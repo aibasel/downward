@@ -1,0 +1,41 @@
+begin_variables
+<number of variables>
+    <var_name> <range> <layer>   
+        // <layer> == -1 for non-axioms, otherwise axiom layer
+        // (low layers must be evaluated first for negation by failure semantics).
+    ...
+end_variables
+
+begin_state     // initial state, omitting derived variables
+    <value of first var>
+    ...
+ end_state
+
+begin_goal
+<number_of_goals>
+    <var_index> <value> // first goal
+    ...
+end_goal
+
+<number of operators>
+begin_operator
+<name>
+<number of preconditions>
+    <var_index> <value> // first precondition
+    ...
+<number of effects>
+    <number of effect conditions>
+        <var_index> <value> // first effect condition
+        ...
+    <var_index> <old value> <new value> // old_val can be -1
+    ... // other effects
+end_operator
+... // other operators
+
+<number of derivation rules>
+begin_rule
+<number of conditions>
+    <var_index> <value>
+    ...
+<var_index> <old_value> <new_value> // consequence of the rule
+end_rule

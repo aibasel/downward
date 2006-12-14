@@ -1,0 +1,11 @@
+Improve architecture:
+* Axioms should be a special kind of operator, not an entity proper.
+* Complicated goals should be replaced by simple goals (one fact only).
+  This can be done via axioms.
+
+Complete features:
+* Conjunctive effects cannot appear inside universal or conditional effects;
+  in general, the allowed effect structure is maybe too restrictive.
+  For example, the "middle-compiled/adl" bit of the PSR domain is problematic
+  because it has two effects with the same quantifiers and condition.
+  Fix: Implement arbitrary nestings of and/forall/when.

@@ -1,0 +1,62 @@
+/* Main file, keeps all important variables.
+ * Calls functions from "helper_functions" to read in input (variables, operators, 
+ * goals, initial state),
+ * then calls functions to build causal graph, domain_transition_graphs and 
+ * successor generator
+ * finally prints output to file "output"
+ */
+
+#include "helper_functions.h"
+#include "successor_generator.h"
+#include "causal_graph.h"
+#include "domain_transition_graph.h"
+#include "state.h"
+#include "operator.h"
+#include "axiom.h"
+#include "variable.h"
+#include <iostream>
+using namespace std;
+
+int main() {
+  vector<Variable *> variables;
+  vector<Variable> internal_variables;
+  State initial_state;
+  vector<pair<Variable *, int> > goals;
+  vector<Operator> operators;
+  vector<Axiom> axioms;
+  vector<DomainTransitionGraph> transition_graphs;
+
+  read_preprocessed_problem_description
+    (cin, internal_variables, variables, initial_state, goals, operators, axioms);
+  //dump_preprocessed_problem_description
+  //  (variables, initial_state, goals, operators, axioms);
+  
+  cout << "Building causal graph..." << endl;
+  CausalGraph causal_graph(variables, operators, axioms, goals);
+  const vector<Variable *> &ordering = causal_graph.get_variable_ordering();
+  bool cg_acyclic = causal_graph.is_acyclic();
+
+  // Remove unnecessary effects from operators and axioms, then remove
+  // operators and axioms without effects.
+  strip_operators(operators);
+  strip_axioms(axioms);
+
+  cout << "Building domain transition graphs..." << endl;
+  build_DTGs(ordering, operators, axioms, transition_graphs);
+  //dump_DTGs(ordering, transition_graphs);
+  bool solveable_in_poly_time = false;
+  if(cg_acyclic)
+    solveable_in_poly_time = are_DTGs_strongly_connected(transition_graphs);
+  //TODO: genauer machen? (highest level var muss nicht scc sein...gemacht)
+  //nur Werte, die wichtig sind fuer drunterliegende vars muessen in scc sein
+  cout << "solveable in poly time " << solveable_in_poly_time << endl;
+  cout << "Building successor generator..." << endl;
+  SuccessorGenerator successor_generator(ordering, operators);
+  //successor_generator.dump();
+
+  cout << "Writing output..." << endl;
+  generate_cpp_input(solveable_in_poly_time, ordering, initial_state, 
+		     goals, operators, axioms, successor_generator, 
+		     transition_graphs, causal_graph);
+  cout << "done" << endl << endl;
+}

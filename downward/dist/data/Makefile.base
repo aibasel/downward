@@ -1,0 +1,22 @@
+# The Makefile looks ugly because it is automatically generated.
+#
+# The Makefile looks basic because it is not intended for people
+# developing on the project but only for people who want to be able to
+# compile and use the planner.
+#
+# There is no "make clean" or "make distclean" option. The Makefile
+# only generates the executables for the different planner components,
+# without creating intermediate files. If you want to get rid of the
+# executables, just delete them. To return the planner distribution to
+# a pristine state, you might also want to remove the Python bytecode
+# files (*.pyc) that are generated when running the Python translator.
+# However, there should be no need to ever do that, since Python keeps
+# track of whether or not the bytecode files are current and
+# regenerates them when needed.
+
+COMPILE=g++ -O3 -Wall -W -Wno-sign-compare -ansi -pedantic -DRELEASE
+
+default: all
+
+.PHONY: default all
+

@@ -1,0 +1,78 @@
+(0) Erzeuge NNF.
+
+(1) Beseitige allquantifizierte Bedingungen:
+     Ersetze, von außen nach innen,
+       forall vars phi
+     durch
+       not (not-all-phi),
+     wobei not-all-phi ein neues Axiom ist.
+
+     Die Parameter von "not-all-phi" sind genau die in phi frei vorkommenden
+     Variablen außer vars, mit den entsprechenden Typen.
+
+     not-all-phi(free(phi) \ vars)
+       :- exists vars: not phi
+
+     Dabei muss natürlich "not phi" in NNF überführt werden.
+     not-all-phi muss gleichfalls rekursiv analog überführt werden.
+
+[Zwischenergebnis: NNF ohne Allquantoren]
+
+(2) Ziehe Disjunktionen nach außen:
+   phi and (psi or psi') == (phi and psi) or (phi and psi')
+   exists x: (phi or psi) == (exists x: phi) or (exists x: psi)
+
+(3) Splitte Regeln an der äußersten Disjunktion in
+    unterschiedliche Regeln auf.
+
+(4) Ziehe Existenzquantoren über Konjunktionen:
+   (exists x: phi and psi) == exists x: (phi and psi),
+      falls x nicht x nicht frei in psi auftritt, was durch die eindeutige
+      Benennung der Variablen garantiert ist.
+
+[Zwischenergebnis: Existenzquantifizierte einfache Konjunktionen]
+
+(5) Spalte die Regel (phi(vars) :- exists vars': psi_1 and ... and psi_k)
+    auf in zwei Regeln:
+       phi(vars)        :- exists vars': psi(vars, vars')
+       psi(vars, vars') :- psi_1 and ... and psi_k
+    Es entstehen also eine einfache Projektionsregel und eine Join-Regel.
+
+    (Vielleicht ist dieser Umstand gar nicht nötig; betrachte das Axiom
+    einfach wie einen normalen Operator mit Parametern (vars, vars') und
+    Effekt phi(vars)).
+
+(6) Werte diese Regeln in compute-model-Manier aus.
+
+(7) Bestimme, welche Axiome positiv, welche negativ, und welche gar nicht
+    ausgewertet werden müssen.
+
+    Ein Axiom muss positiv ausgewertet werden, wenn es
+    - positiv in einer Operatorbedingung (Vorbedingung oder bedingter Effekt)
+      oder im Ziel auftritt.
+    - positiv in einem Axiom auftritt, das positiv ausgewertet werden muss.
+    - negativ in einem Axiom auftritt, das negativ ausgewertet werden muss.
+
+    Ein Axiom muss negativ ausgewertet werden, wenn es
+    - negativ in einer Operatorbedingung (Vorbedingung oder bedingter Effekt)
+      oder im Ziel auftritt.
+    - negativ in einem Axiom auftritt, das positiv ausgewertet werden muss.
+    - positiv in einem Axiom auftritt, das negativ ausgewertet werden muss.
+
+(8) Für Axiome, die negativ ausgewertet werden müssen, müssen noch
+    entsprechende Ableitungsregeln gefunden werden. Dies geschieht bereits auf
+    der propositionalen Ebene.
+    Finde alle positiven Ableitungsregeln für das Axiom; dies entspricht einer
+    DNF. Negiere diese DNF und überführe die entstehende KNF wieder in DNF.
+
+(9) Schreibe die Ableitungsregeln für alle Axiome die Ableitungsregeln für
+    positive bzw. negative Auswertung in die Ausgabe, wenn diese benötigt
+    werden. Axiome werden mit einem Wert von "unknown" (2) initialisiert und
+    können dann "false" (0) oder "true" (1) werden.
+
+TODO: Durch die eingeführten negativ verwendeten Axiome ist es vermutlich
+      nötig, dass Axiome geschichtet ausgewertet werden (=> Stratifizierung).
+      Die richtige Auswertungsreihenfolge sollte nicht weiter schwer zu
+      ermitteln sein, aber die Konsequenzen für Präprozessor und Sucher müssen
+      überdacht werden. Auch das Ausgabeformat (und damit der Präprozessor)
+      müssen geändert werden.

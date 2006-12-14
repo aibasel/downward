@@ -1,0 +1,69 @@
+<polynomial solvability flag>
+
+begin_variables
+<number of variables>
+    <var_name> <range> <is_derived>    // <is_derived> in (0, 1)
+    ...
+end_variables
+
+begin_state     // initial state, omitting derived variables
+    <value of first var>
+    ...
+ end_state
+
+begin_goal
+<number_of_goals>
+    <var_index> <value> // first goal
+    ...
+end_goal
+
+<number of operators>
+begin_operator
+<name>
+<number of preconditions>
+    <var_index> <value> // first precondition
+    ...
+<number of effects>
+    <number of effect conditions>
+        <var_index> <value> // first effect condition
+        ...
+    <var_index> <old value> <new value> // old_val can be -1
+    ... // other effects
+end_operator
+... // other operators
+
+<number of derivation rules>
+begin_rule
+<number of conditions>
+    <var_index> <value>
+    ...
+<var_index> <old_value> <new_value> // consequence of the rule
+end_rule
+
+begin_SG
+    <SG description>
+end_SG
+
+where <SG description> is either:
+    check <number of applicable operators>
+        <operator index>
+        ...
+or:
+    switch <index of switch var>
+        <immediate SG>    // always of the "check" kind
+        <SG for var = 0>
+        <SG for var = 1>
+        ...
+        <SG for var = anything>
+
+begin_DTG // for first variable
+    <number of transitions from first value>
+        <target of first transition>
+        <number of (prevail) conditions for first transition>
+            <var_index> <value> // for first condition
+            ...                 // other conditions
+        ... // other transitions from first value
+    ... // transitions from second, third, ... values
+end_DTG
+
+... // DTGs for second, third, ... variable

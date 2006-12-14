@@ -1,0 +1,107 @@
+#! /bin/bash
+
+# TODO:
+
+# This is not perfect because it picks up any odd *.{cc,h,py} file
+# lying around in the planner directories and puts it into the
+# package. It would be nicer to integrate this with the regular
+# Makefiles so that no information about what is and isn't part of the
+# planner is duplicated anywhere.
+#
+# For the Python code, which does not require a Makefile, we could go
+# fancy and automatically keep track of dependencies by looking at
+# "import" statements. Of course, this is fallible when there are
+# dynamic imports, and we need to be careful about absolute and
+# relative imports etc. Probably the easiest way of dealing with this
+# is to first delete all pyc files recursively, then run the planner
+# on some dummy input (or even empty input) and check which *.pyc files
+# were generated. The corresponding *.py files plus the main *.py file
+# would be the only ones that need to be included. Again, this fails
+# in some cases, such as when imports are only conditionally executed,
+# but we could guard against errors by outputting a list of *.py files
+# found that were *not* added (this could then be eyeballed). The unit
+# tests run after packaging should catch this too.
+#
+# Another problem with this is that it is not at all graceful if
+# errors occur at any stage. These are basically ignored, which is
+# hardly the right thing to do. For example, if one of the unit tests
+# at the end fails, one would certainly not like to delete the
+# distribution directory -- it should be left intact to check what was
+# going wrong. All in all, this sounds like a more complicated job
+# than what I would like to do with a bash script, so maybe it should
+# be done with Python.
+
+echo "Preparing distribution directory..."
+DIST=downward-`date --iso-8601`
+SRC_DIR=..
+
+MAKEFILE=$DIST/Makefile
+
+mkdir $DIST
+cp data/Makefile.base $MAKEFILE
+mkdir $DIST/doc
+cp data/README $DIST/
+cp data/doc/sas-format.txt $DIST/doc/
+cp data/doc/fast-downward.pdf $DIST/doc/
+cp data/doc/translator.pdf $DIST/doc/
+
+# C++ components
+for component in translate-strips preprocess search; do
+    mkdir $DIST/$component
+    cp $SRC_DIR/$component/*.{cc,h} $DIST/$component/
+
+    # The rest of this is for generating the Makefile.
+    ID=`echo $component | sed -e \
+      y/abcdefghijklmnopqrstuvwxyz-/ABCDEFGHIJKLMNOPQRSTUVWXYZ_/`
+    CC_FILES=`cd $SRC_DIR && echo $component/*.cc`
+    H_FILES=`cd $SRC_DIR && echo $component/*.h`
+
+    echo >> $MAKEFILE
+    echo "${ID}_CC = $CC_FILES" >> $MAKEFILE
+    echo "${ID}_H  = $H_FILES" >> $MAKEFILE
+    echo "$component/$component: \$(${ID}_CC) \$(${ID}_H)" >> $MAKEFILE
+    echo -e "\t\$(COMPILE) -o $component/$component \$(${ID}_CC)" >> $MAKEFILE
+    echo "all: $component/$component" >> $MAKEFILE
+done
+
+# Python component
+mkdir $DIST/translate
+mkdir $DIST/translate/pddl
+cp $SRC_DIR/translate/*.py $DIST/translate/
+cp $SRC_DIR/translate/pddl/*.py $DIST/translate/pddl/
+
+# Packaging
+echo "Packaging..."
+tar czf $DIST.tar.gz $DIST/
+rm -rf $DIST
+
+# Unit tests
+echo "Unit test: Unpacking package..."
+tar xzf $DIST.tar.gz
+
+echo "Unit test: Compiling..."
+cp -r data/tests $DIST/
+cd $DIST
+make > /dev/null
+
+echo 'Unit test: First task (C++ translator)...'
+translate-strips/translate-strips \
+    tests/test-cpp-domain.pddl tests/test-cpp-problem.pddl \
+    > /dev/null
+preprocess/preprocess < output.sas > /dev/null
+search/search cCfF < output > /dev/null
+diff sas_plan tests/test-cpp-plan
+rm -f output.sas output sas_plan
+
+echo 'Unit test: Second task (Python translator)...'
+translate/translate.py \
+    tests/test-py-domain.pddl tests/test-py-problem.pddl \
+    > /dev/null
+preprocess/preprocess < output.sas > /dev/null
+search/search cCfF < output > /dev/null
+diff sas_plan tests/test-py-plan
+rm -f output.sas test.groups output sas_plan
+
+echo "Cleaning up..."
+cd ..
+rm -rf $DIST

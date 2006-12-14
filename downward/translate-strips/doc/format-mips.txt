@@ -1,0 +1,27 @@
+begin_variables
+3       # Anzahl Variablen
+var1 5  # Für jede Variable: Name und Größe des Wertebereichs
+var2 4
+var3 4
+end_variables
+
+begin_state
+3       # Für jede Variable: anfängliche Belegung.
+1
+0
+end_state
+
+begin_goal
+1       # Anzahl Goals
+1 4     # Für jedes Goal: Variablenindex und gewünschte Belegung
+end_goal
+
+1 # Anzahl Operatoren
+begin_operator
+foo    # Name des Operators
+1      # Anzahl prevail conditions
+2 0    # Für jede prevail condition: Variablenindex und nötige Belegung
+2      # Anzahl Effekte (precondition/postcondition-Paare)
+0 1 2  # Für jeden Effekt: Variablenindex, nötige alte Belegung, neue Belegung
+1 -1 1 # Alte Belegung -1 bedeutet: alter Wert egal.
+end_operator

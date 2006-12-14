@@ -1,0 +1,44 @@
+TODO:
+preprocess und translate in einen stabilen Zustand bringen und in backups 
+Verzeichnisse fuer Version 1.0 anlegen.
+
+
+All programs: Eliminite distinction between "prevail conditions" and
+              "preconditions".
+
+All programs: Unify axioms and actions.
+
+
+* Zum Debugging:
+    Assoziation von SAS-Paaren zu STRIPS-Propositionen speichern und dem
+    Planer erlauben, den aktuellen Zustand in STRIPS-Kodierung anzugeben.
+
+* Bug bei der SAS+-Kodierung:
+    Siehe Übersetzung von "shopping: domain-alt": Die 
+    Gruppenzusammensetzung macht keinen Sinn.
+* Problem bei der SAS+-Kodierung:
+    In Gripper-1 haben die Drop-Operatoren keine Vorbedingung für den Ball 
+    (sie sollte lauten: "Weder in Raum A, noch in Raum B"). Die 
+    Vorbedingung ist optional, da sie schon durch die Vorbedingung des 
+    Grippers abgedeckt wird, würde aber zusätliche Informationen liefern 
+    und sollte daher besser nicht ignoriert werden.
+* Bug bei der SAS+-Kodierung:
+    Unmögliche Ziele werden einfach entfernt (Mystery-07, Mystery-18).
+    Das ist natürlich Unsinn. Stattdessen sollte ein (möglichst einfaches) 
+    unmögliches Problem ausgegeben werden.
+
+* Im Präprozessor:
+    Dominierte Transitionen entfernen.
+* Im Präprozessor:
+    Sollten Goals nicht die höchsten Levels bekommen?
+    (Beispiel: Gripper-Probleme.)
+
+* In Search:
+    polynomiellen Solver für Logistics und kleine Miconic-Probleme implementieren
+
+Alternative Idee:
+=================
+Planen mit Makro-Operatoren?
+Compute all macros that can be performed by only considering the state of 
+at most k state variables. Retain the ones which are most simple (e.g. 
+unary ones?)
