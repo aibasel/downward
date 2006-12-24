@@ -1,7 +1,5 @@
 #include "globals.h"
 #include "operator.h"
-#include "partial_relaxation.h"
-#include "partially_relaxed_state.h"
 #include "state.h"
 #include "successor_generator.h"
 
@@ -19,8 +17,6 @@ public:
     SuccessorGeneratorSwitch(istream &in);
     virtual void generate_applicable_ops(const State &curr,
 					 vector<const Operator *> &ops);
-    virtual void generate_applicable_ops(const PartiallyRelaxedState &curr,
-					 vector<const Operator *> &ops);
     virtual void _dump(string indent);
 };
 
@@ -29,8 +25,6 @@ class SuccessorGeneratorGenerate : public SuccessorGenerator {
 public:
     SuccessorGeneratorGenerate(istream &in);
     virtual void generate_applicable_ops(const State &curr,
-					 vector<const Operator *> &ops);
-    virtual void generate_applicable_ops(const PartiallyRelaxedState &curr,
 					 vector<const Operator *> &ops);
     virtual void _dump(string indent);
 };
@@ -50,19 +44,6 @@ void SuccessorGeneratorSwitch::generate_applicable_ops(
     default_generator->generate_applicable_ops(curr, ops);
 }
 
-void SuccessorGeneratorSwitch::generate_applicable_ops(
-    const PartiallyRelaxedState &curr, vector<const Operator *> &ops) {
-    immediate_ops->generate_applicable_ops(curr, ops);
-    if(curr.get_relaxation().is_relaxed(switch_var)) {
-	for(int value = 0; value < g_variable_domain[switch_var]; value++)
-	    if(curr.has_value(switch_var, value))
-		generator_for_value[value]->generate_applicable_ops(curr, ops);
-    } else {
-	generator_for_value[curr.get(switch_var)]->generate_applicable_ops(curr, ops);
-    }
-    default_generator->generate_applicable_ops(curr, ops);
-}
-
 void SuccessorGeneratorSwitch::_dump(string indent) {
     cout << indent << "switch on " << g_variable_name[switch_var] << endl;
     cout << indent << "immediately:" << endl;
@@ -76,11 +57,6 @@ void SuccessorGeneratorSwitch::_dump(string indent) {
 }
 
 void SuccessorGeneratorGenerate::generate_applicable_ops(const State &,
-							 vector<const Operator *> &ops) {
-    ops.insert(ops.end(), op.begin(), op.end());
-}
-
-void SuccessorGeneratorGenerate::generate_applicable_ops(const PartiallyRelaxedState &,
 							 vector<const Operator *> &ops) {
     ops.insert(ops.end(), op.begin(), op.end());
 }

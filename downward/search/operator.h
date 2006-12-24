@@ -8,7 +8,6 @@
 
 #include "globals.h"
 #include "state.h"
-#include "partially_relaxed_state.h"
 
 class Variable;
 
@@ -22,11 +21,6 @@ struct Prevail {
 	assert(var >= 0 && var < g_variable_name.size());
 	assert(prev >= 0 && prev < g_variable_domain[var]);
 	return state[var] == prev;
-    }
-    bool is_applicable(const PartiallyRelaxedState &state) const {
-	assert(var >= 0 && var < g_variable_name.size());
-	assert(prev >= 0 && prev < g_variable_domain[var]);
-	return state.has_value(var, prev);
     }
 
     void dump() const;
@@ -46,19 +40,8 @@ struct PrePost {
 	assert(pre == -1 || pre >= 0 && pre < g_variable_domain[var]);
 	return pre == -1 || state[var] == pre;
     }
-    bool is_applicable(const PartiallyRelaxedState &state) const {
-	assert(var >= 0 && var < g_variable_name.size());
-	assert(pre == -1 || pre >= 0 && pre < g_variable_domain[var]);
-	return pre == -1 || state.has_value(var, pre);
-    }
 
     bool does_fire(const State &state) const {
-	for(int i = 0; i < cond.size(); i++)
-	    if(!cond[i].is_applicable(state))
-		return false;
-	return true;
-    }
-    bool does_fire(const PartiallyRelaxedState &state) const {
 	for(int i = 0; i < cond.size(); i++)
 	    if(!cond[i].is_applicable(state))
 		return false;
@@ -84,15 +67,6 @@ public:
     const std::vector<PrePost> &get_pre_post() const {return pre_post;}
 
     bool is_applicable(const State &state) const {
-	for(int i = 0; i < prevail.size(); i++)
-	    if(!prevail[i].is_applicable(state))
-		return false;
-	for(int i = 0; i < pre_post.size(); i++)
-	    if(!pre_post[i].is_applicable(state))
-		return false;
-	return true;
-    }
-    bool is_applicable(const PartiallyRelaxedState &state) const {
 	for(int i = 0; i < prevail.size(); i++)
 	    if(!prevail[i].is_applicable(state))
 		return false;

@@ -8,7 +8,6 @@
 
 class Operator;
 class State;
-class PartiallyRelaxedState;
 
 class Proposition;
 class UnaryOperator;
@@ -62,7 +61,6 @@ class FFHeuristic : public Heuristic {
 
     void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
-    void setup_exploration_queue_state(const PartiallyRelaxedState &state);
     void relaxed_exploration();
     void collect_relaxed_plan(Proposition *goal, RelaxedPlan &relaxed_plan);
 
@@ -71,7 +69,6 @@ class FFHeuristic : public Heuristic {
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
-    virtual int compute_heuristic(const PartiallyRelaxedState &state);
 public:
     FFHeuristic(bool use_cache=false);
     ~FFHeuristic();

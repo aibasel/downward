@@ -3,7 +3,6 @@
 #include "globals.h"
 #include "operator.h"
 #include "state.h"
-#include "partially_relaxed_state.h"
 
 #include <cassert>
 #include <vector>
@@ -213,19 +212,6 @@ void FFHeuristic::setup_exploration_queue_state(const State &state) {
     }
 }
 
-void FFHeuristic::setup_exploration_queue_state(const PartiallyRelaxedState &state) {
-    for(int var = 0; var < propositions.size(); var++) {
-	for(int value = 0; value < propositions[var].size(); value++) {
-	    if(state.has_value(var, value)) {
-		Proposition *init_prop = &propositions[var][value];
-		init_prop->h_add_cost = 0;
-		init_prop->reached_by = 0; // only needed for FF heuristic
-		*reachable_queue_write_pos++ = init_prop;
-	    }
-	}
-    }
-}
-
 void FFHeuristic::relaxed_exploration() {
     int unsolved_goals = goal_propositions.size();
     while(reachable_queue_read_pos != reachable_queue_write_pos) {
@@ -304,8 +290,3 @@ int FFHeuristic::compute_heuristic(const State &state) {
     return compute_ff_heuristic();
 }
 
-int FFHeuristic::compute_heuristic(const PartiallyRelaxedState &state) {
-    setup_exploration_queue();
-    setup_exploration_queue_state(state);
-    return compute_ff_heuristic();
-}

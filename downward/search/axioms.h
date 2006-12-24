@@ -4,7 +4,6 @@
 #include <vector>
 
 class State;
-class PartiallyRelaxedState;
 
 class AxiomEvaluator {
     struct AxiomRule;
@@ -35,7 +34,6 @@ class AxiomEvaluator {
 public:
     AxiomEvaluator();
     void evaluate(State &state);
-    void evaluate(PartiallyRelaxedState &state);
 };
 
 #endif

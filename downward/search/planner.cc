@@ -1,7 +1,6 @@
 #include "best_first_search.h"
 #include "cg_heuristic.h"
 #include "ff_heuristic.h"
-#include "partial_relaxation_heuristic.h"
 #include "goal_count_heuristic.h"
 #include "globals.h"
 #include "operator.h"
@@ -23,7 +22,6 @@ int main(int argc, const char **argv) {
     bool cg_heuristic = false, cg_preferred_operators = false;
     bool ff_heuristic = false, ff_preferred_operators = false;
     bool goal_count_heuristic = false;
-    bool partial_relaxation_heuristic = false, pr_preferred_operators = false;
     for(int i = 1; i < argc; i++) {
 	for(const char *c = argv[i]; *c != 0; c++) {
 	    if(*c == 'c') {
@@ -34,10 +32,6 @@ int main(int argc, const char **argv) {
 		ff_heuristic = true;
 	    } else if(*c == 'F') {
 		ff_preferred_operators = true;
-	    } else if(*c == 'p') {
-		partial_relaxation_heuristic = true;
-	    } else if(*c == 'P') {
-		pr_preferred_operators = true;
 	    } else if(*c == 'g') {
 		goal_count_heuristic = true;
 	    } else {
@@ -47,8 +41,7 @@ int main(int argc, const char **argv) {
 	}
     }
 
-    if(!cg_heuristic && !ff_heuristic && !partial_relaxation_heuristic
-       && !goal_count_heuristic) {
+    if(!cg_heuristic && !ff_heuristic && !goal_count_heuristic) {
 	cerr << "Error: you must select at least one heuristic!" << endl
 	     << "If you are unsure, choose options \"cCfF\"." << endl;
 	return 2;
@@ -72,21 +65,8 @@ int main(int argc, const char **argv) {
     if(ff_heuristic || ff_preferred_operators)
 	engine->add_heuristic(new FFHeuristic, ff_heuristic,
 			      ff_preferred_operators);
-    if(partial_relaxation_heuristic || pr_preferred_operators)
-	engine->add_heuristic(new PartialRelaxationHeuristic,
-			      partial_relaxation_heuristic,
-			      pr_preferred_operators);
     if(goal_count_heuristic)
 	engine->add_heuristic(new GoalCountHeuristic, true, false);
-
-#ifdef RELEASE
-    if(partial_relaxation_heuristic || pr_preferred_operators) {
-	cout << "The partial relaxation heuristic is unfinished work "
-	     << "in progress." << endl
-	     << "Please do not use the \"p\" option for now." << endl;
-	return 2;
-    }
-#endif
 
     times(&search_start);
     engine->search();

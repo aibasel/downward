@@ -1,7 +1,5 @@
 HEADERS = heuristic.h \
 	  cg_heuristic.h ff_heuristic.h goal_count_heuristic.h \
-	  partial_relaxation_heuristic.h low_level_search.h \
-	  partial_relaxation.h partially_relaxed_state.h \
 	  domain_transition_graph.h globals.h \
           operator.h state.h successor_generator.h causal_graph.h \
 	  best_first_search.h axioms.h cache.h \

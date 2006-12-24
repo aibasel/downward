@@ -1,7 +1,6 @@
 #include "axioms.h"
 #include "globals.h"
 #include "operator.h"
-#include "partially_relaxed_state.h"
 #include "state.h"
 
 #include <deque>
@@ -114,12 +113,4 @@ void AxiomEvaluator::evaluate(State &state) {
 		queue.push_back(nbf_info[i].literal);
 	}
     }
-}
-
-void AxiomEvaluator::evaluate(PartiallyRelaxedState &/*state*/) {
-    // TODO: Implement.
-    // The program should verify that derived variables that depend on
-    // relaxed variables are also relaxed. This should probably
-    // happen within the PartialRelaxation constructor.
-    assert(g_axioms.empty());
 }

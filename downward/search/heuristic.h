@@ -6,7 +6,6 @@
 
 class Operator;
 class State;
-class PartiallyRelaxedState;
 
 class Heuristic {
     enum {NOT_INITIALIZED = -2};
@@ -23,19 +22,16 @@ class Heuristic {
 
     bool use_cache;
     std::map<State, EvaluationInfo> state_cache;
-    std::map<PartiallyRelaxedState, EvaluationInfo> partially_relaxed_state_cache;
 protected:
     enum {DEAD_END = -1};
     virtual void initialize() {}
     virtual int compute_heuristic(const State &state) = 0;
-    virtual int compute_heuristic(const PartiallyRelaxedState &state);
     void set_preferred(const Operator *op);
 public:
     Heuristic(bool use_cache=false);
     virtual ~Heuristic();
 
     void evaluate(const State &state);
-    void evaluate(const PartiallyRelaxedState &state);
     bool is_dead_end();
     int get_heuristic();
     void get_preferred_operators(std::vector<const Operator *> &result);
