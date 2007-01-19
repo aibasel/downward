@@ -112,6 +112,16 @@ def translate_strips_conditions(conditions, dictionary, ranges):
   condition = {}
   for fact in conditions:
     if fact.negated:
+      ## BUG: Here we take a shortcut compared to Sec. 10.6.4
+      ##      of the thesis and do something that doesn't appear
+      ##      to make sense if this is part of a proper fact group.
+      ##      Compare the last sentences of the third paragraph of
+      ##      the section.
+      ##      We need to do what is written there. As a test case,
+      ##      consider Airport ADL tasks with only one airport, where
+      ##      (occupied ?x) variables are encoded in a single variable,
+      ##      and conditions like (not (occupied ?x)) do occur in
+      ##      preconditions.
       fact = pddl.Atom(fact.predicate, fact.args)
       var, _ = dictionary[fact]
       val = ranges[var] - 1
