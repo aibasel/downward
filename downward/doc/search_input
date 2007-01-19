@@ -2,7 +2,7 @@
 
 begin_variables
 <number of variables>
-    <var_name> <range> <is_derived>    // <is_derived> in (0, 1)
+    <var_name> <range> <axiom_layer>    // <axiom_layer == -1 for non-derived variables
     ...
 end_variables
 
@@ -20,8 +20,8 @@ end_goal
 <number of operators>
 begin_operator
 <name>
-<number of preconditions>
-    <var_index> <value> // first precondition
+<number of prevail conditions>
+    <var_index> <value> // first prevail condition
     ...
 <number of effects>
     <number of effect conditions>
@@ -59,6 +59,7 @@ or:
 begin_DTG // for first variable
     <number of transitions from first value>
         <target of first transition>
+        <index of operator responsible for the transition>
         <number of (prevail) conditions for first transition>
             <var_index> <value> // for first condition
             ...                 // other conditions
@@ -67,3 +68,11 @@ begin_DTG // for first variable
 end_DTG
 
 ... // DTGs for second, third, ... variable
+
+begin_CG // causal graph
+<number of successors of first variable>
+   <index of first successor> <number of responsible actions/axiom>
+   ...
+   <index of last successor> <number of responsible actions/axiom>
+... // information for second, third, ... variable
+end_CG
