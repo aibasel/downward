@@ -43,7 +43,10 @@ def translate_strips_conditions(conditions, dictionary, ranges):
             ##      (occupied ?x) variables are encoded in a single variable,
             ##      and conditions like (not (occupied ?x)) do occur in
             ##      preconditions.
-            fact = pddl.Atom(fact.predicate, fact.args)
+            ##      However, *do* what we do here if this is a binary
+            ##      variable, because this happens to be the most
+            ##      common case.
+                fact = pddl.Atom(fact.predicate, fact.args)
             var, _ = dictionary[fact]
             val = ranges[var] - 1
         else:
