@@ -215,15 +215,15 @@ def pddl_to_sas(task):
     if isinstance(task.goal, pddl.Conjunction):
         goal_list = task.goal.parts
     else:
-        assert isinstance(task.goal, pddl.Literal)
         goal_list = [task.goal]
+    for item in goal_list:
+        assert isinstance(item, pddl.Literal)
 
     groups = fact_groups.compute_groups(task, atoms)
 
     print "Building STRIPS to SAS dictionary..."
     ranges, strips_to_sas = strips_to_sas_dictionary(groups)
     print "Translating task..."
-
     sas_task = translate_task(strips_to_sas, ranges, task.init, goal_list,
                               actions, axioms)
     return sas_task
