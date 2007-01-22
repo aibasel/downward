@@ -1,7 +1,7 @@
 import pddl
 import sas_tasks
 
-def handle_axioms(atoms, operators, axioms, goals):
+def handle_axioms(operators, axioms, goals):
   print "Processing axioms..."
 
   axioms_by_atom = get_axioms_by_atom(axioms)

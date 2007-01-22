@@ -2,8 +2,8 @@
 # -*- coding: latin-1 -*-
 
 import axiom_rules
+import fact_groups
 import instantiate
-import invariant_finder
 import pddl
 import sas_tasks
 
@@ -18,85 +18,6 @@ import sas_tasks
 # non-derived).
 
 ALLOW_CONFLICTING_EFFECTS = False
-
-def tuples(domain, n):
-  if n == 0:
-    yield ()
-  else:
-    for tup in tuples(domain, n - 1):
-      for obj in domain:
-        yield tup + (obj,)
-
-def expand_group(group, task, reachable_facts):
-  result = []
-  for fact in group:
-    try:
-      pos = list(fact.args).index("?X")
-    except ValueError:
-      result.append(fact)
-    else:
-      # NOTE: This could be optimized by only trying objects of the correct
-      #       type, or by using a unifier which directly generates the
-      #       applicable objects. It is not worth optimizing this at this stage,
-      #       though.
-      for obj in task.objects:
-        newargs = list(fact.args)
-        newargs[pos] = obj.name
-        atom = pddl.Atom(fact.predicate, newargs)
-        if atom in reachable_facts:
-          result.append(atom)
-  return result
-
-def instantiate_groups(groups, task, reachable_facts):
-  return [expand_group(group, task, reachable_facts) for group in groups]
-
-class GroupCoverQueue:
-  def __init__(self, groups):
-    if groups:
-      self.max_size = max([len(group) for group in groups])
-      self.groups_by_size = [[] for i in range(self.max_size + 1)]
-      self.groups_by_fact = {}
-      for group in groups:
-        group = set(group) # Copy group, as it will be modified.
-        self.groups_by_size[len(group)].append(group)
-        for fact in group:
-          self.groups_by_fact.setdefault(fact, []).append(group)
-      self._update_top()
-    else:
-      self.max_size = 0
-  def __nonzero__(self):
-    return self.max_size > 1
-  def pop(self):
-    result = list(self.top) # Copy; this group will shrink further.
-    for fact in result:
-      for group in self.groups_by_fact[fact]:
-        group.remove(fact)
-    self._update_top()
-    return result
-  def _update_top(self):
-    while self.max_size > 1:
-      max_list = self.groups_by_size[self.max_size]
-      while max_list:
-        candidate = max_list.pop()
-        if len(candidate) == self.max_size:
-          self.top = candidate
-          return
-        self.groups_by_size[len(candidate)].append(candidate)
-      self.max_size -= 1
-
-def choose_groups(groups, reachable_facts):
-  queue = GroupCoverQueue(groups)
-  uncovered_facts = reachable_facts.copy()
-  result = []
-  while queue:
-    group = queue.pop()
-    uncovered_facts.difference_update(group)
-    result.append(group)
-  print len(uncovered_facts), "uncovered facts"
-  #for fact in uncovered_facts:
-  #  print fact
-  result += [[fact] for fact in uncovered_facts]
-  return result
 
 def strips_to_sas_dictionary(groups):
   dictionary = {}
@@ -242,13 +163,13 @@ def translate_strips_axioms(axioms, strips_to_sas, ranges):
       result.append(sas_axiom)
   return result
 
-def translate_task(strips_to_sas, ranges, init, goals, actions, axioms,
-                   axiom_layer_dict):
-  axiom_layers = [-1] * len(ranges)
-  for atom, layer in axiom_layer_dict.iteritems():
-    assert layer >= 0
-    axiom_layers[strips_to_sas[atom][0]] = layer
-  variables = sas_tasks.SASVariables(ranges, axiom_layers)
+def translate_task(strips_to_sas, ranges, init, goals, actions, axioms):
+  axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
+    actions, axioms, goals)
+  init = init + axiom_init
+  #axioms.sort(key=lambda axiom: axiom.name)
+  #for axiom in axioms:
+  #  axiom.dump()
 
   init_values = [rang - 1 for rang in ranges]
   # Closed World Assumption: Initialize to "range - 1" == Nothing.
@@ -265,6 +186,12 @@ def translate_task(strips_to_sas, ranges, init, goals, actions, axioms,
 
   operators = translate_strips_operators(actions, strips_to_sas, ranges)
   axioms = translate_strips_axioms(axioms, strips_to_sas, ranges)
+
+  axiom_layers = [-1] * len(ranges)
+  for atom, layer in axiom_layer_dict.iteritems():
+    assert layer >= 0
+    axiom_layers[strips_to_sas[atom][0]] = layer
+  variables = sas_tasks.SASVariables(ranges, axiom_layers)
 
   return sas_tasks.SASTask(variables, init, goal, operators, axioms)
 
@@ -291,33 +218,14 @@ def pddl_to_sas(task):
     assert isinstance(task.goal, pddl.Literal)
     goal_list = [task.goal]
 
-  axioms, axiom_init, axiom_layers = axiom_rules.handle_axioms(atoms, actions,
-                                                               axioms, goal_list)
-  #axioms.sort(key=lambda axiom: axiom.name)
-  #for axiom in axioms:
-  #  axiom.dump()
-
-  print "Finding invariants..."
-  groups = invariant_finder.get_groups(task)
-  print "Instantiating groups..."
-  groups = instantiate_groups(groups, task, atoms)
-  print "Choosing groups..."
-  groups = choose_groups(groups, atoms)
-
-  groups_file = file("test.groups", "w")
-  for i, group in enumerate(groups):
-    print >> groups_file, "var%d:" % i
-    for j, fact in enumerate(group):
-      print >> groups_file, "  %d: %s" % (j, fact)
-    print >> groups_file, "  %d: <none of those>" % len(group)
-  groups_file.close()
+  groups = fact_groups.compute_groups(task, atoms)
 
   print "Building STRIPS to SAS dictionary..."
   ranges, strips_to_sas = strips_to_sas_dictionary(groups)
   print "Translating task..."
 
-  sas_task = translate_task(strips_to_sas, ranges, task.init + axiom_init, goal_list,
-                            actions, axioms, axiom_layers)
+  sas_task = translate_task(strips_to_sas, ranges, task.init, goal_list,
+                            actions, axioms)
   return sas_task
 
 if __name__ == "__main__":
