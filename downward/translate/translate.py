@@ -46,7 +46,7 @@ def translate_strips_conditions(conditions, dictionary, ranges):
             ##      However, *do* what we do here if this is a binary
             ##      variable, because this happens to be the most
             ##      common case.
-                fact = pddl.Atom(fact.predicate, fact.args)
+            fact = pddl.Atom(fact.predicate, fact.args)
             var, _ = dictionary[fact]
             val = ranges[var] - 1
         else:
