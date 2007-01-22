@@ -21,39 +21,6 @@ def get_axioms_by_atom(axioms):
     axioms_by_atom.setdefault(axiom.effect, []).append(axiom)
   return axioms_by_atom
 
-"""
-def compute_axiom_layers(axioms_by_atom):
-  NO_AXIOM = -1
-  UNKNOWN_LAYER = -2
-  FIRST_MARKER = -3
-  layers = dict([(atom, UNKNOWN_LAYER) for atom in axioms_by_atom])
-  def find_level(atom, marker):
-    layer = layers.get(atom, NO_AXIOM)
-    if layer == NO_AXIOM:
-      return 0
-
-    if layer == marker:
-      # Found positive cycle: May return 0 but not set value.
-      return 0
-    elif layer <= FIRST_MARKER:
-      # Found negative cycle: Error.
-      assert False, "Cyclic dependencies in axioms; cannot stratify."
-    if layer == UNKNOWN_LAYER:
-      layers[atom] = marker
-      layer = 0
-      for axiom in axioms_by_atom[atom]:
-        for literal in axiom.condition:
-          if literal.negated:
-            layer = max(layer, find_level(literal.negate(), marker - 1) + 1)
-          else:
-            layer = max(layer, find_level(literal, marker))
-      layers[atom] = layer
-    return layer
-  for atom in axioms_by_atom:
-    find_level(atom, FIRST_MARKER)
-  return layers
-"""
-
 def compute_axiom_layers(axioms, axiom_init):
   NO_AXIOM = -1
   UNKNOWN_LAYER = -2

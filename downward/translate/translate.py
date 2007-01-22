@@ -133,14 +133,6 @@ def translate_strips_conditions(conditions, dictionary, ranges):
     condition[var] = val
   return condition
 
-# Old version had problem with
-# - delete effects
-# - without matching precondition or effect condition
-# - without corresponding add effect
-# - with range > 2.
-# These need to be conditional effects.
-# "If set, then delete."
-
 def translate_strips_operator(operator, dictionary, ranges):
   # NOTE: This function does not really deal with the intricacies of properly
   # encoding delete effects for grouped propositions in the presence of
@@ -222,80 +214,6 @@ def translate_strips_operator(operator, dictionary, ranges):
   prevail = condition.items()
 
   return sas_tasks.SASOperator(operator.name, prevail, pre_post)
-
-"""
-def translate_strips_operator(operator, dictionary, ranges):
-  # NOTE: This function does not really deal with the intricacies of properly
-  # encoding delete effects for grouped propositions in the presence of
-  # conditional effects. It probably works but will break with more
-  # complicated conditional effects.
-  
-  condition = translate_strips_conditions(operator.precondition, dictionary, ranges)
-  if condition is None:
-    return None
-
-  effect = {}
-
-  for conditions, fact in operator.add_effects:
-    eff_condition = translate_strips_conditions(conditions, dictionary, ranges).items()
-    if eff_condition is None: # Impossible condition for this effect.
-      continue
-    var, val = dictionary[fact]
-    effect_list = effect.setdefault(var, [])
-    if effect_list:
-      # There are previous effects that affect the same variable. In the
-      # presence of conditional effects, this is ok, but there might be
-      # something fishy with the invariants, so we are rather safe than sorry.
-      # This can be removed in the final version to improve speed.
-      for other_val, other_cond in effect_list:
-        if other_val == val:
-          assert eff_condition != other_condition, "Duplicate effect"
-          assert eff_condition and other_condition, "Dominated conditional effect"
-        else:
-          # This check is too conservative.
-          assert eff_condition and other_condition, "Conflicting effects?"
-    effect_list.append((val, eff_condition))
-
-  for conditions, fact in operator.del_effects:
-    eff_condition = translate_strips_conditions(conditions, dictionary, ranges).items()
-    if eff_condition is None:
-      continue
-    var, val = dictionary[fact]
-    effect_list = effect.setdefault(var, [])
-    none_of_those = ranges[var] - 1
-    if effect_list:
-      for other_val, other_cond in effect_list:
-        if other_val != none_of_those:
-          # There is a corresponding add effect.
-          # Check that it *really* matches and don't do anything.
-          # The add effect sets the variable already.
-          assert other_cond == eff_condition, "Operator too complicated"
-          if not ALLOW_CONFLICTING_EFFECTS and other_val == val:
-            # We are adding and deleting the same value, with the same
-            # condition. This might or might not be illegal, depending on
-            # which semantics for PDDL you adhere to.
-            return None
-        else:
-          # There is another delete effect.
-          # Do the same check as for add effects above, then
-          # add a different conditional delete effect if appropriate.
-          assert eff_condition != other_condition, "Duplicate effect"
-          assert eff_condition and other_condition, "Dominated conditional effect"
-          effect_list.append((none_of_those, eff_condition))
-    else:
-      effect_list.append((none_of_those, eff_condition))
-
-  pre_post = []
-  for var, eff_list in effect.iteritems():
-    pre = condition.get(var, -1)
-    if pre != -1:
-      del condition[var]
-    for (post, eff_condition) in eff_list:
-      pre_post.append((var, pre, post, eff_condition))
-  prevail = condition.items()
-
-  return sas_tasks.SASOperator(operator.name, prevail, pre_post)
-"""
 
 def translate_strips_axiom(axiom, dictionary, ranges):
   condition = translate_strips_conditions(axiom.condition, dictionary, ranges)
