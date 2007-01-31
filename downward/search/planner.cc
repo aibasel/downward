@@ -2,6 +2,7 @@
 #include "cg_heuristic.h"
 #include "ff_heuristic.h"
 #include "goal_count_heuristic.h"
+#include "blind_search_heuristic.h"
 #include "globals.h"
 #include "operator.h"
 
@@ -22,6 +23,7 @@ int main(int argc, const char **argv) {
     bool cg_heuristic = false, cg_preferred_operators = false;
     bool ff_heuristic = false, ff_preferred_operators = false;
     bool goal_count_heuristic = false;
+    bool blind_search_heuristic = false;
     for(int i = 1; i < argc; i++) {
 	for(const char *c = argv[i]; *c != 0; c++) {
 	    if(*c == 'c') {
@@ -34,6 +36,8 @@ int main(int argc, const char **argv) {
 		ff_preferred_operators = true;
 	    } else if(*c == 'g') {
 		goal_count_heuristic = true;
+	    } else if(*c == 'b') {
+		blind_search_heuristic = true;
 	    } else {
 		cerr << "Unknown option: " << *c << endl;
 		return 1;
@@ -41,7 +45,8 @@ int main(int argc, const char **argv) {
 	}
     }
 
-    if(!cg_heuristic && !ff_heuristic && !goal_count_heuristic) {
+    if(!cg_heuristic && !ff_heuristic && !goal_count_heuristic
+        && !blind_search_heuristic) {
 	cerr << "Error: you must select at least one heuristic!" << endl
 	     << "If you are unsure, choose options \"cCfF\"." << endl;
 	return 2;
@@ -67,6 +72,8 @@ int main(int argc, const char **argv) {
 			      ff_preferred_operators);
     if(goal_count_heuristic)
 	engine->add_heuristic(new GoalCountHeuristic, true, false);
+    if(blind_search_heuristic)
+	engine->add_heuristic(new BlindSearchHeuristic, true, false);
 
     times(&search_start);
     engine->search();
