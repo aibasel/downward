@@ -206,9 +206,10 @@ void FFHeuristic::setup_exploration_queue() {
 void FFHeuristic::setup_exploration_queue_state(const State &state) {
     for(int var = 0; var < propositions.size(); var++) {
 	Proposition *init_prop = &propositions[var][state[var]];
+	if(init_prop->h_add_cost == -1)
+	    *reachable_queue_write_pos++ = init_prop;
 	init_prop->h_add_cost = 0;
 	init_prop->reached_by = 0; // only needed for FF heuristic
-	*reachable_queue_write_pos++ = init_prop;
     }
 }
 
