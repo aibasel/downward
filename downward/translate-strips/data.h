@@ -132,8 +132,9 @@ public:
   vector<SymbolicFact *> &getAddEffects()     {return add;}
   vector<SymbolicFact *> &getDelEffects()     {return del;}
   int getParameterCount()                   {return parameterCount;}
-private:                    // special methods and members for ExploreStep
-  friend void ExploreStep::initActionData(vector<Action *> &);
+private:                   
+  // special methods and members for ExploreStep::initActionData
+  friend class ExploreStep;
   vector<vector<SymbolicFact *> > preByMaxPar;
           // non-unary preconditions with a given maximum argument number
   vector<vector<int> > preconditionCount;
