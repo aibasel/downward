@@ -105,3 +105,7 @@ rm -f output.sas test.groups output sas_plan
 echo "Cleaning up..."
 cd ..
 rm -rf $DIST
+
+echo "Publishing..."
+cp $DIST.tar.gz /lummerland/.public_html/
+echo "Published: http://www.informatik.uni-freiburg.de/~helmert/$DIST.tar.gz"
