@@ -74,6 +74,14 @@ def choose_groups(groups, reachable_facts):
     result += [[fact] for fact in uncovered_facts]
     return result
 
+def build_translation_key(groups):
+    group_keys = []
+    for group in groups:
+        group_key = [str(fact) for fact in group]
+        group_key.append("<none of those>")
+        group_keys.append(group_key)
+    return group_keys
+
 def compute_groups(task, atoms):
     print "Finding invariants..."
     groups = invariant_finder.get_groups(task)
@@ -81,13 +89,6 @@ def compute_groups(task, atoms):
     groups = instantiate_groups(groups, task, atoms)
     print "Choosing groups..."
     groups = choose_groups(groups, atoms)
-
-    groups_file = file("test.groups", "w")
-    for i, group in enumerate(groups):
-        print >> groups_file, "var%d:" % i
-        for j, fact in enumerate(group):
-            print >> groups_file, "  %d: %s" % (j, fact)
-        print >> groups_file, "  %d: <none of those>" % len(group)
-    groups_file.close()
-
-    return groups
+    print "Building translation key..."
+    translation_key = build_translation_key(groups)
+    return groups, translation_key

@@ -222,17 +222,29 @@ def pddl_to_sas(task):
     for item in goal_list:
         assert isinstance(item, pddl.Literal)
 
-    groups = fact_groups.compute_groups(task, atoms)
+    groups, translation_key = fact_groups.compute_groups(task, atoms)
 
     print "Building STRIPS to SAS dictionary..."
     ranges, strips_to_sas = strips_to_sas_dictionary(groups)
     print "Translating task..."
     sas_task = translate_task(strips_to_sas, ranges, task.init, goal_list,
                               actions, axioms)
+    simplify.filter_unreachable_propositions(sas_task, translation_key)
+    write_translation_key(translation_key)
     return sas_task
+
+def write_translation_key(translation_key):
+    groups_file = file("test.groups", "w")
+    for var_no, var_key in enumerate(translation_key):
+        print >> groups_file, "var%d:" % var_no
+        for value, value_name in enumerate(var_key):
+            print >> groups_file, "  %d: %s" % (value, value_name)
+    groups_file.close()
+
 
 if __name__ == "__main__":
     import pddl
+    import simplify
     print "Parsing..."
     task = pddl.open()
     if task.domain_name == "protocol":
