@@ -1,0 +1,39 @@
+* Support automated regression tests. These should do the following.
+  1. For a given benchmark suite (say, the "benchmarks/tests" folder)
+     and a given revision number, check out the suitable code and
+     do a complete test run (translate.py/preprocess/search with
+     suitable arguments). Record the intermediate results, timings,
+     state numbers and plan lengths. Validate the plans.
+  2. Run the translator. If the result equals the old result, report
+     that and quit. Otherwise, compare some metrics such as no. of
+     operators, no. of axioms etc. and report whether or not the
+     change appears bad (significant growth in some metric).
+  3. Run the preprocessor and search and compare the plan metrics in
+     a similar way.
+  4. Print a summary of what happened, ordered by criticality.
+* Make the output more canonical. Currently, adding some debug output
+  or byte-compiling can already affect the result. To change this,
+  sort some data structures as necessary etc.
+* STRIPS axioms should only be generated with a positive head.
+  Apparently this is already the case, but there is something going
+  on within axiom_rules.handle_axioms which should be looked at
+  (probably related to extended domain transition graphs).
+  If this is work that conceptually belongs to the preprocessor, it
+  should probably happen later in the translator execution, before the
+  "regular" sas output is computed.
+* Fix the airport-adl bug (see comment "BUG" in translate.py).
+
+
+OLD TODO
+========
+Improve architecture:
+* Axioms should be a special kind of operator, not an entity proper.
+* Complicated goals should be replaced by simple goals (one fact only).
+  This can be done via axioms.
+
+Complete features:
+* Conjunctive effects cannot appear inside universal or conditional effects;
+  in general, the allowed effect structure is maybe too restrictive.
+  For example, the "middle-compiled/adl" bit of the PSR domain is problematic
+  because it has two effects with the same quantifiers and condition.
+  Fix: Implement arbitrary nestings of and/forall/when.
