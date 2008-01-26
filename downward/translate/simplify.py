@@ -132,10 +132,17 @@ class VarValueRenaming(object):
         init.values = new_values
 
     def apply_to_goals(self, goals):
-        try:
-            goals[:] = map(self.translate_pair, goals)
-        except ValueError:
-            raise SystemExit("trivially unsolvable")
+        new_goals = []
+        for pair in goals:
+            try:
+                new_pair = self.translate_pair(pair)
+            except ValueError: 
+                print "Warning: goal %s removed. Pray." % (pair,)
+                # Remove trivially true goals.
+                pass
+            else:
+                new_goals.append(new_pair)
+        goals[:] = new_goals
 
     def apply_to_operator(self, op):
         new_prevail = []
