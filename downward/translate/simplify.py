@@ -4,18 +4,14 @@ from collections import defaultdict
 from itertools import count
 import sys
 
-DEBUG = False
+DEBUG = True
 
 # TODO:
 # This is all quite hackish and would be easier if the translator were
 # restructured so that more information is immediately available for
 # the propositions, and if propositions had more structure. Directly
 # working with int pairs is awkward.
-#
-# It might also be buggy. In particular, the distinction between
-# "trivially false" and "trivially true" conditions below is not
-# obvious and I'm not sure if it's based on fact. Similarly for the
-# throwing away of "effects on constants" in translate_pre_post.
+
 
 class DomainTransitionGraph(object):
     def __init__(self, init, size):
@@ -69,6 +65,15 @@ def build_dtgs(task):
     return dtgs
 
 
+always_false = object()
+always_true = object()
+
+class Impossible(Exception):
+    pass
+
+class DoesNothing(Exception):
+    pass
+
 class VarValueRenaming(object):
     def __init__(self):
         self.new_var_nos = []   # indexed by old var_no
@@ -77,12 +82,15 @@ class VarValueRenaming(object):
         self.new_var_count = 0
         self.num_removed_values = 0
 
-    def register_variable(self, old_domain_size, new_domain):
+    def register_variable(self, old_domain_size, init_value, new_domain):
         assert 1 <= len(new_domain) <= old_domain_size
+        assert init_value in new_domain
         if len(new_domain) == 1:
             # Remove this variable completely.
+            new_values_for_var = [always_false] * old_domain_size
+            new_values_for_var[init_value] = always_true
             self.new_var_nos.append(None)
-            self.new_values.append([None] * old_domain_size)
+            self.new_values.append(new_values_for_var)
             self.num_removed_values += old_domain_size
         else:
             new_value_counter = count()
@@ -92,7 +100,7 @@ class VarValueRenaming(object):
                     new_values_for_var.append(new_value_counter.next())
                 else:
                     self.num_removed_values += 1
-                    new_values_for_var.append(None)
+                    new_values_for_var.append(always_false)
             new_size = new_value_counter.next()
             assert new_size == len(new_domain)
 
@@ -105,10 +113,8 @@ class VarValueRenaming(object):
         self.apply_to_variables(task.variables)
         self.apply_to_init(task.init)
         self.apply_to_goals(task.goal.pairs)
-        for op in task.operators:
-            self.apply_to_operator(op)
-        for axiom in task.axioms:
-            self.apply_to_axiom(axiom)
+        self.apply_to_operators(task.operators)
+        self.apply_to_axioms(task.axioms)
 
     def apply_to_variables(self, variables):
         variables.ranges = self.new_sizes
@@ -120,81 +126,121 @@ class VarValueRenaming(object):
         variables.axiom_layers = new_axiom_layers
 
     def apply_to_init(self, init):
+        init_pairs = list(enumerate(init.values))
+        try:
+            self.translate_pairs_in_place(init_pairs)
+        except Impossible:
+            assert False, "Initial state impossible? Inconceivable!"
         new_values = [None] * self.new_var_count
-        for pair in enumerate(init.values):
-            try:
-                new_var_no, new_value= self.translate_pair(pair)
-            except ValueError:
-                pass
-            else:
-                new_values[new_var_no] = new_value
+        for new_var_no, new_value in init_pairs:
+            new_values[new_var_no] = new_value
         assert None not in new_values
         init.values = new_values
 
     def apply_to_goals(self, goals):
-        new_goals = []
-        for pair in goals:
+        # This may propagate Impossible up.
+        self.translate_pairs_in_place(goals)
+
+    def apply_to_operators(self, operators):
+        new_operators = []
+        for op in operators:
             try:
-                new_pair = self.translate_pair(pair)
-            except ValueError: 
-                print "Warning: goal %s removed. Pray." % (pair,)
-                # Remove trivially true goals.
-                pass
-            else:
-                new_goals.append(new_pair)
-        goals[:] = new_goals
+                self.apply_to_operator(op)
+                new_operators.append(op)
+            except (Impossible, DoesNothing):
+                if DEBUG:
+                    print "Removed operator: %s" % op.name
+        operators[:] = new_operators
+
+    def apply_to_axioms(self, axioms):
+        new_axioms = []
+        for axiom in axioms:
+            try:
+                self.apply_to_axiom(axiom)
+                new_axioms.append(axiom)
+            except (Impossible, DoesNothing):
+                if DEBUG:
+                    print "Removed axiom: %s" % axiom.name
+        axioms[:] = new_axioms
 
     def apply_to_operator(self, op):
-        new_prevail = []
-        for pair in op.prevail:
+        # The prevail translation may generate an Impossible exception,
+        # which is propagated up.
+        self.translate_pairs_in_place(op.prevail)
+        new_pre_post = []
+        for entry in op.pre_post:
             try:
-                new_pair = self.translate_pair(pair)
-            except ValueError: 
-                # Remove trivially true preconditions.
+                new_pre_post.append(self.translate_pre_post(entry))
+                # This may raise Impossible if "pre" is always false.
+                # This is then propagated up.
+            except DoesNothing:
+                # Conditional effect that is impossible to trigger, or
+                # effect that sets an always true value. Swallow this.
                 pass
-            else:
-                new_prevail.append(new_pair)
-        op.prevail = new_prevail
-
-        new_pre_post = map(self.translate_pre_post, op.pre_post)
-        op.pre_post = [pre_post for pre_post in new_pre_post
-                       if pre_post is not None]
+        op.pre_post = new_pre_post
+        if not new_pre_post:
+            raise DoesNothing
 
     def apply_to_axiom(self, axiom):
-        axiom.condition = map(self.translate_pair, axiom.condition)
-        axiom.effect = self.translate_pair(axiom.effect)
-
-    def translate_pair(self, (var_no, value)):
-        new_var_no = self.new_var_nos[var_no]
-        new_value = self.new_values[var_no][value]
-        if new_var_no is None or new_value is None:
-            raise ValueError
-        return new_var_no, new_value
+        # The following line may generate an Impossible exception,
+        # which is propagated up.
+        self.translate_pairs_in_place(axiom.condition)
+        new_var, new_value = self.translate_pair(axiom.effect)
+        # If the new_value is always false, then the condition must
+        # have been impossible.
+        assert not new_value is always_false
+        if new_value is always_true:
+            raise DoesNothing
+        axiom.effect = new_var, new_value
 
     def translate_pre_post(self, (var_no, pre, post, cond)):
-        if self.new_var_nos[var_no] is None:
-            # Effect on a constant. (Happens in Schedule, e.g.,
-            # where initially cylindrical objects will always stay
-            # cylindrical, but there are effects that set the value
-            # again.
-            return None
         new_var_no, new_post = self.translate_pair((var_no, post))
         if pre == -1:
             new_pre = -1
         else:
-            new_pre = self.new_values[var_no][pre]
-        new_cond = map(self.translate_pair, cond)
-        return new_var_no, new_pre, new_post, new_cond    
+            _, new_pre = self.translate_pair((var_no, pre))
+        if new_pre is always_false:
+            raise Impossible
+        try:
+            self.translate_pairs_in_place(cond)
+        except Impossible:
+            raise DoesNothing
+        assert new_post is not always_false
+        if new_pre is always_true:
+            assert new_post is always_true
+            raise DoesNothing
+        elif new_post is always_true:
+            assert new_pre == -1
+            raise DoesNothing
+        return new_var_no, new_pre, new_post, cond
+
+    def translate_pair(self, (var_no, value)):
+        new_var_no = self.new_var_nos[var_no]
+        new_value = self.new_values[var_no][value]
+        return new_var_no, new_value
+
+    def translate_pairs_in_place(self, pairs):
+        new_pairs = []
+        for pair in pairs:
+            new_var_no, new_value = self.translate_pair(pair)
+            if new_value is always_false:
+                raise Impossible
+            elif new_value is not always_true:
+                assert new_var_no is not None
+                new_pairs.append((new_var_no, new_value))
+        pairs[:] = new_pairs
 
     def apply_to_translation_key(self, translation_key):
         new_key = [[None] * size for size in self.new_sizes]
         for var_no, value_names in enumerate(translation_key):
             for value, value_name in enumerate(value_names):
-                new_var_no = self.new_var_nos[var_no]
-                new_value = self.new_values[var_no][value]
-                if new_var_no is None or new_value is None:
+                new_var_no, new_value = self.translate_pair((var_no, value))
+                if new_value is always_true:
                     if DEBUG:
-                        print "Removed proposition: %s" % value_name
+                        print "Removed true proposition: %s" % value_name
+                elif new_value is always_false:
+                    if DEBUG:
+                        print "Removed false proposition: %s" % value_name
                 else:
                     new_key[new_var_no][new_value] = value_name
         assert all((None not in value_names) for value_names in new_key)
@@ -205,12 +251,9 @@ class VarValueRenaming(object):
         for group in mutex_key:
             new_group = []
             for var, val, name in group:
-                new_var_no = self.new_var_nos[var]
-                new_value = self.new_values[var][val]
-                if new_var_no is None or new_value is None:
-                    if DEBUG:
-                        print "Removed proposition: %s" % name
-                else:
+                new_var_no, new_value = self.translate_pair((var, val))
+                if (new_value is not always_true and
+                    new_value is not always_false):
                     new_group.append((new_var_no, new_value, name))
             if len(new_group) > 0:
                 new_key.append(new_group)
@@ -220,7 +263,7 @@ class VarValueRenaming(object):
 def build_renaming(dtgs):
     renaming = VarValueRenaming()
     for dtg in dtgs:
-        renaming.register_variable(dtg.size, dtg.reachable())
+        renaming.register_variable(dtg.size, dtg.init, dtg.reachable())
     return renaming
 
 
@@ -258,6 +301,8 @@ def filter_unreachable_propositions(sas_task, mutex_key, translation_key):
     # dump_translation_key(translation_key)
     dtgs = build_dtgs(sas_task)
     renaming = build_renaming(dtgs)
+    # apply_to_task may propagate up Impossible if the goal is simplified
+    # to False.
     renaming.apply_to_task(sas_task)
     renaming.apply_to_translation_key(translation_key)
     renaming.apply_to_mutex_key(mutex_key)

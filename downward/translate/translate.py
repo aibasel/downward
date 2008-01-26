@@ -18,7 +18,7 @@ import simplify
 # derived variable is synonymous with another variable (derived or
 # non-derived).
 
-ALLOW_CONFLICTING_EFFECTS = True
+ALLOW_CONFLICTING_EFFECTS = False
 USE_PARTIAL_ENCODING = True
 WRITE_ALL_MUTEXES = True
 
@@ -230,8 +230,8 @@ def translate_task(strips_to_sas, ranges, init, goals, actions, axioms):
 
     return sas_tasks.SASTask(variables, init, goal, operators, axioms)
 
-def unsolvable_sas_task():
-    print "No relaxed solution! Generating unsolvable task..."
+def unsolvable_sas_task(msg):
+    print "%s! Generating unsolvable task..." % msg
     variables = sas_tasks.SASVariables([2], [-1])
     init = sas_tasks.SASInit([0])
     goal = sas_tasks.SASGoal([(0, 1)])
@@ -244,7 +244,7 @@ def pddl_to_sas(task):
     relaxed_reachable, atoms, actions, axioms = instantiate.explore(task)
 
     if not relaxed_reachable:
-        return unsolvable_sas_task()
+        return unsolvable_sas_task("No relaxed solution")
 
     # HACK! Goals should be treated differently (see TODO file).
     if isinstance(task.goal, pddl.Conjunction):
@@ -266,7 +266,11 @@ def pddl_to_sas(task):
     
     mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
 
-    simplify.filter_unreachable_propositions(sas_task, mutex_key, translation_key)
+    try:
+        simplify.filter_unreachable_propositions(
+            sas_task, mutex_key, translation_key)
+    except simplify.Impossible:
+        return unsolvable_sas_task("Simplified to trivially false goal")
 
     write_translation_key(translation_key)
     if WRITE_ALL_MUTEXES:
@@ -329,7 +333,14 @@ if __name__ == "__main__":
     import pddl
     print "Parsing..."
     task = pddl.open()
-    if task.domain_name == "protocol":
+    if task.domain_name in ["protocol", "rover"]:
+        # This is, of course, a HACK HACK HACK!
+        # The real issue is that ALLOW_CONFLICTING_EFFECTS = True
+        # is actually the correct semantics, but then we don't get to filter
+        # out operators that are impossible to apply due to mutexes between
+        # different SAS+ variables. For example,
+        # ALLOW_CONFLICTING_EFFECTS = True does not filter on(a,a) in
+        # blocksworld/4-0.
         ALLOW_CONFLICTING_EFFECTS = True
 
     # EXPERIMENTAL!
