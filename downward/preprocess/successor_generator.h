@@ -1,6 +1,7 @@
 #ifndef SUCCESSOR_GENERATOR_H
 #define SUCCESSOR_GENERATOR_H
 
+#include <list>
 #include <vector>
 #include <fstream>
 #include <map>
@@ -14,8 +15,7 @@ class SuccessorGenerator {
   GeneratorBase *root;
 
   typedef vector<pair<Variable *, int> > Condition;
-  GeneratorBase *construct_recursive(int switchVarNo,
-				     const vector<int> &ops);
+  GeneratorBase *construct_recursive(int switchVarNo, list<int> &ops);
   SuccessorGenerator(const SuccessorGenerator &copy);
 
   vector<Condition> conditions;
