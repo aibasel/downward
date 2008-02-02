@@ -14,14 +14,16 @@ class SuccessorGenerator {
   GeneratorBase *root;
 
   typedef vector<pair<Variable *, int> > Condition;
-  GeneratorBase *construct_recursive(const vector<Variable *> &varOrder,
-				     int switchVarNo,
-				     vector<int> ops,
-				     vector<Condition> &conds);
+  GeneratorBase *construct_recursive(int switchVarNo,
+				     const vector<int> &ops);
   SuccessorGenerator(const SuccessorGenerator &copy);
+
+  vector<Condition> conditions;
+  vector<Condition::const_iterator> next_condition_by_op;
+  vector<Variable *> varOrder;
+
   // private copy constructor to forbid copying;
   // typical idiom for classes with non-trivial destructors
-  map<const Operator *, int> op_to_index;
 public:
   SuccessorGenerator();
   SuccessorGenerator(const vector<Variable *> &variables,

@@ -24,7 +24,7 @@ class GeneratorSwitch : public GeneratorBase {
 public:
   ~GeneratorSwitch();
   GeneratorSwitch(Variable *switch_variable,
-		  vector<int> operators,
+		  const vector<int> &operators,
 		  const vector<GeneratorBase *> &gen_for_val,
 		  GeneratorBase *default_gen);
   virtual void dump(string indent) const;
@@ -34,7 +34,7 @@ public:
 class GeneratorLeaf : public GeneratorBase {
   vector<int> applicable_ops_indices;
 public:
-  GeneratorLeaf(vector<int> operators);
+  GeneratorLeaf(const vector<int> &operators);
   virtual void dump(string indent) const;
   virtual void generate_cpp_input(ofstream &outfile) const;
 };
@@ -55,7 +55,7 @@ public:
 
 GeneratorSwitch::GeneratorSwitch(Variable *switch_variable, 
 				 //const vector<const Operator *> &operators,
-				 vector<int> operators,
+				 const vector<int> &operators,
 				 const vector<GeneratorBase *> &gen_for_val,
 				 GeneratorBase *default_gen)
   : switch_var(switch_variable), immediate_ops_indices(operators),
@@ -99,7 +99,7 @@ void GeneratorSwitch::generate_cpp_input(ofstream &outfile) const {
   default_generator->generate_cpp_input(outfile);
   
 }
-GeneratorLeaf::GeneratorLeaf(vector<int> ops)
+GeneratorLeaf::GeneratorLeaf(const vector<int> &ops)
   : applicable_ops_indices(ops) {
 }
 
@@ -126,9 +126,9 @@ void GeneratorEmpty::generate_cpp_input(ofstream &outfile) const {
 
 SuccessorGenerator::SuccessorGenerator(const vector<Variable *> &variables,
 				       const vector<Operator> &operators) {
+  // We need the iterators to conditions to be stable:
+  conditions.reserve(operators.size());
   vector<int> all_operator_indices;
-  vector<Condition> all_conditions;
-  
   for(int i = 0; i < operators.size(); i++) {
     const Operator *op = &operators[i];
     Condition cond;
@@ -141,21 +141,20 @@ SuccessorGenerator::SuccessorGenerator(const vector<Variable *> &variables,
       if(pre_post.pre != -1)
 	cond.push_back(make_pair(pre_post.var, pre_post.pre));
     }
-    sort(cond.begin(), cond.end(), greater<pair<Variable *, int> >());
+    sort(cond.begin(), cond.end());
     all_operator_indices.push_back(i);
-    all_conditions.push_back(cond);
+    conditions.push_back(cond);
+    next_condition_by_op.push_back(conditions.back().begin());
   }
-
-  vector<Variable *> varOrder = variables;
+  
+  varOrder = variables;
   sort(varOrder.begin(), varOrder.end());
 
-  root = construct_recursive(varOrder, 0, all_operator_indices, all_conditions);
+  root = construct_recursive(0, all_operator_indices);
 }
 
-GeneratorBase *SuccessorGenerator::construct_recursive(const vector<Variable *> &varOrder,
-						       int switch_var_no,
-						       vector<int> op_indices,
-						       vector<Condition> &conds) {
+GeneratorBase *SuccessorGenerator::construct_recursive(int switch_var_no,
+						       const vector<int> &op_indices) {
   if(op_indices.empty())
     return new GeneratorEmpty;
   if(switch_var_no == varOrder.size()) // no further switch necessary
@@ -164,29 +163,25 @@ GeneratorBase *SuccessorGenerator::construct_recursive(const vector<Variable *> 
   Variable *switch_var = varOrder[switch_var_no];
   int number_of_children = switch_var->get_range();
 
-  vector<vector<int> > ops_for_val_indices;
-  vector<vector<Condition> > conds_for_val;
-  ops_for_val_indices.resize(number_of_children);
-  conds_for_val.resize(number_of_children);
-  
+  vector<vector<int> > ops_for_val_indices(number_of_children);
   vector<int> default_ops_indices;
-  vector<Condition> default_conds;
   vector<int> applicable_ops_indices;
   for(int i = 0; i < op_indices.size(); i++){
     int op_index = op_indices[i];
-    Condition &cond = conds[i];
-    if(cond.empty()) {
+    assert(op_index >= 0 && op_index < next_condition_by_op.size());
+    Condition::const_iterator &cond_iter = next_condition_by_op[op_index];
+    assert(cond_iter - conditions[op_index].begin() >= 0);
+    assert(cond_iter - conditions[op_index].begin() <= conditions[op_index].size());
+    if(cond_iter == conditions[op_index].end()) {
       applicable_ops_indices.push_back(op_index);
     } else {
-      Variable *var = cond.back().first;
-      int val = cond.back().second;
+      Variable *var = cond_iter->first;
+      int val = cond_iter->second;
       if(var == switch_var) {
-	cond.pop_back();
+	++cond_iter;
 	ops_for_val_indices[val].push_back(op_index);
-	conds_for_val[val].push_back(cond);
       } else {
 	default_ops_indices.push_back(op_index);
-	default_conds.push_back(cond);
       }
     }
   }
@@ -195,17 +190,15 @@ GeneratorBase *SuccessorGenerator::construct_recursive(const vector<Variable *> 
     return new GeneratorLeaf(applicable_ops_indices);
   } else if(op_indices.size() == default_ops_indices.size()) { 
     // this switch var can be left out because no operator depends on it
-    return construct_recursive(varOrder, switch_var_no + 1, default_ops_indices, 
-			       default_conds);
+    return construct_recursive(switch_var_no + 1, default_ops_indices);
   } else {
-    GeneratorBase *default_sg = construct_recursive(varOrder, switch_var_no + 1,
-						    default_ops_indices, default_conds);
     vector<GeneratorBase *> gen_for_val;
     for(int j = 0; j < number_of_children; j++) {
-      gen_for_val.push_back(construct_recursive(varOrder, switch_var_no + 1,
-						ops_for_val_indices[j], 
-						conds_for_val[j]));
+      gen_for_val.push_back(construct_recursive(switch_var_no + 1,
+						ops_for_val_indices[j]));
     }
+    GeneratorBase *default_sg = construct_recursive(switch_var_no + 1,
+						    default_ops_indices);
     return new GeneratorSwitch(switch_var, applicable_ops_indices, gen_for_val, default_sg);
   }
 }
