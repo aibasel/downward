@@ -9,6 +9,22 @@
 #include <cassert>
 using namespace std;
 
+/* NOTE on possible optimizations:
+
+   * Sharing "GeneratorEmpty" instances might help quite a bit with
+     reducing memory usage and possibly even speed, because there are
+     bound to be many instance of those. However, it complicates
+     deleting the successor generator, and memory doesn't seem to be
+     an issue. Speed appears to be fine now, too. So this is probably
+     an unnecessary complication.
+
+   * Using slist instead of list led to a further 10% speedup on the
+     largest Logistics instance, logistics-98/prob28.pddl. It would of
+     course also reduce memory usage. However, it would make the code
+     g++-specific, so it's probably not worth it.
+
+*/
+
 class GeneratorBase {
 public:
   virtual ~GeneratorBase() {}
@@ -44,14 +60,6 @@ public:
   virtual void dump(string indent) const;
   virtual void generate_cpp_input(ofstream &outfile) const;
 };
-
-// NOTE:
-// Als Optimierung könnte man ein Singleton aus GeneratorEmpty machen.
-// Die Generatoren würden sich also dasselbe Empty-Objekt teilen.
-// Das führt dann aber zu Komplikationen beim Freigeben der Kinder
-// (mit delete), da der leere Generator natürlich nur einmal
-// freigegeben werden darf (bzw. gar nicht, falls er nicht auf dem
-// Heap alloziert wird).
 
 GeneratorSwitch::GeneratorSwitch(Variable *switch_variable, 
 				 list<int> &operators,
@@ -158,56 +166,62 @@ GeneratorBase *SuccessorGenerator::construct_recursive(int switch_var_no,
 						       list<int> &op_indices) {
   if(op_indices.empty())
     return new GeneratorEmpty;
-  if(switch_var_no == varOrder.size()) // no further switch necessary
-    return new GeneratorLeaf(op_indices);
 
-  Variable *switch_var = varOrder[switch_var_no];
-  int number_of_children = switch_var->get_range();
+  while(true) {
+    // Test if no further switch is necessary (or possible).
+    if(switch_var_no == varOrder.size())
+      return new GeneratorLeaf(op_indices);
 
-  vector<list<int> > ops_for_val_indices(number_of_children);
-  list<int> default_ops_indices;
-  list<int> applicable_ops_indices;
+    Variable *switch_var = varOrder[switch_var_no];
+    int number_of_children = switch_var->get_range();
 
-  bool all_ops_are_immediate = true;
-  bool all_ops_are_default = true;
-  while(!op_indices.empty()) {
-    int op_index = op_indices.front();
-    op_indices.pop_front();
-    assert(op_index >= 0 && op_index < next_condition_by_op.size());
-    Condition::const_iterator &cond_iter = next_condition_by_op[op_index];
-    assert(cond_iter - conditions[op_index].begin() >= 0);
-    assert(cond_iter - conditions[op_index].begin() <= conditions[op_index].size());
-    if(cond_iter == conditions[op_index].end()) {
-      all_ops_are_default = false;
-      applicable_ops_indices.push_back(op_index);
-    } else {
-      all_ops_are_immediate = false;
-      Variable *var = cond_iter->first;
-      int val = cond_iter->second;
-      if(var == switch_var) {
-	all_ops_are_default = false;
-	++cond_iter;
-	ops_for_val_indices[val].push_back(op_index);
+    vector<list<int> > ops_for_val_indices(number_of_children);
+    list<int> default_ops_indices;
+    list<int> applicable_ops_indices;
+    
+    bool all_ops_are_immediate = true;
+    bool var_is_interesting = false;
+    
+    while(!op_indices.empty()) {
+      int op_index = op_indices.front();
+      op_indices.pop_front();
+      assert(op_index >= 0 && op_index < next_condition_by_op.size());
+      Condition::const_iterator &cond_iter = next_condition_by_op[op_index];
+      assert(cond_iter - conditions[op_index].begin() >= 0);
+      assert(cond_iter - conditions[op_index].begin() <= conditions[op_index].size());
+      if(cond_iter == conditions[op_index].end()) {
+	var_is_interesting = true;
+	applicable_ops_indices.push_back(op_index);
       } else {
-	default_ops_indices.push_back(op_index);
+	all_ops_are_immediate = false;
+	Variable *var = cond_iter->first;
+	int val = cond_iter->second;
+	if(var == switch_var) {
+	  var_is_interesting = true;
+	  ++cond_iter;
+	  ops_for_val_indices[val].push_back(op_index);
+	} else {
+	  default_ops_indices.push_back(op_index);
+	}
       }
     }
-  }
-
-  if(all_ops_are_immediate) {
-    return new GeneratorLeaf(applicable_ops_indices);
-  } else if(all_ops_are_default) {
-    // this switch var can be left out because no operator depends on it
-    return construct_recursive(switch_var_no + 1, default_ops_indices);
-  } else {
-    vector<GeneratorBase *> gen_for_val;
-    for(int j = 0; j < number_of_children; j++) {
-      gen_for_val.push_back(construct_recursive(switch_var_no + 1,
-						ops_for_val_indices[j]));
+    
+    if(all_ops_are_immediate) {
+      return new GeneratorLeaf(applicable_ops_indices);
+    } else if(var_is_interesting) {
+      vector<GeneratorBase *> gen_for_val;
+      for(int j = 0; j < number_of_children; j++) {
+	gen_for_val.push_back(construct_recursive(switch_var_no + 1,
+						  ops_for_val_indices[j]));
+      }
+      GeneratorBase *default_sg = construct_recursive(switch_var_no + 1,
+						      default_ops_indices);
+      return new GeneratorSwitch(switch_var, applicable_ops_indices, gen_for_val, default_sg);
+    } else {
+      // this switch var can be left out because no operator depends on it
+      ++switch_var_no;
+      default_ops_indices.swap(op_indices);
     }
-    GeneratorBase *default_sg = construct_recursive(switch_var_no + 1,
-						    default_ops_indices);
-    return new GeneratorSwitch(switch_var, applicable_ops_indices, gen_for_val, default_sg);
   }
 }
 
