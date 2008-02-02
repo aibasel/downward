@@ -98,7 +98,7 @@ void GeneratorSwitch::generate_cpp_input(ofstream &outfile) const {
   outfile << "check " << immediate_ops_indices.size() << endl;
   for(list<int>::const_iterator op_iter = immediate_ops_indices.begin();
       op_iter != immediate_ops_indices.end(); ++op_iter)
-    cout << *op_iter << endl;
+    outfile << *op_iter << endl;
   for(int i = 0; i < switch_var->get_range(); i++) {
     //cout << "case "<<switch_var->get_name()<<" (Level " <<switch_var->get_level() <<
     //  ") has value " << i << ":" << endl;
