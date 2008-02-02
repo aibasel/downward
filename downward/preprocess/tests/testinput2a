@@ -1,0 +1,40 @@
+begin_variables
+6
+var0 5
+var1 4
+var2 3
+var3 4
+var4 5
+var5 4
+end_variables
+begin_state
+3
+1
+0
+0
+0
+0
+end_state
+begin_goal
+1
+1 4
+end_goal
+2
+begin_operator
+op0
+3
+2 0
+0 1
+1 2
+2
+3 1 2
+4 2 3
+end_operator
+begin_operator
+op1
+0
+3
+4 1 6
+2 1 2
+1 1 2
+end_operator
