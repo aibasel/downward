@@ -91,6 +91,9 @@ translate-strips/translate-strips \
 preprocess/preprocess < output.sas > /dev/null
 search/search cCfF < output > /dev/null
 diff sas_plan tests/test-cpp-plan
+echo Validating...
+../../validate -s tests/test-cpp-domain.pddl tests/test-cpp-problem.pddl sas_plan \
+  && echo Validation succeeded. || echo Validation failed!
 rm -f output.sas output sas_plan
 
 echo 'Unit test: Second task (Python translator)...'
@@ -100,6 +103,9 @@ translate/translate.py \
 preprocess/preprocess < output.sas > /dev/null
 search/search cCfF < output > /dev/null
 diff sas_plan tests/test-py-plan
+echo Validating...
+../../validate -s tests/test-py-domain.pddl tests/test-py-problem.pddl sas_plan \
+  && echo Validation succeeded. || echo Validation failed!
 rm -f output.sas test.groups output sas_plan
 
 echo "Cleaning up..."
