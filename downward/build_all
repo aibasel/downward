@@ -1,0 +1,26 @@
+#! /bin/bash
+
+cd preprocess
+make
+cd ..
+
+cd search
+make
+cd ..
+
+type flex >& /dev/null
+if [ $? != 0 ]; then
+    echo cannot build validator: flex not found
+    exit 1
+fi
+
+type bison >& /dev/null
+if [ $? != 0 ]; then
+    echo cannot build validator: bison not found
+    exit 1
+fi
+
+cd val
+make validate
+cp validate ..
+cd ..
