@@ -20,7 +20,7 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-cd val
+cd VAL
 make validate
 cp validate ..
 cd ..
