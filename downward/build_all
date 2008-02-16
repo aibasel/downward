@@ -1,11 +1,11 @@
 #! /bin/bash
 
 cd preprocess
-make
+make || exit 1
 cd ..
 
 cd search
-make
+make || exit 1
 cd ..
 
 type flex >& /dev/null
@@ -21,6 +21,6 @@ if [ $? != 0 ]; then
 fi
 
 cd VAL
-make validate
+make validate || exit 1
 cp validate ..
 cd ..
