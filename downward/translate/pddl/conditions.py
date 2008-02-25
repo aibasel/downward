@@ -2,6 +2,11 @@ import pddl_types
 
 def parse_condition(alist):
     condition = parse_condition_aux(alist, False)
+    # TODO: The next line doesn't appear to do anything good,
+    # since uniquify_variables doesn't modify the condition in place.
+    # Conditions in actions or axioms are uniquified elsewhere, but
+    # it looks like goal conditions are never uniquified at all
+    # (which would be a bug).
     condition.uniquify_variables({})
     return condition
 
