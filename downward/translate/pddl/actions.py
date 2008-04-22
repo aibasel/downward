@@ -33,13 +33,8 @@ class Action(object):
             effect_tag = precondition_tag_opt
         assert effect_tag == ":effect"
         effect_list = iterator.next()
-        if effect_list[0] == "and":
-            effect_list = effect_list[1:]
-        else:
-            effect_list = [effect_list]
         eff = []
-        for item in effect_list:
-            effects.parse_effects(item, eff)
+        effects.parse_effects(effect_list, eff)
         for rest in iterator:
             assert False, rest
         return Action(name, parameters, precondition, eff)
