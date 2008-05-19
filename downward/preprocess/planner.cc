@@ -52,6 +52,16 @@ int main(int argc, const char **argv) {
   bool solveable_in_poly_time = false;
   if(cg_acyclic)
     solveable_in_poly_time = are_DTGs_strongly_connected(transition_graphs);
+  /*
+    TODO: The above test doesn't seem to be quite ok because it
+    ignores axioms and it ignores non-unary operators. (Note that the
+    causal graph computed here does *not* contain arcs between
+    effects, only arcs from preconditions to effects.)
+
+    So solveable_in_poly_time [sic] should also be set to false if
+    there are any derived variables or non-unary operators.
+   */
+
   //TODO: genauer machen? (highest level var muss nicht scc sein...gemacht)
   //nur Werte, die wichtig sind fuer drunterliegende vars muessen in scc sein
   cout << "solveable in poly time " << solveable_in_poly_time << endl;
