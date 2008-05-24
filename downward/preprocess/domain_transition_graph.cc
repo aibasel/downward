@@ -130,6 +130,7 @@ void DomainTransitionGraph::finalize() {
 	}
       }
     }
+    vertices[i].swap(undominated_trans);
   }
 }
 
