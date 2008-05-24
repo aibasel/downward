@@ -164,6 +164,9 @@ void ValueTransition::simplify() {
   for(HashMap::iterator it = label_index.begin(); it != label_index.end(); ++it) {
     const HashKey &key = it->first;
     int label_no = it->second;
+
+    // TODO: This should check whether key.size() is so large that
+    //       we get an overflow for powerset_size (which is well possible).
     int powerset_size = (1 << key.size()) - 1; // -1: only consider proper subsets
     bool match = false;
     if(powerset_size <= 31) { // HACK! Don't spend too much time here...
