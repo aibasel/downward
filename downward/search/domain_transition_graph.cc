@@ -30,14 +30,19 @@ void DomainTransitionGraph::read_all(istream &in) {
   // domains, but not for ADL domains.
 
   cout << "Simplifying transitions..." << flush;
+  int before_total = 0;
+  int after_total = 0;
   for(int var = 0; var < var_count; var++) {
     vector<ValueNode> &nodes = g_transition_graphs[var]->nodes;
     for(int value = 0; value < nodes.size(); value++)
-      for(int i = 0; i < nodes[value].transitions.size(); i++)
+      for(int i = 0; i < nodes[value].transitions.size(); i++) {
+        before_total += nodes[value].transitions[i].labels.size();
 	nodes[value].transitions[i].simplify();
+        after_total += nodes[value].transitions[i].labels.size();
+      }
   }
-  cout << " done!" << endl;
-
+  cout << " done! (reduced from " << before_total << " to "
+       << after_total << ")" << endl;
 }
 
 DomainTransitionGraph::DomainTransitionGraph(int var_index, int node_count) {
