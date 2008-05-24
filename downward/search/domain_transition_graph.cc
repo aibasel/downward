@@ -25,10 +25,6 @@ void DomainTransitionGraph::read_all(istream &in) {
     g_transition_graphs[var]->read_data(in);
 
   // Third step: Simplify transitions.
-  // Don't do this for ADL domains, because the algorithm is exponential
-  // in the number of conditions of a transition, which is a constant for STRIPS
-  // domains, but not for ADL domains.
-
   cout << "Simplifying transitions..." << flush;
   int before_total = 0;
   int after_total = 0;
