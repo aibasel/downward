@@ -30,7 +30,7 @@ public:
 };
 
 SuccessorGeneratorSwitch::SuccessorGeneratorSwitch(istream &in) {
-    cin >> switch_var;
+    in >> switch_var;
     immediate_ops = read_successor_generator(in);
     for(int i = 0; i < g_variable_domain[switch_var]; i++)
 	generator_for_value.push_back(read_successor_generator(in));
@@ -63,7 +63,7 @@ void SuccessorGeneratorGenerate::generate_applicable_ops(const State &,
 
 SuccessorGeneratorGenerate::SuccessorGeneratorGenerate(istream &in) {
     int count;
-    cin >> count;
+    in >> count;
     for(int i = 0; i < count; i++) {
 	int op_index;
 	in >> op_index;

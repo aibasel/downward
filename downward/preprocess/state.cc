@@ -7,7 +7,7 @@ State::State(istream &in, const vector<Variable *> &variables) {
   check_magic(in, "begin_state");
   for(int i = 0; i < variables.size(); i++) {
     int value;
-    cin >> value; //for axioms, this is default value
+    in >> value; //for axioms, this is default value
     values[variables[i]] = value;
   }
   check_magic(in, "end_state");

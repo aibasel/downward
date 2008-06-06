@@ -13,7 +13,7 @@ State::State(istream &in) {
     check_magic(in, "begin_state");
     for(int i = 0; i < g_variable_domain.size(); i++) {
 	int var;
-	cin >> var;
+	in >> var;
 	vars.push_back(var);
     }
     check_magic(in, "end_state");
