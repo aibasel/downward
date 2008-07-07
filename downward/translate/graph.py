@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.4
+#! /usr/bin/env python2.5
 # -*- coding: latin-1 -*-
 
 class Graph:

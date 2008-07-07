@@ -85,20 +85,20 @@ about any feedback on which problems you encountered and how you
 addressed them.
 
 The Python code is interpreted and thus does not need compilation.
-However, you will need a Python interpreter, version 2.4 or newer, to
+However, you will need a Python interpreter, version 2.5 or newer, to
 run it. If you are on a non-Unix system, you will probably need to
 install Python by following the instructions at
 http://www.python.org/. If you are on a Unix-ish system, check if the
-correct version of Python is installed already by typing "python2.4"
+correct version of Python is installed already by typing "python2.5"
 in a shell. If this does not result in an error message, you are fine.
 If you do get an error, but have a *newer* version of Python installed
 (such as Python 2.5), you can also run the translator under this newer
 version. In this case, you will need to change the first line of
 translate/translate.py to match your system setup. The translator will
-*not* work with Python 2.3 or older. If you only have an older version
+*not* work with Python 2.4 or older. If you only have an older version
 of Python (or none) installed, go ahead and install a newer one with
 your Unix system's package manager (e.g. with "apt-get install
-python2.4" on a Debian system). Different versions of Python can
+python2.5" on a Debian system). Different versions of Python can
 peacefully coexist, so this should not wreck your system setup.
 
 
