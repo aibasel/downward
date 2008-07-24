@@ -27,7 +27,7 @@ directory "doc" contains some documentation.
 Documentation
 =============
 
-Apart from this README file, three pieces of documentation are
+Apart from this README file, four pieces of documentation are
 available (all in the "doc" directory):
 
 1. "fast-downward.pdf" is the JAIR paper [1] on Fast Downward. It
@@ -60,6 +60,11 @@ available (all in the "doc" directory):
 3. "sas-format.txt" is a description of the translator output format.
    You will only need this if you want to use SAS+ tasks/multi-valued
    planning tasks within your own planner.
+
+4. "pre-format.txt" is a description of the output format of the
+   knowledge compilation component ("preprocess"). You will only need
+   this if you want to use the preprocessed multi-valued planning task
+   information within your own planner.
 
 
 Build Instructions
