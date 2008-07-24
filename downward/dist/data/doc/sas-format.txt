@@ -11,9 +11,9 @@ The translator generates two output files:
      variable/value pairs in the SAS encoding.
      We call this the "translation key".
 
-The contains all information required for solving the task.
-The translation key is only generated for the benefit of the human
-using the translator.
+The translation contains all information required for solving the
+task. The translation key is only generated for the benefit of the
+human using the translator.
 
 Roughly speaking, the translation process works by determining sets of
 mutually exclusive propositions in the STRIPS task, then replacing
@@ -29,6 +29,13 @@ trivial translation. Of course, the translator tries to avoid such
 trivial translations, preferring encodings which use few SAS
 variables. The actual mutex group cover computed by the translator is
 written to the translation key file "test.groups".
+
+ADDENDUM: Depending on how they are configured, the most recent
+versions of the translator may create the additional output file
+"all.groups" containing additional mutex information. This is used by
+the landmark planner described in the AAAI 2008 paper by Richter,
+Helmert and Westphal. There is no documentation available for this
+file.
 
 
 Translation Key Example
