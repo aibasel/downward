@@ -1,6 +1,7 @@
 #ifndef DOMAIN_TRANSITION_GRAPH_H
 #define DOMAIN_TRANSITION_GRAPH_H
 
+#include <iosfwd>
 #include <vector>
 using namespace std;
 

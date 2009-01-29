@@ -1,6 +1,7 @@
 #include "causal_graph.h"
 #include "globals.h"
 
+#include <algorithm>
 #include <iostream>
 #include <cassert>
 using namespace std;

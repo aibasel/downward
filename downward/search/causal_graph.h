@@ -1,6 +1,7 @@
 #ifndef CAUSAL_GRAPH_H
 #define CAUSAL_GRAPH_H
 
+#include <iosfwd>
 #include <vector>
 #include <map>
 using namespace std;

@@ -2,6 +2,7 @@
 #include "successor_generator.h"
 #include "variable.h"
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <fstream>

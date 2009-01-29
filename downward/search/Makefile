@@ -12,7 +12,7 @@ PROFILE_OBJECTS = $(SOURCES:%.cc=%.profile.o)
 
 CC = g++
 DEPEND = g++ -MM
-CCOPT = -Wall -W -Wno-sign-compare -ansi -pedantic -Werror
+CCOPT = -Wall -W -Wno-sign-compare -ansi -pedantic -Werror -Wno-deprecated
 LINKOPT =
 
 ## debug, don't optimize
