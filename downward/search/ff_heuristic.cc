@@ -196,8 +196,10 @@ void FFHeuristic::setup_exploration_queue() {
 	    if(op.effect->h_add_cost == -1) {
 		*reachable_queue_write_pos++ = op.effect;
 		op.effect->h_add_cost = op.base_cost;
+                op.effect->reached_by = &op;
 	    } else if(op.effect->h_add_cost > op.base_cost) {
 		op.effect->h_add_cost = op.base_cost;
+                op.effect->reached_by = &op;
 	    }
 	}
     }
