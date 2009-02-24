@@ -23,12 +23,17 @@ class RelaxedAction(object):
 
 
 class RelaxedTask(object):
-    def __init__(self, init, goals, actions):
+    def __init__(self, atoms, init, goals, actions):
+        self.atoms = atoms
         self.init = init
         self.goals = goals
         self.actions = actions
 
     def dump(self):
+        print "ATOMS:"
+        for fact in self.atoms:
+            print "    %s" % fact
+        print
         print "INIT:"
         for fact in self.init:
             print "    %s" % fact
@@ -101,7 +106,7 @@ def build_relaxed_task(task):
     relaxed_actions = [build_relaxed_action(action) for action in actions]
     init = collect_init_facts(fluent_atoms, task.init)
     goal = collect_goal_facts(fluent_atoms, task.goal)
-    return RelaxedTask(init, goal, relaxed_actions)
+    return RelaxedTask(fluent_atoms, init, goal, relaxed_actions)
 
 
 if __name__ == "__main__":
