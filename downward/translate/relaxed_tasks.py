@@ -5,6 +5,20 @@ import instantiate
 import pddl
 
 
+class RelaxedAtom(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __cmp__(self, other):
+        return cmp(self.name, other.name)
+
+    def __repr__(self):
+        return "<RelaxedAtom %r>" % self.name
+
+    def __str__(self):
+        return str(self.name)
+
+
 class RelaxedAction(object):
     def __init__(self, name, preconditions, effects, cost):
         self.name = name
@@ -30,30 +44,42 @@ class RelaxedTask(object):
         self.actions = actions
 
     def convert_to_canonical_form(self):
-        assert "@@init" not in self.atoms
-        assert "@@goal" not in self.atoms
+        # Transforms the relaxed task into an equivalent one such that:
+        # * Each relaxed plan begins with action "@@init-action".
+        # * Each non-redundant relaxed plan ends with action "@@goal-action".
+        # * There is exactly one initial fact, "@@init".
+        # * There is exactly one goal fact, "@@goal".
+        # * Each action has at least one precondition.
 
+        init_fact = RelaxedAtom("@@init")
         old_init = list(self.init)
-        self.atoms.append("@@init")
-        self.init = ["@@init"]
-        self.actions.append(RelaxedAction(
+        self.atoms.append(init_fact)
+        self.init = [init_fact]
+        init_action = RelaxedAction(
             name="@@init-action",
-            preconditions=["@@init"],
+            preconditions=[init_fact],
             effects=old_init,
-            cost=0))
+            cost=0)
+        self.actions.append(init_action)
 
+        goal_fact = RelaxedAtom("@@goal")
         old_goals = list(self.goals)
-        self.atoms.append("@@goal")
-        self.goals = ["@@goal"]
+        self.atoms.append(goal_fact)
+        self.goals = [goal_fact]
         self.actions.append(RelaxedAction(
             name="@@goal-action",
             preconditions=old_goals,
-            effects=["@@goal"],
+            effects=[goal_fact],
             cost=0))
 
+        artificial_precondition = None
         for action in self.actions:
             if not action.preconditions:
-                action.preconditions.append("@@init")
+                if not artificial_precondition:
+                    artificial_precondition = RelaxedAtom("@@precond")
+                    self.atoms.append(artificial_precondition)
+                    init_action.effects.append(artificial_precondition)
+                action.preconditions.append(artificial_precondition)
 
     def dump(self):
         print "ATOMS:"
@@ -72,12 +98,7 @@ class RelaxedTask(object):
             action.dump()
 
 
-def literal_to_name(literal):
-    assert not literal.negated
-    return "%s(%s)" % (literal.predicate, ", ".join(literal.args))
-
-
-def build_relaxed_action(action):
+def build_relaxed_action(action, symtable):
     def fail():
         raise SystemExit("not a STRIPS action: %s" % action.name)
     preconditions = []
@@ -85,26 +106,27 @@ def build_relaxed_action(action):
     for literal in action.precondition:
         if literal.negated:
             fail()
-        preconditions.append(literal_to_name(literal))
+        preconditions.append(symtable[literal])
     for conditions, effect_literal in action.add_effects:
         if conditions:
             fail()
-        effects.append(literal_to_name(effect_literal))
+        effects.append(symtable[effect_literal])
     for conditions, effect_literal in action.del_effects:
         if conditions:
             fail()
     return RelaxedAction(action.name, sorted(preconditions), sorted(effects), 1)
 
 
-def collect_init_facts(fluent_atoms, init):
+def collect_init_facts(init, symtable):
     facts = []
     for atom in init:
-        if atom in fluent_atoms:
-            facts.append(literal_to_name(atom))
+        fact = symtable.get(atom)
+        if fact:
+            facts.append(fact)
     return sorted(facts)
 
 
-def collect_goal_facts(fluent_atoms, goal):
+def collect_goal_facts(goal, symtable):
     def fail():
         raise SystemExit("not a STRIPS goal: %s" % goal)
     facts = []
@@ -115,8 +137,9 @@ def collect_goal_facts(fluent_atoms, goal):
         elif isinstance(condition, pddl.Literal):
             if condition.negated:
                 fail()
-            if condition in fluent_atoms:
-                facts.append(literal_to_name(condition))
+            fact = symtable.get(condition)
+            if fact:
+                facts.append(fact)
         elif not isinstance(condition, pddl.Truth):
             fail()
     recurse(goal)
@@ -129,14 +152,18 @@ def build_relaxed_task(task):
         raise SystemExit("goal is not relaxed reachable")
     if axioms:
         raise SystemExit("axioms not supported")
-    atoms = [literal_to_name(atom) for atom in fluent_atoms]
-    relaxed_actions = [build_relaxed_action(action) for action in actions]
-    init = collect_init_facts(fluent_atoms, task.init)
-    goal = collect_goal_facts(fluent_atoms, task.goal)
-    return RelaxedTask(atoms, init, goal, relaxed_actions)
+    symtable = dict((atom, RelaxedAtom(str(atom))) for atom in fluent_atoms)
+    relaxed_atoms = sorted(symtable.values())
+    relaxed_actions = [build_relaxed_action(action, symtable)
+                       for action in actions]
+    relaxed_init = collect_init_facts(task.init, symtable)
+    relaxed_goal = collect_goal_facts(task.goal, symtable)
+    return RelaxedTask(relaxed_atoms, relaxed_init, relaxed_goal,
+                       relaxed_actions)
 
 
 if __name__ == "__main__":
     task = pddl.open()
     relaxed_task = build_relaxed_task(task)
+    relaxed_task.convert_to_canonical_form()
     relaxed_task.dump()

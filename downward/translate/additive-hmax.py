@@ -4,7 +4,6 @@
 import pddl
 import relaxed_tasks
 
-from collections import defaultdict
 from heapq import heappush, heappop
 
 
@@ -18,30 +17,28 @@ def hmax(task):
     # zero-cost actions.
     infinity = float("inf")
 
-    fact_hmax = {}
-    fact_reached_by = {}
-    for fact in task.atoms:
-        fact_hmax[fact] = (infinity, infinity)
     init, = task.init
     goal, = task.goals
-    fact_hmax[init] = (0, 0)
-    fact_reached_by[init] = None
+    for fact in task.atoms:
+        fact.hmax = (infinity, infinity)
+        fact.precondition_of = []
+    init.hmax = (0, 0)
+    init.reached_by = None
 
-    precondition_to_operators = defaultdict(list)
     for action in task.actions:
         preconditions = action.preconditions
         assert preconditions, "relaxed task not in canonical form"
         action.unsatisfied_conditions = len(preconditions)
         for prec in preconditions:
-            precondition_to_operators[prec].append(action)
+            prec.precondition_of.append(action)
 
     heap = [((0, 0), init)]
     while heap:
         hmax, fact = heappop(heap)
         if fact == goal:
             break
-        if hmax == fact_hmax[fact]:
-            for action in precondition_to_operators[fact]:
+        if hmax == fact.hmax:
+            for action in fact.precondition_of:
                 action.unsatisfied_conditions -= 1
                 if not action.unsatisfied_conditions:
                     hmax_cost, hmax_depth = hmax
@@ -50,16 +47,16 @@ def hmax(task):
                     eff_hmax = (hmax_cost, hmax_depth)
                     action.hmax = (hmax_cost, hmax_depth)
                     for effect in action.effects:
-                        if eff_hmax < fact_hmax[effect]:
-                            fact_hmax[effect] = eff_hmax
-                            fact_reached_by[effect] = action
+                        if eff_hmax < effect.hmax:
+                            effect.hmax = eff_hmax
+                            effect.reached_by = action
                             heappush(heap, (eff_hmax, effect))
     chain = []
-    goal = "@@goal"
-    while fact_reached_by[goal]:
-        action = fact_reached_by[goal]
+    goal, = task.goals
+    while goal.reached_by:
+        action = goal.reached_by
         chain.append(action.name)
-        goal = max(action.preconditions, key=fact_hmax.__getitem__)
+        goal = max(action.preconditions, key=lambda fact: fact.hmax)
     chain.reverse()
     return hmax, chain
 
