@@ -23,7 +23,7 @@ def hmax(task):
         fact.hmax = (infinity, infinity)
         fact.precondition_of = []
     init.hmax = (0, 0)
-    init.reached_by = None
+    init.reached_by = []
 
     for action in task.actions:
         preconditions = action.preconditions
@@ -44,19 +44,28 @@ def hmax(task):
                     hmax_cost, hmax_depth = hmax
                     hmax_cost += action.cost
                     hmax_depth += 1
-                    eff_hmax = (hmax_cost, hmax_depth)
-                    action.hmax = (hmax_cost, hmax_depth)
+                    action_hmax = (hmax_cost, hmax_depth)
+                    action.hmax = action_hmax
+                    action.hmax_supporters = [
+                        fact for fact in action.preconditions
+                        if fact.hmax == hmax]
                     for effect in action.effects:
-                        if eff_hmax < effect.hmax:
-                            effect.hmax = eff_hmax
-                            effect.reached_by = action
-                            heappush(heap, (eff_hmax, effect))
+                        if action_hmax < effect.hmax:
+                            effect.hmax = action_hmax
+                            effect.reached_by = [action]
+                            heappush(heap, (action_hmax, effect))
+                        elif action_hmax == effect.hmax:
+                            effect.reached_by.append(action)
+
+    # NOTE: We backchain by taking the first best supporter of each
+    # action and fact. All other choices would also be fine, and might
+    # lead to different landmarks being extracted.
     chain = []
     goal, = task.goals
     while goal.reached_by:
-        action = goal.reached_by
+        action = goal.reached_by[0]
         chain.append(action.name)
-        goal = max(action.preconditions, key=lambda fact: fact.hmax)
+        goal = action.hmax_supporters[0]
     chain.reverse()
     return hmax, chain
 
