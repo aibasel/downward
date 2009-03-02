@@ -29,6 +29,32 @@ class RelaxedTask(object):
         self.goals = goals
         self.actions = actions
 
+    def convert_to_canonical_form(self):
+        assert "@@init" not in self.atoms
+        assert "@@goal" not in self.atoms
+
+        old_init = list(self.init)
+        self.atoms.append("@@init")
+        self.init = ["@@init"]
+        self.actions.append(RelaxedAction(
+            name="@@init-action",
+            preconditions=["@@init"],
+            effects=old_init,
+            cost=0))
+
+        old_goals = list(self.goals)
+        self.atoms.append("@@goal")
+        self.goals = ["@@goal"]
+        self.actions.append(RelaxedAction(
+            name="@@goal-action",
+            preconditions=old_goals,
+            effects=["@@goal"],
+            cost=0))
+
+        for action in self.actions:
+            if not action.preconditions:
+                action.preconditions.append("@@init")
+
     def dump(self):
         print "ATOMS:"
         for fact in self.atoms:
@@ -48,7 +74,7 @@ class RelaxedTask(object):
 
 def literal_to_name(literal):
     assert not literal.negated
-    return "%s(%s)" % (literal.predicate, ",".join(literal.args))
+    return "%s(%s)" % (literal.predicate, ", ".join(literal.args))
 
 
 def build_relaxed_action(action):
@@ -103,10 +129,11 @@ def build_relaxed_task(task):
         raise SystemExit("goal is not relaxed reachable")
     if axioms:
         raise SystemExit("axioms not supported")
+    atoms = [literal_to_name(atom) for atom in fluent_atoms]
     relaxed_actions = [build_relaxed_action(action) for action in actions]
     init = collect_init_facts(fluent_atoms, task.init)
     goal = collect_goal_facts(fluent_atoms, task.goal)
-    return RelaxedTask(fluent_atoms, init, goal, relaxed_actions)
+    return RelaxedTask(atoms, init, goal, relaxed_actions)
 
 
 if __name__ == "__main__":
