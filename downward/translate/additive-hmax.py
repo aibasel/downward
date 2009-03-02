@@ -61,6 +61,67 @@ def hmax(task):
     return goal.hmax
 
 
+def possibly_before(task, landmark_facts):
+    # TODO: This is of course a crude HACK HACK HACK to "reuse"
+    # (through copy and paste) the hmax code from above.
+    # This should be replaced by a decent algorithm as soon as possible.
+    infinity = float("inf")
+
+    init, = task.init
+    goal, = task.goals
+    for fact in task.atoms:
+        fact.hmax = (infinity, infinity)
+        fact.precondition_of = []
+        fact.effect_of = []
+    init.hmax = (0, 0)
+    init.reached_by = []
+
+    for action in task.actions:
+        preconditions = action.preconditions
+        assert preconditions, "relaxed task not in canonical form"
+        action.unsatisfied_conditions = len(preconditions)
+        for prec in preconditions:
+            prec.precondition_of.append(action)
+        for eff in action.effects:
+            eff.effect_of.append(action)
+
+    for fact in landmark_facts:
+        for action in fact.effect_of:
+            action.unsatisfied_conditions += 1000
+
+    heap = [((0, 0), init)]
+    while heap:
+        hmax, fact = heappop(heap)
+        if fact == goal:
+            # break ## Commented out for now because we want the complete
+            #       ## supporters.
+            pass
+        if hmax == fact.hmax:
+            for action in fact.precondition_of:
+                action.unsatisfied_conditions -= 1
+                if not action.unsatisfied_conditions:
+                    hmax_cost, hmax_depth = hmax
+                    hmax_cost += action.cost
+                    hmax_depth += 1
+                    action_hmax = (hmax_cost, hmax_depth)
+                    action.hmax = action_hmax
+                    action.hmax_supporters = [
+                        fact for fact in action.preconditions
+                        if fact.hmax == hmax]
+                    for effect in action.effects:
+                        if action_hmax < effect.hmax:
+                            effect.hmax = action_hmax
+                            effect.reached_by = [action]
+                            heappush(heap, (action_hmax, effect))
+                        elif action_hmax == effect.hmax:
+                            effect.reached_by.append(action)
+    if goal.hmax[0] != infinity:
+        raise ValueError("not a landmark!")
+    cut = [action for action in task.actions
+           if action.unsatisfied_conditions == 1000]
+    return cut
+
+
 def collect_chain(task):
     # NOTE: We backchain by taking the first best supporter of each
     # action and fact. All other choices would also be fine, and might
@@ -76,16 +137,6 @@ def collect_chain(task):
 
 
 def collect_cut(task):
-    # TODO: Unless there's a bug, this should indeed compute a cut
-    # (and hence, an action landmark), but it's larger than necessary
-    # because it may includes actions that cannot be reached from the
-    # init partition of the cut without crossing into the goal partition
-    # of the cut first.
-    #
-    # So we should compute a smaller cut. We should be able to come up
-    # with a much smaller cut directly, but if we cannot, there's also
-    # the general technique of post-processing the cut until it is
-    # guaranteed to be a minimal action landmark.
     goal, = task.goals
     hmax = goal.hmax[0]
     goal_plateau = set()
@@ -97,13 +148,7 @@ def collect_cut(task):
                     supporter = action.hmax_supporters[0]
                     recurse(supporter)
     recurse(goal)
-    cut = set()
-    for action in task.actions:
-        if action.hmax_supporters[0] not in goal_plateau:
-            for effect in action.effects:
-                if effect in goal_plateau:
-                    cut.add(action)
-                    break
+    cut = possibly_before(task, goal_plateau)
     return cut
 
 
