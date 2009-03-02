@@ -1,0 +1,22 @@
+#! /bin/bash
+
+function run-domain {
+    DOMAIN="$1"
+    shift
+    rm -f $DOMAIN.log
+    for PATTERN in "$@"; do
+        for TASK in ../../benchmarks/$DOMAIN/$PATTERN; do
+            echo -n "$TASK... "
+            RESULT=$(./additive-hmax.py $TASK | grep -o '^[0-9][0-9]*$')
+            echo $RESULT
+            echo "$TASK... $RESULT" >> $DOMAIN.log
+        done
+    done
+}
+
+run-domain blocks prob*.pddl
+run-domain gripper prob*.pddl
+run-domain logistics00 prob*.pddl
+run-domain logistics98 prob{01,05,17,31,32,33,35}.pddl
+run-domain miconic s*-0.pddl
+run-domain satellite p[01]?-pfile*.pddl
