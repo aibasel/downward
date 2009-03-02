@@ -19,6 +19,7 @@ def hmax(task):
     for fact in task.atoms:
         fact.hmax = (infinity, infinity)
         fact.precondition_of = []
+        fact.effect_of = []
     init.hmax = (0, 0)
     init.reached_by = []
 
@@ -28,12 +29,16 @@ def hmax(task):
         action.unsatisfied_conditions = len(preconditions)
         for prec in preconditions:
             prec.precondition_of.append(action)
+        for eff in action.effects:
+            eff.effect_of.append(action)
 
     heap = [((0, 0), init)]
     while heap:
         hmax, fact = heappop(heap)
         if fact == goal:
-            break
+            # break ## Commented out for now because we want the complete
+            #       ## supporters.
+            pass
         if hmax == fact.hmax:
             for action in fact.precondition_of:
                 action.unsatisfied_conditions -= 1
@@ -53,8 +58,7 @@ def hmax(task):
                             heappush(heap, (action_hmax, effect))
                         elif action_hmax == effect.hmax:
                             effect.reached_by.append(action)
-    # chain = collect_chain(task)
-    return hmax
+    return goal.hmax
 
 
 def collect_chain(task):
@@ -72,26 +76,34 @@ def collect_chain(task):
 
 
 def collect_cut(task):
-    # BUG: Unfortunately, this is buggy -- by only considering
-    # "reached_by", which are the *best* supporters of each fact,
-    # we're not guaranteed to get a cut of the justification graph
-    # here.
+    # TODO: Unless there's a bug, this should indeed compute a cut
+    # (and hence, an action landmark), but it's larger than necessary
+    # because it may includes actions that cannot be reached from the
+    # init partition of the cut without crossing into the goal partition
+    # of the cut first.
+    #
+    # So we should compute a smaller cut. We should be able to come up
+    # with a much smaller cut directly, but if we cannot, there's also
+    # the general technique of post-processing the cut until it is
+    # guaranteed to be a minimal action landmark.
     goal, = task.goals
     hmax = goal.hmax[0]
-    cut = set()
-    def recurse(supporter):
-        assert supporter.hmax[0] == hmax
-        for action in supporter.reached_by:
-            # NOTE: Same as in collect_chain: could just as well pick
-            # another supporter here instead of hmax_supporters[0]
-            supporter = action.hmax_supporters[0]
-            supporter_hmax = supporter.hmax[0]
-            assert supporter_hmax <= hmax
-            if supporter_hmax < hmax:
-                cut.add(action)
-            else:
-                recurse(supporter)
+    goal_plateau = set()
+    def recurse(subgoal):
+        if subgoal not in goal_plateau:
+            goal_plateau.add(subgoal)
+            for action in subgoal.effect_of:
+                if action.cost == 0:
+                    supporter = action.hmax_supporters[0]
+                    recurse(supporter)
     recurse(goal)
+    cut = set()
+    for action in task.actions:
+        if action.hmax_supporters[0] not in goal_plateau:
+            for effect in action.effects:
+                if effect in goal_plateau:
+                    cut.add(action)
+                    break
     return cut
 
 
