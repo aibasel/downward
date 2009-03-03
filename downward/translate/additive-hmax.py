@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import pddl
+import random
 import relaxed_tasks
 
 from heapq import heappush, heappop
+
+random.seed(2009)
 
 
 infinity = float("inf")
@@ -32,7 +35,6 @@ def hmax(task, goal_cut_facts=()):
     for fact in task.atoms:
         fact.hmax = (infinity, infinity)
     init.hmax = (0, 0)
-    init.reached_by = []
 
     for action in task.actions:
         assert action.preconditions, "relaxed task not in canonical form"
@@ -54,18 +56,61 @@ def hmax(task, goal_cut_facts=()):
                     hmax_depth += 1
                     action_hmax = (hmax_cost, hmax_depth)
                     action.hmax = action_hmax
-                    action.hmax_supporters = [
-                        fact for fact in action.preconditions
-                        if fact.hmax == hmax]
+
+                    # We have some freedom in which hmax_supporter to pick.
+                    # Quick summary of results for the following three options:
+                    # - Option 2 and 4 give identical results.
+                    # - Option 1 vs. Option 2:
+                    #   * wins for Option 1: Satellite (+1 twice, +2 once)
+                    #   * wins for Option 2: Blocks (+1 once), Logistics98 (+1 once),
+                    #     Satellite (+1 twice, +2 once, +3 once, +4 once)
+                    # - Option 1 vs. Option 3:
+                    #   * wins for Option 1: Gripper (+1 thirteen times),
+                    #     Satellite (+1 three times, +2 once)
+                    #   * wins for Option 3: Blocks (+1 once), Logistics98 (+1 once),
+                    #     Satellite (+1 twice, +2 three times, +3 once)
+                    # - Option 2 vs. Option 3:
+                    #   * wins for Option 2: Gripper (+1 thirteen times),
+                    #     Satellite (+1 once, +2 three times, +3 once)
+                    #   * wins for Option 3: Satellite (+1 three times, +2 three times)
+                    #
+                    # For options 2 and 3, I also made some experiments how
+                    # results change when multiplying costs by 5 (i.e., only extracting
+                    # a fraction of the action cost per round).
+                    # - Option 2:
+                    #   * Satellite: +1 (three times), +2 (once), +4 (once)
+                    # - Option 3:
+                    #   * Gripper: +1 (thirteen times), -1 (once)
+                    #   * Satellite: +4 (once), +3 (three times), +2 (one time),
+                    #     +1 (five times), - 1 (once)
+                    OPTION = 2
+                    if OPTION == 1:
+                        # Choose first (in precondition list)
+                        # maximizing precondition as supporter.
+                        supporter = (fact for fact in action.preconditions
+                                     if fact.hmax == hmax).next()
+                    elif OPTION == 2:
+                        # Choose this fact as supporter.
+                        supporter = fact
+                    elif OPTION == 3:
+                        # Choose a random maximizer as a supporter.
+                        supporter = random.choice([
+                            fact for fact in action.preconditions
+                            if fact.hmax == hmax])
+                    elif OPTION == 4:
+                        # Choose last (in precondition list)
+                        # maximizing precondition as supporter.
+                        supporter = [fact for fact in action.preconditions
+                                     if fact.hmax == hmax][-1]
+                    else:
+                        assert False
+                    action.hmax_supporter = supporter
                     for effect in action.effects:
                         if effect in goal_cut_facts:
                             cut.append(action)
                         elif action_hmax < effect.hmax:
                             effect.hmax = action_hmax
-                            effect.reached_by = [action]
                             heappush(heap, (action_hmax, effect))
-                        elif action_hmax == effect.hmax:
-                            effect.reached_by.append(action)
     return goal.hmax[0], cut
 
 
@@ -77,8 +122,7 @@ def collect_cut(task):
             goal_plateau.add(subgoal)
             for action in subgoal.effect_of:
                 if action.cost == 0:
-                    supporter = action.hmax_supporters[0]
-                    recurse(supporter)
+                    recurse(action.hmax_supporter)
     recurse(goal)
     cut_hmax, cut = hmax(task, goal_plateau)
     assert cut_hmax == infinity, "did not extract a landmark!"
