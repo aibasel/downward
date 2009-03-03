@@ -108,6 +108,7 @@ def hmax(task, goal_cut_facts=()):
                     for effect in action.effects:
                         if effect in goal_cut_facts:
                             cut.append(action)
+                            break
                         elif action_hmax < effect.hmax:
                             effect.hmax = action_hmax
                             heappush(heap, (action_hmax, effect))
