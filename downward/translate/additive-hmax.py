@@ -10,28 +10,33 @@ from heapq import heappush, heappop
 infinity = float("inf")
 
 
+def crossreference_task(task):
+    for fact in task.atoms:
+        fact.precondition_of = []
+        fact.effect_of = []
+    for action in task.actions:
+        for prec in action.preconditions:
+            prec.precondition_of.append(action)
+        for eff in action.effects:
+            eff.effect_of.append(action)
+
+
 def hmax(task, goal_cut_facts=()):
     # hmax costs are pairs of the form (cost, depth), where "depth" is
     # the length (as opposed to cost sum) of the supporting chain. We
-    # use the depth for tie-breaking to avoid problems with cycles of
-    # zero-cost actions.
+    # use the depth for tie-breaking; this is not strictly necessary,
+    # but empirically leads to better action landmarks (i.e., higher
+    # heuristic values).
     init, = task.init
     goal, = task.goals
     for fact in task.atoms:
         fact.hmax = (infinity, infinity)
-        fact.precondition_of = []
-        fact.effect_of = []
     init.hmax = (0, 0)
     init.reached_by = []
 
     for action in task.actions:
-        preconditions = action.preconditions
-        assert preconditions, "relaxed task not in canonical form"
-        action.unsatisfied_conditions = len(preconditions)
-        for prec in preconditions:
-            prec.precondition_of.append(action)
-        for eff in action.effects:
-            eff.effect_of.append(action)
+        assert action.preconditions, "relaxed task not in canonical form"
+        action.unsatisfied_conditions = len(action.preconditions)
 
     heap = [((0, 0), init)]
     cut = []
@@ -101,5 +106,6 @@ if __name__ == "__main__":
     task = pddl.open()
     relaxed_task = relaxed_tasks.build_relaxed_task(task)
     relaxed_task.convert_to_canonical_form()
+    crossreference_task(relaxed_task)
     # relaxed_task.dump()
     print additive_hmax(relaxed_task)
