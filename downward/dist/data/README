@@ -97,13 +97,14 @@ http://www.python.org/. If you are on a Unix-ish system, check if the
 correct version of Python is installed already by typing "python2.5"
 in a shell. If this does not result in an error message, you are fine.
 If you do get an error, but have a *newer* version of Python installed
-(such as Python 2.5), you can also run the translator under this newer
+(such as Python 2.6), you can also run the translator under this newer
 version. In this case, you will need to change the first line of
 translate/translate.py to match your system setup. The translator will
-*not* work with Python 2.4 or older. If you only have an older version
-of Python (or none) installed, go ahead and install a newer one with
-your Unix system's package manager (e.g. with "apt-get install
-python2.5" on a Debian system). Different versions of Python can
+*not* work with Python 2.4 or older or with Python 3.*, which is
+incompatible with the 2.* series. If you only have an older version of
+Python (or none) installed, go ahead and install a newer one with your
+Unix system's package manager (e.g. with "apt-get install python2.6"
+on a Debian or Ubuntu system). Different versions of Python can
 peacefully coexist, so this should not wreck your system setup.
 
 
@@ -185,9 +186,9 @@ Benchmarking
 ============
 
 If you want to benchmark the planner, for example to compare it to
-other planning systems, please note that the different configuration of
+other planning systems, please note that the different configurations of
 the search component have a huge impact on performance. Which options
-work best varies across domains. If in doubt and you do not want to
+work best varies across domains. If in doubt and not in a mood to
 experiment, activate all features (use options "cCfF").
 
 
