@@ -41,20 +41,7 @@ def translate_strips_conditions(conditions, dictionary, ranges):
         atom = pddl.Atom(fact.predicate, fact.args) # force positive
         for var, val in dictionary[atom]:
             if fact.negated:
-                ## BUG: Here we take a shortcut compared to Sec. 10.6.4
-                ##      of the thesis and do something that doesn't appear
-                ##      to make sense if this is part of a proper fact group.
-                ##      Compare the last sentences of the third paragraph of
-                ##      the section.
-                ##      We need to do what is written there. As a test case,
-                ##      consider Airport ADL tasks with only one airport, where
-                ##      (occupied ?x) variables are encoded in a single variable,
-                ##      and conditions like (not (occupied ?x)) do occur in
-                ##      preconditions.
-                ##      However, *do* what we do here if this is a binary
-                ##      variable, because this happens to be the most
-                ##      common case.
-                val = ranges[var] - 1
+                assert False, "neg. precondition: task not in positive normal form" 
             if condition.get(var) not in (None, val):
                 # Conflicting conditions on this variable: Operator invalid.
                 return None
@@ -100,7 +87,7 @@ def translate_strips_operator(operator, dictionary, ranges):
         for var, val in dictionary[fact]:
             none_of_those = ranges[var] - 1
 
-            other_val, eff_conditions = effect.setdefault(var, (none_of_those, []))
+            other_val, eff_conditions = effect.get(var, (none_of_those, []))
 
             if other_val != none_of_those:
                 # Look for matching add effect; ignore this del effect if found.
@@ -144,20 +131,17 @@ def translate_strips_operator(operator, dictionary, ranges):
                     else:
                         assert not eff_condition and not eff_conditions[0], "Uncertain conflict"
                         return None  # Definite conflict otherwise.
-            else:
-                if condition.get(var) != val and eff_condition_dict.get(var) != val:
-                    # Need a guard for this delete effect.
-                    assert var not in condition and var not in eff_condition, "Oops?"
-                    eff_condition.append((var, val))
-                eff_conditions.append(eff_condition)
+#            else:
+#                if condition.get(var) != val and eff_condition_dict.get(var) != val:
+#                    # Need a guard for this delete effect.
+#                    assert var not in condition and var not in eff_condition, "Oops?"
+#                    eff_condition.append((var, val))
+#                eff_conditions.append(eff_condition)
 
     if possible_add_conflict:
         print operator.name
 
     assert not possible_add_conflict, "Conflicting add effects?"
-
-    # assert eff_condition != other_condition, "Duplicate effect"
-    # assert eff_condition and other_condition, "Dominated conditional effect"
 
     pre_post = []
     for var, (post, eff_condition_lists) in effect.iteritems():
@@ -254,9 +238,14 @@ def pddl_to_sas(task):
     for item in goal_list:
         assert isinstance(item, pddl.Literal)
 
-    groups, mutex_groups, translation_key = fact_groups.compute_groups(
-        task, atoms, return_mutex_groups=WRITE_ALL_MUTEXES,
-        partial_encoding=USE_PARTIAL_ENCODING)
+#    groups, mutex_groups, translation_key = fact_groups.compute_groups(
+#        task, atoms, return_mutex_groups=WRITE_ALL_MUTEXES,
+#        partial_encoding=USE_PARTIAL_ENCODING)
+
+    # switched off invariant syntheses -> one group for each fluent fact
+    groups = [[fact] for fact in atoms]
+    translation_key = [[str(fact),str(fact.negate())] for group in groups 
+                                                      for fact in group]
 
     print "Building STRIPS to SAS dictionary..."
     ranges, strips_to_sas = strips_to_sas_dictionary(groups)
@@ -268,13 +257,13 @@ def pddl_to_sas(task):
 
     try:
         simplify.filter_unreachable_propositions(
-            sas_task, mutex_key, translation_key)
+            sas_task, [], translation_key)
     except simplify.Impossible:
         return unsolvable_sas_task("Simplified to trivially false goal")
 
     write_translation_key(translation_key)
-    if WRITE_ALL_MUTEXES:
-        write_mutex_key(mutex_key)
+#    if WRITE_ALL_MUTEXES:
+#        write_mutex_key(mutex_key)
     return sas_task
 
 def build_mutex_key(strips_to_sas, groups):
