@@ -253,8 +253,6 @@ def pddl_to_sas(task):
     sas_task = translate_task(strips_to_sas, ranges, task.init, goal_list,
                               actions, axioms)
     
-    mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
-
     try:
         simplify.filter_unreachable_propositions(
             sas_task, [], translation_key)
@@ -262,8 +260,6 @@ def pddl_to_sas(task):
         return unsolvable_sas_task("Simplified to trivially false goal")
 
     write_translation_key(translation_key)
-#    if WRITE_ALL_MUTEXES:
-#        write_mutex_key(mutex_key)
     return sas_task
 
 def build_mutex_key(strips_to_sas, groups):
