@@ -160,7 +160,8 @@ class VarValueRenaming(object):
                 new_axioms.append(axiom)
             except (Impossible, DoesNothing):
                 if DEBUG:
-                    print "Removed axiom: %s" % axiom.name
+                    print "Removed axiom:"
+                    axiom.dump()
         axioms[:] = new_axioms
 
     def apply_to_operator(self, op):
