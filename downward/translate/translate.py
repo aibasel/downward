@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.5
+#! /usr/bin/env python
 # -*- coding: latin-1 -*-
 
 import axiom_rules
