@@ -47,7 +47,7 @@ cp data/doc/fast-downward.pdf $DIST/doc/
 cp data/doc/translator.pdf $DIST/doc/
 
 # C++ components
-for component in translate-strips preprocess search; do
+for component in preprocess search; do
     mkdir $DIST/$component
     cp $SRC_DIR/$component/*.{cc,h} $DIST/$component/
 
@@ -85,8 +85,8 @@ cp -r data/tests $DIST/
 cd $DIST
 make > /dev/null
 
-echo 'Unit test: First task (C++ translator)...'
-translate-strips/translate-strips \
+echo 'Unit test: First task...'
+translate/translate.py \
     tests/test-cpp-domain.pddl tests/test-cpp-problem.pddl \
     > /dev/null
 preprocess/preprocess < output.sas > /dev/null
@@ -97,7 +97,7 @@ echo Validating...
   && echo Validation succeeded. || echo Validation failed!
 rm -f output.sas output sas_plan
 
-echo 'Unit test: Second task (Python translator)...'
+echo 'Unit test: Second task...'
 translate/translate.py \
     tests/test-py-domain.pddl tests/test-py-problem.pddl \
     > /dev/null
