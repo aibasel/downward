@@ -336,3 +336,5 @@ if __name__ == "__main__":
     print "Writing output..."
     sas_task.output(file("output.sas", "w"))
     print "Done!"
+    print "Creating dummy output:"
+    open("all.groups", "w").write("dummy file expected by our scripts\n")
