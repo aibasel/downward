@@ -1,0 +1,100 @@
+We assume that operators are converted to rules of the form
+    [condition] var: old_value -> new_value
+where condition is a partial variable assignment.
+
+A "context" C is given by a state variable and an assignment to that
+state variable and all the variables it directly depends on. We write
+C.var for the state variable and C.state for the partial state
+associated with the context.
+
+A context C may be "opened", which means that we associate with it the
+problem of changing the value of C.var from its value in C.state to
+any other value, given the state described by the current state
+modified by C.state. This is a Dijkstra-style problem of the form
+considered in the original causal graph heuristic. An open context
+stores the following information:
+
+- for each value d of C.var, a cost for reaching that value
+  (C.cost(d))
+- for each value d of C.var, an assignment to the state variable on
+  which the context is defined (C.context(d))
+
+When a context is first opened, the cost of the initial value is set
+to 0 (C.cost(C.state(C.var)) := 0) and the associated state is sent to
+the context's associated state (C.context(C.state(C.var)) := C.state).
+All other C.cost values are set to infinity, and all other C.context
+values are initially undefined. In general, C.context(d) will be
+defined iff C.cost(d) != infinity.
+
+A "fringe transition" in an open context C is a transition rule
+[condition] var: old_value -> new_value with the following properties:
+- var is the variable of the context (var = C.var)
+- the cost of old_value has been determined
+  (C.cost(old_value) != infinity).
+- the new_value node has not yet been expanded
+
+For each (cvar, cvalue) pair in the [condition] of a fringe transition,
+we can compute an associated context C' as follows:
+1. Start with the current state.
+2. Modify it with C.context(old_value)[cvar].
+3. Project to cvar and the variables it depends on.
+
+If the context C' has already been opened and C'.cost(cvalue) is known,
+then this is the "associated cost" of that condition of the transition
+in C. If the associated costs of all conditions of a pending
+transitions are known, then the "cost" of the transition is 1 plus the
+sum of these costs; in that case the transition is "ready". The
+"target cost" of the value reached by the transition is then the cost
+of the transition plus the cost of the originating value
+(C.cost(old_value)).
+
+Otherwise, the transition is not ready (because either some contexts
+remain unopened, or haven't been searched far enough yet, or because
+the desired values are unachievable). In that case, the transition is
+"waiting"; we can in this case at least compute a "lower bound" on the
+cost of the transition as 1 plus the associated costs of all its
+conditions for which that cost is known. The "target cost lower bound"
+of the transition is then the "lower bound" of the transition plus the
+cost of the originating value (C.cost(old_value)).
+
+A fringe transition can "fire" if it is "ready" and its "target cost"
+is no larger than the target costs of all other ready transitions and
+the "target cost lower bounds" of all other waiting transitions. If it
+fires, the cost of the reached value is set to the target cost of the
+transition, and the corresponding context state is set to the context
+state of the originating value old_value, modified by [condition] and
+new_value, and then further modified by co-occurring effects of the
+operator that induced the transition.
+
+
+1. Open a context for each goal variable, taking the values of the
+   dependent variables from the current state. Call these the "goal
+   contexts".
+
+2. While not all goal values have been reached in the goal contexts:
+
+   1. If there is a ready transition that can fire, fire it.
+   2. Otherwise, if there is a waiting transition with a condition
+      whose associated context has not yet been opened, open it.
+   3. Otherwise, nothing can be done; return infinity.
+
+3. Add the cost of reaching the goal in all goal contexts. This is
+   the heuristic value.
+
+[Note: The actual implementation introduces a kind of axiom for the
+       goal set, so that there is only a single goal proposition to
+       consider, which simplifies step 3 and the "while" test in
+       step 2.]
+
+
+=> Note for a write-up of this: Just let a context refer to a full
+   state, rather than a partial state. Having it be a partial state is
+   an implementation optimization (the values of variables that are
+   neither the transitioned variable itself nor one of its parents
+   simply don't matter to the computation), but conceptually, it's
+   probably easier to understand if the context is a full state.
+
+TODO:
+=> Update terminology: Use "local problem" for the subproblems that are 
+   solved, "context" for the associated states, "initial context" for
+   the context of the initial value of the local problem.

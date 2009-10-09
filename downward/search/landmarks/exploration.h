@@ -1,0 +1,150 @@
+#ifndef EXPLORATION_H
+#define EXPLORATION_H
+
+#include "../heuristic.h"
+#include "../globals.h"
+#include "landmarks_types.h"
+
+#include <vector>
+#include <ext/hash_set>
+#include <ext/hash_map>
+#include <cassert>
+
+class Operator;
+class State;
+
+class ExProposition;
+class ExUnaryOperator;
+
+class LandmarksCountHeuristic;
+
+struct ExProposition {
+    int var;
+    int val;
+    bool is_goal_condition;
+    bool is_termination_condition;
+    std::vector<ExUnaryOperator *> precondition_of;
+
+    int h_add_cost;
+    int h_max_cost;
+    int depth;
+    ExUnaryOperator *reached_by;
+
+    ExProposition() {
+	is_goal_condition = false;
+	is_termination_condition = false;
+	h_add_cost = -1;
+	h_max_cost = -1;
+	reached_by = 0;
+    }
+
+    bool operator<(const ExProposition &other) const {
+        return var < other.var || (var == other.var && val < other.val);
+    }
+
+};
+
+struct ExUnaryOperator {
+    const Operator *op;
+    std::vector<ExProposition *> precondition;
+    ExProposition *effect;
+    int base_cost; // 0 for axioms, 1 for regular operators
+
+    int unsatisfied_preconditions;
+    int h_add_cost;
+    int h_max_cost;
+    int depth;
+    ExUnaryOperator(const std::vector<ExProposition *> &pre, ExProposition *eff,
+		  const Operator *the_op, int base)
+	: op(the_op), precondition(pre), effect(eff), base_cost(base) {}
+
+
+    bool operator<(const ExUnaryOperator &other) const {
+        if(*(other.effect) < *effect)
+            return false;
+        else if (*effect < *(other.effect))
+            return true;
+
+        else {
+            int i = 0;
+            while (i != precondition.size()) {
+                if (i == other.precondition.size() || *(other.precondition[i]) < *(precondition[i]))
+                    return false;
+                else if (*(precondition[i]) < *(other.precondition[i]))
+                    return true;
+                i++;
+            }
+            return true;
+        }
+    }
+};
+
+struct ex_hash_operator_ptr {
+    size_t operator()(const Operator *key) const {
+	return reinterpret_cast<unsigned long>(key);
+    }
+};
+
+class Exploration : public Heuristic {
+
+ private:
+    friend class LandmarksCountHeuristic;
+
+    typedef __gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> RelaxedPlan;
+
+    std::vector<ExUnaryOperator> unary_operators;
+    std::vector<std::vector<ExProposition> > propositions;
+    std::vector<ExProposition *> goal_propositions;
+    std::vector<ExProposition *> termination_propositions;
+
+    typedef std::vector<ExProposition *> Bucket;
+    std::vector<Bucket> reachable_queue;
+
+    bool heuristic_recomputation_needed;
+
+    void build_unary_operators(const Operator &op);
+    void simplify();
+
+    void setup_exploration_queue(const State &state,
+				 const std::vector<std::pair<int, int> >& excluded_props,
+				 const __gnu_cxx::hash_set<const Operator *,
+				 ex_hash_operator_ptr>& excluded_ops,
+				 bool use_h_max);
+    inline void setup_exploration_queue(const State &state, bool h_max) {
+	std::vector<std::pair<int, int> > excluded_props;
+	__gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> excluded_ops;
+	setup_exploration_queue(state, excluded_props, excluded_ops, h_max);
+    }
+    void relaxed_exploration(bool use_h_max, bool level_out);
+    void prepare_heuristic_computation(const State& state, bool h_max);
+    void collect_relaxed_plan(ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
+
+    int compute_hsp_add_heuristic();
+    int compute_hsp_max_heuristic();
+    int compute_ff_heuristic(const State &state);
+
+    void collect_ha(ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
+
+    void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
+			      bool use_h_max);
+protected:
+    virtual int compute_heuristic(const State &state);
+public:
+    int get_lower_bound(const State &state);
+    void set_additional_goals(const std::vector<std::pair<int, int> >& goals);
+    void set_recompute_heuristic() {heuristic_recomputation_needed = true;}
+    void compute_reachability_with_excludes(std::vector<std::vector<int> >& lvl_var,
+					    std::vector<__gnu_cxx::hash_map<pair<int, int>, int,
+					    hash_int_pair> >& lvl_op,
+					    bool level_out,
+					    const std::vector<std::pair<int, int> >& excluded_props,
+					    const __gnu_cxx::hash_set<const Operator *,
+					    ex_hash_operator_ptr>& excluded_ops,
+					    bool compute_lvl_ops);
+    std::vector<const Operator *> exported_ops; // only needed for landmarks count heuristic ha
+    int plan_for_disj(std::vector<std::pair<int, int> >& disj_goal, const State& state);
+    Exploration(bool use_cache=false);
+    ~Exploration();
+};
+
+#endif

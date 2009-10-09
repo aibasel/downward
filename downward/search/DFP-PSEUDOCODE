@@ -1,0 +1,41 @@
+DFP's merging strategy appears simple enough to implement more or less
+literally, so not many comments there. The big thing we need to do of
+course is to properly support non-linear abstraction strategies.
+
+What about their shrinking strategy?
+
+The step where it is least clear how to implement it efficiently is
+the one where they split up a set of states based on their outgoing
+transitions. One way to do this:
+
+for each state s in a given partition:
+    s.outgoing = []
+    for each arc (label, s') leaving s:
+    	s.outgoing.append((label, s'.current_partition))
+    s.outgoing.sort()
+    s.outgoing.uniq()
+sort states by .outgoing
+scan through the sorted list to create new partitions
+   (check special cases: only one partition,
+    partitions would exceed size bound)
+
+
+So in terms of data structures, we need:
+
+- a way to attach some extra information to states
+  (s.current_partition, s.outgoing)
+  => since we don't want to make states bigger for the other shrinking
+     strategies, maybe just use vectors indexed by the state id
+
+- a representation of the partitions
+  => a single partition could be a vector of state ids or state
+     pointers
+  => the set of all partitions could be computed as a vector indexed
+     by distance initially (so that it can be initially populated
+     fast)
+  => then each loop iteration generates a new vector and swaps the two
+     vectors at the end.
+  => to save copying time, might have pointers to the actual
+     partitions in the vectors rather than the partitions themselves
+     (or alternatively, have a "partition" be a class that consists of
+     a pointer, so that partitions are light-weight)

@@ -1,0 +1,43 @@
+This branch is based on the hector branch and
+contains
+
+from the hector branch:
+- additive heuristic
+- ff heuristic
+- causal graph heuristic
+- cyclic causal graph heuristic (cea heuristic)
+- best first search
+
+from the finkbeiner-draeger branch:
+- merge-and-shrink abstractions 
+- max heuristic
+- timer functionality (see r1586 and timer.*)
+- state implementation
+- A* search
+
+TODO (future?):
+
+Integrate from aij-translator/aij-translator-exp branches:
+- translator logging improvements (possibly)
+
+Integrate from landmarks/lama or branch:
+- landmarks
+- action costs (possibly including different open list implementation;
+  needs profiling)
+- weighted A*/anytime search
+- translator robustness improvements (possibly)
+
+Integrate from gabi branch:
+- almost perfect heuristics (possibly)
+
+Things to worry about architecture-wise:
+- How to integrate the auxiliary node info needed for the landmark
+  heuristic in a clean and efficient way? Certainly, the auxiliary
+  node info should be maintained by some abstract search engine class,
+  not the individual search algorithms -- everything else is too error
+  prone. But how do we efficiently deal with the case that we don't
+  need to aux node infos, or the case that we need several different
+  ones for several different heuristics? One solution is using
+  templates, having a different instantiation for each set of search
+  heuristics. But that of course means recompilation when trying out a
+  new set of search heuristics. Need to think about this some more.

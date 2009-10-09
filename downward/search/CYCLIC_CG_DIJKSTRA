@@ -1,0 +1,37 @@
+It is no longer possible to immediately compute the outgoing
+transition costs upon popping a Dijkstra node. Before, we could do
+recursive calls to get_transition_cost to determine the setup costs of
+the transitions. Now, we may have to wait until they become available.
+
+Here is how it could work roughly:
+1. Global Dijkstra open queue stores local problem nodes.
+2. Pairs (local problem, DTG arc) get their own identity ("local
+   problem arcs") Each local problem arc stores the number of
+   unreached conditions (rule labels). If the source (local problem
+   node) of the arc has not yet been popped, this number can be set to
+   infinity or whatever. (At that stage, we don't yet know what
+   precise set-up we need to do to achieve this arc.)
+3. When we pop a local problem node, we set up its outgoing arcs as
+   follows:
+   - Initialize target cost by local problem node cost.
+   - Increase target cost by operator cost (0 or 1).
+   - Set number of pending conditions to 0.
+   - Iterate over the conditions of the arc:
+     - Determine the (var, old_value -> new_value) transition that is
+       required to set this up.
+     - Check if new_value has already been popped in the (var,
+       old_value) local problem.
+       - If yes, add the cost of new_value to the target cost.
+       - If no, increase number of pending conditions by 1, and add
+         this arc to the waiting list of that local problem node.
+   - If the arc has 0 pending conditions, fire.
+4. Afterwards (or before), iterate over the waiting list of the
+   popped local problem node. For each arc:
+   - Add the cost of the local problem node to the target cost of the
+     arc.
+   - Reduce the number of pending conditions by 1.
+   - If the arc has 0 pending conditions, fire.
+
+"Firing" an arc means inserting the target node into the Dijkstra
+queue, if its current distance is greater that the target distance
+(and lowering its current distance accordingly).
