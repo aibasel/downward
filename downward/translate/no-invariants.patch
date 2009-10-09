@@ -1,0 +1,131 @@
+diff -u ../../official-lama/current/seq-sat-lama/lama/translate/invariant_finder.py ./invariant_finder.py
+--- ../../official-lama/current/seq-sat-lama/lama/translate/invariant_finder.py	2008-06-24 08:06:35.000000000 +0200
++++ ./invariant_finder.py	2009-03-03 15:22:53.000000000 +0100
+@@ -86,6 +86,7 @@
+   return [pred for pred in task.predicates if pred.name in fluent_names]
+ 
+ def get_initial_invariants(task):
++  return
+   for predicate in get_fluents(task):
+     all_args = range(len(predicate.arguments))
+     for omitted_arg in [-1] + all_args:
+
+diff -u ../../official-lama/current/seq-sat-lama/lama/translate/translate.py ./translate.py
+--- ../../official-lama/current/seq-sat-lama/lama/translate/translate.py	2009-01-19 05:51:46.000000000 +0100
++++ ./translate.py	2009-03-03 15:22:21.000000000 +0100
+@@ -91,13 +91,12 @@
+     # conditional effects. It should work ok but will bail out in more
+     # complicated cases even though a conflict does not necessarily exist.
+ 
+-    possible_add_conflict = False
+ 
+     condition = translate_strips_conditions(operator.precondition, dictionary, ranges)
+     if condition is None:
+         return None
+ 
+-    effect = {}
++    effects = []
+ 
+     for conditions, fact in operator.add_effects:
+         eff_condition = translate_strips_conditions(conditions, dictionary, ranges)
+@@ -105,16 +104,7 @@
+             continue
+         eff_condition = eff_condition.items()
+         for var, val in dictionary[fact]:
+-            effect_pair = effect.get(var)
+-            if not effect_pair:
+-                effect[var] = (val, [eff_condition])
+-            else:
+-                other_val, eff_conditions = effect_pair
+-                # Don't flag conflict just yet... the operator might be invalid
+-                # because of conflicting add/delete effects (see pipesworld).
+-                if other_val != val:
+-                    possible_add_conflict = True
+-                eff_conditions.append(eff_condition)
++            effects.append((var, val, eff_condition))
+ 
+     for conditions, fact in operator.del_effects:
+         eff_condition_dict = translate_strips_conditions(conditions, dictionary, ranges)
+@@ -123,78 +113,14 @@
+         eff_condition = eff_condition_dict.items()
+         for var, val in dictionary[fact]:
+             none_of_those = ranges[var] - 1
+-
+-            other_val, eff_conditions = effect.setdefault(var, (none_of_those, []))
+-
+-            if other_val != none_of_those:
+-                # Look for matching add effect; ignore this del effect if found.
+-                assert eff_condition in eff_conditions or [] in eff_conditions, \
+-                              "Add effect with uncertain del effect partner?"
+-                if other_val == val:
+-                    if ALLOW_CONFLICTING_EFFECTS:
+-                        # Conflicting ADD and DEL effect. This is *only* allowed if
+-                        # this is also a precondition, in which case there is *no*
+-                        # effect (the ADD takes precedence). We delete the add effect here.
+-                        if condition.get(var) != val:
+-                            # HACK HACK HACK!
+-                            # There used to be an assertion here that actually
+-                            # forbid this, but this was wrong in Pipesworld-notankage
+-                            # (e.g. task 01). The thing is, it *is* possible for
+-                            # an operator with proven (with the given invariants)
+-                            # inconsistent preconditions to actually end up here if
+-                            # the inconsistency of the preconditions is not obvious at
+-                            # the SAS+ encoding level.
+-                            #
+-                            # Example: Pipes-Notank-01, operator
+-                            # (pop-unitarypipe s12 b4 a1 a2 b4 lco lco).
+-                            # This has precondition last(b4, s12) and on(b4, a2) which
+-                            # is inconsistent because b4 can only be in one place.
+-                            # However, the chosen encoding encodes *what is last in s12*
+-                            # separately, and so the precondition translates to
+-                            # "last(s12) = b4 and on(b4) = a2", which does not look
+-                            # inconsistent at first glance.
+-                            #
+-                            # Something reasonable to do here would be to make a
+-                            # decent check that the precondition is indeed inconsistent
+-                            # (using *all* mutexes), but that seems tough with this
+-                            # convoluted code, so we just warn and reject the operator.
+-                            print "Warning: %s rejected. Cross your fingers." % (
+-                                operator.name)
+-                            return None
+-                            assert False
+-
+-                        assert eff_conditions == [[]]
+-                        del effect[var]
+-                    else:
+-                        assert not eff_condition and not eff_conditions[0], "Uncertain conflict"
+-                        return None  # Definite conflict otherwise.
+-            else:
+-                if condition.get(var) != val and eff_condition_dict.get(var) != val:
+-                    if var in condition:
+-                        ## HACK HACK HACK! There is a precondition on the variable for
+-                        ## this delete effect on another value, so there is no need to
+-                        ## represent the delete effect. Right? Right???
+-                        continue
+-                    # Need a guard for this delete effect.
+-                    assert var not in condition and var not in eff_condition, "Oops?"
+-                    eff_condition.append((var, val))
+-                eff_conditions.append(eff_condition)
+-
+-    if possible_add_conflict:
+-        print operator.name
+-
+-    assert not possible_add_conflict, "Conflicting add effects?"
+-
+-    # assert eff_condition != other_condition, "Duplicate effect"
+-    # assert eff_condition and other_condition, "Dominated conditional effect"
++            effects.append((var, none_of_those, eff_condition))
+ 
+     pre_post = []
+-    for var, (post, eff_condition_lists) in effect.iteritems():
++    for var, post, eff_condition in effects:
+         pre = condition.get(var, -1)
+         if pre != -1:
+             del condition[var]
+-        for eff_condition in eff_condition_lists:
+-            pre_post.append((var, pre, post, eff_condition))
++        pre_post.append((var, pre, post, eff_condition))
+     prevail = condition.items()
+ 
+     return sas_tasks.SASOperator(operator.name, prevail, pre_post, operator.cost)
+
