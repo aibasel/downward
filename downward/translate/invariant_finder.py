@@ -1,6 +1,9 @@
 #! /usr/bin/env python2.5
 # -*- coding: latin-1 -*-
 
+from collections import deque
+import time
+
 import invariants
 import pddl
 
@@ -66,19 +69,28 @@ def get_initial_invariants(task):
       part = invariants.InvariantPart(predicate.name, order, omitted_arg)
       yield invariants.Invariant((part,))
 
+# Input file might be grounded, beware of too many invariant candidates
+MAX_CANDIDATES = 100000
+MAX_TIME = 300
+
 def find_invariants(task):
-  candidates = list(get_initial_invariants(task))
+  candidates = deque(get_initial_invariants(task))
+  print len(candidates), "initial candidates"
   seen_candidates = set(candidates)
 
   balance_checker = BalanceChecker(task)
 
   def enqueue_func(invariant):
-    if invariant not in seen_candidates:
+    if len(seen_candidates) < MAX_CANDIDATES and invariant not in seen_candidates:
       candidates.append(invariant)
       seen_candidates.add(invariant)
 
+  start_time = time.clock()
   while candidates:
-    candidate = candidates.pop()
+    candidate = candidates.popleft()
+    if time.clock() - start_time > MAX_TIME:
+      print "Time limit reached, aborting invariant generation"
+      return
     if candidate.check_balance(balance_checker, enqueue_func):
       yield candidate
 
