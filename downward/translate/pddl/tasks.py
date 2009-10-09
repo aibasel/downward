@@ -3,21 +3,26 @@ import axioms
 import conditions
 import predicates
 import pddl_types
+import functions
+import f_expression
 
 class Task(object):
+  FUNCTION_SYMBOLS = dict()
   def __init__(self, domain_name, task_name, requirements,
-               types, objects, predicates, init, goal, actions, axioms):
+               types, objects, predicates, functions, init, goal, actions, axioms, use_metric):
     self.domain_name = domain_name
     self.task_name = task_name
     self.requirements = requirements
     self.types = types
     self.objects = objects
     self.predicates = predicates
+    self.functions = functions
     self.init = init
     self.goal = goal
     self.actions = actions
     self.axioms = axioms
     self.axiom_counter = 0
+    self.use_min_cost_metric = use_metric
 
   def add_axiom(self, parameters, condition):
     name = "new-axiom@%d" % self.axiom_counter
@@ -28,15 +33,15 @@ class Task(object):
     return axiom
 
   def parse(domain_pddl, task_pddl):
-    domain_name, requirements, types, constants, predicates, actions, axioms \
+    domain_name, requirements, types, constants, predicates, functions, actions, axioms \
                  = parse_domain(domain_pddl)
-    task_name, task_domain_name, objects, init, goal = parse_task(task_pddl)
+    task_name, task_domain_name, objects, init, goal, use_metric = parse_task(task_pddl)
 
     assert domain_name == task_domain_name
     objects = constants + objects
     init += [conditions.Atom("=", (obj.name, obj.name)) for obj in objects]
     return Task(domain_name, task_name, requirements, types, objects,
-                predicates, init, goal, actions, axioms)
+                predicates, functions, init, goal, actions, axioms, use_metric)
   parse = staticmethod(parse)
 
   def dump(self):
@@ -51,6 +56,9 @@ class Task(object):
     print "Predicates:"
     for pred in self.predicates:
       print "  %s" % pred
+    print "Functions:"
+    for func in self.functions:
+      print "  %s" % func
     print "Init:"
     for fact in self.init:
       print "  %s" % fact
@@ -71,7 +79,8 @@ class Requirements(object):
       assert req in (
         ":strips", ":adl", ":typing", ":negation", ":equality",
         ":negative-preconditions", ":disjunctive-preconditions",
-        ":quantified-preconditions", ":conditional-effects", ":derived-predicates"), req
+        ":quantified-preconditions", ":conditional-effects",
+        ":derived-predicates", ":action-costs"), req
   def __str__(self):
     return ", ".join(self.requirements)
 
@@ -115,9 +124,22 @@ def parse_domain(domain_pddl):
          [predicates.Predicate("=",
                                [pddl_types.TypedObject("?x", "object"),
                                 pddl_types.TypedObject("?y", "object")])])
+  
+  opt_functions = iterator.next() #action costs enable restrictive version of fluents
+  if opt_functions[0] == ":functions":
+    the_functions = pddl_types.parse_typed_list(opt_functions[1:],
+                                                constructor=functions.Function.parse_typed, functions=True)
+    for function in the_functions:
+      Task.FUNCTION_SYMBOLS[function.name] = function.type
+    yield the_functions
+    first_action = iterator.next()
+  else:
+    yield []
+    first_action = opt_functions
+  entries = [first_action] + [entry for entry in iterator]
   the_axioms = []
   the_actions = []
-  for entry in iterator:
+  for entry in entries:
     if entry[0] == ":derived":
       axiom = axioms.Axiom.parse(entry)
       the_axioms.append(axiom)
@@ -147,11 +169,26 @@ def parse_task(task_pddl):
     init = objects_opt
 
   assert init[0] == ":init"
-  yield [conditions.Atom(fact[0], fact[1:]) for fact in init[1:]]
+  initial = []
+  for fact in init[1:]:
+    if fact[0] == "=":
+        initial.append(f_expression.parse_assignment(fact))
+    else:
+        initial.append(conditions.Atom(fact[0], fact[1:]))
+  yield initial
 
   goal = iterator.next()
   assert goal[0] == ":goal" and len(goal) == 2
   yield conditions.parse_condition(goal[1])
 
+  use_metric = False
+  for entry in iterator:
+    if entry[0] == ":metric":
+      if entry[1]=="minimize" and entry[2][0] == "total-cost":
+        use_metric = True
+      else:
+        assert False, "Unknown metric."  
+  yield use_metric
+          
   for entry in iterator:
     assert False, entry

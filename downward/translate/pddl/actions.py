@@ -7,12 +7,13 @@ import effects
 import pddl_types
 
 class Action(object):
-    def __init__(self, name, parameters, precondition, effects):
+    def __init__(self, name, parameters, precondition, effects, cost):
         self.name = name
         self.parameters = parameters
         self.precondition = precondition
         self.effects = effects
-        self.uniquify_variables()
+        self.cost = cost
+        self.uniquify_variables() # TODO: uniquify variables in cost?
     def parse(alist):
         iterator = iter(alist)
         assert iterator.next() == ":action"
@@ -34,10 +35,10 @@ class Action(object):
         assert effect_tag == ":effect"
         effect_list = iterator.next()
         eff = []
-        effects.parse_effects(effect_list, eff)
+        cost = effects.parse_effects(effect_list, eff)
         for rest in iterator:
             assert False, rest
-        return Action(name, parameters, precondition, eff)
+        return Action(name, parameters, precondition, eff, cost)
     parse = staticmethod(parse)
     def dump(self):
         print "%s(%s)" % (self.name, ", ".join(map(str, self.parameters)))
@@ -46,6 +47,11 @@ class Action(object):
         print "Effects:"
         for eff in self.effects:
             eff.dump()
+        print "Cost:"
+        if(self.cost):
+            self.cost.dump()
+        else:
+            print "  None"
     def uniquify_variables(self):
         self.type_map = dict([(par.name, par.type) for par in self.parameters])
         self.precondition = self.precondition.uniquify_variables(self.type_map)
@@ -114,12 +120,16 @@ class Action(object):
             eff.instantiate(var_mapping, init_facts, fluent_facts,
                             objects_by_type, effects)
         if effects:
-            return PropositionalAction(name, precondition, effects)
+            if self.cost == None:
+                cost = 0
+            else:
+                cost = int(self.cost.instantiate(var_mapping, init_facts).expression.value)
+            return PropositionalAction(name, precondition, effects, cost)
         else:
             return None
 
 class PropositionalAction:
-    def __init__(self, name, precondition, effects):
+    def __init__(self, name, precondition, effects, cost):
         self.name = name
         self.precondition = precondition
         self.add_effects = []
@@ -129,6 +139,7 @@ class PropositionalAction:
                 self.del_effects.append((condition, effect.negate()))
             else:
                 self.add_effects.append((condition, effect))
+        self.cost = cost
     def dump(self):
         print self.name
         for fact in self.precondition:
@@ -137,3 +148,4 @@ class PropositionalAction:
             print "ADD: %s -> %s" % (", ".join(map(str, cond)), fact)
         for cond, fact in self.del_effects:
             print "DEL: %s -> %s" % (", ".join(map(str, cond)), fact)
+        print "Cost:", self.cost

@@ -35,6 +35,8 @@ def open(task_filename=None, domain_filename=None):
       domain_filename = os.path.join(dirname, basename[:4] + "domain.pddl")
     if not os.path.exists(domain_filename) and re.match(r"p[0-9][0-9]\b", basename):
       domain_filename = os.path.join(dirname, basename[:3] + "-domain.pddl")
+    if not os.path.exists(domain_filename) and re.match(r"p[0-9][0-9]\b", basename):
+      domain_filename = os.path.join(dirname, "domain_" + basename)
     if not os.path.exists(domain_filename):
       raise SystemExit("Error: Could not find domain file using "
                        "automatic naming rules.")

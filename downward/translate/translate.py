@@ -146,6 +146,11 @@ def translate_strips_operator(operator, dictionary, ranges):
                         return None  # Definite conflict otherwise.
             else:
                 if condition.get(var) != val and eff_condition_dict.get(var) != val:
+                    if var in condition:
+                        ## HACK HACK HACK! There is a precondition on the variable for
+                        ## this delete effect on another value, so there is no need to
+                        ## represent the delete effect. Right? Right???
+                        continue
                     # Need a guard for this delete effect.
                     assert var not in condition and var not in eff_condition, "Oops?"
                     eff_condition.append((var, val))
@@ -168,7 +173,7 @@ def translate_strips_operator(operator, dictionary, ranges):
             pre_post.append((var, pre, post, eff_condition))
     prevail = condition.items()
 
-    return sas_tasks.SASOperator(operator.name, prevail, pre_post)
+    return sas_tasks.SASOperator(operator.name, prevail, pre_post, operator.cost)
 
 def translate_strips_axiom(axiom, dictionary, ranges):
     condition = translate_strips_conditions(axiom.condition, dictionary, ranges)
@@ -197,7 +202,7 @@ def translate_strips_axioms(axioms, strips_to_sas, ranges):
             result.append(sas_axiom)
     return result
 
-def translate_task(strips_to_sas, ranges, init, goals, actions, axioms):
+def translate_task(strips_to_sas, ranges, init, goals, actions, axioms, metric):
     axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
       actions, axioms, goals)
     init = init + axiom_init
@@ -228,16 +233,20 @@ def translate_task(strips_to_sas, ranges, init, goals, actions, axioms):
         axiom_layers[var] = layer
     variables = sas_tasks.SASVariables(ranges, axiom_layers)
 
-    return sas_tasks.SASTask(variables, init, goal, operators, axioms)
+    return sas_tasks.SASTask(variables, init, goal, operators, axioms, metric)
 
 def unsolvable_sas_task(msg):
     print "%s! Generating unsolvable task..." % msg
+    write_translation_key([])
+    if WRITE_ALL_MUTEXES:
+        write_mutex_key([])
     variables = sas_tasks.SASVariables([2], [-1])
     init = sas_tasks.SASInit([0])
     goal = sas_tasks.SASGoal([(0, 1)])
     operators = []
     axioms = []
-    return sas_tasks.SASTask(variables, init, goal, operators, axioms)
+    metric = True
+    return sas_tasks.SASTask(variables, init, goal, operators, axioms, metric)
 
 def pddl_to_sas(task):
     print "Instantiating..."
@@ -262,7 +271,7 @@ def pddl_to_sas(task):
     ranges, strips_to_sas = strips_to_sas_dictionary(groups)
     print "Translating task..."
     sas_task = translate_task(strips_to_sas, ranges, task.init, goal_list,
-                              actions, axioms)
+                              actions, axioms, task.use_min_cost_metric)
     
     mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
 

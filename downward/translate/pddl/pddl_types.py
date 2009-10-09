@@ -54,22 +54,25 @@ class TypedObject(object):
   def to_untyped_strips(self):
     return conditions.Atom(self.type, [self.name])
 
-def parse_typed_list(alist, only_variables=False, constructor=TypedObject):
+def parse_typed_list(alist, only_variables=False, constructor=TypedObject, functions=False):
   result = []
   while alist:
     try:
       separator_position = alist.index("-")
     except ValueError:
-      names = alist
-      type = "object"
+      items = alist
+      if functions:
+        _type = "number"
+      else:
+        _type = "object"
       alist = []
     else:
-      names = alist[:separator_position]
-      type = alist[separator_position + 1]
+      items = alist[:separator_position]
+      _type = alist[separator_position + 1]
       alist = alist[separator_position + 2:]
-    for name in names:
-      assert name.startswith("?") or not only_variables
-      entry = constructor(name, type)
+    for item in items:
+      assert not only_variables or item.startswith("?")
+      entry = constructor(item, _type)
       result.append(entry)
   return result
 

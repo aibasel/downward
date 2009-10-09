@@ -1,11 +1,15 @@
 class SASTask:
-  def __init__(self, variables, init, goal, operators, axioms):
+  def __init__(self, variables, init, goal, operators, axioms, metric):
     self.variables = variables
     self.init = init
     self.goal = goal
     self.operators = operators
     self.axioms = axioms
+    self.metric = metric
   def output(self, stream):
+    print >> stream, "begin_metric"
+    print >> stream, int(self.metric)
+    print >> stream, "end_metric"
     self.variables.output(stream)
     self.init.output(stream)
     self.goal.output(stream)
@@ -61,10 +65,11 @@ class SASGoal:
     print >> stream, "end_goal"
 
 class SASOperator:
-  def __init__(self, name, prevail, pre_post):
+  def __init__(self, name, prevail, pre_post, cost):
     self.name = name
     self.prevail = sorted(prevail)
     self.pre_post = sorted(pre_post)
+    self.cost = cost
   def dump(self):
     print self.name
     print "Prevail:"
@@ -89,6 +94,7 @@ class SASOperator:
       for cvar, cval in cond:
         print >> stream, cvar, cval,
       print >> stream, var, pre, post
+    print >> stream, self.cost
     print >> stream, "end_operator"
 
 class SASAxiom:

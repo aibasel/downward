@@ -91,6 +91,8 @@ def useful_groups(invariants, initial_facts):
   nonempty_groups = set()
   overcrowded_groups = set()
   for atom in initial_facts:
+    if isinstance(atom, pddl.Assign):
+      continue
     for invariant in predicate_to_invariants.get(atom.predicate, ()):
       group_key = (invariant, tuple(invariant.get_parameters(atom)))
       if group_key not in nonempty_groups:

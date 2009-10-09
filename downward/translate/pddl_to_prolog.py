@@ -145,7 +145,9 @@ def translate_facts(prog, task):
   for obj in task.objects:
     translate_typed_object(prog, obj, type_dict)
   for fact in task.init:
-    prog.add_fact(fact)
+    assert isinstance(fact, pddl.Atom) or isinstance(fact, pddl.Assign)
+    if isinstance(fact, pddl.Atom):
+      prog.add_fact(fact)
 
 def translate(task):
   normalize.normalize(task)

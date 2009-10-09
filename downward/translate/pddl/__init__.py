@@ -28,3 +28,5 @@ from conditions import ExistentialCondition
 
 from effects import Effect
 
+from f_expression import Assign
+

@@ -79,10 +79,14 @@ class GoalConditionProxy(ConditionProxy):
   def set(self, new_condition):
     self.owner.goal = self.condition = new_condition
   def register_owner(self, task):
-    # TODO: Implement with axioms.
+    # this assertion should never trigger, because disjunctive
+    # goals are now implemented with axioms 
+    # (see substitute_complicated_goal)
     assert False, "Disjunctive goals not (yet) implemented."
   def delete_owner(self, task):
-    # TODO: Implement with axioms.
+    # this assertion should never trigger, because disjunctive
+    # goals are now implemented with axioms 
+    # (see substitute_complicated_goal)
     assert False, "Disjunctive goals not (yet) implemented."
   def build_rules(self, rules):
     rule_head_name = "@goal-reachable"
@@ -259,9 +263,25 @@ def move_existential_quantifiers(task):
     if proxy.condition.has_existential_part():
       proxy.set(recurse(proxy.condition).simplified())
 
+def substitute_complicated_goal(task):
+  goal = task.goal
+  if isinstance(goal, pddl.Literal):
+    return
+  elif isinstance(goal, pddl.Conjunction):
+    simple_goal = True
+    for item in goal.parts:
+      if not isinstance(item, pddl.Literal):
+        simple_goal = False
+        break
+    if simple_goal:
+      return
+  new_axiom = task.add_axiom([], goal)
+  task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)
+
 # Combine Steps [1], [2], [3], [4]
 def normalize(task):
   remove_universal_quantifiers(task)
+  substitute_complicated_goal(task)
   build_DNF(task)
   split_disjunctions(task)
   move_existential_quantifiers(task)
