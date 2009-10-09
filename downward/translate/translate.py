@@ -342,15 +342,13 @@ if __name__ == "__main__":
     import pddl
     print "Parsing..."
     task = pddl.open()
-    if task.domain_name in ["protocol", "rover"]:
-        # This is, of course, a HACK HACK HACK!
-        # The real issue is that ALLOW_CONFLICTING_EFFECTS = True
-        # is actually the correct semantics, but then we don't get to filter
-        # out operators that are impossible to apply due to mutexes between
-        # different SAS+ variables. For example,
-        # ALLOW_CONFLICTING_EFFECTS = True does not filter on(a,a) in
-        # blocksworld/4-0.
-        ALLOW_CONFLICTING_EFFECTS = True
+    # Note: we do not allow conflicting effects (using ALLOW_CONFLICTING_EFFECTS = False).
+    # ALLOW_CONFLICTING_EFFECTS = True is actually the correct semantics, but then we don't
+    # get to filter out operators that are impossible to apply due to mutexes between
+    # different SAS+ variables. For example, ALLOW_CONFLICTING_EFFECTS = True does not
+    # filter on(a,a) in blocksworld/4-0.
+    # Instead, we filter (simple cases of) conflicting effects when reading them in,
+    # applying add-after-delete semantics.
 
     # EXPERIMENTAL!
     # import psyco

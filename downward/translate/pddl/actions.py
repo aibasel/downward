@@ -134,11 +134,16 @@ class PropositionalAction:
         self.precondition = precondition
         self.add_effects = []
         self.del_effects = []
-        for (condition, effect) in effects:
-            if effect.negated:
-                self.del_effects.append((condition, effect.negate()))
-            else:
+        for condition, effect in effects:
+            if not effect.negated:
                 self.add_effects.append((condition, effect))
+        # Warning: This is O(N^2), could be turned into O(N).
+        # But that might actually harm performance, since there are
+        # usually few effects.
+        # TODO: Measure this in critical domains, then use sets if acceptable.
+        for condition, effect in effects:
+            if effect.negated and (condition, effect.negate()) not in self.add_effects:
+                self.del_effects.append((condition, effect.negate()))
         self.cost = cost
     def dump(self):
         print self.name

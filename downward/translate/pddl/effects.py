@@ -52,8 +52,17 @@ def add_effect(tmp_effect, result):
       assert isinstance(tmp_effect, SimpleEffect)
       effect = tmp_effect.effect
     assert isinstance(effect, conditions.Literal)
-    result.append(Effect(parameters, condition, effect))
- 
+    # Check for contradictory effects
+    new_effect = Effect(parameters, condition, effect)
+    contradiction = Effect(parameters, condition, effect.negate())
+    if not contradiction in result:
+      result.append(new_effect)
+    else:
+      # We use add-after-delete semantics, keep positive effect
+      if isinstance(contradiction.literal, conditions.NegatedAtom):
+        result.remove(contradiction)
+        result.append(new_effect)
+
 def parse_effect(alist):
     tag = alist[0]
     if tag == "and":
