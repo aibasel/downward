@@ -1,11 +1,13 @@
-#! /usr/bin/env python2.5
+#! /usr/bin/env python2.6
 # -*- coding: latin-1 -*-
 
+from __future__ import with_statement
 from collections import deque
 import time
 
 import invariants
 import pddl
+import timers
 
 class BalanceChecker(object):
   def __init__(self, task):
@@ -116,8 +118,11 @@ def useful_groups(invariants, initial_facts):
     yield [part.instantiate(parameters) for part in invariant.parts]
 
 def get_groups(task):
-  invariants = find_invariants(task)
-  return list(useful_groups(invariants, task.init))
+  with timers.timing("Finding invariants"):
+    invariants = list(find_invariants(task))
+  with timers.timing("Checking invariant weight"):
+    result = list(useful_groups(invariants, task.init))
+  return result
 
 if __name__ == "__main__":
   import pddl

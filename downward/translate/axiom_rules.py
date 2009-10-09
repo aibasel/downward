@@ -1,14 +1,16 @@
+from __future__ import with_statement
+
 import pddl
 import sas_tasks
+import timers
 
 def handle_axioms(operators, axioms, goals):
-    print "Processing axioms..."
-
     axioms_by_atom = get_axioms_by_atom(axioms)
 
     axiom_literals = compute_necessary_axiom_literals(axioms_by_atom, operators, goals)
     axiom_init = get_axiom_init(axioms_by_atom, axiom_literals)
-    axioms = simplify_axioms(axioms_by_atom, axiom_literals)
+    with timers.timing("Simplifying axioms"):
+        axioms = simplify_axioms(axioms_by_atom, axiom_literals)
     axioms = compute_negative_axioms(axioms_by_atom, axiom_literals)
     # NOTE: compute_negative_axioms more or less invalidates axioms_by_atom.
     #       Careful with that axe, Eugene!

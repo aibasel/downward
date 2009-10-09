@@ -1,16 +1,24 @@
-#! /usr/bin/env python2.5
-# -*- coding: latin-1 -*-
+#! /usr/bin/env python2.6
+# -*- coding: utf-8 -*-
+
+from __future__ import with_statement
 
 import sys
 
 import pddl
+import timers
 
 def convert_rules(prog):
-    RULE_TYPES = {"join": JoinRule, "product": ProductRule, "project": ProjectRule}
+    RULE_TYPES = {
+        "join": JoinRule,
+        "product": ProductRule,
+        "project": ProjectRule,
+        }
     result = []
     for rule in prog.rules:
         RuleType = RULE_TYPES[rule.type]
-        new_effect, new_conditions = variables_to_numbers(rule.effect, rule.conditions)
+        new_effect, new_conditions = variables_to_numbers(
+            rule.effect, rule.conditions)
         rule = RuleType(new_effect, new_conditions)
         rule.validate()
         result.append(rule)
@@ -24,6 +32,17 @@ def variables_to_numbers(effect, conditions):
             rename_map[arg] = i
             new_effect_args[i] = i
     new_effect = pddl.Atom(effect.predicate, new_effect_args)
+
+    # There are three possibilities for arguments in conditions:
+    # 1. They are variables that occur in the effect. In that case,
+    #    they are replaced by the corresponding position in the
+    #    effect, as indicated by the rename_map.
+    # 2. They are constants. In that case, the unifier must guarantee
+    #    that they are matched appropriately. In that case, they are
+    #    not modified (remain strings denoting objects).
+    # 3. They are variables that don't occur in the effect (are
+    #    projected away). This is only allowed in projection rules.
+    #    Such arguments are also not modified (remain "?x" strings).
 
     new_conditions = []
     for cond in conditions:
@@ -51,28 +70,34 @@ class JoinRule(BuildRule):
         left_vars = set([var for var in left_args if isinstance(var, int)])
         right_vars = set([var for var in right_args if isinstance(var, int)])
         common_vars = left_vars & right_vars
-        self.common_var_positions = [[args.index(var) for var in common_vars]
-                                     for args in (list(left_args), list(right_args))]
+        self.common_var_positions = [
+            [args.index(var) for var in common_vars]
+            for args in (list(left_args), list(right_args))]
         self.atoms_by_key = ({}, {})
     def validate(self):
         assert len(self.conditions) == 2, self
         left_args = self.conditions[0].args
         right_args = self.conditions[1].args
         eff_args = self.effect.args
-        left_vars = set([v for v in left_args if isinstance(v, int) or v[0] == "?"])
-        right_vars = set([v for v in right_args if isinstance(v, int) or v[0] == "?"])
-        eff_vars = set([v for v in eff_args if isinstance(v, int) or v[0] == "?"])
+        left_vars = set([v for v in left_args
+                         if isinstance(v, int) or v[0] == "?"])
+        right_vars = set([v for v in right_args
+                          if isinstance(v, int) or v[0] == "?"])
+        eff_vars = set([v for v in eff_args
+                        if isinstance(v, int) or v[0] == "?"])
         assert left_vars & right_vars, self
         assert (left_vars | right_vars) == (left_vars & right_vars) | eff_vars
     def update_index(self, new_atom, cond_index):
-        ordered_common_args = [new_atom.args[position]
-                               for position in self.common_var_positions[cond_index]]
+        ordered_common_args = [
+            new_atom.args[position]
+            for position in self.common_var_positions[cond_index]]
         key = tuple(ordered_common_args)
         self.atoms_by_key[cond_index].setdefault(key, []).append(new_atom)
     def fire(self, new_atom, cond_index, enqueue_func):
         effect_args = self.prepare_effect(new_atom, cond_index)
-        ordered_common_args = [new_atom.args[position]
-                               for position in self.common_var_positions[cond_index]]
+        ordered_common_args = [
+            new_atom.args[position]
+            for position in self.common_var_positions[cond_index]]
         key = tuple(ordered_common_args)
         other_cond_index = 1 - cond_index
         other_cond = self.conditions[other_cond_index]
@@ -90,7 +115,8 @@ class ProductRule(BuildRule):
         self.empty_atom_list_no = len(self.conditions)
     def validate(self):
         assert len(self.conditions) >= 2, self
-        cond_vars = [set([v for v in cond.args if isinstance(v, int) or v[0] == "?"])
+        cond_vars = [set([v for v in cond.args
+                          if isinstance(v, int) or v[0] == "?"])
                      for cond in self.conditions]
         all_cond_vars = reduce(set.union, cond_vars)
         eff_vars = set([v for v in self.effect.args
@@ -148,9 +174,10 @@ class Unifier:
         root = self.predicate_to_rule_generator.get(condition.predicate)
         if not root:
             root = LeafGenerator()
-        constant_arguments = [(arg_index, arg)
-                              for (arg_index, arg) in enumerate(condition.args)
-                              if not isinstance(arg, int) and arg[0] != "?"]
+        constant_arguments = [
+            (arg_index, arg)
+            for (arg_index, arg) in enumerate(condition.args)
+            if not isinstance(arg, int) and arg[0] != "?"]
         newroot = root._insert(constant_arguments, (rule, cond_index))
         self.predicate_to_rule_generator[condition.predicate] = newroot
     def dump(self):
@@ -158,14 +185,16 @@ class Unifier:
         predicates.sort()
         print "Unifier:"
         for pred in predicates:
-            print "  %s:" % pred
+            print "    %s:" % pred
             rule_gen = self.predicate_to_rule_generator[pred]
-            rule_gen.dump(())
+            rule_gen.dump("    " * 2)
 
 class LeafGenerator:
     index = sys.maxint
     def __init__(self):
         self.matches = []
+    def empty(self):
+        return not self.matches
     def generate(self, atom, result):
         result += self.matches
     def _insert(self, args, value):
@@ -181,12 +210,9 @@ class LeafGenerator:
                 root = new_root
             root.matches = self.matches # can be swapped in C++
             return root
-    def dump(self, conditions):
-        spaces = "  " + "  " * len(conditions)
-        if conditions:
-            print "%s%s" % (spaces, ", ".join(conditions))
+    def dump(self, indent):
         for match in self.matches:
-            print "%s  %s" % (spaces, match)
+            print "%s%s" % (indent, match)
 
 class MatchGenerator:
     def __init__(self, index, next):
@@ -194,6 +220,8 @@ class MatchGenerator:
         self.matches = []
         self.match_generator = {}
         self.next = next
+    def empty(self):
+        return False
     def generate(self, atom, result):
         result += self.matches
         generator = self.match_generator.get(atom.args[self.index])
@@ -217,20 +245,19 @@ class MatchGenerator:
                 branch_generator = self.match_generator.get(arg)
                 if not branch_generator:
                     branch_generator = LeafGenerator()
-                self.match_generator[arg] = branch_generator._insert(args[1:], value)
+                self.match_generator[arg] = branch_generator._insert(
+                    args[1:], value)
                 return self
-    def dump(self, conditions):
-        spaces = "  " + "  " * len(conditions)
-        if conditions:
-            print "%s%s" % (spaces, ", ".join(conditions))
+    def dump(self, indent):
         for match in self.matches:
-            print "%s  %s" % (spaces, match)
-        self.next.dump(conditions)
-        keys = self.match_generator.keys()
-        keys.sort()
-        for key in keys:
-            condition = "%s: %s" % (self.index, key)
-            self.match_generator[key].dump(conditions + (condition,))
+            print "%s%s" % (indent, match)
+        for key in sorted(self.match_generator.keys()):
+            print "%sargs[%s] == %s:" % (indent, self.index, key)
+            self.match_generator[key].dump(indent + "    ")
+        if not self.next.empty():
+            assert isinstance(self.next, MatchGenerator)
+            print "%s[*]" % indent
+            self.next.dump(indent + "    ")
 
 class Queue:
     def __init__(self, atoms):
@@ -238,9 +265,11 @@ class Queue:
         self.queue_pos = 0
         self.enqueued = set([(atom.predicate,) + tuple(atom.args)
                              for atom in self.queue])
+        self.num_pushes = len(atoms)
     def __nonzero__(self):
         return self.queue_pos < len(self.queue)
     def push(self, predicate, args):
+        self.num_pushes += 1
         eff_tuple = (predicate,) + tuple(args)
         if eff_tuple not in self.enqueued:
             self.enqueued.add(eff_tuple)
@@ -253,25 +282,49 @@ class Queue:
         return queue.queue[:self.queue_pos]
 
 def compute_model(prog):
-    rules = convert_rules(prog)
-    unifier = Unifier(rules)
-    # unifier.dump()
-    queue = Queue([fact.atom for fact in prog.facts])
-    print "Starting instantiation [%d rules]..." % len(rules)
-    while queue:
-        next_atom = queue.pop()
-        matches = unifier.unify(next_atom)
-        for rule, cond_index in matches:
-            rule.update_index(next_atom, cond_index)
-            rule.fire(next_atom, cond_index, queue.push)
+    with timers.timing("Preparing model"):
+        rules = convert_rules(prog)
+        unifier = Unifier(rules)
+        # unifier.dump()
+        fact_atoms = [fact.atom for fact in prog.facts]
+        queue = Queue(fact_atoms)
+
+    print "Generated %d rules." % len(rules)
+    with timers.timing("Computing model"):
+        relevant_atoms = 0
+        auxiliary_atoms = 0
+        while queue:
+            next_atom = queue.pop()
+            pred = next_atom.predicate
+            if isinstance(pred, str) and "$" in pred:
+                auxiliary_atoms += 1
+            else:
+                relevant_atoms += 1
+            matches = unifier.unify(next_atom)
+            for rule, cond_index in matches:
+                rule.update_index(next_atom, cond_index)
+                rule.fire(next_atom, cond_index, queue.push)
+    print "%d relevant atoms" % relevant_atoms
+    print "%d auxiliary atoms" % auxiliary_atoms
+    print "%d final queue length" % len(queue.queue)
+    print "%d total queue pushes" % queue.num_pushes
     return queue.queue
 
 if __name__ == "__main__":
+    import sys
     import pddl_to_prolog
+    silent = False
+    if len(sys.argv) >= 2 and sys.argv[1] == "--silent":
+        silent = True
+        del sys.argv[1]
+
     print "Parsing..."
     task = pddl.open()
     print "Writing rules..."
     prog = pddl_to_prolog.translate(task)
-    print "Computing model..."
-    for atom in compute_model(prog):
-        print atom
+
+    model = compute_model(prog)
+    if not silent:
+        for atom in model:
+            print atom
+    print "%d atoms" % len(model)

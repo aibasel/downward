@@ -14,6 +14,8 @@ class Action(object):
         self.effects = effects
         self.cost = cost
         self.uniquify_variables() # TODO: uniquify variables in cost?
+    def __repr__(self):
+        return "<Action %r at %#x>" % (self.name, id(self))
     def parse(alist):
         iterator = iter(alist)
         assert iterator.next() == ":action"

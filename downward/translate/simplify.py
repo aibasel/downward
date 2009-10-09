@@ -275,11 +275,6 @@ def dump_translation_key(translation_key):
             print "%2d: %s" % (value_no, value)
 
 def filter_unreachable_propositions(sas_task, mutex_key, translation_key):
-    print "Detecting unreachable propositions...",
-    sys.stdout.flush()
-    if DEBUG:
-        print
-
     # This procedure is a bit of an afterthought, and doesn't fit the
     # overall architecture of the translator too well. We filter away
     # unreachable propositions here, and then prune away variables

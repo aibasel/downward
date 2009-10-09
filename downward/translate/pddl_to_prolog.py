@@ -1,10 +1,13 @@
-#! /usr/bin/env python2.5
+#! /usr/bin/env python2.6
 # -*- coding: latin-1 -*-
+
+from __future__ import with_statement
 
 import itertools
 
 import normalize
 import pddl
+import timers
 
 class PrologProgram:
   def __init__(self):
@@ -150,13 +153,18 @@ def translate_facts(prog, task):
       prog.add_fact(fact)
 
 def translate(task):
-  normalize.normalize(task)
-  prog = PrologProgram()
-  translate_facts(prog, task)
-  for conditions, effect in normalize.build_exploration_rules(task):
-    prog.add_rule(Rule(conditions, effect))
-  prog.normalize()
-  prog.split_rules()
+  with timers.timing("Normalizing task"):
+    normalize.normalize(task)
+  with timers.timing("Generating Datalog program"):
+    prog = PrologProgram()
+    translate_facts(prog, task)
+    for conditions, effect in normalize.build_exploration_rules(task):
+      prog.add_rule(Rule(conditions, effect))
+  with timers.timing("Normalizing Datalog program", block=True):
+    # Using block=True because normalization can output some messages
+    # in rare cases.
+    prog.normalize()
+    prog.split_rules()
   return prog
 
 def test_normalization():

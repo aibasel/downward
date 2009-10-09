@@ -1,5 +1,7 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2.6
 # -*- coding: latin-1 -*-
+
+from __future__ import with_statement
 
 import axiom_rules
 import fact_groups
@@ -7,6 +9,7 @@ import instantiate
 import pddl
 import sas_tasks
 import simplify
+import timers
 
 # TODO: The translator may generate trivial derived variables which are always true,
 # for example if there ia a derived predicate in the input that only depends on
@@ -21,6 +24,7 @@ import simplify
 ALLOW_CONFLICTING_EFFECTS = False
 USE_PARTIAL_ENCODING = True
 WRITE_ALL_MUTEXES = True
+DETECT_UNREACHABLE = True
 
 def strips_to_sas_dictionary(groups):
     dictionary = {}
@@ -203,8 +207,9 @@ def translate_strips_axioms(axioms, strips_to_sas, ranges):
     return result
 
 def translate_task(strips_to_sas, ranges, init, goals, actions, axioms, metric):
-    axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
-      actions, axioms, goals)
+    with timers.timing("Processing axioms", block=True):
+        axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
+            actions, axioms, goals)
     init = init + axiom_init
     #axioms.sort(key=lambda axiom: axiom.name)
     #for axiom in axioms:
@@ -249,8 +254,8 @@ def unsolvable_sas_task(msg):
     return sas_tasks.SASTask(variables, init, goal, operators, axioms, metric)
 
 def pddl_to_sas(task):
-    print "Instantiating..."
-    relaxed_reachable, atoms, actions, axioms = instantiate.explore(task)
+    with timers.timing("Instantiating", block=True):
+        relaxed_reachable, atoms, actions, axioms = instantiate.explore(task)
 
     if not relaxed_reachable:
         return unsolvable_sas_task("No relaxed solution")
@@ -263,27 +268,34 @@ def pddl_to_sas(task):
     for item in goal_list:
         assert isinstance(item, pddl.Literal)
 
-    groups, mutex_groups, translation_key = fact_groups.compute_groups(
-        task, atoms, return_mutex_groups=WRITE_ALL_MUTEXES,
-        partial_encoding=USE_PARTIAL_ENCODING)
+    with timers.timing("Computing fact groups", block=True):
+        groups, mutex_groups, translation_key = fact_groups.compute_groups(
+            task, atoms, return_mutex_groups=WRITE_ALL_MUTEXES,
+            partial_encoding=USE_PARTIAL_ENCODING)
 
-    print "Building STRIPS to SAS dictionary..."
-    ranges, strips_to_sas = strips_to_sas_dictionary(groups)
-    print "Translating task..."
-    sas_task = translate_task(strips_to_sas, ranges, task.init, goal_list,
-                              actions, axioms, task.use_min_cost_metric)
+    with timers.timing("Building STRIPS to SAS dictionary"):
+        ranges, strips_to_sas = strips_to_sas_dictionary(groups)
+    with timers.timing("Translating task", block=True):
+        sas_task = translate_task(strips_to_sas, ranges, task.init, goal_list,
+                                  actions, axioms, task.use_min_cost_metric)
     
-    mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
+    if WRITE_ALL_MUTEXES or DETECT_UNREACHABLE:
+        with timers.timing("Building mutex information"):
+            mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
 
-    try:
-        simplify.filter_unreachable_propositions(
-            sas_task, mutex_key, translation_key)
-    except simplify.Impossible:
-        return unsolvable_sas_task("Simplified to trivially false goal")
+    if DETECT_UNREACHABLE:
+        with timers.timing("Detecting unreachable propositions", block=True):
+            try:
+                simplify.filter_unreachable_propositions(
+                    sas_task, mutex_key, translation_key)
+            except simplify.Impossible:
+                return unsolvable_sas_task("Simplified to trivially false goal")
 
-    write_translation_key(translation_key)
+    with timers.timing("Writing translation key"):
+        write_translation_key(translation_key)
     if WRITE_ALL_MUTEXES:
-        write_mutex_key(mutex_key)
+        with timers.timing("Writing mutex key"):
+            write_mutex_key(mutex_key)
     return sas_task
 
 def build_mutex_key(strips_to_sas, groups):
@@ -340,8 +352,11 @@ def write_mutex_key(mutex_key):
 
 if __name__ == "__main__":
     import pddl
-    print "Parsing..."
-    task = pddl.open()
+
+    timer = timers.Timer()
+    with timers.timing("Parsing"):
+        task = pddl.open()
+
     # Note: we do not allow conflicting effects (using ALLOW_CONFLICTING_EFFECTS = False).
     # ALLOW_CONFLICTING_EFFECTS = True is actually the correct semantics, but then we don't
     # get to filter out operators that are impossible to apply due to mutexes between
@@ -355,6 +370,6 @@ if __name__ == "__main__":
     # psyco.full()
 
     sas_task = pddl_to_sas(task)
-    print "Writing output..."
-    sas_task.output(file("output.sas", "w"))
-    print "Done!"
+    with timers.timing("Writing output"):
+        sas_task.output(file("output.sas", "w"))
+    print "Done! %s" % timer

@@ -1,9 +1,12 @@
-#! /usr/bin/env python2.5
+#! /usr/bin/env python2.6
 # -*- coding: latin-1 -*-
+
+from __future__ import with_statement
 
 import build_model
 import pddl_to_prolog
 import pddl
+import timers
 
 def get_fluent_facts(task, model):
   fluent_predicates = set()
@@ -62,7 +65,8 @@ def instantiate(task, model):
 def explore(task):
   prog = pddl_to_prolog.translate(task)
   model = build_model.compute_model(prog)
-  return instantiate(task, model)
+  with timers.timing("Completing instantiation"):
+    return instantiate(task, model)
 
 if __name__ == "__main__":
   import pddl
