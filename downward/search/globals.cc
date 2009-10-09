@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <climits>
 using namespace std;
 
 #include "axioms.h"
@@ -22,6 +23,12 @@ void check_magic(istream &in, string magic) {
     cout << "Got '" << word << "'." << endl;
     exit(1);
   }
+}
+
+void read_metric(istream &in) {
+  check_magic(in, "begin_metric");
+  in >> g_use_metric;
+  check_magic(in, "end_metric");
 }
 
 void read_variables(istream &in) {
@@ -64,6 +71,7 @@ void dump_goal() {
 void read_operators(istream &in) {
   int count;
   in >> count;
+  g_min_action_cost = INT_MAX; //gets adjusted when reading in operators
   for(int i = 0; i < count; i++)
     g_operators.push_back(Operator(in, false));
 }
@@ -80,6 +88,7 @@ void read_axioms(istream &in) {
 }
 
 void read_everything(istream &in) {
+  read_metric(in);
   read_variables(in);
   g_initial_state = new State(in);
   read_goal(in);
@@ -94,6 +103,7 @@ void read_everything(istream &in) {
 }
 
 void dump_everything() {
+  cout << "Use metric? " << g_use_metric << endl;
   cout << "Variables (" << g_variable_name.size() << "):" << endl;
   for(int i = 0; i < g_variable_name.size(); i++)
     cout << "  " << g_variable_name[i]
@@ -107,6 +117,8 @@ void dump_everything() {
     g_transition_graphs[i]->dump();
 }
 
+bool g_use_metric;
+int g_min_action_cost;
 vector<string> g_variable_name;
 vector<int> g_variable_domain;
 vector<int> g_axiom_layers;

@@ -36,6 +36,7 @@ private:
   string name;
   vector<Prevail> prevail;      // var, val
   vector<PrePost> pre_post; // var, old-val, new-val
+  int cost;
 public:
   Operator(istream &in, const vector<Variable *> &variables);
 

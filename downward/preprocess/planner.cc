@@ -18,6 +18,7 @@
 using namespace std;
 
 int main(int argc, const char **argv) {
+  bool metric;
   vector<Variable *> variables;
   vector<Variable> internal_variables;
   State initial_state;
@@ -32,7 +33,7 @@ int main(int argc, const char **argv) {
   }
 
   read_preprocessed_problem_description
-    (cin, internal_variables, variables, initial_state, goals, operators, axioms);
+    (cin, metric, internal_variables, variables, initial_state, goals, operators, axioms);
   //dump_preprocessed_problem_description
   //  (variables, initial_state, goals, operators, axioms);
   
@@ -70,7 +71,7 @@ int main(int argc, const char **argv) {
   //successor_generator.dump();
 
   cout << "Writing output..." << endl;
-  generate_cpp_input(solveable_in_poly_time, ordering, initial_state, 
+  generate_cpp_input(solveable_in_poly_time, ordering, metric, initial_state, 
 		     goals, operators, axioms, successor_generator, 
 		     transition_graphs, causal_graph);
   cout << "done" << endl << endl;

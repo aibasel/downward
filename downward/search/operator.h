@@ -56,6 +56,7 @@ class Operator {
     std::vector<Prevail> prevail;      // var, val
     std::vector<PrePost> pre_post;     // var, old-val, new-val, effect conditions
     std::string name;
+    int cost;
 public:
     Operator(std::istream &in, bool is_axiom);
     void dump() const;
@@ -75,6 +76,7 @@ public:
 		return false;
 	return true;
     }
+    int get_cost() const {return cost;}
 };
 
 #endif

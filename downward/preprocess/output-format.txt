@@ -1,0 +1,92 @@
+Output of the LAMA Preprocessor
+======================================
+
+This file contains no explanation, just an outline of the output file
+produced by the LAMA predecessor.  For details on how the predecessor
+works, DTGs and causal graphs see Malte Helmert: The Fast Downward
+Planning System, JAIR 2006. 
+
+------ Schematic output file ------------
+
+<task_is_known_to_be_polynomially_satisfiable> // boolean (0 or 1)
+
+begin_metric
+  <use_action_costs> // boolean (0 or 1)
+end_metric
+
+begin_variables
+  <number of variables>
+	<var_name> <range>
+	...
+end_variables
+
+begin_state     // initial state
+  <value of first var>
+  ...
+  <value of last var>
+end_state
+
+begin_goal
+  <number_of_goals>
+	<var_index> <value> //first goal
+	...
+end_goal
+
+begin_operator
+  // operator in same format as translator output
+  ...
+end_operator
+
+begin_SG
+  switch <index of switch_var>
+  check <number of immediately applicable operators>
+	begin_operator // if above line !=0
+	<number_of_effects> //is that always one?
+		<var_index> <val> // first effect
+		...
+	end_operator
+	...
+
+  // either
+  check <number of operators applicable if var has first val> 
+	//all ops applicable without further switch here	
+	...
+  // or
+  switch <index of inner switch_var>
+	...
+
+  ...
+  check <number of operators that don't care about switch_var but have further conditions>
+	...
+end_SG
+
+
+begin_DTG // domain transition graph for first var
+  <range of first var>
+
+  <number of transitions from first val>
+	<new value using first transition>
+	<number of (prevail) conditions for first transition>
+		<<var_index> <value> of first condition>
+		...
+		<<var_index> <value> of last condition>
+	...
+	<new value using last transition>
+		...
+
+  ...
+  <number of transitions from last val>
+	...
+end_DTG
+
+begin_DTG // second var
+...
+end_DTG
+...
+
+begin_CG // causal graph of the task
+  <number of variables that are causal successors of first var>
+     <level of successor in CG> <weight of caual arc>
+     ...
+  ...
+end_CG

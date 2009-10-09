@@ -20,6 +20,8 @@ void dump_everything();
 
 void check_magic(istream &in, string magic);
 
+extern bool g_use_metric;
+extern int g_min_action_cost;
 extern vector<string> g_variable_name;
 extern vector<int> g_variable_domain;
 extern vector<int> g_axiom_layers;

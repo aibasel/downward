@@ -29,9 +29,12 @@ Operator::Operator(istream &in, bool axiom) {
     in >> count;
     for(int i = 0; i < count; i++)
       pre_post.push_back(PrePost(in));
+    in >> cost;
+    g_min_action_cost = min(cost, g_min_action_cost);
     check_magic(in, "end_operator");
   } else {
     name = "<axiom>";
+    cost = 0;
     check_magic(in, "begin_rule");
     pre_post.push_back(PrePost(in));
     check_magic(in, "end_rule");

@@ -24,6 +24,12 @@ void check_magic(istream &in, string magic) {
   }
 }
 
+void read_metric(istream &in, bool& metric) {
+  check_magic(in, "begin_metric");
+  in >> metric;
+  check_magic(in, "end_metric");
+}
+
 void read_variables(istream &in, vector<Variable> &internal_variables,
 		    vector<Variable *> &variables) {
   check_magic(in, "begin_variables");
@@ -75,12 +81,14 @@ void read_axioms(istream &in, const vector<Variable *> &variables,
 
 
 void read_preprocessed_problem_description(istream &in,
+					   bool &metric,
 					   vector<Variable> &internal_variables, 
 					   vector<Variable *> &variables, 
 					   State &initial_state,
 					   vector<pair<Variable*, int> > &goals,
 					   vector<Operator> &operators,
-					   vector<Axiom> &axioms) { 
+					   vector<Axiom> &axioms) {
+  read_metric(in, metric); 
   read_variables(in, internal_variables, variables);
   initial_state = State(in, variables);
   read_goal(in, variables, goals);
@@ -118,6 +126,7 @@ void dump_DTGs(const vector<Variable *> &ordering,
 
 void generate_cpp_input(bool solveable_in_poly_time,
 			const vector<Variable *> & ordered_vars, 
+			const bool &metric,
 			const State &initial_state,
 			const vector<pair<Variable*, int> > &goals,
 			const vector<Operator> & operators,
@@ -128,6 +137,9 @@ void generate_cpp_input(bool solveable_in_poly_time,
   ofstream outfile;
   outfile.open("output",ios::out);
   outfile << solveable_in_poly_time << endl; // 1 if true, else 0
+  outfile << "begin_metric" << endl;
+  outfile << metric << endl;
+  outfile << "end_metric" << endl;
   int var_count = ordered_vars.size();
   outfile << "begin_variables" << endl;
   outfile << var_count << endl;
