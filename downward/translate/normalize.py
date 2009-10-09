@@ -268,12 +268,10 @@ def substitute_complicated_goal(task):
   if isinstance(goal, pddl.Literal):
     return
   elif isinstance(goal, pddl.Conjunction):
-    simple_goal = True
     for item in goal.parts:
       if not isinstance(item, pddl.Literal):
-        simple_goal = False
         break
-    if simple_goal:
+    else:
       return
   new_axiom = task.add_axiom([], goal)
   task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)

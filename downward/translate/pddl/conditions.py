@@ -356,14 +356,8 @@ class FunctionTerm(Term):
         self.name = name
         self.args = args
     def __eq__(self, other):
-        if not (self.__class__ == other.__class__ and self.name == other.name
-                and len(self.args) == len(other.args)):
-            return False
-        else:
-            for s,o in zip(self.args, other.args):
-                if not s == o:
-                    return False
-            return True
+        return (self.__class__ == other.__class__ and self.name == other.name
+                and self.args == other.args)
     
 class Variable(Term):
     args = []

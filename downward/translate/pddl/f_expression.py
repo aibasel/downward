@@ -54,14 +54,8 @@ class PrimitiveNumericExpression(FunctionalExpression):
         self.symbol = symbol
         self.args = tuple(args)
     def __eq__(self, other):
-        if not (self.__class__ == other.__class__ and self.symbol == other.symbol
-                and len(self.args) == len(other.args)):
-            return False
-        else:
-            for s,o in zip(self.args, other.args):
-                if not s == o:
-                    return False
-            return True    
+        return (self.__class__ == other.__class__ and self.symbol == other.symbol
+                and self.args == other.args)
     def __str__(self):
         return "%s %s(%s)" % ("PNE", self.symbol, ", ".join(map(str, self.args)))
     def dump(self, indent="  "):
@@ -71,7 +65,8 @@ class PrimitiveNumericExpression(FunctionalExpression):
     def _dump(self):
         return str(self)
     def  instantiate(self, var_mapping, init_facts):
-        args = [conditions.ObjectTerm(var_mapping.get(arg.name, arg.name)) for arg in self.args]
+        args = [conditions.ObjectTerm(var_mapping.get(arg.name, arg.name))
+                for arg in self.args]
         pne = PrimitiveNumericExpression(self.symbol, args)
         assert not self.symbol == "total-cost"
         # We know this expression is constant. Substitute it by corresponding 

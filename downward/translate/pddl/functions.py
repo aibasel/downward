@@ -4,19 +4,18 @@ class Function(object):
     def __init__(self, name, arguments):
         self.name = name
         self.arguments = arguments
-    def parse(alist):
+    @classmethod
+    def parse(cls, alist):
         name = alist[0]
         arguments = pddl_types.parse_typed_list(alist[1:], functions=True)
-        return Function(name, arguments)
-    def parse_typed(alist, _type):
-        function = Function.parse(alist)
+        return cls(name, arguments)
+    @classmethod
+    def parse_typed(cls, alist, _type):
+        function = cls.parse(alist)
         function.type = _type
         return function
-    parse = staticmethod(parse)
-    parse_typed = staticmethod(parse_typed)
     def __str__(self):
+        result = "%s(%s)" % (self.name, ", ".join(map(str, self.arguments)))
         if self.type:
-            return "%s(%s): %s" % (self.name, ", ".join(map(str, self.arguments)), self.type) 
-        else:
-            return "%s(%s)" % (self.name, ", ".join(map(str, self.arguments))) 
-
+            result += ": %s" % self.type
+        return result

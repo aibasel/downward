@@ -122,7 +122,7 @@ class Action(object):
             eff.instantiate(var_mapping, init_facts, fluent_facts,
                             objects_by_type, effects)
         if effects:
-            if self.cost == None:
+            if self.cost is None:
                 cost = 0
             else:
                 cost = int(self.cost.instantiate(var_mapping, init_facts).expression.value)
@@ -155,4 +155,4 @@ class PropositionalAction:
             print "ADD: %s -> %s" % (", ".join(map(str, cond)), fact)
         for cond, fact in self.del_effects:
             print "DEL: %s -> %s" % (", ".join(map(str, cond)), fact)
-        print "Cost:", self.cost
+        print "cost:", self.cost

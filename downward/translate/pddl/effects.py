@@ -22,7 +22,6 @@ def parse_effects(alist, result):
     return cost_eff.effect
   else:
     return None
-  #assert False
 
 def add_effect(tmp_effect, result):
   """tmp_effect has the following structure:
