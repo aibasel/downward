@@ -251,6 +251,11 @@ protected:
     					   const Operator* exclude,
     					   bool compute_lvl_op = false) const;
 
+    void compute_predecessor_information(
+    	LandmarkNode* bp,
+    	vector<vector<int> >& lvl_var,
+    	vector<hash_map<pair<int, int>, int, hash_int_pair> >& lvl_op);
+
     LandmarkNode& landmark_add_simple(const pair<int, int>& lm);
     LandmarkNode& landmark_add_disjunctive(const set<pair<int, int> >& lm);
     void edge_add(LandmarkNode& from, LandmarkNode& to,
@@ -260,7 +265,7 @@ protected:
     bool check_action_landmark(const Operator* op);
 
     void reset_landmarks_count() {landmarks_count = nodes.size();}
-    virtual void calc_achievers() = 0;
+    virtual void calc_achievers();
 };
 
 #endif

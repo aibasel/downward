@@ -44,10 +44,7 @@ class LandmarksGraphNew : public LandmarksGraph {
         vector<set<pair<int, int> > >& disjunctive_pre,
         vector<vector<int> >& lvl_var,
         LandmarkNode* bp);
-    void compute_predecessor_information(
-	LandmarkNode* bp,
-	vector<vector<int> >& lvl_var,
-	vector<hash_map<pair<int, int>, int, hash_int_pair> >& lvl_op);
+
     int min_cost_for_landmark(LandmarkNode* bp, vector<vector<int> >& lvl_var);
     void generate_landmarks();
     void found_lm_and_order(const pair<int, int> a, LandmarkNode& b,
@@ -57,10 +54,6 @@ class LandmarksGraphNew : public LandmarksGraph {
     void approximate_lookahead_orders(const vector<vector<int> >& lvl_var,
 				      LandmarkNode* lmp);
     static bool domain_connectivity(const pair<int, int>& landmark, const hash_set<int>& exclude);
-
-protected:
-	virtual void calc_achievers();
-
 public:
     LandmarksGraphNew(Exploration* exploration) : LandmarksGraph(exploration) {}
     ~LandmarksGraphNew(){}

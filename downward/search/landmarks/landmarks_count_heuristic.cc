@@ -40,15 +40,12 @@ static void init_lm_graph(Exploration* exploration, int landmarks_type) {
       case 0:
 	  g_lgraph = new LandmarksGraphNew(exploration);
 	break;
-	/*
-	 * todo: take care of calc_achievers, and add this back
       case 1:
 	  g_lgraph = new LandmarksGraphZhuGivan(exploration); // Note: remove exploration here?
 	break;
       case 2:
 	  g_lgraph = new LandmarksGraphExhaust(exploration);
 	break;
-	*/
       default:
 	assert(false); // unknown landmarks_type
     }

@@ -15,4 +15,4 @@ In addition, there are 2 helper classes:
 		implement uniform and optimal LP-based cost sharing.
 		
 		
-	
+util.h/cc contains some code that does not belong in any class	

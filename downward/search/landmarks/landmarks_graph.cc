@@ -35,6 +35,7 @@
 #include "../operator.h"
 #include "../state.h"
 #include "../globals.h"
+#include "util.h"
 
 using namespace std;
 
@@ -1075,4 +1076,41 @@ check_action_landmark(const Operator* op) {
 	vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
 
     return !relaxed_task_solvable_without_operator(lvl_var, lvl_op, true, op, false);
+}
+
+void LandmarksGraph::
+compute_predecessor_information(LandmarkNode* bp,
+                                vector<vector<int> >& lvl_var,
+				vector<hash_map<pair<int, int>, int, hash_int_pair> >& lvl_op) {
+    /* Collect information at what time step propositions can be reached
+       (in lvl_var) in a relaxed plan that excludes bp, and similarly
+       when operators can be applied (in lvl_op).  */
+
+    relaxed_task_solvable(lvl_var, lvl_op, true, bp);
+}
+
+void LandmarksGraph::calc_achievers() {
+	for(set<LandmarkNode*>::iterator node_it = nodes.begin(); node_it != nodes.end(); ++node_it) {
+		LandmarkNode& lmn = **node_it;
+
+		for (int k = 0; k < lmn.vars.size(); k++)
+		{
+			vector<int> ops = get_operators_including_eff(make_pair(lmn.vars[k], lmn.vals[k]));
+			lmn.possible_achievers.insert(ops.begin(), ops.end());
+		}
+
+		vector<vector<int> > lvl_var;
+		vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
+		compute_predecessor_information(&lmn, lvl_var, lvl_op);
+
+		set<int>::iterator ach_it;
+		for(ach_it = lmn.possible_achievers.begin(); ach_it != lmn.possible_achievers.end(); ++ach_it) {
+			int op_id = *ach_it;
+			const Operator& op = get_operator_for_lookup_index(op_id);
+
+			if (_possibly_reaches_lm(op, lvl_var, &lmn)) {
+				lmn.first_achievers.insert(op_id);
+			}
+		}
+	}
 }
