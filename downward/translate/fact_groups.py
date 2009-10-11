@@ -99,7 +99,7 @@ def collect_all_mutex_groups(groups, atoms):
     all_groups += [[fact] for fact in uncovered_facts]
     return all_groups
 
-def compute_groups(task, atoms, return_mutex_groups=True, partial_encoding=True):
+def compute_groups(task, atoms, partial_encoding=True):
     groups = invariant_finder.get_groups(task)
     with timers.timing("Instantiating groups"):
         groups = instantiate_groups(groups, task, atoms)
@@ -107,11 +107,8 @@ def compute_groups(task, atoms, return_mutex_groups=True, partial_encoding=True)
     # TODO: I think that collect_all_mutex_groups should do the same thing
     #       as choose_groups with partial_encoding=False, so these two should
     #       be unified.
-    if return_mutex_groups:
-        with timers.timing("Collecting mutex groups"):
-            mutex_groups = collect_all_mutex_groups(groups, atoms)
-    else:
-        mutex_groups = []
+    with timers.timing("Collecting mutex groups"):
+        mutex_groups = collect_all_mutex_groups(groups, atoms)
     with timers.timing("Choosing groups", block=True):
         groups = choose_groups(groups, atoms, partial_encoding=partial_encoding)
     with timers.timing("Building translation key"):

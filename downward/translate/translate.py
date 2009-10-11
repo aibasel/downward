@@ -21,25 +21,21 @@ import timers
 # derived variable is synonymous with another variable (derived or
 # non-derived).
 
-ALLOW_CONFLICTING_EFFECTS = False
+ALLOW_CONFLICTING_EFFECTS = True
 USE_PARTIAL_ENCODING = True
-WRITE_ALL_MUTEXES = True
 DETECT_UNREACHABLE = True
 
-def strips_to_sas_dictionary(groups):
+def strips_to_sas_dictionary(groups, assert_partial):
     dictionary = {}
     for var_no, group in enumerate(groups):
         for val_no, atom in enumerate(group):
             dictionary.setdefault(atom, []).append((var_no, val_no))
-    if USE_PARTIAL_ENCODING:
+    if assert_partial:
         assert all(len(sas_pairs) == 1
                    for sas_pairs in dictionary.itervalues())
     return [len(group) + 1 for group in groups], dictionary
 
-def translate_strips_conditions(conditions, dictionary, ranges):
-    if not conditions:
-        return {} # Quick exit for common case.
-
+def translate_strips_conditions_aux(conditions, dictionary, ranges):
     condition = {}
     for fact in conditions:
         atom = pddl.Atom(fact.predicate, fact.args) # force positive
@@ -65,7 +61,19 @@ def translate_strips_conditions(conditions, dictionary, ranges):
             condition[var] = val
     return condition
 
-def translate_strips_operator(operator, dictionary, ranges):
+def translate_strips_conditions(conditions, dictionary, ranges,
+                                mutex_dict, mutex_ranges):
+    if not conditions:
+        return {} # Quick exit for common case.
+
+    # Check if the condition violates any mutexes.
+    if translate_strips_conditions_aux(
+        conditions, mutex_dict, mutex_ranges) is None:
+        return None
+
+    return translate_strips_conditions_aux(conditions, dictionary, ranges)
+
+def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ranges):
     # NOTE: This function does not really deal with the intricacies of properly
     # encoding delete effects for grouped propositions in the presence of
     # conditional effects. It should work ok but will bail out in more
@@ -73,14 +81,14 @@ def translate_strips_operator(operator, dictionary, ranges):
 
     possible_add_conflict = False
 
-    condition = translate_strips_conditions(operator.precondition, dictionary, ranges)
+    condition = translate_strips_conditions(operator.precondition, dictionary, ranges, mutex_dict, mutex_ranges)
     if condition is None:
         return None
 
     effect = {}
 
     for conditions, fact in operator.add_effects:
-        eff_condition = translate_strips_conditions(conditions, dictionary, ranges)
+        eff_condition = translate_strips_conditions(conditions, dictionary, ranges, mutex_dict, mutex_ranges)
         if eff_condition is None: # Impossible condition for this effect.
             continue
         eff_condition = eff_condition.items()
@@ -97,7 +105,7 @@ def translate_strips_operator(operator, dictionary, ranges):
                 eff_conditions.append(eff_condition)
 
     for conditions, fact in operator.del_effects:
-        eff_condition_dict = translate_strips_conditions(conditions, dictionary, ranges)
+        eff_condition_dict = translate_strips_conditions(conditions, dictionary, ranges, mutex_dict, mutex_ranges)
         if eff_condition_dict is None:
             continue
         eff_condition = eff_condition_dict.items()
@@ -161,7 +169,8 @@ def translate_strips_operator(operator, dictionary, ranges):
                 eff_conditions.append(eff_condition)
 
     if possible_add_conflict:
-        print operator.name
+        operator.dump()
+
 
     assert not possible_add_conflict, "Conflicting add effects?"
 
@@ -179,8 +188,8 @@ def translate_strips_operator(operator, dictionary, ranges):
 
     return sas_tasks.SASOperator(operator.name, prevail, pre_post, operator.cost)
 
-def translate_strips_axiom(axiom, dictionary, ranges):
-    condition = translate_strips_conditions(axiom.condition, dictionary, ranges)
+def translate_strips_axiom(axiom, dictionary, ranges, mutex_dict, mutex_ranges):
+    condition = translate_strips_conditions(axiom.condition, dictionary, ranges, mutex_dict, mutex_ranges)
     if condition is None:
         return None
     if axiom.effect.negated:
@@ -190,23 +199,24 @@ def translate_strips_axiom(axiom, dictionary, ranges):
         [effect] = dictionary[axiom.effect]
     return sas_tasks.SASAxiom(condition.items(), effect)
 
-def translate_strips_operators(actions, strips_to_sas, ranges):
+def translate_strips_operators(actions, strips_to_sas, ranges, mutex_dict, mutex_ranges):
     result = []
     for action in actions:
-        sas_op = translate_strips_operator(action, strips_to_sas, ranges)
+        sas_op = translate_strips_operator(action, strips_to_sas, ranges, mutex_dict, mutex_ranges)
         if sas_op:
             result.append(sas_op)
     return result
 
-def translate_strips_axioms(axioms, strips_to_sas, ranges):
+def translate_strips_axioms(axioms, strips_to_sas, ranges, mutex_dict, mutex_ranges):
     result = []
     for axiom in axioms:
-        sas_axiom = translate_strips_axiom(axiom, strips_to_sas, ranges)
+        sas_axiom = translate_strips_axiom(axiom, strips_to_sas, ranges, mutex_dict, mutex_ranges)
         if sas_axiom:
             result.append(sas_axiom)
     return result
 
-def translate_task(strips_to_sas, ranges, init, goals, actions, axioms, metric):
+def translate_task(strips_to_sas, ranges, mutex_dict, mutex_ranges, init, goals,
+                   actions, axioms, metric):
     with timers.timing("Processing axioms", block=True):
         axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
             actions, axioms, goals)
@@ -225,11 +235,11 @@ def translate_task(strips_to_sas, ranges, init, goals, actions, axioms, metric):
             init_values[var] = val
     init = sas_tasks.SASInit(init_values)
 
-    goal_pairs = translate_strips_conditions(goals, strips_to_sas, ranges).items()
+    goal_pairs = translate_strips_conditions(goals, strips_to_sas, ranges, mutex_dict, mutex_ranges).items()
     goal = sas_tasks.SASGoal(goal_pairs)
 
-    operators = translate_strips_operators(actions, strips_to_sas, ranges)
-    axioms = translate_strips_axioms(axioms, strips_to_sas, ranges)
+    operators = translate_strips_operators(actions, strips_to_sas, ranges, mutex_dict, mutex_ranges)
+    axioms = translate_strips_axioms(axioms, strips_to_sas, ranges, mutex_dict, mutex_ranges)
 
     axiom_layers = [-1] * len(ranges)
     for atom, layer in axiom_layer_dict.iteritems():
@@ -243,8 +253,7 @@ def translate_task(strips_to_sas, ranges, init, goals, actions, axioms, metric):
 def unsolvable_sas_task(msg):
     print "%s! Generating unsolvable task..." % msg
     write_translation_key([])
-    if WRITE_ALL_MUTEXES:
-        write_mutex_key([])
+    write_mutex_key([])
     variables = sas_tasks.SASVariables([2], [-1])
     init = sas_tasks.SASInit([0])
     goal = sas_tasks.SASGoal([(0, 1)])
@@ -270,18 +279,23 @@ def pddl_to_sas(task):
 
     with timers.timing("Computing fact groups", block=True):
         groups, mutex_groups, translation_key = fact_groups.compute_groups(
-            task, atoms, return_mutex_groups=WRITE_ALL_MUTEXES,
-            partial_encoding=USE_PARTIAL_ENCODING)
+            task, atoms, partial_encoding=USE_PARTIAL_ENCODING)
 
     with timers.timing("Building STRIPS to SAS dictionary"):
-        ranges, strips_to_sas = strips_to_sas_dictionary(groups)
+        ranges, strips_to_sas = strips_to_sas_dictionary(
+            groups, assert_partial=USE_PARTIAL_ENCODING)
+
+    with timers.timing("Building dictionary for full mutex groups"):
+        mutex_ranges, mutex_dict = strips_to_sas_dictionary(
+            mutex_groups, assert_partial=False)
+
     with timers.timing("Translating task", block=True):
-        sas_task = translate_task(strips_to_sas, ranges, task.init, goal_list,
-                                  actions, axioms, task.use_min_cost_metric)
+        sas_task = translate_task(
+            strips_to_sas, ranges, mutex_dict, mutex_ranges,
+            task.init, goal_list, actions, axioms, task.use_min_cost_metric)
     
-    if WRITE_ALL_MUTEXES or DETECT_UNREACHABLE:
-        with timers.timing("Building mutex information"):
-            mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
+    with timers.timing("Building mutex information"):
+        mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
 
     if DETECT_UNREACHABLE:
         with timers.timing("Detecting unreachable propositions", block=True):
@@ -293,9 +307,8 @@ def pddl_to_sas(task):
 
     with timers.timing("Writing translation key"):
         write_translation_key(translation_key)
-    if WRITE_ALL_MUTEXES:
-        with timers.timing("Writing mutex key"):
-            write_mutex_key(mutex_key)
+    with timers.timing("Writing mutex key"):
+        write_mutex_key(mutex_key)
     return sas_task
 
 def build_mutex_key(strips_to_sas, groups):
@@ -356,14 +369,6 @@ if __name__ == "__main__":
     timer = timers.Timer()
     with timers.timing("Parsing"):
         task = pddl.open()
-
-    # Note: we do not allow conflicting effects (using ALLOW_CONFLICTING_EFFECTS = False).
-    # ALLOW_CONFLICTING_EFFECTS = True is actually the correct semantics, but then we don't
-    # get to filter out operators that are impossible to apply due to mutexes between
-    # different SAS+ variables. For example, ALLOW_CONFLICTING_EFFECTS = True does not
-    # filter on(a,a) in blocksworld/4-0.
-    # Instead, we filter (simple cases of) conflicting effects when reading them in,
-    # applying add-after-delete semantics.
 
     # EXPERIMENTAL!
     # import psyco
