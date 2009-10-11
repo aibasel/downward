@@ -17,7 +17,8 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  landmarks/landmarks_count_heuristic.h landmarks/exploration.h \
 	  landmarks/landmark_status_manager.h landmarks/landmark_cost_assignment.h \
 	  landmarks/landmarks_graph_rpg_exhaust.h landmarks/landmarks_graph_zhu_givan.h \
-	  landmarks/util.h
+	  landmarks/util.h \
+	  hm_heuristic.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 OBJECTS = $(SOURCES:%.cc=obj/%.o)

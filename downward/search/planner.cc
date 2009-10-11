@@ -17,6 +17,7 @@
 #include "landmarks/landmarks_graph_rpg_sasp.h"
 #include "landmarks/landmarks_count_heuristic.h"
 #include "landmarks/exploration.h"
+#include "hm_heuristic.h"
 
 #include <iostream>
 #include <fstream>
@@ -42,6 +43,7 @@ int main(int argc, const char **argv) {
     bool lm_heuristic = false;
     bool lm_heuristic_admissible = false;
     bool lm_preferred = false;
+    bool use_hm = false;
 
 
 
@@ -67,6 +69,8 @@ int main(int argc, const char **argv) {
 	    use_gen_search = true;
 	    } else if(*c == 'm') {
 		hsp_max_heuristic = true;
+	    } else if(*c == 'h') {
+	    use_hm = true;
 	    } else if(*c == 'd') {
 		additive_heuristic = true;
 	    } else if(*c == 'l') {
@@ -172,7 +176,7 @@ int main(int argc, const char **argv) {
     if(!cg_heuristic && !cyclic_cg_heuristic
        && !ff_heuristic && !additive_heuristic && !goal_count_heuristic
        && !blind_search_heuristic && !fd_heuristic && !hsp_max_heuristic
-       && !lm_cut_heuristic && !lm_heuristic) {
+       && !lm_cut_heuristic && !lm_heuristic && !use_hm) {
 	cerr << "Error: you must select at least one heuristic!" << endl
 	     << "If you are unsure, choose options \"cCfF\"." << endl;
 	return 2;
@@ -233,6 +237,8 @@ int main(int argc, const char **argv) {
 	engine->add_heuristic(new HSPMaxHeuristic, true, false);
     if(lm_cut_heuristic)
     engine->add_heuristic(new LandmarkCutHeuristic, true, false);
+    if(use_hm)
+    engine->add_heuristic(new HMHeuristic(2), true, false);
     if(lm_heuristic) {
     engine->add_heuristic(new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible), true, lm_preferred);
     }
