@@ -23,7 +23,7 @@ class LandmarksCountHeuristic : public Heuristic {
 
     lm_set goal;
     LandmarkSet initial_state_landmarks;
-    LandmarkStausManager lm_status_manager;
+    LandmarkStatusManager lm_status_manager;
     LandmarkCostAssignment *lm_cost_assignment;
 
     bool use_dynamic_cost_sharing;

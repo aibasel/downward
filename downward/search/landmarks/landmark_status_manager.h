@@ -5,13 +5,13 @@
  *      Author: karpase
  */
 
-#ifndef LANDMARKSTAUSMANAGER_H_
-#define LANDMARKSTAUSMANAGER_H_
+#ifndef LANDMARKSTATUSMANAGER_H_
+#define LANDMARKSTATUSMANAGER_H_
 
 #include "landmarks_graph.h"
 #include "../state_proxy.h"
 
-class LandmarkStausManager {
+class LandmarkStatusManager {
 private:
 	hash_map<StateProxy, LandmarkSet> reached_lms;
 	hash_map<StateProxy, ActionLandmarkSet> unused_action_lms;
@@ -22,8 +22,8 @@ private:
 	bool landmark_is_leaf(const LandmarkNode& node, const LandmarkSet& reached) const;
 	bool check_lost_landmark_children_needed_again(const LandmarkNode& node) const;
 public:
-	LandmarkStausManager(LandmarksGraph &graph);
-	virtual ~LandmarkStausManager();
+	LandmarkStatusManager(LandmarksGraph &graph);
+	virtual ~LandmarkStatusManager();
 
 	void clear_reached();
 	LandmarkSet& get_reached_landmarks(const State &state);
@@ -38,4 +38,4 @@ public:
 	void set_unused_action_landmarks(const State &state, const ActionLandmarkSet& unused);
 };
 
-#endif /* LANDMARKSTAUSMANAGER_H_ */
+#endif /* LANDMARKSTATUSMANAGER_H_ */

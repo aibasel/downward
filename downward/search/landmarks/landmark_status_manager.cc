@@ -1,5 +1,5 @@
 /*
- * LandmarkStausManager.cpp
+ * LandmarkStatusManager.cpp
  *
  *  Created on: Oct 9, 2009
  *      Author: karpase
@@ -7,35 +7,35 @@
 
 #include "landmark_status_manager.h"
 
-LandmarkStausManager::LandmarkStausManager(LandmarksGraph &graph):
+LandmarkStatusManager::LandmarkStatusManager(LandmarksGraph &graph):
 	lm_graph(graph) {
 	do_intersection = true;
 }
 
-LandmarkStausManager::~LandmarkStausManager() {
+LandmarkStatusManager::~LandmarkStatusManager() {
 }
 
 
-void LandmarkStausManager::clear_reached() {
+void LandmarkStatusManager::clear_reached() {
 	reached_lms.clear();
 	unused_action_lms.clear();
 }
 
-LandmarkSet& LandmarkStausManager::get_reached_landmarks(const State &state) {
+LandmarkSet& LandmarkStatusManager::get_reached_landmarks(const State &state) {
 	StateProxy proxy = StateProxy(&state);
 
 	//assert(reached_lms.find(proxy) != reached_lms.end());
 	return reached_lms[proxy];
 }
 
-ActionLandmarkSet& LandmarkStausManager::get_unused_action_landmarks(const State &state) {
+ActionLandmarkSet& LandmarkStatusManager::get_unused_action_landmarks(const State &state) {
 	StateProxy proxy = StateProxy(&state);
 
 	//assert(unused_action_lms.find(proxy) != unused_action_lms.end());
 	return unused_action_lms[proxy];
 }
 
-void LandmarkStausManager::set_landmarks_for_initial_state(const State& state) {
+void LandmarkStatusManager::set_landmarks_for_initial_state(const State& state) {
 	LandmarkSet &reached = get_reached_landmarks(state);
 	ActionLandmarkSet &unused_alm = get_unused_action_landmarks(state);
 
@@ -71,7 +71,7 @@ void LandmarkStausManager::set_landmarks_for_initial_state(const State& state) {
 }
 
 
-bool LandmarkStausManager::update_reached_lms(const State& parent_state, const Operator &op, const State& state) {
+bool LandmarkStatusManager::update_reached_lms(const State& parent_state, const Operator &op, const State& state) {
     //int reached_size = 0;
     bool intersect_used = false;
 
@@ -175,7 +175,7 @@ bool LandmarkStausManager::update_reached_lms(const State& parent_state, const O
     return true;
 }
 
-bool LandmarkStausManager::update_lm_status(const State &state) {
+bool LandmarkStatusManager::update_lm_status(const State &state) {
 	StateProxy proxy = StateProxy(&state);
     bool dead_end_found = false;
 
@@ -249,7 +249,7 @@ bool LandmarkStausManager::update_lm_status(const State &state) {
 }
 
 
-bool LandmarkStausManager::check_lost_landmark_children_needed_again(const LandmarkNode& node) const {
+bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const LandmarkNode& node) const {
     const hash_map<LandmarkNode*, edge_type, hash_pointer >& children
         = node.children;
 
@@ -265,7 +265,7 @@ bool LandmarkStausManager::check_lost_landmark_children_needed_again(const Landm
     return false;
 }
 
-bool LandmarkStausManager::landmark_is_leaf(const LandmarkNode& node,
+bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode& node,
 		const LandmarkSet& reached) const {
 //Note: this is the same as !check_node_orders_disobeyed
     const hash_map<LandmarkNode*, edge_type, hash_pointer >& parents
@@ -297,7 +297,7 @@ bool LandmarkStausManager::landmark_is_leaf(const LandmarkNode& node,
     return true;
 }
 
-void LandmarkStausManager::set_reached_landmarks(const State &state, const LandmarkSet& reached) {
+void LandmarkStatusManager::set_reached_landmarks(const State &state, const LandmarkSet& reached) {
 	StateProxy proxy = StateProxy(&state);
 
 	// new state
@@ -308,7 +308,7 @@ void LandmarkStausManager::set_reached_landmarks(const State &state, const Landm
 	reached_lms[proxy].insert(reached.begin(), reached.end());
 }
 
-void LandmarkStausManager::set_unused_action_landmarks(const State &state,
+void LandmarkStatusManager::set_unused_action_landmarks(const State &state,
 		const ActionLandmarkSet& unused) {
 	StateProxy proxy = StateProxy(&state);
 
