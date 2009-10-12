@@ -200,7 +200,8 @@ int main(int argc, const char **argv) {
     //LandmarksGraph *lm_graph = new LandmarksGraphNew(new Exploration);
     //lm_graph->read_external_inconsistencies();
     //lm_graph->generate();
-    //cout << "Generated " << lm_graph->number_of_landmarks() << " landmarks and " << lm_graph->number_of_edges() << " orderings" << endl;
+    //cout << "Generated " << lm_graph->number_of_landmarks() << " landmarks and " 
+    //<< lm_graph->number_of_edges() << " orderings" << endl;
 
     SearchEngine *engine = 0;
     if(a_star_search) {
@@ -240,7 +241,8 @@ int main(int argc, const char **argv) {
     if(use_hm)
     engine->add_heuristic(new HMHeuristic(2), true, false);
     if(lm_heuristic) {
-    engine->add_heuristic(new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible), true, lm_preferred);
+    engine->add_heuristic(new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible), 
+			  true, lm_preferred);
     }
 
     Timer search_timer;

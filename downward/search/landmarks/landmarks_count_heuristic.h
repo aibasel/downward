@@ -1,25 +1,3 @@
-/*********************************************************************
- * Authors: Matthias Westphal (westpham@informatik.uni-freiburg.de),
- *          Silvia Richter (silvia.richter@nicta.com.au)
- * (C) Copyright 2008 Matthias Westphal and NICTA
- *
- * This file is part of LAMA.
- *
- * LAMA is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the license, or (at your option) any later version.
- *
- * LAMA is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, see <http://www.gnu.org/licenses/>.
- *
- *********************************************************************/
-
 #ifndef LANDMARKS_COUNT_HEURISTIC_H
 #define LANDMARKS_COUNT_HEURISTIC_H
 
@@ -34,17 +12,6 @@
 extern LandmarksGraph *g_lgraph; // Make global so graph does not need to be built more than once
                            // even when iterating search (TODO: clean up use of g_lgraph vs.
                            // lgraph in this class).
-/*
-class LMAuxNodeInfo : public AuxNodeInfo {
- public:
-  LandmarkSet reached_lms;
-  int reached_lms_cost;
-  LMAuxNodeInfo() : AuxNodeInfo(), reached_lms_cost(0) {}
-  LMAuxNodeInfo(LandmarkSet previous_lms, int previous_cost) : AuxNodeInfo(), reached_lms(previous_lms),
-    reached_lms_cost(previous_cost) {}
-  ~LMAuxNodeInfo() {}
-};
-*/
 
 class LandmarksCountHeuristic : public Heuristic {
 
@@ -93,11 +60,6 @@ public:
     virtual bool reach_state(const State& parent_state, const Operator &op,
             		const State& state);
     virtual bool dead_ends_are_reliable() {return true;}
-    /*virtual bool needs_aux_info() {return true;}
-    virtual AuxNodeInfo *get_successor_info(const State& current_state,
-					    const Operator *current_operator,
-					    const AuxNodeInfo *predecessor_info);
-					    */
 };
 
 #endif

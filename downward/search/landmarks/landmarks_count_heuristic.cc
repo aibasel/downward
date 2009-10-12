@@ -1,25 +1,3 @@
-/*********************************************************************
- * Authors: Matthias Westphal (westpham@informatik.uni-freiburg.de),
- *          Silvia Richter (silvia.richter@nicta.com.au)
- * (C) Copyright 2008 Matthias Westphal and NICTA
- *
- * This file is part of LAMA.
- *
- * LAMA is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the license, or (at your option) any later version.
- *
- * LAMA is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, see <http://www.gnu.org/licenses/>.
- *
- *********************************************************************/
-
 #include <climits>
 #include <math.h>
 
@@ -52,8 +30,8 @@ static void init_lm_graph(Exploration* exploration, int landmarks_type) {
 }
 
 static LandmarksGraph *build_landmarks_graph(Exploration* exploration) {
-    bool reasonable_orders = false; // change this option to not use reasonable orderings
-    bool disjunctive_lms = false;   // change this option to discard disj. landmarks before search
+    bool reasonable_orders = false; // option to use/not use reasonable orderings
+    bool disjunctive_lms = false;   // option to discard/not discard disj. landmarks before search
     if(g_lgraph != NULL) // in case of iterated search LM graph has already been constructed
       return g_lgraph;
     Timer lm_generation_timer;
