@@ -25,6 +25,7 @@ void dump_everything();
 
 void check_magic(istream &in, string magic);
 
+extern bool g_legacy_file_format;
 extern bool g_use_metric;
 extern int g_min_action_cost;
 extern vector<string> g_variable_name;

@@ -32,9 +32,13 @@ Operator::Operator(istream &in, bool axiom) {
     for(int i = 0; i < count; i++)
       pre_post.push_back(PrePost(in));
 
-    int op_cost;
-    in >> op_cost;
-    cost = g_use_metric ? op_cost : 1;
+    if(g_legacy_file_format) {
+      cost = 1;
+    } else {
+      int op_cost;
+      in >> op_cost;
+      cost = g_use_metric ? op_cost : 1;
+    }
     g_min_action_cost = min(g_min_action_cost, cost);
 
     // TODO: add option to increase all action costs by 1

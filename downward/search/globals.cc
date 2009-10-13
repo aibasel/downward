@@ -26,6 +26,16 @@ bool test_goal(const State &state) {
 }
 
 
+bool peek_magic(istream &in, string magic) {
+  string word;
+  in >> word;
+  bool result = (word == magic);
+  in.putback('\n');
+  for(int i = word.size() - 1; i >= 0; i--)
+    in.putback(word[i]);
+  return result;
+}
+
 void check_magic(istream &in, string magic) {
   string word;
   in >> word;
@@ -101,7 +111,13 @@ void read_axioms(istream &in) {
 }
 
 void read_everything(istream &in) {
-  read_metric(in);
+  if(peek_magic(in, "begin_metric")) {
+    read_metric(in);
+    g_legacy_file_format = false;
+  } else {
+    g_use_metric = false;
+    g_legacy_file_format = true;
+  }
   read_variables(in);
   g_initial_state = new State(in);
   read_goal(in);
@@ -133,6 +149,7 @@ void dump_everything() {
   */
 }
 
+bool g_legacy_file_format = false; // TODO: Can rip this out after migration.
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
 vector<string> g_variable_name;
