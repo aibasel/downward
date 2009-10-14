@@ -14,14 +14,14 @@ class Operator;
 
 class GeneralEagerBestFirstSearch : public SearchEngine {
 
-	// Search Behavior parameters
-	int wg, wh; // weights for g and h
-	int tb; // tie-breaker
-	bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
+    // Search Behavior parameters
+    int wg, wh; // weights for g and h
+    int tb; // tie-breaker
+    bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
 
-	// wg = 0, wh = 1, reopen = false -> Greedy Best First Search
-	// wg = 1, wh = 1, reopen = true  -> A*
-	// wg = 1, wh = w, reopen = true  -> weighted A*
+    // wg = 0, wh = 1, reopen = false -> Greedy Best First Search
+    // wg = 1, wh = 1, reopen = true  -> A*
+    // wg = 1, wh = w, reopen = true  -> weighted A*
 
     std::vector<Heuristic *> heuristics;
     SearchSpace search_space;
@@ -58,8 +58,8 @@ protected:
     bool check_progress();
     void report_progress();
 public:
-	enum {fifo = 0, h = 1, high_g = 2, low_g = 3};
-	GeneralEagerBestFirstSearch(int weight_g, int weight_h, int tie_breaker, bool reopen_closed);
+    enum {fifo = 0, h = 1, high_g = 2, low_g = 3};
+    GeneralEagerBestFirstSearch(int weight_g, int weight_h, int tie_breaker, bool reopen_closed);
     ~GeneralEagerBestFirstSearch();
     virtual void add_heuristic(Heuristic *heuristic, bool use_estimates,
                                bool use_preferred_operators);

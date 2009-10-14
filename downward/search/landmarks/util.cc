@@ -1,7 +1,6 @@
 #include "util.h"
 
-bool _possibly_fires(const vector<Prevail>& prevail,
-		     const vector<vector<int> >& lvl_var) {
+bool _possibly_fires(const vector<Prevail>& prevail, const vector<vector<int> >& lvl_var) {
     for(int j = 0; j < prevail.size(); j++)
         if(lvl_var[prevail[j].var][prevail[j].prev] == INT_MAX)
             return false;
@@ -9,8 +8,7 @@ bool _possibly_fires(const vector<Prevail>& prevail,
 }
 
 
-hash_map<int, int> _intersect(const hash_map<int, int>& a,
-			      const hash_map<int, int>& b) {
+hash_map<int, int> _intersect(const hash_map<int, int>& a, const hash_map<int, int>& b) {
     if(a.size() > b.size())
         return _intersect(b, a);
     hash_map<int, int> result;
@@ -23,9 +21,7 @@ hash_map<int, int> _intersect(const hash_map<int, int>& a,
 }
 
 
-bool _possibly_reaches_lm(const Operator& o,
-			  const vector<vector<int> >& lvl_var,
-			  const LandmarkNode *lmp) {
+bool _possibly_reaches_lm(const Operator& o, const vector<vector<int> >& lvl_var, const LandmarkNode *lmp) {
     /* Check whether operator o can possibly make landmark lmp true in a
        relaxed task (as given by the reachability information in lvl_var) */
 
@@ -43,8 +39,8 @@ bool _possibly_reaches_lm(const Operator& o,
     // Go through all effects of o...
     const vector<PrePost>& prepost = o.get_pre_post();
     for(unsigned i = 0; i < prepost.size(); i++) {
-	// If there is a precondition on the effect, check whether it can be reached
-	// Otherwise, operator is not applicable
+        // If there is a precondition on the effect, check whether it can be reached
+        // Otherwise, operator is not applicable
         if(prepost[i].pre != -1)
             if(lvl_var[prepost[i].var][prepost[i].pre] == INT_MAX)
                 return false;
@@ -53,14 +49,14 @@ bool _possibly_reaches_lm(const Operator& o,
         bool effect_condition_reachable = false;
         assert(!lvl_var[prepost[i].var].empty());
         bool correct_effect = false;
-	// Check whether *this* effect of o reaches a proposition in lmp...
+        // Check whether *this* effect of o reaches a proposition in lmp...
         for(unsigned int j = 0; j < lmp->vars.size(); j++)
             if(prepost[i].var == lmp->vars[j] && prepost[i].post == lmp->vals[j]) {
                 correct_effect = true;
                 break;
             }
         if(correct_effect)
-	    // ...if so, test whether the condition can be satisfied
+            // ...if so, test whether the condition can be satisfied
             effect_condition_reachable =  _possibly_fires(prepost[i].cond, lvl_var);
         else
             continue;
