@@ -1,10 +1,3 @@
-/*
- * GeneralEagerBestFirstSearch.h
- *
- *  Created on: Oct 8, 2009
- *      Author: karpase
- */
-
 #ifndef GENERALEAGERBESTFIRSTSEARCH_H_
 #define GENERALEAGERBESTFIRSTSEARCH_H_
 

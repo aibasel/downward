@@ -1,10 +1,3 @@
-/*
- * LandmarkStatusManager.cpp
- *
- *  Created on: Oct 9, 2009
- *      Author: karpase
- */
-
 #include "landmark_status_manager.h"
 
 LandmarkStatusManager::LandmarkStatusManager(LandmarksGraph &graph):

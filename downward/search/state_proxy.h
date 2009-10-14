@@ -1,10 +1,3 @@
-/*
- * state_proxy.h
- *
- *  Created on: Dec 28, 2008
- *      Author: karpase
- */
-
 #ifndef STATE_PROXY_H_
 #define STATE_PROXY_H_
 

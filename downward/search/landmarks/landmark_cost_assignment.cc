@@ -1,10 +1,3 @@
-/*
- * landmark_cost_assignment.cpp
- *
- *  Created on: Oct 9, 2009
- *      Author: karpase
- */
-
 #include "landmark_cost_assignment.h"
 #include <limits>
 

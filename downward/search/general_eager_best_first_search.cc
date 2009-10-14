@@ -1,10 +1,3 @@
-/*
- * GeneralEagerBestFirstSearch.cpp
- *
- *  Created on: Oct 8, 2009
- *      Author: karpase
- */
-
 #include "general_eager_best_first_search.h"
 
 #include "globals.h"

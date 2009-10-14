@@ -1,10 +1,3 @@
-/*
- * LandmarkStausManager.h
- *
- *  Created on: Oct 9, 2009
- *      Author: karpase
- */
-
 #ifndef LANDMARKSTATUSMANAGER_H_
 #define LANDMARKSTATUSMANAGER_H_
 

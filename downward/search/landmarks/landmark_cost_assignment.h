@@ -1,10 +1,3 @@
-/*
- * landmark_cost_assignment.h
- *
- *  Created on: Oct 9, 2009
- *      Author: karpase
- */
-
 #ifndef LANDMARK_COST_ASSIGNMENT_H_
 #define LANDMARK_COST_ASSIGNMENT_H_
 
