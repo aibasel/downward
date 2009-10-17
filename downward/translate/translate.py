@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.6
+#! /usr/bin/env python
 # -*- coding: latin-1 -*-
 
 from __future__ import with_statement
