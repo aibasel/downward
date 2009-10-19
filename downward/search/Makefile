@@ -86,8 +86,19 @@ clean:
 distclean: clean
 	rm -f search release-search
 
+## Note: If we just call gcc -MM on a source file that lives within a
+## subdirectory, it will strip the directory part in the output. Hence
+## the for loop with the sed call.
+
 Makefile.depend: $(SOURCES) $(HEADERS)
-	$(DEPEND) $(SOURCES) > Makefile.temp
+	rm -f Makefile.temp
+	for source in $(SOURCES); do \
+	    $(DEPEND) $$source > Makefile.temp0; \
+	    objfile=$${source%%.cc}.o; \
+	    sed -i -e "s@^[^:]*:@$$objfile:@" Makefile.temp0; \
+	    cat Makefile.temp0 >> Makefile.temp; \
+	done
+	rm -f Makefile.temp0
 	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1.o:\2@" Makefile.temp > Makefile.depend
 	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1.release.o:\2@" Makefile.temp >> Makefile.depend
 	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1.profile.o:\2@" Makefile.temp >> Makefile.depend
