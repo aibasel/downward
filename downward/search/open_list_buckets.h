@@ -1,5 +1,5 @@
-#ifndef OPEN_LIST_H
-#define OPEN_LIST_H
+#ifndef OPEN_LIST_BUCKETS_H
+#define OPEN_LIST_BUCKETS_H
 
 #include <deque>
 #include <utility>
@@ -23,7 +23,7 @@ public:
     bool empty() const;
 };
 
-#include "open_list.cc"
+#include "open_list_buckets.cc"
 
 // HACK! Need a better strategy of dealing with templates, also in the Makefile.
 

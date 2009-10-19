@@ -1,7 +1,5 @@
-// #include "open_list.h"
-
 // HACK! Ignore this if used as a top-level compile target.
-#ifdef OPEN_LIST_H
+#ifdef OPEN_LIST_BUCKETS_H
 
 #include <cassert>
 using namespace std;

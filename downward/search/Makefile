@@ -10,7 +10,7 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  domain_transition_graph.h \
           operator.h state.h successor_generator.h causal_graph.h \
 	  best_first_search.h axioms.h cache.h \
-          search_engine.h open_list.h closed_list.h \
+          search_engine.h open_list_buckets.h closed_list.h \
           timer.h \
 	  search_space.h fh_open_list.h a_star_search.h general_eager_best_first_search.h \
 	  landmarks/landmarks_graph.h landmarks/landmarks_graph_rpg_sasp.h \
