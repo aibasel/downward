@@ -93,6 +93,12 @@ def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ra
             continue
         eff_condition = eff_condition.items()
         for var, val in dictionary[fact]:
+            if condition.get(var) == val:
+                # Effect implied by precondition. TODO: Also catch this
+                # if this effect is implied by the extended precondition, i.e.,
+                # the precondition according to mutex_dict.
+                print "Skipping effect of %s..." % operator.name
+                continue
             effect_pair = effect.get(var)
             if not effect_pair:
                 effect[var] = (val, [eff_condition])
