@@ -46,7 +46,6 @@ class LandmarksCountHeuristic: public Heuristic {
             LandmarkNode& lm) const;
     bool generate_helpful_actions(const State& state,
             const LandmarkSet& reached);
-    void set_recompute_heuristic(const State& state);
 
     //int get_needed_landmarks(const State& state, LandmarkSet& needed) const;
 

@@ -219,8 +219,7 @@ void LandmarksGraph::read_external_inconsistencies() {
                     if (j == k)
                         continue;
                     inconsistent_facts[invariant_group[j].first][invariant_group[j].second].insert(
-                            make_pair(invariant_group[k].first,
-                                    invariant_group[k].second));
+                            make_pair(invariant_group[k].first, invariant_group[k].second));
                 }
             }
         }
@@ -235,7 +234,7 @@ void LandmarksGraph::read_external_inconsistencies() {
 }
 
 bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> >& lvl_var,
-        vector<hash_map<pair<int, int> , int, hash_int_pair> >& lvl_op,
+        vector<hash_map<pair<int, int>, int, hash_int_pair> >& lvl_op,
         bool level_out, const LandmarkNode* exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
      "exclude" (do not apply operators that would add a proposition from "exclude").
@@ -337,8 +336,8 @@ bool LandmarksGraph::effect_always_happens(const vector<PrePost>& prepost, set<
     set<int> nogood_effect_vars;
     map<int, pair<int, vector<pair<int, int> > > > effect_conditions;
     for (unsigned i = 0; i < prepost.size(); i++) {
-        if (prepost[i].cond.empty() || nogood_effect_vars.find(prepost[i].var)
-                != nogood_effect_vars.end()) {
+        if (prepost[i].cond.empty() || 
+	    nogood_effect_vars.find(prepost[i].var) != nogood_effect_vars.end()) {
             // Var has no condition or can take on different values, skipping
             continue;
         }
@@ -360,10 +359,8 @@ bool LandmarksGraph::effect_always_happens(const vector<PrePost>& prepost, set<
                         == prepost[i].post) {
             // We have seen this effect before, adding conditions
             for (int k = 0; k < prepost[i].cond.size(); k++) {
-                vector<pair<int, int> >& vec = effect_conditions.find(
-                        prepost[i].var)->second.second;
-                vec.push_back(make_pair(prepost[i].cond[k].var,
-                        prepost[i].cond[k].prev));
+                vector<pair<int, int> >& vec = effect_conditions.find(prepost[i].var)->second.second;
+                vec.push_back(make_pair(prepost[i].cond[k].var, prepost[i].cond[k].prev));
             }
         } else {
             // We have not seen this effect before, making new effect entry
@@ -371,8 +368,7 @@ bool LandmarksGraph::effect_always_happens(const vector<PrePost>& prepost, set<
                     prepost[i].var, make_pair(prepost[i].post, vector<pair<int,
                             int> > ()))).first->second.second;
             for (int k = 0; k < prepost[i].cond.size(); k++) {
-                vec.push_back(make_pair(prepost[i].cond[k].var,
-                        prepost[i].cond[k].prev));
+                vec.push_back(make_pair(prepost[i].cond[k].var, prepost[i].cond[k].prev));
             }
         }
     }
@@ -436,9 +432,8 @@ inline bool LandmarksGraph::inconsistent(const pair<int, int>& a, const pair<
     assert(a.first != b.first || a.second != b.second);
     if (a.first == b.first && a.second != b.second)
         return true;
-    if (use_external_inconsistencies
-            && inconsistent_facts[a.first][a.second].find(b)
-                    != inconsistent_facts[a.first][a.second].end())
+    if (use_external_inconsistencies &&
+	inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
         return true;
     return false;
 }
@@ -535,8 +530,8 @@ bool LandmarksGraph::interferes(const LandmarkNode* node_a,
 }
 
 inline static bool _in_goal(const pair<int, int>& l) {
-    for (vector<pair<int, int> >::const_iterator start = g_goal.begin(); start
-            != g_goal.end(); start++)
+    for (vector<pair<int, int> >::const_iterator start = g_goal.begin();
+            start != g_goal.end(); start++)
         if (*start == l) // l \subseteq goal
             return true;
 
@@ -587,8 +582,9 @@ void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
                         if (parent.disjunctive)
                             continue;
                         if ((edge == gn || edge == n || edge == ln
-                                || (obedient_orders && edge == r)) && &parent
-                                != node_p) { // find predecessors or parent and collect in "interesting nodes"
+                                || (obedient_orders && edge == r)) &&
+                                 &parent != node_p) { // find predecessors or parent and collect in 
+			                              // "interesting nodes"
                             interesting_nodes.insert(&parent);
                             collect_ancestors(interesting_nodes, parent,
                                     obedient_orders);
@@ -642,8 +638,8 @@ void LandmarksGraph::collect_ancestors(
                 node2.parents.begin(); it != node2.parents.end(); it++) {
             edge_type& edge = it->second;
             LandmarkNode& parent = *(it->first);
-            if (edge == gn || edge == n || edge == ln || (use_reasonable
-                    && edge == r)) {
+            if (edge == gn || edge == n || edge == ln ||
+                     (use_reasonable && edge == r)) {
                 if (closed_nodes.find(&parent) == closed_nodes.end()) {
                     open_nodes.push_back(&parent);
                     closed_nodes.insert(&parent);
@@ -664,12 +660,11 @@ void LandmarksGraph::dump_node(const LandmarkNode* node_p) const {
                 it = pddl_propositions.find(node_prop);
         if (it != pddl_propositions.end()) {
             cout << it->second.to_string() << " ("
-                    << g_variable_name[node_prop.first] << "("
-                    << node_prop.first << ")" << "->" << node_prop.second
-                    << ")";
+		 << g_variable_name[node_prop.first] << "(" << node_prop.first << ")" 
+		 << "->" << node_prop.second << ")";
         } else {
-            cout << g_variable_name[node_prop.first] << " (" << node_prop.first
-                    << ") " << "->" << node_prop.second;
+            cout << g_variable_name[node_prop.first] << " (" << node_prop.first << ") "
+		 << "->" << node_prop.second;
         }
         if (i < node_p->vars.size() - 1)
             cout << ", ";
@@ -850,8 +845,7 @@ void LandmarksGraph::rm_landmark(const pair<int, int>& lm) {
 }
 
 void LandmarksGraph::mk_acyclic_graph() {
-    hash_set<LandmarkNode*, hash_pointer> acyclic_node_set(
-            number_of_landmarks());
+    hash_set<LandmarkNode*, hash_pointer> acyclic_node_set(number_of_landmarks());
     int removed_edges = 0;
     for (set<LandmarkNode*>::iterator it = nodes.begin(); it != nodes.end(); it++) {
         LandmarkNode& lmn = **it;
@@ -863,8 +857,8 @@ void LandmarksGraph::mk_acyclic_graph() {
             << " reasonable or obedient reasonable orders\n";
 }
 
-bool LandmarksGraph::remove_first_weakest_cycle_edge(LandmarkNode* cur, list<
-        pair<LandmarkNode*, edge_type> >& path, list<pair<LandmarkNode*,
+bool LandmarksGraph::remove_first_weakest_cycle_edge(LandmarkNode* cur,
+        list<pair<LandmarkNode*, edge_type> >& path, list<pair<LandmarkNode*,
         edge_type> >::iterator it) {
 
     LandmarkNode* parent_p = 0;

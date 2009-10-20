@@ -29,9 +29,13 @@ static void init_lm_graph(Exploration* exploration, int landmarks_type) {
     }
 }
 
-static LandmarksGraph *build_landmarks_graph(Exploration* exploration) {
-    bool reasonable_orders = false; // option to use/not use reasonable orderings
-    bool disjunctive_lms = false; // option to discard/not discard disj. landmarks before search
+static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admissible) {
+    bool reasonable_orders = true; // option to use/not use reasonable orderings
+    bool disjunctive_lms = true; // option to discard/not discard disj. landmarks before search
+    if(admissible) {
+	reasonable_orders = false;
+	disjunctive_lms = false;
+    }
     if (g_lgraph != NULL) // in case of iterated search LM graph has already been constructed
         return g_lgraph;
     Timer lm_generation_timer;
@@ -59,7 +63,7 @@ static LandmarksGraph *build_landmarks_graph(Exploration* exploration) {
 
 LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
         bool admissible) :
-    exploration(new Exploration), lgraph(*build_landmarks_graph(exploration)),
+    exploration(new Exploration), lgraph(*build_landmarks_graph(exploration, admissible)),
             lm_status_manager(lgraph) {
 
     cout << "Initializing landmarks count heuristic..." << endl;
@@ -86,27 +90,13 @@ LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
     }
 }
 
-void LandmarksCountHeuristic::set_recompute_heuristic(const State& state) {
-    if (preferred_operators) {
-        assert(exploration != 0);
-        // Set additional goals for FF exploration
-        vector<pair<int, int> > lm_leaves;
-        //hash_set<const LandmarkNode*, hash_pointer> result;
-        //check_partial_plan(result);
-
-        LandmarkSet& result = lm_status_manager.get_reached_landmarks(state);
-
-        collect_lm_leaves(ff_search_disjunctive_lms, result, lm_leaves);
-        exploration->set_additional_goals(lm_leaves);
-    }
-}
-
 int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
-    // Get landmarks that have been true at some point (put into
-    // "reached_lms") and their cost
 
-    int h = 0;
-    //const State& state = node.get_state();
+    // Need explicit test to see if state is a goal state. The landmark
+    // heuristic may compute h != 0 for a goal state if landmarks are 
+    // achieved before their parents in the landmarks graph (because 
+    // they do not get counted as reached in that case). However, we 
+    // must return 0 for a goal state.
 
     bool goal_reached = true;
     for (int i = 0; i < g_goal.size(); i++)
@@ -118,17 +108,14 @@ int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
     }
 
     bool dead_end = lm_status_manager.update_lm_status(state);
-
     if (dead_end) {
         return DEAD_END;
-        //return 1;
     }
 
     if (use_dynamic_cost_sharing) {
         lm_cost_assignment->assign_costs();
         lgraph.count_shared_costs();
     }
-
     lgraph.count_costs();
 
     //cout << "After cost sharing ---------------------------------------------------- " << endl;
@@ -157,9 +144,7 @@ int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
         needed_cost = (double) lgraph.get_needed_cost();
     }
 
-    //assert(reached_cost == needed_cost);
-
-    h = ceil(total_cost - reached_cost + needed_cost + additional_cost
+    int h = ceil(total_cost - reached_cost + needed_cost + additional_cost
             - epsilon);
     /*
      if (g_verbose) {
@@ -169,31 +154,10 @@ int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
      */
 
     assert(-1 * epsilon <= needed_cost);
-    //assert(reached_cost + additional_cost - needed_cost >= -1 * epsilon);
     assert(reached_cost - needed_cost >= -1 * epsilon);
     assert(h >= 0);
 
-    // Test if goal has been reached even though the landmark heuristic is
-    // not 0. This may happen if landmarks are achieved before their parents
-    // in the landmarks graph, because they do not get counted as reached
-    // in that case. However, we must return 0 for a goal state.
-
-    if (goal_reached && h != 0) {
-        cout << "Goal reached but Landmark heuristic != 0" << endl;
-        /*
-         cout << "Never accepted the following Lms:" << endl;
-         const set<LandmarkNode*>& my_nodes = lgraph.get_nodes();
-         set<LandmarkNode*>::const_iterator it;
-         for(it = my_nodes.begin(); it != my_nodes.end(); ++it) {
-         const LandmarkNode& node = **it;
-         if(reached_lms.find(&node) == reached_lms.end())
-         lgraph.dump_node(&node);
-         }
-         */
-        cout << "LM heuristic was " << h << " - returning zero" << endl;
-        return 0;
-    }
-
+#ifndef NDEBUG
     // For debugging purposes, check whether heuristic is 0 even though
     // goal is not reached. This should never happen unless action costs
     // are used where some actions have cost 0.
@@ -213,86 +177,29 @@ int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
                     max = cost;
             }
         }
-        h = max;
+        assert(max == 0);
     }
+#endif
 
     return h;
 }
 
 int LandmarksCountHeuristic::compute_heuristic(const State &state) {
-    int h = get_heuristic_value(state);
-
     // For now: assume that we always do the relaxed exploration rather than
     // re-using any possible previous effort by some other heuristic.
-    // TODO: get rid of double "check_partial_plan"
-    set_recompute_heuristic(state);
-    // Get landmarks that have been true at some point (put into
-    // "reached_lms") and their cost
-    LandmarkSet &reached_lms = lm_status_manager.get_reached_landmarks(state);
-    const int reached_lms_cost = lgraph.get_reached_cost();
-    //const int reached_lms_cost = check_partial_plan(reached_lms);
-    // Get landmarks that are needed again (of those in
-    // "reached_lms") because they have been made false in the meantime,
-    // but are goals or required by unachieved successors
-    //LandmarkSet needed_lms;
-    //const int needed_lms_cost = get_needed_landmarks(state, needed_lms);
-    //assert(0 <= needed_lms_cost);
-    //assert(reached_lms_cost >= needed_lms_cost);
-    //assert(reached_lms.size() >= needed_lms.size());
-    // Heuristic is total number of landmarks,
-    // minus the ones we have already achieved and do not need again
-
-    //h = lgraph.number_of_landmarks() - reached_lms.size() + needed_lms.size();
-    assert(h >= 0);
-
-    // Test if goal has been reached even though the landmark heuristic is
-    // not 0. This may happen if landmarks are achieved before their parents
-    // in the landmarks graph, because they do not get counted as reached
-    // in that case. However, we must return 0 for a goal state.
-    bool goal_reached = true;
-    for (int i = 0; i < g_goal.size(); i++)
-        if (state[g_goal[i].first] != g_goal[i].second)
-            goal_reached = false;
-    if (goal_reached && h != 0) {
-        cout << "Goal reached but Landmark heuristic != 0" << endl;
-        /*
-         cout << "Never accepted the following Lms:" << endl;
-         const set<LandmarkNode*>& my_nodes = lgraph.get_nodes();
-         set<LandmarkNode*>::const_iterator it;
-         for(it = my_nodes.begin(); it != my_nodes.end(); ++it) {
-         const LandmarkNode& node = **it;
-         if(reached_lms.find(&node) == reached_lms.end())
-         lgraph.dump_node(&node);
-         }
-         */
-        cout << "LM heuristic was " << h << " - returning zero" << endl;
-        return 0;
-    }
-
-#ifndef NDEBUG
-    // For debugging purposes, check whether heuristic is 0 even though
-    // goal is not reached. This should never happen.
-    if (h == 0 && !goal_reached) {
-        cout << "WARNING! Landmark heuristic is 0, but goal not reached"
-                << endl;
-        for (int i = 0; i < g_goal.size(); i++)
-            if (state[g_goal[i].first] != g_goal[i].second) {
-                cout << "missing goal prop "
-                        << g_variable_name[g_goal[i].first] << " : "
-                        << g_goal[i].second << endl;
-            }
-        //cout << reached_lms_cost << " " << needed_lms_cost << endl;
-    }
-#endif
+    int h = get_heuristic_value(state);
 
     if (!preferred_operators || h == 0) {// no (need for) helpful actions, return
         return h;
     }
 
     // Try generating helpful actions (those that lead to new leaf LM in the
-    // next step). If all Lms have been reached before or no new ones can be
-    // reached within next step, helpful actions are those occuring in a PLAN
+    // next step). If all LMs have been reached before or no new ones can be
+    // reached within next step, helpful actions are those occuring in a plan
     // to achieve one of the LM leaves.
+
+    LandmarkSet &reached_lms = lm_status_manager.get_reached_landmarks(state);
+    const int reached_lms_cost = lgraph.get_reached_cost(); 
 
     if (reached_lms_cost == lgraph.cost_of_landmarks()
             || !generate_helpful_actions(state, reached_lms)) {
@@ -311,6 +218,7 @@ int LandmarksCountHeuristic::compute_heuristic(const State &state) {
         }
         exploration->exported_ops.clear();
     }
+
     return h;
 }
 
