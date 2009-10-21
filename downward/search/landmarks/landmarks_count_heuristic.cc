@@ -90,6 +90,17 @@ LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
     }
 }
 
+void LandmarksCountHeuristic::set_recompute_heuristic(const State& state) {
+    if (preferred_operators) {
+        assert(exploration != 0);
+        // Set additional goals for FF exploration
+        vector<pair<int, int> > lm_leaves;
+        LandmarkSet& result = lm_status_manager.get_reached_landmarks(state);
+        collect_lm_leaves(ff_search_disjunctive_lms, result, lm_leaves);
+        exploration->set_additional_goals(lm_leaves);
+    }
+}
+
 int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
 
     // Need explicit test to see if state is a goal state. The landmark
@@ -187,6 +198,7 @@ int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
 int LandmarksCountHeuristic::compute_heuristic(const State &state) {
     // For now: assume that we always do the relaxed exploration rather than
     // re-using any possible previous effort by some other heuristic.
+    set_recompute_heuristic(state);
     int h = get_heuristic_value(state);
 
     if (!preferred_operators || h == 0) {// no (need for) helpful actions, return
