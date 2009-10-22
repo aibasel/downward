@@ -22,7 +22,7 @@ public:
     LandmarkSet& get_reached_landmarks(const State &state);
     ActionLandmarkSet& get_unused_action_landmarks(const State &state);
 
-    bool update_lm_status(const State &state);
+    void update_lm_status(const State &state);
 
     void set_landmarks_for_initial_state(const State& state);
     bool update_reached_lms(const State& parent_state, const Operator &op, const State& state);

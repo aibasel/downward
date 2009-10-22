@@ -64,7 +64,8 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(const State& state) 
 }
 
 
-bool LandmarkStatusManager::update_reached_lms(const State& parent_state, const Operator &op, const State& state) {
+bool LandmarkStatusManager::update_reached_lms(const State& parent_state, const Operator &op, 
+					       const State& state) {
     //int reached_size = 0;
     bool intersect_used = false;
 
@@ -168,29 +169,25 @@ bool LandmarkStatusManager::update_reached_lms(const State& parent_state, const 
     return true;
 }
 
-bool LandmarkStatusManager::update_lm_status(const State &state) {
+void LandmarkStatusManager::update_lm_status(const State &state) {
     StateProxy proxy = StateProxy(&state);
-    bool dead_end_found = false;
 
     LandmarkSet &reached = get_reached_landmarks(state);
     ActionLandmarkSet &unused_alm = get_unused_action_landmarks(state);
 
     const set<LandmarkNode*>& nodes = lm_graph.get_nodes();
-
     // initialize all nodes to not reached and not effect of unused ALM
     set<LandmarkNode*>::iterator lit;
     for (lit = nodes.begin(); lit != nodes.end(); lit++) {
         LandmarkNode& node = **lit;
         node.status = lm_not_reached;
         node.effect_of_ununsed_alm = false;
-
         if (reached.find(&node) != reached.end()){
             node.status = lm_reached;
         }
     }
 
     int unused_alm_cost = 0;
-
     // go over all unused action landmarks
     for (set<const Operator*>::const_iterator action_lm_it = unused_alm.begin();
             action_lm_it != unused_alm.end(); action_lm_it++) {
@@ -205,7 +202,6 @@ bool LandmarkStatusManager::update_lm_status(const State &state) {
         }
         unused_alm_cost += action_lm->get_cost();
     }
-
     lm_graph.set_unused_action_landmark_cost(unused_alm_cost);
 
     // mark reached and find needed again landmarks
@@ -223,22 +219,9 @@ bool LandmarkStatusManager::update_lm_status(const State &state) {
                     }
                 }
             }
-
-
-            if (node.status == lm_needed_again) {
-                // if a landmark is needed again, and has no achievers, we discovered a dead end
-                if (node.possible_achievers.size() == 0) {
-                    dead_end_found = true;
-                }
-            }
-            else if (node.status == lm_not_reached) {
-                if (node.first_achievers.size() == 0) {
-                    dead_end_found = true;
-                }
-            }
-        }
+	}
     }
-    return dead_end_found;
+    return;
 }
 
 

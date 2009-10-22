@@ -118,10 +118,7 @@ int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
         return 0;
     }
 
-    bool dead_end = lm_status_manager.update_lm_status(state);
-    if (dead_end) {
-        return DEAD_END;
-    }
+    lm_status_manager.update_lm_status(state);
 
     if (use_dynamic_cost_sharing) {
         lm_cost_assignment->assign_costs();
