@@ -154,6 +154,7 @@ void FFHeuristic::collect_relaxed_plan(Proposition *goal,
 	for(int i = 0; i < unary_op->precondition.size(); i++)
 	    collect_relaxed_plan(unary_op->precondition[i], relaxed_plan);
 	const Operator *op = unary_op->op;
+	// TODO: we should actually not add axioms to the relaxed plan.
 	bool added_to_relaxed_plan = relaxed_plan.insert(op).second;
 	if(added_to_relaxed_plan
 	   && unary_op->h_add_cost == unary_op->base_cost
