@@ -13,6 +13,7 @@
 #include "operator.h"
 #include "timer.h"
 #include "general_eager_best_first_search.h"
+#include "landmarks/lama_ff_synergy.h"
 #include "landmarks/landmarks_graph.h"
 #include "landmarks/landmarks_graph_rpg_sasp.h"
 #include "landmarks/landmarks_count_heuristic.h"
@@ -216,6 +217,26 @@ int main(int argc, const char **argv) {
     	else
     		engine = new BestFirstSearchEngine;
     }
+
+    // Test if synergies can be used between FF heuristic and landmark pref. ops.
+    // Used to achieve LAMA's behaviour. (Note: this uses a different version
+    // of the FF heuristic than if the FF heuristic is run by itself 
+    // or in other combinations.)
+    if((ff_heuristic || ff_preferred_operators) && lm_preferred) {
+	LamaFFSynergy *lama_ff_synergy = new LamaFFSynergy(
+	    lm_preferred, lm_heuristic_admissible);
+	engine->add_heuristic(
+	    lama_ff_synergy->get_ff_heuristic_proxy(),
+	    ff_heuristic, ff_preferred_operators);
+	engine->add_heuristic(
+	    lama_ff_synergy->get_lama_heuristic_proxy(),
+	    lm_heuristic, lm_preferred);
+	ff_heuristic = false;
+	ff_preferred_operators = false;
+	lm_heuristic = false;
+	lm_preferred = false;
+    }
+
     if(cg_heuristic || cg_preferred_operators)
 	engine->add_heuristic(new CGHeuristic, cg_heuristic,
 			      cg_preferred_operators);

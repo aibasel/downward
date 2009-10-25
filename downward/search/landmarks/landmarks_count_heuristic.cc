@@ -67,7 +67,7 @@ LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
             lm_status_manager(lgraph) {
 
     cout << "Initializing landmarks count heuristic..." << endl;
-    preferred_operators = preferred_ops;
+    use_preferred_operators = preferred_ops;
     lookahead = INT_MAX;
     // When generating preferred operators, we plan towards
     // non-disjunctive landmarks only
@@ -88,17 +88,16 @@ LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
         use_dynamic_cost_sharing = false;
         use_action_landmark_count = false;
     }
+    lm_status_manager.set_landmarks_for_initial_state(*g_initial_state);
 }
 
-void LandmarksCountHeuristic::set_recompute_heuristic(const State& state) {
-    if (preferred_operators) {
-        assert(exploration != 0);
-        // Set additional goals for FF exploration
-        vector<pair<int, int> > lm_leaves;
-        LandmarkSet& result = lm_status_manager.get_reached_landmarks(state);
-        collect_lm_leaves(ff_search_disjunctive_lms, result, lm_leaves);
-        exploration->set_additional_goals(lm_leaves);
-    }
+void LandmarksCountHeuristic::set_exploration_goals(const State& state) {
+    assert(exploration != 0);
+    // Set additional goals for FF exploration
+    vector<pair<int, int> > lm_leaves;
+    LandmarkSet& result = lm_status_manager.get_reached_landmarks(state);
+    collect_lm_leaves(ff_search_disjunctive_lms, result, lm_leaves);
+    exploration->set_additional_goals(lm_leaves);
 }
 
 int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
@@ -155,11 +154,9 @@ int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
     int h = ceil(total_cost - reached_cost + needed_cost + additional_cost
             - epsilon);
     /*
-     if (g_verbose) {
      cout << "h = " << total_cost << " - " << reached_cost << " + " << needed_cost
-     << " + " << additional_cost << endl;
-     }
-     */
+	  << " + " << additional_cost << " = " << h << endl;
+    */
 
     assert(-1 * epsilon <= needed_cost);
     assert(reached_cost - needed_cost >= -1 * epsilon);
@@ -193,12 +190,10 @@ int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
 }
 
 int LandmarksCountHeuristic::compute_heuristic(const State &state) {
-    // For now: assume that we always do the relaxed exploration rather than
-    // re-using any possible previous effort by some other heuristic.
-    set_recompute_heuristic(state);
+
     int h = get_heuristic_value(state);
 
-    if (!preferred_operators || h == 0) {// no (need for) helpful actions, return
+    if (!use_preferred_operators || h == 0) {// no (need for) helpful actions, return
         return h;
     }
 
@@ -214,6 +209,7 @@ int LandmarksCountHeuristic::compute_heuristic(const State &state) {
             || !generate_helpful_actions(state, reached_lms)) {
 
         assert(exploration != NULL);
+	set_exploration_goals(state);
         // Use FF to plan to a landmark leaf
         int dead_end = ff_search_lm_leaves(ff_search_disjunctive_lms, state,
                 reached_lms);
@@ -338,13 +334,10 @@ bool LandmarksCountHeuristic::landmark_is_interesting(const State& s,
     return lm.is_goal() && !lm.is_true_in_state(s);
 }
 
-void LandmarksCountHeuristic::initialize() {
-    lm_status_manager.set_landmarks_for_initial_state(*g_initial_state);
-}
-
 bool LandmarksCountHeuristic::reach_state(const State& parent_state,
         const Operator &op, const State& state) {
     lm_status_manager.update_reached_lms(parent_state, op, state);
 
     return true;
 }
+

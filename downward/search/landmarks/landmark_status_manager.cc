@@ -166,6 +166,8 @@ bool LandmarkStatusManager::update_reached_lms(const State& parent_state, const 
         unused_alm.erase(&op);
     }
 
+    if(!intersect)
+	assert(reached.size() >= parent_reached.size());
     return true;
 }
 

@@ -34,7 +34,8 @@ public:
     void evaluate(const State &state);
     bool is_dead_end();
     int get_heuristic();
-    void get_preferred_operators(std::vector<const Operator *> &result);
+    // changed to virtual, so HeuristicProxy can delegate this:
+    virtual void get_preferred_operators(std::vector<const Operator *> &result);
     virtual bool dead_ends_are_reliable() {return true;}
     virtual bool reach_state(const State& parent_state, const Operator& op,
         		const State& state);
