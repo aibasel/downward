@@ -14,7 +14,8 @@ void LamaFFSynergy::HeuristicProxy::initialize() {
 
 LamaFFSynergy::LamaFFSynergy(bool lm_pref_, bool lm_admissible_) :
     lama_heuristic_proxy(this), ff_heuristic_proxy(this), 
-    lm_pref(lm_pref_), lm_admissible(lm_admissible_) {
+    lm_pref(lm_pref_), lm_admissible(lm_admissible_), 
+    lama_dead_end(false), ff_dead_end(false) {
 
     cout << "Initializing LAMA-FF Synergy Object" << endl;
     lama_heuristic = new LandmarksCountHeuristic(lm_pref, lm_admissible);
@@ -42,14 +43,19 @@ void LamaFFSynergy::compute_heuristics(const State& state) {
     exploration->set_recompute_heuristic();
 
     lama_heuristic->evaluate(state);
-    lama_heuristic_value = lama_heuristic->get_heuristic();
-    lama_preferred_operators.clear();
-    lama_heuristic->get_preferred_operators(lama_preferred_operators);
-
+    lama_dead_end = lama_heuristic->is_dead_end();
+    if(!lama_dead_end) {
+	lama_heuristic_value = lama_heuristic->get_heuristic();
+	lama_preferred_operators.clear();
+	lama_heuristic->get_preferred_operators(lama_preferred_operators);
+    }
     exploration->evaluate(state);
-    ff_heuristic_value = exploration->get_heuristic();
-    ff_preferred_operators.clear();
-    exploration->get_preferred_operators(ff_preferred_operators);
+    ff_dead_end = exploration->is_dead_end();
+    if(!ff_dead_end) {
+	ff_heuristic_value = exploration->get_heuristic();
+	ff_preferred_operators.clear();
+	exploration->get_preferred_operators(ff_preferred_operators);
+    }
 }
 
 bool LamaFFSynergy::reach_state(const State& parent_state,

@@ -32,7 +32,8 @@ public:
     virtual ~Heuristic();
 
     void evaluate(const State &state);
-    bool is_dead_end();
+    // changed to virtual, so HeuristicProxy can delegate this:
+    virtual bool is_dead_end();
     int get_heuristic();
     // changed to virtual, so HeuristicProxy can delegate this:
     virtual void get_preferred_operators(std::vector<const Operator *> &result);

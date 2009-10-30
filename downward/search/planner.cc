@@ -226,11 +226,11 @@ int main(int argc, const char **argv) {
 	LamaFFSynergy *lama_ff_synergy = new LamaFFSynergy(
 	    lm_preferred, lm_heuristic_admissible);
 	engine->add_heuristic(
-	    lama_ff_synergy->get_ff_heuristic_proxy(),
-	    ff_heuristic, ff_preferred_operators);
-	engine->add_heuristic(
 	    lama_ff_synergy->get_lama_heuristic_proxy(),
 	    lm_heuristic, lm_preferred);
+	engine->add_heuristic(
+	    lama_ff_synergy->get_ff_heuristic_proxy(),
+	    ff_heuristic, ff_preferred_operators);
 	ff_heuristic = false;
 	ff_preferred_operators = false;
 	lm_heuristic = false;
