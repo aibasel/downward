@@ -1,10 +1,3 @@
-/*
- * HMHeuristic.cpp
- *
- *  Created on: Oct 11, 2009
- *      Author: karpase
- */
-
 #include "hm_heuristic.h"
 
 

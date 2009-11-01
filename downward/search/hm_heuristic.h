@@ -1,10 +1,3 @@
-/*
- * HMHeuristic.h
- *
- *  Created on: Oct 11, 2009
- *      Author: karpase
- */
-
 #ifndef HMHEURISTIC_H_
 #define HMHEURISTIC_H_
 

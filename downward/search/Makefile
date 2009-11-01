@@ -102,8 +102,8 @@ all: search
 search: $(OBJECTS) $(SPECIAL_OBJECTS)
 	$(CC) $(LINKOPT) $(OBJECTS) $(SPECIAL_OBJECTS) -o search
 
-profile-search: $(PROFILE_OBJECTS)
-	$(CC) $(LINKOPT) $(PROFLINKOPT) $(PROFOPT) $(PROFILE_OBJECTS) \
+profile-search: $(PROFILE_OBJECTS) $(SPECIAL_PROFILE_OBJECTS)
+	$(CC) $(LINKOPT) $(PROFLINKOPT) $(PROFOPT) $(PROFILE_OBJECTS) $(SPECIAL_PROFILE_OBJECTS)\
           -o profile-search
 
 release: release-search
