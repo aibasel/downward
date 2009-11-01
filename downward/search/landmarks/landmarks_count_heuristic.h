@@ -55,7 +55,7 @@ class LandmarksCountHeuristic: public Heuristic {
 protected:
     virtual int compute_heuristic(const State &state);
 public:
-    LandmarksCountHeuristic(bool use_preferred_operators, bool admissible);
+    LandmarksCountHeuristic(bool use_preferred_operators, bool admissible, bool optimal);
     ~LandmarksCountHeuristic() {
     }
     virtual bool reach_state(const State& parent_state, const Operator &op,

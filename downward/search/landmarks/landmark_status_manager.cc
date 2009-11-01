@@ -64,7 +64,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(const State& state) 
 }
 
 
-bool LandmarkStatusManager::update_reached_lms(const State& parent_state, const Operator &op, 
+bool LandmarkStatusManager::update_reached_lms(const State& parent_state, const Operator &op,
 					       const State& state) {
     //int reached_size = 0;
     bool intersect_used = false;
@@ -171,7 +171,7 @@ bool LandmarkStatusManager::update_reached_lms(const State& parent_state, const 
     return true;
 }
 
-void LandmarkStatusManager::update_lm_status(const State &state) {
+bool LandmarkStatusManager::update_lm_status(const State &state) {
     StateProxy proxy = StateProxy(&state);
 
     LandmarkSet &reached = get_reached_landmarks(state);
@@ -206,6 +206,8 @@ void LandmarkStatusManager::update_lm_status(const State &state) {
     }
     lm_graph.set_unused_action_landmark_cost(unused_alm_cost);
 
+    bool dead_end_found = false;
+
     // mark reached and find needed again landmarks
     for (lit = nodes.begin(); lit != nodes.end(); lit++) {
         LandmarkNode& node = **lit;
@@ -221,9 +223,18 @@ void LandmarkStatusManager::update_lm_status(const State &state) {
                     }
                 }
             }
-	}
+        }
+
+        if (!node.is_derived) {
+            if ((node.status == lm_not_reached) && (node.first_achievers.size() == 0)) {
+                dead_end_found = true;
+            }
+            if ((node.status == lm_needed_again) && (node.possible_achievers.size() == 0)) {
+                dead_end_found = true;
+            }
+        }
     }
-    return;
+    return dead_end_found;
 }
 
 

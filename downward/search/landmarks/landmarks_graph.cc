@@ -336,7 +336,7 @@ bool LandmarksGraph::effect_always_happens(const vector<PrePost>& prepost, set<
     set<int> nogood_effect_vars;
     map<int, pair<int, vector<pair<int, int> > > > effect_conditions;
     for (unsigned i = 0; i < prepost.size(); i++) {
-        if (prepost[i].cond.empty() || 
+        if (prepost[i].cond.empty() ||
 	    nogood_effect_vars.find(prepost[i].var) != nogood_effect_vars.end()) {
             // Var has no condition or can take on different values, skipping
             continue;
@@ -583,7 +583,7 @@ void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
                             continue;
                         if ((edge == gn || edge == n || edge == ln
                                 || (obedient_orders && edge == r)) &&
-                                 &parent != node_p) { // find predecessors or parent and collect in 
+                                 &parent != node_p) { // find predecessors or parent and collect in
 			                              // "interesting nodes"
                             interesting_nodes.insert(&parent);
                             collect_ancestors(interesting_nodes, parent,
@@ -660,7 +660,7 @@ void LandmarksGraph::dump_node(const LandmarkNode* node_p) const {
                 it = pddl_propositions.find(node_prop);
         if (it != pddl_propositions.end()) {
             cout << it->second.to_string() << " ("
-		 << g_variable_name[node_prop.first] << "(" << node_prop.first << ")" 
+		 << g_variable_name[node_prop.first] << "(" << node_prop.first << ")"
 		 << "->" << node_prop.second << ")";
         } else {
             cout << g_variable_name[node_prop.first] << " (" << node_prop.first << ") "
@@ -1054,7 +1054,7 @@ bool LandmarksGraph::relaxed_task_solvable_without_operator(
 }
 
 void LandmarksGraph::generate_action_landmarks() {
-    cout << "Generating action landmarks" << endl;
+    cout << "Discovering action landmarks" << endl;
     int alm = 0;
     for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
         const Operator& op = get_operator_for_lookup_index(i);
@@ -1067,7 +1067,7 @@ void LandmarksGraph::generate_action_landmarks() {
             alm++;
         }
     }
-    cout << "Generated " << alm << " action landmarks" << endl;
+    cout << "Discovered " << alm << " action landmarks" << endl;
 
     /*
      if (g_verbose) {
@@ -1105,6 +1105,9 @@ void LandmarksGraph::calc_achievers() {
             vector<int> ops = get_operators_including_eff(make_pair(
                     lmn.vars[k], lmn.vals[k]));
             lmn.possible_achievers.insert(ops.begin(), ops.end());
+
+            if (g_axiom_layers[lmn.vars[k]] != -1)
+                lmn.is_derived = true;
         }
 
         vector<vector<int> > lvl_var;

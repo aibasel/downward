@@ -1,5 +1,28 @@
 #include "landmark_cost_assignment.h"
 #include <limits>
+#ifdef USE_LP
+
+#ifdef COIN_USE_CLP
+#include "OsiClpSolverInterface.hpp"
+typedef OsiClpSolverInterface OsiXxxSolverInterface;
+#endif
+
+#ifdef COIN_USE_OSL
+#include "OsiOslSolverInterface.hpp"
+typedef OsiOslSolverInterface OsiXxxSolverInterface;
+#include "ekk_c_api.h"
+#endif
+
+#ifdef COIN_USE_CPX
+#include "OsiCpxSolverInterface.hpp"
+typedef OsiCpxSolverInterface OsiXxxSolverInterface;
+#endif
+
+#include "CoinPackedVector.hpp"
+#include "CoinPackedMatrix.hpp"
+#include <sys/times.h>
+#endif
+
 
 LandmarkCostAssignment::LandmarkCostAssignment(LandmarksGraph &graph, bool exc_ALM_eff):
     lm_graph(graph), exclude_ALM_effects(exc_ALM_eff) {
@@ -149,7 +172,8 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
     OsiXxxSolverInterface* si = new OsiXxxSolverInterface();
     //Number of variables (columns) in problem is:
     // 1 for each landmark, and 1 for each action/landmark pair
-    int n_cols = landmarks_count * (1 + g_operators.size());
+    const set<LandmarkNode*>& nodes = lm_graph.get_nodes();
+    int n_cols = lm_graph.number_of_landmarks() *  (1 + g_operators.size());
     double * objective    = new double[n_cols];//the objective coefficients
     double * col_lb       = new double[n_cols];//the column lower bounds
     double * col_ub       = new double[n_cols];//the column upper bounds
@@ -164,7 +188,7 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
     for (int i = 0; i < n_cols; i++) {
         // Define the objective coefficients.
         // we want to maximize 1*cost(lm_1) + 1*cost(lm_2) + ... + 1*cost(lm_n)
-        if (i < landmarks_count)
+        if (i < lm_graph.number_of_landmarks())
             objective[i] = 1;
         else
             objective[i] = 0.0;
@@ -192,7 +216,7 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
         added_rows.push_back(&row);
     }
 
-    for (int lm_j = 0; lm_j < landmarks_count; lm_j++) {
+    for (int lm_j = 0; lm_j < lm_graph.number_of_landmarks(); lm_j++) {
         LandmarkNode* lmn = lm_vector[lm_j];
 
         int lmn_status = lmn->get_status(exclude_ALM_effects);
@@ -216,7 +240,7 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
 
     // this stands in for cost(lm_i) = min_{a_j} cost(a_j, lm_i)
     // for first achievers a_j of lm_i
-    for (int lm_i = 0; lm_i < landmarks_count; lm_i++)
+    for (int lm_i = 0; lm_i < lm_graph.number_of_landmarks(); lm_i++)
     {
         LandmarkNode* lmn = lm_vector[lm_i];
 
@@ -257,7 +281,7 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
     double * row_ub = new double[n_rows]; //the row upper bounds
 
     for (int a_i = 0; a_i < g_operators.size(); a_i++) {
-        const Operator& op = get_operator_for_lookup_index(a_i);
+        const Operator& op = lm_graph.get_operator_for_lookup_index(a_i);
 
         row_lb[a_i] = (double) op.get_cost();
         row_ub[a_i] = (double) op.get_cost();
@@ -284,7 +308,7 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
     const double * solution = si->getColSolution();
 
     // LP solved, assign shared cost to nodes
-    for (int i = 0; i < landmarks_count; i++)
+    for (int i = 0; i < lm_graph.number_of_landmarks(); i++)
     {
         lm_vector[i]->shared_cost = solution[cost_lm_i(i)];
     }

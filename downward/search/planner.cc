@@ -43,6 +43,7 @@ int main(int argc, const char **argv) {
     bool use_gen_search = false;
     bool lm_heuristic = false;
     bool lm_heuristic_admissible = false;
+    bool lm_heuristic_optimal = false;
     bool lm_preferred = false;
     bool use_hm = false;
 
@@ -78,6 +79,8 @@ int main(int argc, const char **argv) {
 	    lm_heuristic = true;
 	    } else if(*c == 's') {
 	    lm_heuristic_admissible = true;
+	    } else if(*c == 'p') {
+	    lm_heuristic_optimal = true;
 	    } else if(*c == 'L') {
 	    lm_preferred = true;
 	    } else if(*c == 'D') {
@@ -201,7 +204,7 @@ int main(int argc, const char **argv) {
     //LandmarksGraph *lm_graph = new LandmarksGraphNew(new Exploration);
     //lm_graph->read_external_inconsistencies();
     //lm_graph->generate();
-    //cout << "Generated " << lm_graph->number_of_landmarks() << " landmarks and " 
+    //cout << "Generated " << lm_graph->number_of_landmarks() << " landmarks and "
     //<< lm_graph->number_of_edges() << " orderings" << endl;
 
     SearchEngine *engine = 0;
@@ -220,11 +223,11 @@ int main(int argc, const char **argv) {
 
     // Test if synergies can be used between FF heuristic and landmark pref. ops.
     // Used to achieve LAMA's behaviour. (Note: this uses a different version
-    // of the FF heuristic than if the FF heuristic is run by itself 
+    // of the FF heuristic than if the FF heuristic is run by itself
     // or in other combinations.)
     if((ff_heuristic || ff_preferred_operators) && lm_preferred) {
 	LamaFFSynergy *lama_ff_synergy = new LamaFFSynergy(
-	    lm_preferred, lm_heuristic_admissible);
+	    lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal);
 	engine->add_heuristic(
 	    lama_ff_synergy->get_lama_heuristic_proxy(),
 	    lm_heuristic, lm_preferred);
@@ -260,10 +263,11 @@ int main(int argc, const char **argv) {
     if(lm_cut_heuristic)
     engine->add_heuristic(new LandmarkCutHeuristic, true, false);
     if(use_hm)
-    engine->add_heuristic(new HMHeuristic(2), true, false);
+    engine->add_heuristic(new HMHeuristic(1), true, false);
     if(lm_heuristic) {
-    engine->add_heuristic(new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible), 
-			  true, lm_preferred);
+    engine->add_heuristic(
+            new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal),
+			 true, lm_preferred);
     }
 
     Timer search_timer;

@@ -22,7 +22,8 @@ class LandmarkNode {
 public:
     LandmarkNode(vector<int>& variables, vector<int>& values, bool disj) :
         vars(variables), vals(values), disjunctive(disj), in_goal(false),
-        min_cost(1),shared_cost(0.0),status(lm_not_reached), effect_of_ununsed_alm(false) {}
+        min_cost(1),shared_cost(0.0),status(lm_not_reached),
+        effect_of_ununsed_alm(false),is_derived(false) {}
 
     vector<int> vars;
     vector<int> vals;
@@ -35,6 +36,7 @@ public:
 
     landmark_status status;
     bool effect_of_ununsed_alm;
+    bool is_derived;
 
     hash_set<pair<int, int>, hash_int_pair> forward_orders;
     set<int> first_achievers;

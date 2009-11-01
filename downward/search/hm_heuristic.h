@@ -1,3 +1,10 @@
+/*
+ * HMHeuristic.h
+ *
+ *  Created on: Oct 11, 2009
+ *      Author: karpase
+ */
+
 #ifndef HMHEURISTIC_H_
 #define HMHEURISTIC_H_
 
@@ -18,6 +25,8 @@ public:
 	HMHeuristic(int _m);
 	virtual ~HMHeuristic();
 protected:
+	int MAX_VALUE;
+
 	virtual int compute_heuristic(const State &state);
 	virtual void initialize();
 
@@ -28,17 +37,31 @@ protected:
 	map<tuple, int> hm_table;
 	bool was_updated;
 
-	void init_hm_table(const State& state);
+	void init_hm_table(tuple &t);
 	void update_hm_table();
 	int eval(tuple &t);
 	int update_hm_entry(tuple &t, int val);
 	void extend_tuple(tuple &t, const Operator &op, int var);
 
 	// some helper methods
-	int check_tuple_in_state(const tuple &tup, const State& state);
+	int check_tuple_in_tuple(const tuple &tup, const tuple& big_tuple);
 	void state_to_tuple(const State& state, tuple& t) {
 		for (int i = 0; i < g_variable_domain.size(); i++)
 			t.push_back(make_pair(i, state[i]));
+	}
+
+	int get_operator_pre_value(const Operator &op, int var) {
+		for (int i = 0; i < op.get_prevail().size(); i++) {
+			if (op.get_prevail()[i].var == var)
+				return op.get_prevail()[i].prev;
+		}
+
+
+		for (int i = 0; i < op.get_pre_post().size(); i++)
+			if (op.get_pre_post()[i].var == var)
+				return op.get_pre_post()[i].pre;
+
+		return -1;
 	}
 
 	void get_operator_pre(const Operator &op, tuple &t) {
@@ -59,6 +82,20 @@ protected:
 		sort(t.begin(), t.end());
 	}
 
+
+	bool is_pre_of(const Operator &op, int var) {
+		for (int j = 0; j < op.get_prevail().size(); j++) {
+			if (op.get_prevail()[j].var == var) {
+				return true;
+			}
+		}
+		for (int j = 0; j < op.get_pre_post().size(); j++) {
+			if (op.get_pre_post()[j].var == var) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	bool is_effect_of(const Operator &op, int var) {
 		for (int j = 0; j < op.get_pre_post().size(); j++) {
@@ -81,7 +118,6 @@ protected:
 		generate_all_partial_tuple(base_tuple, t, 0, m, res);
 	}
 	void generate_all_partial_tuple(tuple &base_tuple, tuple &t, int index, int sz, vector<tuple>& res);
-
 
 	void dump_table() const {
 		map<tuple, int>::const_iterator it;

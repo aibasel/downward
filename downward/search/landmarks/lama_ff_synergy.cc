@@ -9,16 +9,16 @@ void LamaFFSynergy::HeuristicProxy::initialize() {
     if(!synergy->initialized) {
 	synergy->initialize();
 	is_first_proxy = true;
-    }   
+    }
 }
 
-LamaFFSynergy::LamaFFSynergy(bool lm_pref_, bool lm_admissible_) :
-    lama_heuristic_proxy(this), ff_heuristic_proxy(this), 
-    lm_pref(lm_pref_), lm_admissible(lm_admissible_), 
+LamaFFSynergy::LamaFFSynergy(bool lm_pref_, bool lm_admissible_, bool lm_optimal_) :
+    lama_heuristic_proxy(this), ff_heuristic_proxy(this),
+    lm_pref(lm_pref_), lm_admissible(lm_admissible_), lm_optimal(lm_optimal_),
     lama_dead_end(false), ff_dead_end(false) {
 
     cout << "Initializing LAMA-FF Synergy Object" << endl;
-    lama_heuristic = new LandmarksCountHeuristic(lm_pref, lm_admissible);
+    lama_heuristic = new LandmarksCountHeuristic(lm_pref, lm_admissible, lm_optimal);
     //lama_heuristic->initialize(); // must be called here explicitly
     exploration = lama_heuristic->get_exploration();
     initialized = false;
@@ -39,7 +39,7 @@ void LamaFFSynergy::get_ff_preferred_operators(std::vector<const Operator *> &re
 void LamaFFSynergy::compute_heuristics(const State& state) {
     /* Compute heuristics and pref. ops. and store results;
        actual work is delegated to the heuristics. */
-        
+
     exploration->set_recompute_heuristic();
 
     lama_heuristic->evaluate(state);

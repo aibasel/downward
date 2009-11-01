@@ -28,6 +28,11 @@ public:
 };
 
 class LandmarkOptimalSharedCostAssignment : public LandmarkCostAssignment {
+private:
+
+    int cost_lm_i(int lm_i) {return lm_i;}
+    int cost_a_lm_i(int a_i, int lm_i) {return ((a_i + 1) * lm_graph.number_of_landmarks()) + lm_i;}
+
 public:
     LandmarkOptimalSharedCostAssignment(LandmarksGraph &graph, bool exc_ALM_eff);
     virtual ~LandmarkOptimalSharedCostAssignment();

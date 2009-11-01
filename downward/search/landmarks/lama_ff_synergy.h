@@ -69,6 +69,7 @@ class LamaFFSynergy {
     Exploration* exploration;
     bool lm_pref;
     bool lm_admissible;
+    bool lm_optimal;
     std::vector<const Operator *> lama_preferred_operators;
     std::vector<const Operator *> ff_preferred_operators;
     bool initialized;
@@ -80,12 +81,12 @@ class LamaFFSynergy {
 
     bool reach_state(const State& parent_state, const Operator& op,
 		     const State& state);
-        
+
     void compute_heuristics(const State&);
     void get_lama_preferred_operators(std::vector<const Operator *> &result);
     void get_ff_preferred_operators(std::vector<const Operator *> &result);
 public:
-    LamaFFSynergy(bool lm_pref_, bool lm_admissible_);
+    LamaFFSynergy(bool lm_pref_, bool lm_admissible_, bool lm_optimal_);
     ~LamaFFSynergy() {}
 
     int lama_heuristic_value;

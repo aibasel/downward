@@ -51,7 +51,7 @@ static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admi
     cout << "Landmarks generation time: " << lm_generation_timer << endl;
     if (g_lgraph->number_of_landmarks() == 0)
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;
-    cout << "Generated " << g_lgraph->number_of_landmarks()
+    cout << "Discovered " << g_lgraph->number_of_landmarks()
             << " landmarks, of which " << g_lgraph->number_of_disj_landmarks()
             << " are disjunctive" << endl << "          "
             << g_lgraph->number_of_edges() << " edges\n";
@@ -62,7 +62,7 @@ static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admi
 }
 
 LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
-        bool admissible) :
+        bool admissible, bool optimal) :
     exploration(new Exploration), lgraph(*build_landmarks_graph(exploration, admissible)),
             lm_status_manager(lgraph) {
 
@@ -77,7 +77,18 @@ LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
     for (int i = 0; i < g_goal.size(); i++)
         goal.insert(make_pair(g_goal[i].first, g_goal[i].second));
 
-    lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, true);
+    if (optimal) {
+#ifdef USE_LP
+        lm_cost_assignment = new LandmarkOptimalSharedCostAssignment(lgraph, true);
+#else
+        cerr << "You must build the planner with the USE_LP symbol defined" << endl;
+        exit(1);
+#endif
+    }
+    else {
+        lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, true);
+    }
+
 
     if (admissible) {
         use_shared_cost = true;
@@ -103,9 +114,9 @@ void LandmarksCountHeuristic::set_exploration_goals(const State& state) {
 int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
 
     // Need explicit test to see if state is a goal state. The landmark
-    // heuristic may compute h != 0 for a goal state if landmarks are 
-    // achieved before their parents in the landmarks graph (because 
-    // they do not get counted as reached in that case). However, we 
+    // heuristic may compute h != 0 for a goal state if landmarks are
+    // achieved before their parents in the landmarks graph (because
+    // they do not get counted as reached in that case). However, we
     // must return 0 for a goal state.
 
     bool goal_reached = true;
@@ -117,7 +128,11 @@ int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
         return 0;
     }
 
-    lm_status_manager.update_lm_status(state);
+    //lm_status_manager.update_lm_status(state);
+    bool dead_end = lm_status_manager.update_lm_status(state);
+    if (dead_end) {
+        return DEAD_END;
+    }
 
     if (use_dynamic_cost_sharing) {
         lm_cost_assignment->assign_costs();
@@ -203,7 +218,7 @@ int LandmarksCountHeuristic::compute_heuristic(const State &state) {
     // to achieve one of the LM leaves.
 
     LandmarkSet &reached_lms = lm_status_manager.get_reached_landmarks(state);
-    const int reached_lms_cost = lgraph.get_reached_cost(); 
+    const int reached_lms_cost = lgraph.get_reached_cost();
 
     if (reached_lms_cost == lgraph.cost_of_landmarks()
             || !generate_helpful_actions(state, reached_lms)) {
