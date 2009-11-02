@@ -46,6 +46,7 @@ int main(int argc, const char **argv) {
     bool lm_heuristic_optimal = false;
     bool lm_preferred = false;
     bool use_hm = false;
+    int  m_hm = 2;
 
 
 
@@ -73,6 +74,11 @@ int main(int argc, const char **argv) {
 		hsp_max_heuristic = true;
 	    } else if(*c == 'h') {
 	    use_hm = true;
+	    c++;
+        m_hm = ::atoi(c);
+        while(*c >= '0' && *c <= '9')
+            c++;
+        c--;
 	    } else if(*c == 'd') {
 		additive_heuristic = true;
 	    } else if(*c == 'l') {
@@ -262,8 +268,10 @@ int main(int argc, const char **argv) {
 	engine->add_heuristic(new HSPMaxHeuristic, true, false);
     if(lm_cut_heuristic)
     engine->add_heuristic(new LandmarkCutHeuristic, true, false);
-    if(use_hm)
-    engine->add_heuristic(new HMHeuristic(1), true, false);
+    if(use_hm) {
+        cout << "Using h^" << m_hm << endl;
+        engine->add_heuristic(new HMHeuristic(m_hm), true, false);
+    }
     if(lm_heuristic) {
     engine->add_heuristic(
             new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal),

@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <limits>
+#include <set>
 
 HMHeuristic::HMHeuristic(int _m):m(_m) {
 	MAX_VALUE = 100000;
@@ -24,11 +25,11 @@ int HMHeuristic::compute_heuristic(const State &state) {
 		//cout << "Evaluating state: " << endl;
 		//state.dump();
 		//cout << endl;
-		tuple s_tup;
+
+	    tuple s_tup;
 		state_to_tuple(state, s_tup);
 
 		init_hm_table(s_tup);
-		//init_hm_table(g_goal);
 		//cout << "After Init" << endl;
 		//dump_table();
 		//cout << "********************************" << endl;
@@ -38,15 +39,20 @@ int HMHeuristic::compute_heuristic(const State &state) {
 		//dump_table();
 		//cout << "********************************" << endl;
 
+		int h = eval(g_goal);
+		//cout << "*** " << h << endl;
 
+		// ******************************
+		//init_hm_table(g_goal);
+		//update_hm_table();
 		//int h1 = eval(s_tup);
-		int h2 = eval(g_goal);
-		if (h2 == MAX_VALUE) {
-			return DEAD_END;
-		}
-		//cout << "EVAL: " << h1 << " " << h2 << endl;
-		return h2;
-		//return 1;
+		//cout << "*** " << h1 << endl;
+		// ******************************
+
+		if (h == MAX_VALUE) {
+            return DEAD_END;
+        }
+		return h;
 	}
 }
 
@@ -67,10 +73,14 @@ void HMHeuristic::update_hm_table() {
 	do {
 		round++;
 		//cout << "Update round " << round << endl;
+		//cout << "***********************************" << endl;
+		//dump_table();
+		//cout << "***********************************" << endl;
 		was_updated = false;
 
 		for (int op_id = 0; op_id < g_operators.size(); op_id++) {
 			const Operator &op = g_operators[op_id];
+			//cout << "Checking operator " << op.get_name() << endl;
 			tuple pre;
 			get_operator_pre(op, pre);
 			int c1 = eval(pre);
@@ -82,13 +92,13 @@ void HMHeuristic::update_hm_table() {
 				generate_all_partial_tuple(eff, partial_eff);
 				for (int i = 0; i < partial_eff.size(); i++) {
 					update_hm_entry(partial_eff[i], c1 + op.get_cost());
-				}
 
-
-				vector<tuple> partial_pre;
-				generate_all_partial_tuple(pre, partial_pre);
-				for (int i = 0; i < partial_pre.size(); i++) {
-					extend_tuple(partial_pre[i], op, 0);
+					if (partial_eff[i].size() < m) {
+					    //cout << "Calling extend_tuple for ";
+					    //print_tuple(partial_eff[i]);
+					    //cout << endl;
+					    extend_tuple(partial_eff[i], op);//, pre, 0);
+					}
 				}
 			}
 		}
@@ -96,35 +106,80 @@ void HMHeuristic::update_hm_table() {
 	} while (was_updated);
 }
 
+void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
+    map<tuple, int>::const_iterator it;
+    for (it = hm_table.begin(); it != hm_table.end(); it++) {
+        pair<tuple, int> hm_ent = *it;
+        tuple &entry = hm_ent.first;
+        if ((entry.size() > t.size()) && (check_tuple_in_tuple(t, entry) == 0)) {
+
+            tuple pre;
+            get_operator_pre(op, pre);
+
+            tuple others;
+            for (int i = 0; i < entry.size(); i++) {
+                pair<int,int> fact = entry[i];
+                if (find(t.begin(), t.end(), fact) == t.end()) {
+                    others.push_back(fact);
+                    if (find(pre.begin(), pre.end(), fact) == pre.end()) {
+                        pre.push_back(fact);
+                    }
+                }
+            }
+
+            sort(pre.begin(), pre.end());
+
+
+            set<int> vars;
+            bool is_valid = true;
+            for (int i = 0; i < pre.size(); i++) {
+                if (vars.count(pre[i].first) != 0) {
+                    is_valid = false;
+                    break;
+                }
+                vars.insert(pre[i].first);
+            }
+
+            if (is_valid) {
+                int c2 = eval(pre);
+                if (c2 < MAX_VALUE) {
+                    //cout << "updating " << c2 + op.get_cost()<< endl;
+                    update_hm_entry(entry, c2 + op.get_cost());
+                }
+            }
+        }
+    }
+}
+
 // generate all tuples which extend t with variables not affected by op
-void HMHeuristic::extend_tuple(tuple &t, const Operator &op, int var) {
-	//cout << "extend ";
-	//print_tuple(t);
-	//cout << endl;
+void HMHeuristic::extend_tuple(tuple &t, const Operator &op, tuple &prec, int var) {
+    for (int i = var; i < g_variable_domain.size(); i++) {
+        // skip variables that are affected by op
+        if (!is_effect_of(op, i)/* && !is_pre_of(op, i)*/) {
+            for (int val = 0; val < g_variable_domain[i]; val++) {
+                tuple tup(prec);
+                tup.push_back(make_pair(i, val));
+                sort(tup.begin(), tup.end());
+                //cout << "Evaluating ";
+                //print_tuple(tup);
+                //cout << endl;
+                int c2 = eval(tup);
 
-	if (t.size() < m) {
-		for (int i = var; i < g_variable_domain.size(); i++) {
-			// skip variables that are affected by op
-			if (!is_effect_of(op, i) && !is_pre_of(op, i)) {
-				for (int val = 0; val < g_variable_domain[i]; val++) {
-					tuple tup(t);
-					tup.push_back(make_pair(i, val));
-					sort(tup.begin(), tup.end());
+                if (c2 < MAX_VALUE) {
+                    tuple ent(t);
+                    t.push_back(make_pair(i, val));
+                    sort(ent.begin(), ent.end());
+                    //cout << "Updating entry" << endl;
+                    update_hm_entry(ent, c2 + op.get_cost());
+                }
 
-					int c2 = eval(tup);
-
-					if (c2 < MAX_VALUE) {
-						update_hm_entry(tup, c2 + op.get_cost());
-					}
-
-					extend_tuple(tup, op, i+1);
-				}
-			}
-		}
-		if (var < g_variable_domain.size()) {
-			extend_tuple(t, op, var+1);
-		}
-	}
+                extend_tuple(t, op, tup, i+1);
+            }
+        }
+    }
+    if (var < g_variable_domain.size()) {
+        extend_tuple(t, op, prec, var+1);
+    }
 }
 
 int HMHeuristic::eval(tuple &t) {
@@ -145,6 +200,7 @@ int HMHeuristic::eval(tuple &t) {
 int HMHeuristic::update_hm_entry(tuple &t, int val) {
 	assert(hm_table.count(t) == 1);
 	if (hm_table[t] > val) {
+	    //cout << "Entry updated " << val << endl;
 		hm_table[t] = val;
 		was_updated = true;
 	}
