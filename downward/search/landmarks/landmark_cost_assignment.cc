@@ -1,7 +1,8 @@
+
 #include "landmark_cost_assignment.h"
 #include <limits>
 #ifdef USE_LP
-
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #ifdef COIN_USE_CLP
 #include "OsiClpSolverInterface.hpp"
 typedef OsiClpSolverInterface OsiXxxSolverInterface;

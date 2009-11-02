@@ -17,20 +17,13 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  landmarks/landmarks_count_heuristic.h landmarks/exploration.h \
 	  landmarks/landmark_status_manager.h \
 	  landmarks/landmarks_graph_rpg_exhaust.h landmarks/landmarks_graph_zhu_givan.h \
-	  landmarks/util.h landmarks/lama_ff_synergy.h \
+	  landmarks/util.h landmarks/lama_ff_synergy.h landmarks/landmark_cost_assignment.h\
 	  hm_heuristic.h
-
-SPECIAL_HEADERS = landmarks/landmark_cost_assignment.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 OBJECTS = $(SOURCES:%.cc=obj/%.o)
 PROFILE_OBJECTS = $(SOURCES:%.cc=obj/%.profile.o)
 RELEASE_OBJECTS = $(SOURCES:%.cc=obj/%.release.o)
-
-SPECIAL_SOURCES = $(SPECIAL_HEADERS:%.h=%.cc)
-SPECIAL_OBJECTS = $(SPECIAL_SOURCES:%.cc=obj/%.o)
-SPECIAL_PROFILE_OBJECTS = $(SPECIAL_SOURCES:%.cc=obj/%.profile.o)
-SPECIAL_RELEASE_OBJECTS = $(SPECIAL_SOURCES:%.cc=obj/%.release.o)
 
 CC = g++
 DEPEND = g++ -MM
@@ -39,9 +32,6 @@ LINKOPT = -m32
 RELEASEOPT = $(CCOPT)
 RELEASEOPT += -O3 -DNDEBUG -fomit-frame-pointer
 
-SPECIAL_CCOPT = -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -Wno-unused
-SPECIAL_RELEASEOPT = $(SPECIAL_CCOPT)
-SPECIAL_RELEASEOPT += -O3 -DNDEBUG -fomit-frame-pointer
 ## We link statically to allow local compiles to work on the BFG cluster.
 ## NOTE: This precludes using exceptions; see man gcc on -static-libgcc.
 #RELEASEOPT += -static -static-libgcc
@@ -64,7 +54,7 @@ PROFARGS = oa200000 < profile-input.pre
 
 ifeq ($(USE_LP_CLP),1) 
 
-COIN_ROOT=$(HOME)/Software/Osi
+COIN_ROOT=$(HOME)/Software/NewOsi
 COIN_INC_DIR=$(COIN_ROOT)/include/coin
 COIN_LIB_DIR=$(COIN_ROOT)/lib
 SOLVER=CLP
@@ -99,17 +89,17 @@ endif
 
 all: search
 
-search: $(OBJECTS) $(SPECIAL_OBJECTS)
-	$(CC) $(LINKOPT) $(OBJECTS) $(SPECIAL_OBJECTS) -o search
+search: $(OBJECTS)
+	$(CC) $(LINKOPT) $(OBJECTS)  -o search
 
-profile-search: $(PROFILE_OBJECTS) $(SPECIAL_PROFILE_OBJECTS)
-	$(CC) $(LINKOPT) $(PROFLINKOPT) $(PROFOPT) $(PROFILE_OBJECTS) $(SPECIAL_PROFILE_OBJECTS)\
+profile-search: $(PROFILE_OBJECTS)
+	$(CC) $(LINKOPT) $(PROFLINKOPT) $(PROFOPT) $(PROFILE_OBJECTS) \
           -o profile-search
 
 release: release-search
 
-release-search: $(RELEASE_OBJECTS) $(SPECIAL_RELEASE_OBJECTS)
-	$(CC) $(RELEASEOPT) $(RELEASELINKOPT) $(RELEASE_OBJECTS) $(SPECIAL_RELEASE_OBJECTS)\
+release-search: $(RELEASE_OBJECTS) 
+	$(CC) $(RELEASEOPT) $(RELEASELINKOPT) $(RELEASE_OBJECTS) \
 	  -o release-search
 
 PROFILE: profile-search
@@ -125,18 +115,8 @@ $(PROFILE_OBJECTS): obj/%.profile.o: %.cc
 $(RELEASE_OBJECTS): obj/%.release.o: %.cc
 	$(CC) $(RELEASEOPT) -c $< -o $@
 	
-
-$(SPECIAL_OBJECTS): obj/%.o: %.cc
-	$(CC) $(SPECIAL_CCOPT) -c $< -o $@
-
-$(SPECIAL_PROFILE_OBJECTS): obj/%.profile.o: %.cc
-	$(CC) $(SPECIAL_CCOPT) $(PROFOPT) -c $< -o $@
-
-$(SPECIAL_RELEASE_OBJECTS): obj/%.release.o: %.cc
-	$(CC) $(SPECIAL_RELEASEOPT) -c $< -o $@	
-
 clean:
-	rm -f $(OBJECTS) $(PROFILE_OBJECTS) $(RELEASE_OBJECTS) $(SPECIAL_OBJECTS) $(SPECIAL_PROFILE_OBJECTS) $(SPECIAL_RELEASE_OBJECTS) *~ *.pyc
+	rm -f $(OBJECTS) $(PROFILE_OBJECTS) $(RELEASE_OBJECTS) *~ *.pyc
 	rm -f Makefile.depend profile-search gmon.out PROFILE core
 	rm -f sas_plan
 
@@ -147,9 +127,9 @@ distclean: clean
 ## subdirectory, it will strip the directory part in the output. Hence
 ## the for loop with the sed call.
 
-Makefile.depend: $(SOURCES) $(HEADERS) $(SPECIAL_SOURCES) $(SPECIAL_HEADERS)
+Makefile.depend: $(SOURCES) $(HEADERS)
 	rm -f Makefile.temp
-	for source in $(SOURCES) $(SPECIAL_SOURCES); do \
+	for source in $(SOURCES) ; do \
 	    $(DEPEND) $$source > Makefile.temp0; \
 	    objfile=$${source%%.cc}.o; \
 	    sed -i -e "s@^[^:]*:@$$objfile:@" Makefile.temp0; \
