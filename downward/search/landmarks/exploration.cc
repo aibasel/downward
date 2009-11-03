@@ -391,7 +391,8 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
 	    collect_relaxed_plan(unary_op->precondition[i], relaxed_plan, state);
 	const Operator *op = unary_op->op;
 	bool added_to_relaxed_plan = false;
-	if(!op->is_axiom())
+	//if(!op->is_axiom()) // Using axioms in the relaxed plan actually
+	//improves performance in many domains... We need to look into this.
 	    added_to_relaxed_plan = relaxed_plan.insert(op).second;
 
 	assert(unary_op->depth != -1);
