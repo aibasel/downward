@@ -97,7 +97,11 @@ void HMHeuristic::update_hm_table() {
 					    //cout << "Calling extend_tuple for ";
 					    //print_tuple(partial_eff[i]);
 					    //cout << endl;
-					    extend_tuple(partial_eff[i], op);//, pre, 0);
+
+					    //tuple others;
+					    //extend_tuple(partial_eff[i], op, others, 0);
+
+					    extend_tuple(partial_eff[i], op);
 					}
 				}
 			}
@@ -152,33 +156,52 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
 }
 
 // generate all tuples which extend t with variables not affected by op
-void HMHeuristic::extend_tuple(tuple &t, const Operator &op, tuple &prec, int var) {
-    for (int i = var; i < g_variable_domain.size(); i++) {
-        // skip variables that are affected by op
-        if (!is_effect_of(op, i)/* && !is_pre_of(op, i)*/) {
-            for (int val = 0; val < g_variable_domain[i]; val++) {
-                tuple tup(prec);
-                tup.push_back(make_pair(i, val));
-                sort(tup.begin(), tup.end());
-                //cout << "Evaluating ";
-                //print_tuple(tup);
-                //cout << endl;
-                int c2 = eval(tup);
+void HMHeuristic::extend_tuple(tuple &t, const Operator &op, tuple &others, int var) {
+    if (others.size() < m) {
+        for (int i = var; i < g_variable_domain.size(); i++) {
+            // skip variables that are affected by op
+            if (!is_effect_of(op, i) && !is_pre_of(op, i)) {
+                for (int val = 0; val < g_variable_domain[i]; val++) {
+                    tuple tup(others);
+                    tup.push_back(make_pair(i, val));
 
-                if (c2 < MAX_VALUE) {
-                    tuple ent(t);
-                    t.push_back(make_pair(i, val));
-                    sort(ent.begin(), ent.end());
-                    //cout << "Updating entry" << endl;
-                    update_hm_entry(ent, c2 + op.get_cost());
+                    //cout << "Others: ";
+                    //print_tuple(tup);
+                    //cout << endl;
+
+                    tuple pre;
+                    get_operator_pre(op, pre);
+                    pre.insert(pre.end(), tup.begin(), tup.end());
+                    sort(pre.begin(), pre.end());
+
+                    //cout << "Evaluating ";
+                    //print_tuple(tup);
+                    //cout << endl;
+                    int c2 = eval(pre);
+
+                    if (c2 < MAX_VALUE) {
+                        tuple ent(t);
+                        ent.insert(ent.end(), tup.begin(), tup.end());
+                        sort(ent.begin(), ent.end());
+
+                        //cout << "Updating ";
+                        //print_tuple(ent);
+                        //cout << endl;
+
+                        vector<tuple> entries;
+                        generate_all_partial_tuple(ent, entries);
+
+                        for (int j = 0; j < entries.size(); j++)
+                            update_hm_entry(entries[j], c2 + op.get_cost());
+                    }
+
+                    extend_tuple(t, op, tup, i+1);
                 }
-
-                extend_tuple(t, op, tup, i+1);
             }
         }
-    }
-    if (var < g_variable_domain.size()) {
-        extend_tuple(t, op, prec, var+1);
+        if (var < g_variable_domain.size()) {
+            extend_tuple(t, op, others, var+1);
+        }
     }
 }
 
