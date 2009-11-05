@@ -59,7 +59,7 @@ void Heuristic::evaluate(const State &state) {
 #endif
 }
 
-bool Heuristic::is_dead_end() {
+bool Heuristic::is_dead_end() const {
     return heuristic == DEAD_END;
 }
 
