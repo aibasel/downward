@@ -3,11 +3,15 @@
 #include "globals.h"
 #include "heuristic.h"
 #include "successor_generator.h"
+#include "open-lists/standard_scalar_open_list.h"
+#include "open-lists/open_list_buckets.h"
+
 
 #include <cassert>
 using namespace std;
 
-OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref) {
+OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref) 
+	: open(new BucketOpenList<OpenListEntry>(heur)) {
     heuristic = heur;
     only_preferred_operators = only_pref;
     priority = 0;
@@ -172,13 +176,13 @@ void BestFirstSearchEngine::generate_successors(const State *parent_ptr) {
     for(int i = 0; i < open_lists.size(); i++) {
 	Heuristic *heur = open_lists[i].heuristic;
 	if(!heur->is_dead_end()) {
-	    int h = heur->get_heuristic();
-	    OpenList<OpenListEntry> &open = open_lists[i].open;
+	    OpenList<OpenListEntry> *open = open_lists[i].open;
+	    open->evaluate(0, false); // TODO: handle preferredness in open list
 	    vector<const Operator *> &ops =
 		open_lists[i].only_preferred_operators ?
 		preferred_operators : all_operators;
 	    for(int j = 0; j < ops.size(); j++)
-		open.insert(h, make_pair(parent_ptr, ops[j]));
+		open->insert(make_pair(parent_ptr, ops[j]));
 	}
     }
     generated_states += all_operators.size();
@@ -191,7 +195,7 @@ int BestFirstSearchEngine::fetch_next_state() {
 	return FAILED;
     }
 
-    OpenListEntry next = open_info->open.remove_min();
+    OpenListEntry next = open_info->open->remove_min();
     open_info->priority++;
 
     current_predecessor = next.first;
@@ -204,7 +208,7 @@ int BestFirstSearchEngine::fetch_next_state() {
 OpenListInfo *BestFirstSearchEngine::select_open_queue() {
     OpenListInfo *best = 0;
     for(int i = 0; i < open_lists.size(); i++)
-	if(!open_lists[i].open.empty() &&
+	if(!open_lists[i].open->empty() &&
 	   (best == 0 || open_lists[i].priority < best->priority))
 	    best = &open_lists[i];
     return best;

@@ -9,16 +9,19 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
           globals.h \
 	  domain_transition_graph.h \
           operator.h state.h successor_generator.h causal_graph.h \
-	  best_first_search.h axioms.h cache.h \
-          search_engine.h open_list_buckets.h closed_list.h \
-          timer.h \
+	  best_first_search.h eager_best_first_search.h axioms.h cache.h \
+          search_engine.h open-lists/open_list_buckets.h closed_list.h \
+          timer.h open-lists/standard_scalar_open_list.h \
+          open-lists/tiebreaking_open_list.h open-lists/alternation_open_list.h \
+		  open-lists/pareto_open_list.h \
 	  search_space.h fh_open_list.h a_star_search.h general_eager_best_first_search.h \
 	  landmarks/landmarks_graph.h landmarks/landmarks_graph_rpg_sasp.h \
 	  landmarks/landmarks_count_heuristic.h landmarks/exploration.h \
 	  landmarks/landmark_status_manager.h \
 	  landmarks/landmarks_graph_rpg_exhaust.h landmarks/landmarks_graph_zhu_givan.h \
 	  landmarks/util.h landmarks/lama_ff_synergy.h landmarks/landmark_cost_assignment.h\
-	  hm_heuristic.h
+	  hm_heuristic.h \
+	  weighted_evaluator.h sum_evaluator.h g_evaluator.h 
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 OBJECTS = $(SOURCES:%.cc=obj/%.o)

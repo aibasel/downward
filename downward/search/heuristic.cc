@@ -26,6 +26,7 @@ void Heuristic::evaluate(const State &state) {
 	if(it != state_cache.end()) {
 	    heuristic = it->second.heuristic;
 	    preferred_operators = it->second.preferred_operators;
+            evaluator_value = heuristic;
 	    return;
 	}
     }
@@ -57,10 +58,11 @@ void Heuristic::evaluate(const State &state) {
 	    assert(preferred_operators[i]->is_applicable(state));
     }
 #endif
+    evaluator_value = heuristic;
 }
 
 bool Heuristic::is_dead_end() const {
-    return heuristic == DEAD_END;
+    return evaluator_value == DEAD_END;
 }
 
 int Heuristic::get_heuristic() {
@@ -85,3 +87,22 @@ bool Heuristic::reach_state(const State& parent_state,
 
 	return false;
 }
+
+int Heuristic::get_value() const{
+    return evaluator_value;
+}
+
+void Heuristic::evaluate(int, bool) {
+	return;
+    // if this is called, evaluate(const State &state) or set_evaluator_value(int val)
+	// should already have been called
+}
+
+bool Heuristic::dead_end_is_reliable() const {
+    return dead_ends_are_reliable();
+}
+
+void Heuristic::set_evaluator_value(int val) {
+	evaluator_value = val;
+}
+

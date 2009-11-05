@@ -1,35 +1,32 @@
-#ifndef GENERALEAGERBESTFIRSTSEARCH_H_
-#define GENERALEAGERBESTFIRSTSEARCH_H_
+#ifndef GENERAL_EAGER_BEST_FIRST_SEARCH_H
+#define GENERAL_EAGER_BEST_FIRST_SEARCH_H
 
 #include <vector>
 
-#include "fh_open_list.h"
+#include "open-lists/open_list.h"
 #include "search_engine.h"
 #include "search_space.h"
 #include "state.h"
 #include "timer.h"
+#include "evaluator.h"
 
 class Heuristic;
 class Operator;
+class ScalarEvaluator;
 
 class GeneralEagerBestFirstSearch : public SearchEngine {
-
+    
     // Search Behavior parameters
-    int wg, wh; // weights for g and h
-    int tb; // tie-breaker
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
+	
+    OpenList<state_var_t *> *open_list;
+    ScalarEvaluator *f_evaluator;
 
-    // wg = 0, wh = 1, reopen = false -> Greedy Best First Search
-    // wg = 1, wh = 1, reopen = true  -> A*
-    // wg = 1, wh = w, reopen = true  -> weighted A*
-
-    std::vector<Heuristic *> heuristics;
     SearchSpace search_space;
-    FhOpenList<state_var_t *> open_list;
 
+    // used for statistics
     std::vector<int> best_heuristic_values;
-
-    int initial_h_value;// h value of the initial state
+	std::vector<int> initial_h_values;// h values of the initial state
 
     int expanded_states;// nr states for which successors were generated
     int reopened_states; // nr of *closed* states which we reopened
@@ -43,29 +40,33 @@ class GeneralEagerBestFirstSearch : public SearchEngine {
 
     int lastjump_f_value;//f value obtained in the last jump
 
-    Timer timer;
-
+    int step();
     SearchNode fetch_next_node();
     bool check_goal(const SearchNode &node);
     void jump_statistics() const;
-protected:
-    virtual void initialize();
-    virtual int step();
-
-    int get_f(SearchNode& node);
-    int get_tie_breaker(SearchNode& node);
-
+	void update_jump_statistic(const SearchNode& node);
+	void print_heuristic_values(const vector<int>& values) const;
+    
     bool check_progress();
     void report_progress();
+
+protected:
+    std::vector<Heuristic *> heuristics; 
+    // TODO: in the long term this
+    // should disappear into the open list
+
+    virtual void initialize();
+    void set_f_evaluator(ScalarEvaluator *eval);
+    void set_open_list(OpenList<state_var_t *> *open);
+
 public:
-    enum {fifo = 0, h = 1, high_g = 2, low_g = 3};
-    GeneralEagerBestFirstSearch(int weight_g, int weight_h, int tie_breaker, bool reopen_closed);
+    GeneralEagerBestFirstSearch(bool reopen_closed);
     ~GeneralEagerBestFirstSearch();
-    virtual void add_heuristic(Heuristic *heuristic, bool use_estimates,
+    void add_heuristic(Heuristic *heuristic, bool use_estimates,
                                bool use_preferred_operators);
-    virtual void statistics() const;
+    void statistics() const;
 
     void dump_search_space();
 };
 
-#endif /* GENERALEAGERBESTFIRSTSEARCH_H_ */
+#endif /* GENERAL_EAGER_BEST_FIRST_SEARCH_H */

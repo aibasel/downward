@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "closed_list.h"
-#include "open_list_buckets.h"
+#include "open-lists/open_list.h"
 #include "search_engine.h"
 #include "state.h"
 
@@ -17,7 +17,7 @@ struct OpenListInfo {
     OpenListInfo(Heuristic *heur, bool only_pref);
     Heuristic *heuristic;
     bool only_preferred_operators;
-    OpenList<OpenListEntry> open;
+    OpenList<OpenListEntry> *open;
     int priority; // low value indicates high priority
 };
 

@@ -15,47 +15,29 @@ using namespace std;
 */
 
 template<class Entry>
-OpenList<Entry>::OpenList() {
-    lowest_bucket = 0;
-    size = 0;
+BucketOpenList<Entry>::BucketOpenList(ScalarEvaluator *eval) 
+    : lowest_bucket(0), size(0), evaluator(eval) {
 }
 
 template<class Entry>
-OpenList<Entry>::~OpenList() {
+BucketOpenList<Entry>::~BucketOpenList() {
 }
 
 template<class Entry>
-void OpenList<Entry>::insert(int key, const Entry &entry) {
+int BucketOpenList<Entry>::insert(const Entry &entry) {
+	int key = last_evaluated_value;
     assert(key >= 0);
     if(key >= buckets.size())
-	buckets.resize(key + 1);
+        buckets.resize(key + 1);
     else if(key < lowest_bucket)
-	lowest_bucket = key;
+        lowest_bucket = key;
     buckets[key].push_back(entry);
     size++;
-}
-/*
-void OpenList::insert(int key, const State *parent, const Operator *operator_) {
-    assert(key >= 0);
-    if(key >= buckets.size())
-	buckets.resize(key + 1);
-    else if(key < lowest_bucket)
-	lowest_bucket = key;
-    buckets[key].push_back(Entry(parent, operator_));
-    size++;
-}
-*/
-
-template<class Entry>
-int OpenList<Entry>::min() const {
-    assert(size > 0);
-    while(buckets[lowest_bucket].empty())
-	lowest_bucket++;
-    return lowest_bucket;
+    return 1;
 }
 
 template<class Entry>
-Entry OpenList<Entry>::remove_min() {
+Entry BucketOpenList<Entry>::remove_min() {
     assert(size > 0);
     while(buckets[lowest_bucket].empty())
 	lowest_bucket++;
@@ -66,15 +48,26 @@ Entry OpenList<Entry>::remove_min() {
 }
 
 template<class Entry>
-bool OpenList<Entry>::empty() const {
+bool BucketOpenList<Entry>::empty() const {
     return size == 0;
 }
 
 template<class Entry>
-void OpenList<Entry>::clear() {
-    buckets.clear();
-    lowest_bucket = 0;
-    size = 0;
+void BucketOpenList<Entry>::evaluate(int g, bool preferred) {
+	get_evaluator()->evaluate(g, preferred);
+	last_evaluated_value = get_evaluator()->get_value();
+	dead_end = get_evaluator()->is_dead_end();
+	dead_end_reliable = get_evaluator()->dead_end_is_reliable();
+}
+
+template<class Entry>
+bool BucketOpenList<Entry>::is_dead_end() const {
+    return dead_end;
+}
+
+template<class Entry>
+bool BucketOpenList<Entry>::dead_end_is_reliable() const {
+    return dead_end_reliable;
 }
 
 #endif

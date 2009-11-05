@@ -1,5 +1,6 @@
 #include "a_star_search.h"
 #include "best_first_search.h"
+#include "eager_best_first_search.h"
 #include "cyclic_cg_heuristic.h"
 #include "cg_heuristic.h"
 #include "ff_heuristic.h"
@@ -215,14 +216,11 @@ int main(int argc, const char **argv) {
 
     SearchEngine *engine = 0;
     if(a_star_search) {
-    	if (use_gen_search)
-    		engine = new GeneralEagerBestFirstSearch(1, 1, GeneralEagerBestFirstSearch::h, true);
-    	else
-    		engine = new AStarSearchEngine;
+        engine = new AStarSearchEngine;
     }
     else {
     	if (use_gen_search)
-    	    engine = new GeneralEagerBestFirstSearch(0, 1, GeneralEagerBestFirstSearch::fifo, false);
+    	    engine = new EagerBestFirstSearchEngine;
     	else
     		engine = new BestFirstSearchEngine;
     }
