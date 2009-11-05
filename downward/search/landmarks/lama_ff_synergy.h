@@ -13,7 +13,6 @@ class LamaFFSynergy {
 
         virtual void initialize();
         virtual int get_heuristic_value() = 0;
-	virtual bool is_dead_end() const = 0;
 	virtual void get_preferred_operators(std::vector<const Operator *> &result) = 0;
     public:
         HeuristicProxy(LamaFFSynergy *synergy_);
@@ -32,9 +31,6 @@ class LamaFFSynergy {
     };
 
     class FFHeuristicProxy : public HeuristicProxy {
-	virtual bool is_dead_end() const {
-	    return synergy->ff_dead_end;
-	}
         virtual int get_heuristic_value() {
             return synergy->ff_heuristic_value;
         }
@@ -46,9 +42,6 @@ class LamaFFSynergy {
     };
 
     class LamaHeuristicProxy : public HeuristicProxy {
-	virtual bool is_dead_end() const {
-	    return synergy->lama_dead_end;
-	}
         virtual int get_heuristic_value() {
             return synergy->lama_heuristic_value;
         }
@@ -91,8 +84,6 @@ public:
 
     int lama_heuristic_value;
     int ff_heuristic_value;
-    bool lama_dead_end;
-    bool ff_dead_end;
 
     Heuristic *get_ff_heuristic_proxy() {
         return &ff_heuristic_proxy;
