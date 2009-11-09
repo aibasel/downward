@@ -14,12 +14,12 @@ class Operator;
 
 
 typedef pair<const State *, const Operator *> OpenListEntry;
-
+typedef pair<pair<const State *, const Operator *>, int> OpenListEntryWithG;
 
 class GeneralLazyBestFirstSearch: public SearchEngine {
 protected:
     ClosedList<State, const Operator *> closed_list;
-    OpenList<OpenListEntry> *open_list;
+    OpenList<OpenListEntryWithG> *open_list;
     ScalarEvaluator *f_evaluator;
     vector<Heuristic *> heuristics;
     vector<Heuristic *> preferred_operator_heuristics;
@@ -30,6 +30,7 @@ protected:
     State current_state;
     const State *current_predecessor;
     const Operator *current_operator;
+    int current_g;
 
     virtual void initialize();
     virtual int step();
@@ -42,7 +43,7 @@ protected:
     void report_progress();
     void reward_progress();
 
-    void set_open_list(OpenList<OpenListEntry> *open);
+    void set_open_list(OpenList<OpenListEntryWithG> *open);
 public:
     GeneralLazyBestFirstSearch();
     virtual ~GeneralLazyBestFirstSearch();

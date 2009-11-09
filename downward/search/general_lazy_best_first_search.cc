@@ -3,6 +3,7 @@
 #include "successor_generator.h"
 #include "open-lists/standard_scalar_open_list.h"
 #include "open-lists/alternation_open_list.h"
+#include "open-lists/tiebreaking_open_list.h"
 #include "g_evaluator.h"
 #include "sum_evaluator.h"
 
@@ -11,46 +12,52 @@ GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch():
     generated_states = 0;
     current_predecessor = 0;
     current_operator = 0;
+    current_g = 0;
 }
 
 GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {
 }
 
-void GeneralLazyBestFirstSearch::set_open_list(OpenList<OpenListEntry> *open) {
+void GeneralLazyBestFirstSearch::set_open_list(OpenList<OpenListEntryWithG> *open) {
     open_list = open;
 }
-
 
 void GeneralLazyBestFirstSearch::initialize() {
     //TODO children classes should output which kind of search
     cout << "Conducting lazy best first search" << endl;
 
-    assert(open_list != NULL);
+    //assert(open_list != NULL);
     assert(heuristics.size() > 0);
 
-    GEvaluator *g = new GEvaluator();
+    //GEvaluator *g = new GEvaluator();
 
     if (heuristics.size() + preferred_operator_heuristics.size() == 1) {
-        SumEvaluator *f = new SumEvaluator();
-        f->add_evaluator(g);
-        f->add_evaluator(heuristics[0]);
-        open_list = new StandardScalarOpenList<OpenListEntry>(f);
+        //SumEvaluator *f = new SumEvaluator();
+        //f->add_evaluator(g);
+        //f->add_evaluator(heuristics[0]);
+        //open_list = new StandardScalarOpenList<OpenListEntryWithG>(f);
+
+        open_list = new StandardScalarOpenList<OpenListEntryWithG>(heuristics[0]);
     }
     else {
-        vector<OpenList<OpenListEntry>*> inner_lists;
+        vector<OpenList<OpenListEntryWithG>*> inner_lists;
         for (int i = 0; i < heuristics.size(); i++) {
-            SumEvaluator *f = new SumEvaluator();
-            f->add_evaluator(g);
-            f->add_evaluator(heuristics[i]);
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntry>(f, false));
+            //SumEvaluator *f = new SumEvaluator();
+            //f->add_evaluator(g);
+            //f->add_evaluator(heuristics[i]);
+            //inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(f, false));
+
+            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(heuristics[i], false));
         }
         for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
-            SumEvaluator *f = new SumEvaluator();
-            f->add_evaluator(g);
-            f->add_evaluator(heuristics[i]);
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntry>(f, true));
+            //SumEvaluator *f = new SumEvaluator();
+            //f->add_evaluator(g);
+            //f->add_evaluator(preferred_operator_heuristics[i]);
+            //inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(f, true));
+
+            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(preferred_operator_heuristics[i], true));
         }
-        open_list = new AlternationOpenList<OpenListEntry>(inner_lists);
+        open_list = new AlternationOpenList<OpenListEntryWithG>(inner_lists);
     }
 }
 
@@ -85,7 +92,7 @@ bool GeneralLazyBestFirstSearch::check_goal() {
             if (!is_goal) return false;
         }
 
-        cout << "Solution found!" << endl;
+        cout << "Solution found! " << endl;
         Plan plan;
         closed_list.trace_path(current_state, plan);
         set_plan(plan);
@@ -115,7 +122,9 @@ void GeneralLazyBestFirstSearch::generate_successors(const State *parent_ptr) {
     if(!open_list->is_dead_end()) {
         for(int j = 0; j < all_operators.size(); j++) {
             open_list->evaluate(0, all_operators[j]->is_marked()); // TODO: handle g in open list
-            open_list->insert(make_pair(parent_ptr, all_operators[j]));
+            open_list->insert(
+                    make_pair(make_pair(parent_ptr, all_operators[j]),
+                            current_g + all_operators[j]->get_cost()));
         }
     }
 
@@ -131,11 +140,13 @@ int GeneralLazyBestFirstSearch::fetch_next_state() {
         return FAILED;
     }
 
-    OpenListEntry next = open_list->remove_min();
+    OpenListEntryWithG next = open_list->remove_min();
 
-    current_predecessor = next.first;
-    current_operator = next.second;
+    current_predecessor = next.first.first;
+    current_operator = next.first.second;
+    current_g = next.second;
     current_state = State(*current_predecessor, *current_operator);
+
 
     return IN_PROGRESS;
 }
@@ -145,6 +156,7 @@ int GeneralLazyBestFirstSearch::step() {
     // - current_state is the next state for which we want to compute the heuristic.
     // - current_predecessor is a permanent pointer to the predecessor of that state.
     // - current_operator is the operator which leads to current_state from predecessor.
+    // - current_g is the g value of the current state
 
     if(!closed_list.contains(current_state)) {
         const State *parent_ptr = closed_list.insert(
@@ -156,7 +168,7 @@ int GeneralLazyBestFirstSearch::step() {
             }
             heuristics[i]->evaluate(current_state);
         }
-        open_list->evaluate(0, false);
+        open_list->evaluate(current_g, false);
         if(!open_list->is_dead_end()) {
             if(check_goal())
                 return SOLVED;
