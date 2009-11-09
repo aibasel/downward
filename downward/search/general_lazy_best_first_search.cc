@@ -29,33 +29,33 @@ void GeneralLazyBestFirstSearch::initialize() {
     //assert(open_list != NULL);
     assert(heuristics.size() > 0);
 
-    //GEvaluator *g = new GEvaluator();
+    GEvaluator *g = new GEvaluator();
 
     if (heuristics.size() + preferred_operator_heuristics.size() == 1) {
-        //SumEvaluator *f = new SumEvaluator();
-        //f->add_evaluator(g);
-        //f->add_evaluator(heuristics[0]);
-        //open_list = new StandardScalarOpenList<OpenListEntryWithG>(f);
+        SumEvaluator *f = new SumEvaluator();
+        f->add_evaluator(g);
+        f->add_evaluator(heuristics[0]);
+        open_list = new StandardScalarOpenList<OpenListEntryWithG>(f);
 
-        open_list = new StandardScalarOpenList<OpenListEntryWithG>(heuristics[0]);
+        //open_list = new StandardScalarOpenList<OpenListEntryWithG>(heuristics[0]);
     }
     else {
         vector<OpenList<OpenListEntryWithG>*> inner_lists;
         for (int i = 0; i < heuristics.size(); i++) {
-            //SumEvaluator *f = new SumEvaluator();
-            //f->add_evaluator(g);
-            //f->add_evaluator(heuristics[i]);
-            //inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(f, false));
+            SumEvaluator *f = new SumEvaluator();
+            f->add_evaluator(g);
+            f->add_evaluator(heuristics[i]);
+            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(f, false));
 
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(heuristics[i], false));
+            //inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(heuristics[i], false));
         }
         for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
-            //SumEvaluator *f = new SumEvaluator();
-            //f->add_evaluator(g);
-            //f->add_evaluator(preferred_operator_heuristics[i]);
-            //inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(f, true));
+            SumEvaluator *f = new SumEvaluator();
+            f->add_evaluator(g);
+            f->add_evaluator(preferred_operator_heuristics[i]);
+            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(f, true));
 
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(preferred_operator_heuristics[i], true));
+            //inner_lists.push_back(new StandardScalarOpenList<OpenListEntryWithG>(preferred_operator_heuristics[i], true));
         }
         open_list = new AlternationOpenList<OpenListEntryWithG>(inner_lists);
     }
@@ -121,10 +121,9 @@ void GeneralLazyBestFirstSearch::generate_successors(const State *parent_ptr) {
 
     if(!open_list->is_dead_end()) {
         for(int j = 0; j < all_operators.size(); j++) {
-            open_list->evaluate(0, all_operators[j]->is_marked()); // TODO: handle g in open list
-            open_list->insert(
-                    make_pair(make_pair(parent_ptr, all_operators[j]),
-                            current_g + all_operators[j]->get_cost()));
+            int new_g = current_g + all_operators[j]->get_cost();
+            open_list->evaluate(new_g, all_operators[j]->is_marked()); // TODO: handle g in open list
+            open_list->insert(make_pair(make_pair(parent_ptr, all_operators[j]), new_g));
         }
     }
 
