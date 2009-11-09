@@ -20,6 +20,7 @@
 #include "landmarks/landmarks_count_heuristic.h"
 #include "landmarks/exploration.h"
 #include "hm_heuristic.h"
+#include "general_lazy_best_first_search.h"
 
 #include <iostream>
 #include <fstream>
@@ -42,12 +43,14 @@ int main(int argc, const char **argv) {
     bool blind_search_heuristic = false;
     bool lm_cut_heuristic = false;
     bool use_gen_search = false;
+    bool use_lazy_search = false;
     bool lm_heuristic = false;
     bool lm_heuristic_admissible = false;
     bool lm_heuristic_optimal = false;
     bool lm_preferred = false;
     bool use_hm = false;
     int  m_hm = 2;
+    int lm_type = LandmarksCountHeuristic::rpg_sasp;
 
 
 
@@ -71,6 +74,8 @@ int main(int argc, const char **argv) {
 		fd_heuristic = true;
 	    } else if(*c == 'k') {
 	    use_gen_search = true;
+	    } else if(*c == 'z') {
+	    use_lazy_search = true;
 	    } else if(*c == 'm') {
 		hsp_max_heuristic = true;
 	    } else if(*c == 'h') {
@@ -84,6 +89,11 @@ int main(int argc, const char **argv) {
 		additive_heuristic = true;
 	    } else if(*c == 'l') {
 	    lm_heuristic = true;
+	    c++;
+        lm_type = ::atoi(c);
+        while(*c >= '0' && *c <= '9')
+            c++;
+        c--;
 	    } else if(*c == 's') {
 	    lm_heuristic_admissible = true;
 	    } else if(*c == 'p') {
@@ -218,12 +228,16 @@ int main(int argc, const char **argv) {
     if(a_star_search) {
         engine = new AStarSearchEngine;
     }
-    else {
-    	if (use_gen_search)
-    	    engine = new EagerBestFirstSearchEngine;
-    	else
-    		engine = new BestFirstSearchEngine;
+    else if (use_gen_search) {
+        engine = new EagerBestFirstSearchEngine;
     }
+    else if (use_lazy_search) {
+        engine = new GeneralLazyBestFirstSearch();
+    }
+    else {
+    	engine = new BestFirstSearchEngine;
+    }
+
 
     // Test if synergies can be used between FF heuristic and landmark pref. ops.
     // Used to achieve LAMA's behaviour. (Note: this uses a different version
@@ -272,7 +286,7 @@ int main(int argc, const char **argv) {
     }
     if(lm_heuristic) {
     engine->add_heuristic(
-            new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal),
+            new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type),
 			 true, lm_preferred);
     }
 
