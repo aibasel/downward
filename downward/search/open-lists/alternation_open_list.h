@@ -14,12 +14,18 @@ class AlternationOpenList : public OpenList<Entry>, public Evaluator {
     int size;
 	bool dead_end;
     bool dead_end_reliable;
+    int boosting;
+    int last_used_list;
 
 protected:
     Evaluator* get_evaluator() { return this; }
 
 public:
-    AlternationOpenList(const vector<OpenList<Entry> *> &sublists);
+    AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
+            int boost_influence=1000); 
+    // rawly speaking, boost_influence is how often the boosted queue should be
+    // preferred when removing an entry
+
     ~AlternationOpenList();
 
     // OpenList interface
@@ -31,6 +37,9 @@ public:
     void evaluate(int g, bool preferred);
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;
+	
+    int boost_preferred();
+    void boost_last_used_list();
 };
 
 #include "alternation_open_list.cc"

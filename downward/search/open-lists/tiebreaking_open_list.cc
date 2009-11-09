@@ -13,8 +13,9 @@ using namespace std;
 
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
-	const std::vector<ScalarEvaluator *> &evals)
-    : size(0), evaluators(evals) {
+	const std::vector<ScalarEvaluator *> &evals,
+    bool preferred_only)
+    : OpenList<Entry>(preferred_only), size(0), evaluators(evals) {
     lowest_bucket = std::vector<int>(dimension(), 9999999);
     last_evaluated_value.resize(evaluators.size());
 }
@@ -25,6 +26,8 @@ TieBreakingOpenList<Entry>::~TieBreakingOpenList() {
 
 template<class Entry>
 int TieBreakingOpenList<Entry>::insert(const Entry &entry) {
+	if (OpenList<Entry>::only_preferred && !last_preferred)
+		return 0;
     const std::vector<int> &key = last_evaluated_value;
     if(key < lowest_bucket)
         lowest_bucket = key;
@@ -72,6 +75,7 @@ void TieBreakingOpenList<Entry>::evaluate(int g, bool preferred) {
         	last_evaluated_value[i] = evaluators[i]->get_value();
 		}
     }
+	last_preferred = preferred;
 }
 
 template<class Entry>

@@ -22,6 +22,7 @@ class TieBreakingOpenList : public OpenList<Entry>, public Evaluator {
 
     std::vector<ScalarEvaluator *> evaluators;
     std::vector<int> last_evaluated_value;
+	bool last_preferred;
     bool dead_end;
     bool dead_end_reliable;
     
@@ -31,7 +32,8 @@ protected:
     Evaluator* get_evaluator() { return this; }
 
 public:
-    TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals);
+    TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
+                        bool preferred_only=false);
     ~TieBreakingOpenList();
 
 	// open list interface

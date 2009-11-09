@@ -13,8 +13,9 @@ using namespace std;
 */
 
 template<class Entry>
-StandardScalarOpenList<Entry>::StandardScalarOpenList(ScalarEvaluator *eval)
-    : size(0), evaluator(eval) {
+StandardScalarOpenList<Entry>::StandardScalarOpenList(ScalarEvaluator *eval,
+    bool preferred_only)
+    : OpenList<Entry>(preferred_only), size(0), evaluator(eval) {
     lowest_bucket = 9999999;
 }
 
@@ -24,6 +25,8 @@ StandardScalarOpenList<Entry>::~StandardScalarOpenList() {
 
 template<class Entry>
 int StandardScalarOpenList<Entry>::insert(const Entry &entry) {
+	if (OpenList<Entry>::only_preferred && !last_preferred)
+		return 0;
 	int key = last_evaluated_value;
     if(key < lowest_bucket)
         lowest_bucket = key;
@@ -57,6 +60,7 @@ template<class Entry>
 void StandardScalarOpenList<Entry>::evaluate(int g, bool preferred) {
 	get_evaluator()->evaluate(g, preferred);
 	last_evaluated_value = get_evaluator()->get_value();
+	last_preferred = preferred;
 	dead_end = get_evaluator()->is_dead_end();
 	dead_end_reliable = get_evaluator()->dead_end_is_reliable();
 }

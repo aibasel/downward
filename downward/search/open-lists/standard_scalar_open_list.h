@@ -21,6 +21,7 @@ class StandardScalarOpenList : public OpenList<Entry> {
 	
 	ScalarEvaluator *evaluator;
 	int last_evaluated_value;
+	int last_preferred;
 	bool dead_end;
 	bool dead_end_reliable;
 
@@ -28,7 +29,8 @@ protected:
     ScalarEvaluator* get_evaluator() { return evaluator; }
 
 public:
-    StandardScalarOpenList(ScalarEvaluator *eval);
+    StandardScalarOpenList(ScalarEvaluator *eval, 
+                           bool preferred_only=false);
     ~StandardScalarOpenList();
 	
     int insert(const Entry &entry);

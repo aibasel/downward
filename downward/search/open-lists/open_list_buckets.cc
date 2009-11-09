@@ -15,8 +15,8 @@ using namespace std;
 */
 
 template<class Entry>
-BucketOpenList<Entry>::BucketOpenList(ScalarEvaluator *eval) 
-    : lowest_bucket(0), size(0), evaluator(eval) {
+BucketOpenList<Entry>::BucketOpenList(ScalarEvaluator *eval, bool preferred_only) 
+    : OpenList<Entry>(preferred_only), lowest_bucket(0), size(0), evaluator(eval) {
 }
 
 template<class Entry>
@@ -25,6 +25,8 @@ BucketOpenList<Entry>::~BucketOpenList() {
 
 template<class Entry>
 int BucketOpenList<Entry>::insert(const Entry &entry) {
+	if (OpenList<Entry>::only_preferred && !last_preferred)
+		return 0;
 	int key = last_evaluated_value;
     assert(key >= 0);
     if(key >= buckets.size())
@@ -56,6 +58,7 @@ template<class Entry>
 void BucketOpenList<Entry>::evaluate(int g, bool preferred) {
 	get_evaluator()->evaluate(g, preferred);
 	last_evaluated_value = get_evaluator()->get_value();
+	last_preferred = preferred;
 	dead_end = get_evaluator()->is_dead_end();
 	dead_end_reliable = get_evaluator()->dead_end_is_reliable();
 }

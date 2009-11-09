@@ -17,6 +17,7 @@ class BucketOpenList : public OpenList<Entry> {
 
     ScalarEvaluator *evaluator;
 	int last_evaluated_value;
+	bool last_preferred;
 	bool dead_end;
 	bool dead_end_reliable;
 
@@ -24,7 +25,7 @@ protected:
     ScalarEvaluator* get_evaluator() { return evaluator; }
 
 public:
-    BucketOpenList(ScalarEvaluator *eval);
+    BucketOpenList(ScalarEvaluator *eval, bool preferred_only=false);
     ~BucketOpenList();
     
     int insert(const Entry &entry);
