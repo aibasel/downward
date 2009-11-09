@@ -55,7 +55,7 @@ void LamaFFSynergy::compute_heuristics(const State& state) {
     }
 }
 
-bool LamaFFSynergy::reach_state(const State& parent_state,
+bool LamaFFSynergy::lama_reach_state(const State& parent_state,
         const Operator &op, const State& state) {
     return lama_heuristic->reach_state(parent_state, op, state);
 }

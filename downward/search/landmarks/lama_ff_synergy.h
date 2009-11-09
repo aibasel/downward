@@ -18,11 +18,6 @@ class LamaFFSynergy {
         HeuristicProxy(LamaFFSynergy *synergy_);
         virtual ~HeuristicProxy() {}
 
-	virtual bool reach_state(const State& parent_state, const Operator& op,
-				 const State& state) {
-	    return synergy->reach_state(parent_state, op, state);
-	}
-
         virtual int compute_heuristic(const State& state) {
             if(is_first_proxy)
                 synergy->compute_heuristics(state);
@@ -50,6 +45,11 @@ class LamaFFSynergy {
 	}
     public:
         LamaHeuristicProxy(LamaFFSynergy *synergy_) : HeuristicProxy(synergy_) {}
+	virtual bool reach_state(const State& parent_state, const Operator& op,
+				 const State& state) {
+	    return synergy->lama_reach_state(parent_state, op, state);
+	}
+
     };
 
     friend class HeuristicProxy;
@@ -72,7 +72,7 @@ class LamaFFSynergy {
         initialized = true;
     }
 
-    bool reach_state(const State& parent_state, const Operator& op,
+    bool lama_reach_state(const State& parent_state, const Operator& op,
 		     const State& state);
 
     void compute_heuristics(const State&);
