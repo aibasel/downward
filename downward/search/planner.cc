@@ -50,7 +50,7 @@ int main(int argc, const char **argv) {
     bool lm_preferred = false;
     bool use_hm = false;
     int  m_hm = 2;
-    int lm_type = LandmarksCountHeuristic::rpg_sasp;
+    //int lm_type = LandmarksCountHeuristic::rpg_sasp;
 
 
 
@@ -89,11 +89,11 @@ int main(int argc, const char **argv) {
 		additive_heuristic = true;
 	    } else if(*c == 'l') {
 	    lm_heuristic = true;
-	    c++;
-        lm_type = ::atoi(c);
-        while(*c >= '0' && *c <= '9')
-            c++;
-        c--;
+	    //c++;
+        //lm_type = ::atoi(c);
+        //while(*c >= '0' && *c <= '9')
+        //    c++;
+        //c--;
 	    } else if(*c == 's') {
 	    lm_heuristic_admissible = true;
 	    } else if(*c == 'p') {
@@ -286,7 +286,7 @@ int main(int argc, const char **argv) {
     }
     if(lm_heuristic) {
     engine->add_heuristic(
-            new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type),
+            new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal),
 			 true, lm_preferred);
     }
 
