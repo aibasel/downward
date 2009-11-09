@@ -40,6 +40,7 @@ protected:
     bool check_goal();
     bool check_progress();
     void report_progress();
+    void reward_progress();
 
     void set_open_list(OpenList<OpenListEntry> *open);
 public:

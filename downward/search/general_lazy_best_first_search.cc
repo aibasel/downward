@@ -30,7 +30,7 @@ void GeneralLazyBestFirstSearch::initialize() {
 
     GEvaluator *g = new GEvaluator();
 
-    if (heuristics.size() == 1) {
+    if (heuristics.size() + preferred_operator_heuristics.size() == 1) {
         SumEvaluator *f = new SumEvaluator();
         f->add_evaluator(g);
         f->add_evaluator(heuristics[0]);
@@ -42,7 +42,13 @@ void GeneralLazyBestFirstSearch::initialize() {
             SumEvaluator *f = new SumEvaluator();
             f->add_evaluator(g);
             f->add_evaluator(heuristics[i]);
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntry>(f));
+            inner_lists.push_back(new StandardScalarOpenList<OpenListEntry>(f, false));
+        }
+        for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
+            SumEvaluator *f = new SumEvaluator();
+            f->add_evaluator(g);
+            f->add_evaluator(heuristics[i]);
+            inner_lists.push_back(new StandardScalarOpenList<OpenListEntry>(f, true));
         }
         open_list = new AlternationOpenList<OpenListEntry>(inner_lists);
     }
@@ -156,7 +162,7 @@ int GeneralLazyBestFirstSearch::step() {
                 return SOLVED;
             if(check_progress()) {
                 report_progress();
-            //    reward_progress();
+                reward_progress();
             }
             generate_successors(parent_ptr);
         }
@@ -188,6 +194,23 @@ void GeneralLazyBestFirstSearch::report_progress() {
         cout << "/";
     }
     cout << " [expanded " << closed_list.size() << " state(s)]" << endl;
+}
+
+void GeneralLazyBestFirstSearch::reward_progress() {
+    // Boost the "preferred operator" open lists somewhat whenever
+    // progress is made. This used to be used in multi-heuristic mode
+    // only, but it is also useful in single-heuristic mode, at least
+    // in Schedule.
+    //
+    // TODO: Test the impact of this, and find a better way of rewarding
+    // successful exploration. For example, reward only the open queue
+    // from which the good state was extracted and/or the open queues
+    // for the heuristic for which a new best value was found.
+
+    open_list->boost_preferred();
+    //for(int i = 0; i < open_lists.size(); i++)
+    //if(open_lists[i].only_preferred_operators)
+    //    open_lists[i].priority -= 1000;
 }
 
 void GeneralLazyBestFirstSearch::statistics() const {
