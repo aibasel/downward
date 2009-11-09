@@ -9,7 +9,7 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
           globals.h \
 	  domain_transition_graph.h \
           operator.h state.h successor_generator.h causal_graph.h \
-	  best_first_search.h eager_best_first_search.h axioms.h cache.h \
+	  best_first_search.h eager_greedy_best_first_search.h axioms.h cache.h \
           search_engine.h open-lists/open_list_buckets.h closed_list.h \
           timer.h open-lists/standard_scalar_open_list.h \
           open-lists/tiebreaking_open_list.h open-lists/alternation_open_list.h \

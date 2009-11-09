@@ -6,10 +6,10 @@
 class Heuristic;
 class Operator;
 
-class EagerBestFirstSearchEngine : public GeneralEagerBestFirstSearch {
+class EagerGreedyBestFirstSearchEngine : public GeneralEagerBestFirstSearch {
 public:
-    EagerBestFirstSearchEngine();
-    ~EagerBestFirstSearchEngine();
+    EagerGreedyBestFirstSearchEngine();
+    ~EagerGreedyBestFirstSearchEngine();
     void initialize();
 };
 

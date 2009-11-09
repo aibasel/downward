@@ -1,17 +1,17 @@
-#include "eager_best_first_search.h"
+#include "eager_greedy_best_first_search.h"
 
 #include "heuristic.h"
 #include "open-lists/standard_scalar_open_list.h"
 #include "open-lists/alternation_open_list.h"
 
-EagerBestFirstSearchEngine::EagerBestFirstSearchEngine():
+EagerGreedyBestFirstSearchEngine::EagerGreedyBestFirstSearchEngine():
 	GeneralEagerBestFirstSearch(false)  {
 }
 
-EagerBestFirstSearchEngine::~EagerBestFirstSearchEngine() {
+EagerGreedyBestFirstSearchEngine::~EagerGreedyBestFirstSearchEngine() {
 }
 
-void EagerBestFirstSearchEngine::initialize() {
+void EagerGreedyBestFirstSearchEngine::initialize() {
 	assert(heuristics.size() > 0);
 
 	vector<OpenList<state_var_t *> *> open_lists;
