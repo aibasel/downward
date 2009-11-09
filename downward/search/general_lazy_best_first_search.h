@@ -24,6 +24,7 @@ protected:
     vector<Heuristic *> heuristics;
     vector<Heuristic *> preferred_operator_heuristics;
 
+    vector<int> best_heuristic_values;
     int generated_states;
 
     State current_state;
@@ -37,6 +38,8 @@ protected:
     int fetch_next_state();
 
     bool check_goal();
+    bool check_progress();
+    void report_progress();
 
     void set_open_list(OpenList<OpenListEntry> *open);
 public:

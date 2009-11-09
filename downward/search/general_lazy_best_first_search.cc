@@ -54,6 +54,7 @@ void GeneralLazyBestFirstSearch::add_heuristic(Heuristic *heuristic,
     assert(use_estimates || use_preferred_operators);
     if (use_estimates || use_preferred_operators) {
         heuristics.push_back(heuristic);
+        best_heuristic_values.push_back(-1);
     }
     if(use_preferred_operators) {
         preferred_operator_heuristics.push_back(heuristic);
@@ -145,7 +146,7 @@ int GeneralLazyBestFirstSearch::step() {
 
         for(int i = 0; i < heuristics.size(); i++) {
             if (current_operator != NULL) {
-                heuristics[i]->reach_state(*current_predecessor, *current_operator, current_state);
+                heuristics[i]->reach_state(*current_predecessor, *current_operator, *parent_ptr);
             }
             heuristics[i]->evaluate(current_state);
         }
@@ -153,14 +154,40 @@ int GeneralLazyBestFirstSearch::step() {
         if(!open_list->is_dead_end()) {
             if(check_goal())
                 return SOLVED;
-            //if(check_progress()) {
-            //    report_progress();
+            if(check_progress()) {
+                report_progress();
             //    reward_progress();
-            //}
+            }
             generate_successors(parent_ptr);
         }
     }
     return fetch_next_state();
+}
+
+
+bool GeneralLazyBestFirstSearch::check_progress() {
+    bool progress = false;
+    for(int i = 0; i < heuristics.size(); i++) {
+    if(heuristics[i]->is_dead_end())
+        continue;
+    int h = heuristics[i]->get_heuristic();
+    int &best_h = best_heuristic_values[i];
+    if(best_h == -1 || h < best_h) {
+        best_h = h;
+        progress = true;
+    }
+    }
+    return progress;
+}
+
+void GeneralLazyBestFirstSearch::report_progress() {
+    cout << "Best heuristic value: ";
+    for(int i = 0; i < heuristics.size(); i++) {
+    cout << best_heuristic_values[i];
+    if(i != heuristics.size() - 1)
+        cout << "/";
+    }
+    cout << " [expanded " << closed_list.size() << " state(s)]" << endl;
 }
 
 void GeneralLazyBestFirstSearch::statistics() const {
