@@ -7,12 +7,11 @@
 #include "g_evaluator.h"
 #include "sum_evaluator.h"
 
-GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch():
-    current_state(*g_initial_state) {
-    generated_states = 0;
-    current_predecessor_buffer = 0;
-    current_operator = 0;
-    current_g = 0;
+GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(bool reopen_closed):
+    reopen_closed_nodes(reopen_closed),current_state(*g_initial_state),
+    current_predecessor_buffer(NULL), current_operator(NULL),
+    current_g(0),
+    generated_states(0){
 }
 
 GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {
@@ -26,39 +25,8 @@ void GeneralLazyBestFirstSearch::initialize() {
     //TODO children classes should output which kind of search
     cout << "Conducting lazy best first search" << endl;
 
-    //assert(open_list != NULL);
+    assert(open_list != NULL);
     assert(heuristics.size() > 0);
-
-    //GEvaluator *g = new GEvaluator();
-
-    if (heuristics.size() + preferred_operator_heuristics.size() == 1) {
-        //SumEvaluator *f = new SumEvaluator();
-        //f->add_evaluator(g);
-        //f->add_evaluator(heuristics[0]);
-        //open_list = new StandardScalarOpenList<OpenListEntryLazy>(f);
-
-        open_list = new StandardScalarOpenList<OpenListEntryLazy>(heuristics[0]);
-    }
-    else {
-        vector<OpenList<OpenListEntryLazy>*> inner_lists;
-        for (int i = 0; i < heuristics.size(); i++) {
-            //SumEvaluator *f = new SumEvaluator();
-            //f->add_evaluator(g);
-            //f->add_evaluator(heuristics[i]);
-            //inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(f, false));
-
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(heuristics[i], false));
-        }
-        for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
-            //SumEvaluator *f = new SumEvaluator();
-            //f->add_evaluator(g);
-            //f->add_evaluator(preferred_operator_heuristics[i]);
-            //inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(f, true));
-
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(preferred_operator_heuristics[i], true));
-        }
-        open_list = new AlternationOpenList<OpenListEntryLazy>(inner_lists);
-    }
 }
 
 void GeneralLazyBestFirstSearch::add_heuristic(Heuristic *heuristic,
@@ -159,7 +127,9 @@ int GeneralLazyBestFirstSearch::step() {
     // - current_g is the g value of the current state
 
     SearchNode node = search_space.get_node(current_state);
-    if(node.is_new()) {
+    bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end();
+
+    if(node.is_new() || reopen) {
         state_var_t *dummy_address = current_predecessor_buffer;
         // HACK! HACK! we do this because SearchNode has no default/copy constructor
         if (dummy_address == NULL) {
@@ -167,13 +137,6 @@ int GeneralLazyBestFirstSearch::step() {
         }
 
         SearchNode parent_node = search_space.get_node(State(dummy_address));
-        if (current_predecessor_buffer == NULL) {
-            node.open_initial(0);
-        }
-        else {
-            node.open(0, parent_node, current_operator);
-        }
-
         const State perm_state = node.get_state();
 
         for(int i = 0; i < heuristics.size(); i++) {
@@ -184,6 +147,18 @@ int GeneralLazyBestFirstSearch::step() {
         }
         open_list->evaluate(current_g, false);
         if(!open_list->is_dead_end()) {
+            // We use the value of the first heuristic, because SearchSpace only supported storing one heuristic value
+            int h = heuristics[0]->get_value();
+            if (reopen) {
+                node.reopen(parent_node, current_operator);
+            }
+            else if (current_predecessor_buffer == NULL) {
+                node.open_initial(h);
+            }
+            else {
+                node.open(h, parent_node, current_operator);
+            }
+            node.close();
             if(check_goal())
                 return SOLVED;
             if(check_progress()) {
@@ -191,6 +166,9 @@ int GeneralLazyBestFirstSearch::step() {
                 reward_progress();
             }
             generate_successors();
+        }
+        else {
+            node.mark_as_dead_end();
         }
     }
     return fetch_next_state();

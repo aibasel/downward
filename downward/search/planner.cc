@@ -21,6 +21,8 @@
 #include "landmarks/exploration.h"
 #include "hm_heuristic.h"
 #include "general_lazy_best_first_search.h"
+#include "lazy_best_first_search_engine.h"
+#include "lazy_wa_star.h"
 
 #include <iostream>
 #include <fstream>
@@ -44,6 +46,8 @@ int main(int argc, const char **argv) {
     bool lm_cut_heuristic = false;
     bool use_gen_search = false;
     bool use_lazy_search = false;
+    bool use_wa_star = false;
+    int weight = 0;
     bool lm_heuristic = false;
     bool lm_heuristic_admissible = false;
     bool lm_heuristic_optimal = false;
@@ -76,6 +80,13 @@ int main(int argc, const char **argv) {
 	    use_gen_search = true;
 	    } else if(*c == 'z') {
 	    use_lazy_search = true;
+	    } else if(*c == 'w') {
+        use_wa_star = true;
+        c++;
+        weight = ::atoi(c);
+        while(*c >= '0' && *c <= '9')
+            c++;
+        c--;
 	    } else if(*c == 'm') {
 		hsp_max_heuristic = true;
 	    } else if(*c == 'h') {
@@ -232,7 +243,10 @@ int main(int argc, const char **argv) {
         engine = new EagerGreedyBestFirstSearchEngine;
     }
     else if (use_lazy_search) {
-        engine = new GeneralLazyBestFirstSearch();
+        engine = new LazyBestFirstSearchEngine();
+    }
+    else if (use_wa_star) {
+        engine = new LazyWeightedAStar(weight);
     }
     else {
     	engine = new BestFirstSearchEngine;
