@@ -8,18 +8,18 @@
 #include "search_engine.h"
 #include "state.h"
 #include "scalar_evaluator.h"
+#include "search_space.h"
 
 class Heuristic;
 class Operator;
 
 
-typedef pair<const State *, const Operator *> OpenListEntry;
-typedef pair<pair<const State *, const Operator *>, int> OpenListEntryWithG;
+typedef pair<state_var_t *, const Operator *> OpenListEntryLazy;
 
 class GeneralLazyBestFirstSearch: public SearchEngine {
 protected:
-    ClosedList<State, const Operator *> closed_list;
-    OpenList<OpenListEntryWithG> *open_list;
+    SearchSpace search_space;
+    OpenList<OpenListEntryLazy> *open_list;
     ScalarEvaluator *f_evaluator;
     vector<Heuristic *> heuristics;
     vector<Heuristic *> preferred_operator_heuristics;
@@ -28,14 +28,14 @@ protected:
     int generated_states;
 
     State current_state;
-    const State *current_predecessor;
+    state_var_t *current_predecessor_buffer;
     const Operator *current_operator;
     int current_g;
 
     virtual void initialize();
     virtual int step();
 
-    void generate_successors(const State *parent_ptr);
+    void generate_successors();
     int fetch_next_state();
 
     bool check_goal();
@@ -43,7 +43,7 @@ protected:
     void report_progress();
     void reward_progress();
 
-    void set_open_list(OpenList<OpenListEntryWithG> *open);
+    void set_open_list(OpenList<OpenListEntryLazy> *open);
 public:
     GeneralLazyBestFirstSearch();
     virtual ~GeneralLazyBestFirstSearch();
