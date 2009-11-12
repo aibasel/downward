@@ -20,6 +20,7 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  landmarks/landmark_status_manager.h \
 	  landmarks/landmarks_graph_rpg_exhaust.h landmarks/landmarks_graph_zhu_givan.h \
 	  landmarks/util.h landmarks/lama_ff_synergy.h landmarks/landmark_cost_assignment.h\
+	  landmarks/landmarks_graph_rpg_search.h\
 	  hm_heuristic.h \
 	  weighted_evaluator.h sum_evaluator.h g_evaluator.h general_lazy_best_first_search.h\
 	  lazy_best_first_search_engine.h lazy_wa_star.h

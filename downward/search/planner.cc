@@ -55,7 +55,7 @@ int main(int argc, const char **argv) {
     bool lm_preferred = false;
     bool use_hm = false;
     int  m_hm = 2;
-    //int lm_type = LandmarksCountHeuristic::rpg_sasp;
+    int lm_type = LandmarksCountHeuristic::rpg_sasp;
 
 
 
@@ -103,11 +103,11 @@ int main(int argc, const char **argv) {
 		additive_heuristic = true;
 	    } else if(*c == 'l') {
 	    lm_heuristic = true;
-	    //c++;
-        //lm_type = ::atoi(c);
-        //while(*c >= '0' && *c <= '9')
-        //    c++;
-        //c--;
+	    c++;
+        lm_type = ::atoi(c);
+        while(*c >= '0' && *c <= '9')
+            c++;
+        c--;
 	    } else if(*c == 's') {
 	    lm_heuristic_admissible = true;
 	    } else if(*c == 'p') {
@@ -284,7 +284,7 @@ int main(int argc, const char **argv) {
     // or in other combinations.)
     if((ff_heuristic || ff_preferred_operators) && lm_preferred) {
 	LamaFFSynergy *lama_ff_synergy = new LamaFFSynergy(
-	    lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal);
+	    lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type);
 	engine->add_heuristic(
 	    lama_ff_synergy->get_lama_heuristic_proxy(),
 	    lm_heuristic, lm_preferred);
@@ -322,7 +322,7 @@ int main(int argc, const char **argv) {
     }
     if(lm_heuristic && !synergy) {
     engine->add_heuristic(
-            new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal),
+            new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type),
 			 true, lm_preferred);
     }
 

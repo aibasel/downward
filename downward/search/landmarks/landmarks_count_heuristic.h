@@ -13,6 +13,8 @@ extern LandmarksGraph *g_lgraph; // Make global so graph does not need to be bui
 // even when iterating search (TODO: clean up use of g_lgraph vs.
 // lgraph in this class).
 
+
+
 class LandmarksCountHeuristic: public Heuristic {
 
     friend class LamaFFSynergy;
@@ -55,7 +57,7 @@ class LandmarksCountHeuristic: public Heuristic {
 protected:
     virtual int compute_heuristic(const State &state);
 public:
-    LandmarksCountHeuristic(bool use_preferred_operators, bool admissible, bool optimal);
+    LandmarksCountHeuristic(bool use_preferred_operators, bool admissible, bool optimal, int landmarks_type=rpg_sasp);
     ~LandmarksCountHeuristic() {
     }
     virtual bool reach_state(const State& parent_state, const Operator &op,
@@ -63,6 +65,8 @@ public:
     virtual bool dead_ends_are_reliable() {
         return true;
     }
+
+    enum {rpg_sasp = 0, zhu_givan = 1, exhaust = 2, search = 3};
 };
 
 #endif

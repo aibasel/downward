@@ -12,12 +12,12 @@ void LamaFFSynergy::HeuristicProxy::initialize() {
     }
 }
 
-LamaFFSynergy::LamaFFSynergy(bool lm_pref_, bool lm_admissible_, bool lm_optimal_) :
+LamaFFSynergy::LamaFFSynergy(bool lm_pref_, bool lm_admissible_, bool lm_optimal_, int lm_type_) :
     lama_heuristic_proxy(this), ff_heuristic_proxy(this),
-    lm_pref(lm_pref_), lm_admissible(lm_admissible_), lm_optimal(lm_optimal_) {
+    lm_pref(lm_pref_), lm_admissible(lm_admissible_), lm_optimal(lm_optimal_), lm_type(lm_type_) {
 
     cout << "Initializing LAMA-FF Synergy Object" << endl;
-    lama_heuristic = new LandmarksCountHeuristic(lm_pref, lm_admissible, lm_optimal);
+    lama_heuristic = new LandmarksCountHeuristic(lm_pref, lm_admissible, lm_optimal, lm_type);
     //lama_heuristic->initialize(); // must be called here explicitly
     exploration = lama_heuristic->get_exploration();
     initialized = false;

@@ -17,16 +17,16 @@ LandmarksGraph *g_lgraph; // global to be accessible by state
 static void init_lm_graph(Exploration* exploration, int landmarks_type) {
 
     switch (landmarks_type) {
-    case 0:
+    case LandmarksCountHeuristic::rpg_sasp:
         g_lgraph = new LandmarksGraphNew(exploration);
         break;
-    case 1:
+    case LandmarksCountHeuristic::zhu_givan:
         g_lgraph = new LandmarksGraphZhuGivan(exploration); // Note: remove exploration here?
         break;
-    case 2:
+    case LandmarksCountHeuristic::exhaust:
         g_lgraph = new LandmarksGraphExhaust(exploration);
         break;
-    case 3:
+    case LandmarksCountHeuristic::search:
         g_lgraph = new LandmarksGraphRpgSearch(exploration);
         break;
     default:
@@ -35,7 +35,8 @@ static void init_lm_graph(Exploration* exploration, int landmarks_type) {
 
 }
 
-static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admissible) {
+static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admissible,
+        int landmarks_type=LandmarksCountHeuristic::rpg_sasp) {
     bool reasonable_orders = true; // option to use/not use reasonable orderings
     bool disjunctive_lms = true; // option to discard/not discard disj. landmarks before search
     if(admissible) {
@@ -45,9 +46,6 @@ static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admi
     if (g_lgraph != NULL) // in case of iterated search LM graph has already been constructed
         return g_lgraph;
     Timer lm_generation_timer;
-    enum {
-        rpg_sasp, zhu_givan, exhaust, search
-    } landmarks_type = rpg_sasp; // change for different landmarks
     init_lm_graph(exploration, landmarks_type);
     g_lgraph->read_external_inconsistencies();
     if (reasonable_orders) {
@@ -68,9 +66,10 @@ static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admi
 }
 
 LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
-        bool admissible, bool optimal) :
-    exploration(new Exploration), lgraph(*build_landmarks_graph(exploration, admissible)),
-            lm_status_manager(lgraph) {
+        bool admissible, bool optimal, int landmarks_type) :
+    exploration(new Exploration),
+    lgraph(*build_landmarks_graph(exploration, admissible, landmarks_type)),
+    lm_status_manager(lgraph) {
 
     cout << "Initializing landmarks count heuristic..." << endl;
     use_preferred_operators = preferred_ops;

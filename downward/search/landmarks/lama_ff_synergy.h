@@ -63,6 +63,7 @@ class LamaFFSynergy {
     bool lm_pref;
     bool lm_admissible;
     bool lm_optimal;
+    int lm_type;
     std::vector<const Operator *> lama_preferred_operators;
     std::vector<const Operator *> ff_preferred_operators;
     bool initialized;
@@ -79,7 +80,7 @@ class LamaFFSynergy {
     void get_lama_preferred_operators(std::vector<const Operator *> &result);
     void get_ff_preferred_operators(std::vector<const Operator *> &result);
 public:
-    LamaFFSynergy(bool lm_pref_, bool lm_admissible_, bool lm_optimal_);
+    LamaFFSynergy(bool lm_pref_, bool lm_admissible_, bool lm_optimal_, int lm_type_=LandmarksCountHeuristic::rpg_sasp);
     ~LamaFFSynergy() {}
 
     int lama_heuristic_value;
