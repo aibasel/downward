@@ -245,6 +245,7 @@ int main(int argc, const char **argv) {
     int wastar_bound = -1;
     int wastar_weight = wa_star_weights[0];
     bool reducing_weight = true;
+    bool synergy = false;
 
   do{
     iteration_no++;
@@ -277,7 +278,6 @@ int main(int argc, const char **argv) {
     	engine = new BestFirstSearchEngine;
     }
 
-
     // Test if synergies can be used between FF heuristic and landmark pref. ops.
     // Used to achieve LAMA's behaviour. (Note: this uses a different version
     // of the FF heuristic than if the FF heuristic is run by itself
@@ -291,10 +291,7 @@ int main(int argc, const char **argv) {
 	engine->add_heuristic(
 	    lama_ff_synergy->get_ff_heuristic_proxy(),
 	    ff_heuristic, ff_preferred_operators);
-	ff_heuristic = false;
-	ff_preferred_operators = false;
-	lm_heuristic = false;
-	lm_preferred = false;
+	synergy = true;
     }
 
     if(cg_heuristic || cg_preferred_operators)
@@ -306,7 +303,7 @@ int main(int argc, const char **argv) {
     if(additive_heuristic || additive_preferred_operators)
 	engine->add_heuristic(new AdditiveHeuristic, additive_heuristic,
                               additive_preferred_operators);
-    if(ff_heuristic || ff_preferred_operators)
+    if((ff_heuristic || ff_preferred_operators) && !synergy)
 	engine->add_heuristic(new FFHeuristic, ff_heuristic,
 			      ff_preferred_operators);
     if(goal_count_heuristic)
@@ -323,7 +320,7 @@ int main(int argc, const char **argv) {
         cout << "Using h^" << m_hm << endl;
         engine->add_heuristic(new HMHeuristic(m_hm), true, false);
     }
-    if(lm_heuristic) {
+    if(lm_heuristic && !synergy) {
     engine->add_heuristic(
             new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal),
 			 true, lm_preferred);
