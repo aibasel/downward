@@ -406,6 +406,30 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
     }
 }
 
+int Exploration::compute_ff_heuristic_with_excludes(const State &state,
+        const vector<pair<int, int> >& excluded_props,
+        const hash_set<const Operator *, ex_hash_operator_ptr>& excluded_ops) {
+    bool use_h_max = true;
+    bool level_out = false;
+    setup_exploration_queue(state, excluded_props, excluded_ops, use_h_max);
+    relaxed_exploration(use_h_max, level_out);
+    int h = 0;
+    if (use_h_max)
+        h = compute_hsp_max_heuristic();
+    else
+        h = compute_hsp_add_heuristic();
+    if(h == DEAD_END) {
+        return DEAD_END;
+    }
+    else {
+        RelaxedPlan relaxed_plan;
+        // Collecting the relaxed plan also marks helpful actions as preferred.
+        for(int i = 0; i < goal_propositions.size(); i++)
+            collect_relaxed_plan(goal_propositions[i], relaxed_plan, state);
+        return relaxed_plan.size();
+    }
+}
+
 void Exploration::
 compute_reachability_with_excludes(vector<vector<int> >& lvl_var,
 				   vector<hash_map<pair<int, int>, int, hash_int_pair> >& lvl_op,

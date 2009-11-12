@@ -1126,3 +1126,19 @@ void LandmarksGraph::calc_achievers() {
         }
     }
 }
+
+int LandmarksGraph::relaxed_plan_length_without(LandmarkNode* exclude) {
+    vector<pair<int, int> > exclude_props;
+    hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
+    if (exclude != NULL) {
+        for (int op = 0; op < g_operators.size(); op++) {
+            if (_operator_eff_includes_non_conditional(g_operators[op], exclude))
+                exclude_ops.insert(&g_operators[op]);
+        }
+        for (int i = 0; i < exclude->vars.size(); i++)
+            exclude_props.push_back(make_pair(exclude->vars[i],
+                    exclude->vals[i]));
+    }
+    int val = exploration->compute_ff_heuristic_with_excludes(*g_initial_state, exclude_props, exclude_ops);
+    return val;
+}

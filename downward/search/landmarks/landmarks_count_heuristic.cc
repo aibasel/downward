@@ -9,11 +9,13 @@
 #include "landmarks_graph_rpg_sasp.h"
 #include "landmarks_graph_zhu_givan.h"
 #include "landmarks_graph_rpg_exhaust.h"
+#include "landmarks_graph_rpg_search.h"
 #include "../timer.h"
 
 LandmarksGraph *g_lgraph; // global to be accessible by state
 
 static void init_lm_graph(Exploration* exploration, int landmarks_type) {
+
     switch (landmarks_type) {
     case 0:
         g_lgraph = new LandmarksGraphNew(exploration);
@@ -24,9 +26,13 @@ static void init_lm_graph(Exploration* exploration, int landmarks_type) {
     case 2:
         g_lgraph = new LandmarksGraphExhaust(exploration);
         break;
+    case 3:
+        g_lgraph = new LandmarksGraphRpgSearch(exploration);
+        break;
     default:
         assert(false); // unknown landmarks_type
     }
+
 }
 
 static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admissible) {
@@ -40,7 +46,7 @@ static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admi
         return g_lgraph;
     Timer lm_generation_timer;
     enum {
-        rpg_sasp, zhu_givan, exhaust
+        rpg_sasp, zhu_givan, exhaust, search
     } landmarks_type = rpg_sasp; // change for different landmarks
     init_lm_graph(exploration, landmarks_type);
     g_lgraph->read_external_inconsistencies();

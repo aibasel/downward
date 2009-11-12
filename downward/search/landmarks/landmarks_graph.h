@@ -237,6 +237,8 @@ protected:
 					 vector<vector<int> >& lvl_var,
 					 vector<hash_map<pair<int, int>, int, hash_int_pair> >& lvl_op);
 
+    int relaxed_plan_length_without(LandmarkNode* lm);
+
     LandmarkNode& landmark_add_simple(const pair<int, int>& lm);
     LandmarkNode& landmark_add_disjunctive(const set<pair<int, int> >& lm);
     void edge_add(LandmarkNode& from, LandmarkNode& to,
