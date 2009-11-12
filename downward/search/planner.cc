@@ -47,6 +47,7 @@ int main(int argc, const char **argv) {
     bool use_gen_search = false;
     bool use_lazy_search = false;
     bool use_wa_star = false;
+    bool iterative_search = false;
     int weight = 0;
     bool lm_heuristic = false;
     bool lm_heuristic_admissible = false;
@@ -80,6 +81,8 @@ int main(int argc, const char **argv) {
 	    use_gen_search = true;
 	    } else if(*c == 'z') {
 	    use_lazy_search = true;
+	    } else if(*c == 'i') {
+	    iterative_search = true;
 	    } else if(*c == 'w') {
         use_wa_star = true;
         c++;
@@ -235,6 +238,24 @@ int main(int argc, const char **argv) {
     //cout << "Generated " << lm_graph->number_of_landmarks() << " landmarks and "
     //<< lm_graph->number_of_edges() << " orderings" << endl;
 
+
+    int iteration_no = 0;
+    bool solution_found = false;
+    int wa_star_weights[] = {10, 5, 3, 2, 1, -1};
+    int wastar_bound = -1;
+    int wastar_weight = wa_star_weights[0];
+    bool reducing_weight = true;
+
+  do{
+    iteration_no++;
+    cout << "Search iteration " << iteration_no << endl;
+    if(reducing_weight && wa_star_weights[iteration_no - 1] != -1)
+        wastar_weight = wa_star_weights[iteration_no - 1];
+    else {
+        cout << "No more new weight, weight is " << wastar_weight << endl;
+        reducing_weight = false;
+    }
+
     SearchEngine *engine = 0;
     if(a_star_search) {
         engine = new AStarSearchEngine;
@@ -247,6 +268,10 @@ int main(int argc, const char **argv) {
     }
     else if (use_wa_star) {
         engine = new LazyWeightedAStar(weight);
+    }
+    else if (iterative_search) {
+        engine = new LazyWeightedAStar(wastar_weight);
+        ((LazyWeightedAStar*)engine)->set_bound(wastar_bound);
     }
     else {
     	engine = new BestFirstSearchEngine;
@@ -308,8 +333,13 @@ int main(int argc, const char **argv) {
     engine->search();
     search_timer.stop();
     g_timer.stop();
-    if(engine->found_solution())
-	save_plan(engine->get_plan());
+    if(engine->found_solution()) {
+        save_plan(engine->get_plan());
+        wastar_bound = engine->get_plan().size();
+    }
+    else {
+        iterative_search = false;
+    }
 
     engine->statistics();
     if(cg_heuristic || cg_preferred_operators) {
@@ -319,7 +349,12 @@ int main(int argc, const char **argv) {
     cout << "Search time: " << search_timer << endl;
     cout << "Total time: " << g_timer << endl;
 
-    return engine->found_solution() ? 0 : 1;
+    solution_found = engine->found_solution();
+
+    delete engine;
+
+  } while(iterative_search);
+
 }
 
 int save_plan(const vector<const Operator *> &plan) {

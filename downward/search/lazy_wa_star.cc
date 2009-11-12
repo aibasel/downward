@@ -22,7 +22,7 @@ LazyWeightedAStar::~LazyWeightedAStar() {
 
 void LazyWeightedAStar::initialize() {
     //TODO children classes should output which kind of search
-    cout << "Conducting lazy weighted A* search" << endl;
+    cout << "Conducting lazy weighted A* search, weight = " << weight <<  endl;
 
     GEvaluator *g = new GEvaluator();
 

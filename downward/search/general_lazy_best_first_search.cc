@@ -8,8 +8,8 @@
 #include "sum_evaluator.h"
 
 GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(bool reopen_closed):
-    reopen_closed_nodes(reopen_closed),current_state(*g_initial_state),
-    current_predecessor_buffer(NULL), current_operator(NULL),
+    reopen_closed_nodes(reopen_closed),bound(-1),
+    current_state(*g_initial_state), current_predecessor_buffer(NULL), current_operator(NULL),
     current_g(0),
     generated_states(0){
 }
@@ -23,7 +23,7 @@ void GeneralLazyBestFirstSearch::set_open_list(OpenList<OpenListEntryLazy> *open
 
 void GeneralLazyBestFirstSearch::initialize() {
     //TODO children classes should output which kind of search
-    cout << "Conducting lazy best first search" << endl;
+    cout << "Conducting lazy best first search, bound = " << bound << endl;
 
     assert(open_list != NULL);
     assert(heuristics.size() > 0);
@@ -125,6 +125,10 @@ int GeneralLazyBestFirstSearch::step() {
     // - current_predecessor is a permanent pointer to the predecessor of that state.
     // - current_operator is the operator which leads to current_state from predecessor.
     // - current_g is the g value of the current state
+
+    if(bound != -1 && current_g >= bound) {
+        return fetch_next_state();
+    }
 
     SearchNode node = search_space.get_node(current_state);
     bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end();

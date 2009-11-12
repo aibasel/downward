@@ -20,6 +20,7 @@ class GeneralLazyBestFirstSearch: public SearchEngine {
 protected:
     // Search Behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
+    int bound;
 
     SearchSpace search_space;
     OpenList<OpenListEntryLazy> *open_list;
@@ -55,6 +56,8 @@ public:
                                    bool use_preferred_operators);
 
     virtual void statistics() const;
+    void set_bound(int b) {bound = b;}
+    int get_bound() {return bound;}
 };
 
 #endif /* GENERALLAZYBESTFIRSTSEARCH_H_ */
