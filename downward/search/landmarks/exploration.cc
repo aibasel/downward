@@ -55,10 +55,6 @@ Exploration::Exploration(bool use_cache)
     for(int i = 0; i < g_axioms.size(); i++)
 	build_unary_operators(g_axioms[i]);
 
-    // Do NOT simplify unary operators: conflicts with operators excluded from
-    // exploration by LM graph.
-    //simplify();
-
     // Cross-reference unary operators.
     for(int i = 0; i < unary_operators.size(); i++) {
 	ExUnaryOperator *op = &unary_operators[i];
@@ -98,7 +94,7 @@ void Exploration::set_additional_goals(const std::vector<pair<int, int> >& add_g
 
 void Exploration::build_unary_operators(const Operator &op) {
     // Note: changed from the original to allow sorting of operator conditions
-    int base_cost = op.is_axiom() ? 0 : 1;
+    int base_cost =  op.get_cost(); 
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<ExProposition *> precondition;
@@ -153,62 +149,6 @@ public:
 	return size_t(hash_value);
     }
 };
-
-void Exploration::simplify() {
-    // Remove duplicate or dominated unary operators.
-
-    /*
-      Algorithm: Put all unary operators into a hash_map
-      (key: condition and effect; value: index in operator vector.
-      This gets rid of operators with identical conditions.
-
-      Then go through the hash_map, checking for each element if
-      none of the possible dominators are part of the hash_map.
-      Put the element into the new operator vector iff this is the case.
-    */
-
-
-    cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
-
-    typedef pair<vector<ExProposition *>, ExProposition *> HashKey;
-    typedef hash_map<HashKey, int, hash_unary_operator> HashMap;
-    HashMap unary_operator_index;
-    unary_operator_index.resize(unary_operators.size() * 2);
-
-    for(int i = 0; i < unary_operators.size(); i++) {
-	ExUnaryOperator &op = unary_operators[i];
-	// sort(op.precondition.begin(), op.precondition.end());
-	HashKey key(op.precondition, op.effect);
-	unary_operator_index[key] = i;
-    }
-
-    vector<ExUnaryOperator> old_unary_operators;
-    old_unary_operators.swap(unary_operators);
-
-    for(HashMap::iterator it = unary_operator_index.begin();
-	it != unary_operator_index.end(); ++it) {
-	const HashKey &key = it->first;
-	int unary_operator_no = it->second;
-	int powerset_size = (1 << key.first.size()) - 1; // -1: only consider proper subsets
-	bool match = false;
-	if(powerset_size <= 31) { // HACK! Don't spend too much time here...
-	    for(int mask = 0; mask < powerset_size; mask++) {
-		HashKey dominating_key = make_pair(vector<ExProposition *>(), key.second);
-		for(int i = 0; i < key.first.size(); i++)
-		    if(mask & (1 << i))
-			dominating_key.first.push_back(key.first[i]);
-		if(unary_operator_index.count(dominating_key)) {
-		    match = true;
-		    break;
-		}
-	    }
-	}
-	if(!match)
-	    unary_operators.push_back(old_unary_operators[unary_operator_no]);
-    }
-    sort(unary_operators.begin(), unary_operators.end());
-    cout << " done! [" << unary_operators.size() << " unary operators]" << endl;
-}
 
 // heuristic computation
 void Exploration::setup_exploration_queue(const State &state,
@@ -378,7 +318,11 @@ int Exploration::compute_ff_heuristic(const State &state) {
 	// Collecting the relaxed plan also marks helpful actions as preferred.
 	for(int i = 0; i < goal_propositions.size(); i++)
 	    collect_relaxed_plan(goal_propositions[i], relaxed_plan, state);
-	return relaxed_plan.size();
+	int cost = 0;
+	RelaxedPlan::iterator it = relaxed_plan.begin();
+	for(; it != relaxed_plan.end(); ++it)
+	    cost += (*it)->get_cost();
+	return cost;
     }
 }
 
