@@ -39,7 +39,7 @@ RELEASEOPT += -O3 -DNDEBUG -fomit-frame-pointer
 
 ## We link statically to allow local compiles to work on the BFG cluster.
 ## NOTE: This precludes using exceptions; see man gcc on -static-libgcc.
-#RELEASEOPT += -static -static-libgcc
+RELEASEOPT += -static -static-libgcc
 
 ## debug, don't optimize
 CCOPT += -g
