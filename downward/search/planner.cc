@@ -71,55 +71,55 @@ int main(int argc, const char **argv) {
                 cyclic_cg_heuristic = true;
             } else if(*c == 'Y') {
                 cyclic_cg_preferred_operators = true;
-	    } else if(*c == 'f') {
-		ff_heuristic = true;
-	    } else if(*c == 'F') {
-		ff_preferred_operators = true;
-	    } else if(*c == 'a') {
-		fd_heuristic = true;
-	    } else if(*c == 'k') {
-	    use_gen_search = true;
-	    } else if(*c == 'z') {
-	    use_lazy_search = true;
-	    } else if(*c == 'i') {
-	    iterative_search = true;
-	    } else if(*c == 'w') {
+        } else if(*c == 'f') {
+        ff_heuristic = true;
+        } else if(*c == 'F') {
+        ff_preferred_operators = true;
+        } else if(*c == 'a') {
+        fd_heuristic = true;
+        } else if(*c == 'k') {
+        use_gen_search = true;
+        } else if(*c == 'z') {
+        use_lazy_search = true;
+        } else if(*c == 'i') {
+        iterative_search = true;
+        } else if(*c == 'w') {
         use_wa_star = true;
         c++;
         weight = ::atoi(c);
         while(*c >= '0' && *c <= '9')
             c++;
         c--;
-	    } else if(*c == 'm') {
-		hsp_max_heuristic = true;
-	    } else if(*c == 'h') {
-	    use_hm = true;
-	    c++;
+        } else if(*c == 'm') {
+        hsp_max_heuristic = true;
+        } else if(*c == 'h') {
+        use_hm = true;
+        c++;
         m_hm = ::atoi(c);
         while(*c >= '0' && *c <= '9')
             c++;
         c--;
-	    } else if(*c == 'd') {
-		additive_heuristic = true;
-	    } else if(*c == 'l') {
-	    lm_heuristic = true;
-	    c++;
+        } else if(*c == 'd') {
+        additive_heuristic = true;
+        } else if(*c == 'l') {
+        lm_heuristic = true;
+        c++;
         lm_type = ::atoi(c);
         while(*c >= '0' && *c <= '9')
             c++;
         c--;
-	    } else if(*c == 's') {
-	    lm_heuristic_admissible = true;
-	    } else if(*c == 'p') {
-	    lm_heuristic_optimal = true;
-	    } else if(*c == 'L') {
-	    lm_preferred = true;
-	    } else if(*c == 'D') {
-		additive_preferred_operators = true;
-	    } else if(*c == 'g') {
-		goal_count_heuristic = true;
-	    } else if(*c == 'b') {
-		blind_search_heuristic = true;
+        } else if(*c == 's') {
+        lm_heuristic_admissible = true;
+        } else if(*c == 'p') {
+        lm_heuristic_optimal = true;
+        } else if(*c == 'L') {
+        lm_preferred = true;
+        } else if(*c == 'D') {
+        additive_preferred_operators = true;
+        } else if(*c == 'g') {
+        goal_count_heuristic = true;
+        } else if(*c == 'b') {
+        blind_search_heuristic = true;
             } else if(*c == 'u') {
                 lm_cut_heuristic = true;
             } else if(*c >= '0' && *c <= '9') {
@@ -132,14 +132,14 @@ int main(int argc, const char **argv) {
                          << endl;
                     return 2;
                 }
-	    } else if(*c == 'A') {
-	        c++;
+        } else if(*c == 'A') {
+            c++;
                 g_abstraction_nr = ::atoi(c);
                 while(*c >= '0' && *c <= '9')
                     c++;
                 c--;
-	    } else if(*c == 'R') {
-	        c++;
+        } else if(*c == 'R') {
+            c++;
                 int seed = ::atoi(c);
                 while(*c >= '0' && *c <= '9')
                     c++;
@@ -167,11 +167,11 @@ int main(int argc, const char **argv) {
                     c++;
                 }
                 c--;
-	    } else {
-		cerr << "Unknown option: " << *c << endl;
-		return 2;
-	    }
-	}
+        } else {
+        cerr << "Unknown option: " << *c << endl;
+        return 2;
+        }
+    }
     }
 
     if(fd_heuristic) {
@@ -212,9 +212,9 @@ int main(int argc, const char **argv) {
        && !ff_heuristic && !additive_heuristic && !goal_count_heuristic
        && !blind_search_heuristic && !fd_heuristic && !hsp_max_heuristic
        && !lm_cut_heuristic && !lm_heuristic && !use_hm) {
-	cerr << "Error: you must select at least one heuristic!" << endl
-	     << "If you are unsure, choose options \"cCfF\"." << endl;
-	return 2;
+    cerr << "Error: you must select at least one heuristic!" << endl
+         << "If you are unsure, choose options \"cCfF\"." << endl;
+    return 2;
     }
 
     istream &in = cin;
@@ -222,8 +222,8 @@ int main(int argc, const char **argv) {
 
     in >> poly_time_method;
     if(poly_time_method) {
-	cout << "Poly-time method not implemented in this branch." << endl;
-	cout << "Starting normal solver." << endl;
+    cout << "Poly-time method not implemented in this branch." << endl;
+    cout << "Starting normal solver." << endl;
     }
 
     read_everything(in);
@@ -275,7 +275,7 @@ int main(int argc, const char **argv) {
         ((LazyWeightedAStar*)engine)->set_bound(wastar_bound);
     }
     else {
-    	engine = new BestFirstSearchEngine;
+        engine = new BestFirstSearchEngine;
     }
 
     // Test if synergies can be used between FF heuristic and landmark pref. ops.
@@ -283,37 +283,37 @@ int main(int argc, const char **argv) {
     // of the FF heuristic than if the FF heuristic is run by itself
     // or in other combinations.)
     if((ff_heuristic || ff_preferred_operators) && lm_preferred) {
-	LamaFFSynergy *lama_ff_synergy = new LamaFFSynergy(
-	    lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type);
-	engine->add_heuristic(
-	    lama_ff_synergy->get_lama_heuristic_proxy(),
-	    lm_heuristic, lm_preferred);
-	engine->add_heuristic(
-	    lama_ff_synergy->get_ff_heuristic_proxy(),
-	    ff_heuristic, ff_preferred_operators);
-	synergy = true;
+    LamaFFSynergy *lama_ff_synergy = new LamaFFSynergy(
+        lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type);
+    engine->add_heuristic(
+        lama_ff_synergy->get_lama_heuristic_proxy(),
+        lm_heuristic, lm_preferred);
+    engine->add_heuristic(
+        lama_ff_synergy->get_ff_heuristic_proxy(),
+        ff_heuristic, ff_preferred_operators);
+    synergy = true;
     }
 
     if(cg_heuristic || cg_preferred_operators)
-	engine->add_heuristic(new CGHeuristic, cg_heuristic,
-			      cg_preferred_operators);
+    engine->add_heuristic(new CGHeuristic, cg_heuristic,
+                  cg_preferred_operators);
     if(cyclic_cg_heuristic || cyclic_cg_preferred_operators)
-	engine->add_heuristic(new CyclicCGHeuristic, cyclic_cg_heuristic,
-			      cyclic_cg_preferred_operators);
+    engine->add_heuristic(new CyclicCGHeuristic, cyclic_cg_heuristic,
+                  cyclic_cg_preferred_operators);
     if(additive_heuristic || additive_preferred_operators)
-	engine->add_heuristic(new AdditiveHeuristic, additive_heuristic,
+    engine->add_heuristic(new AdditiveHeuristic, additive_heuristic,
                               additive_preferred_operators);
     if((ff_heuristic || ff_preferred_operators) && !synergy)
-	engine->add_heuristic(new FFHeuristic, ff_heuristic,
-			      ff_preferred_operators);
+    engine->add_heuristic(new FFHeuristic, ff_heuristic,
+                  ff_preferred_operators);
     if(goal_count_heuristic)
-	engine->add_heuristic(new GoalCountHeuristic, true, false);
+    engine->add_heuristic(new GoalCountHeuristic, true, false);
     if(blind_search_heuristic)
-	engine->add_heuristic(new BlindSearchHeuristic, true, false);
+    engine->add_heuristic(new BlindSearchHeuristic, true, false);
     if(fd_heuristic)
-	engine->add_heuristic(new FinkbeinerDraegerHeuristic, true, false);
+    engine->add_heuristic(new FinkbeinerDraegerHeuristic, true, false);
     if(hsp_max_heuristic)
-	engine->add_heuristic(new HSPMaxHeuristic, true, false);
+    engine->add_heuristic(new HSPMaxHeuristic, true, false);
     if(lm_cut_heuristic)
     engine->add_heuristic(new LandmarkCutHeuristic, true, false);
     if(use_hm) {
@@ -323,7 +323,7 @@ int main(int argc, const char **argv) {
     if(lm_heuristic && !synergy) {
     engine->add_heuristic(
             new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type),
-			 true, lm_preferred);
+             true, lm_preferred);
     }
 
     Timer search_timer;
@@ -340,8 +340,8 @@ int main(int argc, const char **argv) {
 
     engine->statistics();
     if(cg_heuristic || cg_preferred_operators) {
-	cout << "Cache hits: " << g_cache_hits << endl;
-	cout << "Cache misses: " << g_cache_misses << endl;
+    cout << "Cache hits: " << g_cache_hits << endl;
+    cout << "Cache misses: " << g_cache_misses << endl;
     }
     cout << "Search time: " << search_timer << endl;
     cout << "Total time: " << g_timer << endl;
@@ -359,9 +359,9 @@ int save_plan(const vector<const Operator *> &plan) {
     int plan_cost = 0;
     outfile.open("sas_plan", ios::out);
     for(int i = 0; i < plan.size(); i++) {
-    	cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
-    	outfile << "(" << plan[i]->get_name() << ")" << endl;
-    	plan_cost += plan[i]->get_cost();
+        cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
+        outfile << "(" << plan[i]->get_name() << ")" << endl;
+        plan_cost += plan[i]->get_cost();
     }
     outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
