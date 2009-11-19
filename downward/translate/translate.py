@@ -39,7 +39,16 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
     condition = {}
     for fact in conditions:
         atom = pddl.Atom(fact.predicate, fact.args) # force positive
-        for var, val in dictionary[atom]:
+        for var, val in dictionary.get(atom, ()):
+            # The default () here is a bit of a hack. For goals (but
+            # only for goals!), we can get static facts here. They
+            # cannot be statically false (that would have been
+            # detected earlier), and hence they are statically true
+            # and don't need to be translated.
+            # TODO: This would not be necessary if we dealt with goals
+            # in the same way we deal with operator preconditions etc.,
+            # where static facts disappear during grounding. So change
+            # this when the goal code is refactored.
             if fact.negated:
                 ## BUG: Here we take a shortcut compared to Sec. 10.6.4
                 ##      of the thesis and do something that doesn't appear
@@ -275,7 +284,7 @@ def pddl_to_sas(task):
     if not relaxed_reachable:
         return unsolvable_sas_task("No relaxed solution")
 
-    # HACK! Goals should be treated differently (see TODO file).
+    # HACK! Goals should be treated differently.
     if isinstance(task.goal, pddl.Conjunction):
         goal_list = task.goal.parts
     else:
