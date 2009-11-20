@@ -85,13 +85,18 @@ void GeneralLazyBestFirstSearch::generate_successors() {
 
     for(int i = 0; i < preferred_operators.size(); i++) {
         preferred_operators[i]->mark();
+        int new_g = current_g + preferred_operators[i]->get_cost();
+        open_list->evaluate(new_g, preferred_operators[i]->is_marked()); // TODO: handle g in open list
+        open_list->insert(make_pair(search_space.get_node(current_state).get_state_buffer(), preferred_operators[i]));
     }
 
     if(!open_list->is_dead_end()) {
         for(int j = 0; j < all_operators.size(); j++) {
-            int new_g = current_g + all_operators[j]->get_cost();
-            open_list->evaluate(new_g, all_operators[j]->is_marked()); // TODO: handle g in open list
-            open_list->insert(make_pair(search_space.get_node(current_state).get_state_buffer(), all_operators[j]));
+            if (!all_operators[j]->is_marked()) {
+                int new_g = current_g + all_operators[j]->get_cost();
+                open_list->evaluate(new_g, all_operators[j]->is_marked()); // TODO: handle g in open list
+                open_list->insert(make_pair(search_space.get_node(current_state).get_state_buffer(), all_operators[j]));
+            }
         }
     }
 
