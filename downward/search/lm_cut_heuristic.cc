@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <vector>
 using namespace std;
 
@@ -22,13 +23,6 @@ LandmarkCutHeuristic::~LandmarkCutHeuristic() {
 void LandmarkCutHeuristic::initialize() {
     cout << "Initializing landmark cut heuristic..." << endl;
 
-    if (g_use_metric) {
-    	cerr << "Warning: lm-cut heuristic does not support action costs!" << endl;
-    	if (g_min_action_cost == 0) {
-    		cerr << "Alert: 0-cost actions exist. lm-cut Heuristic is not admissible" << endl;
-    	}
-    }
-
     // Build propositions.
     propositions.resize(g_variable_domain.size());
     for(int var = 0; var < g_variable_domain.size(); var++) {
@@ -39,8 +33,11 @@ void LandmarkCutHeuristic::initialize() {
     // Build relaxed operators for operators and axioms.
     for(int i = 0; i < g_operators.size(); i++)
         build_relaxed_operator(g_operators[i]);
-    for(int i = 0; i < g_axioms.size(); i++)
-        build_relaxed_operator(g_axioms[i]);
+    if(!g_axioms.empty()) {
+        cerr << "error: LM-cut heuristic implementation does not "
+             << "support axioms" << endl;
+        ::exit(1);
+    }
 
     // Simplify relaxed operators.
     // simplify();
@@ -69,7 +66,16 @@ void LandmarkCutHeuristic::initialize() {
 }
 
 void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
-    int base_cost = op.is_axiom() ? 0 : 1;
+    int base_cost = op.get_cost();
+    if(base_cost > 1000) {
+        // HACK -- but doing it this way and failing noisily is better
+        // than using this implementation for high action cost settings
+        // accidentally.
+        // TODO: Think about how to do this properly.
+        cerr << "error: LM-cut heuristic implementation not suitable "
+             << "for high action costs" << endl;
+        ::exit(1);
+    }
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<RelaxedProposition *> precondition;
@@ -147,7 +153,14 @@ void LandmarkCutHeuristic::setup_exploration_queue_state(const State &state) {
     enqueue_if_necessary(&artificial_precondition, 0);
 }
 
-void LandmarkCutHeuristic::relaxed_exploration() {
+void LandmarkCutHeuristic::relaxed_exploration(
+    bool first_exploration, vector<RelaxedOperator *> &cut) {
+    /* TODO: The second exploration essentially does a breadth-first
+       search because we don't really need to recompute h_max values
+       in that one -- we could make this even more efficient by
+       actually implementing it differently, but that would require
+       some more sweeping changes in data structures, so let's put
+       that off for a while. */
     for(int bucket_no = 0; bucket_no < reachable_queue.size(); bucket_no++) {
         for(;;) {
             Bucket &bucket = reachable_queue[bucket_no];
@@ -156,6 +169,7 @@ void LandmarkCutHeuristic::relaxed_exploration() {
             //       resized.
             if(bucket.empty())
                 break;
+            assert(first_exploration || bucket_no == 0);
             RelaxedProposition *prop = bucket.back();
             bucket.pop_back();
             int prop_cost = prop->h_max_cost;
@@ -169,16 +183,29 @@ void LandmarkCutHeuristic::relaxed_exploration() {
                 relaxed_op->unsatisfied_preconditions--;
                 assert(relaxed_op->unsatisfied_preconditions >= 0);
                 if(relaxed_op->unsatisfied_preconditions == 0) {
-                    relaxed_op->h_max_supporter = prop;
-                    int target_cost = prop_cost + relaxed_op->cost;
-                    for(int j = 0; j < relaxed_op->effects.size(); j++) {
-                        RelaxedProposition *effect = relaxed_op->effects[j];
-                        if(effect->in_excluded_set) {
-                            assert(relaxed_op->cost > 0);
-                            relaxed_op->cost--;
-                            break;
-                        } else {
+                    if(first_exploration) {
+                        relaxed_op->h_max_supporter = prop;
+                        int target_cost = prop_cost + relaxed_op->cost;
+                        for(int j = 0; j < relaxed_op->effects.size(); j++) {
+                            RelaxedProposition *effect = relaxed_op->effects[j];
                             enqueue_if_necessary(effect, target_cost);
+                        }
+                    } else {
+                        bool add_to_cut = false;
+                        for(int j = 0; j < relaxed_op->effects.size(); j++) {
+                            RelaxedProposition *effect = relaxed_op->effects[j];
+                            if(effect->in_excluded_set) {
+                                assert(relaxed_op->cost > 0);
+                                add_to_cut = true;
+                                cut.push_back(relaxed_op);
+                                break;
+                            }
+                        }
+                        if(!add_to_cut) {
+                            for(int j = 0; j < relaxed_op->effects.size(); j++) {
+                                RelaxedProposition *effect = relaxed_op->effects[j];
+                                enqueue_if_necessary(effect, 0);
+                            }
                         }
                     }
                 }
@@ -204,25 +231,37 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
         RelaxedOperator &op = relaxed_operators[i];
         op.cost = op.base_cost * COST_MULTIPLIER;
     }
-
+    
     // cout << "*" << flush;
     int total_cost = 0;
+    vector<RelaxedOperator *> cut;
     while(true) {
+        cut.clear();
         setup_exploration_queue(true);
         setup_exploration_queue_state(state);
-        relaxed_exploration();
+        relaxed_exploration(true, cut);
+        assert(cut.empty());
         int cost = artificial_goal.h_max_cost;
         // cout << "cost = " << cost << "..." << endl;
         if(cost == -1)
             return DEAD_END;
         if(cost == 0)
             break;
-        total_cost++;
         // cout << "total_cost = " << total_cost << "..." << endl;
         mark_goal_plateau(&artificial_goal);
         setup_exploration_queue(false);
         setup_exploration_queue_state(state);
-        relaxed_exploration();
+        relaxed_exploration(false, cut);
+        assert(!cut.empty());
+        int cut_cost = numeric_limits<int>::max();
+        for(int i = 0; i < cut.size(); i++) {
+            cut_cost = min(cut_cost, cut[i]->cost);
+            // NOTE: The following line is only needed if COST_MULTIPLIER > 1
+            cut_cost = min(cut_cost, cut[i]->base_cost);
+        }
+        for(int i = 0; i < cut.size(); i++)
+            cut[i]->cost -= cut_cost;
+        total_cost += cut_cost;
         assert(artificial_goal.h_max_cost == -1);
     }
     // cout << "[" << total_cost << "]" << flush;

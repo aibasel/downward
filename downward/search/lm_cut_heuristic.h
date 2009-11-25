@@ -101,7 +101,8 @@ class LandmarkCutHeuristic : public Heuristic {
                               const Operator *op, int base_cost);
     void setup_exploration_queue(bool clear_exclude_set);
     void setup_exploration_queue_state(const State &state);
-    void relaxed_exploration();
+    void relaxed_exploration(bool first_exploration,
+                             std::vector<RelaxedOperator *> &cut);
 
     void enqueue_if_necessary(RelaxedProposition *prop, int cost) {
         assert(cost >= 0);
