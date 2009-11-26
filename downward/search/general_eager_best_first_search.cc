@@ -9,11 +9,11 @@
 using namespace std;
 
 GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(bool reopen_closed):
-    reopen_closed_nodes(reopen_closed), 
+    reopen_closed_nodes(reopen_closed),
     open_list(0), f_evaluator(0),
-    expanded_states(0), reopened_states(0), 
+    expanded_states(0), reopened_states(0),
     evaluated_states(0), generated_states(0),
-    lastjump_expanded_states(0), lastjump_reopened_states(0), 
+    lastjump_expanded_states(0), lastjump_reopened_states(0),
     lastjump_evaluated_states(0), lastjump_generated_states(0),
     lastjump_f_value(-1) {
 }
@@ -70,6 +70,9 @@ void GeneralEagerBestFirstSearch::initialize() {
             f_evaluator->evaluate(0,false);
             lastjump_f_value = f_evaluator->get_value();
             jump_statistics();
+        }
+        if(check_progress()) {
+            report_progress();
         }
         SearchNode node = search_space.get_node(*g_initial_state);
         node.open_initial(initial_h_values[0]);
@@ -144,7 +147,7 @@ int GeneralEagerBestFirstSearch::step() {
             evaluated_states++;
             bool dead_end = false;
             for (unsigned int i = 0; i < heuristics.size(); i++) {
-                if(heuristics[i]->is_dead_end() 
+                if(heuristics[i]->is_dead_end()
                    && heuristics[i]->dead_ends_are_reliable()) {
                     dead_end = true;
                     break;
