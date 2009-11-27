@@ -54,4 +54,6 @@
  * - WeightedEvaluator - the evaluation of a state is weighted by a constant factor.
  * This can be used in weighted A* (i.e. f=g+wh)
  *
+ *
+ * And now we have a buildbot
  */
