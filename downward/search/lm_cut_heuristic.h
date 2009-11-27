@@ -40,6 +40,12 @@ const int COST_MULTIPLIER = 1;
 // heuristic accuracy. Heuristic computation time should increase
 // roughly linearly with the multiplier.
 
+/* TODO: In some very preliminary tests in the IPC-2008 Elevators
+   domain (more precisely, on Elevators-01), a larger cost multiplier
+   (I tried 10) reduced expansion count quite a bit, although not
+   enough to balance the extra runtime. Worth experimenting a bit to
+   see the effect, though.
+ */
 
 struct RelaxedOperator {
     const Operator *op;
