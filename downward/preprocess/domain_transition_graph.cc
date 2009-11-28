@@ -26,27 +26,42 @@ DomainTransitionGraph::DomainTransitionGraph(const Variable &var) {
 }
 
 void DomainTransitionGraph::addTransition(int from, int to, const Operator &op,
-					  int op_index) {
+					  int op_index, const Operator::PrePost &pre_post) {
+  assert(pre_post.var->get_level() == level && pre_post.post == to);
   Transition trans(to, op_index);
   Condition &cond = trans.condition;
+
+  // Collect operator preconditions.
   const vector<Operator::Prevail> &prevail = op.get_prevail();
-  const vector<Operator::PrePost> &pre_post = op.get_pre_post();
   for(int i = 0; i < prevail.size(); i++)
-    if(true) // [cycles]
-    // if(prevail[i].var->get_level() < level) // [no cycles]
-      cond.push_back(make_pair(prevail[i].var, prevail[i].prev));
-  for(int i = 0; i < pre_post.size(); i++)
-    if(pre_post[i].var->get_level() != level && pre_post[i].pre != -1) // [cycles]
-    // if(pre_post[i].var->get_level() < level && pre_post[i].pre != -1) //[no cycles]
-      cond.push_back(make_pair(pre_post[i].var, pre_post[i].pre));
-    else
-      if(pre_post[i].var->get_level() == level && pre_post[i].is_conditional_effect)
-	for(int j = 0; j < pre_post[i].effect_conds.size(); j++)
-	  cond.push_back(make_pair(pre_post[i].effect_conds[j].var,
-				   pre_post[i].effect_conds[j].cond));
-	
+    cond.push_back(make_pair(prevail[i].var, prevail[i].prev));
+  const vector<Operator::PrePost> &pre_post_vec = op.get_pre_post();
+  for(int i = 0; i < pre_post_vec.size(); i++) {
+    if(pre_post_vec[i].pre != -1) {
+      if(pre_post_vec[i].var->get_level() == level)
+        assert(pre_post_vec[i].pre == from);
+      else
+        cond.push_back(make_pair(pre_post_vec[i].var, pre_post_vec[i].pre));
+    }
+  }
+  // Collect effect conditions for this effect.
+  for(int i = 0; i < pre_post.effect_conds.size(); i++) {
+    if(pre_post.effect_conds[i].var->get_level() == level) {
+      if(pre_post.effect_conds[i].cond != from)  {
+        // This is a conditional effect that cannot trigger a transition
+        // from "from" to "to" because it requires var to have a value
+        // different from "from".
+        return;
+      }
+    } else {
+      trans.condition.push_back(make_pair(pre_post.effect_conds[i].var,
+                                          pre_post.effect_conds[i].cond));
+    }
+  }
+
   vertices[from].push_back(trans);
 }
+
 void DomainTransitionGraph::addAxTransition(int from, int to, const Axiom &ax,
 					    int ax_index) {
   Transition trans(to, ax_index);
@@ -152,11 +167,11 @@ void build_DTGs(const vector<Variable *> &var_order,
 	int pre = pre_post[j].pre;
 	int post = pre_post[j].post;
 	if(pre != -1) {
-	  transition_graphs[var_level].addTransition(pre, post, op, i);
+          transition_graphs[var_level].addTransition(pre, post, op, i, pre_post[j]);
 	} else {
 	  for(int pre = 0; pre < var->get_range(); pre++)
 	    if(pre != post)
-	      transition_graphs[var_level].addTransition(pre, post, op, i);
+              transition_graphs[var_level].addTransition(pre, post, op, i, pre_post[j]);
 	}
       }
       //else
