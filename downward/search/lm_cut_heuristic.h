@@ -84,13 +84,14 @@ struct RelaxedProposition {
        depths). See if the init h values degrade compared to Python without
        explicit depth tie-breaking, then decide.
     */
-    bool in_excluded_set;
 
     RelaxedProposition() {
     }
 };
 
 class LandmarkCutHeuristic : public Heuristic {
+    enum {UNREACHED = -1, GOAL_ZONE = -2, BEFORE_GOAL_ZONE = -3}; // special hmax values
+
     typedef std::vector<RelaxedProposition *> Bucket;
 
     std::vector<RelaxedOperator> relaxed_operators;
@@ -105,10 +106,11 @@ class LandmarkCutHeuristic : public Heuristic {
     void add_relaxed_operator(const std::vector<RelaxedProposition *> &precondition,
                               const std::vector<RelaxedProposition *> &effects,
                               const Operator *op, int base_cost);
-    void setup_exploration_queue(bool clear_exclude_set);
+    void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
-    void relaxed_exploration(bool first_exploration,
-                             std::vector<RelaxedOperator *> &cut);
+    void first_exploration(const State &state);
+    void second_exploration(const State &state, std::vector<RelaxedProposition *> &queue,
+			    std::vector<RelaxedOperator *> &cut);
 
     void enqueue_if_necessary(RelaxedProposition *prop, int cost) {
         assert(cost >= 0);

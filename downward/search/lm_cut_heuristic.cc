@@ -119,24 +119,18 @@ void LandmarkCutHeuristic::add_relaxed_operator(
 }
 
 // heuristic computation
-void LandmarkCutHeuristic::setup_exploration_queue(bool clear_exclude_set) {
+void LandmarkCutHeuristic::setup_exploration_queue() {
     reachable_queue.clear();
 
     for(int var = 0; var < propositions.size(); var++) {
         for(int value = 0; value < propositions[var].size(); value++) {
             RelaxedProposition &prop = propositions[var][value];
-            prop.h_max_cost = -1;
-            if(clear_exclude_set)
-                prop.in_excluded_set = false;
+            prop.h_max_cost = UNREACHED;
         }
     }
 
-    artificial_goal.h_max_cost = -1;
-    if(clear_exclude_set)
-        artificial_goal.in_excluded_set = false;
-    artificial_precondition.h_max_cost = -1;
-    if(clear_exclude_set)
-        artificial_precondition.in_excluded_set = false;
+    artificial_goal.h_max_cost = UNREACHED;
+    artificial_precondition.h_max_cost = UNREACHED;
 
     for(int i = 0; i < relaxed_operators.size(); i++) {
         RelaxedOperator &op = relaxed_operators[i];
@@ -153,14 +147,9 @@ void LandmarkCutHeuristic::setup_exploration_queue_state(const State &state) {
     enqueue_if_necessary(&artificial_precondition, 0);
 }
 
-void LandmarkCutHeuristic::relaxed_exploration(
-    bool first_exploration, vector<RelaxedOperator *> &cut) {
-    /* TODO: The second exploration essentially does a breadth-first
-       search because we don't really need to recompute h_max values
-       in that one -- we could make this even more efficient by
-       actually implementing it differently, but that would require
-       some more sweeping changes in data structures, so let's put
-       that off for a while. */
+void LandmarkCutHeuristic::first_exploration(const State &state) {
+    setup_exploration_queue();
+    setup_exploration_queue_state(state);
     for(int bucket_no = 0; bucket_no < reachable_queue.size(); bucket_no++) {
         for(;;) {
             Bucket &bucket = reachable_queue[bucket_no];
@@ -169,7 +158,6 @@ void LandmarkCutHeuristic::relaxed_exploration(
             //       resized.
             if(bucket.empty())
                 break;
-            assert(first_exploration || bucket_no == 0);
             RelaxedProposition *prop = bucket.back();
             bucket.pop_back();
             int prop_cost = prop->h_max_cost;
@@ -183,32 +171,58 @@ void LandmarkCutHeuristic::relaxed_exploration(
                 relaxed_op->unsatisfied_preconditions--;
                 assert(relaxed_op->unsatisfied_preconditions >= 0);
                 if(relaxed_op->unsatisfied_preconditions == 0) {
-                    if(first_exploration) {
-                        relaxed_op->h_max_supporter = prop;
-                        int target_cost = prop_cost + relaxed_op->cost;
-                        for(int j = 0; j < relaxed_op->effects.size(); j++) {
-                            RelaxedProposition *effect = relaxed_op->effects[j];
-                            enqueue_if_necessary(effect, target_cost);
-                        }
-                    } else {
-                        bool add_to_cut = false;
-                        for(int j = 0; j < relaxed_op->effects.size(); j++) {
-                            RelaxedProposition *effect = relaxed_op->effects[j];
-                            if(effect->in_excluded_set) {
-                                assert(relaxed_op->cost > 0);
-                                add_to_cut = true;
-                                cut.push_back(relaxed_op);
-                                break;
-                            }
-                        }
-                        if(!add_to_cut) {
-                            for(int j = 0; j < relaxed_op->effects.size(); j++) {
-                                RelaxedProposition *effect = relaxed_op->effects[j];
-                                enqueue_if_necessary(effect, 0);
-                            }
-                        }
-                    }
+		    relaxed_op->h_max_supporter = prop;
+		    int target_cost = prop_cost + relaxed_op->cost;
+		    for(int j = 0; j < relaxed_op->effects.size(); j++) {
+			RelaxedProposition *effect = relaxed_op->effects[j];
+			enqueue_if_necessary(effect, target_cost);
+		    }
                 }
+            }
+        }
+    }
+}
+
+void LandmarkCutHeuristic::second_exploration(
+    const State &state, vector<RelaxedProposition *> &queue, vector<RelaxedOperator *> &cut) {
+    assert(queue.empty()); 
+
+    artificial_precondition.h_max_cost = BEFORE_GOAL_ZONE;
+    queue.push_back(&artificial_precondition);
+
+    for(int var = 0; var < propositions.size(); var++) {
+        RelaxedProposition *init_prop = &propositions[var][state[var]];
+	init_prop->h_max_cost = BEFORE_GOAL_ZONE;
+	queue.push_back(init_prop);
+    }
+
+    while(!queue.empty()) {
+	RelaxedProposition *prop = queue.back();
+	queue.pop_back();
+	const vector<RelaxedOperator *> &triggered_operators =
+	    prop->precondition_of;
+	for(int i = 0; i < triggered_operators.size(); i++) {
+	    RelaxedOperator *relaxed_op = triggered_operators[i];
+	    if(relaxed_op->h_max_supporter == prop) {
+		bool reached_goal_zone = false;
+		for(int j = 0; j < relaxed_op->effects.size(); j++) {
+		    RelaxedProposition *effect = relaxed_op->effects[j];
+		    if(effect->h_max_cost == GOAL_ZONE) {
+			assert(relaxed_op->cost > 0);
+			reached_goal_zone = true;
+			cut.push_back(relaxed_op);
+			break;
+		    }
+		}
+		if(!reached_goal_zone) {
+		    for(int j = 0; j < relaxed_op->effects.size(); j++) {
+			RelaxedProposition *effect = relaxed_op->effects[j];
+			if(effect->h_max_cost != BEFORE_GOAL_ZONE) {
+			    effect->h_max_cost = BEFORE_GOAL_ZONE;
+			    queue.push_back(effect);
+			}
+		    }
+		}
             }
         }
     }
@@ -216,9 +230,9 @@ void LandmarkCutHeuristic::relaxed_exploration(
 
 void LandmarkCutHeuristic::mark_goal_plateau(RelaxedProposition *subgoal) {
     assert(subgoal);
-    if(!subgoal->in_excluded_set) {
-        subgoal->in_excluded_set = true;
-        const vector<RelaxedOperator *> effect_of = subgoal->effect_of;
+    if(subgoal->h_max_cost != GOAL_ZONE) {
+        subgoal->h_max_cost = GOAL_ZONE;
+        const vector<RelaxedOperator *> &effect_of = subgoal->effect_of;
         for(int i = 0; i < effect_of.size(); i++)
             if(effect_of[i]->cost == 0)
                 mark_goal_plateau(effect_of[i]->h_max_supporter);
@@ -234,24 +248,25 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     
     // cout << "*" << flush;
     int total_cost = 0;
+
+    // The following two variables could be declared inside the loop
+    // ("queue" even inside second_exploration), but having them here
+    // saves reallocations and hence provides a measurable speed
+    // boost.
     vector<RelaxedOperator *> cut;
+    vector<RelaxedProposition *> queue;
     while(true) {
-        cut.clear();
-        setup_exploration_queue(true);
-        setup_exploration_queue_state(state);
-        relaxed_exploration(true, cut);
-        assert(cut.empty());
+        first_exploration(state);
         int cost = artificial_goal.h_max_cost;
         // cout << "cost = " << cost << "..." << endl;
-        if(cost == -1)
+        if(cost == UNREACHED)
             return DEAD_END;
         if(cost == 0)
             break;
         // cout << "total_cost = " << total_cost << "..." << endl;
         mark_goal_plateau(&artificial_goal);
-        setup_exploration_queue(false);
-        setup_exploration_queue_state(state);
-        relaxed_exploration(false, cut);
+        assert(cut.empty());
+        second_exploration(state, queue, cut);
         assert(!cut.empty());
         int cut_cost = numeric_limits<int>::max();
         for(int i = 0; i < cut.size(); i++) {
@@ -262,7 +277,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
         for(int i = 0; i < cut.size(); i++)
             cut[i]->cost -= cut_cost;
         total_cost += cut_cost;
-        assert(artificial_goal.h_max_cost == -1);
+        cut.clear();
     }
     // cout << "[" << total_cost << "]" << flush;
     return (total_cost + COST_MULTIPLIER - 1) / COST_MULTIPLIER;
