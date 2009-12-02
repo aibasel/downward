@@ -183,6 +183,56 @@ void LandmarkCutHeuristic::first_exploration(const State &state) {
     }
 }
 
+void LandmarkCutHeuristic::first_exploration_incremental(
+    vector<RelaxedOperator *> &cut) {
+    // TODO: This implementation may not be very suitable for problems
+    //       with action costs because of potential reexpansions; might
+    //       use a priority queue instead. Needs testing.
+    // TODO: We could probably integrate the h_max test with the h_max supporter
+    //       update to avoid iterating through the operator preconditions too
+    //       often.
+    // TODO: Maybe it's worth storing h_max values in the actual operators.
+    //       Or maybe not.
+    vector<pair<int, RelaxedOperator *> > queue;
+    for(int i = 0; i < cut.size(); i++) {
+	RelaxedOperator *op = cut[i];
+	queue.push_back(make_pair(op->h_max_cost() + op->cost, op));
+    }
+    while(!queue.empty()) {
+	int cost = queue.back().first;
+	RelaxedOperator *op = queue.back().second;
+	queue.pop_back();
+	for(int i = 0; i < op->effects.size(); i++) {
+	    RelaxedProposition *prop = op->effects[i];
+	    int old_prop_cost = prop->h_max_cost;
+	    if(old_prop_cost > cost) {
+		prop->h_max_cost = cost;
+		/* Note: Instead of iterations over all operators of which
+		   prop is a precondition, we only really want to iterate
+		   over all operators of which prop is the h_max supporter.
+		   Iterating over all instead may give us asymptotically
+		   worse performence, but maintaining the extra data
+		   structures to keep track of the best supporter relationship
+		   is probably a waste of time in the common case of few
+		   preconditions per operator.
+		   TODO: Try this out. */
+		for(int j = 0; j < prop->precondition_of.size(); j++) {
+		    RelaxedOperator *next_op = prop->precondition_of[j];
+		    if(next_op->h_max_supporter == prop) {
+			int next_op_cost = next_op->h_max_cost();
+			next_op->update_h_max_supporter();
+			if(next_op_cost < old_prop_cost) {
+			    queue.push_back(
+				make_pair(next_op_cost + next_op->cost,
+					  next_op));
+			}
+		    }
+		}
+	    }
+        }
+    }
+}
+
 void LandmarkCutHeuristic::second_exploration(
     const State &state, vector<RelaxedProposition *> &queue, vector<RelaxedOperator *> &cut) {
     assert(queue.empty()); 
@@ -218,6 +268,7 @@ void LandmarkCutHeuristic::second_exploration(
 		    for(int j = 0; j < relaxed_op->effects.size(); j++) {
 			RelaxedProposition *effect = relaxed_op->effects[j];
 			if(effect->status != BEFORE_GOAL_ZONE) {
+			    assert(effect->status == REACHED);
 			    effect->status = BEFORE_GOAL_ZONE;
 			    queue.push_back(effect);
 			}
@@ -239,6 +290,32 @@ void LandmarkCutHeuristic::mark_goal_plateau(RelaxedProposition *subgoal) {
     }
 }
 
+void LandmarkCutHeuristic::validate_h_max() const {
+#ifndef NDEBUG
+    for(int i = 0; i < relaxed_operators.size(); i++) {
+	const RelaxedOperator *op = &relaxed_operators[i];
+	const vector<RelaxedProposition *> prec = op->precondition;
+	if(op->unsatisfied_preconditions) {
+	    bool reachable = true;
+	    for(int j = 0; j < prec.size(); j++)
+		if(prec[j]->status == UNREACHED) {
+		    reachable = false;
+		    break;
+		}
+	    assert(!reachable);
+	    assert(!op->h_max_supporter);
+	} else {
+	    assert(op->h_max_supporter);
+	    int h_max_cost = op->h_max_supporter->h_max_cost;
+	    for(int j = 0; j < prec.size(); j++) {
+		assert(prec[j]->status != UNREACHED);
+		assert(prec[j]->h_max_cost <= h_max_cost);
+	    }
+	}
+    }
+#endif
+}
+
 int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     // TODO: Possibly put back in some kind of preferred operator mechanism.
     for(int i = 0; i < relaxed_operators.size(); i++) {
@@ -246,7 +323,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
         op.cost = op.base_cost * COST_MULTIPLIER;
     }
     
-    // cout << "*" << flush;
+    //cout << "*" << flush;
     int total_cost = 0;
 
     // The following two variables could be declared inside the loop
@@ -255,14 +332,13 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     // boost.
     vector<RelaxedOperator *> cut;
     vector<RelaxedProposition *> queue;
-    while(true) {
-        first_exploration(state);
-        // cout << "hmax = " << artificial_goal.h_max_cost << "..." << endl;
-        if(artificial_goal.h_max_cost == 0)
-            break;
-        if(artificial_goal.status == UNREACHED)
-            return DEAD_END;
-        // cout << "total_cost = " << total_cost << "..." << endl;
+    first_exploration(state);
+    // validate_h_max();
+    if(artificial_goal.status == UNREACHED)
+	return DEAD_END;
+    while(artificial_goal.h_max_cost != 0) {
+        //cout << "h_max = " << artificial_goal.h_max_cost << "..." << endl;
+        //cout << "total_cost = " << total_cost << "..." << endl;
         mark_goal_plateau(&artificial_goal);
         assert(cut.empty());
         second_exploration(state, queue, cut);
@@ -275,9 +351,29 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
         }
         for(int i = 0; i < cut.size(); i++)
             cut[i]->cost -= cut_cost;
+	//cout << "{" << cut_cost << "}" << flush;
         total_cost += cut_cost;
+	first_exploration_incremental(cut);
+	// validate_h_max();
+	// TODO: Need better name for all explorations; e.g. this could
+	//       be "recompute_h_max"; second_exploration could be
+	//       "mark_zones" or whatever.
         cut.clear();
+
+	// TODO: Make this more efficient. For example, we can use
+	//       a round-dependent counter for GOAL_ZONE and BEFORE_GOAL_ZONE,
+	//       or something based on total_cost, in which case we don't
+	//       need a per-round reinitialization.
+	for(int var = 0; var < propositions.size(); var++) {
+	    for(int value = 0; value < propositions[var].size(); value++) {
+		RelaxedProposition &prop = propositions[var][value];
+		if(prop.status == GOAL_ZONE || prop.status == BEFORE_GOAL_ZONE)
+		    prop.status = REACHED;
+	    }
+	}
+	artificial_goal.status = REACHED;
+	artificial_precondition.status = REACHED;
     }
-    // cout << "[" << total_cost << "]" << flush;
+    //cout << "[" << total_cost << "]" << flush;
     return (total_cost + COST_MULTIPLIER - 1) / COST_MULTIPLIER;
 }
