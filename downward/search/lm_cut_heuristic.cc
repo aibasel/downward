@@ -125,12 +125,12 @@ void LandmarkCutHeuristic::setup_exploration_queue() {
     for(int var = 0; var < propositions.size(); var++) {
         for(int value = 0; value < propositions[var].size(); value++) {
             RelaxedProposition &prop = propositions[var][value];
-            prop.h_max_cost = UNREACHED;
+            prop.status = UNREACHED;
         }
     }
 
-    artificial_goal.h_max_cost = UNREACHED;
-    artificial_precondition.h_max_cost = UNREACHED;
+    artificial_goal.status = UNREACHED;
+    artificial_precondition.status = UNREACHED;
 
     for(int i = 0; i < relaxed_operators.size(); i++) {
         RelaxedOperator &op = relaxed_operators[i];
@@ -187,12 +187,12 @@ void LandmarkCutHeuristic::second_exploration(
     const State &state, vector<RelaxedProposition *> &queue, vector<RelaxedOperator *> &cut) {
     assert(queue.empty()); 
 
-    artificial_precondition.h_max_cost = BEFORE_GOAL_ZONE;
+    artificial_precondition.status = BEFORE_GOAL_ZONE;
     queue.push_back(&artificial_precondition);
 
     for(int var = 0; var < propositions.size(); var++) {
         RelaxedProposition *init_prop = &propositions[var][state[var]];
-	init_prop->h_max_cost = BEFORE_GOAL_ZONE;
+	init_prop->status = BEFORE_GOAL_ZONE;
 	queue.push_back(init_prop);
     }
 
@@ -207,7 +207,7 @@ void LandmarkCutHeuristic::second_exploration(
 		bool reached_goal_zone = false;
 		for(int j = 0; j < relaxed_op->effects.size(); j++) {
 		    RelaxedProposition *effect = relaxed_op->effects[j];
-		    if(effect->h_max_cost == GOAL_ZONE) {
+		    if(effect->status == GOAL_ZONE) {
 			assert(relaxed_op->cost > 0);
 			reached_goal_zone = true;
 			cut.push_back(relaxed_op);
@@ -217,8 +217,8 @@ void LandmarkCutHeuristic::second_exploration(
 		if(!reached_goal_zone) {
 		    for(int j = 0; j < relaxed_op->effects.size(); j++) {
 			RelaxedProposition *effect = relaxed_op->effects[j];
-			if(effect->h_max_cost != BEFORE_GOAL_ZONE) {
-			    effect->h_max_cost = BEFORE_GOAL_ZONE;
+			if(effect->status != BEFORE_GOAL_ZONE) {
+			    effect->status = BEFORE_GOAL_ZONE;
 			    queue.push_back(effect);
 			}
 		    }
@@ -230,8 +230,8 @@ void LandmarkCutHeuristic::second_exploration(
 
 void LandmarkCutHeuristic::mark_goal_plateau(RelaxedProposition *subgoal) {
     assert(subgoal);
-    if(subgoal->h_max_cost != GOAL_ZONE) {
-        subgoal->h_max_cost = GOAL_ZONE;
+    if(subgoal->status != GOAL_ZONE) {
+        subgoal->status = GOAL_ZONE;
         const vector<RelaxedOperator *> &effect_of = subgoal->effect_of;
         for(int i = 0; i < effect_of.size(); i++)
             if(effect_of[i]->cost == 0)
@@ -257,12 +257,11 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     vector<RelaxedProposition *> queue;
     while(true) {
         first_exploration(state);
-        int cost = artificial_goal.h_max_cost;
-        // cout << "cost = " << cost << "..." << endl;
-        if(cost == UNREACHED)
-            return DEAD_END;
-        if(cost == 0)
+        // cout << "hmax = " << artificial_goal.h_max_cost << "..." << endl;
+        if(artificial_goal.h_max_cost == 0)
             break;
+        if(artificial_goal.status == UNREACHED)
+            return DEAD_END;
         // cout << "total_cost = " << total_cost << "..." << endl;
         mark_goal_plateau(&artificial_goal);
         assert(cut.empty());

@@ -35,6 +35,13 @@ class RelaxedOperator;
    more operators.
 */
 
+enum PropositionStatus {
+    UNREACHED = 0,
+    REACHED = 1,
+    GOAL_ZONE = 2,
+    BEFORE_GOAL_ZONE = 3
+};
+
 const int COST_MULTIPLIER = 1;
 // Choose 1 for maximum speed, larger values for possibly better
 // heuristic accuracy. Heuristic computation time should increase
@@ -67,6 +74,7 @@ struct RelaxedProposition {
     std::vector<RelaxedOperator *> precondition_of;
     std::vector<RelaxedOperator *> effect_of;
 
+    PropositionStatus status;
     int h_max_cost;
     /* TODO: Also add the rpg depth? The Python implementation used
        this for tie breaking, and it led to better landmark extraction
@@ -90,8 +98,6 @@ struct RelaxedProposition {
 };
 
 class LandmarkCutHeuristic : public Heuristic {
-    enum {UNREACHED = -1, GOAL_ZONE = -2, BEFORE_GOAL_ZONE = -3}; // special hmax values
-
     typedef std::vector<RelaxedProposition *> Bucket;
 
     std::vector<RelaxedOperator> relaxed_operators;
@@ -114,7 +120,8 @@ class LandmarkCutHeuristic : public Heuristic {
 
     void enqueue_if_necessary(RelaxedProposition *prop, int cost) {
         assert(cost >= 0);
-        if(prop->h_max_cost == -1 || prop->h_max_cost > cost) {
+        if(prop->status == UNREACHED || prop->h_max_cost > cost) {
+	    prop->status = REACHED;
             prop->h_max_cost = cost;
             if(cost >= reachable_queue.size())
                 reachable_queue.resize(cost + 1);
