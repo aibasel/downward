@@ -280,8 +280,11 @@ void LandmarkCutHeuristic::second_exploration(
 }
 
 void LandmarkCutHeuristic::mark_goal_plateau(RelaxedProposition *subgoal) {
-    assert(subgoal);
-    if(subgoal->status != GOAL_ZONE) {
+    // NOTE: subgoal can be null if we got here via recursion through
+    // a zero-cost action that is relaxed unreachable. (This can only
+    // happen in domains which have zero-cost actions to start with.)
+    // For example, this happens in pegsol-strips #01.
+    if(subgoal && subgoal->status != GOAL_ZONE) {
         subgoal->status = GOAL_ZONE;
         const vector<RelaxedOperator *> &effect_of = subgoal->effect_of;
         for(int i = 0; i < effect_of.size(); i++)
