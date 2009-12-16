@@ -1,0 +1,6 @@
+(define (problem desire-prob)
+(:domain desire)
+(:objects  dockpos1 - location)
+(:init (loc desiree free_area))
+(:goal (loc desiree dockpos1))
+)
