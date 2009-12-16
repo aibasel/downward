@@ -235,7 +235,8 @@ class MatchGenerator:
         else:
             arg_index, arg = args[0]
             if self.index < arg_index:
-                self.next = self.next._insert(args[1:], value)
+                self.next = self.next._insert(args, value)
+                return self
             elif self.index > arg_index:
                 new_parent = MatchGenerator(arg_index, self)
                 new_branch = LeafGenerator()._insert(args[1:], value)
