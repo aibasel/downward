@@ -1,8 +1,7 @@
 (define (domain desire)
 (:types robot location - object)
 (:constants  unknown - object
-             desiree - robot
-             free_area - location)
+             desiree - robot)
 (:predicates (loc ?o - object ?val - location))
 
 (:action  move
