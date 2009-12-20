@@ -18,12 +18,16 @@ using namespace __gnu_cxx;
 enum edge_type {n = 4, gn = 3, r = 1, o_r = 0, ln = 2};
 enum landmark_status {lm_reached = 0, lm_not_reached = 1, lm_needed_again = 2};
 
+static int last_lm_id = 0;
+
 class LandmarkNode {
 public:
     LandmarkNode(vector<int>& variables, vector<int>& values, bool disj) :
         vars(variables), vals(values), disjunctive(disj), in_goal(false),
         min_cost(1),shared_cost(0.0),status(lm_not_reached),
-        effect_of_ununsed_alm(false),is_derived(false) {}
+        effect_of_ununsed_alm(false),is_derived(false) {id = last_lm_id; last_lm_id++;}
+
+    int id;
 
     vector<int> vars;
     vector<int> vals;

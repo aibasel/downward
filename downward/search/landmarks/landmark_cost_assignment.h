@@ -10,6 +10,7 @@ protected:
 
     const set<int>& get_achievers(int lmn_status, LandmarkNode &lmn);
     void get_landmark_effects(const Operator& op, set<pair<int, int> >& eff);
+    void get_effect_landmarks(const Operator& op, set<LandmarkNode *>& eff);
 
     const set<int> empty;
 public:
@@ -27,6 +28,30 @@ public:
     virtual void assign_costs();
 };
 
+#ifdef USE_LP
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#ifdef COIN_USE_CLP
+#include "OsiClpSolverInterface.hpp"
+typedef OsiClpSolverInterface OsiXxxSolverInterface;
+#endif
+
+#ifdef COIN_USE_OSL
+#include "OsiOslSolverInterface.hpp"
+typedef OsiOslSolverInterface OsiXxxSolverInterface;
+#include "ekk_c_api.h"
+#endif
+
+#ifdef COIN_USE_CPX
+#include "OsiCpxSolverInterface.hpp"
+typedef OsiCpxSolverInterface OsiXxxSolverInterface;
+#endif
+
+#include "CoinPackedVector.hpp"
+#include "CoinPackedMatrix.hpp"
+#include <sys/times.h>
+#endif
+
+
 class LandmarkOptimalSharedCostAssignment : public LandmarkCostAssignment {
 private:
 
@@ -36,6 +61,18 @@ private:
 public:
     LandmarkOptimalSharedCostAssignment(LandmarksGraph &graph, bool exc_ALM_eff);
     virtual ~LandmarkOptimalSharedCostAssignment();
+
+    virtual void assign_costs();
+};
+
+class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
+private:
+#ifdef USE_LP
+    OsiXxxSolverInterface* si;
+#endif
+public:
+    LandmarkEfficientOptimalSharedCostAssignment(LandmarksGraph &graph, bool exc_ALM_eff);
+    virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 
     virtual void assign_costs();
 };
