@@ -1,10 +1,3 @@
-/*
- * LandmarksGraphSearch.cpp
- *
- *  Created on: Nov 12, 2009
- *      Author: karpase
- */
-
 #include "landmarks_graph_rpg_search.h"
 
 LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(Exploration* exploration):

@@ -10,7 +10,7 @@ class AStarSearchEngine : public GeneralEagerBestFirstSearch {
 public:
     AStarSearchEngine();
     ~AStarSearchEngine();
-    void initialize();
+    virtual void initialize();
 };
 
 #endif

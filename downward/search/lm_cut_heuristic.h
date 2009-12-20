@@ -109,6 +109,7 @@ class LandmarkCutHeuristic : public Heuristic {
     RelaxedProposition artificial_precondition;
     RelaxedProposition artificial_goal;
     std::vector<Bucket> reachable_queue;
+    int iteration_limit;
 
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
@@ -137,7 +138,7 @@ class LandmarkCutHeuristic : public Heuristic {
     void mark_goal_plateau(RelaxedProposition *subgoal);
     void validate_h_max() const;
 public:
-    LandmarkCutHeuristic(bool use_cache=false);
+    LandmarkCutHeuristic(int _iteration_limit=-1, bool use_cache=false);
     virtual ~LandmarkCutHeuristic();
 };
 

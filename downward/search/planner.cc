@@ -23,6 +23,7 @@
 #include "general_lazy_best_first_search.h"
 #include "lazy_best_first_search_engine.h"
 #include "lazy_wa_star.h"
+#include "learning/selective_max_heuristic.h"
 
 #include <iostream>
 #include <fstream>
@@ -56,6 +57,7 @@ int main(int argc, const char **argv) {
     bool use_hm = false;
     int m_hm = 2;
     int lm_type = LandmarksCountHeuristic::rpg_sasp;
+    bool use_selective_max = false;
 
     for (int i = 1; i < argc; i++) {
         for (const char *c = argv[i]; *c != 0; c++) {
@@ -112,6 +114,8 @@ int main(int argc, const char **argv) {
                 lm_heuristic_optimal = true;
             } else if (*c == 'L') {
                 lm_preferred = true;
+            } else if (*c == 'M') {
+                use_selective_max = true;
             } else if (*c == 'D') {
                 additive_preferred_operators = true;
             } else if (*c == 'g') {
@@ -209,7 +213,7 @@ int main(int argc, const char **argv) {
     if (!cg_heuristic && !cyclic_cg_heuristic
        && !ff_heuristic && !additive_heuristic && !goal_count_heuristic
        && !blind_search_heuristic && !fd_heuristic && !hsp_max_heuristic
-       && !lm_cut_heuristic && !lm_heuristic && !use_hm) {
+       && !lm_cut_heuristic && !lm_heuristic && !use_hm && !use_selective_max) {
         cerr << "Error: you must select at least one heuristic!" << endl
              << "If you are unsure, choose options \"cCfF\"." << endl;
         return 2;
@@ -271,6 +275,9 @@ int main(int argc, const char **argv) {
             engine = new BestFirstSearchEngine;
         }
 
+
+
+
         // Test if synergies can be used between FF heuristic and landmark pref. ops.
         // Used to achieve LAMA's behaviour. (Note: this uses a different version
         // of the FF heuristic than if the FF heuristic is run by itself
@@ -317,6 +324,12 @@ int main(int argc, const char **argv) {
             engine->add_heuristic(
                 new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type),
                 true, lm_preferred);
+        }
+        if (use_selective_max) {
+            SelectiveMaxHeuristic *sel_max = new SelectiveMaxHeuristic();
+            sel_max->add_heuristic(new LandmarksCountHeuristic(lm_preferred, lm_heuristic_admissible, lm_heuristic_optimal, lm_type));
+            sel_max->add_heuristic(new LandmarkCutHeuristic);
+            engine->add_heuristic(sel_max, true, false);
         }
 
         Timer search_timer;

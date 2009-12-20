@@ -5,34 +5,12 @@
 #include <cassert>
 #include <ext/hash_map>
 #include "state_proxy.h"
+#include "search_node_info.h"
 
 using namespace std;
 using namespace __gnu_cxx;
 
 
-class SearchNodeInfo {
-    friend class SearchNode;
-    friend class SearchSpace;
-
-    enum NodeStatus {NEW = 0, OPEN = 1, CLOSED = 2, DEAD_END = 3};
-
-    /*
-      NodeStatus status;
-      int g;
-      int h;
-    */
-
-    unsigned int status: 2;
-    int g: 15;
-    int h: 15;
-    const state_var_t *parent_state;
-    const Operator *creating_operator;
-
-    SearchNodeInfo()
-	: status(NEW), g(-1), h(-1), parent_state(0), creating_operator(0) {
-    }
-
-};
 
 
 SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_)
@@ -80,6 +58,10 @@ int SearchNode::get_h() const {
     return info.h;
 }
 
+const state_var_t *SearchNode::get_parent_buffer() const {
+    return info.parent_state;
+}
+
 void SearchNode::open_initial(int h) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
@@ -101,14 +83,22 @@ void SearchNode::open(int h, const SearchNode &parent_node,
 
 void SearchNode::reopen(const SearchNode &parent_node,
 			const Operator *parent_op) {
+    /*
     assert(info.status == SearchNodeInfo::OPEN ||
            info.status == SearchNodeInfo::CLOSED);
+    */
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
     info.status = SearchNodeInfo::OPEN;
     info.g = parent_node.info.g + parent_op->get_cost();
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
+}
+
+void SearchNode::update_h(int h) {
+    //assert(info.status == SearchNodeInfo::OPEN);
+
+    info.h = h;
 }
 
 // like reopen, except doesn't change status
@@ -162,6 +152,10 @@ int SearchSpace::size() const {
     return nodes->size();
 }
 
+void SearchSpace::resize(size_t sz) {
+    nodes->resize(sz);
+}
+
 SearchNode SearchSpace::get_node(const State &state) {
     static SearchNodeInfo default_info;
     pair<HashTable::iterator, bool> result = nodes->insert(
@@ -211,4 +205,21 @@ void SearchSpace::dump()
 void SearchSpace::statistics() const {
   cout << "search space hash size: " << nodes->size() << endl;
   cout << "search space hash bucket count: " << nodes->bucket_count() << endl;
+}
+
+__gnu_cxx::hash_map<StateProxy, SearchNodeInfo>::const_iterator it;
+
+void SearchSpace::reset_iterator() {
+    it = nodes->begin();
+}
+
+bool SearchSpace::has_more_states() {
+    return (it != nodes->end());
+}
+const State SearchSpace::get_next_state() {
+    pair<StateProxy, SearchNodeInfo> p = *it;
+    State s = get_node(State(p.first.state_data)).get_state();
+    it++;
+    return s;
+    //return *g_initial_state;
 }

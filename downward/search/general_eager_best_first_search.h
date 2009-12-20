@@ -15,14 +15,12 @@ class Operator;
 class ScalarEvaluator;
 
 class GeneralEagerBestFirstSearch : public SearchEngine {
-    
+protected:
     // Search Behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
-	
+
     OpenList<state_var_t *> *open_list;
     ScalarEvaluator *f_evaluator;
-
-    SearchSpace search_space;
 
     // used for statistics
     std::vector<int> best_heuristic_values;
@@ -46,12 +44,12 @@ class GeneralEagerBestFirstSearch : public SearchEngine {
     void jump_statistics() const;
 	void update_jump_statistic(const SearchNode& node);
 	void print_heuristic_values(const vector<int>& values) const;
-    
+
     bool check_progress();
     void report_progress();
 
-protected:
-    std::vector<Heuristic *> heuristics; 
+    SearchSpace search_space;
+    std::vector<Heuristic *> heuristics;
     // TODO: in the long term this
     // should disappear into the open list
 

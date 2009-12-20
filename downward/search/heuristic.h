@@ -51,6 +51,7 @@ public:
 	void evaluate(int g, bool preferred);
 	bool dead_end_is_reliable() const;
 	void set_evaluator_value(int val);
+	virtual void reset() {}
 };
 
 #endif

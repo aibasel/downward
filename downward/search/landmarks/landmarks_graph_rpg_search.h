@@ -1,10 +1,3 @@
-/*
- * LandmarksGraphSearch.h
- *
- *  Created on: Nov 12, 2009
- *      Author: karpase
- */
-
 #ifndef LANDMARKSGRAPHSEARCH_H_
 #define LANDMARKSGRAPHSEARCH_H_
 

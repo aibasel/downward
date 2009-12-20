@@ -306,6 +306,7 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
     si->initialSolve();
     times(&end_solve);
 
+
     const double * solution = si->getColSolution();
 
     // LP solved, assign shared cost to nodes
@@ -326,15 +327,14 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
     delete rows;
     delete si;
 
-
     times(&end_all);
-    /*
+
     int total_ms = (end_all.tms_utime - start.tms_utime) * 10;
     int build_ms = (end_build.tms_utime - start.tms_utime) * 10;
     int solve_ms = (end_solve.tms_utime - end_build.tms_utime) * 10;
 
-    cout << "Build: " << build_ms << " , Solve: " << solve_ms << " , Total: " << total_ms << endl;
-    */
+    cout << "Build: " << build_ms << " , Solve: " << solve_ms << " , Total: " << total_ms << "  , Iterations: " << si->getIterationCount() << endl;;
+
 
     }
     catch(CoinError & ex){

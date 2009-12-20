@@ -17,6 +17,7 @@ class State;
 class SuccessorGenerator;
 class Timer;
 class FFHeuristic;
+class SearchSpace;
 
 bool test_goal(const State &state);
 
@@ -79,5 +80,6 @@ extern bool g_merge_and_shrink_extra_statistics;
 extern bool g_merge_and_shrink_forbid_merge_across_buckets;
 
 extern FFHeuristic *g_ff_heur;
+extern SearchSpace* g_search_space;
 
 #endif

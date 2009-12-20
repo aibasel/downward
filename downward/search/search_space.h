@@ -2,12 +2,17 @@
 #define SEARCH_SPACE_H
 
 #include "state.h" // for state_var_t
+#include <vector>
+#include <ext/hash_map>
+#include "state.h"
+#include "state_proxy.h"
+#include "search_node_info.h"
 
 #include <vector>
 
 class Operator;
 class State;
-class SearchNodeInfo;
+class StateProxy;
 
 class SearchNode {
     state_var_t *state_buffer;
@@ -28,12 +33,14 @@ public:
 
     int get_g() const;
     int get_h() const;
+    const state_var_t *get_parent_buffer() const;
 
     void open_initial(int h);
     void open(int h, const SearchNode &parent_node,
 	      const Operator *parent_op);
     void reopen(const SearchNode &parent_node,
 		const Operator *parent_op);
+    void update_h(int h);
     void update_parent(const SearchNode &parent_node,
     		const Operator *parent_op);
     void close();
@@ -46,16 +53,23 @@ public:
 class SearchSpace {
     class HashTable;
     HashTable *nodes;
+
+    __gnu_cxx::hash_map<StateProxy, SearchNodeInfo>::const_iterator it;
 public:
     SearchSpace();
     ~SearchSpace();
     int size() const;
+    void resize(size_t sz);
     SearchNode get_node(const State &state);
     void trace_path(const State &goal_state,
 		    std::vector<const Operator *> &path) const;
 
     void dump();
     void statistics() const;
+
+    void reset_iterator();
+    const State get_next_state();
+    bool has_more_states();
 };
 
 #endif

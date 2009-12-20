@@ -9,11 +9,12 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include <sys/times.h>
 using namespace std;
 
 // construction and destruction
-LandmarkCutHeuristic::LandmarkCutHeuristic(bool use_cache)
-    : Heuristic(use_cache) {
+LandmarkCutHeuristic::LandmarkCutHeuristic(int _iteration_limit, bool use_cache)
+    : Heuristic(use_cache),iteration_limit(_iteration_limit) {
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
@@ -235,7 +236,7 @@ void LandmarkCutHeuristic::first_exploration_incremental(
 
 void LandmarkCutHeuristic::second_exploration(
     const State &state, vector<RelaxedProposition *> &queue, vector<RelaxedOperator *> &cut) {
-    assert(queue.empty()); 
+    assert(queue.empty());
 
     artificial_precondition.status = BEFORE_GOAL_ZONE;
     queue.push_back(&artificial_precondition);
@@ -325,7 +326,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
         RelaxedOperator &op = relaxed_operators[i];
         op.cost = op.base_cost * COST_MULTIPLIER;
     }
-    
+
     //cout << "*" << flush;
     int total_cost = 0;
 
@@ -339,7 +340,12 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     // validate_h_max();
     if(artificial_goal.status == UNREACHED)
 	return DEAD_END;
-    while(artificial_goal.h_max_cost != 0) {
+
+    //clock_t start_time = times(NULL);
+    //cout << "--------------------------" << endl;
+    int num_iterations = 0;
+    while ((artificial_goal.h_max_cost != 0) && ((iteration_limit == -1) || (num_iterations < iteration_limit))) {
+        num_iterations++;
         //cout << "h_max = " << artificial_goal.h_max_cost << "..." << endl;
         //cout << "total_cost = " << total_cost << "..." << endl;
         mark_goal_plateau(&artificial_goal);
@@ -356,6 +362,11 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
             cut[i]->cost -= cut_cost;
 	//cout << "{" << cut_cost << "}" << flush;
         total_cost += cut_cost;
+
+        //clock_t current_time = times(NULL);
+        //cout << current_time - start_time << " - " << (total_cost + COST_MULTIPLIER - 1) / COST_MULTIPLIER << endl;
+
+
 	first_exploration_incremental(cut);
 	// validate_h_max();
 	// TODO: Need better name for all explorations; e.g. this could
@@ -378,6 +389,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
 	artificial_precondition.status = REACHED;
     }
     //cout << "[" << total_cost << "]" << flush;
+    //cout << "**************************" << endl;
     return (total_cost + COST_MULTIPLIER - 1) / COST_MULTIPLIER;
 }
 
