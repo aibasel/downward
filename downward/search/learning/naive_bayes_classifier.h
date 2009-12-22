@@ -22,7 +22,8 @@ private:
 	   * of attribute counts, i.e., the number of times an attribute value occurs
 	   * in conjunction with another attribute value and a class value.
 	   */
-	COUNTER ***m_CondiCounts;
+	//COUNTER ***m_CondiCounts;
+	COUNTER **m_CondiCounts1;
 
 	  /** The number of times each class value occurs in the dataset */
 	COUNTER *m_ClassCounts;

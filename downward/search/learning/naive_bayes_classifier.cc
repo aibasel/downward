@@ -1,4 +1,5 @@
 #include "naive_bayes_classifier.h"
+#include <cassert>
 
 static void normalize(double* doubles, int length);
 
@@ -55,17 +56,22 @@ void NBClassifier::buildClassifier(int num_classes) {
     // allocate space for counts and frequencies
     //m_CondiCounts = new double[m_NumClasses][m_TotalAttValues][m_TotalAttValues];
     //m_SumForCounts = new double*[m_NumClasses][m_NumAttributes];
-    m_CondiCounts = new COUNTER**[m_NumClasses];
+    //m_CondiCounts = new COUNTER**[m_NumClasses];
+    m_CondiCounts1 = new COUNTER*[m_NumClasses];
     m_SumForCounts = new COUNTER*[m_NumClasses];
     m_ClassCounts = new COUNTER[m_NumClasses];
     m_Frequencies = new COUNTER[m_TotalAttValues];
     for (int i=0; i < m_NumClasses; i++) {
-    	m_CondiCounts[i] = new COUNTER*[m_TotalAttValues];
+    	//m_CondiCounts[i] = new COUNTER*[m_TotalAttValues];
+    	m_CondiCounts1[i] = new COUNTER[m_TotalAttValues];
     	for (int j = 0; j < m_TotalAttValues; j++) {
+    	    m_CondiCounts1[i][j] = 0;
+    	    /*
     		m_CondiCounts[i][j] = new COUNTER[m_TotalAttValues];
     		for (int k = 0; k < m_TotalAttValues; k++) {
     			m_CondiCounts[i][j][k] = 0;
     		}
+    		*/
     	}
     	m_SumForCounts[i] = new COUNTER[m_NumAttributes];
     	for (int j = 0; j < m_NumAttributes; j++) {
@@ -79,7 +85,7 @@ void NBClassifier::buildClassifier(int num_classes) {
   }
 
 void NBClassifier::addExample(const void *obj, int tag) {
-	COUNTER *countsPointer;
+	//COUNTER *countsPointer;
 
     int classVal = tag;
     COUNTER weight = 1;
@@ -115,6 +121,8 @@ void NBClassifier::addExample(const void *obj, int tag) {
        m_SumForCounts[classVal][Att1] += weight;
 
        // save time by referencing this now, rather than do it repeatedly in the loop
+       m_CondiCounts1[classVal][attIndex[Att1]] += weight;
+       /*
        countsPointer = m_CondiCounts[classVal][attIndex[Att1]];
 
        for(int Att2 = 0; Att2 < m_NumAttributes; Att2++) {
@@ -122,6 +130,7 @@ void NBClassifier::addExample(const void *obj, int tag) {
              countsPointer[attIndex[Att2]] += weight;
           }
        }
+       */
     }
 }
 
@@ -156,7 +165,7 @@ bool NBClassifier::distributionForInstance(const void *obj, double *dist) {
 */
 double NBClassifier::NBconditionalProb(const void *obj, int classVal) {
     double prob;
-    COUNTER **pointer;
+    //COUNTER **pointer;
     vector<int> features;
 
     //features.resize(feature_extractor->get_num_features());
@@ -170,6 +179,7 @@ double NBClassifier::NBconditionalProb(const void *obj, int classVal) {
                + ((double)m_Weight / (double)m_NumClasses))
              / (m_SumInstances + m_Weight);
     }
+    /*
     pointer = m_CondiCounts[classVal];
 
     // consider effect of each att value
@@ -189,6 +199,34 @@ double NBClassifier::NBconditionalProb(const void *obj, int classVal) {
                  / (double)(m_SumForCounts[classVal][att] + m_Weight);
        }
     }
+    */
+
+    COUNTER *pointer1;
+    pointer1 = m_CondiCounts1[classVal];
+    //double prob1 = prob;
+
+    // consider effect of each att value
+    for(int att = 0; att < m_NumAttributes; att++) {
+       if(att == m_ClassIndex)
+          continue;
+
+       // determine correct index for att in m_CondiCounts
+       int aIndex = m_StartAttIndex[att] + features[att];
+
+       if(!m_MEstimates) {
+          prob *= (double)(pointer1[aIndex] + 1.0)
+              / ((double)m_SumForCounts[classVal][att] + m_NumAttValues[att]);
+       } else {
+          prob *= (double)(pointer1[aIndex]
+                    + ((double)m_Weight / (double)m_NumAttValues[att]))
+                 / (double)(m_SumForCounts[classVal][att] + m_Weight);
+       }
+    }
+
+    //cout << prob1 << " " << prob << endl;
+    //assert( ((prob - prob1) < 0.002) && ((prob1 - prob1 < 0.0002)));
+
+
     return prob;
 }
 
