@@ -24,6 +24,7 @@
 #include "lazy_best_first_search_engine.h"
 #include "lazy_wa_star.h"
 #include "learning/selective_max_heuristic.h"
+#include "enforced_hill_climbing_search.h"
 
 #include <iostream>
 #include <fstream>
@@ -58,11 +59,17 @@ int main(int argc, const char **argv) {
     int m_hm = 2;
     int lm_type = LandmarksCountHeuristic::rpg_sasp;
     bool use_selective_max = false;
+    bool use_ehc_search = false;
+    bool ehc_rank_by_preferred = false;
 
     for (int i = 1; i < argc; i++) {
         for (const char *c = argv[i]; *c != 0; c++) {
             if (*c == 'o') {
                 a_star_search = true; // "o"ptimal
+            } else if (*c == 'e') {
+                use_ehc_search = true; // "e"enforced hill climbing
+            } else if (*c == 'r') {
+                ehc_rank_by_preferred = true;
             } else if (*c == 'c') {
                 cg_heuristic = true;
             } else if (*c == 'C') {
@@ -271,11 +278,14 @@ int main(int argc, const char **argv) {
         } else if (iterative_search) {
             engine = new LazyWeightedAStar(wastar_weight);
             ((LazyWeightedAStar*)engine)->set_bound(wastar_bound);
+        } else if (use_ehc_search) {
+            engine = new EnforcedHillClimbingSearch();
+            if (ehc_rank_by_preferred) {
+                ((EnforcedHillClimbingSearch*)engine)->set_preferred_usage(rank_preferred_first);
+            }
         } else {
             engine = new BestFirstSearchEngine;
         }
-
-
 
 
         // Test if synergies can be used between FF heuristic and landmark pref. ops.
