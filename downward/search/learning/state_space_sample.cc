@@ -5,7 +5,6 @@ StateSpaceSample::StateSpaceSample() {
 }
 
 StateSpaceSample::~StateSpaceSample() {
-	sample.resize(0);
 }
 
 int StateSpaceSample::choose_operator(int num_ops, vector<int> &h_s) {

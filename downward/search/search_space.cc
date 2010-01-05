@@ -152,10 +152,6 @@ int SearchSpace::size() const {
     return nodes->size();
 }
 
-void SearchSpace::resize(size_t sz) {
-    nodes->resize(sz);
-}
-
 SearchNode SearchSpace::get_node(const State &state) {
     static SearchNodeInfo default_info;
     pair<HashTable::iterator, bool> result = nodes->insert(

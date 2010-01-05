@@ -59,7 +59,6 @@ public:
     SearchSpace();
     ~SearchSpace();
     int size() const;
-    void resize(size_t sz);
     SearchNode get_node(const State &state);
     void trace_path(const State &goal_state,
 		    std::vector<const Operator *> &path) const;
