@@ -1,5 +1,5 @@
-#ifndef LAZYBESTFIRSTSEARCHENGINE_H
-#define LAZYBESTFIRSTSEARCHENGINE_H
+#ifndef LAZY_BEST_FIRST_SEARCH_ENGINE_H
+#define LAZY_BEST_FIRST_SEARCH_ENGINE_H
 
 #include "general_lazy_best_first_search.h"
 

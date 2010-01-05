@@ -1,5 +1,5 @@
-#ifndef PARETO_OPENLIST_H
-#define PARETO_OPENLIST_H
+#ifndef PARETO_OPEN_LIST_H
+#define PARETO_OPEN_LIST_H
 
 #include "open_list.h"
 #include "../evaluator.h"

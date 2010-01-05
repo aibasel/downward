@@ -1,5 +1,5 @@
-#ifndef TIEBREAKING_OPENLIST_H
-#define TIEBREAKING_OPENLIST_H
+#ifndef TIEBREAKING_OPEN_LIST_H
+#define TIEBREAKING_OPEN_LIST_H
 
 #include "open_list.h"
 #include "../evaluator.h"

@@ -1,5 +1,5 @@
-#ifndef ALTERNATION_OPENLIST_H
-#define ALTERNATION_OPENLIST_H
+#ifndef ALTERNATION_OPEN_LIST_H
+#define ALTERNATION_OPEN_LIST_H
 
 #include "open_list.h"
 #include "../evaluator.h"

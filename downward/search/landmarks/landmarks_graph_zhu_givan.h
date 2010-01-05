@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_GRAPH_ZHU_GIVAN
-#define LANDMARKS_GRAPH_ZHU_GIVAN
+#ifndef LANDMARKS_GRAPH_ZHU_GIVAN_H
+#define LANDMARKS_GRAPH_ZHU_GIVAN_H
 
 #include "../globals.h"
 #include "landmarks_graph.h"

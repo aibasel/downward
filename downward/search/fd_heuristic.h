@@ -1,5 +1,5 @@
-#ifndef FINKBEINER_DRAEGER_HEURISTIC_H
-#define FINKBEINER_DRAEGER_HEURISTIC_H
+#ifndef FD_HEURISTIC_H
+#define FD_HEURISTIC_H
 
 #include "heuristic.h"
 
