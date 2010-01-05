@@ -83,10 +83,8 @@ void SearchNode::open(int h, const SearchNode &parent_node,
 
 void SearchNode::reopen(const SearchNode &parent_node,
 			const Operator *parent_op) {
-    /*
     assert(info.status == SearchNodeInfo::OPEN ||
            info.status == SearchNodeInfo::CLOSED);
-    */
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
     info.status = SearchNodeInfo::OPEN;
