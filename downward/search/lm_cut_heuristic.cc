@@ -9,7 +9,6 @@
 #include <iostream>
 #include <limits>
 #include <vector>
-#include <sys/times.h>
 using namespace std;
 
 // construction and destruction
@@ -341,8 +340,6 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     if(artificial_goal.status == UNREACHED)
 	return DEAD_END;
 
-    //clock_t start_time = times(NULL);
-    //cout << "--------------------------" << endl;
     int num_iterations = 0;
     while ((artificial_goal.h_max_cost != 0) && ((iteration_limit == -1) || (num_iterations < iteration_limit))) {
         num_iterations++;
@@ -363,8 +360,6 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
 	//cout << "{" << cut_cost << "}" << flush;
         total_cost += cut_cost;
 
-        //clock_t current_time = times(NULL);
-        //cout << current_time - start_time << " - " << (total_cost + COST_MULTIPLIER - 1) / COST_MULTIPLIER << endl;
 
 
 	first_exploration_incremental(cut);
