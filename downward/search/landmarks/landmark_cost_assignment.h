@@ -1,5 +1,5 @@
-#ifndef LANDMARK_COST_ASSIGNMENT_H_
-#define LANDMARK_COST_ASSIGNMENT_H_
+#ifndef LANDMARK_COST_ASSIGNMENT_H
+#define LANDMARK_COST_ASSIGNMENT_H
 
 #include "landmarks_graph.h"
 
@@ -77,4 +77,4 @@ public:
     virtual void assign_costs();
 };
 
-#endif /* LANDMARK_COST_ASSIGNMENT_H_ */
+#endif

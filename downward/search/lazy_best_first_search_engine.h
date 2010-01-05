@@ -11,4 +11,4 @@ public:
     virtual ~LazyBestFirstSearchEngine();
 };
 
-#endif /* LAZYBESTFIRSTSEARCHENGINE_H_ */
+#endif

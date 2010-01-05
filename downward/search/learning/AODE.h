@@ -1,5 +1,5 @@
-#ifndef AODE_H_
-#define AODE_H_
+#ifndef AODE_H
+#define AODE_H
 
 #include "../globals.h"
 #include "classifier.h"
@@ -81,4 +81,4 @@ private:
 	  int m_Weight;
 };
 
-#endif /* AODE_H_ */
+#endif

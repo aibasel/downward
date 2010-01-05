@@ -60,4 +60,4 @@ namespace __gnu_cxx {
 }
 
 
-#endif /* STATE_PROXY_H_ */
+#endif

@@ -12,4 +12,4 @@ public:
     virtual ~LazyWeightedAStar();
 };
 
-#endif /* LAZY_WA_STAR_H_ */
+#endif

@@ -1,5 +1,5 @@
-#ifndef LANDMARKSGRAPHSEARCH_H_
-#define LANDMARKSGRAPHSEARCH_H_
+#ifndef LANDMARKSGRAPHSEARCH_H
+#define LANDMARKSGRAPHSEARCH_H
 
 #include "landmarks_graph.h"
 
@@ -17,4 +17,4 @@ public:
     virtual ~LandmarksGraphRpgSearch();
 };
 
-#endif /* LANDMARKSGRAPHSEARCH_H_ */
+#endif

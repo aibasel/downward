@@ -130,4 +130,4 @@ protected:
 
 };
 
-#endif /* HMHEURISTIC_H_ */
+#endif

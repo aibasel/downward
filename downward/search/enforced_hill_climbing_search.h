@@ -57,4 +57,4 @@ public:
     void set_preferred_usage(int usage) {preferred_usage = usage;}
 };
 
-#endif /* ENFORCED_HILL_CLIMBING_SEARCH_H_ */
+#endif

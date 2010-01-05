@@ -1,5 +1,5 @@
-#ifndef SELECTIVE_MAX_HEURISTIC_H_
-#define SELECTIVE_MAX_HEURISTIC_H_
+#ifndef SELECTIVE_MAX_HEURISTIC_H
+#define SELECTIVE_MAX_HEURISTIC_H
 
 #include "../heuristic.h"
 #include "../globals.h"
@@ -143,4 +143,4 @@ public:
 		        		const State& state);
 };
 
-#endif /* SELECTIVE_MAX_HEURISTIC_H_ */
+#endif

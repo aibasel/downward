@@ -1,5 +1,5 @@
-#ifndef NODEINFOFEATUREEXTRACTOR_H_
-#define NODEINFOFEATUREEXTRACTOR_H_
+#ifndef NODEINFOFEATUREEXTRACTOR_H
+#define NODEINFOFEATUREEXTRACTOR_H
 
 #include "feature_extractor.h"
 #include "../search_space.h"
@@ -18,4 +18,4 @@ public:
 	void change_search_space(SearchSpace *space) {search_space = space;}
 };
 
-#endif /* NODEINFOFEATUREEXTRACTOR_H_ */
+#endif

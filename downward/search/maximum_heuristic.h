@@ -45,4 +45,4 @@ public:
 	        		const State& state);
 };
 
-#endif /* MAXHEURISTIC_H_ */
+#endif

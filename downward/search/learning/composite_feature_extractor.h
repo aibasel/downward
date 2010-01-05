@@ -1,5 +1,5 @@
-#ifndef COMPOSITEFEATUREEXTRACTOR_H_
-#define COMPOSITEFEATUREEXTRACTOR_H_
+#ifndef COMPOSITEFEATUREEXTRACTOR_H
+#define COMPOSITEFEATUREEXTRACTOR_H
 
 #include <vector>
 #include "feature_extractor.h"
@@ -20,4 +20,4 @@ public:
 	virtual void extract_features(const void *obj, vector<int>& features);
 };
 
-#endif /* COMPOSITEFEATUREEXTRACTOR_H_ */
+#endif

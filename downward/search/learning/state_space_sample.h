@@ -1,5 +1,5 @@
-#ifndef STATESPACESAMPLE_H_
-#define STATESPACESAMPLE_H_
+#ifndef STATESPACESAMPLE_H
+#define STATESPACESAMPLE_H
 
 #include <vector>
 #include "../search_space.h"
@@ -33,4 +33,4 @@ public:
     virtual int collect() = 0;
 };
 
-#endif /* STATESPACESAMPLE_H_ */
+#endif

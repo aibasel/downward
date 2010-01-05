@@ -1,5 +1,5 @@
-#ifndef FEATURE_EXTRACTOR_H_
-#define FEATURE_EXTRACTOR_H_
+#ifndef FEATURE_EXTRACTOR_H
+#define FEATURE_EXTRACTOR_H
 
 /**
  * This class is the base class for feature extractors
@@ -28,4 +28,4 @@ public:
 	virtual void extract_features(const void *obj, vector<int>& features) = 0;
 };
 
-#endif /* FEATURE_EXTRACTOR_H_ */
+#endif

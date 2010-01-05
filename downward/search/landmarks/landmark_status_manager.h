@@ -1,5 +1,5 @@
-#ifndef LANDMARKSTATUSMANAGER_H_
-#define LANDMARKSTATUSMANAGER_H_
+#ifndef LANDMARKSTATUSMANAGER_H
+#define LANDMARKSTATUSMANAGER_H
 
 #include "landmarks_graph.h"
 #include "../state_proxy.h"
@@ -31,4 +31,4 @@ public:
     void set_unused_action_landmarks(const State &state, const ActionLandmarkSet& unused);
 };
 
-#endif /* LANDMARKSTATUSMANAGER_H_ */
+#endif

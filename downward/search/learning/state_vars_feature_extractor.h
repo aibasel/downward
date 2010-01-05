@@ -1,5 +1,5 @@
-#ifndef STATEVARFEATUREEXTRACTOR_H_
-#define STATEVARFEATUREEXTRACTOR_H_
+#ifndef STATEVARFEATUREEXTRACTOR_H
+#define STATEVARFEATUREEXTRACTOR_H
 
 #include "feature_extractor.h"
 
@@ -13,4 +13,4 @@ public:
 	virtual void extract_features(const void *obj, vector<int>& features);
 };
 
-#endif /* STATEVARFEATUREEXTRACTOR_H_ */
+#endif

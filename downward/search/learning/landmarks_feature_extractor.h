@@ -1,5 +1,5 @@
-#ifndef LANDMARKSFEATUREEXTRACTOR_H_
-#define LANDMARKSFEATUREEXTRACTOR_H_
+#ifndef LANDMARKSFEATUREEXTRACTOR_H
+#define LANDMARKSFEATUREEXTRACTOR_H
 
 #include "feature_extractor.h"
 #include "../landmarks/landmarks_graph.h"
@@ -19,4 +19,4 @@ public:
 	virtual void extract_features(const void *obj, vector<int>& features);
 };
 
-#endif /* LANDMARKSFEATUREEXTRACTOR_H_ */
+#endif

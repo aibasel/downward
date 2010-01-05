@@ -67,4 +67,4 @@ public:
     void dump_search_space();
 };
 
-#endif /* GENERAL_EAGER_BEST_FIRST_SEARCH_H */
+#endif

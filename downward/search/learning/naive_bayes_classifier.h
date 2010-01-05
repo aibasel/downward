@@ -1,5 +1,5 @@
-#ifndef NAIVE_BAYES_CLASSIFIER_H_
-#define NAIVE_BAYES_CLASSIFIER_H_
+#ifndef NAIVE_BAYES_CLASSIFIER_H
+#define NAIVE_BAYES_CLASSIFIER_H
 
 #include "../globals.h"
 #include "classifier.h"
@@ -84,4 +84,4 @@ private:
 	  int m_Weight;
 };
 
-#endif /* NAIVE_BAYES_CLASSIFIER_H_ */
+#endif

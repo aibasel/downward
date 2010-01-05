@@ -1,5 +1,5 @@
-#ifndef CLASSIFIER_H_
-#define CLASSIFIER_H_
+#ifndef CLASSIFIER_H
+#define CLASSIFIER_H
 
 #include "../state.h"
 #include "feature_extractor.h"
@@ -20,4 +20,4 @@ public:
     void set_feature_extractor(FeatureExtractor *fe) {feature_extractor = fe;}
 };
 
-#endif /* CLASSIFIER_H_ */
+#endif

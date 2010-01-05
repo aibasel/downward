@@ -1,5 +1,5 @@
-#ifndef PROBESTATESPACESAMPLE_H_
-#define PROBESTATESPACESAMPLE_H_
+#ifndef PROBESTATESPACESAMPLE_H
+#define PROBESTATESPACESAMPLE_H
 
 #include "state_space_sample.h"
 #include "../globals.h"
@@ -35,4 +35,4 @@ public:
     void set_heuristic(Heuristic *h) {heuristic = h;}
 };
 
-#endif /* PROBESTATESPACESAMPLE_H_ */
+#endif

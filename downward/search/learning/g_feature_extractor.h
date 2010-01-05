@@ -1,5 +1,5 @@
-#ifndef G_FEATURE_EXTRACTOR_H_
-#define G_FEATURE_EXTRACTOR_H_
+#ifndef G_FEATURE_EXTRACTOR_H
+#define G_FEATURE_EXTRACTOR_H
 
 #include "node_info_feature_extractor.h"
 
@@ -15,4 +15,4 @@ public:
     virtual void extract_features(const void *obj, vector<int>& features);
 };
 
-#endif /* G_FEATURE_EXTRACTOR_H_ */
+#endif

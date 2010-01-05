@@ -60,4 +60,4 @@ public:
     int get_bound() {return bound;}
 };
 
-#endif /* GENERALLAZYBESTFIRSTSEARCH_H_ */
+#endif
