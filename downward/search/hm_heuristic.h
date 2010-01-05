@@ -1,5 +1,5 @@
-#ifndef HMHEURISTIC_H_
-#define HMHEURISTIC_H_
+#ifndef HMHEURISTIC_H
+#define HMHEURISTIC_H
 
 #include <iostream>
 #include <algorithm>

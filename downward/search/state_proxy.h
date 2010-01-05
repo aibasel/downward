@@ -1,5 +1,5 @@
-#ifndef STATE_PROXY_H_
-#define STATE_PROXY_H_
+#ifndef STATE_PROXY_H
+#define STATE_PROXY_H
 
 #include "state.h"
 #include "globals.h"

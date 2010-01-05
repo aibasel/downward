@@ -1,5 +1,5 @@
-#ifndef ENFORCED_HILL_CLIMBING_SEARCH_H_
-#define ENFORCED_HILL_CLIMBING_SEARCH_H_
+#ifndef ENFORCED_HILL_CLIMBING_SEARCH_H
+#define ENFORCED_HILL_CLIMBING_SEARCH_H
 
 #include "search_engine.h"
 #include "globals.h"

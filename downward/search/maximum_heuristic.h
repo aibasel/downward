@@ -1,5 +1,5 @@
-#ifndef MAXHEURISTIC_H_
-#define MAXHEURISTIC_H_
+#ifndef MAXHEURISTIC_H
+#define MAXHEURISTIC_H
 
 #include "globals.h"
 #include "heuristic.h"
