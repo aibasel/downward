@@ -316,11 +316,8 @@ void SelectiveMaxHeuristic::train() {
 
 	total_training_time.stop();
 
-	// reset statistics and heuristics after training
+	// reset statistics  after training
 	reset_statistics();
-	for (int i = 0; i < num_heuristics; i++) {
-		heuristics[i]->reset();
-	}
 
 	//cout << "Freed Memory" << endl;
 	ni_fe->change_search_space(g_search_space);
