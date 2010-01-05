@@ -133,7 +133,7 @@ $(PROFILE_OBJECTS): obj/%.profile.o: %.cc
 
 $(RELEASE_OBJECTS): obj/%.release.o: %.cc
 	$(CC) $(RELEASEOPT) -c $< -o $@
-	
+
 clean:
 	rm -f $(OBJECTS) $(PROFILE_OBJECTS) $(RELEASE_OBJECTS) *~ *.pyc
 	rm -f Makefile.depend profile-search gmon.out PROFILE core

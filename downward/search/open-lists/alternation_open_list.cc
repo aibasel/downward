@@ -1,5 +1,5 @@
 // HACK! Ignore this if used as a top-level compile target.
-#ifdef ALTERNATION_OPENLIST_H
+#ifdef ALTERNATION_OPEN_LIST_H
 
 #include <iostream>
 #include <cassert>

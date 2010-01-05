@@ -1,5 +1,5 @@
 // HACK! Ignore this if used as a top-level compile target.
-#ifdef TIEBREAKING_OPENLIST_H
+#ifdef TIEBREAKING_OPEN_LIST_H
 
 #include <iostream>
 #include <cassert>
