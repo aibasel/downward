@@ -115,7 +115,7 @@ void LandmarkUniformSharedCostAssignment::assign_costs() {
             //if (g_verbose) cout << "calculating cost " << endl;
             double min_cost = numeric_limits<double>::max();
 
-            set<int> achievers = get_achievers(lmn_status, node);
+            const set<int> &achievers = get_achievers(lmn_status, node);
 
             if (achievers.size() > 0) {
                 set<int>::iterator fa_it;
