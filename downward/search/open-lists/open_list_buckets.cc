@@ -16,7 +16,7 @@ using namespace std;
 
 template<class Entry>
 BucketOpenList<Entry>::BucketOpenList(ScalarEvaluator *eval, bool preferred_only) 
-    : OpenList<Entry>(preferred_only), lowest_bucket(0), size(0), evaluator(eval) {
+    : OpenList<Entry>(preferred_only), lowest_bucket(9999999), size(0), evaluator(eval) {
 }
 
 template<class Entry>
@@ -25,9 +25,9 @@ BucketOpenList<Entry>::~BucketOpenList() {
 
 template<class Entry>
 int BucketOpenList<Entry>::insert(const Entry &entry) {
-	if (OpenList<Entry>::only_preferred && !last_preferred)
-		return 0;
-	int key = last_evaluated_value;
+    if (OpenList<Entry>::only_preferred && !last_preferred)
+        return 0;
+    int key = last_evaluated_value;
     assert(key >= 0);
     if(key >= buckets.size())
         buckets.resize(key + 1);
@@ -42,7 +42,7 @@ template<class Entry>
 Entry BucketOpenList<Entry>::remove_min() {
     assert(size > 0);
     while(buckets[lowest_bucket].empty())
-	lowest_bucket++;
+    lowest_bucket++;
     size--;
     Entry result = buckets[lowest_bucket].front();
     buckets[lowest_bucket].pop_front();
@@ -55,12 +55,19 @@ bool BucketOpenList<Entry>::empty() const {
 }
 
 template<class Entry>
+void BucketOpenList<Entry>::clear() {
+    buckets.clear();
+    lowest_bucket = 9999999;
+    size = 0;
+}
+
+template<class Entry>
 void BucketOpenList<Entry>::evaluate(int g, bool preferred) {
-	get_evaluator()->evaluate(g, preferred);
-	last_evaluated_value = get_evaluator()->get_value();
-	last_preferred = preferred;
-	dead_end = get_evaluator()->is_dead_end();
-	dead_end_reliable = get_evaluator()->dead_end_is_reliable();
+    get_evaluator()->evaluate(g, preferred);
+    last_evaluated_value = get_evaluator()->get_value();
+    last_preferred = preferred;
+    dead_end = get_evaluator()->is_dead_end();
+    dead_end_reliable = get_evaluator()->dead_end_is_reliable();
 }
 
 template<class Entry>

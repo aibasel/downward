@@ -18,12 +18,12 @@ AlternationOpenList<Entry>::~AlternationOpenList() {
 
 template<class Entry>
 int AlternationOpenList<Entry>::insert(const Entry &entry) {
-	int new_entries = 0;
+    int new_entries = 0;
     for (unsigned int i = 0; i < open_lists.size(); i++) {
-		new_entries += open_lists[i]->insert(entry);
+        new_entries += open_lists[i]->insert(entry);
     }
     size += new_entries;
-	return new_entries;
+    return new_entries;
 }
 
 template<class Entry>
@@ -50,6 +50,13 @@ bool AlternationOpenList<Entry>::empty() const {
 }
 
 template<class Entry>
+void AlternationOpenList<Entry>::clear() {
+    size = 0;
+    for (unsigned int i = 0; i < open_lists.size(); i++) 
+        open_lists[i]->clear();
+}
+
+template<class Entry>
 void AlternationOpenList<Entry>::evaluate(int g, bool preferred) {
     dead_end = false;
     dead_end_reliable = false;
@@ -62,7 +69,7 @@ void AlternationOpenList<Entry>::evaluate(int g, bool preferred) {
                 break;
             }
         }
-	}
+    }
 }
 
 template<class Entry>

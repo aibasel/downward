@@ -168,7 +168,7 @@ int EnforcedHillClimbingSearch::ehc() {
 
                 current_state = node.get_state();
                 current_h = heuristic->get_heuristic();
-                clear_open_list();
+                open_list->clear();
                 return IN_PROGRESS;
             }
             else {
@@ -192,14 +192,6 @@ int EnforcedHillClimbingSearch::ehc() {
     }
     cout << "No solution - FAILED" << endl;
     return FAILED;
-}
-
-void EnforcedHillClimbingSearch::clear_open_list() {
-    while (!open_list->empty()) {
-        open_list->remove_min();
-    }
-    //delete open_list;
-    //open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
 }
 
 void EnforcedHillClimbingSearch::statistics() const {

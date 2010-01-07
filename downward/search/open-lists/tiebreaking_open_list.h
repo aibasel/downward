@@ -14,7 +14,7 @@ class ScalarEvaluator;
 template<class Entry>
 class TieBreakingOpenList : public OpenList<Entry>, public Evaluator {
     
-	typedef std::deque<Entry> Bucket;
+    typedef std::deque<Entry> Bucket;
 
     std::map<const std::vector<int>, Bucket> buckets;
     int size;
@@ -22,11 +22,11 @@ class TieBreakingOpenList : public OpenList<Entry>, public Evaluator {
 
     std::vector<ScalarEvaluator *> evaluators;
     std::vector<int> last_evaluated_value;
-	bool last_preferred;
+    bool last_preferred;
     bool dead_end;
     bool dead_end_reliable;
     
-	const std::vector<int>& get_value(); // currently not used
+    const std::vector<int>& get_value(); // currently not used
     int dimension() const;
 protected:
     Evaluator* get_evaluator() { return this; }
@@ -36,12 +36,13 @@ public:
                         bool preferred_only=false);
     ~TieBreakingOpenList();
 
-	// open list interface
+    // open list interface
     int insert(const Entry &entry);
     Entry remove_min();
     bool empty() const;
+    void clear();
 
-	// tuple evaluator interface
+    // tuple evaluator interface
     void evaluate(int g, bool preferred);
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;

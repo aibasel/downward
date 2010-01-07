@@ -25,9 +25,9 @@ StandardScalarOpenList<Entry>::~StandardScalarOpenList() {
 
 template<class Entry>
 int StandardScalarOpenList<Entry>::insert(const Entry &entry) {
-	if (OpenList<Entry>::only_preferred && !last_preferred)
-		return 0;
-	int key = last_evaluated_value;
+    if (OpenList<Entry>::only_preferred && !last_preferred)
+        return 0;
+    int key = last_evaluated_value;
     if(key < lowest_bucket)
         lowest_bucket = key;
     buckets[key].push_back(entry);
@@ -57,12 +57,19 @@ bool StandardScalarOpenList<Entry>::empty() const {
 }
 
 template<class Entry>
+void StandardScalarOpenList<Entry>::clear() {
+    buckets.clear();
+    lowest_bucket = 9999999;
+    size = 0;
+}
+
+template<class Entry>
 void StandardScalarOpenList<Entry>::evaluate(int g, bool preferred) {
-	get_evaluator()->evaluate(g, preferred);
-	last_evaluated_value = get_evaluator()->get_value();
-	last_preferred = preferred;
-	dead_end = get_evaluator()->is_dead_end();
-	dead_end_reliable = get_evaluator()->dead_end_is_reliable();
+    get_evaluator()->evaluate(g, preferred);
+    last_evaluated_value = get_evaluator()->get_value();
+    last_preferred = preferred;
+    dead_end = get_evaluator()->is_dead_end();
+    dead_end_reliable = get_evaluator()->dead_end_is_reliable();
 }
 
 template<class Entry>

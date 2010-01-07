@@ -51,7 +51,7 @@ void ParetoOpenList<Entry>::remove_key(const KeyType key) {
 template<class Entry>
 ParetoOpenList<Entry>::ParetoOpenList(const std::vector<ScalarEvaluator *> &evals,
     bool preferred_only) 
-	: OpenList<Entry>(preferred_only), evaluators(evals) {
+    : OpenList<Entry>(preferred_only), evaluators(evals) {
     last_evaluated_value.resize(evaluators.size());
 }
 
@@ -61,8 +61,8 @@ ParetoOpenList<Entry>::~ParetoOpenList() {
 
 template<class Entry>
 int ParetoOpenList<Entry>::insert(const Entry &entry) {
-	if (OpenList<Entry>::only_preferred && !last_preferred)
-		return 0;
+    if (OpenList<Entry>::only_preferred && !last_preferred)
+        return 0;
     const std::vector<int> &key = last_evaluated_value;
     Bucket &bucket = buckets[key];
     bool newkey = bucket.empty();
@@ -80,7 +80,7 @@ int ParetoOpenList<Entry>::insert(const Entry &entry) {
         }
         nondominated.insert(key);
     }
-	return 1;
+    return 1;
 }
 
 template<class Entry>
@@ -107,6 +107,12 @@ Entry ParetoOpenList<Entry>::remove_min() {
 }
 
 template<class Entry>
+void ParetoOpenList<Entry>::clear() {
+    buckets.clear();
+    nondominated.clear();
+}
+
+template<class Entry>
 void ParetoOpenList<Entry>::evaluate(int g, bool preferred) {
     dead_end = false;
     dead_end_reliable = false;
@@ -121,10 +127,10 @@ void ParetoOpenList<Entry>::evaluate(int g, bool preferred) {
                 dead_end_reliable = true;
             }
         } else { // add value if no dead end
-        	last_evaluated_value[i] = evaluators[i]->get_value();
-		}
+            last_evaluated_value[i] = evaluators[i]->get_value();
+        }
     }
-	last_preferred = preferred;
+    last_preferred = preferred;
 }
 
 template<class Entry>

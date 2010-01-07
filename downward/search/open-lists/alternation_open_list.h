@@ -12,7 +12,7 @@ class AlternationOpenList : public OpenList<Entry>, public Evaluator {
     std::vector<int> priorities;
 
     int size;
-	bool dead_end;
+    bool dead_end;
     bool dead_end_reliable;
     int boosting;
     int last_used_list;
@@ -32,12 +32,13 @@ public:
     int insert(const Entry &entry);
     Entry remove_min();
     bool empty() const;
+    void clear();
 
     // Evaluator interface
     void evaluate(int g, bool preferred);
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;
-	
+    
     int boost_preferred();
     void boost_last_used_list();
 };

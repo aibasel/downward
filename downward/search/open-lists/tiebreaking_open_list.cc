@@ -13,7 +13,7 @@ using namespace std;
 
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
-	const std::vector<ScalarEvaluator *> &evals,
+    const std::vector<ScalarEvaluator *> &evals,
     bool preferred_only)
     : OpenList<Entry>(preferred_only), size(0), evaluators(evals) {
     lowest_bucket = std::vector<int>(dimension(), 9999999);
@@ -26,8 +26,8 @@ TieBreakingOpenList<Entry>::~TieBreakingOpenList() {
 
 template<class Entry>
 int TieBreakingOpenList<Entry>::insert(const Entry &entry) {
-	if (OpenList<Entry>::only_preferred && !last_preferred)
-		return 0;
+    if (OpenList<Entry>::only_preferred && !last_preferred)
+        return 0;
     const std::vector<int> &key = last_evaluated_value;
     if(key < lowest_bucket)
         lowest_bucket = key;
@@ -58,6 +58,13 @@ bool TieBreakingOpenList<Entry>::empty() const {
 }
 
 template<class Entry>
+void TieBreakingOpenList<Entry>::clear() {
+    buckets.clear();
+    lowest_bucket = std::vector<int>(dimension(), 9999999);
+    size = 0;
+}
+
+template<class Entry>
 void TieBreakingOpenList<Entry>::evaluate(int g, bool preferred) {
     dead_end = false;
     dead_end_reliable = false;
@@ -72,10 +79,10 @@ void TieBreakingOpenList<Entry>::evaluate(int g, bool preferred) {
                 dead_end_reliable = true;
             }
         } else { // add value if no dead end
-        	last_evaluated_value[i] = evaluators[i]->get_value();
-		}
+            last_evaluated_value[i] = evaluators[i]->get_value();
+        }
     }
-	last_preferred = preferred;
+    last_preferred = preferred;
 }
 
 template<class Entry>

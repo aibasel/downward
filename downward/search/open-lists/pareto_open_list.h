@@ -44,7 +44,7 @@ class ParetoOpenList : public OpenList<Entry>, public Evaluator {
     bool is_nondominated(const KeyType &vec,
             KeySet &domination_candidates);
     void remove_key(const KeyType key);
-	bool last_preferred;
+    bool last_preferred;
     
     bool dead_end;
     bool dead_end_reliable;
@@ -61,6 +61,7 @@ public:
     int insert(const Entry &entry);
     Entry remove_min();
     bool empty() const { return nondominated.empty(); }
+    void clear();
 
     // tuple evaluator interface
     void evaluate(int g, bool preferred);

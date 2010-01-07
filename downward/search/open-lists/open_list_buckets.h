@@ -16,10 +16,10 @@ class BucketOpenList : public OpenList<Entry> {
     int size;
 
     ScalarEvaluator *evaluator;
-	int last_evaluated_value;
-	bool last_preferred;
-	bool dead_end;
-	bool dead_end_reliable;
+    int last_evaluated_value;
+    bool last_preferred;
+    bool dead_end;
+    bool dead_end_reliable;
 
 protected:
     ScalarEvaluator* get_evaluator() { return evaluator; }
@@ -31,10 +31,11 @@ public:
     int insert(const Entry &entry);
     Entry remove_min();
     bool empty() const;
-	
-	void evaluate(int g, bool preferred);
-	bool is_dead_end() const;
-	bool dead_end_is_reliable() const;
+    void clear();
+    
+    void evaluate(int g, bool preferred);
+    bool is_dead_end() const;
+    bool dead_end_is_reliable() const;
 };
 
 #include "open_list_buckets.cc"

@@ -44,7 +44,6 @@ protected:
     virtual void initialize();
     virtual int step();
     int ehc();
-    void clear_open_list();
     void get_successors(const State &state, vector<const Operator *> &ops);
     void evaluate(const State &state);
 public:
