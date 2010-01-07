@@ -3,7 +3,7 @@
 #include "heuristic.h"
 #include "g_evaluator.h"
 #include "sum_evaluator.h"
-#include "open-lists/tiebreaking_open_list.h"
+#include "open_lists/tiebreaking_open_list.h"
 
 AStarSearchEngine::AStarSearchEngine():
 	GeneralEagerBestFirstSearch(true)  {

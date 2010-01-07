@@ -7,7 +7,7 @@
 #include "search_node_info.h"
 #include "operator.h"
 #include "state.h"
-#include "open-lists/open_list.h"
+#include "open_lists/open_list.h"
 #include "g_evaluator.h"
 #include <vector>
 #include <map>

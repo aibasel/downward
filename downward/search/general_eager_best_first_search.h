@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "open-lists/open_list.h"
+#include "open_lists/open_list.h"
 #include "search_engine.h"
 #include "search_space.h"
 #include "state.h"

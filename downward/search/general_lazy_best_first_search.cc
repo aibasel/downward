@@ -1,9 +1,9 @@
 #include "general_lazy_best_first_search.h"
 #include "heuristic.h"
 #include "successor_generator.h"
-#include "open-lists/standard_scalar_open_list.h"
-#include "open-lists/alternation_open_list.h"
-#include "open-lists/tiebreaking_open_list.h"
+#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/alternation_open_list.h"
+#include "open_lists/tiebreaking_open_list.h"
 #include "g_evaluator.h"
 #include "sum_evaluator.h"
 

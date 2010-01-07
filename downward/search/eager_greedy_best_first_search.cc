@@ -1,8 +1,8 @@
 #include "eager_greedy_best_first_search.h"
 
 #include "heuristic.h"
-#include "open-lists/standard_scalar_open_list.h"
-#include "open-lists/alternation_open_list.h"
+#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/alternation_open_list.h"
 
 EagerGreedyBestFirstSearchEngine::EagerGreedyBestFirstSearchEngine():
 	GeneralEagerBestFirstSearch(false)  {
