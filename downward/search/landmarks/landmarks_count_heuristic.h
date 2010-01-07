@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_COUNT_HEURISTIC_H
-#define LANDMARKS_COUNT_HEURISTIC_H
+#ifndef LANDMARKS_LANDMARKS_COUNT_HEURISTIC_H
+#define LANDMARKS_LANDMARKS_COUNT_HEURISTIC_H
 
 #include "../state.h"
 #include "../heuristic.h"

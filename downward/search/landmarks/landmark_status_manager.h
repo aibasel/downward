@@ -1,5 +1,5 @@
-#ifndef LANDMARKSTATUSMANAGER_H
-#define LANDMARKSTATUSMANAGER_H
+#ifndef LANDMARKS_LANDMARK_STATUS_MANAGER_H
+#define LANDMARKS_LANDMARK_STATUS_MANAGER_H
 
 #include "landmarks_graph.h"
 #include "../state_proxy.h"

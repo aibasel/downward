@@ -1,5 +1,5 @@
-#ifndef OPEN_LIST_BUCKETS_H
-#define OPEN_LIST_BUCKETS_H
+#ifndef OPEN_LISTS_OPEN_LIST_BUCKETS_H
+#define OPEN_LISTS_OPEN_LIST_BUCKETS_H
 
 #include "open_list.h"
 #include "../scalar_evaluator.h"

@@ -1,5 +1,5 @@
-#ifndef PROB_A_STAR_SAMPLE_H
-#define PROB_A_STAR_SAMPLE_H
+#ifndef LEARNING_PROB_A_STAR_SAMPLE_H
+#define LEARNING_PROB_A_STAR_SAMPLE_H
 
 #include <vector>
 

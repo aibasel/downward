@@ -1,5 +1,5 @@
-#ifndef G_FEATURE_EXTRACTOR_H
-#define G_FEATURE_EXTRACTOR_H
+#ifndef LEARNING_G_FEATURE_EXTRACTOR_H
+#define LEARNING_G_FEATURE_EXTRACTOR_H
 
 #include "node_info_feature_extractor.h"
 

@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_GRAPH_H
-#define LANDMARKS_GRAPH_H
+#ifndef LANDMARKS_LANDMARKS_GRAPH_H
+#define LANDMARKS_LANDMARKS_GRAPH_H
 
 #include <vector>
 #include <set>

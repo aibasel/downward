@@ -1,5 +1,5 @@
-#ifndef CLASSIFIER_H
-#define CLASSIFIER_H
+#ifndef LEARNING_CLASSIFIER_H
+#define LEARNING_CLASSIFIER_H
 
 #include "../state.h"
 #include "feature_extractor.h"

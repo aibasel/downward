@@ -1,5 +1,5 @@
-#ifndef FEATURE_EXTRACTOR_H
-#define FEATURE_EXTRACTOR_H
+#ifndef LEARNING_FEATURE_EXTRACTOR_H
+#define LEARNING_FEATURE_EXTRACTOR_H
 
 /**
  * This class is the base class for feature extractors

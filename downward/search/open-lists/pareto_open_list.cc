@@ -1,5 +1,5 @@
 // HACK! Ignore this if used as a top-level compile target.
-#ifdef TIEBREAKING_OPENLIST_H
+#ifdef OPEN_LISTS_PARETO_OPEN_LIST_H
 
 #include "../tuple_evaluator.h"
 

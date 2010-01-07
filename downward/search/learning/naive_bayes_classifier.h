@@ -1,5 +1,5 @@
-#ifndef NAIVE_BAYES_CLASSIFIER_H
-#define NAIVE_BAYES_CLASSIFIER_H
+#ifndef LEARNING_NAIVE_BAYES_CLASSIFIER_H
+#define LEARNING_NAIVE_BAYES_CLASSIFIER_H
 
 #include "../globals.h"
 #include "classifier.h"

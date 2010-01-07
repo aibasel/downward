@@ -1,5 +1,5 @@
-#ifndef LAMA_FF_SYNERGY_H
-#define LAMA_FF_SYNERGY_H
+#ifndef LANDMARKS_LAMA_FF_SYNERGY_H
+#define LANDMARKS_LAMA_FF_SYNERGY_H
 
 #include "../heuristic.h"
 #include "exploration.h"

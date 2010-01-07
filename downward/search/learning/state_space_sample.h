@@ -1,5 +1,5 @@
-#ifndef STATESPACESAMPLE_H
-#define STATESPACESAMPLE_H
+#ifndef LEARNING_STATE_SPACE_SAMPLE_H
+#define LEARNING_STATE_SPACE_SAMPLE_H
 
 #include <vector>
 #include "../search_space.h"

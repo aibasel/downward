@@ -1,5 +1,5 @@
-#ifndef AODE_H
-#define AODE_H
+#ifndef LEARNING_AODE_H
+#define LEARNING_AODE_H
 
 #include "../globals.h"
 #include "classifier.h"

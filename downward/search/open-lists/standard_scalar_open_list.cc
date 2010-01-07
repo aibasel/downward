@@ -1,5 +1,5 @@
 // HACK! Ignore this if used as a top-level compile target.
-#ifdef STANDARD_SCALAR_OPEN_LIST_H
+#ifdef OPEN_LISTS_STANDARD_SCALAR_OPEN_LIST_H
 
 #include "../scalar_evaluator.h"
 

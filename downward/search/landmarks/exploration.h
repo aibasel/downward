@@ -1,5 +1,5 @@
-#ifndef EXPLORATION_H
-#define EXPLORATION_H
+#ifndef LANDMARKS_EXPLORATION_H
+#define LANDMARKS_EXPLORATION_H
 
 #include "../heuristic.h"
 #include "../globals.h"

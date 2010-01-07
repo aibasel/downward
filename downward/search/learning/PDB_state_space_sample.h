@@ -1,5 +1,5 @@
-#ifndef PDBSTATESPACESAMPLE_H
-#define PDBSTATESPACESAMPLE_H
+#ifndef LEARNING_PDB_STATE_SPACE_SAMPLE_H
+#define LEARNING_PDB_STATE_SPACE_SAMPLE_H
 
 #include "probe_state_space_sample.h"
 #include "../heuristic.h"

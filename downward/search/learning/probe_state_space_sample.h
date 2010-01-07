@@ -1,5 +1,5 @@
-#ifndef PROBESTATESPACESAMPLE_H
-#define PROBESTATESPACESAMPLE_H
+#ifndef LEARNING_PROBE_STATE_SPACE_SAMPLE_H
+#define LEARNING_PROBE_STATE_SPACE_SAMPLE_H
 
 #include "state_space_sample.h"
 #include "../globals.h"

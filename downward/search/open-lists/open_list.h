@@ -1,5 +1,5 @@
-#ifndef OPEN_LIST_H
-#define OPEN_LIST_H
+#ifndef OPEN_LISTS_OPEN_LIST_H
+#define OPEN_LISTS_OPEN_LIST_H
 
 class Evaluator;
 

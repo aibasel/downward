@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_GRAPH_NEW_H
-#define LANDMARKS_GRAPH_NEW_H
+#ifndef LANDMARKS_LANDMARKS_GRAPH_RPG_SASP_H
+#define LANDMARKS_LANDMARKS_GRAPH_RPG_SASP_H
 
 #include <ext/hash_set>
 #include "../globals.h"

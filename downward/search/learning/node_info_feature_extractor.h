@@ -1,5 +1,5 @@
-#ifndef NODEINFOFEATUREEXTRACTOR_H
-#define NODEINFOFEATUREEXTRACTOR_H
+#ifndef LEARNING_NODE_INFO_FEATURE_EXTRACTOR_H
+#define LEARNING_NODE_INFO_FEATURE_EXTRACTOR_H
 
 #include "feature_extractor.h"
 #include "../search_space.h"

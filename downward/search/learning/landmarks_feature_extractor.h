@@ -1,5 +1,5 @@
-#ifndef LANDMARKSFEATUREEXTRACTOR_H
-#define LANDMARKSFEATUREEXTRACTOR_H
+#ifndef LEARNING_LANDMARKS_FEATURE_EXTRACTOR_H
+#define LEARNING_LANDMARKS_FEATURE_EXTRACTOR_H
 
 #include "feature_extractor.h"
 #include "../landmarks/landmarks_graph.h"
