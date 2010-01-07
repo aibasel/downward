@@ -1,0 +1,64 @@
+This is not meant to be a complete description of coding conventions.
+General advice: follow the example of the existing code.
+
+We mostly follow the style known as "K&R" or "stroupstrup" (see
+http://en.wikipedia.org/wiki/Indent_style), with a few exceptions. For
+example, unlike K&R, we don't special-case the use of braces around
+function definitions.
+
+
+Here's some basic rules:
+
+ * Indentation: Indent with spaces, not tabs. Use four spaces per
+   level of indentation.
+
+ * Whitespace usage: New code should use a single space after control
+   structures that use parentheses ("for", "while", "if"), as in:
+   "if (x)" rather than "if(x)".
+
+ * Placement of braces: We use the following style:
+
+   if (foo) {
+       bar();
+   } else if (foobar) {
+       baz();
+   } else if (quux) {
+       quuux();
+   } else {
+       quuuux();
+   }
+
+   Braces can be omitted for control structures with only a single
+   statement, but don't mix using braces with no braces within the
+   same if/else block. For example, this is not OK:
+
+   if (foo) {
+       bar();
+       baz();
+   } else
+       foobar();
+ 
+   (In that case, also use braces for the else block.)
+
+ * header file guards: take the filename (if in a subdirectory,
+   including the subdirectory name), convert to uppercase, and replace
+   "." and "/" with "_". For example, "learning/state_space_sample.h"
+   becomes "LEARNING_STATE_SPACE_SAMPLE_H". Then use the following
+   guard block in the header file:
+
+   #ifndef LEARNING_STATE_SPACE_SAMPLE_H
+   #define LEARNING_STATE_SPACE_SAMPLE_H
+   // ...
+   #endif
+
+   That's all. For example, don't add a comment after the #endif, and
+   don't add further underscores at the start or end of the guard
+   name.
+
+ * namespaces: Every subdirectory should correspond to a namespace.
+   (As of r3821, this has not yet been done.) Namespaces follow the
+   same camel-case naming convention as classes. For example, we would
+   expect file my_subdir/my_class.h to contain a definition of class
+   MySubdir::MyClass. (Actually, namespaces should rather have short,
+   single-word names if possibe; this example only uses an underscore
+   in the subdir name for sake of illustration.)
