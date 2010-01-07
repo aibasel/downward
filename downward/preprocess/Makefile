@@ -11,10 +11,10 @@ PROFILE_PARAMETERS =
 
 CC_OPTIONS = -m32 -ansi -Wall -O3 -Wno-sign-compare -pedantic -Werror
 # CC_OPTIONS += -march=pentium3
-CC_OPTIONS += -static -static-libgcc
 
 PROFILE_OPTIONS = -m32 -pg -O3
 LINK_OPTIONS = -m32
+LINK_OPTIONS += -static -static-libgcc
 
 CC = g++
 DEPEND = g++ -MM
