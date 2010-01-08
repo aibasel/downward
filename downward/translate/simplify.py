@@ -4,7 +4,7 @@ from collections import defaultdict
 from itertools import count
 import sys
 
-DEBUG = True
+DEBUG = False
 
 # TODO:
 # This is all quite hackish and would be easier if the translator were
@@ -143,13 +143,16 @@ class VarValueRenaming(object):
 
     def apply_to_operators(self, operators):
         new_operators = []
+        num_removed = 0
         for op in operators:
             try:
                 self.apply_to_operator(op)
                 new_operators.append(op)
             except (Impossible, DoesNothing):
+                num_removed += 1
                 if DEBUG:
                     print "Removed operator: %s" % op.name
+        print "%d operators removed" % num_removed
         operators[:] = new_operators
 
     def apply_to_axioms(self, axioms):
@@ -302,4 +305,4 @@ def filter_unreachable_propositions(sas_task, mutex_key, translation_key):
     renaming.apply_to_task(sas_task)
     renaming.apply_to_translation_key(translation_key)
     renaming.apply_to_mutex_key(mutex_key)
-    print "%d propositions removed." % renaming.num_removed_values
+    print "%d propositions removed" % renaming.num_removed_values
