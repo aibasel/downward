@@ -31,7 +31,7 @@ int BucketOpenList<Entry>::insert(const Entry &entry) {
     assert(key >= 0);
     if(key >= buckets.size())
         buckets.resize(key + 1);
-    else if(key < lowest_bucket)
+    if(key < lowest_bucket)
         lowest_bucket = key;
     buckets[key].push_back(entry);
     size++;
