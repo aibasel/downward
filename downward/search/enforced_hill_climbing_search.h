@@ -30,6 +30,8 @@ protected:
     bool use_preferred;
     int preferred_usage;
 
+    bool use_cost_for_bfs;
+
     State current_state;
     int current_h;
 
@@ -54,6 +56,7 @@ public:
     virtual void add_heuristic(Heuristic *h, bool use_estimates,
                                bool use_preferred_operators);
     void set_preferred_usage(int usage) {preferred_usage = usage;}
+    void set_use_cost_for_bfs(bool use) {use_cost_for_bfs = use;}
 };
 
 #endif
