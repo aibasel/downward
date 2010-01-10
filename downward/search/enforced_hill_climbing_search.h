@@ -14,7 +14,7 @@
 
 using namespace std;
 
-typedef pair<State, pair<int, const Operator * > > OpenListEntryEHC;
+typedef pair<state_var_t*, pair<int, const Operator * > > OpenListEntryEHC;
 
 enum {rank_preferred_first = 1, prune_by_preferred = 2};
 
