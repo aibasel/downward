@@ -13,7 +13,7 @@ using namespace std;
 
 // construction and destruction
 LandmarkCutHeuristic::LandmarkCutHeuristic(int _iteration_limit, bool use_cache)
-    : Heuristic(use_cache),iteration_limit(_iteration_limit) {
+    : Heuristic(use_cache), iteration_limit(_iteration_limit) {
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
