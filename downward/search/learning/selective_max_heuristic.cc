@@ -1,6 +1,6 @@
 #include "selective_max_heuristic.h"
 #include "../successor_generator.h"
-#include "../maximum_heuristic.h"
+#include "maximum_heuristic.h"
 #include "naive_bayes_classifier.h"
 #include "state_vars_feature_extractor.h"
 #include "composite_feature_extractor.h"
@@ -108,7 +108,7 @@ void SelectiveMaxHeuristic::initialize() {
 	cheap = new int[num_pairs];
 	threshold = new double[num_pairs];
 
-	ni_fe = new GFeatureExtractor(g_search_space);
+	ni_fe = new GFeatureExtractor(g_learning_search_space);
 
 
 	CompositeFeatureExtractor *cfe = new CompositeFeatureExtractor();
@@ -297,7 +297,7 @@ void SelectiveMaxHeuristic::train() {
 	reset_statistics();
 
 	//cout << "Freed Memory" << endl;
-	ni_fe->change_search_space(g_search_space);
+	ni_fe->change_search_space(g_learning_search_space);
 }
 
 int SelectiveMaxHeuristic::eval_heuristic(const State& state, int index, bool count) {

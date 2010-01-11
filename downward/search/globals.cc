@@ -190,5 +190,5 @@ bool g_merge_and_shrink_forbid_merge_across_buckets = false;
 
 Timer g_timer;
 
-FFHeuristic *g_ff_heur;
-SearchSpace* g_search_space;
+FFHeuristic *g_ff_heur = 0;
+SearchSpace* g_learning_search_space = 0;

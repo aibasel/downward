@@ -109,7 +109,7 @@ int MaxHeuristic::compute_heuristic(const State& state)
 		for (int i = 0; i < g_variable_domain.size(); i++) {
 			arff_out << state[i] << ", ";
 		}
-		int g = g_search_space->get_node(state).get_g();
+		int g = g_learning_search_space->get_node(state).get_g();
 		arff_out << g << ", " << max + g << endl;
 	}
 

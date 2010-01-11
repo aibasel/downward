@@ -42,7 +42,7 @@ void GeneralEagerBestFirstSearch::add_heuristic(Heuristic *heuristic,
 }
 
 void GeneralEagerBestFirstSearch::initialize() {
-    g_search_space = &search_space;
+    g_learning_search_space = &search_space;
     if (heuristics.size() > 1) {
         cout << "WARNING: currently only one heuristic allowed in general search; ";
         cout << "skipping additional heuristics." << endl;
