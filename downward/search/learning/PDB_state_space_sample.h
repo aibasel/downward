@@ -1,5 +1,5 @@
-#ifndef LEARNING_PDB_STATE_SPACE_SAMPLE_H
-#define LEARNING_PDB_STATE_SPACE_SAMPLE_H
+#ifndef PDBSTATESPACESAMPLE_H_
+#define PDBSTATESPACESAMPLE_H_
 
 #include "probe_state_space_sample.h"
 #include "../heuristic.h"
@@ -10,10 +10,10 @@ protected:
 
 	int get_random_depth();
 public:
-	PDBStateSpaceSample(Heuristic *h, int goal_depth, int probes, int size);
+	PDBStateSpaceSample(int goal_depth, int probes, int size);
 	virtual ~PDBStateSpaceSample();
 
 	virtual int collect();
 };
 
-#endif
+#endif /* PDBSTATESPACESAMPLE_H_ */

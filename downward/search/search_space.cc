@@ -202,20 +202,3 @@ void SearchSpace::statistics() const {
   cout << "search space hash size: " << nodes->size() << endl;
   cout << "search space hash bucket count: " << nodes->bucket_count() << endl;
 }
-
-__gnu_cxx::hash_map<StateProxy, SearchNodeInfo>::const_iterator it;
-
-void SearchSpace::reset_iterator() {
-    it = nodes->begin();
-}
-
-bool SearchSpace::has_more_states() {
-    return (it != nodes->end());
-}
-const State SearchSpace::get_next_state() {
-    pair<StateProxy, SearchNodeInfo> p = *it;
-    State s = get_node(State(p.first.state_data)).get_state();
-    it++;
-    return s;
-    //return *g_initial_state;
-}

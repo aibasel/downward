@@ -1,24 +1,29 @@
-#ifndef LEARNING_STATE_SPACE_SAMPLE_H
-#define LEARNING_STATE_SPACE_SAMPLE_H
+#ifndef STATESPACESAMPLE_H_
+#define STATESPACESAMPLE_H_
 
-#include <vector>
 #include "../search_space.h"
+#include "../heuristic.h"
+#include <map>
+#include <sys/times.h>
+#include <vector>
 
 using namespace std;
 
 enum state_space_sample_t {Probe = 0, ProbAStar = 1, PDB = 2};
+typedef map<State, vector<int> > sample_t;
 
 class StateSpaceSample {
 protected:
 	// parameters
 	bool uniform_sampling;
+	vector<Heuristic *> heuristics;
 
 	// gathered data
-	SearchSpace sample;
+	sample_t samp;
 	double branching_factor;
+	vector<clock_t> computation_time;
 
-
-	int choose_operator(int num_ops, vector<int> &h_s);
+	int choose_operator(vector<int> &h_s);
 public:
 	StateSpaceSample();
 	virtual ~StateSpaceSample();
@@ -28,9 +33,13 @@ public:
 
     double get_branching_factor() const {return branching_factor;}
 
-    virtual SearchSpace &get_sample() {return sample;}
+    void add_heuristic(Heuristic *h) {heuristics.push_back(h); computation_time.push_back(0);}
+    clock_t get_computation_time(int i) {return computation_time[i];}
+
+    virtual sample_t &get_samp() {return samp;}
 
     virtual int collect() = 0;
+
 };
 
-#endif
+#endif /* STATESPACESAMPLE_H_ */

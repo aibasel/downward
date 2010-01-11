@@ -1,5 +1,5 @@
-#ifndef LEARNING_PROB_A_STAR_SAMPLE_H
-#define LEARNING_PROB_A_STAR_SAMPLE_H
+#ifndef PROB_A_STAR_SAMPLE_H
+#define PROB_A_STAR_SAMPLE_H
 
 #include <vector>
 
@@ -14,7 +14,7 @@
 
 class Operator;
 
-class ProbAStarSample : public StateSpaceSample, AStarSearchEngine {
+class ProbAStarSample : public StateSpaceSample {
 private:
 	Heuristic *heuristic;
 	int min_training_set_size;
@@ -29,8 +29,6 @@ public:
 
     virtual int step();
     virtual int collect();
-
-    virtual SearchSpace &get_sample() {return search_space;}
 };
 
 #endif

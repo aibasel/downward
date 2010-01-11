@@ -14,9 +14,8 @@ double Bin(int n,double p,int r)
     return fac(n)/(fac(n-r)*fac(r))*pow(p,r)*pow(1-p,n-r);
 }
 
-PDBStateSpaceSample::PDBStateSpaceSample(Heuristic *h,
-	int goal_depth, int probes = 10, int size = 100):
-		ProbeStateSpaceSample(h, goal_depth, probes, size)
+PDBStateSpaceSample::PDBStateSpaceSample(int goal_depth, int probes = 10, int size = 100):
+		ProbeStateSpaceSample(goal_depth, probes, size)
 {
 	int table_size = (2 * goal_depth) + 1;
 	double p = 0.2;
@@ -48,7 +47,7 @@ int PDBStateSpaceSample::get_random_depth() {
 int PDBStateSpaceSample::collect() {
 	cout << "PDB-style state space sample" << endl;
 	int num_probes = 0;
-	while ((sample.size() < min_training_set_size) && (num_probes < max_num_probes)) {
+	while ((samp.size() < min_training_set_size) && (num_probes < max_num_probes)) {
 		num_probes++;
 		//cout << "Probe: " << num_probes << " - " << sample.size() << endl;
 		int depth = get_random_depth();
@@ -57,5 +56,5 @@ int PDBStateSpaceSample::collect() {
 
 	branching_factor = (double) generated / (double) expanded;
 
-	return sample.size();
+	return samp.size();
 }

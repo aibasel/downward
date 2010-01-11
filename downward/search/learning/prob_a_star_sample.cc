@@ -6,7 +6,7 @@
 #include "../operator.h"
 #include "../landmarks/landmarks_graph.h"
 #include "../state.h"
-#include "../open_lists/open_list.h"
+#include "../open-lists/open_list.h"
 #include "../search_engine.h"
 #include "../search_space.h"
 #include "../state.h"

@@ -15,7 +15,7 @@ class Operator;
 class ScalarEvaluator;
 
 class GeneralEagerBestFirstSearch : public SearchEngine {
-protected:
+
     // Search Behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
 
@@ -37,7 +37,7 @@ protected:
     int lastjump_generated_states;
 
     int lastjump_f_value;//f value obtained in the last jump
-
+protected:
     int step();
     SearchNode fetch_next_node();
     bool check_goal(const SearchNode &node);

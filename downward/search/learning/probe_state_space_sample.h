@@ -1,14 +1,15 @@
-#ifndef LEARNING_PROBE_STATE_SPACE_SAMPLE_H
-#define LEARNING_PROBE_STATE_SPACE_SAMPLE_H
+#ifndef PROBESTATESPACESAMPLE_H_
+#define PROBESTATESPACESAMPLE_H_
 
 #include "state_space_sample.h"
 #include "../globals.h"
 #include "../heuristic.h"
+#include <sys/times.h>
+
 
 class ProbeStateSpaceSample: public StateSpaceSample {
 protected:
 	// parameters
-	Heuristic *heuristic;
     int goal_depth_estimate;
     int max_num_probes;
     int min_training_set_size;
@@ -17,8 +18,9 @@ protected:
     int generated;
 
     void send_probe(int depth_limit);
+    int get_aggregate_value(vector<int> &values);
 public:
-    ProbeStateSpaceSample(Heuristic *h, int goal_depth, int probes, int size);
+    ProbeStateSpaceSample(int goal_depth, int probes, int size);
     virtual ~ProbeStateSpaceSample();
     virtual int collect();
 
@@ -31,8 +33,8 @@ public:
     int get_min_training_set_size() const {return min_training_set_size;}
     void set_min_training_set_size(int training_set_size) {min_training_set_size = training_set_size;}
 
-    Heuristic* get_heuristic() const {return heuristic;}
-    void set_heuristic(Heuristic *h) {heuristic = h;}
+    void add_heuristic(Heuristic *h) {heuristics.push_back(h); computation_time.push_back(0);}
+    clock_t get_computation_time(int i) {return computation_time[i];}
 };
 
-#endif
+#endif /* PROBESTATESPACESAMPLE_H_ */

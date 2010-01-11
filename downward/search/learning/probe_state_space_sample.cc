@@ -1,10 +1,10 @@
 #include "probe_state_space_sample.h"
 #include "../successor_generator.h"
 #include "../heuristic.h"
-#include <climits>
+#include <limits>
 
-ProbeStateSpaceSample::ProbeStateSpaceSample(Heuristic *h, int goal_depth, int probes = 10, int size = 100):
-	heuristic(h), goal_depth_estimate(goal_depth), max_num_probes(probes), min_training_set_size(size)
+ProbeStateSpaceSample::ProbeStateSpaceSample(int goal_depth, int probes = 10, int size = 100):
+	goal_depth_estimate(goal_depth), max_num_probes(probes), min_training_set_size(size)
 {
 	expanded = 0;
 	generated = 0;
@@ -16,7 +16,7 @@ ProbeStateSpaceSample::~ProbeStateSpaceSample() {
 int ProbeStateSpaceSample::collect() {
 	cout << "Probe state space sample" << endl;
 	int num_probes = 0;
-	while ((sample.size() < min_training_set_size) && (num_probes < max_num_probes)) {
+	while ((samp.size() < min_training_set_size) && (num_probes < max_num_probes)) {
 		num_probes++;
 		//cout << "Probe: " << num_probes << " - " << sample.size() << endl;
 
@@ -25,7 +25,16 @@ int ProbeStateSpaceSample::collect() {
 
 	branching_factor = (double) generated / (double) expanded;
 
-	return sample.size();
+	return samp.size();
+}
+
+int ProbeStateSpaceSample::get_aggregate_value(vector<int> &values) {
+    int max = numeric_limits<int>::min();
+    for (int i = 0; i < values.size(); i++) {
+        if (values[i] > max)
+            max = values[i];
+    }
+    return max;
 }
 
 void ProbeStateSpaceSample::send_probe(int depth_limit) {
@@ -33,12 +42,19 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 	vector<int> h_s;
 
 	State s = *g_initial_state;
-	if (sample.get_node(s).is_new()) {
-		heuristic->evaluate(*g_initial_state);
-		sample.get_node(s).open_initial(heuristic->get_heuristic());
+	if (samp.find(s) == samp.end()) {
+	//if (sample.get_node(s).is_new()) {
+		//guiding_heuristic->evaluate(*g_initial_state);
+		//sample.get_node(s).open_initial(heuristic->get_heuristic());
+		for (int i = 0; i < heuristics.size(); i++) {
+		    heuristics[i]->evaluate(*g_initial_state);
+		    samp[s].push_back(heuristics[i]->get_heuristic());
+		}
+		//samp[s] = guiding_heuristic->get_heuristic();
 	}
-	for (int i = 0; (i < depth_limit) && (sample.size() < min_training_set_size); i++) {
-		SearchNode node = sample.get_node(s);
+	//for (int i = 0; (i < depth_limit) && (sample.size() < min_training_set_size); i++) {
+	for (int i = 0; (i < depth_limit) && (samp.size() < min_training_set_size); i++) {
+		//SearchNode node = sample.get_node(s);
 		expanded++;
 		applicable_ops.clear();
 		g_successor_generator->generate_applicable_ops(s, applicable_ops);
@@ -53,37 +69,52 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 			// generate and add to training set all successors
 			const Operator *op = applicable_ops[op_num];
 			State succ(s, *op);
-			SearchNode succ_node = sample.get_node(succ);
+			//SearchNode succ_node = sample.get_node(succ);
+			//samp[succ] = 0;
 
-			heuristic->reach_state(s, *op, succ);
-			heuristic->evaluate(succ);
-			if (heuristic->is_dead_end()) {
-				h_s[op_num] = INT_MAX;
+
+			for (int i = 0; i < heuristics.size(); i++) {
+			    clock_t before = times(NULL);
+			    heuristics[i]->reach_state(s, *op, succ);
+			    heuristics[i]->evaluate(succ);
+			    clock_t after = times(NULL);
+			    computation_time[i] += after - before;
+                if (heuristics[i]->is_dead_end()) {
+                    samp[succ].push_back(numeric_limits<int>::max());
+                }
+                else {
+                    samp[succ].push_back(heuristics[i]->get_heuristic());
+                }
 			}
-			else {
-				h_s[op_num] = heuristic->get_heuristic();
-			}
+
+			h_s[op_num] = get_aggregate_value(samp[succ]);
+
 			//cout << op->get_name() << " - " << h_s[op_num] << endl;
 
-			succ_node.reopen(node, op);
-			succ_node.update_h(h_s[op_num]);
+			//succ_node.reopen(node, op);
+			//succ_node.update_h(h_s[op_num]);
+			//samp[succ] = h_s[op_num];
 		}
 
 		// choose operator at random
-		int op_num = choose_operator(applicable_ops.size(), h_s);
+		int op_num = choose_operator(h_s);
 
 		const Operator *op = applicable_ops[op_num];
 
 		//cout << op->get_name() << endl;
 
 		State succ(s, *op);
-		SearchNode succ_node = sample.get_node(succ);
+		//SearchNode succ_node = sample.get_node(succ);
 
-		heuristic->reach_state(s, *op, succ);
-		if (succ_node.is_goal()) {
+		for (int i = 0; i < heuristics.size(); i++) {
+		    heuristics[i]->reach_state(s, *op, succ);
+		}
+		if (test_goal(succ)) {
+		//if (succ_node.is_goal()) {
 			break;
 		}
 
-		s = sample.get_node(succ).get_state();
+		//s = sample.get_node(succ).get_state();
+		s = succ;
 	}
 }

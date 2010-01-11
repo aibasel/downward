@@ -53,8 +53,6 @@ public:
 class SearchSpace {
     class HashTable;
     HashTable *nodes;
-
-    __gnu_cxx::hash_map<StateProxy, SearchNodeInfo>::const_iterator it;
 public:
     SearchSpace();
     ~SearchSpace();
@@ -65,10 +63,6 @@ public:
 
     void dump();
     void statistics() const;
-
-    void reset_iterator();
-    const State get_next_state();
-    bool has_more_states();
 };
 
 #endif

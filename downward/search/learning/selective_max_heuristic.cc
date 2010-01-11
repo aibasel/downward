@@ -1,7 +1,5 @@
 #include "selective_max_heuristic.h"
 #include "../successor_generator.h"
-//#include "../search_node_info.h"
-//#include "prob_a_star_sample.h"
 #include "../maximum_heuristic.h"
 #include "naive_bayes_classifier.h"
 #include "state_vars_feature_extractor.h"
@@ -15,6 +13,7 @@
 #include "../landmarks/landmarks_count_heuristic.h"
 
 #include <cassert>
+#include <limits>
 
 
 SelectiveMaxHeuristic::SelectiveMaxHeuristic():num_always_calc(0) {
@@ -195,7 +194,9 @@ void SelectiveMaxHeuristic::train() {
 
 	switch (state_space_sample_type) {
 	case Probe:
-		sample = new ProbeStateSpaceSample(&max, goal_depth_estimate, 10, min_training_set);
+		sample = new ProbeStateSpaceSample(goal_depth_estimate, 10, min_training_set);
+		for (int i = 0; i < heuristics.size(); i++)
+		    sample->add_heuristic(heuristics[i]);
 		break;
 	/*
 	case ProbAStar:
@@ -203,7 +204,9 @@ void SelectiveMaxHeuristic::train() {
 		break;
 	*/
 	case PDB:
-		sample = new PDBStateSpaceSample(&max, goal_depth_estimate, 10, min_training_set);
+		sample = new PDBStateSpaceSample(goal_depth_estimate, 10, min_training_set);
+		for (int i = 0; i < heuristics.size(); i++)
+		    sample->add_heuristic(heuristics[i]);
 		break;
 	default:
 		cerr << "Unknown state space sample" << endl;
@@ -212,11 +215,11 @@ void SelectiveMaxHeuristic::train() {
 
 	sample->collect();
 
-	SearchSpace& training_set = sample->get_sample();
+	sample_t& training_set = sample->get_samp();
 	training_set_size = training_set.size();
 	branching_factor = sample->get_branching_factor();
 
-	ni_fe->change_search_space(&training_set);
+	//ni_fe->change_search_space(&training_set);
 
 	cout << "Training Example Collection Finished" << endl;
 	cout << "Branching Factor: " << branching_factor << endl;
@@ -225,33 +228,10 @@ void SelectiveMaxHeuristic::train() {
 	// Get Heuristic Evaluation Times and Values
 
 	//cout << "Collecting Timing Data" << endl;
-
-	int** values = new int*[num_heuristics];
-	cout << "Times: " << endl;
 	for (int i = 0; i < num_heuristics; i++) {
-		values[i] = new int[training_set.size()];
-		clock_t clocks_before = times(NULL);
-		training_set.reset_iterator();
-		int si = 0;
-		while (training_set.has_more_states()) {
-			const State s = training_set.get_next_state();
-			heuristics[i]->evaluate(s);
-			if (heuristics[i]->is_dead_end()) {
-				values[i][si] = INT_MAX;
-			}
-			else {
-				values[i][si] = heuristics[i]->get_heuristic();
-			}
-			si++;
-		}
-		clock_t clocks_after = times(NULL);
-		total_computation_time[i] = clocks_after - clocks_before + 1; // add 1 so we don't divide by zero
-		cout << i /*heuristics[i]->get_name()*/ << ", " <<
-				total_computation_time[i] << endl;
-		avg_time[i] = (double) total_computation_time[i] / (double) training_set.size();
-
+	    total_computation_time[i] = ((ProbeStateSpaceSample*)sample)->get_computation_time(i) + 1;
+	    cout << "Time " << i << " - " << total_computation_time[i] << endl;
 	}
-
 	//cout << "Timing Data Collected" << endl;
 
 	cout << "Beginning Training Classifier" << endl;
@@ -284,19 +264,22 @@ void SelectiveMaxHeuristic::train() {
 			cout << expensive[classifier_index] /*heuristics[expensive[classifier_index]]->get_name()*/ <<
 					" <=> " << expensive[classifier_index] /*heuristics[expensive[classifier_index]]->get_name()*/ << " - " <<
 					cheap[classifier_index] /*heuristics[cheap[classifier_index]]->get_name()*/ << " > " << thr << endl;
-			training_set.reset_iterator();
-			int si = 0;
-			while (training_set.has_more_states()) {
-				const State s = training_set.get_next_state();
-				int value_expensive = values[expensive[classifier_index]][si];
-				int value_cheap = values[cheap[classifier_index]][si];
+			//training_set.reset_iterator();
+
+			sample_t::const_iterator it;
+			//while (training_set.has_more_states()) {
+			for (it = training_set.begin(); it != training_set.end(); it++) {
+				//const State s = training_set.get_next_state();
+				const State s = (*it).first;
+				int value_expensive = training_set[s][expensive[classifier_index]];
+				int value_cheap = training_set[s][cheap[classifier_index]];
+
 				int tag  = 0;
 				int diff = value_expensive - value_cheap;
 				if (diff > threshold[classifier_index]) {
 					tag = 1;
 				}
 				classifiers[classifier_index]->addExample(&s, tag);
-				si++;
 			}
 			classifier_index++;
 
@@ -305,18 +288,12 @@ void SelectiveMaxHeuristic::train() {
 
 	cout << "Finished Training Classifier" << endl;
 
-	//delete training_set;
-	for (int i = 0; i < num_heuristics; i++) {
-		delete values[i];
-	}
-	delete values;
-
 	//training_set.resize(0);
 	delete sample;
 
 	total_training_time.stop();
 
-	// reset statistics  after training
+	// reset statistics and heuristics after training
 	reset_statistics();
 
 	//cout << "Freed Memory" << endl;
@@ -331,7 +308,7 @@ int SelectiveMaxHeuristic::eval_heuristic(const State& state, int index, bool co
 
 	if (heuristics[index]->is_dead_end()) {
 		if (heuristics[index]->dead_ends_are_reliable()) {
-			hvalue[index] = INT_MAX;
+			hvalue[index] = numeric_limits<int>::max();
 			dead_end = true;
 		}
 	}

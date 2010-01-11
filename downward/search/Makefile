@@ -34,7 +34,6 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  learning/state_space_sample.h \
 	  learning/PDB_state_space_sample.h \
 	  learning/probe_state_space_sample.h \
-	  learning/prob_a_star_sample.h \
 	  learning/classifier.h \
 	  learning/naive_bayes_classifier.h \
 	  learning/AODE.h \
