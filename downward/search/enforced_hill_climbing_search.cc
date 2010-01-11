@@ -50,13 +50,15 @@ void EnforcedHillClimbingSearch::initialize() {
         cout << "Using only preferred operators" << endl;
     }
 
-    evaluate(current_state, NULL, current_state);
+    SearchNode node = search_space.get_node(current_state);
+    evaluate(node.get_state(), NULL, node.get_state());
+
     if (heuristic->is_dead_end()) {
         cout << "Initial state is a dead end, no solution" << endl;
         return;
     }
     current_h = heuristic->get_heuristic();
-    search_space.get_node(current_state).open_initial(current_h);
+    node.open_initial(current_h);
 
     if (!use_preferred || (preferred_usage == prune_by_preferred)) {
         open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
@@ -146,7 +148,7 @@ int EnforcedHillClimbingSearch::step() {
 int EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
         OpenListEntryEHC next = open_list->remove_min();
-        State last_parent = State(next.first);
+        State last_parent = search_space.get_node(State(next.first)).get_state();
         int d = next.second.first;
         const Operator *last_op = next.second.second;
         State s(last_parent, *last_op);
@@ -155,7 +157,7 @@ int EnforcedHillClimbingSearch::ehc() {
         SearchNode node = search_space.get_node(s);
 
         if (node.is_new()) {
-            evaluate(last_parent, last_op, s);
+            evaluate(last_parent, last_op, node.get_state());
 
             if (heuristic->is_dead_end()) {
                 node.mark_as_dead_end();
