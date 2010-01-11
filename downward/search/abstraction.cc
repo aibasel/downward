@@ -407,8 +407,13 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1, Abstraction *abs2)
     for(int i = 0; i < abs2->relevant_operators.size(); i++)
         abs2->relevant_operators[i]->marker2 = true;
 
-    abs1->normalize();
-    abs2->normalize();
+    // HACK! Normalization should be done differently. This size() > 1
+    // test is just a hack to make it work for linear abstraction
+    // strategies. See issue68.
+    if(abs1->varset.size() > 1)
+        abs1->normalize();
+    else if(abs2->varset.size() > 1)
+        abs2->normalize();
 
     int multiplier = abs2->size();
     for(int op_no = 0; op_no < g_operators.size(); op_no++) {
