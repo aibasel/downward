@@ -47,7 +47,7 @@ protected:
     virtual int step();
     int ehc();
     void get_successors(const State &state, vector<const Operator *> &ops);
-    void evaluate(const State &state);
+    void evaluate(const State &parent, const Operator * op, const State &state);
 public:
     EnforcedHillClimbingSearch();
     virtual ~EnforcedHillClimbingSearch();

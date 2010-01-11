@@ -27,13 +27,19 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
     delete g_evaluator;
 }
 
-void EnforcedHillClimbingSearch::evaluate(const State &state) {
+void EnforcedHillClimbingSearch::evaluate(const State &parent, const Operator * op,const State &state) {
     if (!preferred_contains_eval) {
-         heuristic->evaluate(state);
-     }
-     for (int i = 0; i < preferred_heuristics.size(); i++) {
-         preferred_heuristics[i]->evaluate(state);
-     }
+        if (op != NULL) {
+            heuristic->reach_state(parent, *op, state);
+        }
+        heuristic->evaluate(state);
+    }
+    for (int i = 0; i < preferred_heuristics.size(); i++) {
+        if (op != NULL) {
+            preferred_heuristics[i]->reach_state(parent, *op, state);
+        }
+        preferred_heuristics[i]->evaluate(state);
+    }
 }
 
 void EnforcedHillClimbingSearch::initialize() {
@@ -44,7 +50,7 @@ void EnforcedHillClimbingSearch::initialize() {
         cout << "Using only preferred operators" << endl;
     }
 
-    evaluate(current_state);
+    evaluate(current_state, NULL, current_state);
     if (heuristic->is_dead_end()) {
         cout << "Initial state is a dead end, no solution" << endl;
         return;
@@ -149,7 +155,7 @@ int EnforcedHillClimbingSearch::ehc() {
         SearchNode node = search_space.get_node(s);
 
         if (node.is_new()) {
-            evaluate(s);
+            evaluate(last_parent, last_op, s);
 
             if (heuristic->is_dead_end()) {
                 node.mark_as_dead_end();
