@@ -40,7 +40,6 @@ public:
 	      const Operator *parent_op);
     void reopen(const SearchNode &parent_node,
 		const Operator *parent_op);
-    void update_h(int h);
     void update_parent(const SearchNode &parent_node,
     		const Operator *parent_op);
     void close();
