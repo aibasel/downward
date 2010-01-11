@@ -217,6 +217,7 @@ void Abstraction::normalize() {
        because the costs are much higher than the benefits in our
        experiments.
     */
+    // dump();
 
     OperatorRegistry *op_reg = 0;
     if(g_merge_and_shrink_simplify_labels) {
@@ -275,6 +276,7 @@ void Abstraction::normalize() {
     }
 
     delete op_reg;
+    // dump();
 }
 
 void Abstraction::build_initial_abstractions(vector<Abstraction *> &result) {
@@ -466,7 +468,9 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1, Abstraction *abs2)
     for(int i = 0; i < abs2->relevant_operators.size(); i++)
         abs2->relevant_operators[i]->marker2 = false;
 
+    // dump();
     compute_distances();
+    // dump();
 }
 
 AbstractStateRef InitialAbstraction::get_abstract_state(const State &state) const {
@@ -1017,4 +1021,35 @@ void Abstraction::statistics() const {
         cout << "abstraction is unsolvable";
     }
     cout << " [t=" << g_timer << "]" << endl;
+}
+
+void Abstraction::dump() const {
+    // TODO: dump relevant_operators, init_distances, goal_distances,
+    //       max_f, max_g, max_h, varset?
+    cout << "digraph abstract_transition_graph";
+    for (int i = 0; i < varset.size(); i++)
+        cout << "_" << varset[i];
+    cout << " {" << endl;
+    cout << "    node [shape = none] start;" << endl;
+    assert(goal_distances.size() == num_states);
+    for (int i = 0; i < num_states; i++) {
+        bool is_init = (i == init_state);
+        bool is_goal = (goal_distances[i] == 0);
+        cout << "    node [shape = "
+             << (is_goal ? "doublecircle" : "circle")
+             << "] node" << i << ";" << endl;
+        if (is_init)
+            cout << "    start -> node" << i << ";" << endl;
+    }
+    assert(transitions_by_op.size() == g_operators.size());
+    for (int op_no = 0; op_no < g_operators.size(); op_no++) {
+        const vector<AbstractTransition> &trans = transitions_by_op[op_no];
+        for (int i = 0; i < trans.size(); i++) {
+            int src = trans[i].src;
+            int target = trans[i].target;
+            cout << "    node" << src << " -> node" << target
+                 << " [label = o_" << op_no << "];" << endl;
+        }
+    }
+    cout << "}" << endl;
 }

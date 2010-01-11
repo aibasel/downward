@@ -90,6 +90,8 @@ public:
 
     void shrink(int threshold, bool force=false);
     void release_memory();
+
+    void dump() const;
 };
 
 class InitialAbstraction : public Abstraction {
