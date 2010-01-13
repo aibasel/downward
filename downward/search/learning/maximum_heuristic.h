@@ -1,8 +1,8 @@
 #ifndef MAXIMUM_HEURISTIC_H
 #define MAXIMUM_HEURISTIC_H
 
-#include "globals.h"
-#include "heuristic.h"
+#include "../globals.h"
+#include "../heuristic.h"
 #include <limits.h>
 
 #include <fstream>

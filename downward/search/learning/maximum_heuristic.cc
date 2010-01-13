@@ -1,7 +1,7 @@
 #include "maximum_heuristic.h"
-#include "globals.h"
-#include "state.h"
-#include "search_space.h"
+#include "../globals.h"
+#include "../state.h"
+#include "../search_space.h"
 
 #include <cassert>
 

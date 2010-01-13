@@ -24,7 +24,6 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  hm_heuristic.h \
 	  weighted_evaluator.h sum_evaluator.h g_evaluator.h general_lazy_best_first_search.h\
 	  lazy_best_first_search_engine.h lazy_wa_star.h \
-	  maximum_heuristic.h \
 	  learning/feature_extractor.h \
 	  learning/state_vars_feature_extractor.h \
 	  learning/composite_feature_extractor.h \
@@ -38,6 +37,7 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  learning/naive_bayes_classifier.h \
 	  learning/AODE.h \
 	  learning/selective_max_heuristic.h \
+          learning/maximum_heuristic.h \
 	  enforced_hill_climbing_search.h pref_evaluator.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
