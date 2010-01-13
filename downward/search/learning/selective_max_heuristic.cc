@@ -25,6 +25,7 @@ SelectiveMaxHeuristic::SelectiveMaxHeuristic():num_always_calc(0) {
 	alpha = 1.0;
 	classifier_type = NB;
 	state_space_sample_type = Probe;
+	retime_heuristics = false;
 
 	// statistics
 	num_evals = 0;
@@ -229,7 +230,18 @@ void SelectiveMaxHeuristic::train() {
 
 	//cout << "Collecting Timing Data" << endl;
 	for (int i = 0; i < num_heuristics; i++) {
-	    total_computation_time[i] = ((ProbeStateSpaceSample*)sample)->get_computation_time(i) + 1;
+	    total_computation_time[i] = sample->get_computation_time(i) + 1;
+	    if (retime_heuristics) {
+            total_computation_time[i] = 0;
+            clock_t before = times(NULL);
+            sample_t::const_iterator it;
+            for (it = training_set.begin(); it != training_set.end(); it++) {
+                const State s = (*it).first;
+                heuristics[0]->evaluate(s);
+            }
+            clock_t after = times(NULL);
+            total_computation_time[i] = after - before + 1;
+	    }
 	    cout << "Time " << i << " - " << total_computation_time[i] << endl;
 	}
 	//cout << "Timing Data Collected" << endl;

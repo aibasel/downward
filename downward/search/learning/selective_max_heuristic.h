@@ -56,6 +56,7 @@ protected:
 	bool uniform_sampling;
 	bool random_selection;
 	double alpha;
+	bool retime_heuristics;
 
 	int num_heuristics;
 
@@ -136,6 +137,10 @@ public:
 
 	inline FeatureExtractors& get_feature_extractors() {
 		return feature_extractor_types;
+	}
+
+	inline void set_retime_heuristics(bool retime) {
+	    retime_heuristics = retime;
 	}
 
 	virtual void print_statistics() const;
