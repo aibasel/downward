@@ -29,7 +29,7 @@ namespace __gnu_cxx {
 }
 
 template<class Entry>
-class ParetoOpenList : public OpenList<Entry>, public Evaluator {
+class ParetoOpenList : public OpenList<Entry> {
     
     typedef std::deque<Entry> Bucket;
     typedef const std::vector<int> KeyType;

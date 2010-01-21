@@ -12,7 +12,7 @@
 class ScalarEvaluator;
 
 template<class Entry>
-class TieBreakingOpenList : public OpenList<Entry>, public Evaluator {
+class TieBreakingOpenList : public OpenList<Entry> {
     
     typedef std::deque<Entry> Bucket;
 

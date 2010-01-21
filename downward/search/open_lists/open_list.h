@@ -1,10 +1,11 @@
 #ifndef OPEN_LISTS_OPEN_LIST_H
 #define OPEN_LISTS_OPEN_LIST_H
 
-class Evaluator;
+#include "../evaluator.h"
+
 
 template<class Entry>
-class OpenList {
+class OpenList : public Evaluator {
 
 protected:
     virtual Evaluator* get_evaluator() = 0;
@@ -23,10 +24,6 @@ public:
     // a search does not have to care about this because 
     // it is handled by the open list whether the entry will
     // be inserted
-    
-    virtual void evaluate(int g, bool preferred) = 0;
-    virtual bool is_dead_end() const = 0;
-    virtual bool dead_end_is_reliable() const = 0;
 
     virtual int boost_preferred() { return 0; }
     virtual void boost_last_used_list() { return; }
