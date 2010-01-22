@@ -31,7 +31,7 @@ bool ParetoOpenList<Entry>::is_nondominated(const KeyType &vec,
 }
 
 template<class Entry>
-void ParetoOpenList<Entry>::remove_key(const KeyType &key) {
+void ParetoOpenList<Entry>::remove_key(const KeyType key) {
     nondominated.erase(key);
     buckets.erase(key);
     KeySet candidates;

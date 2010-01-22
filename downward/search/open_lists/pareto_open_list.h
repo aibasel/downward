@@ -47,7 +47,7 @@ class ParetoOpenList : public OpenList<Entry> {
     bool dominates(const KeyType &v1, const KeyType &v2);
     bool is_nondominated(const KeyType &vec,
             KeySet &domination_candidates);
-    void remove_key(const KeyType &key);
+    void remove_key(const KeyType key);
     bool last_preferred;
     
     bool dead_end;
