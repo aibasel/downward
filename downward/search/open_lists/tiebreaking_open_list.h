@@ -18,13 +18,15 @@ class TieBreakingOpenList : public OpenList<Entry> {
 
     std::map<const std::vector<int>, Bucket> buckets;
     int size;
-    std::vector<int> lowest_bucket;
 
     std::vector<ScalarEvaluator *> evaluators;
     std::vector<int> last_evaluated_value;
     bool last_preferred;
     bool dead_end;
+    bool first_is_dead_end;
     bool dead_end_reliable;
+    bool allow_unsafe_pruning; // don't insert if main evaluator
+    // says dead end, even if not reliably
     
     const std::vector<int>& get_value(); // currently not used
     int dimension() const;
@@ -33,7 +35,7 @@ protected:
 
 public:
     TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
-                        bool preferred_only=false);
+                        bool preferred_only=false, bool unsafe_pruning=true);
     ~TieBreakingOpenList();
 
     // open list interface

@@ -1,8 +1,6 @@
 // HACK! Ignore this if used as a top-level compile target.
 #ifdef OPEN_LISTS_PARETO_OPEN_LIST_H
 
-#include "../tuple_evaluator.h"
-
 #include <iostream>
 #include <cassert>
 #include <limits>
@@ -25,7 +23,7 @@ template<class Entry>
 bool ParetoOpenList<Entry>::is_nondominated(const KeyType &vec,
         KeySet &domination_candidates) {
     for (typename KeySet::iterator it = domination_candidates.begin();
-            it != domination_candidates.end(); it++) {
+            it != domination_candidates.end(); ++ it) {
         if (dominates(*it, vec))
             return false;
     }
@@ -33,25 +31,30 @@ bool ParetoOpenList<Entry>::is_nondominated(const KeyType &vec,
 }
 
 template<class Entry>
-void ParetoOpenList<Entry>::remove_key(const KeyType key) {
+void ParetoOpenList<Entry>::remove_key(const KeyType &key) {
     nondominated.erase(key);
     buckets.erase(key);
     KeySet candidates;
-    for (typename BucketMap::iterator it = buckets.begin(); it != buckets.end(); it ++)
+    for (typename BucketMap::iterator it = buckets.begin(); it != buckets.end(); ++it)
+        // if the estimate vector of the bucket is not already in the set of
+        // nondominated estimate vectors and the vector was previously dominated
+        // by key and the estimate vector is not dominated by any vector
+        // from the set of nondominated vectors, we add it to the candidate set
         if (nondominated.find(it->first) == nondominated.end() &&
                 dominates(key, it->first) &&
                 is_nondominated(it->first, nondominated))
             candidates.insert(it->first);
     for (typename KeySet::iterator it = candidates.begin();
-            it != candidates.end(); it ++)
+            it != candidates.end(); ++ it)
         if (is_nondominated(*it, candidates))
             nondominated.insert(*it);
 }
 
 template<class Entry>
 ParetoOpenList<Entry>::ParetoOpenList(const std::vector<ScalarEvaluator *> &evals,
-    bool preferred_only) 
-    : OpenList<Entry>(preferred_only), evaluators(evals) {
+    bool preferred_only, bool state_uniform_selection_) 
+    : OpenList<Entry>(preferred_only),
+    state_uniform_selection(state_uniform_selection_), evaluators(evals) {
     last_evaluated_value.resize(evaluators.size());
 }
 
@@ -67,17 +70,24 @@ int ParetoOpenList<Entry>::insert(const Entry &entry) {
     Bucket &bucket = buckets[key];
     bool newkey = bucket.empty();
     bucket.push_back(entry);
+
     if (newkey && is_nondominated(key, nondominated)) {
+        // delete previously nondominated keys that are now
+        // dominated by key
+        // Note: this requirest that nondominated is a "normal"
+        // set (no hash set) because then iterators are not
+        // invalidated by erase(it).
         typename KeySet::iterator it = nondominated.begin();
         while (it != nondominated.end()) {
             if (dominates(key, *it)) {
                 typename KeySet::iterator tmp_it = it;
-                it ++;
+                ++ it;
                 nondominated.erase(tmp_it);
             } else {
-                it ++;
+                ++ it;
             }
         }
+        // insert new key
         nondominated.insert(key);
     }
     return 1;
@@ -88,7 +98,7 @@ Entry ParetoOpenList<Entry>::remove_min() {
     typename KeySet::iterator selected = nondominated.begin();
     int seen = 0;
     for (typename KeySet::iterator it = nondominated.begin();
-            it != nondominated.end(); it ++) {
+            it != nondominated.end(); ++ it) {
         int numerator;
         if (state_uniform_selection) 
             numerator =  it->size();

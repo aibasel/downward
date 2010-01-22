@@ -42,7 +42,7 @@ Entry StandardScalarOpenList<Entry>::remove_min() {
     it = buckets.find(lowest_bucket); 
     assert(it != buckets.end());
     while(it->second.empty())
-        it++;
+        ++ it;
     assert(it != buckets.end());
     lowest_bucket = it->first;
     size--;

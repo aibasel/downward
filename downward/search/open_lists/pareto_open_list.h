@@ -5,8 +5,8 @@
 #include "../evaluator.h"
 
 #include <deque>
-#include <ext/hash_set>
-#include <map>
+#include <ext/hash_map>
+#include <set>
 #include <vector>
 #include <utility>
 
@@ -32,18 +32,22 @@ template<class Entry>
 class ParetoOpenList : public OpenList<Entry> {
     
     typedef std::deque<Entry> Bucket;
-    typedef const std::vector<int> KeyType;
-    typedef std::map<KeyType, Bucket> BucketMap;
-    typedef typename __gnu_cxx::hash_set<KeyType, __gnu_cxx::hash<const std::vector<int> > > KeySet;
+    typedef std::vector<int> KeyType;
+    //typedef std::map<const KeyType, Bucket> BucketMap;
+    typedef typename __gnu_cxx::hash_map<const KeyType, Bucket, 
+        __gnu_cxx::hash<const std::vector<int> > > BucketMap;
+    typedef std::set<KeyType> KeySet; // no hash_set (see insert method)
 
     BucketMap buckets;
     KeySet nondominated;
+    bool state_uniform_selection;
     std::vector<ScalarEvaluator *> evaluators;
+    std::vector<int> last_evaluated_value;
     
     bool dominates(const KeyType &v1, const KeyType &v2);
     bool is_nondominated(const KeyType &vec,
             KeySet &domination_candidates);
-    void remove_key(const KeyType key);
+    void remove_key(const KeyType &key);
     bool last_preferred;
     
     bool dead_end;
@@ -54,7 +58,7 @@ protected:
 
 public:
     ParetoOpenList(const std::vector<ScalarEvaluator *> &evals, 
-                   bool preferred_only=false);
+                   bool preferred_only, bool state_uniform_selection_);
     ~ParetoOpenList();
 
     // open list interface

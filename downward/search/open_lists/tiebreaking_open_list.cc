@@ -14,9 +14,9 @@ using namespace std;
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
     const std::vector<ScalarEvaluator *> &evals,
-    bool preferred_only)
-    : OpenList<Entry>(preferred_only), size(0), evaluators(evals) {
-    lowest_bucket = std::vector<int>(dimension(), 9999999);
+    bool preferred_only, bool unsafe_pruning)
+    : OpenList<Entry>(preferred_only), size(0), evaluators(evals),
+      allow_unsafe_pruning(unsafe_pruning) {
     last_evaluated_value.resize(evaluators.size());
 }
 
@@ -28,9 +28,10 @@ template<class Entry>
 int TieBreakingOpenList<Entry>::insert(const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
         return 0;
+    if (first_is_dead_end && allow_unsafe_pruning) {
+        return 0;
+    }
     const std::vector<int> &key = last_evaluated_value;
-    if(key < lowest_bucket)
-        lowest_bucket = key;
     buckets[key].push_back(entry);
     size++;
     return 1;
@@ -40,15 +41,14 @@ template<class Entry>
 Entry TieBreakingOpenList<Entry>::remove_min() {
     assert(size > 0);
     typename std::map<const std::vector<int>, Bucket>::iterator it;
-    it = buckets.find(lowest_bucket); 
+    it = buckets.begin(); 
     assert(it != buckets.end());
-    while(it->second.empty())
-        it++;
-    assert(it != buckets.end());
-    lowest_bucket = it->first;
+    assert(!it->second.empty());
     size--;
     Entry result = it->second.front();
     it->second.pop_front();
+    if (it->second.empty())
+        buckets.erase(it);
     return result;
 }
 
@@ -60,7 +60,6 @@ bool TieBreakingOpenList<Entry>::empty() const {
 template<class Entry>
 void TieBreakingOpenList<Entry>::clear() {
     buckets.clear();
-    lowest_bucket = std::vector<int>(dimension(), 9999999);
     size = 0;
 }
 
@@ -68,6 +67,8 @@ template<class Entry>
 void TieBreakingOpenList<Entry>::evaluate(int g, bool preferred) {
     dead_end = false;
     dead_end_reliable = false;
+    first_is_dead_end = evaluators[0]->is_dead_end();
+    
     for (unsigned int i = 0; i < evaluators.size(); i++) {
         evaluators[i]->evaluate(g, preferred);
 
