@@ -67,7 +67,6 @@ template<class Entry>
 void TieBreakingOpenList<Entry>::evaluate(int g, bool preferred) {
     dead_end = false;
     dead_end_reliable = false;
-    first_is_dead_end = evaluators[0]->is_dead_end();
     
     for (unsigned int i = 0; i < evaluators.size(); i++) {
         evaluators[i]->evaluate(g, preferred);
@@ -83,6 +82,7 @@ void TieBreakingOpenList<Entry>::evaluate(int g, bool preferred) {
             last_evaluated_value[i] = evaluators[i]->get_value();
         }
     }
+    first_is_dead_end = evaluators[0]->is_dead_end();
     last_preferred = preferred;
 }
 
