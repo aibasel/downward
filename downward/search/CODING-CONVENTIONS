@@ -9,8 +9,14 @@ function definitions.
 
 Here's some basic rules:
 
+ * We generally follow the recommendations in the book "C++ Coding
+   Standards: 101 Rules, Guidelines, and Best Practices" by Herb
+   Sutter and Andrei Alexandrescu
+
  * Indentation: Indent with spaces, not tabs. Use four spaces per
    level of indentation.
+
+ * Line width: stick to 80 columns
 
  * Whitespace usage: New code should use a single space after control
    structures that use parentheses ("for", "while", "if"), as in:
