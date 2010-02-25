@@ -42,7 +42,7 @@ void GeneralEagerBestFirstSearch::add_heuristic(Heuristic *heuristic,
 }
 
 void GeneralEagerBestFirstSearch::initialize() {
-    g_learning_search_space = &search_space;
+    g_learning_search_space = &search_space; //TODO:CR - check if we can get of this
     if (heuristics.size() > 1) {
         cout << "WARNING: currently only one heuristic allowed in general search; ";
         cout << "skipping additional heuristics." << endl;
@@ -67,6 +67,7 @@ void GeneralEagerBestFirstSearch::initialize() {
         for (unsigned int i = 0; i < heuristics.size(); i++) {
             initial_h_values.push_back(heuristics[i]->get_heuristic());
         }
+        //TODO:CR - create a common search statistics class to unify counting and output
         if (f_evaluator) {
             f_evaluator->evaluate(0,false);
             lastjump_f_value = f_evaluator->get_value();
@@ -128,6 +129,7 @@ int GeneralEagerBestFirstSearch::step() {
     vector<const Operator *> applicable_ops;
     g_successor_generator->generate_applicable_ops(node.get_state(),
             applicable_ops);
+    //TODO:CR - implement double evaluation for preferred operators
     for(int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
         State succ_state(node.get_state(), *op);
@@ -146,6 +148,7 @@ int GeneralEagerBestFirstSearch::step() {
                 heuristics[i]->evaluate(succ_state);
             }
             evaluated_states++;
+            //TODO:CR - check dead end using the open list
             bool dead_end = false;
             for (unsigned int i = 0; i < heuristics.size(); i++) {
                 if(heuristics[i]->is_dead_end()
@@ -158,6 +161,7 @@ int GeneralEagerBestFirstSearch::step() {
                 succ_node.mark_as_dead_end();
                 continue;
             }
+            //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
 			int succ_h = heuristics[0]->get_heuristic();
             succ_node.open(succ_h, node, op);
 			open_list->evaluate(succ_node.get_g(), false);
@@ -170,6 +174,7 @@ int GeneralEagerBestFirstSearch::step() {
         } else if(succ_node.get_g() > node.get_g() + op->get_cost()) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
+            	//TODO:CR - test if we should add a reevaluate flag and if it helps
                 // if we reopen closed nodes, do that
                 if(succ_node.is_closed()) {
                     /* TODO: Verify that the heuristic is inconsistent.
@@ -178,6 +183,7 @@ int GeneralEagerBestFirstSearch::step() {
                      * was thought to be consistent isn't. Therefore, it
                      * should be present also in release builds, so don't
                      * use a plain assert. */
+                	//TODO:CR - add a consistent flag to heuristics, and add an assert here based on it
                     reopened_states++;
                 }
                 succ_node.reopen(node, op);
@@ -197,6 +203,7 @@ int GeneralEagerBestFirstSearch::step() {
 }
 
 SearchNode GeneralEagerBestFirstSearch::fetch_next_node() {
+	//TODO:CR - return a pair of SearchNode, bool
     while(true) {
         if(open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
@@ -221,6 +228,7 @@ SearchNode GeneralEagerBestFirstSearch::fetch_next_node() {
     }
 }
 
+//TODO:CR - move to search engine
 bool GeneralEagerBestFirstSearch::check_goal(const SearchNode &node) {
     if (node.is_goal()) {
         cout << "Solution found!" << endl;
