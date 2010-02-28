@@ -23,7 +23,6 @@ protected:
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
     int bound;
 
-    SearchSpace search_space;
     OpenList<OpenListEntryLazy> *open_list;
     vector<Heuristic *> heuristics;
     vector<Heuristic *> preferred_operator_heuristics;
@@ -43,7 +42,6 @@ protected:
     void generate_successors();
     int fetch_next_state();
 
-    bool check_goal();
     void reward_progress();
 
     void set_open_list(OpenList<OpenListEntryLazy> *open);

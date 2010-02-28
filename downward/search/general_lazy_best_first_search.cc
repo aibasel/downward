@@ -42,18 +42,6 @@ void GeneralLazyBestFirstSearch::add_heuristic(Heuristic *heuristic,
     }
 }
 
-bool GeneralLazyBestFirstSearch::check_goal() {
-    if (test_goal(current_state)) {
-        cout << "Solution found! " << endl;
-        Plan plan;
-        search_space.trace_path(current_state, plan);
-        set_plan(plan);
-        return true;
-    } else {
-        return false;
-    }
-}
-
 void GeneralLazyBestFirstSearch::generate_successors() {
     vector<const Operator *> all_operators;
     vector<const Operator *> preferred_operators;
@@ -157,7 +145,7 @@ int GeneralLazyBestFirstSearch::step() {
                 node.open(h, parent_node, current_operator);
             }
             node.close();
-            if(check_goal())
+            if(check_goal_and_set_plan(current_state))
                 return SOLVED;
             if (search_progress.check_h_progress()) {
                 reward_progress();

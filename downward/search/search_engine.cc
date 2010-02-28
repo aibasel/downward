@@ -37,3 +37,13 @@ void SearchEngine::search() {
     cout << "Actual search time: " << timer << endl;
 }
 
+bool SearchEngine::check_goal_and_set_plan(const State &state) {
+    if (test_goal(state)) {
+        cout << "Solution found!" << endl;
+        Plan plan;
+        search_space.trace_path(state, plan);
+        set_plan(plan);
+        return true;
+    }
+    return false;
+}

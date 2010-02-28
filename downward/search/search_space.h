@@ -25,7 +25,6 @@ public:
     }
     State get_state() const;
 
-    bool is_goal() const;
     bool is_new() const;
     bool is_open() const;
     bool is_closed() const;

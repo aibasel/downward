@@ -22,7 +22,6 @@ enum {rank_preferred_first = 1, prune_by_preferred = 2};
 class EnforcedHillClimbingSearch : public SearchEngine {
 protected:
     OpenList<OpenListEntryEHC> *open_list;
-    SearchSpace search_space;
     GEvaluator *g_evaluator;
 
     Heuristic *heuristic;

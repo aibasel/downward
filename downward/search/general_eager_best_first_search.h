@@ -31,7 +31,6 @@ protected:
 	void update_jump_statistic(const SearchNode& node);
 	void print_heuristic_values(const vector<int>& values) const;
 
-    SearchSpace search_space;
     std::vector<Heuristic *> heuristics;
     // TODO: in the long term this
     // should disappear into the open list

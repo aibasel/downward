@@ -116,11 +116,7 @@ int EnforcedHillClimbingSearch::step() {
     // current_state is the current state, and it is the last state to be evaluated
     // cuurent_h is the h value of the current state
 
-    if ((current_h == 0) && test_goal(current_state)) {
-        cout << "Solution found" << endl;
-        Plan plan;
-        search_space.trace_path(current_state, plan);
-        set_plan(plan);
+    if (check_goal_and_set_plan(current_state)) {
         return SOLVED;
     }
 

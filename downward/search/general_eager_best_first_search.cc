@@ -60,7 +60,6 @@ void GeneralEagerBestFirstSearch::initialize() {
     }
     else {
         search_progress.get_initial_h_values();
-        //TODO:CR - create a common search statistics class to unify counting and output
         if (f_evaluator) {
             f_evaluator->evaluate(0,false);
             search_progress.report_f_value(f_evaluator->get_value());
@@ -83,16 +82,17 @@ void GeneralEagerBestFirstSearch::statistics() const {
 int GeneralEagerBestFirstSearch::step() {
     SearchNode node = fetch_next_node();
 
-    if(check_goal(node))
+    State s = node.get_state();
+    if (check_goal_and_set_plan(s))
         return SOLVED;
 
     vector<const Operator *> applicable_ops;
-    g_successor_generator->generate_applicable_ops(node.get_state(),
+    g_successor_generator->generate_applicable_ops(s,
             applicable_ops);
     //TODO:CR - implement double evaluation for preferred operators
     for(int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
-        State succ_state(node.get_state(), *op);
+        State succ_state(s, *op);
         search_progress.inc_generated();
 
         SearchNode succ_node = search_space.get_node(succ_state);
@@ -104,7 +104,7 @@ int GeneralEagerBestFirstSearch::step() {
             // We have not seen this state before.
             // Evaluate and create a new node.
             for (unsigned int i = 0; i < heuristics.size(); i++) {
-                heuristics[i]->reach_state(node.get_state(), *op, succ_node.get_state());
+                heuristics[i]->reach_state(s, *op, succ_node.get_state());
                 heuristics[i]->evaluate(succ_state);
             }
             search_progress.inc_evaluated();
@@ -184,18 +184,6 @@ SearchNode GeneralEagerBestFirstSearch::fetch_next_node() {
             return node;
         }
     }
-}
-
-//TODO:CR - move to search engine
-bool GeneralEagerBestFirstSearch::check_goal(const SearchNode &node) {
-    if (node.is_goal()) {
-        cout << "Solution found!" << endl;
-        Plan plan;
-        search_space.trace_path(node.get_state(), plan);
-        set_plan(plan);
-        return true;
-    }
-    return false;
 }
 
 void GeneralEagerBestFirstSearch::dump_search_space()

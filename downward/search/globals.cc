@@ -17,14 +17,13 @@ using namespace std;
 #include "timer.h"
 
 bool test_goal(const State &state) {
-	for(int i = 0; i < g_goal.size(); i++) {
-		if(state[g_goal[i].first] != g_goal[i].second) {
-			return false;
-		}
-	}
-	return true;
+    for(int i = 0; i < g_goal.size(); i++) {
+        if(state[g_goal[i].first] != g_goal[i].second) {
+            return false;
+        }
+    }
+    return true;
 }
-
 
 bool peek_magic(istream &in, string magic) {
   string word;

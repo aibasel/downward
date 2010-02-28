@@ -21,19 +21,6 @@ State SearchNode::get_state() const {
     return State(state_buffer);
 }
 
-bool SearchNode::is_goal() const {
-	// any state with h > 0 is not a goal state
-	if (info.h > 0) {
-		return false;
-	}
-	// if we use action costs, h == 0 is not enough, we need to check
-	if(g_use_metric) {
-		State state = get_state();
-		return test_goal(state);
-	}
-    return true;
-}
-
 bool SearchNode::is_open() const {
     return info.status == SearchNodeInfo::OPEN;
 }
