@@ -75,12 +75,15 @@ void GeneralEagerBestFirstSearch::initialize() {
 
 void GeneralEagerBestFirstSearch::statistics() const {
     search_progress.print_statistics();
-
     search_space.statistics();
 }
 
 int GeneralEagerBestFirstSearch::step() {
-    SearchNode node = fetch_next_node();
+    pair<SearchNode, bool> n = fetch_next_node();
+    if (!n.second) {
+        return FAILED;
+    }
+    SearchNode node = n.first;
 
     State s = node.get_state();
     if (check_goal_and_set_plan(s))
@@ -160,13 +163,13 @@ int GeneralEagerBestFirstSearch::step() {
     return IN_PROGRESS;
 }
 
-SearchNode GeneralEagerBestFirstSearch::fetch_next_node() {
-	//TODO:CR - return a pair of SearchNode, bool
+pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
     while(true) {
         if(open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
-            assert(false);
-            exit(1); // fix segfault in release mode
+            return make_pair(search_space.get_node(*g_initial_state), false);
+            //assert(false);
+            //exit(1); // fix segfault in release mode
             // TODO: Deal with this properly. step() should return
             //       failure.
         }
@@ -181,7 +184,7 @@ SearchNode GeneralEagerBestFirstSearch::fetch_next_node() {
             assert(!node.is_dead_end());
 			update_jump_statistic(node);
             search_progress.inc_expanded();
-            return node;
+            return make_pair(node, true);
         }
     }
 }

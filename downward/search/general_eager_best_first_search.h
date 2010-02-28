@@ -26,7 +26,7 @@ class GeneralEagerBestFirstSearch : public SearchEngine {
 	SearchProgress search_progress;
 protected:
     int step();
-    SearchNode fetch_next_node();
+    pair<SearchNode, bool> fetch_next_node();
     bool check_goal(const SearchNode &node);
 	void update_jump_statistic(const SearchNode& node);
 	void print_heuristic_values(const vector<int>& values) const;

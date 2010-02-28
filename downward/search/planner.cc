@@ -354,6 +354,7 @@ int main(int argc, const char **argv) {
         }
 
         engine->statistics();
+
         if (cg_heuristic || cg_preferred_operators) {
             cout << "Cache hits: " << g_cache_hits << endl;
             cout << "Cache misses: " << g_cache_misses << endl;

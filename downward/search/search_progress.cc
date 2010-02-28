@@ -89,9 +89,9 @@ void SearchProgress::print_line() const {
 
 void SearchProgress::print_statistics() const {
     cout << "Initial state h value: ";
-    for(int i = 0; i < heuristics.size(); i++) {
+    for(int i = 0; i < initial_h_values.size(); i++) {
         cout << initial_h_values[i];
-        if(i != heuristics.size() - 1)
+        if(i != initial_h_values.size() - 1)
             cout << "/";
     }
     cout << "." << endl;
