@@ -27,8 +27,6 @@ protected:
     vector<Heuristic *> heuristics;
     vector<Heuristic *> preferred_operator_heuristics;
 
-    vector<int> best_heuristic_values;
-
     State current_state;
     state_var_t *current_predecessor_buffer;
     const Operator *current_operator;

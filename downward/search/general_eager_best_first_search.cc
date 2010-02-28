@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <set>
 using namespace std;
 
 GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(bool reopen_closed):
@@ -22,26 +23,18 @@ void GeneralEagerBestFirstSearch::add_heuristic(Heuristic *heuristic,
   bool use_estimates,
   bool use_preferred_operators) {
 
-    if (!use_estimates && !use_preferred_operators) {
-        cerr << "WTF" << endl;
-    }
-
-    if (use_preferred_operators) {
-        cerr << "Preferred operator not supported" << endl;
-    }
-
     assert(use_estimates || use_preferred_operators);
-
-    heuristics.push_back(heuristic);
-    search_progress.add_heuristic(heuristic);
+    if (use_estimates || use_preferred_operators) {
+        heuristics.push_back(heuristic);
+        search_progress.add_heuristic(heuristic);
+    }
+    if(use_preferred_operators) {
+        preferred_operator_heuristics.push_back(heuristic);
+    }
 }
 
 void GeneralEagerBestFirstSearch::initialize() {
     g_learning_search_space = &search_space; //TODO:CR - check if we can get of this
-    if (heuristics.size() > 1) {
-        cout << "WARNING: currently only one heuristic allowed in general search; ";
-        cout << "skipping additional heuristics." << endl;
-    }
     //TODO children classes should output which kind of search
     cout << "Conducting best first search" <<
         (reopen_closed_nodes? " with" : " without") << " reopening closes nodes" << endl;
@@ -90,13 +83,25 @@ int GeneralEagerBestFirstSearch::step() {
         return SOLVED;
 
     vector<const Operator *> applicable_ops;
-    g_successor_generator->generate_applicable_ops(s,
-            applicable_ops);
-    //TODO:CR - implement double evaluation for preferred operators
+    set<const Operator *> preferred_ops;
+
+    g_successor_generator->generate_applicable_ops(s, applicable_ops);
+    // This evaluates the expanded state (again) to get preferred ops
+    for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
+        vector<const Operator *> pref;
+        pref.clear();
+        preferred_operator_heuristics[i]->evaluate(s);
+        preferred_operator_heuristics[i]->get_preferred_operators(pref);
+        for (int i = 0; i < pref.size(); i++) {
+            preferred_ops.insert(pref[i]);
+        }
+    }
+
     for(int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
         State succ_state(s, *op);
         search_progress.inc_generated();
+        bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
@@ -127,7 +132,7 @@ int GeneralEagerBestFirstSearch::step() {
             //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
 			int succ_h = heuristics[0]->get_heuristic();
             succ_node.open(succ_h, node, op);
-			open_list->evaluate(succ_node.get_g(), false);
+			open_list->evaluate(succ_node.get_g(), is_preferred);
             open_list->insert(succ_node.get_state_buffer());
 
             search_progress.check_h_progress();
@@ -149,7 +154,7 @@ int GeneralEagerBestFirstSearch::step() {
                 }
                 succ_node.reopen(node, op);
                 heuristics[0]->set_evaluator_value(succ_node.get_h());
-				open_list->evaluate(succ_node.get_g(), false);
+				open_list->evaluate(succ_node.get_g(), is_preferred);
 
                 open_list->insert(succ_node.get_state_buffer());
             }

@@ -31,7 +31,8 @@ protected:
 	void update_jump_statistic(const SearchNode& node);
 	void print_heuristic_values(const vector<int>& values) const;
 
-    std::vector<Heuristic *> heuristics;
+    vector<Heuristic *> heuristics;
+    vector<Heuristic *> preferred_operator_heuristics;
     // TODO: in the long term this
     // should disappear into the open list
 

@@ -16,10 +16,10 @@ AStarSearchEngine::~AStarSearchEngine() {
 
 void AStarSearchEngine::initialize() {
     if (heuristics.size() > 1) {
-        cout << "Warning: only one heuristic in A*; ";
-        cout << "skipping additional heuristics." << endl;
+        cerr << "Error: only one heuristic in A*" << endl;
+        exit(344);
     }
-	
+
 	GEvaluator *g = new GEvaluator();
     SumEvaluator *f = new SumEvaluator();
     f->add_evaluator(g);

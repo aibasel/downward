@@ -35,7 +35,6 @@ void GeneralLazyBestFirstSearch::add_heuristic(Heuristic *heuristic,
     if (use_estimates || use_preferred_operators) {
         heuristics.push_back(heuristic);
         search_progress.add_heuristic(heuristic);
-        best_heuristic_values.push_back(-1);
     }
     if(use_preferred_operators) {
         preferred_operator_heuristics.push_back(heuristic);
