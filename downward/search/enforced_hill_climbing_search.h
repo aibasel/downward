@@ -9,6 +9,7 @@
 #include "state.h"
 #include "open_lists/open_list.h"
 #include "g_evaluator.h"
+#include "search_progress.h"
 #include <vector>
 #include <map>
 
@@ -36,9 +37,7 @@ protected:
     int current_h;
 
     // statistics
-    int expanded;
-    int generated_states;
-    int generated_ops;
+    SearchProgress search_progress;
     map<int, pair<int, int> > d_counts;
     int num_ehc_phases;
     int last_expanded;

@@ -10,12 +10,7 @@ using namespace std;
 
 GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(bool reopen_closed):
     reopen_closed_nodes(reopen_closed),
-    open_list(0), f_evaluator(0),
-    expanded_states(0), reopened_states(0),
-    evaluated_states(0), generated_states(0),
-    lastjump_expanded_states(0), lastjump_reopened_states(0),
-    lastjump_evaluated_states(0), lastjump_generated_states(0),
-    lastjump_f_value(-1) {
+    open_list(0), f_evaluator(0) {
 }
 
 GeneralEagerBestFirstSearch::~GeneralEagerBestFirstSearch() {
@@ -38,7 +33,7 @@ void GeneralEagerBestFirstSearch::add_heuristic(Heuristic *heuristic,
     assert(use_estimates || use_preferred_operators);
 
     heuristics.push_back(heuristic);
-    best_heuristic_values.push_back(-1);
+    search_progress.add_heuristic(heuristic);
 }
 
 void GeneralEagerBestFirstSearch::initialize() {
@@ -57,65 +52,30 @@ void GeneralEagerBestFirstSearch::initialize() {
     for (unsigned int i = 0; i < heuristics.size(); i++)
         heuristics[i]->evaluate(*g_initial_state);
 	open_list->evaluate(0, false);
-    evaluated_states++;
+    search_progress.inc_evaluated();
 
     if(open_list->is_dead_end()) {
         assert(open_list->dead_end_is_reliable());
         cout << "Initial state is a dead end." << endl;
     }
     else {
-        for (unsigned int i = 0; i < heuristics.size(); i++) {
-            initial_h_values.push_back(heuristics[i]->get_heuristic());
-        }
+        search_progress.get_initial_h_values();
         //TODO:CR - create a common search statistics class to unify counting and output
         if (f_evaluator) {
             f_evaluator->evaluate(0,false);
-            lastjump_f_value = f_evaluator->get_value();
-            jump_statistics();
+            search_progress.report_f_value(f_evaluator->get_value());
         }
-        if(check_progress()) {
-            report_progress();
-        }
+        search_progress.check_h_progress();
         SearchNode node = search_space.get_node(*g_initial_state);
-        node.open_initial(initial_h_values[0]);
+        node.open_initial(heuristics[0]->get_value());
 
         open_list->insert(node.get_state_buffer());
     }
 }
 
 
-void GeneralEagerBestFirstSearch::jump_statistics() const {
-    cout << "f = " << lastjump_f_value
-         << " [" << evaluated_states << " evaluated, "
-         << expanded_states << " expanded, ";
-    if(reopened_states) {
-        /* TODO: Replace this test by the test if the heuristic is
-         consistent. (Each heuristic should know if it is.) */
-        cout << reopened_states << " reopened, ";
-    }
-    cout << "t=" << g_timer << "]" << endl;
-}
-
 void GeneralEagerBestFirstSearch::statistics() const {
-    cout << "Initial state h value ";
-    print_heuristic_values(initial_h_values);
-    cout << "." << endl;
-
-    cout << "Expanded " << expanded_states << " state(s)." << endl;
-    cout << "Reopened " << reopened_states << " state(s)." << endl;
-    cout << "Evaluated " << evaluated_states << " state(s)." << endl;
-    cout << "Generated " << generated_states << " state(s)." << endl;
-
-    if (f_evaluator) {
-    cout << "Expanded until last jump: "
-         << lastjump_expanded_states << " state(s)." << endl;
-    cout << "Reopened until last jump: "
-         << lastjump_reopened_states << " state(s)." << endl;
-    cout << "Evaluated until last jump: "
-         << lastjump_evaluated_states << " state(s)." << endl;
-    cout << "Generated until last jump: "
-         << lastjump_generated_states << " state(s)." << endl;
-    }
+    search_progress.print_statistics();
 
     search_space.statistics();
 }
@@ -133,7 +93,7 @@ int GeneralEagerBestFirstSearch::step() {
     for(int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
         State succ_state(node.get_state(), *op);
-        generated_states++;
+        search_progress.inc_generated();
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
@@ -147,7 +107,7 @@ int GeneralEagerBestFirstSearch::step() {
                 heuristics[i]->reach_state(node.get_state(), *op, succ_node.get_state());
                 heuristics[i]->evaluate(succ_state);
             }
-            evaluated_states++;
+            search_progress.inc_evaluated();
             //TODO:CR - check dead end using the open list
             bool dead_end = false;
             for (unsigned int i = 0; i < heuristics.size(); i++) {
@@ -167,9 +127,7 @@ int GeneralEagerBestFirstSearch::step() {
 			open_list->evaluate(succ_node.get_g(), false);
             open_list->insert(succ_node.get_state_buffer());
 
-            if(check_progress()) {
-                report_progress();
-            }
+            search_progress.check_h_progress();
 
         } else if(succ_node.get_g() > node.get_g() + op->get_cost()) {
             // We found a new cheapest path to an open or closed state.
@@ -184,7 +142,7 @@ int GeneralEagerBestFirstSearch::step() {
                      * should be present also in release builds, so don't
                      * use a plain assert. */
                 	//TODO:CR - add a consistent flag to heuristics, and add an assert here based on it
-                    reopened_states++;
+                    search_progress.inc_reopened();
                 }
                 succ_node.reopen(node, op);
                 heuristics[0]->set_evaluator_value(succ_node.get_h());
@@ -222,7 +180,7 @@ SearchNode GeneralEagerBestFirstSearch::fetch_next_node() {
             node.close();
             assert(!node.is_dead_end());
 			update_jump_statistic(node);
-            expanded_states++;
+            search_progress.inc_expanded();
             return node;
         }
     }
@@ -245,40 +203,12 @@ void GeneralEagerBestFirstSearch::dump_search_space()
   search_space.dump();
 }
 
-bool GeneralEagerBestFirstSearch::check_progress() {
-    bool progress = false;
-    for(int i = 0; i < heuristics.size(); i++) {
-        if(heuristics[i]->is_dead_end())
-            continue;
-        int h = heuristics[i]->get_heuristic();
-        int &best_h = best_heuristic_values[i];
-        if(best_h == -1 || h < best_h) {
-            best_h = h;
-            progress = true;
-        }
-    }
-    return progress;
-}
-
-void GeneralEagerBestFirstSearch::report_progress() {
-    cout << "Best heuristic value: ";
-    print_heuristic_values(best_heuristic_values);
-    cout << " [expanded " << expanded_states << " state(s)]" << endl;
-}
-
 void GeneralEagerBestFirstSearch::update_jump_statistic(const SearchNode& node) {
 	if (f_evaluator) {
 		heuristics[0]->set_evaluator_value(node.get_h());
 		f_evaluator->evaluate(node.get_g(), false);
 		int new_f_value = f_evaluator->get_value();
-		if (new_f_value > lastjump_f_value) {
-			lastjump_f_value = new_f_value;
-			jump_statistics();
-			lastjump_expanded_states = expanded_states;
-			lastjump_reopened_states = reopened_states;
-			lastjump_evaluated_states = evaluated_states;
-			lastjump_generated_states = generated_states;
-		}
+		search_progress.report_f_value(new_f_value);
 	}
 }
 

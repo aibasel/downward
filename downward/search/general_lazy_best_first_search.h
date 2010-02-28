@@ -9,6 +9,7 @@
 #include "state.h"
 #include "scalar_evaluator.h"
 #include "search_space.h"
+#include "search_progress.h"
 
 class Heuristic;
 class Operator;
@@ -34,7 +35,7 @@ protected:
     const Operator *current_operator;
     int current_g;
 
-    int generated_states;
+    SearchProgress search_progress;
 
     virtual void initialize();
     virtual int step();
@@ -43,8 +44,6 @@ protected:
     int fetch_next_state();
 
     bool check_goal();
-    bool check_progress();
-    void report_progress();
     void reward_progress();
 
     void set_open_list(OpenList<OpenListEntryLazy> *open);

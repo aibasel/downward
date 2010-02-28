@@ -12,10 +12,6 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch():
     heuristic = NULL;
     use_preferred = false;
     preferred_usage = prune_by_preferred;
-
-    expanded = 0;
-    generated_states = 0;
-    generated_ops = 0;
     num_ehc_phases = 0;
 
     use_cost_for_bfs = false;
@@ -28,6 +24,7 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 }
 
 void EnforcedHillClimbingSearch::evaluate(const State &parent, const Operator * op,const State &state) {
+    search_progress.inc_evaluated();
     if (!preferred_contains_eval) {
         if (op != NULL) {
             heuristic->reach_state(parent, *op, state);
@@ -52,6 +49,7 @@ void EnforcedHillClimbingSearch::initialize() {
 
     SearchNode node = search_space.get_node(current_state);
     evaluate(node.get_state(), NULL, node.get_state());
+    search_progress.get_initial_h_values();
 
     if (heuristic->is_dead_end()) {
         cout << "Initial state is a dead end, no solution" << endl;
@@ -102,9 +100,8 @@ void EnforcedHillClimbingSearch::get_successors(const State &state, vector<const
             }
         }
     }
-    expanded++;
-    generated_ops += ops.size();
-    random_shuffle( ops.begin(), ops.end() );
+    search_progress.inc_expanded();
+    search_progress.inc_generated_ops(ops.size());
 }
 
 int EnforcedHillClimbingSearch::step() {
@@ -113,8 +110,8 @@ int EnforcedHillClimbingSearch::step() {
     //    cout << current_state[i] << " ";
     //}
     //cout << endl;
-    last_expanded = expanded;
-    cout << "h = " << current_h << " [expanded " << expanded << " states(s)]" << endl;
+    last_expanded = search_progress.get_expanded();
+    search_progress.check_h_progress();
 
     // current_state is the current state, and it is the last state to be evaluated
     // cuurent_h is the h value of the current state
@@ -152,7 +149,7 @@ int EnforcedHillClimbingSearch::ehc() {
         int d = next.second.first;
         const Operator *last_op = next.second.second;
         State s(last_parent, *last_op);
-        generated_states++;
+        search_progress.inc_generated();
 
         SearchNode node = search_space.get_node(s);
 
@@ -175,7 +172,7 @@ int EnforcedHillClimbingSearch::ehc() {
                 }
                 pair<int, int> p = d_counts[d];
                 p.first = p.first + 1;
-                p.second = p.second + expanded - last_expanded;
+                p.second = p.second + search_progress.get_expanded() - last_expanded;
                 d_counts[d] = p;
 
                 current_state = node.get_state();
@@ -209,11 +206,10 @@ int EnforcedHillClimbingSearch::ehc() {
 }
 
 void EnforcedHillClimbingSearch::statistics() const {
-    cout << "Expanded: " << expanded << " state(s)" << endl;
-    cout << "Generated: " << generated_states  << " state(s)" << endl;
-    cout << "Generated Ops: " << generated_ops  << endl;
+    search_progress.print_statistics();
+
     cout << "EHC Phases: " << num_ehc_phases << endl;
-    cout << "Average expansions per EHC Phase: " << (double) expanded / (double)num_ehc_phases << endl;
+    cout << "Average expansions per EHC Phase: " << (double) search_progress.get_expanded() / (double)num_ehc_phases << endl;
 
     map<int, pair<int, int> >::const_iterator it;
     for (it = d_counts.begin(); it != d_counts.end(); it++) {
@@ -231,6 +227,7 @@ void EnforcedHillClimbingSearch::add_heuristic(Heuristic *h, bool use_estimates,
         }
         heuristic = h;
         preferred_contains_eval = use_preferred_operators;
+        search_progress.add_heuristic(h);
     }
 
     if (use_preferred_operators) {

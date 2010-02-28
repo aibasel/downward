@@ -10,8 +10,7 @@
 GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(bool reopen_closed):
     reopen_closed_nodes(reopen_closed),bound(-1),
     current_state(*g_initial_state), current_predecessor_buffer(NULL), current_operator(NULL),
-    current_g(0),
-    generated_states(0){
+    current_g(0) {
 }
 
 GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {
@@ -35,6 +34,7 @@ void GeneralLazyBestFirstSearch::add_heuristic(Heuristic *heuristic,
     assert(use_estimates || use_preferred_operators);
     if (use_estimates || use_preferred_operators) {
         heuristics.push_back(heuristic);
+        search_progress.add_heuristic(heuristic);
         best_heuristic_values.push_back(-1);
     }
     if(use_preferred_operators) {
@@ -93,7 +93,7 @@ void GeneralLazyBestFirstSearch::generate_successors() {
     for(int i = 0; i < preferred_operators.size(); i++) {
         preferred_operators[i]->unmark();
     }
-    generated_states += all_operators.size();
+    search_progress.inc_generated(all_operators.size());
 }
 
 int GeneralLazyBestFirstSearch::fetch_next_state() {
@@ -141,6 +141,7 @@ int GeneralLazyBestFirstSearch::step() {
             }
             heuristics[i]->evaluate(current_state);
         }
+        search_progress.inc_evaluated();
         open_list->evaluate(current_g, false);
         if(!open_list->is_dead_end()) {
             // We use the value of the first heuristic, because SearchSpace only
@@ -148,50 +149,26 @@ int GeneralLazyBestFirstSearch::step() {
             int h = heuristics[0]->get_value();
             if (reopen) {
                 node.reopen(parent_node, current_operator);
+                search_progress.inc_reopened();
             } else if (current_predecessor_buffer == NULL) {
                 node.open_initial(h);
+                search_progress.get_initial_h_values();
             } else {
                 node.open(h, parent_node, current_operator);
             }
             node.close();
             if(check_goal())
                 return SOLVED;
-            if(check_progress()) {
-                report_progress();
+            if (search_progress.check_h_progress()) {
                 reward_progress();
             }
             generate_successors();
+            search_progress.inc_expanded();
         } else {
             node.mark_as_dead_end();
         }
     }
     return fetch_next_state();
-}
-
-
-bool GeneralLazyBestFirstSearch::check_progress() {
-    bool progress = false;
-    for(int i = 0; i < heuristics.size(); i++) {
-    if(heuristics[i]->is_dead_end())
-        continue;
-    int h = heuristics[i]->get_heuristic();
-    int &best_h = best_heuristic_values[i];
-    if(best_h == -1 || h < best_h) {
-        best_h = h;
-        progress = true;
-    }
-    }
-    return progress;
-}
-
-void GeneralLazyBestFirstSearch::report_progress() {
-    cout << "Best heuristic value: ";
-    for(int i = 0; i < heuristics.size(); i++) {
-    cout << best_heuristic_values[i];
-    if(i != heuristics.size() - 1)
-        cout << "/";
-    }
-    cout << " [expanded " << search_space.size() << " state(s)]" << endl;
 }
 
 void GeneralLazyBestFirstSearch::reward_progress() {
@@ -200,6 +177,5 @@ void GeneralLazyBestFirstSearch::reward_progress() {
 }
 
 void GeneralLazyBestFirstSearch::statistics() const {
-    cout << "Expanded " << search_space.size() << " state(s)." << endl;
-    cout << "Generated " << generated_states << " state(s)." << endl;
+    search_progress.print_statistics();
 }

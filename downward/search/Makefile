@@ -38,7 +38,7 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  learning/AODE.h \
 	  learning/selective_max_heuristic.h \
           learning/maximum_heuristic.h \
-	  enforced_hill_climbing_search.h pref_evaluator.h
+	  enforced_hill_climbing_search.h pref_evaluator.h search_progress.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 OBJECTS = $(SOURCES:%.cc=obj/%.o)
