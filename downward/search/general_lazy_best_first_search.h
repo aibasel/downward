@@ -26,6 +26,7 @@ protected:
     OpenList<OpenListEntryLazy> *open_list;
     vector<Heuristic *> heuristics;
     vector<Heuristic *> preferred_operator_heuristics;
+    vector<Heuristic *> estimate_heuristics;
 
     State current_state;
     state_var_t *current_predecessor_buffer;

@@ -13,20 +13,20 @@ EagerGreedyBestFirstSearchEngine::~EagerGreedyBestFirstSearchEngine() {
 
 void EagerGreedyBestFirstSearchEngine::initialize() {
     assert(heuristics.size() > 0);
-    
+
     OpenList<state_var_t *> *ol;
 
-    if (heuristics.size() + preferred_operator_heuristics.size() == 1) {
+    if ((heuristics.size() == 1) &&  (estimate_heuristics.size() == 1)) {
         ol = new StandardScalarOpenList<state_var_t *>(heuristics[0]);
     } else {
         vector<OpenList<state_var_t *>*> inner_lists;
-        for (int i = 0; i < heuristics.size(); i++) {
-            inner_lists.push_back(new StandardScalarOpenList<state_var_t *>(
-                                      heuristics[i], false));
-        }
-        for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
-            inner_lists.push_back(new StandardScalarOpenList<state_var_t *>(
-                                      preferred_operator_heuristics[i], true));
+        for (int i = 0; i < estimate_heuristics.size(); i++) {
+            inner_lists.push_back(
+                    new StandardScalarOpenList<state_var_t *>(estimate_heuristics[i], false));
+            if (preferred_operator_heuristics.size() > 0) {
+                inner_lists.push_back(
+                    new StandardScalarOpenList<state_var_t *>(estimate_heuristics[i], true));
+            }
         }
         ol = new AlternationOpenList<state_var_t *>(inner_lists);
     }

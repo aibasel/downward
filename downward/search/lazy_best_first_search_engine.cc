@@ -23,16 +23,16 @@ void LazyBestFirstSearchEngine::initialize() {
 
     assert(heuristics.size() > 0);
 
-    if (heuristics.size() + preferred_operator_heuristics.size() == 1) {
+    if ((heuristics.size() == 1) &&  (estimate_heuristics.size() == 1)) {
         open_list = new StandardScalarOpenList<OpenListEntryLazy>(heuristics[0]);
     }
     else {
         vector<OpenList<OpenListEntryLazy>*> inner_lists;
-        for (int i = 0; i < heuristics.size(); i++) {
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(heuristics[i], false));
-        }
-        for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
-            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(preferred_operator_heuristics[i], true));
+        for (int i = 0; i < estimate_heuristics.size(); i++) {
+            inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(estimate_heuristics[i], false));
+            if (preferred_operator_heuristics.size() > 0) {
+                inner_lists.push_back(new StandardScalarOpenList<OpenListEntryLazy>(estimate_heuristics[i], true));
+            }
         }
         open_list = new AlternationOpenList<OpenListEntryLazy>(inner_lists);
     }
