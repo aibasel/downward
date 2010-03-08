@@ -23,7 +23,7 @@ void LazyBestFirstSearchEngine::initialize() {
 
     assert(heuristics.size() > 0);
 
-    if ((heuristics.size() == 1) &&  (estimate_heuristics.size() == 1)) {
+    if ((heuristics.size() == 1) &&  (preferred_operator_heuristics.size() == 0)) {
         open_list = new StandardScalarOpenList<OpenListEntryLazy>(heuristics[0]);
     }
     else {

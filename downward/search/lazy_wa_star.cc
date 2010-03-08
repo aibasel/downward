@@ -26,7 +26,7 @@ void LazyWeightedAStar::initialize() {
 
     GEvaluator *g = new GEvaluator();
 
-    if ((heuristics.size() == 1) &&  (estimate_heuristics.size() == 1)) {
+    if ((heuristics.size() == 1) &&  (preferred_operator_heuristics.size() == 0)) {
         SumEvaluator *f = new SumEvaluator();
         WeightedEvaluator *w = new WeightedEvaluator(heuristics[0], weight);
         f->add_evaluator(g);

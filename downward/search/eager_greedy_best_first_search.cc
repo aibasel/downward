@@ -16,7 +16,7 @@ void EagerGreedyBestFirstSearchEngine::initialize() {
 
     OpenList<state_var_t *> *ol;
 
-    if ((heuristics.size() == 1) &&  (estimate_heuristics.size() == 1)) {
+    if ((heuristics.size() == 1) &&  (preferred_operator_heuristics.size() == 0)) {
         ol = new StandardScalarOpenList<state_var_t *>(heuristics[0]);
     } else {
         vector<OpenList<state_var_t *>*> inner_lists;
