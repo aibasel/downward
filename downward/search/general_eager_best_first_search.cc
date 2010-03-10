@@ -155,10 +155,10 @@ int GeneralEagerBestFirstSearch::step() {
 
                 open_list->insert(succ_node.get_state_buffer());
             }
-            else {
+            //else {
                 // if we do not reopen closed nodes, we just update the parent pointers
-                succ_node.update_parent(node, op);
-            }
+            //    succ_node.update_parent(node, op);
+            //}
         }
     }
 
