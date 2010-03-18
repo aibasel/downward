@@ -10,7 +10,7 @@
 #include <algorithm>
 
 GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(bool reopen_closed):
-    reopen_closed_nodes(reopen_closed),bound(-1),succ_mode(pref_first),
+    reopen_closed_nodes(reopen_closed), bound(-1), succ_mode(pref_first),
     current_state(*g_initial_state),
     current_predecessor_buffer(NULL), current_operator(NULL),
     current_g(0) {
@@ -48,45 +48,38 @@ void GeneralLazyBestFirstSearch::add_heuristic(Heuristic *heuristic,
 }
 
 void GeneralLazyBestFirstSearch::get_successor_operators(
-        vector<const Operator *> &ops) {
+    vector<const Operator *> &ops) {
     vector<const Operator *> all_operators;
     vector<const Operator *> preferred_operators;
 
     g_successor_generator->generate_applicable_ops(
             current_state, all_operators);
 
-    for(int i = 0; i < preferred_operator_heuristics.size(); i++) {
+    for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
         Heuristic *heur = preferred_operator_heuristics[i];
-        if(!heur->is_dead_end()) {
+        if (!heur->is_dead_end())
             heur->get_preferred_operators(preferred_operators);
-        }
     }
 
     if (succ_mode == pref_first) {
-        for(int i = 0; i < preferred_operators.size(); i++) {
+        for (int i = 0; i < preferred_operators.size(); i++) {
             if (!preferred_operators[i]->is_marked()) {
                 ops.push_back(preferred_operators[i]);
                 preferred_operators[i]->mark();
             }
         }
 
-        for(int i = 0; i < all_operators.size(); i++) {
-            if (!all_operators[i]->is_marked()) {
+        for(int i = 0; i < all_operators.size(); i++)
+            if (!all_operators[i]->is_marked())
                 ops.push_back(all_operators[i]);
-            }
-        }
     } else {
-        for(int i = 0; i < preferred_operators.size(); i++) {
-            if (!preferred_operators[i]->is_marked()) {
+        for (int i = 0; i < preferred_operators.size(); i++)
+            if (!preferred_operators[i]->is_marked())
                 preferred_operators[i]->mark();
-            }
-        }
         ops.swap(all_operators);
-        if (succ_mode == shuffled) {
+        if (succ_mode == shuffled)
             random_shuffle(ops.begin(), ops.end());
-        }
     }
-
 }
 
 void GeneralLazyBestFirstSearch::generate_successors() {
@@ -97,7 +90,7 @@ void GeneralLazyBestFirstSearch::generate_successors() {
     state_var_t *current_state_buffer =
         search_space.get_node(current_state).get_state_buffer();
 
-    for(int i = 0; i < operators.size(); i++) {
+    for (int i = 0; i < operators.size(); i++) {
         int new_g = current_g + operators[i]->get_cost();
         bool is_preferred = operators[i]->is_marked();
         if (is_preferred)
@@ -105,7 +98,7 @@ void GeneralLazyBestFirstSearch::generate_successors() {
         if (bound == -1 || new_g < bound) {
             open_list->evaluate(new_g, is_preferred);
             open_list->insert(
-                    make_pair(current_state_buffer, operators[i]));
+                make_pair(current_state_buffer, operators[i]));
         }
     }
 }
