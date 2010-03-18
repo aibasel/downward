@@ -8,9 +8,10 @@
 #include "sum_evaluator.h"
 
 #include <algorithm>
+#include <limits>
 
 GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(bool reopen_closed):
-    reopen_closed_nodes(reopen_closed), bound(-1), succ_mode(pref_first),
+    reopen_closed_nodes(reopen_closed), bound(numeric_limits<int>::max()), succ_mode(pref_first),
     current_state(*g_initial_state),
     current_predecessor_buffer(NULL), current_operator(NULL),
     current_g(0) {
@@ -95,7 +96,7 @@ void GeneralLazyBestFirstSearch::generate_successors() {
         bool is_preferred = operators[i]->is_marked();
         if (is_preferred)
             operators[i]->unmark();
-        if (bound == -1 || new_g < bound) {
+        if (new_g < bound) {
             open_list->evaluate(new_g, is_preferred);
             open_list->insert(
                 make_pair(current_state_buffer, operators[i]));

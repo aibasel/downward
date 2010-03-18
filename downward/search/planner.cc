@@ -251,7 +251,7 @@ int main(int argc, const char **argv) {
     int iteration_no = 0;
     bool solution_found = false;
     int wa_star_weights[] = {10, 5, 3, 2, 1, -1};
-    int wastar_bound = -1;
+    int wastar_bound = numeric_limits<int>::max();
     int wastar_weight = wa_star_weights[0];
     bool reducing_weight = true;
     bool synergy = false;
