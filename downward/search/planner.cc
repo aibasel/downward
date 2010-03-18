@@ -347,8 +347,8 @@ int main(int argc, const char **argv) {
         search_timer.stop();
         g_timer.stop();
         if (engine->found_solution()) {
-            save_plan(engine->get_plan());
-            wastar_bound = engine->get_plan().size();
+            int plan_cost = save_plan(engine->get_plan());
+            wastar_bound = plan_cost;
         } else {
             iterative_search = false;
         }

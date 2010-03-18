@@ -132,7 +132,7 @@ int GeneralLazyBestFirstSearch::step() {
 
 
     SearchNode node = search_space.get_node(current_state);
-    bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end();
+    bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end()  && !node.is_new();
 
     if(node.is_new() || reopen) {
         state_var_t *dummy_address = current_predecessor_buffer;
