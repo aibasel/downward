@@ -22,6 +22,7 @@ protected:
     // Search Behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
     int bound;
+    enum {original, pref_first, shuffled} succ_mode;
 
     OpenList<OpenListEntryLazy> *open_list;
     vector<Heuristic *> heuristics;
@@ -44,7 +45,9 @@ protected:
     void reward_progress();
 
     void set_open_list(OpenList<OpenListEntryLazy> *open);
+    void get_successor_operators(vector<const Operator *> &ops);
 public:
+
     GeneralLazyBestFirstSearch(bool reopen_closed);
     virtual ~GeneralLazyBestFirstSearch();
 

@@ -7,9 +7,12 @@
 #include "g_evaluator.h"
 #include "sum_evaluator.h"
 
+#include <algorithm>
+
 GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(bool reopen_closed):
-    reopen_closed_nodes(reopen_closed),bound(-1),
-    current_state(*g_initial_state), current_predecessor_buffer(NULL), current_operator(NULL),
+    reopen_closed_nodes(reopen_closed),bound(-1),succ_mode(pref_first),
+    current_state(*g_initial_state),
+    current_predecessor_buffer(NULL), current_operator(NULL),
     current_g(0) {
 }
 
@@ -44,11 +47,13 @@ void GeneralLazyBestFirstSearch::add_heuristic(Heuristic *heuristic,
     }
 }
 
-void GeneralLazyBestFirstSearch::generate_successors() {
+void GeneralLazyBestFirstSearch::get_successor_operators(
+        vector<const Operator *> &ops) {
     vector<const Operator *> all_operators;
     vector<const Operator *> preferred_operators;
 
-    g_successor_generator->generate_applicable_ops(current_state, all_operators);
+    g_successor_generator->generate_applicable_ops(
+            current_state, all_operators);
 
     for(int i = 0; i < preferred_operator_heuristics.size(); i++) {
         Heuristic *heur = preferred_operator_heuristics[i];
@@ -57,33 +62,52 @@ void GeneralLazyBestFirstSearch::generate_successors() {
         }
     }
 
-    for(int i = 0; i < preferred_operators.size(); i++) {
-        if (!preferred_operators[i]->is_marked()) {
-            preferred_operators[i]->mark();
-            int new_g = current_g + preferred_operators[i]->get_cost();
-            if((bound == -1) || (new_g < bound)) {
-                open_list->evaluate(new_g, preferred_operators[i]->is_marked());
-                open_list->insert(make_pair(search_space.get_node(current_state).get_state_buffer(), preferred_operators[i]));
+    if (succ_mode == pref_first) {
+        for(int i = 0; i < preferred_operators.size(); i++) {
+            if (!preferred_operators[i]->is_marked()) {
+                ops.push_back(preferred_operators[i]);
+                preferred_operators[i]->mark();
             }
+        }
+
+        for(int i = 0; i < all_operators.size(); i++) {
+            if (!all_operators[i]->is_marked()) {
+                ops.push_back(all_operators[i]);
+            }
+        }
+    } else {
+        for(int i = 0; i < preferred_operators.size(); i++) {
+            if (!preferred_operators[i]->is_marked()) {
+                preferred_operators[i]->mark();
+            }
+        }
+        ops.swap(all_operators);
+        if (succ_mode == shuffled) {
+            random_shuffle(ops.begin(), ops.end());
         }
     }
 
-    if(!open_list->is_dead_end()) {
-        for(int j = 0; j < all_operators.size(); j++) {
-            if (!all_operators[j]->is_marked()) {
-                int new_g = current_g + all_operators[j]->get_cost();
-                if((bound == -1) || (new_g < bound)) {
-                    open_list->evaluate(new_g, all_operators[j]->is_marked());
-                    open_list->insert(make_pair(search_space.get_node(current_state).get_state_buffer(), all_operators[j]));
-                }
-            }
+}
+
+void GeneralLazyBestFirstSearch::generate_successors() {
+    vector<const Operator *> operators;
+    get_successor_operators(operators);
+    search_progress.inc_generated(operators.size());
+
+    state_var_t *current_state_buffer =
+        search_space.get_node(current_state).get_state_buffer();
+
+    for(int i = 0; i < operators.size(); i++) {
+        int new_g = current_g + operators[i]->get_cost();
+        bool is_preferred = operators[i]->is_marked();
+        if (is_preferred)
+            operators[i]->unmark();
+        if (bound == -1 || new_g < bound) {
+            open_list->evaluate(new_g, is_preferred);
+            open_list->insert(
+                    make_pair(current_state_buffer, operators[i]));
         }
     }
-
-    for(int i = 0; i < preferred_operators.size(); i++) {
-        preferred_operators[i]->unmark();
-    }
-    search_progress.inc_generated(all_operators.size());
 }
 
 int GeneralLazyBestFirstSearch::fetch_next_state() {
@@ -98,7 +122,8 @@ int GeneralLazyBestFirstSearch::fetch_next_state() {
     current_operator = next.second;
     State current_predecessor(current_predecessor_buffer);
     current_state = State(current_predecessor, *current_operator);
-    current_g = search_space.get_node(current_predecessor).get_g() + current_operator->get_cost();
+    current_g = search_space.get_node(current_predecessor).get_g() +
+                current_operator->get_cost();
 
 
     return IN_PROGRESS;
