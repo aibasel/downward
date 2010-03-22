@@ -14,9 +14,9 @@ HMHeuristic::~HMHeuristic() {
 }
 
 void HMHeuristic::initialize() {
-    cout << "The implementation of the h^m heuristic is preliminary" << endl;
-    cout << "It is SLOOOOOOOOOOOW" << endl;
-    cout << "Please do not use this for comparison" << endl;
+    cout << "The implementation of the h^m heuristic is preliminary" << endl
+         << "It is SLOOOOOOOOOOOW" << endl
+         << "Please do not use this for comparison" << endl;
     generate_all_tuples();
 }
 
