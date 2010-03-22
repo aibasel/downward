@@ -168,9 +168,18 @@ LandmarkOptimalSharedCostAssignment::LandmarkOptimalSharedCostAssignment(
         LandmarksGraph &graph, bool exc_ALM_eff):
             LandmarkCostAssignment(graph, exc_ALM_eff)
 {
+#ifdef USE_LP
+    si = new OsiXxxSolverInterface();
+#endif
 }
 
 LandmarkOptimalSharedCostAssignment::~LandmarkOptimalSharedCostAssignment() {
+#ifdef USE_LP
+    if (si != 0) {
+        delete si;
+        si = 0;
+    }
+#endif
 }
 
 void LandmarkOptimalSharedCostAssignment::assign_costs() {
@@ -179,7 +188,6 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
         struct tms start, end_build, end_solve, end_all;
         times(&start);
 
-    OsiXxxSolverInterface* si = new OsiXxxSolverInterface();
     //Number of variables (columns) in problem is:
     // 1 for each landmark, and 1 for each action/landmark pair
     const set<LandmarkNode*>& nodes = lm_graph.get_nodes();
@@ -334,15 +342,14 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
     if(matrix != 0)      { delete matrix; matrix = 0; }
     //delete solution;
     delete rows;
-    delete si;
 
     times(&end_all);
 
-    int total_ms = (end_all.tms_utime - start.tms_utime) * 10;
-    int build_ms = (end_build.tms_utime - start.tms_utime) * 10;
-    int solve_ms = (end_solve.tms_utime - end_build.tms_utime) * 10;
+    //int total_ms = (end_all.tms_utime - start.tms_utime) * 10;
+    //int build_ms = (end_build.tms_utime - start.tms_utime) * 10;
+    //int solve_ms = (end_solve.tms_utime - end_build.tms_utime) * 10;
 
-    cout << "Build: " << build_ms << " , Solve: " << solve_ms << " , Total: " << total_ms << "  , Iterations: " << si->getIterationCount() << endl;;
+    //cout << "Build: " << build_ms << " , Solve: " << solve_ms << " , Total: " << total_ms << "  , Iterations: " << si->getIterationCount() << endl;;
 
 
     }

@@ -84,7 +84,7 @@ LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
 
     if (optimal) {
 #ifdef USE_LP
-        lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph, true);
+        lm_cost_assignment = new LandmarkOptimalSharedCostAssignment(lgraph, true);
 #else
         cerr << "You must build the planner with the USE_LP symbol defined" << endl;
         exit(1);

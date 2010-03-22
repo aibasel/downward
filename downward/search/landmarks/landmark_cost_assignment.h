@@ -54,7 +54,9 @@ typedef OsiCpxSolverInterface OsiXxxSolverInterface;
 
 class LandmarkOptimalSharedCostAssignment : public LandmarkCostAssignment {
 private:
-
+#ifdef USE_LP
+    OsiXxxSolverInterface* si;
+#endif
     int cost_lm_i(int lm_i) {return lm_i;}
     int cost_a_lm_i(int a_i, int lm_i) {return ((a_i + 1) * lm_graph.number_of_landmarks()) + lm_i;}
 
@@ -65,6 +67,11 @@ public:
     virtual void assign_costs();
 };
 
+/**
+ * Note: This class does not take into account that landmarks
+ * that have not been achieved can only be achieved by first-achievers,
+ * and therefore does not give the optimal cost partitioning
+ */
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
 private:
 #ifdef USE_LP
