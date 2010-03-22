@@ -13,6 +13,11 @@ using namespace std;
 
 typedef vector<pair<int, int> > tuple;
 
+/**
+ * The h^m heuristic.
+ * This is a preliminary implementation, and it is very slow.
+ * Please do not use this for comparison.
+ */
 class HMHeuristic : public Heuristic{
 public:
 	HMHeuristic(int _m);
