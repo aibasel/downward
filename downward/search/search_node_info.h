@@ -16,8 +16,8 @@ class SearchNodeInfo {
     */
 
     unsigned int status: 2;
-    int g: 15;
-    int h: 15; // TODO:CR - should we get rid of it
+    int g: 30;
+    int h: 32; // TODO:CR - should we get rid of it
     const state_var_t *parent_state;
     const Operator *creating_operator;
 
