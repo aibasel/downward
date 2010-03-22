@@ -175,10 +175,7 @@ LandmarkOptimalSharedCostAssignment::LandmarkOptimalSharedCostAssignment(
 
 LandmarkOptimalSharedCostAssignment::~LandmarkOptimalSharedCostAssignment() {
 #ifdef USE_LP
-    if (si != 0) {
-        delete si;
-        si = 0;
-    }
+    delete si;
 #endif
 }
 
@@ -375,10 +372,7 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
 
 LandmarkEfficientOptimalSharedCostAssignment::~LandmarkEfficientOptimalSharedCostAssignment() {
 #ifdef USE_LP
-    if (si != 0) {
-        delete si;
-        si = 0;
-    }
+    delete si;
 #endif
 }
 
