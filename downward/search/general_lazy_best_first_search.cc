@@ -168,7 +168,7 @@ int GeneralLazyBestFirstSearch::step() {
             node.close();
             if(check_goal_and_set_plan(current_state))
                 return SOLVED;
-            if (search_progress.check_h_progress()) {
+            if (search_progress.check_h_progress(current_g)) {
                 reward_progress();
             }
             generate_successors();

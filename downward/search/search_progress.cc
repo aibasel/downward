@@ -41,7 +41,7 @@ void SearchProgress::get_initial_h_values() {
     }
 }
 
-bool SearchProgress::check_h_progress() {
+bool SearchProgress::check_h_progress(int g) {
     bool progress = false;
     for(int i = 0; i < heuristics.size(); i++) {
         if(heuristics[i]->is_dead_end())
@@ -54,7 +54,7 @@ bool SearchProgress::check_h_progress() {
         }
     }
     if (progress) {
-        print_h_line();
+        print_h_line(g);
     }
     return progress;
 }
@@ -66,14 +66,14 @@ void SearchProgress::print_f_line() const {
     cout << "]" << endl;
 }
 
-void SearchProgress::print_h_line() const {
+void SearchProgress::print_h_line(int g) const {
     cout << "Best heuristic value: ";
     for(int i = 0; i < heuristics.size(); i++) {
     cout << best_heuristic_values[i];
     if(i != heuristics.size() - 1)
         cout << "/";
     }
-    cout << " [";
+    cout << " [g=" << g << ", ";
     print_line();
     cout << "]" << endl;
 }

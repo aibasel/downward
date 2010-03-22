@@ -41,7 +41,7 @@ void EnforcedHillClimbingSearch::evaluate(const State &parent, const Operator * 
 
 void EnforcedHillClimbingSearch::initialize() {
     assert(heuristic != NULL);
-
+    current_g = 0;
     cout << "Conducting Enforced Hill Climbing Search" << endl;
     if (use_preferred) {
         cout << "Using only preferred operators" << endl;
@@ -111,7 +111,7 @@ int EnforcedHillClimbingSearch::step() {
     //}
     //cout << endl;
     last_expanded = search_progress.get_expanded();
-    search_progress.check_h_progress();
+    search_progress.check_h_progress(current_g);
 
     // current_state is the current state, and it is the last state to be evaluated
     // cuurent_h is the h value of the current state
@@ -161,7 +161,7 @@ int EnforcedHillClimbingSearch::ehc() {
             node.open(h, search_space.get_node(last_parent), last_op);
 
             if (h < current_h) {
-
+                current_g = node.get_g();
                 num_ehc_phases++;
                 if (d_counts.find(d) == d_counts.end()) {
                     d_counts[d] = make_pair(0, 0);

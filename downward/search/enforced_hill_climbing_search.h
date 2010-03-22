@@ -34,6 +34,7 @@ protected:
 
     State current_state;
     int current_h;
+    int current_g;
 
     // statistics
     SearchProgress search_progress;

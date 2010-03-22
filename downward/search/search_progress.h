@@ -55,13 +55,13 @@ public:
 
     // h-value
     void get_initial_h_values();
-    bool check_h_progress();
+    bool check_h_progress(int g);
 
 
     // output
     void print_line() const;
     void print_f_line() const;
-    void print_h_line() const;
+    void print_h_line(int g) const;
     void print_statistics() const;
 };
 

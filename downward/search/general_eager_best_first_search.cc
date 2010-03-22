@@ -60,7 +60,7 @@ void GeneralEagerBestFirstSearch::initialize() {
             f_evaluator->evaluate(0,false);
             search_progress.report_f_value(f_evaluator->get_value());
         }
-        search_progress.check_h_progress();
+        search_progress.check_h_progress(0);
         SearchNode node = search_space.get_node(*g_initial_state);
         node.open_initial(heuristics[0]->get_value());
 
@@ -132,7 +132,7 @@ int GeneralEagerBestFirstSearch::step() {
             }
 
 			open_list->insert(succ_node.get_state_buffer());
-            search_progress.check_h_progress();
+            search_progress.check_h_progress(succ_node.get_g());
 
         } else if(succ_node.get_g() > node.get_g() + op->get_cost()) {
             // We found a new cheapest path to an open or closed state.
