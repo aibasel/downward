@@ -220,7 +220,7 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op, tuple &others, int 
                         vector<tuple> entries;
                         generate_all_partial_tuple(ent, entries);
 
-                        cout << "Trying 3: " << op.get_name() << endl;
+                        //cout << "Trying 3: " << op.get_name() << endl;
                         for (int j = 0; j < entries.size(); j++) {
                             update_hm_entry(entries[j], c2 + op.get_cost());
                         }
