@@ -105,6 +105,15 @@ protected:
 		return false;
 	}
 
+	bool contradict_effect_of(const Operator &op, int var, int val) {
+        for (int j = 0; j < op.get_pre_post().size(); j++) {
+            if ((op.get_pre_post()[j].var == var) && (op.get_pre_post()[j].post != val)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 	void generate_all_tuples() {
 		tuple t;

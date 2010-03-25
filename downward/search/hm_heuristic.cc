@@ -41,8 +41,10 @@ int HMHeuristic::compute_heuristic(const State &state) {
         //dump_table();
         //cout << "********************************" << endl;
 
-        int h = eval(g_goal);
-        //cout << "*** " << h << endl;
+		//exit(0);
+
+		int h = eval(g_goal);
+		//cout << "*** " << h << endl;
 
         // ******************************
         //init_hm_table(g_goal);
@@ -80,20 +82,32 @@ void HMHeuristic::update_hm_table() {
         //cout << "***********************************" << endl;
         was_updated = false;
 
-        for (int op_id = 0; op_id < g_operators.size(); op_id++) {
-            const Operator &op = g_operators[op_id];
-            //cout << "Checking operator " << op.get_name() << endl;
-            tuple pre;
-            get_operator_pre(op, pre);
-            int c1 = eval(pre);
-            if (c1 < MAX_VALUE) {
-                tuple eff;
-                vector<tuple> partial_eff;
+		for (int op_id = 0; op_id < g_operators.size(); op_id++) {
+			const Operator &op = g_operators[op_id];
+			//cout << "Checking operator " << op.get_name() << endl;
+			tuple pre;
+			get_operator_pre(op, pre);
+			//cout << "PRE: ";
+			//print_tuple(pre);
+			//cout << endl;
 
-                get_operator_eff(op, eff);
-                generate_all_partial_tuple(eff, partial_eff);
-                for (int i = 0; i < partial_eff.size(); i++) {
-                    update_hm_entry(partial_eff[i], c1 + op.get_cost());
+			int c1 = eval(pre);
+			if (c1 < MAX_VALUE) {
+				tuple eff;
+				vector<tuple> partial_eff;
+
+				get_operator_eff(op, eff);
+
+				//cout << "EFF: ";
+                //print_tuple(eff);
+                //cout << endl;
+
+				generate_all_partial_tuple(eff, partial_eff);
+				for (int i = 0; i < partial_eff.size(); i++) {
+				    //cout << "Trying 1: " << op.get_name() << " - ";
+				    //print_tuple(partial_eff[i]);
+				    //cout << endl;
+					update_hm_entry(partial_eff[i], c1 + op.get_cost());
 
                     if (partial_eff[i].size() < m) {
                         //cout << "Calling extend_tuple for ";
@@ -117,7 +131,19 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
     for (it = hm_table.begin(); it != hm_table.end(); it++) {
         pair<tuple, int> hm_ent = *it;
         tuple &entry = hm_ent.first;
-        if ((entry.size() > t.size()) && (check_tuple_in_tuple(t, entry) == 0)) {
+
+        //print_tuple(t);
+        //cout << " \\in ";
+        //print_tuple(entry);
+        //cout << " - " << check_tuple_in_tuple(t, entry) << endl;
+        bool contradict = false;
+        for (int i = 0; i < entry.size(); i++) {
+            if (contradict_effect_of(op, entry[i].first, entry[i].second)) {
+                contradict = true;
+                break;
+            }
+        }
+        if (!contradict && (entry.size() > t.size()) && (check_tuple_in_tuple(t, entry) == 0)) {
 
             tuple pre;
             get_operator_pre(op, pre);
@@ -150,6 +176,7 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
                 int c2 = eval(pre);
                 if (c2 < MAX_VALUE) {
                     //cout << "updating " << c2 + op.get_cost()<< endl;
+                    //cout << "Trying 2: " << op.get_name() << endl;
                     update_hm_entry(entry, c2 + op.get_cost());
                 }
             }
@@ -193,8 +220,10 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op, tuple &others, int 
                         vector<tuple> entries;
                         generate_all_partial_tuple(ent, entries);
 
-                        for (int j = 0; j < entries.size(); j++)
+                        cout << "Trying 3: " << op.get_name() << endl;
+                        for (int j = 0; j < entries.size(); j++) {
                             update_hm_entry(entries[j], c2 + op.get_cost());
+                        }
                     }
 
                     extend_tuple(t, op, tup, i+1);
@@ -223,13 +252,14 @@ int HMHeuristic::eval(tuple &t) {
 }
 
 int HMHeuristic::update_hm_entry(tuple &t, int val) {
-    assert(hm_table.count(t) == 1);
-    if (hm_table[t] > val) {
-        //cout << "Entry updated " << val << endl;
-        hm_table[t] = val;
-        was_updated = true;
-    }
-    return val;
+	assert(hm_table.count(t) == 1);
+	if (hm_table[t] > val) {
+	    //print_tuple(t);
+	    //cout << " Entry updated " << val << endl;
+		hm_table[t] = val;
+		was_updated = true;
+	}
+	return val;
 }
 
 void HMHeuristic::generate_all_tuples(int var, int sz, tuple &base) {
