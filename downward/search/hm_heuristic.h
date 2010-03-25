@@ -40,7 +40,6 @@ protected:
 	int eval(tuple &t);
 	int update_hm_entry(tuple &t, int val);
 	void extend_tuple(tuple &t, const Operator &op);
-	void extend_tuple(tuple &t, const Operator &op, tuple &others, int var);
 
 	// some helper methods
 	int check_tuple_in_tuple(const tuple &tup, const tuple& big_tuple);
