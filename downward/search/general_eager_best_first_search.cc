@@ -120,9 +120,6 @@ int GeneralEagerBestFirstSearch::step() {
             }
             search_progress.inc_evaluated();
 
-            //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
-            int succ_h = heuristics[0]->get_heuristic();
-            succ_node.open(succ_h, node, op);
             open_list->evaluate(succ_node.get_g(), is_preferred);
 
             bool dead_end = open_list->is_dead_end() && open_list->dead_end_is_reliable();
@@ -130,6 +127,11 @@ int GeneralEagerBestFirstSearch::step() {
                 succ_node.mark_as_dead_end();
                 continue;
             }
+
+            //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
+            int succ_h = heuristics[0]->get_heuristic();
+            succ_node.open(succ_h, node, op);
+
 
 			open_list->insert(succ_node.get_state_buffer());
             search_progress.check_h_progress(succ_node.get_g());
