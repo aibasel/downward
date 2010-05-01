@@ -9,7 +9,7 @@ people without asking for permission first (email to Malte Helmert
 sit on my code in general but because I know it is buggy and
 underdocumented and don't feel too well about it spreading.
 
-Note: This distribution doesn't really reflect any of the devlopments
+Note: This distribution doesn't really reflect any of the developments
 of the planner past 2004, such as any heuristics other than the
 original CG and FF heuristics. (Or maybe it does, but then we have
 forgotten to update this README file.) If you are interested in any of
