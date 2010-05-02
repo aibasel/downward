@@ -49,13 +49,25 @@ cp data/doc/translator.pdf $DIST/doc/
 # C++ components
 for component in preprocess search; do
     mkdir $DIST/$component
-    cp $SRC_DIR/$component/*.{cc,h} $DIST/$component/
+    pushd . > /dev/null
+    cd $SRC_DIR
+    if [[ "$component" == "search" ]]; then
+        CC_FILES=$(echo $component/*.cc $component/*/*.cc)
+        H_FILES=$(echo $component/*.h $component/*/*.h)
+    else
+        CC_FILES=$(echo $component/*.cc)
+        H_FILES=$(echo $component/*.h)
+    fi
+    popd > /dev/null
+    for x in $CC_FILES $H_FILES; do
+        TARGET_DIR=$(dirname "$DIST/$x")
+        mkdir -p $TARGET_DIR
+        cp $SRC_DIR/$x $TARGET_DIR/
+    done
 
     # The rest of this is for generating the Makefile.
     ID=`echo $component | sed -e \
       y/abcdefghijklmnopqrstuvwxyz-/ABCDEFGHIJKLMNOPQRSTUVWXYZ_/`
-    CC_FILES=`cd $SRC_DIR && echo $component/*.cc`
-    H_FILES=`cd $SRC_DIR && echo $component/*.h`
 
     echo >> $MAKEFILE
     echo "${ID}_CC = $CC_FILES" >> $MAKEFILE
@@ -78,12 +90,12 @@ rm -rf $DIST
 
 # Unit tests
 echo "Unit test: Unpacking package..."
-tar xzf $DIST.tar.gz
+tar xzf $DIST.tar.gz || exit 1
 
 echo "Unit test: Compiling..."
 cp -r data/tests $DIST/
 cd $DIST
-make > /dev/null
+make > /dev/null || exit 1
 
 echo 'Unit test: First task...'
 translate/translate.py \

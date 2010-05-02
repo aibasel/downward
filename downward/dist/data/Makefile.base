@@ -14,7 +14,7 @@
 # track of whether or not the bytecode files are current and
 # regenerates them when needed.
 
-COMPILE=g++ -O3 -Wall -W -Wno-sign-compare -ansi -pedantic -DRELEASE
+COMPILE=g++ -O3 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -DRELEASE
 
 default: all
 
