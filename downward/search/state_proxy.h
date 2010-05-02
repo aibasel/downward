@@ -4,6 +4,7 @@
 #include "state.h"
 #include "globals.h"
 
+#include <ext/hash_map>
 
 
 class StateProxy {
