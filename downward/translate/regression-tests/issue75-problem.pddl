@@ -14,10 +14,10 @@
 (define (problem GROUNDED-TRUCK-1)
 (:domain GROUNDED-TRUCKS)
 (:init
-(time-now_t0)
 (at_package1_l2)
-(free_a1_truck1)
 (at_truck1_l1)
+(free_a1_truck1)
+(time-now_t0)
 )
 (:goal
 (and
