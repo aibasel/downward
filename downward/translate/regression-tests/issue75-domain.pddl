@@ -9,7 +9,6 @@
 (at_truck1_l2)
 (at_truck1_l1)
 (at-destination_package1_l2)
-(delivered_package1_l2_t3)
 (delivered_package1_l2_t2)
 (delivered_package1_l2_t1)
 (in_package1_truck1_a1)
@@ -18,149 +17,14 @@
 (time-now_t2)
 (at-destination_package1_l1)
 (at-destination_package1_l3)
-(delivered_package1_l1_t3)
-(delivered_package1_l3_t3)
 (delivered_package1_l1_t2)
 (delivered_package1_l3_t2)
 (delivered_package1_l1_t1)
 (delivered_package1_l3_t1)
-(time-now_t3)
 (at_package1_l2)
 (at_truck1_l3)
 (free_a1_truck1)
 (time-now_t0)
-)
-(:action DELIVER_PACKAGE1_L3_T3_T3
-:parameters ()
-:precondition
-(and
-(time-now_t3)
-(at_package1_l3)
-)
-:effect
-(and
-(delivered_package1_l3_t3)
-(at-destination_package1_l3)
-(not (at_package1_l3))
-)
-)
-(:action DELIVER_PACKAGE1_L2_T3_T3
-:parameters ()
-:precondition
-(and
-(time-now_t3)
-(at_package1_l2)
-)
-:effect
-(and
-(delivered_package1_l2_t3)
-(at-destination_package1_l2)
-(not (at_package1_l2))
-)
-)
-(:action DELIVER_PACKAGE1_L1_T3_T3
-:parameters ()
-:precondition
-(and
-(time-now_t3)
-(at_package1_l1)
-)
-:effect
-(and
-(delivered_package1_l1_t3)
-(at-destination_package1_l1)
-(not (at_package1_l1))
-)
-)
-(:action DRIVE_TRUCK1_L1_L2_T2_T3
-:parameters ()
-:precondition
-(and
-(time-now_t2)
-(at_truck1_l1)
-)
-:effect
-(and
-(time-now_t3)
-(at_truck1_l2)
-(not (at_truck1_l1))
-(not (time-now_t2))
-)
-)
-(:action DRIVE_TRUCK1_L1_L3_T2_T3
-:parameters ()
-:precondition
-(and
-(time-now_t2)
-(at_truck1_l1)
-)
-:effect
-(and
-(time-now_t3)
-(at_truck1_l3)
-(not (at_truck1_l1))
-(not (time-now_t2))
-)
-)
-(:action DRIVE_TRUCK1_L2_L1_T2_T3
-:parameters ()
-:precondition
-(and
-(time-now_t2)
-(at_truck1_l2)
-)
-:effect
-(and
-(time-now_t3)
-(at_truck1_l1)
-(not (at_truck1_l2))
-(not (time-now_t2))
-)
-)
-(:action DRIVE_TRUCK1_L2_L3_T2_T3
-:parameters ()
-:precondition
-(and
-(time-now_t2)
-(at_truck1_l2)
-)
-:effect
-(and
-(time-now_t3)
-(at_truck1_l3)
-(not (at_truck1_l2))
-(not (time-now_t2))
-)
-)
-(:action DRIVE_TRUCK1_L3_L1_T2_T3
-:parameters ()
-:precondition
-(and
-(time-now_t2)
-(at_truck1_l3)
-)
-:effect
-(and
-(time-now_t3)
-(at_truck1_l1)
-(not (at_truck1_l3))
-(not (time-now_t2))
-)
-)
-(:action DRIVE_TRUCK1_L3_L2_T2_T3
-:parameters ()
-:precondition
-(and
-(time-now_t2)
-(at_truck1_l3)
-)
-:effect
-(and
-(time-now_t3)
-(at_truck1_l2)
-(not (at_truck1_l3))
-(not (time-now_t2))
-)
 )
 (:action LOAD_PACKAGE1_TRUCK1_A1_L3
 :parameters ()
@@ -248,34 +112,6 @@
 (not (at_package1_l1))
 )
 )
-(:action DELIVER_PACKAGE1_L3_T1_T3
-:parameters ()
-:precondition
-(and
-(time-now_t1)
-(at_package1_l3)
-)
-:effect
-(and
-(delivered_package1_l3_t3)
-(at-destination_package1_l3)
-(not (at_package1_l3))
-)
-)
-(:action DELIVER_PACKAGE1_L1_T1_T3
-:parameters ()
-:precondition
-(and
-(time-now_t1)
-(at_package1_l1)
-)
-:effect
-(and
-(delivered_package1_l1_t3)
-(at-destination_package1_l1)
-(not (at_package1_l1))
-)
-)
 (:action DELIVER_PACKAGE1_L3_T2_T2
 :parameters ()
 :precondition
@@ -314,48 +150,6 @@
 :effect
 (and
 (delivered_package1_l1_t2)
-(at-destination_package1_l1)
-(not (at_package1_l1))
-)
-)
-(:action DELIVER_PACKAGE1_L3_T2_T3
-:parameters ()
-:precondition
-(and
-(time-now_t2)
-(at_package1_l3)
-)
-:effect
-(and
-(delivered_package1_l3_t3)
-(at-destination_package1_l3)
-(not (at_package1_l3))
-)
-)
-(:action DELIVER_PACKAGE1_L2_T2_T3
-:parameters ()
-:precondition
-(and
-(time-now_t2)
-(at_package1_l2)
-)
-:effect
-(and
-(delivered_package1_l2_t3)
-(at-destination_package1_l2)
-(not (at_package1_l2))
-)
-)
-(:action DELIVER_PACKAGE1_L1_T2_T3
-:parameters ()
-:precondition
-(and
-(time-now_t2)
-(at_package1_l1)
-)
-:effect
-(and
-(delivered_package1_l1_t3)
 (at-destination_package1_l1)
 (not (at_package1_l1))
 )
@@ -531,20 +325,6 @@
 :effect
 (and
 (delivered_package1_l2_t2)
-(at-destination_package1_l2)
-(not (at_package1_l2))
-)
-)
-(:action DELIVER_PACKAGE1_L2_T1_T3
-:parameters ()
-:precondition
-(and
-(time-now_t1)
-(at_package1_l2)
-)
-:effect
-(and
-(delivered_package1_l2_t3)
 (at-destination_package1_l2)
 (not (at_package1_l2))
 )

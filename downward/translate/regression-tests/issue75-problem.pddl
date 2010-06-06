@@ -7,7 +7,7 @@
 ;; - Removed atom (foo).
 ;; - Changed goal deadline from t3 to t2.
 ;; - Removed storage space (if that's what it is) a2.
-;; - Removed everything pertaining to timesteps t4, t5 and t6.
+;; - Removed everything pertaining to timesteps t3, t4, t5 and t6.
 
 (define (problem GROUNDED-TRUCK-1)
 (:domain GROUNDED-TRUCKS)
