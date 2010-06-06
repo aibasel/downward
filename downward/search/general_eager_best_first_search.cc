@@ -120,6 +120,11 @@ int GeneralEagerBestFirstSearch::step() {
             }
             search_progress.inc_evaluated();
 
+            // Note that we cannot use succ_node.get_g() here as the
+            // node is not yet open. Furthermore, we cannot open it
+            // before having checked that we're not in a dead end. The
+            // division of responsibilities is a bit tricky here -- we
+            // may want to refactor this later.
             open_list->evaluate(node.get_g() + op->get_cost(), is_preferred);
             bool dead_end = open_list->is_dead_end() && open_list->dead_end_is_reliable();
             if (dead_end) {
@@ -131,7 +136,7 @@ int GeneralEagerBestFirstSearch::step() {
             int succ_h = heuristics[0]->get_heuristic();
             succ_node.open(succ_h, node, op);
 
-			open_list->insert(succ_node.get_state_buffer());
+            open_list->insert(succ_node.get_state_buffer());
             search_progress.check_h_progress(succ_node.get_g());
 
         } else if(succ_node.get_g() > node.get_g() + op->get_cost()) {
