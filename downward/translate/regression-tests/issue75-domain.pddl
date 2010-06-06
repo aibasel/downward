@@ -5,7 +5,6 @@
 :strips
 )
 (:predicates
-(FOO)
 (time-now_t1)
 (at_truck1_l2)
 (at_truck1_l1)
@@ -17,7 +16,6 @@
 (delivered_package1_l2_t2)
 (delivered_package1_l2_t1)
 (in_package1_truck1_a1)
-(in_package1_truck1_a2)
 (at_package1_l1)
 (at_package1_l3)
 (time-now_t2)
@@ -41,7 +39,6 @@
 (time-now_t6)
 (at_package1_l2)
 (at_truck1_l3)
-(free_a2_truck1)
 (free_a1_truck1)
 (time-now_t0)
 )
@@ -825,38 +822,6 @@
 (not (time-now_t2))
 )
 )
-(:action LOAD_PACKAGE1_TRUCK1_A2_L3
-:parameters ()
-:precondition
-(and
-(at_truck1_l3)
-(at_package1_l3)
-(free_a2_truck1)
-(free_a1_truck1)
-)
-:effect
-(and
-(in_package1_truck1_a2)
-(not (free_a2_truck1))
-(not (at_package1_l3))
-)
-)
-(:action LOAD_PACKAGE1_TRUCK1_A2_L1
-:parameters ()
-:precondition
-(and
-(at_truck1_l1)
-(at_package1_l1)
-(free_a2_truck1)
-(free_a1_truck1)
-)
-:effect
-(and
-(in_package1_truck1_a2)
-(not (free_a2_truck1))
-(not (at_package1_l1))
-)
-)
 (:action LOAD_PACKAGE1_TRUCK1_A1_L3
 :parameters ()
 :precondition
@@ -1355,51 +1320,6 @@
 (not (time-now_t1))
 )
 )
-(:action UNLOAD_PACKAGE1_TRUCK1_A2_L3
-:parameters ()
-:precondition
-(and
-(at_truck1_l3)
-(in_package1_truck1_a2)
-(free_a1_truck1)
-)
-:effect
-(and
-(at_package1_l3)
-(free_a2_truck1)
-(not (in_package1_truck1_a2))
-)
-)
-(:action UNLOAD_PACKAGE1_TRUCK1_A2_L2
-:parameters ()
-:precondition
-(and
-(at_truck1_l2)
-(in_package1_truck1_a2)
-(free_a1_truck1)
-)
-:effect
-(and
-(at_package1_l2)
-(free_a2_truck1)
-(not (in_package1_truck1_a2))
-)
-)
-(:action UNLOAD_PACKAGE1_TRUCK1_A2_L1
-:parameters ()
-:precondition
-(and
-(at_truck1_l1)
-(in_package1_truck1_a2)
-(free_a1_truck1)
-)
-:effect
-(and
-(at_package1_l1)
-(free_a2_truck1)
-(not (in_package1_truck1_a2))
-)
-)
 (:action UNLOAD_PACKAGE1_TRUCK1_A1_L3
 :parameters ()
 :precondition
@@ -1440,22 +1360,6 @@
 (at_package1_l1)
 (free_a1_truck1)
 (not (in_package1_truck1_a1))
-)
-)
-(:action LOAD_PACKAGE1_TRUCK1_A2_L2
-:parameters ()
-:precondition
-(and
-(at_truck1_l2)
-(at_package1_l2)
-(free_a2_truck1)
-(free_a1_truck1)
-)
-:effect
-(and
-(in_package1_truck1_a2)
-(not (free_a2_truck1))
-(not (at_package1_l2))
 )
 )
 (:action LOAD_PACKAGE1_TRUCK1_A1_L2

@@ -4,20 +4,21 @@
 ;; This is based on Trucks-Strips #1, with the following modifications:
 ;;
 ;; - Removed everything pertaining to packages 2 and 3.
+;; - Removed atom (foo).
+;; - Changed goal deadline from t3 to t2.
+;; - Removed storage space (if that's what it is) a2.
 
 (define (problem GROUNDED-TRUCK-1)
 (:domain GROUNDED-TRUCKS)
 (:init
-(FOO)
 (time-now_t0)
 (at_package1_l2)
-(free_a2_truck1)
 (free_a1_truck1)
 (at_truck1_l3)
 )
 (:goal
 (and
-(delivered_package1_l3_t3)
+(delivered_package1_l3_t2)
 )
 )
 )
