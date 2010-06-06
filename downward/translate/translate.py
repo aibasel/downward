@@ -26,7 +26,10 @@ import timers
 ALLOW_CONFLICTING_EFFECTS = True
 USE_PARTIAL_ENCODING = True
 DETECT_UNREACHABLE = True
-ADD_IMPLIED_PRECONDITIONS = True
+
+## Setting the following variable to True can cause a severe
+## performance penalty due to weaker relevance analysis (see issue7).
+ADD_IMPLIED_PRECONDITIONS = False
 
 removed_implied_effect_counter = 0
 simplified_effect_condition_counter = 0
