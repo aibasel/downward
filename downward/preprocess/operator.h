@@ -45,6 +45,7 @@ public:
 
   void dump() const;
   void generate_cpp_input(ofstream &outfile) const;
+  int get_cost() const {return cost;}
   string get_name() const {return name;}
   const vector<Prevail> &get_prevail() const {return prevail;}
   const vector<PrePost> &get_pre_post() const {return pre_post;}

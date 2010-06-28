@@ -29,6 +29,7 @@ void DomainTransitionGraph::addTransition(int from, int to, const Operator &op,
 					  int op_index, const Operator::PrePost &pre_post) {
   assert(pre_post.var->get_level() == level && pre_post.post == to);
   Transition trans(to, op_index);
+  trans.cost = op.get_cost();
   Condition &cond = trans.condition;
 
   // Collect operator preconditions.
@@ -77,8 +78,10 @@ void DomainTransitionGraph::addAxTransition(int from, int to, const Axiom &ax,
 bool DomainTransitionGraph::Transition::operator<(const Transition &other) const {
   if (target != other.target)
     return target < other.target;
-  else
+  else if (condition.size() != other.condition.size())
     return condition.size() < other.condition.size();
+  else
+    return cost < other.cost;
 }
 
 void DomainTransitionGraph::finalize() {
@@ -110,6 +113,10 @@ void DomainTransitionGraph::finalize() {
 	    continue;
 	  }
 	  Transition &other_trans = vertices[i][comp];
+      if (other_trans.cost < trans.cost) {
+        comp++;
+        continue; // lower cost transition can't be dominated
+      }
 	  assert(other_trans.target >= trans.target);
 	  if(other_trans.target != trans.target)
 	    break; // transition and all after it have different targets

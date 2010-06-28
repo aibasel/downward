@@ -22,6 +22,7 @@ private:
     bool operator<(const Transition &other) const;
     int target;
     int op;
+    int cost;
     Condition condition;
   };
   typedef vector<Transition> Vertex;
