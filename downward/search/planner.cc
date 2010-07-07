@@ -368,6 +368,9 @@ int main(int argc, const char **argv) {
         delete engine;
     } while (iterative_search);
 
+    char filename[256];
+	sprintf(filename, "grep VmPeak /proc/%d/status", (int)getpid());
+	system(filename);
 }
 
 int save_plan(const vector<const Operator *> &plan) {
