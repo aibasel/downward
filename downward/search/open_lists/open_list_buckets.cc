@@ -2,6 +2,7 @@
 #ifdef OPEN_LISTS_OPEN_LIST_BUCKETS_H
 
 #include <cassert>
+#include "../option_parser.h"
 using namespace std;
 
 /*
@@ -13,6 +14,23 @@ using namespace std;
   there is little point in applying such generalizations before there
   is any need for them.
 */
+
+template<class Entry>
+OpenList<Entry>* 
+BucketOpenList<Entry>::create_open_list(const std::vector<string> &config,
+                                        int start, int &end) {
+
+    std::vector<ScalarEvaluator *> evaluators;
+    bool only_pref_ = false;
+    NamedOptionParser named_option_parser;
+    named_option_parser.add_bool_option("pref_only", &only_pref_, 
+                                        "insert only preferred operators");
+    OptionParser *parser = OptionParser::instance();
+    parser->parse_evals_and_options(config, start, end, evaluators,
+                                    named_option_parser, true);
+
+    return new BucketOpenList<Entry>(evaluators[0], only_pref_);
+}
 
 template<class Entry>
 BucketOpenList<Entry>::BucketOpenList(ScalarEvaluator *eval, bool preferred_only) 
@@ -27,6 +45,9 @@ template<class Entry>
 int BucketOpenList<Entry>::insert(const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
         return 0;
+    if (dead_end) {
+        return 0;
+    }
     int key = last_evaluated_value;
     assert(key >= 0);
     if(key >= buckets.size())
@@ -80,4 +101,8 @@ bool BucketOpenList<Entry>::dead_end_is_reliable() const {
     return dead_end_reliable;
 }
 
+template<class Entry>
+void BucketOpenList<Entry>::get_involved_heuristics(std::set<Heuristic*> &hset) {
+    evaluator->get_involved_heuristics(hset);
+}
 #endif

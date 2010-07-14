@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "heuristic.h"
 #include "globals.h"
@@ -22,6 +24,9 @@ class HMHeuristic : public Heuristic{
 public:
 	HMHeuristic(int _m);
 	virtual ~HMHeuristic();
+    static ScalarEvaluator* 
+    create_heuristic(const std::vector<std::string> &config, 
+                     int start, int &end);
 protected:
 	int MAX_VALUE;
 

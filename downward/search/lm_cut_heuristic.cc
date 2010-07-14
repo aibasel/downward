@@ -2,6 +2,7 @@
 
 #include "globals.h"
 #include "operator.h"
+#include "option_parser.h"
 #include "state.h"
 
 #include <cassert>
@@ -397,3 +398,33 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
    e.g. use a different tie-breaking rule in every round to spread out the
    values a bit.
  */
+
+ScalarEvaluator* 
+LandmarkCutHeuristic::create_heuristic(const std::vector<string> &config,
+                              int start, int &end) {
+    if (config.size() <= start) throw ParseError(start);
+
+    bool use_cache_ = false;
+    int iteration_limit_ = -1;
+
+    // "<name>()" or "<name>(<options>)"
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+
+        if (config[end] != ")") { 
+            NamedOptionParser option_parser;
+            option_parser.add_int_option("iteration_limit", &iteration_limit_, 
+                                         "iteration limit");
+            option_parser.add_bool_option("use_cache", &use_cache_, 
+                                         "use cache");
+            option_parser.parse_options(config, end, end);
+            end ++;
+        }
+        if (config[end] != ")") throw ParseError(end);
+        
+    } else { // "<name>"
+        end = start;
+    }
+
+    return new LandmarkCutHeuristic(iteration_limit_, use_cache_);
+}

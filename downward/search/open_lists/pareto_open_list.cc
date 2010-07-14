@@ -1,10 +1,31 @@
 // HACK! Ignore this if used as a top-level compile target.
 #ifdef OPEN_LISTS_PARETO_OPEN_LIST_H
 
+#include "../option_parser.h"
+
 #include <iostream>
 #include <cassert>
 #include <limits>
 using namespace std;
+
+template<class Entry>
+OpenList<Entry>*
+ParetoOpenList<Entry>::create_open_list(const std::vector<string> &config,
+                                             int start, int &end) {
+    std::vector<ScalarEvaluator *> evaluators;
+    NamedOptionParser option_parser;
+    bool only_pref_ = false;
+    bool state_uniform_ = false;
+    option_parser.add_bool_option("pref_only", &only_pref_, 
+                                  "insert only preferred operators");
+    option_parser.add_bool_option("state_uniform_selection", &state_uniform_, 
+                                  "select uniformly from the candidate *states*");
+    OptionParser *parser = OptionParser::instance();
+    parser->parse_evals_and_options(config, start, end, evaluators,
+                                    option_parser);
+    
+    return new ParetoOpenList<Entry>(evaluators, only_pref_, state_uniform_);
+}
 
 template<class Entry>
 bool ParetoOpenList<Entry>::dominates(const KeyType &v1, const KeyType &v2) {
@@ -153,4 +174,9 @@ bool ParetoOpenList<Entry>::dead_end_is_reliable() const {
     return dead_end_reliable;
 }
 
+template<class Entry>
+void ParetoOpenList<Entry>::get_involved_heuristics(std::set<Heuristic*> &hset) {
+    for (unsigned int i = 0; i < evaluators.size(); i ++)
+        evaluators[i]->get_involved_heuristics(hset);
+}
 #endif

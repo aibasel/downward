@@ -1,6 +1,7 @@
 #include "blind_search_heuristic.h"
 
 #include "globals.h"
+#include "option_parser.h"
 #include "state.h"
 
 BlindSearchHeuristic::BlindSearchHeuristic() {
@@ -29,4 +30,11 @@ int BlindSearchHeuristic::compute_heuristic(const State &state) {
     }
     return 0;
     */
+}
+
+ScalarEvaluator* 
+BlindSearchHeuristic::create_heuristic(const std::vector<string> &config,
+                              int start, int &end) {
+    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    return new BlindSearchHeuristic();
 }

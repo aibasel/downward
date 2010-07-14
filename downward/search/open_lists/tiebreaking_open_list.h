@@ -35,7 +35,7 @@ protected:
 
 public:
     TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
-                        bool preferred_only=false, bool unsafe_pruning=true);
+                        bool preferred_only, bool unsafe_pruning);
     ~TieBreakingOpenList();
 
     // open list interface
@@ -48,6 +48,11 @@ public:
     void evaluate(int g, bool preferred);
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;
+    void get_involved_heuristics(std::set<Heuristic*> &hset);
+    
+    static OpenList<Entry>* 
+    create_open_list(const std::vector<std::string> &config, 
+                     int start, int &end);
 };
 
 #include "tiebreaking_open_list.cc"

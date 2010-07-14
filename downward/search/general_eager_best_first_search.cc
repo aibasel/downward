@@ -2,38 +2,29 @@
 
 #include "globals.h"
 #include "heuristic.h"
+#include "open_list_parser.h"
+#include "option_parser.h"
 #include "successor_generator.h"
+#include "g_evaluator.h"
+#include "sum_evaluator.h"
+#include "open_lists/tiebreaking_open_list.h"
 
 #include <cassert>
 #include <cstdlib>
 #include <set>
 using namespace std;
 
-GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(bool reopen_closed):
+GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(
+    OpenList<state_var_t *> *open,
+    bool reopen_closed, ScalarEvaluator *f_eval):
     reopen_closed_nodes(reopen_closed),
-    open_list(0), f_evaluator(0) {
+    open_list(open), f_evaluator(f_eval) {
 }
 
-GeneralEagerBestFirstSearch::~GeneralEagerBestFirstSearch() {
-}
-
-// TODO: changes this to add_open_list,
-// including type of open list, use of preferred operators, which heuristic to use, etc.
-void GeneralEagerBestFirstSearch::add_heuristic(Heuristic *heuristic,
-  bool use_estimates,
-  bool use_preferred_operators) {
-
-    assert(use_estimates || use_preferred_operators);
-    if (use_estimates || use_preferred_operators) {
-        heuristics.push_back(heuristic);
-    }
-    if (use_estimates) {
-        estimate_heuristics.push_back(heuristic);
-        search_progress.add_heuristic(heuristic);
-    }
-    if(use_preferred_operators) {
-        preferred_operator_heuristics.push_back(heuristic);
-    }
+void
+GeneralEagerBestFirstSearch::set_pref_operator_heuristics(
+    vector<Heuristic *> &heur) {
+    preferred_operator_heuristics = heur;
 }
 
 void GeneralEagerBestFirstSearch::initialize() {
@@ -43,6 +34,31 @@ void GeneralEagerBestFirstSearch::initialize() {
         (reopen_closed_nodes? " with" : " without") << " reopening closed nodes" << endl;
 
     assert(open_list != NULL);
+
+    set<Heuristic*> hset;
+    open_list->get_involved_heuristics(hset);
+    
+    for (set<Heuristic*>::iterator it = hset.begin(); it != hset.end(); it++) {
+        estimate_heuristics.push_back(*it);
+        search_progress.add_heuristic(*it);
+    }
+
+    // add heuristics that are used for preferred operators (in case they are
+    // not also used in the open list)
+    hset.insert(preferred_operator_heuristics.begin(),
+                preferred_operator_heuristics.end()); 
+
+    // add heuristics that are used in the f_evaluator. They are usually also
+    // used in the open list and hence already be included, but we want to be
+    // sure.
+    if (f_evaluator) {
+        f_evaluator->get_involved_heuristics(hset);
+    }
+       
+    for (set<Heuristic*>::iterator it = hset.begin(); it != hset.end(); it++) {
+        heuristics.push_back(*it);
+    }
+
     assert(heuristics.size() > 0);
 
     for (unsigned int i = 0; i < heuristics.size(); i++)
@@ -156,6 +172,8 @@ int GeneralEagerBestFirstSearch::step() {
                 }
                 succ_node.reopen(node, op);
                 heuristics[0]->set_evaluator_value(succ_node.get_h());
+                // TODO: this appears fishy to me. Why is here only heuristic[0]
+                // involved? Is this still feasible in the current version?
 				open_list->evaluate(succ_node.get_g(), is_preferred);
 
                 open_list->insert(succ_node.get_state_buffer());
@@ -220,10 +238,117 @@ void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int>& valu
     }
 }
 
-void GeneralEagerBestFirstSearch::set_f_evaluator(ScalarEvaluator* eval) {
-    f_evaluator = eval;
+SearchEngine* 
+GeneralEagerBestFirstSearch::create_engine(const vector<string> &config,
+                                           int start, int &end) {
+    if (config[start + 1] != "(") throw ParseError(start + 1);
+
+    OpenListParser<state_var_t *> *p = OpenListParser<state_var_t *>::instance();
+    OpenList<state_var_t *> *open = p->parse_open_list(config, start + 2, end);
+
+    end ++;
+    if (end >= config.size()) throw ParseError(end);
+   
+    // parse options
+    bool reopen_closed = false; 
+    ScalarEvaluator* f_eval = 0;
+    vector<Heuristic *> preferred_list;
+
+    if (config[end] != ")") {
+        end ++;
+        NamedOptionParser option_parser;
+        option_parser.add_bool_option("reopen_closed", &reopen_closed,
+                                     "reopen closed nodes");
+        option_parser.add_scalar_evaluator_option("f_evaluator", f_eval,
+                                     "set evaluator for jump statistics");
+        option_parser.add_heuristic_list_option("preferred", 
+            &preferred_list, "use preferred operators of these heuristics");
+
+        option_parser.parse_options(config, end, end);
+        end ++;
+    }
+    if (config[end] != ")") throw ParseError(end);
+    
+    GeneralEagerBestFirstSearch *engine = \
+        new GeneralEagerBestFirstSearch(open, reopen_closed, f_eval);
+    engine->set_pref_operator_heuristics(preferred_list);
+    
+    return engine;
 }
 
-void GeneralEagerBestFirstSearch::set_open_list(OpenList<state_var_t *> *open) {
-    open_list = open;
+SearchEngine* 
+GeneralEagerBestFirstSearch::create_astar_engine(const vector<string> &config,
+    int start, int &end) {
+    if (config[start + 1] != "(") throw ParseError(start + 1);
+
+    ScalarEvaluator* eval = 
+        OptionParser::instance()->parse_scalar_evaluator(config, start + 2, end);
+    end ++;
+    if (config[end] != ")") throw ParseError(end);
+    
+    GEvaluator *g = new GEvaluator();
+    vector<ScalarEvaluator *> sum_evals;
+    sum_evals.push_back(g);
+    sum_evals.push_back(eval);
+    SumEvaluator *f_eval = new SumEvaluator(sum_evals);
+
+    // use eval for tiebreaking
+    std::vector<ScalarEvaluator *> evals;
+    evals.push_back(f_eval);
+    evals.push_back(eval);
+    OpenList<state_var_t *> *open = \
+        new TieBreakingOpenList<state_var_t *>(evals, false, true);
+
+    GeneralEagerBestFirstSearch *engine = \
+        new GeneralEagerBestFirstSearch(open, true, f_eval);
+
+    return engine;
+}
+
+SearchEngine* 
+GeneralEagerBestFirstSearch::create_standard_greedy_engine(const vector<string> &config,
+    int start, int &end) {
+    if (config[start + 1] != "(") throw ParseError(start + 1);
+
+    vector<ScalarEvaluator *> evals;
+    OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
+                                                          end, false, evals);
+    if (evals.empty()) throw ParseError(end);
+    end ++;
+     
+    vector<Heuristic *> preferred_list;
+    int boost = 1000;
+
+    if (config[end] != ")") {
+        end ++;
+        NamedOptionParser option_parser;
+        option_parser.add_heuristic_list_option("preferred", 
+            &preferred_list, "use preferred operators of these heuristics");
+        option_parser.add_int_option("boost", &boost, 
+                                     "boost value for successful sub-open-lists");
+        option_parser.parse_options(config, end, end);
+        end ++;
+    }
+    if (config[end] != ")") throw ParseError(end);
+    
+    OpenList<state_var_t *> *open;
+    if ((evals.size() == 1) && preferred_list.empty()) {
+        open = new StandardScalarOpenList<state_var_t *>(evals[0], false);
+    } else {
+        vector<OpenList<state_var_t *> *> inner_lists;
+        for (int i = 0; i < evals.size(); i++) {
+            inner_lists.push_back(
+                    new StandardScalarOpenList<state_var_t *>(evals[i], false));
+            if (!preferred_list.empty()) {
+                inner_lists.push_back(
+                    new StandardScalarOpenList<state_var_t *>(evals[i], true));
+            }
+        }
+        open = new AlternationOpenList<state_var_t *>(inner_lists, boost);
+    }
+    
+    GeneralEagerBestFirstSearch *engine = \
+        new GeneralEagerBestFirstSearch(open, false, NULL);
+    engine->set_pref_operator_heuristics(preferred_list);
+    return engine;
 }

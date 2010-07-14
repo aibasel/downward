@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "state.h"
+#include "option_parser.h"
 
 #include <algorithm>
 #include <cassert>
@@ -238,4 +239,11 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
 	    mark_helpful_transitions(state, precond_dtg, precond[i].value);
         }
     }
+}
+
+ScalarEvaluator* 
+CGHeuristic::create_heuristic(const std::vector<string> &config,
+                              int start, int &end) {
+    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    return new CGHeuristic();
 }

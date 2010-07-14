@@ -1,6 +1,7 @@
 #include "goal_count_heuristic.h"
 
 #include "globals.h"
+#include "option_parser.h"
 #include "state.h"
 
 GoalCountHeuristic::GoalCountHeuristic() {
@@ -21,4 +22,11 @@ int GoalCountHeuristic::compute_heuristic(const State &state) {
 	    unsatisfied_goal_count++;
     }
     return unsatisfied_goal_count;
+}
+
+ScalarEvaluator* 
+GoalCountHeuristic::create_heuristic(const std::vector<string> &config,
+                              int start, int &end) {
+    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    return new GoalCountHeuristic();
 }

@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "state.h"
+#include "option_parser.h"
 
 #include <algorithm>
 #include <cassert>
@@ -333,4 +334,11 @@ int CyclicCGHeuristic::compute_costs(const State &state) {
         buckets[curr_priority].clear();
     }
     return DEAD_END;
+}
+
+ScalarEvaluator* 
+CyclicCGHeuristic::create_heuristic(const std::vector<string> &config,
+                                    int start, int &end) {
+    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    return new CyclicCGHeuristic();
 }

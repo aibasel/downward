@@ -3,6 +3,7 @@
 
 #include "scalar_evaluator.h"
 
+#include <string>
 #include <vector>
 
 class SumEvaluator : public ScalarEvaluator {
@@ -13,15 +14,18 @@ private:
 	bool dead_end_reliable;
 
 public:
-    SumEvaluator();
+    SumEvaluator(const std::vector<ScalarEvaluator *> &evals);
     ~SumEvaluator();
-
-	void add_evaluator(ScalarEvaluator *eval);
 
 	void evaluate(int g, bool preferred);
 	bool is_dead_end() const;
 	bool dead_end_is_reliable() const;
     int get_value() const;
+    void get_involved_heuristics(std::set<Heuristic*> &hset);
+    
+    static ScalarEvaluator* 
+    create_sum_evaluator(const std::vector<std::string> &config, 
+                         int start, int &end);
 };
 
 #endif

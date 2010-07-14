@@ -1,6 +1,7 @@
 #ifndef CYCLIC_CG_HEURISTIC_H
 #define CYCLIC_CG_HEURISTIC_H
 
+#include<string>
 #include <vector>
 
 #include "heuristic.h"
@@ -122,6 +123,9 @@ public:
     CyclicCGHeuristic();
     ~CyclicCGHeuristic();
     virtual bool dead_ends_are_reliable() {return false;}
+    static ScalarEvaluator* 
+    create_heuristic(const std::vector<std::string> &config, 
+                     int start, int &end);
 };
 
 

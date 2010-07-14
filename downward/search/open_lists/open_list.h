@@ -3,6 +3,11 @@
 
 #include "../evaluator.h"
 
+#include <map>
+#include <string>
+#include <vector>
+
+class ScalarEvaluator;
 
 template<class Entry>
 class OpenList : public Evaluator {

@@ -1,9 +1,48 @@
 // HACK! Ignore this if used as a top-level compile target.
 #ifdef OPEN_LISTS_ALTERNATION_OPEN_LIST_H
 
-#include <iostream>
+#include "../open_list_parser.h"
+
 #include <cassert>
 using namespace std;
+template<class Entry>
+OpenList<Entry>*
+AlternationOpenList<Entry>::create_open_list(const std::vector<string> &config,
+                                             int start, int &end) {
+
+    if (config[start+1] != "(") throw ParseError(start+1);
+    // create sublists
+    vector<OpenList<Entry> *> sublists;
+    end = start + 2;
+    OpenListParser<Entry> *open_list_parser = OpenListParser<Entry>::instance();
+    while (open_list_parser->knows_open_list(config[end])) {
+        OpenList<Entry>* sublist = 
+            open_list_parser->parse_open_list(config, end, end);
+        sublists.push_back(sublist);
+        end ++;
+        if (config[end] == ")")
+            break;
+        if (config[end] != ",") throw ParseError(end);
+        end ++;
+    }
+
+    if (sublists.empty()) throw ParseError(start + 2);
+    // need at least one internal open list
+
+    // parse options
+    int boost = 1000; // TODO make default value visible
+    if (config[end] != ")") {
+        NamedOptionParser option_parser;
+        option_parser.add_int_option("boost", &boost, 
+                                     "boost value for successful sub-open-lists");
+
+        option_parser.parse_options(config, end, end);
+        end ++;
+    }
+    if (config[end] != ")") throw ParseError(end);
+     
+    return new AlternationOpenList<Entry>(sublists, boost);
+}
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
@@ -80,6 +119,12 @@ bool AlternationOpenList<Entry>::is_dead_end() const {
 template<class Entry>
 bool AlternationOpenList<Entry>::dead_end_is_reliable() const {
     return dead_end_reliable;
+}
+
+template<class Entry>
+void AlternationOpenList<Entry>::get_involved_heuristics(std::set<Heuristic*> &hset) {
+    for (unsigned int i = 0; i < open_lists.size(); i++) 
+        open_lists[i]->get_involved_heuristics(hset);
 }
 
 template<class Entry>

@@ -39,8 +39,12 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    AdditiveHeuristic(bool use_cache=false);
+    AdditiveHeuristic(bool use_cache);
     ~AdditiveHeuristic();
+
+    static ScalarEvaluator* 
+    create_heuristic(const std::vector<std::string> &config, 
+                     int start, int &end);
 };
 
 #endif

@@ -22,7 +22,7 @@ protected:
 
 public:
     AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
-            int boost_influence=1000); 
+            int boost_influence); 
     // roughly speaking, boost_influence is how often the boosted queue should be
     // preferred when removing an entry
 
@@ -38,9 +38,13 @@ public:
     void evaluate(int g, bool preferred);
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;
+    void get_involved_heuristics(std::set<Heuristic*> &hset);
     
     int boost_preferred();
     void boost_last_used_list();
+    static OpenList<Entry>* 
+    create_open_list(const std::vector<std::string> &config, 
+                     int start, int &end);
 };
 
 #include "alternation_open_list.cc"

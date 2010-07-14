@@ -17,7 +17,7 @@ using namespace std;
 
 typedef pair<state_var_t*, pair<int, const Operator * > > OpenListEntryEHC;
 
-enum {rank_preferred_first = 1, prune_by_preferred = 2};
+enum PreferredUsage {rank_preferred_first = 1, prune_by_preferred = 2};
 
 class EnforcedHillClimbingSearch : public SearchEngine {
 protected:
@@ -28,7 +28,7 @@ protected:
     bool preferred_contains_eval;
     vector<Heuristic *> preferred_heuristics;
     bool use_preferred;
-    int preferred_usage;
+    PreferredUsage preferred_usage;
 
     bool use_cost_for_bfs;
 
@@ -48,14 +48,15 @@ protected:
     void get_successors(const State &state, vector<const Operator *> &ops);
     void evaluate(const State &parent, const Operator * op, const State &state);
 public:
-    EnforcedHillClimbingSearch();
+    EnforcedHillClimbingSearch(Heuristic *heuristic_, 
+        PreferredUsage preferred_usage_, bool use_cost_for_bfs_);
     virtual ~EnforcedHillClimbingSearch();
+    void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
 
     virtual void statistics() const;
-    virtual void add_heuristic(Heuristic *h, bool use_estimates,
-                               bool use_preferred_operators);
-    void set_preferred_usage(int usage) {preferred_usage = usage;}
-    void set_use_cost_for_bfs(bool use) {use_cost_for_bfs = use;}
+
+    static SearchEngine* create_engine(const vector<string> &config, 
+                                       int start, int &end);
 };
 
 #endif

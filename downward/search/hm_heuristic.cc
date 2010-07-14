@@ -1,5 +1,6 @@
 #include "hm_heuristic.h"
 
+#include "option_parser.h"
 
 #include <cassert>
 #include <limits>
@@ -215,4 +216,17 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple& big_tuple) 
 
     }
     return 0;
+}
+
+ScalarEvaluator* 
+HMHeuristic::create_heuristic(const std::vector<string> &config,
+                              int start, int &end) {
+    if (config[start + 1] != "(") throw ParseError(start+1);
+    end = start + 2;
+    OptionParser *parser = OptionParser::instance();
+    int m = parser->parse_int(config, end, end);
+    end ++;
+    if (config[end] != ")") throw ParseError(end);
+
+    return new HMHeuristic(m);
 }

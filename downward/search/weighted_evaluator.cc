@@ -1,5 +1,10 @@
 #include "weighted_evaluator.h"
 
+#include <cstdlib>
+#include <sstream>
+
+#include "option_parser.h"
+
 WeightedEvaluator::WeightedEvaluator(ScalarEvaluator *eval, int weight) 
     : evaluator(eval), w(weight) {
 }
@@ -25,4 +30,27 @@ int WeightedEvaluator::get_value() const {
     return value;
 }
 
+void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic*> &hset) {
+    evaluator->get_involved_heuristics(hset);
+}
 
+ScalarEvaluator* 
+WeightedEvaluator::create_weighted_evaluator(const std::vector<std::string> &config,
+                               int start, int &end) {
+    if (config[start+1] != "(") throw ParseError(start+1);
+
+    // create evaluator
+    std::vector<ScalarEvaluator *> evals;
+    OptionParser *parser = OptionParser::instance();
+    parser->parse_scalar_evaluator_list(config, start + 2, end,
+                                        true, evals);
+
+    end ++; // on comma
+    end ++; // on weight
+
+    int weight = parser->parse_int(config, end, end);
+    end ++;
+    if (config[end] != ")") throw ParseError(end);
+
+    return new WeightedEvaluator(evals[0], weight);
+}

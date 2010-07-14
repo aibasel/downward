@@ -1,4 +1,5 @@
 #include "pref_evaluator.h"
+#include "option_parser.h"
 
 PrefEvaluator::PrefEvaluator() {
 }
@@ -23,5 +24,12 @@ int PrefEvaluator::get_value() const {
         return 0;
     else
         return 1;
+}
+
+ScalarEvaluator* 
+PrefEvaluator::create_pref_evaluator(const std::vector<std::string> &config,
+                               int start, int &end) {
+    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    return new PrefEvaluator();
 }
 

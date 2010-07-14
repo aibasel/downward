@@ -1,4 +1,5 @@
 #include "g_evaluator.h"
+#include "option_parser.h"
 
 GEvaluator::GEvaluator() {
 }
@@ -22,4 +23,10 @@ int GEvaluator::get_value() const {
     return value;
 }
 
+ScalarEvaluator* 
+GEvaluator::create_g_evaluator(const std::vector<std::string> &config,
+                               int start, int &end) {
+    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    return new GEvaluator();
+}
 

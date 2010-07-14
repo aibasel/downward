@@ -140,6 +140,9 @@ class LandmarkCutHeuristic : public Heuristic {
 public:
     LandmarkCutHeuristic(int _iteration_limit=-1, bool use_cache=false);
     virtual ~LandmarkCutHeuristic();
+    static ScalarEvaluator* 
+    create_heuristic(const std::vector<std::string> &config, 
+                     int start, int &end);
 };
 
 inline int RelaxedOperator::h_max_cost() const {

@@ -6,16 +6,13 @@
 #include "open_lists/tiebreaking_open_list.h"
 #include "pref_evaluator.h"
 
-EnforcedHillClimbingSearch::EnforcedHillClimbingSearch():
-    current_state(*g_initial_state)
+EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(Heuristic *heuristic_,
+    PreferredUsage preferred_usage_, bool use_cost_for_bfs_):
+    heuristic(heuristic_), use_preferred(false), 
+    preferred_usage(preferred_usage_), use_cost_for_bfs(use_cost_for_bfs_),
+    current_state(*g_initial_state), num_ehc_phases(0)
 {
-    heuristic = NULL;
-    use_preferred = false;
-    preferred_usage = prune_by_preferred;
-    num_ehc_phases = 0;
-
-    use_cost_for_bfs = false;
-
+    search_progress.add_heuristic(heuristic_);
     g_evaluator = new GEvaluator();
 }
 
@@ -44,7 +41,9 @@ void EnforcedHillClimbingSearch::initialize() {
     current_g = 0;
     cout << "Conducting Enforced Hill Climbing Search" << endl;
     if (use_preferred) {
-        cout << "Using only preferred operators" << endl;
+        cout << "Using preferred operators for "
+             << (preferred_usage == rank_preferred_first ? "ranking successors"
+                                                         : "pruning") << endl;
     }
 
     SearchNode node = search_space.get_node(current_state);
@@ -65,7 +64,7 @@ void EnforcedHillClimbingSearch::initialize() {
         vector<ScalarEvaluator *> evals;
         evals.push_back(g_evaluator);
         evals.push_back(new PrefEvaluator);
-        open_list = new TieBreakingOpenList<OpenListEntryEHC>(evals, false);
+        open_list = new TieBreakingOpenList<OpenListEntryEHC>(evals, false, true);
     }
 }
 
@@ -212,22 +211,64 @@ void EnforcedHillClimbingSearch::statistics() const {
         pair<int, pair<int, int> > p = *it;
         cout << "EHC phases of depth "<< p.first << " : " << p.second.first << " - Avg. Expansions: " << (double) p.second.second / (double) p.second.first << endl;
     }
-
 }
 
-void EnforcedHillClimbingSearch::add_heuristic(Heuristic *h, bool use_estimates,
-                           bool use_preferred_operators) {
-    if (use_estimates) {
-        if (heuristic != NULL) {
-            cerr << "Only one heuristic for enforced hill climbing. Ignoring last." << endl;
-        }
-        heuristic = h;
-        preferred_contains_eval = use_preferred_operators;
-        search_progress.add_heuristic(h);
-    }
-
-    if (use_preferred_operators) {
+void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
+    vector<Heuristic *> &heur) {
+    preferred_heuristics = heur;
+    if (heur.empty()) {
         use_preferred = true;
-        preferred_heuristics.push_back(h);
+    } else if (find( heur.begin(), heur.end(), heuristic) != heur.end()) {
+        preferred_contains_eval = true;
     }
 }
+
+
+SearchEngine* 
+EnforcedHillClimbingSearch::create_engine(const vector<string> &config,
+                                           int start, int &end) {
+    if (config[start + 1] != "(") throw ParseError(start + 1);
+    Heuristic *h = \
+        OptionParser::instance()->parse_heuristic(config, start + 2, end);
+    end ++;
+
+    if (end >= config.size()) throw ParseError(end);
+   
+    // parse options
+
+    string pref_usage = "prune_by_preferred";
+    bool use_cost_for_bfs_ = false;
+    vector<Heuristic *> preferred_list;
+
+    if (config[end] != ")") {
+        end ++;
+        NamedOptionParser option_parser;
+        option_parser.add_bool_option("bfs_use_cost", 
+            &use_cost_for_bfs_, "use cost for bfs");
+        option_parser.add_string_option("preferred_usage", 
+            &pref_usage, 
+            "preferred operator usage (rank_preferred_first or prune_by_preferred)");
+        option_parser.add_heuristic_list_option("preferred", 
+            &preferred_list, "use preferred operators of these heuristics");
+
+        option_parser.parse_options(config, end, end);
+        end ++;
+    }
+    if (config[end] != ")") throw ParseError(end);
+   
+    PreferredUsage preferred_usage_ = prune_by_preferred;
+    if (pref_usage == "rank_preferred_first") {
+        preferred_usage_ = rank_preferred_first;
+    } else if (pref_usage != "prune_by_preferred") {
+        cerr << "preferred_usage must be \"rank_preferred_first\" or "
+             << "\"prune_by_preferred\"" << endl;
+        exit(2);
+    }
+    
+    EnforcedHillClimbingSearch *engine = \
+        new EnforcedHillClimbingSearch(h, preferred_usage_, use_cost_for_bfs_);
+    engine->set_pref_operator_heuristics(preferred_list);
+    
+    return engine;
+}
+

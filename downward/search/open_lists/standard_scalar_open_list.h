@@ -30,7 +30,7 @@ protected:
 
 public:
     StandardScalarOpenList(ScalarEvaluator *eval, 
-                           bool preferred_only=false);
+                           bool preferred_only);
     ~StandardScalarOpenList();
     
     int insert(const Entry &entry);
@@ -41,6 +41,11 @@ public:
     void evaluate(int g, bool preferred);
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;
+    void get_involved_heuristics(std::set<Heuristic*> &hset);
+    
+    static OpenList<Entry>* 
+    create_open_list(const std::vector<std::string> &config, 
+                     int start, int &end);
 };
 
 #include "standard_scalar_open_list.cc"

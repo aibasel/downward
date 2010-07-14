@@ -19,12 +19,13 @@ typedef pair<state_var_t *, const Operator *> OpenListEntryLazy;
 
 class GeneralLazyBestFirstSearch: public SearchEngine {
 protected:
+    OpenList<OpenListEntryLazy> *open_list;
+
     // Search Behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
     int bound;
     enum {original, pref_first, shuffled} succ_mode;
 
-    OpenList<OpenListEntryLazy> *open_list;
     vector<Heuristic *> heuristics;
     vector<Heuristic *> preferred_operator_heuristics;
     vector<Heuristic *> estimate_heuristics;
@@ -36,6 +37,7 @@ protected:
 
     SearchProgress search_progress;
 
+    void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     virtual void initialize();
     virtual int step();
 
@@ -44,19 +46,23 @@ protected:
 
     void reward_progress();
 
-    void set_open_list(OpenList<OpenListEntryLazy> *open);
     void get_successor_operators(vector<const Operator *> &ops);
 public:
 
-    GeneralLazyBestFirstSearch(bool reopen_closed);
+    GeneralLazyBestFirstSearch(OpenList<OpenListEntryLazy> *open,
+                               bool reopen_closed);
     virtual ~GeneralLazyBestFirstSearch();
-
-    virtual void add_heuristic(Heuristic *heuristic, bool use_estimates,
-                                   bool use_preferred_operators);
 
     virtual void statistics() const;
     void set_bound(int b) {bound = b;}
     int get_bound() {return bound;}
+    
+    static SearchEngine* create_engine(const std::vector<std::string> &config, 
+                                         int start, int &end);
+    static SearchEngine* create_standard_greedy_engine(
+        const std::vector<std::string> &config, int start, int &end);
+    static SearchEngine* create_weighted_astar_engine(
+        const std::vector<std::string> &config, int start, int &end);
 };
 
 #endif

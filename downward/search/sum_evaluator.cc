@@ -2,14 +2,13 @@
 
 #include <limits>
 
-SumEvaluator::SumEvaluator() {
+#include "option_parser.h"
+
+SumEvaluator::SumEvaluator(const std::vector<ScalarEvaluator *> &evals) 
+: evaluators(evals) {
 }
 
 SumEvaluator::~SumEvaluator(){
-}
-
-void SumEvaluator::add_evaluator(ScalarEvaluator *eval) {
-    evaluators.push_back(eval);
 }
 
 void SumEvaluator::evaluate(int g, bool preferred) {
@@ -46,4 +45,27 @@ int SumEvaluator::get_value() const {
     return value;
 }
 
+void SumEvaluator::get_involved_heuristics(std::set<Heuristic*> &hset) {
+    for (unsigned int i = 0; i < evaluators.size(); i++ )
+        evaluators[i]->get_involved_heuristics(hset);
+}
+
+ScalarEvaluator* 
+SumEvaluator::create_sum_evaluator(const std::vector<std::string> &config,
+                               int start, int &end) {
+    if (config[start+1] != "(") throw ParseError(start+1);
+
+    // create evaluators
+    std::vector<ScalarEvaluator *> evals;
+    OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2, 
+                                                          end, false, evals);
+
+    if (evals.empty()) throw ParseError(end);
+    // need at least one evaluator
+
+    end ++;
+    if (config[end] != ")") throw ParseError(end);
+
+    return new SumEvaluator(evals);
+}
 

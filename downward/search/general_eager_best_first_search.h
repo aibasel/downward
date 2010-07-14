@@ -22,8 +22,8 @@ class GeneralEagerBestFirstSearch : public SearchEngine {
     OpenList<state_var_t *> *open_list;
     ScalarEvaluator *f_evaluator;
 
-
 	SearchProgress search_progress;
+
 protected:
     int step();
     pair<SearchNode, bool> fetch_next_node();
@@ -38,17 +38,21 @@ protected:
     // should disappear into the open list
 
     virtual void initialize();
-    void set_f_evaluator(ScalarEvaluator *eval);
-    void set_open_list(OpenList<state_var_t *> *open);
 
 public:
-    GeneralEagerBestFirstSearch(bool reopen_closed);
-    ~GeneralEagerBestFirstSearch();
-    void add_heuristic(Heuristic *heuristic, bool use_estimates,
-                               bool use_preferred_operators);
+    GeneralEagerBestFirstSearch(OpenList<state_var_t *> *open, bool reopen_closed, 
+        ScalarEvaluator *f_eval);
+    void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     void statistics() const;
 
     void dump_search_space();
+
+    static SearchEngine* create_engine(const std::vector<std::string> &config, 
+                                         int start, int &end);
+    static SearchEngine* create_astar_engine(const std::vector<std::string> &config, 
+                                         int start, int &end);
+    static SearchEngine* create_standard_greedy_engine(
+        const std::vector<std::string> &config, int start, int &end);
 };
 
 #endif

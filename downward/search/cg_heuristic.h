@@ -2,6 +2,7 @@
 #define CG_HEURISTIC_H
 
 #include "heuristic.h"
+#include<string>
 
 class DomainTransitionGraph;
 class State;
@@ -20,6 +21,10 @@ public:
     CGHeuristic();
     ~CGHeuristic();
     virtual bool dead_ends_are_reliable() {return false;}
+    
+    static ScalarEvaluator* 
+    create_heuristic(const std::vector<std::string> &config, 
+                     int start, int &end);
 };
 
 #endif

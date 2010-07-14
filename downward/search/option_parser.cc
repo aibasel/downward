@@ -1,0 +1,358 @@
+#include "option_parser.h"
+
+#include "heuristic.h"
+
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+OptionParser* OptionParser::instance_ = 0;
+
+OptionParser* OptionParser::instance() {
+    if( instance_ == 0 ) 
+        instance_ = new OptionParser(); 
+    return instance_;
+}
+
+void OptionParser::register_search_engine(string key, 
+        SearchEngine* func(const vector<string> &, int, int&)) {
+        engine_map[key] = func;
+}
+
+void OptionParser::register_scalar_evaluator(string key, 
+    ScalarEvaluator* func(const vector<string> &, int, int&)) {
+    scalar_evaluator_map[key] = func;
+}
+
+ScalarEvaluator* 
+OptionParser::parse_scalar_evaluator(const vector<string> &input, 
+                                     int start, int & end) {
+    // predefined shortcut
+    map<string, Heuristic*>::iterator iter;
+    iter = predefined_heuristics.find(input[start]);
+    if (iter != predefined_heuristics.end())
+        return (ScalarEvaluator*) iter->second;
+   
+    // scalar evaluater definition
+    map<string, ScalarEvalCreatorFunc>::iterator it;
+    it = scalar_evaluator_map.find(input[start]);
+    if (it == scalar_evaluator_map.end()) throw ParseError(start);
+    return it->second(input, start, end);
+}
+
+Heuristic* OptionParser::parse_heuristic(const vector<string> &input, 
+                                         int start, int & end) {
+    ScalarEvaluator* eval = parse_scalar_evaluator(input, start, end);
+    Heuristic *h = dynamic_cast<Heuristic *>(eval); // HACK?
+    if (h == 0) throw ParseError(start);
+    return h;
+}
+
+bool OptionParser::knows_scalar_evaluator(string name) {
+    return (scalar_evaluator_map.find(name) != scalar_evaluator_map.end() ||
+            predefined_heuristics.find(name) != predefined_heuristics.end());
+}
+
+SearchEngine* OptionParser::parse_search_engine(const vector<string> &input, 
+    int start, int & end) {
+
+    map<string, EngineCreatorFunc>::iterator it;
+    it = engine_map.find(input[start]);
+    if (it == engine_map.end()) throw ParseError(start);
+    return it->second(input, start, end);
+}
+    
+void OptionParser::predefine_heuristic(const vector<string> &input) {
+    string name = input[0];
+    if (knows_scalar_evaluator(name))
+        throw ParseError(0);
+    if (input[1].compare("=") != 0) 
+        throw ParseError(1);
+    int end = 2;
+    ScalarEvaluator* heur = parse_scalar_evaluator(input, 2, end);
+    predefined_heuristics[name] = (Heuristic*) heur;
+}
+
+// sets "end" on the last position of the last scalar evaluator
+// in the list.
+// if the list does not contain any scalar evaluator then end=start
+void
+OptionParser::parse_scalar_evaluator_list(const vector<string> &input, 
+                                      int start, int & end, bool only_one_eval,
+                                      vector<ScalarEvaluator *> &evals) {
+    end = start;
+    bool break_loop = false;
+    while (knows_scalar_evaluator(input[end])) {
+        if (only_one_eval && evals.size() > 0)
+            throw ParseError(end);
+        ScalarEvaluator* eval = 
+            parse_scalar_evaluator(input, end, end);
+        evals.push_back(eval);
+        end ++;
+        if (input[end] != ",") {
+            break_loop = true;
+            break;
+        }
+        end ++;
+    }
+    if (!evals.empty()) {
+        end --;
+        if (!break_loop) {
+            end --;
+        }
+    }
+}
+
+void OptionParser::parse_heuristic_list(const vector<string> &input, int start,
+                                        int & end, bool only_one_eval,
+                                        vector<Heuristic *> &evals) {
+    end = start;
+    bool break_loop = false;
+    while (knows_scalar_evaluator(input[end])) {
+        if (only_one_eval && evals.size() > 0)
+            throw ParseError(end);
+        Heuristic* heur = 
+            parse_heuristic(input, end, end);
+        evals.push_back(heur);
+        end ++;
+        if (input[end] != ",") {
+            break_loop = true;
+            break;
+        }
+        end ++;
+    }
+    if (!evals.empty()) {
+        end --;
+        if (!break_loop) {
+            end --;
+        }
+    }
+}
+
+// helper method for simple configs that may have the
+// form "<name>" or "<name>()" (e.g. "ff" or "ff()" for the
+// ff heuristic) 
+void 
+OptionParser::set_end_for_simple_config(const vector<string> &config, 
+                                        int start, int &end) {
+    if (config.size() <= start) throw ParseError(start);
+
+    // "<name>()"
+    if (config.size() > start + 2 && config[start + 1] == "(" && 
+        config[start + 2] == ")") {
+        end = start + 2;
+    } else { // "<name>"
+        end = start;
+    }
+    return;
+}
+
+/* Helper for heuristics that use only one optional argument which
+   is use_cache. These heuristics can also be called using only their
+   name, e.g. ff for ff().
+*/
+void OptionParser::parse_simple_heuristic(const vector<string> &config, 
+                                         int start, int &end, bool &use_cache) {
+    if (config.size() <= start) throw ParseError(start);
+
+    // "<name>()" or "<name>(use_cache=...)"
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+
+        if (config[end] != ")") { 
+            NamedOptionParser option_parser;
+            option_parser.add_bool_option("use_cache", &use_cache, 
+                                         "use cache");
+            option_parser.parse_options(config, end, end);
+            end ++;
+        }
+        if (config[end] != ")") throw ParseError(end);
+        
+    } else { // "<name>"
+        end = start;
+    }
+    return;
+
+}
+
+int OptionParser::parse_int(const vector<string> &config, 
+                             int start, int &end) {
+    start = end;
+    int val = atoi(config[end].c_str());
+    if (val == 0 && config[end] != "0") throw ParseError(end);
+   
+    // check that there are no additional characters
+    ostringstream temp;
+    temp << val;
+    if (temp.str() != config[end]) throw ParseError(end);
+    return val;
+}
+
+void OptionParser::parse_evals_and_options(const vector<string> &config, 
+                                 int start, int &end,
+                                 vector<ScalarEvaluator *> &evaluators, 
+                                 NamedOptionParser &option_parser,
+                                 bool only_one_eval
+                               ) {
+    if (config[start+1] != "(") throw ParseError(start+1);
+    // create evaluators
+    parse_scalar_evaluator_list(config, start + 2, end,
+                                only_one_eval, evaluators);
+
+    if (evaluators.empty()) throw ParseError(end);
+    // need at least one scalar evaluator (e.g. a heuristic)
+
+    // parse options
+    end ++;
+    if (config[end] != ")") {
+        if (config[end] != ",") throw ParseError(end);
+        end ++;
+        option_parser.parse_options(config, end, end);
+        end ++;
+    }
+    if (config[end] != ")") throw ParseError(end);
+}
+
+void 
+NamedOptionParser::add_bool_option(string name, bool *var, string desc) {
+    bool_options[name] = var;
+    help[name] = "bool " + name + " " + desc;
+    // TODO: add default value to help string
+}
+
+void 
+NamedOptionParser::add_string_option(string name, string *var, string desc) {
+    str_options[name] = var;
+    help[name] = "string " + name + " " + desc;
+    // TODO: add default value to help string
+}
+
+void 
+NamedOptionParser::add_int_option(string name, int *var, string desc) {
+    int_options[name] = var;
+    help[name] = "int " + name + " " + desc;
+    // TODO: add default value to help string
+}
+
+void 
+NamedOptionParser::add_scalar_evaluator_option(string name, 
+    ScalarEvaluator *var, string desc) {
+    scalar_evaluator_options[name] = var;
+    help[name] = "scalar evaluator " + name + " " + desc;
+}
+
+void 
+NamedOptionParser::add_heuristic_list_option(string name, 
+    vector<Heuristic *> *var, string desc) {
+    heuristic_list_options[name] = var;
+    help[name] = "heuristic list " + name + " " + desc;
+}
+
+void
+NamedOptionParser::parse_options(const vector<string> &config, 
+                                  int start, int & end) {
+    bool first_option = true;
+    end = start;
+    while (first_option || config[end] == ",") {
+        if (first_option) {
+            first_option = false;
+        } else {
+            end ++;
+        }
+
+        if (bool_options.count(config[end]) > 0) {
+            parse_bool_option(config, end, end);
+        } else if (str_options.count(config[end]) > 0) {
+            parse_string_option(config, end, end);
+        } else if (int_options.count(config[end]) > 0) {
+            parse_int_option(config, end, end);
+        } else if (scalar_evaluator_options.count(config[end]) > 0) {
+            parse_scalar_evaluator_option(config, end, end);
+        } else if (heuristic_list_options.count(config[end]) > 0) {
+            parse_heuristic_list_option(config, end, end);
+        } else {
+            throw ParseError(end);
+        }
+        end ++;
+    }
+    end --;
+}
+
+void
+NamedOptionParser::parse_bool_option(const vector<string> &config, 
+                                int start, int &end) {
+    end = start;
+    bool *val = bool_options[config[end]];
+    end ++;
+    if (config[end] != "=") throw ParseError(end);
+    end ++;
+    if (config[end] == "true") {
+        *val = true;
+    } else if (config[end] == "false") {
+        *val = false;
+    } else {
+        throw ParseError(end);
+    }
+}
+
+void
+NamedOptionParser::parse_string_option(const vector<string> &config, 
+                                int start, int &end) {
+    end = start;
+    string *val = str_options[config[end]];
+    end ++;
+    if (config[end] != "=") throw ParseError(end);
+    end ++;
+    *val = config[end];
+}
+
+void
+NamedOptionParser::parse_int_option(const vector<string> &config, 
+                                int start, int &end) {
+    end = start;
+    int *val = int_options[config[end]];
+    end ++;
+    if (config[end] != "=") throw ParseError(end);
+    end ++;
+
+    OptionParser *parser = OptionParser::instance();
+    *val = parser->parse_int(config, end, end);
+}
+
+void
+NamedOptionParser::parse_scalar_evaluator_option(const vector<string> &config, 
+                                int start, int &end) {
+    end = start;
+    ScalarEvaluator *val = scalar_evaluator_options[config[end]];
+    end ++;
+    if (config[end] != "=") throw ParseError(end);
+    end ++;
+
+    OptionParser *parser = OptionParser::instance();
+    val = parser->parse_scalar_evaluator(config, end, end);
+}
+
+void
+NamedOptionParser::parse_heuristic_list_option(
+    const vector<string> &config, int start, int &end) {
+    end = start;
+    vector<Heuristic *> *val = 
+        heuristic_list_options[config[end]];
+    end ++;
+    if (config[end] != "=") throw ParseError(end);
+    end ++;
+    OptionParser *parser = OptionParser::instance();
+
+    if (config[end] == "(") {
+        end ++;
+        parser->parse_heuristic_list(config, end, end, false, *val);
+        end ++;
+        if (config[end] != ")") throw ParseError(end);
+    } else {
+        parser->parse_heuristic_list(config, end, end, true, *val);
+    }
+}

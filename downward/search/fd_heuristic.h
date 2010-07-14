@@ -18,6 +18,9 @@ protected:
 public:
     FinkbeinerDraegerHeuristic();
     ~FinkbeinerDraegerHeuristic();
+    static ScalarEvaluator* 
+    create_heuristic(const std::vector<std::string> &config, 
+                     int start, int &end);
 };
 
 #endif

@@ -11,7 +11,7 @@
 using namespace std;
 
 OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref) 
-	: open(new BucketOpenList<OpenListEntry>(heur)) {
+	: open(new BucketOpenList<OpenListEntry>(heur, false)) {
     heuristic = heur;
     only_preferred_operators = only_pref;
     priority = 0;
@@ -203,6 +203,48 @@ int BestFirstSearchEngine::fetch_next_state() {
     current_state = State(*current_predecessor, *current_operator);
 
     return IN_PROGRESS;
+}
+
+SearchEngine* 
+BestFirstSearchEngine::create_engine(const vector<string> &config,
+    int start, int &end) {
+    if (config[start + 1] != "(") throw ParseError(start + 1);
+
+    vector<Heuristic *> evals;
+    OptionParser::instance()->parse_heuristic_list(config, start + 2,
+                                                   end, false, evals);
+    if (evals.empty()) throw ParseError(end);
+    end ++;
+     
+    vector<Heuristic *> preferred_list;
+
+    if (config[end] != ")") {
+        end ++;
+        NamedOptionParser option_parser;
+        option_parser.add_heuristic_list_option("preferred", 
+            &preferred_list, "use preferred operators of these heuristics");
+        option_parser.parse_options(config, end, end);
+        end ++;
+    }
+    if (config[end] != ")") throw ParseError(end);
+    
+    BestFirstSearchEngine *engine = new BestFirstSearchEngine();
+    
+    set<Heuristic*> hset;
+    set<Heuristic*> pset;
+    hset.insert(evals.begin(), evals.end()); 
+    pset.insert(preferred_list.begin(), preferred_list.end()); 
+
+    for (unsigned int i = 0; i < evals.size(); i++) {
+        engine->add_heuristic(evals[i], true, pset.count(evals[i]));
+    }
+    for (unsigned int i = 0; i < preferred_list.size(); i++) {
+        if (hset.count(preferred_list[0]) == 0) {
+            engine->add_heuristic(evals[i], false, true);
+        }
+    }
+
+    return engine;
 }
 
 OpenListInfo *BestFirstSearchEngine::select_open_queue() {

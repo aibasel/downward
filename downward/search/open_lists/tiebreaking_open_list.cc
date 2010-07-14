@@ -4,12 +4,33 @@
 #include <iostream>
 #include <cassert>
 #include <limits>
+#include "../scalar_evaluator.h"
+#include "../option_parser.h"
 using namespace std;
 
 /*
   Bucket-based implementation of a open list.
   Nodes with identical heuristic value are expanded in FIFO order.
 */
+
+template<class Entry>
+OpenList<Entry>*
+TieBreakingOpenList<Entry>::create_open_list(const std::vector<string> &config,
+                                             int start, int &end) {
+    std::vector<ScalarEvaluator *> evaluators;
+    NamedOptionParser option_parser;
+    bool only_pref_ = false;
+    bool allow_unsafe_ = true;
+    option_parser.add_bool_option("pref_only", &only_pref_, 
+                                  "insert only preferred operators");
+    option_parser.add_bool_option("unsafe_pruning", &allow_unsafe_, 
+                                  "allow unsafe pruning when the main evaluator regards a state a dead end");
+    OptionParser *parser = OptionParser::instance();
+    parser->parse_evals_and_options(config, start, end, evaluators,
+                                    option_parser);
+        
+    return new TieBreakingOpenList<Entry>(evaluators, only_pref_, allow_unsafe_);
+}
 
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
@@ -106,4 +127,10 @@ int TieBreakingOpenList<Entry>::dimension() const {
     return evaluators.size();
 }
 
+template<class Entry>
+void TieBreakingOpenList<Entry>::get_involved_heuristics(std::set<Heuristic*> &hset) {
+   for (unsigned int i = 0; i < evaluators.size(); i++) {
+        evaluators[i]->get_involved_heuristics(hset);
+   }
+}
 #endif

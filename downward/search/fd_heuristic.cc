@@ -2,6 +2,7 @@
 #include "fd_heuristic.h"
 #include "globals.h"
 #include "operator.h"
+#include "option_parser.h"
 #include "state.h"
 #include "timer.h"
 #include "variable_order_finder.h"
@@ -155,4 +156,11 @@ int FinkbeinerDraegerHeuristic::compute_heuristic(const State &state) {
         }
     }
     return cost;
+}
+
+ScalarEvaluator* 
+FinkbeinerDraegerHeuristic::create_heuristic(const std::vector<string> &config,
+                              int start, int &end) {
+    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    return new FinkbeinerDraegerHeuristic();
 }
