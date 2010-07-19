@@ -106,8 +106,9 @@ int main(int argc, const char **argv) {
     cout << "Total time: " << g_timer << endl;
     
     char filename[256];
-	sprintf(filename, "grep VmPeak /proc/%d/status", (int)getpid());
-	system(filename);
+    sprintf(filename, "grep VmPeak /proc/%d/status", (int)getpid());
+    int ignore_me = system(filename);
+    (void) ignore_me;
 
     return engine->found_solution() ? 0 : 1;
 }
