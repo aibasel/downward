@@ -113,10 +113,10 @@ void DomainTransitionGraph::finalize() {
 	    continue;
 	  }
 	  Transition &other_trans = vertices[i][comp];
-      if (other_trans.cost < trans.cost) {
-        comp++;
-        continue; // lower cost transition can't be dominated
-      }
+          if (other_trans.cost < trans.cost) {
+              comp++;
+              continue; // lower cost transition can't be dominated
+          }
 	  assert(other_trans.target >= trans.target);
 	  if(other_trans.target != trans.target)
 	    break; // transition and all after it have different targets
