@@ -29,7 +29,6 @@ bool peek_magic(istream &in, string magic) {
   string word;
   in >> word;
   bool result = (word == magic);
-  in.putback('\n');
   for(int i = word.size() - 1; i >= 0; i--)
     in.putback(word[i]);
   return result;
