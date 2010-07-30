@@ -245,5 +245,5 @@ ScalarEvaluator*
 CGHeuristic::create_heuristic(const std::vector<string> &config,
                               int start, int &end) {
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    return new CGHeuristic();
+    return new CGHeuristic;
 }
