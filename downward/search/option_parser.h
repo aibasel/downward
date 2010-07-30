@@ -103,8 +103,6 @@ public:
                                      std::vector<ScalarEvaluator *> &evals);
     void set_end_for_simple_config(const std::vector<std::string> &config, 
                                      int start, int &end);
-    void parse_simple_heuristic(const std::vector<std::string> &config, 
-                                     int start, int &end, bool &use_cache); 
     void parse_evals_and_options(const std::vector<std::string> &config, 
                      int start, int &end,
                      std::vector<ScalarEvaluator *> &evaluators, 

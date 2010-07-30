@@ -20,23 +20,13 @@ class Heuristic : public ScalarEvaluator {
 
     std::vector<const Operator *> preferred_operators;
 
-    struct EvaluationInfo {
-	EvaluationInfo() {heuristic = NOT_INITIALIZED;}
-	EvaluationInfo(int heur, const std::vector<const Operator *> &pref)
-	    : heuristic(heur), preferred_operators(pref) {}
-	int heuristic;
-	std::vector<const Operator *> preferred_operators;
-    };
-
-    bool use_cache;
-    std::map<State, EvaluationInfo> state_cache;
 protected:
     enum {DEAD_END = -1};
     virtual void initialize() {}
     virtual int compute_heuristic(const State &state) = 0;
     void set_preferred(const Operator *op);
 public:
-    Heuristic(bool use_cache=false);
+    Heuristic();
     virtual ~Heuristic();
 
     void evaluate(const State &state);

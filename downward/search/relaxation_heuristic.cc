@@ -12,8 +12,7 @@ using namespace std;
 using namespace __gnu_cxx;
 
 // construction and destruction
-RelaxationHeuristic::RelaxationHeuristic(bool use_cache)
-    : Heuristic(use_cache) {
+RelaxationHeuristic::RelaxationHeuristic() {
 }
 
 RelaxationHeuristic::~RelaxationHeuristic() {

@@ -138,7 +138,7 @@ class LandmarkCutHeuristic : public Heuristic {
     void mark_goal_plateau(RelaxedProposition *subgoal);
     void validate_h_max() const;
 public:
-    LandmarkCutHeuristic(int _iteration_limit=-1, bool use_cache=false);
+    LandmarkCutHeuristic(int _iteration_limit=-1);
     virtual ~LandmarkCutHeuristic();
     static ScalarEvaluator* 
     create_heuristic(const std::vector<std::string> &config, 

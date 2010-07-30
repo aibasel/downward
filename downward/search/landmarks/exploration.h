@@ -145,7 +145,7 @@ public:
 					    bool compute_lvl_ops);
     std::vector<const Operator *> exported_ops; // only needed for landmarks count heuristic ha
     int plan_for_disj(std::vector<std::pair<int, int> >& disj_goal, const State& state);
-    Exploration(bool use_cache=false);
+    Exploration();
     ~Exploration();
     int compute_ff_heuristic_with_excludes(const State &state,
             const vector<pair<int, int> >& excluded_props,

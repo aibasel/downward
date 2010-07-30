@@ -20,8 +20,7 @@ using namespace __gnu_cxx;
 */
 
 // construction and destruction
-HSPMaxHeuristic::HSPMaxHeuristic(bool use_cache) 
-    : RelaxationHeuristic(use_cache) {
+HSPMaxHeuristic::HSPMaxHeuristic() {
     reachable_queue_start = 0;
     reachable_queue_read_pos = 0;
     reachable_queue_write_pos = 0;
@@ -145,9 +144,7 @@ int HSPMaxHeuristic::compute_heuristic(const State &state) {
 
 ScalarEvaluator* 
 HSPMaxHeuristic::create_heuristic(const std::vector<string> &config,
-                              int start, int &end) {
-    bool usecache = false;
-    OptionParser::instance()->parse_simple_heuristic(config, start, end, 
-                                                     usecache);
-    return new HSPMaxHeuristic(usecache);
+                                  int start, int &end) {
+    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    return new HSPMaxHeuristic;
 }

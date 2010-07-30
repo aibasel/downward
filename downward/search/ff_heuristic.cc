@@ -28,8 +28,7 @@ using namespace __gnu_cxx;
 */
 
 // construction and destruction
-FFHeuristic::FFHeuristic(bool use_cache)
-    : RelaxationHeuristic(use_cache) {
+FFHeuristic::FFHeuristic() {
     reachable_queue_start = 0;
     reachable_queue_read_pos = 0;
     reachable_queue_write_pos = 0;
@@ -174,8 +173,6 @@ int FFHeuristic::compute_heuristic(const State &state) {
 ScalarEvaluator* 
 FFHeuristic::create_heuristic(const std::vector<string> &config,
                               int start, int &end) {
-    bool usecache = false;
-    OptionParser::instance()->parse_simple_heuristic(config, start, end, 
-                                                     usecache);
-    return new FFHeuristic(usecache);
+    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    return new FFHeuristic;
 }

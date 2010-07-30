@@ -13,8 +13,8 @@
 using namespace std;
 
 // construction and destruction
-LandmarkCutHeuristic::LandmarkCutHeuristic(int _iteration_limit, bool use_cache)
-    : Heuristic(use_cache), iteration_limit(_iteration_limit) {
+LandmarkCutHeuristic::LandmarkCutHeuristic(int _iteration_limit)
+    : iteration_limit(_iteration_limit) {
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
@@ -404,7 +404,6 @@ LandmarkCutHeuristic::create_heuristic(const std::vector<string> &config,
                               int start, int &end) {
     if (config.size() <= start) throw ParseError(start);
 
-    bool use_cache_ = false;
     int iteration_limit_ = -1;
 
     // "<name>()" or "<name>(<options>)"
@@ -415,8 +414,6 @@ LandmarkCutHeuristic::create_heuristic(const std::vector<string> &config,
             NamedOptionParser option_parser;
             option_parser.add_int_option("iteration_limit", &iteration_limit_, 
                                          "iteration limit");
-            option_parser.add_bool_option("use_cache", &use_cache_, 
-                                         "use cache");
             option_parser.parse_options(config, end, end);
             end ++;
         }
@@ -426,5 +423,5 @@ LandmarkCutHeuristic::create_heuristic(const std::vector<string> &config,
         end = start;
     }
 
-    return new LandmarkCutHeuristic(iteration_limit_, use_cache_);
+    return new LandmarkCutHeuristic(iteration_limit_);
 }

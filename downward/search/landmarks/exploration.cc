@@ -27,8 +27,7 @@ using namespace __gnu_cxx;
 */
 
 // Construction and destruction
-Exploration::Exploration(bool use_cache)
-    : Heuristic(use_cache) {
+Exploration::Exploration() {
     cout << "Initializing Exploration..." << endl;
 
     // Build propositions.

@@ -13,8 +13,7 @@ using namespace std;
 using namespace __gnu_cxx;
 
 // construction and destruction
-AdditiveHeuristic::AdditiveHeuristic(bool use_cache)
-    : RelaxationHeuristic(use_cache) {
+AdditiveHeuristic::AdditiveHeuristic() {
 }
 
 AdditiveHeuristic::~AdditiveHeuristic() {
@@ -131,8 +130,6 @@ int AdditiveHeuristic::compute_heuristic(const State &state) {
 ScalarEvaluator* 
 AdditiveHeuristic::create_heuristic(const std::vector<string> &config,
                                     int start, int &end) {
-    bool usecache = false;
-    OptionParser::instance()->parse_simple_heuristic(config, start, end, 
-                                                     usecache);
-    return new AdditiveHeuristic(usecache);
+    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    return new AdditiveHeuristic;
 }

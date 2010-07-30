@@ -195,33 +195,6 @@ OptionParser::set_end_for_simple_config(const vector<string> &config,
     return;
 }
 
-/* Helper for heuristics that use only one optional argument which
-   is use_cache. These heuristics can also be called using only their
-   name, e.g. ff for ff().
-*/
-void OptionParser::parse_simple_heuristic(const vector<string> &config, 
-                                         int start, int &end, bool &use_cache) {
-    if (config.size() <= start) throw ParseError(start);
-
-    // "<name>()" or "<name>(use_cache=...)"
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-
-        if (config[end] != ")") { 
-            NamedOptionParser option_parser;
-            option_parser.add_bool_option("use_cache", &use_cache, 
-                                         "use cache");
-            option_parser.parse_options(config, end, end);
-            end ++;
-        }
-        if (config[end] != ")") throw ParseError(end);
-        
-    } else { // "<name>"
-        end = start;
-    }
-    return;
-
-}
 
 int OptionParser::parse_int(const vector<string> &config, 
                              int start, int &end) {

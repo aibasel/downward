@@ -24,7 +24,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    HSPMaxHeuristic(bool use_cache);
+    HSPMaxHeuristic();
     ~HSPMaxHeuristic();
 
     static ScalarEvaluator* 
