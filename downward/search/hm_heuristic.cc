@@ -15,6 +15,7 @@ HMHeuristic::~HMHeuristic() {
 }
 
 void HMHeuristic::initialize() {
+    cout << "Using h^" << m << endl;
     cout << "The implementation of the h^m heuristic is preliminary" << endl
          << "It is SLOOOOOOOOOOOW" << endl
          << "Please do not use this for comparison" << endl;

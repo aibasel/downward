@@ -4,6 +4,7 @@
 #include "landmarks_count_heuristic.h"
 #include "../globals.h"
 #include "../operator.h"
+#include "../option_parser.h"
 #include "../search_engine.h"
 #include "../successor_generator.h"
 #include "landmarks_graph_rpg_sasp.h"
@@ -361,3 +362,39 @@ bool LandmarksCountHeuristic::reach_state(const State& parent_state,
     return true;
 }
 
+ScalarEvaluator* LandmarksCountHeuristic::create(
+    const std::vector<string> &config, int start, int &end) {
+    int lm_type_ = LandmarksCountHeuristic::rpg_sasp;
+    bool admissible_ = false;
+    bool optimal_ = false;
+    bool pref_ = false; 
+
+    // "<name>()" or "<name>(<options>)"
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+
+        if (config[end] != ")") { 
+            NamedOptionParser option_parser;
+            option_parser.add_int_option("lm_type",
+                                         &lm_type_, 
+                                         "landmarks type");
+            option_parser.add_bool_option("optimal",
+                                         &optimal_,
+                                         "optimal cost sharing");
+            option_parser.add_bool_option("admissible",
+                                         &admissible_,
+                                         "get admissible estimate");
+            option_parser.add_bool_option("pref_ops",
+                                         &pref_,
+                                         "identify preferred operators");
+            option_parser.parse_options(config, end, end);
+            end ++;
+        }
+        if (config[end] != ")") throw ParseError(end);
+        
+    } else { // "<name>"
+        end = start;
+    }
+
+    return new LandmarksCountHeuristic(pref_, admissible_, optimal_, lm_type_);
+}

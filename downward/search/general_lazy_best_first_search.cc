@@ -12,8 +12,8 @@
 #include <limits>
 
 GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(
-    OpenList<OpenListEntryLazy> *open, bool reopen_closed):
-    open_list(open), reopen_closed_nodes(reopen_closed),  bound(numeric_limits<int>::max()), succ_mode(pref_first),
+    OpenList<OpenListEntryLazy> *open, bool reopen_closed, int g_bound):
+    open_list(open), reopen_closed_nodes(reopen_closed),  bound(g_bound), succ_mode(pref_first),
     current_state(*g_initial_state),
     current_predecessor_buffer(NULL), current_operator(NULL),
     current_g(0) {
@@ -226,6 +226,7 @@ GeneralLazyBestFirstSearch::create_engine(const vector<string> &config,
    
     // parse options
     bool reopen_closed = false; // TODO make default value visible
+    int g_bound = numeric_limits<int>::max();
     vector<Heuristic *> preferred_list;
 
     if (config[end] != ")") {
@@ -233,6 +234,8 @@ GeneralLazyBestFirstSearch::create_engine(const vector<string> &config,
         NamedOptionParser option_parser;
         option_parser.add_bool_option("reopen_closed", &reopen_closed,
                                      "reopen closed nodes");
+        option_parser.add_int_option("bound", &g_bound,
+                                     "depth bound on g-values");
         option_parser.add_heuristic_list_option("preferred", 
             &preferred_list, "use preferred operators of these heuristics");
 
@@ -242,7 +245,7 @@ GeneralLazyBestFirstSearch::create_engine(const vector<string> &config,
     if (config[end] != ")") throw ParseError(end);
     
     GeneralLazyBestFirstSearch *engine = \
-        new GeneralLazyBestFirstSearch(open, reopen_closed);
+        new GeneralLazyBestFirstSearch(open, reopen_closed, g_bound);
 
     engine->set_pref_operator_heuristics(preferred_list);
     
@@ -293,7 +296,7 @@ GeneralLazyBestFirstSearch::create_standard_greedy_engine(const vector<string> &
     }
     
     GeneralLazyBestFirstSearch *engine = \
-        new GeneralLazyBestFirstSearch(open, false);
+        new GeneralLazyBestFirstSearch(open, false, numeric_limits<int>::max());
     engine->set_pref_operator_heuristics(preferred_list);
     return engine;
 }
@@ -312,6 +315,7 @@ GeneralLazyBestFirstSearch::create_weighted_astar_engine(
      
     vector<Heuristic *> preferred_list;
     int boost = 1000;
+    int g_bound = numeric_limits<int>::max();
     int weight = 1;
 
     if (config[end] != ")") {
@@ -321,6 +325,8 @@ GeneralLazyBestFirstSearch::create_weighted_astar_engine(
             &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost, 
                                      "boost value for successful sub-open-lists");
+        option_parser.add_int_option("bound", &g_bound,
+                                     "depth bound on g-values");
         option_parser.add_int_option("weight", &weight, 
                                      "heuristic weight");
         option_parser.parse_options(config, end, end);
@@ -357,7 +363,7 @@ GeneralLazyBestFirstSearch::create_weighted_astar_engine(
     }
     
     GeneralLazyBestFirstSearch *engine = \
-        new GeneralLazyBestFirstSearch(open, true);
+        new GeneralLazyBestFirstSearch(open, true, g_bound);
     engine->set_pref_operator_heuristics(preferred_list);
     return engine;
 }

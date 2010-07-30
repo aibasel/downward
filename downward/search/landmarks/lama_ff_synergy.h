@@ -93,6 +93,9 @@ public:
     Heuristic *get_lama_heuristic_proxy() {
         return &lama_heuristic_proxy;
     }
+
+    static void create_heuristics(const std::vector<string> &config, int start,
+                                  int &end, vector<Heuristic *> &heuristics);
 };
 
 #endif

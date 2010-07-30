@@ -202,6 +202,12 @@ void register_parsers() {
         HSPMaxHeuristic::create_heuristic);
     OptionParser::instance()->register_scalar_evaluator("hm", 
         HMHeuristic::create_heuristic);
+    OptionParser::instance()->register_scalar_evaluator("lmcount", 
+        LandmarksCountHeuristic::create);
+    
+    // Register synergy heuristics
+    OptionParser::instance()->register_synergy("lm_ff_syn", 
+        LamaFFSynergy::create_heuristics);
    
     // register combinations and g evaluator
     OptionParser::instance()->register_scalar_evaluator("sum", 
@@ -216,8 +222,8 @@ void register_parsers() {
     // Note:
     // open lists are registered in the constructor of OpenListParser.
     // This is necessary because the open list entries are specified
-    // as template parameter and we otherwise would have template
-    // parameters everywhere
+    // as template parameter and we would have template parameters everywhere
+    // otherwise 
 }
 
 std::string strip_and_to_lower(const char* begin, const char* end) {

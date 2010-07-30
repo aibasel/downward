@@ -50,7 +50,7 @@ protected:
 public:
 
     GeneralLazyBestFirstSearch(OpenList<OpenListEntryLazy> *open,
-                               bool reopen_closed);
+                               bool reopen_closed, int g_bound);
     virtual ~GeneralLazyBestFirstSearch();
 
     virtual void statistics() const;

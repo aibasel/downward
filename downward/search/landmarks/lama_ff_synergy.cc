@@ -1,4 +1,5 @@
 #include "lama_ff_synergy.h"
+#include "../option_parser.h"
 
 LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_) {
     synergy = synergy_;
@@ -58,5 +59,48 @@ void LamaFFSynergy::compute_heuristics(const State& state) {
 bool LamaFFSynergy::lama_reach_state(const State& parent_state,
         const Operator &op, const State& state) {
     return lama_heuristic->reach_state(parent_state, op, state);
+}
+
+void
+LamaFFSynergy::create_heuristics(const std::vector<string> &config,
+                                 int start, int &end, 
+                                 vector<Heuristic *> &heuristics) {
+    int lm_type_ = LandmarksCountHeuristic::rpg_sasp;
+    bool lm_admissible_ = false;
+    bool lm_optimal_ = false;
+    
+    // "<name>()" or "<name>(<options>)"
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+
+        if (config[end] != ")") { 
+            NamedOptionParser option_parser;
+            option_parser.add_int_option("lm_type",
+                                         &lm_type_, 
+                                         "landmarks type");
+            option_parser.add_bool_option("lm_optimal",
+                                         &lm_optimal_,
+                                         "optimal cost sharing");
+            option_parser.add_bool_option("lm_admissible",
+                                         &lm_admissible_,
+                                         "get admissible estimate");
+            option_parser.parse_options(config, end, end);
+            end ++;
+        }
+        if (config[end] != ")") throw ParseError(end);
+        
+    } else { // "<name>"
+        end = start;
+    }
+
+    bool lm_pref_ = true; // this will always be the case because it
+                          // does not make sense to use the synergy without
+                          // using lm preferred operators
+    LamaFFSynergy *lama_ff_synergy = new LamaFFSynergy(
+        lm_pref_, lm_admissible_, lm_optimal_, lm_type_);
+
+    heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
+    heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
+    return;
 }
 

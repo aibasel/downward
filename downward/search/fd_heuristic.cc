@@ -161,6 +161,93 @@ int FinkbeinerDraegerHeuristic::compute_heuristic(const State &state) {
 ScalarEvaluator* 
 FinkbeinerDraegerHeuristic::create_heuristic(const std::vector<string> &config,
                               int start, int &end) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    if (g_using_abstraction_heuristic) {
+        cerr << "The current implementation supports only one "
+             << "abstraction heuristic" << endl;
+        exit(2);
+    }
+    
+    // "<name>()" or "<name>(<options>)"
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+
+        // TODO: better documentation what each parameter does
+        if (config[end] != ")") { 
+            NamedOptionParser option_parser;
+            option_parser.add_int_option("abstraction_max_size",
+                                         &g_abstraction_max_size, 
+                                         "maximum abstraction size");
+            option_parser.add_int_option("abstraction_nr",
+                                         &g_abstraction_nr, 
+                                         "nr of abstractions to build");
+            option_parser.add_int_option("composition",
+                                         &g_compose_strategy, 
+                                         "composition strategy");
+            option_parser.add_int_option("collapsing",
+                                         &g_collapse_strategy, 
+                                         "collapsing strategy");
+            option_parser.add_bool_option("bound_is_for_product",
+                                         &g_merge_and_shrink_bound_is_for_product,
+                                         "merge and shrink bound is for product");
+            option_parser.parse_options(config, end, end);
+            end ++;
+        }
+        if (config[end] != ")") throw ParseError(end);
+        
+    } else { // "<name>"
+        end = start;
+    }
+
+    if (g_abstraction_max_size < 1) {
+        cerr << "error: abstraction size must be at least 1"
+             << endl;
+        exit(2);
+    }
+                
+
+    cout << "Composition strategy: ";
+    switch (g_compose_strategy) {
+        case COMPOSE_LINEAR_CG_GOAL_LEVEL:
+            cout << "linear CG/GOAL, tie breaking on level (main)"; break;
+        case COMPOSE_LINEAR_CG_GOAL_RANDOM:
+            cout << "linear CG/GOAL, tie breaking random"; break;
+        case COMPOSE_LINEAR_GOAL_CG_LEVEL:
+            cout << "linear GOAL/CG, tie breaking on level"; break;
+        case COMPOSE_LINEAR_RANDOM:
+            cout << "linear random"; break;
+        case COMPOSE_DFP:
+            cout << "Draeger/Finkbeiner/Podelski" << endl;
+            cerr << "DFP composition strategy not implemented." << endl;
+            exit(2);
+        default:
+            if (g_compose_strategy < 0 ||
+                g_compose_strategy >= MAX_COMPOSE_STRATEGY) {
+                cerr << "Unknown compose strategy: " << g_compose_strategy << endl;
+                exit(2);
+            }
+    }
+    cout << endl;
+
+    cout << "Collapsing strategy: ";
+    switch (g_collapse_strategy) {
+        case COLLAPSE_HIGH_F_LOW_H:
+            cout << "high f/low h (main)"; break;
+        case COLLAPSE_LOW_F_LOW_H:
+            cout << "low f/low h"; break;
+        case COLLAPSE_HIGH_F_HIGH_H:
+            cout << "high f/high h"; break;
+        case COLLAPSE_RANDOM:
+            cout << "random states"; break;
+        case COLLAPSE_DFP:
+            cout << "Draeger/Finkbeiner/Podelski"; break;
+        default:
+            if (g_collapse_strategy < 0 ||
+                g_collapse_strategy >= MAX_COLLAPSE_STRATEGY) {
+                cerr << "Unknown collapsing strategy: " << g_collapse_strategy << endl;
+                exit(2);
+            }
+    }
+    cout << endl;
+
     return new FinkbeinerDraegerHeuristic();
 }

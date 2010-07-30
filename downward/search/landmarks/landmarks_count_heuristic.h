@@ -65,6 +65,8 @@ public:
     virtual bool dead_ends_are_reliable() {
         return true;
     }
+    static ScalarEvaluator* create(const std::vector<string> &config, int start, 
+                                   int &end);
 
     enum {rpg_sasp = 0, zhu_givan = 1, exhaust = 2, search = 3};
 };

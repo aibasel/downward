@@ -55,12 +55,15 @@ class OptionParser {
     typedef const std::vector<std::string> & ConfigRef;
     typedef SearchEngine* (*EngineCreatorFunc)(ConfigRef, int, int&);
     typedef ScalarEvaluator* (*ScalarEvalCreatorFunc)(ConfigRef, int, int&);
+    typedef void (*SynergyCreatorFunc)(ConfigRef, int, int&, 
+                                       std::vector<Heuristic *> &);
     typedef 
         OpenList<state_var_t *>* (*OpenListCreatorFunc)(ConfigRef, int, int&);
 
     std::map<std::string, Heuristic*> predefined_heuristics; 
     std::map<std::string, EngineCreatorFunc> engine_map; 
     std::map<std::string, ScalarEvalCreatorFunc> scalar_evaluator_map; 
+    std::map<std::string, SynergyCreatorFunc> synergy_map; 
 private:
     static OptionParser* instance_;
     OptionParser() {}
@@ -73,6 +76,9 @@ public:
             SearchEngine* func(const std::vector<std::string> &, int, int&));
     void register_scalar_evaluator(std::string key, 
             ScalarEvaluator* func(const std::vector<std::string> &, int, int&));
+    void register_synergy(std::string key, 
+            void func(const std::vector<std::string> &, int, int&,
+                      std::vector<Heuristic *> &));
     void predefine_heuristic(const std::vector<std::string> &input);
 
     ScalarEvaluator* parse_scalar_evaluator(const std::vector<std::string> &input, 
@@ -82,6 +88,9 @@ public:
     bool knows_scalar_evaluator(std::string name);
     SearchEngine* parse_search_engine(const std::vector<std::string> &input, 
         int start, int & end);
+    void parse_synergy_heuristics(const std::vector<std::string> &input, 
+                                  int start, int &end, 
+                                  std::vector<Heuristic *> &heuristics);
 
     int parse_int(const std::vector<std::string> &config, 
                   int start, int &end);

@@ -2,6 +2,7 @@
 
 #include "heuristic.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
@@ -28,10 +29,17 @@ void OptionParser::register_scalar_evaluator(string key,
     scalar_evaluator_map[key] = func;
 }
 
+void OptionParser::register_synergy(string key, 
+    void func(const vector<string> &, int, int&, 
+              vector<Heuristic *> &)) {
+    synergy_map[key] = func;
+}
+
+
 ScalarEvaluator* 
 OptionParser::parse_scalar_evaluator(const vector<string> &input, 
                                      int start, int & end) {
-    // predefined shortcut
+    // predefined evaluator
     map<string, Heuristic*>::iterator iter;
     iter = predefined_heuristics.find(input[start]);
     if (iter != predefined_heuristics.end())
@@ -52,6 +60,15 @@ Heuristic* OptionParser::parse_heuristic(const vector<string> &input,
     return h;
 }
 
+void OptionParser::parse_synergy_heuristics(const vector<string> &input, 
+                                            int start, int &end,
+                                            vector<Heuristic *> &heuristics) {
+    map<string, SynergyCreatorFunc>::iterator it;
+    it = synergy_map.find(input[start]);
+    if (it == synergy_map.end()) throw ParseError(start);
+    it->second(input, start, end, heuristics);
+}
+
 bool OptionParser::knows_scalar_evaluator(string name) {
     return (scalar_evaluator_map.find(name) != scalar_evaluator_map.end() ||
             predefined_heuristics.find(name) != predefined_heuristics.end());
@@ -67,14 +84,41 @@ SearchEngine* OptionParser::parse_search_engine(const vector<string> &input,
 }
     
 void OptionParser::predefine_heuristic(const vector<string> &input) {
-    string name = input[0];
-    if (knows_scalar_evaluator(name))
-        throw ParseError(0);
-    if (input[1].compare("=") != 0) 
+    if (input[1].compare("=") == 0) {
+        // define one heuristic (standard case) 
+        string name = input[0];
+        if (knows_scalar_evaluator(name) || name == "(" || name == ")")
+            throw ParseError(0);
+        int end = 2;
+        predefined_heuristics[name] = parse_heuristic(input, 2, end);
+    } else if (input[1].compare(",") == 0) {
+        // define several heuristics (currently only lama ff synergy)
+
+        vector<string>::const_iterator it = find(input.begin(), 
+                                                 input.end(), "=");
+        if (it == input.end())
+            throw ParseError(input.size());
+        int heuristic_pos = it - input.begin() + 1;
+
+        vector<Heuristic *> heuristics;
+        int end = 0;
+        parse_synergy_heuristics(input, heuristic_pos, end, heuristics);
+
+        for (unsigned int i = 0; i < heuristics.size(); i++) {
+            int name_pos = 2 * i; 
+            string name = input[name_pos];
+            if (knows_scalar_evaluator(name) || name == "(" || name == ")")
+                throw ParseError(name_pos);
+            predefined_heuristics[name] = heuristics[i];
+            if (i == heuristics.size() - 1 && input[name_pos + 1] != "=") {
+                throw ParseError(name_pos + 1);
+            } else if (i < heuristics.size() - 1 && input[name_pos + 1] != ",") {
+                throw ParseError(name_pos + 1);
+            }
+        }
+    } else {
         throw ParseError(1);
-    int end = 2;
-    ScalarEvaluator* heur = parse_scalar_evaluator(input, 2, end);
-    predefined_heuristics[name] = (Heuristic*) heur;
+    }
 }
 
 // sets "end" on the last position of the last scalar evaluator
