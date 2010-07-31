@@ -16,9 +16,9 @@ using namespace std;
 
 GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(
     OpenList<state_var_t *> *open,
-    bool reopen_closed, ScalarEvaluator *f_eval):
-    reopen_closed_nodes(reopen_closed),
-    open_list(open), f_evaluator(f_eval) {
+    bool reopen_closed, ScalarEvaluator *f_eval)
+    : reopen_closed_nodes(reopen_closed),
+      open_list(open), f_evaluator(f_eval) {
 }
 
 void
@@ -31,14 +31,14 @@ void GeneralEagerBestFirstSearch::initialize() {
     g_learning_search_space = &search_space; //TODO:CR - check if we can get of this
     //TODO children classes should output which kind of search
     cout << "Conducting best first search" <<
-        (reopen_closed_nodes? " with" : " without") << " reopening closed nodes" << endl;
+    (reopen_closed_nodes ? " with" : " without") << " reopening closed nodes" << endl;
 
     assert(open_list != NULL);
 
-    set<Heuristic*> hset;
+    set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
-    
-    for (set<Heuristic*>::iterator it = hset.begin(); it != hset.end(); it++) {
+
+    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); it++) {
         estimate_heuristics.push_back(*it);
         search_progress.add_heuristic(*it);
     }
@@ -46,7 +46,7 @@ void GeneralEagerBestFirstSearch::initialize() {
     // add heuristics that are used for preferred operators (in case they are
     // not also used in the open list)
     hset.insert(preferred_operator_heuristics.begin(),
-                preferred_operator_heuristics.end()); 
+                preferred_operator_heuristics.end());
 
     // add heuristics that are used in the f_evaluator. They are usually also
     // used in the open list and hence already be included, but we want to be
@@ -54,8 +54,8 @@ void GeneralEagerBestFirstSearch::initialize() {
     if (f_evaluator) {
         f_evaluator->get_involved_heuristics(hset);
     }
-       
-    for (set<Heuristic*>::iterator it = hset.begin(); it != hset.end(); it++) {
+
+    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); it++) {
         heuristics.push_back(*it);
     }
 
@@ -63,17 +63,16 @@ void GeneralEagerBestFirstSearch::initialize() {
 
     for (unsigned int i = 0; i < heuristics.size(); i++)
         heuristics[i]->evaluate(*g_initial_state);
-	open_list->evaluate(0, false);
+    open_list->evaluate(0, false);
     search_progress.inc_evaluated();
 
-    if(open_list->is_dead_end()) {
+    if (open_list->is_dead_end()) {
         assert(open_list->dead_end_is_reliable());
         cout << "Initial state is a dead end." << endl;
-    }
-    else {
+    } else {
         search_progress.get_initial_h_values();
         if (f_evaluator) {
-            f_evaluator->evaluate(0,false);
+            f_evaluator->evaluate(0, false);
             search_progress.report_f_value(f_evaluator->get_value());
         }
         search_progress.check_h_progress(0);
@@ -116,7 +115,7 @@ int GeneralEagerBestFirstSearch::step() {
         }
     }
 
-    for(int i = 0; i < applicable_ops.size(); i++) {
+    for (int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
         State succ_state(s, *op);
         search_progress.inc_generated();
@@ -124,10 +123,10 @@ int GeneralEagerBestFirstSearch::step() {
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
-        if(succ_node.is_dead_end()) {
+        if (succ_node.is_dead_end()) {
             // Previously encountered dead end. Don't re-evaluate.
             continue;
-        } else if(succ_node.is_new()) {
+        } else if (succ_node.is_new()) {
             // We have not seen this state before.
             // Evaluate and create a new node.
             for (unsigned int i = 0; i < heuristics.size(); i++) {
@@ -154,31 +153,29 @@ int GeneralEagerBestFirstSearch::step() {
 
             open_list->insert(succ_node.get_state_buffer());
             search_progress.check_h_progress(succ_node.get_g());
-
-        } else if(succ_node.get_g() > node.get_g() + op->get_cost()) {
+        } else if (succ_node.get_g() > node.get_g() + op->get_cost()) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
-            	//TODO:CR - test if we should add a reevaluate flag and if it helps
+                //TODO:CR - test if we should add a reevaluate flag and if it helps
                 // if we reopen closed nodes, do that
-                if(succ_node.is_closed()) {
+                if (succ_node.is_closed()) {
                     /* TODO: Verify that the heuristic is inconsistent.
                      * Otherwise, this is a bug. This is a serious
                      * assertion because it can show that a heuristic that
                      * was thought to be consistent isn't. Therefore, it
                      * should be present also in release builds, so don't
                      * use a plain assert. */
-                	//TODO:CR - add a consistent flag to heuristics, and add an assert here based on it
+                    //TODO:CR - add a consistent flag to heuristics, and add an assert here based on it
                     search_progress.inc_reopened();
                 }
                 succ_node.reopen(node, op);
                 heuristics[0]->set_evaluator_value(succ_node.get_h());
                 // TODO: this appears fishy to me. Why is here only heuristic[0]
                 // involved? Is this still feasible in the current version?
-				open_list->evaluate(succ_node.get_g(), is_preferred);
+                open_list->evaluate(succ_node.get_g(), is_preferred);
 
                 open_list->insert(succ_node.get_state_buffer());
-            }
-            else {
+            } else {
                 // if we do not reopen closed nodes, we just update the parent pointers
                 // Note that this could cause an incompatibility between
                 // the g-value and the actual path that is traced back
@@ -191,8 +188,8 @@ int GeneralEagerBestFirstSearch::step() {
 }
 
 pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
-    while(true) {
-        if(open_list->empty()) {
+    while (true) {
+        if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
             return make_pair(search_space.get_node(*g_initial_state), false);
             //assert(false);
@@ -206,86 +203,90 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
         // If the node is closed, we do not reopen it, as our heuristic
         // is consistent.
         // TODO: check this
-        if(!node.is_closed()) {
+        if (!node.is_closed()) {
             node.close();
             assert(!node.is_dead_end());
-			update_jump_statistic(node);
+            update_jump_statistic(node);
             search_progress.inc_expanded();
             return make_pair(node, true);
         }
     }
 }
 
-void GeneralEagerBestFirstSearch::dump_search_space()
-{
-  search_space.dump();
+void GeneralEagerBestFirstSearch::dump_search_space() {
+    search_space.dump();
 }
 
-void GeneralEagerBestFirstSearch::update_jump_statistic(const SearchNode& node) {
-	if (f_evaluator) {
-		heuristics[0]->set_evaluator_value(node.get_h());
-		f_evaluator->evaluate(node.get_g(), false);
-		int new_f_value = f_evaluator->get_value();
-		search_progress.report_f_value(new_f_value);
-	}
+void GeneralEagerBestFirstSearch::update_jump_statistic(const SearchNode &node) {
+    if (f_evaluator) {
+        heuristics[0]->set_evaluator_value(node.get_h());
+        f_evaluator->evaluate(node.get_g(), false);
+        int new_f_value = f_evaluator->get_value();
+        search_progress.report_f_value(new_f_value);
+    }
 }
 
-void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int>& values) const {
-    for(int i = 0; i < values.size(); i++) {
+void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int> &values) const {
+    for (int i = 0; i < values.size(); i++) {
         cout << values[i];
-        if(i != values.size() - 1)
+        if (i != values.size() - 1)
             cout << "/";
     }
 }
 
-SearchEngine* 
+SearchEngine *
 GeneralEagerBestFirstSearch::create_engine(const vector<string> &config,
                                            int start, int &end) {
-    if (config[start + 1] != "(") throw ParseError(start + 1);
+    if (config[start + 1] != "(")
+        throw ParseError(start + 1);
 
     OpenListParser<state_var_t *> *p = OpenListParser<state_var_t *>::instance();
     OpenList<state_var_t *> *open = p->parse_open_list(config, start + 2, end);
 
-    end ++;
-    if (end >= config.size()) throw ParseError(end);
-   
+    end++;
+    if (end >= config.size())
+        throw ParseError(end);
+
     // parse options
-    bool reopen_closed = false; 
-    ScalarEvaluator* f_eval = 0;
+    bool reopen_closed = false;
+    ScalarEvaluator *f_eval = 0;
     vector<Heuristic *> preferred_list;
 
     if (config[end] != ")") {
-        end ++;
+        end++;
         NamedOptionParser option_parser;
         option_parser.add_bool_option("reopen_closed", &reopen_closed,
-                                     "reopen closed nodes");
+                                      "reopen closed nodes");
         option_parser.add_scalar_evaluator_option("f_evaluator", f_eval,
-                                     "set evaluator for jump statistics");
-        option_parser.add_heuristic_list_option("preferred", 
-            &preferred_list, "use preferred operators of these heuristics");
+                                                  "set evaluator for jump statistics");
+        option_parser.add_heuristic_list_option("preferred",
+                                                &preferred_list, "use preferred operators of these heuristics");
 
         option_parser.parse_options(config, end, end);
-        end ++;
+        end++;
     }
-    if (config[end] != ")") throw ParseError(end);
-    
+    if (config[end] != ")")
+        throw ParseError(end);
+
     GeneralEagerBestFirstSearch *engine = \
         new GeneralEagerBestFirstSearch(open, reopen_closed, f_eval);
     engine->set_pref_operator_heuristics(preferred_list);
-    
+
     return engine;
 }
 
-SearchEngine* 
+SearchEngine *
 GeneralEagerBestFirstSearch::create_astar_engine(const vector<string> &config,
-    int start, int &end) {
-    if (config[start + 1] != "(") throw ParseError(start + 1);
+                                                 int start, int &end) {
+    if (config[start + 1] != "(")
+        throw ParseError(start + 1);
 
-    ScalarEvaluator* eval = 
+    ScalarEvaluator *eval =
         OptionParser::instance()->parse_scalar_evaluator(config, start + 2, end);
-    end ++;
-    if (config[end] != ")") throw ParseError(end);
-    
+    end++;
+    if (config[end] != ")")
+        throw ParseError(end);
+
     GEvaluator *g = new GEvaluator();
     vector<ScalarEvaluator *> sum_evals;
     sum_evals.push_back(g);
@@ -305,32 +306,35 @@ GeneralEagerBestFirstSearch::create_astar_engine(const vector<string> &config,
     return engine;
 }
 
-SearchEngine* 
+SearchEngine *
 GeneralEagerBestFirstSearch::create_standard_greedy_engine(const vector<string> &config,
-    int start, int &end) {
-    if (config[start + 1] != "(") throw ParseError(start + 1);
+                                                           int start, int &end) {
+    if (config[start + 1] != "(")
+        throw ParseError(start + 1);
 
     vector<ScalarEvaluator *> evals;
     OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
                                                           end, false, evals);
-    if (evals.empty()) throw ParseError(end);
-    end ++;
-     
+    if (evals.empty())
+        throw ParseError(end);
+    end++;
+
     vector<Heuristic *> preferred_list;
     int boost = 1000;
 
     if (config[end] != ")") {
-        end ++;
+        end++;
         NamedOptionParser option_parser;
-        option_parser.add_heuristic_list_option("preferred", 
-            &preferred_list, "use preferred operators of these heuristics");
-        option_parser.add_int_option("boost", &boost, 
+        option_parser.add_heuristic_list_option("preferred",
+                                                &preferred_list, "use preferred operators of these heuristics");
+        option_parser.add_int_option("boost", &boost,
                                      "boost value for successful sub-open-lists");
         option_parser.parse_options(config, end, end);
-        end ++;
+        end++;
     }
-    if (config[end] != ")") throw ParseError(end);
-    
+    if (config[end] != ")")
+        throw ParseError(end);
+
     OpenList<state_var_t *> *open;
     if ((evals.size() == 1) && preferred_list.empty()) {
         open = new StandardScalarOpenList<state_var_t *>(evals[0], false);
@@ -338,7 +342,7 @@ GeneralEagerBestFirstSearch::create_standard_greedy_engine(const vector<string> 
         vector<OpenList<state_var_t *> *> inner_lists;
         for (int i = 0; i < evals.size(); i++) {
             inner_lists.push_back(
-                    new StandardScalarOpenList<state_var_t *>(evals[i], false));
+                new StandardScalarOpenList<state_var_t *>(evals[i], false));
             if (!preferred_list.empty()) {
                 inner_lists.push_back(
                     new StandardScalarOpenList<state_var_t *>(evals[i], true));
@@ -346,7 +350,7 @@ GeneralEagerBestFirstSearch::create_standard_greedy_engine(const vector<string> 
         }
         open = new AlternationOpenList<state_var_t *>(inner_lists, boost);
     }
-    
+
     GeneralEagerBestFirstSearch *engine = \
         new GeneralEagerBestFirstSearch(open, false, NULL);
     engine->set_pref_operator_heuristics(preferred_list);
