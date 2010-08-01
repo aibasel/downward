@@ -27,6 +27,9 @@ enum ShrinkStrategy {
 };
 
 class MergeAndShrinkHeuristic : public Heuristic {
+    const int max_abstract_states;
+    const bool bound_is_for_product;
+    const int abstraction_count;
     const MergeStrategy merge_strategy;
     const ShrinkStrategy shrink_strategy;
 
@@ -38,6 +41,8 @@ protected:
     virtual int compute_heuristic(const State &state);
 public:
     MergeAndShrinkHeuristic(
+        int max_abstract_states, bool bound_is_for_product,
+        int abstraction_count,
         MergeStrategy merge_strategy, ShrinkStrategy shrink_strategy);
     ~MergeAndShrinkHeuristic();
     void dump_options() const;

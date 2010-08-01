@@ -47,14 +47,9 @@ extern int g_cache_hits, g_cache_misses;
 extern bool g_using_abstraction_heuristic;
 extern vector<Abstraction *> g_abstractions;
 
-extern int g_abstraction_max_size;
 extern int g_abstraction_peak_memory;
 
-extern int g_abstraction_nr;
-
 extern Timer g_timer;
-
-extern bool g_merge_and_shrink_bound_is_for_product;
 
 extern bool g_merge_and_shrink_simplify_labels;
 extern bool g_merge_and_shrink_extra_statistics;
