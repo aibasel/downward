@@ -213,7 +213,7 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(
 }
 
 void Abstraction::normalize(bool simplify_labels) {
-    /* Applies label simplification and removes duplicate transitions.
+    /* Apply label simplification and remove duplicate transitions.
 
        This is called right before an abstraction is merged with
        another through a product operation.
@@ -673,9 +673,6 @@ void Abstraction::compute_abstraction_dfp(
     int target_size,
     vector<slist<AbstractStateRef> > &collapsed_groups) const {
     int num_groups = max_h + 1;
-
-    // TODO: Should not call this if num_states <= target_size, i.e.,
-    //       if this is a pure pruning run. (Is too inefficient.)
 
     // cout << num_states << "***" << target_size << endl;
 
