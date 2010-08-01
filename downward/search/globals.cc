@@ -164,7 +164,6 @@ vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
 Cache *g_cache;
 int g_cache_hits = 0, g_cache_misses = 0;
-bool g_using_abstraction_heuristic = false;
 
 Timer g_timer;
 

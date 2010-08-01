@@ -241,12 +241,6 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
     bool use_label_simplification = true;
     bool use_expensive_statistics = false;
 
-    if (g_using_abstraction_heuristic) {
-        cerr << "The current implementation supports only one "
-             << "abstraction heuristic" << endl;
-        exit(2);
-    }
-    
     // "<name>()" or "<name>(<options>)"
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
