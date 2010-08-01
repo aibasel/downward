@@ -166,7 +166,7 @@ void register_parsers() {
     OptionParser::instance()->register_scalar_evaluator("lmcut", 
         LandmarkCutHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("mas", 
-        FinkbeinerDraegerHeuristic::create);
+        MergeAndShrinkHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("selmax", 
         SelectiveMaxHeuristic::create);
     

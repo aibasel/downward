@@ -1,5 +1,5 @@
-#ifndef FD_HEURISTIC_H
-#define FD_HEURISTIC_H
+#ifndef MAS_HEURISTIC_H
+#define MAS_HEURISTIC_H
 
 #include "heuristic.h"
 
@@ -26,7 +26,7 @@ enum ShrinkStrategy {
     MAX_SHRINK_STRATEGY
 };
 
-class FinkbeinerDraegerHeuristic : public Heuristic {
+class MergeAndShrinkHeuristic : public Heuristic {
     const MergeStrategy merge_strategy;
     const ShrinkStrategy shrink_strategy;
 
@@ -37,9 +37,9 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    FinkbeinerDraegerHeuristic(
+    MergeAndShrinkHeuristic(
         MergeStrategy merge_strategy, ShrinkStrategy shrink_strategy);
-    ~FinkbeinerDraegerHeuristic();
+    ~MergeAndShrinkHeuristic();
     void dump_options() const;
     static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end);

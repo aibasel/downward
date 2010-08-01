@@ -14,16 +14,16 @@
 using namespace std;
 
 
-FinkbeinerDraegerHeuristic::FinkbeinerDraegerHeuristic(
+MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
     MergeStrategy merge_strategy_, ShrinkStrategy shrink_strategy_)
     : merge_strategy(merge_strategy_),
       shrink_strategy(shrink_strategy_) {
 }
 
-FinkbeinerDraegerHeuristic::~FinkbeinerDraegerHeuristic() {
+MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 }
 
-void FinkbeinerDraegerHeuristic::dump_options() const {
+void MergeAndShrinkHeuristic::dump_options() const {
     cout << "Merge strategy: ";
     switch (merge_strategy) {
         case MERGE_LINEAR_CG_GOAL_LEVEL:
@@ -62,7 +62,7 @@ void FinkbeinerDraegerHeuristic::dump_options() const {
 }
 
 
-void FinkbeinerDraegerHeuristic::verify_no_axioms_no_cond_effects() const {
+void MergeAndShrinkHeuristic::verify_no_axioms_no_cond_effects() const {
     if(!g_axioms.empty()) {
         cerr << "Heuristic does not support axioms!" << endl
              << "Terminating." << endl;
@@ -101,7 +101,7 @@ void FinkbeinerDraegerHeuristic::verify_no_axioms_no_cond_effects() const {
     }
 }
 
-Abstraction *FinkbeinerDraegerHeuristic::build_abstraction(bool is_first) {
+Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     cout << "Merging abstractions..." << endl;
     assert(!g_abstractions.empty());
     int threshold = g_abstraction_max_size;
@@ -150,10 +150,10 @@ Abstraction *FinkbeinerDraegerHeuristic::build_abstraction(bool is_first) {
     return abstraction;
 }
 
-void FinkbeinerDraegerHeuristic::initialize() {
+void MergeAndShrinkHeuristic::initialize() {
     int threshold = g_abstraction_max_size;
     Timer timer;
-    cout << "Initializing Finkbeiner/Draeger heuristic..." << endl;
+    cout << "Initializing merge-and-shrink heuristic..." << endl;
     verify_no_axioms_no_cond_effects();
     cout << "Abstraction size limit: " << threshold << endl;
 
@@ -167,7 +167,7 @@ void FinkbeinerDraegerHeuristic::initialize() {
             break;
     }
 
-    cout << "Done initializing Finkbeiner/Draeger heuristic ["
+    cout << "Done initializing merge-and-shrink heuristic ["
          << timer << "]" << endl
          << "initial h value: " << compute_heuristic(*g_initial_state)
          << endl;
@@ -177,7 +177,7 @@ void FinkbeinerDraegerHeuristic::initialize() {
 
 }
 
-int FinkbeinerDraegerHeuristic::compute_heuristic(const State &state) {
+int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
     int cost = 0;
     for(int i = 0; i < abstractions.size(); i++) {
         int abs_cost = abstractions[i]->get_cost(state);
@@ -202,7 +202,7 @@ int FinkbeinerDraegerHeuristic::compute_heuristic(const State &state) {
     return cost;
 }
 
-ScalarEvaluator *FinkbeinerDraegerHeuristic::create(
+ScalarEvaluator *MergeAndShrinkHeuristic::create(
     const std::vector<string> &config, int start, int &end) {
     int merge_strategy = MERGE_LINEAR_CG_GOAL_LEVEL;
     int shrink_strategy = SHRINK_HIGH_F_LOW_H;
@@ -260,7 +260,7 @@ ScalarEvaluator *FinkbeinerDraegerHeuristic::create(
         exit(2);
     }
 
-    FinkbeinerDraegerHeuristic *result = new FinkbeinerDraegerHeuristic(
+    MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(
         static_cast<MergeStrategy>(merge_strategy),
         static_cast<ShrinkStrategy>(shrink_strategy));
     result->dump_options();
