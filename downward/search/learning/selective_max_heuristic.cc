@@ -618,9 +618,9 @@ ScalarEvaluator *SelectiveMaxHeuristic::create(
                                       "classifier type (0: NB, 1: AODE)");
         option_parser.add_double_option("conf_threshold", &conf_threshold_,
                                         "confidence threshold");
-        option_parser.add_int_option("min_training_set", &min_training_set_,
+        option_parser.add_int_option("training_set", &min_training_set_,
                                      "minimum size of training set");
-        option_parser.add_int_option("calc_always", &num_always_calc_,
+        option_parser.add_int_option("eval_always", &num_always_calc_,
             "number of heuristics that should always be evaluated");
         option_parser.add_bool_option("random_sel", &random_selection_, 
                                       "random selection");
