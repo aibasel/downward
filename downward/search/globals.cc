@@ -166,19 +166,9 @@ Cache *g_cache;
 int g_cache_hits = 0, g_cache_misses = 0;
 bool g_using_abstraction_heuristic = false;
 
-// TODO: The following three should be command-line options.
+// TODO: The following two should be command-line options.
 bool g_merge_and_shrink_simplify_labels = true;
-bool g_merge_and_shrink_extra_statistics = false;
 bool g_merge_and_shrink_forbid_merge_across_buckets = false;
-
-/* WARNING: When last tested (around r3011), enabling the extra statistics
-   for merge-and-shrink increased heuristic generation time by 76%.
-   So don't activate it without good reason!
-
-   TODO: Once there is a command-line option for this, move this warning
-   to the place where it is set, or even turn it into a message printed to
-   cout.
-*/
 
 Timer g_timer;
 

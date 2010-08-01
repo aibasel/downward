@@ -92,7 +92,7 @@ public:
 
     int get_cost(const State &state) const;
     int size() const;
-    void statistics() const;
+    void statistics(bool include_expensive_statistics) const;
 
     int get_peak_memory_estimate() const;
     // NOTE: This will only return something useful if the memory estimates

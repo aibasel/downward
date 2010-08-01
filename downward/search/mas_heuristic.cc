@@ -17,12 +17,17 @@ using namespace std;
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
     int max_abstract_states_, bool bound_is_for_product_,
     int abstraction_count_,
-    MergeStrategy merge_strategy_, ShrinkStrategy shrink_strategy_)
+    MergeStrategy merge_strategy_, ShrinkStrategy shrink_strategy_,
+    bool use_expensive_statistics_)
     : max_abstract_states(max_abstract_states_),
       bound_is_for_product(bound_is_for_product_),
       abstraction_count(abstraction_count_),
       merge_strategy(merge_strategy_),
-      shrink_strategy(shrink_strategy_) {
+      shrink_strategy(shrink_strategy_),
+      use_expensive_statistics(use_expensive_statistics_) {
+
+    dump_options();
+    warn_on_unusual_options();
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -66,6 +71,21 @@ void MergeAndShrinkHeuristic::dump_options() const {
     cout << endl;
 }
 
+void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
+    if (use_expensive_statistics) {
+        string dashes(79, '=');
+        cerr << dashes << endl
+             << ("WARNING! You have enabled extra statistics for "
+                 "merge-and-shrink heuristics.\n"
+                 "These statistics require a lot of time and memory.\n"
+                 "When last tested (around revision 3011), enabling the "
+                 "extra statistics\nincreased heuristic generation time by "
+                 "76%. This figure may be significantly\nworse with more "
+                 "recent code or for particular domains and instances.\n"
+                 "You have been warned. Don't use this for benchmarking!")
+             << endl << dashes << endl;
+    }
+}
 
 void MergeAndShrinkHeuristic::verify_no_axioms_no_cond_effects() const {
     if(!g_axioms.empty()) {
@@ -120,7 +140,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     VariableOrderFinder order(merge_strategy, is_first);
 
     Abstraction *abstraction = atomic_abstractions[order.next()];
-    abstraction->statistics();
+    abstraction->statistics(use_expensive_statistics);
 
     bool first_iteration = true;
     while(!order.done() && abstraction->is_solvable()) {
@@ -147,7 +167,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
         if(abstraction->size() > max_allowed_size) {
             abstraction->shrink(max_allowed_size, shrink_strategy);
-            abstraction->statistics();
+            abstraction->statistics(use_expensive_statistics);
         }
         Abstraction *new_abstraction = new CompositeAbstraction(
             abstraction, atomic_abstractions[var_no]);
@@ -156,7 +176,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         else
             abstraction->release_memory();
         abstraction = new_abstraction;
-        abstraction->statistics();
+        abstraction->statistics(use_expensive_statistics);
     }
     return abstraction;
 }
@@ -217,6 +237,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
     int abstraction_count = 1;
     int merge_strategy = MERGE_LINEAR_CG_GOAL_LEVEL;
     int shrink_strategy = SHRINK_HIGH_F_LOW_H;
+    bool use_expensive_statistics = false;
 
     if (g_using_abstraction_heuristic) {
         cerr << "The current implementation supports only one "
@@ -231,21 +252,31 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
         // TODO: better documentation what each parameter does
         if (config[end] != ")") { 
             NamedOptionParser option_parser;
-            option_parser.add_int_option("max_states",
-                                         &max_abstract_states,
-                                         "maximum abstraction size");
-            option_parser.add_int_option("count",
-                                         &abstraction_count, 
-                                         "nr of abstractions to build");
-            option_parser.add_int_option("merge_strategy",
-                                         &merge_strategy, 
-                                         "merge strategy");
-            option_parser.add_int_option("shrink_strategy",
-                                         &shrink_strategy,
-                                         "shrink strategy");
-            option_parser.add_bool_option("bound_is_for_product",
-                                          &bound_is_for_product,
-                                          "merge and shrink bound is for product");
+            option_parser.add_int_option(
+                "max_states",
+                &max_abstract_states,
+                "maximum abstraction size");
+            option_parser.add_int_option(
+                "count",
+                &abstraction_count, 
+                "nr of abstractions to build");
+            option_parser.add_int_option(
+                "merge_strategy",
+                &merge_strategy, 
+                "merge strategy");
+            option_parser.add_int_option(
+                "shrink_strategy",
+                &shrink_strategy,
+                "shrink strategy");
+            option_parser.add_bool_option(
+                "bound_is_for_product",
+                &bound_is_for_product,
+                "merge and shrink bound is for product");
+            option_parser.add_bool_option(
+                "expensive_statistics",
+                &use_expensive_statistics,
+                "show statistics on \"unique unlabeled edges\" (WARNING: "
+                "these are *very* slow -- check the warning in the output)");
             option_parser.parse_options(config, end, end);
             end ++;
         }
@@ -276,7 +307,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
         bound_is_for_product,
         abstraction_count,
         static_cast<MergeStrategy>(merge_strategy),
-        static_cast<ShrinkStrategy>(shrink_strategy));
-    result->dump_options();
+        static_cast<ShrinkStrategy>(shrink_strategy),
+        use_expensive_statistics);
     return result;
 }

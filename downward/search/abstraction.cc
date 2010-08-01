@@ -1013,13 +1013,13 @@ int Abstraction::unique_unlabeled_transitions() const {
             - unique_transitions.begin());
 }
 
-void Abstraction::statistics() const {
+void Abstraction::statistics(bool include_expensive_statistics) const {
     int memory = memory_estimate();
     peak_memory = max(peak_memory, memory);
     cout << "abstraction: "
          << varset.size() << "/" << g_variable_domain.size() << " vars, "
          << size() << " nodes, ";
-    if(g_merge_and_shrink_extra_statistics)
+    if(include_expensive_statistics)
         cout << unique_unlabeled_transitions();
     else
         cout << "???";
