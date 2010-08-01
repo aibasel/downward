@@ -139,11 +139,13 @@ void print_peak_mem_usage() {
 }
 
 void exit_handler(int, void*) {
-	print_peak_mem_usage();
+    print_peak_mem_usage();
 }
 
 void signal_handler(int ) {
-	print_peak_mem_usage();
+    print_peak_mem_usage();
+    cout << "caught signal: exiting" << endl;
+    exit(3);
 }
 
 
