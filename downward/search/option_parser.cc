@@ -197,13 +197,13 @@ void OptionParser::set_end_for_simple_config(const vector<string> &config,
 double OptionParser::parse_double(const vector<string> &config, 
                                   int start, int &end) {
     start = end;
-    double val = atof(config[end].c_str());
-    if (val == 0 && config[end] != "0") throw ParseError(end);
+    string str = config[end];
+    if (str.find_first_not_of(".0123456789") != string::npos)
+        throw ParseError(end);
+    double val = atof(str.c_str());
+    if (val == 0 && str.find_first_not_of(".0") != string::npos)
+            throw ParseError(end);
    
-    // check that there are no additional characters
-    ostringstream temp;
-    temp << val;
-    if (temp.str() != config[end]) throw ParseError(end);
     return val;
 }
 
@@ -211,12 +211,14 @@ int OptionParser::parse_int(const vector<string> &config,
                             int start, int &end) {
     start = end;
     int val = atoi(config[end].c_str());
-    if (val == 0 && config[end] != "0") throw ParseError(end);
+    if (val == 0 && config[end] != "0") 
+        throw ParseError(end);
    
     // check that there are no additional characters
     ostringstream temp;
     temp << val;
-    if (temp.str() != config[end]) throw ParseError(end);
+    if (temp.str() != config[end]) 
+        throw ParseError(end);
     return val;
 }
 
