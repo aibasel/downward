@@ -49,7 +49,6 @@ extern bool g_using_abstraction_heuristic;
 extern Timer g_timer;
 
 extern bool g_merge_and_shrink_simplify_labels;
-extern bool g_merge_and_shrink_forbid_merge_across_buckets;
 
 extern FFHeuristic *g_ff_heur;
 extern SearchSpace* g_learning_search_space;

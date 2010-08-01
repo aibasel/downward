@@ -568,7 +568,7 @@ void Abstraction::compute_abstraction(
     vector<vector<AbstractStateRef> > &buckets, int target_size,
     vector<slist<AbstractStateRef> > &collapsed_groups) const {
     typedef slist<AbstractStateRef> Group;
-    bool show_merge_across_bucket_warning = false;
+    bool show_combine_buckets_warning = false;
 
     assert(collapsed_groups.empty());
     collapsed_groups.reserve(target_size);
@@ -600,18 +600,16 @@ void Abstraction::compute_abstraction(
             } else {
                 if(bucket_no == 0)
                     collapsed_groups.push_back(Group());
-                if(show_merge_across_bucket_warning) {
-                    show_merge_across_bucket_warning = false;
-                    cout << "ARGH! Very small node limit, merge across buckets."
+                if(show_combine_buckets_warning) {
+                    show_combine_buckets_warning = false;
+                    cout << "ARGH! Very small node limit, must combine buckets."
                          << endl;
-                    if(g_merge_and_shrink_forbid_merge_across_buckets)
-                        exit(1);
                 }
             }
             Group &group = collapsed_groups.back();
             group.insert(group.begin(), bucket.begin(), bucket.end());
         } else {
-            // Complicated case: must merge until bucket_budget.
+            // Complicated case: must combine until bucket_budget.
             // cout << "SHRINK SOME: " << bucket_no << endl;
             // First create singleton groups.
             vector<Group> groups;

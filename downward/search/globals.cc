@@ -166,9 +166,8 @@ Cache *g_cache;
 int g_cache_hits = 0, g_cache_misses = 0;
 bool g_using_abstraction_heuristic = false;
 
-// TODO: The following two should be command-line options.
+// TODO: The following should be a command-line option.
 bool g_merge_and_shrink_simplify_labels = true;
-bool g_merge_and_shrink_forbid_merge_across_buckets = false;
 
 Timer g_timer;
 
