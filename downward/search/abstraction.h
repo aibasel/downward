@@ -73,7 +73,7 @@ class Abstraction {
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
 
-    void normalize();
+    void normalize(bool simplify_labels);
 protected:
     enum {INVALID = -2};
 
@@ -128,7 +128,8 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    CompositeAbstraction(Abstraction *abs1, Abstraction *abs2);
+    CompositeAbstraction(Abstraction *abs1, Abstraction *abs2,
+                         bool simplify_labels);
 };
 
 #endif

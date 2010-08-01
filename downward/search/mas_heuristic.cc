@@ -18,14 +18,14 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
     int max_abstract_states_, bool bound_is_for_product_,
     int abstraction_count_,
     MergeStrategy merge_strategy_, ShrinkStrategy shrink_strategy_,
-    bool use_expensive_statistics_)
+    bool use_label_simplification_, bool use_expensive_statistics_)
     : max_abstract_states(max_abstract_states_),
       bound_is_for_product(bound_is_for_product_),
       abstraction_count(abstraction_count_),
       merge_strategy(merge_strategy_),
       shrink_strategy(shrink_strategy_),
+      use_label_simplification(use_label_simplification_),
       use_expensive_statistics(use_expensive_statistics_) {
-
     dump_options();
     warn_on_unusual_options();
 }
@@ -170,7 +170,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             abstraction->statistics(use_expensive_statistics);
         }
         Abstraction *new_abstraction = new CompositeAbstraction(
-            abstraction, atomic_abstractions[var_no]);
+            abstraction, atomic_abstractions[var_no],
+            use_label_simplification);
         if(first_iteration)
             first_iteration = false;
         else
@@ -237,6 +238,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
     int abstraction_count = 1;
     int merge_strategy = MERGE_LINEAR_CG_GOAL_LEVEL;
     int shrink_strategy = SHRINK_HIGH_F_LOW_H;
+    bool use_label_simplification = true;
     bool use_expensive_statistics = false;
 
     if (g_using_abstraction_heuristic) {
@@ -273,6 +275,10 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
                 &bound_is_for_product,
                 "merge and shrink bound is for product");
             option_parser.add_bool_option(
+                "simplify_labels",
+                &use_label_simplification,
+                "enable label simplification");
+            option_parser.add_bool_option(
                 "expensive_statistics",
                 &use_expensive_statistics,
                 "show statistics on \"unique unlabeled edges\" (WARNING: "
@@ -308,6 +314,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
         abstraction_count,
         static_cast<MergeStrategy>(merge_strategy),
         static_cast<ShrinkStrategy>(shrink_strategy),
+        use_label_simplification,
         use_expensive_statistics);
     return result;
 }

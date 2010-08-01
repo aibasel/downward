@@ -212,7 +212,7 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(
     }
 }
 
-void Abstraction::normalize() {
+void Abstraction::normalize(bool simplify_labels) {
     /* Applies label simplification and removes duplicate transitions.
 
        This is called right before an abstraction is merged with
@@ -226,7 +226,7 @@ void Abstraction::normalize() {
     // dump();
 
     OperatorRegistry *op_reg = 0;
-    if(g_merge_and_shrink_simplify_labels) {
+    if(simplify_labels) {
         op_reg = new OperatorRegistry(relevant_operators, varset);
         op_reg->statistics();
     }
@@ -374,7 +374,8 @@ AtomicAbstraction::AtomicAbstraction(int variable_)
     }
 }
 
-CompositeAbstraction::CompositeAbstraction(Abstraction *abs1, Abstraction *abs2) {
+CompositeAbstraction::CompositeAbstraction(
+    Abstraction *abs1, Abstraction *abs2, bool simplify_labels) {
     assert(abs1->is_solvable() && abs2->is_solvable());
 
     components[0] = abs1;
@@ -383,7 +384,7 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1, Abstraction *abs2)
     ::set_union(abs1->varset.begin(), abs1->varset.end(),
                 abs2->varset.begin(), abs2->varset.end(),
                 back_inserter(varset));
-    if(g_merge_and_shrink_simplify_labels) {
+    if(simplify_labels) {
         if(varset.size() != abs1->varset.size() + abs2->varset.size()) {
             cout << "error: label simplification is only correct "
                  << "for orthogonal compositions" << endl;
@@ -417,9 +418,9 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1, Abstraction *abs2)
     // test is just a hack to make it work for linear abstraction
     // strategies. See issue68.
     if(abs1->varset.size() > 1)
-        abs1->normalize();
+        abs1->normalize(simplify_labels);
     else if(abs2->varset.size() > 1)
-        abs2->normalize();
+        abs2->normalize(simplify_labels);
 
     int multiplier = abs2->size();
     for(int op_no = 0; op_no < g_operators.size(); op_no++) {

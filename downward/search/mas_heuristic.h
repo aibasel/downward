@@ -32,6 +32,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     const int abstraction_count;
     const MergeStrategy merge_strategy;
     const ShrinkStrategy shrink_strategy;
+    const bool use_label_simplification;
     const bool use_expensive_statistics;
 
     std::vector<Abstraction *> abstractions;
@@ -48,7 +49,7 @@ public:
         int max_abstract_states, bool bound_is_for_product,
         int abstraction_count,
         MergeStrategy merge_strategy, ShrinkStrategy shrink_strategy,
-        bool use_expensive_statistics);
+        bool use_label_simplification, bool use_expensive_statistics);
     ~MergeAndShrinkHeuristic();
     static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end);
