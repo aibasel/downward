@@ -1,8 +1,8 @@
 #ifndef ABSTRACTION_H
 #define ABSTRACTION_H
 
-#include "fd_heuristic.h" // needed for ShrinkStrategy type;
-                          // TODO: move that type somewhere else?
+#include "mas_heuristic.h" // needed for ShrinkStrategy type;
+                           // TODO: move that type somewhere else?
 
 #include <ext/slist>
 #include <vector>

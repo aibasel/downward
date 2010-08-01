@@ -3,7 +3,7 @@ HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
 	  lm_cut_heuristic.h \
           cyclic_cg_heuristic.h cg_heuristic.h \
           additive_heuristic.h \
-          fd_heuristic.h ff_heuristic.h relaxation_heuristic.h\
+          mas_heuristic.h ff_heuristic.h relaxation_heuristic.h\
 	  max_heuristic.h \
           goal_count_heuristic.h blind_search_heuristic.h \
           globals.h \

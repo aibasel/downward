@@ -1,9 +1,9 @@
 #include "variable_order_finder.h"
 
 #include "causal_graph.h"
-#include "fd_heuristic.h" // needed for MergeStrategy type;
-                          // TODO: move that type somewhere else?
 #include "globals.h"
+#include "mas_heuristic.h" // needed for MergeStrategy type;
+                           // TODO: move that type somewhere else?
 
 #include <cassert>
 #include <iostream>

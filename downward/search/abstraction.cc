@@ -6,8 +6,8 @@
 using namespace std;
 
 #include "abstraction.h"
-#include "fd_heuristic.h" // needed for ShrinkStrategy type;
-                          // TODO: move that type somewhere else?
+#include "mas_heuristic.h" // needed for ShrinkStrategy type;
+                           // TODO: move that type somewhere else?
 #include "globals.h"
 #include "operator.h"
 #include "operator_registry.h"
