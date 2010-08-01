@@ -19,6 +19,45 @@ FinkbeinerDraegerHeuristic::FinkbeinerDraegerHeuristic() {
 FinkbeinerDraegerHeuristic::~FinkbeinerDraegerHeuristic() {
 }
 
+void FinkbeinerDraegerHeuristic::dump_options() const {
+    cout << "Composition strategy: ";
+    switch (g_compose_strategy) {
+        case COMPOSE_LINEAR_CG_GOAL_LEVEL:
+            cout << "linear CG/GOAL, tie breaking on level (main)"; break;
+        case COMPOSE_LINEAR_CG_GOAL_RANDOM:
+            cout << "linear CG/GOAL, tie breaking random"; break;
+        case COMPOSE_LINEAR_GOAL_CG_LEVEL:
+            cout << "linear GOAL/CG, tie breaking on level"; break;
+        case COMPOSE_LINEAR_RANDOM:
+            cout << "linear random"; break;
+        case COMPOSE_DFP:
+            cout << "Draeger/Finkbeiner/Podelski" << endl;
+            cerr << "DFP composition strategy not implemented." << endl;
+            exit(2);
+        default:
+            abort();
+    }
+    cout << endl;
+
+    cout << "Collapsing strategy: ";
+    switch (g_collapse_strategy) {
+        case COLLAPSE_HIGH_F_LOW_H:
+            cout << "high f/low h (main)"; break;
+        case COLLAPSE_LOW_F_LOW_H:
+            cout << "low f/low h"; break;
+        case COLLAPSE_HIGH_F_HIGH_H:
+            cout << "high f/high h"; break;
+        case COLLAPSE_RANDOM:
+            cout << "random states"; break;
+        case COLLAPSE_DFP:
+            cout << "Draeger/Finkbeiner/Podelski"; break;
+        default:
+            abort();
+    }
+    cout << endl;
+}
+
+
 void FinkbeinerDraegerHeuristic::verify_no_axioms_no_cond_effects() const {
     if(!g_axioms.empty()) {
         cerr << "Heuristic does not support axioms!" << endl
@@ -202,51 +241,20 @@ ScalarEvaluator *FinkbeinerDraegerHeuristic::create(
              << endl;
         exit(2);
     }
-                
 
-    cout << "Composition strategy: ";
-    switch (g_compose_strategy) {
-        case COMPOSE_LINEAR_CG_GOAL_LEVEL:
-            cout << "linear CG/GOAL, tie breaking on level (main)"; break;
-        case COMPOSE_LINEAR_CG_GOAL_RANDOM:
-            cout << "linear CG/GOAL, tie breaking random"; break;
-        case COMPOSE_LINEAR_GOAL_CG_LEVEL:
-            cout << "linear GOAL/CG, tie breaking on level"; break;
-        case COMPOSE_LINEAR_RANDOM:
-            cout << "linear random"; break;
-        case COMPOSE_DFP:
-            cout << "Draeger/Finkbeiner/Podelski" << endl;
-            cerr << "DFP composition strategy not implemented." << endl;
-            exit(2);
-        default:
-            if (g_compose_strategy < 0 ||
-                g_compose_strategy >= MAX_COMPOSE_STRATEGY) {
-                cerr << "Unknown merge strategy: " << g_compose_strategy << endl;
-                exit(2);
-            }
+    if (g_compose_strategy < 0 ||
+        g_compose_strategy >= MAX_COMPOSE_STRATEGY) {
+        cerr << "Unknown merge strategy: " << g_compose_strategy << endl;
+        exit(2);
     }
-    cout << endl;
 
-    cout << "Collapsing strategy: ";
-    switch (g_collapse_strategy) {
-        case COLLAPSE_HIGH_F_LOW_H:
-            cout << "high f/low h (main)"; break;
-        case COLLAPSE_LOW_F_LOW_H:
-            cout << "low f/low h"; break;
-        case COLLAPSE_HIGH_F_HIGH_H:
-            cout << "high f/high h"; break;
-        case COLLAPSE_RANDOM:
-            cout << "random states"; break;
-        case COLLAPSE_DFP:
-            cout << "Draeger/Finkbeiner/Podelski"; break;
-        default:
-            if (g_collapse_strategy < 0 ||
-                g_collapse_strategy >= MAX_COLLAPSE_STRATEGY) {
-                cerr << "Unknown shrink strategy: " << g_collapse_strategy << endl;
-                exit(2);
-            }
+    if (g_collapse_strategy < 0 ||
+        g_collapse_strategy >= MAX_COLLAPSE_STRATEGY) {
+        cerr << "Unknown shrink strategy: " << g_collapse_strategy << endl;
+        exit(2);
     }
-    cout << endl;
 
-    return new FinkbeinerDraegerHeuristic();
+    FinkbeinerDraegerHeuristic *result = new FinkbeinerDraegerHeuristic;
+    result->dump_options();
+    return result;
 }
