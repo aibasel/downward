@@ -6,6 +6,8 @@
 using namespace std;
 
 #include "abstraction.h"
+#include "fd_heuristic.h" // needed for ShrinkStrategy type;
+                          // TODO: move that type somewhere else?
 #include "globals.h"
 #include "operator.h"
 #include "operator_registry.h"
@@ -122,7 +124,10 @@ void Abstraction::compute_distances() {
     if(unreachable_count || irrelevant_count) {
         cout << "unreachable: " << unreachable_count << " nodes, "
              << "irrelevant: " << irrelevant_count << " nodes" << endl;
-        shrink(size(), true);
+        // Call shrink to discard unreachable and irrelevant states.
+        // The exact strategy doesn't matter much (although it should
+        // be efficient) as there is no need to actually shrink.
+        shrink(size(), SHRINK_HIGH_F_LOW_H, true);
     }
 }
 
@@ -492,7 +497,8 @@ AbstractStateRef CompositeAbstraction::get_abstract_state(const State &state) co
 }
 
 void Abstraction::partition_into_buckets(
-    vector<vector<AbstractStateRef> > &buckets) const {
+    vector<vector<AbstractStateRef> > &buckets,
+    ShrinkStrategy shrink_strategy) const {
     assert(buckets.empty());
 
     typedef vector<AbstractStateRef> Bucket;
@@ -510,7 +516,7 @@ void Abstraction::partition_into_buckets(
 
         int f = g + h;
         
-        if(g_collapse_strategy == COLLAPSE_RANDOM) {
+        if(shrink_strategy == SHRINK_RANDOM) {
             // Put all into the same bucket.
             f = h = 0;
         }
@@ -520,8 +526,8 @@ void Abstraction::partition_into_buckets(
         states_by_f_and_h[f][h].push_back(state);
     }
 
-    if(g_collapse_strategy == COLLAPSE_HIGH_F_LOW_H ||
-       g_collapse_strategy == COLLAPSE_RANDOM) {
+    if(shrink_strategy == SHRINK_HIGH_F_LOW_H ||
+       shrink_strategy == SHRINK_RANDOM) {
         for(int f = max_f; f >= 0; f--) {
             for(int h = 0; h < states_by_f_and_h[f].size(); h++) {
                 Bucket &bucket = states_by_f_and_h[f][h];
@@ -531,7 +537,7 @@ void Abstraction::partition_into_buckets(
                 }
             }
         }
-    } else if(g_collapse_strategy == COLLAPSE_LOW_F_LOW_H) {
+    } else if(shrink_strategy == SHRINK_LOW_F_LOW_H) {
         for(int f = 0; f <= max_f; f++) {
             for(int h = 0; h < states_by_f_and_h[f].size(); h++) {
                 Bucket &bucket = states_by_f_and_h[f][h];
@@ -541,7 +547,7 @@ void Abstraction::partition_into_buckets(
                 }
             }
         }
-    } else if(g_collapse_strategy == COLLAPSE_HIGH_F_HIGH_H) {
+    } else if(shrink_strategy == SHRINK_HIGH_F_HIGH_H) {
         for(int f = max_f; f >= 0; f--) {
             for(int h = states_by_f_and_h[f].size() - 1; h >= 0; h--) {
                 Bucket &bucket = states_by_f_and_h[f][h];
@@ -578,7 +584,7 @@ void Abstraction::compute_abstraction(
 
         if(bucket_budget >= (int) bucket.size()) {
             // Each state in bucket can become a singleton group.
-            // cout << "COLLAPSE NONE: " << bucket_no << endl;
+            // cout << "SHRINK NONE: " << bucket_no << endl;
             for(int i = 0; i < bucket.size(); i++) {
                 Group group;
                 group.push_front(bucket[i]);
@@ -586,7 +592,7 @@ void Abstraction::compute_abstraction(
             }
         } else if(bucket_budget <= 1) {
             // The whole bucket must form one group.
-            // cout << "COLLAPSE ALL: " << bucket_no << endl;
+            // cout << "SHRINK ALL: " << bucket_no << endl;
             int remaining_buckets = buckets.size() - bucket_no;
             if(remaining_state_budget >= remaining_buckets) {
                 collapsed_groups.push_back(Group());
@@ -605,7 +611,7 @@ void Abstraction::compute_abstraction(
             group.insert(group.begin(), bucket.begin(), bucket.end());
         } else {
             // Complicated case: must merge until bucket_budget.
-            // cout << "COLLAPSE SOME: " << bucket_no << endl;
+            // cout << "SHRINK SOME: " << bucket_no << endl;
             // First create singleton groups.
             vector<Group> groups;
             groups.resize(bucket.size());
@@ -907,7 +913,8 @@ void Abstraction::apply_abstraction(
     }
 }
 
-void Abstraction::shrink(int threshold, bool force) {
+void Abstraction::shrink(int threshold, ShrinkStrategy shrink_strategy,
+                         bool force) {
     /* Shrink the abstraction to size threshold.
 
        This also prunes all irrelevant and unreachable states, which
@@ -928,11 +935,11 @@ void Abstraction::shrink(int threshold, bool force) {
         return;
 
     vector<slist<AbstractStateRef> > collapsed_groups;
-    if(g_collapse_strategy == COLLAPSE_DFP) {
+    if(shrink_strategy == SHRINK_DFP) {
         compute_abstraction_dfp(threshold, collapsed_groups);
     } else {
         vector<vector<AbstractStateRef> > buckets;
-        partition_into_buckets(buckets);
+        partition_into_buckets(buckets, shrink_strategy);
         compute_abstraction(buckets, threshold, collapsed_groups);
         assert(collapsed_groups.size() <= threshold);
     }

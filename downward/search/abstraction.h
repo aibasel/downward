@@ -1,6 +1,9 @@
 #ifndef ABSTRACTION_H
 #define ABSTRACTION_H
 
+#include "fd_heuristic.h" // needed for ShrinkStrategy type;
+                          // TODO: move that type somewhere else?
+
 #include <ext/slist>
 #include <vector>
 using namespace std;
@@ -54,7 +57,8 @@ class Abstraction {
     void compute_goal_distances();
 
     void partition_into_buckets(
-        vector<vector<AbstractStateRef> > &buckets) const;
+        vector<vector<AbstractStateRef> > &buckets,
+        ShrinkStrategy shrink_strategy) const;
     void compute_abstraction(
         vector<vector<AbstractStateRef> > &buckets, int target_size,
         vector<slist<AbstractStateRef> > &collapsed_groups) const;
@@ -88,7 +92,8 @@ public:
     int size() const;
     void statistics() const;
 
-    void shrink(int threshold, bool force=false);
+    void shrink(int threshold, ShrinkStrategy shrink_strategy,
+                bool force=false);
     void release_memory();
 
     void dump() const;

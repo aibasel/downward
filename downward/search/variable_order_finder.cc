@@ -1,6 +1,9 @@
-#include "causal_graph.h"
-#include "globals.h"
 #include "variable_order_finder.h"
+
+#include "causal_graph.h"
+#include "fd_heuristic.h" // needed for MergeStrategy type;
+                          // TODO: move that type somewhere else?
+#include "globals.h"
 
 #include <cassert>
 #include <iostream>
@@ -8,15 +11,17 @@
 using namespace std;
 
 
-VariableOrderFinder::VariableOrderFinder(bool is_first) {
-    // TODO: Implement COMPOSE_DFP.
+VariableOrderFinder::VariableOrderFinder(
+    MergeStrategy merge_strategy_, bool is_first)
+    : merge_strategy(merge_strategy_) {
+    // TODO: Implement MERGE_DFP.
 
     int var_count = g_variable_domain.size();
     for(int i = var_count - 1; i >= 0; i--)
         remaining_vars.push_back(i);
 
-    if(g_compose_strategy == COMPOSE_LINEAR_CG_GOAL_RANDOM ||
-       g_compose_strategy == COMPOSE_LINEAR_RANDOM ||
+    if(merge_strategy == MERGE_LINEAR_CG_GOAL_RANDOM ||
+       merge_strategy == MERGE_LINEAR_RANDOM ||
        (!is_first))
         random_shuffle(remaining_vars.begin(), remaining_vars.end());
 
@@ -42,8 +47,8 @@ bool VariableOrderFinder::done() const{
 
 int VariableOrderFinder::next() {
     assert(!done());
-    if(g_compose_strategy == COMPOSE_LINEAR_CG_GOAL_LEVEL ||
-       g_compose_strategy == COMPOSE_LINEAR_CG_GOAL_RANDOM) {
+    if(merge_strategy == MERGE_LINEAR_CG_GOAL_LEVEL ||
+       merge_strategy == MERGE_LINEAR_CG_GOAL_RANDOM) {
         // First run: Try to find a causally connected variable.
         for(int i = 0; i < remaining_vars.size(); i++) {
             int var_no = remaining_vars[i];
@@ -60,7 +65,7 @@ int VariableOrderFinder::next() {
                 return var_no;
             }
         }
-    } else if(g_compose_strategy == COMPOSE_LINEAR_GOAL_CG_LEVEL) {
+    } else if(merge_strategy == MERGE_LINEAR_GOAL_CG_LEVEL) {
         // First run: Try to find a goal variable.
         for(int i = 0; i < remaining_vars.size(); i++) {
             int var_no = remaining_vars[i];
@@ -77,12 +82,12 @@ int VariableOrderFinder::next() {
                 return var_no;
             }
         }
-    } else if(g_compose_strategy == COMPOSE_LINEAR_RANDOM) {
+    } else if(merge_strategy == MERGE_LINEAR_RANDOM) {
         int var_no = remaining_vars[0];
         select_next(0, var_no);
         return var_no;
-    } else if(g_compose_strategy == COMPOSE_DFP) {
-        // TODO: Implement COMPOSE_DFP.
+    } else if(merge_strategy == MERGE_DFP) {
+        // TODO: Implement MERGE_DFP.
         assert(false);
     }
 

@@ -1,5 +1,6 @@
-#include "abstraction.h"
 #include "fd_heuristic.h"
+
+#include "abstraction.h"
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
@@ -13,43 +14,46 @@
 using namespace std;
 
 
-FinkbeinerDraegerHeuristic::FinkbeinerDraegerHeuristic() {
+FinkbeinerDraegerHeuristic::FinkbeinerDraegerHeuristic(
+    MergeStrategy merge_strategy_, ShrinkStrategy shrink_strategy_)
+    : merge_strategy(merge_strategy_),
+      shrink_strategy(shrink_strategy_) {
 }
 
 FinkbeinerDraegerHeuristic::~FinkbeinerDraegerHeuristic() {
 }
 
 void FinkbeinerDraegerHeuristic::dump_options() const {
-    cout << "Composition strategy: ";
-    switch (g_compose_strategy) {
-        case COMPOSE_LINEAR_CG_GOAL_LEVEL:
+    cout << "Merge strategy: ";
+    switch (merge_strategy) {
+        case MERGE_LINEAR_CG_GOAL_LEVEL:
             cout << "linear CG/GOAL, tie breaking on level (main)"; break;
-        case COMPOSE_LINEAR_CG_GOAL_RANDOM:
+        case MERGE_LINEAR_CG_GOAL_RANDOM:
             cout << "linear CG/GOAL, tie breaking random"; break;
-        case COMPOSE_LINEAR_GOAL_CG_LEVEL:
+        case MERGE_LINEAR_GOAL_CG_LEVEL:
             cout << "linear GOAL/CG, tie breaking on level"; break;
-        case COMPOSE_LINEAR_RANDOM:
+        case MERGE_LINEAR_RANDOM:
             cout << "linear random"; break;
-        case COMPOSE_DFP:
+        case MERGE_DFP:
             cout << "Draeger/Finkbeiner/Podelski" << endl;
-            cerr << "DFP composition strategy not implemented." << endl;
+            cerr << "DFP merge strategy not implemented." << endl;
             exit(2);
         default:
             abort();
     }
     cout << endl;
 
-    cout << "Collapsing strategy: ";
-    switch (g_collapse_strategy) {
-        case COLLAPSE_HIGH_F_LOW_H:
+    cout << "Shrink strategy: ";
+    switch (shrink_strategy) {
+        case SHRINK_HIGH_F_LOW_H:
             cout << "high f/low h (main)"; break;
-        case COLLAPSE_LOW_F_LOW_H:
+        case SHRINK_LOW_F_LOW_H:
             cout << "low f/low h"; break;
-        case COLLAPSE_HIGH_F_HIGH_H:
+        case SHRINK_HIGH_F_HIGH_H:
             cout << "high f/high h"; break;
-        case COLLAPSE_RANDOM:
+        case SHRINK_RANDOM:
             cout << "random states"; break;
-        case COLLAPSE_DFP:
+        case SHRINK_DFP:
             cout << "Draeger/Finkbeiner/Podelski"; break;
         default:
             abort();
@@ -102,7 +106,7 @@ Abstraction *FinkbeinerDraegerHeuristic::build_abstraction(bool is_first) {
     assert(!g_abstractions.empty());
     int threshold = g_abstraction_max_size;
 
-    VariableOrderFinder order(is_first);
+    VariableOrderFinder order(merge_strategy, is_first);
 
     Abstraction *abstraction = g_abstractions[order.next()];
     abstraction->statistics();
@@ -126,11 +130,12 @@ Abstraction *FinkbeinerDraegerHeuristic::build_abstraction(bool is_first) {
 
         if(atomic_abstraction_target_size != g_abstractions[var_no]->size()) {
             cout << "atomic abstraction too big; must shrink" << endl;
-            g_abstractions[var_no]->shrink(atomic_abstraction_target_size);
+            g_abstractions[var_no]->shrink(
+                atomic_abstraction_target_size, shrink_strategy);
         }
 
         if(abstraction->size() > max_allowed_size) {
-            abstraction->shrink(max_allowed_size);
+            abstraction->shrink(max_allowed_size, shrink_strategy);
             abstraction->statistics();
         }
         Abstraction *new_abstraction = new CompositeAbstraction(
@@ -199,6 +204,9 @@ int FinkbeinerDraegerHeuristic::compute_heuristic(const State &state) {
 
 ScalarEvaluator *FinkbeinerDraegerHeuristic::create(
     const std::vector<string> &config, int start, int &end) {
+    int merge_strategy = MERGE_LINEAR_CG_GOAL_LEVEL;
+    int shrink_strategy = SHRINK_HIGH_F_LOW_H;
+
     if (g_using_abstraction_heuristic) {
         cerr << "The current implementation supports only one "
              << "abstraction heuristic" << endl;
@@ -219,10 +227,10 @@ ScalarEvaluator *FinkbeinerDraegerHeuristic::create(
                                          &g_abstraction_nr, 
                                          "nr of abstractions to build");
             option_parser.add_int_option("merge_strategy",
-                                         &g_compose_strategy, 
+                                         &merge_strategy, 
                                          "merge strategy");
             option_parser.add_int_option("shrink_strategy",
-                                         &g_collapse_strategy, 
+                                         &shrink_strategy,
                                          "shrink strategy");
             option_parser.add_bool_option("bound_is_for_product",
                                          &g_merge_and_shrink_bound_is_for_product,
@@ -242,19 +250,19 @@ ScalarEvaluator *FinkbeinerDraegerHeuristic::create(
         exit(2);
     }
 
-    if (g_compose_strategy < 0 ||
-        g_compose_strategy >= MAX_COMPOSE_STRATEGY) {
-        cerr << "Unknown merge strategy: " << g_compose_strategy << endl;
+    if (merge_strategy < 0 || merge_strategy >= MAX_MERGE_STRATEGY) {
+        cerr << "Unknown merge strategy: " << merge_strategy << endl;
         exit(2);
     }
 
-    if (g_collapse_strategy < 0 ||
-        g_collapse_strategy >= MAX_COLLAPSE_STRATEGY) {
-        cerr << "Unknown shrink strategy: " << g_collapse_strategy << endl;
+    if (shrink_strategy < 0 || shrink_strategy >= MAX_SHRINK_STRATEGY) {
+        cerr << "Unknown shrink strategy: " << shrink_strategy << endl;
         exit(2);
     }
 
-    FinkbeinerDraegerHeuristic *result = new FinkbeinerDraegerHeuristic;
+    FinkbeinerDraegerHeuristic *result = new FinkbeinerDraegerHeuristic(
+        static_cast<MergeStrategy>(merge_strategy),
+        static_cast<ShrinkStrategy>(shrink_strategy));
     result->dump_options();
     return result;
 }

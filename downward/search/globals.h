@@ -54,26 +54,6 @@ extern int g_abstraction_nr;
 
 extern Timer g_timer;
 
-enum {
-    COMPOSE_LINEAR_CG_GOAL_LEVEL,
-    COMPOSE_LINEAR_CG_GOAL_RANDOM,
-    COMPOSE_LINEAR_GOAL_CG_LEVEL,
-    COMPOSE_LINEAR_RANDOM,
-    COMPOSE_DFP,
-    MAX_COMPOSE_STRATEGY
-};
-extern int g_compose_strategy;
-
-enum {
-    COLLAPSE_HIGH_F_LOW_H,
-    COLLAPSE_LOW_F_LOW_H,
-    COLLAPSE_HIGH_F_HIGH_H,
-    COLLAPSE_RANDOM,
-    COLLAPSE_DFP,
-    MAX_COLLAPSE_STRATEGY
-};
-extern int g_collapse_strategy;
-
 extern bool g_merge_and_shrink_bound_is_for_product;
 
 extern bool g_merge_and_shrink_simplify_labels;
