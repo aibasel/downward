@@ -174,18 +174,18 @@ FinkbeinerDraegerHeuristic::create_heuristic(const std::vector<string> &config,
         // TODO: better documentation what each parameter does
         if (config[end] != ")") { 
             NamedOptionParser option_parser;
-            option_parser.add_int_option("abstraction_max_size",
+            option_parser.add_int_option("max_states",
                                          &g_abstraction_max_size, 
                                          "maximum abstraction size");
-            option_parser.add_int_option("abstraction_nr",
+            option_parser.add_int_option("count",
                                          &g_abstraction_nr, 
                                          "nr of abstractions to build");
-            option_parser.add_int_option("composition",
+            option_parser.add_int_option("merge_strategy",
                                          &g_compose_strategy, 
-                                         "composition strategy");
-            option_parser.add_int_option("collapsing",
+                                         "merge strategy");
+            option_parser.add_int_option("shrink_strategy",
                                          &g_collapse_strategy, 
-                                         "collapsing strategy");
+                                         "shrink strategy");
             option_parser.add_bool_option("bound_is_for_product",
                                          &g_merge_and_shrink_bound_is_for_product,
                                          "merge and shrink bound is for product");
@@ -222,7 +222,7 @@ FinkbeinerDraegerHeuristic::create_heuristic(const std::vector<string> &config,
         default:
             if (g_compose_strategy < 0 ||
                 g_compose_strategy >= MAX_COMPOSE_STRATEGY) {
-                cerr << "Unknown compose strategy: " << g_compose_strategy << endl;
+                cerr << "Unknown merge strategy: " << g_compose_strategy << endl;
                 exit(2);
             }
     }
@@ -243,7 +243,7 @@ FinkbeinerDraegerHeuristic::create_heuristic(const std::vector<string> &config,
         default:
             if (g_collapse_strategy < 0 ||
                 g_collapse_strategy >= MAX_COLLAPSE_STRATEGY) {
-                cerr << "Unknown collapsing strategy: " << g_collapse_strategy << endl;
+                cerr << "Unknown shrink strategy: " << g_collapse_strategy << endl;
                 exit(2);
             }
     }
