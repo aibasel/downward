@@ -336,9 +336,8 @@ int CyclicCGHeuristic::compute_costs(const State &state) {
     return DEAD_END;
 }
 
-ScalarEvaluator* 
-CyclicCGHeuristic::create_heuristic(const std::vector<string> &config,
-                                    int start, int &end) {
+ScalarEvaluator *CyclicCGHeuristic::create(const std::vector<string> &config,
+                                           int start, int &end) {
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
     return new CyclicCGHeuristic();
 }

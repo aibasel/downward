@@ -1,5 +1,4 @@
 #include "max_heuristic.h"
-
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
@@ -142,9 +141,8 @@ int HSPMaxHeuristic::compute_heuristic(const State &state) {
     return max_cost;
 }
 
-ScalarEvaluator* 
-HSPMaxHeuristic::create_heuristic(const std::vector<string> &config,
-                                  int start, int &end) {
+ScalarEvaluator *HSPMaxHeuristic::create(const std::vector<string> &config, 
+                                         int start, int &end) {
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
     return new HSPMaxHeuristic;
 }

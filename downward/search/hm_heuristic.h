@@ -24,9 +24,8 @@ class HMHeuristic : public Heuristic{
 public:
 	HMHeuristic(int _m);
 	virtual ~HMHeuristic();
-    static ScalarEvaluator* 
-    create_heuristic(const std::vector<std::string> &config, 
-                     int start, int &end);
+    static ScalarEvaluator *create(const std::vector<std::string> &config, 
+                                   int start, int &end);
 protected:
 	int MAX_VALUE;
 

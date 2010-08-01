@@ -219,9 +219,8 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple& big_tuple) 
     return 0;
 }
 
-ScalarEvaluator* 
-HMHeuristic::create_heuristic(const std::vector<string> &config,
-                              int start, int &end) {
+ScalarEvaluator *HMHeuristic::create(const std::vector<string> &config, 
+                                     int start, int &end) {
     if (config[start + 1] != "(") throw ParseError(start+1);
     end = start + 2;
     OptionParser *parser = OptionParser::instance();

@@ -10,9 +10,8 @@ protected:
 public:
     BlindSearchHeuristic();
     ~BlindSearchHeuristic();
-    static ScalarEvaluator* 
-    create_heuristic(const std::vector<std::string> &config, 
-                     int start, int &end);
+    static ScalarEvaluator *create(const std::vector<std::string> &config, 
+                                   int start, int &end);
 };
 
 #endif

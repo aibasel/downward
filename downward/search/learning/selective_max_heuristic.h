@@ -146,6 +146,9 @@ public:
 	virtual void print_statistics() const;
 	virtual bool reach_state(const State& parent_state, const Operator &op,
 		        		const State& state);
+
+    static ScalarEvaluator *create(const std::vector<string> &config, 
+                                   int start, int &end);
 };
 
 #endif /* SELECTIVE_MAX_HEURISTIC_H_ */

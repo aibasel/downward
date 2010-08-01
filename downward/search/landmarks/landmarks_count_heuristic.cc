@@ -362,7 +362,7 @@ bool LandmarksCountHeuristic::reach_state(const State& parent_state,
     return true;
 }
 
-ScalarEvaluator* LandmarksCountHeuristic::create(
+ScalarEvaluator *LandmarksCountHeuristic::create(
     const std::vector<string> &config, int start, int &end) {
     int lm_type_ = LandmarksCountHeuristic::rpg_sasp;
     bool admissible_ = false;
@@ -375,15 +375,15 @@ ScalarEvaluator* LandmarksCountHeuristic::create(
 
         if (config[end] != ")") { 
             NamedOptionParser option_parser;
+            option_parser.add_bool_option("admissible",
+                                         &admissible_,
+                                         "get admissible estimate");
             option_parser.add_int_option("lm_type",
                                          &lm_type_, 
                                          "landmarks type");
             option_parser.add_bool_option("optimal",
                                          &optimal_,
                                          "optimal cost sharing");
-            option_parser.add_bool_option("admissible",
-                                         &admissible_,
-                                         "get admissible estimate");
             option_parser.add_bool_option("pref_ops",
                                          &pref_,
                                          "identify preferred operators");

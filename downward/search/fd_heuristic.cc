@@ -158,9 +158,8 @@ int FinkbeinerDraegerHeuristic::compute_heuristic(const State &state) {
     return cost;
 }
 
-ScalarEvaluator* 
-FinkbeinerDraegerHeuristic::create_heuristic(const std::vector<string> &config,
-                              int start, int &end) {
+ScalarEvaluator *FinkbeinerDraegerHeuristic::create(
+    const std::vector<string> &config, int start, int &end) {
     if (g_using_abstraction_heuristic) {
         cerr << "The current implementation supports only one "
              << "abstraction heuristic" << endl;

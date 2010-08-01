@@ -241,9 +241,8 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 }
 
-ScalarEvaluator* 
-CGHeuristic::create_heuristic(const std::vector<string> &config,
-                              int start, int &end) {
+ScalarEvaluator *CGHeuristic::create(const std::vector<string> &config, 
+                                     int start, int &end) {
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
     return new CGHeuristic;
 }

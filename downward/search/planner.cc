@@ -182,28 +182,30 @@ void register_parsers() {
         BestFirstSearchEngine::create_engine);
 
     // Register heuristics
-    OptionParser::instance()->register_scalar_evaluator("ff", 
-        FFHeuristic::create_heuristic);
-    OptionParser::instance()->register_scalar_evaluator("cg", 
-        CGHeuristic::create_heuristic);
-    OptionParser::instance()->register_scalar_evaluator("cea", 
-        CyclicCGHeuristic::create_heuristic);
     OptionParser::instance()->register_scalar_evaluator("add", 
-        AdditiveHeuristic::create_heuristic);
+        AdditiveHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("blind", 
-        BlindSearchHeuristic::create_heuristic);
+        BlindSearchHeuristic::create);
+    OptionParser::instance()->register_scalar_evaluator("cg", 
+        CGHeuristic::create);
+    OptionParser::instance()->register_scalar_evaluator("cea", 
+        CyclicCGHeuristic::create);
+    OptionParser::instance()->register_scalar_evaluator("ff", 
+        FFHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("goalcount", 
-        GoalCountHeuristic::create_heuristic);
-    OptionParser::instance()->register_scalar_evaluator("mas", 
-        FinkbeinerDraegerHeuristic::create_heuristic);
-    OptionParser::instance()->register_scalar_evaluator("lmcut", 
-        LandmarkCutHeuristic::create_heuristic);
-    OptionParser::instance()->register_scalar_evaluator("hmax", 
-        HSPMaxHeuristic::create_heuristic);
+        GoalCountHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("hm", 
-        HMHeuristic::create_heuristic);
+        HMHeuristic::create);
+    OptionParser::instance()->register_scalar_evaluator("hmax", 
+        HSPMaxHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("lmcount", 
         LandmarksCountHeuristic::create);
+    OptionParser::instance()->register_scalar_evaluator("lmcut", 
+        LandmarkCutHeuristic::create);
+    OptionParser::instance()->register_scalar_evaluator("mas", 
+        FinkbeinerDraegerHeuristic::create);
+    OptionParser::instance()->register_scalar_evaluator("selmax", 
+        SelectiveMaxHeuristic::create);
     
     // Register synergy heuristics
     OptionParser::instance()->register_synergy("lm_ff_syn", 

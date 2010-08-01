@@ -399,9 +399,8 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
    values a bit.
  */
 
-ScalarEvaluator* 
-LandmarkCutHeuristic::create_heuristic(const std::vector<string> &config,
-                              int start, int &end) {
+ScalarEvaluator *LandmarkCutHeuristic::create(const std::vector<string> &config,
+                                              int start, int &end) {
     if (config.size() <= start) throw ParseError(start);
 
     int iteration_limit_ = -1;

@@ -32,9 +32,8 @@ int BlindSearchHeuristic::compute_heuristic(const State &state) {
     */
 }
 
-ScalarEvaluator* 
-BlindSearchHeuristic::create_heuristic(const std::vector<string> &config,
-                              int start, int &end) {
+ScalarEvaluator *BlindSearchHeuristic::create(const std::vector<string> &config,
+                                              int start, int &end) {
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
     return new BlindSearchHeuristic();
 }

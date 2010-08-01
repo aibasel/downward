@@ -21,6 +21,7 @@ class NamedOptionParser {
     std::map<std::string, bool *> bool_options;
     std::map<std::string, float *> float_options;
     std::map<std::string, int *> int_options;
+    std::map<std::string, double *> double_options;
     std::map<std::string, ScalarEvaluator *> scalar_evaluator_options;
     std::map<std::string, std::vector<Heuristic *> *> heuristic_list_options;
     std::map<std::string, std::string *> str_options;
@@ -28,6 +29,8 @@ class NamedOptionParser {
     std::map<std::string, std::string> help;
 
     void parse_bool_option(const std::vector<std::string> &config, 
+                           int start, int &end);
+    void parse_double_option(const std::vector<std::string> &config, 
                            int start, int &end);
     void parse_int_option(const std::vector<std::string> &config, 
                            int start, int &end);
@@ -39,6 +42,7 @@ class NamedOptionParser {
                            int start, int &end);
     public:
         void add_bool_option(std::string name, bool *var, std::string desc);
+        void add_double_option(std::string name, double *var, std::string desc);
         void add_int_option(std::string name, int *var, std::string desc);
         void add_scalar_evaluator_option(std::string name, 
             ScalarEvaluator *var, std::string desc);
@@ -81,16 +85,19 @@ public:
                       std::vector<Heuristic *> &));
     void predefine_heuristic(const std::vector<std::string> &input);
 
-    ScalarEvaluator* parse_scalar_evaluator(const std::vector<std::string> &input, 
-        int start, int & end);
+    ScalarEvaluator *parse_scalar_evaluator(
+        const std::vector<std::string> &input, int start, int & end);
     Heuristic* parse_heuristic(const std::vector<std::string> &input, 
-        int start, int & end);
+                               int start, int & end);
     bool knows_scalar_evaluator(std::string name);
     SearchEngine* parse_search_engine(const std::vector<std::string> &input, 
-        int start, int & end);
+                                      int start, int & end);
     void parse_synergy_heuristics(const std::vector<std::string> &input, 
                                   int start, int &end, 
                                   std::vector<Heuristic *> &heuristics);
+
+    double parse_double(const std::vector<std::string> &config, 
+                        int start, int &end);
 
     int parse_int(const std::vector<std::string> &config, 
                   int start, int &end);
