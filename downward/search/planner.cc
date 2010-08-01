@@ -26,12 +26,11 @@
 #include "pref_evaluator.h"
 #include "sum_evaluator.h"
 #include "weighted_evaluator.h"
+#include "utilities.h"
 
 #include <iostream>
 #include <fstream>
-#include <limits>
 #include <vector>
-#include <signal.h>
 using namespace std;
 
 int save_plan(const vector<const Operator *> &plan);
@@ -41,16 +40,8 @@ void tokenize_options(const char *str, vector<std::string> &tokens);
 void register_parsers();
 void print_parse_error(const std::vector<std::string> tokens, ParseError &err);
 
-void exit_handler(int exit_code, void*);
-void signal_handler(int exit_code);
-
 int main(int argc, const char **argv) {
-    // Register event handlers
-    on_exit(exit_handler, 0);
-    signal(SIGABRT, signal_handler);
-    signal(SIGTERM, signal_handler);
-    signal(SIGSEGV, signal_handler);
-    signal(SIGINT,  signal_handler);
+    register_event_handlers();
 
     // read prepropressor output first because we need to know the initial
     // state when we create a general lazy search engine
@@ -118,36 +109,6 @@ int main(int argc, const char **argv) {
 
     return engine->found_solution() ? 0 : 1;
 }
-
-void print_peak_mem_usage() {
-    char filename[64];
-    sprintf(filename, "/proc/%d/status", (int)getpid());
-    string word;
-    ifstream proc_is(filename);
-    bool done = false;
-    while (!done) {
-        proc_is >> word;
-        if (word == "VmPeak:") {
-            proc_is >> word;
-            cout << "Peak Memory Usage: " << word << " kB" << endl;;
-            done = true;
-        }
-        else {
-            done = proc_is.eof();
-        }
-    }
-}
-
-void exit_handler(int, void*) {
-    print_peak_mem_usage();
-}
-
-void signal_handler(int ) {
-    print_peak_mem_usage();
-    cout << "caught signal: exiting" << endl;
-    exit(3);
-}
-
 
 int save_plan(const vector<const Operator *> &plan) {
     ofstream outfile;
