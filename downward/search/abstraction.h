@@ -38,7 +38,7 @@ struct AbstractTransition {
 
 class Abstraction {
     enum {QUITE_A_LOT = 1000000000};
-    friend class InitialAbstraction;
+    friend class AtomicAbstraction;
     friend class CompositeAbstraction;
 
     vector<const Operator *> relevant_operators;
@@ -87,7 +87,7 @@ public:
     Abstraction();
     virtual ~Abstraction();
 
-    static void build_initial_abstractions(vector<Abstraction *> &result);
+    static void build_atomic_abstractions(vector<Abstraction *> &result);
     bool is_solvable() const;
 
     int get_cost(const State &state) const;
@@ -107,7 +107,7 @@ public:
     void dump() const;
 };
 
-class InitialAbstraction : public Abstraction {
+class AtomicAbstraction : public Abstraction {
     int variable;
     vector<AbstractStateRef> lookup_table;
 protected:
@@ -116,7 +116,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    InitialAbstraction(int variable_);
+    AtomicAbstraction(int variable_);
 };
 
 class CompositeAbstraction : public Abstraction {

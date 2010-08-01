@@ -192,7 +192,7 @@ void Abstraction::compute_goal_distances() {
     breadth_first_search(backward_graph, queue, goal_distances);
 }
 
-void InitialAbstraction::apply_abstraction_to_lookup_table(
+void AtomicAbstraction::apply_abstraction_to_lookup_table(
     const vector<AbstractStateRef> &abstraction_mapping) {
     for(int i = 0; i < lookup_table.size(); i++) {
         AbstractStateRef old_state = lookup_table[i];
@@ -285,14 +285,14 @@ void Abstraction::normalize() {
     // dump();
 }
 
-void Abstraction::build_initial_abstractions(vector<Abstraction *> &result) {
+void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result) {
     assert(result.empty());
-    cout << "Building initial abstractions... " << flush;
+    cout << "Building atomic abstractions... " << flush;
     int var_count = g_variable_domain.size();
 
     // Step 1: Create the abstraction objects without transitions.
     for(int var_no = 0; var_no < var_count; var_no++)
-        result.push_back(new InitialAbstraction(var_no));
+        result.push_back(new AtomicAbstraction(var_no));
 
     // Step 2: Add transitions.
     for(int op_no = 0; op_no < g_operators.size(); op_no++) {
@@ -341,13 +341,13 @@ void Abstraction::build_initial_abstractions(vector<Abstraction *> &result) {
     cout << "done!" << endl;
 }
 
-InitialAbstraction::InitialAbstraction(int variable_)
+AtomicAbstraction::AtomicAbstraction(int variable_)
     : variable(variable_) {
 
     varset.push_back(variable);
     /*
-      This generates the nodes of the initial abstraction, but not the
-      arcs: It is more efficient to generate all arcs of all initial
+      This generates the nodes of the atomic abstraction, but not the
+      arcs: It is more efficient to generate all arcs of all atomic
       abstractions simultaneously.
      */
     int range = g_variable_domain[variable];
@@ -484,7 +484,7 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1, Abstraction *abs2)
     // dump();
 }
 
-AbstractStateRef InitialAbstraction::get_abstract_state(const State &state) const {
+AbstractStateRef AtomicAbstraction::get_abstract_state(const State &state) const {
     int value = state[variable];
     return lookup_table[value];
 }
@@ -973,9 +973,9 @@ int Abstraction::memory_estimate() const {
     return result;
 }
 
-int InitialAbstraction::memory_estimate() const {
+int AtomicAbstraction::memory_estimate() const {
     int result = Abstraction::memory_estimate();
-    result += sizeof(InitialAbstraction) - sizeof(Abstraction);
+    result += sizeof(AtomicAbstraction) - sizeof(Abstraction);
     result += sizeof(AbstractStateRef) * lookup_table.capacity();
     return result;
 }

@@ -107,13 +107,19 @@ void MergeAndShrinkHeuristic::verify_no_axioms_no_cond_effects() const {
 }
 
 Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
+    // TODO: We're leaking memory here in various ways. Fix this.
+    //       Don't forget that build_atomic_abstractions also
+    //       allocates memory.
+    vector<Abstraction *> atomic_abstractions;
+    cout << "Building atomic abstractions..." << endl;
+    Abstraction::build_atomic_abstractions(atomic_abstractions);
+
     cout << "Merging abstractions..." << endl;
-    assert(!g_abstractions.empty());
     int threshold = max_abstract_states;
 
     VariableOrderFinder order(merge_strategy, is_first);
 
-    Abstraction *abstraction = g_abstractions[order.next()];
+    Abstraction *abstraction = atomic_abstractions[order.next()];
     abstraction->statistics();
 
     bool first_iteration = true;
@@ -121,7 +127,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         int var_no = order.next();
 
         int max_allowed_size;
-        int atomic_abstraction_target_size = g_abstractions[var_no]->size();
+        int atomic_abstraction_target_size = atomic_abstractions[var_no]->size();
         if(bound_is_for_product) {
             int balanced_size = int(sqrt(threshold));
             if(atomic_abstraction_target_size > balanced_size)
@@ -133,9 +139,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
                 atomic_abstraction_target_size = threshold;
         }
 
-        if(atomic_abstraction_target_size != g_abstractions[var_no]->size()) {
+        if(atomic_abstraction_target_size != atomic_abstractions[var_no]->size()) {
             cout << "atomic abstraction too big; must shrink" << endl;
-            g_abstractions[var_no]->shrink(
+            atomic_abstractions[var_no]->shrink(
                 atomic_abstraction_target_size, shrink_strategy);
         }
 
@@ -144,7 +150,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             abstraction->statistics();
         }
         Abstraction *new_abstraction = new CompositeAbstraction(
-            abstraction, g_abstractions[var_no]);
+            abstraction, atomic_abstractions[var_no]);
         if(first_iteration)
             first_iteration = false;
         else
@@ -161,9 +167,6 @@ void MergeAndShrinkHeuristic::initialize() {
     cout << "Initializing merge-and-shrink heuristic..." << endl;
     verify_no_axioms_no_cond_effects();
     cout << "Abstraction size limit: " << threshold << endl;
-
-    cout << "Building initial abstractions..." << endl;
-    Abstraction::build_initial_abstractions(g_abstractions);
 
     int peak_memory = 0;
     for(int i = 0; i < abstraction_count; i++) {
