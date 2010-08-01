@@ -52,6 +52,8 @@ class Abstraction {
     int max_g;
     int max_h;
 
+    mutable int peak_memory;
+
     void compute_distances();
     void compute_init_distances();
     void compute_goal_distances();
@@ -91,6 +93,12 @@ public:
     int get_cost(const State &state) const;
     int size() const;
     void statistics() const;
+
+    int get_peak_memory_estimate() const;
+    // NOTE: This will only return something useful if the memory estimates
+    //       have been computed along the way by calls to statistics().
+    // TODO: Find a better way of doing this that doesn't require
+    //       a mutable attribute?
 
     void shrink(int threshold, ShrinkStrategy shrink_strategy,
                 bool force=false);

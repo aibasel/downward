@@ -165,9 +165,12 @@ void MergeAndShrinkHeuristic::initialize() {
     cout << "Building initial abstractions..." << endl;
     Abstraction::build_initial_abstractions(g_abstractions);
 
+    int peak_memory = 0;
     for(int i = 0; i < abstraction_count; i++) {
         cout << "Building abstraction nr " << i << "..." << endl;
-        abstractions.push_back(build_abstraction(i == 0));
+        Abstraction *abstraction = build_abstraction(i == 0);
+        peak_memory = max(peak_memory, abstraction->get_peak_memory_estimate());
+        abstractions.push_back(abstraction);
         if(!abstractions.back()->is_solvable())
             break;
     }
@@ -176,10 +179,7 @@ void MergeAndShrinkHeuristic::initialize() {
          << timer << "]" << endl
          << "initial h value: " << compute_heuristic(*g_initial_state)
          << endl;
-    cout << "Peak abstraction size: "
-         << g_abstraction_peak_memory << " bytes" << endl;
-
-
+    cout << "Estimated peak memory: " << peak_memory << " bytes" << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {

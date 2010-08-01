@@ -88,7 +88,8 @@ inline int get_op_index(const Operator *op) {
     return op_index;
 }
 
-Abstraction::Abstraction() {
+Abstraction::Abstraction()
+    : peak_memory(0) {
     transitions_by_op.resize(g_operators.size());
 }
 
@@ -1014,7 +1015,7 @@ int Abstraction::unique_unlabeled_transitions() const {
 
 void Abstraction::statistics() const {
     int memory = memory_estimate();
-    g_abstraction_peak_memory = max(g_abstraction_peak_memory, memory);
+    peak_memory = max(peak_memory, memory);
     cout << "abstraction: "
          << varset.size() << "/" << g_variable_domain.size() << " vars, "
          << size() << " nodes, ";
@@ -1033,6 +1034,10 @@ void Abstraction::statistics() const {
         cout << "abstraction is unsolvable";
     }
     cout << " [t=" << g_timer << "]" << endl;
+}
+
+int Abstraction::get_peak_memory_estimate() const {
+    return peak_memory;
 }
 
 void Abstraction::dump() const {

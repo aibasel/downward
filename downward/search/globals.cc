@@ -166,7 +166,6 @@ Cache *g_cache;
 int g_cache_hits = 0, g_cache_misses = 0;
 bool g_using_abstraction_heuristic = false;
 vector<Abstraction *> g_abstractions;
-int g_abstraction_peak_memory = 0;
 
 // TODO: The following three should be command-line options.
 bool g_merge_and_shrink_simplify_labels = true;
