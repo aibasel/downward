@@ -27,9 +27,9 @@ void MaxHeuristic::initialize() {
 			}
 			arff_out << "}" << endl;
 		}
-		arff_out << "@ATTRIBUTE g NUMERIC" << endl;
+		//arff_out << "@ATTRIBUTE g NUMERIC" << endl;
 
-		arff_out << "@ATTRIBUTE f NUMERIC" << endl;
+		//arff_out << "@ATTRIBUTE f NUMERIC" << endl;
 
 		/*
 		for (int i = 0; i < heuristics.size(); i++) {
@@ -109,8 +109,8 @@ int MaxHeuristic::compute_heuristic(const State& state)
 		for (int i = 0; i < g_variable_domain.size(); i++) {
 			arff_out << state[i] << ", ";
 		}
-		int g = g_learning_search_space->get_node(state).get_g();
-		arff_out << g << ", " << max + g << endl;
+		//int g = g_learning_search_space->get_node(state).get_g();
+		//arff_out << g << ", " << max + g << endl;
 	}
 
 	if (winner_count == 1) {

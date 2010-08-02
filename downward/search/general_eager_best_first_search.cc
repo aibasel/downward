@@ -28,7 +28,7 @@ GeneralEagerBestFirstSearch::set_pref_operator_heuristics(
 }
 
 void GeneralEagerBestFirstSearch::initialize() {
-    g_learning_search_space = &search_space; //TODO:CR - check if we can get of this
+    //g_learning_search_space = &search_space; //TODO:CR - check if we can get of this
     //TODO children classes should output which kind of search
     cout << "Conducting best first search" <<
     (reopen_closed_nodes ? " with" : " without") << " reopening closed nodes" << endl;

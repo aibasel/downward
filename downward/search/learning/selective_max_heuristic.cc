@@ -110,7 +110,7 @@ void SelectiveMaxHeuristic::initialize() {
 	cheap = new int[num_pairs];
 	threshold = new double[num_pairs];
 
-	ni_fe = new GFeatureExtractor(g_learning_search_space);
+	//ni_fe = new GFeatureExtractor(g_learning_search_space);
 
 
 	CompositeFeatureExtractor *cfe = new CompositeFeatureExtractor();
@@ -118,7 +118,8 @@ void SelectiveMaxHeuristic::initialize() {
 		cfe->add_feature_extractor(new StateVarFeatureExtractor());
 	}
 	if (feature_extractor_types.node_info) {
-		cfe->add_feature_extractor(ni_fe);
+	    cerr << "G Feature currently not supported" << endl;
+		//cfe->add_feature_extractor(ni_fe);
 	}
 	if (feature_extractor_types.landmarks) {
 		cfe->add_feature_extractor(new LandmarksFeatureExtractor(g_lgraph));
@@ -310,7 +311,7 @@ void SelectiveMaxHeuristic::train() {
 	reset_statistics();
 
 	//cout << "Freed Memory" << endl;
-	ni_fe->change_search_space(g_learning_search_space);
+	//ni_fe->change_search_space(g_learning_search_space);
 }
 
 int SelectiveMaxHeuristic::eval_heuristic(const State& state, int index, bool count) {

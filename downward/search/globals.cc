@@ -168,4 +168,4 @@ int g_cache_hits = 0, g_cache_misses = 0;
 Timer g_timer;
 
 FFHeuristic *g_ff_heur = 0;
-SearchSpace* g_learning_search_space = 0;
+//SearchSpace* g_learning_search_space = 0;

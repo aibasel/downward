@@ -48,6 +48,6 @@ extern int g_cache_hits, g_cache_misses;
 extern Timer g_timer;
 
 extern FFHeuristic *g_ff_heur;
-extern SearchSpace* g_learning_search_space;
+//extern SearchSpace* g_learning_search_space;
 
 #endif

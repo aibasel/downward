@@ -68,7 +68,7 @@ protected:
 
 	FeatureExtractor *feature_extractor;
 	FeatureExtractors feature_extractor_types;
-	GFeatureExtractor *ni_fe;
+	//GFeatureExtractor *ni_fe;
 
 	int *expensive;
 	int *cheap;
