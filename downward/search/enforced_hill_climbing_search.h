@@ -17,7 +17,8 @@ using namespace std;
 
 typedef pair<state_var_t*, pair<int, const Operator * > > OpenListEntryEHC;
 
-enum PreferredUsage {rank_preferred_first = 1, prune_by_preferred = 2};
+enum PreferredUsage {PRUNE_BY_PREFERRED, RANK_PREFERRED_FIRST,
+                     MAX_PREFERRED_USAGE};
 
 class EnforcedHillClimbingSearch : public SearchEngine {
 protected:

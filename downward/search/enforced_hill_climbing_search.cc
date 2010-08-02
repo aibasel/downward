@@ -10,8 +10,8 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(Heuristic *heuristic_,
     PreferredUsage preferred_usage_, bool use_cost_for_bfs_):
     heuristic(heuristic_), use_preferred(false), 
     preferred_usage(preferred_usage_), use_cost_for_bfs(use_cost_for_bfs_),
-    current_state(*g_initial_state), num_ehc_phases(0)
-{
+    current_state(*g_initial_state), num_ehc_phases(0) {
+
     search_progress.add_heuristic(heuristic_);
     g_evaluator = new GEvaluator();
 }
@@ -42,7 +42,7 @@ void EnforcedHillClimbingSearch::initialize() {
     cout << "Conducting Enforced Hill Climbing Search" << endl;
     if (use_preferred) {
         cout << "Using preferred operators for "
-             << (preferred_usage == rank_preferred_first ? "ranking successors"
+             << (preferred_usage == RANK_PREFERRED_FIRST ? "ranking successors"
                                                          : "pruning") << endl;
     }
 
@@ -57,7 +57,7 @@ void EnforcedHillClimbingSearch::initialize() {
     current_h = heuristic->get_heuristic();
     node.open_initial(current_h);
 
-    if (!use_preferred || (preferred_usage == prune_by_preferred)) {
+    if (!use_preferred || (preferred_usage == PRUNE_BY_PREFERRED)) {
         open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
     }
     else {
@@ -69,11 +69,11 @@ void EnforcedHillClimbingSearch::initialize() {
 }
 
 void EnforcedHillClimbingSearch::get_successors(const State &state, vector<const Operator *> &ops) {
-    if (!use_preferred || preferred_usage == rank_preferred_first) {
+    if (!use_preferred || preferred_usage == RANK_PREFERRED_FIRST) {
         g_successor_generator->generate_applicable_ops(state, ops);
 
         // mark preferred operators as preferred
-        if (use_preferred && (preferred_usage == rank_preferred_first)) {
+        if (use_preferred && (preferred_usage == RANK_PREFERRED_FIRST)) {
             for (int i = 0; i < ops.size(); i++) {
                 ops[i]->unmark();
             }
@@ -217,8 +217,10 @@ void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
     vector<Heuristic *> &heur) {
     preferred_heuristics = heur;
     if (heur.empty()) {
-        use_preferred = true;
+        use_preferred = false;
+        preferred_contains_eval = false;
     } else if (find( heur.begin(), heur.end(), heuristic) != heur.end()) {
+        use_preferred = true;
         preferred_contains_eval = true;
     }
 }
@@ -235,7 +237,7 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
    
     // parse options
 
-    string pref_usage = "prune_by_preferred";
+    int pref_usage = 0;
     bool use_cost_for_bfs_ = false;
     vector<Heuristic *> preferred_list;
 
@@ -244,9 +246,9 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
         NamedOptionParser option_parser;
         option_parser.add_bool_option("bfs_use_cost", 
             &use_cost_for_bfs_, "use cost for bfs");
-        option_parser.add_string_option("preferred_usage", 
+        option_parser.add_int_option("preferred_usage", 
             &pref_usage, 
-            "preferred operator usage (rank_preferred_first or prune_by_preferred)");
+            "preferred operator usage");
         option_parser.add_heuristic_list_option("preferred", 
             &preferred_list, "use preferred operators of these heuristics");
 
@@ -255,14 +257,11 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
     }
     if (config[end] != ")") throw ParseError(end);
    
-    PreferredUsage preferred_usage_ = prune_by_preferred;
-    if (pref_usage == "rank_preferred_first") {
-        preferred_usage_ = rank_preferred_first;
-    } else if (pref_usage != "prune_by_preferred") {
-        cerr << "preferred_usage must be \"rank_preferred_first\" or "
-             << "\"prune_by_preferred\"" << endl;
+    if (pref_usage < 0 || pref_usage >= MAX_PREFERRED_USAGE) {
+        cerr << "error: unknown preferred_usage: " << pref_usage << endl;
         exit(2);
     }
+    PreferredUsage preferred_usage_ = (PreferredUsage) pref_usage;
     
     EnforcedHillClimbingSearch *engine = \
         new EnforcedHillClimbingSearch(h, preferred_usage_, use_cost_for_bfs_);
