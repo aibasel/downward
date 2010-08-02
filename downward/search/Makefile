@@ -71,53 +71,52 @@ PROFOPT = -pg -O3
 # PROFLINKOPT = -lc_p
 PROFARGS = oa200000 < profile-input.pre
 
+USE_COIN_CLP=0
 
 ifeq ($(USE_LP_CLP),1) 
+COIN_ROOT = lp/coin
 
-COIN_ROOT=$(HOME)/Software/NewOsi
-COIN_INC_DIR=$(COIN_ROOT)/include/coin
-COIN_LIB_DIR=$(COIN_ROOT)/lib
-SOLVER=CLP
+## We want to link the Linear Programming libraries statically since
+## they are unlikely to be preinstalled on the grids we use for
+## evaluation. Static linking is a bit tricky: we need to specify the
+## libraries *after* the source files and in such an order that if A
+## depends on B, A is listed before B. (In case of dependency cycles,
+## we can and must list them multiple times.) The following set of
+## libraries and their ordering have been determined experimentally
+## and hence might break if we use more functions from the LP
+## libraries. See
+## http://ask.metafilter.com/117792/How-to-fix-C-static-linking-problems
 
-ifeq ($(SOLVER),CLP)
-SOLVER_INC_DIR=$(COIN_INC_DIR)
-SOLVER_LIB_DIR=$(COIN_LIB_DIR)
-SOLVER_LIBS=$(COIN_LIB_DIR)/libOsiClp.so $(SOLVER_LIB_DIR)/libClp.so
-endif
+COIN_LIBS = OsiClp Clp CoinUtils Osi
 
-ifeq ($(SOLVER),OSL)
-SOLVER_INC_DIR=$(OSL_INC_DIR)
-SOLVER_LIB_DIR=$(OSL_LIB_DIR)
-SOLVER_LIBS=$(COIN_LIB_DIR)/libOsiOsl.so $(SOLVER_LIB_DIR)/libosl.so
-endif
 
-ifeq ($(SOLVER),CPX)
-SOLVER_INC_DIR=$(CPX_INC_DIR)
-SOLVER_LIB_DIR=$(CPX_LIB_DIR)
-SOLVER_LIBS=$(COIN_LIB_DIR)/libOsiCpx.so $(SOLVER_LIB_DIR)/libcplex.a /usr/lib/libpthread.so
-endif
+## We want to link the COIN libraries statically and link other
+## libraries dynamically, unless we are in release mode. We accomplish
+## this by using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
+## afterwards (unless in release mode). See
+## http://ubuntuforums.org/showthread.php?t=491455
 
-COIN_FLAGS = -I$(COIN_INC_DIR) -I$(SOLVER_INC_DIR) -DCOIN_USE_$(SOLVER) -DUSE_LP 
-COIN_LINK_FLAGS = $(COIN_LIB_DIR)/libOsi.so $(COIN_LIB_DIR)/libCoinUtils.so $(SOLVER_LIBS)
-
+COIN_FLAGS = -I $(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
 CCOPT += $(COIN_FLAGS)
-LINKOPT += $(COIN_LINK_FLAGS)
-RELEASELINKOPT = $(COIN_LINK_FLAGS)
+
+COIN_LINK_FLAGS = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+RELEASELINKOPT_END += $(COIN_LINK_FLAGS)
+LINKOPT_END += $(COIN_LINK_FLAGS) -Wl,-Bdynamic
 endif
 
 all: search
 
 search: $(OBJECTS)
-	$(CC) $(LINKOPT) $(OBJECTS)  -o search
+	$(CC) $(LINKOPT) $(OBJECTS) $(LINKOPT_END) -o search
 
 profile-search: $(PROFILE_OBJECTS)
-	$(CC) $(LINKOPT) $(PROFLINKOPT) $(PROFOPT) $(PROFILE_OBJECTS) \
+	$(CC) $(LINKOPT) $(PROFLINKOPT) $(PROFOPT) $(PROFILE_OBJECTS) $(LINKOPT_END)\
           -o profile-search
 
 release: release-search
 
 release-search: $(RELEASE_OBJECTS) 
-	$(CC) $(RELEASEOPT) $(RELEASELINKOPT) $(RELEASE_OBJECTS) \
+	$(CC) $(RELEASEOPT) $(RELEASELINKOPT) $(RELEASE_OBJECTS) $(RELEASELINKOPT_END)\
 	  -o release-search
 
 PROFILE: profile-search

@@ -35,12 +35,6 @@ public:
 typedef OsiClpSolverInterface OsiXxxSolverInterface;
 #endif
 
-#ifdef COIN_USE_OSL
-#include "OsiOslSolverInterface.hpp"
-typedef OsiOslSolverInterface OsiXxxSolverInterface;
-#include "ekk_c_api.h"
-#endif
-
 #ifdef COIN_USE_CPX
 #include "OsiCpxSolverInterface.hpp"
 typedef OsiCpxSolverInterface OsiXxxSolverInterface;
