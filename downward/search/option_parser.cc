@@ -179,18 +179,18 @@ void OptionParser::parse_heuristic_list(const vector<string> &input, int start,
 }
 
 // helper method for simple configs that may have the
-// form "<name>" or "<name>()" (e.g. "ff" or "ff()" for the
-// ff heuristic) 
+// form "<name>()" (e.g. "ff()" for the ff heuristic) 
 void OptionParser::set_end_for_simple_config(const vector<string> &config, 
                                              int start, int &end) {
-    if (config.size() <= start) throw ParseError(start);
+    if (config.size() <= start)
+        throw ParseError(start);
 
     // "<name>()"
     if (config.size() > start + 2 && config[start + 1] == "(" && 
         config[start + 2] == ")") {
         end = start + 2;
-    } else { // "<name>"
-        end = start;
+    } else {
+        throw ParseError(start + 2);
     }
     return;
 }
