@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -266,7 +267,10 @@ void NamedOptionParser::add_double_option(string name, double *var, string desc)
     // TODO: add default value to help string
 }
 
-void NamedOptionParser::add_int_option(string name, int *var, string desc) {
+void NamedOptionParser::add_int_option(string name, int *var, string desc, 
+                                       bool allow_infinity) {
+    if (allow_infinity) 
+        can_be_infinity.insert(name);
     int_options[name] = var;
     help[name] = "int " + name + " " + desc;
     // TODO: add default value to help string
@@ -274,8 +278,11 @@ void NamedOptionParser::add_int_option(string name, int *var, string desc) {
 
 void NamedOptionParser::add_scalar_evaluator_option(string name, 
                                                     ScalarEvaluator *var, 
-                                                    string desc) {
+                                                    string desc, 
+                                                    bool allow_none) {
     scalar_evaluator_options[name] = var;
+    if (allow_none) 
+        can_be_none.insert(name);
     help[name] = "scalar evaluator " + name + " " + desc;
 }
 
@@ -364,6 +371,16 @@ void NamedOptionParser::parse_int_option(const vector<string> &config,
     end ++;
     if (config[end] != "=") throw ParseError(end);
     end ++;
+  
+    string name = config[end];
+    if (name == "Infinity" || name == "infinity") {
+        if (can_be_infinity.find(name) != can_be_infinity.end()) {
+            *val = numeric_limits<int>::max();
+            return;
+        } else {
+            throw ParseError(end);
+        }
+    }
 
     OptionParser *parser = OptionParser::instance();
     *val = parser->parse_int(config, end, end);
@@ -376,6 +393,16 @@ void NamedOptionParser::parse_scalar_evaluator_option(
     end ++;
     if (config[end] != "=") throw ParseError(end);
     end ++;
+
+    string name = config[end];
+    if (name == "None" || name == "none") {
+        if (can_be_none.find(name) != can_be_none.end()) {
+            val = NULL;
+            return;
+        } else {
+            throw ParseError(end);
+        }
+    }
 
     OptionParser *parser = OptionParser::instance();
     val = parser->parse_scalar_evaluator(config, end, end);

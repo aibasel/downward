@@ -234,9 +234,8 @@ void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int> &valu
     }
 }
 
-SearchEngine *
-GeneralEagerBestFirstSearch::create_engine(const vector<string> &config,
-                                           int start, int &end) {
+SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
+                                                  int start, int &end) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
@@ -257,8 +256,8 @@ GeneralEagerBestFirstSearch::create_engine(const vector<string> &config,
         NamedOptionParser option_parser;
         option_parser.add_bool_option("reopen_closed", &reopen_closed,
                                       "reopen closed nodes");
-        option_parser.add_scalar_evaluator_option("f_evaluator", f_eval,
-                                                  "set evaluator for jump statistics");
+        option_parser.add_scalar_evaluator_option(
+            "f_evaluator", f_eval, "set evaluator for jump statistics", true);
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
 

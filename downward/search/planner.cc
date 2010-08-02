@@ -128,19 +128,19 @@ int save_plan(const vector<const Operator *> &plan) {
 void register_parsers() {
     // Register search engines
     OptionParser::instance()->register_search_engine("eager", 
-        GeneralEagerBestFirstSearch::create_engine);
+        GeneralEagerBestFirstSearch::create);
     OptionParser::instance()->register_search_engine("eager_astar", 
         GeneralEagerBestFirstSearch::create_astar_engine);
     OptionParser::instance()->register_search_engine("eager_standard_greedy", 
         GeneralEagerBestFirstSearch::create_standard_greedy_engine);
     OptionParser::instance()->register_search_engine("lazy", 
-        GeneralLazyBestFirstSearch::create_engine);
+        GeneralLazyBestFirstSearch::create);
     OptionParser::instance()->register_search_engine("lazy_standard_greedy", 
         GeneralLazyBestFirstSearch::create_standard_greedy_engine);
     OptionParser::instance()->register_search_engine("lazy_wastar", 
         GeneralLazyBestFirstSearch::create_weighted_astar_engine);
     OptionParser::instance()->register_search_engine("ehc", 
-        EnforcedHillClimbingSearch::create_engine);
+        EnforcedHillClimbingSearch::create);
     OptionParser::instance()->register_search_engine("old_greedy", 
         BestFirstSearchEngine::create_engine);
 

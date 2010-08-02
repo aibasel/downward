@@ -57,8 +57,8 @@ public:
     void set_bound(int b) {bound = b;}
     int get_bound() {return bound;}
     
-    static SearchEngine* create_engine(const std::vector<std::string> &config, 
-                                         int start, int &end);
+    static SearchEngine *create(const std::vector<std::string> &config, 
+                                int start, int &end);
     static SearchEngine* create_standard_greedy_engine(
         const std::vector<std::string> &config, int start, int &end);
     static SearchEngine* create_weighted_astar_engine(

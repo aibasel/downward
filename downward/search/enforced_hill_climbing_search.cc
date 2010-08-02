@@ -224,9 +224,8 @@ void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
 }
 
 
-SearchEngine* 
-EnforcedHillClimbingSearch::create_engine(const vector<string> &config,
-                                           int start, int &end) {
+SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
+                                                 int start, int &end) {
     if (config[start + 1] != "(") throw ParseError(start + 1);
     Heuristic *h = \
         OptionParser::instance()->parse_heuristic(config, start + 2, end);

@@ -55,8 +55,8 @@ public:
 
     virtual void statistics() const;
 
-    static SearchEngine* create_engine(const vector<string> &config, 
-                                       int start, int &end);
+    static SearchEngine *create(const vector<string> &config, int start, 
+                                int &end);
 };
 
 #endif
