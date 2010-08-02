@@ -35,44 +35,59 @@ MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
-    // TODO: Add missing options
-    cout << "Abstraction size limit: " << max_abstract_states << endl;
-
-    cout << "Merge strategy: ";
+    cout << "Abstraction size limit: "
+         << max_abstract_states << endl
+         << "Abstraction size limit right before merge: "
+         << max_abstract_states_before_merge << endl
+         << "Number of abstractions to maximize over: "
+         << abstraction_count << endl
+         << "Merge strategy: ";
     switch (merge_strategy) {
-        case MERGE_LINEAR_CG_GOAL_LEVEL:
-            cout << "linear CG/GOAL, tie breaking on level (main)"; break;
-        case MERGE_LINEAR_CG_GOAL_RANDOM:
-            cout << "linear CG/GOAL, tie breaking random"; break;
-        case MERGE_LINEAR_GOAL_CG_LEVEL:
-            cout << "linear GOAL/CG, tie breaking on level"; break;
-        case MERGE_LINEAR_RANDOM:
-            cout << "linear random"; break;
-        case MERGE_DFP:
-            cout << "Draeger/Finkbeiner/Podelski" << endl;
-            cerr << "DFP merge strategy not implemented." << endl;
-            exit(2);
-        default:
-            abort();
+    case MERGE_LINEAR_CG_GOAL_LEVEL:
+        cout << "linear CG/GOAL, tie breaking on level (main)";
+        break;
+    case MERGE_LINEAR_CG_GOAL_RANDOM:
+        cout << "linear CG/GOAL, tie breaking random";
+        break;
+    case MERGE_LINEAR_GOAL_CG_LEVEL:
+        cout << "linear GOAL/CG, tie breaking on level";
+        break;
+    case MERGE_LINEAR_RANDOM:
+        cout << "linear random";
+        break;
+    case MERGE_DFP:
+        cout << "Draeger/Finkbeiner/Podelski" << endl;
+        cerr << "DFP merge strategy not implemented." << endl;
+        exit(2);
+    default:
+        abort();
     }
-    cout << endl;
-
-    cout << "Shrink strategy: ";
+    cout << endl
+         << "Shrink strategy: ";
     switch (shrink_strategy) {
-        case SHRINK_HIGH_F_LOW_H:
-            cout << "high f/low h (main)"; break;
-        case SHRINK_LOW_F_LOW_H:
-            cout << "low f/low h"; break;
-        case SHRINK_HIGH_F_HIGH_H:
-            cout << "high f/high h"; break;
-        case SHRINK_RANDOM:
-            cout << "random states"; break;
-        case SHRINK_DFP:
-            cout << "Draeger/Finkbeiner/Podelski"; break;
-        default:
-            abort();
+    case SHRINK_HIGH_F_LOW_H:
+        cout << "high f/low h (main)";
+        break;
+    case SHRINK_LOW_F_LOW_H:
+        cout << "low f/low h";
+        break;
+    case SHRINK_HIGH_F_HIGH_H:
+        cout << "high f/high h";
+        break;
+    case SHRINK_RANDOM:
+        cout << "random states";
+        break;
+    case SHRINK_DFP:
+        cout << "Draeger/Finkbeiner/Podelski";
+        break;
+    default:
+        abort();
     }
-    cout << endl;
+    cout << endl
+         << "Label simplification: "
+         << (use_label_simplification ? "enabled" : "disabled") << endl
+         << "Expensive statistics: "
+         << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
 
 void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
@@ -159,8 +174,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_abstractions also
     //       allocates memory.
-    vector<Abstraction *> atomic_abstractions;
     cout << "Building atomic abstractions..." << endl;
+    vector<Abstraction *> atomic_abstractions;
     Abstraction::build_atomic_abstractions(atomic_abstractions);
 
     cout << "Merging abstractions..." << endl;
@@ -307,7 +322,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
 
     if (max_states == -1 && max_states_before_merge == -1) {
         // None of the two options specified: set default limit
-        max_states = 1000;
+        max_states = 50000;
     }
 
     // If exactly one of the max_states options has been set, set the other
@@ -322,7 +337,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
     }
 
     if (max_states_before_merge > max_states) {
-        cerr << "Warning: max_states_before_merge exceeds max_states, "
+        cerr << "warning: max_states_before_merge exceeds max_states, "
              << "correcting." << endl;
         max_states_before_merge = max_states;
     }
@@ -340,12 +355,12 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
     }
 
     if (merge_strategy < 0 || merge_strategy >= MAX_MERGE_STRATEGY) {
-        cerr << "Unknown merge strategy: " << merge_strategy << endl;
+        cerr << "error: unknown merge strategy: " << merge_strategy << endl;
         exit(2);
     }
 
     if (shrink_strategy < 0 || shrink_strategy >= MAX_SHRINK_STRATEGY) {
-        cerr << "Unknown shrink strategy: " << shrink_strategy << endl;
+        cerr << "error: unknown shrink strategy: " << shrink_strategy << endl;
         exit(2);
     }
 
