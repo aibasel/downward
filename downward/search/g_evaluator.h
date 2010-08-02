@@ -20,9 +20,8 @@ public:
     bool dead_end_is_reliable() const;
     int get_value() const;
     void get_involved_heuristics(std::set<Heuristic*>&) {}
-    static ScalarEvaluator* 
-    create_g_evaluator(const std::vector<std::string> &config, 
-                       int start, int &end);
+    static ScalarEvaluator *create(const std::vector<std::string> &config, 
+                                   int start, int &end);
 };
 
 #endif

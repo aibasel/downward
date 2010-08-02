@@ -6,9 +6,8 @@
 #include <cassert>
 using namespace std;
 template<class Entry>
-OpenList<Entry>*
-AlternationOpenList<Entry>::create_open_list(const std::vector<string> &config,
-                                             int start, int &end) {
+OpenList<Entry> *AlternationOpenList<Entry>::create(
+    const std::vector<string> &config, int start, int &end) {
 
     if (config[start+1] != "(") throw ParseError(start+1);
     // create sublists

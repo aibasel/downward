@@ -16,15 +16,15 @@ OpenListParser<Entry>* OpenListParser<Entry>::instance() {
 
         // Register open lists
         OpenListParser<Entry>::instance()->register_open_list("single", 
-            StandardScalarOpenList<Entry>::create_open_list);
+            StandardScalarOpenList<Entry>::create);
         OpenListParser<Entry>::instance()->register_open_list("single_buckets", 
-            BucketOpenList<Entry>::create_open_list);
+            BucketOpenList<Entry>::create);
         OpenListParser<Entry>::instance()->register_open_list("tiebreaking", 
-            TieBreakingOpenList<Entry>::create_open_list);
+            TieBreakingOpenList<Entry>::create);
         OpenListParser<Entry>::instance()->register_open_list("alt", 
-            AlternationOpenList<Entry>::create_open_list);
+            AlternationOpenList<Entry>::create);
         OpenListParser<Entry>::instance()->register_open_list("pareto", 
-            ParetoOpenList<Entry>::create_open_list);
+            ParetoOpenList<Entry>::create);
 
     }
     return instance_;

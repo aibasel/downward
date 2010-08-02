@@ -14,9 +14,9 @@ using namespace std;
 */
 
 template<class Entry>
-OpenList<Entry>*
-TieBreakingOpenList<Entry>::create_open_list(const std::vector<string> &config,
-                                             int start, int &end) {
+OpenList<Entry> *TieBreakingOpenList<Entry>::create(
+    const std::vector<string> &config, int start, int &end) {
+
     std::vector<ScalarEvaluator *> evaluators;
     NamedOptionParser option_parser;
     bool only_pref_ = false;

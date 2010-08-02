@@ -50,9 +50,8 @@ void SumEvaluator::get_involved_heuristics(std::set<Heuristic*> &hset) {
         evaluators[i]->get_involved_heuristics(hset);
 }
 
-ScalarEvaluator* 
-SumEvaluator::create_sum_evaluator(const std::vector<std::string> &config,
-                               int start, int &end) {
+ScalarEvaluator *SumEvaluator::create(const std::vector<std::string> &config,
+                                      int start, int &end) {
     if (config[start+1] != "(") throw ParseError(start+1);
 
     // create evaluators

@@ -42,9 +42,8 @@ public:
     
     int boost_preferred();
     void boost_last_used_list();
-    static OpenList<Entry>* 
-    create_open_list(const std::vector<std::string> &config, 
-                     int start, int &end);
+    static OpenList<Entry> *create(const std::vector<std::string> &config, 
+                                   int start, int &end);
 };
 
 #include "alternation_open_list.cc"

@@ -34,9 +34,8 @@ void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic*> &hset) {
     evaluator->get_involved_heuristics(hset);
 }
 
-ScalarEvaluator* 
-WeightedEvaluator::create_weighted_evaluator(const std::vector<std::string> &config,
-                               int start, int &end) {
+ScalarEvaluator *WeightedEvaluator::create(
+    const std::vector<std::string> &config, int start, int &end) {
     if (config[start+1] != "(") throw ParseError(start+1);
 
     // create evaluator

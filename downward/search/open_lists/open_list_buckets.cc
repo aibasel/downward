@@ -16,9 +16,8 @@ using namespace std;
 */
 
 template<class Entry>
-OpenList<Entry>* 
-BucketOpenList<Entry>::create_open_list(const std::vector<string> &config,
-                                        int start, int &end) {
+OpenList<Entry> *BucketOpenList<Entry>::create(
+    const std::vector<string> &config, int start, int &end) {
 
     std::vector<ScalarEvaluator *> evaluators;
     bool only_pref_ = false;

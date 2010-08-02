@@ -23,9 +23,8 @@ public:
     int get_value() const;
     void get_involved_heuristics(std::set<Heuristic*> &hset);
     
-    static ScalarEvaluator* 
-    create_sum_evaluator(const std::vector<std::string> &config, 
-                         int start, int &end);
+    static ScalarEvaluator *create(const std::vector<std::string> &config, 
+                                   int start, int &end);
 };
 
 #endif

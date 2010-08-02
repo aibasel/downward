@@ -26,9 +26,8 @@ int PrefEvaluator::get_value() const {
         return 1;
 }
 
-ScalarEvaluator* 
-PrefEvaluator::create_pref_evaluator(const std::vector<std::string> &config,
-                               int start, int &end) {
+ScalarEvaluator *PrefEvaluator::create(const std::vector<std::string> &config,
+                                       int start, int &end) {
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
     return new PrefEvaluator();
 }

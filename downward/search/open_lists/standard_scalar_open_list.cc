@@ -8,8 +8,7 @@
 #include <cassert>
 using namespace std;
 template<class Entry>
-OpenList<Entry>* 
-StandardScalarOpenList<Entry>::create_open_list(
+OpenList<Entry> *StandardScalarOpenList<Entry>::create(
     const std::vector<string> &config, int start, int &end) {
 
     std::vector<ScalarEvaluator *> evaluators;

@@ -176,13 +176,13 @@ void register_parsers() {
    
     // register combinations and g evaluator
     OptionParser::instance()->register_scalar_evaluator("sum", 
-        SumEvaluator::create_sum_evaluator);
+        SumEvaluator::create);
     OptionParser::instance()->register_scalar_evaluator("weight", 
-        WeightedEvaluator::create_weighted_evaluator);
+        WeightedEvaluator::create);
     OptionParser::instance()->register_scalar_evaluator("g", 
-        GEvaluator::create_g_evaluator);
+        GEvaluator::create);
     OptionParser::instance()->register_scalar_evaluator("pref", 
-        PrefEvaluator::create_pref_evaluator);
+        PrefEvaluator::create);
 
     // Note:
     // open lists are registered in the constructor of OpenListParser.
