@@ -274,9 +274,9 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
     return engine;
 }
 
-SearchEngine *
-GeneralEagerBestFirstSearch::create_astar_engine(const vector<string> &config,
-                                                 int start, int &end) {
+SearchEngine *GeneralEagerBestFirstSearch::create_astar(
+    const vector<string> &config, int start, int &end) {
+
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
@@ -297,7 +297,7 @@ GeneralEagerBestFirstSearch::create_astar_engine(const vector<string> &config,
     evals.push_back(f_eval);
     evals.push_back(eval);
     OpenList<state_var_t *> *open = \
-        new TieBreakingOpenList<state_var_t *>(evals, false, true);
+        new TieBreakingOpenList<state_var_t *>(evals, false, false);
 
     GeneralEagerBestFirstSearch *engine = \
         new GeneralEagerBestFirstSearch(open, true, f_eval);
@@ -305,9 +305,9 @@ GeneralEagerBestFirstSearch::create_astar_engine(const vector<string> &config,
     return engine;
 }
 
-SearchEngine *
-GeneralEagerBestFirstSearch::create_standard_greedy_engine(const vector<string> &config,
-                                                           int start, int &end) {
+SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
+    const vector<string> &config, int start, int &end) {
+
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 

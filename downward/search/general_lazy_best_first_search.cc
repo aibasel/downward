@@ -253,15 +253,17 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
 }
 
 
-SearchEngine* 
-GeneralLazyBestFirstSearch::create_standard_greedy_engine(const vector<string> &config,
-    int start, int &end) {
-    if (config[start + 1] != "(") throw ParseError(start + 1);
+SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
+    const vector<string> &config, int start, int &end) {
+
+    if (config[start + 1] != "(")
+        throw ParseError(start + 1);
 
     vector<ScalarEvaluator *> evals;
     OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
                                                           end, false, evals);
-    if (evals.empty()) throw ParseError(end);
+    if (evals.empty())
+        throw ParseError(end);
     end ++;
      
     vector<Heuristic *> preferred_list;
@@ -301,16 +303,17 @@ GeneralLazyBestFirstSearch::create_standard_greedy_engine(const vector<string> &
     return engine;
 }
 
-SearchEngine* 
-GeneralLazyBestFirstSearch::create_weighted_astar_engine(
-        const vector<string> &config, int start, int &end) {
+SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
+    const vector<string> &config, int start, int &end) {
 
-    if (config[start + 1] != "(") throw ParseError(start + 1);
+    if (config[start + 1] != "(")
+        throw ParseError(start + 1);
 
     vector<ScalarEvaluator *> evals;
     OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
                                                           end, false, evals);
-    if (evals.empty()) throw ParseError(end);
+    if (evals.empty()) 
+        throw ParseError(end);
     end ++;
      
     vector<Heuristic *> preferred_list;

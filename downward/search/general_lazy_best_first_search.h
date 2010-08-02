@@ -59,9 +59,9 @@ public:
     
     static SearchEngine *create(const std::vector<std::string> &config, 
                                 int start, int &end);
-    static SearchEngine* create_standard_greedy_engine(
-        const std::vector<std::string> &config, int start, int &end);
-    static SearchEngine* create_weighted_astar_engine(
+    static SearchEngine *create_greedy(const std::vector<std::string> &config,
+                                       int start, int &end);
+    static SearchEngine *create_weighted_astar(
         const std::vector<std::string> &config, int start, int &end);
 };
 

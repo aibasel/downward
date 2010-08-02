@@ -414,15 +414,19 @@ void NamedOptionParser::parse_heuristic_list_option(
     vector<Heuristic *> *val = 
         heuristic_list_options[config[end]];
     end ++;
-    if (config[end] != "=") throw ParseError(end);
+    if (config[end] != "=")
+        throw ParseError(end);
     end ++;
     OptionParser *parser = OptionParser::instance();
 
-    if (config[end] == "(") {
+    if (config[end] == "(" && config[end + 1] == ")") {
+        return;
+    } else if (config[end] == "(") {
         end ++;
         parser->parse_heuristic_list(config, end, end, false, *val);
         end ++;
-        if (config[end] != ")") throw ParseError(end);
+        if (config[end] != ")")
+            throw ParseError(end);
     } else {
         parser->parse_heuristic_list(config, end, end, true, *val);
     }
