@@ -10,30 +10,34 @@
 
 #include <cassert>
 #include <cmath>
+#include <limits>
 #include <vector>
 using namespace std;
 
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
-    int max_abstract_states_, bool bound_is_for_product_,
+    int max_abstract_states_, int max_abstract_states_before_merge_,
     int abstraction_count_,
     MergeStrategy merge_strategy_, ShrinkStrategy shrink_strategy_,
     bool use_label_simplification_, bool use_expensive_statistics_)
     : max_abstract_states(max_abstract_states_),
-      bound_is_for_product(bound_is_for_product_),
+      max_abstract_states_before_merge(max_abstract_states_before_merge_),
       abstraction_count(abstraction_count_),
       merge_strategy(merge_strategy_),
       shrink_strategy(shrink_strategy_),
       use_label_simplification(use_label_simplification_),
       use_expensive_statistics(use_expensive_statistics_) {
-    dump_options();
-    warn_on_unusual_options();
+    assert(max_abstract_states_before_merge > 0);
+    assert(max_abstract_states >= max_abstract_states_before_merge);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
+    // TODO: Add missing options
+    cout << "Abstraction size limit: " << max_abstract_states << endl;
+
     cout << "Merge strategy: ";
     switch (merge_strategy) {
         case MERGE_LINEAR_CG_GOAL_LEVEL:
@@ -126,6 +130,31 @@ void MergeAndShrinkHeuristic::verify_no_axioms_no_cond_effects() const {
     }
 }
 
+pair<int, int> MergeAndShrinkHeuristic::compute_shrink_sizes(
+    int size1, int size2) const {
+    // Bound both sizes by max allowed size before merge.
+    int newsize1 = min(size1, max_abstract_states_before_merge);
+    int newsize2 = min(size2, max_abstract_states_before_merge);
+
+    // Check if product would exceeds max allowed size.
+    // Use division instead of multiplication to avoid overflow.
+    if (max_abstract_states / newsize1 < newsize2) {
+        int balanced_size = int(sqrt(max_abstract_states));
+
+        // Shrink size2 (which in the linear strategies is the size
+        // for the atomic abstraction) down to balanced_size if larger.
+        newsize2 = min(newsize2, balanced_size);
+
+        // Use whatever is left for size1.
+        newsize1 = min(newsize1, max_abstract_states / newsize2);
+    }
+    assert(newsize1 <= size1 && newsize2 <= size2);
+    assert(newsize1 <= max_abstract_states_before_merge);
+    assert(newsize2 <= max_abstract_states_before_merge);
+    assert(newsize1 * newsize2 <= max_abstract_states);
+    return make_pair(newsize1, newsize2);
+}
+
 Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_abstractions also
@@ -135,7 +164,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     Abstraction::build_atomic_abstractions(atomic_abstractions);
 
     cout << "Merging abstractions..." << endl;
-    int threshold = max_abstract_states;
 
     VariableOrderFinder order(merge_strategy, is_first);
 
@@ -145,33 +173,24 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     bool first_iteration = true;
     while(!order.done() && abstraction->is_solvable()) {
         int var_no = order.next();
+        Abstraction *other_abstraction = atomic_abstractions[var_no];
+        
+        pair<int, int> new_sizes = compute_shrink_sizes(
+            abstraction->size(), other_abstraction->size());
+        int new_size = new_sizes.first;
+        int other_new_size = new_sizes.second;
 
-        int max_allowed_size;
-        int atomic_abstraction_target_size = atomic_abstractions[var_no]->size();
-        if(bound_is_for_product) {
-            int balanced_size = int(sqrt(threshold));
-            if(atomic_abstraction_target_size > balanced_size)
-                atomic_abstraction_target_size = balanced_size;
-            max_allowed_size = threshold / atomic_abstraction_target_size;
-        } else {
-            max_allowed_size = threshold;
-            if(atomic_abstraction_target_size > threshold)
-                atomic_abstraction_target_size = threshold;
-        }
-
-        if(atomic_abstraction_target_size != atomic_abstractions[var_no]->size()) {
+        if(other_new_size != other_abstraction->size()) {
             cout << "atomic abstraction too big; must shrink" << endl;
-            atomic_abstractions[var_no]->shrink(
-                atomic_abstraction_target_size, shrink_strategy);
+            other_abstraction->shrink(other_new_size, shrink_strategy);
         }
 
-        if(abstraction->size() > max_allowed_size) {
-            abstraction->shrink(max_allowed_size, shrink_strategy);
+        if(new_size != abstraction->size()) {
+            abstraction->shrink(new_size, shrink_strategy);
             abstraction->statistics(use_expensive_statistics);
         }
         Abstraction *new_abstraction = new CompositeAbstraction(
-            abstraction, atomic_abstractions[var_no],
-            use_label_simplification);
+            abstraction, other_abstraction, use_label_simplification);
         if(first_iteration)
             first_iteration = false;
         else
@@ -183,11 +202,12 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 }
 
 void MergeAndShrinkHeuristic::initialize() {
-    int threshold = max_abstract_states;
     Timer timer;
     cout << "Initializing merge-and-shrink heuristic..." << endl;
+    dump_options();
+    warn_on_unusual_options();
+
     verify_no_axioms_no_cond_effects();
-    cout << "Abstraction size limit: " << threshold << endl;
 
     int peak_memory = 0;
     for(int i = 0; i < abstraction_count; i++) {
@@ -233,8 +253,8 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 
 ScalarEvaluator *MergeAndShrinkHeuristic::create(
     const std::vector<string> &config, int start, int &end) {
-    int max_abstract_states = 1000;
-    bool bound_is_for_product = true;
+    int max_states = -1;
+    int max_states_before_merge = -1;
     int abstraction_count = 1;
     int merge_strategy = MERGE_LINEAR_CG_GOAL_LEVEL;
     int shrink_strategy = SHRINK_HIGH_F_LOW_H;
@@ -250,8 +270,12 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
             NamedOptionParser option_parser;
             option_parser.add_int_option(
                 "max_states",
-                &max_abstract_states,
+                &max_states,
                 "maximum abstraction size");
+            option_parser.add_int_option(
+                "max_states_before_merge",
+                &max_states_before_merge,
+                "maximum abstraction size for factors of synchronized product");
             option_parser.add_int_option(
                 "count",
                 &abstraction_count, 
@@ -265,10 +289,6 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
                 &shrink_strategy,
                 "shrink strategy");
             option_parser.add_bool_option(
-                "bound_is_for_product",
-                &bound_is_for_product,
-                "merge and shrink bound is for product");
-            option_parser.add_bool_option(
                 "simplify_labels",
                 &use_label_simplification,
                 "enable label simplification");
@@ -281,13 +301,40 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
             end ++;
         }
         if (config[end] != ")") throw ParseError(end);
-        
     } else { // "<name>"
         end = start;
     }
 
-    if (max_abstract_states < 1) {
+    if (max_states == -1 && max_states_before_merge == -1) {
+        // None of the two options specified: set default limit
+        max_states = 1000;
+    }
+
+    // If exactly one of the max_states options has been set, set the other
+    // so that it imposes no further limits.
+    if (max_states_before_merge == -1) {
+        max_states_before_merge = max_states;
+    } else if (max_states == -1) {
+        int n = max_states_before_merge;
+        max_states = n * n;
+        if (max_states < 0 || max_states / n != n) // overflow
+            max_states = numeric_limits<int>::max();
+    }
+
+    if (max_states_before_merge > max_states) {
+        cerr << "Warning: max_states_before_merge exceeds max_states, "
+             << "correcting." << endl;
+        max_states_before_merge = max_states;
+    }
+
+    if (max_states < 1) {
         cerr << "error: abstraction size must be at least 1"
+             << endl;
+        exit(2);
+    }
+
+    if (max_states_before_merge < 1) {
+        cerr << "error: abstraction size before merge must be at least 1"
              << endl;
         exit(2);
     }
@@ -303,8 +350,8 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
     }
 
     MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(
-        max_abstract_states,
-        bound_is_for_product,
+        max_states,
+        max_states_before_merge,
         abstraction_count,
         static_cast<MergeStrategy>(merge_strategy),
         static_cast<ShrinkStrategy>(shrink_strategy),

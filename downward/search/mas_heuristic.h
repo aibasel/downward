@@ -3,8 +3,8 @@
 
 #include "heuristic.h"
 
+#include <utility>
 #include <vector>
-#include <math.h>
 
 class Abstraction;
 
@@ -28,7 +28,7 @@ enum ShrinkStrategy {
 
 class MergeAndShrinkHeuristic : public Heuristic {
     const int max_abstract_states;
-    const bool bound_is_for_product;
+    const int max_abstract_states_before_merge;
     const int abstraction_count;
     const MergeStrategy merge_strategy;
     const ShrinkStrategy shrink_strategy;
@@ -37,6 +37,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
 
     std::vector<Abstraction *> abstractions;
     void verify_no_axioms_no_cond_effects() const;
+    std::pair<int, int> compute_shrink_sizes(int size1, int size2) const;
     Abstraction *build_abstraction(bool is_first = true);
 
     void dump_options() const;
@@ -46,7 +47,7 @@ protected:
     virtual int compute_heuristic(const State &state);
 public:
     MergeAndShrinkHeuristic(
-        int max_abstract_states, bool bound_is_for_product,
+        int max_abstract_states, int max_abstract_states_before_merge,
         int abstraction_count,
         MergeStrategy merge_strategy, ShrinkStrategy shrink_strategy,
         bool use_label_simplification, bool use_expensive_statistics);
