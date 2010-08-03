@@ -9,7 +9,8 @@ template<class Entry>
 OpenList<Entry> *AlternationOpenList<Entry>::create(
     const std::vector<string> &config, int start, int &end) {
 
-    if (config[start+1] != "(") throw ParseError(start+1);
+    if (config[start+1] != "(")
+        throw ParseError(start+1);
     // create sublists
     vector<OpenList<Entry> *> sublists;
     end = start + 2;
@@ -21,11 +22,13 @@ OpenList<Entry> *AlternationOpenList<Entry>::create(
         end ++;
         if (config[end] == ")")
             break;
-        if (config[end] != ",") throw ParseError(end);
+        if (config[end] != ",")
+            throw ParseError(end);
         end ++;
     }
 
-    if (sublists.empty()) throw ParseError(start + 2);
+    if (sublists.empty())
+        throw ParseError(start + 2);
     // need at least one internal open list
 
     // parse options
@@ -38,7 +41,8 @@ OpenList<Entry> *AlternationOpenList<Entry>::create(
         option_parser.parse_options(config, end, end);
         end ++;
     }
-    if (config[end] != ")") throw ParseError(end);
+    if (config[end] != ")")
+        throw ParseError(end);
      
     return new AlternationOpenList<Entry>(sublists, boost);
 }

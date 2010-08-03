@@ -52,18 +52,21 @@ void SumEvaluator::get_involved_heuristics(std::set<Heuristic*> &hset) {
 
 ScalarEvaluator *SumEvaluator::create(const std::vector<std::string> &config,
                                       int start, int &end) {
-    if (config[start+1] != "(") throw ParseError(start+1);
+    if (config[start+1] != "(")
+        throw ParseError(start+1);
 
     // create evaluators
     std::vector<ScalarEvaluator *> evals;
     OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2, 
                                                           end, false, evals);
 
-    if (evals.empty()) throw ParseError(end);
+    if (evals.empty())
+        throw ParseError(end);
     // need at least one evaluator
 
     end ++;
-    if (config[end] != ")") throw ParseError(end);
+    if (config[end] != ")")
+        throw ParseError(end);
 
     return new SumEvaluator(evals);
 }

@@ -401,7 +401,8 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
 
 ScalarEvaluator *LandmarkCutHeuristic::create(const std::vector<string> &config,
                                               int start, int &end) {
-    if (config.size() <= start) throw ParseError(start);
+    if (config.size() <= start)
+        throw ParseError(start);
 
     int iteration_limit_ = -1;
 
@@ -416,7 +417,8 @@ ScalarEvaluator *LandmarkCutHeuristic::create(const std::vector<string> &config,
             option_parser.parse_options(config, end, end);
             end ++;
         }
-        if (config[end] != ")") throw ParseError(end);
+        if (config[end] != ")")
+            throw ParseError(end);
         
     } else { // "<name>"
         end = start;

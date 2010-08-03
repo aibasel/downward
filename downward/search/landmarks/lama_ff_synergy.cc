@@ -87,8 +87,8 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
             option_parser.parse_options(config, end, end);
             end ++;
         }
-        if (config[end] != ")") throw ParseError(end);
-        
+        if (config[end] != ")")
+            throw ParseError(end);
     } else { // "<name>"
         end = start;
     }

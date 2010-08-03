@@ -315,7 +315,8 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
             option_parser.parse_options(config, end, end);
             end ++;
         }
-        if (config[end] != ")") throw ParseError(end);
+        if (config[end] != ")")
+            throw ParseError(end);
     } else { // "<name>"
         end = start;
     }

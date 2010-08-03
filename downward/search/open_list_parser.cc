@@ -47,6 +47,7 @@ OpenListParser<Entry>::parse_open_list(const vector<string> &input,
                               int start, int & end) {
     typename std::map<std::string, OpenListCreatorFunc>::iterator it;
     it = open_list_map.find(input[start]);
-    if (it == open_list_map.end()) throw ParseError(start);
+    if (it == open_list_map.end()) 
+        throw ParseError(start);
     return it->second(input, start, end);
 }

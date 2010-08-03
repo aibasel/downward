@@ -221,7 +221,8 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
     OpenList<OpenListEntryLazy> *open = \
         OpenListParser<OpenListEntryLazy>::instance()->parse_open_list(config, start + 2, end);
     end ++;
-    if (end >= config.size()) throw ParseError(end);
+    if (end >= config.size()) 
+        throw ParseError(end);
    
     // parse options
     bool reopen_closed = false; // TODO make default value visible
@@ -242,7 +243,8 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
         option_parser.parse_options(config, end, end);
         end ++;
     }
-    if (config[end] != ")") throw ParseError(end);
+    if (config[end] != ")")
+        throw ParseError(end);
     
     GeneralLazyBestFirstSearch *engine = \
         new GeneralLazyBestFirstSearch(open, reopen_closed, g_bound);
@@ -279,7 +281,8 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
         option_parser.parse_options(config, end, end);
         end ++;
     }
-    if (config[end] != ")") throw ParseError(end);
+    if (config[end] != ")")
+        throw ParseError(end);
     
     OpenList<OpenListEntryLazy> *open;
     if ((evals.size() == 1) && preferred_list.empty()) {
@@ -335,7 +338,8 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
         option_parser.parse_options(config, end, end);
         end ++;
     }
-    if (config[end] != ")") throw ParseError(end);
+    if (config[end] != ")")
+        throw ParseError(end);
     
     vector<OpenList<OpenListEntryLazy> *> inner_lists;
     for (int i = 0; i < evals.size(); i++) {

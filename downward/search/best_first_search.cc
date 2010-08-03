@@ -11,7 +11,7 @@
 using namespace std;
 
 OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref) 
-	: open(new BucketOpenList<OpenListEntry>(heur, false)) {
+    : open(new BucketOpenList<OpenListEntry>(heur, false)) {
     heuristic = heur;
     only_preferred_operators = only_pref;
     priority = 0;
@@ -28,17 +28,17 @@ BestFirstSearchEngine::~BestFirstSearchEngine() {
 }
 
 void BestFirstSearchEngine::add_heuristic(Heuristic *heuristic,
-					  bool use_estimates,
-					  bool use_preferred_operators) {
+                      bool use_estimates,
+                      bool use_preferred_operators) {
     assert(use_estimates || use_preferred_operators);
     heuristics.push_back(heuristic);
     best_heuristic_values.push_back(-1);
     if(use_estimates) {
-	open_lists.push_back(OpenListInfo(heuristic, false));
-	open_lists.push_back(OpenListInfo(heuristic, true));
+    open_lists.push_back(OpenListInfo(heuristic, false));
+    open_lists.push_back(OpenListInfo(heuristic, true));
     }
     if(use_preferred_operators)
-	preferred_operator_heuristics.push_back(heuristic);
+    preferred_operator_heuristics.push_back(heuristic);
 }
 
 void BestFirstSearchEngine::initialize() {
@@ -58,22 +58,22 @@ int BestFirstSearchEngine::step() {
     // - current_operator is the operator which leads to current_state from predecessor.
 
     if(!closed_list.contains(current_state)) {
-	const State *parent_ptr = closed_list.insert(
-	    current_state, current_predecessor, current_operator);
-	for(int i = 0; i < heuristics.size(); i++) {
-		if (current_predecessor != NULL)
-			heuristics[i]->reach_state(*current_predecessor, *current_operator, *parent_ptr);
-	    heuristics[i]->evaluate(current_state);
-	}
-	if(!is_dead_end()) {
-	    if(check_goal())
-		return SOLVED;
-	    if(check_progress()) {
-		report_progress();
-		reward_progress();
-	    }
-	    generate_successors(parent_ptr);
-	}
+    const State *parent_ptr = closed_list.insert(
+        current_state, current_predecessor, current_operator);
+    for(int i = 0; i < heuristics.size(); i++) {
+        if (current_predecessor != NULL)
+            heuristics[i]->reach_state(*current_predecessor, *current_operator, *parent_ptr);
+        heuristics[i]->evaluate(current_state);
+    }
+    if(!is_dead_end()) {
+        if(check_goal())
+        return SOLVED;
+        if(check_progress()) {
+        report_progress();
+        reward_progress();
+        }
+        generate_successors(parent_ptr);
+    }
     }
     return fetch_next_state();
 }
@@ -83,55 +83,55 @@ bool BestFirstSearchEngine::is_dead_end() {
     // Otherwise, all heuristics must agree on dead-end-ness.
     int dead_end_counter = 0;
     for(int i = 0; i < heuristics.size(); i++) {
-	if(heuristics[i]->is_dead_end()) {
-	    if(heuristics[i]->dead_ends_are_reliable())
-		return true;
-	    else
-		dead_end_counter++;
-	}
+    if(heuristics[i]->is_dead_end()) {
+        if(heuristics[i]->dead_ends_are_reliable())
+        return true;
+        else
+        dead_end_counter++;
+    }
     }
     return dead_end_counter == heuristics.size();
 }
 
 bool BestFirstSearchEngine::check_goal() {
-	// Any heuristic reports 0 iff this is a goal state, so we can
+    // Any heuristic reports 0 iff this is a goal state, so we can
     // pick an arbitrary one. (only if there are no action costs)
     Heuristic *heur = open_lists[0].heuristic;
     if(!heur->is_dead_end() && heur->get_heuristic() == 0) {
-		// We actually need this silly !heur->is_dead_end() check because
-		// this state *might* be considered a non-dead end by the
-		// overall search even though heur considers it a dead end
-		// (e.g. if heur is the CG heuristic, but the FF heuristic is
-		// also computed and doesn't consider this state a dead end.
-		// If heur considers the state a dead end, it cannot be a goal
-		// state (heur will not be *that* stupid). We may not call
-		// get_heuristic() in such cases because it will barf.
-    	if(g_use_metric) {
-    		bool is_goal = test_goal(current_state);
-    		if (!is_goal) return false;
-    	}
+        // We actually need this silly !heur->is_dead_end() check because
+        // this state *might* be considered a non-dead end by the
+        // overall search even though heur considers it a dead end
+        // (e.g. if heur is the CG heuristic, but the FF heuristic is
+        // also computed and doesn't consider this state a dead end.
+        // If heur considers the state a dead end, it cannot be a goal
+        // state (heur will not be *that* stupid). We may not call
+        // get_heuristic() in such cases because it will barf.
+        if(g_use_metric) {
+            bool is_goal = test_goal(current_state);
+            if (!is_goal) return false;
+        }
 
-		cout << "Solution found!" << endl;
-		Plan plan;
-		closed_list.trace_path(current_state, plan);
-		set_plan(plan);
-		return true;
+        cout << "Solution found!" << endl;
+        Plan plan;
+        closed_list.trace_path(current_state, plan);
+        set_plan(plan);
+        return true;
     } else {
-    	return false;
+        return false;
     }
 }
 
 bool BestFirstSearchEngine::check_progress() {
     bool progress = false;
     for(int i = 0; i < heuristics.size(); i++) {
-	if(heuristics[i]->is_dead_end())
-	    continue;
-	int h = heuristics[i]->get_heuristic();
-	int &best_h = best_heuristic_values[i];
-	if(best_h == -1 || h < best_h) {
-	    best_h = h;
-	    progress = true;
-	}
+    if(heuristics[i]->is_dead_end())
+        continue;
+    int h = heuristics[i]->get_heuristic();
+    int &best_h = best_heuristic_values[i];
+    if(best_h == -1 || h < best_h) {
+        best_h = h;
+        progress = true;
+    }
     }
     return progress;
 }
@@ -139,9 +139,9 @@ bool BestFirstSearchEngine::check_progress() {
 void BestFirstSearchEngine::report_progress() {
     cout << "Best heuristic value: ";
     for(int i = 0; i < heuristics.size(); i++) {
-	cout << best_heuristic_values[i];
-	if(i != heuristics.size() - 1)
-	    cout << "/";
+    cout << best_heuristic_values[i];
+    if(i != heuristics.size() - 1)
+        cout << "/";
     }
     cout << " [expanded " << closed_list.size() << " state(s)]" << endl;
 }
@@ -158,8 +158,8 @@ void BestFirstSearchEngine::reward_progress() {
     // for the heuristic for which a new best value was found.
 
     for(int i = 0; i < open_lists.size(); i++)
-	if(open_lists[i].only_preferred_operators)
-	    open_lists[i].priority -= 1000;
+    if(open_lists[i].only_preferred_operators)
+        open_lists[i].priority -= 1000;
 }
 
 void BestFirstSearchEngine::generate_successors(const State *parent_ptr) {
@@ -168,22 +168,22 @@ void BestFirstSearchEngine::generate_successors(const State *parent_ptr) {
 
     vector<const Operator *> preferred_operators;
     for(int i = 0; i < preferred_operator_heuristics.size(); i++) {
-	Heuristic *heur = preferred_operator_heuristics[i];
-	if(!heur->is_dead_end())
-	    heur->get_preferred_operators(preferred_operators);
+    Heuristic *heur = preferred_operator_heuristics[i];
+    if(!heur->is_dead_end())
+        heur->get_preferred_operators(preferred_operators);
     }
 
     for(int i = 0; i < open_lists.size(); i++) {
-	Heuristic *heur = open_lists[i].heuristic;
-	if(!heur->is_dead_end()) {
-	    OpenList<OpenListEntry> *open = open_lists[i].open;
-	    open->evaluate(0, false); // TODO: handle preferredness in open list
-	    vector<const Operator *> &ops =
-		open_lists[i].only_preferred_operators ?
-		preferred_operators : all_operators;
-	    for(int j = 0; j < ops.size(); j++)
-		open->insert(make_pair(parent_ptr, ops[j]));
-	}
+    Heuristic *heur = open_lists[i].heuristic;
+    if(!heur->is_dead_end()) {
+        OpenList<OpenListEntry> *open = open_lists[i].open;
+        open->evaluate(0, false); // TODO: handle preferredness in open list
+        vector<const Operator *> &ops =
+        open_lists[i].only_preferred_operators ?
+        preferred_operators : all_operators;
+        for(int j = 0; j < ops.size(); j++)
+        open->insert(make_pair(parent_ptr, ops[j]));
+    }
     }
     generated_states += all_operators.size();
 }
@@ -191,8 +191,8 @@ void BestFirstSearchEngine::generate_successors(const State *parent_ptr) {
 int BestFirstSearchEngine::fetch_next_state() {
     OpenListInfo *open_info = select_open_queue();
     if(!open_info) {
-	cout << "Completely explored state space -- no solution!" << endl;
-	return FAILED;
+    cout << "Completely explored state space -- no solution!" << endl;
+    return FAILED;
     }
 
     OpenListEntry next = open_info->open->remove_min();
@@ -208,12 +208,14 @@ int BestFirstSearchEngine::fetch_next_state() {
 SearchEngine* 
 BestFirstSearchEngine::create_engine(const vector<string> &config,
     int start, int &end) {
-    if (config[start + 1] != "(") throw ParseError(start + 1);
+    if (config[start + 1] != "(") 
+        throw ParseError(start + 1);
 
     vector<Heuristic *> evals;
     OptionParser::instance()->parse_heuristic_list(config, start + 2,
                                                    end, false, evals);
-    if (evals.empty()) throw ParseError(end);
+    if (evals.empty()) 
+        throw ParseError(end);
     end ++;
      
     vector<Heuristic *> preferred_list;
@@ -226,7 +228,8 @@ BestFirstSearchEngine::create_engine(const vector<string> &config,
         option_parser.parse_options(config, end, end);
         end ++;
     }
-    if (config[end] != ")") throw ParseError(end);
+    if (config[end] != ")") 
+        throw ParseError(end);
     
     BestFirstSearchEngine *engine = new BestFirstSearchEngine();
     
@@ -250,8 +253,8 @@ BestFirstSearchEngine::create_engine(const vector<string> &config,
 OpenListInfo *BestFirstSearchEngine::select_open_queue() {
     OpenListInfo *best = 0;
     for(int i = 0; i < open_lists.size(); i++)
-	if(!open_lists[i].open->empty() &&
-	   (best == 0 || open_lists[i].priority < best->priority))
-	    best = &open_lists[i];
+    if(!open_lists[i].open->empty() &&
+       (best == 0 || open_lists[i].priority < best->priority))
+        best = &open_lists[i];
     return best;
 }

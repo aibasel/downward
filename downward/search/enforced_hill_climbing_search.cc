@@ -228,12 +228,14 @@ void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
 
 SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
                                                  int start, int &end) {
-    if (config[start + 1] != "(") throw ParseError(start + 1);
+    if (config[start + 1] != "(") 
+        throw ParseError(start + 1);
     Heuristic *h = \
         OptionParser::instance()->parse_heuristic(config, start + 2, end);
     end ++;
 
-    if (end >= config.size()) throw ParseError(end);
+    if (end >= config.size()) 
+        throw ParseError(end);
    
     // parse options
 
@@ -255,7 +257,8 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
         option_parser.parse_options(config, end, end);
         end ++;
     }
-    if (config[end] != ")") throw ParseError(end);
+    if (config[end] != ")") 
+        throw ParseError(end);
    
     if (pref_usage < 0 || pref_usage >= MAX_PREFERRED_USAGE) {
         cerr << "error: unknown preferred_usage: " << pref_usage << endl;
