@@ -34,11 +34,7 @@
 using namespace std;
 
 int save_plan(const vector<const Operator *> &plan);
-
-void tokenize_options(const char *str, vector<std::string> &tokens); 
-
 void register_parsers();
-void print_parse_error(const std::vector<std::string> tokens, ParseError &err);
 
 int main(int argc, const char **argv) {
     register_event_handlers();
@@ -63,25 +59,10 @@ int main(int argc, const char **argv) {
         string arg = string(argv[i]);
         if (arg.compare("--heuristic") == 0 or arg.compare("-h") == 0) {
             ++ i;
-            vector<string> tokens;
-            tokenize_options(argv[i], tokens);
-            try {
-                OptionParser::instance()->predefine_heuristic(tokens);
-            } catch (ParseError e) {
-                print_parse_error(tokens, e);
-                return 2;
-            }
+            OptionParser::instance()->predefine_heuristic(argv[i]);
         } else if (arg.compare("--search") == 0 or arg.compare("-s") == 0) {
             ++ i;
-            vector<string> tokens;
-            tokenize_options(argv[i], tokens);
-            try {
-                int end = 0;
-                engine = OptionParser::instance()->parse_search_engine(tokens, 0, end);
-            } catch (ParseError e) {
-                print_parse_error(tokens, e);
-                return 2;
-            }
+            engine = OptionParser::instance()->parse_search_engine(argv[i]);
         } else if (arg.compare("--random-seed") == 0 or arg.compare("-r") == 0) {
             ++ i;
             srand(atoi(argv[i]));
@@ -93,8 +74,6 @@ int main(int argc, const char **argv) {
         }
     }
 
-    
-
     Timer search_timer;
     engine->search();
     search_timer.stop();
@@ -105,7 +84,6 @@ int main(int argc, const char **argv) {
     engine->heuristic_statistics();
     cout << "Search time: " << search_timer << endl;
     cout << "Total time: " << g_timer << endl;
-    
 
     return engine->found_solution() ? 0 : 1;
 }
@@ -191,59 +169,4 @@ void register_parsers() {
     // otherwise 
 }
 
-std::string strip_and_to_lower(const char* begin, const char* end) {
-    const char *b = begin;
-    const char *e = end;
-    // lstrip
-    while (*b == ' ' && b < end) 
-        b++;
-    
-    // return if empty string
-    if (b == end) return "";
 
-    // rstrip
-    do {
-        -- e;
-    } while (*e == ' ' && e > b);
-    e ++;
-
-    string ret_string = string(b, e);
-
-    // to lower
-    for (unsigned int i = 0; i < ret_string.length(); i++) 
-        ret_string[i] = tolower(ret_string[i]);
-    return ret_string;
-}
-
-void tokenize_options(const char *str, vector<std::string> &tokens) 
-{
-    while (true) {
-        const char *begin = str;
-        while (*str != '(' && *str != ',' && *str != ')' && *str != '=' && *str)
-            str ++;
-        if (begin != str) {
-            string substring = strip_and_to_lower(begin, str);
-            if (substring != "") {
-                tokens.push_back(substring);
-            }
-        }
-        if (*str)
-            tokens.push_back(string(str, str+1));
-        if (0 == *str++)
-            break;
-    }
-}
-
-void print_parse_error(const std::vector<std::string> tokens, ParseError &err) {
-    cerr << "ParseError: ";
-    for (unsigned int i = 0; i < tokens.size(); i ++)
-        cerr << tokens[i];
-    cerr << endl;
-    cerr << "            ";  // same lenght as "ParseError: "
-    for (unsigned int i = 0; i < err.pos; i ++) {
-        for (unsigned int j = 0; j < tokens[i].size(); j ++) {
-            cerr << " ";            
-        }
-    }
-    cerr << "^" << endl;
-}

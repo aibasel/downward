@@ -72,10 +72,17 @@ class OptionParser {
     std::map<std::string, EngineCreatorFunc> engine_map; 
     std::map<std::string, ScalarEvalCreatorFunc> scalar_evaluator_map; 
     std::map<std::string, SynergyCreatorFunc> synergy_map; 
-private:
+
     static OptionParser* instance_;
     OptionParser() {}
     OptionParser(const OptionParser&);
+
+    void tokenize_options(const char *str, std::vector<std::string> &tokens); 
+    std::string strip_and_to_lower(const char* begin, const char* end);
+    void print_parse_error(const std::vector<std::string> &tokens, 
+                           ParseError &err);
+
+    void predefine_heuristic(const std::vector<std::string> &input);
     
 public:
     static OptionParser* instance();
@@ -87,13 +94,14 @@ public:
     void register_synergy(std::string key, 
             void func(const std::vector<std::string> &, int, int&,
                       std::vector<Heuristic *> &));
-    void predefine_heuristic(const std::vector<std::string> &input);
+    void predefine_heuristic(const char *str);
 
     ScalarEvaluator *parse_scalar_evaluator(
         const std::vector<std::string> &input, int start, int & end);
     Heuristic* parse_heuristic(const std::vector<std::string> &input, 
                                int start, int & end);
     bool knows_scalar_evaluator(std::string name);
+    SearchEngine* parse_search_engine(const char *str);
     SearchEngine* parse_search_engine(const std::vector<std::string> &input, 
                                       int start, int & end);
     void parse_synergy_heuristics(const std::vector<std::string> &input, 

@@ -75,6 +75,21 @@ bool OptionParser::knows_scalar_evaluator(string name) {
             predefined_heuristics.find(name) != predefined_heuristics.end());
 }
 
+SearchEngine *OptionParser::parse_search_engine(const char *str) {
+    vector<string> tokens;
+    tokenize_options(str, tokens);
+
+    SearchEngine *engine;
+    try {
+        int end = 0;
+        engine = parse_search_engine(tokens, 0, end);
+    } catch (ParseError e) {
+        print_parse_error(tokens, e);
+        exit (2);
+    }
+    return engine;
+}
+
 SearchEngine *OptionParser::parse_search_engine(const vector<string> &input, 
                                                 int start, int & end) {
 
@@ -82,6 +97,17 @@ SearchEngine *OptionParser::parse_search_engine(const vector<string> &input,
     it = engine_map.find(input[start]);
     if (it == engine_map.end()) throw ParseError(start);
     return it->second(input, start, end);
+}
+
+void OptionParser::predefine_heuristic(const char *str) {
+    vector<string> tokens;
+    tokenize_options(str, tokens);
+    try {
+        predefine_heuristic(tokens);
+    } catch (ParseError e) {
+        print_parse_error(tokens, e);
+        exit(2);
+    }
 }
     
 void OptionParser::predefine_heuristic(const vector<string> &input) {
@@ -430,4 +456,61 @@ void NamedOptionParser::parse_heuristic_list_option(
     } else {
         parser->parse_heuristic_list(config, end, end, true, *val);
     }
+}
+
+void OptionParser::tokenize_options(const char *str, vector<string> &tokens) {
+    while (true) {
+        const char *begin = str;
+        while (*str != '(' && *str != ',' && *str != ')' && *str != '=' && *str)
+            str ++;
+        if (begin != str) {
+            string substring = strip_and_to_lower(begin, str);
+            if (substring != "") {
+                tokens.push_back(substring);
+            }
+        }
+        if (*str)
+            tokens.push_back(string(str, str+1));
+        if (0 == *str++)
+            break;
+    }
+}
+
+string OptionParser::strip_and_to_lower(const char* begin, const char* end) {
+    const char *b = begin;
+    const char *e = end;
+    // lstrip
+    while (*b == ' ' && b < end) 
+        b++;
+    
+    // return if empty string
+    if (b == end) return "";
+
+    // rstrip
+    do {
+        -- e;
+    } while (*e == ' ' && e > b);
+    e ++;
+
+    string ret_string = string(b, e);
+
+    // to lower
+    for (unsigned int i = 0; i < ret_string.length(); i++) 
+        ret_string[i] = tolower(ret_string[i]);
+    return ret_string;
+}
+
+void OptionParser::print_parse_error(const vector<string> &tokens,
+                                     ParseError &err) {
+    cerr << "ParseError: ";
+    for (unsigned int i = 0; i < tokens.size(); i ++)
+        cerr << tokens[i];
+    cerr << endl;
+    cerr << "            ";  // same length as "ParseError: "
+    for (unsigned int i = 0; i < err.pos; i ++) {
+        for (unsigned int j = 0; j < tokens[i].size(); j ++) {
+            cerr << " ";            
+        }
+    }
+    cerr << "^" << endl;
 }
