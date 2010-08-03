@@ -57,13 +57,13 @@ int main(int argc, const char **argv) {
     SearchEngine *engine = 0;
     for (unsigned int i = 1; i < argc; ++ i) {
         string arg = string(argv[i]);
-        if (arg.compare("--heuristic") == 0 or arg.compare("-h") == 0) {
+        if (arg.compare("--heuristic") == 0) {
             ++ i;
             OptionParser::instance()->predefine_heuristic(argv[i]);
-        } else if (arg.compare("--search") == 0 or arg.compare("-s") == 0) {
+        } else if (arg.compare("--search") == 0) {
             ++ i;
             engine = OptionParser::instance()->parse_search_engine(argv[i]);
-        } else if (arg.compare("--random-seed") == 0 or arg.compare("-r") == 0) {
+        } else if (arg.compare("--random-seed") == 0) {
             ++ i;
             srand(atoi(argv[i]));
             cout << "random seed " << argv[i] << endl;
