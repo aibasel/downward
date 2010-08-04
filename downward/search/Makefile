@@ -88,13 +88,13 @@ TARGET_SUFFIX_DEBUG   = -debug
 OBJECT_SUFFIX_PROFILE = .profile
 TARGET_SUFFIX_PROFILE = -profile
 
-OBJECTS_RELEASE = $(SOURCES:%.cc=obj/%$(OBJECT_SUFFIX_RELEASE).o)
+OBJECTS_RELEASE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_RELEASE).o)
 TARGET_RELEASE  = $(TARGET)$(TARGET_SUFFIX_RELEASE)
 
-OBJECTS_DEBUG   = $(SOURCES:%.cc=obj/%$(OBJECT_SUFFIX_DEBUG).o)
+OBJECTS_DEBUG   = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_DEBUG).o)
 TARGET_DEBUG    = $(TARGET)$(TARGET_SUFFIX_DEBUG)
 
-OBJECTS_PROFILE = $(SOURCES:%.cc=obj/%$(OBJECT_SUFFIX_PROFILE).o)
+OBJECTS_PROFILE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_PROFILE).o)
 TARGET_PROFILE  = $(TARGET)$(TARGET_SUFFIX_PROFILE)
 
 
@@ -137,7 +137,6 @@ POSTLINKOPT_RELEASE  =
 POSTLINKOPT_DEBUG    =
 POSTLINKOPT_PROFILE  =
 
-
 ifeq ($(USE_LP_CLP),1) 
 COIN_ROOT = lp/coin
 
@@ -170,6 +169,8 @@ POSTLINKOPT_DEBUG   += $(COIN_LINKOPT) -Wl,-Bdynamic
 POSTLINKOPT_PROFILE += $(COIN_LINKOPT) -Wl,-Bdynamic
 endif
 
+SHELL = /bin/bash
+
 default: release
 
 all: release debug profile
@@ -181,7 +182,8 @@ release: $(TARGET_RELEASE)
 $(TARGET_RELEASE): $(OBJECTS_RELEASE)
 	$(CC) $(LINKOPT) $(LINKOPT_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
 
-$(OBJECTS_RELEASE): obj/%$(OBJECT_SUFFIX_RELEASE).o: %.cc
+$(OBJECTS_RELEASE): .obj/%$(OBJECT_SUFFIX_RELEASE).o: %.cc
+	@mkdir -p $$(dirname $@)
 	$(CC) $(CCOPT) $(CCOPT_RELEASE) -c $< -o $@
 
 ## Build rules for the debug target follow.
@@ -191,7 +193,8 @@ debug: $(TARGET_DEBUG)
 $(TARGET_DEBUG): $(OBJECTS_DEBUG)
 	$(CC) $(LINKOPT) $(LINKOPT_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
 
-$(OBJECTS_DEBUG): obj/%$(OBJECT_SUFFIX_DEBUG).o: %.cc
+$(OBJECTS_DEBUG): .obj/%$(OBJECT_SUFFIX_DEBUG).o: %.cc
+	@mkdir -p $$(dirname $@)
 	$(CC) $(CCOPT) $(CCOPT_DEBUG) -c $< -o $@
 
 ## Build rules for the profile target follow.
@@ -201,7 +204,8 @@ profile: $(TARGET_PROFILE)
 $(TARGET_PROFILE): $(OBJECTS_PROFILE)
 	$(CC) $(LINKOPT) $(LINKOPT_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
 
-$(OBJECTS_PROFILE): obj/%$(OBJECT_SUFFIX_PROFILE).o: %.cc
+$(OBJECTS_PROFILE): .obj/%$(OBJECT_SUFFIX_PROFILE).o: %.cc
+	@mkdir -p $$(dirname $@)
 	$(CC) $(CCOPT) $(CCOPT_PROFILE) -c $< -o $@
 
 ## Additional targets follow.
@@ -211,7 +215,7 @@ PROFILE: $(TARGET_PROFILE)
 	gprof $(TARGET_PROFILE) | (cleanup-profile 2> /dev/null || cat) > PROFILE
 
 clean:
-	rm -f $(OBJECTS_RELEASE) $(OBJECTS_DEBUG) $(OBJECTS_PROFILE)
+	rm -rf .obj
 	rm -f *~ *.pyc
 	rm -f Makefile.depend gmon.out PROFILE core
 	rm -f sas_plan
@@ -232,9 +236,9 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 	    cat Makefile.temp0 >> Makefile.temp; \
 	done
 	rm -f Makefile.temp0 Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.depend
 	rm -f Makefile.temp
 
 ifneq ($(MAKECMDGOALS),clean)
