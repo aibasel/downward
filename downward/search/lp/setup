@@ -8,4 +8,5 @@ cd Osi-0.103.0 || exit 1
 make || exit 1
 make test || exit 1 
 make install || exit 1
+cd ..
 rm -r Osi-0.103.0
