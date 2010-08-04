@@ -1,4 +1,4 @@
-USE_LP_CLP=0   ## Set to 1 to enable linear programming stuff.
+USE_LP=0   ## Set to 1 to enable linear programming stuff.
 
 HEADERS = \
           abstraction.h \
@@ -137,8 +137,16 @@ POSTLINKOPT_RELEASE  =
 POSTLINKOPT_DEBUG    =
 POSTLINKOPT_PROFILE  =
 
-ifeq ($(USE_LP_CLP),1) 
+## Define the default target up here so that the LP stuff below
+## doesn't define a default target.
+
+default: release
+
+ifeq ($(USE_LP),1)
 COIN_ROOT = lp/coin
+
+$(COIN_ROOT):
+	cd lp && ./setup
 
 ## We want to link the Linear Programming libraries statically since
 ## they are unlikely to be preinstalled on the grids we use for
@@ -170,8 +178,6 @@ POSTLINKOPT_PROFILE += $(COIN_LINKOPT) -Wl,-Bdynamic
 endif
 
 SHELL = /bin/bash
-
-default: release
 
 all: release debug profile
 
