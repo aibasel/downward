@@ -142,8 +142,12 @@ POSTLINKOPT_PROFILE  =
 
 default: release
 
+PREPARE:
+
 ifeq ($(USE_LP),1)
 COIN_ROOT = lp/coin
+
+PREPARE: $(COIN_ROOT)
 
 $(COIN_ROOT):
 	cd lp && ./setup
@@ -185,6 +189,8 @@ all: release debug profile
 
 release: $(TARGET_RELEASE)
 
+$(TARGET_RELEASE) $(OBJECTS_RELEASE): PREPARE
+
 $(TARGET_RELEASE): $(OBJECTS_RELEASE)
 	$(CC) $(LINKOPT) $(LINKOPT_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
 
@@ -196,6 +202,8 @@ $(OBJECTS_RELEASE): .obj/%$(OBJECT_SUFFIX_RELEASE).o: %.cc
 
 debug: $(TARGET_DEBUG)
 
+$(TARGET_DEBUG) $(OBJECTS_DEBUG): PREPARE
+
 $(TARGET_DEBUG): $(OBJECTS_DEBUG)
 	$(CC) $(LINKOPT) $(LINKOPT_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
 
@@ -206,6 +214,8 @@ $(OBJECTS_DEBUG): .obj/%$(OBJECT_SUFFIX_DEBUG).o: %.cc
 ## Build rules for the profile target follow.
 
 profile: $(TARGET_PROFILE)
+
+$(TARGET_PROFILE) $(OBJECTS_PROFILE): PREPARE
 
 $(TARGET_PROFILE): $(OBJECTS_PROFILE)
 	$(CC) $(LINKOPT) $(LINKOPT_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
@@ -253,4 +263,4 @@ ifneq ($(MAKECMDGOALS),distclean)
 endif
 endif
 
-.PHONY: default all release debug profile clean distclean
+.PHONY: PREPARE default all release debug profile clean distclean
