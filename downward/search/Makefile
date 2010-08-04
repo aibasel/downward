@@ -1,3 +1,5 @@
+USE_LP_CLP=0   ## Set to 1 to enable linear programming stuff.
+
 HEADERS = \
           abstraction.h \
           additive_heuristic.h \
@@ -71,38 +73,70 @@ HEADERS = \
           learning/state_space_sample.h \
           learning/state_vars_feature_extractor.h
 
+
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
-OBJECTS = $(SOURCES:%.cc=obj/%.o)
-PROFILE_OBJECTS = $(SOURCES:%.cc=obj/%.profile.o)
-RELEASE_OBJECTS = $(SOURCES:%.cc=obj/%.release.o)
+TARGET  = downward
 
-CC = g++
+ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
+
+
+
+OBJECT_SUFFIX_RELEASE =
+TARGET_SUFFIX_RELEASE =
+OBJECT_SUFFIX_DEBUG   = .debug
+TARGET_SUFFIX_DEBUG   = -debug
+OBJECT_SUFFIX_PROFILE = .profile
+TARGET_SUFFIX_PROFILE = -profile
+
+OBJECTS_RELEASE = $(SOURCES:%.cc=obj/%$(OBJECT_SUFFIX_RELEASE).o)
+TARGET_RELEASE  = $(TARGET)$(TARGET_SUFFIX_RELEASE)
+
+OBJECTS_DEBUG   = $(SOURCES:%.cc=obj/%$(OBJECT_SUFFIX_DEBUG).o)
+TARGET_DEBUG    = $(TARGET)$(TARGET_SUFFIX_DEBUG)
+
+OBJECTS_PROFILE = $(SOURCES:%.cc=obj/%$(OBJECT_SUFFIX_PROFILE).o)
+TARGET_PROFILE  = $(TARGET)$(TARGET_SUFFIX_PROFILE)
+
+
+CC     = g++
 DEPEND = g++ -MM
-CCOPT         = -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
-LINKOPT = -m32
-RELEASEOPT = $(CCOPT)
-RELEASEOPT += -O3 -DNDEBUG -fomit-frame-pointer
 
-## We link statically to allow local compiles to work on the BFG cluster.
-## NOTE: This precludes using exceptions; see man gcc on -static-libgcc.
-RELEASEOPT += -static -static-libgcc
+## CCOPT, LINKOPT, POSTLINKOPT are options for compiler and linker
+## that are used for all three targets (release, debug, and profile).
+## (POSTLINKOPT are options that appear *after* all object files.)
 
-## debug, don't optimize
+CCOPT  =
+CCOPT += -m32
 CCOPT += -g
+CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
+
+LINKOPT  =
+LINKOPT += -m32
 LINKOPT += -g
 
-## debug, optimize
-# CCOPT += -O3 -g
-# LINKOPT += -g
+POSTLINKOPT =
 
-## no debug, optimize a lot
-# CCOPT += -O3 -DNDEBUG
+## Additional specialized options for the various targets follow.
+## In release mode, we link statically since this makes it more likely
+## that local compiles will work on the various grids (gkigrid, Black
+## Forest Grid).
+##
+## NOTE: This precludes some uses of exceptions.
+##        For details, see man gcc on -static-libgcc.
 
-PROFOPT = -pg -O3
-# PROFLINKOPT = -lc_p
-PROFARGS = oa200000 < profile-input.pre
+CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
+CCOPT_DEBUG    =
+CCOPT_PROFILE  = -pg -O3
 
-USE_COIN_CLP=0
+LINKOPT_RELEASE  = -static -static-libgcc
+LINKOPT_DEBUG    =
+LINKOPT_PROFILE  = -pg
+# LINKOPT_PROFILE += -lc_p
+
+POSTLINKOPT_RELEASE  =
+POSTLINKOPT_DEBUG    =
+POSTLINKOPT_PROFILE  =
+
 
 ifeq ($(USE_LP_CLP),1) 
 COIN_ROOT = lp/coin
@@ -120,56 +154,70 @@ COIN_ROOT = lp/coin
 
 COIN_LIBS = OsiClp Clp CoinUtils Osi
 
-
 ## We want to link the COIN libraries statically and link other
 ## libraries dynamically, unless we are in release mode. We accomplish
 ## this by using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
 ## afterwards (unless in release mode). See
 ## http://ubuntuforums.org/showthread.php?t=491455
 
-COIN_FLAGS = -I $(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
-CCOPT += $(COIN_FLAGS)
+COIN_CCOPT = -I $(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
+COIN_LINKOPT = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
 
-COIN_LINK_FLAGS = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
-RELEASELINKOPT_END += $(COIN_LINK_FLAGS)
-LINKOPT_END += $(COIN_LINK_FLAGS) -Wl,-Bdynamic
+CCOPT += $(COIN_CCOPT)
+
+POSTLINKOPT_RELEASE += $(COIN_LINKOPT)
+POSTLINKOPT_DEBUG   += $(COIN_LINKOPT) -Wl,-Bdynamic
+POSTLINKOPT_PROFILE += $(COIN_LINKOPT) -Wl,-Bdynamic
 endif
 
-all: search
+default: release
 
-search: $(OBJECTS)
-	$(CC) $(LINKOPT) $(OBJECTS) $(LINKOPT_END) -o search
+all: release debug profile
 
-profile-search: $(PROFILE_OBJECTS)
-	$(CC) $(LINKOPT) $(PROFLINKOPT) $(PROFOPT) $(PROFILE_OBJECTS) $(LINKOPT_END)\
-          -o profile-search
+## Build rules for the release target follow.
 
-release: release-search
+release: $(TARGET_RELEASE)
 
-release-search: $(RELEASE_OBJECTS) 
-	$(CC) $(RELEASEOPT) $(RELEASELINKOPT) $(RELEASE_OBJECTS) $(RELEASELINKOPT_END)\
-	  -o release-search
+$(TARGET_RELEASE): $(OBJECTS_RELEASE)
+	$(CC) $(LINKOPT) $(LINKOPT_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
 
-PROFILE: profile-search
-	./profile-search $(PROFARGS)
-	gprof profile-search | cleanup-profile > PROFILE
+$(OBJECTS_RELEASE): obj/%$(OBJECT_SUFFIX_RELEASE).o: %.cc
+	$(CC) $(CCOPT) $(CCOPT_RELEASE) -c $< -o $@
 
-$(OBJECTS): obj/%.o: %.cc
-	$(CC) $(CCOPT) -c $< -o $@
+## Build rules for the debug target follow.
 
-$(PROFILE_OBJECTS): obj/%.profile.o: %.cc
-	$(CC) $(CCOPT) $(PROFOPT) -c $< -o $@
+debug: $(TARGET_DEBUG)
 
-$(RELEASE_OBJECTS): obj/%.release.o: %.cc
-	$(CC) $(RELEASEOPT) -c $< -o $@
+$(TARGET_DEBUG): $(OBJECTS_DEBUG)
+	$(CC) $(LINKOPT) $(LINKOPT_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
+
+$(OBJECTS_DEBUG): obj/%$(OBJECT_SUFFIX_DEBUG).o: %.cc
+	$(CC) $(CCOPT) $(CCOPT_DEBUG) -c $< -o $@
+
+## Build rules for the profile target follow.
+
+profile: $(TARGET_PROFILE)
+
+$(TARGET_PROFILE): $(OBJECTS_PROFILE)
+	$(CC) $(LINKOPT) $(LINKOPT_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
+
+$(OBJECTS_PROFILE): obj/%$(OBJECT_SUFFIX_PROFILE).o: %.cc
+	$(CC) $(CCOPT) $(CCOPT_PROFILE) -c $< -o $@
+
+## Additional targets follow.
+
+PROFILE: $(TARGET_PROFILE)
+	./$(TARGET_PROFILE) $(ARGS_PROFILE)
+	gprof $(TARGET_PROFILE) | (cleanup-profile 2> /dev/null || cat) > PROFILE
 
 clean:
-	rm -f $(OBJECTS) $(PROFILE_OBJECTS) $(RELEASE_OBJECTS) *~ *.pyc
-	rm -f Makefile.depend profile-search gmon.out PROFILE core
+	rm -f $(OBJECTS_RELEASE) $(OBJECTS_DEBUG) $(OBJECTS_PROFILE)
+	rm -f *~ *.pyc
+	rm -f Makefile.depend gmon.out PROFILE core
 	rm -f sas_plan
 
 distclean: clean
-	rm -f search release-search
+	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
 
 ## Note: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
@@ -183,10 +231,10 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 	    sed -i -e "s@^[^:]*:@$$objfile:@" Makefile.temp0; \
 	    cat Makefile.temp0 >> Makefile.temp; \
 	done
-	rm -f Makefile.temp0
-	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1.o:\2@" Makefile.temp > Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1.release.o:\2@" Makefile.temp >> Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1.profile.o:\2@" Makefile.temp >> Makefile.depend
+	rm -f Makefile.temp0 Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.depend
 	rm -f Makefile.temp
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -195,4 +243,4 @@ ifneq ($(MAKECMDGOALS),distclean)
 endif
 endif
 
-.PHONY: release clean distclean
+.PHONY: default all release debug profile clean distclean
