@@ -311,7 +311,7 @@ void NamedOptionParser::add_int_option(string name, int *var, string desc,
 }
 
 void NamedOptionParser::add_scalar_evaluator_option(string name, 
-                                                    ScalarEvaluator *var, 
+                                                    ScalarEvaluator **var, 
                                                     string desc, 
                                                     bool allow_none) {
     scalar_evaluator_options[name] = var;
@@ -425,7 +425,8 @@ void NamedOptionParser::parse_int_option(const vector<string> &config,
 void NamedOptionParser::parse_scalar_evaluator_option(
     const vector<string> &config, int start, int &end) {
     end = start;
-    ScalarEvaluator *val = scalar_evaluator_options[config[end]];
+    ScalarEvaluator **pp_eval = scalar_evaluator_options[config[end]];
+    ScalarEvaluator *val;
     end ++;
     if (config[end] != "=")
         throw ParseError(end);
@@ -443,6 +444,7 @@ void NamedOptionParser::parse_scalar_evaluator_option(
 
     OptionParser *parser = OptionParser::instance();
     val = parser->parse_scalar_evaluator(config, end, end);
+    *pp_eval = val;
 }
 
 void NamedOptionParser::parse_heuristic_list_option(

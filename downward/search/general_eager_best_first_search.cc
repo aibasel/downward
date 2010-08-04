@@ -257,7 +257,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
         option_parser.add_bool_option("reopen_closed", &reopen_closed,
                                       "reopen closed nodes");
         option_parser.add_scalar_evaluator_option(
-            "f_evaluator", f_eval, "set evaluator for jump statistics", true);
+            "progress_evaluator", &f_eval, "set evaluator for jump statistics", true);
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
 

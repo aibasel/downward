@@ -23,7 +23,7 @@ class NamedOptionParser {
     std::map<std::string, float *> float_options;
     std::map<std::string, int *> int_options;
     std::map<std::string, double *> double_options;
-    std::map<std::string, ScalarEvaluator *> scalar_evaluator_options;
+    std::map<std::string, ScalarEvaluator **> scalar_evaluator_options;
     std::map<std::string, std::vector<Heuristic *> *> heuristic_list_options;
     std::map<std::string, std::string *> str_options;
     std::set<std::string> can_be_none;
@@ -49,7 +49,7 @@ class NamedOptionParser {
         void add_int_option(std::string name, int *var, std::string desc, 
                             bool allow_infinity=false);
         void add_scalar_evaluator_option(std::string name, 
-            ScalarEvaluator *var, std::string desc, bool allow_none=false);
+            ScalarEvaluator **var, std::string desc, bool allow_none=false);
         void add_heuristic_list_option(std::string name, 
             std::vector<Heuristic *> *var, std::string desc);
         void add_string_option(std::string name, std::string *var, 
