@@ -493,7 +493,7 @@ string OptionParser::strip_and_to_lower(const char* begin, const char* end) {
     const char *b = begin;
     const char *e = end;
     // lstrip
-    while (*b == ' ' && b < end) 
+    while ((*b == ' ' || *b == '\n' || *b == '\t')&& b < end) 
         b++;
     
     // return if empty string
