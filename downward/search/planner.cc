@@ -140,7 +140,7 @@ void register_parsers() {
     OptionParser::instance()->register_search_engine("ehc", 
         EnforcedHillClimbingSearch::create);
     OptionParser::instance()->register_search_engine("old_greedy", 
-        BestFirstSearchEngine::create_engine);
+        BestFirstSearchEngine::create);
 
     // Register heuristics
     OptionParser::instance()->register_scalar_evaluator("add", 

@@ -51,8 +51,8 @@ public:
     virtual void add_heuristic(Heuristic *heuristic, bool use_estimates,
                                bool use_preferred_operators);
     virtual void statistics() const;
-    static SearchEngine* create_engine(const vector<string> &config, 
-                                       int start, int &end);
+    static SearchEngine *create(const vector<string> &config, 
+                                int start, int &end);
 };
 
 #endif

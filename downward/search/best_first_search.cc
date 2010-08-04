@@ -205,8 +205,7 @@ int BestFirstSearchEngine::fetch_next_state() {
     return IN_PROGRESS;
 }
 
-SearchEngine* 
-BestFirstSearchEngine::create_engine(const vector<string> &config,
+SearchEngine *BestFirstSearchEngine::create(const vector<string> &config,
     int start, int &end) {
     if (config[start + 1] != "(") 
         throw ParseError(start + 1);
