@@ -5,8 +5,7 @@ make || exit 1
 cd ..
 
 cd search
-make || exit 1
-make release || exit 1
+make all || exit 1
 cd ..
 
 type flex >& /dev/null
