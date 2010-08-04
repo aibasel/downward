@@ -142,15 +142,16 @@ POSTLINKOPT_PROFILE  =
 
 default: release
 
-PREPARE:
-
 ifeq ($(USE_LP),1)
-COIN_ROOT = lp/coin
 
-PREPARE: $(COIN_ROOT)
+COIN_ROOT = lp/coin
 
 $(COIN_ROOT):
 	cd lp && ./setup
+
+$(TARGET_RELEASE) $(OBJECTS_RELEASE): $(COIN_ROOT)
+$(TARGET_DEBUG) $(OBJECTS_DEBUG): $(COIN_ROOT)
+$(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
 
 ## We want to link the Linear Programming libraries statically since
 ## they are unlikely to be preinstalled on the grids we use for
@@ -179,6 +180,7 @@ CCOPT += $(COIN_CCOPT)
 POSTLINKOPT_RELEASE += $(COIN_LINKOPT)
 POSTLINKOPT_DEBUG   += $(COIN_LINKOPT) -Wl,-Bdynamic
 POSTLINKOPT_PROFILE += $(COIN_LINKOPT) -Wl,-Bdynamic
+
 endif
 
 SHELL = /bin/bash
@@ -188,8 +190,6 @@ all: release debug profile
 ## Build rules for the release target follow.
 
 release: $(TARGET_RELEASE)
-
-$(TARGET_RELEASE) $(OBJECTS_RELEASE): PREPARE
 
 $(TARGET_RELEASE): $(OBJECTS_RELEASE)
 	$(CC) $(LINKOPT) $(LINKOPT_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
@@ -202,8 +202,6 @@ $(OBJECTS_RELEASE): .obj/%$(OBJECT_SUFFIX_RELEASE).o: %.cc
 
 debug: $(TARGET_DEBUG)
 
-$(TARGET_DEBUG) $(OBJECTS_DEBUG): PREPARE
-
 $(TARGET_DEBUG): $(OBJECTS_DEBUG)
 	$(CC) $(LINKOPT) $(LINKOPT_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
 
@@ -214,8 +212,6 @@ $(OBJECTS_DEBUG): .obj/%$(OBJECT_SUFFIX_DEBUG).o: %.cc
 ## Build rules for the profile target follow.
 
 profile: $(TARGET_PROFILE)
-
-$(TARGET_PROFILE) $(OBJECTS_PROFILE): PREPARE
 
 $(TARGET_PROFILE): $(OBJECTS_PROFILE)
 	$(CC) $(LINKOPT) $(LINKOPT_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
@@ -263,4 +259,4 @@ ifneq ($(MAKECMDGOALS),distclean)
 endif
 endif
 
-.PHONY: PREPARE default all release debug profile clean distclean
+.PHONY: default all release debug profile clean distclean
