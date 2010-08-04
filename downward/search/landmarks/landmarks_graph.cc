@@ -906,7 +906,7 @@ int LandmarksGraph::loop_acyclic_graph(LandmarkNode& lmn, hash_set<
                 if (it->first == cur)
                     break;
             }
-            assert(it->first == cur);
+            assert(it != path.end());
             // remove edge from graph
             remove_first_weakest_cycle_edge(cur, path, it);
             //assert(removed);
