@@ -1,44 +1,75 @@
-HEADERS = abstraction.h operator_registry.h variable_order_finder.h \
-          heuristic.h \
-	  lm_cut_heuristic.h \
-          cyclic_cg_heuristic.h cg_heuristic.h \
+HEADERS = \
+          abstraction.h \
           additive_heuristic.h \
-          mas_heuristic.h ff_heuristic.h relaxation_heuristic.h\
-	  max_heuristic.h \
-          goal_count_heuristic.h blind_search_heuristic.h \
+          axioms.h \
+          best_first_search.h \
+          blind_search_heuristic.h \
+          cache.h \
+          causal_graph.h \
+          cg_heuristic.h \
+          closed_list.h \
+          cyclic_cg_heuristic.h \
+          domain_transition_graph.h \
+          enforced_hill_climbing_search.h \
+          ff_heuristic.h \
+          general_eager_best_first_search.h \
+          general_lazy_best_first_search.h \
           globals.h \
-	  domain_transition_graph.h \
-          operator.h state.h successor_generator.h causal_graph.h \
-	  best_first_search.h axioms.h cache.h \
-          search_engine.h open_lists/open_list_buckets.h closed_list.h \
-          timer.h open_lists/standard_scalar_open_list.h \
-          open_lists/tiebreaking_open_list.h open_lists/alternation_open_list.h \
-		  open_lists/pareto_open_list.h \
-	  search_node_info.h search_space.h general_eager_best_first_search.h \
-	  landmarks/landmarks_graph.h landmarks/landmarks_graph_rpg_sasp.h \
-	  landmarks/landmarks_count_heuristic.h landmarks/exploration.h \
-	  landmarks/landmark_status_manager.h \
-	  landmarks/landmarks_graph_rpg_exhaust.h landmarks/landmarks_graph_zhu_givan.h \
-	  landmarks/util.h landmarks/lama_ff_synergy.h landmarks/landmark_cost_assignment.h\
-	  landmarks/landmarks_graph_rpg_search.h\
-	  hm_heuristic.h \
-	  weighted_evaluator.h sum_evaluator.h g_evaluator.h general_lazy_best_first_search.h\
-	  learning/feature_extractor.h \
-	  learning/state_vars_feature_extractor.h \
-	  learning/composite_feature_extractor.h \
-	  learning/node_info_feature_extractor.h \
-	  learning/landmarks_feature_extractor.h \
-	  learning/g_feature_extractor.h \
-	  learning/state_space_sample.h \
-	  learning/PDB_state_space_sample.h \
-	  learning/probe_state_space_sample.h \
-	  learning/classifier.h \
-	  learning/naive_bayes_classifier.h \
-	  learning/AODE.h \
-	  learning/selective_max_heuristic.h \
+          goal_count_heuristic.h \
+          heuristic.h \
+          hm_heuristic.h \
+          lm_cut_heuristic.h \
+          mas_heuristic.h \
+          max_heuristic.h \
+          operator.h \
+          operator_registry.h \
+          option_parser.h \
+          pref_evaluator.h \
+          relaxation_heuristic.h \
+          search_engine.h \
+          search_node_info.h \
+          search_progress.h \
+          search_space.h \
+          state.h \
+          successor_generator.h \
+          sum_evaluator.h g_evaluator.h \
+          timer.h \
+          utilities.h \
+          variable_order_finder.h \
+          weighted_evaluator.h \
+          \
+          open_lists/alternation_open_list.h \
+          open_lists/open_list_buckets.h \
+          open_lists/pareto_open_list.h \
+          open_lists/standard_scalar_open_list.h \
+          open_lists/tiebreaking_open_list.h \
+          \
+          landmarks/exploration.h \
+          landmarks/lama_ff_synergy.h \
+          landmarks/landmark_cost_assignment.h \
+          landmarks/landmark_status_manager.h \
+          landmarks/landmarks_count_heuristic.h \
+          landmarks/landmarks_graph.h \
+          landmarks/landmarks_graph_rpg_exhaust.h \
+          landmarks/landmarks_graph_rpg_sasp.h \
+          landmarks/landmarks_graph_rpg_search.h \
+          landmarks/landmarks_graph_zhu_givan.h \
+          landmarks/util.h \
+          \
+          learning/AODE.h \
+          learning/classifier.h \
+          learning/composite_feature_extractor.h \
+          learning/feature_extractor.h \
+          learning/landmarks_feature_extractor.h \
           learning/maximum_heuristic.h \
-	  enforced_hill_climbing_search.h pref_evaluator.h search_progress.h option_parser.h \
-	  utilities.h
+          learning/naive_bayes_classifier.h \
+          learning/node_info_feature_extractor.h \
+          learning/g_feature_extractor.h \
+          learning/PDB_state_space_sample.h \
+          learning/probe_state_space_sample.h \
+          learning/selective_max_heuristic.h \
+          learning/state_space_sample.h \
+          learning/state_vars_feature_extractor.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 OBJECTS = $(SOURCES:%.cc=obj/%.o)
