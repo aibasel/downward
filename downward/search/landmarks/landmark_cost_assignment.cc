@@ -357,6 +357,9 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
           exit(0);
     };
 #else
+    // TODO: Use same error message everywhere (or better:
+    //       try to avoid having such #ifdefs in different places).
+    //       See the nicer error message in landmarks_count_heuristic.cc.
     cout << "Please define USE_LP first" << endl;
     exit(2);
 #endif
@@ -511,6 +514,9 @@ void LandmarkEfficientOptimalSharedCostAssignment::assign_costs() {
           exit(0);
     };
 #else
+    // TODO: Use same error message everywhere (or better:
+    //       try to avoid having such #ifdefs in different places).
+    //       See the nicer error message in landmarks_count_heuristic.cc.
     cout << "Please define USE_LP first" << endl;
     exit(2);
 #endif
