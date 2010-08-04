@@ -39,6 +39,25 @@ void register_parsers();
 int main(int argc, const char **argv) {
     register_event_handlers();
 
+    string usage = 
+        "usage: \n" +
+        string(argv[0]) + " [OPTIONS] --search SEARCH < OUTPUT\n\n" 
+        "* SEARCH (SearchEngine): configuration of the search algorithm\n"
+        "* OUTPUT (filename): preprocessor output\n\n"
+        "Options:\n" 
+        "--heuristic HEURISTIC_PREDEFINITION\n" 
+        "    Predefines a heuristic that can afterwards be referenced\n" 
+        "    by the name that is specified in the definition.\n" 
+        "--random-seed SEED\n" 
+        "    Use random seed SEED\n\n" 
+        "See http://alfons.informatik.uni-freiburg.de/downward/HomePage for " 
+        "details.";
+
+    if (argc < 2) {
+        cout << usage << endl;
+        exit(1);
+    }
+
     // read prepropressor output first because we need to know the initial
     // state when we create a general lazy search engine
     bool poly_time_method = false;
@@ -55,6 +74,7 @@ int main(int argc, const char **argv) {
 
     register_parsers();
     SearchEngine *engine = 0;
+
     for (unsigned int i = 1; i < argc; ++ i) {
         string arg = string(argv[i]);
         if (arg.compare("--heuristic") == 0) {
@@ -68,8 +88,8 @@ int main(int argc, const char **argv) {
             srand(atoi(argv[i]));
             cout << "random seed " << argv[i] << endl;
         } else {
-            cerr << "unknown option " << arg << endl;
-            // XXX TODO: add usage message
+            cerr << "unknown option " << arg << endl << endl;
+            cout << usage << endl;
             exit(1);
         }
     }
