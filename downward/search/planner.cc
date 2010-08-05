@@ -100,7 +100,8 @@ int main(int argc, const char **argv) {
     search_timer.stop();
     g_timer.stop();
 
-    save_plan(engine->get_plan());
+    if (engine->found_solution())
+        save_plan(engine->get_plan());
     engine->statistics();
     engine->heuristic_statistics();
     cout << "Search time: " << search_timer << endl;
