@@ -1,44 +1,88 @@
 #! /bin/bash
 
-# TODO:
+set -o errexit
 
-# This is not perfect because it picks up any odd *.{cc,h,py} file
-# lying around in the planner directories and puts it into the
-# package. It would be nicer to integrate this with the regular
-# Makefiles so that no information about what is and isn't part of the
-# planner is duplicated anywhere.
-#
-# For the Python code, which does not require a Makefile, we could go
-# fancy and automatically keep track of dependencies by looking at
-# "import" statements. Of course, this is fallible when there are
-# dynamic imports, and we need to be careful about absolute and
-# relative imports etc. Probably the easiest way of dealing with this
-# is to first delete all pyc files recursively, then run the planner
-# on some dummy input (or even empty input) and check which *.pyc files
-# were generated. The corresponding *.py files plus the main *.py file
-# would be the only ones that need to be included. Again, this fails
-# in some cases, such as when imports are only conditionally executed,
-# but we could guard against errors by outputting a list of *.py files
-# found that were *not* added (this could then be eyeballed). The unit
-# tests run after packaging should catch this too.
-#
-# Another problem with this is that it is not at all graceful if
-# errors occur at any stage. These are basically ignored, which is
-# hardly the right thing to do. For example, if one of the unit tests
-# at the end fails, one would certainly not like to delete the
-# distribution directory -- it should be left intact to check what was
-# going wrong. All in all, this sounds like a more complicated job
-# than what I would like to do with a bash script, so maybe it should
-# be done with Python.
+CHECKOUT=pristine-checkout
+DIST=downward-`date --iso-8601`
+PACKAGE=$DIST.tar.gz
+SEARCH_OPTIONS="
+    --heuristic h1=cg()
+    --heuristic h2=ff()
+    --search lazy_greedy(h1,h2,preferred=(h1,h2))"
+
+echo -n "Looking for validator... "
+which validate || (echo "not found!" && exit 1)
+
+if [[ -e $CHECKOUT ]]; then
+    echo Removing existing working copy $CHECKOUT...
+    rm -rf $CHECKOUT
+fi
+
+if [[ -e $DIST ]]; then
+    echo Removing existing distribution directory $DIST...
+    rm -rf $DIST
+fi
+
+if [[ -e $DIST ]]; then
+    echo Removing existing distribution package $PACKAGE...
+    rm $PACKAGE
+fi
+
+echo "Checking out code..."
+svn checkout --quiet svn+ssh://downward/trunk/downward $CHECKOUT
+rm -rf $(find $CHECKOUT -regex '.*/\.svn$')
 
 echo "Preparing distribution directory..."
-DIST=downward-`date --iso-8601`
-SRC_DIR=..
-
-MAKEFILE=$DIST/Makefile
 
 mkdir $DIST
-cp data/Makefile.base $MAKEFILE
+
+cp -r $CHECKOUT/translate $DIST/
+cp -r $CHECKOUT/preprocess $DIST/
+cp -r $CHECKOUT/search $DIST/
+cp $CHECKOUT/build_all $DIST/
+
+COMPLAINED=false
+cd $DIST
+for filename in $(find . -type f); do
+    ## Test if file is known to be good (don't do anything),
+    ## known not to belong into the distribution (remove it), or
+    ## not known (complain).
+    if [[ \
+        $filename =~ ^\./build_all$ || \
+        $filename =~ ^\./translate/.*\.py$ || \
+        $filename =~ ^\./(preprocess|search)/.*\.(cc|h)$ || \
+        $filename =~ ^\./(preprocess|search)/Makefile$ || \
+        $filename =~ ^\./search/lp/(setup|Osi-0\.103\.0\.tgz)$ || \
+        0 == 1 ]]; then
+        :
+    elif [[ \
+        $filename =~ ^\./translate/no-invariants\.patch$ || \
+        $filename =~ ^\./translate/regression-tests/.*$ || \
+        $filename =~ ^\./translate/run-additive-hmax$ || \
+        $filename =~ ^\./preprocess/output-format\.txt$ || \
+        $filename =~ ^\./search/landmarks/README\.txt$ || \
+        $filename =~ ^\./search/CYCLIC_CG_DIJKSTRA$ || \
+        $filename =~ ^\./search/DFP-PSEUDOCODE$ || \
+        $filename =~ ^\./search/Doxyfile$ || \
+        $filename =~ ^\./search/PSEUDOCODE$ || \
+        $filename =~ ^\./search/downward\.cfg$ || \
+        $filename =~ ^\./search/integration_status\.txt$ || \
+        0 == 1 ]]; then
+        rm $filename
+    else
+        echo "unknown file: $filename"
+        COMPLAINED=true
+    fi
+done
+cd ..
+
+if [[ $COMPLAINED == true ]]; then
+    echo "Found unknown files -- exiting."
+    echo "If there is nothing wrong, update the filename patterns in the"
+    echo "make_dist script."
+    exit 1
+fi
+
 mkdir $DIST/doc
 cp data/README $DIST/
 cp data/doc/sas-format.txt $DIST/doc/
@@ -46,85 +90,57 @@ cp data/doc/pre-format.txt $DIST/doc/
 cp data/doc/fast-downward.pdf $DIST/doc/
 cp data/doc/translator.pdf $DIST/doc/
 
-# C++ components
-for component in preprocess search; do
-    mkdir $DIST/$component
-    pushd . > /dev/null
-    cd $SRC_DIR
-    if [[ "$component" == "search" ]]; then
-        CC_FILES=$(echo $component/*.cc $component/*/*.cc)
-        H_FILES=$(echo $component/*.h $component/*/*.h)
-    else
-        CC_FILES=$(echo $component/*.cc)
-        H_FILES=$(echo $component/*.h)
-    fi
-    popd > /dev/null
-    for x in $CC_FILES $H_FILES; do
-        TARGET_DIR=$(dirname "$DIST/$x")
-        mkdir -p $TARGET_DIR
-        cp $SRC_DIR/$x $TARGET_DIR/
-    done
-
-    # The rest of this is for generating the Makefile.
-    ID=`echo $component | sed -e \
-      y/abcdefghijklmnopqrstuvwxyz-/ABCDEFGHIJKLMNOPQRSTUVWXYZ_/`
-
-    echo >> $MAKEFILE
-    echo "${ID}_CC = $CC_FILES" >> $MAKEFILE
-    echo "${ID}_H  = $H_FILES" >> $MAKEFILE
-    echo "$component/$component: \$(${ID}_CC) \$(${ID}_H)" >> $MAKEFILE
-    echo -e "\t\$(COMPILE) -o $component/$component \$(${ID}_CC)" >> $MAKEFILE
-    echo "all: $component/$component" >> $MAKEFILE
-done
-
-# Python component
-mkdir $DIST/translate
-mkdir $DIST/translate/pddl
-cp $SRC_DIR/translate/*.py $DIST/translate/
-cp $SRC_DIR/translate/pddl/*.py $DIST/translate/pddl/
-
 # Packaging
 echo "Packaging..."
-tar czf $DIST.tar.gz $DIST/
+tar czf $PACKAGE $DIST/
 rm -rf $DIST
 
-# Unit tests
-echo "Unit test: Unpacking package..."
-tar xzf $DIST.tar.gz || exit 1
+# Sanity tests
+echo "Sanity test: Unpacking package..."
+tar xzf $PACKAGE
 
-echo "Unit test: Compiling..."
+echo "Sanity test: Compiling..."
 cp -r data/tests $DIST/
 cd $DIST
-make > /dev/null || exit 1
+./build_all > /dev/null
 
-echo 'Unit test: First task...'
-translate/translate.py \
-    tests/test-cpp-domain.pddl tests/test-cpp-problem.pddl \
-    > /dev/null
-preprocess/preprocess < output.sas > /dev/null
-search/search cCfF < output > /dev/null
-diff sas_plan tests/test-cpp-plan
-echo Validating...
-../../validate -s tests/test-cpp-domain.pddl tests/test-cpp-problem.pddl sas_plan \
-  && echo Validation succeeded. || echo Validation failed!
-rm -f output.sas output sas_plan
+function planner-test-run () {
+    TESTID=$1
+    echo "Sanity test: $TESTID..."
+    translate/translate.py \
+        tests/$TESTID-domain.pddl tests/$TESTID-problem.pddl \
+        > /dev/null
+    preprocess/preprocess < output.sas > /dev/null
+    search/downward $SEARCH_OPTIONS < output > /dev/null
 
-echo 'Unit test: Second task...'
-translate/translate.py \
-    tests/test-py-domain.pddl tests/test-py-problem.pddl \
-    > /dev/null
-preprocess/preprocess < output.sas > /dev/null
-search/search cCfF < output > /dev/null
-diff sas_plan tests/test-py-plan
-echo Validating...
-../../validate -s tests/test-py-domain.pddl tests/test-py-problem.pddl sas_plan \
-  && echo Validation succeeded. || echo Validation failed!
-rm -f output.sas test.groups output sas_plan
+    diff -u sas_plan tests/$TESTID-plan || \
+        echo WARNING: did not get the expected plan
+    echo Validating...
+
+    ## Note: As of now, VAL doesn't appear to always return a useful
+    ## exit code, so we check for output instead.
+    ## The "|| true" part makes sure that even if VAL does return an
+    ## error exit, we still get the contents of validate.log reported.
+    ## VAL seems to sometimes generate newlines on successful runs,
+    ## hence we use grep to check for (and report) nonblank lines.
+    validate -s tests/$TESTID-domain.pddl tests/$TESTID-problem.pddl \
+        sas_plan &> validate.log || true
+    grep . validate.log && MATCH=true || MATCH=false
+    if [[ $MATCH == true ]]; then
+        echo validator failed -- exiting
+        exit 1
+    fi
+    rm -f output.sas output sas_plan
+}
+
+planner-test-run test1
+planner-test-run test2
 
 echo "Cleaning up..."
 cd ..
+rm -rf $CHECKOUT
 rm -rf $DIST
 
 echo "Publishing..."
-cp $DIST.tar.gz /lummerland/.public_html/
-echo "Published: http://www.informatik.uni-freiburg.de/~helmert/$DIST.tar.gz"
+cp $PACKAGE /lummerland/.public_html/
+echo "Published: http://www.informatik.uni-freiburg.de/~helmert/$PACKAGE"
