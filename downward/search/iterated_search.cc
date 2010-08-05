@@ -1,14 +1,21 @@
 #include "iterated_search.h"
+#include <limits>
 
 IteratedSearch::IteratedSearch(
         vector<SearchEngine *> engine_list,
         bool pass_bound_,
-        bool repeat_last_phase_):
+        bool repeat_last_phase_,
+        bool continue_on_fail_,
+        bool continue_on_solve_):
         engines(engine_list),
         pass_bound(pass_bound_),
-        repeat_last_phase(repeat_last_phase_)
+        repeat_last_phase(repeat_last_phase_),
+        continue_on_fail(continue_on_fail_),
+        continue_on_solve(continue_on_solve_)
 {
-    last_phase_plan_cost = -1;
+    last_phase_found_solution = false;
+    best_bound = numeric_limits<int>::max();
+    found_solution = false;
 }
 
 IteratedSearch::~IteratedSearch() {
@@ -33,10 +40,10 @@ SearchEngine *IteratedSearch::create_phase(int p) {
 int IteratedSearch::step() {
     current_search = create_phase(phase);
     if (current_search == NULL) {
-        return ( (last_phase_plan_cost >= 0) ? SOLVED : FAILED);
+        return ( (last_phase_found_solution) ? SOLVED : FAILED);
     }
-    if (pass_bound && (last_phase_plan_cost >= 0)) {
-        current_search->set_bound(last_phase_plan_cost);
+    if (pass_bound) {
+        current_search->set_bound(best_bound);
     }
     phase++;
 
@@ -44,18 +51,19 @@ int IteratedSearch::step() {
 
     SearchEngine::Plan found_plan;
     int plan_cost = 0;
-    bool found_solution = current_search->found_solution();
-    phase_found_solution.push_back(found_solution);
-    phase_statistics.push_back(current_search->get_search_progress());
-    if (found_solution) {
+    last_phase_found_solution = current_search->found_solution();
+    if (last_phase_found_solution) {
+        found_solution = true;
         found_plan = current_search->get_plan();
         plan_cost = save_plan(found_plan);
-        last_phase_plan_cost = plan_cost;
+        if (plan_cost < best_bound)
+            best_bound = plan_cost;
         set_plan(found_plan);
     }
-    else {
-        last_phase_plan_cost = -1;
-    }
+    phase_statistics.push_back(current_search->get_search_progress());
+    phase_solution_cost.push_back(plan_cost);
+    phase_found_solution.push_back(last_phase_found_solution);
+
     current_search->statistics();
     search_progress.inc_expanded(
             current_search->get_search_progress().get_expanded());
@@ -68,23 +76,28 @@ int IteratedSearch::step() {
     search_progress.inc_reopened(
             current_search->get_search_progress().get_reopened());
 
-    phase_solution_cost.push_back(plan_cost);
     return step_return_value();
 }
 
 int IteratedSearch::step_return_value() {
-    cout << "Last solution: " << last_phase_plan_cost << endl;
-    if (last_phase_plan_cost > -1) {
-        cout << "Solution found - keep searching" << endl;
-        return IN_PROGRESS;
-    } else {
-        if (phase > 0) {
-            cout << "No solution found - last solution is optimal" << endl;
+    if (found_solution)
+        cout << "Best solution cost so far: " << best_bound << endl;
+
+    if (last_phase_found_solution) {
+        if (continue_on_solve) {
+            cout << "Solution found - keep searching" << endl;
+            return IN_PROGRESS;
+        } else {
+            cout << "Solution found - stop searching" << endl;
             return SOLVED;
         }
-        else {
-            cout << "No solution found" << endl;
-            return FAILED;
+    } else {
+        if (continue_on_fail) {
+            cout << "No solution found - keep searching" << endl;
+            return IN_PROGRESS;
+        } else {
+            cout << "No solution found - stop searching" << endl;
+            return (found_solution ? SOLVED : FAILED);
         }
     }
 }
@@ -127,6 +140,8 @@ SearchEngine *IteratedSearch::create(
 
     bool pass_bound = true;
     bool repeat_last = false;
+    bool continue_on_fail = false;
+    bool continue_on_solve = true;
 
     if (config[end] != ")") {
         end ++;
@@ -135,6 +150,10 @@ SearchEngine *IteratedSearch::create(
                                      "use bound from previous search");
         option_parser.add_bool_option("repeat_last", &repeat_last,
                                      "repeat last phase of search");
+        option_parser.add_bool_option("continue_on_fail", &continue_on_fail,
+                                      "continue search after no solution found");
+        option_parser.add_bool_option("continue_on_solve", &continue_on_solve,
+                                      "continue search after solution found");
         option_parser.parse_options(config, end, end);
         end ++;
     }
@@ -142,6 +161,6 @@ SearchEngine *IteratedSearch::create(
         throw ParseError(end);
 
     IteratedSearch *engine = \
-        new IteratedSearch(engines, pass_bound, repeat_last);
+        new IteratedSearch(engines, pass_bound, repeat_last, continue_on_fail, continue_on_solve);
     return engine;
 }

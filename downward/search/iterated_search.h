@@ -9,12 +9,17 @@
 class IteratedSearch: public SearchEngine {
 private:
     int phase;
-    int last_phase_plan_cost;
+    bool last_phase_found_solution;
+    int best_bound;
+    bool found_solution;
+
     SearchEngine *current_search;
 
     vector<SearchEngine *> engines;
     bool pass_bound;
     bool repeat_last_phase;
+    bool continue_on_fail;
+    bool continue_on_solve;
 
     vector<SearchProgress> phase_statistics;
     vector<bool> phase_found_solution;
@@ -27,7 +32,11 @@ private:
     virtual void initialize();
     virtual int step();
 public:
-    IteratedSearch(vector<SearchEngine *> engine_list, bool pass_bound, bool repeat_last_phase);
+    IteratedSearch(vector<SearchEngine *> engine_list,
+                   bool pass_bound,
+                   bool repeat_last_phase,
+                   bool continue_on_fail,
+                   bool continue_on_solve);
     virtual ~IteratedSearch();
     void statistics() const;
     static SearchEngine* create(
