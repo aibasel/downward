@@ -39,7 +39,7 @@ protected:
 
 public:
     GeneralEagerBestFirstSearch(OpenList<state_var_t *> *open, bool reopen_closed, 
-        ScalarEvaluator *f_eval);
+        ScalarEvaluator *f_eval, int g_bound);
     void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     void statistics() const;
 

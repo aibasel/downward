@@ -16,9 +16,10 @@ using namespace std;
 
 GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(
     OpenList<state_var_t *> *open,
-    bool reopen_closed, ScalarEvaluator *f_eval)
+    bool reopen_closed, ScalarEvaluator *f_eval, int g_bound)
     : reopen_closed_nodes(reopen_closed),
       open_list(open), f_evaluator(f_eval) {
+    bound = g_bound;
 }
 
 void
@@ -30,8 +31,10 @@ GeneralEagerBestFirstSearch::set_pref_operator_heuristics(
 void GeneralEagerBestFirstSearch::initialize() {
     //g_learning_search_space = &search_space; //TODO:CR - check if we can get of this
     //TODO children classes should output which kind of search
-    cout << "Conducting best first search" <<
-    (reopen_closed_nodes ? " with" : " without") << " reopening closed nodes" << endl;
+    cout << "Conducting best first search"
+         << (reopen_closed_nodes ? " with" : " without")
+         << " reopening closed nodes, bound = " << bound
+         << endl;
 
     assert(open_list != NULL);
 
@@ -117,6 +120,10 @@ int GeneralEagerBestFirstSearch::step() {
 
     for (int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
+
+        if ((node.get_g() + op->get_cost()) >= bound)
+            continue;
+
         State succ_state(s, *op);
         search_progress.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
@@ -250,6 +257,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
     bool reopen_closed = false;
     ScalarEvaluator *f_eval = 0;
     vector<Heuristic *> preferred_list;
+    int g_bound = numeric_limits<int>::max();
 
     if (config[end] != ")") {
         end++;
@@ -258,6 +266,8 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
                                       "reopen closed nodes");
         option_parser.add_scalar_evaluator_option(
             "progress_evaluator", &f_eval, "set evaluator for jump statistics", true);
+        option_parser.add_int_option("bound", &g_bound,
+                                     "depth bound on g-values");
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
 
@@ -268,7 +278,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
         throw ParseError(end);
 
     GeneralEagerBestFirstSearch *engine = \
-        new GeneralEagerBestFirstSearch(open, reopen_closed, f_eval);
+        new GeneralEagerBestFirstSearch(open, reopen_closed, f_eval, g_bound);
     engine->set_pref_operator_heuristics(preferred_list);
 
     return engine;
@@ -300,7 +310,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
         new TieBreakingOpenList<state_var_t *>(evals, false, false);
 
     GeneralEagerBestFirstSearch *engine = \
-        new GeneralEagerBestFirstSearch(open, true, f_eval);
+        new GeneralEagerBestFirstSearch(open, true, f_eval, numeric_limits<int>::max() );
 
     return engine;
 }
@@ -320,6 +330,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
 
     vector<Heuristic *> preferred_list;
     int boost = 1000;
+    int g_bound = numeric_limits<int>::max();
 
     if (config[end] != ")") {
         end++;
@@ -328,6 +339,8 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost,
                                      "boost value for successful sub-open-lists");
+        //option_parser.add_int_option("bound", &g_bound,
+        //                             "depth bound on g-values");
         option_parser.parse_options(config, end, end);
         end++;
     }
@@ -351,7 +364,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
     }
 
     GeneralEagerBestFirstSearch *engine = \
-        new GeneralEagerBestFirstSearch(open, false, NULL);
+        new GeneralEagerBestFirstSearch(open, false, NULL, g_bound);
     engine->set_pref_operator_heuristics(preferred_list);
     return engine;
 }
