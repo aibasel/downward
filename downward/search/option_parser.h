@@ -133,7 +133,7 @@ public:
                      bool only_one_eval, bool dry_run);
     void parse_search_engine_list(const std::vector<std::string> &input, int start,
                                   int & end, bool only_one,
-                                  std::vector<SearchEngine *> &engines, 
+                                  std::vector<int> &engine_config_start,
                                   bool dry_run);
 };
 

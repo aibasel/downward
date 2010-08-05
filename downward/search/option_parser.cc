@@ -219,16 +219,15 @@ void OptionParser::parse_heuristic_list(const vector<string> &input, int start,
 
 void OptionParser::parse_search_engine_list(const vector<string> &input, int start,
                                         int & end, bool only_one,
-                                        vector<SearchEngine *> &engines, 
+                                        vector<int> &engines,
                                         bool dry_run) {
     end = start;
     bool break_loop = false;
     while (knows_search_engine(input[end])) {
         if (only_one && engines.size() > 0)
             throw ParseError(end);
-        SearchEngine* engine =
-            parse_search_engine(input, end, end, dry_run);
-        engines.push_back(engine);
+        engines.push_back(end);
+        parse_search_engine(input, end, end, dry_run);
         end ++;
         if (input[end] != ",") {
             break_loop = true;

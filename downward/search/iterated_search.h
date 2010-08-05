@@ -14,8 +14,10 @@ private:
     bool found_solution;
 
     SearchEngine *current_search;
+    string current_search_name;
 
-    vector<SearchEngine *> engines;
+    const vector<string> engine_config;
+    vector<int> engine_config_start;
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;
@@ -25,14 +27,15 @@ private:
     vector<bool> phase_found_solution;
     vector<int> phase_solution_cost;
 
-
+    SearchEngine *get_search_engine(int engine_config_start_index);
     SearchEngine *create_phase(int p);
     int step_return_value();
 
     virtual void initialize();
     virtual int step();
 public:
-    IteratedSearch(vector<SearchEngine *> engine_list,
+    IteratedSearch(const std::vector<std::string> &engine_config,
+                   std::vector<int> engine_config_start,
                    bool pass_bound,
                    bool repeat_last_phase,
                    bool continue_on_fail,

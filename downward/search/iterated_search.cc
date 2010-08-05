@@ -2,12 +2,14 @@
 #include <limits>
 
 IteratedSearch::IteratedSearch(
-        vector<SearchEngine *> engine_list,
+        const vector<string> &engine_config_,
+        vector<int> engine_config_start_,
         bool pass_bound_,
         bool repeat_last_phase_,
         bool continue_on_fail_,
         bool continue_on_solve_):
-        engines(engine_list),
+        engine_config(engine_config_),
+        engine_config_start(engine_config_start_),
         pass_bound(pass_bound_),
         repeat_last_phase(repeat_last_phase_),
         continue_on_fail(continue_on_fail_),
@@ -25,16 +27,33 @@ void IteratedSearch::initialize() {
     phase = 0;
 }
 
+SearchEngine *IteratedSearch::get_search_engine(
+        int engine_config_start_index) {
+    int end;
+    current_search_name = "";
+    SearchEngine *engine = OptionParser::instance()->parse_search_engine(
+            engine_config, engine_config_start[engine_config_start_index],
+            end, false);
+    for (int i = engine_config_start[engine_config_start_index]; i <= end; i++) {
+        current_search_name.append(engine_config[i]);
+    }
+    cout << "Starting search: " << current_search_name << endl;
+
+    return engine;
+}
+
 SearchEngine *IteratedSearch::create_phase(int p) {
-    if (p >= engines.size()) {
+
+    if (p >= engine_config_start.size()) {
         if (repeat_last_phase) {
-            return engines[engines.size() - 1];
+            return get_search_engine(engine_config_start.size() - 1);
         }
         else {
             return NULL;
         }
     }
-    return engines[p];
+
+    return get_search_engine(p);
 }
 
 int IteratedSearch::step() {
@@ -103,19 +122,9 @@ int IteratedSearch::step_return_value() {
 }
 
 void IteratedSearch::statistics() const {
-    int expanded = 0;
-    int generated = 0;
-    int reopened = 0;
-    int evaluated = 0;
-
     for (int i = 0; i < phase_statistics.size(); i++) {
         cout << "Phase " << i << endl;
         phase_statistics[i].print_statistics();
-
-        expanded += phase_statistics[i].get_expanded();
-        generated += phase_statistics[i].get_generated();
-        reopened += phase_statistics[i].get_reopened();
-        evaluated += phase_statistics[i].get_evaluated();
     }
 
     cout << "Total" << endl;
@@ -127,20 +136,14 @@ void IteratedSearch::statistics() const {
 SearchEngine *IteratedSearch::create(
     const vector<string> &config, int start, int &end, bool dry_run) {
 
-    //XXX TODO: dry_run not implemented
-    if (dry_run) {
-        cerr << "dry run not implemented for iterated search!" << endl;
-    }
-
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
-    vector<SearchEngine *> engines;
+    vector<int> engine_config_start;
     OptionParser::instance()->parse_search_engine_list(config, start + 2,
-                                                       end, false, engines,
-                                                       dry_run);
+                           end, false, engine_config_start, true);
 
-    if (engines.empty())
+    if (engine_config_start.empty())
         throw ParseError(end);
     end ++;
 
@@ -157,7 +160,7 @@ SearchEngine *IteratedSearch::create(
         option_parser.add_bool_option("repeat_last", &repeat_last,
                                      "repeat last phase of search");
         option_parser.add_bool_option("continue_on_fail", &continue_on_fail,
-                                      "continue search after no solution found");
+                                   "continue search after no solution found");
         option_parser.add_bool_option("continue_on_solve", &continue_on_solve,
                                       "continue search after solution found");
         option_parser.parse_options(config, end, end, dry_run);
@@ -166,7 +169,12 @@ SearchEngine *IteratedSearch::create(
     if (config[end] != ")")
         throw ParseError(end);
 
+    if (dry_run)
+        return NULL;
+
     IteratedSearch *engine = \
-        new IteratedSearch(engines, pass_bound, repeat_last, continue_on_fail, continue_on_solve);
+        new IteratedSearch(config, engine_config_start, pass_bound, repeat_last,
+                continue_on_fail, continue_on_solve);
+
     return engine;
 }
