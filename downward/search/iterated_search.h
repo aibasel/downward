@@ -40,7 +40,8 @@ public:
     virtual ~IteratedSearch();
     void statistics() const;
     static SearchEngine* create(
-        const std::vector<std::string> &config, int start, int &end);
+        const std::vector<std::string> &config, int start, int &end, 
+        bool dry_run);
 };
 
 #endif /* ITERATED_SEARCH_H_ */

@@ -84,7 +84,7 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
             option_parser.add_bool_option("lm_admissible",
                                          &lm_admissible_,
                                          "get admissible estimate");
-            option_parser.parse_options(config, end, end);
+            option_parser.parse_options(config, end, end, false);
             end ++;
         }
         if (config[end] != ")")

@@ -21,7 +21,7 @@ public:
     void get_involved_heuristics(std::set<Heuristic*> &) {return; }
 
     static ScalarEvaluator *create(const std::vector<std::string> &config, 
-                                   int start, int &end);
+                                   int start, int &end, bool dry_run);
 };
 
 #endif

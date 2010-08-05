@@ -25,7 +25,7 @@ public:
 	HMHeuristic(int _m);
 	virtual ~HMHeuristic();
     static ScalarEvaluator *create(const std::vector<std::string> &config, 
-                                   int start, int &end);
+                                   int start, int &end, bool dry_run);
 protected:
 	int MAX_VALUE;
 

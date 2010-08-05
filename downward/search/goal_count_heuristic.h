@@ -12,7 +12,7 @@ public:
     ~GoalCountHeuristic();
 
     static ScalarEvaluator *create(const std::vector<std::string> &config, 
-                                   int start, int &end);
+                                   int start, int &end, bool dry_run);
 };
 
 #endif

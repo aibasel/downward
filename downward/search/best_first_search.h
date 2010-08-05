@@ -52,7 +52,7 @@ public:
                                bool use_preferred_operators);
     virtual void statistics() const;
     static SearchEngine *create(const vector<string> &config, 
-                                int start, int &end);
+                                int start, int &end, bool dry_run);
 };
 
 #endif

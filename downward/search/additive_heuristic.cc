@@ -128,7 +128,10 @@ int AdditiveHeuristic::compute_heuristic(const State &state) {
 }
 
 ScalarEvaluator *AdditiveHeuristic::create(const std::vector<string> &config,
-                                           int start, int &end) {
+                                           int start, int &end, bool dry_run) {
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    return new AdditiveHeuristic;
+    if (dry_run)
+        return 0;
+    else
+        return new AdditiveHeuristic;
 }

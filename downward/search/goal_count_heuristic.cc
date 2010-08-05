@@ -25,7 +25,10 @@ int GoalCountHeuristic::compute_heuristic(const State &state) {
 }
 
 ScalarEvaluator *GoalCountHeuristic::create(const std::vector<string> &config,
-                                            int start, int &end) {
+                                            int start, int &end, bool dry_run) {
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    return new GoalCountHeuristic();
+    if (dry_run)
+        return 0;
+    else
+        return new GoalCountHeuristic;
 }

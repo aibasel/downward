@@ -215,12 +215,14 @@ void GeneralLazyBestFirstSearch::statistics() const {
 }
 
 SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
-                                                 int start, int &end) {
+                                                 int start, int &end, 
+                                                 bool dry_run) {
     if (config[start + 1] != "(") 
         throw ParseError(start + 1);
 
     OpenList<OpenListEntryLazy> *open = \
-        OpenListParser<OpenListEntryLazy>::instance()->parse_open_list(config, start + 2, end);
+        OpenListParser<OpenListEntryLazy>::instance()->parse_open_list(
+            config, start + 2, end, dry_run);
     end ++;
     if (end >= config.size()) 
         throw ParseError(end);
@@ -241,30 +243,32 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
             "preferred", &preferred_list, 
             "use preferred operators of these heuristics");
 
-        option_parser.parse_options(config, end, end);
+        option_parser.parse_options(config, end, end, dry_run);
         end ++;
     }
     if (config[end] != ")")
         throw ParseError(end);
     
-    GeneralLazyBestFirstSearch *engine = \
-        new GeneralLazyBestFirstSearch(open, reopen_closed, g_bound);
-
-    engine->set_pref_operator_heuristics(preferred_list);
+    GeneralLazyBestFirstSearch *engine = 0;
+    if (!dry_run) {
+        engine = new GeneralLazyBestFirstSearch(open, reopen_closed, g_bound);
+        engine->set_pref_operator_heuristics(preferred_list);
+    }
     
     return engine;
 }
 
 
 SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
-    const vector<string> &config, int start, int &end) {
+    const vector<string> &config, int start, int &end, bool dry_run) {
 
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
     vector<ScalarEvaluator *> evals;
     OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
-                                                          end, false, evals);
+                                                          end, false, evals,
+                                                          dry_run);
     if (evals.empty())
         throw ParseError(end);
     end ++;
@@ -279,43 +283,51 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
             &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost, 
                                      "boost value for successful sub-open-lists");
-        option_parser.parse_options(config, end, end);
+        option_parser.parse_options(config, end, end, dry_run);
         end ++;
     }
     if (config[end] != ")")
         throw ParseError(end);
-    
-    OpenList<OpenListEntryLazy> *open;
-    if ((evals.size() == 1) && preferred_list.empty()) {
-        open = new StandardScalarOpenList<OpenListEntryLazy>(evals[0], false);
-    } else {
-        vector<OpenList<OpenListEntryLazy> *> inner_lists;
-        for (int i = 0; i < evals.size(); i++) {
-            inner_lists.push_back(
-                    new StandardScalarOpenList<OpenListEntryLazy>(evals[i], false));
-            if (!preferred_list.empty()) {
+   
+    GeneralLazyBestFirstSearch *engine = 0;
+    if (!dry_run) {
+        OpenList<OpenListEntryLazy> *open;
+        if ((evals.size() == 1) && preferred_list.empty()) {
+            open = new StandardScalarOpenList<OpenListEntryLazy>(evals[0], 
+                                                                 false);
+        } else {
+            vector<OpenList<OpenListEntryLazy> *> inner_lists;
+            for (int i = 0; i < evals.size(); i++) {
                 inner_lists.push_back(
-                    new StandardScalarOpenList<OpenListEntryLazy>(evals[i], true));
+                        new StandardScalarOpenList<OpenListEntryLazy>(evals[i], 
+                                                                      false));
+                if (!preferred_list.empty()) {
+                    inner_lists.push_back(
+                        new StandardScalarOpenList<OpenListEntryLazy>(evals[i],
+                                                                      true));
+                }
             }
+            open = new AlternationOpenList<OpenListEntryLazy>(inner_lists, 
+                                                              boost);
         }
-        open = new AlternationOpenList<OpenListEntryLazy>(inner_lists, boost);
+        
+        engine = new GeneralLazyBestFirstSearch(open, false,
+                                                numeric_limits<int>::max());
+        engine->set_pref_operator_heuristics(preferred_list);
     }
-    
-    GeneralLazyBestFirstSearch *engine = \
-        new GeneralLazyBestFirstSearch(open, false, numeric_limits<int>::max());
-    engine->set_pref_operator_heuristics(preferred_list);
     return engine;
 }
 
 SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
-    const vector<string> &config, int start, int &end) {
+    const vector<string> &config, int start, int &end, bool dry_run) {
 
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
     vector<ScalarEvaluator *> evals;
     OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
-                                                          end, false, evals);
+                                                          end, false, evals,
+                                                          dry_run);
     if (evals.empty()) 
         throw ParseError(end);
     end ++;
@@ -336,43 +348,48 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
                                      "depth bound on g-values",true);
         option_parser.add_int_option("weight", &weight, 
                                      "heuristic weight");
-        option_parser.parse_options(config, end, end);
+        option_parser.parse_options(config, end, end, dry_run);
         end ++;
     }
     if (config[end] != ")")
         throw ParseError(end);
-    
-    vector<OpenList<OpenListEntryLazy> *> inner_lists;
-    for (int i = 0; i < evals.size(); i++) {
-        GEvaluator *g = new GEvaluator();
-        vector<ScalarEvaluator *> sum_evals;
-        sum_evals.push_back(g);
-        if (weight == 1) {
-            sum_evals.push_back(evals[i]);
-        } else {
-            WeightedEvaluator *w = new WeightedEvaluator(evals[i], weight);
-            sum_evals.push_back(w);
-        }
-        SumEvaluator *f_eval = new SumEvaluator(sum_evals);
+   
+    GeneralLazyBestFirstSearch *engine = 0;
+    if (!dry_run) {
+        vector<OpenList<OpenListEntryLazy> *> inner_lists;
+        for (int i = 0; i < evals.size(); i++) {
+            GEvaluator *g = new GEvaluator();
+            vector<ScalarEvaluator *> sum_evals;
+            sum_evals.push_back(g);
+            if (weight == 1) {
+                sum_evals.push_back(evals[i]);
+            } else {
+                WeightedEvaluator *w = new WeightedEvaluator(evals[i], weight);
+                sum_evals.push_back(w);
+            }
+            SumEvaluator *f_eval = new SumEvaluator(sum_evals);
 
-        inner_lists.push_back(
-            new StandardScalarOpenList<OpenListEntryLazy>(f_eval, false));
-
-        if (!preferred_list.empty()) {
             inner_lists.push_back(
-                new StandardScalarOpenList<OpenListEntryLazy>(f_eval, true));
+                new StandardScalarOpenList<OpenListEntryLazy>(f_eval, false));
+
+            if (!preferred_list.empty()) {
+                inner_lists.push_back(
+                    new StandardScalarOpenList<OpenListEntryLazy>(f_eval, 
+                                                                  true));
+            }
         }
+        OpenList<OpenListEntryLazy> *open;
+        if (inner_lists.size() == 1) {
+            open = inner_lists[0];
+        } else {
+            open = new AlternationOpenList<OpenListEntryLazy>(inner_lists, 
+                                                              boost);
+
+        }
+        
+        engine = new GeneralLazyBestFirstSearch(open, true, g_bound);
+        engine->set_pref_operator_heuristics(preferred_list);
     }
-    OpenList<OpenListEntryLazy> *open;
-    if (inner_lists.size() == 1) {
-        open = inner_lists[0];
-    } else {
-        open = new AlternationOpenList<OpenListEntryLazy>(inner_lists, boost);
-    }
-    
-    GeneralLazyBestFirstSearch *engine = \
-        new GeneralLazyBestFirstSearch(open, true, g_bound);
-    engine->set_pref_operator_heuristics(preferred_list);
     return engine;
 }
 

@@ -24,8 +24,11 @@ int GEvaluator::get_value() const {
 }
 
 ScalarEvaluator *GEvaluator::create(const std::vector<std::string> &config,
-                                    int start, int &end) {
+                                    int start, int &end, bool dry_run) {
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    return new GEvaluator();
+    if (dry_run)
+        return 0;
+    else
+        return new GEvaluator;
 }
 

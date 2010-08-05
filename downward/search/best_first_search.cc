@@ -206,13 +206,13 @@ int BestFirstSearchEngine::fetch_next_state() {
 }
 
 SearchEngine *BestFirstSearchEngine::create(const vector<string> &config,
-    int start, int &end) {
+    int start, int &end, bool dry_run) {
     if (config[start + 1] != "(") 
         throw ParseError(start + 1);
 
     vector<Heuristic *> evals;
     OptionParser::instance()->parse_heuristic_list(config, start + 2,
-                                                   end, false, evals);
+                                                   end, false, evals, dry_run);
     if (evals.empty()) 
         throw ParseError(end);
     end ++;
@@ -224,25 +224,28 @@ SearchEngine *BestFirstSearchEngine::create(const vector<string> &config,
         NamedOptionParser option_parser;
         option_parser.add_heuristic_list_option("preferred", 
             &preferred_list, "use preferred operators of these heuristics");
-        option_parser.parse_options(config, end, end);
+        option_parser.parse_options(config, end, end, dry_run);
         end ++;
     }
     if (config[end] != ")") 
         throw ParseError(end);
+   
+    BestFirstSearchEngine *engine = 0;
+    if (!dry_run) {
+        engine = new BestFirstSearchEngine();
     
-    BestFirstSearchEngine *engine = new BestFirstSearchEngine();
-    
-    set<Heuristic*> hset;
-    set<Heuristic*> pset;
-    hset.insert(evals.begin(), evals.end()); 
-    pset.insert(preferred_list.begin(), preferred_list.end()); 
+        set<Heuristic*> hset;
+        set<Heuristic*> pset;
+        hset.insert(evals.begin(), evals.end()); 
+        pset.insert(preferred_list.begin(), preferred_list.end()); 
 
-    for (unsigned int i = 0; i < evals.size(); i++) {
-        engine->add_heuristic(evals[i], true, pset.count(evals[i]));
-    }
-    for (unsigned int i = 0; i < preferred_list.size(); i++) {
-        if (hset.count(preferred_list[0]) == 0) {
-            engine->add_heuristic(evals[i], false, true);
+        for (unsigned int i = 0; i < evals.size(); i++) {
+            engine->add_heuristic(evals[i], true, pset.count(evals[i]));
+        }
+        for (unsigned int i = 0; i < preferred_list.size(); i++) {
+            if (hset.count(preferred_list[0]) == 0) {
+                engine->add_heuristic(evals[i], false, true);
+            }
         }
     }
 

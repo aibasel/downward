@@ -9,7 +9,7 @@
 using namespace std;
 template<class Entry>
 OpenList<Entry> *StandardScalarOpenList<Entry>::create(
-    const std::vector<string> &config, int start, int &end) {
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
 
     std::vector<ScalarEvaluator *> evaluators;
     bool only_pref_ = false;
@@ -18,9 +18,12 @@ OpenList<Entry> *StandardScalarOpenList<Entry>::create(
                                         "insert only preferred operators");
     OptionParser *parser = OptionParser::instance();
     parser->parse_evals_and_options(config, start, end, evaluators,
-                                    named_option_parser, true);
+                                    named_option_parser, true, dry_run);
 
-    return new StandardScalarOpenList<Entry>(evaluators[0], only_pref_);
+    if (dry_run)
+        return 0;
+    else
+        return new StandardScalarOpenList<Entry>(evaluators[0], only_pref_);
 }
 
 /*

@@ -7,7 +7,7 @@
 using namespace std;
 template<class Entry>
 OpenList<Entry> *AlternationOpenList<Entry>::create(
-    const std::vector<string> &config, int start, int &end) {
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
 
     if (config[start+1] != "(")
         throw ParseError(start+1);
@@ -17,7 +17,7 @@ OpenList<Entry> *AlternationOpenList<Entry>::create(
     OpenListParser<Entry> *open_list_parser = OpenListParser<Entry>::instance();
     while (open_list_parser->knows_open_list(config[end])) {
         OpenList<Entry>* sublist = 
-            open_list_parser->parse_open_list(config, end, end);
+            open_list_parser->parse_open_list(config, end, end, dry_run);
         sublists.push_back(sublist);
         end ++;
         if (config[end] == ")")
@@ -38,13 +38,16 @@ OpenList<Entry> *AlternationOpenList<Entry>::create(
         option_parser.add_int_option("boost", &boost, 
                                      "boost value for successful sub-open-lists");
 
-        option_parser.parse_options(config, end, end);
+        option_parser.parse_options(config, end, end, dry_run);
         end ++;
     }
     if (config[end] != ")")
         throw ParseError(end);
      
-    return new AlternationOpenList<Entry>(sublists, boost);
+    if (dry_run)
+        return 0;
+    else
+        return new AlternationOpenList<Entry>(sublists, boost);
 }
 
 template<class Entry>

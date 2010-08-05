@@ -585,7 +585,7 @@ void SelectiveMaxHeuristic::print_statistics() const{
 }
 
 ScalarEvaluator *SelectiveMaxHeuristic::create(
-    const std::vector<string> &config, int start, int &end) {
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
     
     if (config[start + 1] != "(") {
         throw ParseError(start + 1);
@@ -593,7 +593,8 @@ ScalarEvaluator *SelectiveMaxHeuristic::create(
 
     vector<Heuristic *> heuristics_;
     OptionParser::instance()->parse_heuristic_list(config, start + 2,
-                                                   end, false, heuristics_);
+                                                   end, false, heuristics_,
+                                                   dry_run);
     if (heuristics_.empty()) {
         throw ParseError(end);
     }
@@ -633,27 +634,30 @@ ScalarEvaluator *SelectiveMaxHeuristic::create(
                                       "uniform sampling");
         option_parser.add_bool_option("zero_threshold", &zero_threshold_, 
                                       "set threshold constant 0");
-        option_parser.parse_options(config, end, end);
+        option_parser.parse_options(config, end, end, dry_run);
         end ++;
     }
     if (config[end] != ")") {
         throw ParseError(end);
     }
 
-    SelectiveMaxHeuristic *heur = new SelectiveMaxHeuristic();
-    for (unsigned int i = 0; i < heuristics_.size(); i++) {
-        heur->add_heuristic(heuristics_[i]);
+    SelectiveMaxHeuristic *heur = 0;
+    if (!dry_run) {
+        heur = new SelectiveMaxHeuristic();
+        for (unsigned int i = 0; i < heuristics_.size(); i++) {
+            heur->add_heuristic(heuristics_[i]);
+        }
+        heur->set_alpha(alpha_);
+        heur->set_classifier((classifier_t) classifier_type_);
+        heur->set_confidence(conf_threshold_);
+        heur->set_num_always_calc(num_always_calc_);
+        heur->set_training_set_size(min_training_set_);
+        heur->set_random_selection(random_selection_);
+        heur->set_retime_heuristics(retime_heuristics_);
+        heur->set_state_space_sample(
+            (state_space_sample_t) state_space_sample_type_);
+        heur->set_uniform_sampling(uniform_sampling_);
+        heur->set_zero_threshold(zero_threshold_);
     }
-    heur->set_alpha(alpha_);
-    heur->set_classifier((classifier_t) classifier_type_);
-    heur->set_confidence(conf_threshold_);
-    heur->set_num_always_calc(num_always_calc_);
-    heur->set_training_set_size(min_training_set_);
-    heur->set_random_selection(random_selection_);
-    heur->set_retime_heuristics(retime_heuristics_);
-    heur->set_state_space_sample((state_space_sample_t) state_space_sample_type_);
-    heur->set_uniform_sampling(uniform_sampling_);
-    heur->set_zero_threshold(zero_threshold_);
-
     return heur;
 }

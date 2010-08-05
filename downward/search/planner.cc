@@ -83,7 +83,7 @@ int main(int argc, const char **argv) {
             OptionParser::instance()->predefine_heuristic(argv[i]);
         } else if (arg.compare("--search") == 0) {
             ++ i;
-            engine = OptionParser::instance()->parse_search_engine(argv[i]);
+            engine = OptionParser::instance()->parse_search_engine(argv[i]); 
         } else if (arg.compare("--random-seed") == 0) {
             ++ i;
             srand(atoi(argv[i]));

@@ -44,7 +44,7 @@ public:
     void get_involved_heuristics(std::set<Heuristic*> &hset);
     
     static OpenList<Entry> *create(const std::vector<std::string> &config, 
-                                   int start, int &end);
+                                   int start, int &end, bool dry_run=false);
 };
 
 #include "standard_scalar_open_list.cc"

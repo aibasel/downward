@@ -15,7 +15,7 @@ using namespace std;
 
 template<class Entry>
 OpenList<Entry> *TieBreakingOpenList<Entry>::create(
-    const std::vector<string> &config, int start, int &end) {
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
 
     std::vector<ScalarEvaluator *> evaluators;
     NamedOptionParser option_parser;
@@ -27,9 +27,13 @@ OpenList<Entry> *TieBreakingOpenList<Entry>::create(
                                   "allow unsafe pruning when the main evaluator regards a state a dead end");
     OptionParser *parser = OptionParser::instance();
     parser->parse_evals_and_options(config, start, end, evaluators,
-                                    option_parser);
+                                    option_parser, false, dry_run);
         
-    return new TieBreakingOpenList<Entry>(evaluators, only_pref_, allow_unsafe_);
+    if (dry_run)
+        return 0;
+    else
+        return new TieBreakingOpenList<Entry>(evaluators, only_pref_, 
+                                              allow_unsafe_);
 }
 
 template<class Entry>

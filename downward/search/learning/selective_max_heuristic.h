@@ -148,7 +148,7 @@ public:
 		        		const State& state);
 
     static ScalarEvaluator *create(const std::vector<string> &config, 
-                                   int start, int &end);
+                                   int start, int &end, bool dry_run=false);
 };
 
 #endif /* SELECTIVE_MAX_HEURISTIC_H_ */

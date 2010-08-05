@@ -43,7 +43,7 @@ public:
     int boost_preferred();
     void boost_last_used_list();
     static OpenList<Entry> *create(const std::vector<std::string> &config, 
-                                   int start, int &end);
+                                   int start, int &end, bool dry_run=false);
 };
 
 #include "alternation_open_list.cc"

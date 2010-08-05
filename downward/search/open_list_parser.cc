@@ -32,7 +32,7 @@ OpenListParser<Entry>* OpenListParser<Entry>::instance() {
 
 template <class Entry>
 void OpenListParser<Entry>::register_open_list(string key, 
-        OpenList<Entry>* func(const vector<string> &, int, int&)) {
+        OpenList<Entry>* func(const vector<string> &, int, int&, bool)) {
         open_list_map[key] = func;
 }
 
@@ -44,10 +44,10 @@ bool OpenListParser<Entry>::knows_open_list(string name) {
 template <class Entry>
 OpenList<Entry>* 
 OpenListParser<Entry>::parse_open_list(const vector<string> &input, 
-                              int start, int & end) {
+                              int start, int &end, bool dry_run) {
     typename std::map<std::string, OpenListCreatorFunc>::iterator it;
     it = open_list_map.find(input[start]);
     if (it == open_list_map.end()) 
         throw ParseError(start);
-    return it->second(input, start, end);
+    return it->second(input, start, end, dry_run);
 }

@@ -21,12 +21,12 @@ OptionParser *OptionParser::instance() {
 }
 
 void OptionParser::register_search_engine(string key, 
-        SearchEngine* func(const vector<string> &, int, int&)) {
+        SearchEngine* func(const vector<string> &, int, int&, bool)) {
         engine_map[key] = func;
 }
 
 void OptionParser::register_scalar_evaluator(string key, 
-    ScalarEvaluator* func(const vector<string> &, int, int&)) {
+    ScalarEvaluator* func(const vector<string> &, int, int&, bool)) {
     scalar_evaluator_map[key] = func;
 }
 
@@ -37,7 +37,7 @@ void OptionParser::register_synergy(string key,
 
 
 ScalarEvaluator *OptionParser::parse_scalar_evaluator(
-    const vector<string> &input, int start, int & end) {
+    const vector<string> &input, int start, int &end, bool dry_run) {
     // predefined evaluator
     map<string, Heuristic*>::iterator iter;
     iter = predefined_heuristics.find(input[start]);
@@ -51,15 +51,17 @@ ScalarEvaluator *OptionParser::parse_scalar_evaluator(
     it = scalar_evaluator_map.find(input[start]);
     if (it == scalar_evaluator_map.end())
         throw ParseError(start);
-    return it->second(input, start, end);
+    return it->second(input, start, end, dry_run);
 }
 
 Heuristic *OptionParser::parse_heuristic(const vector<string> &input, 
-                                         int start, int & end) {
-    ScalarEvaluator* eval = parse_scalar_evaluator(input, start, end);
+                                         int start, int & end, bool dry_run) {
+    ScalarEvaluator* eval = parse_scalar_evaluator(input, start, end, dry_run);
     Heuristic *h = dynamic_cast<Heuristic *>(eval); // HACK?
-    if (h == 0)
+    if (!dry_run && h == 0)
         throw ParseError(start);
+    // FIXME: With dry_run we need a different implementation to 
+    // check that we would get a heuristic
     return h;
 }
 
@@ -89,7 +91,7 @@ SearchEngine *OptionParser::parse_search_engine(const char *str) {
     SearchEngine *engine;
     try {
         int end = 0;
-        engine = parse_search_engine(tokens, 0, end);
+        engine = parse_search_engine(tokens, 0, end, false);
     } catch (ParseError e) {
         print_parse_error(tokens, e);
         exit (2);
@@ -98,13 +100,14 @@ SearchEngine *OptionParser::parse_search_engine(const char *str) {
 }
 
 SearchEngine *OptionParser::parse_search_engine(const vector<string> &input, 
-                                                int start, int & end) {
+                                                int start, int &end, 
+                                                bool dry_run) {
 
     map<string, EngineCreatorFunc>::iterator it;
     it = engine_map.find(input[start]);
     if (it == engine_map.end())
         throw ParseError(start);
-    return it->second(input, start, end);
+    return it->second(input, start, end, dry_run);
 }
 
 void OptionParser::predefine_heuristic(const char *str) {
@@ -125,7 +128,7 @@ void OptionParser::predefine_heuristic(const vector<string> &input) {
         if (knows_scalar_evaluator(name) || name == "(" || name == ")")
             throw ParseError(0);
         int end = 2;
-        predefined_heuristics[name] = parse_heuristic(input, 2, end);
+        predefined_heuristics[name] = parse_heuristic(input, 2, end, false);
     } else if (input[1].compare(",") == 0) {
         // define several heuristics (currently only lama ff synergy)
 
@@ -162,14 +165,15 @@ void OptionParser::predefine_heuristic(const vector<string> &input) {
 void OptionParser::parse_scalar_evaluator_list(const vector<string> &input, 
                                            int start, int & end, 
                                            bool only_one_eval,
-                                           vector<ScalarEvaluator *> &evals) {
+                                           vector<ScalarEvaluator *> &evals,
+                                           bool dry_run) {
     end = start;
     bool break_loop = false;
     while (knows_scalar_evaluator(input[end])) {
         if (only_one_eval && evals.size() > 0)
             throw ParseError(end);
         ScalarEvaluator* eval = 
-            parse_scalar_evaluator(input, end, end);
+            parse_scalar_evaluator(input, end, end, dry_run);
         evals.push_back(eval);
         end ++;
         if (input[end] != ",") {
@@ -188,14 +192,15 @@ void OptionParser::parse_scalar_evaluator_list(const vector<string> &input,
 
 void OptionParser::parse_heuristic_list(const vector<string> &input, int start,
                                         int & end, bool only_one_eval,
-                                        vector<Heuristic *> &evals) {
+                                        vector<Heuristic *> &evals, 
+                                        bool dry_run) {
     end = start;
     bool break_loop = false;
     while (knows_scalar_evaluator(input[end])) {
         if (only_one_eval && evals.size() > 0)
             throw ParseError(end);
         Heuristic* heur = 
-            parse_heuristic(input, end, end);
+            parse_heuristic(input, end, end, dry_run);
         evals.push_back(heur);
         end ++;
         if (input[end] != ",") {
@@ -214,14 +219,15 @@ void OptionParser::parse_heuristic_list(const vector<string> &input, int start,
 
 void OptionParser::parse_search_engine_list(const vector<string> &input, int start,
                                         int & end, bool only_one,
-                                        vector<SearchEngine *> &engines) {
+                                        vector<SearchEngine *> &engines, 
+                                        bool dry_run) {
     end = start;
     bool break_loop = false;
     while (knows_search_engine(input[end])) {
         if (only_one && engines.size() > 0)
             throw ParseError(end);
         SearchEngine* engine =
-            parse_search_engine(input, end, end);
+            parse_search_engine(input, end, end, dry_run);
         engines.push_back(engine);
         end ++;
         if (input[end] != ",") {
@@ -287,13 +293,12 @@ void OptionParser::parse_evals_and_options(const vector<string> &config,
                                  int start, int &end,
                                  vector<ScalarEvaluator *> &evaluators, 
                                  NamedOptionParser &option_parser,
-                                 bool only_one_eval
-                               ) {
+                                 bool only_one_eval, bool dry_run) {
     if (config[start+1] != "(")
         throw ParseError(start+1);
     // create evaluators
     parse_scalar_evaluator_list(config, start + 2, end,
-                                only_one_eval, evaluators);
+                                only_one_eval, evaluators, dry_run);
 
     if (evaluators.empty())
         throw ParseError(end);
@@ -305,7 +310,7 @@ void OptionParser::parse_evals_and_options(const vector<string> &config,
         if (config[end] != ",")
             throw ParseError(end);
         end ++;
-        option_parser.parse_options(config, end, end);
+        option_parser.parse_options(config, end, end, dry_run);
         end ++;
     }
     if (config[end] != ")")
@@ -358,7 +363,7 @@ void NamedOptionParser::add_heuristic_list_option(string name,
 }
 
 void NamedOptionParser::parse_options(const vector<string> &config, 
-                                      int start, int & end) {
+                                      int start, int &end, bool dry_run) {
     bool first_option = true;
     end = start;
     while (first_option || config[end] == ",") {
@@ -377,9 +382,9 @@ void NamedOptionParser::parse_options(const vector<string> &config,
         } else if (double_options.count(config[end]) > 0) {
             parse_double_option(config, end, end);
         } else if (scalar_evaluator_options.count(config[end]) > 0) {
-            parse_scalar_evaluator_option(config, end, end);
+            parse_scalar_evaluator_option(config, end, end, dry_run);
         } else if (heuristic_list_options.count(config[end]) > 0) {
-            parse_heuristic_list_option(config, end, end);
+            parse_heuristic_list_option(config, end, end, dry_run);
         } else {
             throw ParseError(end);
         }
@@ -453,7 +458,7 @@ void NamedOptionParser::parse_int_option(const vector<string> &config,
 }
 
 void NamedOptionParser::parse_scalar_evaluator_option(
-    const vector<string> &config, int start, int &end) {
+    const vector<string> &config, int start, int &end, bool dry_run) {
     end = start;
     ScalarEvaluator **pp_eval = scalar_evaluator_options[config[end]];
     ScalarEvaluator *val;
@@ -473,12 +478,12 @@ void NamedOptionParser::parse_scalar_evaluator_option(
     }
 
     OptionParser *parser = OptionParser::instance();
-    val = parser->parse_scalar_evaluator(config, end, end);
+    val = parser->parse_scalar_evaluator(config, end, end, dry_run);
     *pp_eval = val;
 }
 
 void NamedOptionParser::parse_heuristic_list_option(
-    const vector<string> &config, int start, int &end) {
+    const vector<string> &config, int start, int &end, bool dry_run) {
     end = start;
     vector<Heuristic *> *val = 
         heuristic_list_options[config[end]];
@@ -492,12 +497,12 @@ void NamedOptionParser::parse_heuristic_list_option(
         return;
     } else if (config[end] == "(") {
         end ++;
-        parser->parse_heuristic_list(config, end, end, false, *val);
+        parser->parse_heuristic_list(config, end, end, false, *val, dry_run);
         end ++;
         if (config[end] != ")")
             throw ParseError(end);
     } else {
-        parser->parse_heuristic_list(config, end, end, true, *val);
+        parser->parse_heuristic_list(config, end, end, true, *val, dry_run);
     }
 }
 

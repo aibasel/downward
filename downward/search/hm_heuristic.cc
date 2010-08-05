@@ -220,7 +220,7 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple& big_tuple) 
 }
 
 ScalarEvaluator *HMHeuristic::create(const std::vector<string> &config, 
-                                     int start, int &end) {
+                                     int start, int &end, bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start+1);
     end = start + 2;
@@ -230,5 +230,8 @@ ScalarEvaluator *HMHeuristic::create(const std::vector<string> &config,
     if (config[end] != ")")
         throw ParseError(end);
 
-    return new HMHeuristic(m);
+    if (dry_run)
+        return 0;
+    else
+        return new HMHeuristic(m);
 }

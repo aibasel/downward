@@ -141,7 +141,7 @@ public:
     LandmarkCutHeuristic(int _iteration_limit=-1);
     virtual ~LandmarkCutHeuristic();
     static ScalarEvaluator *create(const std::vector<std::string> &config, 
-                                   int start, int &end);
+                                   int start, int &end, bool dry_run);
 };
 
 inline int RelaxedOperator::h_max_cost() const {

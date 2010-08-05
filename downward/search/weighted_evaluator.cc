@@ -35,7 +35,7 @@ void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic*> &hset) {
 }
 
 ScalarEvaluator *WeightedEvaluator::create(
-    const std::vector<std::string> &config, int start, int &end) {
+    const std::vector<std::string> &config, int start, int &end, bool dry_run) {
     if (config[start+1] != "(")
         throw ParseError(start+1);
 
@@ -43,7 +43,7 @@ ScalarEvaluator *WeightedEvaluator::create(
     std::vector<ScalarEvaluator *> evals;
     OptionParser *parser = OptionParser::instance();
     parser->parse_scalar_evaluator_list(config, start + 2, end,
-                                        true, evals);
+                                        true, evals, dry_run);
 
     end ++; // on comma
     end ++; // on weight
@@ -53,5 +53,8 @@ ScalarEvaluator *WeightedEvaluator::create(
     if (config[end] != ")")
         throw ParseError(end);
 
-    return new WeightedEvaluator(evals[0], weight);
+    if (dry_run)
+        return 0;
+    else
+        return new WeightedEvaluator(evals[0], weight);
 }

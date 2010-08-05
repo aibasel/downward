@@ -267,7 +267,7 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 }
 
 ScalarEvaluator *MergeAndShrinkHeuristic::create(
-    const std::vector<string> &config, int start, int &end) {
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
     int max_states = -1;
     int max_states_before_merge = -1;
     int abstraction_count = 1;
@@ -312,7 +312,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
                 &use_expensive_statistics,
                 "show statistics on \"unique unlabeled edges\" (WARNING: "
                 "these are *very* slow -- check the warning in the output)");
-            option_parser.parse_options(config, end, end);
+            option_parser.parse_options(config, end, end, dry_run);
             end ++;
         }
         if (config[end] != ")")
@@ -365,13 +365,17 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
         exit(2);
     }
 
-    MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(
-        max_states,
-        max_states_before_merge,
-        abstraction_count,
-        static_cast<MergeStrategy>(merge_strategy),
-        static_cast<ShrinkStrategy>(shrink_strategy),
-        use_label_simplification,
-        use_expensive_statistics);
-    return result;
+    if (dry_run) {
+        return 0;
+    } else {
+        MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(
+            max_states,
+            max_states_before_merge,
+            abstraction_count,
+            static_cast<MergeStrategy>(merge_strategy),
+            static_cast<ShrinkStrategy>(shrink_strategy),
+            use_label_simplification,
+            use_expensive_statistics);
+        return result;
+    }
 }

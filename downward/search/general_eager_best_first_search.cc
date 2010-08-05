@@ -242,12 +242,14 @@ void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int> &valu
 }
 
 SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
-                                                  int start, int &end) {
+                                                  int start, int &end, 
+                                                  bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
     OpenListParser<state_var_t *> *p = OpenListParser<state_var_t *>::instance();
-    OpenList<state_var_t *> *open = p->parse_open_list(config, start + 2, end);
+    OpenList<state_var_t *> *open = p->parse_open_list(config, start + 2, end,
+                                                       dry_run);
 
     end++;
     if (end >= config.size())
@@ -271,59 +273,66 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
 
-        option_parser.parse_options(config, end, end);
+        option_parser.parse_options(config, end, end, dry_run);
         end++;
     }
     if (config[end] != ")")
         throw ParseError(end);
 
-    GeneralEagerBestFirstSearch *engine = \
-        new GeneralEagerBestFirstSearch(open, reopen_closed, f_eval, g_bound);
-    engine->set_pref_operator_heuristics(preferred_list);
+    GeneralEagerBestFirstSearch *engine = 0;
+    if (!dry_run) {
+        engine = new GeneralEagerBestFirstSearch(open, reopen_closed, f_eval, 
+                                                 g_bound);
+        engine->set_pref_operator_heuristics(preferred_list);
+    }
 
     return engine;
 }
 
 SearchEngine *GeneralEagerBestFirstSearch::create_astar(
-    const vector<string> &config, int start, int &end) {
+    const vector<string> &config, int start, int &end, bool dry_run) {
 
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
-    ScalarEvaluator *eval =
-        OptionParser::instance()->parse_scalar_evaluator(config, start + 2, end);
+    ScalarEvaluator *eval = OptionParser::instance()->parse_scalar_evaluator(
+        config, start + 2, end, dry_run);
     end++;
     if (config[end] != ")")
         throw ParseError(end);
 
-    GEvaluator *g = new GEvaluator();
-    vector<ScalarEvaluator *> sum_evals;
-    sum_evals.push_back(g);
-    sum_evals.push_back(eval);
-    SumEvaluator *f_eval = new SumEvaluator(sum_evals);
+    GeneralEagerBestFirstSearch *engine = 0;
+    if (!dry_run) {
+        GEvaluator *g = new GEvaluator();
+        vector<ScalarEvaluator *> sum_evals;
+        sum_evals.push_back(g);
+        sum_evals.push_back(eval);
+        SumEvaluator *f_eval = new SumEvaluator(sum_evals);
 
-    // use eval for tiebreaking
-    std::vector<ScalarEvaluator *> evals;
-    evals.push_back(f_eval);
-    evals.push_back(eval);
-    OpenList<state_var_t *> *open = \
-        new TieBreakingOpenList<state_var_t *>(evals, false, false);
+        // use eval for tiebreaking
+        std::vector<ScalarEvaluator *> evals;
+        evals.push_back(f_eval);
+        evals.push_back(eval);
+        OpenList<state_var_t *> *open = \
+            new TieBreakingOpenList<state_var_t *>(evals, false, false);
 
-    GeneralEagerBestFirstSearch *engine = \
-        new GeneralEagerBestFirstSearch(open, true, f_eval, numeric_limits<int>::max() );
+        engine = new GeneralEagerBestFirstSearch(open, true, f_eval,
+                                                 numeric_limits<int>::max());
+    }
 
     return engine;
 }
 
 SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
-    const vector<string> &config, int start, int &end) {
+    const vector<string> &config, int start, int &end, bool dry_run) {
 
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
     vector<ScalarEvaluator *> evals;
     OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
-                                                          end, false, evals);
+                                                          end, false, evals,
+                                                          dry_run);
     if (evals.empty())
         throw ParseError(end);
     end++;
@@ -341,30 +350,33 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
                                      "boost value for successful sub-open-lists");
         //option_parser.add_int_option("bound", &g_bound,
         //                             "depth bound on g-values",true);
-        option_parser.parse_options(config, end, end);
+        option_parser.parse_options(config, end, end, dry_run);
         end++;
     }
     if (config[end] != ")")
         throw ParseError(end);
 
-    OpenList<state_var_t *> *open;
-    if ((evals.size() == 1) && preferred_list.empty()) {
-        open = new StandardScalarOpenList<state_var_t *>(evals[0], false);
-    } else {
-        vector<OpenList<state_var_t *> *> inner_lists;
-        for (int i = 0; i < evals.size(); i++) {
-            inner_lists.push_back(
-                new StandardScalarOpenList<state_var_t *>(evals[i], false));
-            if (!preferred_list.empty()) {
+    GeneralEagerBestFirstSearch *engine = 0;
+    if (!dry_run) {
+        OpenList<state_var_t *> *open;
+        if ((evals.size() == 1) && preferred_list.empty()) {
+            open = new StandardScalarOpenList<state_var_t *>(evals[0], false);
+        } else {
+            vector<OpenList<state_var_t *> *> inner_lists;
+            for (int i = 0; i < evals.size(); i++) {
                 inner_lists.push_back(
-                    new StandardScalarOpenList<state_var_t *>(evals[i], true));
+                    new StandardScalarOpenList<state_var_t *>(evals[i], false));
+                if (!preferred_list.empty()) {
+                    inner_lists.push_back(
+                        new StandardScalarOpenList<state_var_t *>(evals[i], 
+                                                                  true));
+                }
             }
+            open = new AlternationOpenList<state_var_t *>(inner_lists, boost);
         }
-        open = new AlternationOpenList<state_var_t *>(inner_lists, boost);
-    }
 
-    GeneralEagerBestFirstSearch *engine = \
-        new GeneralEagerBestFirstSearch(open, false, NULL, g_bound);
-    engine->set_pref_operator_heuristics(preferred_list);
+        engine = new GeneralEagerBestFirstSearch(open, false, NULL, g_bound);
+        engine->set_pref_operator_heuristics(preferred_list);
+    }
     return engine;
 }

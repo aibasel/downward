@@ -125,14 +125,20 @@ void IteratedSearch::statistics() const {
 
 
 SearchEngine *IteratedSearch::create(
-    const vector<string> &config, int start, int &end) {
+    const vector<string> &config, int start, int &end, bool dry_run) {
+
+    //XXX TODO: dry_run not implemented
+    if (dry_run) {
+        cerr << "dry run not implemented for iterated search!" << endl;
+    }
 
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
     vector<SearchEngine *> engines;
     OptionParser::instance()->parse_search_engine_list(config, start + 2,
-                                                          end, false, engines);
+                                                       end, false, engines,
+                                                       dry_run);
 
     if (engines.empty())
         throw ParseError(end);
@@ -154,7 +160,7 @@ SearchEngine *IteratedSearch::create(
                                       "continue search after no solution found");
         option_parser.add_bool_option("continue_on_solve", &continue_on_solve,
                                       "continue search after solution found");
-        option_parser.parse_options(config, end, end);
+        option_parser.parse_options(config, end, end, dry_run);
         end ++;
     }
     if (config[end] != ")")

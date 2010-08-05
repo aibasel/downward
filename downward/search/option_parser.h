@@ -38,9 +38,9 @@ class NamedOptionParser {
     void parse_int_option(const std::vector<std::string> &config, 
                            int start, int &end);
     void parse_scalar_evaluator_option(const std::vector<std::string> &config, 
-                           int start, int &end);
+                           int start, int &end, bool dry_run);
     void parse_heuristic_list_option(const std::vector<std::string> &config, 
-                           int start, int &end);
+                           int start, int &end, bool dry_run);
     void parse_string_option(const std::vector<std::string> &config, 
                            int start, int &end);
     public:
@@ -56,13 +56,13 @@ class NamedOptionParser {
             std::string desc);
 
         void parse_options(const std::vector<std::string> &config, 
-                           int start, int &end);
+                           int start, int &end, bool dry_run);
 };
 
 class OptionParser {
     typedef const std::vector<std::string> & ConfigRef;
-    typedef SearchEngine* (*EngineCreatorFunc)(ConfigRef, int, int&);
-    typedef ScalarEvaluator* (*ScalarEvalCreatorFunc)(ConfigRef, int, int&);
+    typedef SearchEngine* (*EngineCreatorFunc)(ConfigRef, int, int&, bool);
+    typedef ScalarEvaluator* (*ScalarEvalCreatorFunc)(ConfigRef, int, int&, bool);
     typedef void (*SynergyCreatorFunc)(ConfigRef, int, int&, 
                                        std::vector<Heuristic *> &);
     typedef 
@@ -88,23 +88,24 @@ public:
     static OptionParser* instance();
 
     void register_search_engine(std::string key, 
-            SearchEngine* func(const std::vector<std::string> &, int, int&));
+        SearchEngine* func(const std::vector<std::string> &, int, int&, bool));
     void register_scalar_evaluator(std::string key, 
-            ScalarEvaluator* func(const std::vector<std::string> &, int, int&));
+        ScalarEvaluator* func(const std::vector<std::string> &, int, int&, bool));
     void register_synergy(std::string key, 
             void func(const std::vector<std::string> &, int, int&,
                       std::vector<Heuristic *> &));
     void predefine_heuristic(const char *str);
 
     ScalarEvaluator *parse_scalar_evaluator(
-        const std::vector<std::string> &input, int start, int & end);
+        const std::vector<std::string> &input, int start, int &end, 
+        bool dry_run);
     Heuristic* parse_heuristic(const std::vector<std::string> &input, 
-                               int start, int & end);
+                               int start, int &end, bool dry_run);
     bool knows_scalar_evaluator(std::string name);
     bool knows_search_engine(std::string name);
     SearchEngine* parse_search_engine(const char *str);
     SearchEngine* parse_search_engine(const std::vector<std::string> &input, 
-                                      int start, int & end);
+                                      int start, int &end, bool dry_run);
     void parse_synergy_heuristics(const std::vector<std::string> &input, 
                                   int start, int &end, 
                                   std::vector<Heuristic *> &heuristics);
@@ -117,20 +118,23 @@ public:
 
     void parse_heuristic_list(const std::vector<std::string> &input, 
                               int start, int & end, bool only_one_eval,
-                              std::vector<Heuristic *> &heuristics);
+                              std::vector<Heuristic *> &heuristics,
+                              bool dry_run);
     void parse_scalar_evaluator_list(const std::vector<std::string> &input, 
                                      int start, int & end, bool only_one_eval,
-                                     std::vector<ScalarEvaluator *> &evals);
+                                     std::vector<ScalarEvaluator *> &evals,
+                                     bool dry_run);
     void set_end_for_simple_config(const std::vector<std::string> &config, 
                                      int start, int &end);
     void parse_evals_and_options(const std::vector<std::string> &config, 
                      int start, int &end,
                      std::vector<ScalarEvaluator *> &evaluators, 
                      NamedOptionParser &option_parser,
-                     bool only_one_eval=false);
+                     bool only_one_eval, bool dry_run);
     void parse_search_engine_list(const std::vector<std::string> &input, int start,
                                   int & end, bool only_one,
-                                  std::vector<SearchEngine *> &engines);
+                                  std::vector<SearchEngine *> &engines, 
+                                  bool dry_run);
 };
 
 

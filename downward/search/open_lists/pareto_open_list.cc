@@ -10,7 +10,7 @@ using namespace std;
 
 template<class Entry>
 OpenList<Entry> *ParetoOpenList<Entry>::create(
-    const std::vector<string> &config, int start, int &end) {
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
     std::vector<ScalarEvaluator *> evaluators;
     NamedOptionParser option_parser;
     bool only_pref_ = false;
@@ -21,9 +21,13 @@ OpenList<Entry> *ParetoOpenList<Entry>::create(
                                   "select uniformly from the candidate *states*");
     OptionParser *parser = OptionParser::instance();
     parser->parse_evals_and_options(config, start, end, evaluators,
-                                    option_parser);
+                                    option_parser, false, dry_run);
     
-    return new ParetoOpenList<Entry>(evaluators, only_pref_, state_uniform_);
+    if (dry_run)
+        return 0;
+    else
+        return new ParetoOpenList<Entry>(evaluators, only_pref_, 
+                                         state_uniform_);
 }
 
 template<class Entry>

@@ -53,7 +53,7 @@ public:
         bool use_label_simplification, bool use_expensive_statistics);
     ~MergeAndShrinkHeuristic();
     static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end);
+                                   int start, int &end, bool dry_run);
 };
 
 #endif

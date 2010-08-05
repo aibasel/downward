@@ -124,7 +124,7 @@ public:
     ~CyclicCGHeuristic();
     virtual bool dead_ends_are_reliable() {return false;}
     static ScalarEvaluator *create(const std::vector<std::string> &config, 
-                                   int start, int &end);
+                                   int start, int &end, bool dry_run);
 };
 
 
