@@ -17,7 +17,7 @@
 #include <iostream>
 using namespace std;
 
-int main(int argc, const char **argv) {
+int main(int argc, const char **) {
   bool metric;
   vector<Variable *> variables;
   vector<Variable> internal_variables;
