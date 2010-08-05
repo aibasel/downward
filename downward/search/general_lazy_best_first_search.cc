@@ -346,8 +346,10 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
                                      "boost value for successful sub-open-lists");
         option_parser.add_int_option("bound", &g_bound,
                                      "depth bound on g-values", true);
-        option_parser.add_int_option("weight", &weight, 
+        option_parser.add_int_option("w", &weight, 
                                      "heuristic weight");
+        // may not be named "weight" because this would be parsed as a
+        // weighted evaluator, if it is the first keyword option
         option_parser.parse_options(config, end, end, dry_run);
         end ++;
     }
