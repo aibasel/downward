@@ -267,7 +267,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
         option_parser.add_scalar_evaluator_option(
             "progress_evaluator", &f_eval, "set evaluator for jump statistics", true);
         option_parser.add_int_option("bound", &g_bound,
-                                     "depth bound on g-values");
+                                     "depth bound on g-values",true);
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
 
@@ -340,7 +340,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
         option_parser.add_int_option("boost", &boost,
                                      "boost value for successful sub-open-lists");
         //option_parser.add_int_option("bound", &g_bound,
-        //                             "depth bound on g-values");
+        //                             "depth bound on g-values",true);
         option_parser.parse_options(config, end, end);
         end++;
     }

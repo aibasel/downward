@@ -261,7 +261,7 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
         option_parser.add_heuristic_list_option("preferred", 
             &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("bound", &g_bound,
-                                     "depth bound on g-values");
+                                     "depth bound on g-values", true);
         option_parser.parse_options(config, end, end);
         end ++;
     }
