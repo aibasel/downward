@@ -8,6 +8,11 @@ cd search
 make all || exit 1
 cd ..
 
+if [ ! -e VAL ]; then
+    # Skip building validator if it isn't present.
+    exit
+fi
+
 type flex >& /dev/null
 if [ $? != 0 ]; then
     echo cannot build validator: flex not found
