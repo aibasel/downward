@@ -338,8 +338,10 @@ void NamedOptionParser::add_double_option(string name, double *var, string desc)
 
 void NamedOptionParser::add_int_option(string name, int *var, string desc, 
                                        bool allow_infinity) {
-    if (allow_infinity) 
+    if (allow_infinity) {
         can_be_infinity.insert(name);
+        cout << "insert " << name << endl;
+    }
     int_options[name] = var;
     help[name] = "int " + name + " " + desc;
     // TODO: add default value to help string
@@ -438,13 +440,14 @@ void NamedOptionParser::parse_int_option(const vector<string> &config,
                                          int start, int &end) {
     end = start;
     int *val = int_options[config[end]];
+    string name = config[end];
     end ++;
     if (config[end] != "=")
         throw ParseError(end);
     end ++;
   
-    string name = config[end];
-    if (name == "Infinity" || name == "infinity") {
+    string str_val = config[end];
+    if (str_val == "Infinity" || str_val == "infinity") {
         if (can_be_infinity.find(name) != can_be_infinity.end()) {
             *val = numeric_limits<int>::max();
             return;
@@ -461,14 +464,15 @@ void NamedOptionParser::parse_scalar_evaluator_option(
     const vector<string> &config, int start, int &end, bool dry_run) {
     end = start;
     ScalarEvaluator **pp_eval = scalar_evaluator_options[config[end]];
+    string name = config[end];
     ScalarEvaluator *val;
     end ++;
     if (config[end] != "=")
         throw ParseError(end);
     end ++;
 
-    string name = config[end];
-    if (name == "None" || name == "none") {
+    string str_val = config[end];
+    if (str_val == "None" || str_val == "none") {
         if (can_be_none.find(name) != can_be_none.end()) {
             val = NULL;
             return;
