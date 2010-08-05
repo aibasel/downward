@@ -7,13 +7,14 @@
 #include "pref_evaluator.h"
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(Heuristic *heuristic_,
-    PreferredUsage preferred_usage_, bool use_cost_for_bfs_):
+    PreferredUsage preferred_usage_, bool use_cost_for_bfs_, int g_bound):
     heuristic(heuristic_), use_preferred(false), 
     preferred_usage(preferred_usage_), use_cost_for_bfs(use_cost_for_bfs_),
     current_state(*g_initial_state), num_ehc_phases(0) {
 
     search_progress.add_heuristic(heuristic_);
     g_evaluator = new GEvaluator();
+    bound = g_bound;
 }
 
 EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
@@ -45,6 +46,7 @@ void EnforcedHillClimbingSearch::initialize() {
              << (preferred_usage == RANK_PREFERRED_FIRST ? "ranking successors"
                                                          : "pruning") << endl;
     }
+    cout << "g-bound = " << bound << endl;
 
     SearchNode node = search_space.get_node(current_state);
     evaluate(node.get_state(), NULL, node.get_state());
@@ -143,6 +145,10 @@ int EnforcedHillClimbingSearch::ehc() {
         State last_parent = search_space.get_node(State(next.first)).get_state();
         int d = next.second.first;
         const Operator *last_op = next.second.second;
+
+        if (search_space.get_node(last_parent).get_g()  + last_op->get_cost() >= bound)
+            continue;
+
         State s(last_parent, *last_op);
         search_progress.inc_generated();
 
@@ -241,6 +247,7 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
 
     int pref_usage = 0;
     bool use_cost_for_bfs_ = false;
+    int g_bound = numeric_limits<int>::max();
     vector<Heuristic *> preferred_list;
 
     if (config[end] != ")") {
@@ -253,7 +260,8 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
             "preferred operator usage");
         option_parser.add_heuristic_list_option("preferred", 
             &preferred_list, "use preferred operators of these heuristics");
-
+        option_parser.add_int_option("bound", &g_bound,
+                                     "depth bound on g-values");
         option_parser.parse_options(config, end, end);
         end ++;
     }
@@ -267,7 +275,7 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
     PreferredUsage preferred_usage_ = (PreferredUsage) pref_usage;
     
     EnforcedHillClimbingSearch *engine = \
-        new EnforcedHillClimbingSearch(h, preferred_usage_, use_cost_for_bfs_);
+        new EnforcedHillClimbingSearch(h, preferred_usage_, use_cost_for_bfs_, g_bound);
     engine->set_pref_operator_heuristics(preferred_list);
     
     return engine;
