@@ -5,7 +5,7 @@ make || exit 1
 cd ..
 
 cd search
-make all || exit 1
+make || exit 1
 cd ..
 
 if [ ! -e VAL ]; then
