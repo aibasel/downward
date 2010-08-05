@@ -78,6 +78,10 @@ bool OptionParser::knows_scalar_evaluator(string name) {
             predefined_heuristics.find(name) != predefined_heuristics.end());
 }
 
+bool OptionParser::knows_search_engine(string name) {
+    return (engine_map.find(name) != engine_map.end());
+}
+
 SearchEngine *OptionParser::parse_search_engine(const char *str) {
     vector<string> tokens;
     tokenize_options(str, tokens);
@@ -201,6 +205,32 @@ void OptionParser::parse_heuristic_list(const vector<string> &input, int start,
         end ++;
     }
     if (!evals.empty()) {
+        end --;
+        if (!break_loop) {
+            end --;
+        }
+    }
+}
+
+void OptionParser::parse_search_engine_list(const vector<string> &input, int start,
+                                        int & end, bool only_one,
+                                        vector<SearchEngine *> &engines) {
+    end = start;
+    bool break_loop = false;
+    while (knows_search_engine(input[end])) {
+        if (only_one && engines.size() > 0)
+            throw ParseError(end);
+        SearchEngine* engine =
+            parse_search_engine(input, end, end);
+        engines.push_back(engine);
+        end ++;
+        if (input[end] != ",") {
+            break_loop = true;
+            break;
+        }
+        end ++;
+    }
+    if (!engines.empty()) {
         end --;
         if (!break_loop) {
             end --;

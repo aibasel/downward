@@ -20,6 +20,7 @@ class FFHeuristic;
 class SearchSpace;
 
 bool test_goal(const State &state);
+int save_plan(const vector<const Operator *> &plan);
 
 void read_everything(istream &in);
 void dump_everything();

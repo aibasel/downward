@@ -13,10 +13,11 @@
 
 GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(
     OpenList<OpenListEntryLazy> *open, bool reopen_closed, int g_bound):
-    open_list(open), reopen_closed_nodes(reopen_closed),  bound(g_bound), succ_mode(pref_first),
+    open_list(open), reopen_closed_nodes(reopen_closed), succ_mode(pref_first),
     current_state(*g_initial_state),
     current_predecessor_buffer(NULL), current_operator(NULL),
     current_g(0) {
+    bound = g_bound;
 }
 
 GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {

@@ -101,6 +101,7 @@ public:
     Heuristic* parse_heuristic(const std::vector<std::string> &input, 
                                int start, int & end);
     bool knows_scalar_evaluator(std::string name);
+    bool knows_search_engine(std::string name);
     SearchEngine* parse_search_engine(const char *str);
     SearchEngine* parse_search_engine(const std::vector<std::string> &input, 
                                       int start, int & end);
@@ -127,6 +128,9 @@ public:
                      std::vector<ScalarEvaluator *> &evaluators, 
                      NamedOptionParser &option_parser,
                      bool only_one_eval=false);
+    void parse_search_engine_list(const std::vector<std::string> &input, int start,
+                                  int & end, bool only_one,
+                                  std::vector<SearchEngine *> &engines);
 };
 
 

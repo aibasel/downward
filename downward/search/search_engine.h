@@ -7,6 +7,7 @@ class Heuristic;
 
 #include "operator.h"
 #include "search_space.h"
+#include "search_progress.h"
 
 class SearchEngine {
 public:
@@ -16,6 +17,8 @@ private:
     Plan plan;
 protected:
     SearchSpace search_space;
+    SearchProgress search_progress;
+    int bound;
 
     enum {FAILED, SOLVED, IN_PROGRESS};
     virtual void initialize() {}
@@ -33,6 +36,9 @@ public:
     bool found_solution() const;
     const Plan &get_plan() const;
     void search();
+    SearchProgress get_search_progress() const {return search_progress;}
+    void set_bound(int b) {bound = b;}
+    int get_bound() {return bound;}
 };
 
 #endif

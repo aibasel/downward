@@ -22,8 +22,6 @@ class GeneralEagerBestFirstSearch : public SearchEngine {
     OpenList<state_var_t *> *open_list;
     ScalarEvaluator *f_evaluator;
 
-	SearchProgress search_progress;
-
 protected:
     int step();
     pair<SearchNode, bool> fetch_next_node();

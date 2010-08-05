@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include <limits>
 #include <string>
 #include <vector>
@@ -23,6 +24,21 @@ bool test_goal(const State &state) {
         }
     }
     return true;
+}
+
+int save_plan(const vector<const Operator *> &plan) {
+    ofstream outfile;
+    int plan_cost = 0;
+    outfile.open("sas_plan", ios::out);
+    for (int i = 0; i < plan.size(); i++) {
+        cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
+        outfile << "(" << plan[i]->get_name() << ")" << endl;
+        plan_cost += plan[i]->get_cost();
+    }
+    outfile.close();
+    cout << "Plan length: " << plan.size() << " step(s)." << endl;
+    cout << "Plan cost: " << plan_cost << endl;
+    return plan_cost;
 }
 
 bool peek_magic(istream &in, string magic) {

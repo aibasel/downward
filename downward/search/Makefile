@@ -20,6 +20,7 @@ HEADERS = \
           goal_count_heuristic.h \
           heuristic.h \
           hm_heuristic.h \
+          iterated_search.h \
           lm_cut_heuristic.h \
           mas_heuristic.h \
           max_heuristic.h \

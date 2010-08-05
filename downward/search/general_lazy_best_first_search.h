@@ -23,7 +23,6 @@ protected:
 
     // Search Behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
-    int bound;
     enum {original, pref_first, shuffled} succ_mode;
 
     vector<Heuristic *> heuristics;
@@ -34,8 +33,6 @@ protected:
     state_var_t *current_predecessor_buffer;
     const Operator *current_operator;
     int current_g;
-
-    SearchProgress search_progress;
 
     void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     virtual void initialize();
@@ -54,8 +51,6 @@ public:
     virtual ~GeneralLazyBestFirstSearch();
 
     virtual void statistics() const;
-    void set_bound(int b) {bound = b;}
-    int get_bound() {return bound;}
     
     static SearchEngine *create(const std::vector<std::string> &config, 
                                 int start, int &end);

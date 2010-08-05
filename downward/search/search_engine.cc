@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <limits>
 using namespace std;
 
 #include "search_engine.h"
@@ -7,6 +8,7 @@ using namespace std;
 
 SearchEngine::SearchEngine() {
     solved = false;
+    bound = numeric_limits<int>::max();
 }
 
 SearchEngine::~SearchEngine() {

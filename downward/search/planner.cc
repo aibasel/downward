@@ -27,13 +27,14 @@
 #include "sum_evaluator.h"
 #include "weighted_evaluator.h"
 #include "utilities.h"
+#include "iterated_search.h"
 
 #include <iostream>
 #include <fstream>
 #include <vector>
 using namespace std;
 
-int save_plan(const vector<const Operator *> &plan);
+
 void register_parsers();
 
 int main(int argc, const char **argv) {
@@ -108,20 +109,7 @@ int main(int argc, const char **argv) {
     return engine->found_solution() ? 0 : 1;
 }
 
-int save_plan(const vector<const Operator *> &plan) {
-    ofstream outfile;
-    int plan_cost = 0;
-    outfile.open("sas_plan", ios::out);
-    for (int i = 0; i < plan.size(); i++) {
-        cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
-        outfile << "(" << plan[i]->get_name() << ")" << endl;
-        plan_cost += plan[i]->get_cost();
-    }
-    outfile.close();
-    cout << "Plan length: " << plan.size() << " step(s)." << endl;
-    cout << "Plan cost: " << plan_cost << endl;
-    return plan_cost;
-}
+
 
 void register_parsers() {
     // Register search engines
@@ -141,6 +129,8 @@ void register_parsers() {
         EnforcedHillClimbingSearch::create);
     OptionParser::instance()->register_search_engine("old_greedy", 
         BestFirstSearchEngine::create);
+    OptionParser::instance()->register_search_engine("iterated",
+            IteratedSearch::create);
 
     // Register heuristics
     OptionParser::instance()->register_scalar_evaluator("add", 

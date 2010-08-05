@@ -38,7 +38,6 @@ protected:
     int current_g;
 
     // statistics
-    SearchProgress search_progress;
     map<int, pair<int, int> > d_counts;
     int num_ehc_phases;
     int last_expanded;
