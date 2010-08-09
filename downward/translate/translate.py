@@ -4,6 +4,7 @@
 from __future__ import with_statement
 
 from collections import defaultdict
+from copy import deepcopy
 
 import axiom_rules
 import fact_groups
@@ -48,8 +49,12 @@ def strips_to_sas_dictionary(groups, assert_partial):
 def translate_strips_conditions_aux(conditions, dictionary, ranges):
     condition = {}
     for fact in conditions:
-        atom = pddl.Atom(fact.predicate, fact.args) # force positive
-        for var, val in dictionary.get(atom, ()):
+        if fact.negated:
+            # we handle negative conditions later, because then we
+            # can recognize when the negative condition is already
+            # ensured by a positive condition
+            continue
+        for var, val in dictionary.get(fact, ()):
             # The default () here is a bit of a hack. For goals (but
             # only for goals!), we can get static facts here. They
             # cannot be statically false (that would have been
@@ -58,32 +63,84 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
             # TODO: This would not be necessary if we dealt with goals
             # in the same way we deal with operator preconditions etc.,
             # where static facts disappear during grounding. So change
-            # this when the goal code is refactored.
-            if fact.negated:
-                ## BUG: Here we take a shortcut compared to Sec. 10.6.4
-                ##      of the thesis and do something that doesn't appear
-                ##      to make sense if this is part of a proper fact group.
-                ##      Compare the last sentences of the third paragraph of
-                ##      the section.
-                ##      We need to do what is written there. As a test case,
-                ##      consider Airport ADL tasks with only one airport, where
-                ##      (occupied ?x) variables are encoded in a single variable,
-                ##      and conditions like (not (occupied ?x)) do occur in
-                ##      preconditions.
-                ##      However, *do* what we do here if this is a binary
-                ##      variable, because this happens to be the most
-                ##      common case.
-                val = ranges[var] - 1
-            if condition.get(var) not in (None, val):
+            # this when the goal code is refactored (also below). (**)
+            if (condition.get(var) is not None and
+                val not in condition.get(var)):
                 # Conflicting conditions on this variable: Operator invalid.
                 return None
-            condition[var] = val
-    return condition
+            condition[var] = set([val])
+
+    for fact in conditions:
+        if fact.negated:
+           ## Note  Here we use a different solution than in Sec. 10.6.4
+           ##       of the thesis. Compare the last sentences of the third
+           ##       paragraph of the section.
+           ##       We could do what is written there. As a test case,
+           ##       consider Airport ADL tasks with only one airport, where
+           ##       (occupied ?x) variables are encoded in a single variable,
+           ##       and conditions like (not (occupied ?x)) do occur in
+           ##       preconditions.
+           ##       However, here we avoid introducing new derived predicates
+           ##       by treat the negative precondition as a disjunctive precondition
+           ##       and expanding it by "multiplying out" the possibilities.
+           ##       This can lead to an exponential blow-up so it would be nice
+           ##       to choose the behaviour as an option.
+            done = False
+            new_condition = {}
+            atom = pddl.Atom(fact.predicate, fact.args) # force positive
+            for var, val in dictionary.get(atom, ()):
+                # see comment (**) above
+                poss_vals = set(range(ranges[var]))
+                poss_vals.remove(val)
+
+                if condition.get(var) is None:
+                    assert new_condition.get(var) is None
+                    new_condition[var] = poss_vals
+                else:
+                    # constrain existing condition on var
+                    prev_possible_vals = condition.get(var)
+                    done = True
+                    prev_possible_vals.intersection_update(poss_vals)
+                    if len(prev_possible_vals) == 0:
+                        # Conflicting conditions on this variable: 
+                        # Operator invalid.
+                        return None
+
+            if not done and len(new_condition) != 0:
+                # we did not enforce the negative condition by constraining
+                # an existing condition on one of the variables representing
+                # this atom. So we need to introduce a new condition:
+                # We can select any from new_condition and currently prefer the
+                # smalles one.
+                candidates = sorted(new_condition.items(), 
+                                    lambda x,y: cmp(len(x[1]),len(y[1])))
+                var, vals = candidates[0]
+                condition[var] = vals
+
+        def multiply_out(condition): # destroys the input
+            sorted_conds = sorted(condition.items(), 
+                                  lambda x,y: cmp(len(x[1]),len(y[1])))
+            flat_conds = [{}]
+            for var, vals in sorted_conds:
+                if len(vals) == 1:
+                    for cond in flat_conds:
+                        cond[var] = vals.pop() # destroys the input here
+                else:
+                    new_conds = []
+                    for cond in flat_conds:
+                        for val in vals:
+                            new_cond = deepcopy(cond)
+                            new_cond[var] = val
+                            new_conds.append(new_cond)
+                    flat_conds = new_conds
+            return flat_conds                 
+    
+    return multiply_out(condition)
 
 def translate_strips_conditions(conditions, dictionary, ranges,
                                 mutex_dict, mutex_ranges):
     if not conditions:
-        return {} # Quick exit for common case.
+        return [{}] # Quick exit for common case.
 
     # Check if the condition violates any mutexes.
     if translate_strips_conditions_aux(
@@ -93,24 +150,36 @@ def translate_strips_conditions(conditions, dictionary, ranges,
     return translate_strips_conditions_aux(conditions, dictionary, ranges)
 
 def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ranges, implied_facts):
+
+    conditions = translate_strips_conditions(operator.precondition, dictionary, ranges, mutex_dict, mutex_ranges)
+    if conditions is None:
+        return []
+    sas_operators = []
+    for condition in conditions:
+        op = translate_strips_operator_aux(operator, dictionary, ranges,
+                                           mutex_dict, mutex_ranges,
+                                           implied_facts, condition)
+        sas_operators.append(op)
+    return sas_operators
+
+def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
+    mutex_ranges, implied_facts, condition):
     # NOTE: This function does not really deal with the intricacies of properly
     # encoding delete effects for grouped propositions in the presence of
     # conditional effects. It should work ok but will bail out in more
     # complicated cases even though a conflict does not necessarily exist.
-
     possible_add_conflict = False
-
-    condition = translate_strips_conditions(operator.precondition, dictionary, ranges, mutex_dict, mutex_ranges)
-    if condition is None:
-        return None
 
     effect = {}
 
     for conditions, fact in operator.add_effects:
-        eff_condition = translate_strips_conditions(conditions, dictionary, ranges, mutex_dict, mutex_ranges)
-        if eff_condition is None: # Impossible condition for this effect.
+        eff_condition_list = translate_strips_conditions(conditions, dictionary,
+                                                         ranges, mutex_dict,
+                                                         mutex_ranges)
+        if eff_condition_list is None: # Impossible condition for this effect.
             continue
-        eff_condition = eff_condition.items()
+        eff_condition = [eff_cond.items() 
+                         for eff_cond in eff_condition_list]
         for var, val in dictionary[fact]:
             if condition.get(var) == val:
                 # Effect implied by precondition.
@@ -120,20 +189,21 @@ def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ra
                 continue
             effect_pair = effect.get(var)
             if not effect_pair:
-                effect[var] = (val, [eff_condition])
+                effect[var] = (val, eff_condition)
             else:
                 other_val, eff_conditions = effect_pair
                 # Don't flag conflict just yet... the operator might be invalid
                 # because of conflicting add/delete effects (see pipesworld).
                 if other_val != val:
                     possible_add_conflict = True
-                eff_conditions.append(eff_condition)
+                eff_conditions.extend(eff_condition)
 
     for conditions, fact in operator.del_effects:
-        eff_condition_dict = translate_strips_conditions(conditions, dictionary, ranges, mutex_dict, mutex_ranges)
-        if eff_condition_dict is None:
+        eff_condition_list = translate_strips_conditions(conditions, dictionary, ranges, mutex_dict, mutex_ranges)
+        if eff_condition_list is None:
             continue
-        eff_condition = eff_condition_dict.items()
+        eff_condition = [eff_cond.items() 
+                         for eff_cond in eff_condition_list]
         for var, val in dictionary[fact]:
             none_of_those = ranges[var] - 1
 
@@ -141,8 +211,9 @@ def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ra
 
             if other_val != none_of_those:
                 # Look for matching add effect; ignore this del effect if found.
-                assert eff_condition in eff_conditions or [] in eff_conditions, \
-                              "Add effect with uncertain del effect partner?"
+                for cond in eff_condition:
+                    assert cond in eff_conditions or [] in eff_conditions, \
+                                  "Add effect with uncertain del effect partner?"
                 if other_val == val:
                     if ALLOW_CONFLICTING_EFFECTS:
                         # Conflicting ADD and DEL effect. This is *only* allowed if
@@ -179,20 +250,23 @@ def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ra
                         assert eff_conditions == [[]]
                         del effect[var]
                     else:
-                        assert not eff_condition and not eff_conditions[0], "Uncertain conflict"
+                        assert not eff_condition[0] and not eff_conditions[0], "Uncertain conflict"
                         return None  # Definite conflict otherwise.
-            else:
-                if condition.get(var) != val and eff_condition_dict.get(var) != val:
+            else: # no add effect on this variable
+                if condition.get(var) != val:
                     if var in condition:
                         ## HACK HACK HACK! There is a precondition on the variable for
                         ## this delete effect on another value, so there is no need to
                         ## represent the delete effect. Right? Right???
                         del effect[var]
                         continue
-                    # Need a guard for this delete effect.
-                    assert var not in condition and var not in eff_condition, "Oops?"
-                    eff_condition.append((var, val))
-                eff_conditions.append(eff_condition)
+                    for index, cond in enumerate(eff_condition_list):
+                        if cond.get(var) != val:
+                            # Need a guard for this delete effect. 
+                            assert (var not in condition and 
+                                    var not in eff_condition[index]), "Oops?"
+                            eff_condition[index].append((var, val))
+                eff_conditions.extend(eff_condition)
 
     if possible_add_conflict:
         operator.dump()
@@ -262,30 +336,31 @@ def prune_stupid_effect_conditions(var, val, conditions):
     return simplified
 
 def translate_strips_axiom(axiom, dictionary, ranges, mutex_dict, mutex_ranges):
-    condition = translate_strips_conditions(axiom.condition, dictionary, ranges, mutex_dict, mutex_ranges)
-    if condition is None:
-        return None
+    conditions = translate_strips_conditions(axiom.condition, dictionary, ranges, mutex_dict, mutex_ranges)
+    if conditions is None:
+        return []
     if axiom.effect.negated:
         [(var, _)] = dictionary[axiom.effect.positive()]
         effect = (var, ranges[var] - 1)
     else:
         [effect] = dictionary[axiom.effect]
-    return sas_tasks.SASAxiom(condition.items(), effect)
+    axioms = []
+    for condition in conditions:
+        axioms.append(sas_tasks.SASAxiom(condition.items(), effect))
+    return axioms
 
 def translate_strips_operators(actions, strips_to_sas, ranges, mutex_dict, mutex_ranges, implied_facts):
     result = []
     for action in actions:
-        sas_op = translate_strips_operator(action, strips_to_sas, ranges, mutex_dict, mutex_ranges, implied_facts)
-        if sas_op:
-            result.append(sas_op)
+        sas_ops = translate_strips_operator(action, strips_to_sas, ranges, mutex_dict, mutex_ranges, implied_facts)
+        result.extend(sas_ops)
     return result
 
 def translate_strips_axioms(axioms, strips_to_sas, ranges, mutex_dict, mutex_ranges):
     result = []
     for axiom in axioms:
-        sas_axiom = translate_strips_axiom(axiom, strips_to_sas, ranges, mutex_dict, mutex_ranges)
-        if sas_axiom:
-            result.append(sas_axiom)
+        sas_axioms = translate_strips_axiom(axiom, strips_to_sas, ranges, mutex_dict, mutex_ranges)
+        result.extend(sas_axioms)
     return result
 
 def translate_task(strips_to_sas, ranges, mutex_dict, mutex_ranges, init, goals,
@@ -308,7 +383,15 @@ def translate_task(strips_to_sas, ranges, mutex_dict, mutex_ranges, init, goals,
             init_values[var] = val
     init = sas_tasks.SASInit(init_values)
 
-    goal_pairs = translate_strips_conditions(goals, strips_to_sas, ranges, mutex_dict, mutex_ranges).items()
+    goal_dict_list = translate_strips_conditions(goals, strips_to_sas, ranges, mutex_dict, mutex_ranges)
+    assert len(goal_dict_list) == 1, "Negative goal not supported"
+    ## we could substitute the negative goal literal in
+    ## normalize.substitute_complicated_goal, using an axiom. We currently
+    ## don't do this, because we don't run into this assertion, if the
+    ## negative goal is part of finite domain variable with only two
+    ## values, which is most of the time the case, and hence refrain from
+    ## introducing axioms (that are not supported by all heuristics)
+    goal_pairs = goal_dict_list[0].items()
     goal = sas_tasks.SASGoal(goal_pairs)
 
     operators = translate_strips_operators(actions, strips_to_sas, ranges, mutex_dict, mutex_ranges, implied_facts)
