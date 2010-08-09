@@ -100,6 +100,9 @@ void SearchProgress::print_statistics() const {
     cout << "Reopened " << reopened_states << " state(s)." << endl;
     cout << "Evaluated " << evaluated_states << " state(s)." << endl;
     cout << "Generated " << generated_states << " state(s)." << endl;
+    if (pathmax_corrections > 0) {
+        cout << "Pathmax corrections: " << pathmax_corrections << endl;
+    }
 
     if (lastjump_f_value >= 0) {
         cout << "Expanded until last jump: "
