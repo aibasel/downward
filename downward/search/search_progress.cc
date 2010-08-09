@@ -7,6 +7,7 @@ SearchProgress::SearchProgress() {
     evaluated_states = 0;
     generated_states = 0;
     generated_ops = 0;
+    pathmax_corrections = 0;
 
     lastjump_expanded_states = 0;
     lastjump_reopened_states = 0;
