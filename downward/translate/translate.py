@@ -187,6 +187,7 @@ def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ra
                         ## HACK HACK HACK! There is a precondition on the variable for
                         ## this delete effect on another value, so there is no need to
                         ## represent the delete effect. Right? Right???
+                        del effect[var]
                         continue
                     # Need a guard for this delete effect.
                     assert var not in condition and var not in eff_condition, "Oops?"
