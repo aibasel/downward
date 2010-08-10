@@ -12,7 +12,6 @@
 #include "g_feature_extractor.h"
 #include <limits.h>
 #include <math.h>
-#include <sys/times.h>
 
 class SelectiveMaxHeuristic: public Heuristic {
 private:
@@ -32,10 +31,10 @@ protected:
 
 	int training_set_size;
 	int num_learn_from_no_confidence;
-	clock_t *total_computation_time;
+	double *total_computation_time;
 	double *avg_time;
-	Timer total_classification_time;
-	Timer total_training_time;
+	ExactTimer total_classification_time;
+	ExactTimer total_training_time;
 
 	int *num_evaluated;
 	int *num_winner;

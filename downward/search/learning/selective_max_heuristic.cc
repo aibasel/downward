@@ -83,7 +83,7 @@ void SelectiveMaxHeuristic::initialize() {
 	num_evaluated = new int[num_heuristics];
 	num_winner = new int[num_heuristics];
 	num_only_winner = new int[num_heuristics];
-	total_computation_time = new clock_t[num_heuristics];
+	total_computation_time = new double[num_heuristics];
 	heuristic_conf = new double[num_heuristics];
 	avg_time = new double[num_heuristics];
 
@@ -231,17 +231,18 @@ void SelectiveMaxHeuristic::train() {
 	// Get Heuristic Evaluation Times and Values
 
 	//cout << "Collecting Timing Data" << endl;
+	ExactTimer retimer;
 	for (int i = 0; i < num_heuristics; i++) {
 	    total_computation_time[i] = sample->get_computation_time(i) + 1;
 	    if (retime_heuristics) {
             total_computation_time[i] = 0;
-            clock_t before = times(NULL);
+            double before = retimer();
             sample_t::const_iterator it;
             for (it = training_set.begin(); it != training_set.end(); it++) {
                 const State s = (*it).first;
-                heuristics[0]->evaluate(s);
+                heuristics[i]->evaluate(s);
             }
-            clock_t after = times(NULL);
+            double after = retimer();
             total_computation_time[i] = after - before + 1;
 	    }
 	    cout << "Time " << i << " - " << total_computation_time[i] << endl;
@@ -309,6 +310,9 @@ void SelectiveMaxHeuristic::train() {
 
 	// reset statistics and heuristics after training
 	reset_statistics();
+	for (int i = 0; i < num_heuristics; i++) {
+        heuristics[i]->reset();
+    }
 
 	//cout << "Freed Memory" << endl;
 	//ni_fe->change_search_space(g_learning_search_space);

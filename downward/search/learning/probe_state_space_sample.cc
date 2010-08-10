@@ -74,10 +74,10 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 
 
 			for (int i = 0; i < heuristics.size(); i++) {
-			    clock_t before = times(NULL);
+			    double before = computation_timer();
 			    heuristics[i]->reach_state(s, *op, succ);
 			    heuristics[i]->evaluate(succ);
-			    clock_t after = times(NULL);
+			    double after = computation_timer();
 			    computation_time[i] += after - before;
                 if (heuristics[i]->is_dead_end()) {
                     samp[succ].push_back(numeric_limits<int>::max());

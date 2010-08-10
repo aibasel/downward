@@ -13,6 +13,7 @@ HEADERS = \
           cyclic_cg_heuristic.h \
           domain_transition_graph.h \
           enforced_hill_climbing_search.h \
+          exact_timer.h \
           ff_heuristic.h \
           general_eager_best_first_search.h \
           general_lazy_best_first_search.h \
@@ -130,11 +131,11 @@ CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
 LINKOPT_RELEASE  = -static -static-libgcc
-LINKOPT_DEBUG    =
-LINKOPT_PROFILE  = -pg
+LINKOPT_DEBUG    = -lrt
+LINKOPT_PROFILE  = -pg -lrt
 # LINKOPT_PROFILE += -lc_p
 
-POSTLINKOPT_RELEASE  =
+POSTLINKOPT_RELEASE  = -Wl,-Bstatic -lrt
 POSTLINKOPT_DEBUG    =
 POSTLINKOPT_PROFILE  =
 
@@ -174,7 +175,7 @@ COIN_LIBS = OsiClp Clp CoinUtils Osi
 ## http://ubuntuforums.org/showthread.php?t=491455
 
 COIN_CCOPT = -I $(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
-COIN_LINKOPT = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+COIN_LINKOPT = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %) 
 
 CCOPT += $(COIN_CCOPT)
 

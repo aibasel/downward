@@ -4,8 +4,8 @@
 #include "../search_space.h"
 #include "../heuristic.h"
 #include <map>
-#include <sys/times.h>
 #include <vector>
+#include "../exact_timer.h"
 
 using namespace std;
 
@@ -19,9 +19,10 @@ protected:
 	vector<Heuristic *> heuristics;
 
 	// gathered data
+	ExactTimer computation_timer;
 	sample_t samp;
 	double branching_factor;
-	vector<clock_t> computation_time;
+	vector<double> computation_time;
 
 	int choose_operator(vector<int> &h_s);
 public:
@@ -34,7 +35,7 @@ public:
     double get_branching_factor() const {return branching_factor;}
 
     void add_heuristic(Heuristic *h) {heuristics.push_back(h); computation_time.push_back(0);}
-    clock_t get_computation_time(int i) {return computation_time[i];}
+    double get_computation_time(int i) {return computation_time[i];}
 
     virtual sample_t &get_samp() {return samp;}
 

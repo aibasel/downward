@@ -363,6 +363,11 @@ bool LandmarksCountHeuristic::reach_state(const State& parent_state,
     return true;
 }
 
+void LandmarksCountHeuristic::reset() {
+    lm_status_manager.clear_reached();
+    lm_status_manager.set_landmarks_for_initial_state(*g_initial_state);
+}
+
 ScalarEvaluator *LandmarksCountHeuristic::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     int lm_type_ = LandmarksCountHeuristic::rpg_sasp;

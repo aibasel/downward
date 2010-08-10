@@ -33,8 +33,8 @@ public:
     int get_min_training_set_size() const {return min_training_set_size;}
     void set_min_training_set_size(int training_set_size) {min_training_set_size = training_set_size;}
 
-    void add_heuristic(Heuristic *h) {heuristics.push_back(h); computation_time.push_back(0);}
-    clock_t get_computation_time(int i) {return computation_time[i];}
+    //void add_heuristic(Heuristic *h) {heuristics.push_back(h); computation_time.push_back(0);}
+    //double get_computation_time(int i) {return computation_time[i];}
 };
 
 #endif /* PROBESTATESPACESAMPLE_H_ */
