@@ -55,5 +55,5 @@
  * This can be used in weighted A* (i.e. f=g+wh)
  *
  *
- * And now we have a buildbot, which might work (now we really have one)
+ * And now we have a buildbot, which I am testing now.
  */
