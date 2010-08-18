@@ -37,9 +37,10 @@ using namespace std;
 
 void register_parsers();
 /***
- * This is the main entry point (duh)
+ * This is the main entry point
  * This comment is for testing the buildbot e-mail notifier.
  */
+I am now breaking the build on purpose
 int main(int argc, const char **argv) {
     register_event_handlers();
 
