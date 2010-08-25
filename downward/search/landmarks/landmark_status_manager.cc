@@ -73,6 +73,10 @@ bool LandmarkStatusManager::update_reached_lms(const State& parent_state, const 
     bool intersect = false;
 
     LandmarkSet old_reached;
+
+    StateProxy proxy = StateProxy(&parent_state);
+    assert(reached_lms.find(proxy) != reached_lms.end());
+
     LandmarkSet& parent_reached = get_reached_landmarks(parent_state);
     LandmarkSet& reached = get_reached_landmarks(state);
 

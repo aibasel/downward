@@ -2,6 +2,7 @@
 #include "../successor_generator.h"
 #include "../heuristic.h"
 #include <limits>
+#include <cassert>
 
 ProbeStateSpaceSample::ProbeStateSpaceSample(int goal_depth, int probes = 10, int size = 100):
 	goal_depth_estimate(goal_depth), max_num_probes(probes), min_training_set_size(size)
@@ -69,14 +70,17 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 			// generate and add to training set all successors
 			const Operator *op = applicable_ops[op_num];
 			State succ(s, *op);
+			samp[succ].reserve(heuristics.size());
+			sample_t::const_iterator succ_it = samp.find(succ);
+			assert(succ_it != samp.end());
 			//SearchNode succ_node = sample.get_node(succ);
 			//samp[succ] = 0;
 
 
 			for (int i = 0; i < heuristics.size(); i++) {
 			    double before = computation_timer();
-			    heuristics[i]->reach_state(s, *op, succ);
-			    heuristics[i]->evaluate(succ);
+			    heuristics[i]->reach_state(s, *op, succ_it->first);
+			    heuristics[i]->evaluate(succ_it->first);
 			    double after = computation_timer();
 			    computation_time[i] += after - before;
                 if (heuristics[i]->is_dead_end()) {
