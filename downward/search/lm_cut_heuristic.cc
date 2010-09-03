@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
+#include "plugin.h"
 #include "state.h"
 
 #include <cassert>
@@ -11,6 +12,11 @@
 #include <limits>
 #include <vector>
 using namespace std;
+
+
+static ScalarEvaluatorPlugin landmark_cut_heuristic_plugin(
+    "lmcut", LandmarkCutHeuristic::create);
+
 
 // construction and destruction
 LandmarkCutHeuristic::LandmarkCutHeuristic(int _iteration_limit)

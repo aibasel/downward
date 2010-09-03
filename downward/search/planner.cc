@@ -1,8 +1,5 @@
 #include "best_first_search.h"
-#include "ff_heuristic.h"
-#include "lm_cut_heuristic.h"
 #include "mas_heuristic.h"
-#include "max_heuristic.h"
 #include "globals.h"
 #include "operator.h"
 #include "timer.h"
@@ -12,7 +9,6 @@
 #include "landmarks/landmarks_graph_rpg_sasp.h"
 #include "landmarks/landmarks_count_heuristic.h"
 #include "landmarks/exploration.h"
-#include "hm_heuristic.h"
 #include "general_lazy_best_first_search.h"
 #include "learning/selective_max_heuristic.h"
 #include "enforced_hill_climbing_search.h"
@@ -129,16 +125,8 @@ void register_parsers() {
             IteratedSearch::create);
 
     // Register heuristics
-    OptionParser::instance()->register_scalar_evaluator("ff", 
-        FFHeuristic::create);
-    OptionParser::instance()->register_scalar_evaluator("hm", 
-        HMHeuristic::create);
-    OptionParser::instance()->register_scalar_evaluator("hmax", 
-        HSPMaxHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("lmcount", 
         LandmarksCountHeuristic::create);
-    OptionParser::instance()->register_scalar_evaluator("lmcut", 
-        LandmarkCutHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("mas", 
         MergeAndShrinkHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("selmax", 

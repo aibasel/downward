@@ -1,7 +1,9 @@
 #include "max_heuristic.h"
+
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
+#include "plugin.h"
 #include "state.h"
 
 #include <cassert>
@@ -17,6 +19,11 @@ using namespace __gnu_cxx;
  additive_heuristic.cc. For such an implementation, more experiments 
  are needed because this could be very slow.
 */
+
+
+static ScalarEvaluatorPlugin max_heuristic_plugin(
+    "hmax", HSPMaxHeuristic::create);
+
 
 // construction and destruction
 HSPMaxHeuristic::HSPMaxHeuristic() {

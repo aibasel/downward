@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
+#include "plugin.h"
 #include "state.h"
 
 #include <cassert>
@@ -26,6 +27,10 @@ using namespace __gnu_cxx;
   don't actually need to define a precondition on the current status of the
   hand because *all* possible values are allowed.)
 */
+
+
+static ScalarEvaluatorPlugin ff_heuristic_plugin("ff", FFHeuristic::create);
+
 
 // construction and destruction
 FFHeuristic::FFHeuristic() {

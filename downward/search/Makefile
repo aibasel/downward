@@ -9,16 +9,12 @@ HEADERS = \
           domain_transition_graph.h \
           enforced_hill_climbing_search.h \
           exact_timer.h \
-          ff_heuristic.h \
           general_eager_best_first_search.h \
           general_lazy_best_first_search.h \
           globals.h \
           heuristic.h \
-          hm_heuristic.h \
           iterated_search.h \
-          lm_cut_heuristic.h \
           mas_heuristic.h \
-          max_heuristic.h \
           operator.h \
           operator_registry.h \
           option_parser.h \
@@ -82,7 +78,11 @@ HEADERS += additive_heuristic.h
 HEADERS += blind_search_heuristic.h
 HEADERS += cea_heuristic.h
 HEADERS += cg_heuristic.h cg_cache.h
+HEADERS += ff_heuristic.h
 HEADERS += goal_count_heuristic.h
+HEADERS += hm_heuristic.h
+HEADERS += lm_cut_heuristic.h
+HEADERS += max_heuristic.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward

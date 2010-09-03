@@ -1,10 +1,15 @@
 #include "hm_heuristic.h"
 
 #include "option_parser.h"
+#include "plugin.h"
 
 #include <cassert>
 #include <limits>
 #include <set>
+
+
+static ScalarEvaluatorPlugin hm_heuristic_plugin("hm", HMHeuristic::create);
+
 
 HMHeuristic::HMHeuristic(int _m):m(_m) {
     MAX_VALUE = 100000;
