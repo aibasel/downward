@@ -144,8 +144,6 @@ void register_parsers() {
         CyclicCGHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("ff", 
         FFHeuristic::create);
-    OptionParser::instance()->register_scalar_evaluator("goalcount", 
-        GoalCountHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("hm", 
         HMHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("hmax", 
@@ -179,5 +177,3 @@ void register_parsers() {
     // as template parameter and we would have template parameters everywhere
     // otherwise 
 }
-
-

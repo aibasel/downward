@@ -28,6 +28,7 @@ HEADERS = \
           operator.h \
           operator_registry.h \
           option_parser.h \
+          plugin.h \
           pref_evaluator.h \
           relaxation_heuristic.h \
           search_engine.h \
