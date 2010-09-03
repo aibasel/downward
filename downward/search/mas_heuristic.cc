@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
+#include "plugin.h"
 #include "state.h"
 #include "timer.h"
 #include "variable_order_finder.h"
@@ -13,6 +14,10 @@
 #include <limits>
 #include <vector>
 using namespace std;
+
+
+static ScalarEvaluatorPlugin merge_and_shrink_heuristic_plugin(
+    "mas", MergeAndShrinkHeuristic::create);
 
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(

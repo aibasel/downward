@@ -1,5 +1,4 @@
 #include "best_first_search.h"
-#include "mas_heuristic.h"
 #include "globals.h"
 #include "operator.h"
 #include "timer.h"
@@ -127,8 +126,6 @@ void register_parsers() {
     // Register heuristics
     OptionParser::instance()->register_scalar_evaluator("lmcount", 
         LandmarksCountHeuristic::create);
-    OptionParser::instance()->register_scalar_evaluator("mas", 
-        MergeAndShrinkHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("selmax", 
         SelectiveMaxHeuristic::create);
     

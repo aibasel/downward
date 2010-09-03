@@ -1,7 +1,6 @@
 USE_LP=0   ## Set to 1 to enable linear programming stuff.
 
 HEADERS = \
-          abstraction.h \
           axioms.h \
           best_first_search.h \
           causal_graph.h \
@@ -15,9 +14,7 @@ HEADERS = \
           globals.h \
           heuristic.h \
           iterated_search.h \
-          mas_heuristic.h \
           operator.h \
-          operator_registry.h \
           option_parser.h \
           plugin.h \
           pref_evaluator.h \
@@ -31,7 +28,6 @@ HEADERS = \
           sum_evaluator.h \
           timer.h \
           utilities.h \
-          variable_order_finder.h \
           weighted_evaluator.h \
           \
           open_lists/alternation_open_list.h \
@@ -67,9 +63,9 @@ HEADERS = \
           learning/state_space_sample.h \
           learning/state_vars_feature_extractor.h
 
-## Each of the following lines defines a "plugin" feature that can be
-## enabled or disabled by simply commenting out the respective line in
-## the Makefile.
+## Each of the following "HEADERS += ..." constructs defines a
+## "plugin" feature that can be enabled or disabled by simply
+## commenting out the respective lines in the Makefile.
 
 ## As with all changes to the Makefile, you will have to force a
 ## rebuild after such a change. Deleting the executable and running
@@ -84,6 +80,11 @@ HEADERS += goal_count_heuristic.h
 HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
+
+HEADERS += mas_heuristic.h \
+           abstraction.h \
+           operator_registry.h \
+           variable_order_finder.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward
