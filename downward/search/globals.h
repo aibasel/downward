@@ -6,9 +6,7 @@
 #include <vector>
 using namespace std;
 
-class Abstraction;
 class AxiomEvaluator;
-class Cache;
 class CausalGraph;
 class DomainTransitionGraph;
 class Operator;
@@ -17,7 +15,6 @@ class State;
 class SuccessorGenerator;
 class Timer;
 class FFHeuristic;
-class SearchSpace;
 
 bool test_goal(const State &state);
 int save_plan(const vector<const Operator *> &plan);
@@ -47,6 +44,5 @@ extern CausalGraph *g_causal_graph;
 extern Timer g_timer;
 
 extern FFHeuristic *g_ff_heur;
-//extern SearchSpace* g_learning_search_space;
 
 #endif

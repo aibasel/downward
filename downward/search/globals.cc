@@ -180,4 +180,3 @@ CausalGraph *g_causal_graph;
 Timer g_timer;
 
 FFHeuristic *g_ff_heur = 0;
-//SearchSpace* g_learning_search_space = 0;
