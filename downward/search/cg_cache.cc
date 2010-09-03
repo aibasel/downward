@@ -1,4 +1,5 @@
-#include "cache.h"
+#include "cg_cache.h"
+
 #include "causal_graph.h"
 #include "globals.h"
 #include "state.h"
@@ -9,9 +10,9 @@
 #include <vector>
 using namespace std;
 
-const int Cache::NOT_COMPUTED;
+const int CGCache::NOT_COMPUTED;
 
-Cache::Cache() {
+CGCache::CGCache() {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = g_variable_domain.size();
@@ -97,7 +98,7 @@ Cache::Cache() {
     cout << "done!" << endl;
 }
 
-int Cache::get_index(int var, const State &state, int from_val, int to_val) const {
+int CGCache::get_index(int var, const State &state, int from_val, int to_val) const {
     assert(is_cached(var));
     assert(from_val != to_val);
     int index = from_val;

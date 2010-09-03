@@ -81,7 +81,7 @@ HEADERS = \
 
 HEADERS += additive_heuristic.h
 HEADERS += blind_search_heuristic.h
-HEADERS += cg_heuristic.h cache.h
+HEADERS += cg_heuristic.h cg_cache.h
 HEADERS += goal_count_heuristic.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)

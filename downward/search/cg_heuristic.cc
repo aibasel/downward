@@ -1,6 +1,6 @@
 #include "cg_heuristic.h"
 
-#include "cache.h"
+#include "cg_cache.h"
 #include "domain_transition_graph.h"
 #include "globals.h"
 #include "operator.h"
@@ -20,7 +20,7 @@ static ScalarEvaluatorPlugin cg_heuristic_plugin("cg", CGHeuristic::create);
 
 
 CGHeuristic::CGHeuristic()
-    : cache(new Cache), cache_hits(0), cache_misses(0),
+    : cache(new CGCache), cache_hits(0), cache_misses(0),
       helpful_transition_extraction_counter(0) {
 }
 
@@ -81,7 +81,7 @@ int CGHeuristic::get_transition_cost(const State &state,
     // Check cache.
     if(USE_CACHE && cache->is_cached(var_no)) {
 	int cached_val = cache->lookup(var_no, state, start_val, goal_val);
-	if(cached_val != Cache::NOT_COMPUTED) {
+	if(cached_val != CGCache::NOT_COMPUTED) {
 	    ++cache_hits;
 	    return cached_val;
 	}

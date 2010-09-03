@@ -5,12 +5,12 @@
 
 #include <string>
 
-class Cache;
+class CGCache;
 class DomainTransitionGraph;
 class State;
 
 class CGHeuristic : public Heuristic {
-    Cache *cache;
+    CGCache *cache;
     int cache_hits;
     int cache_misses;
 
