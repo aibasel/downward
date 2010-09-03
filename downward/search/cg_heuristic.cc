@@ -208,7 +208,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     // Avoid checking the same layer twice via different paths of recursion.
     // TODO: Shouldn't we consider this variable again if the "to" value
     // is a different one from the previous call??? Same issue probably
-    // exists for cyclic CG heuristic.
+    // exists for cea heuristic.
     if(dtg->last_helpful_transition_extraction_time == helpful_transition_extraction_counter)
 	return;
     dtg->last_helpful_transition_extraction_time = helpful_transition_extraction_counter;

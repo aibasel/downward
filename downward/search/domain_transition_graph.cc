@@ -53,7 +53,7 @@ void DomainTransitionGraph::read_data(istream &in) {
   check_magic(in, "begin_DTG");
 
   map<int, int> global_to_local_child;
-  map<int, int> global_to_ccg_parent;
+  map<int, int> global_to_cea_parent;
   map<pair<int, int>, int> transition_index;
   // TODO: This transition index business is caused by the fact
   //       that transitions in the input are not grouped by target
@@ -77,13 +77,13 @@ void DomainTransitionGraph::read_data(istream &in) {
       ValueTransition *transition = &nodes[origin].transitions[transition_index[arc]];
 
       vector<LocalAssignment> precond;
-      vector<LocalAssignment> cyclic_precond;
+      vector<LocalAssignment> cea_precond;
       vector<LocalAssignment> no_effect;
-      vector<LocalAssignment> cyclic_effect;
+      vector<LocalAssignment> cea_effect;
       int precond_count;
       in >> precond_count;
 
-      vector<pair<int, int> > precond_pairs; // Needed to build up cyclic_effect.
+      vector<pair<int, int> > precond_pairs; // Needed to build up cea_effect.
       for(int j = 0; j < precond_count; j++) {
 	int global_var, val;
 	in >> global_var >> val;
@@ -99,13 +99,13 @@ void DomainTransitionGraph::read_data(istream &in) {
 	  precond.push_back(LocalAssignment(local_var, val));
 	}
 
-        // Processing for full DTG (cyclic CG).
-        if(!global_to_ccg_parent.count(global_var)) {
-          global_to_ccg_parent[global_var] = ccg_parents.size();
-          ccg_parents.push_back(global_var);
+        // Processing for full DTG (cea CG).
+        if(!global_to_cea_parent.count(global_var)) {
+          global_to_cea_parent[global_var] = cea_parents.size();
+          cea_parents.push_back(global_var);
         }
-        int ccg_parent = global_to_ccg_parent[global_var];
-        cyclic_precond.push_back(LocalAssignment(ccg_parent, val));
+        int cea_parent = global_to_cea_parent[global_var];
+        cea_precond.push_back(LocalAssignment(cea_parent, val));
       }
       Operator *the_operator;
       if(is_axiom) {
@@ -116,7 +116,7 @@ void DomainTransitionGraph::read_data(istream &in) {
 	the_operator = &g_operators[operator_index];
       }
 
-      // Build up cyclic_effect. This is messy because this isn't
+      // Build up cea_effect. This is messy because this isn't
       // really the place to do this, and it was added very much as an
       // afterthought.
       sort(precond_pairs.begin(), precond_pairs.end());
@@ -127,7 +127,7 @@ void DomainTransitionGraph::read_data(istream &in) {
           int pre = pre_post[j].pre;
           int post = pre_post[j].post;
 
-          if(var_no == var || !global_to_ccg_parent.count(var_no)) {
+          if(var_no == var || !global_to_cea_parent.count(var_no)) {
               // This is either an effect on the variable we're
               // building the DTG for, or an effect on a variable we
               // don't need to track because it doesn't appear in
@@ -146,20 +146,20 @@ void DomainTransitionGraph::read_data(istream &in) {
 
           if(includes(precond_pairs.begin(), precond_pairs.end(),
                       triggercond_pairs.begin(), triggercond_pairs.end())) {
-              int ccg_parent = global_to_ccg_parent[var_no];
-              cyclic_effect.push_back(LocalAssignment(ccg_parent, post));
+              int cea_parent = global_to_cea_parent[var_no];
+              cea_effect.push_back(LocalAssignment(cea_parent, post));
           }
       }
 
 #define TRACK_SIDE_EFFECTS true
 #if !TRACK_SIDE_EFFECTS
-      cyclic_effect.clear();
+      cea_effect.clear();
 #endif
 
       transition->labels.push_back(
           ValueTransitionLabel(the_operator, precond, no_effect));
-      transition->ccg_labels.push_back(
-          ValueTransitionLabel(the_operator, cyclic_precond, cyclic_effect));
+      transition->cea_labels.push_back(
+          ValueTransitionLabel(the_operator, cea_precond, cea_effect));
     }
   }
   check_magic(in, "end_DTG");
@@ -193,7 +193,7 @@ public:
 
 void ValueTransition::simplify() {
   simplify_labels(labels);
-  simplify_labels(ccg_labels);
+  simplify_labels(cea_labels);
 }
 
 void ValueTransition::simplify_labels(

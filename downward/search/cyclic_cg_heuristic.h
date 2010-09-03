@@ -1,5 +1,5 @@
-#ifndef CYCLIC_CG_HEURISTIC_H
-#define CYCLIC_CG_HEURISTIC_H
+#ifndef CEA_HEURISTIC_H
+#define CEA_HEURISTIC_H
 
 #include<string>
 #include <vector>
@@ -11,12 +11,12 @@ class State;
 
 class LocalProblem;
 class LocalProblemNode;
-class CyclicCGHeuristic;
+class ContextEnhancedAdditiveHeuristic;
 
 // TODO: Fix friend statements and access qualifiers.
 
 class LocalTransition {
-    friend class CyclicCGHeuristic;
+    friend class ContextEnhancedAdditiveHeuristic;
     friend class LocalProblem;
     friend class LocalProblemNode;
 
@@ -38,7 +38,7 @@ class LocalTransition {
 
 
 class LocalProblemNode {
-    friend class CyclicCGHeuristic;
+    friend class ContextEnhancedAdditiveHeuristic;
     friend class LocalProblem;
     friend class LocalTransition;
 
@@ -79,7 +79,7 @@ class LocalProblemNode {
 
 
 class LocalProblem {
-    friend class CyclicCGHeuristic;
+    friend class ContextEnhancedAdditiveHeuristic;
     friend class LocalProblemNode;
     friend class LocalTransition;
     enum {QUITE_A_LOT = 1000000};
@@ -99,7 +99,7 @@ public:
 };
 
 
-class CyclicCGHeuristic : public Heuristic {
+class ContextEnhancedAdditiveHeuristic : public Heuristic {
     friend class LocalProblem;
     friend class LocalProblemNode;
     friend class LocalTransition;
@@ -120,8 +120,8 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    CyclicCGHeuristic();
-    ~CyclicCGHeuristic();
+    ContextEnhancedAdditiveHeuristic();
+    ~ContextEnhancedAdditiveHeuristic();
     virtual bool dead_ends_are_reliable() {return false;}
     static ScalarEvaluator *create(const std::vector<std::string> &config, 
                                    int start, int &end, bool dry_run);
@@ -136,7 +136,8 @@ inline bool LocalProblem::is_initialized() const {
     return base_priority != -1;
 }
 
-inline LocalProblem *CyclicCGHeuristic::get_local_problem(int var_no, int value) {
+inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
+    int var_no, int value) {
     LocalProblem *result = local_problem_index[var_no][value];
     if(!result) {
         result = new LocalProblem(var_no);

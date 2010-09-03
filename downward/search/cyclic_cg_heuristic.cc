@@ -18,18 +18,19 @@ TODO: The responsibilities between the different classes need to be
       initialization code contains some stuff (related to initial node
       initialization) that may better fit into the LocalProblemNode
       class. It's probably best to have all the code in the
-      CyclicCGHeuristic class and have everything else be PODs.
+      ContextEnhancedAdditiveHeuristic class and have everything else be PODs.
       This would also get rid of g_HACK.
  */
 
 
-static ScalarEvaluatorPlugin cyclic_cg_heuristic_plugin(
-    "cea", CyclicCGHeuristic::create);
+static ScalarEvaluatorPlugin context_enhanced_additive_heuristic_plugin(
+    "cea", ContextEnhancedAdditiveHeuristic::create);
 
 
-CyclicCGHeuristic *g_HACK = 0;
+static ContextEnhancedAdditiveHeuristic *g_HACK = 0;
 
-inline void CyclicCGHeuristic::add_to_heap(LocalProblemNode *node) {
+inline void ContextEnhancedAdditiveHeuristic::add_to_heap(
+    LocalProblemNode *node) {
     int bucket_no = node->priority();
     if(bucket_no >= buckets.size())
         buckets.resize(max<size_t>(bucket_no + 1, 2 * buckets.size()));
@@ -164,7 +165,7 @@ void LocalProblemNode::on_expand() {
 void LocalProblem::build_nodes_for_variable(int var_no) {
     DomainTransitionGraph *dtg = g_transition_graphs[var_no];
 
-    causal_graph_parents = &dtg->ccg_parents;
+    causal_graph_parents = &dtg->cea_parents;
 
     int num_parents = causal_graph_parents->size();
     for(int value = 0; value < g_variable_domain[var_no]; value++)
@@ -179,8 +180,8 @@ void LocalProblem::build_nodes_for_variable(int var_no) {
             const ValueTransition &dtg_trans = dtg_node.transitions[i];
             int target_value = dtg_trans.target->value;
             LocalProblemNode &target = nodes[target_value];
-            for(int j = 0; j < dtg_trans.ccg_labels.size(); j++) {
-                const ValueTransitionLabel &label = dtg_trans.ccg_labels[j];
+            for(int j = 0; j < dtg_trans.cea_labels.size(); j++) {
+                const ValueTransitionLabel &label = dtg_trans.cea_labels[j];
                 LocalTransition trans(&node, &target, &label, action_cost);
                 node.outgoing_transitions.push_back(trans);
             }
@@ -263,7 +264,7 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
     }
 }
 
-CyclicCGHeuristic::CyclicCGHeuristic() {
+ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic() {
     if (g_HACK)
         abort();
     g_HACK = this;
@@ -272,15 +273,15 @@ CyclicCGHeuristic::CyclicCGHeuristic() {
     heap_size = -1;
 }
 
-CyclicCGHeuristic::~CyclicCGHeuristic() {
+ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
     delete goal_problem;
     for(int i = 0; i < local_problems.size(); i++)
         delete local_problems[i];
 }
 
-void CyclicCGHeuristic::initialize() {
+void ContextEnhancedAdditiveHeuristic::initialize() {
     assert(goal_problem == 0);
-    cout << "Initializing cyclic causal graph heuristic..." << endl;
+    cout << "Initializing context-enhanced additive heuristic..." << endl;
 
     int num_variables = g_variable_domain.size();
 
@@ -294,7 +295,7 @@ void CyclicCGHeuristic::initialize() {
     }
 }
 
-int CyclicCGHeuristic::compute_heuristic(const State &state) {
+int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
     initialize_heap();
     goal_problem->base_priority = -1;
     for(int i = 0; i < local_problems.size(); i++)
@@ -310,7 +311,7 @@ int CyclicCGHeuristic::compute_heuristic(const State &state) {
     return heuristic;
 }
 
-void CyclicCGHeuristic::initialize_heap() {
+void ContextEnhancedAdditiveHeuristic::initialize_heap() {
     /* This was just "buckets.clear()", but it may be advantageous to
        keep the empty buckets around so that there are fewer
        reallocations. At least changing this from buckets.clear() gave
@@ -321,7 +322,7 @@ void CyclicCGHeuristic::initialize_heap() {
     heap_size = 0;
 }
 
-int CyclicCGHeuristic::compute_costs(const State &state) {
+int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
     for(int curr_priority = 0; heap_size != 0; curr_priority++) {
         assert(curr_priority < buckets.size());
         for(int pos = 0; pos < buckets[curr_priority].size(); pos++) {
@@ -343,11 +344,11 @@ int CyclicCGHeuristic::compute_costs(const State &state) {
     return DEAD_END;
 }
 
-ScalarEvaluator *CyclicCGHeuristic::create(const std::vector<string> &config,
-                                           int start, int &end, bool dry_run) {
+ScalarEvaluator *ContextEnhancedAdditiveHeuristic::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
     if (dry_run)
         return 0;
     else
-        return new CyclicCGHeuristic();
+        return new ContextEnhancedAdditiveHeuristic;
 }
