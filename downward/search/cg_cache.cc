@@ -98,18 +98,22 @@ CGCache::CGCache() {
     cout << "done!" << endl;
 }
 
-int CGCache::get_index(int var, const State &state, int from_val, int to_val) const {
+CGCache::~CGCache() {
+}
+
+int CGCache::get_index(int var, const State &state,
+                       int from_val, int to_val) const {
     assert(is_cached(var));
     assert(from_val != to_val);
     int index = from_val;
     int multiplier = g_variable_domain[var];
-    for(int i = 0; i < depends_on[var].size(); i++) {
+    for (int i = 0; i < depends_on[var].size(); ++i) {
         int dep_var = depends_on[var][i];
         index += state[dep_var] * multiplier;
         multiplier *= g_variable_domain[dep_var];
     }
-    if(to_val > from_val)
-        to_val--;
+    if (to_val > from_val)
+        --to_val;
     index += to_val * multiplier;
     assert(index >= 0 && index < cache[var].size());
     return index;
