@@ -45,7 +45,7 @@ template <class Entry>
 OpenList<Entry>* 
 OpenListParser<Entry>::parse_open_list(const vector<string> &input, 
                               int start, int &end, bool dry_run) {
-    typename std::map<std::string, OpenListCreatorFunc>::iterator it;
+    typename std::map<std::string, OpenListFactory>::iterator it;
     it = open_list_map.find(input[start]);
     if (it == open_list_map.end()) 
         throw ParseError(start);

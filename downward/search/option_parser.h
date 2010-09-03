@@ -60,18 +60,21 @@ class NamedOptionParser {
 };
 
 class OptionParser {
-    typedef const std::vector<std::string> & ConfigRef;
-    typedef SearchEngine* (*EngineCreatorFunc)(ConfigRef, int, int&, bool);
-    typedef ScalarEvaluator* (*ScalarEvalCreatorFunc)(ConfigRef, int, int&, bool);
-    typedef void (*SynergyCreatorFunc)(ConfigRef, int, int&, 
-                                       std::vector<Heuristic *> &);
-    typedef 
-        OpenList<state_var_t *>* (*OpenListCreatorFunc)(ConfigRef, int, int&);
-
+public:
+    typedef const std::vector<std::string> &ConfigRef;
+    typedef SearchEngine *(*EngineFactory)(
+        ConfigRef, int, int &, bool);
+    typedef ScalarEvaluator *(*ScalarEvalFactory)(
+        ConfigRef, int, int &, bool);
+    typedef void (*SynergyFactory)(
+        ConfigRef, int, int &, std::vector<Heuristic *> &);
+    typedef OpenList<state_var_t *> *(*OpenListFactory)(
+        ConfigRef, int, int &);
+private:
     std::map<std::string, Heuristic*> predefined_heuristics; 
-    std::map<std::string, EngineCreatorFunc> engine_map; 
-    std::map<std::string, ScalarEvalCreatorFunc> scalar_evaluator_map; 
-    std::map<std::string, SynergyCreatorFunc> synergy_map; 
+    std::map<std::string, EngineFactory> engine_map; 
+    std::map<std::string, ScalarEvalFactory> scalar_evaluator_map; 
+    std::map<std::string, SynergyFactory> synergy_map; 
 
     static OptionParser* instance_;
     OptionParser() {}
@@ -136,6 +139,5 @@ public:
                                   std::vector<int> &engine_config_start,
                                   bool dry_run);
 };
-
 
 #endif

@@ -4,11 +4,10 @@
 template <class Entry>
 class OpenListParser {
 private:
-    typedef const std::vector<std::string> & ConfigRef;
-    typedef 
-        OpenList<Entry>* (*OpenListCreatorFunc)(ConfigRef, int, int&, bool);
+    typedef const std::vector<std::string> &ConfigRef;
+    typedef OpenList<Entry> * (*OpenListFactory)(ConfigRef, int, int &, bool);
 
-    std::map<std::string, OpenListCreatorFunc> open_list_map; 
+    std::map<std::string, OpenListFactory> open_list_map; 
 
     static OpenListParser* instance_;
     OpenListParser() {}

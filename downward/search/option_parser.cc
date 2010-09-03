@@ -47,7 +47,7 @@ ScalarEvaluator *OptionParser::parse_scalar_evaluator(
     }
    
     // scalar evaluater definition
-    map<string, ScalarEvalCreatorFunc>::iterator it;
+    map<string, ScalarEvalFactory>::iterator it;
     it = scalar_evaluator_map.find(input[start]);
     if (it == scalar_evaluator_map.end())
         throw ParseError(start);
@@ -68,7 +68,7 @@ Heuristic *OptionParser::parse_heuristic(const vector<string> &input,
 void OptionParser::parse_synergy_heuristics(const vector<string> &input, 
                                             int start, int &end,
                                             vector<Heuristic *> &heuristics) {
-    map<string, SynergyCreatorFunc>::iterator it;
+    map<string, SynergyFactory>::iterator it;
     it = synergy_map.find(input[start]);
     if (it == synergy_map.end())
         throw ParseError(start);
@@ -103,7 +103,7 @@ SearchEngine *OptionParser::parse_search_engine(const vector<string> &input,
                                                 int start, int &end, 
                                                 bool dry_run) {
 
-    map<string, EngineCreatorFunc>::iterator it;
+    map<string, EngineFactory>::iterator it;
     it = engine_map.find(input[start]);
     if (it == engine_map.end())
         throw ParseError(start);
