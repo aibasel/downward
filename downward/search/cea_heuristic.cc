@@ -1,4 +1,4 @@
-#include "cyclic_cg_heuristic.h"
+#include "cea_heuristic.h"
 
 #include "domain_transition_graph.h"
 #include "globals.h"
