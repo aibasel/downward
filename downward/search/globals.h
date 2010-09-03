@@ -14,7 +14,6 @@ class Axiom;
 class State;
 class SuccessorGenerator;
 class Timer;
-class FFHeuristic;
 
 bool test_goal(const State &state);
 int save_plan(const vector<const Operator *> &plan);
@@ -42,7 +41,5 @@ extern vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
 
 extern Timer g_timer;
-
-extern FFHeuristic *g_ff_heur;
 
 #endif

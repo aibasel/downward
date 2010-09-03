@@ -178,5 +178,3 @@ vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
 
 Timer g_timer;
-
-FFHeuristic *g_ff_heur = 0;
