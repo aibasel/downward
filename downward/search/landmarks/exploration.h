@@ -16,9 +16,6 @@ class State;
 class ExProposition;
 class ExUnaryOperator;
 
-class LandmarksCountHeuristic;
-
-
 
 struct ExProposition {
     int var;
@@ -90,8 +87,6 @@ struct ex_hash_operator_ptr {
 class Exploration : public Heuristic {
 
  private:
-    friend class LandmarksCountHeuristic;
-
     typedef __gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> RelaxedPlan;
 
     std::vector<ExUnaryOperator> unary_operators;

@@ -1,7 +1,7 @@
 This is the README file for the landmarks code.
 
 There are 2 main classes here: 
-	LandmarksCountHeuristic is the landmarks heuristic class.
+	LandmarkCountHeuristic is the landmark heuristic class.
 	LandmarksGraph is the class that represents the landmarks and orderings.
 		All the classes that inherit from LandmarksGraph implement different methods of
 		landmarks extraction.

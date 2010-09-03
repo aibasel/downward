@@ -35,18 +35,6 @@ HEADERS = \
           open_lists/pareto_open_list.h \
           open_lists/standard_scalar_open_list.h \
           open_lists/tiebreaking_open_list.h \
-          \
-          landmarks/exploration.h \
-          landmarks/lama_ff_synergy.h \
-          landmarks/landmark_cost_assignment.h \
-          landmarks/landmark_status_manager.h \
-          landmarks/landmarks_count_heuristic.h \
-          landmarks/landmarks_graph.h \
-          landmarks/landmarks_graph_rpg_exhaust.h \
-          landmarks/landmarks_graph_rpg_sasp.h \
-          landmarks/landmarks_graph_rpg_search.h \
-          landmarks/landmarks_graph_zhu_givan.h \
-          landmarks/util.h \
 
 ## Each of the following "HEADERS += ..." constructs defines a
 ## "plugin" feature that can be enabled or disabled by simply
@@ -70,6 +58,18 @@ HEADERS += mas_heuristic.h \
            abstraction.h \
            operator_registry.h \
            variable_order_finder.h
+
+HEADERS += landmarks/exploration.h \
+           landmarks/lama_ff_synergy.h \
+           landmarks/landmark_cost_assignment.h \
+           landmarks/landmark_count_heuristic.h \
+           landmarks/landmark_status_manager.h \
+           landmarks/landmarks_graph.h \
+           landmarks/landmarks_graph_rpg_exhaust.h \
+           landmarks/landmarks_graph_rpg_sasp.h \
+           landmarks/landmarks_graph_rpg_search.h \
+           landmarks/landmarks_graph_zhu_givan.h \
+           landmarks/util.h
 
 HEADERS += learning/AODE.h \
            learning/classifier.h \

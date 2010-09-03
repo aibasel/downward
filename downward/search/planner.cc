@@ -1,23 +1,19 @@
 #include "best_first_search.h"
-#include "globals.h"
-#include "operator.h"
-#include "timer.h"
-#include "general_eager_best_first_search.h"
-#include "landmarks/lama_ff_synergy.h"
-#include "landmarks/landmarks_count_heuristic.h"
-#include "general_lazy_best_first_search.h"
 #include "enforced_hill_climbing_search.h"
-#include "option_parser.h"
 #include "g_evaluator.h"
+#include "general_eager_best_first_search.h"
+#include "general_lazy_best_first_search.h"
+#include "globals.h"
+#include "iterated_search.h"
+#include "operator.h"
+#include "option_parser.h"
 #include "pref_evaluator.h"
 #include "sum_evaluator.h"
-#include "weighted_evaluator.h"
+#include "timer.h"
 #include "utilities.h"
-#include "iterated_search.h"
+#include "weighted_evaluator.h"
 
 #include <iostream>
-#include <fstream>
-#include <vector>
 using namespace std;
 
 
@@ -62,16 +58,16 @@ int main(int argc, const char **argv) {
     register_parsers();
     SearchEngine *engine = 0;
 
-    for (unsigned int i = 1; i < argc; ++ i) {
+    for (int i = 1; i < argc; ++i) {
         string arg = string(argv[i]);
         if (arg.compare("--heuristic") == 0) {
-            ++ i;
+            ++i;
             OptionParser::instance()->predefine_heuristic(argv[i]);
         } else if (arg.compare("--search") == 0) {
-            ++ i;
+            ++i;
             engine = OptionParser::instance()->parse_search_engine(argv[i]); 
         } else if (arg.compare("--random-seed") == 0) {
-            ++ i;
+            ++i;
             srand(atoi(argv[i]));
             cout << "random seed " << argv[i] << endl;
         } else {
@@ -117,14 +113,6 @@ void register_parsers() {
     OptionParser::instance()->register_search_engine("iterated",
             IteratedSearch::create);
 
-    // Register heuristics
-    OptionParser::instance()->register_scalar_evaluator("lmcount", 
-        LandmarksCountHeuristic::create);
-    
-    // Register synergy heuristics
-    OptionParser::instance()->register_synergy("lm_ff_syn", 
-        LamaFFSynergy::create_heuristics);
-   
     // register combinations and g evaluator
     OptionParser::instance()->register_scalar_evaluator("sum", 
         SumEvaluator::create);

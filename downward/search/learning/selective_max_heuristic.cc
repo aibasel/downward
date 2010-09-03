@@ -10,7 +10,7 @@
 #include "probe_state_space_sample.h"
 //#include "prob_a_star_sample.h"
 #include "PDB_state_space_sample.h"
-#include "../landmarks/landmarks_count_heuristic.h"
+#include "../landmarks/landmark_count_heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
