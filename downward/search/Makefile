@@ -9,6 +9,7 @@ HEADERS = \
           domain_transition_graph.h \
           enforced_hill_climbing_search.h \
           exact_timer.h \
+          g_evaluator.h \
           general_eager_best_first_search.h \
           general_lazy_best_first_search.h \
           globals.h \
@@ -27,7 +28,7 @@ HEADERS = \
           search_space.h \
           state.h \
           successor_generator.h \
-          sum_evaluator.h g_evaluator.h \
+          sum_evaluator.h \
           timer.h \
           utilities.h \
           variable_order_finder.h \
