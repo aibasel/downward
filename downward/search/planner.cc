@@ -6,7 +6,6 @@
 #include "mas_heuristic.h"
 #include "max_heuristic.h"
 #include "additive_heuristic.h"
-#include "goal_count_heuristic.h"
 #include "blind_search_heuristic.h"
 #include "globals.h"
 #include "operator.h"
