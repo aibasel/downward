@@ -31,13 +31,13 @@ OpenListParser<Entry>* OpenListParser<Entry>::instance() {
 }
 
 template <class Entry>
-void OpenListParser<Entry>::register_open_list(string key, 
+void OpenListParser<Entry>::register_open_list(const string &key, 
         OpenList<Entry>* func(const vector<string> &, int, int&, bool)) {
         open_list_map[key] = func;
 }
 
 template <class Entry>
-bool OpenListParser<Entry>::knows_open_list(string name) {
+bool OpenListParser<Entry>::knows_open_list(const string &name) {
     return (open_list_map.find(name) != open_list_map.end());
 }
 
