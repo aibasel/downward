@@ -3,7 +3,7 @@
 
 #include "heuristic.h"
 
-#include<vector>
+#include <vector>
 
 class Operator;
 class State;
@@ -49,7 +49,6 @@ struct hash_operator_ptr {
 };
 
 class RelaxationHeuristic : public Heuristic {
-
     void build_unary_operators(const Operator &op);
     void simplify();
 protected:
@@ -63,6 +62,5 @@ public:
     RelaxationHeuristic();
     virtual ~RelaxationHeuristic();
 };
-
 
 #endif
