@@ -12,9 +12,14 @@
 #include "PDB_state_space_sample.h"
 #include "../landmarks/landmarks_count_heuristic.h"
 #include "../option_parser.h"
+#include "../plugin.h"
 
 #include <cassert>
 #include <limits>
+
+
+static ScalarEvaluatorPlugin selective_max_heuristic_plugin(
+    "selmax", SelectiveMaxHeuristic::create);
 
 
 SelectiveMaxHeuristic::SelectiveMaxHeuristic():num_always_calc(0) {

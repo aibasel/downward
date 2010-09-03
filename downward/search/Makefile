@@ -47,21 +47,6 @@ HEADERS = \
           landmarks/landmarks_graph_rpg_search.h \
           landmarks/landmarks_graph_zhu_givan.h \
           landmarks/util.h \
-          \
-          learning/AODE.h \
-          learning/classifier.h \
-          learning/composite_feature_extractor.h \
-          learning/feature_extractor.h \
-          learning/landmarks_feature_extractor.h \
-          learning/maximum_heuristic.h \
-          learning/naive_bayes_classifier.h \
-          learning/node_info_feature_extractor.h \
-          learning/g_feature_extractor.h \
-          learning/PDB_state_space_sample.h \
-          learning/probe_state_space_sample.h \
-          learning/selective_max_heuristic.h \
-          learning/state_space_sample.h \
-          learning/state_vars_feature_extractor.h
 
 ## Each of the following "HEADERS += ..." constructs defines a
 ## "plugin" feature that can be enabled or disabled by simply
@@ -85,6 +70,22 @@ HEADERS += mas_heuristic.h \
            abstraction.h \
            operator_registry.h \
            variable_order_finder.h
+
+HEADERS += learning/AODE.h \
+           learning/classifier.h \
+           learning/composite_feature_extractor.h \
+           learning/feature_extractor.h \
+           learning/landmarks_feature_extractor.h \
+           learning/maximum_heuristic.h \
+           learning/naive_bayes_classifier.h \
+           learning/node_info_feature_extractor.h \
+           learning/g_feature_extractor.h \
+           learning/PDB_state_space_sample.h \
+           learning/probe_state_space_sample.h \
+           learning/selective_max_heuristic.h \
+           learning/state_space_sample.h \
+           learning/state_vars_feature_extractor.h
+
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward

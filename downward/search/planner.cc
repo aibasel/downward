@@ -9,7 +9,6 @@
 #include "landmarks/landmarks_count_heuristic.h"
 #include "landmarks/exploration.h"
 #include "general_lazy_best_first_search.h"
-#include "learning/selective_max_heuristic.h"
 #include "enforced_hill_climbing_search.h"
 #include "option_parser.h"
 #include "g_evaluator.h"
@@ -100,8 +99,6 @@ int main(int argc, const char **argv) {
     return engine->found_solution() ? 0 : 1;
 }
 
-
-
 void register_parsers() {
     // Register search engines
     OptionParser::instance()->register_search_engine("eager", 
@@ -126,8 +123,6 @@ void register_parsers() {
     // Register heuristics
     OptionParser::instance()->register_scalar_evaluator("lmcount", 
         LandmarksCountHeuristic::create);
-    OptionParser::instance()->register_scalar_evaluator("selmax", 
-        SelectiveMaxHeuristic::create);
     
     // Register synergy heuristics
     OptionParser::instance()->register_synergy("lm_ff_syn", 
