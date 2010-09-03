@@ -3,8 +3,9 @@
 #include "domain_transition_graph.h"
 #include "globals.h"
 #include "operator.h"
-#include "state.h"
 #include "option_parser.h"
+#include "plugin.h"
+#include "state.h"
 
 #include <algorithm>
 #include <cassert>
@@ -20,6 +21,11 @@ TODO: The responsibilities between the different classes need to be
       CyclicCGHeuristic class and have everything else be PODs.
       This would also get rid of g_HACK.
  */
+
+
+static ScalarEvaluatorPlugin cyclic_cg_heuristic_plugin(
+    "cea", CyclicCGHeuristic::create);
+
 
 CyclicCGHeuristic *g_HACK = 0;
 
@@ -258,7 +264,8 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
 }
 
 CyclicCGHeuristic::CyclicCGHeuristic() {
-    assert(!g_HACK);
+    if (g_HACK)
+        abort();
     g_HACK = this;
     goal_problem = 0;
     goal_node = 0;
