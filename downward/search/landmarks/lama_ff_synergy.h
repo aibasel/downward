@@ -3,7 +3,7 @@
 
 #include "../heuristic.h"
 #include "exploration.h"
-#include "landmarks_count_heuristic.h"
+#include "landmark_count_heuristic.h"
 
 class LamaFFSynergy {
     class HeuristicProxy : public Heuristic {
@@ -58,7 +58,7 @@ class LamaFFSynergy {
 
     LamaHeuristicProxy lama_heuristic_proxy;
     FFHeuristicProxy ff_heuristic_proxy;
-    LandmarksCountHeuristic* lama_heuristic;
+    LandmarkCountHeuristic* lama_heuristic;
     Exploration* exploration;
     bool lm_pref;
     bool lm_admissible;
@@ -80,7 +80,7 @@ class LamaFFSynergy {
     void get_lama_preferred_operators(std::vector<const Operator *> &result);
     void get_ff_preferred_operators(std::vector<const Operator *> &result);
 public:
-    LamaFFSynergy(bool lm_pref_, bool lm_admissible_, bool lm_optimal_, int lm_type_=LandmarksCountHeuristic::rpg_sasp);
+    LamaFFSynergy(bool lm_pref_, bool lm_admissible_, bool lm_optimal_, int lm_type_=LandmarkCountHeuristic::rpg_sasp);
     ~LamaFFSynergy() {}
 
     int lama_heuristic_value;

@@ -1,33 +1,40 @@
 #include <climits>
 #include <math.h>
 
-#include "landmarks_count_heuristic.h"
-#include "../globals.h"
-#include "../operator.h"
-#include "../option_parser.h"
-#include "../search_engine.h"
-#include "../successor_generator.h"
+#include "landmark_count_heuristic.h"
 #include "landmarks_graph_rpg_sasp.h"
 #include "landmarks_graph_zhu_givan.h"
 #include "landmarks_graph_rpg_exhaust.h"
 #include "landmarks_graph_rpg_search.h"
+
+#include "../globals.h"
+#include "../operator.h"
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../search_engine.h"
+#include "../successor_generator.h"
 #include "../timer.h"
 
 LandmarksGraph *g_lgraph; // global to be accessible by state
 
+
+static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(
+    "lmcount", LandmarkCountHeuristic::create);
+
+
 static void init_lm_graph(Exploration* exploration, int landmarks_type) {
 
     switch (landmarks_type) {
-    case LandmarksCountHeuristic::rpg_sasp:
+    case LandmarkCountHeuristic::rpg_sasp:
         g_lgraph = new LandmarksGraphNew(exploration);
         break;
-    case LandmarksCountHeuristic::zhu_givan:
+    case LandmarkCountHeuristic::zhu_givan:
         g_lgraph = new LandmarksGraphZhuGivan(exploration); // Note: remove exploration here?
         break;
-    case LandmarksCountHeuristic::exhaust:
+    case LandmarkCountHeuristic::exhaust:
         g_lgraph = new LandmarksGraphExhaust(exploration);
         break;
-    case LandmarksCountHeuristic::search:
+    case LandmarkCountHeuristic::search:
         g_lgraph = new LandmarksGraphRpgSearch(exploration);
         break;
     default:
@@ -37,7 +44,7 @@ static void init_lm_graph(Exploration* exploration, int landmarks_type) {
 }
 
 static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admissible,
-        int landmarks_type=LandmarksCountHeuristic::rpg_sasp) {
+        int landmarks_type=LandmarkCountHeuristic::rpg_sasp) {
     bool reasonable_orders = true; // option to use/not use reasonable orderings
     bool disjunctive_lms = true; // option to discard/not discard disj. landmarks before search
     if(admissible) {
@@ -66,7 +73,7 @@ static LandmarksGraph *build_landmarks_graph(Exploration* exploration, bool admi
     return g_lgraph;
 }
 
-LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
+LandmarkCountHeuristic::LandmarkCountHeuristic(bool preferred_ops,
         bool admissible, bool optimal, int landmarks_type) :
     exploration(new Exploration),
     lgraph(*build_landmarks_graph(exploration, admissible, landmarks_type)),
@@ -109,7 +116,7 @@ LandmarksCountHeuristic::LandmarksCountHeuristic(bool preferred_ops,
     lm_status_manager.set_landmarks_for_initial_state(*g_initial_state);
 }
 
-void LandmarksCountHeuristic::set_exploration_goals(const State& state) {
+void LandmarkCountHeuristic::set_exploration_goals(const State& state) {
     assert(exploration != 0);
     // Set additional goals for FF exploration
     vector<pair<int, int> > lm_leaves;
@@ -118,7 +125,7 @@ void LandmarksCountHeuristic::set_exploration_goals(const State& state) {
     exploration->set_additional_goals(lm_leaves);
 }
 
-int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
+int LandmarkCountHeuristic::get_heuristic_value(const State& state) {
 
     // Need explicit test to see if state is a goal state. The landmark
     // heuristic may compute h != 0 for a goal state if landmarks are
@@ -211,7 +218,7 @@ int LandmarksCountHeuristic::get_heuristic_value(const State& state) {
     return h;
 }
 
-int LandmarksCountHeuristic::compute_heuristic(const State &state) {
+int LandmarkCountHeuristic::compute_heuristic(const State &state) {
 
     int h = get_heuristic_value(state);
 
@@ -249,7 +256,7 @@ int LandmarksCountHeuristic::compute_heuristic(const State &state) {
     return h;
 }
 
-void LandmarksCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
+void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
         LandmarkSet& reached_lms, vector<pair<int, int> >& leaves) {
 
     set<LandmarkNode*>::const_iterator it;
@@ -271,7 +278,7 @@ void LandmarksCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
     }
 }
 
-int LandmarksCountHeuristic::ff_search_lm_leaves(bool disjunctive_lms,
+int LandmarkCountHeuristic::ff_search_lm_leaves(bool disjunctive_lms,
         const State& state, LandmarkSet& reached_lms) {
 
     vector<pair<int, int> > leaves;
@@ -282,7 +289,7 @@ int LandmarksCountHeuristic::ff_search_lm_leaves(bool disjunctive_lms,
         return 0;
 }
 
-bool LandmarksCountHeuristic::check_node_orders_disobeyed(LandmarkNode& node,
+bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode& node,
         const LandmarkSet& reached) const {
 
     const hash_map<LandmarkNode*, edge_type, hash_pointer>& parents =
@@ -297,7 +304,7 @@ bool LandmarksCountHeuristic::check_node_orders_disobeyed(LandmarkNode& node,
     return false;
 }
 
-bool LandmarksCountHeuristic::generate_helpful_actions(const State& state,
+bool LandmarkCountHeuristic::generate_helpful_actions(const State& state,
         const LandmarkSet& reached) {
 
     /* Find actions that achieve new landmark leaves. If no such action exist,
@@ -341,7 +348,7 @@ bool LandmarksCountHeuristic::generate_helpful_actions(const State& state,
     return true;
 }
 
-bool LandmarksCountHeuristic::landmark_is_interesting(const State& s,
+bool LandmarkCountHeuristic::landmark_is_interesting(const State& s,
         const LandmarkSet& reached, LandmarkNode& lm) const {
     /* A landmark is interesting if it hasn't been reached before and
      its parents have all been reached, or if all landmarks have been
@@ -356,21 +363,21 @@ bool LandmarksCountHeuristic::landmark_is_interesting(const State& s,
     return lm.is_goal() && !lm.is_true_in_state(s);
 }
 
-bool LandmarksCountHeuristic::reach_state(const State& parent_state,
+bool LandmarkCountHeuristic::reach_state(const State& parent_state,
         const Operator &op, const State& state) {
     lm_status_manager.update_reached_lms(parent_state, op, state);
 
     return true;
 }
 
-void LandmarksCountHeuristic::reset() {
+void LandmarkCountHeuristic::reset() {
     lm_status_manager.clear_reached();
     lm_status_manager.set_landmarks_for_initial_state(*g_initial_state);
 }
 
-ScalarEvaluator *LandmarksCountHeuristic::create(
+ScalarEvaluator *LandmarkCountHeuristic::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-    int lm_type_ = LandmarksCountHeuristic::rpg_sasp;
+    int lm_type_ = LandmarkCountHeuristic::rpg_sasp;
     bool admissible_ = false;
     bool optimal_ = false;
     bool pref_ = false; 
@@ -405,6 +412,6 @@ ScalarEvaluator *LandmarksCountHeuristic::create(
     if (dry_run)
         return 0;
     else
-        return new LandmarksCountHeuristic(pref_, admissible_, optimal_, 
-                                           lm_type_);
+        return new LandmarkCountHeuristic(pref_, admissible_, optimal_, 
+                                          lm_type_);
 }

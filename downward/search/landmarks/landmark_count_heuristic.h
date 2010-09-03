@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_LANDMARKS_COUNT_HEURISTIC_H
-#define LANDMARKS_LANDMARKS_COUNT_HEURISTIC_H
+#ifndef LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
+#define LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
 
 #include "../state.h"
 #include "../heuristic.h"
@@ -15,7 +15,7 @@ extern LandmarksGraph *g_lgraph; // Make global so graph does not need to be bui
 
 
 
-class LandmarksCountHeuristic: public Heuristic {
+class LandmarkCountHeuristic: public Heuristic {
 
     friend class LamaFFSynergy;
     Exploration* exploration;
@@ -57,8 +57,8 @@ class LandmarksCountHeuristic: public Heuristic {
 protected:
     virtual int compute_heuristic(const State &state);
 public:
-    LandmarksCountHeuristic(bool use_preferred_operators, bool admissible, bool optimal, int landmarks_type=rpg_sasp);
-    ~LandmarksCountHeuristic() {
+    LandmarkCountHeuristic(bool use_preferred_operators, bool admissible, bool optimal, int landmarks_type=rpg_sasp);
+    ~LandmarkCountHeuristic() {
     }
     virtual bool reach_state(const State& parent_state, const Operator &op,
             const State& state);

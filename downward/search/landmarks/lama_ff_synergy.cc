@@ -1,5 +1,11 @@
 #include "lama_ff_synergy.h"
 #include "../option_parser.h"
+#include "../plugin.h"
+
+
+static SynergyPlugin lama_ff_synergy_plugin(
+    "lm_ff_syn", LamaFFSynergy::create_heuristics);
+
 
 LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_) {
     synergy = synergy_;
@@ -18,7 +24,7 @@ LamaFFSynergy::LamaFFSynergy(bool lm_pref_, bool lm_admissible_, bool lm_optimal
     lm_pref(lm_pref_), lm_admissible(lm_admissible_), lm_optimal(lm_optimal_), lm_type(lm_type_) {
 
     cout << "Initializing LAMA-FF Synergy Object" << endl;
-    lama_heuristic = new LandmarksCountHeuristic(lm_pref, lm_admissible, lm_optimal, lm_type);
+    lama_heuristic = new LandmarkCountHeuristic(lm_pref, lm_admissible, lm_optimal, lm_type);
     //lama_heuristic->initialize(); // must be called here explicitly
     exploration = lama_heuristic->get_exploration();
     initialized = false;
@@ -65,7 +71,7 @@ void
 LamaFFSynergy::create_heuristics(const std::vector<string> &config,
                                  int start, int &end, 
                                  vector<Heuristic *> &heuristics) {
-    int lm_type_ = LandmarksCountHeuristic::rpg_sasp;
+    int lm_type_ = LandmarkCountHeuristic::rpg_sasp;
     bool lm_admissible_ = false;
     bool lm_optimal_ = false;
     
@@ -78,14 +84,14 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
             option_parser.add_int_option("lm_type",
                                          &lm_type_, 
                                          "landmarks type");
-            option_parser.add_bool_option("lm_optimal",
+            option_parser.add_bool_option("optimal",
                                          &lm_optimal_,
                                          "optimal cost sharing");
-            option_parser.add_bool_option("lm_admissible",
+            option_parser.add_bool_option("admissible",
                                          &lm_admissible_,
                                          "get admissible estimate");
             option_parser.parse_options(config, end, end, false);
-            end ++;
+            ++end;
         }
         if (config[end] != ")")
             throw ParseError(end);
