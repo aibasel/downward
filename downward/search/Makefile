@@ -18,7 +18,6 @@ HEADERS = \
           general_eager_best_first_search.h \
           general_lazy_best_first_search.h \
           globals.h \
-          goal_count_heuristic.h \
           heuristic.h \
           hm_heuristic.h \
           iterated_search.h \
@@ -76,6 +75,15 @@ HEADERS = \
           learning/state_space_sample.h \
           learning/state_vars_feature_extractor.h
 
+## Each of the following lines defines a "plugin" feature that can be
+## enabled or disabled by simply commenting out the respective line in
+## the Makefile.
+
+## As with all changes to the Makefile, you will have to force a
+## rebuild after such a change. Deleting the executable and running
+## "make" to relink is enough; no need to do a complete rebuild.
+
+HEADERS += goal_count_heuristic.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward
