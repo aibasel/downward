@@ -4,8 +4,9 @@
 #include "domain_transition_graph.h"
 #include "globals.h"
 #include "operator.h"
-#include "state.h"
 #include "option_parser.h"
+#include "plugin.h"
+#include "state.h"
 
 #include <algorithm>
 #include <cassert>
@@ -14,8 +15,13 @@ using namespace std;
 
 #define USE_CACHE true
 
-CGHeuristic::CGHeuristic() {
-    helpful_transition_extraction_counter = 0;
+
+static ScalarEvaluatorPlugin cg_heuristic_plugin("cg", CGHeuristic::create);
+
+
+CGHeuristic::CGHeuristic()
+    : cache(new Cache), cache_hits(0), cache_misses(0),
+      helpful_transition_extraction_counter(0) {
 }
 
 CGHeuristic::~CGHeuristic() {
@@ -73,14 +79,14 @@ int CGHeuristic::get_transition_cost(const State &state,
     int var_no = dtg->var;
 
     // Check cache.
-    if(USE_CACHE && g_cache->is_cached(var_no)) {
-	int cached_val = g_cache->lookup(var_no, state, start_val, goal_val);
+    if(USE_CACHE && cache->is_cached(var_no)) {
+	int cached_val = cache->lookup(var_no, state, start_val, goal_val);
 	if(cached_val != Cache::NOT_COMPUTED) {
-	    g_cache_hits++;
+	    ++cache_hits;
 	    return cached_val;
 	}
     } else {
-	g_cache_misses++;
+	++cache_misses;
     }
 
     ValueNode *start = &dtg->nodes[start_val];
@@ -182,10 +188,10 @@ int CGHeuristic::get_transition_cost(const State &state,
     int transition_cost = start->distances[goal_val];
 
     // Fill cache.
-    if(USE_CACHE && g_cache->is_cached(var_no)) {
+    if(USE_CACHE && cache->is_cached(var_no)) {
         assert(transition_cost == QUITE_A_LOT || start->helpful_transitions[goal_val]);
-	g_cache->store(var_no, state, start_val, goal_val, transition_cost);
-	g_cache->store_helpful_transition(var_no, state, start_val, goal_val,
+	cache->store(var_no, state, start_val, goal_val, transition_cost);
+	cache->store_helpful_transition(var_no, state, start_val, goal_val,
 					  start->helpful_transitions[goal_val]);
     }
 
@@ -210,15 +216,15 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     ValueTransitionLabel *helpful = 0;
     int cost;
     // Check cache.
-    if(USE_CACHE && g_cache->is_cached(var_no)) {
-	helpful = g_cache->lookup_helpful_transition(var_no, state, from, to);
+    if(USE_CACHE && cache->is_cached(var_no)) {
+	helpful = cache->lookup_helpful_transition(var_no, state, from, to);
         // TODO: Shouldn't we be able to *assert* helpful here?
         // Either the variable is *always* cached -- in which case we will
         // have put the relevant entry into the cache during get_transition_cost
-        // -- or never cached, in which case g_cache->is_cached fails.
+        // -- or never cached, in which case cache->is_cached fails.
     }
     if(helpful) {
-	cost = g_cache->lookup(var_no, state, from, to);
+	cost = cache->lookup(var_no, state, from, to);
     } else {
 	ValueNode *start_node = &dtg->nodes[from];
 	assert(!start_node->helpful_transitions.empty());

@@ -6,7 +6,7 @@
 #include "state.h"
 
 
-ScalarEvaluatorPlugin goal_count_plugin(
+static ScalarEvaluatorPlugin goal_count_heuristic_plugin(
     "goalcount", GoalCountHeuristic::create);
 
 

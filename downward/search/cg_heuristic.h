@@ -2,12 +2,18 @@
 #define CG_HEURISTIC_H
 
 #include "heuristic.h"
-#include<string>
 
+#include <string>
+
+class Cache;
 class DomainTransitionGraph;
 class State;
 
 class CGHeuristic : public Heuristic {
+    Cache *cache;
+    int cache_hits;
+    int cache_misses;
+
     enum {QUITE_A_LOT = 1000000};
     int helpful_transition_extraction_counter;
 

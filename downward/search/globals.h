@@ -43,8 +43,6 @@ extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
 extern vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
-extern Cache *g_cache;
-extern int g_cache_hits, g_cache_misses;
 
 extern Timer g_timer;
 

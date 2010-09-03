@@ -2,13 +2,9 @@ USE_LP=0   ## Set to 1 to enable linear programming stuff.
 
 HEADERS = \
           abstraction.h \
-          additive_heuristic.h \
           axioms.h \
           best_first_search.h \
-          blind_search_heuristic.h \
-          cache.h \
           causal_graph.h \
-          cg_heuristic.h \
           closed_list.h \
           cyclic_cg_heuristic.h \
           domain_transition_graph.h \
@@ -83,6 +79,9 @@ HEADERS = \
 ## rebuild after such a change. Deleting the executable and running
 ## "make" to relink is enough; no need to do a complete rebuild.
 
+HEADERS += additive_heuristic.h
+HEADERS += blind_search_heuristic.h
+HEADERS += cg_heuristic.h cache.h
 HEADERS += goal_count_heuristic.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)

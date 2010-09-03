@@ -1,12 +1,9 @@
 #include "best_first_search.h"
 #include "cyclic_cg_heuristic.h"
-#include "cg_heuristic.h"
 #include "ff_heuristic.h"
 #include "lm_cut_heuristic.h"
 #include "mas_heuristic.h"
 #include "max_heuristic.h"
-#include "additive_heuristic.h"
-#include "blind_search_heuristic.h"
 #include "globals.h"
 #include "operator.h"
 #include "timer.h"
@@ -133,12 +130,6 @@ void register_parsers() {
             IteratedSearch::create);
 
     // Register heuristics
-    OptionParser::instance()->register_scalar_evaluator("add", 
-        AdditiveHeuristic::create);
-    OptionParser::instance()->register_scalar_evaluator("blind", 
-        BlindSearchHeuristic::create);
-    OptionParser::instance()->register_scalar_evaluator("cg", 
-        CGHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("cea", 
         CyclicCGHeuristic::create);
     OptionParser::instance()->register_scalar_evaluator("ff", 

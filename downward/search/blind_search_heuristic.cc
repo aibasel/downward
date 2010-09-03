@@ -2,7 +2,13 @@
 
 #include "globals.h"
 #include "option_parser.h"
+#include "plugin.h"
 #include "state.h"
+
+
+static ScalarEvaluatorPlugin blind_search_heuristic_plugin(
+    "blind", BlindSearchHeuristic::create);
+
 
 BlindSearchHeuristic::BlindSearchHeuristic() {
 }

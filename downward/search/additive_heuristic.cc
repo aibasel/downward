@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
+#include "plugin.h"
 #include "state.h"
 
 #include <cassert>
@@ -11,6 +12,11 @@ using namespace std;
 
 #include <ext/hash_map>
 using namespace __gnu_cxx;
+
+
+static ScalarEvaluatorPlugin additive_heuristic_plugin(
+    "add", AdditiveHeuristic::create);
+
 
 // construction and destruction
 AdditiveHeuristic::AdditiveHeuristic() {
