@@ -60,13 +60,8 @@ for filename in $(find . -type f); do
         $filename =~ ^\./translate/regression-tests/.*$ || \
         $filename =~ ^\./translate/run-additive-hmax$ || \
         $filename =~ ^\./preprocess/output-format\.txt$ || \
-        $filename =~ ^\./search/landmarks/README\.txt$ || \
-        $filename =~ ^\./search/CYCLIC_CG_DIJKSTRA$ || \
-        $filename =~ ^\./search/DFP-PSEUDOCODE$ || \
         $filename =~ ^\./search/Doxyfile$ || \
-        $filename =~ ^\./search/PSEUDOCODE$ || \
         $filename =~ ^\./search/downward\.cfg$ || \
-        $filename =~ ^\./search/integration_status\.txt$ || \
         0 == 1 ]]; then
         rm $filename
     else
