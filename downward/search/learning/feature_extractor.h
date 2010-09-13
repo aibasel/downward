@@ -10,11 +10,9 @@
 #include "../globals.h"
 
 struct FeatureExtractors {
-	FeatureExtractors(bool sv = true, bool ni = false, bool lm = false):
-		state_vars(sv),node_info(ni), landmarks(lm) {}
+	FeatureExtractors(bool sv = true):
+		state_vars(sv) {}
 	bool state_vars;
-	bool node_info;
-	bool landmarks;
 };
 
 using namespace std;

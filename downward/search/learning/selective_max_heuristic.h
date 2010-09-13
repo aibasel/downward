@@ -7,9 +7,7 @@
 #include "../timer.h"
 #include "classifier.h"
 #include "feature_extractor.h"
-#include "AODE.h"
 #include "state_space_sample.h"
-#include "g_feature_extractor.h"
 #include <limits.h>
 #include <math.h>
 

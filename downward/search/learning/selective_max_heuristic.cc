@@ -4,13 +4,11 @@
 #include "naive_bayes_classifier.h"
 #include "state_vars_feature_extractor.h"
 #include "composite_feature_extractor.h"
-#include "landmarks_feature_extractor.h"
 #include "node_info_feature_extractor.h"
 #include "AODE.h"
 #include "probe_state_space_sample.h"
 //#include "prob_a_star_sample.h"
 #include "PDB_state_space_sample.h"
-#include "../landmarks/landmark_count_heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -118,18 +116,15 @@ void SelectiveMaxHeuristic::initialize() {
 	//ni_fe = new GFeatureExtractor(g_learning_search_space);
 
 
+	assert(feature_extractor_types.state_vars);
+	feature_extractor = new StateVarFeatureExtractor();
+	/*
 	CompositeFeatureExtractor *cfe = new CompositeFeatureExtractor();
 	if (feature_extractor_types.state_vars) {
 		cfe->add_feature_extractor(new StateVarFeatureExtractor());
 	}
-	if (feature_extractor_types.node_info) {
-	    cerr << "G Feature currently not supported" << endl;
-		//cfe->add_feature_extractor(ni_fe);
-	}
-	if (feature_extractor_types.landmarks) {
-		cfe->add_feature_extractor(new LandmarksFeatureExtractor(g_lgraph));
-	}
 	feature_extractor = cfe;
+	*/
 
 	cout << "Number of features: " << feature_extractor->get_num_features() << endl;
 

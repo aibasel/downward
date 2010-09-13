@@ -75,17 +75,18 @@ HEADERS += learning/AODE.h \
            learning/classifier.h \
            learning/composite_feature_extractor.h \
            learning/feature_extractor.h \
-           learning/landmarks_feature_extractor.h \
            learning/maximum_heuristic.h \
            learning/naive_bayes_classifier.h \
-           learning/node_info_feature_extractor.h \
-           learning/g_feature_extractor.h \
            learning/PDB_state_space_sample.h \
            learning/probe_state_space_sample.h \
            learning/selective_max_heuristic.h \
            learning/state_space_sample.h \
            learning/state_vars_feature_extractor.h
-
+           
+# Removed for now as per issue 118           
+#learning/landmarks_feature_extractor.h
+#learning/node_info_feature_extractor.h 
+#learning/g_feature_extractor.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward
