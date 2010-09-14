@@ -1,7 +1,8 @@
 #include <cassert>
 
 #include "state_vars_feature_extractor.h"
-
+#include "../globals.h"
+#include "../state.h"
 
 StateVarFeatureExtractor::StateVarFeatureExtractor() {
 }

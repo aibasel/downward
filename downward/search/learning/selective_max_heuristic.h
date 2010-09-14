@@ -64,8 +64,7 @@ protected:
 	Classifier** classifiers;
 
 	FeatureExtractor *feature_extractor;
-	FeatureExtractors feature_extractor_types;
-	//GFeatureExtractor *ni_fe;
+	FeatureExtractorFactory feature_extractor_types;
 
 	int *expensive;
 	int *cheap;
@@ -132,7 +131,7 @@ public:
 		 state_space_sample_type = st;
 	}
 
-	inline FeatureExtractors& get_feature_extractors() {
+	inline FeatureExtractorFactory& get_feature_extractors() {
 		return feature_extractor_types;
 	}
 

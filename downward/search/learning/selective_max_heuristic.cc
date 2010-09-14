@@ -4,10 +4,8 @@
 #include "naive_bayes_classifier.h"
 #include "state_vars_feature_extractor.h"
 #include "composite_feature_extractor.h"
-#include "node_info_feature_extractor.h"
 #include "AODE.h"
 #include "probe_state_space_sample.h"
-//#include "prob_a_star_sample.h"
 #include "PDB_state_space_sample.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -113,22 +111,8 @@ void SelectiveMaxHeuristic::initialize() {
 	cheap = new int[num_pairs];
 	threshold = new double[num_pairs];
 
-	//ni_fe = new GFeatureExtractor(g_learning_search_space);
-
-
-	assert(feature_extractor_types.state_vars);
-	feature_extractor = new StateVarFeatureExtractor();
-	/*
-	CompositeFeatureExtractor *cfe = new CompositeFeatureExtractor();
-	if (feature_extractor_types.state_vars) {
-		cfe->add_feature_extractor(new StateVarFeatureExtractor());
-	}
-	feature_extractor = cfe;
-	*/
-
+	feature_extractor = feature_extractor_types.create();
 	cout << "Number of features: " << feature_extractor->get_num_features() << endl;
-
-	//feature_extractor = new StateVarFeatureExtractor();
 
 	for (int i = 0; i < num_pairs; i++) {
 		switch (classifier_type) {
@@ -222,8 +206,6 @@ void SelectiveMaxHeuristic::train() {
 	training_set_size = training_set.size();
 	branching_factor = sample->get_branching_factor();
 
-	//ni_fe->change_search_space(&training_set);
-
 	cout << "Training Example Collection Finished" << endl;
 	cout << "Branching Factor: " << branching_factor << endl;
 	cout << "Training Set Size: " << training_set_size << endl;
@@ -315,7 +297,6 @@ void SelectiveMaxHeuristic::train() {
     }
 
 	//cout << "Freed Memory" << endl;
-	//ni_fe->change_search_space(g_learning_search_space);
 }
 
 int SelectiveMaxHeuristic::eval_heuristic(const State& state, int index, bool count) {
