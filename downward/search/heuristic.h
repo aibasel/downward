@@ -24,6 +24,9 @@ protected:
     enum {DEAD_END = -1};
     virtual void initialize() {}
     virtual int compute_heuristic(const State &state) = 0;
+    // Usage note: It's OK to set the same operator as preferred
+    // multiple times -- it will still only appear in the list of
+    // preferred operators for this heuristic once.
     void set_preferred(const Operator *op);
 public:
     Heuristic();

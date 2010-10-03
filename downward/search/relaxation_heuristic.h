@@ -33,12 +33,14 @@ struct Proposition {
     int h_add_cost;
     int h_max_cost;
     UnaryOperator *reached_by;
+    bool marked; // used when computing preferred operators for h^add and h^FF
 
     Proposition(int id_) {
         id = id_;
-    is_goal = false;
-    h_add_cost = -1;
-    reached_by = 0;
+        is_goal = false;
+        h_add_cost = -1;
+        reached_by = 0;
+        marked = false;
     }
 };
 

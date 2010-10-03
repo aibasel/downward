@@ -39,6 +39,7 @@ void AdditiveHeuristic::setup_exploration_queue() {
 	for(int value = 0; value < propositions[var].size(); value++) {
 	    Proposition &prop = propositions[var][value];
 	    prop.h_add_cost = -1;
+            prop.marked = false;
 	}
     }
 
@@ -93,19 +94,26 @@ void AdditiveHeuristic::relaxed_exploration() {
     }
 }
 
-void AdditiveHeuristic::collect_relaxed_plan(Proposition *goal,
-                                             RelaxedPlan &relaxed_plan) {
-    UnaryOperator *unary_op = goal->reached_by;
-    if(unary_op) { // We have not yet chained back to a start node.
-	for(int i = 0; i < unary_op->precondition.size(); i++)
-	    collect_relaxed_plan(unary_op->precondition[i], relaxed_plan);
-	const Operator *op = unary_op->op;
-	bool added_to_relaxed_plan = relaxed_plan.insert(op).second;
-	if(added_to_relaxed_plan
-	   && unary_op->h_add_cost == unary_op->base_cost
-	   && !op->is_axiom()) {
-	    set_preferred(op); // This is a helpful action.
-	}
+void AdditiveHeuristic::mark_preferred_operators(Proposition *goal) {
+    if (!goal->marked) { // Only consider each subgoal once.
+        goal->marked = true;
+        UnaryOperator *unary_op = goal->reached_by;
+        if (unary_op) { // We have not yet chained back to a start node.
+            for (int i = 0; i < unary_op->precondition.size(); i++)
+                mark_preferred_operators(unary_op->precondition[i]);
+            if(unary_op->h_add_cost == unary_op->base_cost) {
+                // This may be applicable in the current state.
+                //
+                // TODO: This is no longer a sure-fire way to test
+                // applicability with zero-cost actions!
+                // Should we test for applicability directly, or should
+                // we make it so that operators that are not applicable
+                // can safely be marked as preferred?
+                const Operator *op = unary_op->op;
+                if (!op->is_axiom())
+                    set_preferred(op);
+            }
+        }
     }
 }
 
@@ -122,13 +130,8 @@ int AdditiveHeuristic::compute_heuristic(const State &state) {
 	total_cost += prop_cost;
     }
 
-    RelaxedPlan relaxed_plan;
-    relaxed_plan.resize(2 * total_cost);
-    // Collecting the relaxed plan marks helpful actions as preferred.
-    // The plan itself is not used, but it is good to have some sort
-    // of mechanism not to visit the same operator twice during backchaining.
     for(int i = 0; i < goal_propositions.size(); i++)
-        collect_relaxed_plan(goal_propositions[i], relaxed_plan);
+        mark_preferred_operators(goal_propositions[i]);
 
     return total_cost;
 }

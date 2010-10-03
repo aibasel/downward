@@ -13,15 +13,13 @@
 */
 
 class AdditiveHeuristic : public RelaxationHeuristic {
-    typedef __gnu_cxx::hash_set<const Operator *, hash_operator_ptr> RelaxedPlan;
-
     typedef std::vector<Proposition *> Bucket;
     std::vector<Bucket> reachable_queue;
 
     void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
     void relaxed_exploration();
-    void collect_relaxed_plan(Proposition *goal, RelaxedPlan &relaxed_plan);
+    void mark_preferred_operators(Proposition *goal);
 
     void enqueue_if_necessary(Proposition *prop, int cost, UnaryOperator *op) {
         assert(cost >= 0);
