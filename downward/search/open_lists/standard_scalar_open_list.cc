@@ -6,6 +6,8 @@
 
 #include <iostream>
 #include <cassert>
+#include <limits>
+
 using namespace std;
 template<class Entry>
 OpenList<Entry> *StandardScalarOpenList<Entry>::create(
@@ -35,7 +37,7 @@ template<class Entry>
 StandardScalarOpenList<Entry>::StandardScalarOpenList(ScalarEvaluator *eval,
     bool preferred_only)
     : OpenList<Entry>(preferred_only), size(0), evaluator(eval) {
-    lowest_bucket = 9999999;
+    lowest_bucket = numeric_limits<int>::max();
 }
 
 template<class Entry>
@@ -81,7 +83,7 @@ bool StandardScalarOpenList<Entry>::empty() const {
 template<class Entry>
 void StandardScalarOpenList<Entry>::clear() {
     buckets.clear();
-    lowest_bucket = 9999999;
+    lowest_bucket = numeric_limits<int>::max();
     size = 0;
 }
 

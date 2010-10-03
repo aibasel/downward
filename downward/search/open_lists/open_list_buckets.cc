@@ -2,7 +2,9 @@
 #ifdef OPEN_LISTS_OPEN_LIST_BUCKETS_H
 
 #include <cassert>
+#include <limits>
 #include "../option_parser.h"
+
 using namespace std;
 
 /*
@@ -36,7 +38,7 @@ OpenList<Entry> *BucketOpenList<Entry>::create(
 
 template<class Entry>
 BucketOpenList<Entry>::BucketOpenList(ScalarEvaluator *eval, bool preferred_only) 
-    : OpenList<Entry>(preferred_only), lowest_bucket(9999999), size(0), evaluator(eval) {
+    : OpenList<Entry>(preferred_only), lowest_bucket(numeric_limits<int>::max()), size(0), evaluator(eval) {
 }
 
 template<class Entry>
@@ -80,7 +82,7 @@ bool BucketOpenList<Entry>::empty() const {
 template<class Entry>
 void BucketOpenList<Entry>::clear() {
     buckets.clear();
-    lowest_bucket = 9999999;
+    lowest_bucket = numeric_limits<int>::max();
     size = 0;
 }
 
