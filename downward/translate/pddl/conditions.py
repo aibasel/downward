@@ -75,7 +75,7 @@ class Condition(object):
         return self.__class__.__name__
     def _postorder_visit(self, method_name, *args):
         part_results = [part._postorder_visit(method_name, *args)
-                        for part in self.parts] 
+                        for part in self.parts]
         method = getattr(self, method_name, self._propagate)
         return method(part_results, *args)
     def _propagate(self, parts, *args):
@@ -340,7 +340,7 @@ def parse_term(term):
         return FunctionTerm(term,[])
     else:
         return ObjectTerm(term)
-        
+
 class Term(object):
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and self.name == other.name)
@@ -358,14 +358,14 @@ class FunctionTerm(Term):
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and self.name == other.name
                 and self.args == other.args)
-    
+
 class Variable(Term):
     args = []
     def __init__(self, name):
         self.name = name
     def __str__(self):
         return self.name
-    
+
 class ObjectTerm(Term):
     args = []
     def __init__(self, name):

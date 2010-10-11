@@ -11,4 +11,3 @@ class Predicate(object):
     parse = staticmethod(parse)
     def __str__(self):
         return "%s(%s)" % (self.name, ", ".join(map(str, self.arguments)))
-

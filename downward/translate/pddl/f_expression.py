@@ -69,7 +69,7 @@ class PrimitiveNumericExpression(FunctionalExpression):
                 for arg in self.args]
         pne = PrimitiveNumericExpression(self.symbol, args)
         assert not self.symbol == "total-cost"
-        # We know this expression is constant. Substitute it by corresponding 
+        # We know this expression is constant. Substitute it by corresponding
         # initialization from task.
         for fact in init_facts:
             if isinstance(fact, FunctionAssignment):
@@ -82,7 +82,7 @@ class FunctionAssignment(object):
         self.fluent = fluent
         self.expression = expression
     def __str__(self):
-        return "%s %s %s" % (self.__class__.__name__, self.fluent, self.expression) 
+        return "%s %s %s" % (self.__class__.__name__, self.fluent, self.expression)
     def dump(self, indent="  "):
         print "%s%s" % (indent, self._dump())
         self.fluent.dump(indent + "  ")
@@ -103,8 +103,7 @@ class FunctionAssignment(object):
 
 class Assign(FunctionAssignment):
     def __str__(self):
-        return "%s := %s" % (self.fluent, self.expression) 
+        return "%s := %s" % (self.fluent, self.expression)
 
 class Increase(FunctionAssignment):
     pass
-
