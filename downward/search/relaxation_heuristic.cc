@@ -62,16 +62,13 @@ void RelaxationHeuristic::build_unary_operators(const Operator &op) {
         assert(prevail[i].prev >= 0 && prevail[i].prev < g_variable_domain[prevail[i].var]);
         precondition.push_back(&propositions[prevail[i].var][prevail[i].prev]);
     }
-    for (int i = 0; i < pre_post.size(); i++)
+    for (int i = 0; i < pre_post.size(); i++) {
         if (pre_post[i].pre != -1) {
             assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
             assert(pre_post[i].pre >= 0 && pre_post[i].pre < g_variable_domain[pre_post[i].var]);
             precondition.push_back(&propositions[pre_post[i].var][pre_post[i].pre]);
         }
-
-
-
-
+    }
     for (int i = 0; i < pre_post.size(); i++) {
         assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
         assert(pre_post[i].post >= 0 && pre_post[i].post < g_variable_domain[pre_post[i].var]);

@@ -283,6 +283,9 @@ bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
 
 
 
+
+
+
     return true;
 }
 
@@ -766,6 +769,9 @@ void LandmarksGraph::edge_add(LandmarkNode &from, LandmarkNode &to,
 
 
 
+
+
+
     // If edge already exists, remove if weaker
     if (from.children.find(&to) != from.children.end() && from.children.find(
             &to)->second < type) {
@@ -1053,14 +1059,11 @@ bool LandmarksGraph::relaxed_task_solvable_without_operator(
                                                     exclude_props, exclude_ops, compute_lvl_op);
 
     // Test whether all goal propositions have a level of less than INT_MAX
-    for (int i = 0; i < g_goal.size(); i++)
+    for (int i = 0; i < g_goal.size(); i++) {
         if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX) {
             return false;
         }
-
-
-
-
+    }
     return true;
 }
 

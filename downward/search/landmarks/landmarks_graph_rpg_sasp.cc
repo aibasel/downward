@@ -20,21 +20,21 @@ void LandmarksGraphNew::get_greedy_preconditions_for_lm(
     // effects achieving the LM.
 
     const vector<PrePost> &prepost = o.get_pre_post();
-    for (unsigned j = 0; j < prepost.size(); j++)
+    for (unsigned j = 0; j < prepost.size(); j++) {
         if (prepost[j].pre != -1) {
             assert(prepost[j].pre < g_variable_domain[prepost[j].var]);
             result.insert(make_pair(prepost[j].var, prepost[j].pre));
-        } else if (g_variable_domain[prepost[j].var] == 2)
-            for (int i = 0; i < lmp->vars.size(); i++)
+        } else if (g_variable_domain[prepost[j].var] == 2) {
+            for (int i = 0; i < lmp->vars.size(); i++) {
                 if (lmp->vars[i] == prepost[j].var
                     && (*g_initial_state)[prepost[j].var] != lmp->vals[i]) {
                     result.insert(make_pair(prepost[j].var,
                                             (*g_initial_state)[prepost[j].var]));
                     break;
                 }
-
-
-
+            }
+        }
+    }
 
     const vector<Prevail> prevail = o.get_prevail();
     for (unsigned j = 0; j < prevail.size(); j++)

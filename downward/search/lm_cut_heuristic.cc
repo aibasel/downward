@@ -306,15 +306,12 @@ void LandmarkCutHeuristic::validate_h_max() const {
         const vector<RelaxedProposition *> prec = op->precondition;
         if (op->unsatisfied_preconditions) {
             bool reachable = true;
-            for (int j = 0; j < prec.size(); j++)
+            for (int j = 0; j < prec.size(); j++) {
                 if (prec[j]->status == UNREACHED) {
                     reachable = false;
                     break;
                 }
-
-
-
-
+            }
             assert(!reachable);
             assert(!op->h_max_supporter);
         } else {
