@@ -47,6 +47,11 @@ function run-on-file {
     uncrustify -L 1 --replace --no-backup -c "$CONFIG" "$1"
     DIFF=$(diff <(echo "$BEFORE") "$1")
     if [[ $? != 0 ]]; then
+        ## This counts how many files start with "<" in the diff,
+        ## i.e., how many "old" lines disappeared/changed. This means
+        ## that it won't report lines *added* by uncrustify, so it's
+        ## possible that we get an output "changing 0 lines", which
+        ## means that the only changes were additions of blank lines.
         CHANGED=$(echo "$DIFF" | grep -c "^<")
         echo uncrustified "$1", changing $CHANGED lines.
     fi
