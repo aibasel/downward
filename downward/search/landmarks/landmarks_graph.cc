@@ -276,16 +276,8 @@ bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
 
     // Test whether all goal propositions have a level of less than INT_MAX
     for (int i = 0; i < g_goal.size(); i++)
-        if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX) {
+        if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX)
             return false;
-        }
-
-
-
-
-
-
-
     return true;
 }
 
@@ -756,7 +748,7 @@ void LandmarksGraph::edge_add(LandmarkNode &from, LandmarkNode &to,
     assert(from.parents.find(&to) == from.parents.end() || type == r || type == o_r);
     assert(to.children.find(&from) == to.children.end() || type == r || type == o_r);
 
-    if (type == r || type == o_r) // simple cycle test
+    if (type == r || type == o_r) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
             //cout << "edge in opposite direction exists" << endl;
             if (from.parents.find(&to)->second > type) // Stronger order present, return
@@ -765,12 +757,7 @@ void LandmarksGraph::edge_add(LandmarkNode &from, LandmarkNode &to,
             from.parents.erase(&to);
             to.children.erase(&from);
         }
-
-
-
-
-
-
+    }
 
     // If edge already exists, remove if weaker
     if (from.children.find(&to) != from.children.end() && from.children.find(
