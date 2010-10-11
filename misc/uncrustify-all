@@ -1,0 +1,14 @@
+#! /bin/bash
+
+## Run uncrustify with our config on all *.cc and *.h files in the
+## preprocess and search directories (including subdirs).
+##
+## Call this without arguments.
+##
+## CAREFUL: The files are modified in place. This may mess up your
+## code. You've been warned.
+
+cd "$(dirname "$0")"
+uncrustify -L 1 --replace --no-backup -c downward-uncrustify.cfg \
+    $(find ../downward/preprocess ../downward/search \
+    \( -name \*.h -o -name \*.cc \) -type f)
