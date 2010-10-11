@@ -12,25 +12,25 @@ class Operator;
 class Variable;
 
 class SuccessorGenerator {
-  GeneratorBase *root;
+    GeneratorBase *root;
 
-  typedef vector<pair<Variable *, int> > Condition;
-  GeneratorBase *construct_recursive(int switchVarNo, list<int> &ops);
-  SuccessorGenerator(const SuccessorGenerator &copy);
+    typedef vector<pair<Variable *, int> > Condition;
+    GeneratorBase *construct_recursive(int switchVarNo, list<int> &ops);
+    SuccessorGenerator(const SuccessorGenerator &copy);
 
-  vector<Condition> conditions;
-  vector<Condition::const_iterator> next_condition_by_op;
-  vector<Variable *> varOrder;
+    vector<Condition> conditions;
+    vector<Condition::const_iterator> next_condition_by_op;
+    vector<Variable *> varOrder;
 
-  // private copy constructor to forbid copying;
-  // typical idiom for classes with non-trivial destructors
+    // private copy constructor to forbid copying;
+    // typical idiom for classes with non-trivial destructors
 public:
-  SuccessorGenerator();
-  SuccessorGenerator(const vector<Variable *> &variables,
-		     const vector<Operator> &operators);
-  ~SuccessorGenerator();
-  void dump() const;
-  void generate_cpp_input(ofstream &outfile) const;
+    SuccessorGenerator();
+    SuccessorGenerator(const vector<Variable *> &variables,
+                       const vector<Operator> &operators);
+    ~SuccessorGenerator();
+    void dump() const;
+    void generate_cpp_input(ofstream &outfile) const;
 };
 
 #endif
