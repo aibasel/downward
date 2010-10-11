@@ -31,7 +31,7 @@ class DomainTransitionGraph(object):
             reachable |= new_neighbors
             queue.extend(new_neighbors)
         return reachable
-        
+
     def dump(self):
         print "SIZE", self.size
         print "INIT", self.init
@@ -262,7 +262,7 @@ class VarValueRenaming(object):
             if len(new_group) > 0:
                 new_key.append(new_group)
         mutex_key[:] = new_key
-        
+
 
 def build_renaming(dtgs):
     renaming = VarValueRenaming()
@@ -282,7 +282,7 @@ def filter_unreachable_propositions(sas_task, mutex_key, translation_key):
     # overall architecture of the translator too well. We filter away
     # unreachable propositions here, and then prune away variables
     # with only one value left.
-    # 
+    #
     # Examples of things that are filtered away:
     # - Constant propositions that are not detected in instantiate.py
     #   because it only reasons at the predicate level, and some

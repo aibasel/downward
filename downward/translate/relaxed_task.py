@@ -15,7 +15,7 @@ def explore_silently(task):
     sys.stdout = real_stdout
     return result
 
-    
+
 def literal_to_name(literal):
     if literal.negated:
         raise SystemExit("negative conditions not supported")

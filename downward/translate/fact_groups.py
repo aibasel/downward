@@ -91,7 +91,7 @@ def collect_all_mutex_groups(groups, atoms):
     # NOTE: This should be functionally identical to choose_groups
     # when partial_encoding is set to False. Maybe a future
     # refactoring could take that into account.
-    all_groups = []      
+    all_groups = []
     uncovered_facts = atoms.copy()
     for group in groups:
         uncovered_facts.difference_update(group)

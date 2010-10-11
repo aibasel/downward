@@ -102,7 +102,7 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
                     done = True
                     prev_possible_vals.intersection_update(poss_vals)
                     if len(prev_possible_vals) == 0:
-                        # Conflicting conditions on this variable: 
+                        # Conflicting conditions on this variable:
                         # Operator invalid.
                         return None
 
@@ -112,13 +112,13 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
                 # this atom. So we need to introduce a new condition:
                 # We can select any from new_condition and currently prefer the
                 # smalles one.
-                candidates = sorted(new_condition.items(), 
+                candidates = sorted(new_condition.items(),
                                     lambda x,y: cmp(len(x[1]),len(y[1])))
                 var, vals = candidates[0]
                 condition[var] = vals
 
         def multiply_out(condition): # destroys the input
-            sorted_conds = sorted(condition.items(), 
+            sorted_conds = sorted(condition.items(),
                                   lambda x,y: cmp(len(x[1]),len(y[1])))
             flat_conds = [{}]
             for var, vals in sorted_conds:
@@ -133,8 +133,8 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
                             new_cond[var] = val
                             new_conds.append(new_cond)
                     flat_conds = new_conds
-            return flat_conds                 
-    
+            return flat_conds
+
     return multiply_out(condition)
 
 def translate_strips_conditions(conditions, dictionary, ranges,
@@ -178,7 +178,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
                                                          mutex_ranges)
         if eff_condition_list is None: # Impossible condition for this effect.
             continue
-        eff_condition = [eff_cond.items() 
+        eff_condition = [eff_cond.items()
                          for eff_cond in eff_condition_list]
         for var, val in dictionary[fact]:
             if condition.get(var) == val:
@@ -202,7 +202,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
         eff_condition_list = translate_strips_conditions(conditions, dictionary, ranges, mutex_dict, mutex_ranges)
         if eff_condition_list is None:
             continue
-        eff_condition = [eff_cond.items() 
+        eff_condition = [eff_cond.items()
                          for eff_cond in eff_condition_list]
         for var, val in dictionary[fact]:
             none_of_those = ranges[var] - 1
@@ -262,8 +262,8 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
                         continue
                     for index, cond in enumerate(eff_condition_list):
                         if cond.get(var) != val:
-                            # Need a guard for this delete effect. 
-                            assert (var not in condition and 
+                            # Need a guard for this delete effect.
+                            assert (var not in condition and
                                     var not in eff_condition[index]), "Oops?"
                             eff_condition[index].append((var, val))
                 eff_conditions.extend(eff_condition)
@@ -460,7 +460,7 @@ def pddl_to_sas(task):
     print "%d implied effects removed" % removed_implied_effect_counter
     print "%d effect conditions simplified" % simplified_effect_condition_counter
     print "%d implied preconditions added" % added_implied_precondition_counter
-    
+
     with timers.timing("Building mutex information"):
         mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
 

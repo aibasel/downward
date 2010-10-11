@@ -41,7 +41,7 @@ def translate_strips_conditions(conditions, dictionary, ranges):
         atom = pddl.Atom(fact.predicate, fact.args) # force positive
         for var, val in dictionary[atom]:
             if fact.negated:
-                assert False, "neg. precondition: task not in positive normal form" 
+                assert False, "neg. precondition: task not in positive normal form"
             if condition.get(var) not in (None, val):
                 # Conflicting conditions on this variable: Operator invalid.
                 return None
@@ -244,7 +244,7 @@ def pddl_to_sas(task):
 
     # switched off invariant syntheses -> one group for each fluent fact
     groups = [[fact] for fact in atoms]
-    translation_key = [[str(fact),str(fact.negate())] for group in groups 
+    translation_key = [[str(fact),str(fact.negate())] for group in groups
                                                       for fact in group]
 
     print "Building STRIPS to SAS dictionary..."
@@ -252,7 +252,7 @@ def pddl_to_sas(task):
     print "Translating task..."
     sas_task = translate_task(strips_to_sas, ranges, task.init, goal_list,
                               actions, axioms)
-    
+
     try:
         simplify.filter_unreachable_propositions(
             sas_task, [], translation_key)
