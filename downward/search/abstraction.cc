@@ -60,7 +60,7 @@ using namespace std;
     is indexed by some sort of "local" operator id. If we don't need
     to the lookup frequently (and I don't think we do), then we can
     use a simple hash_map<Operator *, int> for this purpose.
-       
+
   * Separate the parts relating to the abstraction mapping from the
     actual abstraction, so that later during search we need not keep
     the abstractions. This would allow us to get rid of the somewhat
@@ -109,12 +109,12 @@ void Abstraction::compute_distances() {
     max_h = 0;
 
     int unreachable_count = 0, irrelevant_count = 0;
-    for(int i = 0; i < num_states; i++) {
+    for (int i = 0; i < num_states; i++) {
         int g = init_distances[i];
         int h = goal_distances[i];
-        if(g == QUITE_A_LOT) {
+        if (g == QUITE_A_LOT) {
             unreachable_count++;
-        } else if(h == QUITE_A_LOT) {
+        } else if (h == QUITE_A_LOT) {
             irrelevant_count++;
         } else {
             max_f = max(max_f, g + h);
@@ -122,7 +122,7 @@ void Abstraction::compute_distances() {
             max_h = max(max_h, h);
         }
     }
-    if(unreachable_count || irrelevant_count) {
+    if (unreachable_count || irrelevant_count) {
         cout << "unreachable: " << unreachable_count << " nodes, "
              << "irrelevant: " << irrelevant_count << " nodes" << endl;
         // Call shrink to discard unreachable and irrelevant states.
@@ -135,12 +135,12 @@ void Abstraction::compute_distances() {
 static void breadth_first_search(
     const vector<vector<int> > &graph, deque<int> &queue,
     vector<int> &distances) {
-    while(!queue.empty()) {
+    while (!queue.empty()) {
         int state = queue.front();
         queue.pop_front();
-        for(int i = 0; i < graph[state].size(); i++) {
+        for (int i = 0; i < graph[state].size(); i++) {
             int successor = graph[state][i];
-            if(distances[successor] > distances[state] + 1) {
+            if (distances[successor] > distances[state] + 1) {
                 distances[successor] = distances[state] + 1;
                 queue.push_back(successor);
             }
@@ -150,17 +150,17 @@ static void breadth_first_search(
 
 void Abstraction::compute_init_distances() {
     vector<vector<AbstractStateRef> > forward_graph(num_states);
-    for(int i = 0; i < transitions_by_op.size(); i++) {
+    for (int i = 0; i < transitions_by_op.size(); i++) {
         const vector<AbstractTransition> &transitions = transitions_by_op[i];
-        for(int j = 0; j < transitions.size(); j++) {
+        for (int j = 0; j < transitions.size(); j++) {
             const AbstractTransition &trans = transitions[j];
             forward_graph[trans.src].push_back(trans.target);
         }
     }
 
     deque<AbstractStateRef> queue;
-    for(AbstractStateRef state = 0; state < num_states; state++) {
-        if(state == init_state) {
+    for (AbstractStateRef state = 0; state < num_states; state++) {
+        if (state == init_state) {
             init_distances[state] = 0;
             queue.push_back(state);
         } else {
@@ -172,17 +172,17 @@ void Abstraction::compute_init_distances() {
 
 void Abstraction::compute_goal_distances() {
     vector<vector<AbstractStateRef> > backward_graph(num_states);
-    for(int i = 0; i < transitions_by_op.size(); i++) {
+    for (int i = 0; i < transitions_by_op.size(); i++) {
         const vector<AbstractTransition> &transitions = transitions_by_op[i];
-        for(int j = 0; j < transitions.size(); j++) {
+        for (int j = 0; j < transitions.size(); j++) {
             const AbstractTransition &trans = transitions[j];
             backward_graph[trans.target].push_back(trans.src);
         }
     }
 
     deque<AbstractStateRef> queue;
-    for(AbstractStateRef state = 0; state < num_states; state++) {
-        if(goal_distances[state] == 0) {
+    for (AbstractStateRef state = 0; state < num_states; state++) {
+        if (goal_distances[state] == 0) {
             goal_distances[state] = 0;
             queue.push_back(state);
         } else {
@@ -194,19 +194,19 @@ void Abstraction::compute_goal_distances() {
 
 void AtomicAbstraction::apply_abstraction_to_lookup_table(
     const vector<AbstractStateRef> &abstraction_mapping) {
-    for(int i = 0; i < lookup_table.size(); i++) {
+    for (int i = 0; i < lookup_table.size(); i++) {
         AbstractStateRef old_state = lookup_table[i];
-        if(old_state != -1)
+        if (old_state != -1)
             lookup_table[i] = abstraction_mapping[old_state];
     }
 }
 
 void CompositeAbstraction::apply_abstraction_to_lookup_table(
     const vector<AbstractStateRef> &abstraction_mapping) {
-    for(int i = 0; i < components[0]->size(); i++) {
-        for(int j = 0; j < components[1]->size(); j++) {
+    for (int i = 0; i < components[0]->size(); i++) {
+        for (int j = 0; j < components[1]->size(); j++) {
             AbstractStateRef old_state = lookup_table[i][j];
-            if(old_state != -1)
+            if (old_state != -1)
                 lookup_table[i][j] = abstraction_mapping[old_state];
         }
     }
@@ -226,7 +226,7 @@ void Abstraction::normalize(bool simplify_labels) {
     // dump();
 
     OperatorRegistry *op_reg = 0;
-    if(simplify_labels) {
+    if (simplify_labels) {
         op_reg = new OperatorRegistry(relevant_operators, varset);
         op_reg->statistics();
     }
@@ -237,18 +237,18 @@ void Abstraction::normalize(bool simplify_labels) {
        canonical operators and clear away the transitions that have
        been processed. */
     vector<StateBucket> target_buckets(num_states);
-    for(int op_no = 0; op_no < transitions_by_op.size(); op_no++) {
+    for (int op_no = 0; op_no < transitions_by_op.size(); op_no++) {
         vector<AbstractTransition> &transitions = transitions_by_op[op_no];
-        if(!transitions.empty()) {
+        if (!transitions.empty()) {
             int canon_op_no;
-            if(op_reg) {
+            if (op_reg) {
                 const Operator *op = &g_operators[op_no];
                 const Operator *canon_op = op_reg->get_canonical_operator(op);
                 canon_op_no = get_op_index(canon_op);
             } else {
                 canon_op_no = op_no;
             }
-            for(int i = 0; i < transitions.size(); i++) {
+            for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &t = transitions[i];
                 target_buckets[t.target].push_back(make_pair(t.src, canon_op_no));
             }
@@ -258,25 +258,25 @@ void Abstraction::normalize(bool simplify_labels) {
 
     // Second, partition by src state.
     vector<StateBucket> src_buckets(num_states);
-    for(AbstractStateRef target = 0; target < num_states; target++) {
+    for (AbstractStateRef target = 0; target < num_states; target++) {
         StateBucket &bucket = target_buckets[target];
-        for(int i = 0; i < bucket.size(); i++) {
+        for (int i = 0; i < bucket.size(); i++) {
             AbstractStateRef src = bucket[i].first;
             int op_no = bucket[i].second;
             src_buckets[src].push_back(make_pair(target, op_no));
         }
     }
     vector<StateBucket>().swap(target_buckets);
-    
+
     // Finally, partition by operator and drop duplicates.
-    for(AbstractStateRef src = 0; src < num_states; src++) {
+    for (AbstractStateRef src = 0; src < num_states; src++) {
         StateBucket &bucket = src_buckets[src];
-        for(int i = 0; i < bucket.size(); i++) {
+        for (int i = 0; i < bucket.size(); i++) {
             int target = bucket[i].first;
             int op_no = bucket[i].second;
             vector<AbstractTransition> &op_bucket = transitions_by_op[op_no];
             AbstractTransition trans(src, target);
-            if(op_bucket.empty() || op_bucket.back() != trans)
+            if (op_bucket.empty() || op_bucket.back() != trans)
                 op_bucket.push_back(trans);
         }
     }
@@ -291,51 +291,50 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result) {
     int var_count = g_variable_domain.size();
 
     // Step 1: Create the abstraction objects without transitions.
-    for(int var_no = 0; var_no < var_count; var_no++)
+    for (int var_no = 0; var_no < var_count; var_no++)
         result.push_back(new AtomicAbstraction(var_no));
 
     // Step 2: Add transitions.
-    for(int op_no = 0; op_no < g_operators.size(); op_no++) {
+    for (int op_no = 0; op_no < g_operators.size(); op_no++) {
         const Operator *op = &g_operators[op_no];
         const vector<Prevail> &prev = op->get_prevail();
-        for(int i = 0; i < prev.size(); i++) {
+        for (int i = 0; i < prev.size(); i++) {
             int var = prev[i].var;
             int value = prev[i].prev;
             Abstraction *abs = result[var];
             AbstractTransition trans(value, value);
             abs->transitions_by_op[op_no].push_back(trans);
 
-            if(abs->relevant_operators.empty() ||
-               abs->relevant_operators.back() != op)
+            if (abs->relevant_operators.empty() ||
+                abs->relevant_operators.back() != op)
                 abs->relevant_operators.push_back(op);
         }
         const vector<PrePost> &pre_post = op->get_pre_post();
-        for(int i = 0; i < pre_post.size(); i++) {
+        for (int i = 0; i < pre_post.size(); i++) {
             int var = pre_post[i].var;
             int pre_value = pre_post[i].pre;
             int post_value = pre_post[i].post;
             Abstraction *abs = result[var];
             int pre_value_min, pre_value_max;
-            if(pre_value == -1) {
+            if (pre_value == -1) {
                 pre_value_min = 0;
                 pre_value_max = g_variable_domain[var];
             } else {
                 pre_value_min = pre_value;
                 pre_value_max = pre_value + 1;
             }
-            for(int value = pre_value_min; value < pre_value_max; value++) {
+            for (int value = pre_value_min; value < pre_value_max; value++) {
                 AbstractTransition trans(value, post_value);
                 abs->transitions_by_op[op_no].push_back(trans);
             }
-            if(abs->relevant_operators.empty() ||
-               abs->relevant_operators.back() != op)
+            if (abs->relevant_operators.empty() ||
+                abs->relevant_operators.back() != op)
                 abs->relevant_operators.push_back(op);
-
         }
     }
 
     // Step 3: Compute init and goal distances and remove unreachable parts.
-    for(int var_no = 0; var_no < var_count; var_no++)
+    for (int var_no = 0; var_no < var_count; var_no++)
         result[var_no]->compute_distances();
 
     cout << "done!" << endl;
@@ -343,7 +342,6 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result) {
 
 AtomicAbstraction::AtomicAbstraction(int variable_)
     : variable(variable_) {
-
     varset.push_back(variable);
     /*
       This generates the nodes of the atomic abstraction, but not the
@@ -354,8 +352,8 @@ AtomicAbstraction::AtomicAbstraction(int variable_)
 
     int init_value = (*g_initial_state)[variable];
     int goal_value = -1;
-    for(int goal_no = 0; goal_no < g_goal.size(); goal_no++) {
-        if(g_goal[goal_no].first == variable) {
+    for (int goal_no = 0; goal_no < g_goal.size(); goal_no++) {
+        if (g_goal[goal_no].first == variable) {
             assert(goal_value == -1);
             goal_value = g_goal[goal_no].second;
         }
@@ -365,10 +363,10 @@ AtomicAbstraction::AtomicAbstraction(int variable_)
     lookup_table.reserve(range);
     init_distances.resize(num_states, INVALID);
     goal_distances.resize(num_states, INVALID);
-    for(int value = 0; value < range; value++) {
-        if(value == goal_value || goal_value == -1)
+    for (int value = 0; value < range; value++) {
+        if (value == goal_value || goal_value == -1)
             goal_distances[value] = 0;
-        if(value == init_value)
+        if (value == init_value)
             init_state = value;
         lookup_table.push_back(value);
     }
@@ -384,8 +382,8 @@ CompositeAbstraction::CompositeAbstraction(
     ::set_union(abs1->varset.begin(), abs1->varset.end(),
                 abs2->varset.begin(), abs2->varset.end(),
                 back_inserter(varset));
-    if(simplify_labels) {
-        if(varset.size() != abs1->varset.size() + abs2->varset.size()) {
+    if (simplify_labels) {
+        if (varset.size() != abs1->varset.size() + abs2->varset.size()) {
             cout << "error: label simplification is only correct "
                  << "for orthogonal compositions" << endl;
             ::exit(1);
@@ -397,49 +395,49 @@ CompositeAbstraction::CompositeAbstraction(
     goal_distances.resize(num_states, INVALID);
 
     lookup_table.resize(abs1->size(), vector<AbstractStateRef>(abs2->size()));
-    for(int s1 = 0; s1 < abs1->size(); s1++) {
-        for(int s2 = 0; s2 < abs2->size(); s2++) {
+    for (int s1 = 0; s1 < abs1->size(); s1++) {
+        for (int s2 = 0; s2 < abs2->size(); s2++) {
             int state = s1 * abs2->size() + s2;
             lookup_table[s1][s2] = state;
-            if(abs1->goal_distances[s1] == 0 &&
-               abs2->goal_distances[s2] == 0)
+            if (abs1->goal_distances[s1] == 0 &&
+                abs2->goal_distances[s2] == 0)
                 goal_distances[state] = 0;
-            if(s1 == abs1->init_state && s2 == abs2->init_state)
+            if (s1 == abs1->init_state && s2 == abs2->init_state)
                 init_state = state;
         }
     }
 
-    for(int i = 0; i < abs1->relevant_operators.size(); i++)
+    for (int i = 0; i < abs1->relevant_operators.size(); i++)
         abs1->relevant_operators[i]->marker1 = true;
-    for(int i = 0; i < abs2->relevant_operators.size(); i++)
+    for (int i = 0; i < abs2->relevant_operators.size(); i++)
         abs2->relevant_operators[i]->marker2 = true;
 
     // HACK! Normalization should be done differently. This size() > 1
     // test is just a hack to make it work for linear abstraction
     // strategies. See issue68.
-    if(abs1->varset.size() > 1)
+    if (abs1->varset.size() > 1)
         abs1->normalize(simplify_labels);
-    else if(abs2->varset.size() > 1)
+    else if (abs2->varset.size() > 1)
         abs2->normalize(simplify_labels);
 
     int multiplier = abs2->size();
-    for(int op_no = 0; op_no < g_operators.size(); op_no++) {
+    for (int op_no = 0; op_no < g_operators.size(); op_no++) {
         const Operator *op = &g_operators[op_no];
         bool relevant1 = op->marker1;
         bool relevant2 = op->marker2;
-        if(relevant1 || relevant2) {
+        if (relevant1 || relevant2) {
             vector<AbstractTransition> &transitions = transitions_by_op[op_no];
             relevant_operators.push_back(op);
             const vector<AbstractTransition> &bucket1 =
                 abs1->transitions_by_op[op_no];
             const vector<AbstractTransition> &bucket2 =
                 abs2->transitions_by_op[op_no];
-            if(relevant1 && relevant2) {
+            if (relevant1 && relevant2) {
                 transitions.reserve(bucket1.size() * bucket2.size());
-                for(int i = 0; i < bucket1.size(); i++) {
+                for (int i = 0; i < bucket1.size(); i++) {
                     int src1 = bucket1[i].src;
                     int target1 = bucket1[i].target;
-                    for(int j = 0; j < bucket2.size(); j++) {
+                    for (int j = 0; j < bucket2.size(); j++) {
                         int src2 = bucket2[j].src;
                         int target2 = bucket2[j].target;
                         int src = src1 * multiplier + src2;
@@ -447,25 +445,25 @@ CompositeAbstraction::CompositeAbstraction(
                         transitions.push_back(AbstractTransition(src, target));
                     }
                 }
-            } else if(relevant1) {
+            } else if (relevant1) {
                 assert(!relevant2);
                 transitions.reserve(bucket1.size() * abs2->size());
-                for(int i = 0; i < bucket1.size(); i++) {
+                for (int i = 0; i < bucket1.size(); i++) {
                     int src1 = bucket1[i].src;
                     int target1 = bucket1[i].target;
-                    for(int s2 = 0; s2 < abs2->size(); s2++) {
+                    for (int s2 = 0; s2 < abs2->size(); s2++) {
                         int src = src1 * multiplier + s2;
                         int target = target1 * multiplier + s2;
                         transitions.push_back(AbstractTransition(src, target));
                     }
                 }
-            } else if(relevant2) {
+            } else if (relevant2) {
                 assert(!relevant1);
                 transitions.reserve(bucket2.size() * abs1->size());
-                for(int i = 0; i < bucket2.size(); i++) {
+                for (int i = 0; i < bucket2.size(); i++) {
                     int src2 = bucket2[i].src;
                     int target2 = bucket2[i].target;
-                    for(int s1 = 0; s1 < abs1->size(); s1++) {
+                    for (int s1 = 0; s1 < abs1->size(); s1++) {
                         int src = s1 * multiplier + src2;
                         int target = s1 * multiplier + target2;
                         transitions.push_back(AbstractTransition(src, target));
@@ -475,9 +473,9 @@ CompositeAbstraction::CompositeAbstraction(
         }
     }
 
-    for(int i = 0; i < abs1->relevant_operators.size(); i++)
+    for (int i = 0; i < abs1->relevant_operators.size(); i++)
         abs1->relevant_operators[i]->marker1 = false;
-    for(int i = 0; i < abs2->relevant_operators.size(); i++)
+    for (int i = 0; i < abs2->relevant_operators.size(); i++)
         abs2->relevant_operators[i]->marker2 = false;
 
     // dump();
@@ -493,7 +491,7 @@ AbstractStateRef AtomicAbstraction::get_abstract_state(const State &state) const
 AbstractStateRef CompositeAbstraction::get_abstract_state(const State &state) const {
     AbstractStateRef state1 = components[0]->get_abstract_state(state);
     AbstractStateRef state2 = components[1]->get_abstract_state(state);
-    if(state1 == -1 || state2 == -1)
+    if (state1 == -1 || state2 == -1)
         return -1;
     return lookup_table[state1][state2];
 }
@@ -508,52 +506,52 @@ void Abstraction::partition_into_buckets(
     // Classify states by f and h value.
     vector<vector<Bucket> > states_by_f_and_h;
     states_by_f_and_h.resize(max_f + 1);
-    for(int f = 0; f <= max_f; f++)
+    for (int f = 0; f <= max_f; f++)
         states_by_f_and_h[f].resize(min(f, max_h) + 1);
-    for(AbstractStateRef state = 0; state < num_states; state++) {
+    for (AbstractStateRef state = 0; state < num_states; state++) {
         int g = init_distances[state];
         int h = goal_distances[state];
-        if(g == QUITE_A_LOT || h == QUITE_A_LOT)
+        if (g == QUITE_A_LOT || h == QUITE_A_LOT)
             continue;
 
         int f = g + h;
-        
-        if(shrink_strategy == SHRINK_RANDOM) {
+
+        if (shrink_strategy == SHRINK_RANDOM) {
             // Put all into the same bucket.
             f = h = 0;
         }
-        
+
         assert(f >= 0 && f < states_by_f_and_h.size());
         assert(h >= 0 && h < states_by_f_and_h[f].size());
         states_by_f_and_h[f][h].push_back(state);
     }
 
-    if(shrink_strategy == SHRINK_HIGH_F_LOW_H ||
-       shrink_strategy == SHRINK_RANDOM) {
-        for(int f = max_f; f >= 0; f--) {
-            for(int h = 0; h < states_by_f_and_h[f].size(); h++) {
+    if (shrink_strategy == SHRINK_HIGH_F_LOW_H ||
+        shrink_strategy == SHRINK_RANDOM) {
+        for (int f = max_f; f >= 0; f--) {
+            for (int h = 0; h < states_by_f_and_h[f].size(); h++) {
                 Bucket &bucket = states_by_f_and_h[f][h];
-                if(!bucket.empty()) {
+                if (!bucket.empty()) {
                     buckets.push_back(Bucket());
                     buckets.back().swap(bucket);
                 }
             }
         }
-    } else if(shrink_strategy == SHRINK_LOW_F_LOW_H) {
-        for(int f = 0; f <= max_f; f++) {
-            for(int h = 0; h < states_by_f_and_h[f].size(); h++) {
+    } else if (shrink_strategy == SHRINK_LOW_F_LOW_H) {
+        for (int f = 0; f <= max_f; f++) {
+            for (int h = 0; h < states_by_f_and_h[f].size(); h++) {
                 Bucket &bucket = states_by_f_and_h[f][h];
-                if(!bucket.empty()) {
+                if (!bucket.empty()) {
                     buckets.push_back(Bucket());
                     buckets.back().swap(bucket);
                 }
             }
         }
-    } else if(shrink_strategy == SHRINK_HIGH_F_HIGH_H) {
-        for(int f = max_f; f >= 0; f--) {
-            for(int h = states_by_f_and_h[f].size() - 1; h >= 0; h--) {
+    } else if (shrink_strategy == SHRINK_HIGH_F_HIGH_H) {
+        for (int f = max_f; f >= 0; f--) {
+            for (int h = states_by_f_and_h[f].size() - 1; h >= 0; h--) {
                 Bucket &bucket = states_by_f_and_h[f][h];
-                if(!bucket.empty()) {
+                if (!bucket.empty()) {
                     buckets.push_back(Bucket());
                     buckets.back().swap(bucket);
                 }
@@ -575,33 +573,33 @@ void Abstraction::compute_abstraction(
     collapsed_groups.reserve(target_size);
 
     int num_states_to_go = 0;
-    for(int bucket_no = 0; bucket_no < buckets.size(); bucket_no++)
+    for (int bucket_no = 0; bucket_no < buckets.size(); bucket_no++)
         num_states_to_go += buckets[bucket_no].size();
 
-    for(int bucket_no = 0; bucket_no < buckets.size(); bucket_no++) {
+    for (int bucket_no = 0; bucket_no < buckets.size(); bucket_no++) {
         vector<AbstractStateRef> &bucket = buckets[bucket_no];
         int remaining_state_budget = target_size - collapsed_groups.size();
         num_states_to_go -= bucket.size();
         int bucket_budget = remaining_state_budget - num_states_to_go;
 
-        if(bucket_budget >= (int) bucket.size()) {
+        if (bucket_budget >= (int)bucket.size()) {
             // Each state in bucket can become a singleton group.
             // cout << "SHRINK NONE: " << bucket_no << endl;
-            for(int i = 0; i < bucket.size(); i++) {
+            for (int i = 0; i < bucket.size(); i++) {
                 Group group;
                 group.push_front(bucket[i]);
                 collapsed_groups.push_back(group);
             }
-        } else if(bucket_budget <= 1) {
+        } else if (bucket_budget <= 1) {
             // The whole bucket must form one group.
             // cout << "SHRINK ALL: " << bucket_no << endl;
             int remaining_buckets = buckets.size() - bucket_no;
-            if(remaining_state_budget >= remaining_buckets) {
+            if (remaining_state_budget >= remaining_buckets) {
                 collapsed_groups.push_back(Group());
             } else {
-                if(bucket_no == 0)
+                if (bucket_no == 0)
                     collapsed_groups.push_back(Group());
-                if(show_combine_buckets_warning) {
+                if (show_combine_buckets_warning) {
                     show_combine_buckets_warning = false;
                     cout << "ARGH! Very small node limit, must combine buckets."
                          << endl;
@@ -615,23 +613,23 @@ void Abstraction::compute_abstraction(
             // First create singleton groups.
             vector<Group> groups;
             groups.resize(bucket.size());
-            for(int i = 0; i < bucket.size(); i++)
+            for (int i = 0; i < bucket.size(); i++)
                 groups[i].push_front(bucket[i]);
             // Then combine groups until required size is reached.
             assert(bucket_budget >= 2 && bucket_budget < groups.size());
-            while(groups.size() > bucket_budget) {
-                int pos1 = ((unsigned int) rand()) % groups.size();
+            while (groups.size() > bucket_budget) {
+                int pos1 = ((unsigned int)rand()) % groups.size();
                 int pos2;
                 do {
-                    pos2 = ((unsigned int) rand()) % groups.size();
-                } while(pos1 == pos2);
+                    pos2 = ((unsigned int)rand()) % groups.size();
+                } while (pos1 == pos2);
                 groups[pos1].splice(groups[pos1].begin(), groups[pos2]);
                 swap(groups[pos2], groups.back());
                 assert(groups.back().empty());
                 groups.pop_back();
             }
             // Finally add these groups to the result.
-            for(int i = 0; i < groups.size(); i++) {
+            for (int i = 0; i < groups.size(); i++) {
                 collapsed_groups.push_back(Group());
                 collapsed_groups.back().swap(groups[i]);
             }
@@ -655,15 +653,15 @@ struct Signature {
 
     bool matches(const Signature &other) const {
         return h == other.h && group == other.group &&
-            succ_signature == other.succ_signature;
+               succ_signature == other.succ_signature;
     }
 
     bool operator<(const Signature &other) const {
-        if(h != other.h)
+        if (h != other.h)
             return h < other.h;
-        if(group != other.group)
+        if (group != other.group)
             return group < other.group;
-        if(succ_signature != other.succ_signature)
+        if (succ_signature != other.succ_signature)
             return succ_signature < other.succ_signature;
         return state < other.state;
     }
@@ -677,9 +675,9 @@ void Abstraction::compute_abstraction_dfp(
     // cout << num_states << "***" << target_size << endl;
 
     vector<int> state_to_group(num_states);
-    for(int state = 0; state < num_states; state++) {
+    for (int state = 0; state < num_states; state++) {
         int h = goal_distances[state];
-        if(h == QUITE_A_LOT || init_distances[state] == QUITE_A_LOT) {
+        if (h == QUITE_A_LOT || init_distances[state] == QUITE_A_LOT) {
             state_to_group[state] = -1;
         } else {
             assert(h >= 0 && h <= max_h);
@@ -693,7 +691,7 @@ void Abstraction::compute_abstraction_dfp(
     signatures.reserve(num_states + 2);
 
     bool done = false;
-    while(!done) {
+    while (!done) {
         done = true;
 
         // Compute state signatures.
@@ -702,9 +700,9 @@ void Abstraction::compute_abstraction_dfp(
         signatures.clear();
         signatures.push_back(
             Signature(-1, -1, SuccessorSignature(), -1));
-        for(int state = 0; state < num_states; state++) {
+        for (int state = 0; state < num_states; state++) {
             int h = goal_distances[state];
-            if(h == QUITE_A_LOT || init_distances[state] == QUITE_A_LOT) {
+            if (h == QUITE_A_LOT || init_distances[state] == QUITE_A_LOT) {
                 h = -1;
                 assert(state_to_group[state] == -1);
             }
@@ -717,21 +715,21 @@ void Abstraction::compute_abstraction_dfp(
         }
         signatures.push_back(
             Signature(max_h + 1, -1, SuccessorSignature(), -1));
-        for(int op_no = 0; op_no < transitions_by_op.size(); op_no++) {
+        for (int op_no = 0; op_no < transitions_by_op.size(); op_no++) {
             const vector<AbstractTransition> &transitions =
                 transitions_by_op[op_no];
-            for(int i = 0; i < transitions.size(); i++) {
+            for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &trans = transitions[i];
                 int src_group = state_to_group[trans.src];
                 int target_group = state_to_group[trans.target];
-                if(src_group != -1 && target_group != -1) {
+                if (src_group != -1 && target_group != -1) {
                     assert(signatures[trans.src + 1].state == trans.src);
                     signatures[trans.src + 1].succ_signature.push_back(
                         make_pair(op_no, target_group));
                 }
             }
         }
-        for(int i = 0; i < signatures.size(); i++) {
+        for (int i = 0; i < signatures.size(); i++) {
             SuccessorSignature &succ_sig = signatures[i].succ_signature;
             ::sort(succ_sig.begin(), succ_sig.end());
             succ_sig.erase(::unique(succ_sig.begin(), succ_sig.end()),
@@ -743,10 +741,10 @@ void Abstraction::compute_abstraction_dfp(
         //       the whole signatures around?
 
         int sig_start = 0;
-        while(true) {
+        while (true) {
             int h = signatures[sig_start].h;
             // cout << sig_start << " *** " << h << endl;
-            if(h > max_h) {
+            if (h > max_h) {
                 // We have hit the end sentinel.
                 assert(h == max_h + 1);
                 assert(sig_start + 1 == signatures.size());
@@ -754,17 +752,15 @@ void Abstraction::compute_abstraction_dfp(
             }
             assert(h >= -1);
             assert(h <= max_h);
-            if(h == -1 || h_done[h]) {
-                while(signatures[sig_start].h == h)
+            if (h == -1 || h_done[h]) {
+                while (signatures[sig_start].h == h)
                     sig_start++;
                 continue;
             }
             int num_old_groups = 0;
             int num_new_groups = 0;
             int sig_end;
-            for(sig_end = sig_start; signatures[sig_end].h == h; sig_end++) {
-
-
+            for (sig_end = sig_start; signatures[sig_end].h == h; sig_end++) {
                 // cout << "@" << sig_start << "@" << sig_end << flush;
 
                 const Signature &prev_sig = signatures[sig_end - 1];
@@ -775,36 +771,36 @@ void Abstraction::compute_abstraction_dfp(
                      << "@" << curr_sig.group << endl;
                 */
 
-                if(sig_end == sig_start)
+                if (sig_end == sig_start)
                     assert(prev_sig.group != curr_sig.group);
 
-                if(prev_sig.group != curr_sig.group) {
+                if (prev_sig.group != curr_sig.group) {
                     num_old_groups++;
                     num_new_groups++;
-                } else if(prev_sig.succ_signature != curr_sig.succ_signature) {
+                } else if (prev_sig.succ_signature != curr_sig.succ_signature) {
                     num_new_groups++;
                 }
             }
             assert(sig_end > sig_start);
 
-            if(num_groups - num_old_groups + num_new_groups > target_size) {
+            if (num_groups - num_old_groups + num_new_groups > target_size) {
                 // Can't split the groups for this h value -- would exceed
                 // bound on abstract state number.
                 h_done[h] = true;
-            } else if(num_new_groups != num_old_groups) {
+            } else if (num_new_groups != num_old_groups) {
                 // Split the groups.
                 done = false;
                 cout << "Splitting h = " << h << ": "
                      << num_old_groups << " => " << num_new_groups
                      << " groups" << endl;
                 int new_group_no = -1;
-                for(int i = sig_start; i < sig_end; i++) {
+                for (int i = sig_start; i < sig_end; i++) {
                     const Signature &prev_sig = signatures[i - 1];
                     const Signature &curr_sig = signatures[i];
-                    if(prev_sig.group != curr_sig.group) {
+                    if (prev_sig.group != curr_sig.group) {
                         // Start first group of a block; keep old group no.
                         new_group_no = curr_sig.group;
-                    } else if(prev_sig.succ_signature != curr_sig.succ_signature) {
+                    } else if (prev_sig.succ_signature != curr_sig.succ_signature) {
                         new_group_no = num_groups++;
                         assert(num_groups <= target_size);
                     }
@@ -820,9 +816,9 @@ void Abstraction::compute_abstraction_dfp(
     assert(collapsed_groups.empty());
     collapsed_groups.resize(num_groups);
     // int total_size = 0;
-    for(int state = 0; state < num_states; state++) {
+    for (int state = 0; state < num_states; state++) {
         int group = state_to_group[state];
-        if(group != -1) {
+        if (group != -1) {
             assert(group >= 0 && group < num_groups);
             collapsed_groups[group].push_front(state);
             // total_size++;
@@ -833,14 +829,13 @@ void Abstraction::compute_abstraction_dfp(
 
 void Abstraction::apply_abstraction(
     vector<slist<AbstractStateRef> > &collapsed_groups) {
-
     typedef slist<AbstractStateRef> Group;
 
     vector<int> abstraction_mapping(num_states, -1);
 
-    for(int group_no = 0; group_no < collapsed_groups.size(); group_no++) {
+    for (int group_no = 0; group_no < collapsed_groups.size(); group_no++) {
         Group &group = collapsed_groups[group_no];
-        for(Group::iterator pos = group.begin(); pos != group.end(); ++pos) {
+        for (Group::iterator pos = group.begin(); pos != group.end(); ++pos) {
             AbstractStateRef state = *pos;
             assert(abstraction_mapping[state] == -1);
             abstraction_mapping[state] = group_no;
@@ -852,8 +847,8 @@ void Abstraction::apply_abstraction(
     vector<int> new_goal_distances(new_num_states, INVALID);
 
     bool must_recompute_distances = false;
-    for(AbstractStateRef new_state = 0;
-        new_state < collapsed_groups.size(); new_state++) {
+    for (AbstractStateRef new_state = 0;
+         new_state < collapsed_groups.size(); new_state++) {
         Group &group = collapsed_groups[new_state];
         assert(!group.empty());
         Group::iterator pos = group.begin();
@@ -862,12 +857,12 @@ void Abstraction::apply_abstraction(
         new_init_dist = init_distances[*pos];
         new_goal_dist = goal_distances[*pos];
         ++pos;
-        for(; pos != group.end(); ++pos) {
-            if(init_distances[*pos] < new_init_dist) {
+        for (; pos != group.end(); ++pos) {
+            if (init_distances[*pos] < new_init_dist) {
                 must_recompute_distances = true;
                 new_init_dist = init_distances[*pos];
             }
-            if(goal_distances[*pos] < new_goal_dist) {
+            if (goal_distances[*pos] < new_goal_dist) {
                 must_recompute_distances = true;
                 new_goal_dist = goal_distances[*pos];
             }
@@ -878,15 +873,15 @@ void Abstraction::apply_abstraction(
 
     vector<vector<AbstractTransition> > new_transitions_by_op(
         transitions_by_op.size());
-    for(int op_no = 0; op_no < transitions_by_op.size(); op_no++) {
+    for (int op_no = 0; op_no < transitions_by_op.size(); op_no++) {
         const vector<AbstractTransition> &transitions = transitions_by_op[op_no];
         vector<AbstractTransition> &new_transitions = new_transitions_by_op[op_no];
         new_transitions.reserve(transitions.size());
-        for(int i = 0; i < transitions.size(); i++) {
+        for (int i = 0; i < transitions.size(); i++) {
             const AbstractTransition &trans = transitions[i];
             int src = abstraction_mapping[trans.src];
             int target = abstraction_mapping[trans.target];
-            if(src != -1 && target != -1)
+            if (src != -1 && target != -1)
                 new_transitions.push_back(
                     AbstractTransition(src, target));
         }
@@ -898,12 +893,12 @@ void Abstraction::apply_abstraction(
     init_distances.swap(new_init_distances);
     goal_distances.swap(new_goal_distances);
     init_state = abstraction_mapping[init_state];
-    if(init_state == -1)
+    if (init_state == -1)
         cout << "init_state irrelevant; problem unsolvable" << endl;
 
     apply_abstraction_to_lookup_table(abstraction_mapping);
 
-    if(init_state != -1 && must_recompute_distances) {
+    if (init_state != -1 && must_recompute_distances) {
         cout << "Simplification was not f-preserving -- "
              << "must recompute distances." << endl;
         compute_distances();
@@ -923,16 +918,16 @@ void Abstraction::shrink(int threshold, ShrinkStrategy shrink_strategy,
     assert(threshold >= 1);
     assert(is_solvable());
 
-    if(size() > threshold)
+    if (size() > threshold)
         cout << "shrink by " << (size() - threshold) << " nodes"
              << " (from " << size() << " to " << threshold << ")" << endl;
-    else if(force)
+    else if (force)
         cout << "shrink forced: prune unreachable/irrelevant states" << endl;
     else
         return;
 
     vector<slist<AbstractStateRef> > collapsed_groups;
-    if(shrink_strategy == SHRINK_DFP) {
+    if (shrink_strategy == SHRINK_DFP) {
         compute_abstraction_dfp(threshold, collapsed_groups);
     } else {
         vector<vector<AbstractStateRef> > buckets;
@@ -951,7 +946,7 @@ bool Abstraction::is_solvable() const {
 
 int Abstraction::get_cost(const State &state) const {
     int abs_state = get_abstract_state(state);
-    if(abs_state == -1)
+    if (abs_state == -1)
         return -1;
     int cost = goal_distances[abs_state];
     assert(cost != INVALID && cost != QUITE_A_LOT);
@@ -962,7 +957,7 @@ int Abstraction::memory_estimate() const {
     int result = sizeof(Abstraction);
     result += sizeof(Operator *) * relevant_operators.capacity();
     result += sizeof(vector<AbstractTransition>) * transitions_by_op.capacity();
-    for(int i = 0; i < transitions_by_op.size(); i++)
+    for (int i = 0; i < transitions_by_op.size(); i++)
         result += sizeof(AbstractTransition) * transitions_by_op[i].capacity();
     result += sizeof(int) * init_distances.capacity();
     result += sizeof(int) * goal_distances.capacity();
@@ -980,8 +975,8 @@ int CompositeAbstraction::memory_estimate() const {
     int result = Abstraction::memory_estimate();
     result += sizeof(CompositeAbstraction) - sizeof(Abstraction);
     result += sizeof(vector<AbstractStateRef>) * lookup_table.capacity();
-    for(int i = 0; i < lookup_table.size(); i++)
-        result +=  sizeof(AbstractStateRef) * lookup_table[i].capacity();
+    for (int i = 0; i < lookup_table.size(); i++)
+        result += sizeof(AbstractStateRef) * lookup_table[i].capacity();
     return result;
 }
 
@@ -992,21 +987,21 @@ void Abstraction::release_memory() {
 
 int Abstraction::total_transitions() const {
     int total = 0;
-    for(int i = 0; i < transitions_by_op.size(); i++)
+    for (int i = 0; i < transitions_by_op.size(); i++)
         total += transitions_by_op[i].size();
     return total;
 }
 
 int Abstraction::unique_unlabeled_transitions() const {
     vector<AbstractTransition> unique_transitions;
-    for(int i = 0; i < transitions_by_op.size(); i++) {
+    for (int i = 0; i < transitions_by_op.size(); i++) {
         const vector<AbstractTransition> &trans = transitions_by_op[i];
         unique_transitions.insert(
             unique_transitions.end(), trans.begin(), trans.end());
     }
     ::sort(unique_transitions.begin(), unique_transitions.end());
-    return (unique(unique_transitions.begin(), unique_transitions.end())
-            - unique_transitions.begin());
+    return unique(unique_transitions.begin(), unique_transitions.end())
+           - unique_transitions.begin();
 }
 
 void Abstraction::statistics(bool include_expensive_statistics) const {
@@ -1015,13 +1010,13 @@ void Abstraction::statistics(bool include_expensive_statistics) const {
     cout << "abstraction: "
          << varset.size() << "/" << g_variable_domain.size() << " vars, "
          << size() << " nodes, ";
-    if(include_expensive_statistics)
+    if (include_expensive_statistics)
         cout << unique_unlabeled_transitions();
     else
         cout << "???";
     cout << "/" << total_transitions() << " arcs, " << memory << " bytes"
          << endl << "             ";
-    if(is_solvable()) {
+    if (is_solvable()) {
         cout << "init h=" << goal_distances[init_state]
              << ", max f=" << max_f
              << ", max g=" << max_g

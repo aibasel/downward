@@ -9,8 +9,8 @@
 using namespace std;
 using namespace __gnu_cxx;
 
-typedef pair<int,int> Assignment;
-    
+typedef pair<int, int> Assignment;
+
 
 struct OperatorSignature {
     vector<int> data;
@@ -20,20 +20,20 @@ struct OperatorSignature {
         // We require that preconditions and effects are sorted by
         // variable -- some sort of canonical representation is needed
         // to guarantee that we can properly test for uniqueness.
-        for(int i = 0; i < preconditions.size(); i++) {
-            if(i != 0)
+        for (int i = 0; i < preconditions.size(); i++) {
+            if (i != 0)
                 assert(preconditions[i].first > preconditions[i - 1].first);
             data.push_back(preconditions[i].first);
             data.push_back(preconditions[i].second);
         }
         data.push_back(-1); // marker
-        for(int i = 0; i < effects.size(); i++) {
-            if(i != 0)
+        for (int i = 0; i < effects.size(); i++) {
+            if (i != 0)
                 assert(effects[i].first > effects[i - 1].first);
             data.push_back(effects[i].first);
             data.push_back(effects[i].second);
         }
-    };
+    }
 
     bool operator==(const OperatorSignature &other) const {
         return data == other.data;
@@ -44,7 +44,7 @@ struct OperatorSignature {
         // out to a common place.
         size_t hash_value = 0x345678;
         size_t mult = 1000003;
-        for(int i = data.size() - 1; i >= 0; i--) {
+        for (int i = data.size() - 1; i >= 0; i--) {
             hash_value = (hash_value ^ data[i]) * mult;
             mult += 82520 + i + i;
         }
@@ -54,49 +54,48 @@ struct OperatorSignature {
 };
 
 namespace __gnu_cxx {
-    template<>
-    struct hash<OperatorSignature> {
-        size_t operator()(const OperatorSignature &sig) const {
-	    return sig.hash();
-	}
-    };
+template<>
+struct hash<OperatorSignature> {
+    size_t operator()(const OperatorSignature &sig) const {
+        return sig.hash();
+    }
+};
 }
 
 
 OperatorRegistry::OperatorRegistry(
     const vector<const Operator *> &relevant_operators,
     const vector<int> &pruned_vars) {
-
     num_vars = pruned_vars.size();
     num_operators = relevant_operators.size();
     num_canonical_operators = 0;
 
     vector<int> var_is_used(g_variable_domain.size(), true);
-    for(int i = 0; i < pruned_vars.size(); i++)
+    for (int i = 0; i < pruned_vars.size(); i++)
         var_is_used[pruned_vars[i]] = false;
 
     hash_map<OperatorSignature, const Operator *> canonical_op_map;
     canonical_operators.resize(g_operators.size(), 0);
 
-    for(int i = 0; i < relevant_operators.size(); i++) {
+    for (int i = 0; i < relevant_operators.size(); i++) {
         const Operator *op = relevant_operators[i];
         vector<Assignment> preconditions;
         vector<Assignment> effects;
 
         const vector<Prevail> &prev = op->get_prevail();
-        for(int j = 0; j < prev.size(); j++) {
+        for (int j = 0; j < prev.size(); j++) {
             int var = prev[j].var;
-            if(var_is_used[var]) {
+            if (var_is_used[var]) {
                 int val = prev[j].prev;
                 preconditions.push_back(make_pair(var, val));
             }
         }
         const vector<PrePost> &pre_post = op->get_pre_post();
-        for(int j = 0; j < pre_post.size(); j++) {
+        for (int j = 0; j < pre_post.size(); j++) {
             int var = pre_post[j].var;
-            if(var_is_used[var]) {
+            if (var_is_used[var]) {
                 int pre = pre_post[j].pre;
-                if(pre != -1)
+                if (pre != -1)
                     preconditions.push_back(make_pair(var, pre));
                 int post = pre_post[j].post;
                 effects.push_back(make_pair(var, post));
@@ -107,7 +106,7 @@ OperatorRegistry::OperatorRegistry(
 
         OperatorSignature op_sig(preconditions, effects);
         int op_index = get_op_index(op);
-        if(!canonical_op_map.count(op_sig)) {
+        if (!canonical_op_map.count(op_sig)) {
             canonical_op_map[op_sig] = op;
             canonical_operators[op_index] = op;
             num_canonical_operators++;

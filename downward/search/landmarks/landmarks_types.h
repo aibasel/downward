@@ -8,16 +8,16 @@
 class hash_int_pair {
 public:
     size_t operator()(const std::pair<int, int> &key) const {
-        return size_t(1337*key.first + key.second);
+        return size_t(1337 * key.first + key.second);
     }
 };
 
 
 class hash_pointer {
 public:
-    size_t operator()(const void* p) const {
+    size_t operator()(const void *p) const {
         //return size_t(reinterpret_cast<int>(p));
-        std::tr1::hash<const void*> my_hash_class;
+        std::tr1::hash<const void *> my_hash_class;
         return my_hash_class(p);
     }
 };

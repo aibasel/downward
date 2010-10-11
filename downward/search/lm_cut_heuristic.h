@@ -122,14 +122,14 @@ class LandmarkCutHeuristic : public Heuristic {
     void first_exploration(const State &state);
     void first_exploration_incremental(std::vector<RelaxedOperator *> &cut);
     void second_exploration(const State &state, std::vector<RelaxedProposition *> &queue,
-			    std::vector<RelaxedOperator *> &cut);
+                            std::vector<RelaxedOperator *> &cut);
 
     void enqueue_if_necessary(RelaxedProposition *prop, int cost) {
         assert(cost >= 0);
-        if(prop->status == UNREACHED || prop->h_max_cost > cost) {
-	    prop->status = REACHED;
+        if (prop->status == UNREACHED || prop->h_max_cost > cost) {
+            prop->status = REACHED;
             prop->h_max_cost = cost;
-            if(cost >= reachable_queue.size())
+            if (cost >= reachable_queue.size())
                 reachable_queue.resize(cost + 1);
             reachable_queue[cost].push_back(prop);
         }
@@ -138,25 +138,25 @@ class LandmarkCutHeuristic : public Heuristic {
     void mark_goal_plateau(RelaxedProposition *subgoal);
     void validate_h_max() const;
 public:
-    LandmarkCutHeuristic(int _iteration_limit=-1);
+    LandmarkCutHeuristic(int _iteration_limit = -1);
     virtual ~LandmarkCutHeuristic();
-    static ScalarEvaluator *create(const std::vector<std::string> &config, 
+    static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end, bool dry_run);
 };
 
 inline int RelaxedOperator::h_max_cost() const {
     assert(!unsatisfied_preconditions);
     int result = precondition[0]->h_max_cost;
-    for(int i = 1; i < precondition.size(); i++)
-	result = std::max(result, precondition[i]->h_max_cost);
+    for (int i = 1; i < precondition.size(); i++)
+        result = std::max(result, precondition[i]->h_max_cost);
     return result;
 }
 
 inline void RelaxedOperator::update_h_max_supporter() {
     assert(!unsatisfied_preconditions);
-    for(int i = 0; i < precondition.size(); i++)
-	if(precondition[i]->h_max_cost > h_max_supporter->h_max_cost)
-	    h_max_supporter = precondition[i];
+    for (int i = 0; i < precondition.size(); i++)
+        if (precondition[i]->h_max_cost > h_max_supporter->h_max_cost)
+            h_max_supporter = precondition[i];
     assert(h_max_cost() == h_max_supporter->h_max_cost);
 }
 

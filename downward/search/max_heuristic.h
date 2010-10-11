@@ -17,7 +17,7 @@ class HSPMaxHeuristic : public RelaxationHeuristic {
     Proposition **reachable_queue_read_pos;
     Proposition **reachable_queue_write_pos;
 
-	void setup_exploration_queue();
+    void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
     void relaxed_exploration();
 protected:

@@ -3,9 +3,9 @@
 
 #include "landmarks_graph.h"
 
-typedef LandmarkNode* LMOpenListEntry;
+typedef LandmarkNode *LMOpenListEntry;
 
-class LandmarksGraphRpgSearch: public LandmarksGraph {
+class LandmarksGraphRpgSearch : public LandmarksGraph {
     bool uniform_sampling;
     int max_depth;
     int num_tries;
@@ -13,7 +13,7 @@ class LandmarksGraphRpgSearch: public LandmarksGraph {
     void landmark_search(LandmarkNode *node, int depth);
     int choose_random(vector<int> &evals);
 public:
-    LandmarksGraphRpgSearch(Exploration* exploration);
+    LandmarksGraphRpgSearch(Exploration *exploration);
     virtual ~LandmarksGraphRpgSearch();
 };
 

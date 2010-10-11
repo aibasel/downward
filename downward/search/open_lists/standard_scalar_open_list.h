@@ -12,13 +12,12 @@ class ScalarEvaluator;
 
 template<class Entry>
 class StandardScalarOpenList : public OpenList<Entry> {
-    
     typedef std::deque<Entry> Bucket;
 
     std::map<int, Bucket> buckets;
     int size;
     mutable int lowest_bucket;
-    
+
     ScalarEvaluator *evaluator;
     int last_evaluated_value;
     int last_preferred;
@@ -26,25 +25,25 @@ class StandardScalarOpenList : public OpenList<Entry> {
     bool dead_end_reliable;
 
 protected:
-    ScalarEvaluator* get_evaluator() { return evaluator; }
+    ScalarEvaluator *get_evaluator() {return evaluator; }
 
 public:
-    StandardScalarOpenList(ScalarEvaluator *eval, 
+    StandardScalarOpenList(ScalarEvaluator *eval,
                            bool preferred_only);
     ~StandardScalarOpenList();
-    
+
     int insert(const Entry &entry);
     Entry remove_min();
     bool empty() const;
     void clear();
-    
+
     void evaluate(int g, bool preferred);
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;
-    void get_involved_heuristics(std::set<Heuristic*> &hset);
-    
-    static OpenList<Entry> *create(const std::vector<std::string> &config, 
-                                   int start, int &end, bool dry_run=false);
+    void get_involved_heuristics(std::set<Heuristic *> &hset);
+
+    static OpenList<Entry> *create(const std::vector<std::string> &config,
+                                   int start, int &end, bool dry_run = false);
 };
 
 #include "standard_scalar_open_list.cc"

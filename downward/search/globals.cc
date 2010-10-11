@@ -17,8 +17,8 @@ using namespace std;
 #include "timer.h"
 
 bool test_goal(const State &state) {
-    for(int i = 0; i < g_goal.size(); i++) {
-        if(state[g_goal[i].first] != g_goal[i].second) {
+    for (int i = 0; i < g_goal.size(); i++) {
+        if (state[g_goal[i].first] != g_goal[i].second) {
             return false;
         }
     }
@@ -41,124 +41,124 @@ int save_plan(const vector<const Operator *> &plan) {
 }
 
 bool peek_magic(istream &in, string magic) {
-  string word;
-  in >> word;
-  bool result = (word == magic);
-  for(int i = word.size() - 1; i >= 0; i--)
-    in.putback(word[i]);
-  return result;
+    string word;
+    in >> word;
+    bool result = (word == magic);
+    for (int i = word.size() - 1; i >= 0; i--)
+        in.putback(word[i]);
+    return result;
 }
 
 void check_magic(istream &in, string magic) {
-  string word;
-  in >> word;
-  if(word != magic) {
-    cout << "Failed to match magic word '" << magic << "'." << endl;
-    cout << "Got '" << word << "'." << endl;
-    exit(1);
-  }
+    string word;
+    in >> word;
+    if (word != magic) {
+        cout << "Failed to match magic word '" << magic << "'." << endl;
+        cout << "Got '" << word << "'." << endl;
+        exit(1);
+    }
 }
 
 void read_metric(istream &in) {
-  check_magic(in, "begin_metric");
-  in >> g_use_metric;
-  check_magic(in, "end_metric");
+    check_magic(in, "begin_metric");
+    in >> g_use_metric;
+    check_magic(in, "end_metric");
 }
 
 void read_variables(istream &in) {
-  check_magic(in, "begin_variables");
-  int count;
-  in >> count;
-  for(int i = 0; i < count; i++) {
-    string name;
-    in >> name;
-    g_variable_name.push_back(name);
-    int range;
-    in >> range;
-    g_variable_domain.push_back(range);
-    if(range > numeric_limits<state_var_t>::max()) {
-      cout << "You bet!" << endl;
-      exit(1);
+    check_magic(in, "begin_variables");
+    int count;
+    in >> count;
+    for (int i = 0; i < count; i++) {
+        string name;
+        in >> name;
+        g_variable_name.push_back(name);
+        int range;
+        in >> range;
+        g_variable_domain.push_back(range);
+        if (range > numeric_limits<state_var_t>::max()) {
+            cout << "You bet!" << endl;
+            exit(1);
+        }
+        int layer;
+        in >> layer;
+        g_axiom_layers.push_back(layer);
     }
-    int layer;
-    in >> layer;
-    g_axiom_layers.push_back(layer);
-  }
-  check_magic(in, "end_variables");
+    check_magic(in, "end_variables");
 }
 
 void read_goal(istream &in) {
-  check_magic(in, "begin_goal");
-  int count;
-  in >> count;
-  for(int i = 0; i < count; i++) {
-    int var, val;
-    in >> var >> val;
-    g_goal.push_back(make_pair(var, val));
-  }
-  check_magic(in, "end_goal");
+    check_magic(in, "begin_goal");
+    int count;
+    in >> count;
+    for (int i = 0; i < count; i++) {
+        int var, val;
+        in >> var >> val;
+        g_goal.push_back(make_pair(var, val));
+    }
+    check_magic(in, "end_goal");
 }
 
 void dump_goal() {
-  cout << "Goal Conditions:" << endl;
-  for(int i = 0; i < g_goal.size(); i++)
-    cout << "  " << g_variable_name[g_goal[i].first] << ": "
-	 << g_goal[i].second << endl;
+    cout << "Goal Conditions:" << endl;
+    for (int i = 0; i < g_goal.size(); i++)
+        cout << "  " << g_variable_name[g_goal[i].first] << ": "
+             << g_goal[i].second << endl;
 }
 
 void read_operators(istream &in) {
-  int count;
-  in >> count;
-  for(int i = 0; i < count; i++)
-    g_operators.push_back(Operator(in, false));
+    int count;
+    in >> count;
+    for (int i = 0; i < count; i++)
+        g_operators.push_back(Operator(in, false));
 }
 
 void read_axioms(istream &in) {
-  int count;
-  in >> count;
-  for(int i = 0; i < count; i++)
-    g_axioms.push_back(Operator(in, true));
+    int count;
+    in >> count;
+    for (int i = 0; i < count; i++)
+        g_axioms.push_back(Operator(in, true));
 
-  g_axiom_evaluator = new AxiomEvaluator;
-  g_axiom_evaluator->evaluate(*g_initial_state);
+    g_axiom_evaluator = new AxiomEvaluator;
+    g_axiom_evaluator->evaluate(*g_initial_state);
 }
 
 void read_everything(istream &in) {
-  if(peek_magic(in, "begin_metric")) {
-    read_metric(in);
-    g_legacy_file_format = false;
-  } else {
-    g_use_metric = false;
-    g_legacy_file_format = true;
-  }
-  read_variables(in);
-  g_initial_state = new State(in);
-  read_goal(in);
-  read_operators(in);
-  read_axioms(in);
-  check_magic(in, "begin_SG");
-  g_successor_generator = read_successor_generator(in);
-  check_magic(in, "end_SG");
-  DomainTransitionGraph::read_all(in);
-  g_causal_graph = new CausalGraph(in);
+    if (peek_magic(in, "begin_metric")) {
+        read_metric(in);
+        g_legacy_file_format = false;
+    } else {
+        g_use_metric = false;
+        g_legacy_file_format = true;
+    }
+    read_variables(in);
+    g_initial_state = new State(in);
+    read_goal(in);
+    read_operators(in);
+    read_axioms(in);
+    check_magic(in, "begin_SG");
+    g_successor_generator = read_successor_generator(in);
+    check_magic(in, "end_SG");
+    DomainTransitionGraph::read_all(in);
+    g_causal_graph = new CausalGraph(in);
 }
 
 void dump_everything() {
-  cout << "Use metric? " << g_use_metric << endl;
-  cout << "Min Action Cost: " << g_min_action_cost << endl;
-  cout << "Variables (" << g_variable_name.size() << "):" << endl;
-  for(int i = 0; i < g_variable_name.size(); i++)
-    cout << "  " << g_variable_name[i]
-	 << " (range " << g_variable_domain[i] << ")" << endl;
-  cout << "Initial State:" << endl;
-  g_initial_state->dump();
-  dump_goal();
-  /*
-  cout << "Successor Generator:" << endl;
-  g_successor_generator->dump();
-  for(int i = 0; i < g_variable_domain.size(); i++)
-    g_transition_graphs[i]->dump();
-  */
+    cout << "Use metric? " << g_use_metric << endl;
+    cout << "Min Action Cost: " << g_min_action_cost << endl;
+    cout << "Variables (" << g_variable_name.size() << "):" << endl;
+    for (int i = 0; i < g_variable_name.size(); i++)
+        cout << "  " << g_variable_name[i]
+             << " (range " << g_variable_domain[i] << ")" << endl;
+    cout << "Initial State:" << endl;
+    g_initial_state->dump();
+    dump_goal();
+    /*
+    cout << "Successor Generator:" << endl;
+    g_successor_generator->dump();
+    for(int i = 0; i < g_variable_domain.size(); i++)
+      g_transition_graphs[i]->dump();
+    */
 }
 
 bool g_legacy_file_format = false; // TODO: Can rip this out after migration.

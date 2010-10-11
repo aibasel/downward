@@ -15,24 +15,24 @@ OpenList<Entry> *ParetoOpenList<Entry>::create(
     NamedOptionParser option_parser;
     bool only_pref_ = false;
     bool state_uniform_ = false;
-    option_parser.add_bool_option("pref_only", &only_pref_, 
+    option_parser.add_bool_option("pref_only", &only_pref_,
                                   "insert only preferred operators");
-    option_parser.add_bool_option("state_uniform_selection", &state_uniform_, 
+    option_parser.add_bool_option("state_uniform_selection", &state_uniform_,
                                   "select uniformly from the candidate *states*");
     OptionParser *parser = OptionParser::instance();
     parser->parse_evals_and_options(config, start, end, evaluators,
                                     option_parser, false, dry_run);
-    
+
     if (dry_run)
         return 0;
     else
-        return new ParetoOpenList<Entry>(evaluators, only_pref_, 
+        return new ParetoOpenList<Entry>(evaluators, only_pref_,
                                          state_uniform_);
 }
 
 template<class Entry>
 bool ParetoOpenList<Entry>::dominates(const KeyType &v1, const KeyType &v2) {
-    assert (v1.size() == v2.size());
+    assert(v1.size() == v2.size());
     bool unequal = false;
     for (unsigned int i = 0; i < v1.size(); i++) {
         if (v1[i] > v2[i])
@@ -45,9 +45,9 @@ bool ParetoOpenList<Entry>::dominates(const KeyType &v1, const KeyType &v2) {
 
 template<class Entry>
 bool ParetoOpenList<Entry>::is_nondominated(const KeyType &vec,
-        KeySet &domination_candidates) {
+                                            KeySet &domination_candidates) {
     for (typename KeySet::iterator it = domination_candidates.begin();
-            it != domination_candidates.end(); ++ it) {
+         it != domination_candidates.end(); ++it) {
         if (dominates(*it, vec))
             return false;
     }
@@ -65,20 +65,20 @@ void ParetoOpenList<Entry>::remove_key(const KeyType key) {
         // by key and the estimate vector is not dominated by any vector
         // from the set of nondominated vectors, we add it to the candidate set
         if (nondominated.find(it->first) == nondominated.end() &&
-                dominates(key, it->first) &&
-                is_nondominated(it->first, nondominated))
+            dominates(key, it->first) &&
+            is_nondominated(it->first, nondominated))
             candidates.insert(it->first);
     for (typename KeySet::iterator it = candidates.begin();
-            it != candidates.end(); ++ it)
+         it != candidates.end(); ++it)
         if (is_nondominated(*it, candidates))
             nondominated.insert(*it);
 }
 
 template<class Entry>
 ParetoOpenList<Entry>::ParetoOpenList(const std::vector<ScalarEvaluator *> &evals,
-    bool preferred_only, bool state_uniform_selection_) 
+                                      bool preferred_only, bool state_uniform_selection_)
     : OpenList<Entry>(preferred_only),
-    state_uniform_selection(state_uniform_selection_), evaluators(evals) {
+      state_uniform_selection(state_uniform_selection_), evaluators(evals) {
     last_evaluated_value.resize(evaluators.size());
 }
 
@@ -105,10 +105,10 @@ int ParetoOpenList<Entry>::insert(const Entry &entry) {
         while (it != nondominated.end()) {
             if (dominates(key, *it)) {
                 typename KeySet::iterator tmp_it = it;
-                ++ it;
+                ++it;
                 nondominated.erase(tmp_it);
             } else {
-                ++ it;
+                ++it;
             }
         }
         // insert new key
@@ -122,14 +122,14 @@ Entry ParetoOpenList<Entry>::remove_min() {
     typename KeySet::iterator selected = nondominated.begin();
     int seen = 0;
     for (typename KeySet::iterator it = nondominated.begin();
-            it != nondominated.end(); ++ it) {
+         it != nondominated.end(); ++it) {
         int numerator;
-        if (state_uniform_selection) 
-            numerator =  it->size();
-        else 
-            numerator =  1;
+        if (state_uniform_selection)
+            numerator = it->size();
+        else
+            numerator = 1;
         seen += numerator;
-        if ((rand() % seen ) < numerator)
+        if ((rand() % seen) < numerator)
             selected = it;
     }
     Bucket &bucket = buckets[*selected];
@@ -178,8 +178,8 @@ bool ParetoOpenList<Entry>::dead_end_is_reliable() const {
 }
 
 template<class Entry>
-void ParetoOpenList<Entry>::get_involved_heuristics(std::set<Heuristic*> &hset) {
-    for (unsigned int i = 0; i < evaluators.size(); i ++)
+void ParetoOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {
+    for (unsigned int i = 0; i < evaluators.size(); i++)
         evaluators[i]->get_involved_heuristics(hset);
 }
 #endif

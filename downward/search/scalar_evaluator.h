@@ -7,8 +7,7 @@ class ScalarEvaluator : public Evaluator {
 public:
     virtual ~ScalarEvaluator() {}
 
-	virtual int get_value() const = 0;
+    virtual int get_value() const = 0;
 };
 
 #endif
-

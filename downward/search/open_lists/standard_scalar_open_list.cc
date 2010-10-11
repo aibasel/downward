@@ -12,11 +12,10 @@ using namespace std;
 template<class Entry>
 OpenList<Entry> *StandardScalarOpenList<Entry>::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-
     std::vector<ScalarEvaluator *> evaluators;
     bool only_pref_ = false;
     NamedOptionParser named_option_parser;
-    named_option_parser.add_bool_option("pref_only", &only_pref_, 
+    named_option_parser.add_bool_option("pref_only", &only_pref_,
                                         "insert only preferred operators");
     OptionParser *parser = OptionParser::instance();
     parser->parse_evals_and_options(config, start, end, evaluators,
@@ -35,7 +34,7 @@ OpenList<Entry> *StandardScalarOpenList<Entry>::create(
 
 template<class Entry>
 StandardScalarOpenList<Entry>::StandardScalarOpenList(ScalarEvaluator *eval,
-    bool preferred_only)
+                                                      bool preferred_only)
     : OpenList<Entry>(preferred_only), size(0), evaluator(eval) {
     lowest_bucket = numeric_limits<int>::max();
 }
@@ -52,7 +51,7 @@ int StandardScalarOpenList<Entry>::insert(const Entry &entry) {
         return 0;
     }
     int key = last_evaluated_value;
-    if(key < lowest_bucket)
+    if (key < lowest_bucket)
         lowest_bucket = key;
     buckets[key].push_back(entry);
     size++;
@@ -63,10 +62,10 @@ template<class Entry>
 Entry StandardScalarOpenList<Entry>::remove_min() {
     assert(size > 0);
     typename std::map<int, Bucket>::iterator it;
-    it = buckets.find(lowest_bucket); 
+    it = buckets.find(lowest_bucket);
     assert(it != buckets.end());
-    while(it->second.empty())
-        ++ it;
+    while (it->second.empty())
+        ++it;
     assert(it != buckets.end());
     lowest_bucket = it->first;
     size--;
@@ -107,8 +106,8 @@ bool StandardScalarOpenList<Entry>::dead_end_is_reliable() const {
 }
 
 template<class Entry>
-void StandardScalarOpenList<Entry>::get_involved_heuristics(std::set<Heuristic*>
-&hset) {
+void StandardScalarOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *>
+                                                            &hset) {
     evaluator->get_involved_heuristics(hset);
 }
 #endif

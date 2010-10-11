@@ -21,8 +21,8 @@ struct UnaryOperator {
     int h_add_cost;
     int h_max_cost;
     UnaryOperator(const std::vector<Proposition *> &pre, Proposition *eff,
-          const Operator *the_op, int base)
-    : op(the_op), precondition(pre), effect(eff), base_cost(base) {}
+                  const Operator *the_op, int base)
+        : op(the_op), precondition(pre), effect(eff), base_cost(base) {}
 };
 
 struct Proposition {
@@ -46,7 +46,7 @@ struct Proposition {
 
 struct hash_operator_ptr {
     size_t operator()(const Operator *key) const {
-    return reinterpret_cast<unsigned long>(key);
+        return reinterpret_cast<unsigned long>(key);
     }
 };
 

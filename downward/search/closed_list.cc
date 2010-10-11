@@ -23,7 +23,7 @@ using namespace std;
      insertion.
   2. It can trace back a path from the initial state to a given state
      in the list.
-  
+
   The datatypes used for the closed list could easily be
   parameterized, but there is no such need presently.
 */
@@ -41,7 +41,7 @@ template<class Entry, class Annotation>
 const Entry *ClosedList<Entry, Annotation>::insert(
     const Entry &entry, const Entry *predecessor, const Annotation &annotation) {
     typename map<Entry, PredecessorInfo>::iterator it =
-	closed.insert(make_pair(entry, PredecessorInfo(predecessor, annotation))).first;
+        closed.insert(make_pair(entry, PredecessorInfo(predecessor, annotation))).first;
     return &it->first;
 }
 
@@ -65,12 +65,12 @@ void ClosedList<Entry, Annotation>::trace_path(
     const Entry &entry, vector<Annotation> &path) const {
     assert(path.empty());
     Entry current_entry = entry;
-    for(;;) {
-	const PredecessorInfo &info = closed.find(current_entry)->second;
-	if(info.predecessor == 0)
-	    break;
-	path.push_back(info.annotation);
-	current_entry = *info.predecessor;
+    for (;;) {
+        const PredecessorInfo &info = closed.find(current_entry)->second;
+        if (info.predecessor == 0)
+            break;
+        path.push_back(info.annotation);
+        current_entry = *info.predecessor;
     }
 
     reverse(path.begin(), path.end());

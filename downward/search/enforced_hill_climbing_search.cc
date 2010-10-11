@@ -7,11 +7,10 @@
 #include "pref_evaluator.h"
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(Heuristic *heuristic_,
-    PreferredUsage preferred_usage_, bool use_cost_for_bfs_, int g_bound):
-    heuristic(heuristic_), use_preferred(false), 
-    preferred_usage(preferred_usage_), use_cost_for_bfs(use_cost_for_bfs_),
-    current_state(*g_initial_state), num_ehc_phases(0) {
-
+                                                       PreferredUsage preferred_usage_, bool use_cost_for_bfs_, int g_bound)
+    : heuristic(heuristic_), use_preferred(false),
+      preferred_usage(preferred_usage_), use_cost_for_bfs(use_cost_for_bfs_),
+      current_state(*g_initial_state), num_ehc_phases(0) {
     search_progress.add_heuristic(heuristic_);
     g_evaluator = new GEvaluator();
     bound = g_bound;
@@ -21,7 +20,7 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
     delete g_evaluator;
 }
 
-void EnforcedHillClimbingSearch::evaluate(const State &parent, const Operator * op,const State &state) {
+void EnforcedHillClimbingSearch::evaluate(const State &parent, const Operator *op, const State &state) {
     search_progress.inc_evaluated();
     if (!preferred_contains_eval) {
         if (op != NULL) {
@@ -44,7 +43,7 @@ void EnforcedHillClimbingSearch::initialize() {
     if (use_preferred) {
         cout << "Using preferred operators for "
              << (preferred_usage == RANK_PREFERRED_FIRST ? "ranking successors"
-                                                         : "pruning") << endl;
+            : "pruning") << endl;
     }
     cout << "g-bound = " << bound << endl;
 
@@ -61,8 +60,7 @@ void EnforcedHillClimbingSearch::initialize() {
 
     if (!use_preferred || (preferred_usage == PRUNE_BY_PREFERRED)) {
         open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
-    }
-    else {
+    } else {
         vector<ScalarEvaluator *> evals;
         evals.push_back(g_evaluator);
         evals.push_back(new PrefEvaluator);
@@ -87,9 +85,7 @@ void EnforcedHillClimbingSearch::get_successors(const State &state, vector<const
                 preferred_ops[i]->mark();
             }
         }
-
-    }
-    else {
+    } else {
         vector<const Operator *> preferred_ops;
         for (int i = 0; i < preferred_heuristics.size(); i++) {
             preferred_heuristics[i]->get_preferred_operators(preferred_ops);
@@ -146,7 +142,7 @@ int EnforcedHillClimbingSearch::ehc() {
         int d = next.second.first;
         const Operator *last_op = next.second.second;
 
-        if (search_space.get_node(last_parent).get_g()  + last_op->get_cost() >= bound)
+        if (search_space.get_node(last_parent).get_g() + last_op->get_cost() >= bound)
             continue;
 
         State s(last_parent, *last_op);
@@ -180,8 +176,7 @@ int EnforcedHillClimbingSearch::ehc() {
                 current_h = heuristic->get_heuristic();
                 open_list->clear();
                 return IN_PROGRESS;
-            }
-            else {
+            } else {
                 vector<const Operator *> ops;
                 get_successors(s, ops);
 
@@ -200,7 +195,6 @@ int EnforcedHillClimbingSearch::ehc() {
         //else if ((search_space.get_node(last_parent).get_g() + last_op->get_cost()) < node.get_g()) {
         //    node.reopen(search_space.get_node(last_parent), last_op);
         //}
-
     }
     cout << "No solution - FAILED" << endl;
     return FAILED;
@@ -210,12 +204,12 @@ void EnforcedHillClimbingSearch::statistics() const {
     search_progress.print_statistics();
 
     cout << "EHC Phases: " << num_ehc_phases << endl;
-    cout << "Average expansions per EHC Phase: " << (double) search_progress.get_expanded() / (double)num_ehc_phases << endl;
+    cout << "Average expansions per EHC Phase: " << (double)search_progress.get_expanded() / (double)num_ehc_phases << endl;
 
     map<int, pair<int, int> >::const_iterator it;
     for (it = d_counts.begin(); it != d_counts.end(); it++) {
         pair<int, pair<int, int> > p = *it;
-        cout << "EHC phases of depth "<< p.first << " : " << p.second.first << " - Avg. Expansions: " << (double) p.second.second / (double) p.second.first << endl;
+        cout << "EHC phases of depth " << p.first << " : " << p.second.first << " - Avg. Expansions: " << (double)p.second.second / (double)p.second.first << endl;
     }
 }
 
@@ -225,7 +219,7 @@ void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
     if (heur.empty()) {
         use_preferred = false;
         preferred_contains_eval = false;
-    } else if (find( heur.begin(), heur.end(), heuristic) != heur.end()) {
+    } else if (find(heur.begin(), heur.end(), heuristic) != heur.end()) {
         use_preferred = true;
         preferred_contains_eval = true;
     }
@@ -233,18 +227,18 @@ void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
 
 
 SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
-                                                 int start, int &end, 
+                                                 int start, int &end,
                                                  bool dry_run) {
-    if (config[start + 1] != "(") 
+    if (config[start + 1] != "(")
         throw ParseError(start + 1);
     Heuristic *h = \
         OptionParser::instance()->parse_heuristic(config, start + 2, end,
                                                   dry_run);
-    end ++;
+    end++;
 
-    if (end >= config.size()) 
+    if (end >= config.size())
         throw ParseError(end);
-   
+
     // parse options
 
     int pref_usage = 0;
@@ -253,36 +247,35 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
     vector<Heuristic *> preferred_list;
 
     if (config[end] != ")") {
-        end ++;
+        end++;
         NamedOptionParser option_parser;
-        option_parser.add_bool_option("bfs_use_cost", 
-            &use_cost_for_bfs_, "use cost for bfs");
-        option_parser.add_int_option("preferred_usage", 
-            &pref_usage, 
-            "preferred operator usage");
-        option_parser.add_heuristic_list_option("preferred", 
-            &preferred_list, "use preferred operators of these heuristics");
+        option_parser.add_bool_option("bfs_use_cost",
+                                      &use_cost_for_bfs_, "use cost for bfs");
+        option_parser.add_int_option("preferred_usage",
+                                     &pref_usage,
+                                     "preferred operator usage");
+        option_parser.add_heuristic_list_option("preferred",
+                                                &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("bound", &g_bound,
                                      "depth bound on g-values", true);
         option_parser.parse_options(config, end, end, dry_run);
-        end ++;
+        end++;
     }
-    if (config[end] != ")") 
+    if (config[end] != ")")
         throw ParseError(end);
-   
+
     if (pref_usage < 0 || pref_usage >= MAX_PREFERRED_USAGE) {
         cerr << "error: unknown preferred_usage: " << pref_usage << endl;
         exit(2);
     }
-    PreferredUsage preferred_usage_ = (PreferredUsage) pref_usage;
-    
+    PreferredUsage preferred_usage_ = (PreferredUsage)pref_usage;
+
     EnforcedHillClimbingSearch *engine = 0;
     if (!dry_run) {
-        engine = new EnforcedHillClimbingSearch(h, preferred_usage_, 
+        engine = new EnforcedHillClimbingSearch(h, preferred_usage_,
                                                 use_cost_for_bfs_, g_bound);
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
     return engine;
 }
-

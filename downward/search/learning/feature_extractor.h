@@ -13,16 +13,16 @@ using namespace std;
 
 class FeatureExtractor {
 public:
-	virtual int get_num_features() = 0;
-	virtual int get_feature_domain_size(int feature) = 0;
-	virtual void extract_features(const void *obj, vector<int>& features) = 0;
+    virtual int get_num_features() = 0;
+    virtual int get_feature_domain_size(int feature) = 0;
+    virtual void extract_features(const void *obj, vector<int> &features) = 0;
 };
 
 
 struct FeatureExtractorFactory {
     bool state_vars;
 
-    FeatureExtractorFactory(bool sv = true):state_vars(sv) {}
+    FeatureExtractorFactory(bool sv = true) : state_vars(sv) {}
     FeatureExtractor *create();
 };
 

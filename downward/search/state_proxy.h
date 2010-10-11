@@ -37,27 +37,27 @@ public:
     }
 
     const StateProxy &operator=(const StateProxy &other) const {
-	state_data = other.state_data;
-	return *this;
+        state_data = other.state_data;
+        return *this;
     }
     bool operator==(const StateProxy &other) const {
         return State(state_data) == State(other.state_data);
     }
     void make_permanent() const {
         state_var_t *new_buffer = new state_var_t[g_variable_domain.size()];
-	for(int i = 0; i < g_variable_domain.size(); i++)
-	  new_buffer[i] = state_data[i];
-	state_data = new_buffer;
+        for (int i = 0; i < g_variable_domain.size(); i++)
+            new_buffer[i] = state_data[i];
+        state_data = new_buffer;
     }
 };
 
 namespace __gnu_cxx {
-    template<>
-    struct hash<StateProxy> {
-        size_t operator()(const StateProxy &state_proxy) const {
-	    return State(state_proxy.state_data).hash();
-	}
-    };
+template<>
+struct hash<StateProxy> {
+    size_t operator()(const StateProxy &state_proxy) const {
+        return State(state_proxy.state_data).hash();
+    }
+};
 }
 
 

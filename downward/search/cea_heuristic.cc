@@ -32,7 +32,7 @@ static ContextEnhancedAdditiveHeuristic *g_HACK = 0;
 inline void ContextEnhancedAdditiveHeuristic::add_to_heap(
     LocalProblemNode *node) {
     int bucket_no = node->priority();
-    if(bucket_no >= buckets.size())
+    if (bucket_no >= buckets.size())
         buckets.resize(max<size_t>(bucket_no + 1, 2 * buckets.size()));
     buckets[bucket_no].push_back(node);
     ++heap_size;
@@ -53,7 +53,7 @@ LocalTransition::LocalTransition(
 }
 
 inline void LocalTransition::try_to_fire() {
-    if(!unreached_conditions && target_cost < target->cost) {
+    if (!unreached_conditions && target_cost < target->cost) {
         target->cost = target_cost;
         target->reached_by = this;
         g_HACK->add_to_heap(target);
@@ -73,7 +73,7 @@ void LocalTransition::on_source_expanded(const State &state) {
 
     target_cost = source->cost + action_cost;
 
-    if(target->cost <= target_cost) {
+    if (target->cost <= target_cost) {
         // Transition cannot find a shorter path to target.
         return;
     }
@@ -89,27 +89,27 @@ void LocalTransition::on_source_expanded(const State &state) {
     vector<vector<LocalProblem *> > &problem_index = g_HACK->local_problem_index;
     int *parent_vars = &*source->owner->causal_graph_parents->begin();
 
-    for(; curr_precond != last_precond; ++curr_precond) {
+    for (; curr_precond != last_precond; ++curr_precond) {
         int local_var = curr_precond->local_var;
         int current_val = children_state[local_var];
         int precond_value = curr_precond->value;
         int precond_var_no = parent_vars[local_var];
-        
-        if(current_val == precond_value)
+
+        if (current_val == precond_value)
             continue;
 
-        LocalProblem *&child_problem = problem_index[precond_var_no][current_val];
-        if(!child_problem) {
+        LocalProblem * &child_problem = problem_index[precond_var_no][current_val];
+        if (!child_problem) {
             child_problem = new LocalProblem(precond_var_no);
             g_HACK->local_problems.push_back(child_problem);
         }
 
-        if(!child_problem->is_initialized())
+        if (!child_problem->is_initialized())
             child_problem->initialize(source->priority(), current_val, state);
         LocalProblemNode *cond_node = &child_problem->nodes[precond_value];
-        if(cond_node->expanded) {
+        if (cond_node->expanded) {
             target_cost += cond_node->cost;
-            if(target->cost <= target_cost) {
+            if (target->cost <= target_cost) {
                 // Transition cannot find a shorter path to target.
                 return;
             }
@@ -145,19 +145,19 @@ void LocalProblemNode::add_to_waiting_list(LocalTransition *transition) {
 void LocalProblemNode::on_expand() {
     expanded = true;
     // Set children state unless this was an initial node.
-    if(reached_by) {
+    if (reached_by) {
         LocalProblemNode *parent = reached_by->source;
         children_state = parent->children_state;
         const vector<LocalAssignment> &precond = reached_by->label->precond;
-        for(int i = 0; i < precond.size(); i++)
+        for (int i = 0; i < precond.size(); i++)
             children_state[precond[i].local_var] = precond[i].value;
         const vector<LocalAssignment> &effect = reached_by->label->effect;
-        for(int i = 0; i < effect.size(); i++)
+        for (int i = 0; i < effect.size(); i++)
             children_state[effect[i].local_var] = effect[i].value;
-        if(parent->reached_by)
+        if (parent->reached_by)
             reached_by = parent->reached_by;
     }
-    for(int i = 0; i < waiting_list.size(); i++)
+    for (int i = 0; i < waiting_list.size(); i++)
         waiting_list[i]->on_condition_reached(cost);
     waiting_list.clear();
 }
@@ -168,19 +168,19 @@ void LocalProblem::build_nodes_for_variable(int var_no) {
     causal_graph_parents = &dtg->cea_parents;
 
     int num_parents = causal_graph_parents->size();
-    for(int value = 0; value < g_variable_domain[var_no]; value++)
+    for (int value = 0; value < g_variable_domain[var_no]; value++)
         nodes.push_back(LocalProblemNode(this, num_parents));
 
     // Compile the DTG arcs into LocalTransition objects.
     int action_cost = dtg->is_axiom ? 0 : 1;
-    for(int value = 0; value < nodes.size(); value++) {
+    for (int value = 0; value < nodes.size(); value++) {
         LocalProblemNode &node = nodes[value];
         const ValueNode &dtg_node = dtg->nodes[value];
-        for(int i = 0; i < dtg_node.transitions.size(); i++) {
+        for (int i = 0; i < dtg_node.transitions.size(); i++) {
             const ValueTransition &dtg_trans = dtg_node.transitions[i];
             int target_value = dtg_trans.target->value;
             LocalProblemNode &target = nodes[target_value];
-            for(int j = 0; j < dtg_trans.cea_labels.size(); j++) {
+            for (int j = 0; j < dtg_trans.cea_labels.size(); j++) {
                 const ValueTransitionLabel &label = dtg_trans.cea_labels[j];
                 LocalTransition trans(&node, &target, &label, action_cost);
                 node.outgoing_transitions.push_back(trans);
@@ -193,14 +193,14 @@ void LocalProblem::build_nodes_for_goal() {
     // TODO: We have a small memory leak here. Could be fixed by
     // making two LocalProblem classes with a virtual destructor.
     causal_graph_parents = new vector<int>;
-    for(int i = 0; i < g_goal.size(); i++)
+    for (int i = 0; i < g_goal.size(); i++)
         causal_graph_parents->push_back(g_goal[i].first);
 
-    for(int value = 0; value < 2; value++)
+    for (int value = 0; value < 2; value++)
         nodes.push_back(LocalProblemNode(this, g_goal.size()));
 
     vector<LocalAssignment> goals;
-    for(int goal_no = 0; goal_no < g_goal.size(); goal_no++) {
+    for (int goal_no = 0; goal_no < g_goal.size(); goal_no++) {
         int goal_value = g_goal[goal_no].second;
         goals.push_back(LocalAssignment(goal_no, goal_value));
     }
@@ -212,7 +212,7 @@ void LocalProblem::build_nodes_for_goal() {
 
 LocalProblem::LocalProblem(int var_no) {
     base_priority = -1;
-    if(var_no == -1)
+    if (var_no == -1)
         build_nodes_for_goal();
     else
         build_nodes_for_variable(var_no);
@@ -223,7 +223,7 @@ void LocalProblem::initialize(int base_priority_, int start_value,
     assert(!is_initialized());
     base_priority = base_priority_;
 
-    for(int to_value = 0; to_value < nodes.size(); to_value++) {
+    for (int to_value = 0; to_value < nodes.size(); to_value++) {
         nodes[to_value].expanded = false;
         nodes[to_value].cost = QUITE_A_LOT;
         nodes[to_value].waiting_list.clear();
@@ -231,7 +231,7 @@ void LocalProblem::initialize(int base_priority_, int start_value,
 
     LocalProblemNode *start = &nodes[start_value];
     start->cost = 0;
-    for(int i = 0; i < causal_graph_parents->size(); i++)
+    for (int i = 0; i < causal_graph_parents->size(); i++)
         start->children_state[i] = state[(*causal_graph_parents)[i]];
 
     g_HACK->add_to_heap(start);
@@ -239,8 +239,8 @@ void LocalProblem::initialize(int base_priority_, int start_value,
 
 void LocalProblemNode::mark_helpful_transitions(const State &state) {
     assert(cost >= 0 && cost < LocalProblem::QUITE_A_LOT);
-    if(reached_by) {
-        if(reached_by->target_cost == reached_by->action_cost) {
+    if (reached_by) {
+        if (reached_by->target_cost == reached_by->action_cost) {
             // Transition applicable, all preconditions achieved.
             const Operator *op = reached_by->label->op;
             assert(!op->is_axiom());
@@ -250,11 +250,11 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
             // Recursively compute helpful transitions for precondition variables.
             const vector<LocalAssignment> &precond = reached_by->label->precond;
             int *parent_vars = &*owner->causal_graph_parents->begin();
-            for(int i = 0; i < precond.size(); i++) {
+            for (int i = 0; i < precond.size(); i++) {
                 int precond_value = precond[i].value;
                 int local_var = precond[i].local_var;
                 int precond_var_no = parent_vars[local_var];
-                if(state[precond_var_no] == precond_value)
+                if (state[precond_var_no] == precond_value)
                     continue;
                 LocalProblemNode *child_node = &g_HACK->get_local_problem(
                     precond_var_no, state[precond_var_no])->nodes[precond_value];
@@ -275,7 +275,7 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic() {
 
 ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
     delete goal_problem;
-    for(int i = 0; i < local_problems.size(); i++)
+    for (int i = 0; i < local_problems.size(); i++)
         delete local_problems[i];
 }
 
@@ -289,7 +289,7 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
     goal_node = &goal_problem->nodes[1];
 
     local_problem_index.resize(num_variables);
-    for(int var_no = 0; var_no < num_variables; var_no++) {
+    for (int var_no = 0; var_no < num_variables; var_no++) {
         int num_values = g_variable_domain[var_no];
         local_problem_index[var_no].resize(num_values, 0);
     }
@@ -298,14 +298,14 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
 int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
     initialize_heap();
     goal_problem->base_priority = -1;
-    for(int i = 0; i < local_problems.size(); i++)
+    for (int i = 0; i < local_problems.size(); i++)
         local_problems[i]->base_priority = -1;
 
     goal_problem->initialize(0, 0, state);
 
     int heuristic = compute_costs(state);
 
-    if(heuristic != DEAD_END && heuristic != 0)
+    if (heuristic != DEAD_END && heuristic != 0)
         goal_node->mark_helpful_transitions(state);
 
     return heuristic;
@@ -317,25 +317,25 @@ void ContextEnhancedAdditiveHeuristic::initialize_heap() {
        reallocations. At least changing this from buckets.clear() gave
        a significant speed boost (about 7%) for depots #10 on alfons.
     */
-    for(int i = 0; i < buckets.size(); i++)
+    for (int i = 0; i < buckets.size(); i++)
         buckets[i].clear();
     heap_size = 0;
 }
 
 int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
-    for(int curr_priority = 0; heap_size != 0; curr_priority++) {
+    for (int curr_priority = 0; heap_size != 0; curr_priority++) {
         assert(curr_priority < buckets.size());
-        for(int pos = 0; pos < buckets[curr_priority].size(); pos++) {
+        for (int pos = 0; pos < buckets[curr_priority].size(); pos++) {
             LocalProblemNode *node = buckets[curr_priority][pos];
             assert(node->owner->is_initialized());
-            if(node->priority() < curr_priority)
+            if (node->priority() < curr_priority)
                 continue;
-            if(node == goal_node)
+            if (node == goal_node)
                 return node->cost;
 
             assert(node->priority() == curr_priority);
             node->on_expand();
-            for(int i = 0; i < node->outgoing_transitions.size(); i++)
+            for (int i = 0; i < node->outgoing_transitions.size(); i++)
                 node->outgoing_transitions[i].on_source_expanded(state);
         }
         heap_size -= buckets[curr_priority].size();

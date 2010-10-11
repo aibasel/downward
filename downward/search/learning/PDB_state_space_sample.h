@@ -4,16 +4,16 @@
 #include "probe_state_space_sample.h"
 #include "../heuristic.h"
 
-class PDBStateSpaceSample: public ProbeStateSpaceSample {
+class PDBStateSpaceSample : public ProbeStateSpaceSample {
 protected:
-	double *prob_table;
+    double *prob_table;
 
-	int get_random_depth();
+    int get_random_depth();
 public:
-	PDBStateSpaceSample(int goal_depth, int probes, int size);
-	virtual ~PDBStateSpaceSample();
+    PDBStateSpaceSample(int goal_depth, int probes, int size);
+    virtual ~PDBStateSpaceSample();
 
-	virtual int collect();
+    virtual int collect();
 };
 
 #endif /* PDBSTATESPACESAMPLE_H_ */

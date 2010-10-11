@@ -4,7 +4,7 @@
 GEvaluator::GEvaluator() {
 }
 
-GEvaluator::~GEvaluator(){
+GEvaluator::~GEvaluator() {
 }
 
 void GEvaluator::evaluate(int g, bool) {
@@ -31,4 +31,3 @@ ScalarEvaluator *GEvaluator::create(const std::vector<std::string> &config,
     else
         return new GEvaluator;
 }
-

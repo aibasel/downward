@@ -7,10 +7,10 @@
 template<class Entry, class Annotation>
 class ClosedList {
     struct PredecessorInfo {
-	const Entry *predecessor;
-	Annotation annotation;
-	PredecessorInfo(const Entry *pred, const Annotation &annote)
-	    : predecessor(pred), annotation(annote) {}
+        const Entry *predecessor;
+        Annotation annotation;
+        PredecessorInfo(const Entry *pred, const Annotation &annote)
+            : predecessor(pred), annotation(annote) {}
     };
 
     typedef std::map<Entry, PredecessorInfo> ClosedListMap;
@@ -19,8 +19,8 @@ public:
     ClosedList();
     ~ClosedList();
     const Entry *insert(const Entry &entry,
-			const Entry *predecessor,
-			const Annotation &annotation);
+                        const Entry *predecessor,
+                        const Annotation &annotation);
     void clear();
 
     bool contains(const Entry &entry) const;

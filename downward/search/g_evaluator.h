@@ -19,11 +19,9 @@ public:
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;
     int get_value() const;
-    void get_involved_heuristics(std::set<Heuristic*>&) {}
-    static ScalarEvaluator *create(const std::vector<std::string> &config, 
+    void get_involved_heuristics(std::set<Heuristic *> &) {}
+    static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end, bool dry_run);
 };
 
 #endif
-
-

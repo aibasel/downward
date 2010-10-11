@@ -7,9 +7,9 @@
 #include <sys/times.h>
 
 
-class ProbeStateSpaceSample: public StateSpaceSample {
+class ProbeStateSpaceSample : public StateSpaceSample {
 protected:
-	// parameters
+    // parameters
     int goal_depth_estimate;
     int max_num_probes;
     int min_training_set_size;
@@ -24,14 +24,14 @@ public:
     virtual ~ProbeStateSpaceSample();
     virtual int collect();
 
-    int get_goal_depth_estimate() const {return goal_depth_estimate;}
-    void set_goal_depth_estimate(int depth) {goal_depth_estimate = depth;}
+    int get_goal_depth_estimate() const {return goal_depth_estimate; }
+    void set_goal_depth_estimate(int depth) {goal_depth_estimate = depth; }
 
-    int get_max_num_probes() const {return max_num_probes;}
-    void set_max_num_probes(int num_probes) {max_num_probes = num_probes;}
+    int get_max_num_probes() const {return max_num_probes; }
+    void set_max_num_probes(int num_probes) {max_num_probes = num_probes; }
 
-    int get_min_training_set_size() const {return min_training_set_size;}
-    void set_min_training_set_size(int training_set_size) {min_training_set_size = training_set_size;}
+    int get_min_training_set_size() const {return min_training_set_size; }
+    void set_min_training_set_size(int training_set_size) {min_training_set_size = training_set_size; }
 
     //void add_heuristic(Heuristic *h) {heuristics.push_back(h); computation_time.push_back(0);}
     //double get_computation_time(int i) {return computation_time[i];}

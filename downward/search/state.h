@@ -23,10 +23,10 @@ public:
     ~State();
     State &operator=(const State &other);
     state_var_t &operator[](int index) {
-	return vars[index];
+        return vars[index];
     }
     int operator[](int index) const {
-	return vars[index];
+        return vars[index];
     }
     void dump() const;
     bool operator==(const State &other) const;

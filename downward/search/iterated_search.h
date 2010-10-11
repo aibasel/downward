@@ -6,7 +6,7 @@
 #include "search_progress.h"
 #include "option_parser.h"
 
-class IteratedSearch: public SearchEngine {
+class IteratedSearch : public SearchEngine {
 private:
     int phase;
     bool last_phase_found_solution;
@@ -42,8 +42,8 @@ public:
                    bool continue_on_solve);
     virtual ~IteratedSearch();
     void statistics() const;
-    static SearchEngine* create(
-        const std::vector<std::string> &config, int start, int &end, 
+    static SearchEngine *create(
+        const std::vector<std::string> &config, int start, int &end,
         bool dry_run);
 };
 

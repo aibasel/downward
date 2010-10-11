@@ -35,7 +35,7 @@ double ExactTimer::operator()() const {
 }
 
 void ExactTimer::resume() {
-    if(stopped) {
+    if (stopped) {
         stopped = false;
         last_start_clock = current_clock();
     }
@@ -48,12 +48,12 @@ double ExactTimer::reset() {
     return result;
 }
 
-ostream &operator<<(ostream &os, const ExactTimer &timer) {
+ostream & operator<<(ostream &os, const ExactTimer &timer) {
     double value = timer() / 1e9;
     if (value < 0 && value > -1e-10)
-        value = 0.0; // We sometimes get inaccuracies from God knows where.
+        value = 0.0;  // We sometimes get inaccuracies from God knows where.
     if (value < 1e-10)
-        value = 0.0; // Don't care about such small values.
+        value = 0.0;  // Don't care about such small values.
     os << value << "s";
     return os;
 }

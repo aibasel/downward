@@ -13,7 +13,6 @@ class ScalarEvaluator;
 
 template<class Entry>
 class TieBreakingOpenList : public OpenList<Entry> {
-    
     typedef std::deque<Entry> Bucket;
 
     std::map<const std::vector<int>, Bucket> buckets;
@@ -27,11 +26,11 @@ class TieBreakingOpenList : public OpenList<Entry> {
     bool dead_end_reliable;
     bool allow_unsafe_pruning; // don't insert if main evaluator
     // says dead end, even if not reliably
-    
-    const std::vector<int>& get_value(); // currently not used
+
+    const std::vector<int> &get_value(); // currently not used
     int dimension() const;
 protected:
-    Evaluator* get_evaluator() { return this; }
+    Evaluator *get_evaluator() {return this; }
 
 public:
     TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
@@ -48,10 +47,10 @@ public:
     void evaluate(int g, bool preferred);
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;
-    void get_involved_heuristics(std::set<Heuristic*> &hset);
-    
-    static OpenList<Entry> *create( const std::vector<std::string> &config, 
-        int start, int &end, bool dry_run=false);
+    void get_involved_heuristics(std::set<Heuristic *> &hset);
+
+    static OpenList<Entry> *create(const std::vector<std::string> &config,
+                                   int start, int &end, bool dry_run = false);
 };
 
 #include "tiebreaking_open_list.cc"

@@ -1,7 +1,7 @@
 #ifndef CEA_HEURISTIC_H
 #define CEA_HEURISTIC_H
 
-#include<string>
+#include <string>
 #include <vector>
 
 #include "heuristic.h"
@@ -122,8 +122,8 @@ protected:
 public:
     ContextEnhancedAdditiveHeuristic();
     ~ContextEnhancedAdditiveHeuristic();
-    virtual bool dead_ends_are_reliable() {return false;}
-    static ScalarEvaluator *create(const std::vector<std::string> &config, 
+    virtual bool dead_ends_are_reliable() {return false; }
+    static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end, bool dry_run);
 };
 
@@ -139,7 +139,7 @@ inline bool LocalProblem::is_initialized() const {
 inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
     int var_no, int value) {
     LocalProblem *result = local_problem_index[var_no][value];
-    if(!result) {
+    if (!result) {
         result = new LocalProblem(var_no);
         local_problem_index[var_no][value] = result;
         local_problems.push_back(result);

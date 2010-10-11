@@ -12,11 +12,11 @@
 using namespace std;
 using namespace __gnu_cxx;
 
-bool _possibly_fires(const vector<Prevail>& prevail, const vector<vector<int> >& lvl_var);
+bool _possibly_fires(const vector<Prevail> &prevail, const vector<vector<int> > &lvl_var);
 
-hash_map<int, int> _intersect(const hash_map<int, int>& a, const hash_map<int, int>& b);
+hash_map<int, int> _intersect(const hash_map<int, int> &a, const hash_map<int, int> &b);
 
-bool _possibly_reaches_lm(const Operator& o,
-			  const vector<vector<int> >& lvl_var, const LandmarkNode *lmp);
+bool _possibly_reaches_lm(const Operator &o,
+                          const vector<vector<int> > &lvl_var, const LandmarkNode *lmp);
 
 #endif

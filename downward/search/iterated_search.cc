@@ -2,19 +2,18 @@
 #include <limits>
 
 IteratedSearch::IteratedSearch(
-        const vector<string> &engine_config_,
-        vector<int> engine_config_start_,
-        bool pass_bound_,
-        bool repeat_last_phase_,
-        bool continue_on_fail_,
-        bool continue_on_solve_):
-        engine_config(engine_config_),
-        engine_config_start(engine_config_start_),
-        pass_bound(pass_bound_),
-        repeat_last_phase(repeat_last_phase_),
-        continue_on_fail(continue_on_fail_),
-        continue_on_solve(continue_on_solve_)
-{
+    const vector<string> &engine_config_,
+    vector<int> engine_config_start_,
+    bool pass_bound_,
+    bool repeat_last_phase_,
+    bool continue_on_fail_,
+    bool continue_on_solve_)
+    : engine_config(engine_config_),
+      engine_config_start(engine_config_start_),
+      pass_bound(pass_bound_),
+      repeat_last_phase(repeat_last_phase_),
+      continue_on_fail(continue_on_fail_),
+      continue_on_solve(continue_on_solve_) {
     last_phase_found_solution = false;
     best_bound = numeric_limits<int>::max();
     found_solution = false;
@@ -28,12 +27,12 @@ void IteratedSearch::initialize() {
 }
 
 SearchEngine *IteratedSearch::get_search_engine(
-        int engine_config_start_index) {
+    int engine_config_start_index) {
     int end;
     current_search_name = "";
     SearchEngine *engine = OptionParser::instance()->parse_search_engine(
-            engine_config, engine_config_start[engine_config_start_index],
-            end, false);
+        engine_config, engine_config_start[engine_config_start_index],
+        end, false);
     for (int i = engine_config_start[engine_config_start_index]; i <= end; i++) {
         current_search_name.append(engine_config[i]);
     }
@@ -43,12 +42,10 @@ SearchEngine *IteratedSearch::get_search_engine(
 }
 
 SearchEngine *IteratedSearch::create_phase(int p) {
-
     if (p >= engine_config_start.size()) {
         if (repeat_last_phase) {
             return get_search_engine(engine_config_start.size() - 1);
-        }
-        else {
+        } else {
             return NULL;
         }
     }
@@ -59,7 +56,7 @@ SearchEngine *IteratedSearch::create_phase(int p) {
 int IteratedSearch::step() {
     current_search = create_phase(phase);
     if (current_search == NULL) {
-        return ( (last_phase_found_solution) ? SOLVED : FAILED);
+        return (last_phase_found_solution) ? SOLVED : FAILED;
     }
     if (pass_bound) {
         current_search->set_bound(best_bound);
@@ -85,15 +82,15 @@ int IteratedSearch::step() {
 
     current_search->statistics();
     search_progress.inc_expanded(
-            current_search->get_search_progress().get_expanded());
+        current_search->get_search_progress().get_expanded());
     search_progress.inc_evaluated(
-            current_search->get_search_progress().get_evaluated());
+        current_search->get_search_progress().get_evaluated());
     search_progress.inc_generated(
-            current_search->get_search_progress().get_generated());
+        current_search->get_search_progress().get_generated());
     search_progress.inc_generated_ops(
-            current_search->get_search_progress().get_generated_ops());
+        current_search->get_search_progress().get_generated_ops());
     search_progress.inc_reopened(
-            current_search->get_search_progress().get_reopened());
+        current_search->get_search_progress().get_reopened());
 
     return step_return_value();
 }
@@ -116,7 +113,7 @@ int IteratedSearch::step_return_value() {
             return IN_PROGRESS;
         } else {
             cout << "No solution found - stop searching" << endl;
-            return (found_solution ? SOLVED : FAILED);
+            return found_solution ? SOLVED : FAILED;
         }
     }
 }
@@ -135,17 +132,16 @@ void IteratedSearch::statistics() const {
 
 SearchEngine *IteratedSearch::create(
     const vector<string> &config, int start, int &end, bool dry_run) {
-
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
     vector<int> engine_config_start;
     OptionParser::instance()->parse_search_engine_list(config, start + 2,
-                           end, false, engine_config_start, true);
+                                                       end, false, engine_config_start, true);
 
     if (engine_config_start.empty())
         throw ParseError(end);
-    end ++;
+    end++;
 
     bool pass_bound = true;
     bool repeat_last = false;
@@ -153,18 +149,18 @@ SearchEngine *IteratedSearch::create(
     bool continue_on_solve = true;
 
     if (config[end] != ")") {
-        end ++;
+        end++;
         NamedOptionParser option_parser;
         option_parser.add_bool_option("pass_bound", &pass_bound,
-                                     "use bound from previous search");
+                                      "use bound from previous search");
         option_parser.add_bool_option("repeat_last", &repeat_last,
-                                     "repeat last phase of search");
+                                      "repeat last phase of search");
         option_parser.add_bool_option("continue_on_fail", &continue_on_fail,
-                                   "continue search after no solution found");
+                                      "continue search after no solution found");
         option_parser.add_bool_option("continue_on_solve", &continue_on_solve,
                                       "continue search after solution found");
         option_parser.parse_options(config, end, end, dry_run);
-        end ++;
+        end++;
     }
     if (config[end] != ")")
         throw ParseError(end);
@@ -174,7 +170,7 @@ SearchEngine *IteratedSearch::create(
 
     IteratedSearch *engine = \
         new IteratedSearch(config, engine_config_start, pass_bound, repeat_last,
-                continue_on_fail, continue_on_solve);
+                           continue_on_fail, continue_on_solve);
 
     return engine;
 }

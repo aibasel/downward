@@ -27,8 +27,7 @@ void LandmarksGraphZhuGivan::generate_landmarks() {
 }
 
 bool LandmarksGraphZhuGivan::satisfies_goal_conditions(
-        const proposition_layer& layer) const {
-
+    const proposition_layer &layer) const {
     for (unsigned i = 0; i < g_goal.size(); i++)
         if (!layer[g_goal[i].first][g_goal[i].second].reached())
             return false;
@@ -37,11 +36,10 @@ bool LandmarksGraphZhuGivan::satisfies_goal_conditions(
 }
 
 void LandmarksGraphZhuGivan::extract_landmarks(
-        const proposition_layer& last_prop_layer) {
-
+    const proposition_layer &last_prop_layer) {
     // insert goal landmarks and mark them as goals
     for (unsigned i = 0; i < g_goal.size(); i++) {
-        LandmarkNode* lmp;
+        LandmarkNode *lmp;
         if (simple_landmark_exists(g_goal[i])) {
             lmp = &get_simple_lm_node(g_goal[i]);
             lmp->in_goal = true;
@@ -50,17 +48,16 @@ void LandmarksGraphZhuGivan::extract_landmarks(
             lmp->in_goal = true;
         }
         // extract landmarks from goal labels
-        const plan_graph_node& goal_node =
-                last_prop_layer[g_goal[i].first][g_goal[i].second];
+        const plan_graph_node &goal_node =
+            last_prop_layer[g_goal[i].first][g_goal[i].second];
 
         assert(goal_node.reached());
 
         for (lm_set::const_iterator it = goal_node.labels.begin(); it
-                != goal_node.labels.end(); it++) {
-
+             != goal_node.labels.end(); it++) {
             if (*it == g_goal[i]) // ignore label on itself
                 continue;
-            LandmarkNode* node;
+            LandmarkNode *node;
             // Add new landmarks
             if (!simple_landmark_exists(*it)) {
                 node = &landmark_add_simple(*it);
@@ -68,7 +65,7 @@ void LandmarksGraphZhuGivan::extract_landmarks(
                 // if landmark is not in the initial state,
                 // relaxed_task_solvable() should be false
                 assert((*g_initial_state)[it->first] == it->second ||
-                        !relaxed_task_solvable(true, node));
+                       !relaxed_task_solvable(true, node));
             } else
                 node = &get_simple_lm_node(*it);
             // Add order: *it ->_{ln} g_goal[i]
@@ -76,7 +73,6 @@ void LandmarksGraphZhuGivan::extract_landmarks(
             assert(lmp->children.find(node) == lmp->children.end());
             edge_add(*node, *lmp, ln);
         }
-
     }
 }
 
@@ -101,7 +97,7 @@ LandmarksGraphZhuGivan::proposition_layer LandmarksGraphZhuGivan::build_relaxed_
     // no conditional effects, is only necessary to apply them once. (If they
     // have conditional effects, they will be triggered at later stages again).
     triggered.insert(operators_without_preconditions.begin(),
-            operators_without_preconditions.end());
+                     operators_without_preconditions.end());
 
     bool changes = true;
     while (changes) {
@@ -109,19 +105,18 @@ LandmarksGraphZhuGivan::proposition_layer LandmarksGraphZhuGivan::build_relaxed_
         hash_set<int> next_triggered;
         changes = false;
         for (hash_set<int>::const_iterator it = triggered.begin(); it
-                != triggered.end(); it++) {
-
-            const Operator& op = get_operator_for_lookup_index(*it);
+             != triggered.end(); it++) {
+            const Operator &op = get_operator_for_lookup_index(*it);
             if (operator_applicable(op, current_prop_layer)) {
                 lm_set changed = apply_operator_and_propagate_labels(op,
-                        current_prop_layer, next_prop_layer);
+                                                                     current_prop_layer, next_prop_layer);
                 if (!changed.empty()) {
                     changes = true;
                     for (lm_set::const_iterator it2 = changed.begin(); it2
-                            != changed.end(); it2++)
+                         != changed.end(); it2++)
                         next_triggered.insert(
-                                triggers[it2->first][it2->second].begin(),
-                                triggers[it2->first][it2->second].end());
+                            triggers[it2->first][it2->second].begin(),
+                            triggers[it2->first][it2->second].end());
                 }
             }
         }
@@ -132,34 +127,32 @@ LandmarksGraphZhuGivan::proposition_layer LandmarksGraphZhuGivan::build_relaxed_
     return current_prop_layer;
 }
 
-bool LandmarksGraphZhuGivan::operator_applicable(const Operator& op,
-        const proposition_layer& state) const {
-
+bool LandmarksGraphZhuGivan::operator_applicable(const Operator &op,
+                                                 const proposition_layer &state) const {
     // test preconditions
-    const vector<Prevail>& prevail = op.get_prevail();
+    const vector<Prevail> &prevail = op.get_prevail();
     for (unsigned i = 0; i < prevail.size(); i++)
         if (!state[prevail[i].var][prevail[i].prev].reached())
             return false;
 
-    const vector<PrePost>& prepost = op.get_pre_post();
+    const vector<PrePost> &prepost = op.get_pre_post();
     for (unsigned i = 0; i < prepost.size(); i++)
         if (prepost[i].pre != -1
-                && !state[prepost[i].var][prepost[i].pre].reached())
+            && !state[prepost[i].var][prepost[i].pre].reached())
             return false;
 
     return true;
 }
 
 bool LandmarksGraphZhuGivan::operator_cond_effect_fires(
-        const vector<Prevail>& cond, const proposition_layer& state) const {
-
+    const vector<Prevail> &cond, const proposition_layer &state) const {
     for (unsigned i = 0; i < cond.size(); i++)
         if (!state[cond[i].var][cond[i].prev].reached())
             return false;
     return true;
 }
 
-static lm_set _union(const lm_set& a, const lm_set& b) {
+static lm_set _union(const lm_set &a, const lm_set &b) {
     if (a.size() < b.size())
         return _union(b, a);
 
@@ -170,7 +163,7 @@ static lm_set _union(const lm_set& a, const lm_set& b) {
     return result;
 }
 
-static lm_set _intersection(const lm_set& a, const lm_set& b) {
+static lm_set _intersection(const lm_set &a, const lm_set &b) {
     if (a.size() > b.size())
         return _intersection(b, a);
 
@@ -182,29 +175,27 @@ static lm_set _intersection(const lm_set& a, const lm_set& b) {
     return result;
 }
 
-lm_set LandmarksGraphZhuGivan::union_of_precondition_labels(const Operator& op,
-        const proposition_layer& current) const {
-
+lm_set LandmarksGraphZhuGivan::union_of_precondition_labels(const Operator &op,
+                                                            const proposition_layer &current) const {
     lm_set result;
 
-    const vector<Prevail>& prevail = op.get_prevail();
+    const vector<Prevail> &prevail = op.get_prevail();
     for (unsigned i = 0; i < prevail.size(); i++)
-        result
-                = _union(result,
-                        current[prevail[i].var][prevail[i].prev].labels);
+        result =
+            _union(result,
+                   current[prevail[i].var][prevail[i].prev].labels);
 
-    const vector<PrePost>& prepost = op.get_pre_post();
+    const vector<PrePost> &prepost = op.get_pre_post();
     for (unsigned i = 0; i < prepost.size(); i++)
         if (prepost[i].pre != -1)
             result = _union(result,
-                    current[prepost[i].var][prepost[i].pre].labels);
+                            current[prepost[i].var][prepost[i].pre].labels);
 
     return result;
 }
 
 lm_set LandmarksGraphZhuGivan::union_of_condition_labels(
-        const vector<Prevail>& cond, const proposition_layer& current) const {
-
+    const vector<Prevail> &cond, const proposition_layer &current) const {
     lm_set result;
     for (unsigned i = 0; i < cond.size(); i++)
         result = _union(result, current[cond[i].var][cond[i].prev].labels);
@@ -212,9 +203,8 @@ lm_set LandmarksGraphZhuGivan::union_of_condition_labels(
     return result;
 }
 
-static bool _propagate_labels(lm_set& labels, const lm_set& new_labels,
-        const pair<int, int>& prop) {
-
+static bool _propagate_labels(lm_set &labels, const lm_set &new_labels,
+                              const pair<int, int> &prop) {
     lm_set old_labels = labels;
 
     if (!labels.empty()) {
@@ -238,15 +228,14 @@ static bool _propagate_labels(lm_set& labels, const lm_set& new_labels,
 }
 
 lm_set LandmarksGraphZhuGivan::apply_operator_and_propagate_labels(
-        const Operator& op, const proposition_layer& current,
-        proposition_layer& next) const {
-
+    const Operator &op, const proposition_layer &current,
+    proposition_layer &next) const {
     assert(operator_applicable(op, current));
 
     lm_set result;
     lm_set precond_label_union = union_of_precondition_labels(op, current);
 
-    const vector<PrePost>& prepost = op.get_pre_post();
+    const vector<PrePost> &prepost = op.get_pre_post();
     for (int i = 0; i < prepost.size(); i++) {
         const int var = prepost[i].var;
         const int post = prepost[i].post;
@@ -256,12 +245,12 @@ lm_set LandmarksGraphZhuGivan::apply_operator_and_propagate_labels(
 
         if (operator_cond_effect_fires(prepost[i].cond, current)) {
             const lm_set precond_label_union_with_condeff = _union(
-                    precond_label_union, union_of_condition_labels(
-                            prepost[i].cond, current)); // NOTE: this equals precond_label_union, if prepost[i] is
+                precond_label_union, union_of_condition_labels(
+                    prepost[i].cond, current));         // NOTE: this equals precond_label_union, if prepost[i] is
             // not a conditional effect
 
             if (_propagate_labels(next[var][post].labels,
-                    precond_label_union_with_condeff, make_pair(var, post)))
+                                  precond_label_union_with_condeff, make_pair(var, post)))
                 result.insert(make_pair(var, post));
         }
     }
@@ -283,20 +272,20 @@ void LandmarksGraphZhuGivan::compute_triggers() {
         lm_set t;
         bool has_cond = false;
 
-        const Operator& op = get_operator_for_lookup_index(i);
-        const vector<Prevail>& prevail = op.get_prevail();
+        const Operator &op = get_operator_for_lookup_index(i);
+        const vector<Prevail> &prevail = op.get_prevail();
         for (unsigned j = 0; j < prevail.size(); j++) {
             t.insert(make_pair(prevail[j].var, prevail[j].prev));
             has_cond = true;
         }
 
-        const vector<PrePost>& prepost = op.get_pre_post();
+        const vector<PrePost> &prepost = op.get_pre_post();
         for (unsigned j = 0; j < prepost.size(); j++) {
             if (prepost[j].pre != -1) {
                 t.insert(make_pair(prepost[j].var, prepost[j].pre));
                 has_cond = true;
             }
-            const vector<Prevail>& cond = prepost[j].cond;
+            const vector<Prevail> &cond = prepost[j].cond;
             for (unsigned k = 0; k < cond.size(); k++) {
                 t.insert(make_pair(cond[k].var, cond[k].prev));
             }

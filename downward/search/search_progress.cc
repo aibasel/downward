@@ -44,12 +44,12 @@ void SearchProgress::get_initial_h_values() {
 
 bool SearchProgress::check_h_progress(int g) {
     bool progress = false;
-    for(int i = 0; i < heuristics.size(); i++) {
-        if(heuristics[i]->is_dead_end())
+    for (int i = 0; i < heuristics.size(); i++) {
+        if (heuristics[i]->is_dead_end())
             continue;
         int h = heuristics[i]->get_heuristic();
         int &best_h = best_heuristic_values[i];
-        if(best_h == -1 || h < best_h) {
+        if (best_h == -1 || h < best_h) {
             best_h = h;
             progress = true;
         }
@@ -62,17 +62,17 @@ bool SearchProgress::check_h_progress(int g) {
 
 void SearchProgress::print_f_line() const {
     cout << "f = " << lastjump_f_value
-             << " [";
+         << " [";
     print_line();
     cout << "]" << endl;
 }
 
 void SearchProgress::print_h_line(int g) const {
     cout << "Best heuristic value: ";
-    for(int i = 0; i < heuristics.size(); i++) {
-    cout << best_heuristic_values[i];
-    if(i != heuristics.size() - 1)
-        cout << "/";
+    for (int i = 0; i < heuristics.size(); i++) {
+        cout << best_heuristic_values[i];
+        if (i != heuristics.size() - 1)
+            cout << "/";
     }
     cout << " [g=" << g << ", ";
     print_line();
@@ -82,7 +82,7 @@ void SearchProgress::print_h_line(int g) const {
 void SearchProgress::print_line() const {
     cout << evaluated_states << " evaluated, "
          << expanded_states << " expanded, ";
-    if(reopened_states > 0) {
+    if (reopened_states > 0) {
         cout << reopened_states << " reopened, ";
     }
     cout << "t=" << g_timer;
@@ -90,9 +90,9 @@ void SearchProgress::print_line() const {
 
 void SearchProgress::print_statistics() const {
     cout << "Initial state h value: ";
-    for(int i = 0; i < initial_h_values.size(); i++) {
+    for (int i = 0; i < initial_h_values.size(); i++) {
         cout << initial_h_values[i];
-        if(i != initial_h_values.size() - 1)
+        if (i != initial_h_values.size() - 1)
             cout << "/";
     }
     cout << "." << endl;
@@ -107,12 +107,12 @@ void SearchProgress::print_statistics() const {
 
     if (lastjump_f_value >= 0) {
         cout << "Expanded until last jump: "
-            << lastjump_expanded_states << " state(s)." << endl;
+             << lastjump_expanded_states << " state(s)." << endl;
         cout << "Reopened until last jump: "
-            << lastjump_reopened_states << " state(s)." << endl;
+             << lastjump_reopened_states << " state(s)." << endl;
         cout << "Evaluated until last jump: "
-            << lastjump_evaluated_states << " state(s)." << endl;
+             << lastjump_evaluated_states << " state(s)." << endl;
         cout << "Generated until last jump: "
-            << lastjump_generated_states << " state(s)." << endl;
+             << lastjump_generated_states << " state(s)." << endl;
     }
 }

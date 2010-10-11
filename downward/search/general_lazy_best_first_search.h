@@ -17,7 +17,7 @@ class Operator;
 
 typedef pair<state_var_t *, const Operator *> OpenListEntryLazy;
 
-class GeneralLazyBestFirstSearch: public SearchEngine {
+class GeneralLazyBestFirstSearch : public SearchEngine {
 protected:
     OpenList<OpenListEntryLazy> *open_list;
 
@@ -51,13 +51,13 @@ public:
     virtual ~GeneralLazyBestFirstSearch();
 
     virtual void statistics() const;
-    
-    static SearchEngine *create(const std::vector<std::string> &config, 
+
+    static SearchEngine *create(const std::vector<std::string> &config,
                                 int start, int &end, bool dry_run);
     static SearchEngine *create_greedy(const std::vector<std::string> &config,
                                        int start, int &end, bool dry_run);
     static SearchEngine *create_weighted_astar(
-        const std::vector<std::string> &config, int start, int &end, 
+        const std::vector<std::string> &config, int start, int &end,
         bool dry_run);
 };
 

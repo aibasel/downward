@@ -5,11 +5,11 @@
 
 #include "option_parser.h"
 
-WeightedEvaluator::WeightedEvaluator(ScalarEvaluator *eval, int weight) 
+WeightedEvaluator::WeightedEvaluator(ScalarEvaluator *eval, int weight)
     : evaluator(eval), w(weight) {
 }
 
-WeightedEvaluator::~WeightedEvaluator(){
+WeightedEvaluator::~WeightedEvaluator() {
 }
 
 void WeightedEvaluator::evaluate(int g, bool preferred) {
@@ -30,14 +30,14 @@ int WeightedEvaluator::get_value() const {
     return value;
 }
 
-void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic*> &hset) {
+void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
     evaluator->get_involved_heuristics(hset);
 }
 
 ScalarEvaluator *WeightedEvaluator::create(
     const std::vector<std::string> &config, int start, int &end, bool dry_run) {
-    if (config[start+1] != "(")
-        throw ParseError(start+1);
+    if (config[start + 1] != "(")
+        throw ParseError(start + 1);
 
     // create evaluator
     std::vector<ScalarEvaluator *> evals;
@@ -45,11 +45,11 @@ ScalarEvaluator *WeightedEvaluator::create(
     parser->parse_scalar_evaluator_list(config, start + 2, end,
                                         true, evals, dry_run);
 
-    end ++; // on comma
-    end ++; // on weight
+    end++;  // on comma
+    end++;  // on weight
 
     int weight = parser->parse_int(config, end, end);
-    end ++;
+    end++;
     if (config[end] != ")")
         throw ParseError(end);
 

@@ -36,9 +36,9 @@ public:
     bool found_solution() const;
     const Plan &get_plan() const;
     void search();
-    SearchProgress get_search_progress() const {return search_progress;}
-    void set_bound(int b) {bound = b;}
-    int get_bound() {return bound;}
+    SearchProgress get_search_progress() const {return search_progress; }
+    void set_bound(int b) {bound = b; }
+    int get_bound() {return bound; }
 };
 
 #endif

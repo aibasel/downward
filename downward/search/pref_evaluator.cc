@@ -4,7 +4,7 @@
 PrefEvaluator::PrefEvaluator() {
 }
 
-PrefEvaluator::~PrefEvaluator(){
+PrefEvaluator::~PrefEvaluator() {
 }
 
 void PrefEvaluator::evaluate(int, bool preferred) {
@@ -34,4 +34,3 @@ ScalarEvaluator *PrefEvaluator::create(const std::vector<std::string> &config,
     else
         return new PrefEvaluator;
 }
-

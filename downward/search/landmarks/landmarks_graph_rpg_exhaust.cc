@@ -12,18 +12,19 @@ void LandmarksGraphExhaust::generate_landmarks() {
     cout << "Generating landmarks by testing all facts with RPG method" << endl;
 
     // insert goal landmarks and mark them as goals
-    for(unsigned i = 0; i < g_goal.size(); i++) {
-	LandmarkNode* lmp = &landmark_add_simple(g_goal[i]);
-	lmp->in_goal = true;
+    for (unsigned i = 0; i < g_goal.size(); i++) {
+        LandmarkNode *lmp = &landmark_add_simple(g_goal[i]);
+        lmp->in_goal = true;
     }
     // test all other possible facts
-    for(int i = 0; i < g_variable_name.size(); i++)
-	for(int j = 0; j < g_variable_domain[i]; j++) {
-	    const pair<int, int> lm = make_pair(i,j);
-	    if(!simple_landmark_exists(lm)) {
-		LandmarkNode* new_lm = &(landmark_add_simple(lm));
-		if((*g_initial_state)[lm.first] != lm.second && relaxed_task_solvable(true, new_lm))
-		    rm_landmark(lm);
-	    }
-	}
+    for (int i = 0; i < g_variable_name.size(); i++)
+        for (int j = 0; j < g_variable_domain[i]; j++) {
+            const pair<int, int> lm = make_pair(i, j);
+            if (!simple_landmark_exists(lm)) {
+                LandmarkNode *new_lm = &(landmark_add_simple(lm));
+                if ((*g_initial_state)[lm.first] != lm.second && relaxed_task_solvable(true, new_lm))
+                    rm_landmark(lm);
+            }
+        }
+
 }

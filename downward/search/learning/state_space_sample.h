@@ -14,33 +14,35 @@ typedef map<State, vector<int> > sample_t;
 
 class StateSpaceSample {
 protected:
-	// parameters
-	bool uniform_sampling;
-	vector<Heuristic *> heuristics;
+    // parameters
+    bool uniform_sampling;
+    vector<Heuristic *> heuristics;
 
-	// gathered data
-	ExactTimer computation_timer;
-	sample_t samp;
-	double branching_factor;
-	vector<double> computation_time;
+    // gathered data
+    ExactTimer computation_timer;
+    sample_t samp;
+    double branching_factor;
+    vector<double> computation_time;
 
-	int choose_operator(vector<int> &h_s);
+    int choose_operator(vector<int> &h_s);
 public:
-	StateSpaceSample();
-	virtual ~StateSpaceSample();
+    StateSpaceSample();
+    virtual ~StateSpaceSample();
 
-    bool get_uniform_sampling() const {return uniform_sampling;}
-    void set_uniform_sampling(bool us) {uniform_sampling = us;}
+    bool get_uniform_sampling() const {return uniform_sampling; }
+    void set_uniform_sampling(bool us) {uniform_sampling = us; }
 
-    double get_branching_factor() const {return branching_factor;}
+    double get_branching_factor() const {return branching_factor; }
 
-    void add_heuristic(Heuristic *h) {heuristics.push_back(h); computation_time.push_back(0);}
-    double get_computation_time(int i) {return computation_time[i];}
+    void add_heuristic(Heuristic *h) {
+        heuristics.push_back(h);
+        computation_time.push_back(0);
+    }
+    double get_computation_time(int i) {return computation_time[i]; }
 
-    virtual sample_t &get_samp() {return samp;}
+    virtual sample_t &get_samp() {return samp; }
 
     virtual int collect() = 0;
-
 };
 
 #endif /* STATESPACESAMPLE_H_ */

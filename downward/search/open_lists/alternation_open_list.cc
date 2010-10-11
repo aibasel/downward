@@ -8,23 +8,22 @@ using namespace std;
 template<class Entry>
 OpenList<Entry> *AlternationOpenList<Entry>::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-
-    if (config[start+1] != "(")
-        throw ParseError(start+1);
+    if (config[start + 1] != "(")
+        throw ParseError(start + 1);
     // create sublists
     vector<OpenList<Entry> *> sublists;
     end = start + 2;
     OpenListParser<Entry> *open_list_parser = OpenListParser<Entry>::instance();
     while (open_list_parser->knows_open_list(config[end])) {
-        OpenList<Entry>* sublist = 
+        OpenList<Entry> *sublist =
             open_list_parser->parse_open_list(config, end, end, dry_run);
         sublists.push_back(sublist);
-        end ++;
+        end++;
         if (config[end] == ")")
             break;
         if (config[end] != ",")
             throw ParseError(end);
-        end ++;
+        end++;
     }
 
     if (sublists.empty())
@@ -35,15 +34,15 @@ OpenList<Entry> *AlternationOpenList<Entry>::create(
     int boost = 1000; // TODO make default value visible
     if (config[end] != ")") {
         NamedOptionParser option_parser;
-        option_parser.add_int_option("boost", &boost, 
+        option_parser.add_int_option("boost", &boost,
                                      "boost value for successful sub-open-lists");
 
         option_parser.parse_options(config, end, end, dry_run);
-        end ++;
+        end++;
     }
     if (config[end] != ")")
         throw ParseError(end);
-     
+
     if (dry_run)
         return 0;
     else
@@ -52,8 +51,8 @@ OpenList<Entry> *AlternationOpenList<Entry>::create(
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
-    int boost_influence) 
-    : open_lists(sublists), priorities(sublists.size(), 0), size(0), 
+                                                int boost_influence)
+    : open_lists(sublists), priorities(sublists.size(), 0), size(0),
       boosting(boost_influence) {
 }
 
@@ -82,8 +81,8 @@ Entry AlternationOpenList<Entry>::remove_min() {
         }
     }
     last_used_list = best;
-    OpenList<Entry>* best_list = open_lists[best];
-    assert (!best_list->empty());
+    OpenList<Entry> *best_list = open_lists[best];
+    assert(!best_list->empty());
     size--;
     priorities[best]++;
     return best_list->remove_min();
@@ -97,7 +96,7 @@ bool AlternationOpenList<Entry>::empty() const {
 template<class Entry>
 void AlternationOpenList<Entry>::clear() {
     size = 0;
-    for (unsigned int i = 0; i < open_lists.size(); i++) 
+    for (unsigned int i = 0; i < open_lists.size(); i++)
         open_lists[i]->clear();
 }
 
@@ -128,8 +127,8 @@ bool AlternationOpenList<Entry>::dead_end_is_reliable() const {
 }
 
 template<class Entry>
-void AlternationOpenList<Entry>::get_involved_heuristics(std::set<Heuristic*> &hset) {
-    for (unsigned int i = 0; i < open_lists.size(); i++) 
+void AlternationOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {
+    for (unsigned int i = 0; i < open_lists.size(); i++)
         open_lists[i]->get_involved_heuristics(hset);
 }
 
@@ -162,7 +161,7 @@ void AlternationOpenList<Entry>::boost_last_used_list() {
     priorities[last_used_list] -= boosting;
 
     // for the case that the last used list is an alternation
-    // list 
+    // list
     open_lists[last_used_list]->boost_last_used_list();
 }
 #endif

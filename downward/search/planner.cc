@@ -22,18 +22,18 @@ void register_parsers();
 int main(int argc, const char **argv) {
     register_event_handlers();
 
-    string usage = 
+    string usage =
         "usage: \n" +
-        string(argv[0]) + " [OPTIONS] --search SEARCH < OUTPUT\n\n" 
+        string(argv[0]) + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
         "* SEARCH (SearchEngine): configuration of the search algorithm\n"
         "* OUTPUT (filename): preprocessor output\n\n"
-        "Options:\n" 
-        "--heuristic HEURISTIC_PREDEFINITION\n" 
-        "    Predefines a heuristic that can afterwards be referenced\n" 
-        "    by the name that is specified in the definition.\n" 
-        "--random-seed SEED\n" 
-        "    Use random seed SEED\n\n" 
-        "See http://alfons.informatik.uni-freiburg.de/downward/HomePage for " 
+        "Options:\n"
+        "--heuristic HEURISTIC_PREDEFINITION\n"
+        "    Predefines a heuristic that can afterwards be referenced\n"
+        "    by the name that is specified in the definition.\n"
+        "--random-seed SEED\n"
+        "    Use random seed SEED\n\n"
+        "See http://alfons.informatik.uni-freiburg.de/downward/HomePage for "
         "details.";
 
     if (argc < 2) {
@@ -65,7 +65,7 @@ int main(int argc, const char **argv) {
             OptionParser::instance()->predefine_heuristic(argv[i]);
         } else if (arg.compare("--search") == 0) {
             ++i;
-            engine = OptionParser::instance()->parse_search_engine(argv[i]); 
+            engine = OptionParser::instance()->parse_search_engine(argv[i]);
         } else if (arg.compare("--random-seed") == 0) {
             ++i;
             srand(atoi(argv[i]));
@@ -94,38 +94,38 @@ int main(int argc, const char **argv) {
 
 void register_parsers() {
     // Register search engines
-    OptionParser::instance()->register_search_engine("eager", 
-        GeneralEagerBestFirstSearch::create);
-    OptionParser::instance()->register_search_engine("astar", 
-        GeneralEagerBestFirstSearch::create_astar);
-    OptionParser::instance()->register_search_engine("eager_greedy", 
-        GeneralEagerBestFirstSearch::create_greedy);
-    OptionParser::instance()->register_search_engine("lazy", 
-        GeneralLazyBestFirstSearch::create);
-    OptionParser::instance()->register_search_engine("lazy_greedy", 
-        GeneralLazyBestFirstSearch::create_greedy);
-    OptionParser::instance()->register_search_engine("lazy_wastar", 
-        GeneralLazyBestFirstSearch::create_weighted_astar);
-    OptionParser::instance()->register_search_engine("ehc", 
-        EnforcedHillClimbingSearch::create);
-    OptionParser::instance()->register_search_engine("old_greedy", 
-        BestFirstSearchEngine::create);
+    OptionParser::instance()->register_search_engine("eager",
+                                                     GeneralEagerBestFirstSearch::create);
+    OptionParser::instance()->register_search_engine("astar",
+                                                     GeneralEagerBestFirstSearch::create_astar);
+    OptionParser::instance()->register_search_engine("eager_greedy",
+                                                     GeneralEagerBestFirstSearch::create_greedy);
+    OptionParser::instance()->register_search_engine("lazy",
+                                                     GeneralLazyBestFirstSearch::create);
+    OptionParser::instance()->register_search_engine("lazy_greedy",
+                                                     GeneralLazyBestFirstSearch::create_greedy);
+    OptionParser::instance()->register_search_engine("lazy_wastar",
+                                                     GeneralLazyBestFirstSearch::create_weighted_astar);
+    OptionParser::instance()->register_search_engine("ehc",
+                                                     EnforcedHillClimbingSearch::create);
+    OptionParser::instance()->register_search_engine("old_greedy",
+                                                     BestFirstSearchEngine::create);
     OptionParser::instance()->register_search_engine("iterated",
-            IteratedSearch::create);
+                                                     IteratedSearch::create);
 
     // register combinations and g evaluator
-    OptionParser::instance()->register_scalar_evaluator("sum", 
-        SumEvaluator::create);
-    OptionParser::instance()->register_scalar_evaluator("weight", 
-        WeightedEvaluator::create);
-    OptionParser::instance()->register_scalar_evaluator("g", 
-        GEvaluator::create);
-    OptionParser::instance()->register_scalar_evaluator("pref", 
-        PrefEvaluator::create);
+    OptionParser::instance()->register_scalar_evaluator("sum",
+                                                        SumEvaluator::create);
+    OptionParser::instance()->register_scalar_evaluator("weight",
+                                                        WeightedEvaluator::create);
+    OptionParser::instance()->register_scalar_evaluator("g",
+                                                        GEvaluator::create);
+    OptionParser::instance()->register_scalar_evaluator("pref",
+                                                        PrefEvaluator::create);
 
     // Note:
     // open lists are registered in the constructor of OpenListParser.
     // This is necessary because the open list entries are specified
     // as template parameter and we would have template parameters everywhere
-    // otherwise 
+    // otherwise
 }

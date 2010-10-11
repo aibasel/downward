@@ -8,9 +8,9 @@ protected:
     LandmarksGraph &lm_graph;
     bool exclude_ALM_effects;
 
-    const set<int>& get_achievers(int lmn_status, LandmarkNode &lmn);
-    void get_landmark_effects(const Operator& op, set<pair<int, int> >& eff);
-    void get_effect_landmarks(const Operator& op, set<LandmarkNode *>& eff);
+    const set<int> &get_achievers(int lmn_status, LandmarkNode &lmn);
+    void get_landmark_effects(const Operator &op, set<pair<int, int> > &eff);
+    void get_effect_landmarks(const Operator &op, set<LandmarkNode *> &eff);
 
     const set<int> empty;
 public:
@@ -49,10 +49,10 @@ typedef OsiCpxSolverInterface OsiXxxSolverInterface;
 class LandmarkOptimalSharedCostAssignment : public LandmarkCostAssignment {
 private:
 #ifdef USE_LP
-    OsiXxxSolverInterface* si;
+    OsiXxxSolverInterface * si;
 #endif
-    int cost_lm_i(int lm_i) {return lm_i;}
-    int cost_a_lm_i(int a_i, int lm_i) {return ((a_i + 1) * lm_graph.number_of_landmarks()) + lm_i;}
+    int cost_lm_i(int lm_i) {return lm_i; }
+    int cost_a_lm_i(int a_i, int lm_i) {return ((a_i + 1) * lm_graph.number_of_landmarks()) + lm_i; }
 
 public:
     LandmarkOptimalSharedCostAssignment(LandmarksGraph &graph, bool exc_ALM_eff);
@@ -69,7 +69,7 @@ public:
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
 private:
 #ifdef USE_LP
-    OsiXxxSolverInterface* si;
+    OsiXxxSolverInterface * si;
 #endif
 public:
     LandmarkEfficientOptimalSharedCostAssignment(LandmarksGraph &graph, bool exc_ALM_eff);

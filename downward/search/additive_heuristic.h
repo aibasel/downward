@@ -23,10 +23,10 @@ class AdditiveHeuristic : public RelaxationHeuristic {
 
     void enqueue_if_necessary(Proposition *prop, int cost, UnaryOperator *op) {
         assert(cost >= 0);
-        if(prop->h_add_cost == -1 || prop->h_add_cost > cost) {
+        if (prop->h_add_cost == -1 || prop->h_add_cost > cost) {
             prop->h_add_cost = cost;
             prop->reached_by = op;
-            if(cost >= reachable_queue.size())
+            if (cost >= reachable_queue.size())
                 reachable_queue.resize(cost + 1);
             reachable_queue[cost].push_back(prop);
         }
@@ -40,7 +40,7 @@ public:
     AdditiveHeuristic();
     ~AdditiveHeuristic();
 
-    static ScalarEvaluator *create(const std::vector<std::string> &config, 
+    static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end, bool dry_run);
 };
 

@@ -17,7 +17,7 @@ using namespace std;
 GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(
     OpenList<state_var_t *> *open,
     bool reopen_closed, bool pathmax_correction, ScalarEvaluator *f_eval, int g_bound)
-    : reopen_closed_nodes(reopen_closed),do_pathmax(pathmax_correction),
+    : reopen_closed_nodes(reopen_closed), do_pathmax(pathmax_correction),
       open_list(open), f_evaluator(f_eval) {
     bound = g_bound;
 }
@@ -250,7 +250,7 @@ void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int> &valu
 }
 
 SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
-                                                  int start, int &end, 
+                                                  int start, int &end,
                                                   bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
@@ -280,7 +280,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
         option_parser.add_scalar_evaluator_option(
             "progress_evaluator", &f_eval, "set evaluator for jump statistics", true);
         option_parser.add_int_option("bound", &g_bound,
-                                     "depth bound on g-values",true);
+                                     "depth bound on g-values", true);
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
 
@@ -293,7 +293,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
     GeneralEagerBestFirstSearch *engine = 0;
     if (!dry_run) {
         engine = new GeneralEagerBestFirstSearch(open, reopen_closed,
-                                                pathmax, f_eval, g_bound);
+                                                 pathmax, f_eval, g_bound);
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
@@ -302,7 +302,6 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
 
 SearchEngine *GeneralEagerBestFirstSearch::create_astar(
     const vector<string> &config, int start, int &end, bool dry_run) {
-
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
@@ -350,7 +349,6 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
 
 SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
     const vector<string> &config, int start, int &end, bool dry_run) {
-
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
@@ -393,7 +391,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
                     new StandardScalarOpenList<state_var_t *>(evals[i], false));
                 if (!preferred_list.empty()) {
                     inner_lists.push_back(
-                        new StandardScalarOpenList<state_var_t *>(evals[i], 
+                        new StandardScalarOpenList<state_var_t *>(evals[i],
                                                                   true));
                 }
             }

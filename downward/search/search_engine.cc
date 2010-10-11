@@ -34,8 +34,8 @@ void SearchEngine::set_plan(const Plan &p) {
 void SearchEngine::search() {
     initialize();
     Timer timer;
-    while(step() == IN_PROGRESS)
-	;
+    while (step() == IN_PROGRESS)
+        ;
     cout << "Actual search time: " << timer << endl;
 }
 

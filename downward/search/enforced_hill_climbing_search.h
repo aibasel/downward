@@ -15,10 +15,12 @@
 
 using namespace std;
 
-typedef pair<state_var_t*, pair<int, const Operator * > > OpenListEntryEHC;
+typedef pair<state_var_t *, pair<int, const Operator * > > OpenListEntryEHC;
 
-enum PreferredUsage {PRUNE_BY_PREFERRED, RANK_PREFERRED_FIRST,
-                     MAX_PREFERRED_USAGE};
+enum PreferredUsage {
+    PRUNE_BY_PREFERRED, RANK_PREFERRED_FIRST,
+    MAX_PREFERRED_USAGE
+};
 
 class EnforcedHillClimbingSearch : public SearchEngine {
 protected:
@@ -46,17 +48,17 @@ protected:
     virtual int step();
     int ehc();
     void get_successors(const State &state, vector<const Operator *> &ops);
-    void evaluate(const State &parent, const Operator * op, const State &state);
+    void evaluate(const State &parent, const Operator *op, const State &state);
 public:
-    EnforcedHillClimbingSearch(Heuristic *heuristic_, 
-        PreferredUsage preferred_usage_, bool use_cost_for_bfs_,
-        int g_bound);
+    EnforcedHillClimbingSearch(Heuristic *heuristic_,
+                               PreferredUsage preferred_usage_, bool use_cost_for_bfs_,
+                               int g_bound);
     virtual ~EnforcedHillClimbingSearch();
     void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
 
     virtual void statistics() const;
 
-    static SearchEngine *create(const vector<string> &config, int start, 
+    static SearchEngine *create(const vector<string> &config, int start,
                                 int &end, bool dry_run);
 };
 

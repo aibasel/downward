@@ -100,36 +100,36 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
         string dashes(79, '=');
         cerr << dashes << endl
              << ("WARNING! You have enabled extra statistics for "
-                 "merge-and-shrink heuristics.\n"
-                 "These statistics require a lot of time and memory.\n"
-                 "When last tested (around revision 3011), enabling the "
-                 "extra statistics\nincreased heuristic generation time by "
-                 "76%. This figure may be significantly\nworse with more "
-                 "recent code or for particular domains and instances.\n"
-                 "You have been warned. Don't use this for benchmarking!")
-             << endl << dashes << endl;
+            "merge-and-shrink heuristics.\n"
+            "These statistics require a lot of time and memory.\n"
+            "When last tested (around revision 3011), enabling the "
+            "extra statistics\nincreased heuristic generation time by "
+            "76%. This figure may be significantly\nworse with more "
+            "recent code or for particular domains and instances.\n"
+            "You have been warned. Don't use this for benchmarking!")
+        << endl << dashes << endl;
     }
 }
 
 void MergeAndShrinkHeuristic::verify_no_axioms_no_cond_effects() const {
-    if(!g_axioms.empty()) {
+    if (!g_axioms.empty()) {
         cerr << "Heuristic does not support axioms!" << endl
              << "Terminating." << endl;
         exit(1);
     }
     if (g_use_metric) {
-    	cerr << "Warning: M&S heuristic does not support action costs!" << endl;
-    	if (g_min_action_cost == 0) {
-    		cerr << "Alert: 0-cost actions exist. M&S Heuristic is not admissible" << endl;
-    	}
+        cerr << "Warning: M&S heuristic does not support action costs!" << endl;
+        if (g_min_action_cost == 0) {
+            cerr << "Alert: 0-cost actions exist. M&S Heuristic is not admissible" << endl;
+        }
     }
 
 
-    for(int i = 0; i < g_operators.size(); i++) {
+    for (int i = 0; i < g_operators.size(); i++) {
         const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
-        for(int j = 0; j < pre_post.size(); j++) {
+        for (int j = 0; j < pre_post.size(); j++) {
             const vector<Prevail> &cond = pre_post[j].cond;
-            if(cond.empty())
+            if (cond.empty())
                 continue;
             // Accept conditions that are redundant, but nothing else.
             // In a better world, these would never be included in the
@@ -137,9 +137,9 @@ void MergeAndShrinkHeuristic::verify_no_axioms_no_cond_effects() const {
             int var = pre_post[j].var;
             int pre = pre_post[j].pre;
             int post = pre_post[j].post;
-            if(pre == -1 && cond.size() == 1 &&
-               cond[0].var == var && cond[0].prev != post &&
-               g_variable_domain[var] == 2)
+            if (pre == -1 && cond.size() == 1 &&
+                cond[0].var == var && cond[0].prev != post &&
+                g_variable_domain[var] == 2)
                 continue;
 
             cerr << "Heuristic does not support conditional effects "
@@ -191,27 +191,27 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     abstraction->statistics(use_expensive_statistics);
 
     bool first_iteration = true;
-    while(!order.done() && abstraction->is_solvable()) {
+    while (!order.done() && abstraction->is_solvable()) {
         int var_no = order.next();
         Abstraction *other_abstraction = atomic_abstractions[var_no];
-        
+
         pair<int, int> new_sizes = compute_shrink_sizes(
             abstraction->size(), other_abstraction->size());
         int new_size = new_sizes.first;
         int other_new_size = new_sizes.second;
 
-        if(other_new_size != other_abstraction->size()) {
+        if (other_new_size != other_abstraction->size()) {
             cout << "atomic abstraction too big; must shrink" << endl;
             other_abstraction->shrink(other_new_size, shrink_strategy);
         }
 
-        if(new_size != abstraction->size()) {
+        if (new_size != abstraction->size()) {
             abstraction->shrink(new_size, shrink_strategy);
             abstraction->statistics(use_expensive_statistics);
         }
         Abstraction *new_abstraction = new CompositeAbstraction(
             abstraction, other_abstraction, use_label_simplification);
-        if(first_iteration)
+        if (first_iteration)
             first_iteration = false;
         else
             abstraction->release_memory();
@@ -230,12 +230,12 @@ void MergeAndShrinkHeuristic::initialize() {
     verify_no_axioms_no_cond_effects();
 
     int peak_memory = 0;
-    for(int i = 0; i < abstraction_count; i++) {
+    for (int i = 0; i < abstraction_count; i++) {
         cout << "Building abstraction nr " << i << "..." << endl;
         Abstraction *abstraction = build_abstraction(i == 0);
         peak_memory = max(peak_memory, abstraction->get_peak_memory_estimate());
         abstractions.push_back(abstraction);
-        if(!abstractions.back()->is_solvable())
+        if (!abstractions.back()->is_solvable())
             break;
     }
 
@@ -248,21 +248,21 @@ void MergeAndShrinkHeuristic::initialize() {
 
 int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
     int cost = 0;
-    for(int i = 0; i < abstractions.size(); i++) {
+    for (int i = 0; i < abstractions.size(); i++) {
         int abs_cost = abstractions[i]->get_cost(state);
-        if(abs_cost == -1)
+        if (abs_cost == -1)
             return DEAD_END;
         cost = max(cost, abs_cost);
     }
-    if(cost == 0) {
+    if (cost == 0) {
         /* We don't want to report 0 for non-goal states because the
            search code doesn't like that. Note that we might report 0
            for non-goal states if we use tiny abstraction sizes (like
            1) or random shrinking. */
         // TODO: Change this once we support action costs!
-        for(int i = 0; i < g_goal.size(); i++) {
+        for (int i = 0; i < g_goal.size(); i++) {
             int var = g_goal[i].first, value = g_goal[i].second;
-            if(state[var] != value) {
+            if (state[var] != value) {
                 cost = 1;
                 break;
             }
@@ -286,7 +286,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
         end = start + 2;
 
         // TODO: better documentation what each parameter does
-        if (config[end] != ")") { 
+        if (config[end] != ")") {
             NamedOptionParser option_parser;
             option_parser.add_int_option(
                 "max_states",
@@ -298,11 +298,11 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
                 "maximum abstraction size for factors of synchronized product");
             option_parser.add_int_option(
                 "count",
-                &abstraction_count, 
+                &abstraction_count,
                 "nr of abstractions to build");
             option_parser.add_int_option(
                 "merge_strategy",
-                &merge_strategy, 
+                &merge_strategy,
                 "merge strategy");
             option_parser.add_int_option(
                 "shrink_strategy",
@@ -318,7 +318,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
                 "show statistics on \"unique unlabeled edges\" (WARNING: "
                 "these are *very* slow -- check the warning in the output)");
             option_parser.parse_options(config, end, end, dry_run);
-            end ++;
+            end++;
         }
         if (config[end] != ")")
             throw ParseError(end);

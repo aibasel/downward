@@ -27,8 +27,8 @@ protected:
     int step();
     pair<SearchNode, bool> fetch_next_node();
     bool check_goal(const SearchNode &node);
-	void update_jump_statistic(const SearchNode& node);
-	void print_heuristic_values(const vector<int>& values) const;
+    void update_jump_statistic(const SearchNode &node);
+    void print_heuristic_values(const vector<int> &values) const;
 
     vector<Heuristic *> heuristics;
     vector<Heuristic *> preferred_operator_heuristics;
@@ -40,13 +40,13 @@ protected:
 
 public:
     GeneralEagerBestFirstSearch(OpenList<state_var_t *> *open, bool reopen_closed,
-        bool pathmax_correction, ScalarEvaluator *f_eval, int g_bound);
+                                bool pathmax_correction, ScalarEvaluator *f_eval, int g_bound);
     void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     void statistics() const;
 
     void dump_search_space();
 
-    static SearchEngine *create(const std::vector<std::string> &config, 
+    static SearchEngine *create(const std::vector<std::string> &config,
                                 int start, int &end, bool dry_run);
     static SearchEngine *create_astar(const std::vector<std::string> &config,
                                       int start, int &end, bool dry_run);

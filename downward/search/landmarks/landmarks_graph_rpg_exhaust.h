@@ -6,8 +6,8 @@
 class LandmarksGraphExhaust : public LandmarksGraph {
     void generate_landmarks();
 public:
-    LandmarksGraphExhaust(Exploration* exploration) : LandmarksGraph(exploration) {}
-    ~LandmarksGraphExhaust(){}
+    LandmarksGraphExhaust(Exploration *exploration) : LandmarksGraph(exploration) {}
+    ~LandmarksGraphExhaust() {}
 };
 
 #endif

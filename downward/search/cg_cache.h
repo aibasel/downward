@@ -14,13 +14,13 @@ class CGCache {
     int get_index(int var, const State &state, int from_val, int to_val) const;
 public:
     static const int NOT_COMPUTED = -2;
-    
+
     CGCache();
     ~CGCache();
 
     bool is_cached(int var) const {
         return !cache[var].empty();
-    };
+    }
 
     int lookup(int var, const State &state, int from_val, int to_val) const {
         return cache[var][get_index(var, state, from_val, to_val)];

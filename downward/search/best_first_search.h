@@ -33,7 +33,7 @@ class BestFirstSearchEngine : public SearchEngine {
     State current_state;
     const State *current_predecessor;
     const Operator *current_operator;
-    
+
     bool is_dead_end();
     bool check_goal();
     bool check_progress();
@@ -51,7 +51,7 @@ public:
     virtual void add_heuristic(Heuristic *heuristic, bool use_estimates,
                                bool use_preferred_operators);
     virtual void statistics() const;
-    static SearchEngine *create(const vector<string> &config, 
+    static SearchEngine *create(const vector<string> &config,
                                 int start, int &end, bool dry_run);
 };
 

@@ -19,7 +19,7 @@ struct AbstractTransition {
     AbstractStateRef target;
 
     AbstractTransition(AbstractStateRef src_, AbstractStateRef target_)
-	: src(src_), target(target_) {
+        : src(src_), target(target_) {
     }
 
     bool operator==(const AbstractTransition &other) const {
@@ -32,7 +32,7 @@ struct AbstractTransition {
 
     bool operator<(const AbstractTransition &other) const {
         return src < other.src || (
-            src == other.src && target < other.target);
+                   src == other.src && target < other.target);
     }
 };
 
@@ -101,7 +101,7 @@ public:
     //       a mutable attribute?
 
     void shrink(int threshold, ShrinkStrategy shrink_strategy,
-                bool force=false);
+                bool force = false);
     void release_memory();
 
     void dump() const;

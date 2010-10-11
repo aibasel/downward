@@ -16,23 +16,22 @@ using namespace std;
 template<class Entry>
 OpenList<Entry> *TieBreakingOpenList<Entry>::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-
     std::vector<ScalarEvaluator *> evaluators;
     NamedOptionParser option_parser;
     bool only_pref_ = false;
     bool allow_unsafe_ = true;
-    option_parser.add_bool_option("pref_only", &only_pref_, 
+    option_parser.add_bool_option("pref_only", &only_pref_,
                                   "insert only preferred operators");
-    option_parser.add_bool_option("unsafe_pruning", &allow_unsafe_, 
+    option_parser.add_bool_option("unsafe_pruning", &allow_unsafe_,
                                   "allow unsafe pruning when the main evaluator regards a state a dead end");
     OptionParser *parser = OptionParser::instance();
     parser->parse_evals_and_options(config, start, end, evaluators,
                                     option_parser, false, dry_run);
-        
+
     if (dry_run)
         return 0;
     else
-        return new TieBreakingOpenList<Entry>(evaluators, only_pref_, 
+        return new TieBreakingOpenList<Entry>(evaluators, only_pref_,
                                               allow_unsafe_);
 }
 
@@ -66,7 +65,7 @@ template<class Entry>
 Entry TieBreakingOpenList<Entry>::remove_min() {
     assert(size > 0);
     typename std::map<const std::vector<int>, Bucket>::iterator it;
-    it = buckets.begin(); 
+    it = buckets.begin();
     assert(it != buckets.end());
     assert(!it->second.empty());
     size--;
@@ -92,7 +91,7 @@ template<class Entry>
 void TieBreakingOpenList<Entry>::evaluate(int g, bool preferred) {
     dead_end = false;
     dead_end_reliable = false;
-    
+
     for (unsigned int i = 0; i < evaluators.size(); i++) {
         evaluators[i]->evaluate(g, preferred);
 
@@ -122,7 +121,7 @@ bool TieBreakingOpenList<Entry>::dead_end_is_reliable() const {
 }
 
 template<class Entry>
-const std::vector<int>& TieBreakingOpenList<Entry>::get_value() {
+const std::vector<int> &TieBreakingOpenList<Entry>::get_value() {
     return last_evaluated_value;
 }
 
@@ -132,9 +131,9 @@ int TieBreakingOpenList<Entry>::dimension() const {
 }
 
 template<class Entry>
-void TieBreakingOpenList<Entry>::get_involved_heuristics(std::set<Heuristic*> &hset) {
-   for (unsigned int i = 0; i < evaluators.size(); i++) {
+void TieBreakingOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {
+    for (unsigned int i = 0; i < evaluators.size(); i++) {
         evaluators[i]->get_involved_heuristics(hset);
-   }
+    }
 }
 #endif
