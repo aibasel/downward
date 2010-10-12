@@ -1,5 +1,5 @@
-#ifndef STATESPACESAMPLE_H_
-#define STATESPACESAMPLE_H_
+#ifndef LEARNING_STATE_SPACE_SAMPLE_H
+#define LEARNING_STATE_SPACE_SAMPLE_H
 
 #include "../search_space.h"
 #include "../heuristic.h"
@@ -45,4 +45,4 @@ public:
     virtual int collect() = 0;
 };
 
-#endif /* STATESPACESAMPLE_H_ */
+#endif

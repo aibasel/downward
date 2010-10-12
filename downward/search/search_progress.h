@@ -1,5 +1,5 @@
-#ifndef SEARCHPROGRESS_H_
-#define SEARCHPROGRESS_H_
+#ifndef SEARCH_PROGRESS_H
+#define SEARCH_PROGRESS_H
 
 #include "globals.h"
 #include "timer.h"
@@ -68,4 +68,4 @@ public:
     void print_statistics() const;
 };
 
-#endif /* SEARCHPROGRESS_H_ */
+#endif

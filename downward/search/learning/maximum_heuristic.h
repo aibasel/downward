@@ -1,5 +1,5 @@
-#ifndef MAXIMUM_HEURISTIC_H
-#define MAXIMUM_HEURISTIC_H
+#ifndef LEARNING_MAXIMUM_HEURISTIC_H
+#define LEARNING_MAXIMUM_HEURISTIC_H
 
 #include "../globals.h"
 #include "../heuristic.h"

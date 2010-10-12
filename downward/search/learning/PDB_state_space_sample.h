@@ -1,5 +1,5 @@
-#ifndef PDBSTATESPACESAMPLE_H_
-#define PDBSTATESPACESAMPLE_H_
+#ifndef LEARNING_PDB_STATE_SPACE_SAMPLE_H
+#define LEARNING_PDB_STATE_SPACE_SAMPLE_H
 
 #include "probe_state_space_sample.h"
 #include "../heuristic.h"
@@ -16,4 +16,4 @@ public:
     virtual int collect();
 };
 
-#endif /* PDBSTATESPACESAMPLE_H_ */
+#endif

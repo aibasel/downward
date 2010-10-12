@@ -1,5 +1,5 @@
-#ifndef SELECTIVE_MAX_HEURISTIC_H_
-#define SELECTIVE_MAX_HEURISTIC_H_
+#ifndef LEARNING_SELECTIVE_MAX_HEURISTIC_H
+#define LEARNING_SELECTIVE_MAX_HEURISTIC_H
 
 #include "../heuristic.h"
 #include "../globals.h"
@@ -147,4 +147,4 @@ public:
                                    int start, int &end, bool dry_run = false);
 };
 
-#endif /* SELECTIVE_MAX_HEURISTIC_H_ */
+#endif

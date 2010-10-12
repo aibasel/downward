@@ -1,5 +1,5 @@
-#ifndef ITERATED_SEARCH_H_
-#define ITERATED_SEARCH_H_
+#ifndef ITERATED_SEARCH_H
+#define ITERATED_SEARCH_H
 
 #include "search_engine.h"
 #include "globals.h"
@@ -47,4 +47,4 @@ public:
         bool dry_run);
 };
 
-#endif /* ITERATED_SEARCH_H_ */
+#endif

@@ -1,5 +1,5 @@
-#ifndef PROBESTATESPACESAMPLE_H_
-#define PROBESTATESPACESAMPLE_H_
+#ifndef LEARNING_PROBE_STATE_SPACE_SAMPLE_H
+#define LEARNING_PROBE_STATE_SPACE_SAMPLE_H
 
 #include "state_space_sample.h"
 #include "../globals.h"
@@ -37,4 +37,4 @@ public:
     //double get_computation_time(int i) {return computation_time[i];}
 };
 
-#endif /* PROBESTATESPACESAMPLE_H_ */
+#endif
