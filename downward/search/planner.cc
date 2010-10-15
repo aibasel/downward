@@ -20,7 +20,7 @@ using namespace std;
 void register_parsers();
 
 int main(int argc, const char **argv) {
-    register_event_handlers();
+    register_event_hanlers();
 
     string usage =
         "usage: \n" +
