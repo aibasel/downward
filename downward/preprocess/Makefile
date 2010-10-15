@@ -32,14 +32,11 @@ PROFILE: $(PROFILE_TARGET)
 	$(PROFILE_TARGET) $(PROFILE_PARAMETERS)
 	gprof $(PROFILE_TARGET) > PROFILE
 
-$(OBJECTS): %.o: %.cc .obj
-	$(CC) $(CC_OPTIONS) -c $< -o .obj/$@
+$(OBJECTS): %.o: %.cc
+	mkdir -p .obj && $(CC) $(CC_OPTIONS) -c $< -o .obj/$@
 
-$(PROFILE_OBJECTS): %.profile.o: %.cc .obj
-	$(CC) $(CC_OPTIONS) $(PROFILE_OPTIONS) -c $< -o .obj/$@
-
-.obj:
-	mkdir -p .obj
+$(PROFILE_OBJECTS): %.profile.o: %.cc
+	mkdir -p .obj && $(CC) $(CC_OPTIONS) $(PROFILE_OPTIONS) -c $< -o .obj/$@
 
 clean:
 	rm -f $(OBJECTS:%=.obj/%) $(PROFILE_OBJECTS:%=.obj/%) *~
