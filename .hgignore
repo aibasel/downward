@@ -1,0 +1,13 @@
+~$
+^downward/preprocess/\.obj/
+^downward/preprocess/Makefile\.depend$
+^downward/preprocess/preprocess$
+^downward/search/\.obj/
+^downward/search/Makefile\.depend$
+^downward/search/downward$
+^downward/search/downward-debug$
+^downward/search/downward-profile$
+^downward/VAL/.*\.o$
+^downward/VAL/lex\.yy\.cc$
+^downward/VAL/validate$
+^downward/validate$
