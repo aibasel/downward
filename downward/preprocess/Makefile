@@ -43,6 +43,7 @@ $(PROFILE_OBJECTS): %.profile.o: %.cc .obj
 
 clean:
 	rm -f $(OBJECTS:%=.obj/%) $(PROFILE_OBJECTS:%=.obj/%) *~
+	if [ -e .obj ]; then rmdir .obj; fi
 	rm -f Makefile.depend $(PROFILE_TARGET) gmon.out
 
 distclean: clean
