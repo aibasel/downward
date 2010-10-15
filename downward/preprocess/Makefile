@@ -19,30 +19,33 @@ LINK_OPTIONS += -static -static-libgcc
 CC = g++
 DEPEND = g++ -MM
 
-vpath %.o obj
+vpath %.o .obj
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(LINK_OPTIONS) $(OBJECTS:%=obj/%) -o $(TARGET)
+	$(CC) $(LINK_OPTIONS) $(OBJECTS:%=.obj/%) -o $(TARGET)
 
 $(PROFILE_TARGET): $(PROFILE_OBJECTS)
-	$(CC) $(LINK_OPTIONS) $(PROFILE_OPTIONS) $(PROFILE_OBJECTS:%=obj/%) \
+	$(CC) $(LINK_OPTIONS) $(PROFILE_OPTIONS) $(PROFILE_OBJECTS:%=.obj/%) \
           -o $(PROFILE_TARGET)
 
 PROFILE: $(PROFILE_TARGET)
 	$(PROFILE_TARGET) $(PROFILE_PARAMETERS)
 	gprof $(PROFILE_TARGET) > PROFILE
 
-$(OBJECTS): %.o: %.cc
-	$(CC) $(CC_OPTIONS) -c $< -o obj/$@
+$(OBJECTS): %.o: %.cc .obj
+	$(CC) $(CC_OPTIONS) -c $< -o .obj/$@
 
-$(PROFILE_OBJECTS): %.profile.o: %.cc
-	$(CC) $(CC_OPTIONS) $(PROFILE_OPTIONS) -c $< -o obj/$@
+$(PROFILE_OBJECTS): %.profile.o: %.cc .obj
+	$(CC) $(CC_OPTIONS) $(PROFILE_OPTIONS) -c $< -o .obj/$@
+
+.obj:
+	mkdir -p .obj
 
 clean:
-	rm -f $(OBJECTS:%=obj/%) $(PROFILE_OBJECTS:%=obj/%) *~
+	rm -f $(OBJECTS:%=.obj/%) $(PROFILE_OBJECTS:%=.obj/%) *~
 	rm -f Makefile.depend $(PROFILE_TARGET) gmon.out
 
-veryclean: clean
+distclean: clean
 	rm -f $(TARGET) PROFILE
 
 Makefile.depend: $(SOURCES) $(HEADERS)
@@ -52,7 +55,7 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 	rm -f Makefile.temp Makefile.temp2
 
 ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(MAKECMDGOALS),veryclean)
+ifneq ($(MAKECMDGOALS),distclean)
 -include Makefile.depend
 endif
 endif
