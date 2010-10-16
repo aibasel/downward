@@ -2,6 +2,8 @@
 ^downward/preprocess/\.obj/
 ^downward/preprocess/Makefile\.depend$
 ^downward/preprocess/preprocess$
+^downward/preprocess/preprocess-debug$
+^downward/preprocess/preprocess-profile$
 ^downward/search/\.obj/
 ^downward/search/Makefile\.depend$
 ^downward/search/downward$
