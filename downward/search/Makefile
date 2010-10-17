@@ -123,7 +123,7 @@ LINKOPT  =
 LINKOPT += -m32
 LINKOPT += -g
 
-POSTLINKOPT = -lrt
+POSTLINKOPT =
 
 ## Additional specialized options for the various targets follow.
 ## In release mode, we link statically since this makes it more likely
@@ -138,11 +138,11 @@ CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
 LINKOPT_RELEASE  = -static -static-libgcc
-LINKOPT_DEBUG    =
-LINKOPT_PROFILE  = -pg
+LINKOPT_DEBUG    = -lrt
+LINKOPT_PROFILE  = -pg -lrt
 # LINKOPT_PROFILE += -lc_p
 
-POSTLINKOPT_RELEASE  = -Wl,-Bstatic
+POSTLINKOPT_RELEASE  = -Wl,-Bstatic -lrt
 POSTLINKOPT_DEBUG    =
 POSTLINKOPT_PROFILE  =
 
