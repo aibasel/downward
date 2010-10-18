@@ -20,7 +20,6 @@ using namespace std;
 void register_parsers();
 
 int main(int argc, const char **argv) {
-    /* Comment added by Erez to check HG push */
     register_event_handlers();
 
     string usage =
