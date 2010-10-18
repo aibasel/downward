@@ -32,6 +32,7 @@ CausalGraph::CausalGraph(istream &in) {
         sort(edges[i].begin(), edges[i].end());
         edges[i].erase(unique(edges[i].begin(), edges[i].end()), edges[i].end());
     }
+    compute_ancestors();
 }
 
 const vector<int> &CausalGraph::get_successors(int var) const {
@@ -60,3 +61,48 @@ void CausalGraph::dump() const {
 //bool CausalGraph::is_acyclic() const {
 //  return acyclic;
 //}
+
+
+void CausalGraph::compute_ancestors() {
+    int var_count = g_variable_domain.size();
+    vector<bool> marked(var_count, false);
+    ancestors.resize(var_count);
+    for (int var_no = 0; var_no < var_count; var_no++) {
+        vector<int> &var_ancestors = ancestors[var_no];
+        compute_ancestors_dfs(var_no, marked, var_ancestors);
+        ::sort(var_ancestors.begin(), var_ancestors.end());
+        for (int i = 0; i < var_ancestors.size(); i++)
+            marked[var_ancestors[i]] = false;
+    }
+}
+
+void CausalGraph::compute_ancestors_dfs(
+    int var_no, vector<bool> &marked, vector<int> &result) const {
+    if (!marked[var_no]) {
+        marked[var_no] = true;
+        result.push_back(var_no);
+        for (int i = 0; i < inverse_arcs[var_no].size(); i++)
+            compute_ancestors_dfs(inverse_arcs[var_no][i], marked, result);
+    }
+}
+
+bool CausalGraph::have_common_ancestor(int var1, int var2) const {
+    // Algorithm to test if two sorted lists have a common element.
+    // Proceeds similar to merge step in mergesort.
+    vector<int>::const_iterator iter1 = ancestors[var1].begin();
+    vector<int>::const_iterator end1 = ancestors[var1].end();
+    vector<int>::const_iterator iter2 = ancestors[var2].begin();
+    vector<int>::const_iterator end2 = ancestors[var2].end();
+    while (iter1 != end1 && iter2 != end2) {
+        if (*iter1 == *iter2) {
+            return true;
+        } else if (*iter1 < *iter2) {
+            assert(iter1 + 1 == end1 || iter1[1] >= iter1[0]);
+            ++iter1;
+        } else {
+            assert(iter2 + 1 == end2 || iter2[1] >= iter2[0]);
+            ++iter2;
+        }
+    }
+    return false;
+}

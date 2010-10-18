@@ -16,7 +16,8 @@ protected:
         virtual void get_preferred_operators(std::vector<const Operator *> &result) = 0;
 public:
         HeuristicProxy(LamaFFSynergy *synergy_);
-        virtual ~HeuristicProxy() {}
+        virtual ~HeuristicProxy() {
+        }
 
         virtual int compute_heuristic(const State &state) {
             if (is_first_proxy)
@@ -33,7 +34,8 @@ public:
             synergy->get_ff_preferred_operators(result);
         }
 public:
-        FFHeuristicProxy(LamaFFSynergy *synergy_) : HeuristicProxy(synergy_) {}
+        FFHeuristicProxy(LamaFFSynergy *synergy_) : HeuristicProxy(synergy_) {
+        }
     };
 
     class LamaHeuristicProxy : public HeuristicProxy {
@@ -44,7 +46,8 @@ public:
             synergy->get_lama_preferred_operators(result);
         }
 public:
-        LamaHeuristicProxy(LamaFFSynergy *synergy_) : HeuristicProxy(synergy_) {}
+        LamaHeuristicProxy(LamaFFSynergy *synergy_) : HeuristicProxy(synergy_) {
+        }
         virtual bool reach_state(const State &parent_state, const Operator &op,
                                  const State &state) {
             return synergy->lama_reach_state(parent_state, op, state);
@@ -80,7 +83,8 @@ public:
     void get_ff_preferred_operators(std::vector<const Operator *> &result);
 public:
     LamaFFSynergy(bool lm_pref_, bool lm_admissible_, bool lm_optimal_, int lm_type_ = LandmarkCountHeuristic::rpg_sasp);
-    ~LamaFFSynergy() {}
+    ~LamaFFSynergy() {
+    }
 
     int lama_heuristic_value;
     int ff_heuristic_value;

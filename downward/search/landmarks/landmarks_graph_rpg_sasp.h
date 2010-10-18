@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_LANDMARKS_GRAPH_RPG_SASP_H
-#define LANDMARKS_LANDMARKS_GRAPH_RPG_SASP_H
+#ifndef LANDMARKS_GRAPH_NEW_H
+#define LANDMARKS_GRAPH_NEW_H
 
 #include <ext/hash_set>
 #include "../globals.h"
@@ -22,12 +22,13 @@ class LandmarksGraphNew : public LandmarksGraph {
 
     int min_cost_for_landmark(LandmarkNode *bp, vector<vector<int> > &lvl_var);
     void generate_landmarks();
-    void found_lm_and_order(const pair<int, int> a, LandmarkNode &b,
-                            edge_type t);
+    void found_simple_lm_and_order(const pair<int, int> a, LandmarkNode &b,
+                                   edge_type t);
     void found_disj_lm_and_order(const set<pair<int, int> > a, LandmarkNode &b,
                                  edge_type t);
     void approximate_lookahead_orders(const vector<vector<int> > &lvl_var,
                                       LandmarkNode *lmp);
+    void make_conjunctive_lms();
     static bool domain_connectivity(const pair<int, int> &landmark,
                                     const hash_set<int> &exclude);
 public:

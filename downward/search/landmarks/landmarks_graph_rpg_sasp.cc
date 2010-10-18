@@ -20,21 +20,18 @@ void LandmarksGraphNew::get_greedy_preconditions_for_lm(
     // effects achieving the LM.
 
     const vector<PrePost> &prepost = o.get_pre_post();
-    for (unsigned j = 0; j < prepost.size(); j++) {
+    for (unsigned j = 0; j < prepost.size(); j++)
         if (prepost[j].pre != -1) {
             assert(prepost[j].pre < g_variable_domain[prepost[j].var]);
             result.insert(make_pair(prepost[j].var, prepost[j].pre));
-        } else if (g_variable_domain[prepost[j].var] == 2) {
-            for (int i = 0; i < lmp->vars.size(); i++) {
+        } else if (g_variable_domain[prepost[j].var] == 2)
+            for (int i = 0; i < lmp->vars.size(); i++)
                 if (lmp->vars[i] == prepost[j].var
                     && (*g_initial_state)[prepost[j].var] != lmp->vals[i]) {
                     result.insert(make_pair(prepost[j].var,
                                             (*g_initial_state)[prepost[j].var]));
                     break;
                 }
-            }
-        }
-    }
 
     const vector<Prevail> prevail = o.get_prevail();
     for (unsigned j = 0; j < prevail.size(); j++)
@@ -78,16 +75,16 @@ void LandmarksGraphNew::get_greedy_preconditions_for_lm(
 int LandmarksGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
                                                                           int> > &lvl_var) {
     /* For now, the cost for each landmark is 1. When extending this to action
-     costs later, we will calculate here the minimum cost of operators that can
-     make bp true for the first time (according to lvl_var) */
+       costs later, we will calculate here the minimum cost of operators that can
+       make bp true for the first time (according to lvl_var) */
 
     bp->vars.size(); // silence compiler...
     lvl_var.size(); // silence compiler...
     return 1;
 }
 
-void LandmarksGraphNew::found_lm_and_order(const pair<int, int> a,
-                                           LandmarkNode &b, edge_type t) {
+void LandmarksGraphNew::found_simple_lm_and_order(const pair<int, int> a,
+                                                  LandmarkNode &b, edge_type t) {
     LandmarkNode *new_lm;
     if (simple_landmark_exists(a)) {
         new_lm = &(get_simple_lm_node(a));
@@ -171,7 +168,7 @@ void LandmarksGraphNew::compute_shared_preconditions(
     hash_map<int, int> &shared_pre, vector<vector<int> > &lvl_var,
     LandmarkNode *bp) {
     /* Compute the shared preconditions of all operators that can potentially
-     achieve landmark bp, given lvl_var (reachability in relaxed planning graph) */
+       achieve landmark bp, given lvl_var (reachability in relaxed planning graph) */
     bool init = true;
     for (unsigned int k = 0; k < bp->vars.size(); k++) {
         pair<int, int> b = make_pair(bp->vars[k], bp->vals[k]);
@@ -199,10 +196,10 @@ void LandmarksGraphNew::compute_disjunctive_preconditions(vector<set<pair<int,
                                                                           int> > > &disjunctive_pre, vector<vector<int> > &lvl_var,
                                                           LandmarkNode *bp) {
     /* Compute disjunctive preconditions from all operators than can potentially
-     achieve landmark bp, given lvl_var (reachability in relaxed planning graph).
-     A disj. precondition is a set of facts which contains one precondition fact
-     from each of the operators, which we additionally restrict so that each fact
-     in the set stems from the same PDDL predicate. */
+       achieve landmark bp, given lvl_var (reachability in relaxed planning graph).
+       A disj. precondition is a set of facts which contains one precondition fact
+       from each of the operators, which we additionally restrict so that each fact
+       in the set stems from the same PDDL predicate. */
 
     vector<int> ops;
     for (int i = 0; i < bp->vars.size(); i++) {
@@ -283,7 +280,11 @@ void LandmarksGraphNew::generate_landmarks() {
             // All such shared preconditions are landmarks, and greedy necessary predecessors of bp.
             for (hash_map<int, int>::iterator it = shared_pre.begin(); it
                  != shared_pre.end(); it++) {
-                found_lm_and_order(*it, *bp, gn);
+/*
+                cout << "found by backchainig: " << it->first << "->" << it->second
+                     << ", from " << bp->vars[0] << "->" << bp->vals[0] << endl;
+ */
+                found_simple_lm_and_order(*it, *bp, gn);
             }
             // Extract additional orders from relaxed planning graph and DTG.
             approximate_lookahead_orders(lvl_var, bp);
@@ -301,6 +302,119 @@ void LandmarksGraphNew::generate_landmarks() {
         }
     }
     add_lm_forward_orders();
+    //make_conjunctive_lms();
+}
+
+void LandmarksGraphNew::make_conjunctive_lms() {
+    for (set<LandmarkNode *>::iterator it = nodes.begin(); it != nodes.end(); it++) {
+        LandmarkNode *node_p = *it;
+        if (node_p->parents.size() <= 1)
+            continue;
+        set<LandmarkNode *> conj_lm;
+        for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
+                 node_p->parents.begin(); it != node_p->parents.end(); it++) {
+            if ((it->first)->disjunctive)
+                continue;
+            else if (it->second == gn)
+                conj_lm.insert(it->first);
+        }
+        if (conj_lm.size() >= 2) {
+/*
+            cout << "found conj lm!" << endl;
+            for (set<LandmarkNode*>::iterator it = conj_lm.begin(); it != conj_lm.end(); ++it) {
+                dump_node(*it);
+            }
+            cout << "---" << endl;
+ */
+            // For new conjunctive lm, add those edges to children that are shared by all
+            // simple lms, and make edge type the smallest denominator (n rather than gn)
+            // For parents, add the union of parents of original nodes, using smallest
+            // denominator for edge types.
+            // Set "in_goal" only if all original nodes were in goal
+            LandmarkNode *first = *conj_lm.begin();
+            LandmarkNode *new_lm = new LandmarkNode(first->vars, first->vals, false, true);
+            nodes.insert(new_lm);
+            new_lm->in_goal = first->is_goal();
+            hash_map<LandmarkNode *, edge_type, hash_pointer> new_parent_edges = first->parents;
+            hash_map<LandmarkNode *, edge_type, hash_pointer> new_child_edges = first->children;
+            for (set<LandmarkNode *>::iterator it = ++conj_lm.begin(); it != conj_lm.end(); ++it) {
+                LandmarkNode *old_lm = *it;
+                new_lm->vars.push_back(old_lm->vars[0]);
+                new_lm->vals.push_back(old_lm->vals[0]);
+                new_lm->in_goal &= old_lm->is_goal();
+                set<LandmarkNode *> delete_children_edges;
+                for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it2 =
+                         new_parent_edges.begin(); it2 != new_parent_edges.end(); it2++) {
+                    LandmarkNode *parent = it2->first;
+                    if (old_lm->parents.find(parent) == old_lm->parents.end()) {
+                        if (it2->second != n) {
+                            cout << "changing edge type (1) from ";
+                            dump_node(parent);
+                            cout << "to ";
+                            dump_node(first);
+                            cout << "was: " << it2->second << ", now is " << n << endl;
+                            it2->second = n;
+                        }
+                    } else if (old_lm->parents.find(parent)->second > it2->second) {
+                        cout << "changing edge type (2) from ";
+                        dump_node(parent);
+                        cout << "to ";
+                        dump_node(first);
+                        cout << "was: " << it2->second << ", now is: "
+                             << old_lm->parents.find(parent)->second << endl;
+                        assert(old_lm->parents.find(parent)->second == n &&
+                               it2->second == gn);
+                        it2->second = old_lm->parents.find(parent)->second;
+                    }
+                }
+                cout << "bla" << endl;
+                for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it2 =
+                         new_child_edges.begin(); it2 != new_child_edges.end(); it2++) {
+                    LandmarkNode *child = it2->first;
+                    if (old_lm->children.find(child) == old_lm->children.end()) {
+/*
+                        cout << "discarding edge from ";
+                        dump_node(first);
+                        cout << "to ";
+                        dump_node(child);
+ */
+                        delete_children_edges.insert(child);
+                    } else if (old_lm->children.find(child)->second > it2->second) {
+                        cout << "changing edge type from ";
+                        dump_node(first);
+                        cout << "to ";
+                        dump_node(child);
+                        cout << "was: " << it2->second << ", now is: "
+                             << old_lm->children.find(child)->second << endl;
+                        assert(old_lm->children.find(child)->second == n &&
+                               it2->second == gn);
+                        it2->second = old_lm->children.find(child)->second;
+                    }
+                }
+                for (set<LandmarkNode *>::iterator it2 = delete_children_edges.begin();
+                     it2 != delete_children_edges.end(); ++it2) {
+                    new_child_edges.erase(*it2);
+                }
+            }
+            new_lm->parents = new_parent_edges;
+            for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it2 =
+                     new_parent_edges.begin(); it2 != new_parent_edges.end(); it2++) {
+                LandmarkNode *parent = it2->first;
+                parent->children.insert(make_pair(new_lm, it2->second));
+            }
+            new_lm->children = new_child_edges;
+            for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it2 =
+                     new_child_edges.begin(); it2 != new_child_edges.end(); it2++) {
+                LandmarkNode *child = it2->first;
+                child->parents.insert(make_pair(new_lm, it2->second));
+            }
+            cout << "new conj landmark: ";
+            dump_node(new_lm);
+            conj_lms++;
+            landmarks_count++;
+        }
+    }
+    cout << "Found " << conj_lms << " conjunctive landmarks." << endl;
 }
 
 void LandmarksGraphNew::approximate_lookahead_orders(
@@ -334,8 +448,13 @@ void LandmarksGraphNew::approximate_lookahead_orders(
             exclude.insert(i);
             // If that value is crucial for achieving the LM from the initial state,
             // we have found a new landmark.
-            if (!domain_connectivity(lmk, exclude))
-                found_lm_and_order(make_pair(lmk.first, i), *lmp, ln);
+            if (!domain_connectivity(lmk, exclude)) {
+/*
+                cout << "found via DTG: " << lmk.first << "->" << i << " from "
+                     << lmp->vars[0] << "->" << lmp->vals[0] << endl;
+ */
+                found_simple_lm_and_order(make_pair(lmk.first, i), *lmp, n);
+            }
         }
 
 }
@@ -343,9 +462,9 @@ void LandmarksGraphNew::approximate_lookahead_orders(
 bool LandmarksGraphNew::domain_connectivity(const pair<int, int> &landmark,
                                             const hash_set<int> &exclude) {
     /* Tests whether in the domain transition graph of the LM variable, there is
-     a path from the initial state value to the LM value, without passing through
-     any value in "exclude". If not, that means that one of the values in "exclude"
-     is crucial for achieving the landmark (i.e. is on every path to the LM).
+       a path from the initial state value to the LM value, without passing through
+       any value in "exclude". If not, that means that one of the values in "exclude"
+       is crucial for achieving the landmark (i.e. is on every path to the LM).
      */
     assert(landmark.second != (*g_initial_state)[landmark.first]); // no initial state landmarks
     // The value that we want to achieve must not be excluded:
@@ -378,8 +497,8 @@ bool LandmarksGraphNew::domain_connectivity(const pair<int, int> &landmark,
 void LandmarksGraphNew::find_forward_orders(
     const vector<vector<int> > &lvl_var, LandmarkNode *lmp) {
     /* lmp is ordered before any var-val pair that cannot be reached before lmp according to
-     relaxed planning graph (as captured in lvl_var).
-     These orders are saved in the node member variable "forward_orders".
+       relaxed planning graph (as captured in lvl_var).
+       These orders are saved in the node member variable "forward_orders".
      */
     for (int i = 0; i < g_variable_domain.size(); i++)
         for (int j = 0; j < g_variable_domain[i]; j++) {
@@ -426,7 +545,7 @@ void LandmarksGraphNew::add_lm_forward_orders() {
 
             if (simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = get_simple_lm_node(node2_pair);
-                edge_add(node, node2, ln);
+                edge_add(node, node2, n);
             }
         }
         node.forward_orders.clear();

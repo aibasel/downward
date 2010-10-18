@@ -1,11 +1,5 @@
 #include "lama_ff_synergy.h"
 #include "../option_parser.h"
-#include "../plugin.h"
-
-
-static SynergyPlugin lama_ff_synergy_plugin(
-    "lm_ff_syn", LamaFFSynergy::create_heuristics);
-
 
 LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_) {
     synergy = synergy_;
@@ -83,14 +77,14 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
             option_parser.add_int_option("lm_type",
                                          &lm_type_,
                                          "landmarks type");
-            option_parser.add_bool_option("optimal",
+            option_parser.add_bool_option("lm_optimal",
                                           &lm_optimal_,
                                           "optimal cost sharing");
-            option_parser.add_bool_option("admissible",
+            option_parser.add_bool_option("lm_admissible",
                                           &lm_admissible_,
                                           "get admissible estimate");
             option_parser.parse_options(config, end, end, false);
-            ++end;
+            end++;
         }
         if (config[end] != ")")
             throw ParseError(end);
