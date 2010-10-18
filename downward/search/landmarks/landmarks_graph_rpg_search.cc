@@ -1,3 +1,10 @@
+/*
+ * LandmarksGraphSearch.cpp
+ *
+ *  Created on: Nov 12, 2009
+ *      Author: karpase
+ */
+
 #include "landmarks_graph_rpg_search.h"
 
 LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(Exploration *exploration)
@@ -22,7 +29,7 @@ void LandmarksGraphRpgSearch::generate_landmarks() {
         lmp->in_goal = true;
     }
     // test all other possible facts
-    for (int i = 0; i < g_variable_name.size(); i++) {
+    for (int i = 0; i < g_variable_name.size(); i++)
         for (int j = 0; j < g_variable_domain[i]; j++) {
             const pair<int, int> lm = make_pair(i, j);
             if (!simple_landmark_exists(lm)) {
@@ -39,7 +46,8 @@ void LandmarksGraphRpgSearch::generate_landmarks() {
                 }
             }
         }
-    }
+
+
     for (int i = 0; i < not_landmarks.size(); i++) {
         for (int j = 0; j < num_tries; j++) {
             landmark_search(not_landmarks[i], max_depth);
@@ -54,7 +62,7 @@ void LandmarksGraphRpgSearch::landmark_search(LandmarkNode *node, int depth) {
     bool lm_created = false;
     vector<LandmarkNode * > facts;
     vector<int> evals;
-    for (int i = 0; i < g_variable_name.size() && !lm_created; i++) {
+    for (int i = 0; i < g_variable_name.size() && !lm_created; i++)
         for (int j = 0; j < g_variable_domain[i] && !lm_created; j++) {
             const pair<int, int> new_fact = make_pair(i, j);
             if (!landmark_exists(new_fact)) {
@@ -77,7 +85,7 @@ void LandmarksGraphRpgSearch::landmark_search(LandmarkNode *node, int depth) {
                 }
             }
         }
-    }
+
     if (!lm_created) {
         int next_index = choose_random(evals);
         landmark_search(facts[next_index], depth - 1);

@@ -69,6 +69,7 @@ HEADERS += landmarks/exploration.h \
            landmarks/landmarks_graph_rpg_sasp.h \
            landmarks/landmarks_graph_rpg_search.h \
            landmarks/landmarks_graph_zhu_givan.h \
+           landmarks/h_m_landmarks.h \
            landmarks/util.h
 
 HEADERS += learning/AODE.h \

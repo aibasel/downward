@@ -50,12 +50,12 @@ bool _possibly_reaches_lm(const Operator &o, const vector<vector<int> > &lvl_var
         assert(!lvl_var[prepost[i].var].empty());
         bool correct_effect = false;
         // Check whether *this* effect of o reaches a proposition in lmp...
-        for (unsigned int j = 0; j < lmp->vars.size(); j++) {
+        for (unsigned int j = 0; j < lmp->vars.size(); j++)
             if (prepost[i].var == lmp->vars[j] && prepost[i].post == lmp->vals[j]) {
                 correct_effect = true;
                 break;
             }
-        }
+
         if (correct_effect)
             // ...if so, test whether the condition can be satisfied
             effect_condition_reachable = _possibly_fires(prepost[i].cond, lvl_var);

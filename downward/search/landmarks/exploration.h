@@ -16,6 +16,9 @@ class State;
 class ExProposition;
 class ExUnaryOperator;
 
+class LandmarkCountHeuristic;
+
+
 
 struct ExProposition {
     int var;
@@ -54,7 +57,8 @@ struct ExUnaryOperator {
     int depth;
     ExUnaryOperator(const std::vector<ExProposition *> &pre, ExProposition *eff,
                     const Operator *the_op, int base)
-        : op(the_op), precondition(pre), effect(eff), base_cost(base) {}
+        : op(the_op), precondition(pre), effect(eff), base_cost(base) {
+    }
 
 
     bool operator<(const ExUnaryOperator &other) const {
@@ -85,6 +89,8 @@ struct ex_hash_operator_ptr {
 
 class Exploration : public Heuristic {
 private:
+    friend class LandmarkCountHeuristic;
+
     typedef __gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> RelaxedPlan;
 
     std::vector<ExUnaryOperator> unary_operators;
@@ -127,7 +133,9 @@ protected:
 public:
     int get_lower_bound(const State &state);
     void set_additional_goals(const std::vector<std::pair<int, int> > &goals);
-    void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
+    void set_recompute_heuristic() {
+        heuristic_recomputation_needed = true;
+    }
     void compute_reachability_with_excludes(std::vector<std::vector<int> > &lvl_var,
                                             std::vector<__gnu_cxx::hash_map<pair<int, int>, int,
                                                                             hash_int_pair> > &lvl_op,
