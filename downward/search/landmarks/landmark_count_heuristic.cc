@@ -2,25 +2,23 @@
 #include <math.h>
 
 #include "landmark_count_heuristic.h"
+#include "../globals.h"
+#include "../operator.h"
+#include "../option_parser.h"
+#include "../search_engine.h"
+#include "../successor_generator.h"
 #include "landmarks_graph_rpg_sasp.h"
 #include "landmarks_graph_zhu_givan.h"
 #include "landmarks_graph_rpg_exhaust.h"
 #include "landmarks_graph_rpg_search.h"
-
-#include "../globals.h"
-#include "../operator.h"
-#include "../option_parser.h"
-#include "../plugin.h"
-#include "../search_engine.h"
-#include "../successor_generator.h"
+#include "h_m_landmarks.h"
 #include "../timer.h"
+#include "../plugin.h"
 
 LandmarksGraph *g_lgraph; // global to be accessible by state
 
-
 static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(
     "lmcount", LandmarkCountHeuristic::create);
-
 
 static void init_lm_graph(Exploration *exploration, int landmarks_type) {
     switch (landmarks_type) {
@@ -35,6 +33,9 @@ static void init_lm_graph(Exploration *exploration, int landmarks_type) {
         break;
     case LandmarkCountHeuristic::search:
         g_lgraph = new LandmarksGraphRpgSearch(exploration);
+        break;
+    case LandmarkCountHeuristic::hmbased:
+        g_lgraph = new HMLandmarks(exploration, 2);
         break;
     default:
         assert(false); // unknown landmarks_type
@@ -63,10 +64,11 @@ static LandmarksGraph *build_landmarks_graph(Exploration *exploration, bool admi
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;
     cout << "Discovered " << g_lgraph->number_of_landmarks()
          << " landmarks, of which " << g_lgraph->number_of_disj_landmarks()
-         << " are disjunctive" << endl << "          "
+         << " are disjunctive and "
+         << g_lgraph->number_of_conj_landmarks() << " are conjunctive \n"
          << g_lgraph->number_of_edges() << " edges\n";
-    if (!disjunctive_lms)
-        g_lgraph->discard_disjunctive_landmarks();
+    //if (!disjunctive_lms)
+    //    g_lgraph->discard_disjunctive_landmarks();
     //g_lgraph->dump();
     return g_lgraph;
 }
@@ -82,108 +84,79 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(bool preferred_ops,
     // When generating preferred operators, we plan towards
     // non-disjunctive landmarks only
     ff_search_disjunctive_lms = false;
-    // Turn goal into hash set
-    goal.resize(g_goal.size());
-    for (int i = 0; i < g_goal.size(); i++)
-        goal.insert(make_pair(g_goal[i].first, g_goal[i].second));
-
-    if (optimal) {
-#ifdef USE_LP
-        lm_cost_assignment = new LandmarkOptimalSharedCostAssignment(lgraph, true);
-#else
-        cerr << "You must build the planner with the USE_LP symbol defined." << endl
-             << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
-        exit(1);
-#endif
-    } else {
-        lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, true);
-    }
-
 
     if (admissible) {
-        use_shared_cost = true;
-        use_dynamic_cost_sharing = true;
-        use_action_landmark_count = true;
+        use_cost_sharing = true;
+        if (!g_axioms.empty()) {
+            cerr << "cost partitioning does not support axioms" << endl;
+            ::exit(1);
+        }
+        if (optimal) {
+#ifdef USE_LP
+            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph);
+#else
+            cerr << "You must build the planner with the USE_LP symbol defined." << endl
+                 << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
+            exit(1);
+#endif
+        } else {
+            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph);
+        }
     } else {
-        use_shared_cost = false;
-        use_dynamic_cost_sharing = false;
-        use_action_landmark_count = false;
+        use_cost_sharing = false;
+        lm_cost_assignment = 0;
     }
-    lm_status_manager.set_landmarks_for_initial_state(*g_initial_state);
+
+    lm_status_manager.set_landmarks_for_initial_state();
 }
 
 void LandmarkCountHeuristic::set_exploration_goals(const State &state) {
     assert(exploration != 0);
     // Set additional goals for FF exploration
     vector<pair<int, int> > lm_leaves;
-    LandmarkSet &result = lm_status_manager.get_reached_landmarks(state);
+    LandmarkSet result;
+    const vector<bool> &reached_lms_v = lm_status_manager.get_reached_landmarks(state);
+    convert_lms(result, reached_lms_v);
     collect_lm_leaves(ff_search_disjunctive_lms, result, lm_leaves);
     exploration->set_additional_goals(lm_leaves);
 }
 
 int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
+    double epsilon = 0.01;
+
     // Need explicit test to see if state is a goal state. The landmark
     // heuristic may compute h != 0 for a goal state if landmarks are
     // achieved before their parents in the landmarks graph (because
     // they do not get counted as reached in that case). However, we
     // must return 0 for a goal state.
 
-    bool goal_reached = true;
-    for (int i = 0; i < g_goal.size(); i++)
-        if (state[g_goal[i].first] != g_goal[i].second)
-            goal_reached = false;
-
-    if (goal_reached) {
+    bool goal_reached = test_goal(state);
+    if (goal_reached)
         return 0;
-    }
 
-    //lm_status_manager.update_lm_status(state);
     bool dead_end = lm_status_manager.update_lm_status(state);
+
     if (dead_end) {
         return DEAD_END;
     }
 
-    if (use_dynamic_cost_sharing) {
-        lm_cost_assignment->assign_costs();
-        lgraph.count_shared_costs();
-    }
-    lgraph.count_costs();
+    int h = -1;
 
-    //cout << "After cost sharing ---------------------------------------------------- " << endl;
-    //lgraph.dump();
-
-    double total_cost = 0;
-    double reached_cost = 0;
-    double needed_cost = 0;
-    double additional_cost = 0;
-    double epsilon = 0.01;
-
-    if (use_shared_cost) {
-        total_cost = lgraph.shared_cost_of_landmarks();
-        if (use_action_landmark_count) {
-            additional_cost = lgraph.get_unused_action_landmark_cost();
-            reached_cost =
-                lgraph.get_not_unused_alm_effect_reached_shared_cost();
-            needed_cost = lgraph.get_not_unused_alm_effect_needed_shared_cost();
-        } else {
-            reached_cost = lgraph.get_reached_shared_cost();
-            needed_cost = lgraph.get_needed_shared_cost();
-        }
+    if (use_cost_sharing) {
+        double h_val = lm_cost_assignment->cost_sharing_h_value();
+        h = ceil(h_val - epsilon);
     } else {
-        total_cost = (double)lgraph.cost_of_landmarks();
-        reached_cost = (double)lgraph.get_reached_cost();
-        needed_cost = (double)lgraph.get_needed_cost();
+        lgraph.count_costs();
+
+        int total_cost = lgraph.cost_of_landmarks();
+        int reached_cost = lgraph.get_reached_cost();
+        int needed_cost = lgraph.get_needed_cost();
+
+        h = total_cost - reached_cost + needed_cost;
+        assert(-epsilon <= needed_cost);
+        assert(reached_cost - needed_cost >= -epsilon);
     }
 
-    int h = ceil(total_cost - reached_cost + needed_cost + additional_cost
-                 - epsilon);
-    /*
-     cout << "h = " << total_cost << " - " << reached_cost << " + " << needed_cost
-          << " + " << additional_cost << " = " << h << endl;
-    */
-
-    assert(-1 * epsilon <= needed_cost);
-    assert(reached_cost - needed_cost >= -1 * epsilon);
     assert(h >= 0);
 
 #ifndef NDEBUG
@@ -225,7 +198,9 @@ int LandmarkCountHeuristic::compute_heuristic(const State &state) {
     // reached within next step, helpful actions are those occuring in a plan
     // to achieve one of the LM leaves.
 
-    LandmarkSet &reached_lms = lm_status_manager.get_reached_landmarks(state);
+    LandmarkSet reached_lms;
+    vector<bool> &reached_lms_v = lm_status_manager.get_reached_landmarks(state);
+    convert_lms(reached_lms, reached_lms_v);
     const int reached_lms_cost = lgraph.get_reached_cost();
 
     if (reached_lms_cost == lgraph.cost_of_landmarks()
@@ -296,9 +271,9 @@ bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
 bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
                                                       const LandmarkSet &reached) {
     /* Find actions that achieve new landmark leaves. If no such action exist,
-     return false. If a simple landmark can be achieved, return only operators
-     that achieve simple landmarks, else return operators that achieve
-     disjunctive landmarks */
+       return false. If a simple landmark can be achieved, return only operators
+       that achieve simple landmarks, else return operators that achieve
+       disjunctive landmarks */
     vector<const Operator *> all_operators;
     g_successor_generator->generate_applicable_ops(state, all_operators);
     vector<const Operator *> ha_simple;
@@ -338,8 +313,8 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
 bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
                                                      const LandmarkSet &reached, LandmarkNode &lm) const {
     /* A landmark is interesting if it hasn't been reached before and
-     its parents have all been reached, or if all landmarks have been
-     reached before, the LM is a goal, and it's not true at moment */
+       its parents have all been reached, or if all landmarks have been
+       reached before, the LM is a goal, and it's not true at moment */
 
     if (lgraph.number_of_landmarks() != reached.size()) {
         if (reached.find(&lm) != reached.end())
@@ -353,14 +328,25 @@ bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
 bool LandmarkCountHeuristic::reach_state(const State &parent_state,
                                          const Operator &op, const State &state) {
     lm_status_manager.update_reached_lms(parent_state, op, state);
-
     return true;
 }
 
 void LandmarkCountHeuristic::reset() {
     lm_status_manager.clear_reached();
-    lm_status_manager.set_landmarks_for_initial_state(*g_initial_state);
+    lm_status_manager.set_landmarks_for_initial_state();
 }
+
+void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
+                                         const vector<bool> &lms_vec) {
+    // This function exists purely so we don't have to change all the
+    // functions in this class that use LandmarkSets for the reached LMs
+    // (hack).
+
+    for (int i = 0; i < lms_vec.size(); i++)
+        if (lms_vec[i])
+            lms_set.insert(g_lgraph->get_lm_for_index(i));
+}
+
 
 ScalarEvaluator *LandmarkCountHeuristic::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {

@@ -24,7 +24,7 @@ using namespace __gnu_cxx;
    - Added-on functionality to check for a set of propositions which one is reached
      first by the relaxed exploration, and extract preferred operators for this cheapest
      proposition (needed for planning to nearest landmark).
-*/
+ */
 
 // Construction and destruction
 Exploration::Exploration() {
@@ -105,14 +105,14 @@ void Exploration::build_unary_operators(const Operator &op) {
         // precondition.push_back(&propositions[prevail[i].var][prevail[i].prev]);
         precondition_var_vals1.push_back(make_pair(prevail[i].var, prevail[i].prev));
     }
-    for (int i = 0; i < pre_post.size(); i++) {
+    for (int i = 0; i < pre_post.size(); i++)
         if (pre_post[i].pre != -1) {
             assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
             assert(pre_post[i].pre >= 0 && pre_post[i].pre < g_variable_domain[pre_post[i].var]);
             // precondition.push_back(&propositions[pre_post[i].var][pre_post[i].pre]);
             precondition_var_vals1.push_back(make_pair(pre_post[i].var, pre_post[i].pre));
         }
-    }
+
     for (int i = 0; i < pre_post.size(); i++) {
         vector<pair<int, int> > precondition_var_vals2(precondition_var_vals1);
         assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
