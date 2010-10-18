@@ -216,9 +216,9 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
 
         if (true) // Note: no condition on edge type here
             if (!reached[parent_p->get_id()]) {
-                cout << "parent is not in reached: ";
-                cout << parent_p << " ";
-                lm_graph.dump_node(parent_p);
+                //cout << "parent is not in reached: ";
+                //cout << parent_p << " ";
+                //lm_graph.dump_node(parent_p);
                 return false;
             }
 
