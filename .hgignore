@@ -1,5 +1,5 @@
 ~$
-^\.pyc$
+\.pyc$
 ^downward/preprocess/\.obj/
 ^downward/preprocess/Makefile\.depend$
 ^downward/preprocess/preprocess$
