@@ -38,6 +38,8 @@ class FunctionalExpression(object):
 class NumericConstant(FunctionalExpression):
     parts = ()
     def __init__(self, value):
+        if value != int(value):
+            raise ValueError("Fractional numbers are not supported")
         self.value = value
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and self.value == other.value)
