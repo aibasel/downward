@@ -37,7 +37,10 @@ class Action(object):
         assert effect_tag == ":effect"
         effect_list = iterator.next()
         eff = []
-        cost = effects.parse_effects(effect_list, eff)
+        try:
+            cost = effects.parse_effects(effect_list, eff)
+        except ValueError, e:
+            raise SystemExit("Error in Action %s\nReason: %s." % (name, e))
         for rest in iterator:
             assert False, rest
         return Action(name, parameters, precondition, eff, cost)

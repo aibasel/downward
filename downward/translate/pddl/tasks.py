@@ -172,7 +172,11 @@ def parse_task(task_pddl):
     initial = []
     for fact in init[1:]:
         if fact[0] == "=":
-            initial.append(f_expression.parse_assignment(fact))
+            try:
+                initial.append(f_expression.parse_assignment(fact))
+            except ValueError, e:
+                raise SystemExit("Error in initial state specification\n" +
+                                 "Reason: %s." %  e)
         else:
             initial.append(conditions.Atom(fact[0], fact[1:]))
     yield initial
