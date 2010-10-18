@@ -13,8 +13,12 @@
 #include "landmarks_graph_rpg_search.h"
 #include "h_m_landmarks.h"
 #include "../timer.h"
+#include "../plugin.h"
 
 LandmarksGraph *g_lgraph; // global to be accessible by state
+
+static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(
+    "lmcount", LandmarkCountHeuristic::create);
 
 static void init_lm_graph(Exploration *exploration, int landmarks_type) {
     switch (landmarks_type) {

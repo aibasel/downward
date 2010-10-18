@@ -1,5 +1,9 @@
 #include "lama_ff_synergy.h"
 #include "../option_parser.h"
+#include "../plugin.h"
+
+static SynergyPlugin lama_ff_synergy_plugin(
+    "lm_ff_syn", LamaFFSynergy::create_heuristics);
 
 LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_) {
     synergy = synergy_;
