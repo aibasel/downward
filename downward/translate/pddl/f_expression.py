@@ -42,7 +42,7 @@ class NumericConstant(FunctionalExpression):
     def __init__(self, value):
         if value != int(value):
             raise ValueError("Fractional numbers are not supported")
-        self.value = value
+        self.value = int(value)
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and self.value == other.value)
     def __str__(self):
