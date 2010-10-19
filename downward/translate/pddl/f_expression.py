@@ -8,6 +8,8 @@ def parse_expression(exp):
                                           [conditions.parse_term(arg) for arg in exp[1:]])
     elif exp.replace(".","").isdigit():
         return NumericConstant(string.atof(exp))
+    elif exp[0] == "-":
+        raise ValueError("Negative numbers are not supported")
     else:
         return PrimitiveNumericExpression(exp,[])
 
