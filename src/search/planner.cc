@@ -33,8 +33,7 @@ int main(int argc, const char **argv) {
         "    by the name that is specified in the definition.\n"
         "--random-seed SEED\n"
         "    Use random seed SEED\n\n"
-        "See http://alfons.informatik.uni-freiburg.de/downward/HomePage for "
-        "details.";
+        "See http://www.fast-downward.org/ for details.";
 
     if (argc < 2) {
         cout << usage << endl;
