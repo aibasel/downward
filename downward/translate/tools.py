@@ -1,13 +1,23 @@
+import itertools
+
+try:
+    from itertools import product # only available in Python 2.6+
+except ImportError: # before Python 2.6
+    def product(*sequences):
+        """
+        > product([a,b,c], [x,y]) => [(a,x), (a,y), (b,x), (b,y), (c,x), (c,y)]
+        """
+        result = [()]
+        for pool in pools:
+            result = [x + (y,) for x in result for y in pool]
+        return result
+        
+
 def cartesian_product(sequences):
     # This isn't actually a proper cartesian product because we
     # concatenate lists, rather than forming sequences of atomic elements.
-    if not sequences:
-        yield []
-    else:
-        temp = list(cartesian_product(sequences[1:]))
-        for item in sequences[0]:
-            for sequence in temp:
-                yield item + sequence
+    return map(itertools.chain, product(*sequences))
+    
 
 def permutations(alist):
     # Note: The list is changed in place as the algorithm is performed.
@@ -39,21 +49,3 @@ def permutations(alist):
                     c[j] = q
                     break
                 d[j] = -d[j]
-                
-                
-                
-try:
-    from itertools import product # only available in Python 2.6+
-except ImportError: # before Python 2.6
-    def product(*sequences):
-        """
-        > product([a,b,c], [x,y]) => [(a,x), (a,y), (b,x), (b,y), (c,x), (c,y)]
-        """
-        result = [()]
-        for pool in pools:
-            result = [x + (y,) for x in result for y in pool]
-        return result
-
-
-
-
