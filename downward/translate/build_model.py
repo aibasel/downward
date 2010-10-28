@@ -4,18 +4,11 @@
 from __future__ import with_statement
 
 import sys
+import itertools
 
 import pddl
+import tools
 import timers
-
-def product(*args):
-    # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
-    pools = map(tuple, args)
-    result = [[]]
-    for pool in pools:
-        result = [x+[y] for x in result for y in pool]
-    for prod in result:
-        yield tuple(prod)
 
 def convert_rules(prog):
     RULE_TYPES = {
@@ -138,33 +131,36 @@ class ProductRule(BuildRule):
             self.empty_atom_list_no -= 1
         atom_list.append(new_atom)
         
+    def _match_atom_args(self, atom, cond):
+        return [(var_no, obj) for var_no, obj in zip(cond.args, atom.args)
+                if isinstance(var_no, int)]
+        
     def fire(self, new_atom, cond_index, enqueue_func):
         if self.empty_atom_list_no:
             return
-        
-        # For every condition generate a list of atoms and remember the 
-        # condition in every atom
-        atom_lists = []
+            
+        assignment_lists = []
         for pos, cond in enumerate(self.conditions):
             if pos == cond_index:
                 continue
             atoms = self.atoms_by_index[pos]
-            # If the list of atoms is empty, this function should not 
-            # have been called
-            assert atoms
-            for atom in atoms:
-                atom.cond = cond
-            atom_lists.append(atoms)
+            assert atoms, "if we have no atoms, this should never be called"
+            assignment = [self._match_atom_args(atom, cond) for atom in atoms]
+            assignment_lists.append(assignment)
+            
+        eff_args_prepared = self.prepare_effect(new_atom, cond_index)
         
-        # Generate all combinations of atoms choosing one atom for each
-        # condition, update the eff_args and call the enqueue_func
-        for atom_combo in product(*atom_lists):
-            eff_args = self.prepare_effect(new_atom, cond_index)
-            for atom in atom_combo:
-                for var_no, obj in zip(atom.cond.args, atom.args):
-                    if isinstance(var_no, int):
-                        eff_args[var_no] = obj
+        for assignments in tools.product(*assignment_lists):
+            # Do not overwrite eff_args_prepared (TODO: Is this needed?)
+            eff_args = eff_args_prepared[:]
+            
+            for assignment in itertools.chain(assignments):
+                if not assignment:
+                    continue
+                var_no, obj = assignment
+                eff_args[var_no] = obj
             enqueue_func(self.effect.predicate, eff_args)
+
 
 class ProjectRule(BuildRule):
     def __init__(self, effect, conditions):

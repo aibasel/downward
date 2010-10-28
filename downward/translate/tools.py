@@ -39,3 +39,21 @@ def permutations(alist):
                     c[j] = q
                     break
                 d[j] = -d[j]
+                
+                
+                
+try:
+    from itertools import product # only available in Python 2.6+
+except ImportError: # before Python 2.6
+    def product(*sequences):
+        """
+        > product([a,b,c], [x,y]) => [(a,x), (a,y), (b,x), (b,y), (c,x), (c,y)]
+        """
+        result = [()]
+        for pool in pools:
+            result = [x + (y,) for x in result for y in pool]
+        return result
+
+
+
+
