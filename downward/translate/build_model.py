@@ -8,6 +8,15 @@ import sys
 import pddl
 import timers
 
+def product(*args):
+    # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
+    pools = map(tuple, args)
+    result = [[]]
+    for pool in pools:
+        result = [x+[y] for x in result for y in pool]
+    for prod in result:
+        yield tuple(prod)
+
 def convert_rules(prog):
     RULE_TYPES = {
         "join": JoinRule,
@@ -128,22 +137,34 @@ class ProductRule(BuildRule):
         if not atom_list:
             self.empty_atom_list_no -= 1
         atom_list.append(new_atom)
+        
     def fire(self, new_atom, cond_index, enqueue_func):
-        if not self.empty_atom_list_no:
-            effect_args = self.prepare_effect(new_atom, cond_index)
-            self._fire(cond_index, 0, effect_args, enqueue_func)
-    def _fire(self, ignore_pos, position, eff_args, enqueue_func):
-        if position == len(self.conditions):
-            enqueue_func(self.effect.predicate, eff_args)
-        elif position == ignore_pos:
-            self._fire(ignore_pos, position + 1, eff_args, enqueue_func)
-        else:
-            cond = self.conditions[position]
-            for atom in self.atoms_by_index[position]:
-                for var_no, obj in zip(cond.args, atom.args):
+        if self.empty_atom_list_no:
+            return
+        
+        # For every condition generate a list of atoms and remember the 
+        # condition in every atom
+        atom_lists = []
+        for pos, cond in enumerate(self.conditions):
+            if pos == cond_index:
+                continue
+            atoms = self.atoms_by_index[pos]
+            # If the list of atoms is empty, this function should not 
+            # have been called
+            assert atoms
+            for atom in atoms:
+                atom.cond = cond
+            atom_lists.append(atoms)
+        
+        # Generate all combinations of atoms choosing one atom for each
+        # condition, update the eff_args and call the enqueue_func
+        for atom_combo in product(*atom_lists):
+            eff_args = self.prepare_effect(new_atom, cond_index)
+            for atom in atom_combo:
+                for var_no, obj in zip(atom.cond.args, atom.args):
                     if isinstance(var_no, int):
                         eff_args[var_no] = obj
-                self._fire(ignore_pos, position + 1, eff_args, enqueue_func)
+            enqueue_func(self.effect.predicate, eff_args)
 
 class ProjectRule(BuildRule):
     def __init__(self, effect, conditions):
