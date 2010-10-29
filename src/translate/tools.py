@@ -8,15 +8,24 @@ except ImportError: # before Python 2.6
         > product([a,b,c], [x,y]) => [(a,x), (a,y), (b,x), (b,y), (c,x), (c,y)]
         """
         result = [()]
-        for pool in pools:
-            result = [x + (y,) for x in result for y in pool]
+        for sequence in sequences:
+            result = [x + (y,) for x in result for y in sequence]
         return result
         
 
 def cartesian_product(sequences):
     # This isn't actually a proper cartesian product because we
     # concatenate lists, rather than forming sequences of atomic elements.
-    return map(itertools.chain, product(*sequences))
+    # We could probably also use something like
+    # map(itertools.chain, product(*sequences))
+    # but that does not produce the same results
+    if not sequences:
+        yield []
+    else:
+        temp = list(cartesian_product(sequences[1:]))
+        for item in sequences[0]:
+            for sequence in temp:
+                yield item + sequence
     
 
 def permutations(alist):
