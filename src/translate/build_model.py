@@ -139,25 +139,19 @@ class ProductRule(BuildRule):
         if self.empty_atom_list_no:
             return
             
-        assignment_lists = []
+        binding_lists = []
         for pos, cond in enumerate(self.conditions):
             if pos == cond_index:
                 continue
             atoms = self.atoms_by_index[pos]
             assert atoms, "if we have no atoms, this should never be called"
-            assignment = [self._match_atom_args(atom, cond) for atom in atoms]
-            assignment_lists.append(assignment)
+            binding = [self._match_atom_args(atom, cond) for atom in atoms]
+            binding_lists.append(binding)
             
-        eff_args_prepared = self.prepare_effect(new_atom, cond_index)
+        eff_args = self.prepare_effect(new_atom, cond_index)
         
-        for assignments in tools.product(*assignment_lists):
-            # Do not overwrite eff_args_prepared (TODO: Is this needed?)
-            eff_args = eff_args_prepared[:]
-            
-            for assignment in itertools.chain(assignments):
-                if not assignment:
-                    continue
-                var_no, obj = assignment
+        for bindings in tools.product(*binding_lists):
+            for var_no, obj in itertools.chain(*bindings):
                 eff_args[var_no] = obj
             enqueue_func(self.effect.predicate, eff_args)
 
