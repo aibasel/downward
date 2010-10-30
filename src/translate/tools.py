@@ -14,6 +14,10 @@ except ImportError: # before Python 2.6
         
 
 def cartesian_product(sequences):
+    # TODO: Rename this. It's not good that we have two functions
+    # called "product" and "cartesian_product", of which "product"
+    # computes cartesian products, while "cartesian_product" does not.
+    
     # This isn't actually a proper cartesian product because we
     # concatenate lists, rather than forming sequences of atomic elements.
     # We could probably also use something like
@@ -29,6 +33,12 @@ def cartesian_product(sequences):
     
 
 def permutations(alist):
+    # TODO: As of Python 2.6, there is a built-in way of computing
+    # permutations, which unfortunately generates them in a different
+    # order (lexicographic). We should probably ultimately switch to
+    # that, but not without testing performance since it can change
+    # the behaviour of invariant synthesis.
+    
     # Note: The list is changed in place as the algorithm is performed.
     #       The original value is restored when we are done.
     #       Since this is a generator, the caller must be aware
