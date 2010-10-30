@@ -131,27 +131,32 @@ class ProductRule(BuildRule):
             self.empty_atom_list_no -= 1
         atom_list.append(new_atom)
         
-    def _match_atom_args(self, atom, cond):
+    def _get_bindings(self, atom, cond):
         return [(var_no, obj) for var_no, obj in zip(cond.args, atom.args)
                 if isinstance(var_no, int)]
         
     def fire(self, new_atom, cond_index, enqueue_func):
         if self.empty_atom_list_no:
             return
-            
-        binding_lists = []
+
+        # Binding: a (var_no, object) pair
+        # Bindings: List-of(Binding)
+        # BindingsFactor: List-of(Bindings)
+        # BindingsFactors: List-of(BindingsFactor)
+        bindings_factors = []
         for pos, cond in enumerate(self.conditions):
             if pos == cond_index:
                 continue
             atoms = self.atoms_by_index[pos]
             assert atoms, "if we have no atoms, this should never be called"
-            binding = [self._match_atom_args(atom, cond) for atom in atoms]
-            binding_lists.append(binding)
+            factor = [self._get_bindings(atom, cond) for atom in atoms]
+            bindings_factors.append(factor)
             
         eff_args = self.prepare_effect(new_atom, cond_index)
         
-        for bindings in tools.product(*binding_lists):
-            for var_no, obj in itertools.chain(*bindings):
+        for bindings_list in tools.product(*bindings_factors):
+            bindings = itertools.chain(*bindings_list)
+            for var_no, obj in bindings:
                 eff_args[var_no] = obj
             enqueue_func(self.effect.predicate, eff_args)
 
