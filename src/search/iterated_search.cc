@@ -83,8 +83,10 @@ int IteratedSearch::step() {
     current_search->statistics();
     search_progress.inc_expanded(
         current_search->get_search_progress().get_expanded());
-    search_progress.inc_evaluated(
-        current_search->get_search_progress().get_evaluated());
+    search_progress.inc_evaluated_states(
+        current_search->get_search_progress().get_evaluated_states());
+    search_progress.inc_evaluations(
+        current_search->get_search_progress().get_evaluations());
     search_progress.inc_generated(
         current_search->get_search_progress().get_generated());
     search_progress.inc_generated_ops(

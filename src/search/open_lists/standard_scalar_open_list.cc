@@ -59,7 +59,7 @@ int StandardScalarOpenList<Entry>::insert(const Entry &entry) {
 }
 
 template<class Entry>
-Entry StandardScalarOpenList<Entry>::remove_min() {
+Entry StandardScalarOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
     typename std::map<int, Bucket>::iterator it;
     it = buckets.find(lowest_bucket);
@@ -69,10 +69,15 @@ Entry StandardScalarOpenList<Entry>::remove_min() {
     assert(it != buckets.end());
     lowest_bucket = it->first;
     size--;
+    if (key) {
+        assert(key->empty());
+        key->push_back(lowest_bucket);
+    }
     Entry result = it->second.front();
     it->second.pop_front();
     return result;
 }
+
 
 template<class Entry>
 bool StandardScalarOpenList<Entry>::empty() const {
