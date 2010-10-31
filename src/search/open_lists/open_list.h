@@ -15,7 +15,11 @@ public:
     virtual ~OpenList() {}
 
     virtual int insert(const Entry &entry) = 0;
-    virtual Entry remove_min() = 0;
+    virtual Entry remove_min(std::vector<int> *key = 0) = 0;
+    // If key is non-null, it must point to an empty vector.
+    // Then remove_min stores the key for the popped element there.
+    // TODO: We might want to solve this differently eventually;
+    //       see msg639 in the tracker.
     virtual bool empty() const = 0;
     virtual void clear() = 0;
     bool only_preferred_states() const {return only_preferred; }

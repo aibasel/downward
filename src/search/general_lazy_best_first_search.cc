@@ -175,7 +175,8 @@ int GeneralLazyBestFirstSearch::step() {
             }
             heuristics[i]->evaluate(current_state);
         }
-        search_progress.inc_evaluated();
+        search_progress.inc_evaluated_states();
+        search_progress.inc_evaluations(heuristics.size());
         open_list->evaluate(current_g, false);
         if (!open_list->is_dead_end()) {
             // We use the value of the first heuristic, because SearchSpace only

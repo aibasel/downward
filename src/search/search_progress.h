@@ -13,11 +13,12 @@
 class SearchProgress {
 private:
     // General Statistics
-    int expanded_states; // nr states for which successors were generated
+    int expanded_states;  // nr states for which successors were generated
     int evaluated_states; // nr states for which h fn was computed
+    int evaluations;      // nr of heuristic evaluations performed
     int generated_states; // nr states created in total (plus those removed since already in close list)
-    int reopened_states; // nr of *closed* states which we reopened
-    int generated_ops; // nr of operators that were returned as applicable
+    int reopened_states;  // nr of *closed* states which we reopened
+    int generated_ops;    // nr of operators that were returned as applicable
     int pathmax_corrections; // nr of pathmax corrections;
 
     // f-statistics
@@ -39,15 +40,17 @@ public:
 
     // statistics update
     void inc_expanded(int inc = 1) {expanded_states += inc; }
-    void inc_evaluated(int inc = 1) {evaluated_states += inc; }
+    void inc_evaluated_states(int inc = 1) {evaluated_states += inc; }
     void inc_generated(int inc = 1) {generated_states += inc; }
     void inc_reopened(int inc = 1) {reopened_states += inc; }
     void inc_generated_ops(int inc = 1) {generated_ops += inc; }
     void inc_pathmax_corrections(int inc = 1) {pathmax_corrections += inc; }
+    void inc_evaluations(int inc = 1) {evaluations += inc; }
 
     //statistics access
     int get_expanded() const {return expanded_states; }
-    int get_evaluated() const {return evaluated_states; }
+    int get_evaluated_states() const {return evaluated_states; }
+    int get_evaluations() const {return evaluations; }
     int get_generated() const {return generated_states; }
     int get_reopened() const {return reopened_states; }
     int get_generated_ops() const {return generated_ops; }

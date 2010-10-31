@@ -16,8 +16,11 @@ using namespace std;
 
 GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(
     OpenList<state_var_t *> *open,
-    bool reopen_closed, bool pathmax_correction, ScalarEvaluator *f_eval, int g_bound)
-    : reopen_closed_nodes(reopen_closed), do_pathmax(pathmax_correction),
+    bool reopen_closed, bool pathmax_correction,
+    bool use_multi_path_dependence_, ScalarEvaluator *f_eval, int g_bound)
+    : reopen_closed_nodes(reopen_closed),
+      do_pathmax(pathmax_correction),
+      use_multi_path_dependence(use_multi_path_dependence_),
       open_list(open), f_evaluator(f_eval) {
     bound = g_bound;
 }
@@ -36,6 +39,8 @@ void GeneralEagerBestFirstSearch::initialize() {
          << endl;
     if (do_pathmax)
         cout << "Using pathmax correction" << endl;
+    if (use_multi_path_dependence)
+        cout << "Using multi-path dependence (LM-A*)" << endl;
     assert(open_list != NULL);
 
     set<Heuristic *> hset;
@@ -64,10 +69,11 @@ void GeneralEagerBestFirstSearch::initialize() {
 
     assert(heuristics.size() > 0);
 
-    for (unsigned int i = 0; i < heuristics.size(); i++)
+    for (size_t i = 0; i < heuristics.size(); i++)
         heuristics[i]->evaluate(*g_initial_state);
     open_list->evaluate(0, false);
-    search_progress.inc_evaluated();
+    search_progress.inc_evaluated_states();
+    search_progress.inc_evaluations(heuristics.size());
 
     if (open_list->is_dead_end()) {
         assert(open_list->dead_end_is_reliable());
@@ -117,6 +123,7 @@ int GeneralEagerBestFirstSearch::step() {
             preferred_ops.insert(pref[i]);
         }
     }
+    search_progress.inc_evaluations(preferred_operator_heuristics.size());
 
     for (int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
@@ -130,17 +137,28 @@ int GeneralEagerBestFirstSearch::step() {
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
-        if (succ_node.is_dead_end()) {
-            // Previously encountered dead end. Don't re-evaluate.
+        // Previously encountered dead end. Don't re-evaluate.
+        if (succ_node.is_dead_end())
             continue;
-        } else if (succ_node.is_new()) {
+
+        // update new path
+        if (use_multi_path_dependence || succ_node.is_new()) {
+            bool h_is_dirty = false;
+            for (size_t i = 0; i < heuristics.size(); i++)
+                h_is_dirty = h_is_dirty || heuristics[i]->reach_state(
+                    s, *op, succ_node.get_state());
+            if (h_is_dirty && use_multi_path_dependence)
+                succ_node.set_h_dirty();
+        }
+
+        if (succ_node.is_new()) {
             // We have not seen this state before.
             // Evaluate and create a new node.
-            for (unsigned int i = 0; i < heuristics.size(); i++) {
-                heuristics[i]->reach_state(s, *op, succ_node.get_state());
+            for (size_t i = 0; i < heuristics.size(); i++)
                 heuristics[i]->evaluate(succ_state);
-            }
-            search_progress.inc_evaluated();
+            succ_node.clear_h_dirty();
+            search_progress.inc_evaluated_states();
+            search_progress.inc_evaluations(heuristics.size());
 
             // Note that we cannot use succ_node.get_g() here as the
             // node is not yet open. Furthermore, we cannot open it
@@ -203,28 +221,63 @@ int GeneralEagerBestFirstSearch::step() {
 }
 
 pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
+    /* TODO: The bulk of this code deals with multi-path dependence,
+       which is a bit unfortunate since that is a special case that
+       makes the common case look more complicated than it would need
+       to be. We could refactor this by implementing multi-path
+       dependence as a separate search algorithm that wraps the "usual"
+       search algorithm and adds the extra processing in the desired
+       places. I think this would lead to much cleaner code. */
+
     while (true) {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
             return make_pair(search_space.get_node(*g_initial_state), false);
-            //assert(false);
-            //exit(1); // fix segfault in release mode
-            // TODO: Deal with this properly. step() should return
-            //       failure.
         }
-        State state(open_list->remove_min());
+        vector<int> last_key_removed;
+        State state(open_list->remove_min(
+                        use_multi_path_dependence ? &last_key_removed : 0));
         SearchNode node = search_space.get_node(state);
 
-        // If the node is closed, we do not reopen it, as our heuristic
-        // is consistent.
-        // TODO: check this
-        if (!node.is_closed()) {
-            node.close();
-            assert(!node.is_dead_end());
-            update_jump_statistic(node);
-            search_progress.inc_expanded();
-            return make_pair(node, true);
+        if (node.is_closed())
+            continue;
+
+        if (use_multi_path_dependence) {
+            assert(last_key_removed.size() == 2);
+            int pushed_h = last_key_removed[1];
+            assert(node.get_h() >= pushed_h);
+            if (node.get_h() > pushed_h) {
+                // cout << "LM-A* skip h" << endl;
+                continue;
+            }
+            assert(node.get_h() == pushed_h);
+            if (!node.is_closed() && node.is_h_dirty()) {
+                for (size_t i = 0; i < heuristics.size(); i++)
+                    heuristics[i]->evaluate(node.get_state());
+                node.clear_h_dirty();
+                search_progress.inc_evaluations(heuristics.size());
+                
+                open_list->evaluate(node.get_g(), false);
+                bool dead_end = open_list->is_dead_end() && open_list->dead_end_is_reliable();
+                if (dead_end) {
+                    node.mark_as_dead_end();
+                    continue;
+                }
+                int new_h = heuristics[0]->get_heuristic();
+                if (new_h > node.get_h()) {
+                    assert(node.is_open());
+                    node.increase_h(new_h);
+                    open_list->insert(node.get_state_buffer());
+                    continue;
+                }
+            }
         }
+        
+        node.close();
+        assert(!node.is_dead_end());
+        update_jump_statistic(node);
+        search_progress.inc_expanded();
+        return make_pair(node, true);
     }
 }
 
@@ -292,8 +345,8 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
 
     GeneralEagerBestFirstSearch *engine = 0;
     if (!dry_run) {
-        engine = new GeneralEagerBestFirstSearch(open, reopen_closed,
-                                                 pathmax, f_eval, g_bound);
+        engine = new GeneralEagerBestFirstSearch(
+            open, reopen_closed, pathmax, false, f_eval, g_bound);
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
@@ -310,6 +363,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
     end++;
 
     bool pathmax = false;
+    bool mpd = false;
 
     if (config[end] != ")") {
         end++;
@@ -317,6 +371,8 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
 
         option_parser.add_bool_option("pathmax", &pathmax,
                                       "use pathmax correction");
+        option_parser.add_bool_option("mpd", &mpd,
+                                      "use multi-path dependence (LM-A*)");
 
         option_parser.parse_options(config, end, end, dry_run);
         end++;
@@ -340,7 +396,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
         OpenList<state_var_t *> *open = \
             new TieBreakingOpenList<state_var_t *>(evals, false, false);
 
-        engine = new GeneralEagerBestFirstSearch(open, true, pathmax,
+        engine = new GeneralEagerBestFirstSearch(open, true, pathmax, mpd,
                                                  f_eval, numeric_limits<int>::max());
     }
 
@@ -398,7 +454,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
             open = new AlternationOpenList<state_var_t *>(inner_lists, boost);
         }
 
-        engine = new GeneralEagerBestFirstSearch(open, false, false,
+        engine = new GeneralEagerBestFirstSearch(open, false, false, false,
                                                  NULL, g_bound);
         engine->set_pref_operator_heuristics(preferred_list);
     }

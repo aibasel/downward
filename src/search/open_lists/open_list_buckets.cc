@@ -63,15 +63,20 @@ int BucketOpenList<Entry>::insert(const Entry &entry) {
 }
 
 template<class Entry>
-Entry BucketOpenList<Entry>::remove_min() {
+Entry BucketOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
     while (buckets[lowest_bucket].empty())
         lowest_bucket++;
     size--;
+    if (key) {
+        assert(key->empty());
+        key->push_back(lowest_bucket);
+    }
     Entry result = buckets[lowest_bucket].front();
     buckets[lowest_bucket].pop_front();
     return result;
 }
+
 
 template<class Entry>
 bool BucketOpenList<Entry>::empty() const {
