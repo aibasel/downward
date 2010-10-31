@@ -20,7 +20,6 @@ class BucketOpenList : public OpenList<Entry> {
     bool last_preferred;
     bool dead_end;
     bool dead_end_reliable;
-
 protected:
     ScalarEvaluator *get_evaluator() {return evaluator; }
 
@@ -29,7 +28,7 @@ public:
     ~BucketOpenList();
 
     int insert(const Entry &entry);
-    Entry remove_min();
+    Entry remove_min(std::vector<int> *key = 0);
     bool empty() const;
     void clear();
 

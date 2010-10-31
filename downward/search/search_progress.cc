@@ -5,6 +5,7 @@ SearchProgress::SearchProgress() {
     expanded_states = 0;
     reopened_states = 0;
     evaluated_states = 0;
+    evaluations = 0;
     generated_states = 0;
     generated_ops = 0;
     pathmax_corrections = 0;
@@ -100,6 +101,7 @@ void SearchProgress::print_statistics() const {
     cout << "Expanded " << expanded_states << " state(s)." << endl;
     cout << "Reopened " << reopened_states << " state(s)." << endl;
     cout << "Evaluated " << evaluated_states << " state(s)." << endl;
+    cout << "Evaluations: " << evaluations << endl;
     cout << "Generated " << generated_states << " state(s)." << endl;
     if (pathmax_corrections > 0) {
         cout << "Pathmax corrections: " << pathmax_corrections << endl;

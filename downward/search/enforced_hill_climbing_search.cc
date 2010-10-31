@@ -21,12 +21,14 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 }
 
 void EnforcedHillClimbingSearch::evaluate(const State &parent, const Operator *op, const State &state) {
-    search_progress.inc_evaluated();
+    search_progress.inc_evaluated_states();
+
     if (!preferred_contains_eval) {
         if (op != NULL) {
             heuristic->reach_state(parent, *op, state);
         }
         heuristic->evaluate(state);
+        search_progress.inc_evaluations();
     }
     for (int i = 0; i < preferred_heuristics.size(); i++) {
         if (op != NULL) {
@@ -34,6 +36,7 @@ void EnforcedHillClimbingSearch::evaluate(const State &parent, const Operator *o
         }
         preferred_heuristics[i]->evaluate(state);
     }
+    search_progress.inc_evaluations(preferred_heuristics.size());
 }
 
 void EnforcedHillClimbingSearch::initialize() {

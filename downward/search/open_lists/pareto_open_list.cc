@@ -118,7 +118,7 @@ int ParetoOpenList<Entry>::insert(const Entry &entry) {
 }
 
 template<class Entry>
-Entry ParetoOpenList<Entry>::remove_min() {
+Entry ParetoOpenList<Entry>::remove_min(vector<int> *key) {
     typename KeySet::iterator selected = nondominated.begin();
     int seen = 0;
     for (typename KeySet::iterator it = nondominated.begin();
@@ -132,6 +132,11 @@ Entry ParetoOpenList<Entry>::remove_min() {
         if ((rand() % seen) < numerator)
             selected = it;
     }
+    if (key) {
+        assert(key->empty());
+        *key = *selected;
+    }
+
     Bucket &bucket = buckets[*selected];
     Entry result = bucket.front();
     bucket.pop_front();

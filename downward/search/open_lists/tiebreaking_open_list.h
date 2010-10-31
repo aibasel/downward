@@ -39,7 +39,7 @@ public:
 
     // open list interface
     int insert(const Entry &entry);
-    Entry remove_min();
+    Entry remove_min(std::vector<int> *key = 0);
     bool empty() const;
     void clear();
 

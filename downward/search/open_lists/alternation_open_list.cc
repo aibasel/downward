@@ -4,7 +4,10 @@
 #include "../open_list_parser.h"
 
 #include <cassert>
+#include <cstdlib>
 using namespace std;
+
+
 template<class Entry>
 OpenList<Entry> *AlternationOpenList<Entry>::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
@@ -71,8 +74,12 @@ int AlternationOpenList<Entry>::insert(const Entry &entry) {
 }
 
 template<class Entry>
-Entry AlternationOpenList<Entry>::remove_min() {
+Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
+    if (key) {
+        cerr << "not implemented -- see msg639 in the tracker" << endl;
+        ::abort();
+    }
     int best = 0;
     for (unsigned int i = 0; i < open_lists.size(); i++) {
         if (!open_lists[i]->empty() &&
@@ -85,7 +92,7 @@ Entry AlternationOpenList<Entry>::remove_min() {
     assert(!best_list->empty());
     size--;
     priorities[best]++;
-    return best_list->remove_min();
+    return best_list->remove_min(0);
 }
 
 template<class Entry>
