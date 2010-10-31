@@ -45,6 +45,18 @@ int SearchNode::get_h() const {
     return info.h;
 }
 
+bool SearchNode::is_h_dirty() const {
+    return info.h_is_dirty;
+}
+
+void SearchNode::set_h_dirty() {
+    info.h_is_dirty = true;
+}
+
+void SearchNode::clear_h_dirty() {
+    info.h_is_dirty = false;
+}
+
 const state_var_t *SearchNode::get_parent_buffer() const {
     return info.parent_state;
 }
@@ -91,6 +103,11 @@ void SearchNode::update_parent(const SearchNode &parent_node,
     info.g = parent_node.info.g + parent_op->get_cost();
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
+}
+
+void SearchNode::increase_h(int h) {
+    assert(h >= info.h);
+    info.h = h;
 }
 
 void SearchNode::close() {

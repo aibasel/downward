@@ -30,6 +30,9 @@ public:
     bool is_closed() const;
     bool is_dead_end() const;
 
+    bool is_h_dirty() const;
+    void set_h_dirty();
+    void clear_h_dirty();
     int get_g() const;
     int get_h() const;
     const state_var_t *get_parent_buffer() const;
@@ -41,6 +44,7 @@ public:
                 const Operator *parent_op);
     void update_parent(const SearchNode &parent_node,
                        const Operator *parent_op);
+    void increase_h(int h);
     void close();
     void mark_as_dead_end();
 

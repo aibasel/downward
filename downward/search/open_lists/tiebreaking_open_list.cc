@@ -62,13 +62,17 @@ int TieBreakingOpenList<Entry>::insert(const Entry &entry) {
 }
 
 template<class Entry>
-Entry TieBreakingOpenList<Entry>::remove_min() {
+Entry TieBreakingOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
     typename std::map<const std::vector<int>, Bucket>::iterator it;
     it = buckets.begin();
     assert(it != buckets.end());
     assert(!it->second.empty());
     size--;
+    if (key) {
+        assert(key->empty());
+        *key = it->first;
+    }
     Entry result = it->second.front();
     it->second.pop_front();
     if (it->second.empty())
