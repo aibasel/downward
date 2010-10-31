@@ -1,6 +1,28 @@
+import itertools
+
+try:
+    from itertools import product # only available in Python 2.6+
+except ImportError: # before Python 2.6
+    def product(*sequences):
+        """
+        > product([a,b,c], [x,y]) => [(a,x), (a,y), (b,x), (b,y), (c,x), (c,y)]
+        """
+        result = [()]
+        for sequence in sequences:
+            result = [x + (y,) for x in result for y in sequence]
+        return result
+        
+
 def cartesian_product(sequences):
+    # TODO: Rename this. It's not good that we have two functions
+    # called "product" and "cartesian_product", of which "product"
+    # computes cartesian products, while "cartesian_product" does not.
+    
     # This isn't actually a proper cartesian product because we
     # concatenate lists, rather than forming sequences of atomic elements.
+    # We could probably also use something like
+    # map(itertools.chain, product(*sequences))
+    # but that does not produce the same results
     if not sequences:
         yield []
     else:
@@ -8,8 +30,15 @@ def cartesian_product(sequences):
         for item in sequences[0]:
             for sequence in temp:
                 yield item + sequence
+    
 
 def permutations(alist):
+    # TODO: As of Python 2.6, there is a built-in way of computing
+    # permutations, which unfortunately generates them in a different
+    # order (lexicographic). We should probably ultimately switch to
+    # that, but not without testing performance since it can change
+    # the behaviour of invariant synthesis.
+    
     # Note: The list is changed in place as the algorithm is performed.
     #       The original value is restored when we are done.
     #       Since this is a generator, the caller must be aware

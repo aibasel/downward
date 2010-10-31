@@ -4,8 +4,10 @@
 from __future__ import with_statement
 
 import sys
+import itertools
 
 import pddl
+import tools
 import timers
 
 def convert_rules(prog):
@@ -128,22 +130,36 @@ class ProductRule(BuildRule):
         if not atom_list:
             self.empty_atom_list_no -= 1
         atom_list.append(new_atom)
+        
+    def _get_bindings(self, atom, cond):
+        return [(var_no, obj) for var_no, obj in zip(cond.args, atom.args)
+                if isinstance(var_no, int)]
+        
     def fire(self, new_atom, cond_index, enqueue_func):
-        if not self.empty_atom_list_no:
-            effect_args = self.prepare_effect(new_atom, cond_index)
-            self._fire(cond_index, 0, effect_args, enqueue_func)
-    def _fire(self, ignore_pos, position, eff_args, enqueue_func):
-        if position == len(self.conditions):
+        if self.empty_atom_list_no:
+            return
+
+        # Binding: a (var_no, object) pair
+        # Bindings: List-of(Binding)
+        # BindingsFactor: List-of(Bindings)
+        # BindingsFactors: List-of(BindingsFactor)
+        bindings_factors = []
+        for pos, cond in enumerate(self.conditions):
+            if pos == cond_index:
+                continue
+            atoms = self.atoms_by_index[pos]
+            assert atoms, "if we have no atoms, this should never be called"
+            factor = [self._get_bindings(atom, cond) for atom in atoms]
+            bindings_factors.append(factor)
+            
+        eff_args = self.prepare_effect(new_atom, cond_index)
+        
+        for bindings_list in tools.product(*bindings_factors):
+            bindings = itertools.chain(*bindings_list)
+            for var_no, obj in bindings:
+                eff_args[var_no] = obj
             enqueue_func(self.effect.predicate, eff_args)
-        elif position == ignore_pos:
-            self._fire(ignore_pos, position + 1, eff_args, enqueue_func)
-        else:
-            cond = self.conditions[position]
-            for atom in self.atoms_by_index[position]:
-                for var_no, obj in zip(cond.args, atom.args):
-                    if isinstance(var_no, int):
-                        eff_args[var_no] = obj
-                self._fire(ignore_pos, position + 1, eff_args, enqueue_func)
+
 
 class ProjectRule(BuildRule):
     def __init__(self, effect, conditions):
