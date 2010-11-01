@@ -1,4 +1,5 @@
-USE_LP=0   ## Set to 1 to enable linear programming stuff.
+## Set USE_LP to 1 to enable linear programming stuff.
+USE_LP=0
 
 HEADERS = \
           axioms.h \
