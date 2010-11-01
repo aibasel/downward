@@ -22,8 +22,8 @@ class LandmarksGraphNew : public LandmarksGraph {
 
     int min_cost_for_landmark(LandmarkNode *bp, vector<vector<int> > &lvl_var);
     void generate_landmarks();
-    void found_lm_and_order(const pair<int, int> a, LandmarkNode &b,
-                            edge_type t);
+    void found_simple_lm_and_order(const pair<int, int> a, LandmarkNode &b,
+                                   edge_type t);
     void found_disj_lm_and_order(const set<pair<int, int> > a, LandmarkNode &b,
                                  edge_type t);
     void approximate_lookahead_orders(const vector<vector<int> > &lvl_var,

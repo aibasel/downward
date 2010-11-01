@@ -4,7 +4,6 @@
 #include "../state.h"
 #include "../heuristic.h"
 #include "landmarks_graph.h"
-#include "../best_first_search.h"
 #include "exploration.h"
 #include "landmark_status_manager.h"
 #include "landmark_cost_assignment.h"
@@ -12,8 +11,6 @@
 extern LandmarksGraph *g_lgraph; // Make global so graph does not need to be built more than once
 // even when iterating search (TODO: clean up use of g_lgraph vs.
 // lgraph in this class).
-
-
 
 class LandmarkCountHeuristic : public Heuristic {
     friend class LamaFFSynergy;
@@ -23,14 +20,10 @@ class LandmarkCountHeuristic : public Heuristic {
     int lookahead;
     bool ff_search_disjunctive_lms;
 
-    lm_set goal;
-    LandmarkSet initial_state_landmarks;
     LandmarkStatusManager lm_status_manager;
     LandmarkCostAssignment *lm_cost_assignment;
 
-    bool use_dynamic_cost_sharing;
-    bool use_shared_cost;
-    bool use_action_landmark_count;
+    bool use_cost_sharing;
 
     int get_heuristic_value(const State &state);
 
@@ -52,7 +45,7 @@ class LandmarkCountHeuristic : public Heuristic {
 
     //int get_needed_landmarks(const State& state, LandmarkSet& needed) const;
     Exploration *get_exploration() {return exploration; }
-
+    void convert_lms(LandmarkSet &lms_set, const vector<bool> &lms_vec);
 protected:
     virtual int compute_heuristic(const State &state);
 public:
@@ -67,7 +60,7 @@ public:
     static ScalarEvaluator *create(const std::vector<string> &config, int start,
                                    int &end, bool dry_run = false);
     virtual void reset();
-    enum {rpg_sasp = 0, zhu_givan = 1, exhaust = 2, search = 3};
+    enum {rpg_sasp = 0, zhu_givan = 1, exhaust = 2, search = 3, hmbased = 4};
 };
 
 #endif
