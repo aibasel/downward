@@ -68,10 +68,10 @@ void LandmarksGraphZhuGivan::extract_landmarks(
                        !relaxed_task_solvable(true, node));
             } else
                 node = &get_simple_lm_node(*it);
-            // Add order: *it ->_{n} g_goal[i]
+            // Add order: *it ->_{nat} g_goal[i]
             assert(node->parents.find(lmp) == node->parents.end());
             assert(lmp->children.find(node) == lmp->children.end());
-            edge_add(*node, *lmp, n);
+            edge_add(*node, *lmp, natural);
         }
     }
 }
