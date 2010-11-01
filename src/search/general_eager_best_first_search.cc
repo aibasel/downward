@@ -256,7 +256,7 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
                     heuristics[i]->evaluate(node.get_state());
                 node.clear_h_dirty();
                 search_progress.inc_evaluations(heuristics.size());
-                
+
                 open_list->evaluate(node.get_g(), false);
                 bool dead_end = open_list->is_dead_end() && open_list->dead_end_is_reliable();
                 if (dead_end) {
@@ -272,7 +272,7 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
                 }
             }
         }
-        
+
         node.close();
         assert(!node.is_dead_end());
         update_jump_statistic(node);
