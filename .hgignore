@@ -10,6 +10,7 @@
 ^src/search/downward$
 ^src/search/downward-debug$
 ^src/search/downward-profile$
+^src/search/lp/coin/
 ^src/VAL/.*\.o$
 ^src/VAL/lex\.yy\.cc$
 ^src/VAL/validate$
