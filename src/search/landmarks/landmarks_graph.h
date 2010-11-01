@@ -15,7 +15,21 @@
 
 using namespace __gnu_cxx;
 
-enum edge_type {gn = 3, n = 2, r = 1, o_r = 0};
+enum edge_type {
+    /* NOTE: The code relies on the fact that larger numbers are
+       stronger in the sense that, e.g., every greedy-necessary
+       ordering is also natural and reasonable. (It is a sad fact of
+       terminology that necessary is indeed a special case of
+       greedy-necessary, i.e., every necessary ordering is
+       greedy-necessary, but not vice versa. */
+
+    necessary = 4,
+    greedy_necessary = 3,
+    natural = 2,
+    reasonable = 1,
+    obedient_reasonable = 0
+};
+
 enum landmark_status {lm_reached = 0, lm_not_reached = 1, lm_needed_again = 2};
 
 class LandmarkNode {

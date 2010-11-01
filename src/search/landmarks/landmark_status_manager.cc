@@ -186,12 +186,9 @@ bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const Land
     for (hash_map<LandmarkNode *, edge_type, hash_pointer >::const_iterator child_it =
              children.begin(); child_it != children.end(); child_it++) {
         LandmarkNode *child_p = child_it->first;
-        if (child_it->second == gn) // Note: condition on edge type here!
-            //if(reached.find(child_p) == reached.end()){
-            if (child_p->status == lm_not_reached) {
-                return true;
-            }
-
+        if (child_it->second >= greedy_necessary &&
+            child_p->status == lm_not_reached)
+            return true;
     }
     return false;
 }

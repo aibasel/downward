@@ -632,7 +632,7 @@ bool LandmarksGraph::interferes(const LandmarkNode *node_a,
             for (int i = 0; i < it->first->vars.size(); i++) {
                 pair<int, int> parent_prop = make_pair(it->first->vars[i],
                                                        it->first->vals[i]);
-                if ((edge == n || edge == gn) && parent_prop != b && inconsistent(
+                if (edge >= greedy_necessary && parent_prop != b && inconsistent(
                         parent_prop, b))
                     return true;
             }
@@ -675,7 +675,7 @@ void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
                 if (node2_p == node_p || node2_p->disjunctive)
                     continue;
                 if (interferes(node2_p, node_p)) {
-                    edge_add(*node2_p, *node_p, r);
+                    edge_add(*node2_p, *node_p, reasonable);
                 }
             }
         } else {
@@ -685,7 +685,7 @@ void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
                 g_variable_name.size());
             for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
                      node_p->children.begin(); it != node_p->children.end(); it++) {
-                if (it->second == gn) { // found node2: node_p ->_gn node2
+                if (it->second >= greedy_necessary) { // found node2: node_p ->_gn node2
                     LandmarkNode &node2 = *(it->first);
                     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator
                          it2 = node2.parents.begin(); it2
@@ -694,8 +694,7 @@ void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
                         LandmarkNode &parent = *(it2->first);
                         if (parent.disjunctive)
                             continue;
-                        if ((edge == gn || edge == n
-                             || (obedient_orders && edge == r)) &&
+                        if ((edge >= natural || (obedient_orders && edge == reasonable)) &&
                             &parent != node_p) {      // find predecessors or parent and collect in
                                                       // "interesting nodes"
                             interesting_nodes.insert(&parent);
@@ -713,9 +712,9 @@ void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
                     continue;
                 if (interferes(*it3, node_p)) {
                     if (!obedient_orders)
-                        edge_add(**it3, *node_p, r);
+                        edge_add(**it3, *node_p, reasonable);
                     else
-                        edge_add(**it3, *node_p, o_r);
+                        edge_add(**it3, *node_p, obedient_reasonable);
                 }
             }
         }
@@ -734,8 +733,7 @@ void LandmarksGraph::collect_ancestors(
              node.parents.begin(); it != node.parents.end(); it++) {
         edge_type &edge = it->second;
         LandmarkNode &parent = *(it->first);
-        if (edge == gn || edge == n || (use_reasonable && edge
-                                        == r))
+        if (edge >= natural || (use_reasonable && edge == reasonable))
             if (closed_nodes.find(&parent) == closed_nodes.end()) {
                 open_nodes.push_back(&parent);
                 closed_nodes.insert(&parent);
@@ -749,8 +747,7 @@ void LandmarksGraph::collect_ancestors(
                  node2.parents.begin(); it != node2.parents.end(); it++) {
             edge_type &edge = it->second;
             LandmarkNode &parent = *(it->first);
-            if (edge == gn || edge == n ||
-                (use_reasonable && edge == r)) {
+            if (edge >= natural || (use_reasonable && edge == reasonable)) {
                 if (closed_nodes.find(&parent) == closed_nodes.end()) {
                     open_nodes.push_back(&parent);
                     closed_nodes.insert(&parent);
@@ -817,16 +814,19 @@ void LandmarksGraph::dump() const {
             const LandmarkNode *parent_p = parent_it->first;
             cout << "\t\t<-_";
             switch (edge) {
-            case n:
-                cout << "n   ";
+            case necessary:
+                cout << "nec ";
                 break;
-            case r:
-                cout << "r   ";
-                break;
-            case gn:
+            case greedy_necessary:
                 cout << "gn  ";
                 break;
-            case o_r:
+            case natural:
+                cout << "nat ";
+                break;
+            case reasonable:
+                cout << "r   ";
+                break;
+            case obedient_reasonable:
                 cout << "o_r ";
                 break;
             }
@@ -839,16 +839,19 @@ void LandmarksGraph::dump() const {
             const LandmarkNode *child_p = child_it->first;
             cout << "\t\t->_";
             switch (edge) {
-            case n:
-                cout << "n   ";
+            case necessary:
+                cout << "nec ";
                 break;
-            case r:
-                cout << "r   ";
-                break;
-            case gn:
+            case greedy_necessary:
                 cout << "gn  ";
                 break;
-            case o_r:
+            case natural:
+                cout << "nat ";
+                break;
+            case reasonable:
+                cout << "r   ";
+                break;
+            case obedient_reasonable:
                 cout << "o_r ";
                 break;
             }
@@ -872,10 +875,10 @@ void LandmarksGraph::edge_add(LandmarkNode &from, LandmarkNode &to,
      reduce cycles. If the edge is already present, the stronger edge type wins.
      */
     assert(&from != &to);
-    assert(from.parents.find(&to) == from.parents.end() || type == r || type == o_r);
-    assert(to.children.find(&from) == to.children.end() || type == r || type == o_r);
+    assert(from.parents.find(&to) == from.parents.end() || type <= reasonable);
+    assert(to.children.find(&from) == to.children.end() || type <= reasonable);
 
-    if (type == r || type == o_r) { // simple cycle test
+    if (type == reasonable || type == obedient_reasonable) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
             //cout << "edge in opposite direction exists" << endl;
             if (from.parents.find(&to)->second > type) // Stronger order present, return
@@ -1050,7 +1053,7 @@ bool LandmarksGraph::remove_first_weakest_cycle_edge(LandmarkNode *cur,
     for (list<pair<LandmarkNode *, edge_type> >::iterator it2 = it; it2
          != path.end(); it2++) {
         edge_type edge = it2->second;
-        if (edge == o_r || edge == r) {
+        if (edge == reasonable || edge == obedient_reasonable) {
             parent_p = it2->first;
             if (*it2 == path.back()) {
                 child_p = cur;
@@ -1060,7 +1063,7 @@ bool LandmarksGraph::remove_first_weakest_cycle_edge(LandmarkNode *cur,
                 child_it++;
                 child_p = child_it->first;
             }
-            if (edge == o_r)
+            if (edge == obedient_reasonable)
                 break;
             // else no break since o_r order could still appear in list
         }

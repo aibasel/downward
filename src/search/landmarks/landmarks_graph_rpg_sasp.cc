@@ -283,7 +283,7 @@ void LandmarksGraphNew::generate_landmarks() {
             // All such shared preconditions are landmarks, and greedy necessary predecessors of bp.
             for (hash_map<int, int>::iterator it = shared_pre.begin(); it
                  != shared_pre.end(); it++) {
-                found_simple_lm_and_order(*it, *bp, gn);
+                found_simple_lm_and_order(*it, *bp, greedy_necessary);
             }
             // Extract additional orders from relaxed planning graph and DTG.
             approximate_lookahead_orders(lvl_var, bp);
@@ -295,7 +295,7 @@ void LandmarksGraphNew::generate_landmarks() {
             compute_disjunctive_preconditions(disjunctive_pre, lvl_var, bp);
             for (int i = 0; i < disjunctive_pre.size(); i++)
                 if (disjunctive_pre[i].size() < 5) { // We don't want disj. LMs to get too big
-                    found_disj_lm_and_order(disjunctive_pre[i], *bp, gn);
+                    found_disj_lm_and_order(disjunctive_pre[i], *bp, greedy_necessary);
                 }
 
         }
@@ -335,7 +335,7 @@ void LandmarksGraphNew::approximate_lookahead_orders(
             // If that value is crucial for achieving the LM from the initial state,
             // we have found a new landmark.
             if (!domain_connectivity(lmk, exclude))
-                found_simple_lm_and_order(make_pair(lmk.first, i), *lmp, n);
+                found_simple_lm_and_order(make_pair(lmk.first, i), *lmp, natural);
         }
 
 }
@@ -426,7 +426,7 @@ void LandmarksGraphNew::add_lm_forward_orders() {
 
             if (simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = get_simple_lm_node(node2_pair);
-                edge_add(node, node2, n);
+                edge_add(node, node2, natural);
             }
         }
         node.forward_orders.clear();
