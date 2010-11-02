@@ -59,8 +59,8 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 /* Uniform cost partioning */
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    LandmarksGraph &graph)
-    : LandmarkCostAssignment(graph) {
+    LandmarksGraph &graph, bool use_action_landmarks_)
+    : LandmarkCostAssignment(graph),use_action_landmarks(use_action_landmarks_) {
 }
 
 
@@ -85,7 +85,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
         if (lmn_status != lm_reached) {
             const set<int> &achievers = get_achievers(lmn_status, node);
             assert(achievers.size() >= 1);
-            if (achievers.size() == 1) {
+            if (use_action_landmarks && (achievers.size() == 1)) {
                 // We have found an action landmark for this state.
                 int op_id = *achievers.begin();
                 assert(op_id >= 0 && op_id < g_operators.size());

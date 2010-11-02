@@ -76,7 +76,8 @@ static LandmarksGraph *build_landmarks_graph(Exploration *exploration, bool admi
 }
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(bool preferred_ops,
-                                               bool admissible, bool optimal, int landmarks_type)
+                                               bool admissible, bool optimal, int landmarks_type,
+                                               bool use_action_landmarks)
     : exploration(new Exploration),
       lgraph(*build_landmarks_graph(exploration, admissible, landmarks_type)),
       lm_status_manager(lgraph) {
@@ -102,7 +103,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(bool preferred_ops,
             exit(1);
 #endif
         } else {
-            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph);
+            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, use_action_landmarks);
         }
     } else {
         use_cost_sharing = false;
@@ -360,6 +361,7 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
     bool admissible_ = false;
     bool optimal_ = false;
     bool pref_ = false;
+    bool use_action_landmarks_ = true;
 
     // "<name>()" or "<name>(<options>)"
     if (config.size() > start + 2 && config[start + 1] == "(") {
@@ -379,6 +381,9 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
             option_parser.add_bool_option("pref_ops",
                                           &pref_,
                                           "identify preferred operators");
+            option_parser.add_bool_option("alm",
+                                          &use_action_landmarks_,
+                                          "use action landmarks");
             option_parser.parse_options(config, end, end, dry_run);
             end++;
         }
@@ -392,5 +397,5 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
         return 0;
     else
         return new LandmarkCountHeuristic(pref_, admissible_, optimal_,
-                                          lm_type_);
+                                          lm_type_, use_action_landmarks_);
 }

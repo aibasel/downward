@@ -49,7 +49,8 @@ class LandmarkCountHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const State &state);
 public:
-    LandmarkCountHeuristic(bool use_preferred_operators, bool admissible, bool optimal, int landmarks_type = rpg_sasp);
+    LandmarkCountHeuristic(bool use_preferred_operators, bool admissible,
+    		bool optimal, int landmarks_type = rpg_sasp, bool use_action_landmarks = true);
     ~LandmarkCountHeuristic() {
     }
     virtual bool reach_state(const State &parent_state, const Operator &op,
