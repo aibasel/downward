@@ -18,8 +18,10 @@ public:
 };
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
+private:
+	bool use_action_landmarks;
 public:
-    LandmarkUniformSharedCostAssignment(LandmarksGraph &graph);
+    LandmarkUniformSharedCostAssignment(LandmarksGraph &graph, bool use_action_landmarks_);
     virtual ~LandmarkUniformSharedCostAssignment();
 
     virtual double cost_sharing_h_value();
