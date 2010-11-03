@@ -15,7 +15,7 @@ double Bin(int n, double p, int r) {
 PDBStateSpaceSample::PDBStateSpaceSample(int goal_depth, int probes = 10, int size = 100)
     : ProbeStateSpaceSample(goal_depth, probes, size) {
     int table_size = (2 * goal_depth) + 1;
-	double p = 0.5;
+    double p = 0.5;
 
     prob_table = new double[table_size];
 
@@ -26,7 +26,7 @@ PDBStateSpaceSample::PDBStateSpaceSample(int goal_depth, int probes = 10, int si
     prob_table[table_size - 1] = 1.0;
 
     uniform_sampling = true;
-	add_every_state = false;
+    add_every_state = false;
 }
 
 PDBStateSpaceSample::~PDBStateSpaceSample() {
@@ -46,15 +46,15 @@ int PDBStateSpaceSample::collect() {
     cout << "PDB-style state space sample" << endl;
     int num_probes = 0;
     while ((samp.size() < min_training_set_size) && (num_probes < max_num_probes)) {
-	    sample_t temp_sample;
+        sample_t temp_sample;
         temporary_samp = &temp_sample;
 
         num_probes++;
 
         int depth = get_random_depth();
-		for (int j = 0; j < heuristics.size(); j++) {
-		    heuristics[j]->reset();
-		}
+        for (int j = 0; j < heuristics.size(); j++) {
+            heuristics[j]->reset();
+        }
         send_probe(depth);
         //cout << "Probe: " << num_probes << " - " << samp.size() << endl;
     }
