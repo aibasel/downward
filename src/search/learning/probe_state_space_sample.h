@@ -13,10 +13,12 @@ protected:
     int goal_depth_estimate;
     int max_num_probes;
     int min_training_set_size;
+    bool add_every_state;
 
     int expanded;
     int generated;
 
+    sample_t *temporary_samp;
     void send_probe(int depth_limit);
     int get_aggregate_value(vector<int> &values);
 public:

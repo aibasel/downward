@@ -182,7 +182,9 @@ void SelectiveMaxHeuristic::train() {
 
     switch (state_space_sample_type) {
     case Probe:
-        sample = new ProbeStateSpaceSample(goal_depth_estimate, 10, min_training_set);
+        sample = new ProbeStateSpaceSample(goal_depth_estimate,
+        		             2 * min_training_set / goal_depth_estimate,
+        		             min_training_set);
         for (int i = 0; i < heuristics.size(); i++)
             sample->add_heuristic(heuristics[i]);
         break;
@@ -192,7 +194,9 @@ void SelectiveMaxHeuristic::train() {
             break;
     */
     case PDB:
-        sample = new PDBStateSpaceSample(goal_depth_estimate, 10, min_training_set);
+        sample = new PDBStateSpaceSample(goal_depth_estimate,
+        								 min_training_set,
+        								 min_training_set);
         for (int i = 0; i < heuristics.size(); i++)
             sample->add_heuristic(heuristics[i]);
         break;
