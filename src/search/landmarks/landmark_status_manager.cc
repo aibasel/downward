@@ -54,8 +54,8 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(const State &state) 
             }
         }
     }
-    cout << inserted << " initial landmarks, "
-         << g_goal.size() << " goal landmarks" << endl;
+    //cout << inserted << " initial landmarks, "
+    //     << g_goal.size() << " goal landmarks" << endl;
 
     unused_alm.insert(
         lm_graph.get_action_landmarks().begin(),
