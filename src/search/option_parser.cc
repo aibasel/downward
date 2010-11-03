@@ -30,6 +30,12 @@ void OptionParser::register_scalar_evaluator(const string &key,
     scalar_evaluator_map[key] = func;
 }
 
+void OptionParser::register_object_factor(const std::string &key,
+                                          ObjectFactory func) {
+    object_map[key] = func;
+}
+
+
 void OptionParser::register_synergy(const string &key, SynergyFactory func) {
     synergy_map[key] = func;
 }
@@ -52,6 +58,18 @@ ScalarEvaluator *OptionParser::parse_scalar_evaluator(
         throw ParseError(start);
     return it->second(input, start, end, dry_run);
 }
+
+void *OptionParser::parse_object(
+    const vector<string> &input, int start, int &end, bool dry_run) {
+    // objecy definition
+    map<string, ObjectFactory>::iterator it;
+    it = object_map.find(input[start]);
+    if (it == object_map.end())
+        throw ParseError(start);
+    return it->second(input, start, end, dry_run);
+}
+
+
 
 Heuristic *OptionParser::parse_heuristic(const vector<string> &input,
                                          int start, int &end, bool dry_run) {

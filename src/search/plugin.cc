@@ -22,3 +22,11 @@ SynergyPlugin::SynergyPlugin(
 
 SynergyPlugin::~SynergyPlugin() {
 }
+
+ObjectPlugin::ObjectPlugin(
+    const string &key, OptionParser::ObjectFactory factory) {
+    OptionParser::instance()->register_object_factor(key, factory);
+}
+
+ObjectPlugin::~ObjectPlugin() {
+}

@@ -21,4 +21,13 @@ public:
     ~SynergyPlugin();
 };
 
+
+class ObjectPlugin {
+	ObjectPlugin(const ObjectPlugin &copy);
+public:
+	ObjectPlugin(const std::string &key,
+                          OptionParser::ObjectFactory factory);
+    ~ObjectPlugin();
+};
+
 #endif
