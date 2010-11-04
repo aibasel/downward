@@ -68,7 +68,7 @@ typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
 class HMLandmarks : public LandmarksGraph {
 public:
-    HMLandmarks(Exploration *expl, int m);
+    HMLandmarks(LandmarksGraphOptions &options, Exploration *expl, int m);
     ~HMLandmarks() {
     }
 
@@ -76,6 +76,8 @@ public:
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
+    static void *create(const std::vector<string> &config, int start,
+                                           int &end, bool dry_run = false);
 
 protected:
 //  typedef std::set<std::pair<int,int> > TriggerSet;

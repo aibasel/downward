@@ -31,11 +31,13 @@ class LandmarksGraphNew : public LandmarksGraph {
     static bool domain_connectivity(const pair<int, int> &landmark,
                                     const hash_set<int> &exclude);
 public:
-    LandmarksGraphNew(Exploration *exploration)
-        : LandmarksGraph(exploration) {
+    LandmarksGraphNew(LandmarksGraphOptions &options, Exploration *exploration)
+        : LandmarksGraph(options, exploration) {
     }
     ~LandmarksGraphNew() {
     }
+    static void *create(const std::vector<string> &config, int start,
+                                       int &end, bool dry_run = false);
 };
 
 #endif

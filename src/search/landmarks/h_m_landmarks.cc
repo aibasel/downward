@@ -1,4 +1,9 @@
 #include "h_m_landmarks.h"
+#include "../option_parser.h"
+#include "../plugin.h"
+
+static ObjectPlugin landmarks_graph_new_plugin(
+    "lmgraph_hm", HMLandmarks::create);
 
 std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
@@ -572,8 +577,8 @@ bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
            inconsistent_facts[var1][val1].end();
 }
 
-HMLandmarks::HMLandmarks(Exploration *expl, int m)
-    : LandmarksGraph(expl), m_(m) {
+HMLandmarks::HMLandmarks(LandmarksGraphOptions &options, Exploration *expl, int m)
+    : LandmarksGraph(options, expl), m_(m) {
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
     // need this to be able to print propositions for debugging
     // already called in global.cc
@@ -1043,4 +1048,40 @@ void HMLandmarks::generate_landmarks() {
         }
     }
     free_unneeded_memory();
+}
+
+
+
+void *HMLandmarks::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
+    LandmarksGraph::LandmarksGraphOptions common_options;
+
+    int m = 2;
+
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.add_int_option("m", &m, "m (as in h^m)");
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
+        return 0;
+    }
+    else {
+        LandmarksGraph *graph = new HMLandmarks(common_options,
+                new Exploration, m);
+        LandmarksGraph::build_lm_graph(graph);
+        return graph;
+    }
 }
