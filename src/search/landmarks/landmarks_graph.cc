@@ -13,6 +13,7 @@
 #include "../operator.h"
 #include "../state.h"
 #include "../globals.h"
+#include "../exact_timer.h"
 #include "util.h"
 
 using namespace std;
@@ -60,15 +61,15 @@ static inline bool _operator_condition_includes(const Operator &o,
     return false;
 }
 
-LandmarksGraph::LandmarksGraph(Exploration *explor)
+LandmarksGraph::LandmarksGraph(LandmarksGraphOptions &options, Exploration *explor)
     : exploration(explor), landmarks_count(0), conj_lms(0),
       use_external_inconsistencies(false) {
-    reasonable_orders = false;
-    only_causal_landmarks = false;
-    disjunctive_landmarks = true;
-    conjunctive_landmarks = true;
-    no_orders = false;
-    use_action_landmarks = false;
+    reasonable_orders = options.reasonable_orders;
+    only_causal_landmarks = options.only_causal_landmarks;
+    disjunctive_landmarks = options.disjunctive_landmarks;
+    conjunctive_landmarks = options.conjunctive_landmarks;
+    no_orders = options.no_orders;
+    use_action_landmarks = options.use_action_landmarks;
     generate_operators_lookups();
 }
 
@@ -1342,4 +1343,19 @@ int LandmarksGraph::get_alm_id(const Operator *op) const {
     if (it != action_landmark_ids.end())
         return it->second;
     return -1;
+}
+
+// static function to generate landmarks and print message
+void LandmarksGraph::build_lm_graph(LandmarksGraph *lm_graph) {
+    ExactTimer lm_generation_timer;
+    lm_graph->read_external_inconsistencies();
+    lm_graph->generate();
+    cout << "Landmarks generation time: " << lm_generation_timer << endl;
+    if (lm_graph->number_of_landmarks() == 0)
+        cout << "Warning! No landmarks found. Task unsolvable?" << endl;
+    cout << "Discovered " << lm_graph->number_of_landmarks()
+         << " landmarks, of which " << lm_graph->number_of_disj_landmarks()
+         << " are disjunctive and "
+         << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
+         << lm_graph->number_of_edges() << " edges\n";
 }

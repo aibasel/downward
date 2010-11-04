@@ -17,69 +17,14 @@
 
 using namespace std;
 
-LandmarksGraph *g_lgraph; // global to be accessible by state
-
 static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(
     "lmcount", LandmarkCountHeuristic::create);
 
-static void init_lm_graph(Exploration *exploration, int landmarks_type) {
-    switch (landmarks_type) {
-    case LandmarkCountHeuristic::rpg_sasp:
-        g_lgraph = new LandmarksGraphNew(exploration);
-        break;
-    case LandmarkCountHeuristic::zhu_givan:
-        g_lgraph = new LandmarksGraphZhuGivan(exploration); // Note: remove exploration here?
-        break;
-    case LandmarkCountHeuristic::exhaust:
-        g_lgraph = new LandmarksGraphExhaust(exploration);
-        break;
-    case LandmarkCountHeuristic::search:
-        g_lgraph = new LandmarksGraphRpgSearch(exploration);
-        break;
-    case LandmarkCountHeuristic::hmbased:
-        g_lgraph = new HMLandmarks(exploration, 2);
-        break;
-    default:
-        assert(false); // unknown landmarks_type
-    }
-}
-
-static LandmarksGraph *build_landmarks_graph(Exploration *exploration, bool admissible,
-                                             int landmarks_type = LandmarkCountHeuristic::rpg_sasp) {
-    bool reasonable_orders = true; // option to use/not use reasonable orderings
-    bool disjunctive_lms = true; // option to keep/discard disj. landmarks before search
-    if (admissible) {
-        reasonable_orders = false;
-        disjunctive_lms = false;
-    }
-    if (g_lgraph != NULL) // in case of iterated search LM graph has already been constructed
-        return g_lgraph;
-    Timer lm_generation_timer;
-    init_lm_graph(exploration, landmarks_type);
-    g_lgraph->read_external_inconsistencies();
-    if (reasonable_orders) {
-        g_lgraph->use_reasonable_orders();
-    }
-    g_lgraph->generate();
-    cout << "Landmarks generation time: " << lm_generation_timer << endl;
-    if (g_lgraph->number_of_landmarks() == 0)
-        cout << "Warning! No landmarks found. Task unsolvable?" << endl;
-    cout << "Discovered " << g_lgraph->number_of_landmarks()
-         << " landmarks, of which " << g_lgraph->number_of_disj_landmarks()
-         << " are disjunctive and "
-         << g_lgraph->number_of_conj_landmarks() << " are conjunctive \n"
-         << g_lgraph->number_of_edges() << " edges\n";
-    if (!disjunctive_lms)
-        g_lgraph->discard_disjunctive_landmarks();
-    //g_lgraph->dump();
-    return g_lgraph;
-}
-
-LandmarkCountHeuristic::LandmarkCountHeuristic(bool preferred_ops,
-                                               bool admissible, bool optimal, int landmarks_type,
+LandmarkCountHeuristic::LandmarkCountHeuristic(LandmarksGraph &lm_graph, bool preferred_ops,
+                                               bool admissible, bool optimal,
                                                bool use_action_landmarks)
-    : exploration(new Exploration),
-      lgraph(*build_landmarks_graph(exploration, admissible, landmarks_type)),
+    : lgraph(lm_graph),
+      exploration(lm_graph.get_exploration()),
       lm_status_manager(lgraph) {
     cout << "Initializing landmarks count heuristic..." << endl;
     use_preferred_operators = preferred_ops;
@@ -90,6 +35,10 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(bool preferred_ops,
 
     if (admissible) {
         use_cost_sharing = true;
+        if (lgraph.is_using_reasonable_orderings()) {
+            cerr << "Reasonable orderings can not be used for admissble heuristics" << endl;
+            ::exit(2);
+        }
         if (!g_axioms.empty()) {
             cerr << "cost partitioning does not support axioms" << endl;
             ::exit(1);
@@ -351,51 +300,52 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 
     for (int i = 0; i < lms_vec.size(); i++)
         if (lms_vec[i])
-            lms_set.insert(g_lgraph->get_lm_for_index(i));
+            lms_set.insert(lgraph.get_lm_for_index(i));
 }
 
 
 ScalarEvaluator *LandmarkCountHeuristic::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-    int lm_type_ = LandmarkCountHeuristic::rpg_sasp;
     bool admissible_ = false;
     bool optimal_ = false;
     bool pref_ = false;
     bool use_action_landmarks_ = true;
 
-    // "<name>()" or "<name>(<options>)"
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            option_parser.add_bool_option("admissible",
-                                          &admissible_,
-                                          "get admissible estimate");
-            option_parser.add_int_option("lm_type",
-                                         &lm_type_,
-                                         "landmarks type");
-            option_parser.add_bool_option("optimal",
-                                          &optimal_,
-                                          "optimal cost sharing");
-            option_parser.add_bool_option("pref_ops",
-                                          &pref_,
-                                          "identify preferred operators");
-            option_parser.add_bool_option("alm",
-                                          &use_action_landmarks_,
-                                          "use action landmarks");
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
+    if (config[start + 1] != "(")
         throw ParseError(start + 1);
+
+    void *object = OptionParser::instance()->parse_object(config,
+            start + 2, end, dry_run);
+    end++;
+
+    LandmarksGraph *lm_graph = (LandmarksGraph *) object;
+    if (!dry_run && lm_graph == 0)
+        throw ParseError(start);
+
+    if (config[end] != ")") {
+        end++;
+        NamedOptionParser option_parser;
+        option_parser.add_bool_option("admissible",
+                                      &admissible_,
+                                      "get admissible estimate");
+        option_parser.add_bool_option("optimal",
+                                      &optimal_,
+                                      "optimal cost sharing");
+        option_parser.add_bool_option("pref_ops",
+                                      &pref_,
+                                      "identify preferred operators");
+        option_parser.add_bool_option("alm",
+                                      &use_action_landmarks_,
+                                      "use action landmarks");
+        option_parser.parse_options(config, end, end, dry_run);
+        end++;
     }
+    if (config[end] != ")")
+        throw ParseError(end);
 
     if (dry_run)
         return 0;
     else
-        return new LandmarkCountHeuristic(pref_, admissible_, optimal_,
-                                          lm_type_, use_action_landmarks_);
+        return new LandmarkCountHeuristic(*lm_graph, pref_, admissible_, optimal_,
+                                          use_action_landmarks_);
 }

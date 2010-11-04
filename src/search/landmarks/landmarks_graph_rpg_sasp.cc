@@ -9,9 +9,14 @@
 #include "../state.h"
 #include "../globals.h"
 #include "../domain_transition_graph.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 #include "util.h"
 
 using namespace __gnu_cxx;
+
+static ObjectPlugin landmarks_graph_new_plugin(
+    "lmgraph_rpg_sasp", LandmarksGraphNew::create);
 
 void LandmarksGraphNew::get_greedy_preconditions_for_lm(
     const LandmarkNode *lmp, const Operator &o, hash_map<int, int> &result) const {
@@ -432,3 +437,36 @@ void LandmarksGraphNew::add_lm_forward_orders() {
         node.forward_orders.clear();
     }
 }
+
+
+
+void *LandmarksGraphNew::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
+    LandmarksGraph::LandmarksGraphOptions common_options;
+
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
+        return 0;
+    }
+    else {
+        LandmarksGraph *graph = new LandmarksGraphNew(common_options,
+                new Exploration);
+        LandmarksGraph::build_lm_graph(graph);
+        return graph;
+    }
+}
+

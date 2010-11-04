@@ -8,8 +8,13 @@
 #include "../operator.h"
 #include "../state.h"
 #include "../globals.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 
 using namespace __gnu_cxx;
+
+static ObjectPlugin landmarks_graph_new_plugin(
+    "lmgraph_zhu_givan", LandmarksGraphZhuGivan::create);
 
 void LandmarksGraphZhuGivan::generate_landmarks() {
     cout << "Generating landmarks using Zhu/Givan label propagation\n";
@@ -296,5 +301,37 @@ void LandmarksGraphZhuGivan::compute_triggers() {
         // add operator to triggers vector
         for (lm_set::const_iterator it = t.begin(); it != t.end(); it++)
             triggers[it->first][it->second].push_back(i);
+    }
+}
+
+
+
+void *LandmarksGraphZhuGivan::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
+    LandmarksGraph::LandmarksGraphOptions common_options;
+
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
+        return 0;
+    }
+    else {
+        LandmarksGraph *graph = new LandmarksGraphZhuGivan(common_options,
+                new Exploration);
+        LandmarksGraph::build_lm_graph(graph);
+        return graph;
     }
 }
