@@ -81,6 +81,8 @@ public:
             ConfigRef, int, int &, bool);
 private:
     std::map<std::string, Heuristic *> predefined_heuristics;
+    std::map<std::string, void *> predefined_objects;
+
     std::map<std::string, EngineFactory> engine_map;
     std::map<std::string, ScalarEvalFactory> scalar_evaluator_map;
     std::map<std::string, SynergyFactory> synergy_map;
@@ -96,6 +98,7 @@ private:
                            ParseError &err);
 
     void predefine_heuristic(const std::vector<std::string> &input);
+    void predefine_object(const std::vector<std::string> &input);
 
 public:
     static OptionParser *instance();
@@ -103,10 +106,11 @@ public:
     void register_search_engine(const std::string &key, EngineFactory func);
     void register_scalar_evaluator(
         const std::string &key, ScalarEvalFactory func);
-    void register_object_factor(
+    void register_object_factory(
             const std::string &key, ObjectFactory func);
     void register_synergy(const std::string &key, SynergyFactory func);
     void predefine_heuristic(const char *str);
+    void predefine_object(const char *str);
 
     ScalarEvaluator *parse_scalar_evaluator(
         const std::vector<std::string> &input, int start, int &end,
@@ -117,6 +121,7 @@ public:
     Heuristic *parse_heuristic(const std::vector<std::string> &input,
                                int start, int &end, bool dry_run);
     bool knows_scalar_evaluator(const std::string &name) const;
+    bool knows_object(const std::string &name) const;
     bool knows_search_engine(const std::string &name) const;
     SearchEngine *parse_search_engine(const char *str);
     SearchEngine *parse_search_engine(const std::vector<std::string> &input,

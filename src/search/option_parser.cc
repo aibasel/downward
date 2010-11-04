@@ -30,7 +30,7 @@ void OptionParser::register_scalar_evaluator(const string &key,
     scalar_evaluator_map[key] = func;
 }
 
-void OptionParser::register_object_factor(const std::string &key,
+void OptionParser::register_object_factory(const std::string &key,
                                           ObjectFactory func) {
     object_map[key] = func;
 }
@@ -61,7 +61,15 @@ ScalarEvaluator *OptionParser::parse_scalar_evaluator(
 
 void *OptionParser::parse_object(
     const vector<string> &input, int start, int &end, bool dry_run) {
-    // objecy definition
+    // predefined object
+    map<string, void *>::iterator iter;
+    iter = predefined_objects.find(input[start]);
+    if (iter != predefined_objects.end()) {
+        end = start;
+        return iter->second;
+    }
+
+    // object definition
     map<string, ObjectFactory>::iterator it;
     it = object_map.find(input[start]);
     if (it == object_map.end())
@@ -95,6 +103,11 @@ void OptionParser::parse_synergy_heuristics(const vector<string> &input,
 bool OptionParser::knows_scalar_evaluator(const string &name) const {
     return scalar_evaluator_map.find(name) != scalar_evaluator_map.end() ||
            predefined_heuristics.find(name) != predefined_heuristics.end();
+}
+
+bool OptionParser::knows_object(const string &name) const {
+    return object_map.find(name) != object_map.end() ||
+           predefined_objects.find(name) != predefined_objects.end();
 }
 
 bool OptionParser::knows_search_engine(const string &name) const {
@@ -173,6 +186,32 @@ void OptionParser::predefine_heuristic(const vector<string> &input) {
         throw ParseError(1);
     }
 }
+
+
+void OptionParser::predefine_object(const char *str) {
+    vector<string> tokens;
+    tokenize_options(str, tokens);
+    try {
+        predefine_object(tokens);
+    } catch (ParseError e) {
+        print_parse_error(tokens, e);
+        exit(2);
+    }
+}
+
+void OptionParser::predefine_object(const vector<string> &input) {
+    if (input[1].compare("=") == 0) {
+        // define one heuristic (standard case)
+        string name = input[0];
+        if (knows_object(name) || name == "(" || name == ")")
+            throw ParseError(0);
+        int end = 2;
+        predefined_objects[name] = parse_object(input, 2, end, false);
+    } else {
+        throw ParseError(1);
+    }
+}
+
 
 // sets "end" on the last position of the last scalar evaluator
 // in the list.
