@@ -2,7 +2,6 @@
 #define PDB_HEURISTIC_H
 
 #include "heuristic.h"
-#include <vector>
 using namespace std;
 
 class Edge {
@@ -12,41 +11,36 @@ class Edge {
 };
 
 class AbstractState {
-    variable_values *vars;
-
+    vector<int> variable_values;
 public:
-    AbstractState(State *state, vector<int> pattern);
+    AbstractState(vector<int> values);
 };
 
+class PDBHeuristic;
 class PDBAbstraction {
     vector<int> pattern;
     size_t size;
     vector<int> distance;
-    vector<vector<Edge > > back-edges;
-
+    vector<vector<Edge > > back_edges;
 public:
     PDBAbstraction(vector<int> pattern);
-    void createPDB();
+    void createPDB(PDBHeuristic *pdbheuristic);
 
 };
 
 class PDBHeuristic : public Heuristic {
-
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
-
 public:
     PDBHeuristic();
     ~PDBHeuristic();
 
     int hash_index(const AbstractState &state);
-    *AbstracState inv_hash_index(int index);
+    AbstractState* inv_hash_index(int index);
 
     static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end, bool dry_run);
 };
-
-
 
 #endif
