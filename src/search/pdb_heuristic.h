@@ -32,6 +32,7 @@ class PDBAbstraction {
     size_t size;
     vector<int> distances;
     vector<vector<Edge > > back_edges;
+    vector<int> n_i;
     int hash_index(const AbstractState &state);
     AbstractState *inv_hash_index(int index);
 public:
