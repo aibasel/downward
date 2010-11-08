@@ -12,19 +12,25 @@ public:
 };
 
 class AbstractState {
-    vector<int> variable_values;
+    vector<int> variable_values; // contains entries for all variables, value = -10 for variables not contained in the abstraction/pdb
 public:
-    AbstractState(vector<int> values);
-    AbstractState(const State &state);
+    AbstractState(vector<int> var_vals);
+    AbstractState(const State &state, vector<int> pattern);
+    vector<int> get_variable_values() const;
 };
 
 class Operator;
+typedef pair<int, pair<int, int> > PreEffect;
 class AbstractOperator {
-    vector<int> pattern;
+    vector<PreEffect> pre_effect;
+    string name;
+    int cost;
 public:
-    AbstractOperator(Operator op, vector<int> pattern);
-    bool is_applicable(AbstractState &abstract_state);
-    const AbstractState apply_operator(AbstractState &abstract_state);
+    AbstractOperator(Operator &op, vector<int> pattern);
+    bool is_applicable(const AbstractState &abstract_state) const;
+    const AbstractState apply_operator(const AbstractState &abstract_state);
+    string get_name() const { return name; }
+    int get_cost() const {return cost; } 
 };
 
 class PDBAbstraction {
@@ -34,7 +40,7 @@ class PDBAbstraction {
     vector<vector<Edge > > back_edges;
     vector<int> n_i;
     int hash_index(const AbstractState &state);
-    AbstractState *inv_hash_index(int index);
+    const AbstractState *inv_hash_index(int index);
 public:
     PDBAbstraction(vector<int> pattern);
     void create_pdb();
@@ -42,7 +48,9 @@ public:
 };
 
 class PDBHeuristic : public Heuristic {
+    vector<int> pattern;
     PDBAbstraction *pdb_abstraction;
+    void verify_no_axioms_no_cond_effects() const;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
