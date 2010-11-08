@@ -77,7 +77,6 @@ void Operator::dump() const {
         prevail[i].dump();
         cout << "]";
     }
-    cout << "test";
     for (int i = 0; i < pre_post.size(); i++) {
         cout << " [";
         pre_post[i].dump();
