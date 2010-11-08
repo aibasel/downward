@@ -39,17 +39,18 @@ PDBAbstraction::PDBAbstraction(vector<int> p) {
     pattern = p;
     size = 1;
     for (size_t i = 0; i < pattern.size(); i++) {
-        size *= (g_variable_domain[pattern[i]] + 1); // check if + 1 is correct!!
+        size *= g_variable_domain[pattern[i]];
     }
     distances = vector<int>(size);
     back_edges = vector<vector<Edge > >(size);
     n_i = vector<int>(size);
     for (int i = 0; i < size; i++) {
-    	j, p = 0, 1;
-    	for (j = 0; j < i; j++) {
-    		p *= (g_variable_domain[pattern[j]] + 1); // check if + 1 is correct!!
-    	}
-    	n_i[i] = p;
+        int j = 0;
+        int p = 1;
+        for (j = 0; j < i; j++) {
+             p *= g_variable_domain[pattern[j]] + 1;
+        }
+        n_i[i] = p;
     }
 
 }
