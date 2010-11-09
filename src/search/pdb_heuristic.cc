@@ -207,6 +207,7 @@ void PDBHeuristic::initialize() {
     pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
     pdb_abstraction = new PDBAbstraction(pattern);
     pdb_abstraction->create_pdb();
+    pdb_abstraction->compute_goal_distance();
 }
 
 int PDBHeuristic::compute_heuristic(const State &state) {
