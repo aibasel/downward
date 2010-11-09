@@ -81,7 +81,7 @@ const AbstractState AbstractOperator::apply_operator(const AbstractState &abstra
 
 PDBAbstraction::PDBAbstraction(vector<int> pat) {
     pattern = pat;
-    size = 1;
+    size = 1; // number of abstract states
     for (size_t i = 0; i < pattern.size(); i++) {
         size *= g_variable_domain[pattern[i]];
     }
@@ -115,9 +115,27 @@ void PDBAbstraction::create_pdb() {
     }
 }
 
+void PDBAbstraction::compute_goal_distances() {
+    // backward search from abstract goal state to all abstract states
+    goal_index = hash_index(AbstractState(g_goal,pattern));
+    queue<pair<int,int>> que;
+    que.push(pair<int,int>(goal_index,0));
+    distances[goal_index] = 0;
+    while (!que.empty) {
+        // get edges from actual abstract state and add them to queue
+        pair<int,int> actual = que.pop();
+        vector<Edge> vec = back_edges[actual.first];
+        for (t_size i = 0;i < vec.size();i++) {
+            actual_distance = actual.second + vec[i].op->get_cost();
+            distances[vec[i]] = actual_distance;
+            que.push(pair<int,int>(vec[i].target,actual_distance));
+        }
+    }
+}
+
 int PDBAbstraction::hash_index(const AbstractState &abstract_state) {
     int index = 0;
-    for (int i = 0;i < pattern.size();i++) {
+    for (size_t i = 0;i < pattern.size();i++) {
         index += n_i[i]*s[i];
     }
     return index;
@@ -125,7 +143,7 @@ int PDBAbstraction::hash_index(const AbstractState &abstract_state) {
 
 const AbstractState *PDBAbstraction::inv_hash_index(int index) {
     vector<int> var_vals = vector<int>(pattern.size());
-    for (int n = 1;n < pattern.size();n++) {
+    for (size_t n = 1;n < pattern.size();n++) {
         d = index%n_i[n];
         var_vals[n-1] = (int) d/n_i[n-1];
         index -= d;

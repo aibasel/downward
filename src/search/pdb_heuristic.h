@@ -5,9 +5,9 @@
 using namespace std;
 
 class Edge {
+public:
     const Operator *op;
     size_t target;
-public:
     Edge(const Operator *o, size_t t) : op(o), target(t) {}
 };
 
