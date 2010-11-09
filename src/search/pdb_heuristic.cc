@@ -116,13 +116,23 @@ void PDBAbstraction::create_pdb() {
 }
 
 int PDBAbstraction::hash_index(const AbstractState &abstract_state) {
-    //TODO siehe formeln
-    return 0;
+    int index = 0;
+    for (int i = 0;i < pattern.size();i++) {
+        index += n_i[i]*s[i];
+    }
+    return index;
 }
 
 const AbstractState *PDBAbstraction::inv_hash_index(int index) {
-    //TODO modulo rechnen
-    return 0;
+    vector<int> var_vals = vector<int>(pattern.size());
+    for (int n = 1;n < pattern.size();n++) {
+        d = index%n_i[n];
+        var_vals[n-1] = (int) d/n_i[n-1];
+        index -= d;
+    }
+    var_vals[pattern.size()-1] = (int) index/n_i[pattern.size()-1];
+
+    return AbstractState(var_vals);
 }
 
 int PDBAbstraction::get_goal_distance(const AbstractState &abstract_state) {
