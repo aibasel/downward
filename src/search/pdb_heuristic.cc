@@ -47,7 +47,6 @@ void AbstractState::dump() const {
 // AbstractOperator -----------------------------------------------------------
 
 AbstractOperator::AbstractOperator(Operator &o, vector<int> pat) {
-    op = &o;
     pattern = pat;
     const vector<PrePost> pre_post = o.get_pre_post();
     pre_effect = vector<PreEffect>();
@@ -65,6 +64,8 @@ AbstractOperator::AbstractOperator(Operator &o, vector<int> pat) {
 }
 
 bool AbstractOperator::is_applicable(const AbstractState &abstract_state) const {
+    if (pre_effect.size() == 0)
+        return false;
     for (size_t i = 0; i < pre_effect.size(); i++) {
         int var = pre_effect[i].first;
         int pre = pre_effect[i].second.first;
@@ -85,17 +86,13 @@ const AbstractState AbstractOperator::apply_operator(const AbstractState &abstra
         int pre = pre_effect[i].second.first;
         int post = pre_effect[i].second.second;
         map<int, int> index_map = abstract_state.variale_to_index_mapping;
-        assert(variable_values[index_map[var]] == pre); //check!
-        if (variable_values[index_map[var]] != pre)
-            exit(1); //pre otherwise counts as non-used variable... whatever.
-            variable_values[index_map[var]] = post;
+        assert(variable_values[index_map[var]] == pre || pre == -1);
+        variable_values[index_map[var]] = post;
     }
     return AbstractState(variable_values, pattern);
 }
 
 void AbstractOperator::dump() const {
-    cout << "Conrete Operator: " << endl;
-    op->dump();
     cout << "AbstractOperator: " << endl;
     for (size_t i = 0; i < pre_effect.size(); i++) {
         cout << "Variable: " << pre_effect[i].first << " (True name: " << g_variable_name[pre_effect[i].first] << ") Pre: " << pre_effect[i].second.first
@@ -125,33 +122,33 @@ void PDBAbstraction::create_pdb() {
         }
         n_i[i] = p;
     }
-    cout << "Calculated n_i. Now abstracting operators." << endl;
+    //cout << "Calculated n_i. Now abstracting operators." << endl;
     vector<AbstractOperator *> operators(g_operators.size());
     for (size_t i = 0; i < g_operators.size(); i++) {
         operators[i] = new AbstractOperator(g_operators[i], pattern);
     }
-    cout << "Calculated abstracted operators. Now computing the abstract space (graph)." << endl;
+    //cout << "Calculated abstracted operators. Now computing the abstract space (graph)." << endl;
     for (size_t i = 0; i < size; i++) {
-        cout << "Iteration No.: " << i << endl;
+        //cout << "Iteration No.: " << i << endl;
         const AbstractState *abstract_state = inv_hash_index(i);
-        abstract_state->dump();
-        cout << endl;
+        //abstract_state->dump();
+        //cout << endl;
         for (size_t j = 0; j < operators.size(); j++){
-            cout << "Operator No.: " << j << endl;
-            operators[j]->dump();
+            //cout << "Operator No.: " << j << endl;
+            //operators[j]->dump();
             if (operators[j]->is_applicable(*abstract_state)) {
-                cout << "operator applicable" << endl;
+                //cout << "operator applicable" << endl;
                 const AbstractState next_state = operators[j]->apply_operator(*abstract_state);
-                cout << "next state: " << endl;
-                next_state.dump();
+                //cout << "next state: " << endl;
+                //next_state.dump();
                 int state_index = hash_index(next_state);
                 back_edges[state_index].push_back(Edge(&(g_operators[j]), i));
             }
-            cout << endl;
+            //cout << endl;
         }
-        cout << endl;
+        //cout << endl;
     }
-    cout << "Graph setup complete." << endl;
+    //cout << "Graph setup complete." << endl;
 }
 
 void PDBAbstraction::compute_goal_distances() {
@@ -240,15 +237,15 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
 }
 
 void PDBHeuristic::initialize() {
-    cout << "Initializing pattern database heuristic..." << endl << endl;
+    cout << "Initializing pattern database heuristic..." << endl;// << endl;
     verify_no_axioms_no_cond_effects();
     int patt[2] = {1, 2};
     vector<int> pattern(patt, patt + sizeof(patt) / sizeof(int));
-    cout << "Try creating a new PDBAbstraction" << endl << endl;
+    //cout << "Try creating a new PDBAbstraction" << endl << endl;
     pdb_abstraction = new PDBAbstraction(pattern);
-    cout << "Created new PDBAbstraction. Now calling create_pdb()" << endl << endl;
+    //cout << "Created new PDBAbstraction. Now calling create_pdb()" << endl << endl;
     pdb_abstraction->create_pdb();
-    cout << "PDB created. Now searching abstract state space." << endl;
+    //cout << "PDB created. Now searching abstract state space." << endl;
     pdb_abstraction->compute_goal_distances();
     cout << "Done initializing." << endl;
 }
