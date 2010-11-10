@@ -14,11 +14,12 @@ public:
 class AbstractState {
     vector<int> variable_values;
 public:
-    map<int, int> variale_to_index_mapping;
+    map<int, int> variable_to_index_mapping;
     map<int, int> index_to_variable_mapping;
     AbstractState(vector<int> var_vals, vector<int> pattern);
     AbstractState(const State &state, vector<int> pattern);
     vector<int> get_variable_values() const;
+    bool is_goal(vector<pair<int, int> > abstract_goal) const;
     void dump() const;
 };
 
@@ -38,6 +39,7 @@ class PDBAbstraction {
     vector<int> pattern;
     size_t size;
     vector<int> distances;
+    vector<int> abstract_goal_states;
     vector<vector<Edge > > back_edges;
     vector<int> n_i;
     int hash_index(const AbstractState &state);

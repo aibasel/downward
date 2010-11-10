@@ -14,7 +14,7 @@
 AbstractState::AbstractState(vector<int> var_vals, vector<int> pattern) {
     variable_values = var_vals;
     for (size_t i = 0; i < pattern.size(); i++) {
-        variale_to_index_mapping[pattern[i]] = i;
+        variable_to_index_mapping[pattern[i]] = i;
         index_to_variable_mapping[i] = pattern[i];
     }
 }
@@ -24,7 +24,7 @@ AbstractState::AbstractState(const State &state, vector<int> pattern) {
     for (size_t i = 0; i < pattern.size(); i++) {
         int var = pattern[i];
         int val = state[var];
-        variale_to_index_mapping[var] = i;
+        variable_to_index_mapping[var] = i;
         index_to_variable_mapping[i] = pattern[i];
         variable_values[i] = val;
     }
@@ -34,11 +34,25 @@ vector<int> AbstractState::get_variable_values() const {
     return variable_values;
 }
 
+bool AbstractState::is_goal(vector<pair<int, int> > abstract_goal) const {
+    for (size_t i = 0; i < abstract_goal.size(); i++) {
+        int var = abstract_goal[i].first;
+        map<int, int> index_map = variable_to_index_mapping; //ANOTHER STRANGE HACK
+        int index = index_map[var];
+        int value = variable_values[index];
+        if (value != abstract_goal[i].second) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void AbstractState::dump() const {
     cout << "AbstractState: " << endl;
     for (size_t i = 0; i < variable_values.size(); i++) {
-        map<int, int> index_map = index_to_variable_mapping; //WHY THE HELL IS THIS REQUIRED?!?!?!?!?!
-        int variable = index_map[i]; //WHY THE HELL IS THIS REQUIRED?!?!?!?!?!
+        map<int, int> index_map = index_to_variable_mapping; //WHY THE HELL IS THIS REQUIRED?!
+        int variable = index_map[i]; //probably because of the function being const... but whats the
+        //difference in copying the map and then accessing it (only reading!) or directly reading it...
         int value = variable_values[i];
         cout << "Index: " << i << " Variable: " <<  variable << " Value: " << value << endl;
     }
@@ -71,7 +85,7 @@ bool AbstractOperator::is_applicable(const AbstractState &abstract_state) const 
         int pre = pre_effect[i].second.first;
         assert(var >= 0 && var < g_variable_name.size());
         assert(pre == -1 || (pre >= 0 && pre < g_variable_domain[var]));
-        map<int, int> index_map = abstract_state.variale_to_index_mapping;
+        map<int, int> index_map = abstract_state.variable_to_index_mapping; //ANOTHER STRANGE HACK
         if (!(pre == -1 || abstract_state.get_variable_values()[index_map[var]] == pre))
             return false;
     }
@@ -85,7 +99,7 @@ const AbstractState AbstractOperator::apply_operator(const AbstractState &abstra
         int var = pre_effect[i].first;
         int pre = pre_effect[i].second.first;
         int post = pre_effect[i].second.second;
-        map<int, int> index_map = abstract_state.variale_to_index_mapping;
+        map<int, int> index_map = abstract_state.variable_to_index_mapping; //ANOTHER STRANGE HACK
         assert(variable_values[index_map[var]] == pre || pre == -1);
         variable_values[index_map[var]] = post;
     }
@@ -95,8 +109,8 @@ const AbstractState AbstractOperator::apply_operator(const AbstractState &abstra
 void AbstractOperator::dump() const {
     cout << "AbstractOperator: " << endl;
     for (size_t i = 0; i < pre_effect.size(); i++) {
-        cout << "Variable: " << pre_effect[i].first << " (True name: " << g_variable_name[pre_effect[i].first] << ") Pre: " << pre_effect[i].second.first
-            << " Post: "<< pre_effect[i].second.second << endl;
+        cout << "Variable: " << pre_effect[i].first << " (True name: " << g_variable_name[pre_effect[i].first] 
+            << ") Pre: " << pre_effect[i].second.first  << " Post: "<< pre_effect[i].second.second << endl;
     }
 }
 
@@ -128,9 +142,21 @@ void PDBAbstraction::create_pdb() {
         operators[i] = new AbstractOperator(g_operators[i], pattern);
     }
     //cout << "Calculated abstracted operators. Now computing the abstract space (graph)." << endl;
+    vector<pair<int, int> > abstracted_goal;
+    for (size_t i = 0; i < g_goal.size(); i++) {
+        for (size_t j = 0; j < pattern.size(); j++) {
+            if (g_goal[i].first == pattern[j]) {
+                abstracted_goal.push_back(make_pair(g_goal[i].first, g_goal[i].second));
+                break;
+            }
+        }
+    }
     for (size_t i = 0; i < size; i++) {
         //cout << "Iteration No.: " << i << endl;
         const AbstractState *abstract_state = inv_hash_index(i);
+        if (abstract_state->is_goal(abstracted_goal)) {
+            abstract_goal_states.push_back(i);
+        }
         //abstract_state->dump();
         //cout << endl;
         for (size_t j = 0; j < operators.size(); j++){
