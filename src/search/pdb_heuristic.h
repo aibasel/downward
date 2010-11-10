@@ -25,7 +25,6 @@ public:
 class Operator;
 typedef pair<int, pair<int, int> > PreEffect;
 class AbstractOperator {
-    Operator *op; // just for debugging purposes
     vector<int> pattern; // only use: in order to construct new AbstractState, which unfortunately needs a pattern for the moment
     vector<PreEffect> pre_effect;
 public:
@@ -46,8 +45,8 @@ class PDBAbstraction {
 public:
     PDBAbstraction(vector<int> pattern);
     void create_pdb();
-    int get_heuristic_value(const State &state);
     void compute_goal_distances();
+    int get_heuristic_value(const State &state);
 };
 
 class PDBHeuristic : public Heuristic {
