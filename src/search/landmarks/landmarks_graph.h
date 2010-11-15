@@ -126,7 +126,7 @@ typedef set<const Operator *> ActionLandmarkSet;
 
 class LandmarksGraph {
 public:
-    struct LandmarksGraphOptions {
+    struct LandmarkGraphOptions {
         bool reasonable_orders;
         bool only_causal_landmarks;
         bool disjunctive_landmarks;
@@ -134,35 +134,9 @@ public:
         bool no_orders;
         bool use_action_landmarks;
 
-        LandmarksGraphOptions()
-            : reasonable_orders(false),
-              only_causal_landmarks(false),
-              disjunctive_landmarks(true),
-              conjunctive_landmarks(true),
-              no_orders(false),
-              use_action_landmarks(false) {
-        }
+        LandmarkGraphOptions();
 
-        void add_option_to_parser(NamedOptionParser &option_parser) {
-            option_parser.add_bool_option("reasonable_orders",
-                                          &reasonable_orders,
-                                          "generate reasonable orders");
-            option_parser.add_bool_option("only_causal_landmarks",
-                                          &only_causal_landmarks,
-                                          "keep only causal landmarks");
-            option_parser.add_bool_option("disjunctive_landmarks",
-                                          &disjunctive_landmarks,
-                                          "keep disjunctive landmarks");
-            option_parser.add_bool_option("conjunctive_landmarks",
-                                          &conjunctive_landmarks,
-                                          "keep conjunctive landmarks");
-            option_parser.add_bool_option("no_orders",
-                                          &no_orders,
-                                          "discard all orderings");
-            option_parser.add_bool_option("use_action_landmarks",
-                                          &use_action_landmarks,
-                                          "generate action landmarks");
-        }
+        void add_option_to_parser(NamedOptionParser &option_parser);
     };
     class Pddl_proposition {
 public:
@@ -179,7 +153,7 @@ public:
     };
     void rm_landmark_node(LandmarkNode *node);
     void rm_landmark(const pair<int, int> &lmk);
-    LandmarksGraph(LandmarksGraphOptions &options, Exploration *explor);
+    LandmarksGraph(LandmarkGraphOptions &options, Exploration *explor);
     virtual ~LandmarksGraph() {}
 
     void print_proposition(const pair<int, int> &fluent) const;

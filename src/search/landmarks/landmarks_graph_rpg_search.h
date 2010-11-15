@@ -13,7 +13,7 @@ class LandmarksGraphRpgSearch : public LandmarksGraph {
     void landmark_search(LandmarkNode *node, int depth);
     int choose_random(vector<int> &evals);
 public:
-    LandmarksGraphRpgSearch(LandmarksGraphOptions &options,
+    LandmarksGraphRpgSearch(LandmarkGraphOptions &options,
                             Exploration *exploration,
                             bool uniform_sampling_, int max_depth_, int num_tries_);
     virtual ~LandmarksGraphRpgSearch();

@@ -27,7 +27,7 @@ LamaFFSynergy::LamaFFSynergy(LandmarksGraph &lm_graph,
       lm_optimal(lm_optimal_),
       use_action_landmarks(use_action_landmarks_) {
     cout << "Initializing LAMA-FF Synergy Object" << endl;
-    LandmarksGraph::LandmarksGraphOptions op;
+    LandmarksGraph::LandmarkGraphOptions op;
     lama_heuristic = new LandmarkCountHeuristic(lm_graph,
                                                 lm_pref, lm_admissible, lm_optimal,
                                                 use_action_landmarks_);

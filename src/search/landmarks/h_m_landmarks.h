@@ -68,7 +68,7 @@ typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
 class HMLandmarks : public LandmarksGraph {
 public:
-    HMLandmarks(LandmarksGraphOptions &options, Exploration *expl, int m);
+    HMLandmarks(LandmarkGraphOptions &options, Exploration *expl, int m);
     ~HMLandmarks() {
     }
 

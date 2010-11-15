@@ -308,7 +308,7 @@ void LandmarksGraphZhuGivan::compute_triggers() {
 
 void *LandmarksGraphZhuGivan::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarksGraph::LandmarksGraphOptions common_options;
+    LandmarksGraph::LandmarkGraphOptions common_options;
 
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;

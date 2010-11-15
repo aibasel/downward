@@ -1,5 +1,4 @@
 #include "h_m_landmarks.h"
-#include "../option_parser.h"
 #include "../plugin.h"
 
 static ObjectPlugin landmarks_graph_new_plugin(
@@ -577,7 +576,7 @@ bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
            inconsistent_facts[var1][val1].end();
 }
 
-HMLandmarks::HMLandmarks(LandmarksGraphOptions &options, Exploration *expl, int m)
+HMLandmarks::HMLandmarks(LandmarkGraphOptions &options, Exploration *expl, int m)
     : LandmarksGraph(options, expl), m_(m) {
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
     // need this to be able to print propositions for debugging
@@ -1054,7 +1053,7 @@ void HMLandmarks::generate_landmarks() {
 
 void *HMLandmarks::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarksGraph::LandmarksGraphOptions common_options;
+    LandmarksGraph::LandmarkGraphOptions common_options;
 
     int m = 2;
 

@@ -68,7 +68,7 @@ public:
 
 public:
     LandmarksGraphZhuGivan(
-        LandmarksGraphOptions &options, Exploration *exploration)
+        LandmarkGraphOptions &options, Exploration *exploration)
         : LandmarksGraph(options, exploration) {
     }
     ~LandmarksGraphZhuGivan() {
