@@ -9,6 +9,21 @@ import subprocess
 SUFFIX = ".uncrustify.temp"
 
 
+def _call_subprocesses(cmddesc, *cmd_lists):
+    for cmd_list in cmd_lists:
+        try:
+            exitcode = subprocess.call(cmd_list)
+        except OSError, e:
+            # If command is not found, swallow error and try next command.
+            if e.errno != errno.ENOENT:
+                raise util.Abort("error running %s: %s" % (cmd_desc, e))
+
+                _raise_command_not_found("diff or colordiff", e)
+        else:
+            return exitcode
+    raise util.Abort("could not find %s -- not installed?" % cmddesc)
+
+
 def _run_uncrustify(config_file, filenames):
     """Call uncrustify, with some fancy additional behaviour:
     1. Make sure that we don't call with an empty file list since
@@ -29,9 +44,9 @@ def _run_uncrustify(config_file, filenames):
             with open(temp_file, "w"):
                 pass
     if inputs:
-        returncode = subprocess.call(
-            ["uncrustify", "-q", "-c", config_file, "--suffix", SUFFIX] +
-            inputs)
+        cmd = ["uncrustify", "-q", "-c", config_file,
+               "--suffix", SUFFIX] + inputs
+        returncode = _call_subprocesses("uncrustify", cmd)
         if returncode:
             raise util.Abort("uncrustify error: %d" % returncode)
 
@@ -43,11 +58,9 @@ def _run_diff(oldfile, newfile):
     #       diff rather than the colors set up for colordiff. It's not
     #       clear to me how this can be done though, and if it is
     #       worth the bother.
-    try:
-        subprocess.call(["colordiff", "-u", oldfile, newfile])
-    except OSError, e:
-        if e.errno == errno.ENOENT:
-            subprocess.call(["diff", "-u", oldfile, newfile])
+    _call_subprocesses("diff or colordiff",
+                       ["colordiff", "-u", oldfile, newfile],
+                       ["diff", "-u", oldfile, newfile])
 
 
 def _get_files(repo, patterns, options):
@@ -113,6 +126,7 @@ def uncrustify(ui, repo, *patterns, **options):
         mode = "status"
 
     no_backup = options["no_backup"]
+    show_clean = options["show_clean"]
 
     paths = [path for path in _get_files(repo, patterns, options)
              if path.endswith((".cc", ".h"))]
@@ -145,7 +159,7 @@ def uncrustify(ui, repo, *patterns, **options):
                 if not ui.quiet:
                     ui.write("%s uncrustified\n" % relpath)
         else:
-            if ui.verbose:
+            if show_clean:
                 if mode == "status":
                     ui.write("C %s\n" % relpath, label="status.clean")
                 elif mode == "modify":
@@ -162,6 +176,8 @@ cmdtable = {
           "actually modify the files that need to be uncrustified"),
          ("", "no-backup", None,
           "do not save backup copies of modified files"),
+         ("", "show-clean", None,
+          "also list clean source files"),
          ("I", "include", [],
           "include names matching the given patterns", "PATTERN"),
          ("X", "exclude", [],
