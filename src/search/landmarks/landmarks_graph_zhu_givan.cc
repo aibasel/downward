@@ -13,7 +13,7 @@
 
 using namespace __gnu_cxx;
 
-static ObjectPlugin landmarks_graph_new_plugin(
+static LandmarksGraphPlugin landmarks_graph_new_plugin(
     "lmgraph_zhu_givan", LandmarksGraphZhuGivan::create);
 
 void LandmarksGraphZhuGivan::generate_landmarks() {
@@ -306,7 +306,7 @@ void LandmarksGraphZhuGivan::compute_triggers() {
 
 
 
-void *LandmarksGraphZhuGivan::create(
+LandmarksGraph *LandmarksGraphZhuGivan::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarksGraph::LandmarkGraphOptions common_options;
 

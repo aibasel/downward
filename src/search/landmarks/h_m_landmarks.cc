@@ -1,7 +1,7 @@
 #include "h_m_landmarks.h"
 #include "../plugin.h"
 
-static ObjectPlugin landmarks_graph_new_plugin(
+static LandmarksGraphPlugin landmarks_graph_new_plugin(
     "lmgraph_hm", HMLandmarks::create);
 
 std::ostream & operator<<(std::ostream &os, const Fluent &p) {
@@ -1051,7 +1051,7 @@ void HMLandmarks::generate_landmarks() {
 
 
 
-void *HMLandmarks::create(
+LandmarksGraph *HMLandmarks::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarksGraph::LandmarkGraphOptions common_options;
 

@@ -6,7 +6,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-static ObjectPlugin landmarks_graph_new_plugin(
+static LandmarksGraphPlugin landmarks_graph_new_plugin(
     "lmgraph_exhaust", LandmarksGraphExhaust::create);
 
 /* Problem: We don't get any orders here. (All we have is the reasonable orders
@@ -35,7 +35,7 @@ void LandmarksGraphExhaust::generate_landmarks() {
 }
 
 
-void *LandmarksGraphExhaust::create(
+LandmarksGraph *LandmarksGraphExhaust::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarksGraph::LandmarkGraphOptions common_options;
 

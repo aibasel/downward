@@ -15,7 +15,7 @@
 
 using namespace __gnu_cxx;
 
-static ObjectPlugin landmarks_graph_new_plugin(
+static LandmarksGraphPlugin landmarks_graph_new_plugin(
     "lmgraph_rpg_sasp", LandmarksGraphNew::create);
 
 void LandmarksGraphNew::get_greedy_preconditions_for_lm(
@@ -440,7 +440,7 @@ void LandmarksGraphNew::add_lm_forward_orders() {
 
 
 
-void *LandmarksGraphNew::create(
+LandmarksGraph *LandmarksGraphNew::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarksGraph::LandmarkGraphOptions common_options;
 

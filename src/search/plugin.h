@@ -22,12 +22,12 @@ public:
 };
 
 
-class ObjectPlugin {
-    ObjectPlugin(const ObjectPlugin &copy);
+class LandmarksGraphPlugin {
+    LandmarksGraphPlugin(const LandmarksGraphPlugin &copy);
 public:
-    ObjectPlugin(const std::string &key,
-                 OptionParser::ObjectFactory factory);
-    ~ObjectPlugin();
+    LandmarksGraphPlugin(const std::string &key,
+                         OptionParser::LandmarksGraphFactory factory);
+    ~LandmarksGraphPlugin();
 };
 
 #endif
