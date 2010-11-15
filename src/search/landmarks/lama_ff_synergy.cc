@@ -20,8 +20,8 @@ void LamaFFSynergy::HeuristicProxy::initialize() {
 }
 
 LamaFFSynergy::LamaFFSynergy(LandmarksGraph &lm_graph,
-        bool lm_pref_, bool lm_admissible_, bool lm_optimal_,
-        bool use_action_landmarks_)
+                             bool lm_pref_, bool lm_admissible_, bool lm_optimal_,
+                             bool use_action_landmarks_)
     : lama_heuristic_proxy(this), ff_heuristic_proxy(this),
       lm_pref(lm_pref_), lm_admissible(lm_admissible_),
       lm_optimal(lm_optimal_),
@@ -29,8 +29,8 @@ LamaFFSynergy::LamaFFSynergy(LandmarksGraph &lm_graph,
     cout << "Initializing LAMA-FF Synergy Object" << endl;
     LandmarksGraph::LandmarksGraphOptions op;
     lama_heuristic = new LandmarkCountHeuristic(lm_graph,
-            lm_pref, lm_admissible, lm_optimal,
-            use_action_landmarks_);
+                                                lm_pref, lm_admissible, lm_optimal,
+                                                use_action_landmarks_);
     //lama_heuristic->initialize(); // must be called here explicitly
     exploration = lama_heuristic->get_exploration();
     initialized = false;
@@ -85,10 +85,10 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
         throw ParseError(start + 1);
 
     void *object = OptionParser::instance()->parse_object(config,
-            start + 2, end, false);
+                                                          start + 2, end, false);
     end++;
 
-    LandmarksGraph *lm_graph = (LandmarksGraph *) object;
+    LandmarksGraph *lm_graph = (LandmarksGraph *)object;
     if (lm_graph == 0)
         throw ParseError(start);
 
@@ -114,7 +114,7 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
                           // does not make sense to use the synergy without
                           // using lm preferred operators
     LamaFFSynergy *lama_ff_synergy = new LamaFFSynergy(*lm_graph,
-        lm_pref_, lm_admissible_, lm_optimal_, use_action_landmarks_);
+                                                       lm_pref_, lm_admissible_, lm_optimal_, use_action_landmarks_);
 
     heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
     heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());

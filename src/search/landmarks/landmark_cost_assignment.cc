@@ -60,7 +60,7 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 /* Uniform cost partioning */
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
     LandmarksGraph &graph, bool use_action_landmarks_)
-    : LandmarkCostAssignment(graph),use_action_landmarks(use_action_landmarks_) {
+    : LandmarkCostAssignment(graph), use_action_landmarks(use_action_landmarks_) {
 }
 
 

@@ -315,10 +315,10 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
         throw ParseError(start + 1);
 
     void *object = OptionParser::instance()->parse_object(config,
-            start + 2, end, dry_run);
+                                                          start + 2, end, dry_run);
     end++;
 
-    LandmarksGraph *lm_graph = (LandmarksGraph *) object;
+    LandmarksGraph *lm_graph = (LandmarksGraph *)object;
     if (!dry_run && lm_graph == 0)
         throw ParseError(start);
 

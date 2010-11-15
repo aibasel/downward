@@ -50,8 +50,8 @@ protected:
     virtual int compute_heuristic(const State &state);
 public:
     LandmarkCountHeuristic(LandmarksGraph &lm_graph,
-            bool use_preferred_operators, bool admissible,
-    		bool optimal, bool use_action_landmarks);
+                           bool use_preferred_operators, bool admissible,
+                           bool optimal, bool use_action_landmarks);
     ~LandmarkCountHeuristic() {
     }
     virtual bool reach_state(const State &parent_state, const Operator &op,

@@ -606,7 +606,7 @@ void HMLandmarks::init() {
          */
     }
     std::cout << "Using " << h_m_table_.size() << " P^m fluents."
-              << std::endl;
+    << std::endl;
 
     // unsatisfied pc counts are now in build pm ops
 
@@ -1077,10 +1077,9 @@ void *HMLandmarks::create(
 
     if (dry_run) {
         return 0;
-    }
-    else {
+    } else {
         LandmarksGraph *graph = new HMLandmarks(common_options,
-                new Exploration, m);
+                                                new Exploration, m);
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }

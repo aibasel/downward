@@ -78,7 +78,7 @@ public:
     typedef OpenList<state_var_t *> *(*OpenListFactory)(
         ConfigRef, int, int &);
     typedef void *(*ObjectFactory)(
-            ConfigRef, int, int &, bool);
+        ConfigRef, int, int &, bool);
 private:
     std::map<std::string, Heuristic *> predefined_heuristics;
     std::map<std::string, void *> predefined_objects;
@@ -107,7 +107,7 @@ public:
     void register_scalar_evaluator(
         const std::string &key, ScalarEvalFactory func);
     void register_object_factory(
-            const std::string &key, ObjectFactory func);
+        const std::string &key, ObjectFactory func);
     void register_synergy(const std::string &key, SynergyFactory func);
     void predefine_heuristic(const char *str);
     void predefine_object(const char *str);
@@ -116,8 +116,8 @@ public:
         const std::vector<std::string> &input, int start, int &end,
         bool dry_run);
     void *parse_object(
-            const std::vector<std::string> &input, int start, int &end,
-            bool dry_run);
+        const std::vector<std::string> &input, int start, int &end,
+        bool dry_run);
     Heuristic *parse_heuristic(const std::vector<std::string> &input,
                                int start, int &end, bool dry_run);
     bool knows_scalar_evaluator(const std::string &name) const;
