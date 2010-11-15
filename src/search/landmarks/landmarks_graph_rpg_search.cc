@@ -6,13 +6,12 @@ static ObjectPlugin landmarks_graph_new_plugin(
     "lmgraph_search", LandmarksGraphRpgSearch::create);
 
 LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(
-        LandmarksGraphOptions &options, Exploration *exploration,
-        bool uniform_sampling_, int max_depth_, int num_tries_)
+    LandmarksGraphOptions &options, Exploration *exploration,
+    bool uniform_sampling_, int max_depth_, int num_tries_)
     : LandmarksGraph(options, exploration),
       uniform_sampling(uniform_sampling_),
       max_depth(max_depth_),
-      num_tries(num_tries_)
-{
+      num_tries(num_tries_) {
 }
 
 LandmarksGraphRpgSearch::~LandmarksGraphRpgSearch() {
@@ -131,16 +130,16 @@ void *LandmarksGraphRpgSearch::create(
             common_options.add_option_to_parser(option_parser);
 
             option_parser.add_int_option("max_depth",
-                    &max_depth,
-                    "max depth");
+                                         &max_depth,
+                                         "max depth");
 
             option_parser.add_int_option("num_tries",
-                    &num_tries,
-                    "max number of tries");
+                                         &num_tries,
+                                         "max number of tries");
 
             option_parser.add_bool_option("uniform_sampling",
-                    &uniform_sampling,
-                    "uniform sampling");
+                                          &uniform_sampling,
+                                          "uniform sampling");
 
             option_parser.parse_options(config, end, end, dry_run);
             end++;
@@ -153,11 +152,10 @@ void *LandmarksGraphRpgSearch::create(
 
     if (dry_run) {
         return 0;
-    }
-    else {
+    } else {
         LandmarksGraph *graph = new LandmarksGraphRpgSearch(
-                common_options, new Exploration,
-                uniform_sampling, max_depth, num_tries);
+            common_options, new Exploration,
+            uniform_sampling, max_depth, num_tries);
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }

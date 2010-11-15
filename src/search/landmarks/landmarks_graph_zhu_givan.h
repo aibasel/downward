@@ -68,13 +68,13 @@ public:
 
 public:
     LandmarksGraphZhuGivan(
-            LandmarksGraphOptions &options, Exploration *exploration)
+        LandmarksGraphOptions &options, Exploration *exploration)
         : LandmarksGraph(options, exploration) {
     }
     ~LandmarksGraphZhuGivan() {
     }
     static void *create(const std::vector<string> &config, int start,
-                                           int &end, bool dry_run = false);
+                        int &end, bool dry_run = false);
 };
 
 #endif

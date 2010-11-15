@@ -56,12 +56,10 @@ void *LandmarksGraphExhaust::create(
 
     if (dry_run) {
         return 0;
-    }
-    else {
+    } else {
         LandmarksGraph *graph = new LandmarksGraphExhaust(common_options,
-                new Exploration);
+                                                          new Exploration);
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }
 }
-

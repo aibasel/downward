@@ -134,38 +134,35 @@ public:
         bool no_orders;
         bool use_action_landmarks;
 
-        LandmarksGraphOptions():
-            reasonable_orders(false),
-            only_causal_landmarks(false),
-            disjunctive_landmarks(true),
-            conjunctive_landmarks(true),
-            no_orders(false),
-            use_action_landmarks(false)
-        {
+        LandmarksGraphOptions()
+            : reasonable_orders(false),
+              only_causal_landmarks(false),
+              disjunctive_landmarks(true),
+              conjunctive_landmarks(true),
+              no_orders(false),
+              use_action_landmarks(false) {
         }
 
         void add_option_to_parser(NamedOptionParser &option_parser) {
             option_parser.add_bool_option("reasonable_orders",
-                                &reasonable_orders,
-                                "generate reasonable orders");
+                                          &reasonable_orders,
+                                          "generate reasonable orders");
             option_parser.add_bool_option("only_causal_landmarks",
-                                &only_causal_landmarks,
-                                "keep only causal landmarks");
+                                          &only_causal_landmarks,
+                                          "keep only causal landmarks");
             option_parser.add_bool_option("disjunctive_landmarks",
-                                &disjunctive_landmarks,
-                                "keep disjunctive landmarks");
+                                          &disjunctive_landmarks,
+                                          "keep disjunctive landmarks");
             option_parser.add_bool_option("conjunctive_landmarks",
-                                &conjunctive_landmarks,
-                                "keep conjunctive landmarks");
+                                          &conjunctive_landmarks,
+                                          "keep conjunctive landmarks");
             option_parser.add_bool_option("no_orders",
-                                &no_orders,
-                                "discard all orderings");
+                                          &no_orders,
+                                          "discard all orderings");
             option_parser.add_bool_option("use_action_landmarks",
-                                &use_action_landmarks,
-                                "generate action landmarks");
-
+                                          &use_action_landmarks,
+                                          "generate action landmarks");
         }
-
     };
     class Pddl_proposition {
 public:
@@ -281,8 +278,8 @@ public:
     const Operator *get_alm_for_index(int i) const;
     int get_alm_id(const Operator *op) const;
 
-    Exploration *get_exploration() const {return exploration;}
-    bool is_using_reasonable_orderings() const {return reasonable_orders;}
+    Exploration *get_exploration() const {return exploration; }
+    bool is_using_reasonable_orderings() const {return reasonable_orders; }
 
     static void build_lm_graph(LandmarksGraph *lm_graph);
 private:

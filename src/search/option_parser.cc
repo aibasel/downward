@@ -31,7 +31,7 @@ void OptionParser::register_scalar_evaluator(const string &key,
 }
 
 void OptionParser::register_object_factory(const std::string &key,
-                                          ObjectFactory func) {
+                                           ObjectFactory func) {
     object_map[key] = func;
 }
 

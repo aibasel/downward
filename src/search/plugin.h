@@ -23,10 +23,10 @@ public:
 
 
 class ObjectPlugin {
-	ObjectPlugin(const ObjectPlugin &copy);
+    ObjectPlugin(const ObjectPlugin &copy);
 public:
-	ObjectPlugin(const std::string &key,
-                          OptionParser::ObjectFactory factory);
+    ObjectPlugin(const std::string &key,
+                 OptionParser::ObjectFactory factory);
     ~ObjectPlugin();
 };
 

@@ -14,11 +14,11 @@ class LandmarksGraphRpgSearch : public LandmarksGraph {
     int choose_random(vector<int> &evals);
 public:
     LandmarksGraphRpgSearch(LandmarksGraphOptions &options,
-            Exploration *exploration,
-            bool uniform_sampling_, int max_depth_, int num_tries_);
+                            Exploration *exploration,
+                            bool uniform_sampling_, int max_depth_, int num_tries_);
     virtual ~LandmarksGraphRpgSearch();
     static void *create(const std::vector<string> &config, int start,
-                                           int &end, bool dry_run = false);
+                        int &end, bool dry_run = false);
 };
 
 #endif
