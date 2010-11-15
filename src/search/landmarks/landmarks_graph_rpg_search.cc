@@ -2,7 +2,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-static ObjectPlugin landmarks_graph_new_plugin(
+static LandmarksGraphPlugin landmarks_graph_new_plugin(
     "lmgraph_search", LandmarksGraphRpgSearch::create);
 
 LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(
@@ -115,7 +115,7 @@ int LandmarksGraphRpgSearch::choose_random(vector<int> &evals) {
 }
 
 
-void *LandmarksGraphRpgSearch::create(
+LandmarksGraph *LandmarksGraphRpgSearch::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarksGraph::LandmarkGraphOptions common_options;
 

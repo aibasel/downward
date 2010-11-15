@@ -13,6 +13,7 @@ class ScalarEvaluator;
 class SearchEngine;
 template<class Entry>
 class OpenList;
+class LandmarksGraph;
 
 struct ParseError {
     int pos;
@@ -77,16 +78,16 @@ public:
         ConfigRef, int, int &, std::vector<Heuristic *> &);
     typedef OpenList<state_var_t *> *(*OpenListFactory)(
         ConfigRef, int, int &);
-    typedef void *(*ObjectFactory)(
+    typedef LandmarksGraph *(*LandmarksGraphFactory)(
         ConfigRef, int, int &, bool);
 private:
     std::map<std::string, Heuristic *> predefined_heuristics;
-    std::map<std::string, void *> predefined_objects;
+    std::map<std::string, LandmarksGraph *> predefined_lm_graphs;
 
     std::map<std::string, EngineFactory> engine_map;
     std::map<std::string, ScalarEvalFactory> scalar_evaluator_map;
     std::map<std::string, SynergyFactory> synergy_map;
-    std::map<std::string, ObjectFactory> object_map;
+    std::map<std::string, LandmarksGraphFactory> lm_graph_map;
 
     static OptionParser *instance_;
     OptionParser() {}
@@ -98,7 +99,7 @@ private:
                            ParseError &err);
 
     void predefine_heuristic(const std::vector<std::string> &input);
-    void predefine_object(const std::vector<std::string> &input);
+    void predefine_lm_graph(const std::vector<std::string> &input);
 
 public:
     static OptionParser *instance();
@@ -106,22 +107,22 @@ public:
     void register_search_engine(const std::string &key, EngineFactory func);
     void register_scalar_evaluator(
         const std::string &key, ScalarEvalFactory func);
-    void register_object_factory(
-        const std::string &key, ObjectFactory func);
+    void register_lm_graph_factory(
+        const std::string &key, LandmarksGraphFactory func);
     void register_synergy(const std::string &key, SynergyFactory func);
     void predefine_heuristic(const char *str);
-    void predefine_object(const char *str);
+    void predefine_lm_graph(const char *str);
 
     ScalarEvaluator *parse_scalar_evaluator(
         const std::vector<std::string> &input, int start, int &end,
         bool dry_run);
-    void *parse_object(
+    LandmarksGraph *parse_lm_graph(
         const std::vector<std::string> &input, int start, int &end,
         bool dry_run);
     Heuristic *parse_heuristic(const std::vector<std::string> &input,
                                int start, int &end, bool dry_run);
     bool knows_scalar_evaluator(const std::string &name) const;
-    bool knows_object(const std::string &name) const;
+    bool knows_lm_graph(const std::string &name) const;
     bool knows_search_engine(const std::string &name) const;
     SearchEngine *parse_search_engine(const char *str);
     SearchEngine *parse_search_engine(const std::vector<std::string> &input,

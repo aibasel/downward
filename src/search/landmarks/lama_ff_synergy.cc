@@ -84,11 +84,10 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
-    void *object = OptionParser::instance()->parse_object(config,
-                                                          start + 2, end, false);
+    LandmarksGraph *lm_graph = OptionParser::instance()->parse_lm_graph(config,
+                                                                        start + 2, end, false);
     end++;
 
-    LandmarksGraph *lm_graph = (LandmarksGraph *)object;
     if (lm_graph == 0)
         throw ParseError(start);
 

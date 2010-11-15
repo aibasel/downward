@@ -23,10 +23,10 @@ SynergyPlugin::SynergyPlugin(
 SynergyPlugin::~SynergyPlugin() {
 }
 
-ObjectPlugin::ObjectPlugin(
-    const string &key, OptionParser::ObjectFactory factory) {
-    OptionParser::instance()->register_object_factory(key, factory);
+LandmarksGraphPlugin::LandmarksGraphPlugin(
+    const string &key, OptionParser::LandmarksGraphFactory factory) {
+    OptionParser::instance()->register_lm_graph_factory(key, factory);
 }
 
-ObjectPlugin::~ObjectPlugin() {
+LandmarksGraphPlugin::~LandmarksGraphPlugin() {
 }
