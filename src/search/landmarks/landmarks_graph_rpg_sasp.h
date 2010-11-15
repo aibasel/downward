@@ -31,7 +31,7 @@ class LandmarksGraphNew : public LandmarksGraph {
     static bool domain_connectivity(const pair<int, int> &landmark,
                                     const hash_set<int> &exclude);
 public:
-    LandmarksGraphNew(LandmarksGraphOptions &options, Exploration *exploration)
+    LandmarksGraphNew(LandmarkGraphOptions &options, Exploration *exploration)
         : LandmarksGraph(options, exploration) {
     }
     ~LandmarksGraphNew() {

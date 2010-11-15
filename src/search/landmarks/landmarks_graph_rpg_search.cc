@@ -6,7 +6,7 @@ static ObjectPlugin landmarks_graph_new_plugin(
     "lmgraph_search", LandmarksGraphRpgSearch::create);
 
 LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(
-    LandmarksGraphOptions &options, Exploration *exploration,
+    LandmarkGraphOptions &options, Exploration *exploration,
     bool uniform_sampling_, int max_depth_, int num_tries_)
     : LandmarksGraph(options, exploration),
       uniform_sampling(uniform_sampling_),
@@ -117,7 +117,7 @@ int LandmarksGraphRpgSearch::choose_random(vector<int> &evals) {
 
 void *LandmarksGraphRpgSearch::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarksGraph::LandmarksGraphOptions common_options;
+    LandmarksGraph::LandmarkGraphOptions common_options;
 
     bool uniform_sampling = false;
     int max_depth = 10;

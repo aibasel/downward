@@ -61,7 +61,7 @@ static inline bool _operator_condition_includes(const Operator &o,
     return false;
 }
 
-LandmarksGraph::LandmarksGraph(LandmarksGraphOptions &options, Exploration *explor)
+LandmarksGraph::LandmarksGraph(LandmarkGraphOptions &options, Exploration *explor)
     : exploration(explor), landmarks_count(0), conj_lms(0),
       use_external_inconsistencies(false) {
     reasonable_orders = options.reasonable_orders;
@@ -1358,4 +1358,35 @@ void LandmarksGraph::build_lm_graph(LandmarksGraph *lm_graph) {
          << " are disjunctive and "
          << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
          << lm_graph->number_of_edges() << " edges\n";
+}
+
+
+LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
+    : reasonable_orders(false),
+      only_causal_landmarks(false),
+      disjunctive_landmarks(true),
+      conjunctive_landmarks(true),
+      no_orders(false),
+      use_action_landmarks(false) {
+}
+
+void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(NamedOptionParser &option_parser) {
+    option_parser.add_bool_option("reasonable_orders",
+                                  &reasonable_orders,
+                                  "generate reasonable orders");
+    option_parser.add_bool_option("only_causal_landmarks",
+                                  &only_causal_landmarks,
+                                  "keep only causal landmarks");
+    option_parser.add_bool_option("disjunctive_landmarks",
+                                  &disjunctive_landmarks,
+                                  "keep disjunctive landmarks");
+    option_parser.add_bool_option("conjunctive_landmarks",
+                                  &conjunctive_landmarks,
+                                  "keep conjunctive landmarks");
+    option_parser.add_bool_option("no_orders",
+                                  &no_orders,
+                                  "discard all orderings");
+    option_parser.add_bool_option("use_action_landmarks",
+                                  &use_action_landmarks,
+                                  "generate action landmarks");
 }

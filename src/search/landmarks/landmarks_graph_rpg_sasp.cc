@@ -442,7 +442,7 @@ void LandmarksGraphNew::add_lm_forward_orders() {
 
 void *LandmarksGraphNew::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarksGraph::LandmarksGraphOptions common_options;
+    LandmarksGraph::LandmarkGraphOptions common_options;
 
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
