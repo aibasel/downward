@@ -63,13 +63,13 @@ static inline bool _operator_condition_includes(const Operator &o,
 
 LandmarksGraph::LandmarksGraph(LandmarkGraphOptions &options, Exploration *explor)
     : exploration(explor), landmarks_count(0), conj_lms(0),
-      use_external_inconsistencies(false) {
+      external_inconsistencies_read(false) {
     reasonable_orders = options.reasonable_orders;
     only_causal_landmarks = options.only_causal_landmarks;
     disjunctive_landmarks = options.disjunctive_landmarks;
     conjunctive_landmarks = options.conjunctive_landmarks;
     no_orders = options.no_orders;
-    use_action_landmarks = options.use_action_landmarks;
+    discover_action_landmarks = options.discover_action_landmarks;
     generate_operators_lookups();
 }
 
@@ -200,7 +200,7 @@ void LandmarksGraph::generate() {
     //cout << "generating landmarks" << endl;
     generate_landmarks();
 
-    if (use_action_landmarks)
+    if (discover_action_landmarks)
         generate_action_landmarks();
     if (only_causal_landmarks)
         discard_noncausal_landmarks();
@@ -297,7 +297,7 @@ void LandmarksGraph::read_external_inconsistencies() {
         }
         check_magic(in, "end_groups");
         myfile.close();
-        use_external_inconsistencies = true;
+        external_inconsistencies_read = true;
         cout << "done" << endl;
     } else {
         cout << "Unable to open invariants file!" << endl;
@@ -1367,7 +1367,7 @@ LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
       disjunctive_landmarks(true),
       conjunctive_landmarks(true),
       no_orders(false),
-      use_action_landmarks(false) {
+      discover_action_landmarks(false) {
 }
 
 void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(NamedOptionParser &option_parser) {
@@ -1386,7 +1386,7 @@ void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(NamedOptionParse
     option_parser.add_bool_option("no_orders",
                                   &no_orders,
                                   "discard all orderings");
-    option_parser.add_bool_option("use_action_landmarks",
-                                  &use_action_landmarks,
-                                  "generate action landmarks");
+    option_parser.add_bool_option("discover_action_landmarks",
+                                  &discover_action_landmarks,
+                                  "discover action landmarks in preprocessing");
 }

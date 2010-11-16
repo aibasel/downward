@@ -15,7 +15,7 @@
 
 using namespace __gnu_cxx;
 
-static LandmarksGraphPlugin landmarks_graph_new_plugin(
+static LandmarkGraphPlugin landmarks_graph_new_plugin(
     "lmgraph_rpg_sasp", LandmarksGraphNew::create);
 
 void LandmarksGraphNew::get_greedy_preconditions_for_lm(

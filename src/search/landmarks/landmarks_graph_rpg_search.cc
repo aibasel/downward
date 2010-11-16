@@ -2,7 +2,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-static LandmarksGraphPlugin landmarks_graph_new_plugin(
+static LandmarkGraphPlugin landmarks_graph_rpg_search_plugin(
     "lmgraph_search", LandmarksGraphRpgSearch::create);
 
 LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(

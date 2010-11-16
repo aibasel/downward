@@ -76,8 +76,8 @@ public:
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
-    static LandmarksGraph *create(const std::vector<string> &config, int start,
-                                  int &end, bool dry_run = false);
+    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
+                                  int &end, bool dry_run);
 
 protected:
 //  typedef std::set<std::pair<int,int> > TriggerSet;

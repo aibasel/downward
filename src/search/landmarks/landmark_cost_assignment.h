@@ -18,7 +18,6 @@ public:
 };
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
-private:
     bool use_action_landmarks;
 public:
     LandmarkUniformSharedCostAssignment(LandmarksGraph &graph, bool use_action_landmarks_);

@@ -27,7 +27,6 @@ LamaFFSynergy::LamaFFSynergy(LandmarksGraph &lm_graph,
       lm_optimal(lm_optimal_),
       use_action_landmarks(use_action_landmarks_) {
     cout << "Initializing LAMA-FF Synergy Object" << endl;
-    LandmarksGraph::LandmarkGraphOptions op;
     lama_heuristic = new LandmarkCountHeuristic(lm_graph,
                                                 lm_pref, lm_admissible, lm_optimal,
                                                 use_action_landmarks_);
@@ -84,9 +83,9 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
-    LandmarksGraph *lm_graph = OptionParser::instance()->parse_lm_graph(config,
-                                                                        start + 2, end, false);
-    end++;
+    LandmarksGraph *lm_graph = OptionParser::instance()->parse_lm_graph(
+            config,start + 2, end, false);
+    ++end;
 
     if (lm_graph == 0)
         throw ParseError(start);
@@ -104,7 +103,7 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
                                       &use_action_landmarks_,
                                       "use action landmarks");
         option_parser.parse_options(config, end, end, false);
-        end++;
+        ++end;
     }
     if (config[end] != ")")
         throw ParseError(end);

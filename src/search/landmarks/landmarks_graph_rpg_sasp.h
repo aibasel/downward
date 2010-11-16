@@ -36,8 +36,8 @@ public:
     }
     ~LandmarksGraphNew() {
     }
-    static LandmarksGraph *create(const std::vector<string> &config, int start,
-                                  int &end, bool dry_run = false);
+    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
+                                  int &end, bool dry_run);
 };
 
 #endif
