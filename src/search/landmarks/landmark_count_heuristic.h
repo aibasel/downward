@@ -60,7 +60,7 @@ public:
         return true;
     }
     static ScalarEvaluator *create(const std::vector<string> &config, int start,
-                                   int &end, bool dry_run = false);
+                                   int &end, bool dry_run);
     virtual void reset();
     enum {rpg_sasp = 0, zhu_givan = 1, exhaust = 2, search = 3, hmbased = 4};
 };

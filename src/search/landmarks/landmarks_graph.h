@@ -132,7 +132,7 @@ public:
         bool disjunctive_landmarks;
         bool conjunctive_landmarks;
         bool no_orders;
-        bool use_action_landmarks;
+        bool discover_action_landmarks;
 
         LandmarkGraphOptions();
 
@@ -283,7 +283,7 @@ protected:
     bool disjunctive_landmarks;
     bool conjunctive_landmarks;
     bool no_orders;
-    bool use_action_landmarks;
+    bool discover_action_landmarks;
 
     int landmarks_count;
     int conj_lms;
@@ -305,7 +305,7 @@ protected:
     vector<vector<set<pair<int, int> > > > inconsistent_facts;
 private:
     int calculate_lms_cost() const;
-    bool use_external_inconsistencies;
+    bool external_inconsistencies_read;
 
 protected:
 
@@ -368,7 +368,7 @@ inline bool LandmarksGraph::inconsistent(const pair<int, int> &a, const pair<
     assert(a.first != b.first || a.second != b.second);
     if (a.first == b.first && a.second != b.second)
         return true;
-    if (use_external_inconsistencies &&
+    if (external_inconsistencies_read &&
         inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
         return true;
     return false;

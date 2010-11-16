@@ -31,7 +31,7 @@ void OptionParser::register_scalar_evaluator(const string &key,
 }
 
 void OptionParser::register_lm_graph_factory(const std::string &key,
-                                             LandmarksGraphFactory func) {
+                                             LandmarkGraphFactory func) {
     lm_graph_map[key] = func;
 }
 
@@ -70,7 +70,7 @@ LandmarksGraph *OptionParser::parse_lm_graph(
     }
 
     // object definition
-    map<string, LandmarksGraphFactory>::iterator it;
+    map<string, LandmarkGraphFactory>::iterator it;
     it = lm_graph_map.find(input[start]);
     if (it == lm_graph_map.end())
         throw ParseError(start);
@@ -106,8 +106,7 @@ bool OptionParser::knows_scalar_evaluator(const string &name) const {
 }
 
 bool OptionParser::knows_lm_graph(const string &name) const {
-    return lm_graph_map.find(name) != lm_graph_map.end() ||
-           predefined_lm_graphs.find(name) != predefined_lm_graphs.end();
+    return lm_graph_map.count(name)  || predefined_lm_graphs.count(name);
 }
 
 bool OptionParser::knows_search_engine(const string &name) const {
@@ -193,7 +192,7 @@ void OptionParser::predefine_lm_graph(const char *str) {
     tokenize_options(str, tokens);
     try {
         predefine_lm_graph(tokens);
-    } catch (ParseError e) {
+    } catch (ParseError &e) {
         print_parse_error(tokens, e);
         exit(2);
     }

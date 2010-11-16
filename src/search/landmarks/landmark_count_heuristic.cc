@@ -36,7 +36,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(LandmarksGraph &lm_graph, bool pr
     if (admissible) {
         use_cost_sharing = true;
         if (lgraph.is_using_reasonable_orderings()) {
-            cerr << "Reasonable orderings can not be used for admissble heuristics" << endl;
+            cerr << "Reasonable orderings should not be used for admissble heuristics" << endl;
             ::exit(2);
         }
         if (!g_axioms.empty()) {
@@ -316,7 +316,7 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
 
     LandmarksGraph *lm_graph = OptionParser::instance()->parse_lm_graph(config,
                                                                         start + 2, end, dry_run);
-    end++;
+    ++end;
 
     if (!dry_run && lm_graph == 0)
         throw ParseError(start);
@@ -333,11 +333,11 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
         option_parser.add_bool_option("pref_ops",
                                       &pref_,
                                       "identify preferred operators");
-        option_parser.add_bool_option("alm",
+        option_parser.add_bool_option("action_landmarks",
                                       &use_action_landmarks_,
                                       "use action landmarks");
         option_parser.parse_options(config, end, end, dry_run);
-        end++;
+        ++end;
     }
     if (config[end] != ")")
         throw ParseError(end);

@@ -78,7 +78,7 @@ public:
         ConfigRef, int, int &, std::vector<Heuristic *> &);
     typedef OpenList<state_var_t *> *(*OpenListFactory)(
         ConfigRef, int, int &);
-    typedef LandmarksGraph *(*LandmarksGraphFactory)(
+    typedef LandmarksGraph *(*LandmarkGraphFactory)(
         ConfigRef, int, int &, bool);
 private:
     std::map<std::string, Heuristic *> predefined_heuristics;
@@ -87,7 +87,7 @@ private:
     std::map<std::string, EngineFactory> engine_map;
     std::map<std::string, ScalarEvalFactory> scalar_evaluator_map;
     std::map<std::string, SynergyFactory> synergy_map;
-    std::map<std::string, LandmarksGraphFactory> lm_graph_map;
+    std::map<std::string, LandmarkGraphFactory> lm_graph_map;
 
     static OptionParser *instance_;
     OptionParser() {}
@@ -108,7 +108,7 @@ public:
     void register_scalar_evaluator(
         const std::string &key, ScalarEvalFactory func);
     void register_lm_graph_factory(
-        const std::string &key, LandmarksGraphFactory func);
+        const std::string &key, LandmarkGraphFactory func);
     void register_synergy(const std::string &key, SynergyFactory func);
     void predefine_heuristic(const char *str);
     void predefine_lm_graph(const char *str);

@@ -144,7 +144,7 @@ public:
                              const State &state);
 
     static ScalarEvaluator *create(const std::vector<string> &config,
-                                   int start, int &end, bool dry_run = false);
+                                   int start, int &end, bool dry_run);
 };
 
 #endif

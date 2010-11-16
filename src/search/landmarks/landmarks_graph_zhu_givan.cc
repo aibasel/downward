@@ -13,7 +13,7 @@
 
 using namespace __gnu_cxx;
 
-static LandmarksGraphPlugin landmarks_graph_new_plugin(
+static LandmarkGraphPlugin landmarks_graph_zhu_givan_plugin(
     "lmgraph_zhu_givan", LandmarksGraphZhuGivan::create);
 
 void LandmarksGraphZhuGivan::generate_landmarks() {

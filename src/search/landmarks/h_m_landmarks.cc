@@ -1,7 +1,7 @@
 #include "h_m_landmarks.h"
 #include "../plugin.h"
 
-static LandmarksGraphPlugin landmarks_graph_new_plugin(
+static LandmarkGraphPlugin h_m_landmarks_graph_plugin(
     "lmgraph_hm", HMLandmarks::create);
 
 std::ostream & operator<<(std::ostream &os, const Fluent &p) {
@@ -773,7 +773,7 @@ void HMLandmarks::compute_h_m_landmarks() {
 
             // add this action to the local action landmarks
             // (if action landmarks are enabled).
-            if (use_action_landmarks)
+            if (discover_action_landmarks)
                 insert_into(local_action_landmarks, op_index);
 
             for (it = action.eff.begin(); it != action.eff.end(); ++it) {
@@ -1066,7 +1066,7 @@ LandmarksGraph *HMLandmarks::create(
             option_parser.add_int_option("m", &m, "m (as in h^m)");
 
             option_parser.parse_options(config, end, end, dry_run);
-            end++;
+            ++end;
         }
         if (config[end] != ")")
             throw ParseError(end);
