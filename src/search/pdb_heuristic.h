@@ -2,6 +2,7 @@
 #define PDB_HEURISTIC_H
 
 #include "heuristic.h"
+#include <queue>
 using namespace std;
 
 class Edge {
@@ -12,13 +13,11 @@ public:
 };
 
 class AbstractState {
-    vector<int> variable_values;
+    map<int, int> variable_values;
 public:
-    map<int, int> variable_to_index_mapping;
-    map<int, int> index_to_variable_mapping;
-    AbstractState(vector<int> var_vals, vector<int> pattern);
+    AbstractState(map<int, int> var_vals);
     AbstractState(const State &state, vector<int> pattern);
-    vector<int> get_variable_values() const;
+    map<int, int> get_variable_values() const;
     bool is_goal(vector<pair<int, int> > abstract_goal) const;
     void dump() const;
 };
@@ -26,29 +25,36 @@ public:
 class Operator;
 typedef pair<int, pair<int, int> > PreEffect;
 class AbstractOperator {
-    vector<int> pattern; // only use: in order to construct new AbstractState, which unfortunately needs a pattern for the moment
     vector<PreEffect> pre_effect;
 public:
     AbstractOperator(Operator &op, vector<int> pattern);
     bool is_applicable(const AbstractState &abstract_state) const;
-    const AbstractState apply_operator(const AbstractState &abstract_state);
+    AbstractState apply_operator(const AbstractState &abstract_state) const;
     void dump() const;
 };
 
+typedef pair<int, int> Node;
+struct compare {
+    bool operator()(Node a, Node b) const {
+        return a.second > b.second;
+    }
+};
+#define QUITE_A_LOT 1000000000
 class PDBAbstraction {
     vector<int> pattern;
     size_t size;
     vector<int> distances;
-    vector<int> abstract_goal_states;
     vector<vector<Edge > > back_edges;
     vector<int> n_i;
-    int hash_index(const AbstractState &state);
-    const AbstractState *inv_hash_index(int index);
+    priority_queue<Node, vector<Node>, compare> pq;
+    int hash_index(const AbstractState &state) const;
+    AbstractState inv_hash_index(int index) const;
 public:
     PDBAbstraction(vector<int> pattern);
     void create_pdb();
     void compute_goal_distances();
-    int get_heuristic_value(const State &state);
+    int get_heuristic_value(const State &state) const;
+    void dump() const;
 };
 
 class PDBHeuristic : public Heuristic {
