@@ -10,11 +10,12 @@
 
 // AbstractState --------------------------------------------------------------
 
-AbstractState::AbstractState(map<int, int> var_vals) {
+AbstractState::AbstractState(vector<int> var_vals) {
     variable_values = var_vals;
 }
 
-AbstractState::AbstractState(const State &state, vector<int> pattern) {
+AbstractState::AbstractState(const State &state, const vector<int> &pattern) {
+    variable_values = vector<int>(g_variable_name.size(), -100);
     for (size_t i = 0; i < pattern.size(); i++) {
         int var = pattern[i];
         int val = state[var];
@@ -22,15 +23,15 @@ AbstractState::AbstractState(const State &state, vector<int> pattern) {
     }
 }
 
-map<int, int> AbstractState::get_variable_values() const {
+vector<int> AbstractState::get_variable_values() const {
     return variable_values;
 }
 
-bool AbstractState::is_goal(vector<pair<int, int> > abstract_goal) const {
+bool AbstractState::is_goal(const vector<pair<int, int> > &abstract_goal) const {
     for (size_t i = 0; i < abstract_goal.size(); i++) {
         int var = abstract_goal[i].first;
         int val = abstract_goal[i].second;
-        if (val != variable_values.find(var)->second) {
+        if (val != variable_values[var]) {
             return false;
         }
     }
@@ -39,16 +40,17 @@ bool AbstractState::is_goal(vector<pair<int, int> > abstract_goal) const {
 
 void AbstractState::dump() const {
     cout << "AbstractState: " << endl;
-    map<int, int> copy_map(variable_values);
-    for (map<int, int>::iterator it = copy_map.begin(); it != copy_map.end(); it++) {
-        cout << "Variable: " <<  it->first << " (True name: " 
-            << g_variable_name[it->first] << ") Value: " << it->second << endl;
+    for (size_t i = 0; i < variable_values.size();  i++) {
+        if (variable_values[i] == -100)
+            continue;
+        cout << "Variable: " << i << " (True name: " 
+        << g_variable_name[i] << ") Value: " << variable_values[i] << endl;
     }
 }
 
 // AbstractOperator -----------------------------------------------------------
 
-AbstractOperator::AbstractOperator(Operator &o, vector<int> pattern) {
+AbstractOperator::AbstractOperator(const Operator &o, vector<int> pattern) {
     const vector<PrePost> pre_post = o.get_pre_post();
     pre_effect = vector<PreEffect>();
     for (size_t i = 0; i < pre_post.size(); i++) {
@@ -72,7 +74,7 @@ bool AbstractOperator::is_applicable(const AbstractState &abstract_state) const 
         int pre = pre_effect[i].second.first;
         assert(var >= 0 && var < g_variable_name.size());
         assert(pre == -1 || (pre >= 0 && pre < g_variable_domain[var]));
-        if (!(pre == -1 || abstract_state.get_variable_values()[var] == pre))
+        if (!(pre == -1 || abstract_state[var] == pre))
             return false;
     }
     return true;
@@ -80,7 +82,7 @@ bool AbstractOperator::is_applicable(const AbstractState &abstract_state) const 
 
 AbstractState AbstractOperator::apply_operator(const AbstractState &abstract_state) const {
     assert(is_applicable(abstract_state));
-    map<int, int> variable_values = abstract_state.get_variable_values();
+    vector<int> variable_values = abstract_state.get_variable_values();
     for (size_t i = 0; i < pre_effect.size(); i++) {
         int var = pre_effect[i].first;
         int post = pre_effect[i].second.second;
@@ -134,19 +136,25 @@ void PDBAbstraction::create_pdb() {
     }
     for (size_t i = 0; i < size; i++) {
         AbstractState abstract_state = inv_hash_index(i);
+        //abstract_state.dump();
         if (abstract_state.is_goal(abstracted_goal)) {
             pq.push(make_pair(i, 0));
         }
         else {
             pq.push(make_pair(i, QUITE_A_LOT));
         }
-        for (size_t j = 0; j < operators.size(); j++){
-            if (operators[j]->is_applicable(abstract_state)) {;
+        for (size_t j = 0; j < operators.size(); j++) {
+            if (operators[j]->is_applicable(abstract_state)) {
+                //operators[j]->dump();
+                //cout << "Operator applicable, resulting next state:" << endl;
                 AbstractState next_state = operators[j]->apply_operator(abstract_state);
+                //next_state.dump();
+                //cout << endl;
                 int state_index = hash_index(next_state);
                 back_edges[state_index].push_back(Edge(&(g_operators[j]), i));
             }
         }
+        //cout << endl;
     }
 }
 
@@ -175,20 +183,20 @@ void PDBAbstraction::compute_goal_distances() {
 int PDBAbstraction::hash_index(const AbstractState &abstract_state) const {
     int index = 0;
     for (int i = 0;i < pattern.size();i++) {
-        index += n_i[i]*abstract_state.get_variable_values()[pattern[i]];
+        index += n_i[i]*abstract_state[pattern[i]];
     }
     return index;
 }
 
 AbstractState PDBAbstraction::inv_hash_index(int index) const {
-    map<int, int> var_vals;
+    vector<int> variable_values(g_variable_name.size(), -100);
     for (int n = 1;n < pattern.size();n++) {
         int d = index%n_i[n];
-        var_vals[pattern[n-1]] = (int) d/n_i[n-1];
+        variable_values[pattern[n-1]] = (int) d/n_i[n-1];
         index -= d;
     }
-    var_vals[pattern[pattern.size()-1]] = (int) index/n_i[pattern.size()-1];
-    return AbstractState(var_vals);
+    variable_values[pattern[pattern.size()-1]] = (int) index/n_i[pattern.size()-1];
+    return AbstractState(variable_values);
 }
 
 int PDBAbstraction::get_heuristic_value(const State &state) const {

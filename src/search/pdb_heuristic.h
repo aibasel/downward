@@ -13,13 +13,14 @@ public:
 };
 
 class AbstractState {
-    map<int, int> variable_values;
+    vector<int> variable_values;
 public:
-    AbstractState(map<int, int> var_vals);
-    AbstractState(const State &state, vector<int> pattern);
-    map<int, int> get_variable_values() const;
-    bool is_goal(vector<pair<int, int> > abstract_goal) const;
+    AbstractState(vector<int> var_vals);
+    AbstractState(const State &state, const vector<int> &pattern);
+    vector<int> get_variable_values() const;
+    bool is_goal(const vector<pair<int, int> > &abstract_goal) const;
     void dump() const;
+    int operator[](int index) const { return variable_values[index]; }
 };
 
 class Operator;
@@ -27,7 +28,7 @@ typedef pair<int, pair<int, int> > PreEffect;
 class AbstractOperator {
     vector<PreEffect> pre_effect;
 public:
-    AbstractOperator(Operator &op, vector<int> pattern);
+    AbstractOperator(const Operator &op, vector<int> pattern);
     bool is_applicable(const AbstractState &abstract_state) const;
     AbstractState apply_operator(const AbstractState &abstract_state) const;
     void dump() const;
