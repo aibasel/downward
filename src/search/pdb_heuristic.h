@@ -13,22 +13,22 @@ public:
 };
 
 class AbstractState {
-    vector<int> variable_values;
+    map<int, int> variable_values; // maps variable to values
 public:
-    AbstractState(vector<int> var_vals);
-    AbstractState(const State &state, const vector<int> &pattern);
-    vector<int> get_variable_values() const;
+    AbstractState(map<int, int> var_vals); // for construction after applying an operator
+    AbstractState(const State &state, const vector<int> &pattern); // for construction from a concrete state
+    map<int, int> get_variable_values() const;
     bool is_goal(const vector<pair<int, int> > &abstract_goal) const;
     void dump() const;
-    int operator[](int index) const { return variable_values[index]; }
 };
 
 class Operator;
 typedef pair<int, pair<int, int> > PreEffect;
 class AbstractOperator {
-    vector<PreEffect> pre_effect;
+    vector<PreEffect> pre_effect; // pair<int, pair<int, int> > : variable with value before and after operator.
+        // Prevail (see operator.cc) is assumed to be non-existent, as we deal with SAS+ tasks.
 public:
-    AbstractOperator(const Operator &op, vector<int> pattern);
+    AbstractOperator(const Operator &op, const vector<int> &pattern);
     bool is_applicable(const AbstractState &abstract_state) const;
     AbstractState apply_operator(const AbstractState &abstract_state) const;
     void dump() const;
@@ -41,26 +41,28 @@ struct compare {
     }
 };
 #define QUITE_A_LOT 1000000000
+// Impelements a single PDB
 class PDBAbstraction {
     vector<int> pattern;
-    size_t size;
-    vector<int> distances;
-    vector<vector<Edge > > back_edges;
-    vector<int> n_i;
+    size_t size; // number of abstract states
+    vector<int> distances; // final h-values for abstract-states
+    vector<vector<Edge > > back_edges; // contains the abstract state space in form of a graph
+    vector<int> n_i; 
     priority_queue<Node, vector<Node>, compare> pq;
-    int hash_index(const AbstractState &state) const;
-    AbstractState inv_hash_index(int index) const;
+    int hash_index(const AbstractState &state) const; // maps an abstract state to an index
+    AbstractState inv_hash_index(int index) const; // inverts the hash-index-function
 public:
     PDBAbstraction(vector<int> pattern);
-    void create_pdb();
-    void compute_goal_distances();
-    int get_heuristic_value(const State &state) const;
+    void create_pdb(); // builds the graph-structure and everything needed for the backward-search
+    void compute_goal_distances(); // does a dijkstra-backward-search
+    int get_heuristic_value(const State &state) const; // returns the precomputed h-values for a 
+        // concrete state when called from PDBHeuristic
     void dump() const;
 };
 
 class PDBHeuristic : public Heuristic {
     PDBAbstraction *pdb_abstraction;
-    void verify_no_axioms_no_cond_effects() const;
+    void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
