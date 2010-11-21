@@ -49,19 +49,37 @@ class PDBAbstraction {
     vector<vector<Edge > > back_edges; // contains the abstract state space in form of a graph
     vector<int> n_i; 
     priority_queue<Node, vector<Node>, compare> pq;
+    void create_pdb(); // builds the graph-structure and everything needed for the backward-search
+    void compute_goal_distances(); // does a dijkstra-backward-search
     int hash_index(const AbstractState &state) const; // maps an abstract state to an index
     AbstractState inv_hash_index(int index) const; // inverts the hash-index-function
 public:
     PDBAbstraction(vector<int> pattern);
-    void create_pdb(); // builds the graph-structure and everything needed for the backward-search
-    void compute_goal_distances(); // does a dijkstra-backward-search
     int get_heuristic_value(const State &state) const; // returns the precomputed h-values for a 
         // concrete state when called from PDBHeuristic
     void dump() const;
 };
 
+class CanonicalHeuristic {
+    vector<vector<int> > pattern_collection;
+    vector<vector<int> > cgraph;
+    vector<vector<int> > max_cliques;
+    vector<int> q_clique;
+    bool are_additive(int pattern1, int pattern2); // better name for are_additive?
+    void build_cgraph();
+    void compute_maximal_cliques();
+    int get_maxi_vertex(vector<int> &subg, const vector<int> &cand); // TODO find nicer name :)
+    void print_cgraph();
+    void expand(vector<int> &subg, vector<int> &cand);
+public:
+    CanonicalHeuristic(vector<vector<int> > pat_coll);
+    int get_heuristic_value(const State &state) const;
+    void print_max_cliques();
+};
+
 class PDBHeuristic : public Heuristic {
     PDBAbstraction *pdb_abstraction;
+    //CanonicalHeuristic *canonical_heuristic;
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
 protected:
     virtual void initialize();
