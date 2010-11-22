@@ -152,7 +152,7 @@ POSTLINKOPT_PROFILE  =
 ## Define the default target up here so that the LP stuff below
 ## doesn't define a default target.
 
-default: release
+default: debug
 
 ifeq ($(USE_LP),1)
 

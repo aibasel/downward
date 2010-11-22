@@ -55,25 +55,27 @@ class PDBAbstraction {
     AbstractState inv_hash_index(int index) const; // inverts the hash-index-function
 public:
     PDBAbstraction(vector<int> pattern);
-    int get_heuristic_value(const State &state) const; // returns the precomputed h-values for a 
-        // concrete state when called from PDBHeuristic
+    int get_heuristic_value(const State &state) const; // returns the precomputed h-value (optimal cost 
+        // in the abstraction induced by the pattern) for a state
     void dump() const;
 };
 
+
+// Implements the canonical heuristic function.
 class CanonicalHeuristic {
     vector<vector<int> > pattern_collection;
-    vector<vector<int> > cgraph;
-    vector<vector<int> > max_cliques;
+    vector<vector<int> > cgraph; // conflict graph for the pattern collection
+    vector<vector<int> > max_cliques; // final computed max_cliques
     vector<int> q_clique;
-    bool are_additive(int pattern1, int pattern2);
+    bool are_additive(int pattern1, int pattern2) const;
     void build_cgraph();
-    void compute_maximal_cliques();
-    int get_maxi_vertex(vector<int> &subg, const vector<int> &cand); // TODO find nicer name :)
-    void expand(vector<int> &subg, vector<int> &cand);
+    int get_maxi_vertex(const vector<int> &subg, const vector<int> &cand) const; // TODO find nicer name :)
+    void expand(vector<int> &subg, vector<int> &cand); // implements the CLIQUES-algorithmn from Tomita et al
 public:
     CanonicalHeuristic(vector<vector<int> > pat_coll);
-    int get_heuristic_value(const State &state) const;
-    void dump();
+    int get_heuristic_value(const State &state) const; // returns the canonical heuristic value (with respect
+        // to the pattern collection) for a state
+    void dump() const;
 };
 
 class PDBHeuristic : public Heuristic {
@@ -86,8 +88,7 @@ protected:
 public:
     PDBHeuristic();
     ~PDBHeuristic();
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
+    static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
 };
 
 #endif
