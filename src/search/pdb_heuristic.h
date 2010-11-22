@@ -65,16 +65,15 @@ class CanonicalHeuristic {
     vector<vector<int> > cgraph;
     vector<vector<int> > max_cliques;
     vector<int> q_clique;
-    bool are_additive(int pattern1, int pattern2); // better name for are_additive?
+    bool are_additive(int pattern1, int pattern2);
     void build_cgraph();
     void compute_maximal_cliques();
     int get_maxi_vertex(vector<int> &subg, const vector<int> &cand); // TODO find nicer name :)
-    void print_cgraph();
     void expand(vector<int> &subg, vector<int> &cand);
 public:
     CanonicalHeuristic(vector<vector<int> > pat_coll);
     int get_heuristic_value(const State &state) const;
-    void print_max_cliques();
+    void dump();
 };
 
 class PDBHeuristic : public Heuristic {

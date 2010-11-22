@@ -214,8 +214,54 @@ CanonicalHeuristic::CanonicalHeuristic(vector<vector<int> > pat_coll) {
     pattern_collection = pat_coll;
 }
 
+
+bool::CanonicalHeuristic::are_additive(int pattern1, int pattern2) {
+    vector<int> p1 = pattern_collection[pattern1];
+    vector<int> p2 = pattern_collection[pattern2];
+
+    for (size_t i = 0; i < p1.size(); i++) {
+        for (size_t j = 0; j < p2.size(); j++) {
+            // now check which operators affect pattern1
+            bool p1_affected = false;
+            for (size_t k = 0; k < g_operators.size(); k++) {
+                const Operator &o = g_operators[k];
+                const vector<PrePost> effects = o.get_pre_post();
+                for (size_t l = 0; l < effects.size(); l++) {
+                    // every effect affect one specific variable
+                    int var = effects[l].var;
+                    // we have to check if this variable is in our pattern
+                    for (size_t m = 0; m < p1.size(); m++) {
+                        if (var == p1[m]) {
+                            // this operator affects pattern 1
+                            p1_affected = true;
+                            break;
+                        }
+                    }
+                    if (p1_affected) {
+                        break;
+                    }
+                }
+                if (p1_affected) {
+                    // check if the same operator also affects pattern 2
+                    for (size_t l = 0; l < effects.size(); l++) {
+                        int var = effects[l].var;
+                        for (size_t m = 0; m < p2.size(); m++) {
+                            if (var == p2[m]) {
+                                // this operator affects also pattern 2
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 void CanonicalHeuristic::build_cgraph() {
-    //vector<vector<int> > cgraph = vector<vector<int> >(10);
+    /*
     vector<int> p0;
     vector<int> p1;
     vector<int> p2;
@@ -244,11 +290,25 @@ void CanonicalHeuristic::build_cgraph() {
     cgraph.push_back(p7);
     p8.assign(edges+27, edges+30);
     cgraph.push_back(p8);
+   */
     
-    print_cgraph();
+    // initialize compatibility graph
+    cgraph = vector<vector<int> >(pattern_collection.size());
+
+    for (size_t i = 0; i < pattern_collection.size(); i++) {
+        for (size_t j = i+1; j < pattern_collection.size(); j++) {
+            if (are_additive(i,j)) {
+                // if the two patterns are additive there is an edge in the compatibility graph
+                cgraph[i].push_back(j);
+                cgraph[j].push_back(i);
+            }
+        }
+    }
 }
 
-void::CanonicalHeuristic::print_cgraph() {
+void::CanonicalHeuristic::dump() {
+    // print compatibility graph
+    cout << "Compatibility graph" << endl;
     for (size_t i = 0; i < cgraph.size(); i++) {
         cout << "[ ";
         for (size_t j = 0; j < cgraph[i].size(); j++) {
@@ -256,23 +316,22 @@ void::CanonicalHeuristic::print_cgraph() {
         }
         cout << "]" << endl;
     }
-}
-
-void::CanonicalHeuristic::print_max_cliques() {
+    // print maximal cliques
+    cout << "Maximal cliques" << endl;
     if (max_cliques.size() == 0) {
-        cout << "no max cliques";
-    }
-    else {
-        cout << "max cliques are ";
-    }
-    for (size_t i = 0; i < max_cliques.size(); i++) {
-        cout << "[ ";
-        for (size_t j = 0; j < max_cliques[i].size(); j++) {
-            cout << max_cliques[i][j] << " ";
-        }
-        cout << "] ";
-    }
-    cout << endl;
+           cout << "no max cliques";
+       }
+       else {
+           cout << "max cliques are ";
+       }
+       for (size_t i = 0; i < max_cliques.size(); i++) {
+           cout << "[ ";
+           for (size_t j = 0; j < max_cliques[i].size(); j++) {
+               cout << max_cliques[i][j] << " ";
+           }
+           cout << "] ";
+       }
+       cout << endl;
 }
 
 int::CanonicalHeuristic::get_maxi_vertex(vector<int> &subg, const vector<int> &cand) {
@@ -337,13 +396,13 @@ void::CanonicalHeuristic::expand(vector<int> &subg, vector<int> &cand) {
 }
 
 int CanonicalHeuristic::get_heuristic_value(const State &state) const {
-    //TODO: h^C(state) = max_{D \in cliques(C)} \sum_{P \in D} h^P(state)
-    /*int max_val = 0;
+    // h^C(state) = max_{D \in cliques(C)} \sum_{P \in D} h^P(state)
+    int max_val = 0;
     for (size_t i = 0; i < max_cliques.size(); i++) {
-        vector<int> clique = max_cliques[i]; //TODO: check!
+        vector<int> clique = max_cliques[i];
         int h_val = 0;
         for (size_t j = 0; j < clique.size(); j++) {
-            int pattern = clique[j]; //TODO: check! a pattern is not a single int!
+            vector<int> pattern = pattern_collection[clique[j]];
             PDBAbstraction *pdb_abstraction = new PDBAbstraction(pattern);
             h_val += pdb_abstraction->get_heuristic_value(state);
         }
@@ -351,7 +410,7 @@ int CanonicalHeuristic::get_heuristic_value(const State &state) const {
             max_val = h_val;
         }
     }
-    return max_val;*/
+    return max_val;
     //dummy for compiling
     cout << state[0] << endl;
     return 0;
