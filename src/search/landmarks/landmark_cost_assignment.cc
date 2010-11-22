@@ -344,7 +344,7 @@ void LandmarkOptimalSharedCostAssignment::assign_costs() {
         //int solve_ms = (end_solve.tms_utime - end_build.tms_utime) * 10;
 
         //cout << "Build: " << build_ms << " , Solve: " << solve_ms << " , Total: " << total_ms << "  , Iterations: " << si->getIterationCount() << endl;;
-    }catch (CoinError &ex) {
+    } catch (CoinError &ex) {
         cerr << "Exception:" << ex.message() << endl
              << " from method " << ex.methodName() << endl
              << " from class " << ex.className() << endl;
@@ -523,7 +523,7 @@ void LandmarkEfficientOptimalSharedCostAssignment::assign_costs() {
 
         cout << "Build: " << build_ms << " , Solve: " << solve_ms << " , Total: " << total_ms << endl;
         */
-    }catch (CoinError &ex) {
+    } catch (CoinError &ex) {
         cerr << "Exception:" << ex.message() << endl
              << " from method " << ex.methodName() << endl
              << " from class " << ex.className() << endl;
