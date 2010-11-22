@@ -91,7 +91,7 @@ SearchEngine *OptionParser::parse_search_engine(const char *str) {
     try {
         int end = 0;
         engine = parse_search_engine(tokens, 0, end, false);
-    } catch (ParseError e) {
+    } catch (ParseError &e) {
         print_parse_error(tokens, e);
         exit(2);
     }
@@ -112,7 +112,7 @@ void OptionParser::predefine_heuristic(const char *str) {
     tokenize_options(str, tokens);
     try {
         predefine_heuristic(tokens);
-    } catch (ParseError e) {
+    } catch (ParseError &e) {
         print_parse_error(tokens, e);
         exit(2);
     }
