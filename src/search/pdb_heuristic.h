@@ -79,8 +79,8 @@ public:
 };
 
 class PDBHeuristic : public Heuristic {
-    PDBAbstraction *pdb_abstraction;
-    //CanonicalHeuristic *canonical_heuristic;
+    //PDBAbstraction *pdb_abstraction;
+    CanonicalHeuristic *canonical_heuristic;
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
 protected:
     virtual void initialize();

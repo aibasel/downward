@@ -213,7 +213,16 @@ void PDBAbstraction::dump() const {
 CanonicalHeuristic::CanonicalHeuristic(vector<vector<int> > pat_coll) {
     pattern_collection = pat_coll;
     build_cgraph();
-    // TODO: correct call to expand(V, V)
+    cout << "built cgraph." << endl;
+    vector<int> vertices_1(pat_coll.size());
+    vector<int> vertices_2(pat_coll.size());
+    for (size_t i = 0; i < pat_coll.size(); i++) {
+        vertices_1[i] = i;
+        vertices_2[i] = i;
+    }
+    expand(vertices_1, vertices_2);
+    cout << "expanded." << endl;
+    dump();
 }
 
 
@@ -224,8 +233,8 @@ bool CanonicalHeuristic::are_additive(int pattern1, int pattern2) const {
     for (size_t i = 0; i < p1.size(); i++) {
         for (size_t j = 0; j < p2.size(); j++) {
             // now check which operators affect pattern1
-            bool p1_affected = false;
             for (size_t k = 0; k < g_operators.size(); k++) {
+                bool p1_affected = false;
                 const Operator &o = g_operators[k];
                 const vector<PrePost> effects = o.get_pre_post();
                 for (size_t l = 0; l < effects.size(); l++) {
@@ -236,6 +245,12 @@ bool CanonicalHeuristic::are_additive(int pattern1, int pattern2) const {
                         if (var == p1[m]) {
                             // this operator affects pattern 1
                             p1_affected = true;
+                            cout << "operator:" << endl;
+                            o.dump();
+                            cout << "affects pattern:" << endl;
+                            for (size_t n = 0; n < p1.size(); n++) {
+                                cout << "variable: " << p1[n] << " (real name: " << g_variable_name[p1[n]] << ")" << endl;
+                            }
                             break;
                         }
                     }
@@ -250,10 +265,20 @@ bool CanonicalHeuristic::are_additive(int pattern1, int pattern2) const {
                         for (size_t m = 0; m < p2.size(); m++) {
                             if (var == p2[m]) {
                                 // this operator affects also pattern 2
+                                cout << "and also affects pattern:" << endl;
+                                for (size_t n = 0; n < p2.size(); n++) {
+                                    cout << "variable: " << p2[n] << " (real name: " << g_variable_name[p2[n]] << ")" << endl;
+                                }
+                                cout << endl;
                                 return false;
                             }
                         }
                     }
+                    cout << "but doesn't affect pattern:" << endl;
+                    for (size_t n = 0; n < p2.size(); n++) {
+                        cout << "variable: " << p2[n] << " (real name: " << g_variable_name[p2[n]] << ")" << endl;
+                    }
+                    cout << endl;
                 }
             }
         }
@@ -301,6 +326,7 @@ void CanonicalHeuristic::build_cgraph() {
         for (size_t j = i+1; j < pattern_collection.size(); j++) {
             if (are_additive(i,j)) {
                 // if the two patterns are additive there is an edge in the compatibility graph
+                cout << "pattern (index) " << i << " additive with " << "pattern (index) " << j << endl;
                 cgraph[i].push_back(j);
                 cgraph[j].push_back(i);
             }
@@ -343,7 +369,7 @@ void CanonicalHeuristic::expand(vector<int> &subg, vector<int> &cand) {
         vector<int>::iterator it_ext = ext_u.begin();
         vector<int>::iterator it_cand = cand.begin();
         
-        while (*it_ext > -1) { // while cand - gamma(u) is not empty
+        while (*it_ext > -1 && it_ext != ext_u.end()) { // while cand - gamma(u) is not empty
             
             int q = *it_ext; // q is a vertex in cand - gamma(u)
             //cout << q << ",";
@@ -459,29 +485,37 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
 void PDBHeuristic::initialize() {
     cout << "Initializing pattern database heuristic..." << endl;// << endl;
     verify_no_axioms_no_cond_effects();
-    int patt[2] = {10, 11};
+    /*int patt[2] = {10, 11};
     vector<int> pattern(patt, patt + sizeof(patt) / sizeof(int));
     //cout << "Try creating a new PDBAbstraction" << endl << endl;
-    pdb_abstraction = new PDBAbstraction(pattern);
+    pdb_abstraction = new PDBAbstraction(pattern);*/
     //pdb_abstraction->dump();
-    /*// probBlocks-6-2.pddl
-    int patt_1[2] = {10, 11}; // on(b, c), on(e, f)
-    vector<int> pattern_1(patt, patt + sizeof(patt) / sizeof(int));
+    // probBlocks-6-2.pddl
+    /*int patt_1[2] = {10, 11}; // on(b, c), on(e, f)
+    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[2] = {9, 10}; // on(f, a), on(b, c)
-    vector<int> pattern_2(patt, patt + sizeof(patt) / sizeof(int));
+    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
     int patt_3[2] = {8, 12}; // on(c, d), on(a, b)
-    vector<int> pattern_3(patt, patt + sizeof(patt) / sizeof(int));
+    vector<int> pattern_3(patt_3, patt_3 + sizeof(patt_3) / sizeof(int));
     vector<vector<int> > pattern_collection(3);
     pattern_collection[0] = pattern_1;
     pattern_collection[1] = pattern_2;
-    pattern_collection[2] = pattern_3
-    canonical_heuristic = new CanonicalHeuristic(pattern_collection);*/
+    pattern_collection[2] = pattern_3;*/
+    
+    int patt_1[1] = {2};
+    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
+    int patt_2[1] = {3};
+    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
+    vector<vector<int> > pattern_collection(2);
+    pattern_collection[0] = pattern_1;
+    pattern_collection[1] = pattern_2;
+    canonical_heuristic = new CanonicalHeuristic(pattern_collection);
     cout << "Done initializing." << endl;
 }
 
 int PDBHeuristic::compute_heuristic(const State &state) {
-    return pdb_abstraction->get_heuristic_value(state);
-    //return canonical_heuristic->get_heuristic_value(state);
+    //return pdb_abstraction->get_heuristic_value(state);
+    return canonical_heuristic->get_heuristic_value(state);
 }
 
 ScalarEvaluator *PDBHeuristic::create(const std::vector<string> &config, int start, int &end, bool dry_run) {
