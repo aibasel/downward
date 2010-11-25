@@ -1,0 +1,69 @@
+begin_groups
+9
+group
+2
+8 1 at 2 tru2 apt2 
+8 0 at 2 tru2 pos2 
+group
+7
+5 2 in 2 obj13 apn1 
+5 5 in 2 obj13 tru2 
+5 6 in 2 obj13 tru1 
+5 4 at 2 obj13 apt2 
+5 1 at 2 obj13 pos2 
+5 0 at 2 obj13 apt1 
+5 3 at 2 obj13 pos1 
+group
+7
+4 2 in 2 obj11 apn1 
+4 4 in 2 obj11 tru2 
+4 0 in 2 obj11 tru1 
+4 1 at 2 obj11 apt2 
+4 3 at 2 obj11 pos2 
+4 6 at 2 obj11 apt1 
+4 5 at 2 obj11 pos1 
+group
+7
+3 0 in 2 obj23 apn1 
+3 4 in 2 obj23 tru2 
+3 6 in 2 obj23 tru1 
+3 2 at 2 obj23 apt2 
+3 1 at 2 obj23 pos2 
+3 3 at 2 obj23 apt1 
+3 5 at 2 obj23 pos1 
+group
+7
+2 0 in 2 obj21 apn1 
+2 5 in 2 obj21 tru2 
+2 3 in 2 obj21 tru1 
+2 2 at 2 obj21 apt2 
+2 4 at 2 obj21 pos2 
+2 6 at 2 obj21 apt1 
+2 1 at 2 obj21 pos1 
+group
+2
+7 0 at 2 apn1 apt2 
+7 1 at 2 apn1 apt1 
+group
+7
+1 3 in 2 obj12 apn1 
+1 5 in 2 obj12 tru2 
+1 0 in 2 obj12 tru1 
+1 6 at 2 obj12 apt2 
+1 1 at 2 obj12 pos2 
+1 2 at 2 obj12 apt1 
+1 4 at 2 obj12 pos1 
+group
+2
+6 1 at 2 tru1 apt1 
+6 0 at 2 tru1 pos1 
+group
+7
+0 3 in 2 obj22 apn1 
+0 2 in 2 obj22 tru2 
+0 4 in 2 obj22 tru1 
+0 5 at 2 obj22 apt2 
+0 6 at 2 obj22 pos2 
+0 1 at 2 obj22 apt1 
+0 0 at 2 obj22 pos1 
+end_groups
