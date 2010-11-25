@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <queue>
+#include "timer.h"
 
 using namespace std;
 
@@ -160,6 +161,7 @@ PDBAbstraction::PDBAbstraction(vector<int> pat) {
     for (size_t i = 0; i < pattern.size(); i++) {
         num_states *= g_variable_domain[pattern[i]];
     }
+    cout << "Number of states:" << num_states << endl;
     distances = vector<int>(num_states, QUITE_A_LOT);
     create_pdb();
 }
@@ -540,10 +542,14 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
 void PDBHeuristic::initialize() {
     cout << "Initializing pattern database heuristic..." << endl;// << endl;
     verify_no_axioms_no_cond_effects();
-    int patt[2] = {10, 11};
+    int patt[] = {5, 6, 7, 8, 9, 10};
     vector<int> pattern(patt, patt + sizeof(patt) / sizeof(int));
     //cout << "Try creating a new PDBAbstraction" << endl << endl;
+    Timer timer;
+    timer();
     pdb_abstraction = new PDBAbstraction(pattern);
+    timer.stop();
+    cout << "PDB construction time: " << timer << endl;
     //pdb_abstraction->dump();
     // probBlocks-6-2.pddl
     /*int patt_1[2] = {10, 11}; // on(b, c), on(e, f)
