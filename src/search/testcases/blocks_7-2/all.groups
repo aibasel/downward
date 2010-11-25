@@ -1,0 +1,153 @@
+begin_groups
+15
+group
+8
+6 1 holding 1 a 
+6 5 ontable 1 a 
+6 4 on 2 a e 
+6 7 on 2 a g 
+6 2 on 2 a c 
+6 6 on 2 a d 
+6 0 on 2 a f 
+6 3 on 2 a b 
+group
+8
+6 1 holding 1 a 
+4 6 on 2 e a 
+5 7 on 2 g a 
+0 7 on 2 c a 
+1 2 on 2 d a 
+2 1 on 2 f a 
+3 3 on 2 b a 
+9 0 clear 1 a 
+group
+8
+5 1 holding 1 g 
+5 6 ontable 1 g 
+5 4 on 2 g e 
+5 3 on 2 g c 
+5 5 on 2 g d 
+5 2 on 2 g f 
+5 7 on 2 g a 
+5 0 on 2 g b 
+group
+8
+4 2 holding 1 e 
+4 7 ontable 1 e 
+4 4 on 2 e g 
+4 0 on 2 e c 
+4 3 on 2 e d 
+4 5 on 2 e f 
+4 6 on 2 e a 
+4 1 on 2 e b 
+group
+8
+3 1 holding 1 b 
+4 1 on 2 e b 
+5 0 on 2 g b 
+0 5 on 2 c b 
+1 6 on 2 d b 
+2 3 on 2 f b 
+6 3 on 2 a b 
+13 0 clear 1 b 
+group
+8
+3 1 holding 1 b 
+3 5 ontable 1 b 
+3 0 on 2 b e 
+3 2 on 2 b g 
+3 4 on 2 b c 
+3 6 on 2 b d 
+3 7 on 2 b f 
+3 3 on 2 b a 
+group
+8
+2 6 holding 1 f 
+2 0 ontable 1 f 
+2 5 on 2 f e 
+2 7 on 2 f g 
+2 4 on 2 f c 
+2 2 on 2 f d 
+2 1 on 2 f a 
+2 3 on 2 f b 
+group
+8
+5 1 holding 1 g 
+4 4 on 2 e g 
+0 6 on 2 c g 
+1 3 on 2 d g 
+2 7 on 2 f g 
+6 7 on 2 a g 
+3 2 on 2 b g 
+7 0 clear 1 g 
+group
+8
+1 7 holding 1 d 
+1 4 ontable 1 d 
+1 5 on 2 d e 
+1 3 on 2 d g 
+1 0 on 2 d c 
+1 1 on 2 d f 
+1 2 on 2 d a 
+1 6 on 2 d b 
+group
+8
+0 0 holding 1 c 
+4 0 on 2 e c 
+5 3 on 2 g c 
+1 0 on 2 d c 
+2 4 on 2 f c 
+6 2 on 2 a c 
+3 4 on 2 b c 
+12 0 clear 1 c 
+group
+8
+2 6 holding 1 f 
+4 5 on 2 e f 
+5 2 on 2 g f 
+0 1 on 2 c f 
+1 1 on 2 d f 
+6 0 on 2 a f 
+3 7 on 2 b f 
+10 0 clear 1 f 
+group
+8
+1 7 holding 1 d 
+4 3 on 2 e d 
+5 5 on 2 g d 
+0 3 on 2 c d 
+2 2 on 2 f d 
+6 6 on 2 a d 
+3 6 on 2 b d 
+14 0 clear 1 d 
+group
+8
+4 2 holding 1 e 
+5 1 holding 1 g 
+0 0 holding 1 c 
+1 7 holding 1 d 
+2 6 holding 1 f 
+6 1 holding 1 a 
+3 1 holding 1 b 
+8 0 handempty 0 
+group
+8
+4 2 holding 1 e 
+5 4 on 2 g e 
+0 2 on 2 c e 
+1 5 on 2 d e 
+2 5 on 2 f e 
+6 4 on 2 a e 
+3 0 on 2 b e 
+11 0 clear 1 e 
+group
+8
+0 0 holding 1 c 
+0 4 ontable 1 c 
+0 2 on 2 c e 
+0 6 on 2 c g 
+0 3 on 2 c d 
+0 1 on 2 c f 
+0 7 on 2 c a 
+0 5 on 2 c b 
+end_groups
