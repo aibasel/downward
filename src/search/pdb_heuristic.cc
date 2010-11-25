@@ -542,7 +542,7 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
 void PDBHeuristic::initialize() {
     cout << "Initializing pattern database heuristic..." << endl;// << endl;
     verify_no_axioms_no_cond_effects();
-    int patt[] = {0};
+    int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
     vector<int> pattern(patt, patt + sizeof(patt) / sizeof(int));
     //cout << "Try creating a new PDBAbstraction" << endl << endl;
     Timer timer;
