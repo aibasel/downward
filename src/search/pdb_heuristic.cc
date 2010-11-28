@@ -522,15 +522,15 @@ void PDBHeuristic::initialize() {
     pattern_collection[0] = pattern_1;*/
 
     //2. two patterns logistics00 6-2
-    int patt_1[3] = {3, 4, 5};
+    /*int patt_1[3] = {3, 4, 5};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[3] = {6, 7, 8};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
     vector<vector<int> > pattern_collection(2);
     pattern_collection[0] = pattern_1;
-    pattern_collection[1] = pattern_2;
+    pattern_collection[1] = pattern_2;*/
 
-    //3. three patterns
+    //3. three patterns logistics00 6-2
     /*int patt_1[2] = {3, 4};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[2] = {5, 6};
@@ -541,6 +541,60 @@ void PDBHeuristic::initialize() {
     pattern_collection[0] = pattern_1;
     pattern_collection[1] = pattern_2;
     pattern_collection[2] = pattern_3;*/
+
+    //1. one pattern driverlog 6
+    /*int patt_1[7] = {4, 5, 7, 9, 10, 11, 12};
+    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
+    vector<vector<int> > pattern_collection(1);
+    pattern_collection[0] = pattern_1;*/
+
+    //2. two patterns driverlog 6
+    /*int patt_1[3] = {4, 5, 7};
+    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
+    int patt_2[4] = {9, 10, 11, 12};
+    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
+    vector<vector<int> > pattern_collection(2);
+    pattern_collection[0] = pattern_1;
+    pattern_collection[1] = pattern_2;*/
+
+    //3. three patterns driverlog 6
+    /*int patt_1[2] = {4, 5};
+    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
+    int patt_2[2] = {7, 9};
+    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
+    int patt_3[3] = {10, 11, 12};
+    vector<int> pattern_3(patt_3, patt_3 + sizeof(patt_3) / sizeof(int));
+    vector<vector<int> > pattern_collection(3);
+    pattern_collection[0] = pattern_1;
+    pattern_collection[1] = pattern_2;
+    pattern_collection[2] = pattern_3;*/
+
+    //1. one pattern blocks 7-2
+    /*int patt_1[6] = {9, 10, 11, 12, 13, 14};
+    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
+    vector<vector<int> > pattern_collection(1);
+    pattern_collection[0] = pattern_1;*/
+
+    //2. two patterns blocks 7-2
+    /*int patt_1[3] = {9, 10, 11};
+    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
+    int patt_2[3] = {12, 13, 14};
+    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
+    vector<vector<int> > pattern_collection(2);
+    pattern_collection[0] = pattern_1;
+    pattern_collection[1] = pattern_2;*/
+
+    //3. three patterns blocks 7-2
+    int patt_1[2] = {9, 10};
+    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
+    int patt_2[2] = {11, 12};
+    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
+    int patt_3[2] = {13, 14};
+    vector<int> pattern_3(patt_3, patt_3 + sizeof(patt_3) / sizeof(int));
+    vector<vector<int> > pattern_collection(3);
+    pattern_collection[0] = pattern_1;
+    pattern_collection[1] = pattern_2;
+    pattern_collection[2] = pattern_3;
 
 
     canonical_heuristic = new CanonicalHeuristic(pattern_collection);

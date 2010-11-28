@@ -1,6 +1,6 @@
 int patt[] = {4, 5, 7, 9, 10, 11, 12};
 
-Kanonische Heuristikfunktion
+canonical heuristic function patterns
 //1. one pattern driverlog 6
 int patt_1[7] = {4, 5, 7, 9, 10, 11, 12};
 vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));

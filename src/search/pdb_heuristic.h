@@ -81,6 +81,7 @@ public:
     ~CanonicalHeuristic();
     std::map<int, PDBAbstraction> pattern_databases; // pattern in pattern collection --> final pdb
     //TODO: don't use maps!
+    //std::vector<PDBAbstraction> pattern_databases; // final pattern databases
     int get_heuristic_value(const State &state) const; // returns the canonical heuristic value (with respect
         // to the pattern collection) for a state
     void dump() const;
