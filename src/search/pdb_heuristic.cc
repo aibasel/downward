@@ -131,16 +131,14 @@ void PDBAbstraction::create_pdb() {
     n_i.reserve(size);
     variable_to_index.resize(g_variable_name.size());
     num_states = 1;
+    int p = 1;
     for (size_t i = 0; i < size; ++i) {
         num_states *= g_variable_domain[pattern[i]];
         
         variable_to_index[pattern[i]] = i;
         
-        int p = 1;
-        for (int j = 0; j < i; ++j) {
-            p *= g_variable_domain[pattern[j]];
-        }
         n_i.push_back(p);
+        p *= g_variable_domain[pattern[i]];
     }
     
     vector<AbstractOperator> operators;
@@ -223,10 +221,10 @@ AbstractState PDBAbstraction::inv_hash_index(int index) const {
     var_vals.resize(size);
     for (int n = 1; n < size; ++n) {
         int d = index % n_i[n];
-        var_vals[variable_to_index[pattern[n - 1]]] = (int) d / n_i[n - 1];
+        var_vals[variable_to_index[pattern[n - 1]]] = d / n_i[n - 1];
         index -= d;
     }
-    var_vals[variable_to_index[pattern[size - 1]]] = (int) index / n_i[size - 1];
+    var_vals[variable_to_index[pattern[size - 1]]] = index / n_i[size - 1];
     return AbstractState(var_vals);
 }
 
