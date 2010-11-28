@@ -79,9 +79,9 @@ class CanonicalHeuristic {
 public:
     explicit CanonicalHeuristic(const std::vector<std::vector<int> > &pat_coll);
     ~CanonicalHeuristic();
-    std::map<int, PDBAbstraction> pattern_databases; // pattern in pattern collection --> final pdb
+    //std::map<int, PDBAbstraction> pattern_databases; // pattern in pattern collection --> final pdb
     //TODO: don't use maps!
-    //std::vector<PDBAbstraction> pattern_databases; // final pattern databases
+    std::vector<PDBAbstraction> pattern_databases; // final pattern databases
     int get_heuristic_value(const State &state) const; // returns the canonical heuristic value (with respect
         // to the pattern collection) for a state
     void dump() const;

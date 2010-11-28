@@ -409,7 +409,8 @@ int CanonicalHeuristic::get_heuristic_value(const State &state) const {
         vector<int> clique = max_cliques[i];
         int h_val = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
-            PDBAbstraction pdb = pattern_databases.find(clique[j])->second;
+            //PDBAbstraction pdb = pattern_databases.find(clique[j])->second;
+            PDBAbstraction pdb = pattern_databases.at(clique[j]);
             h_val += pdb.get_heuristic_value(state);
         }
         if (h_val > max_val) {
@@ -549,13 +550,13 @@ void PDBHeuristic::initialize() {
     pattern_collection[0] = pattern_1;*/
 
     //2. two patterns driverlog 6
-    /*int patt_1[3] = {4, 5, 7};
+    int patt_1[3] = {4, 5, 7};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[4] = {9, 10, 11, 12};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
     vector<vector<int> > pattern_collection(2);
     pattern_collection[0] = pattern_1;
-    pattern_collection[1] = pattern_2;*/
+    pattern_collection[1] = pattern_2;
 
     //3. three patterns driverlog 6
     /*int patt_1[2] = {4, 5};
@@ -585,7 +586,7 @@ void PDBHeuristic::initialize() {
     pattern_collection[1] = pattern_2;*/
 
     //3. three patterns blocks 7-2
-    int patt_1[2] = {9, 10};
+    /*int patt_1[2] = {9, 10};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[2] = {11, 12};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
@@ -594,7 +595,7 @@ void PDBHeuristic::initialize() {
     vector<vector<int> > pattern_collection(3);
     pattern_collection[0] = pattern_1;
     pattern_collection[1] = pattern_2;
-    pattern_collection[2] = pattern_3;
+    pattern_collection[2] = pattern_3;*/
 
 
     canonical_heuristic = new CanonicalHeuristic(pattern_collection);
@@ -604,7 +605,8 @@ void PDBHeuristic::initialize() {
     timer();
     for (int i = 0; i < pattern_collection.size(); ++i) {
         PDBAbstraction pdb = PDBAbstraction(pattern_collection[i]);
-        canonical_heuristic->pattern_databases.insert(pair<int, PDBAbstraction>(i, pdb));
+        //canonical_heuristic->pattern_databases.insert(pair<int, PDBAbstraction>(i, pdb));
+        canonical_heuristic->pattern_databases.push_back(pdb);
     }
     timer.stop();
     cout << pattern_collection.size() << " pdbs constructed." << endl;
