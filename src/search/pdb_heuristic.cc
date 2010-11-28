@@ -216,8 +216,6 @@ size_t PDBAbstraction::hash_index(const AbstractState &abstract_state) const {
     return index;
 }
 
-// TODO we could probably calculate abstract states incrementally
-// This method is always called for i = 0, ..., num_states
 AbstractState PDBAbstraction::inv_hash_index(int index) const {
     vector<int> var_vals;
     var_vals.resize(size);
@@ -244,18 +242,22 @@ void PDBAbstraction::dump() const {
 
 // CanonicalHeuristic -----------------------------------------------------------------------------
 
-CanonicalHeuristic::CanonicalHeuristic(vector<vector<int> > pat_coll) {
-    pattern_collection = pat_coll;
+CanonicalHeuristic::CanonicalHeuristic(const vector<vector<int> > &pat_coll) : pattern_collection(pat_coll), number_patterns(pat_coll.size()) {
     build_cgraph();
     cout << "built cgraph." << endl;
-    vector<int> vertices_1(pat_coll.size());
-    vector<int> vertices_2(pat_coll.size());
-    for (size_t i = 0; i < pat_coll.size(); ++i) {
-        vertices_1[i] = i;
-        vertices_2[i] = i;
+    vector<int> vertices_1;
+    vertices_1.reserve(number_patterns);
+    vector<int> vertices_2;
+    vertices_2.reserve(number_patterns);
+    for (size_t i = 0; i < number_patterns; ++i) {
+        vertices_1.push_back(i);
+        vertices_2.push_back(i);
     }
-    expand(vertices_1, vertices_2);
+    vector<int> q_clique; // contains actual calculated maximal clique
+    q_clique.reserve(number_patterns);
+    max_cliques_expand(vertices_1, vertices_2, q_clique);
     cout << "expanded." << endl;
+    // TODO now we could forget cgraph, because we've got maximal cliques
     dump();
 }
 
@@ -322,12 +324,13 @@ bool CanonicalHeuristic::are_additive(int pattern1, int pattern2) const {
     return true;
 }
 
-void CanonicalHeuristic::build_cgraph() { 
+void CanonicalHeuristic::build_cgraph() {
     // initialize compatibility graph
-    cgraph = vector<vector<int> >(pattern_collection.size());
+    cgraph = vector<vector<int> >();
+    cgraph.resize(number_patterns);
 
-    for (size_t i = 0; i < pattern_collection.size(); i++) {
-        for (size_t j = i+1; j < pattern_collection.size(); j++) {
+    for (size_t i = 0; i < number_patterns; i++) {
+        for (size_t j = i+1; j < number_patterns; j++) {
             if (are_additive(i,j)) {
                 // if the two patterns are additive there is an edge in the compatibility graph
                 cout << "pattern (index) " << i << " additive with " << "pattern (index) " << j << endl;
@@ -359,7 +362,7 @@ int CanonicalHeuristic::get_maxi_vertex(const vector<int> &subg, const vector<in
     return vertex;
 }
 
-void CanonicalHeuristic::expand(vector<int> &subg, vector<int> &cand) {
+void CanonicalHeuristic::max_cliques_expand(vector<int> &subg, vector<int> &cand, vector<int> &q_clique) {
     if (subg[0] == -1) {
         //cout << "clique" << endl;
         max_cliques.push_back(q_clique);
@@ -387,7 +390,7 @@ void CanonicalHeuristic::expand(vector<int> &subg, vector<int> &cand) {
             vector<int> cand_q(cand.size(), -1);
             set_intersection(it_cand, cand.end(), cgraph[q].begin(), cgraph[q].end(), cand_q.begin());
             
-            expand(subg_q, cand_q);
+            max_cliques_expand(subg_q, cand_q, q_clique);
             
             // remove q from cand --> cand = cand - q
             it_cand++;
@@ -449,8 +452,8 @@ PDBHeuristic::PDBHeuristic() {
 }
 
 PDBHeuristic::~PDBHeuristic() {
-    delete pdb_abstraction;
-    //delete canonical_heuristic;
+    //delete pdb_abstraction;
+    delete canonical_heuristic;
 }
 
 void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
@@ -489,7 +492,7 @@ void PDBHeuristic::initialize() {
     
     // pdbabstraction function tests
     // 1. blocks-7-2 test-pattern
-    int patt[] = {9, 10, 11, 12, 13, 14};
+    //int patt[] = {9, 10, 11, 12, 13, 14};
     
     // 2. driverlog-6 test-pattern
     //int patt[] = {4, 5, 7, 9, 10, 11, 12};
@@ -502,23 +505,23 @@ void PDBHeuristic::initialize() {
     
     // 5. logistics00-5-1 test-pattern
     //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
-    
+    /*
     vector<int> pattern(patt, patt + sizeof(patt) / sizeof(int));
     Timer timer;
     timer();
     pdb_abstraction = new PDBAbstraction(pattern);
     timer.stop();
-    cout << "PDB construction time: " << timer << endl;
+    cout << "PDB construction time: " << timer << endl;*/
+
     
-    /*
     // Canonical heuristic function tests
-    //1. one pattern
-    int patt_1[6] = {3, 4, 5, 6, 7, 8};
+    //1. one pattern logistics00 6-2
+    /*int patt_1[6] = {3, 4, 5, 6, 7, 8};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     vector<vector<int> > pattern_collection(1);
-    pattern_collection[0] = pattern_1;
+    pattern_collection[0] = pattern_1;*/
 
-    //2. two patterns
+    //2. two patterns logistics00 6-2
     int patt_1[3] = {3, 4, 5};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[3] = {6, 7, 8};
@@ -528,7 +531,7 @@ void PDBHeuristic::initialize() {
     pattern_collection[1] = pattern_2;
 
     //3. three patterns
-    int patt_1[2] = {3, 4};
+    /*int patt_1[2] = {3, 4};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[2] = {5, 6};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
@@ -537,31 +540,31 @@ void PDBHeuristic::initialize() {
     vector<vector<int> > pattern_collection(3);
     pattern_collection[0] = pattern_1;
     pattern_collection[1] = pattern_2;
-    pattern_collection[2] = pattern_3;
-    */
+    pattern_collection[2] = pattern_3;*/
 
-    //canonical_heuristic = new CanonicalHeuristic(pattern_collection);
+
+    canonical_heuristic = new CanonicalHeuristic(pattern_collection);
 
     // build all pdbs
-    /*Timer timer;
+    Timer timer;
     timer();
     for (int i = 0; i < pattern_collection.size(); ++i) {
-        PDBAbstraction pdb = PDBAbstraction(pattern_collection[i]); // TODO delete it anywhere
+        PDBAbstraction pdb = PDBAbstraction(pattern_collection[i]);
         canonical_heuristic->pattern_databases.insert(pair<int, PDBAbstraction>(i, pdb));
     }
     timer.stop();
     cout << pattern_collection.size() << " pdbs constructed." << endl;
-    cout << "Construction time for all pdbs: " << timer << endl;*/
+    cout << "Construction time for all pdbs: " << timer << endl;
 
     //cout << "Done initializing." << endl;
 }
 
 int PDBHeuristic::compute_heuristic(const State &state) {
-    int h = pdb_abstraction->get_heuristic_value(state);
+   /* int h = pdb_abstraction->get_heuristic_value(state);
     if (h == numeric_limits<int>::max())
         return -1;
-    return h;
-    //return canonical_heuristic->get_heuristic_value(state);
+    return h;*/
+    return canonical_heuristic->get_heuristic_value(state);
 }
 
 ScalarEvaluator *PDBHeuristic::create(const vector<string> &config, int start, int &end, bool dry_run) {

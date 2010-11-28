@@ -1,13 +1,13 @@
 int patt[] = {9, 10, 11, 12, 13, 14};
 
 canonical heuristic function:
-//1. one pattern
+//1. one pattern blocks 7-2
 int patt_1[6] = {9, 10, 11, 12, 13, 14};
 vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
 vector<vector<int> > pattern_collection(1);
 pattern_collection[0] = pattern_1;
 
-//2. two patterns
+//2. two patterns blocks 7-2
 int patt_1[3] = {9, 10, 11};
 vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
 int patt_2[3] = {12, 13, 14};
@@ -16,7 +16,7 @@ vector<vector<int> > pattern_collection(2);
 pattern_collection[0] = pattern_1;
 pattern_collection[1] = pattern_2;
 
-//3. three patterns
+//3. three patterns blocks 7-2
 int patt_1[2] = {9, 10};
 vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
 int patt_2[2] = {11, 12};

@@ -69,15 +69,15 @@ public:
 // Implements the canonical heuristic function.
 class CanonicalHeuristic {
     std::vector<std::vector<int> > pattern_collection;
-    std::vector<std::vector<int> > cgraph; // compatibility graph for the pattern collection TODO should not be global
+    int number_patterns;
+    std::vector<std::vector<int> > cgraph; // compatibility graph for the pattern collection
     std::vector<std::vector<int> > max_cliques; // final computed max_cliques
-    std::vector<int> q_clique; // TODO should not be global
     bool are_additive(int pattern1, int pattern2) const;
     void build_cgraph();
     int get_maxi_vertex(const std::vector<int> &subg, const std::vector<int> &cand) const; // TODO find nicer name :)
-    void expand(std::vector<int> &subg, std::vector<int> &cand); // implements the CLIQUES-algorithmn from Tomita et al
+    void max_cliques_expand(std::vector<int> &subg, std::vector<int> &cand, std::vector<int> &q_clique); // implements the CLIQUES-algorithmn from Tomita et al
 public:
-    explicit CanonicalHeuristic(std::vector<std::vector<int> > pat_coll);
+    explicit CanonicalHeuristic(const std::vector<std::vector<int> > &pat_coll);
     ~CanonicalHeuristic();
     std::map<int, PDBAbstraction> pattern_databases; // pattern in pattern collection --> final pdb
     //TODO: don't use maps!
@@ -87,8 +87,8 @@ public:
 };
 
 class PDBHeuristic : public Heuristic {
-    PDBAbstraction *pdb_abstraction;
-    //CanonicalHeuristic *canonical_heuristic;
+    //PDBAbstraction *pdb_abstraction;
+    CanonicalHeuristic *canonical_heuristic;
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
 protected:
     virtual void initialize();
