@@ -216,6 +216,8 @@ size_t PDBAbstraction::hash_index(const AbstractState &abstract_state) const {
     return index;
 }
 
+// TODO we could probably calculate abstract states incrementally
+// This method is always called for i = 0, ..., num_states
 AbstractState PDBAbstraction::inv_hash_index(int index) const {
     vector<int> var_vals;
     var_vals.resize(size);
