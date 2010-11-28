@@ -550,13 +550,13 @@ void PDBHeuristic::initialize() {
     pattern_collection[0] = pattern_1;*/
 
     //2. two patterns driverlog 6
-    int patt_1[3] = {4, 5, 7};
+    /*int patt_1[3] = {4, 5, 7};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[4] = {9, 10, 11, 12};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
     vector<vector<int> > pattern_collection(2);
     pattern_collection[0] = pattern_1;
-    pattern_collection[1] = pattern_2;
+    pattern_collection[1] = pattern_2;*/
 
     //3. three patterns driverlog 6
     /*int patt_1[2] = {4, 5};
@@ -596,6 +596,33 @@ void PDBHeuristic::initialize() {
     pattern_collection[0] = pattern_1;
     pattern_collection[1] = pattern_2;
     pattern_collection[2] = pattern_3;*/
+
+    // additional two patterns for logistics00 9-1
+    /*int patt_1[4] = {4, 5, 6, 7};
+    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
+    int patt_2[5] = {8, 9, 10, 11, 12};
+    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
+    vector<vector<int> > pattern_collection(2);
+    pattern_collection[0] = pattern_1;
+    pattern_collection[1] = pattern_2;*/
+
+    // additional five patterns for logistics00 9-1
+    int patt_1[2] = {4, 5};
+    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
+    int patt_2[2] = {6, 7};
+    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
+    int patt_3[2] = {8, 9};
+    vector<int> pattern_3(patt_3, patt_3 + sizeof(patt_3) / sizeof(int));
+    int patt_4[2] = {10, 11};
+    vector<int> pattern_4(patt_4, patt_4 + sizeof(patt_4) / sizeof(int));
+    int patt_5[1] = {12};
+    vector<int> pattern_5(patt_5, patt_5 + sizeof(patt_5) / sizeof(int));
+    vector<vector<int> > pattern_collection(5);
+    pattern_collection[0] = pattern_1;
+    pattern_collection[1] = pattern_2;
+    pattern_collection[2] = pattern_3;
+    pattern_collection[3] = pattern_4;
+    pattern_collection[4] = pattern_5;
 
 
     canonical_heuristic = new CanonicalHeuristic(pattern_collection);
