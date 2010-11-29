@@ -36,8 +36,18 @@ removed_implied_effect_counter = 0
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
 
+import sys
+import random
+memory_hog = [random.randint(1, 2**15)] * random.randint(1, 2**15)
+print sys.getsizeof(memory_hog)
+
 def strips_to_sas_dictionary(groups, assert_partial):
     dictionary = {}
+
+    # sort groups to get a deterministic output
+    map(lambda g: g.sort(key=str), groups)
+    groups.sort(key=lambda x: (-len(x), str(x[0])))
+
     for var_no, group in enumerate(groups):
         for val_no, atom in enumerate(group):
             dictionary.setdefault(atom, []).append((var_no, val_no))
@@ -351,6 +361,10 @@ def translate_strips_axiom(axiom, dictionary, ranges, mutex_dict, mutex_ranges):
 
 def translate_strips_operators(actions, strips_to_sas, ranges, mutex_dict, mutex_ranges, implied_facts):
     result = []
+
+    # TODO: Gabi sorts the actions here although I think "actions" is a list
+    actions.sort(key=lambda a: a.name)
+
     for action in actions:
         sas_ops = translate_strips_operator(action, strips_to_sas, ranges, mutex_dict, mutex_ranges, implied_facts)
         result.extend(sas_ops)
@@ -358,6 +372,10 @@ def translate_strips_operators(actions, strips_to_sas, ranges, mutex_dict, mutex
 
 def translate_strips_axioms(axioms, strips_to_sas, ranges, mutex_dict, mutex_ranges):
     result = []
+
+    # TODO: Gabi sorts the axioms here although I think "axioms" is a list
+    axioms.sort(key=lambda a: a.name)
+
     for axiom in axioms:
         sas_axioms = translate_strips_axiom(axiom, strips_to_sas, ranges, mutex_dict, mutex_ranges)
         result.extend(sas_axioms)
