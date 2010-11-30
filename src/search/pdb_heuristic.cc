@@ -140,6 +140,8 @@ void PDBAbstraction::create_pdb() {
         n_i.push_back(p);
         p *= g_variable_domain[pattern[i]];
     }
+    cout << "Number of abstract states: " << num_states << endl;
+    //cout << "numeric limits " << numeric_limits<int>::max() << endl;
     
     vector<AbstractOperator> operators;
     //operators.reserve(g_operators.size());
@@ -161,11 +163,90 @@ void PDBAbstraction::create_pdb() {
         }
     }
     
-    vector<vector<Edge > > back_edges;
+    vector<vector<Edge> > back_edges;
     back_edges.resize(num_states);
     distances.reserve(num_states);
-    priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq;
     // first entry: priority, second entry: index for an abstract state
+    priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq;
+    
+    
+    // help structures for the next while loop
+    int var_index = 0; // current variable being modified
+    vector<int> var_counters(size, 0); // contains current values for all variables, 0 in the beginning
+    
+    // first state, 0 for all variables
+    int counter = 0;
+    AbstractState abstract_state(var_counters);
+    assert(hash_index(abstract_state) == counter);
+    if (abstract_state.is_goal_state(abstracted_goal, variable_to_index)) {
+        pq.push(make_pair(0, counter));
+        distances.push_back(0);
+    }
+    else {
+        pq.push(make_pair(numeric_limits<int>::max(), counter));
+        distances.push_back(numeric_limits<int>::max());
+    }
+    
+    // incremental computation of all abstract states according to the ordering of increasing hash-indices
+    //cout << "starting loop" << endl;
+    while (true) {
+        //cout << "iteration number: " << counter << endl;
+        ++var_counters[var_index];
+        abstract_state[var_index] = var_counters[var_index];
+        //cout << "changed variable: " << var_index << " to value: " << var_counters[var_index] << endl;
+        int old_index = var_index;
+        bool reached_end = false;
+        //cout << "var_counters[" << var_index << "] = " << var_counters[var_index] << endl;
+        //cout << "g_variable_domain[pattern[" << var_index << "]] = " << g_variable_domain[pattern[var_index]] << endl;
+        while (var_counters[var_index] == g_variable_domain[pattern[var_index]]) {
+            var_counters[var_index] = 0;
+            abstract_state[var_index] = var_counters[var_index];
+            //cout << "changed variable: " << var_index << " to value: " << var_counters[var_index] << endl;
+            ++var_index;
+            if (var_index == size) {
+                reached_end = true;
+                break;
+            }
+            ++var_counters[var_index];
+            abstract_state[var_index] = var_counters[var_index];
+            //cout << "changed variable: " << var_index << " to value: " << var_counters[var_index] << endl;
+        }
+        if (reached_end)
+            break;
+        var_index = old_index;
+        ++counter;
+        //cout << "counter: " << counter << endl;
+        //cout << "hash index: " << hash_index(current_state) << endl;
+        assert(hash_index(abstract_state) == counter);
+        //cout << endl;
+        
+        //AbstractState abstract_state2 = inv_hash_index(counter);
+        //abstract_state.dump();
+        //abstract_state2.dump();
+        
+        if (abstract_state.is_goal_state(abstracted_goal, variable_to_index)) {
+            pq.push(make_pair(0, counter));
+            distances.push_back(0);
+        }
+        else {
+            pq.push(make_pair(numeric_limits<int>::max(), counter));
+            distances.push_back(numeric_limits<int>::max());
+        }
+        for (size_t j = 0; j < operators.size(); ++j) {
+            if (abstract_state.is_applicable(operators[j], variable_to_index)) {
+                AbstractState next_state = abstract_state; //TODO: this didn't change anything compared to the old
+                // AbstractOperator::apply_to_state-method where a new AbstractState was returned in the end ;-)
+                next_state.apply_operator(operators[j], variable_to_index);
+                size_t state_index = hash_index(next_state);
+                assert(counter != state_index);
+                back_edges[state_index].push_back(Edge(g_operators[j].get_cost(), counter));
+            }
+        }
+        
+        assert(hash_index(abstract_state) == counter);
+    }
+    
+    /*
     for (size_t i = 0; i < num_states; ++i) {
         AbstractState abstract_state = inv_hash_index(i);
         if (abstract_state.is_goal_state(abstracted_goal, variable_to_index)) {
@@ -186,7 +267,8 @@ void PDBAbstraction::create_pdb() {
                 back_edges[state_index].push_back(Edge(g_operators[j].get_cost(), i));
             }
         }
-    }
+    }*/
+    
     while (!pq.empty()) {
         pair<int, int> node = pq.top();
         pq.pop();
@@ -453,8 +535,8 @@ PDBHeuristic::PDBHeuristic() {
 }
 
 PDBHeuristic::~PDBHeuristic() {
-    //delete pdb_abstraction;
-    delete canonical_heuristic;
+    delete pdb_abstraction;
+    //delete canonical_heuristic;
 }
 
 void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
@@ -493,7 +575,8 @@ void PDBHeuristic::initialize() {
     
     // pdbabstraction function tests
     // 1. blocks-7-2 test-pattern
-    //int patt[] = {9, 10, 11, 12, 13, 14};
+    int patt[] = {9, 10, 11, 12, 13, 14};
+    //int patt[] = {1, 2};
     
     // 2. driverlog-6 test-pattern
     //int patt[] = {4, 5, 7, 9, 10, 11, 12};
@@ -506,13 +589,14 @@ void PDBHeuristic::initialize() {
     
     // 5. logistics00-5-1 test-pattern
     //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
-    /*
+    
     vector<int> pattern(patt, patt + sizeof(patt) / sizeof(int));
     Timer timer;
     timer();
     pdb_abstraction = new PDBAbstraction(pattern);
     timer.stop();
-    cout << "PDB construction time: " << timer << endl;*/
+    cout << "PDB construction time: " << timer << endl;
+    //pdb_abstraction->dump();
 
     
     // Canonical heuristic function tests
@@ -607,7 +691,7 @@ void PDBHeuristic::initialize() {
     pattern_collection[1] = pattern_2;*/
 
     // additional five patterns for logistics00 9-1
-    int patt_1[2] = {4, 5};
+    /*int patt_1[2] = {4, 5};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[2] = {6, 7};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
@@ -637,17 +721,18 @@ void PDBHeuristic::initialize() {
     }
     timer.stop();
     cout << pattern_collection.size() << " pdbs constructed." << endl;
-    cout << "Construction time for all pdbs: " << timer << endl;
+    cout << "Construction time for all pdbs: " << timer << endl;*/
 
     //cout << "Done initializing." << endl;
 }
 
 int PDBHeuristic::compute_heuristic(const State &state) {
-   /* int h = pdb_abstraction->get_heuristic_value(state);
+    int h = pdb_abstraction->get_heuristic_value(state);
+    //cout << "h:" << h << endl;
     if (h == numeric_limits<int>::max())
         return -1;
-    return h;*/
-    return canonical_heuristic->get_heuristic_value(state);
+    return h;
+    //return canonical_heuristic->get_heuristic_value(state);
 }
 
 ScalarEvaluator *PDBHeuristic::create(const vector<string> &config, int start, int &end, bool dry_run) {

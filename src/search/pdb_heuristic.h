@@ -36,6 +36,7 @@ public:
     AbstractState(const State &state, const std::vector<int> &pattern); // for construction from a concrete state
     ~AbstractState();
     int operator[](int index) const { return variable_values[index]; }
+    int &operator[](int index) { return variable_values[index]; }
     bool is_applicable(const AbstractOperator &op, const std::vector<int> &var_to_index) const;
     void apply_operator(const AbstractOperator &op, const std::vector<int> &var_to_index);
     bool is_goal_state(const std::vector<std::pair<int, int> > &abstract_goal, const std::vector<int> &var_to_index) const;
@@ -88,8 +89,8 @@ public:
 };
 
 class PDBHeuristic : public Heuristic {
-    //PDBAbstraction *pdb_abstraction;
-    CanonicalHeuristic *canonical_heuristic;
+    PDBAbstraction *pdb_abstraction;
+    //CanonicalHeuristic *canonical_heuristic;
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
 protected:
     virtual void initialize();
