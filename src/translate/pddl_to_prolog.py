@@ -13,6 +13,7 @@ class PrologProgram:
     def __init__(self):
         self.facts = []
         self.rules = []
+        # TODO: Sort self.objects ?
         self.objects = set()
         def predicate_name_generator():
             for count in itertools.count():
@@ -101,6 +102,7 @@ def get_variables(symbolic_atoms):
     variables = set()
     for sym_atom in symbolic_atoms:
         variables |= set([arg for arg in sym_atom.args if arg[0] == "?"])
+    # TODO: Sort variables ?
     return variables
 
 class Fact:

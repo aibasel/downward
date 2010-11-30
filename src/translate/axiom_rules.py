@@ -106,6 +106,7 @@ def get_axiom_init(axioms_by_atom, necessary_literals):
             # Initial value for axiom: False (which is omitted due to closed world
             # assumption) unless it is only needed negatively.
             result.add(atom)
+    # TODO: sort result ?
     return result
 
 def simplify_axioms(axioms_by_atom, necessary_literals):
@@ -115,6 +116,7 @@ def simplify_axioms(axioms_by_atom, necessary_literals):
         axioms = simplify(axioms_by_atom[atom])
         axioms_by_atom[atom] = axioms
         new_axioms += axioms
+    # TODO: sort new_axioms ?
     return new_axioms
 
 def remove_duplicates(alist):

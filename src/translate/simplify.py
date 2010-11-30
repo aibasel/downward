@@ -49,7 +49,8 @@ def build_dtgs(task):
 
     def add_arc(var_no, pre_spec, post):
         if pre_spec == -1:
-            pre_values = set(range(sizes[var_no])).difference([post])
+            # TODO: Add key function
+            pre_values = sorted(set(range(sizes[var_no])).difference([post]))
         else:
             pre_values = [pre_spec]
         for pre in pre_values:
