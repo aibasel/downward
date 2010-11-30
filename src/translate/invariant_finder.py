@@ -18,6 +18,7 @@ class BalanceChecker(object):
                     predicate = eff.literal.predicate
                     self.predicates_to_add_actions.setdefault(predicate, set()).add(action)
     def get_threats(self, predicate):
+        # TODO sort?
         return self.predicates_to_add_actions.get(predicate, set())
     def are_compatible(self, add_effect1, add_effect2):
         assert not add_effect1.negated
@@ -61,6 +62,7 @@ def get_fluents(task):
     for action in task.actions:
         for eff in action.effects:
             fluent_names.add(eff.literal.predicate)
+    # TODO: Sort fluent_names ?
     return [pred for pred in task.predicates if pred.name in fluent_names]
 
 def get_initial_invariants(task):
@@ -114,6 +116,7 @@ def useful_groups(invariants, initial_facts):
             else:
                 overcrowded_groups.add(group_key)
     useful_groups = nonempty_groups - overcrowded_groups
+    # TODO: sort useful_groups ?
     for (invariant, parameters) in useful_groups:
         yield [part.instantiate(parameters) for part in invariant.parts]
 

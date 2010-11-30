@@ -39,7 +39,6 @@ added_implied_precondition_counter = 0
 import sys
 import random
 memory_hog = [random.randint(1, 2**15)] * random.randint(1, 2**15)
-print sys.getsizeof(memory_hog)
 
 def strips_to_sas_dictionary(groups, assert_partial):
     dictionary = {}
