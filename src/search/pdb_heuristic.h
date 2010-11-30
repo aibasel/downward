@@ -10,6 +10,12 @@ public:
     int cost;
     size_t target;
     Edge(int c, size_t t) : cost(c), target(t) {}
+    bool operator<(const Edge &other) const { // TODO: Get rid of this again
+        return to_pair() < other.to_pair();
+    }
+    std::pair<size_t, int> to_pair() const { // TODO: Get rid of this again
+        return std::make_pair(target, cost);
+    }
 };
 
 class Operator;

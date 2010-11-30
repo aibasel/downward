@@ -168,8 +168,11 @@ void PDBAbstraction::create_pdb() {
     distances.reserve(num_states);
     // first entry: priority, second entry: index for an abstract state
     priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq;
-    
-    
+
+#define USE_NEW_CODE false
+#if USE_NEW_CODE
+    cout << "using new code" << endl;
+
     // help structures for the next while loop
     int var_index = 0; // current variable being modified
     vector<int> var_counters(size, 0); // contains current values for all variables, 0 in the beginning
@@ -183,7 +186,7 @@ void PDBAbstraction::create_pdb() {
         distances.push_back(0);
     }
     else {
-        pq.push(make_pair(numeric_limits<int>::max(), counter));
+        // pq.push(make_pair(numeric_limits<int>::max(), counter));
         distances.push_back(numeric_limits<int>::max());
     }
     
@@ -229,7 +232,7 @@ void PDBAbstraction::create_pdb() {
             distances.push_back(0);
         }
         else {
-            pq.push(make_pair(numeric_limits<int>::max(), counter));
+            // pq.push(make_pair(numeric_limits<int>::max(), counter));
             distances.push_back(numeric_limits<int>::max());
         }
         for (size_t j = 0; j < operators.size(); ++j) {
@@ -245,8 +248,8 @@ void PDBAbstraction::create_pdb() {
         
         assert(hash_index(abstract_state) == counter);
     }
-    
-    /*
+#else
+    cout << "using old code" << endl;
     for (size_t i = 0; i < num_states; ++i) {
         AbstractState abstract_state = inv_hash_index(i);
         if (abstract_state.is_goal_state(abstracted_goal, variable_to_index)) {
@@ -267,8 +270,27 @@ void PDBAbstraction::create_pdb() {
                 back_edges[state_index].push_back(Edge(g_operators[j].get_cost(), i));
             }
         }
-    }*/
-    
+    }
+#endif
+
+    cout << "@X" << back_edges.size() << endl;
+    for (size_t i = 0; i < back_edges.size(); ++i) {
+        cout << "@ [" << i << "] ";
+        for (size_t j = 0; j < back_edges[i].size(); ++j) {
+            Edge edge(back_edges[i][j]);
+            cout << " " << edge.to_pair().first << "/" << edge.to_pair().second;
+        }
+        vector<Edge> sorted_edges(back_edges[i]);
+        sort(sorted_edges.begin(), sorted_edges.end());
+        cout << endl;
+        cout << "@X [" << i << "] ";
+        for (size_t j = 0; j < sorted_edges.size(); ++j) {
+            Edge edge(sorted_edges[j]);
+            cout << " " << edge.to_pair().first << "/" << edge.to_pair().second;
+        }
+        cout << endl;
+    }
+
     while (!pq.empty()) {
         pair<int, int> node = pq.top();
         pq.pop();
