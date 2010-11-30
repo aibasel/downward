@@ -84,7 +84,8 @@ HEADERS += learning/AODE.h \
            learning/state_space_sample.h \
            learning/state_vars_feature_extractor.h
 
-HEADERS += pdb_heuristic.h
+HEADERS += pdb_heuristic.h \
+           abstract_state_iterator.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward
