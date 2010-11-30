@@ -258,6 +258,9 @@ CanonicalHeuristic::CanonicalHeuristic(const vector<vector<int> > &pat_coll) : p
     max_cliques_expand(vertices_1, vertices_2, q_clique);
     dump();
 
+    // maybe unnecessary, but we don't need cgraph anymore
+    cgraph.clear();
+
     // build all pattern databases
     Timer timer;
     timer();
@@ -418,8 +421,7 @@ int CanonicalHeuristic::get_heuristic_value(const State &state) const {
         vector<int> clique = max_cliques[i];
         int h_val = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
-            PDBAbstraction pdb = pattern_databases.at(clique[j]);
-            h_val += pdb.get_heuristic_value(state);
+            h_val += pattern_databases[clique[j]].get_heuristic_value(state);
         }
         if (h_val > max_val) {
             max_val = h_val;
@@ -540,7 +542,7 @@ void PDBHeuristic::initialize() {
     pattern_collection[1] = pattern_2;*/
 
     //3. three patterns logistics00 6-2
-    /*int patt_1[2] = {3, 4};
+    int patt_1[2] = {3, 4};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[2] = {5, 6};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
@@ -549,7 +551,7 @@ void PDBHeuristic::initialize() {
     vector<vector<int> > pattern_collection(3);
     pattern_collection[0] = pattern_1;
     pattern_collection[1] = pattern_2;
-    pattern_collection[2] = pattern_3;*/
+    pattern_collection[2] = pattern_3;
 
     //1. one pattern driverlog 6
     /*int patt_1[7] = {4, 5, 7, 9, 10, 11, 12};
@@ -615,7 +617,7 @@ void PDBHeuristic::initialize() {
     pattern_collection[1] = pattern_2;*/
 
     // additional five patterns for logistics00 9-1
-    int patt_1[2] = {4, 5};
+    /*int patt_1[2] = {4, 5};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[2] = {6, 7};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
@@ -630,7 +632,7 @@ void PDBHeuristic::initialize() {
     pattern_collection[1] = pattern_2;
     pattern_collection[2] = pattern_3;
     pattern_collection[3] = pattern_4;
-    pattern_collection[4] = pattern_5;
+    pattern_collection[4] = pattern_5;*/
 
 
     canonical_heuristic = new CanonicalHeuristic(pattern_collection);
