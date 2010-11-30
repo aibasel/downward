@@ -9,6 +9,12 @@ public:
     int cost;
     size_t target;
     Edge(int c, size_t t) : cost(c), target(t) {}
+    bool operator<(const Edge &other) const { // TODO: Get rid of this again
+        return to_pair() < other.to_pair();
+    }
+    std::pair<size_t, int> to_pair() const { // TODO: Get rid of this again
+        return std::make_pair(target, cost);
+    }
 };
 
 class Operator;
@@ -35,6 +41,7 @@ public:
     AbstractState(const State &state, const std::vector<int> &pattern); // for construction from a concrete state
     ~AbstractState();
     int operator[](int index) const { return variable_values[index]; }
+    int &operator[](int index) { return variable_values[index]; }
     bool is_applicable(const AbstractOperator &op, const std::vector<int> &var_to_index) const;
     void apply_operator(const AbstractOperator &op, const std::vector<int> &var_to_index);
     bool is_goal_state(const std::vector<std::pair<int, int> > &abstract_goal, const std::vector<int> &var_to_index) const;
@@ -78,8 +85,6 @@ class CanonicalHeuristic {
 public:
     explicit CanonicalHeuristic(const std::vector<std::vector<int> > &pat_coll);
     ~CanonicalHeuristic();
-    //std::map<int, PDBAbstraction> pattern_databases; // pattern in pattern collection --> final pdb
-    //TODO: don't use maps!
     std::vector<PDBAbstraction> pattern_databases; // final pattern databases
     int get_heuristic_value(const State &state) const; // returns the canonical heuristic value (with respect
         // to the pattern collection) for a state
@@ -87,7 +92,7 @@ public:
 };
 
 class PDBHeuristic : public Heuristic {
-    //PDBAbstraction *pdb_abstraction;
+    PDBAbstraction *pdb_abstraction;
     CanonicalHeuristic *canonical_heuristic;
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
 protected:
