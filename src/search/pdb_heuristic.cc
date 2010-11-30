@@ -355,58 +355,53 @@ void CanonicalHeuristic::build_cgraph() {
 
 int CanonicalHeuristic::get_maxi_vertex(const vector<int> &subg, const vector<int> &cand) const {
     // assert that subg and cand are sorted
-    // how is complexity of subg.sort() and cand.sort() if they are sorted yet?
-    int max = -1;
-    int vertex = -1;
+    size_t max = 0;
+    int vertex = subg[0];
     
-    vector<int>::const_iterator it = subg.begin();
-    while (*it > -1 && it != subg.end()) {
-        vector<int> intersection(subg.size(), -1); // intersection [ -1, -1, ..., -1 ]
+    for (size_t i = 1; i < subg.size(); ++i) {
+        vector<int> intersection;
+        intersection.reserve(subg.size());
         // for vertex u in subg get u's adjacent vertices --> cgraph[subg[i]];
-        vector<int>::iterator it2 = set_intersection(cand.begin(), cand.end(),
-            cgraph[*it].begin(), cgraph[*it].end(), intersection.begin());
-        if (int(it2 - intersection.begin()) > max) {
-            max = int(it2 - intersection.begin());
-            vertex = *it;
+        set_intersection(cand.begin(), cand.end(), cgraph[subg[i]].begin(), cgraph[subg[i]].end(), back_inserter(intersection));
+
+        if (intersection.size() > max) {
+            max = intersection.size();
+            vertex = subg[i];
         }
-        it++;
     }
     return vertex;
 }
 
 void CanonicalHeuristic::max_cliques_expand(vector<int> &subg, vector<int> &cand, vector<int> &q_clique) {
-    if (subg[0] == -1) {
+    if (subg.empty()) {
         //cout << "clique" << endl;
         max_cliques.push_back(q_clique);
-    }
-    else {
+    } else {
         int u = get_maxi_vertex(subg, cand);
         
-        vector<int> ext_u(cand.size(), -1); // ext_u = cand - gamma(u)
-        set_difference(cand.begin(), cand.end(), cgraph[u].begin(), cgraph[u].end(), ext_u.begin());
-        
-        vector<int>::iterator it_ext = ext_u.begin();
-        vector<int>::iterator it_cand = cand.begin();
-        
-        while (*it_ext > -1 && it_ext != ext_u.end()) { // while cand - gamma(u) is not empty
-            
-            int q = *it_ext; // q is a vertex in cand - gamma(u)
+        vector<int> ext_u;
+        ext_u.reserve(cand.size());
+        set_difference(cand.begin(), cand.end(), cgraph[u].begin(), cgraph[u].end(), back_inserter(ext_u));
+
+        for (size_t i = 0; i < ext_u.size(); ++i) { // while cand - gamma(u) is not empty
+            int q = ext_u[i]; // q is a vertex in cand - gamma(u)
             //cout << q << ",";
             q_clique.push_back(q);
             
             // subg_q = subg n gamma(q)
-            vector<int> subg_q(subg.size(), -1);
-            set_intersection(subg.begin(), subg.end(), cgraph[q].begin(), cgraph[q].end(), subg_q.begin());
+            vector<int> subg_q;
+            subg_q.reserve(subg.size());
+            set_intersection(subg.begin(), subg.end(), cgraph[q].begin(), cgraph[q].end(), back_inserter(subg_q));
             
             // cand_q = cand n gamma(q)
-            vector<int> cand_q(cand.size(), -1);
-            set_intersection(it_cand, cand.end(), cgraph[q].begin(), cgraph[q].end(), cand_q.begin());
+            vector<int> cand_q;
+            cand_q.reserve(cand.size());
+            set_intersection(cand.begin() + i, cand.end(), cgraph[q].begin(), cgraph[q].end(), back_inserter(cand_q));
             
             max_cliques_expand(subg_q, cand_q, q_clique);
             
             // remove q from cand --> cand = cand - q
-            it_cand++;
-            it_ext++;
+            // is done --> with index i
             
             //cout << "back"  << endl;
             q_clique.pop_back();
@@ -633,7 +628,6 @@ void PDBHeuristic::initialize() {
     pattern_collection[2] = pattern_3;
     pattern_collection[3] = pattern_4;
     pattern_collection[4] = pattern_5;*/
-
 
     canonical_heuristic = new CanonicalHeuristic(pattern_collection);
 
