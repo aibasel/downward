@@ -3,7 +3,6 @@
 
 #include "heuristic.h"
 #include <vector>
-#include <map>
 
 class Edge {
 public:
