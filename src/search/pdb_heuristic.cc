@@ -256,9 +256,18 @@ CanonicalHeuristic::CanonicalHeuristic(const vector<vector<int> > &pat_coll) : p
     vector<int> q_clique; // contains actual calculated maximal clique
     q_clique.reserve(number_patterns);
     max_cliques_expand(vertices_1, vertices_2, q_clique);
-    cout << "expanded." << endl;
-    // TODO now we could forget cgraph, because we've got maximal cliques
     dump();
+
+    // build all pattern databases
+    Timer timer;
+    timer();
+    for (int i = 0; i < pattern_collection.size(); ++i) {
+        PDBAbstraction pdb = PDBAbstraction(pattern_collection[i]);
+        pattern_databases.push_back(pdb);
+    }
+    timer.stop();
+    cout << pattern_collection.size() << " pdbs constructed." << endl;
+    cout << "Construction time for all pdbs: " << timer << endl;
 }
 
 CanonicalHeuristic::~CanonicalHeuristic() {
@@ -409,7 +418,6 @@ int CanonicalHeuristic::get_heuristic_value(const State &state) const {
         vector<int> clique = max_cliques[i];
         int h_val = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
-            //PDBAbstraction pdb = pattern_databases.find(clique[j])->second;
             PDBAbstraction pdb = pattern_databases.at(clique[j]);
             h_val += pdb.get_heuristic_value(state);
         }
@@ -626,18 +634,6 @@ void PDBHeuristic::initialize() {
 
 
     canonical_heuristic = new CanonicalHeuristic(pattern_collection);
-
-    // build all pdbs
-    Timer timer;
-    timer();
-    for (int i = 0; i < pattern_collection.size(); ++i) {
-        PDBAbstraction pdb = PDBAbstraction(pattern_collection[i]);
-        //canonical_heuristic->pattern_databases.insert(pair<int, PDBAbstraction>(i, pdb));
-        canonical_heuristic->pattern_databases.push_back(pdb);
-    }
-    timer.stop();
-    cout << pattern_collection.size() << " pdbs constructed." << endl;
-    cout << "Construction time for all pdbs: " << timer << endl;
 
     //cout << "Done initializing." << endl;
 }
