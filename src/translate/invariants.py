@@ -2,6 +2,8 @@
 
 import pddl
 import tools
+import copy
+import random # only for tests
 
 # TODO: Rewrite.
 #
@@ -49,6 +51,49 @@ def instantiate_factored_mapping(pairs):
     part_mappings = [[zip(preimg, perm_img) for perm_img in tools.permutations(img)]
                      for (preimg, img) in pairs]
     return tools.cartesian_product(part_mappings)
+
+class NegativeClause(object):
+    def __init__(self, parts):
+        self.parts = parts
+    def is_satisfiable(self):
+        for part in self.parts:
+            if part[0] == part[1]:
+                return False
+        return True
+    def apply_assignment(self, assignment):
+        m = assignment.get_mapping()
+        if not m:
+            return None
+        new_parts = [(m.get(v1, v1), m.get(v2, v2)) for (v1, v2) in parts]
+        return NegativeClause(new_parts)
+
+class Assignment(object):
+    def __init__(self, equalities):
+        self.equalities = equalities 
+        # represents a conjunction of expressions ?x = ?y or ?x = d
+        # with ?x, ?y being variables and d being a domain value
+    def get_mapping(self):
+        eq_classes = dict()
+        for (v1, v2) in self.equalities:
+            c1 = eq_classes.setdefault(v1, set([v1]))
+            c2 = eq_classes.setdefault(v2, set([v2]))
+            if id(c1) != id(c2):
+                if len(c2) > len(c1):
+                    v1, c1, v2, c2 = v2, c2, v1, c1
+                c1.update(c2)
+                for elem in c2:
+                    eq_classes[elem] = c1
+        all_classes = set([frozenset(s) for s in eq_classes.values()])
+        mapping = dict()
+        for eq_class in all_classes:
+            current = list(eq_class)
+            current.sort()
+            maxval = current[-1]
+            if len(current) > 1 and not current[-2].startswith("?"):
+                return None # inconsistent Assignment (d1 = d2)
+            for entry in current:
+                mapping[entry] = maxval
+        return mapping
 
 class InvariantPart:
     def __init__(self, predicate, order, omitted_pos=-1):
@@ -140,9 +185,37 @@ class Invariant:
         for part in self.parts:
             actions_to_check |= balance_checker.get_threats(part.predicate)
         for action in actions_to_check:
-            if not self.check_action_balance(balance_checker, action, enqueue_func):
+            if self.check_operator_too_heavy(action):
                 return False
-        return True
+#            if not self.check_action_balance(balance_checker, action, enqueue_func):
+#                return False
+        return False
+    def check_operator_too_heavy(self, action):
+        # duplicate universal effects and assign unique names to all 
+        # quantified variables
+        new_effects = []
+        for eff in action.effects:
+            new_effects.append(eff)
+            if len(eff.parameters) > 0:
+                new_effects.append(copy.copy(eff))
+        act = pddl.Action(action.name, action.parameters, action.precondition,
+                          new_effects, action.cost)
+
+        add_effects = [eff for eff in act.effects 
+                           if not eff.literal.negated and
+                              self.predicate_to_part.get(eff.literal.predicate)]
+
+        params = [p.name for p in act.parameters]
+        for eff in act.effects:
+            params += [p.name for p in eff.parameters]
+        must_be_equal = set([]) 
+
+        # assume add1 and add2 are two distinct add_effects
+
+        for eff in add_effects:
+            part = self.predicate_to_part.get(eff.literal.predicate)
+
+        
     def check_action_balance(self, balance_checker, action, enqueue_func):
         # Check balance for this hypothesis with regard to one action.
         del_effects = [eff for eff in action.effects if eff.literal.negated]
@@ -171,3 +244,19 @@ class Invariant:
                 for match in part.possible_matches(add_effect.literal, del_eff.literal):
                     enqueue_func(Invariant(self.parts.union((match,))))
         return False # Balance check failed.
+
+if __name__ == "__main__":
+    test = [("?a", "?b"), ("?b", "d"), ("?c", "?e"), ("?c", "?f"), ("?a", "?f")]
+    test2 = [("?a", "k"), ("?a", "?b"), ("?b", "d"), ("?c", "?e"), ("?c", "?f"), ("?a", "?f")]
+    for case in (test, test2):
+        for x in range(5):
+            new_test = []
+            for (v1,v2) in case:
+                if v2.startswith("?") and random.randint(0, 1):
+                    new_test.append((v2, v1))
+                else:
+                    new_test.append((v1, v2))
+            print new_test
+            a = Assignment(set(new_test))
+            print a.get_mapping()
+   
