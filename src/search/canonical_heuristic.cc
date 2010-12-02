@@ -164,7 +164,10 @@ void CanonicalHeuristic::initialize() {
 }
 
 int CanonicalHeuristic::compute_heuristic(const State &state) {
-    return pattern_collection->get_heuristic_value(state);
+    int h = pattern_collection->get_heuristic_value(state);
+        if (h == numeric_limits<int>::max())
+            return -1;
+    return h;
 }
 
 ScalarEvaluator *CanonicalHeuristic::create(const vector<string> &config, int start, int &end, bool dry_run) {
