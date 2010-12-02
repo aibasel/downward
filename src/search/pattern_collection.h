@@ -2,6 +2,7 @@
 #define PATTERN_COLLECTION_H
 
 #include "pdb_abstraction.h"
+
 #include <vector>
 
 class PatternCollection {
