@@ -4,15 +4,12 @@
 #include <vector>
 using namespace std;
 
-
 AbstractStateIterator::AbstractStateIterator(const vector<int> &ranges_)
     : ranges(ranges_), current(ranges.size(), 0), counter(0), at_end(false) {
 }
 
-
 AbstractStateIterator::~AbstractStateIterator() {
 }
-
 
 void AbstractStateIterator::next() {
     assert(!at_end);

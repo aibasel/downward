@@ -85,6 +85,7 @@ HEADERS += learning/AODE.h \
            learning/state_vars_feature_extractor.h
 
 HEADERS += pdb_heuristic.h \
+           pdb_abstraction.h \
            abstract_state_iterator.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
