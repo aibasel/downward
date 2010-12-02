@@ -14,8 +14,7 @@ protected:
     virtual int compute_heuristic(const State &state);
 public:
     CanonicalHeuristic();
-    ~CanonicalHeuristic();
-
+    virtual ~CanonicalHeuristic();
     static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
 };
 

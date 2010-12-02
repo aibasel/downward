@@ -134,7 +134,6 @@ void PDBAbstraction::create_pdb() {
         n_i.push_back(p);
         p *= g_variable_domain[pattern[i]];
     }
-    cout << "Number of abstract states: " << num_states << endl;
     
     vector<AbstractOperator> operators;
     for (size_t i = 0; i < g_operators.size(); ++i) {

@@ -178,7 +178,6 @@ void PatternCollection::max_cliques_expand(vector<int> &subg, vector<int> &cand,
 }
 
 int PatternCollection::get_heuristic_value(const State &state) const {
-    // h^C(state) = max_{D \in max_cliques(C)} \sum_{P \in D} h^P(state)
     int max_val = 0;
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         vector<int> clique = max_cliques[i];
