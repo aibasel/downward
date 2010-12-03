@@ -3,6 +3,7 @@
 import pddl
 import tools
 import copy
+import itertools
 import random # only for tests
 
 # TODO: Rewrite.
@@ -41,6 +42,14 @@ import random # only for tests
 # Hmm... leider alles sehr schwammig. :-(
 # Bis Ende der Woche sollte der Algorithmus auf den ADL-Domänen funktionieren.
 
+# Notes (from/to Gabi):
+# All parts of an invariant aways use all non-counted variables
+# -> the arity of all predicates covered by an invariant is either the
+# number of the invariant variables or this value + 1
+#
+# we currently keep the assumption that each predicate occurs at most once
+# in every invariant. This will be changed in it's own commit
+
 def invert_list(alist):
     result = {}
     for pos, arg in enumerate(alist):
@@ -53,18 +62,19 @@ def instantiate_factored_mapping(pairs):
     return tools.cartesian_product(part_mappings)
 
 class NegativeClause(object):
+    # disjunction of inequalities
     def __init__(self, parts):
         self.parts = parts
     def is_satisfiable(self):
         for part in self.parts:
-            if part[0] == part[1]:
-                return False
-        return True
+            if part[0] != part[1]:
+                return True
+        return False
     def apply_assignment(self, assignment):
         m = assignment.get_mapping()
         if not m:
             return None
-        new_parts = [(m.get(v1, v1), m.get(v2, v2)) for (v1, v2) in parts]
+        new_parts = [(m.get(v1, v1), m.get(v2, v2)) for (v1, v2) in self.parts]
         return NegativeClause(new_parts)
 
 class Assignment(object):
@@ -113,6 +123,10 @@ class InvariantPart:
         if self.omitted_pos != -1:
             omitted_string = " [%d]" % self.omitted_pos
         return "%s %s%s" % (self.predicate, var_string, omitted_string)
+    def get_assignment(self, parameters, literal):
+        equalities = [(arg, literal.args[argpos]) 
+                      for arg, argpos in zip(parameters, self.order)] 
+        return Assignment(equalities)
     def get_parameters(self, literal):
         return [literal.args[pos] for pos in self.order]
     def instantiate(self, parameters):
@@ -189,8 +203,10 @@ class Invariant:
                 return False
 #            if not self.check_action_balance(balance_checker, action, enqueue_func):
 #                return False
-        return False
+        return False # True
     def check_operator_too_heavy(self, action):
+        # XXX TODO: some things can be precomputed once
+
         # duplicate universal effects and assign unique names to all 
         # quantified variables
         new_effects = []
@@ -205,17 +221,91 @@ class Invariant:
                            if not eff.literal.negated and
                               self.predicate_to_part.get(eff.literal.predicate)]
 
-        params = [p.name for p in act.parameters]
+        params = set([p.name for p in act.parameters])
         for eff in act.effects:
-            params += [p.name for p in eff.parameters]
-        must_be_equal = set([]) 
+            params.update([p.name for p in eff.parameters])
 
-        # assume add1 and add2 are two distinct add_effects
+        # use unique names for invariant variables
+        inv_vars = []
+        need_more_variables = len(self.parts.__iter__().next().order)
+        # TODO: aaahrg. There must be a better way of getting the
+        # arity of the invariant
+        if need_more_variables:
+            for counter in itertools.count(1):
+                new_name = "?v%i" % counter
+                if new_name not in params:
+                    inv_vars.append(new_name)
+                    need_more_variables -= 1
+                    params.add(new_name)
+                    if not need_more_variables:
+                        break
 
-        for eff in add_effects:
-            part = self.predicate_to_part.get(eff.literal.predicate)
+        for index1, eff1 in enumerate(add_effects):
+            for index2 in range(index1 + 1, len(add_effects)):
+                eff2 = add_effects[index2]
+                negative_clauses = []
+                assignments1 = []
+                assignments2 = []
+                
+                # eff1.atom != eff2.atom
+                l1 = eff1.literal
+                l2 = eff2.literal
+                if l1.predicate == l2.predicate:
+                    parts = [(l1.parts[i], l2.parts[i]) 
+                             for i in range(len(l1.parts))]
+                    negative_clauses.append(NegativeClause(parts))
+                
+                # covers(V, Phi, eff1.atom)
+                part = self.predicate_to_part[eff1.literal.predicate] 
+                assignments1.append(part.get_assignment(inv_vars, eff1.literal))
+                
+                # covers(V, Phi, eff2.atom)
+                part = self.predicate_to_part[eff2.literal.predicate] 
+                assignments2.append(part.get_assignment(inv_vars, eff2.literal))
 
-        
+                # precondition plus effect conditions plus both literals
+                # false
+                pos, neg = dict(), dict()
+                neg.setdefault(eff1.literal.predicate, set()).add(eff1.literal)
+                neg.setdefault(eff2.literal.predicate, set()).add(eff2.literal)
+                def get_literals(condition):
+                    if isinstance(condition, pddl.Literal):
+                        yield condition
+                    elif isinstance(condition, pddl.Conjunction):
+                        for literal in condition.parts:
+                            yield literal
+                for literal in itertools.chain(get_literals(act.precondition),
+                                               get_literals(eff1.condition),
+                                               get_literals(eff2.condition)):
+                    if literal.negated:
+                        neg.setdefault(literal.predicate, set()).add(literal)
+                    else:
+                        pos.setdefault(literal.predicate, set()).add(literal)
+                for pred, posatoms in pos.iteritems():
+                    if pred in neg:
+                        negatoms = neg[pred]
+                        for posatom in posatoms:
+                            for negatom in negatoms:
+                                parts = zip(negatom.args, posatom.args)
+                                negative_clauses.append(NegativeClause(parts))
+
+                # check for all covering assignments whether they make the
+                # conjunction of all negative_clauses unsatisfiably
+                for a1 in assignments1:
+                    for a2 in assignments2:
+                        comb = Assignment(a1.equalities + a2.equalities)
+                        mapping = comb.get_mapping()
+                        if mapping: # otherwise a1 and a2 are inconsistent
+                            satisfiable = True
+                            for neg_clause in negative_clauses:
+                                clause = neg_clause.apply_assignment(comb)
+                                if not clause.is_satisfiable():
+                                    satisfiable = False
+                                    break
+                            if satisfiable:
+                                return True
+        return False
+
     def check_action_balance(self, balance_checker, action, enqueue_func):
         # Check balance for this hypothesis with regard to one action.
         del_effects = [eff for eff in action.effects if eff.literal.negated]
@@ -248,7 +338,8 @@ class Invariant:
 if __name__ == "__main__":
     test = [("?a", "?b"), ("?b", "d"), ("?c", "?e"), ("?c", "?f"), ("?a", "?f")]
     test2 = [("?a", "k"), ("?a", "?b"), ("?b", "d"), ("?c", "?e"), ("?c", "?f"), ("?a", "?f")]
-    for case in (test, test2):
+    test3 = [("?b", "d"), ("?c", "?e"), ("?c", "?f"), ("?a", "?f")]
+    for case in (test, test2, test3):
         for x in range(5):
             new_test = []
             for (v1,v2) in case:
