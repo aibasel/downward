@@ -17,12 +17,10 @@ class AbstractOperator {
     std::vector<std::pair<int, int> > conditions;
     std::vector<std::pair<int, int> > effects;
 public:
-    AbstractOperator(const Operator &op, const std::vector<int> &pattern);
+    AbstractOperator(const Operator &o, const std::vector<int> &var_to_index);
     ~AbstractOperator();
     const std::vector<std::pair<int, int> > &get_conditions() const { return conditions; }
     const std::vector<std::pair<int, int> > &get_effects() const { return effects; }
-    //bool is_applicable(const AbstractState &abstract_state) const;
-    //AbstractState apply_operator(const AbstractState &abstract_state) const;
     void dump() const;
 };
 

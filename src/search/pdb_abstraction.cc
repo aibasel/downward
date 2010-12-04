@@ -11,26 +11,18 @@ using namespace std;
 
 // AbstractOperator -------------------------------------------------------------------------------
 
-AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &pattern) {
+AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_index) {
     const vector<Prevail> &prevail = o.get_prevail();
     const vector<PrePost> &pre_post = o.get_pre_post();
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        int var = pattern[i];
-        bool prev = false;
-        for (size_t j = 0; j < prevail.size(); ++j) {
-            if (var == prevail[j].var) {
-                conditions.push_back(make_pair(var, prevail[j].prev));
-                prev = true;
-                break;
-            }
+    for (size_t j = 0; j < prevail.size(); ++j) {
+        if (var_to_index[prevail[j].var] != -1) {
+            conditions.push_back(make_pair(prevail[j].var, prevail[j].prev));
         }
-        if (prev)
-            continue;
-        for (size_t j = 0; j < pre_post.size(); ++j) {
-            if (var == pre_post[j].var) {
-                conditions.push_back(make_pair(var, pre_post[j].pre));
-                effects.push_back(make_pair(var, pre_post[j].post));
-            }
+    }
+    for (size_t j = 0; j < pre_post.size(); ++j) {
+        if (var_to_index[pre_post[j].var] != -1) {
+            conditions.push_back(make_pair(pre_post[j].var, pre_post[j].pre));
+            effects.push_back(make_pair(pre_post[j].var, pre_post[j].post));
         }
     }
 }
@@ -102,14 +94,12 @@ bool AbstractState::is_goal_state(const vector<pair<int, int> > &abstract_goal, 
 
 void AbstractState::dump() const {
     cout << "AbstractState: " << endl;
-    //TODO: if want to display Variable, need pattern to match back the index to the actual variable
+    //TODO: if want to display variable and not only index, need pattern to match back index to var
     for (size_t i = 0; i < variable_values.size(); ++i) {
-        cout << "Index:" << i << "Value:" << variable_values[i] << endl; 
+        cout << "Index:" << i << "Value:" << variable_values[i] << endl;
+        //cout << "Variable: " << pattern(i) << " (True name: " 
+        //<< g_variable_name[pattern(i)] << ") Value: " << variable_values[i] << endl;
     }
-    /*for (map<int, int>::iterator it = copy_map.begin(); it != copy_map.end(); it++) {
-        cout << "Variable: " <<  it->first << " (True name: " 
-        << g_variable_name[it->first] << ") Value: " << it->second << endl;
-    }*/
 }
 
 // PDBAbstraction ---------------------------------------------------------------------------------
@@ -123,7 +113,7 @@ PDBAbstraction::~PDBAbstraction() {
 
 void PDBAbstraction::create_pdb() {
     n_i.reserve(size);
-    variable_to_index.resize(g_variable_name.size());
+    variable_to_index.resize(g_variable_name.size(), -1);
     num_states = 1;
     int p = 1;
     for (size_t i = 0; i < size; ++i) {
@@ -137,18 +127,15 @@ void PDBAbstraction::create_pdb() {
     
     vector<AbstractOperator> operators;
     for (size_t i = 0; i < g_operators.size(); ++i) {
-        AbstractOperator ao(g_operators[i], pattern);
+        AbstractOperator ao(g_operators[i], variable_to_index);
         if (!ao.get_effects().empty())
             operators.push_back(ao);
     }
     
     vector<pair<int, int> > abstracted_goal;
     for (size_t i = 0; i < g_goal.size(); ++i) {
-        for (size_t j = 0; j < size; ++j) {
-            if (g_goal[i].first == pattern[j]) {
-                abstracted_goal.push_back(g_goal[i]);
-                break;
-            }
+        if (variable_to_index[g_goal[i].first] != -1) {
+            abstracted_goal.push_back(g_goal[i]);
         }
     }
     
@@ -177,8 +164,7 @@ void PDBAbstraction::create_pdb() {
         }
         for (size_t j = 0; j < operators.size(); ++j) {
             if (abstract_state.is_applicable(operators[j], variable_to_index)) {
-                AbstractState next_state = abstract_state; //TODO: this didn't change anything compared to the old
-                // AbstractOperator::apply_to_state-method where a new AbstractState was returned in the end ;-)
+                AbstractState next_state = abstract_state;
                 next_state.apply_operator(operators[j], variable_to_index);
                 size_t state_index = hash_index(next_state);
                 assert(counter != state_index);
@@ -195,7 +181,6 @@ void PDBAbstraction::create_pdb() {
         size_t state_index = node.second;
         if (distance > distances[state_index])
             continue;
-        //distances[state_index] = distance;
         const vector<Edge> &edges = back_edges[state_index];
         for (size_t i = 0; i < edges.size(); ++i) {
             size_t predecessor = edges[i].target;
