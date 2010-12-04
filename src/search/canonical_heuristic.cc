@@ -5,6 +5,7 @@
 #include "operator.h"
 
 #include <cstdlib>
+#include <limits>
 
 using namespace std;
 

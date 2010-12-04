@@ -54,8 +54,7 @@ void PDBHeuristic::initialize() {
     
     // function tests
     // 1. blocks-7-2 test-pattern
-    int patt[] = {9, 10, 11, 12, 13, 14};
-    //int patt[] = {1, 2};
+    //int patt[] = {9, 10, 11, 12, 13, 14};
     
     // 2. driverlog-6 test-pattern
     //int patt[] = {4, 5, 7, 9, 10, 11, 12};
@@ -67,7 +66,7 @@ void PDBHeuristic::initialize() {
     //int patt[] = {0};
     
     // 5. logistics00-5-1 test-pattern
-    //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
+    int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
     
     vector<int> pattern(patt, patt + sizeof(patt) / sizeof(int));
     Timer timer;
