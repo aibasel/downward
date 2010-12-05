@@ -10,7 +10,8 @@ class PatternCollection {
     int number_patterns;
     std::vector<std::vector<int> > cgraph; // compatibility graph for the pattern collection
     std::vector<std::vector<int> > max_cliques; // final computed max_cliques
-    bool are_additive(int pattern1, int pattern2) const;
+    std::vector<vector<bool> > are_additive;
+    //bool are_additive(int pattern1, int pattern2) const;
     void build_cgraph();
     int get_maxi_vertex(const std::vector<int> &subg, const std::vector<int> &cand) const; // TODO find nicer name :)
     void max_cliques_expand(std::vector<int> &subg, std::vector<int> &cand, std::vector<int> &q_clique); // implements the CLIQUES-algorithmn from Tomita et al

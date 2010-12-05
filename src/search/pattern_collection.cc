@@ -11,6 +11,19 @@
 using namespace std;
 
 PatternCollection::PatternCollection(const vector<vector<int> > &pat_coll) : pattern_collection(pat_coll), number_patterns(pat_coll.size()) {
+    // precompute additive patterns
+    int num_vars = g_variable_domain.size();
+    are_additive.resize(num_vars, vector<bool>(num_vars, true));
+    for (size_t k = 0; k < g_operators.size(); k++) {
+        const Operator &o = g_operators[k];
+        const vector<PrePost> effects = o.get_pre_post();
+        for (size_t e1 = 0; e1 < effects.size(); e1++) {
+            for (size_t e2 = 0; e2 < effects.size(); e2++) {
+                are_additive[effects[e1].var][effects[e2].var] = false;
+            }
+        }
+    }
+
     build_cgraph();
     cout << "built cgraph." << endl;
     vector<int> vertices_1;
@@ -29,6 +42,7 @@ PatternCollection::PatternCollection(const vector<vector<int> > &pat_coll) : pat
     // maybe unnecessary, but we don't need cgraph anymore
     cgraph.clear();
 
+
     // build all pattern databases
     Timer timer;
     timer();
@@ -44,65 +58,9 @@ PatternCollection::PatternCollection(const vector<vector<int> > &pat_coll) : pat
 PatternCollection::~PatternCollection() {
 }
 
-bool PatternCollection::are_additive(int pattern1, int pattern2) const {
-    vector<int> p1 = pattern_collection[pattern1];
-    vector<int> p2 = pattern_collection[pattern2];
-
-    for (size_t i = 0; i < p1.size(); i++) {
-        for (size_t j = 0; j < p2.size(); j++) {
-            // now check which operators affect pattern1
-            for (size_t k = 0; k < g_operators.size(); k++) {
-                bool p1_affected = false;
-                const Operator &o = g_operators[k];
-                const vector<PrePost> effects = o.get_pre_post();
-                for (size_t l = 0; l < effects.size(); l++) {
-                    // every effect affect one specific variable
-                    int var = effects[l].var;
-                    // we have to check if this variable is in our pattern
-                    for (size_t m = 0; m < p1.size(); m++) {
-                        if (var == p1[m]) {
-                            // this operator affects pattern 1
-                            p1_affected = true;
-                            //cout << "operator:" << endl;
-                            //o.dump();
-                            //cout << "affects pattern:" << endl;
-                            //for (size_t n = 0; n < p1.size(); n++) {
-                                //cout << "variable: " << p1[n] << " (real name: " << g_variable_name[p1[n]] << ")" << endl;
-                            //}
-                            break;
-                        }
-                    }
-                    if (p1_affected) {
-                        break;
-                    }
-                }
-                if (p1_affected) {
-                    // check if the same operator also affects pattern 2
-                    for (size_t l = 0; l < effects.size(); l++) {
-                        int var = effects[l].var;
-                        for (size_t m = 0; m < p2.size(); m++) {
-                            if (var == p2[m]) {
-                                // this operator affects also pattern 2
-                                //cout << "and also affects pattern:" << endl;
-                                //for (size_t n = 0; n < p2.size(); n++) {
-                                    //cout << "variable: " << p2[n] << " (real name: " << g_variable_name[p2[n]] << ")" << endl;
-                                //}
-                                //cout << endl;
-                                return false;
-                            }
-                        }
-                    }
-                    //cout << "but doesn't affect pattern:" << endl;
-                    //for (size_t n = 0; n < p2.size(); n++) {
-                        //cout << "variable: " << p2[n] << " (real name: " << g_variable_name[p2[n]] << ")" << endl;
-                    //}
-                    //cout << endl;
-                }
-            }
-        }
-    }
-    return true;
-}
+/*bool PatternCollection::are_additive(int pattern1, int pattern2) const {
+    return are_additive[pattern1][pattern2];
+}*/
 
 void PatternCollection::build_cgraph() {
     // initialize compatibility graph
@@ -111,7 +69,7 @@ void PatternCollection::build_cgraph() {
 
     for (size_t i = 0; i < number_patterns; i++) {
         for (size_t j = i+1; j < number_patterns; j++) {
-            if (are_additive(i,j)) {
+            if (are_additive[i][j]) {
                 // if the two patterns are additive there is an edge in the compatibility graph
                 cout << "pattern (index) " << i << " additive with " << "pattern (index) " << j << endl;
                 cgraph[i].push_back(j);

@@ -69,7 +69,7 @@ void CanonicalHeuristic::initialize() {
     pattern_collection[1] = pattern_2;*/
 
     //3. three patterns logistics00 6-2
-    int patt_1[2] = {3, 4};
+    /*int patt_1[2] = {3, 4};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[2] = {5, 6};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
@@ -78,7 +78,7 @@ void CanonicalHeuristic::initialize() {
     vector<vector<int> > patt_coll(3);
     patt_coll[0] = pattern_1;
     patt_coll[1] = pattern_2;
-    patt_coll[2] = pattern_3;
+    patt_coll[2] = pattern_3;*/
 
     //1. one pattern driverlog 6
     /*int patt_1[7] = {4, 5, 7, 9, 10, 11, 12};
@@ -123,16 +123,16 @@ void CanonicalHeuristic::initialize() {
     pattern_collection[1] = pattern_2;*/
 
     //3. three patterns blocks 7-2
-    /*int patt_1[2] = {9, 10};
+    int patt_1[2] = {9, 10};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[2] = {11, 12};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
     int patt_3[2] = {13, 14};
     vector<int> pattern_3(patt_3, patt_3 + sizeof(patt_3) / sizeof(int));
-    vector<vector<int> > pattern_collection(3);
-    pattern_collection[0] = pattern_1;
-    pattern_collection[1] = pattern_2;
-    pattern_collection[2] = pattern_3;*/
+    vector<vector<int> > patt_coll(3);
+    patt_coll[0] = pattern_1;
+    patt_coll[1] = pattern_2;
+    patt_coll[2] = pattern_3;
 
     // additional two patterns for logistics00 9-1
     /*int patt_1[4] = {4, 5, 6, 7};
