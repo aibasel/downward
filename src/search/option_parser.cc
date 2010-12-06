@@ -106,7 +106,7 @@ bool OptionParser::knows_scalar_evaluator(const string &name) const {
 }
 
 bool OptionParser::knows_lm_graph(const string &name) const {
-    return lm_graph_map.count(name)  || predefined_lm_graphs.count(name);
+    return lm_graph_map.count(name) || predefined_lm_graphs.count(name);
 }
 
 bool OptionParser::knows_search_engine(const string &name) const {
@@ -185,7 +185,6 @@ void OptionParser::predefine_heuristic(const vector<string> &input) {
         throw ParseError(1);
     }
 }
-
 
 void OptionParser::predefine_lm_graph(const char *str) {
     vector<string> tokens;

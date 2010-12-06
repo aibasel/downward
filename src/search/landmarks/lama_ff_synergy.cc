@@ -84,7 +84,7 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
         throw ParseError(start + 1);
 
     LandmarksGraph *lm_graph = OptionParser::instance()->parse_lm_graph(
-            config,start + 2, end, false);
+        config, start + 2, end, false);
     ++end;
 
     if (lm_graph == 0)

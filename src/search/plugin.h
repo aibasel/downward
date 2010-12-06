@@ -26,7 +26,7 @@ class LandmarkGraphPlugin {
     LandmarkGraphPlugin(const LandmarkGraphPlugin &copy);
 public:
     LandmarkGraphPlugin(const std::string &key,
-                         OptionParser::LandmarkGraphFactory factory);
+                        OptionParser::LandmarkGraphFactory factory);
     ~LandmarkGraphPlugin();
 };
 
