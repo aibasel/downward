@@ -62,6 +62,9 @@ int main(int argc, const char **argv) {
         if (arg.compare("--heuristic") == 0) {
             ++i;
             OptionParser::instance()->predefine_heuristic(argv[i]);
+        } else if (arg.compare("--landmarks") == 0) {
+            ++i;
+            OptionParser::instance()->predefine_lm_graph(argv[i]);
         } else if (arg.compare("--search") == 0) {
             ++i;
             engine = OptionParser::instance()->parse_search_engine(argv[i]);

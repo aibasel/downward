@@ -9,9 +9,14 @@
 #include "../state.h"
 #include "../globals.h"
 #include "../domain_transition_graph.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 #include "util.h"
 
 using namespace __gnu_cxx;
+
+static LandmarkGraphPlugin landmarks_graph_new_plugin(
+    "lmgraph_rpg_sasp", LandmarksGraphNew::create);
 
 void LandmarksGraphNew::get_greedy_preconditions_for_lm(
     const LandmarkNode *lmp, const Operator &o, hash_map<int, int> &result) const {
@@ -86,8 +91,8 @@ int LandmarksGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
     return 1;
 }
 
-void LandmarksGraphNew::found_lm_and_order(const pair<int, int> a,
-                                           LandmarkNode &b, edge_type t) {
+void LandmarksGraphNew::found_simple_lm_and_order(const pair<int, int> a,
+                                                  LandmarkNode &b, edge_type t) {
     LandmarkNode *new_lm;
     if (simple_landmark_exists(a)) {
         new_lm = &(get_simple_lm_node(a));
@@ -283,7 +288,7 @@ void LandmarksGraphNew::generate_landmarks() {
             // All such shared preconditions are landmarks, and greedy necessary predecessors of bp.
             for (hash_map<int, int>::iterator it = shared_pre.begin(); it
                  != shared_pre.end(); it++) {
-                found_lm_and_order(*it, *bp, gn);
+                found_simple_lm_and_order(*it, *bp, greedy_necessary);
             }
             // Extract additional orders from relaxed planning graph and DTG.
             approximate_lookahead_orders(lvl_var, bp);
@@ -295,7 +300,7 @@ void LandmarksGraphNew::generate_landmarks() {
             compute_disjunctive_preconditions(disjunctive_pre, lvl_var, bp);
             for (int i = 0; i < disjunctive_pre.size(); i++)
                 if (disjunctive_pre[i].size() < 5) { // We don't want disj. LMs to get too big
-                    found_disj_lm_and_order(disjunctive_pre[i], *bp, gn);
+                    found_disj_lm_and_order(disjunctive_pre[i], *bp, greedy_necessary);
                 }
 
         }
@@ -335,7 +340,7 @@ void LandmarksGraphNew::approximate_lookahead_orders(
             // If that value is crucial for achieving the LM from the initial state,
             // we have found a new landmark.
             if (!domain_connectivity(lmk, exclude))
-                found_lm_and_order(make_pair(lmk.first, i), *lmp, ln);
+                found_simple_lm_and_order(make_pair(lmk.first, i), *lmp, natural);
         }
 
 }
@@ -426,9 +431,40 @@ void LandmarksGraphNew::add_lm_forward_orders() {
 
             if (simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = get_simple_lm_node(node2_pair);
-                edge_add(node, node2, ln);
+                edge_add(node, node2, natural);
             }
         }
         node.forward_orders.clear();
+    }
+}
+
+
+
+LandmarksGraph *LandmarksGraphNew::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
+    LandmarksGraph::LandmarkGraphOptions common_options;
+
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
+        return 0;
+    } else {
+        LandmarksGraph *graph = new LandmarksGraphNew(common_options,
+                                                      new Exploration);
+        LandmarksGraph::build_lm_graph(graph);
+        return graph;
     }
 }

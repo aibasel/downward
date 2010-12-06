@@ -13,6 +13,7 @@
 #include "../operator.h"
 #include "../state.h"
 #include "../globals.h"
+#include "../exact_timer.h"
 #include "util.h"
 
 using namespace std;
@@ -34,9 +35,41 @@ static inline bool _operator_eff_includes_non_conditional(const Operator &o,
     return false;
 }
 
-LandmarksGraph::LandmarksGraph(Exploration *explor)
-    : exploration(explor), landmarks_count(0),
-      use_external_inconsistencies(false), reasonable_orders(false) {
+static inline bool _operator_condition_includes(const Operator &o,
+                                                const LandmarkNode *lmp) {
+    /* Test whether the landmark is used by the operator as a precondition.
+       A disjunctive landmarks is used if one of its disjuncts is used. */
+    assert(lmp != NULL);
+    const vector<Prevail> &prevail = o.get_prevail();
+    for (unsigned j = 0; j < prevail.size(); j++) {
+        for (unsigned int k = 0; k < lmp->vars.size(); k++) {
+            if (prevail[j].var == lmp->vars[k] && prevail[j].prev
+                == lmp->vals[k])
+                //if (prepost[j].cond.empty())
+                return true;
+        }
+    }
+    const vector<PrePost> &prepost = o.get_pre_post();
+    for (unsigned j = 0; j < prepost.size(); j++) {
+        for (unsigned int k = 0; k < lmp->vars.size(); k++) {
+            if (prepost[j].var == lmp->vars[k] && prepost[j].pre
+                == lmp->vals[k])
+                //if (prepost[j].cond.empty())
+                return true;
+        }
+    }
+    return false;
+}
+
+LandmarksGraph::LandmarksGraph(LandmarkGraphOptions &options, Exploration *explor)
+    : exploration(explor), landmarks_count(0), conj_lms(0),
+      external_inconsistencies_read(false) {
+    reasonable_orders = options.reasonable_orders;
+    only_causal_landmarks = options.only_causal_landmarks;
+    disjunctive_landmarks = options.disjunctive_landmarks;
+    conjunctive_landmarks = options.conjunctive_landmarks;
+    no_orders = options.no_orders;
+    discover_action_landmarks = options.discover_action_landmarks;
     generate_operators_lookups();
 }
 
@@ -48,6 +81,8 @@ bool LandmarksGraph::simple_landmark_exists(const pair<int, int> &lm) const {
 }
 
 bool LandmarksGraph::landmark_exists(const pair<int, int> &lm) const {
+    // Note: this only checks for one fact whether it's part of a landmark, hence only
+    // simple and disjunctive landmarks are checked.
     set<pair<int, int> > lm_set;
     lm_set.insert(lm);
     return simple_landmark_exists(lm) || disj_landmark_exists(lm_set);
@@ -135,13 +170,49 @@ LandmarkNode &LandmarksGraph::landmark_add_disjunctive(
     return *new_node_p;
 }
 
+void LandmarksGraph::set_landmark_ids() {
+    ordered_nodes.resize(number_of_landmarks());
+    int id = 0;
+    for (set<LandmarkNode *>::iterator node_it =
+             nodes.begin(); node_it != nodes.end(); node_it++) {
+        LandmarkNode *lmn = *node_it;
+        lmn->assign_id(id);
+        ordered_nodes[id] = lmn;
+        id++;
+    }
+
+    ordered_action_landmarks.resize(action_landmarks.size());
+    id = 0;
+    for (set<const Operator *>::iterator alm_it =
+             action_landmarks.begin(); alm_it != action_landmarks.end(); alm_it++) {
+        ordered_action_landmarks[id] = *alm_it;
+        action_landmark_ids[*alm_it] = id;
+        id++;
+    }
+}
+
+LandmarkNode *LandmarksGraph::get_lm_for_index(int i) {
+    assert(ordered_nodes[i]->get_id() == i);
+    return ordered_nodes[i];
+}
+
 void LandmarksGraph::generate() {
     //cout << "generating landmarks" << endl;
     generate_landmarks();
 
-    generate_action_landmarks();
+    if (discover_action_landmarks)
+        generate_action_landmarks();
+    if (only_causal_landmarks)
+        discard_noncausal_landmarks();
+    if (!disjunctive_landmarks)
+        discard_disjunctive_landmarks();
+    if (!conjunctive_landmarks)
+        discard_conjunctive_landmarks();
+    set_landmark_ids();
 
-    if (reasonable_orders) {
+    if (no_orders)
+        discard_all_orderings();
+    else if (reasonable_orders) {
         cout << "approx. reasonable orders" << endl;
         approximate_reasonable_orders(false);
         cout << "approx. obedient reasonable orders" << endl;
@@ -150,6 +221,7 @@ void LandmarksGraph::generate() {
     mk_acyclic_graph();
     landmarks_cost = calculate_lms_cost();
     calc_achievers();
+    //dump();
 }
 
 void LandmarksGraph::read_external_inconsistencies() {
@@ -225,7 +297,7 @@ void LandmarksGraph::read_external_inconsistencies() {
         }
         check_magic(in, "end_groups");
         myfile.close();
-        use_external_inconsistencies = true;
+        external_inconsistencies_read = true;
         cout << "done" << endl;
     } else {
         cout << "Unable to open invariants file!" << endl;
@@ -278,7 +350,42 @@ bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     for (int i = 0; i < g_goal.size(); i++)
         if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX)
             return false;
+
     return true;
+}
+
+bool LandmarksGraph::is_causal_landmark(const LandmarkNode &landmark) const {
+    /* Test whether the relaxed planning task is unsolvable without using any operator
+       that has "landmark" has a precondition.
+       Similar to "relaxed_task_solvable" above.
+     */
+
+    if (landmark.in_goal)
+        return true;
+    vector<vector<int> > lvl_var;
+    vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
+    // Initialize lvl_var to INT_MAX
+    lvl_var.resize(g_variable_name.size());
+    for (unsigned var = 0; var < g_variable_name.size(); var++) {
+        lvl_var[var].resize(g_variable_domain[var], INT_MAX);
+    }
+    hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
+    vector<pair<int, int> > exclude_props;
+    for (int op = 0; op < g_operators.size(); op++) {
+        if (_operator_condition_includes(g_operators[op], &landmark)) {
+            exclude_ops.insert(&g_operators[op]);
+        }
+    }
+    // Do relaxed exploration
+    exploration->compute_reachability_with_excludes(lvl_var, lvl_op, true,
+                                                    exclude_props, exclude_ops, false);
+
+    // Test whether all goal propositions have a level of less than INT_MAX
+    for (int i = 0; i < g_goal.size(); i++)
+        if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX)
+            return true;
+
+    return false;
 }
 
 void LandmarksGraph::generate_operators_lookups() {
@@ -426,17 +533,6 @@ bool LandmarksGraph::effect_always_happens(const vector<PrePost> &prepost, set<
     return eff.empty();
 }
 
-inline bool LandmarksGraph::inconsistent(const pair<int, int> &a, const pair<
-                                             int, int> &b) const {
-    assert(a.first != b.first || a.second != b.second);
-    if (a.first == b.first && a.second != b.second)
-        return true;
-    if (use_external_inconsistencies &&
-        inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
-        return true;
-    return false;
-}
-
 bool LandmarksGraph::interferes(const LandmarkNode *node_a,
                                 const LandmarkNode *node_b) const {
     /* Facts a and b interfere (i.e., achieving b before a would mean having to delete b
@@ -448,81 +544,100 @@ bool LandmarksGraph::interferes(const LandmarkNode *node_a,
      "all actions that add a delete b". However, in our case (SAS+ formalism), this condition
      is the same as 2.
      */
+    assert(node_a != node_b);
     assert(!node_a->disjunctive && !node_b->disjunctive);
-    pair<int, int> a = make_pair(node_a->vars[0], node_a->vals[0]);
-    pair<int, int> b = make_pair(node_b->vars[0], node_b->vals[0]);
-    assert(a.first != b.first || a.second != b.second);
 
-    // 1. a, b inconsistent
-    if (inconsistent(a, b))
-        return true;
+    for (int bi = 0; bi < node_b->vars.size(); bi++) {
+        pair<int, int> b = make_pair(node_b->vars[bi], node_b->vals[bi]);
+        for (int ai = 0; ai < node_a->vars.size(); ai++) {
+            pair<int, int> a = make_pair(node_a->vars[ai], node_a->vals[ai]);
 
-    // 2. Shared effect e in all operators reaching a, and e, b inconsistent
-    hash_map<int, int> shared_eff;
-    bool init = true;
-    const vector<int> &ops = get_operators_including_eff(a);
-    // Intersect operators that achieve a one by one
-    for (unsigned i = 0; i < ops.size(); i++) {
-        const Operator &op = get_operator_for_lookup_index(ops[i]);
-        // If no shared effect among previous operators, break
-        if (!init && shared_eff.empty())
-            break;
-        // Else, insert effects of this operator into set "next_eff" if
-        // it is an unconditional effect or a conditional effect that is sure to
-        // happen. (Such "trivial" conditions can arise due to our translator,
-        // e.g. in Schedule. There, the same effect is conditioned on a disjunction
-        // of conditions of which one will always be true. We test for a simple kind
-        // of these trivial conditions here.)
-        const vector<PrePost> &prepost = op.get_pre_post();
-        set<pair<int, int> > trivially_conditioned_effects;
-        bool testing_for_trivial_conditions = true;
-        bool trivial_conditioned_effects_found = false;
-        if (testing_for_trivial_conditions)
-            trivial_conditioned_effects_found = effect_always_happens(prepost,
-                                                                      trivially_conditioned_effects);
-        hash_map<int, int> next_eff;
-        for (unsigned i = 0; i < prepost.size(); i++) {
-            if (prepost[i].cond.empty() && prepost[i].var != a.first) {
-                next_eff.insert(make_pair(prepost[i].var, prepost[i].post));
-            } else if (testing_for_trivial_conditions
-                       && trivial_conditioned_effects_found
-                       && trivially_conditioned_effects.find(make_pair(
-                                                                 prepost[i].var, prepost[i].post))
-                       != trivially_conditioned_effects.end())
-                next_eff.insert(make_pair(prepost[i].var, prepost[i].post));
-        }
-        // Intersect effects of this operator with those of previous operators
-        if (init)
-            swap(shared_eff, next_eff);
-        else {
-            hash_map<int, int> result;
-            for (hash_map<int, int>::iterator it1 = shared_eff.begin(); it1
-                 != shared_eff.end(); it1++) {
-                hash_map<int, int>::iterator it2 = next_eff.find(it1->first);
-                if (it2 != next_eff.end() && it2->second == it1->second)
-                    result.insert(*it1);
+            if (a.first == b.first && a.second == b.second) {
+                if (!node_a->conjunctive || !node_b->conjunctive)
+                    return false;
+                else
+                    continue;
             }
-            swap(shared_eff, result);
-        }
-        init = false;
-    }
-    // Test whether one of the shared effects is inconsistent with b
-    for (hash_map<int, int>::iterator it = shared_eff.begin(); it
-         != shared_eff.end(); it++)
-        if (make_pair(it->first, it->second) != a && make_pair(it->first,
-                                                               it->second) != b && inconsistent(*it, b))
-            return true;
 
-    // 3. Exists LM x, inconsistent x, b and x->_gn a
-    const LandmarkNode &node = *node_a;
-    for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
-             node.parents.begin(); it != node.parents.end(); it++) {
-        edge_type edge = it->second;
-        pair<int, int> parent_prop = make_pair(it->first->vars[0],
-                                               it->first->vals[0]);
-        if ((edge == n || edge == gn) && parent_prop != b && inconsistent(
-                parent_prop, b))
-            return true;
+            // 1. a, b inconsistent
+            if (inconsistent(a, b))
+                return true;
+
+            // 2. Shared effect e in all operators reaching a, and e, b inconsistent
+            // Skip this for conjunctive nodes a, as they are typically achieved through a
+            // sequence of operators successively adding the parts of a
+            if (node_a->conjunctive)
+                continue;
+
+            hash_map<int, int> shared_eff;
+            bool init = true;
+            const vector<int> &ops = get_operators_including_eff(a);
+            // Intersect operators that achieve a one by one
+            for (unsigned i = 0; i < ops.size(); i++) {
+                const Operator &op = get_operator_for_lookup_index(ops[i]);
+                // If no shared effect among previous operators, break
+                if (!init && shared_eff.empty())
+                    break;
+                // Else, insert effects of this operator into set "next_eff" if
+                // it is an unconditional effect or a conditional effect that is sure to
+                // happen. (Such "trivial" conditions can arise due to our translator,
+                // e.g. in Schedule. There, the same effect is conditioned on a disjunction
+                // of conditions of which one will always be true. We test for a simple kind
+                // of these trivial conditions here.)
+                const vector<PrePost> &prepost = op.get_pre_post();
+                set<pair<int, int> > trivially_conditioned_effects;
+                bool testing_for_trivial_conditions = true;
+                bool trivial_conditioned_effects_found = false;
+                if (testing_for_trivial_conditions)
+                    trivial_conditioned_effects_found = effect_always_happens(prepost,
+                                                                              trivially_conditioned_effects);
+                hash_map<int, int> next_eff;
+                for (unsigned i = 0; i < prepost.size(); i++) {
+                    if (prepost[i].cond.empty() && prepost[i].var != a.first) {
+                        next_eff.insert(make_pair(prepost[i].var, prepost[i].post));
+                    } else if (testing_for_trivial_conditions
+                               && trivial_conditioned_effects_found
+                               && trivially_conditioned_effects.find(make_pair(
+                                                                         prepost[i].var, prepost[i].post))
+                               != trivially_conditioned_effects.end())
+                        next_eff.insert(make_pair(prepost[i].var, prepost[i].post));
+                }
+                // Intersect effects of this operator with those of previous operators
+                if (init)
+                    swap(shared_eff, next_eff);
+                else {
+                    hash_map<int, int> result;
+                    for (hash_map<int, int>::iterator it1 = shared_eff.begin(); it1
+                         != shared_eff.end(); it1++) {
+                        hash_map<int, int>::iterator it2 = next_eff.find(it1->first);
+                        if (it2 != next_eff.end() && it2->second == it1->second)
+                            result.insert(*it1);
+                    }
+                    swap(shared_eff, result);
+                }
+                init = false;
+            }
+            // Test whether one of the shared effects is inconsistent with b
+            for (hash_map<int, int>::iterator it = shared_eff.begin(); it
+                 != shared_eff.end(); it++)
+                if (make_pair(it->first, it->second) != a && make_pair(it->first,
+                                                                       it->second) != b && inconsistent(*it, b))
+                    return true;
+        }
+
+        // 3. Exists LM x, inconsistent x, b and x->_gn a
+        const LandmarkNode &node = *node_a;
+        for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
+                 node.parents.begin(); it != node.parents.end(); it++) {
+            edge_type edge = it->second;
+            for (int i = 0; i < it->first->vars.size(); i++) {
+                pair<int, int> parent_prop = make_pair(it->first->vars[i],
+                                                       it->first->vals[i]);
+                if (edge >= greedy_necessary && parent_prop != b && inconsistent(
+                        parent_prop, b))
+                    return true;
+            }
+        }
     }
     // No inconsistency found
     return false;
@@ -550,28 +665,28 @@ void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
         LandmarkNode *node_p = *it;
         if (node_p->disjunctive)
             continue;
-        pair<int, int> node_prop = make_pair(node_p->vars[0], node_p->vals[0]);
 
-        if (!obedient_orders && _in_goal(node_prop)) {
+        if (node_p->is_true_in_state(*g_initial_state))
+            return;
+
+        if (!obedient_orders && node_p->is_goal()) {
             for (set<LandmarkNode *>::iterator it2 = nodes.begin(); it2
                  != nodes.end(); it2++) {
                 LandmarkNode *node2_p = *it2;
-                if (node2_p->disjunctive)
+                if (node2_p == node_p || node2_p->disjunctive)
                     continue;
-                pair<int, int> node2_prop = make_pair(node2_p->vars[0],
-                                                      node2_p->vals[0]);
-                if (node_prop != node2_prop && interferes(node2_p, node_p)) {
-                    edge_add(*node2_p, *node_p, r);
+                if (interferes(node2_p, node_p)) {
+                    edge_add(*node2_p, *node_p, reasonable);
                 }
             }
-        } else if (!node_p->is_true_in_state(*g_initial_state)) {
+        } else {
             // Collect candidates for reasonable orders in "interesting nodes".
             // Use hash set to filter duplicates.
             hash_set<LandmarkNode *, hash_pointer> interesting_nodes(
                 g_variable_name.size());
             for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
                      node_p->children.begin(); it != node_p->children.end(); it++) {
-                if (it->second == gn) { // found node2: node_p ->_gn node2
+                if (it->second >= greedy_necessary) { // found node2: node_p ->_gn node2
                     LandmarkNode &node2 = *(it->first);
                     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator
                          it2 = node2.parents.begin(); it2
@@ -580,8 +695,7 @@ void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
                         LandmarkNode &parent = *(it2->first);
                         if (parent.disjunctive)
                             continue;
-                        if ((edge == gn || edge == n || edge == ln
-                             || (obedient_orders && edge == r)) &&
+                        if ((edge >= natural || (obedient_orders && edge == reasonable)) &&
                             &parent != node_p) {      // find predecessors or parent and collect in
                                                       // "interesting nodes"
                             interesting_nodes.insert(&parent);
@@ -595,15 +709,13 @@ void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
             // with node_p.
             for (hash_set<LandmarkNode *, hash_pointer>::iterator it3 =
                      interesting_nodes.begin(); it3 != interesting_nodes.end(); it3++) {
-                if ((*it3)->disjunctive)
+                if (*it3 == node_p || (*it3)->disjunctive)
                     continue;
-                pair<int, int> it_prop = make_pair((*it3)->vars[0],
-                                                   (*it3)->vals[0]);
-                if (it_prop != node_prop && interferes(*it3, node_p)) {
+                if (interferes(*it3, node_p)) {
                     if (!obedient_orders)
-                        edge_add(**it3, *node_p, r);
+                        edge_add(**it3, *node_p, reasonable);
                     else
-                        edge_add(**it3, *node_p, o_r);
+                        edge_add(**it3, *node_p, obedient_reasonable);
                 }
             }
         }
@@ -622,8 +734,7 @@ void LandmarksGraph::collect_ancestors(
              node.parents.begin(); it != node.parents.end(); it++) {
         edge_type &edge = it->second;
         LandmarkNode &parent = *(it->first);
-        if (edge == gn || edge == n || edge == ln || (use_reasonable && edge
-                                                      == r))
+        if (edge >= natural || (use_reasonable && edge == reasonable))
             if (closed_nodes.find(&parent) == closed_nodes.end()) {
                 open_nodes.push_back(&parent);
                 closed_nodes.insert(&parent);
@@ -637,8 +748,7 @@ void LandmarksGraph::collect_ancestors(
                  node2.parents.begin(); it != node2.parents.end(); it++) {
             edge_type &edge = it->second;
             LandmarkNode &parent = *(it->first);
-            if (edge == gn || edge == n || edge == ln ||
-                (use_reasonable && edge == r)) {
+            if (edge >= natural || (use_reasonable && edge == reasonable)) {
                 if (closed_nodes.find(&parent) == closed_nodes.end()) {
                     open_nodes.push_back(&parent);
                     closed_nodes.insert(&parent);
@@ -650,9 +760,24 @@ void LandmarksGraph::collect_ancestors(
     }
 }
 
+void LandmarksGraph::print_proposition(const pair<int, int> &fluent) const {
+    hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator it =
+        pddl_propositions.find(fluent);
+    if (it != pddl_propositions.end()) {
+        cout << it->second.to_string();
+    } else {
+        cout << "Name unknown";
+    }
+    cout << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
+         << "->" << fluent.second << ")";
+}
+
 void LandmarksGraph::dump_node(const LandmarkNode *node_p) const {
+    cout << "LM " << node_p->get_id() << " ";
     if (node_p->disjunctive)
-        cout << "{";
+        cout << "disj {";
+    else if (node_p->conjunctive)
+        cout << "conj {";
     for (unsigned int i = 0; i < node_p->vars.size(); i++) {
         pair<int, int> node_prop = make_pair(node_p->vars[i], node_p->vals[i]);
         hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator
@@ -668,14 +793,19 @@ void LandmarksGraph::dump_node(const LandmarkNode *node_p) const {
         if (i < node_p->vars.size() - 1)
             cout << ", ";
     }
-    if (node_p->disjunctive)
+    if (node_p->disjunctive || node_p->conjunctive)
         cout << "}";
+    if (node_p->in_goal)
+        cout << "(goal)";
     cout << endl;
 }
 
 void LandmarksGraph::dump() const {
-    for (set<LandmarkNode *>::const_iterator it = nodes.begin(); it
-         != nodes.end(); it++) {
+    cout << "Landmarks graph: " << endl;
+    set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
+
+    for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
+         != nodes2.end(); it++) {
         LandmarkNode *node_p = *it;
         dump_node(node_p);
         for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
@@ -685,19 +815,19 @@ void LandmarksGraph::dump() const {
             const LandmarkNode *parent_p = parent_it->first;
             cout << "\t\t<-_";
             switch (edge) {
-            case n:
-                cout << "n   ";
+            case necessary:
+                cout << "nec ";
                 break;
-            case r:
-                cout << "r   ";
-                break;
-            case gn:
+            case greedy_necessary:
                 cout << "gn  ";
                 break;
-            case ln:
-                cout << "ln  ";
+            case natural:
+                cout << "nat ";
                 break;
-            case o_r:
+            case reasonable:
+                cout << "r   ";
+                break;
+            case obedient_reasonable:
                 cout << "o_r ";
                 break;
             }
@@ -710,25 +840,26 @@ void LandmarksGraph::dump() const {
             const LandmarkNode *child_p = child_it->first;
             cout << "\t\t->_";
             switch (edge) {
-            case n:
-                cout << "n   ";
+            case necessary:
+                cout << "nec ";
                 break;
-            case r:
-                cout << "r   ";
-                break;
-            case gn:
+            case greedy_necessary:
                 cout << "gn  ";
                 break;
-            case ln:
-                cout << "ln  ";
+            case natural:
+                cout << "nat ";
                 break;
-            case o_r:
+            case reasonable:
+                cout << "r   ";
+                break;
+            case obedient_reasonable:
                 cout << "o_r ";
                 break;
             }
             dump_node(child_p);
         }
     }
+    cout << "Landmarks graph end." << endl;
 }
 
 int LandmarksGraph::number_of_edges() const {
@@ -745,10 +876,10 @@ void LandmarksGraph::edge_add(LandmarkNode &from, LandmarkNode &to,
      reduce cycles. If the edge is already present, the stronger edge type wins.
      */
     assert(&from != &to);
-    assert(from.parents.find(&to) == from.parents.end() || type == r || type == o_r);
-    assert(to.children.find(&from) == to.children.end() || type == r || type == o_r);
+    assert(from.parents.find(&to) == from.parents.end() || type <= reasonable);
+    assert(to.children.find(&from) == to.children.end() || type <= reasonable);
 
-    if (type == r || type == o_r) { // simple cycle test
+    if (type == reasonable || type == obedient_reasonable) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
             //cout << "edge in opposite direction exists" << endl;
             if (from.parents.find(&to)->second > type) // Stronger order present, return
@@ -780,6 +911,28 @@ void LandmarksGraph::edge_add(LandmarkNode &from, LandmarkNode &to,
     assert(to.parents.find(&from) != to.parents.end());
 }
 
+void LandmarksGraph::discard_noncausal_landmarks() {
+    int number_of_noncausal_landmarks = 0;
+    bool change = true;
+    while (change) {
+        change = false;
+        for (set<LandmarkNode *>::const_iterator it = nodes.begin(); it
+             != nodes.end(); ++it) {
+            LandmarkNode *n = *it;
+            if (!is_causal_landmark(*n)) {
+                cout << "Discarding non-causal landmark: ";
+                dump_node(n);
+                rm_landmark_node(n);
+                number_of_noncausal_landmarks++;
+                change = true;
+                break;
+            }
+        }
+    }
+    cout << "Discarded " << number_of_noncausal_landmarks
+         << " non-causal landmarks" << endl;
+}
+
 void LandmarksGraph::discard_disjunctive_landmarks() {
     /* Using disjunctive landmarks during landmark generation can be
      beneficial even if we don't want to use disunctive landmarks during s
@@ -787,6 +940,8 @@ void LandmarksGraph::discard_disjunctive_landmarks() {
      found. (Note: this is implemented inefficiently because "nodes" contains
      pointers, not the actual nodes. We should change that.)
      */
+    if (number_of_disj_landmarks() == 0)
+        return;
     cout << "Discarding " << number_of_disj_landmarks()
          << " disjunctive landmarks" << endl;
     bool change = true;
@@ -804,6 +959,27 @@ void LandmarksGraph::discard_disjunctive_landmarks() {
     }
     assert(number_of_disj_landmarks() == 0);
     assert(disj_lms_to_nodes.size() == 0);
+}
+
+void LandmarksGraph::discard_conjunctive_landmarks() {
+    if (number_of_conj_landmarks() == 0)
+        return;
+    cout << "Discarding " << number_of_conj_landmarks()
+         << " conjunctive landmarks" << endl;
+    bool change = true;
+    while (change) {
+        change = false;
+        for (set<LandmarkNode *>::const_iterator it = nodes.begin(); it
+             != nodes.end(); ++it) {
+            LandmarkNode *n = *it;
+            if (n->conjunctive) {
+                rm_landmark_node(n);
+                change = true;
+                break;
+            }
+        }
+    }
+    assert(number_of_conj_landmarks() == 0);
 }
 
 void LandmarksGraph::rm_landmark_node(LandmarkNode *node) {
@@ -826,6 +1002,8 @@ void LandmarksGraph::rm_landmark_node(LandmarkNode *node) {
             pair<int, int> lm = make_pair(node->vars[i], node->vals[i]);
             disj_lms_to_nodes.erase(lm);
         }
+    } else if (node->conjunctive) {
+        conj_lms--;
     } else {
         pair<int, int> lm = make_pair(node->vars[0], node->vals[0]);
         simple_lms_to_nodes.erase(lm);
@@ -843,6 +1021,16 @@ void LandmarksGraph::rm_landmark(const pair<int, int> &lm) {
     else
         node = &get_disj_lm_node(lm);
     rm_landmark_node(node);
+}
+
+void LandmarksGraph::discard_all_orderings() {
+    cout << "Removing all orderings." << endl;
+    for (set<LandmarkNode *>::iterator it =
+             nodes.begin(); it != nodes.end(); it++) {
+        LandmarkNode &lmn = **it;
+        lmn.children.clear();
+        lmn.parents.clear();
+    }
 }
 
 void LandmarksGraph::mk_acyclic_graph() {
@@ -866,7 +1054,7 @@ bool LandmarksGraph::remove_first_weakest_cycle_edge(LandmarkNode *cur,
     for (list<pair<LandmarkNode *, edge_type> >::iterator it2 = it; it2
          != path.end(); it2++) {
         edge_type edge = it2->second;
-        if (edge == o_r || edge == r) {
+        if (edge == reasonable || edge == obedient_reasonable) {
             parent_p = it2->first;
             if (*it2 == path.back()) {
                 child_p = cur;
@@ -876,7 +1064,7 @@ bool LandmarksGraph::remove_first_weakest_cycle_edge(LandmarkNode *cur,
                 child_it++;
                 child_p = child_it->first;
             }
-            if (edge == o_r)
+            if (edge == obedient_reasonable)
                 break;
             // else no break since o_r order could still appear in list
         }
@@ -1142,4 +1330,63 @@ int LandmarksGraph::relaxed_plan_length_without(LandmarkNode *exclude) {
     }
     int val = exploration->compute_ff_heuristic_with_excludes(*g_initial_state, exclude_props, exclude_ops);
     return val;
+}
+
+
+const Operator *LandmarksGraph::get_alm_for_index(int i) const {
+    return ordered_action_landmarks[i];
+}
+
+// return action landmark id if op is an action landmark, -1 otherwisr
+int LandmarksGraph::get_alm_id(const Operator *op) const {
+    map<const Operator *, int>::const_iterator it = action_landmark_ids.find(op);
+    if (it != action_landmark_ids.end())
+        return it->second;
+    return -1;
+}
+
+// static function to generate landmarks and print message
+void LandmarksGraph::build_lm_graph(LandmarksGraph *lm_graph) {
+    ExactTimer lm_generation_timer;
+    lm_graph->read_external_inconsistencies();
+    lm_graph->generate();
+    cout << "Landmarks generation time: " << lm_generation_timer << endl;
+    if (lm_graph->number_of_landmarks() == 0)
+        cout << "Warning! No landmarks found. Task unsolvable?" << endl;
+    cout << "Discovered " << lm_graph->number_of_landmarks()
+         << " landmarks, of which " << lm_graph->number_of_disj_landmarks()
+         << " are disjunctive and "
+         << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
+         << lm_graph->number_of_edges() << " edges\n";
+}
+
+
+LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
+    : reasonable_orders(false),
+      only_causal_landmarks(false),
+      disjunctive_landmarks(true),
+      conjunctive_landmarks(true),
+      no_orders(false),
+      discover_action_landmarks(false) {
+}
+
+void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(NamedOptionParser &option_parser) {
+    option_parser.add_bool_option("reasonable_orders",
+                                  &reasonable_orders,
+                                  "generate reasonable orders");
+    option_parser.add_bool_option("only_causal_landmarks",
+                                  &only_causal_landmarks,
+                                  "keep only causal landmarks");
+    option_parser.add_bool_option("disjunctive_landmarks",
+                                  &disjunctive_landmarks,
+                                  "keep disjunctive landmarks");
+    option_parser.add_bool_option("conjunctive_landmarks",
+                                  &conjunctive_landmarks,
+                                  "keep conjunctive landmarks");
+    option_parser.add_bool_option("no_orders",
+                                  &no_orders,
+                                  "discard all orderings");
+    option_parser.add_bool_option("discover_action_landmarks",
+                                  &discover_action_landmarks,
+                                  "discover action landmarks in preprocessing");
 }
