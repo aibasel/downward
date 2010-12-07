@@ -36,7 +36,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(LandmarksGraph &lm_graph, bool pr
     if (admissible) {
         use_cost_sharing = true;
         if (lgraph.is_using_reasonable_orderings()) {
-            cerr << "Reasonable orderings should not be used for admissble heuristics" << endl;
+            cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             ::exit(2);
         }
         if (!g_axioms.empty()) {
