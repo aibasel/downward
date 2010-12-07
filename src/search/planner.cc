@@ -81,38 +81,27 @@ int main(int argc, const char **argv) {
 
 void register_parsers() {
     // Register search engines
-    OptionParser::instance()->register_search_engine("eager",
-                                                     GeneralEagerBestFirstSearch::create);
-    OptionParser::instance()->register_search_engine("astar",
-                                                     GeneralEagerBestFirstSearch::create_astar);
-    OptionParser::instance()->register_search_engine("eager_greedy",
-                                                     GeneralEagerBestFirstSearch::create_greedy);
-    OptionParser::instance()->register_search_engine("lazy",
-                                                     GeneralLazyBestFirstSearch::create);
-    OptionParser::instance()->register_search_engine("lazy_greedy",
-                                                     GeneralLazyBestFirstSearch::create_greedy);
-    OptionParser::instance()->register_search_engine("lazy_wastar",
-                                                     GeneralLazyBestFirstSearch::create_weighted_astar);
-    OptionParser::instance()->register_search_engine("ehc",
-                                                     EnforcedHillClimbingSearch::create);
-    OptionParser::instance()->register_search_engine("old_greedy",
-                                                     BestFirstSearchEngine::create);
-    OptionParser::instance()->register_search_engine("iterated",
-                                                     IteratedSearch::create);
+    Registry<SearchEngine>* search_reg = Registry<SearchEngine>::instance();
+    search_reg->register("eager", GeneralEagerBestFirstSearch::create);
+
+    search_reg->register("eager", GeneralEagerBestFirstSearch::create);
+    search_reg->register("astar", GeneralEagerBestFirstSearch::create_astar);
+    search_reg->register("eager_greedy", GeneralEagerBestFirstSearch::create_greedy);
+    search_reg->register("lazy", GeneralLazyBestFirstSearch::create);
+    search_reg->register("lazy_greedy", GeneralLazyBestFirstSearch::create_greedy);
+    search_reg->register("lazy_wastar", GeneralLazyBestFirstSearch::create_weighted_astar);
+    search_reg->register("ehc", EnforcedHillClimbingSearch::create);
+    search_reg->register("old_greedy", BestFirstSearchEngine::create);
+    search_reg->register("iterated", IteratedSearch::create);
 
     // register combinations and g evaluator
-    OptionParser::instance()->register_scalar_evaluator("sum",
-                                                        SumEvaluator::create);
-    OptionParser::instance()->register_scalar_evaluator("weight",
-                                                        WeightedEvaluator::create);
-    OptionParser::instance()->register_scalar_evaluator("g",
-                                                        GEvaluator::create);
-    OptionParser::instance()->register_scalar_evaluator("pref",
-                                                        PrefEvaluator::create);
+    Registry<ScalarEvaluator>* scalar_eval_reg = Registry<ScalarEvaluator>::instance();
+    scalar_eval_reg->register("sum", SumEvaluator::create);
+    scalar_eval_reg->register("weight", WeightedEvaluator::create);
+    scalar_eval_reg->register("g", GEvaluator::create);
+    scalar_eval_reg->register("pref", PrefEvaluator::create);
 
     // Note:
-    // open lists are registered in the constructor of OpenListParser.
-    // This is necessary because the open list entries are specified
-    // as template parameter and we would have template parameters everywhere
-    // otherwise
+    // open lists are registered just before creation in the OptionParser,
+    // since they are templated.
 }
