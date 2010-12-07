@@ -99,7 +99,7 @@ class SASOperator:
 
 class SASAxiom:
     def __init__(self, condition, effect):
-        self.condition = condition
+        self.condition = sorted(condition)
         self.effect = effect
         assert self.effect[1] in (0, 1)
 
