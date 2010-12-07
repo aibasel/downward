@@ -62,7 +62,6 @@ def get_fluents(task):
     for action in task.actions:
         for eff in action.effects:
             fluent_names.add(eff.literal.predicate)
-    # TODO: Sort fluent_names ?
     return [pred for pred in task.predicates if pred.name in fluent_names]
 
 def get_initial_invariants(task):
@@ -115,14 +114,15 @@ def useful_groups(invariants, initial_facts):
                 nonempty_groups.add(group_key)
             else:
                 overcrowded_groups.add(group_key)
-    useful_groups = nonempty_groups - overcrowded_groups
-    # TODO: sort useful_groups ?
+    useful_groups = list(nonempty_groups - overcrowded_groups)
+    useful_groups.sort(key=lambda (inv, params): str(inv) + str(params))
     for (invariant, parameters) in useful_groups:
-        yield [part.instantiate(parameters) for part in invariant.parts]
+        yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
 def get_groups(task):
     with timers.timing("Finding invariants"):
         invariants = list(find_invariants(task))
+    # TODO: Gabi sorts here, but I think it is deterministic
     with timers.timing("Checking invariant weight"):
         result = list(useful_groups(invariants, task.init))
     return result
