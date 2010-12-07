@@ -163,6 +163,15 @@ bool LandmarkStatusManager::update_lm_status(const State &state) {
             }
         }
 
+        // This dead-end detection works for the following case:
+        // X is a goal, it is true in the initial state, and has no achievers.
+        // Some action A has X as a delete effect. Then using this,
+        // we can detect that applying A leads to a dead-end.
+        //
+        // Note: this only tests for reachability of the landmark from the initial state.
+        // A (possibly) more effective option would be to test reachability of the landmark
+        // from the current state.
+
         if (!node.is_derived) {
             if ((node.status == lm_not_reached) &&
                 (node.first_achievers.size() == 0)) {
