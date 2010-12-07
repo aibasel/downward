@@ -14,7 +14,7 @@
 using namespace __gnu_cxx;
 
 static LandmarkGraphPlugin landmarks_graph_zhu_givan_plugin(
-    "lmgraph_zhu_givan", LandmarksGraphZhuGivan::create);
+    "lm_zg", LandmarksGraphZhuGivan::create);
 
 void LandmarksGraphZhuGivan::generate_landmarks() {
     cout << "Generating landmarks using Zhu/Givan label propagation\n";

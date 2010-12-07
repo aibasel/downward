@@ -3,7 +3,7 @@
 #include "../plugin.h"
 
 static LandmarkGraphPlugin landmarks_graph_rpg_search_plugin(
-    "lmgraph_search", LandmarksGraphRpgSearch::create);
+    "lm_search", LandmarksGraphRpgSearch::create);
 
 LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(
     LandmarkGraphOptions &options, Exploration *exploration,

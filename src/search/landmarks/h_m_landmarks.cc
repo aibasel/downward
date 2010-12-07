@@ -2,7 +2,7 @@
 #include "../plugin.h"
 
 static LandmarkGraphPlugin h_m_landmarks_graph_plugin(
-    "lmgraph_hm", HMLandmarks::create);
+    "lm_hm", HMLandmarks::create);
 
 std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
