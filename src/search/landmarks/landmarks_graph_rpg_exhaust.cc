@@ -7,7 +7,7 @@
 #include "../plugin.h"
 
 static LandmarkGraphPlugin landmarks_graph_exhaust_plugin(
-    "lmgraph_exhaust", LandmarksGraphExhaust::create);
+    "lm_exhaust", LandmarksGraphExhaust::create);
 
 /* Problem: We don't get any orders here. (All we have is the reasonable orders
    that are inferred later.) It's thus best to combine this landmark generation
