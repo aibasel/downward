@@ -57,27 +57,12 @@ int main(int argc, const char **argv) {
     register_parsers();
     SearchEngine *engine = 0;
 
-    for (int i = 1; i < argc; ++i) {
-        string arg = string(argv[i]);
-        if (arg.compare("--heuristic") == 0) {
-            ++i;
-            OptionParser::instance()->predefine_heuristic(argv[i]);
-        } else if (arg.compare("--landmarks") == 0) {
-            ++i;
-            OptionParser::instance()->predefine_lm_graph(argv[i]);
-        } else if (arg.compare("--search") == 0) {
-            ++i;
-            engine = OptionParser::instance()->parse_search_engine(argv[i]);
-        } else if (arg.compare("--random-seed") == 0) {
-            ++i;
-            srand(atoi(argv[i]));
-            cout << "random seed " << argv[i] << endl;
-        } else {
-            cerr << "unknown option " << arg << endl << endl;
-            cout << usage << endl;
-            exit(1);
-        }
-    }
+    //the input will be parsed twice: 
+    //once in dry-run mode, to check for simple input errors, 
+    //then in normal mode
+    OptionParser::parse_cmd_line(char **argv, true);
+    OptionParser::parse_cmd_line(char **argv, false);
+    
 
     Timer search_timer;
     engine->search();
