@@ -62,6 +62,8 @@ class InvariantPart:
         return self.predicate != other.predicate or self.order != other.order
     def __hash__(self):
         return hash((self.predicate, tuple(self.order)))
+    def __cmp__(self, other):
+        return cmp(str(self), str(other))
     def __str__(self):
         var_string = " ".join(map(str, self.order))
         omitted_string = ""
@@ -130,6 +132,8 @@ class Invariant:
         return hash(self.parts)
     def __str__(self):
         return "{%s}" % ", ".join(map(str, self.parts))
+    def __repr__(self):
+        return '<Invariant %s>' % str(self)
     def get_parameters(self, atom):
         return self.predicate_to_part[atom.predicate].get_parameters(atom)
     def instantiate(self, parameters):
