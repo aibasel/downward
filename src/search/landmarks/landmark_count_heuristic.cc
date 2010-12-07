@@ -343,7 +343,7 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
         throw ParseError(end);
 
     if (optimal_ && !admissible_) {
-        cerr << "Using optimal=true only makes sense with admissible=true " << endl;
+        cerr << "Using optimal=true only makes sense with admissible=true" << endl;
         throw ParseError(end);
     }
 
