@@ -1,163 +1,265 @@
-#ifndef OPTION_PARSER_H
-#define OPTION_PARSER_H
+#ifndef OPTION_PARSER_H_
+#define OPTION_PARSER_H_
 
 #include <vector>
-#include <map>
-#include <set>
 #include <string>
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <map>
+#include "boost/any.hpp"
 
-typedef short state_var_t;
 
-class Heuristic;
-class ScalarEvaluator;
-class SearchEngine;
-template<class Entry>
-class OpenList;
-class LandmarksGraph;
-
-struct ParseError {
-    int pos;
-    ParseError(int ii) {pos = ii; }
-};
-
-class NamedOptionParser {
-    std::map<std::string, bool *> bool_options;
-    std::map<std::string, float *> float_options;
-    std::map<std::string, int *> int_options;
-    std::map<std::string, double *> double_options;
-    std::map<std::string, ScalarEvaluator **> scalar_evaluator_options;
-    std::map<std::string, std::vector<Heuristic *> *> heuristic_list_options;
-    std::map<std::string, std::string *> str_options;
-    std::set<std::string> can_be_none;
-    std::set<std::string> can_be_infinity;
-
-    std::map<std::string, std::string> help;
-
-    void parse_bool_option(const std::vector<std::string> &config,
-                           int start, int &end);
-    void parse_double_option(const std::vector<std::string> &config,
-                             int start, int &end);
-    void parse_int_option(const std::vector<std::string> &config,
-                          int start, int &end);
-    void parse_scalar_evaluator_option(const std::vector<std::string> &config,
-                                       int start, int &end, bool dry_run);
-    void parse_heuristic_list_option(const std::vector<std::string> &config,
-                                     int start, int &end, bool dry_run);
-    void parse_string_option(const std::vector<std::string> &config,
-                             int start, int &end);
+class ParseTree{
 public:
-    void add_bool_option(
-        const std::string &name, bool *var, const std::string &desc);
-    void add_double_option(
-        const std::string &name, double *var, const std::string &desc);
-    void add_int_option(
-        const std::string &name, int *var, const std::string &desc,
-        bool allow_infinity = false);
-    void add_scalar_evaluator_option(
-        const std::string &name, ScalarEvaluator **var,
-        const std::string &desc, bool allow_none = false);
-    void add_heuristic_list_option(
-        const std::string &name, std::vector<Heuristic *> *var,
-        const std::string &desc);
-    void add_string_option(
-        const std::string &name, std::string *var,
-        const std::string &desc);
+    ParseTree();
+    ParseTree(ParseTree* parent, std::string value = "", std::string key = "");
 
-    void parse_options(const std::vector<std::string> &config,
-                       int start, int &end, bool dry_run);
-};
+    std::string value;
+    std::string key;
 
-class OptionParser {
-public:
-    typedef const std::vector<std::string> &ConfigRef;
-    typedef SearchEngine *(*EngineFactory)(
-        ConfigRef, int, int &, bool);
-    typedef ScalarEvaluator *(*ScalarEvalFactory)(
-        ConfigRef, int, int &, bool);
-    typedef void (*SynergyFactory)(
-        ConfigRef, int, int &, std::vector<Heuristic *> &);
-    typedef OpenList<state_var_t *> *(*OpenListFactory)(
-        ConfigRef, int, int &);
-    typedef LandmarksGraph *(*LandmarkGraphFactory)(
-        ConfigRef, int, int &, bool);
+    std::vector<ParseTree>* get_children();
+    void add_child(std::string value = "", std::string key = "");
+    ParseTree* last_child();
+    ParseTree* find_child(std::string key);
+    ParseTree* get_parent() const;
+    bool is_root() const;
+
+    
+    bool operator == (ParseTree& pt);
+    bool operator != (ParseTree& pt);
+
 private:
-    std::map<std::string, Heuristic *> predefined_heuristics;
-    std::map<std::string, LandmarksGraph *> predefined_lm_graphs;
-
-    std::map<std::string, EngineFactory> engine_map;
-    std::map<std::string, ScalarEvalFactory> scalar_evaluator_map;
-    std::map<std::string, SynergyFactory> synergy_map;
-    std::map<std::string, LandmarkGraphFactory> lm_graph_map;
-
-    static OptionParser *instance_;
-    OptionParser() {}
-    OptionParser(const OptionParser &);
-
-    void tokenize_options(const char *str, std::vector<std::string> &tokens);
-    std::string strip_and_to_lower(const char *begin, const char *end);
-    void print_parse_error(const std::vector<std::string> &tokens,
-                           ParseError &err);
-
-    void predefine_heuristic(const std::vector<std::string> &input);
-    void predefine_lm_graph(const std::vector<std::string> &input);
-
-public:
-    static OptionParser *instance();
-
-    void register_search_engine(const std::string &key, EngineFactory func);
-    void register_scalar_evaluator(
-        const std::string &key, ScalarEvalFactory func);
-    void register_lm_graph_factory(
-        const std::string &key, LandmarkGraphFactory func);
-    void register_synergy(const std::string &key, SynergyFactory func);
-    void predefine_heuristic(const char *str);
-    void predefine_lm_graph(const char *str);
-
-    ScalarEvaluator *parse_scalar_evaluator(
-        const std::vector<std::string> &input, int start, int &end,
-        bool dry_run);
-    LandmarksGraph *parse_lm_graph(
-        const std::vector<std::string> &input, int start, int &end,
-        bool dry_run);
-    Heuristic *parse_heuristic(const std::vector<std::string> &input,
-                               int start, int &end, bool dry_run);
-    bool knows_scalar_evaluator(const std::string &name) const;
-    bool knows_lm_graph(const std::string &name) const;
-    bool knows_search_engine(const std::string &name) const;
-    SearchEngine *parse_search_engine(const char *str);
-    SearchEngine *parse_search_engine(const std::vector<std::string> &input,
-                                      int start, int &end, bool dry_run);
-    void parse_synergy_heuristics(const std::vector<std::string> &input,
-                                  int start, int &end,
-                                  std::vector<Heuristic *> &heuristics);
-
-    double parse_double(const std::vector<std::string> &config,
-                        int start, int &end);
-
-    int parse_int(const std::vector<std::string> &config,
-                  int start, int &end);
-
-    void parse_heuristic_list(const std::vector<std::string> &input,
-                              int start, int &end, bool only_one_eval,
-                              std::vector<Heuristic *> &heuristics,
-                              bool dry_run);
-    void parse_scalar_evaluator_list(const std::vector<std::string> &input,
-                                     int start, int &end, bool only_one_eval,
-                                     std::vector<ScalarEvaluator *> &evals,
-                                     bool dry_run);
-    void set_end_for_simple_config(const std::vector<std::string> &config,
-                                   int start, int &end);
-    void parse_evals_and_options(
-        const std::vector<std::string> &config,
-        int start, int &end,
-        std::vector<ScalarEvaluator *> &evaluators,
-        NamedOptionParser &option_parser,
-        bool only_one_eval, bool dry_run);
-    void parse_search_engine_list(
-        const std::vector<std::string> &input, int start,
-        int &end, bool only_one,
-        std::vector<int> &engine_config_start,
-        bool dry_run);
+    std::vector<ParseTree> children_;
+    ParseTree* parent_;
 };
 
-#endif
+
+
+
+
+//A ConfigObject is just a wrapper for map<string, boost::any>
+class ConfigObject{
+public:
+    std::map<std::string, boost::any> storage;
+    
+    template <class T> void set(std::string key, T value) {
+        storage[key] = value;
+    }
+
+    template <class T> T get(std::string key) {
+        return boost::any_cast<T>(storage[key]);
+    }
+
+    bool contains(std::string key) {
+        return storage.find(key) != storage.end();
+    }
+};
+
+class OptionParser;
+
+template <class T>
+class Registry {
+public:
+    static Registry<T>* instance()
+    {
+        if (!instance_) {
+            instance_ = new Registry<T>();
+        }
+        return instance_;
+    }
+            
+    typedef T (*Factory)(OptionParser&);
+    
+private:
+    Registry(){};
+    static Registry<T>* instance_;
+    std::map<std::string, Factory> registered;
+};
+
+template <class T> Registry<T>* Registry<T>::instance_ = 0;
+
+template <class T>
+class Predefinitions {
+public:
+    static Predefinitions<T>* instance()
+    {
+        if (!instance_) {
+            instance_ = new Predefinitions<T>();
+        }
+        return instance_;
+    }
+
+private:
+    Predefinitions<T>(){};
+    static Predefinitions<T>* instance_;
+    std::map<std::string, T*> predefined;
+};
+
+template <class T> Predefinitions<T>* Predefinitions<T>::instance_ = 0;
+
+/*The TokenParser<T> wraps functions to parse supported types T. 
+In the first version, those functions where part of OptionParser, 
+but function template specialization is not as nice as 
+class template specialization (http://www.gotw.ca/publications/mill17.htm). 
+Specifically, partial function template specialization is not possible.
+To add support for a new type T, it should suffice 
+to implement the corresponding TokenParser<T> class.
+Many built-in types are supported automatically (if they can 
+be read from a stringstream), and vectors of supported types are supported too.
+ */
+
+template <class T>
+class TokenParser {
+public:
+    //if T has no template specialization, 
+    //try to parse it directly from the input string
+    static T parse(const ParseTree& pt) {
+        std::stringstream str_stream(pt.value);
+        T x;
+        if ((str_stream >> x).fail()) {
+            //TODO: throw error;
+        }
+        return x;
+    }
+};
+
+
+template <> 
+class TokenParser<bool> {
+public: 
+    static bool parse(const ParseTree& pt) {
+        if(pt.value.compare("false") == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+};
+
+
+template <class S>
+class TokenParser<std::vector<S > > {
+public:
+    static std::vector<S> parse(ParseTree& pt) {
+        std::vector<S> results;
+        if (pt.value.compare("list") != 0) {
+            //TODO:throw error
+        } else {
+            for (size_t i(0); i != pt.get_children()->size(); ++i) {
+                results.push_back(
+                    TokenParser<S>::parse(pt.get_children()->at(i)));
+            }
+        }
+        return results;
+    }      
+};
+
+/*
+template <class Entry>
+class TokenParser<OpenList<Entry > > {
+public:
+    static OpenList<Entry> parse(const ParseTree& pt) {
+    }
+}
+*/
+
+/*The OptionParser stores a parse tree, and a ConfigObject. 
+By calling addArgument, the parse tree is partially parsed, 
+and the result is added to the ConfigObject.
+ */
+class OptionParser{
+public:
+    OptionParser(std::string config);
+    OptionParser(ParseTree pt);
+
+    ConfigObject parse();
+    static ParseTree generate_parse_tree(const std::string config);
+
+    //this is where all parsing starts:
+    //static void parse_cmd_line(char **argv, bool dry_run);
+
+    template <class T> void add_option(
+        std::string k, std::string h="") {
+        valid_keys.push_back(k);
+        T result;
+        if (next_unparsed_argument >= parse_tree.get_children()->end()) {
+            if (configuration.contains(k)){
+                return; //use default value
+            } else {
+                //throw error: not enough arguments supplied
+            }
+        }
+        ParseTree* arg = &*next_unparsed_argument;
+        if (arg->key.size() > 0) {
+            arg = parse_tree.find_child(k);
+            if (!arg) {
+                if (!configuration.contains(k)) {
+                    //throw error
+                } else {
+                    return; //use default value
+                }
+            }
+        } 
+       
+        result = TokenParser<T>::parse(*arg);
+        configuration.set(k, result);
+        //if we have not reached the keyword parameters yet, 
+        //increment the argument position pointer
+        if (arg->key.size() == 0)
+            ++next_unparsed_argument;        
+    }
+
+    //add option with default value
+    template <class T> void add_option(
+        std::string k, T def_val, std::string h="") {
+        configuration.set(k, def_val);
+        add_option<T>(k, h);
+    }
+
+    void add_enum_option(std::string k, 
+                         const std::vector<std::string >& enumeration, 
+                         std::string def_val = "", std::string h="") {
+        //first parse the corresponding string like a normal argument... 
+        if (def_val.compare("") != 0) {
+            add_option<std::string>(k, def_val, h);
+        } else {
+            add_option<std::string>(k, h);
+        }
+
+        //...then map that string to its position in the enumeration vector
+        std::string name = configuration.get<std::string>(k);
+        std::vector<std::string>::const_iterator it = 
+            std::find(enumeration.begin(), enumeration.end(), name);
+        if (it == enumeration.end()) {
+            //throw error
+        }
+        configuration.set(k, it - enumeration.begin());            
+    }
+        
+    
+    ConfigObject get_configuration() {
+        //first check if there were any arguments with invalid keywords
+        std::vector<ParseTree>* pt_children = parse_tree.get_children();
+        for (size_t i(0); i != pt_children->size(); ++i) {
+            if (find(valid_keys.begin(), 
+                     valid_keys.end(), 
+                     pt_children->at(i).key) == valid_keys.end()) {
+                //throw error: invalid option: ptChildren->at(i)
+            }
+        }    
+        return configuration;
+    }
+    
+
+private: 
+    ParseTree parse_tree;
+    std::vector<ParseTree>::iterator next_unparsed_argument;
+    ConfigObject configuration;
+    std::vector<std::string> valid_keys;
+    static std::string to_lowercase(const std::string& s);
+};
+
+
+
+#endif /* OPTION_PARSER_H_ */
