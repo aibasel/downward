@@ -9,48 +9,18 @@
 
 using namespace std;
 
-static ScalarEvaluatorPlugin canonical_heuristic_plugin("ch", CanonicalHeuristic::create);
+static ScalarEvaluatorPlugin canonical_heuristic_plugin("pdbs", PDBCollectionHeuristic::create);
 
-CanonicalHeuristic::CanonicalHeuristic() {
+PDBCollectionHeuristic::PDBCollectionHeuristic() {
+    pattern_collection = 0;
 }
 
-CanonicalHeuristic::~CanonicalHeuristic() {
+PDBCollectionHeuristic::~PDBCollectionHeuristic() {
     delete pattern_collection;
 }
 
-void CanonicalHeuristic::verify_no_axioms_no_cond_effects() const {
-    if (!g_axioms.empty()) {
-        cerr << "Heuristic does not support axioms!" << endl << "Terminating." << endl;
-        exit(1);
-    }
-    for (int i = 0; i < g_operators.size(); ++i) {
-        const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
-        for (int j = 0; j < pre_post.size(); ++j) {
-            const vector<Prevail> &cond = pre_post[j].cond;
-            if (cond.empty())
-                continue;
-            // Accept conditions that are redundant, but nothing else.
-            // In a better world, these would never be included in the
-            // input in the first place.
-            int var = pre_post[j].var;
-            int pre = pre_post[j].pre;
-            int post = pre_post[j].post;
-            if (pre == -1 && cond.size() == 1 &&
-                cond[0].var == var && cond[0].prev != post &&
-                g_variable_domain[var] == 2)
-                continue;
-
-            cerr << "Heuristic does not support conditional effects "
-            << "(operator " << g_operators[i].get_name() << ")"
-            << endl << "Terminating." << endl;
-            exit(1);
-        }
-    }
-}
-
-void CanonicalHeuristic::initialize() {
+void PDBCollectionHeuristic::initialize() {
     cout << "Initializing pattern database heuristic..." << endl;
-    verify_no_axioms_no_cond_effects();
 
     // Canonical heuristic function tests
     //1. one pattern logistics00 6-2
@@ -164,18 +134,18 @@ void CanonicalHeuristic::initialize() {
     pattern_collection = new PatternCollection(patt_coll);
 }
 
-int CanonicalHeuristic::compute_heuristic(const State &state) {
+int PDBCollectionHeuristic::compute_heuristic(const State &state) {
     int h = pattern_collection->get_heuristic_value(state);
         if (h == numeric_limits<int>::max())
             return -1;
     return h;
 }
 
-ScalarEvaluator *CanonicalHeuristic::create(const vector<string> &config, int start, int &end, bool dry_run) {
+ScalarEvaluator *PDBCollectionHeuristic::create(const vector<string> &config, int start, int &end, bool dry_run) {
     //TODO: check what we have to do here!
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
     if (dry_run)
         return 0;
     else
-        return new CanonicalHeuristic;
+        return new PDBCollectionHeuristic;
 }
