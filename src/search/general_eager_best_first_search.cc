@@ -185,7 +185,9 @@ int GeneralEagerBestFirstSearch::step() {
             succ_node.open(succ_h, node, op);
 
             open_list->insert(succ_node.get_state_buffer());
-            search_progress.check_h_progress(succ_node.get_g());
+            if (search_progress.check_h_progress(succ_node.get_g())) {
+                reward_progress();
+            }
         } else if (succ_node.get_g() > node.get_g() + op->get_cost()) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
@@ -280,6 +282,13 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
         return make_pair(node, true);
     }
 }
+
+
+void GeneralEagerBestFirstSearch::reward_progress() {
+    // Boost the "preferred operator" open lists somewhat whenever
+    open_list->boost_preferred();
+}
+
 
 void GeneralEagerBestFirstSearch::dump_search_space() {
     search_space.dump();
