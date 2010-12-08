@@ -36,10 +36,6 @@ removed_implied_effect_counter = 0
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
 
-import sys
-import random
-memory_hog = [random.randint(1, 2**15)] * random.randint(1, 2**15)
-
 def strips_to_sas_dictionary(groups, assert_partial):
     dictionary = {}
 
@@ -142,6 +138,8 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
                             new_cond[var] = val
                             new_conds.append(new_cond)
                     flat_conds = new_conds
+            # The return value is deterministic because each dict in flat_conds
+            # only contains one entry
             return flat_conds
 
     return multiply_out(condition)
@@ -361,7 +359,8 @@ def translate_strips_axiom(axiom, dictionary, ranges, mutex_dict, mutex_ranges):
 def translate_strips_operators(actions, strips_to_sas, ranges, mutex_dict, mutex_ranges, implied_facts):
     result = []
 
-    # TODO: Gabi sorts the actions here although I think "actions" is a list
+    # TODO: Gabi sorts the actions here although I think the list of actions is deterministic
+
     actions.sort(key=lambda a: a.name)
 
     for action in actions:
@@ -372,7 +371,7 @@ def translate_strips_operators(actions, strips_to_sas, ranges, mutex_dict, mutex
 def translate_strips_axioms(axioms, strips_to_sas, ranges, mutex_dict, mutex_ranges):
     result = []
 
-    # TODO: Gabi sorts the axioms here although I think "axioms" is a list
+    # TODO: Gabi sorts the axioms here although I think the list of axioms is deterministic
     axioms.sort(key=lambda a: a.name)
 
     for axiom in axioms:
