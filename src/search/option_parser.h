@@ -38,8 +38,8 @@ private:
 
 
 
-//A ConfigObject is just a wrapper for map<string, boost::any>
-class ConfigObject{
+//Options is just a wrapper for map<string, boost::any>
+class Options{
 public:
     std::map<std::string, boost::any> storage;
     
@@ -164,16 +164,16 @@ public:
 }
 */
 
-/*The OptionParser stores a parse tree, and a ConfigObject. 
+/*The OptionParser stores a parse tree, and a Options. 
 By calling addArgument, the parse tree is partially parsed, 
-and the result is added to the ConfigObject.
+and the result is added to the Options.
  */
 class OptionParser{
 public:
     OptionParser(std::string config);
     OptionParser(ParseTree pt);
 
-    ConfigObject parse();
+    Options parse();
     static ParseTree generate_parse_tree(const std::string config);
 
     //this is where all parsing starts:
@@ -238,7 +238,7 @@ public:
     }
         
     
-    ConfigObject get_configuration() {
+    Options get_configuration() {
         //first check if there were any arguments with invalid keywords
         std::vector<ParseTree>* pt_children = parse_tree.get_children();
         for (size_t i(0); i != pt_children->size(); ++i) {
@@ -256,7 +256,7 @@ public:
 private: 
     ParseTree parse_tree;
     std::vector<ParseTree>::iterator next_unparsed_argument;
-    ConfigObject configuration;
+    Options configuration;
     std::vector<std::string> valid_keys;
     static std::string to_lowercase(const std::string& s);
 };
