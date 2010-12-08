@@ -251,6 +251,7 @@ public:
         return configuration;
     }
     
+    bool dry_run;
 
 private: 
     ParseTree parse_tree;

@@ -67,7 +67,7 @@ bool ParseTree::operator == (ParseTree& pt){
 
 
 
-/*
+
 void OptionParser::parse_cmd_line(char **argv, bool dry_run) {
     for (int i = 1; i < argc; ++i) {
         string arg = string(argv[i]);
@@ -91,24 +91,26 @@ void OptionParser::parse_cmd_line(char **argv, bool dry_run) {
         }
     }
 }
-*/
+
 
 bool ParseTree::operator != (ParseTree& pt) {
     return !(this->operator== (pt));
 }
 
 
-OptionParser::OptionParser(const string config):
+OptionParser::OptionParser(const string config, bool dr):
     parse_tree(generate_parse_tree(config)),
-    next_unparsed_argument(parse_tree.get_children()->begin())
+    next_unparsed_argument(parse_tree.get_children()->begin()),
+    dry_run(dr)
 {
 }
 
 
 
-OptionParser::OptionParser(ParseTree pt):
+OptionParser::OptionParser(ParseTree pt, bool dr):
     parse_tree(pt),
-    next_unparsed_argument(parse_tree.get_children()->begin())
+    next_unparsed_argument(parse_tree.get_children()->begin()),
+    dry_run(dr)
 {
 }
 
