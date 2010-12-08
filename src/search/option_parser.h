@@ -177,7 +177,35 @@ public:
     static ParseTree generate_parse_tree(const std::string config);
 
     //this is where all parsing starts:
-    //static void parse_cmd_line(char **argv, bool dry_run);
+    static void parse_cmd_line(char **argv, bool dry_run);
+
+    void add_int_option(string k, string h = "");
+    void add_int_option(string k, int default_val, string h = "");
+    
+    void add_heuristics_option(string k, string h = "");
+    void add_heuristics_option(string k, Heuristic* default_val, string h = "");
+
+    template <class Entry>
+        void add_openlist_option<Entry>(string k, string h);
+    template <class Entry>
+        void add_openlist_option<Entry>(string k, OpenList<Entry> default_val, string h = "");
+
+    void add_enum_option(std::string k, 
+                         const std::vector<std::string >& enumeration, 
+                         std::string def_val = "", std::string h="");
+        
+    
+    Options get_configuration();
+
+    
+    bool dry_run;
+
+private: 
+    ParseTree parse_tree;
+    std::vector<ParseTree>::iterator next_unparsed_argument;
+    Options configuration;
+    std::vector<std::string> valid_keys;
+    static std::string to_lowercase(const std::string& s);
 
     template <class T> void add_option(
         std::string k, std::string h="") {
@@ -216,49 +244,6 @@ public:
         configuration.set(k, def_val);
         add_option<T>(k, h);
     }
-
-    void add_enum_option(std::string k, 
-                         const std::vector<std::string >& enumeration, 
-                         std::string def_val = "", std::string h="") {
-        //first parse the corresponding string like a normal argument... 
-        if (def_val.compare("") != 0) {
-            add_option<std::string>(k, def_val, h);
-        } else {
-            add_option<std::string>(k, h);
-        }
-
-        //...then map that string to its position in the enumeration vector
-        std::string name = configuration.get<std::string>(k);
-        std::vector<std::string>::const_iterator it = 
-            std::find(enumeration.begin(), enumeration.end(), name);
-        if (it == enumeration.end()) {
-            //throw error
-        }
-        configuration.set(k, it - enumeration.begin());            
-    }
-        
-    
-    Options get_configuration() {
-        //first check if there were any arguments with invalid keywords
-        std::vector<ParseTree>* pt_children = parse_tree.get_children();
-        for (size_t i(0); i != pt_children->size(); ++i) {
-            if (find(valid_keys.begin(), 
-                     valid_keys.end(), 
-                     pt_children->at(i).key) == valid_keys.end()) {
-                //throw error: invalid option: ptChildren->at(i)
-            }
-        }    
-        return configuration;
-    }
-    
-    bool dry_run;
-
-private: 
-    ParseTree parse_tree;
-    std::vector<ParseTree>::iterator next_unparsed_argument;
-    Options configuration;
-    std::vector<std::string> valid_keys;
-    static std::string to_lowercase(const std::string& s);
 };
 
 

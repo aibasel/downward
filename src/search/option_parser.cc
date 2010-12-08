@@ -114,6 +114,41 @@ OptionParser::OptionParser(ParseTree pt, bool dr):
 {
 }
 
+                           
+
+void OptionParser::add_enum_option(string k, 
+                                   const vector<string >& enumeration, 
+                                   string def_val = "", string h="") {
+        //first parse the corresponding string like a normal argument... 
+        if (def_val.compare("") != 0) {
+            add_option<string>(k, def_val, h);
+        } else {
+            add_option<string>(k, h);
+        }
+
+        //...then map that string to its position in the enumeration vector
+        string name = configuration.get<string>(k);
+        vector<string>::const_iterator it = 
+            find(enumeration.begin(), enumeration.end(), name);
+        if (it == enumeration.end()) {
+            //throw error
+        }
+        configuration.set(k, it - enumeration.begin());            
+}
+
+Options OptionParser::get_configuration() {
+    //first check if there were any arguments with invalid keywords
+    std::vector<ParseTree>* pt_children = parse_tree.get_children();
+    for (size_t i(0); i != pt_children->size(); ++i) {
+        if (find(valid_keys.begin(), 
+                 valid_keys.end(), 
+                 pt_children->at(i).key) == valid_keys.end()) {
+            //throw error: invalid option: ptChildren->at(i)
+        }
+    }    
+    return configuration;
+}
+
 string OptionParser::to_lowercase(const string& s){
     string t;
     for (string::const_iterator i = s.begin(); i != s.end(); ++i)
