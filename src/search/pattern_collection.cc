@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <algorithm>
+#include <limits>
 
 using namespace std;
 
@@ -135,12 +136,17 @@ void PatternCollection::max_cliques_expand(vector<int> &subg, vector<int> &cand,
 }
 
 int PatternCollection::get_heuristic_value(const State &state) const {
-    int max_val = 0;
+    int max_val = -1;
     for (size_t i = 0; i < max_cliques.size(); ++i) {
-        vector<int> clique = max_cliques[i];
+        const vector<int> &clique = max_cliques[i];
         int h_val = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
-            h_val += pattern_databases[clique[j]].get_heuristic_value(state);
+            int h = pattern_databases[clique[j]].get_heuristic_value(state);
+            if (h == numeric_limits<int>::max()) {
+                h_val = -1;
+                break;
+            }
+            h_val += h;
         }
         if (h_val > max_val) {
             max_val = h_val;

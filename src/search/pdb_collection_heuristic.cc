@@ -1,4 +1,4 @@
-#include "canonical_heuristic.h"
+#include "pdb_collection_heuristic.h"
 #include "globals.h"
 #include "plugin.h"
 #include "state.h"
