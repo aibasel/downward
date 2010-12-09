@@ -19,42 +19,7 @@ class BalanceChecker(object):
                     self.predicates_to_add_actions.setdefault(predicate, set()).add(action)
     def get_threats(self, predicate):
         return self.predicates_to_add_actions.get(predicate, set())
-    def are_compatible(self, add_effect1, add_effect2):
-        assert not add_effect1.negated
-        assert not add_effect2.negated
-        # Check whether two add effects of the same action can happen together.
-        # Should always be true for STRIPS actions, but ADL actions can have
-        # conditional effects with conflicting triggers.
-        # For the invariant finding algorithm to be correct, this may never return
-        # "False" unless there really is a conflict. Return "True" although there
-        # is no conflict is fine, but can lead to fewer invariants being found.
-        return True
-    def can_compensate(self, del_effect, add_effect):
-        assert del_effect.negated
-        assert not add_effect.negated
-        # Check whether the del_effect always happens whenever the add_effect
-        # happens; they are always effects of the same action.
-        # For STRIPS actions, we only need to check whether the del_effect is
-        # guaranteed to delete something, i.e. contains a fact mentioned in the
-        # precondition. For ADL actions, we should also check that a possible
-        # triggering condition always holds whenever the add effect is triggered.
-        # For the invariant finding algorithm to be correct, this may never return
-        # "True" unless the delete effect is guaranteed to happen when the add
-        # effect happens. Returning "False" too often is no problem, but leads to
-        # fewer invariants being found.
-        # TODO: The current implementation is not correct, but works well enough
-        #       in practice. Should perhaps be rectified in the future.
-        if add_effect.parameters:
-            # Dealing with these in a less conservative ways requires checking that
-            # the quantification is *not* over an [omitted] variable, checking that
-            # the delete effect is also quantified and unifying the quantified variables
-            # in some way. Quite difficult, and besides might need to be done *earlier*
-            # than these, because can_compensate might not even be called if the
-            # variables in the delete effect are named differently. (This will be the
-            # case because of unique variable names.)
-            return False
-        else:
-            return True
+        
 
 def get_fluents(task):
     fluent_names = set()
