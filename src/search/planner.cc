@@ -46,7 +46,6 @@ int main(int argc, const char **argv) {
 
     read_everything(in);
 
-    register_parsers();
     SearchEngine *engine = 0;
 
     //the input will be parsed twice: 
