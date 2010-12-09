@@ -58,11 +58,12 @@ public:
 
 class PDBHeuristic : public Heuristic {
     PDBAbstraction *pdb_abstraction;
+    int max_abstract_states;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    PDBHeuristic();
+    PDBHeuristic(int max_abstract_states);
     virtual ~PDBHeuristic();
     static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
 };
