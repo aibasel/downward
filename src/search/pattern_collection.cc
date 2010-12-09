@@ -11,46 +11,15 @@
 using namespace std;
 
 PatternCollection::PatternCollection(const vector<vector<int> > &pat_coll) : pattern_collection(pat_coll), number_patterns(pat_coll.size()) {
-    // precompute additive patterns
-    int num_vars = g_variable_domain.size();
-    are_additive.resize(num_vars, vector<bool>(num_vars, true));
-    for (size_t k = 0; k < g_operators.size(); k++) {
-        const Operator &o = g_operators[k];
-        const vector<PrePost> effects = o.get_pre_post();
-        for (size_t e1 = 0; e1 < effects.size(); e1++) {
-            for (size_t e2 = 0; e2 < effects.size(); e2++) {
-                are_additive[effects[e1].var][effects[e2].var] = false;
-            }
-        }
-    }
-
-    build_cgraph();
-    cout << "built cgraph." << endl;
-    vector<int> vertices_1;
-    vertices_1.reserve(number_patterns);
-    vector<int> vertices_2;
-    vertices_2.reserve(number_patterns);
-    for (size_t i = 0; i < number_patterns; ++i) {
-        vertices_1.push_back(i);
-        vertices_2.push_back(i);
-    }
-    vector<int> q_clique; // contains actual calculated maximal clique
-    q_clique.reserve(number_patterns);
-    max_cliques_expand(vertices_1, vertices_2, q_clique);
-    dump();
-
-    // maybe unnecessary, but we don't need cgraph anymore
-    cgraph.clear();
-
+    precompute_additive_vars();
+    compute_max_cliques();
 
     // build all pattern databases
     Timer timer;
-    timer();
     for (int i = 0; i < pattern_collection.size(); ++i) {
-        PDBAbstraction pdb = PDBAbstraction(pattern_collection[i]);
+        PDBAbstraction pdb(pattern_collection[i]);
         pattern_databases.push_back(pdb);
     }
-    timer.stop();
     cout << pattern_collection.size() << " pdbs constructed." << endl;
     cout << "Construction time for all pdbs: " << timer << endl;
 }
@@ -58,17 +27,47 @@ PatternCollection::PatternCollection(const vector<vector<int> > &pat_coll) : pat
 PatternCollection::~PatternCollection() {
 }
 
-/*bool PatternCollection::are_additive(int pattern1, int pattern2) const {
-    return are_additive[pattern1][pattern2];
-}*/
+//bool PatternCollection::are_additive(int pattern1, int pattern2) const {
+  //  return are_additive[pattern1][pattern2];
+//}
+
+void PatternCollection::precompute_additive_vars() {
+    int num_vars = g_variable_domain.size();
+    are_additive.resize(num_vars, vector<bool>(num_vars, true));
+    for (size_t k = 0; k < g_operators.size(); ++k) {
+        const Operator &o = g_operators[k];
+        const vector<PrePost> effects = o.get_pre_post();
+        for (size_t e1 = 0; e1 < effects.size(); ++e1) {
+            for (size_t e2 = 0; e2 < effects.size(); ++e2) {
+                are_additive[effects[e1].var][effects[e2].var] = false;
+            }
+        }
+    }
+}
+
+void PatternCollection::compute_max_cliques() {
+    build_cgraph();
+    cout << "built cgraph." << endl;
+    vector<int> vertices_1;
+    vertices_1.reserve(number_patterns);
+    for (size_t i = 0; i < number_patterns; ++i) {
+        vertices_1.push_back(i);
+    }
+    vector<int> vertices_2(vertices_1); // copy vector
+    vector<int> q_clique; // contains actual calculated maximal clique
+    q_clique.reserve(number_patterns);
+    max_cliques_expand(vertices_1, vertices_2, q_clique);
+    dump();
+
+    cgraph.clear(); // or replace cgraph with empty vector
+}
 
 void PatternCollection::build_cgraph() {
     // initialize compatibility graph
-    cgraph = vector<vector<int> >();
     cgraph.resize(number_patterns);
 
-    for (size_t i = 0; i < number_patterns; i++) {
-        for (size_t j = i+1; j < number_patterns; j++) {
+    for (size_t i = 0; i < number_patterns; ++i) {
+        for (size_t j = i + 1; j < number_patterns; ++j) {
             if (are_additive[i][j]) {
                 // if the two patterns are additive there is an edge in the compatibility graph
                 cout << "pattern (index) " << i << " additive with " << "pattern (index) " << j << endl;
@@ -153,9 +152,9 @@ int PatternCollection::get_heuristic_value(const State &state) const {
 void PatternCollection::dump() const {
     // print compatibility graph
     cout << "Compatibility graph" << endl;
-    for (size_t i = 0; i < cgraph.size(); i++) {
+    for (size_t i = 0; i < cgraph.size(); ++i) {
         cout << i << " adjacent to [ ";
-        for (size_t j = 0; j < cgraph[i].size(); j++) {
+        for (size_t j = 0; j < cgraph[i].size(); ++j) {
             cout << cgraph[i][j] << " ";
         }
         cout << "]" << endl;
@@ -164,9 +163,9 @@ void PatternCollection::dump() const {
     assert(max_cliques.size() > 0);
     cout << max_cliques.size() << " maximal clique(s)" << endl;
     cout << "Maximal cliques are { ";
-    for (size_t i = 0; i < max_cliques.size(); i++) {
+    for (size_t i = 0; i < max_cliques.size(); ++i) {
         cout << "[ ";
-        for (size_t j = 0; j < max_cliques[i].size(); j++) {
+        for (size_t j = 0; j < max_cliques[i].size(); ++j) {
             cout << max_cliques[i][j] << " ";
         }
         cout << "] ";

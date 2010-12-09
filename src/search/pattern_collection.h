@@ -8,6 +8,8 @@
 class PatternCollection {
     std::vector<std::vector<int> > pattern_collection;
     int number_patterns;
+    void precompute_additive_vars();
+    void compute_max_cliques();
     std::vector<std::vector<int> > cgraph; // compatibility graph for the pattern collection
     std::vector<std::vector<int> > max_cliques; // final computed max_cliques
     std::vector<vector<bool> > are_additive;
