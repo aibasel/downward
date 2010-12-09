@@ -6,6 +6,7 @@
 #include "operator.h"
 #include "timer.h"
 #include "abstract_state_iterator.h"
+#include "variable_order_finder.h"
 
 #include <limits>
 #include <cstdlib>
@@ -192,15 +193,26 @@ void PDBAbstraction::create_pdb() {
         else {
             distances.push_back(numeric_limits<int>::max());
         }
+        //abstract_state.dump(pattern);
+        //cout << "successor states:" << endl;
         for (size_t j = 0; j < operators.size(); ++j) {
             if (abstract_state.is_applicable(operators[j])) {
+                //cout << "applying operator:" << endl;
+                //operators[j].dump(pattern);
                 AbstractState next_state = abstract_state;
                 next_state.apply_operator(operators[j]);
+                //next_state.dump(pattern);
                 size_t state_index = hash_index(next_state);
-                assert(counter != state_index);
-                back_edges[state_index].push_back(Edge(g_operators[j].get_cost(), counter));
+                if (state_index == counter) {
+                    //cout << "operator didn't lead to a new state, ignoring!" << endl;
+                    continue;
+                } else {
+                    assert(counter != state_index);
+                    back_edges[state_index].push_back(Edge(g_operators[j].get_cost(), counter));
+                }
             }
         }
+        //cout << endl;
     }
     
     while (!pq.empty()) {
@@ -259,7 +271,8 @@ void PDBAbstraction::dump() const {
 
 static ScalarEvaluatorPlugin pdb_heuristic_plugin("pdb", PDBHeuristic::create);
 
-PDBHeuristic::PDBHeuristic() : pdb_abstraction (0) {
+PDBHeuristic::PDBHeuristic(int max_abs_states) 
+    : pdb_abstraction (0), max_abstract_states(max_abs_states) {
 }
 
 PDBHeuristic::~PDBHeuristic() {
@@ -269,9 +282,22 @@ PDBHeuristic::~PDBHeuristic() {
 void PDBHeuristic::initialize() {
     cout << "Initializing pattern database heuristic..." << endl;
     
+    VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL);
+    vector<int> pattern;
+    int var = vof.next();
+    int num_states = g_variable_domain[var];
+    while (num_states <= max_abstract_states) {
+        //cout << "num states" << num_states << endl;
+        //cout << "including Variable: " << var << " (True name:" << g_variable_name[var] << ")" << endl;
+        pattern.push_back(var);
+        var = vof.next();
+        num_states *= g_variable_domain[var];
+    }
+    
     // function tests
     // 1. blocks-7-2 test-pattern
-    int patt[] = {9, 10, 11, 12, 13, 14};
+    //int patt[] = {9, 10, 11, 12, 13, 14};
+    //int patt[] = {13, 14};
     
     // 2. driverlog-6 test-pattern
     //int patt[] = {4, 5, 7, 9, 10, 11, 12};
@@ -285,7 +311,7 @@ void PDBHeuristic::initialize() {
     // 5. logistics00-5-1 test-pattern
     //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
     
-    vector<int> pattern(patt, patt + sizeof(patt) / sizeof(int));
+    //vector<int> pattern(patt, patt + sizeof(patt) / sizeof(int));
     Timer timer;
     pdb_abstraction = new PDBAbstraction(pattern);
     cout << "PDB construction time: " << timer << endl;
@@ -302,10 +328,37 @@ int PDBHeuristic::compute_heuristic(const State &state) {
 }
 
 ScalarEvaluator *PDBHeuristic::create(const vector<string> &config, int start, int &end, bool dry_run) {
-    //TODO: check what we have to do here!
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    int max_states = -1;
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            option_parser.add_int_option(
+                "max_states",
+                &max_states,
+                "maximum abstraction size");
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+    
+    if (max_states == -1) {
+        max_states = 1000000;
+    }
+    
+    if (max_states < 1) {
+        cerr << "error: abstraction size must be at least 1" << endl;
+        exit(2);
+    }
+    
+    //OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    
     if (dry_run)
         return 0;
     else
-        return new PDBHeuristic;
+        return new PDBHeuristic(max_states);
 }
