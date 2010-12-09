@@ -1,17 +1,9 @@
-#include "best_first_search.h"
-#include "enforced_hill_climbing_search.h"
-#include "g_evaluator.h"
-#include "general_eager_best_first_search.h"
-#include "general_lazy_best_first_search.h"
 #include "globals.h"
-#include "iterated_search.h"
 #include "operator.h"
 #include "option_parser.h"
-#include "pref_evaluator.h"
-#include "sum_evaluator.h"
 #include "timer.h"
 #include "utilities.h"
-#include "weighted_evaluator.h"
+
 
 #include <iostream>
 using namespace std;
@@ -79,29 +71,4 @@ int main(int argc, const char **argv) {
     return engine->found_solution() ? 0 : 1;
 }
 
-void register_parsers() {
-    // Register search engines
-    Registry<SearchEngine>* search_reg = Registry<SearchEngine>::instance();
-    search_reg->register("eager", GeneralEagerBestFirstSearch::create);
 
-    search_reg->register("eager", GeneralEagerBestFirstSearch::create);
-    search_reg->register("astar", GeneralEagerBestFirstSearch::create_astar);
-    search_reg->register("eager_greedy", GeneralEagerBestFirstSearch::create_greedy);
-    search_reg->register("lazy", GeneralLazyBestFirstSearch::create);
-    search_reg->register("lazy_greedy", GeneralLazyBestFirstSearch::create_greedy);
-    search_reg->register("lazy_wastar", GeneralLazyBestFirstSearch::create_weighted_astar);
-    search_reg->register("ehc", EnforcedHillClimbingSearch::create);
-    search_reg->register("old_greedy", BestFirstSearchEngine::create);
-    search_reg->register("iterated", IteratedSearch::create);
-
-    // register combinations and g evaluator
-    Registry<ScalarEvaluator>* scalar_eval_reg = Registry<ScalarEvaluator>::instance();
-    scalar_eval_reg->register("sum", SumEvaluator::create);
-    scalar_eval_reg->register("weight", WeightedEvaluator::create);
-    scalar_eval_reg->register("g", GEvaluator::create);
-    scalar_eval_reg->register("pref", PrefEvaluator::create);
-
-    // Note:
-    // open lists are registered just before creation in the OptionParser,
-    // since they are templated.
-}

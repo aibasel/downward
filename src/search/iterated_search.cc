@@ -176,3 +176,5 @@ SearchEngine *IteratedSearch::create(
 
     return engine;
 }
+
+static EnginePlugin _plugin("iterated", _parse);

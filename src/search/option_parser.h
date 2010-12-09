@@ -58,23 +58,23 @@ public:
 
 class OptionParser;
 
-template <class T>
+
 class Registry {
 public:
-    static Registry<T>* instance()
+    static Registry* instance()
     {
         if (!instance_) {
-            instance_ = new Registry<T>();
+            instance_ = new Registry();
         }
         return instance_;
     }
             
-    typedef T (*Factory)(OptionParser&);
+    typedef SearchEngine (*EngineFactory)(OptionParser&);
     
 private:
     Registry(){};
-    static Registry<T>* instance_;
-    std::map<std::string, Factory> registered;
+    static Registry* instance_;
+    std::map<std::string, HeuristicsFactory> heuristics;
 };
 
 template <class T> Registry<T>* Registry<T>::instance_ = 0;

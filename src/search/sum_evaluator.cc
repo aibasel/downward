@@ -74,3 +74,5 @@ ScalarEvaluator *SumEvaluator::create(const std::vector<std::string> &config,
     else
         return new SumEvaluator(evals);
 }
+
+static ScalarEvalPlugin _plugin("sum", _parse);

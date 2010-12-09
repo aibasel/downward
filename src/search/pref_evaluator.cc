@@ -34,3 +34,5 @@ ScalarEvaluator *PrefEvaluator::create(const std::vector<std::string> &config,
     else
         return new PrefEvaluator;
 }
+
+static ScalarEvalPlugin("pref", parse_);

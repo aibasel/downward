@@ -282,3 +282,6 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
 
     return engine;
 }
+
+static EnginePlugin _plugin("ehc", _parse);
+

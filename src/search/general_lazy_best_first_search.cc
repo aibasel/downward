@@ -392,3 +392,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
     }
     return engine;
 }
+
+static EnginePlugin _plugin("lazy", _parse);
+static EnginePlugin _plugin("lazy_greedy", _parse_greedy);
+static EnginePlugin _plugin("lazy_wastar", _parse_weighted_astar);
