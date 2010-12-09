@@ -228,14 +228,28 @@ class Invariant:
         actions_to_check = set()
         for part in self.parts:
             actions_to_check |= balance_checker.get_threats(part.predicate)
+        old_value = True
+        for action in actions_to_check:
+            if not self.check_action_balance(balance_checker, action, enqueue_func):
+                old_value = False
+#                print "old:", action.name
+                break
+
+        new_value = True
         for action in actions_to_check:
             if self.operator_too_heavy(action):
-                print "too heavy"
-                return False
+                #print "too heavy"
+                new_value = False
+#                print "new:", action.name
+                break
             if self.operator_unbalanced(action, enqueue_func):
-                print "unbalanced"
-                return False
-        return True
+                #print "unbalanced"
+                new_value = False
+#                print "new:", action.name
+                break
+
+        assert old_value == new_value, "%s %s, %s"% (old_value, new_value, self)
+        return old_value
     def operator_too_heavy(self, action):
         # XXX TODO: some things can be precomputed once
 
@@ -258,8 +272,6 @@ class Invariant:
         for index1, eff1 in enumerate(add_effects):
             for index2 in range(index1 + 1, len(add_effects)):
                 eff2 = add_effects[index2]
-                eff1.dump()
-                eff2.dump()
                 negative_clauses = []
                 assignments1 = []
                 assignments2 = []
@@ -308,10 +320,10 @@ class Invariant:
                     for a2 in assignments2:
                         comb = Assignment(a1.equalities + a2.equalities)
                         mapping = comb.get_mapping()
-                        if mapping: # otherwise a1 and a2 are inconsistent
+                        if mapping != None: # otherwise a1 and a2 are inconsistent
                             satisfiable = True
                             for neg_clause in negative_clauses:
-                                clause = neg_clause.apply_assignment(comb)
+                                clause = neg_clause.apply_mapping(mapping)
                                 if not clause.is_satisfiable():
                                     satisfiable = False
                                     break
