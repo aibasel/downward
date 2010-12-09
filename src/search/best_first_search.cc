@@ -261,3 +261,5 @@ OpenListInfo *BestFirstSearchEngine::select_open_queue() {
             best = &open_lists[i];
     return best;
 }
+
+static EnginePlugin _plugin("old_greedy", _parse);

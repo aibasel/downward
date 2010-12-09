@@ -30,3 +30,8 @@ LandmarkGraphPlugin::LandmarkGraphPlugin(
 
 LandmarkGraphPlugin::~LandmarkGraphPlugin() {
 }
+
+SearchEnginePlugin::SearchEnginePlugin(
+    const string &key, Registry::EngineFactory factory) {
+    Registry::instance()->register_search_engine(key, factory);
+}

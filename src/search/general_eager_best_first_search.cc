@@ -460,3 +460,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
     }
     return engine;
 }
+
+static EnginePlugin _plugin("eager", _parse);
+static EnginePlugin _plugin("astar", _parse_astar);
+static EnginePlugin _plugin("eager_greedy", _parse_greedy);

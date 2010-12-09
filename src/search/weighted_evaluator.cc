@@ -58,3 +58,5 @@ ScalarEvaluator *WeightedEvaluator::create(
     else
         return new WeightedEvaluator(evals[0], weight);
 }
+
+static ScalarEvalPlugin _plugin("weight", _parse);

@@ -31,3 +31,5 @@ ScalarEvaluator *GEvaluator::create(const std::vector<std::string> &config,
     else
         return new GEvaluator;
 }
+
+static ScalarEvalPlugin _parse("g", _parse);
