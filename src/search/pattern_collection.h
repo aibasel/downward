@@ -12,7 +12,7 @@ class PatternCollection {
     void compute_max_cliques();
     std::vector<std::vector<int> > cgraph; // compatibility graph for the pattern collection
     std::vector<std::vector<int> > max_cliques; // final computed max_cliques
-    std::vector<vector<bool> > are_additive;
+    std::vector<std::vector<bool> > are_additive; // variables which are additive
     //bool are_additive(int pattern1, int pattern2) const;
     void build_cgraph();
     int get_maxi_vertex(const std::vector<int> &subg, const std::vector<int> &cand) const; // TODO find nicer name :)

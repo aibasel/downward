@@ -88,7 +88,7 @@ HEADERS += pdb_heuristic.h \
            pdb_abstraction.h \
            abstract_state_iterator.h
 
-HEADERS += canonical_heuristic.h \
+HEADERS += pdb_collection_heuristic.h \
            pattern_collection.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
