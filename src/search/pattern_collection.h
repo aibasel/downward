@@ -1,7 +1,7 @@
 #ifndef PATTERN_COLLECTION_H
 #define PATTERN_COLLECTION_H
 
-#include "pdb_abstraction.h"
+#include "pdb_heuristic.h"
 
 #include <vector>
 
