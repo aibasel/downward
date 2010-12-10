@@ -15,6 +15,7 @@ class State;
 class RelaxedProposition;
 class RelaxedOperator;
 
+class Options;
 /* TODO: Check the impact of using unary relaxed operators instead of
    multi-effect ones.
 
@@ -138,10 +139,8 @@ class LandmarkCutHeuristic : public Heuristic {
     void mark_goal_plateau(RelaxedProposition *subgoal);
     void validate_h_max() const;
 public:
-    LandmarkCutHeuristic(int _iteration_limit = -1);
+    LandmarkCutHeuristic(const Options &opts);
     virtual ~LandmarkCutHeuristic();
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
 };
 
 inline int RelaxedOperator::h_max_cost() const {
