@@ -14,8 +14,6 @@ using namespace std;
 using namespace __gnu_cxx;
 
 
-static ScalarEvaluatorPlugin additive_heuristic_plugin(
-    "add", AdditiveHeuristic::create);
 
 
 // construction and destruction
@@ -136,11 +134,11 @@ int AdditiveHeuristic::compute_heuristic(const State &state) {
     return total_cost;
 }
 
-ScalarEvaluator *AdditiveHeuristic::create(const std::vector<string> &config,
-                                           int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+static ScalarEvaluator* _parse(&OptionParser p) {
+    if (p.dry_run)
         return 0;
     else
         return new AdditiveHeuristic;
 }
+
+static ScalarEvaluatorPlugin additive_heuristic_plugin("add", _parse);
