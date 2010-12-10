@@ -5,8 +5,9 @@
 
 #include "option_parser.h"
 
-WeightedEvaluator::WeightedEvaluator(ScalarEvaluator *eval, int weight)
-    : evaluator(eval), w(weight) {
+WeightedEvaluator::WeightedEvaluator(Options opts)
+    : evaluator(opts.get_list<ScalarEvaluator *>("evals")[0]) 
+      w(opts.get_list<ScalarEvaluator *>("weight")) {
 }
 
 WeightedEvaluator::~WeightedEvaluator() {
@@ -34,29 +35,16 @@ void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
     evaluator->get_involved_heuristics(hset);
 }
 
-ScalarEvaluator *WeightedEvaluator::create(
-    const std::vector<std::string> &config, int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-
+ScalarEvaluator *WeightedEvaluator::create(&OptionParser parser) {
     // create evaluator
     std::vector<ScalarEvaluator *> evals;
-    OptionParser *parser = OptionParser::instance();
-    parser->parse_scalar_evaluator_list(config, start + 2, end,
-                                        true, evals, dry_run);
-
-    end++;  // on comma
-    end++;  // on weight
-
-    int weight = parser->parse_int(config, end, end);
-    end++;
-    if (config[end] != ")")
-        throw ParseError(end);
-
-    if (dry_run)
+    parser.add_list_option<ScalarEvaluator *>("evals");
+    parser.add_option<int>("weight");
+    Options opts parser.parse();
+    if (parser.dry_run)
         return 0;
     else
-        return new WeightedEvaluator(evals[0], weight);
+        return new WeightedEvaluator(opts);
 }
 
 static ScalarEvalPlugin _plugin("weight", _parse);
