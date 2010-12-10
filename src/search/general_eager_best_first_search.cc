@@ -67,7 +67,7 @@ void GeneralEagerBestFirstSearch::initialize() {
         heuristics.push_back(*it);
     }
 
-    assert(heuristics.size() > 0);
+    assert(!heuristics.empty());
 
     for (size_t i = 0; i < heuristics.size(); i++)
         heuristics[i]->evaluate(*g_initial_state);

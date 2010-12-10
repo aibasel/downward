@@ -1,17 +1,19 @@
-#include <cassert>
-#include <climits>
-#include <ext/hash_map>
-#include <ext/hash_set>
-
 #include "landmarks_graph_rpg_sasp.h"
+
 #include "landmarks_graph.h"
+#include "util.h"
+
 #include "../operator.h"
 #include "../state.h"
 #include "../globals.h"
 #include "../domain_transition_graph.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "util.h"
+
+#include <cassert>
+#include <limits>
+#include <ext/hash_map>
+#include <ext/hash_set>
 
 using namespace __gnu_cxx;
 
@@ -327,7 +329,8 @@ void LandmarksGraphNew::approximate_lookahead_orders(
     // before the LM value (in the relaxed plan graph)
     hash_set<int> unreached(g_variable_domain[lmk.first]);
     for (int i = 0; i < g_variable_domain[lmk.first]; i++)
-        if (lvl_var[lmk.first][i] == INT_MAX && lmk.second != i)
+        if (lvl_var[lmk.first][i] == numeric_limits<int>::max()
+            && lmk.second != i)
             unreached.insert(i);
     // The set "exclude" will contain all those values of the LM variable that
     // cannot be reached before the LM value (as in "unreached") PLUS
@@ -388,7 +391,7 @@ void LandmarksGraphNew::find_forward_orders(
      */
     for (int i = 0; i < g_variable_domain.size(); i++)
         for (int j = 0; j < g_variable_domain[i]; j++) {
-            if (lvl_var[i][j] != INT_MAX)
+            if (lvl_var[i][j] != numeric_limits<int>::max())
                 continue;
 
             bool insert = true;
