@@ -14,13 +14,10 @@
 using namespace std;
 
 
-static ScalarEvaluatorPlugin landmark_cut_heuristic_plugin(
-    "lmcut", LandmarkCutHeuristic::create);
-
 
 // construction and destruction
-LandmarkCutHeuristic::LandmarkCutHeuristic(int _iteration_limit)
-    : iteration_limit(_iteration_limit) {
+LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
+    : iteration_limit(opts.get<int>("iteration_limit")) {
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
@@ -405,33 +402,14 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
    values a bit.
  */
 
-ScalarEvaluator *LandmarkCutHeuristic::create(const std::vector<string> &config,
-                                              int start, int &end,
-                                              bool dry_run) {
-    if (config.size() <= start)
-        throw ParseError(start);
-
-    int iteration_limit_ = -1;
-
-    // "<name>()" or "<name>(<options>)"
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            option_parser.add_int_option("iteration_limit", &iteration_limit_,
-                                         "iteration limit");
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        throw ParseError(start + 1);
-    }
-
+ScalarEvaluator *_parse(OptionParser& parser) {
+    parser.add_option<int>("iteration_limit", -1, "iteration limit");
+    Options opts = parser.parse();
     if (dry_run)
         return 0;
     else
-        return new LandmarkCutHeuristic(iteration_limit_);
+        return new LandmarkCutHeuristic(opts);
 }
+
+
+static ScalarEvaluatorPlugin _plugin("lmcut", _parse);
