@@ -17,11 +17,26 @@ OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref)
     priority = 0;
 }
 
-BestFirstSearchEngine::BestFirstSearchEngine()
+BestFirstSearchEngine::BestFirstSearchEngine(opts)
     : current_state(*g_initial_state) {
     generated_states = 0;
     current_predecessor = 0;
     current_operator = 0;
+    set<Heuristic *> hset;
+    set<Heuristic *> pset;
+    vector<Heuristic *> evals = opts.get_list<Heuristics *>("heuristics");
+    vector<Heuristic *> evals = opts.get_list<Heuristics *>("preferred");
+    hset.insert(evals.begin(), evals.end());
+    pset.insert(preferred_list.begin(), preferred_list.end());
+    
+    for (unsigned int i = 0; i < evals.size(); i++) {
+        add_heuristic(evals[i], true, pset.count(evals[i]));
+    }
+    for (unsigned int i = 0; i < preferred_list.size(); i++) {
+        if (hset.count(preferred_list[0]) == 0) {
+            add_heuristic(evals[i], false, true);
+        }
+    }
 }
 
 BestFirstSearchEngine::~BestFirstSearchEngine() {
@@ -206,52 +221,20 @@ int BestFirstSearchEngine::fetch_next_state() {
     return IN_PROGRESS;
 }
 
-SearchEngine *BestFirstSearchEngine::create(const vector<string> &config,
-                                            int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-
-    vector<Heuristic *> evals;
-    OptionParser::instance()->parse_heuristic_list(config, start + 2,
-                                                   end, false, evals, dry_run);
-    if (evals.empty())
-        throw ParseError(end);
-    end++;
-
-    vector<Heuristic *> preferred_list;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-        option_parser.add_heuristic_list_option("preferred",
-                                                &preferred_list, "use preferred operators of these heuristics");
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
+SearchEngine *_parse(&OptionParser parser) {
+    parser.add_option_list<Heuristic *>("heuristics");
+    parser.add_option_list<Heuristic *>("preffered", vector<Heuristic *>(), "use preferred operators of these heuristics");
 
     BestFirstSearchEngine *engine = 0;
-    if (!dry_run) {
-        engine = new BestFirstSearchEngine();
-
-        set<Heuristic *> hset;
-        set<Heuristic *> pset;
-        hset.insert(evals.begin(), evals.end());
-        pset.insert(preferred_list.begin(), preferred_list.end());
-
-        for (unsigned int i = 0; i < evals.size(); i++) {
-            engine->add_heuristic(evals[i], true, pset.count(evals[i]));
-        }
-        for (unsigned int i = 0; i < preferred_list.size(); i++) {
-            if (hset.count(preferred_list[0]) == 0) {
-                engine->add_heuristic(evals[i], false, true);
-            }
-        }
+    if (!parser.dry_run) {
+        Options opts = parser.parse();
+        engine = new BestFirstSearchEngine(opts);
     }
 
     return engine;
 }
+
+static EnginePlugin _plugin("old_greedy", _parse);
 
 OpenListInfo *BestFirstSearchEngine::select_open_queue() {
     OpenListInfo *best = 0;
@@ -262,4 +245,4 @@ OpenListInfo *BestFirstSearchEngine::select_open_queue() {
     return best;
 }
 
-static EnginePlugin _plugin("old_greedy", _parse);
+
