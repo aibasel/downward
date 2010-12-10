@@ -30,6 +30,7 @@ protected:
     bool check_goal(const SearchNode &node);
     void update_jump_statistic(const SearchNode &node);
     void print_heuristic_values(const vector<int> &values) const;
+    void reward_progress();
 
     vector<Heuristic *> heuristics;
     vector<Heuristic *> preferred_operator_heuristics;
