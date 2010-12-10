@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <limits>
 
+static const int DEFAULT_LAZY_BOOST = 1000;
+
 GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(
     OpenList<OpenListEntryLazy> *open, bool reopen_closed, int g_bound)
     : open_list(open), reopen_closed_nodes(reopen_closed), succ_mode(pref_first),
@@ -274,7 +276,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
     end++;
 
     vector<Heuristic *> preferred_list;
-    int boost = 1000;
+    int boost = DEFAULT_LAZY_BOOST;
 
     if (config[end] != ")") {
         end++;
@@ -332,7 +334,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
     end++;
 
     vector<Heuristic *> preferred_list;
-    int boost = 1000;
+    int boost = DEFAULT_LAZY_BOOST;
     int g_bound = numeric_limits<int>::max();
     int weight = 1;
 

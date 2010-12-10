@@ -34,7 +34,7 @@ OpenList<Entry> *AlternationOpenList<Entry>::create(
     // need at least one internal open list
 
     // parse options
-    int boost = 1000; // TODO make default value visible
+    int boost = 0;
     if (config[end] != ")") {
         NamedOptionParser option_parser;
         option_parser.add_int_option("boost", &boost,
