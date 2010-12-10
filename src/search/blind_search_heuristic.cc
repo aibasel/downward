@@ -6,8 +6,6 @@
 #include "state.h"
 
 
-static ScalarEvaluatorPlugin blind_search_heuristic_plugin(
-    "blind", BlindSearchHeuristic::create);
 
 
 BlindSearchHeuristic::BlindSearchHeuristic() {
@@ -38,12 +36,12 @@ return 0;
 */
 }
 
-ScalarEvaluator *BlindSearchHeuristic::create(const std::vector<string> &config,
-                                              int start, int &end,
-                                              bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+ScalarEvaluator *_parse(&OptionParser parser) {
+    if (parser.dry_run)
         return 0;
     else
         return new BlindSearchHeuristic();
 }
+
+static ScalarEvaluatorPlugin _plugin("blind", _parse);
+
