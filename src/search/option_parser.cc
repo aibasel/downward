@@ -149,12 +149,6 @@ Options OptionParser::get_configuration() {
     return configuration;
 }
 
-string OptionParser::to_lowercase(const string& s){
-    string t;
-    for (string::const_iterator i = s.begin(); i != s.end(); ++i)
-        t += tolower(*i);
-    return t;
-}
 
 ParseTree OptionParser::generate_parse_tree(const string config) {
     ParseTree root;
@@ -174,9 +168,13 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
             cur_node = cur_node->last_child();
             break;
         case ')':
+            if(cur_node.isRoot()) 
+                throw ParseError(cur_node, "missing (");
             cur_node = cur_node->get_parent();
             break;
         case '[':
+            if(!buffer.empty())
+                throw ParseError(cur_node, "misplaced opening bracket");
             cur_node->add_child("list", key);
             key.clear();
             cur_node = cur_node->last_child();
@@ -188,19 +186,24 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
                 key.clear();
             }
             cur_node = cur_node->get_parent();
+            if(cur_node.value.compare("list") != 0)
+                throw ParseError(cur_node, "mismatched brackets");
             break;
         case ',':
             break;
         case '=':
+            if (key.empty())
+                throw ParseError(cur_node, "expected keyword before =");
             key = buffer;
             buffer.clear();
             break;
         default:
-            buffer.push_back(next);
+            buffer.push_back(tolower(next));
             break;
         }    
     }
-        
+    if (!cur_node.isRoot())
+        throw ParseError(cur_node, "missing )");
         
     return *root.last_child();
 }
