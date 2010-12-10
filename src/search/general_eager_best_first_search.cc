@@ -286,6 +286,7 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
 
 void GeneralEagerBestFirstSearch::reward_progress() {
     // Boost the "preferred operator" open lists somewhat whenever
+    // one of the heuristics finds a state with a new best h value.
     open_list->boost_preferred();
 }
 
@@ -426,7 +427,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
     end++;
 
     vector<Heuristic *> preferred_list;
-    int boost = 1000;
+    int boost = 0;
     int g_bound = numeric_limits<int>::max();
 
     if (config[end] != ")") {
