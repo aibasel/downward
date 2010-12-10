@@ -73,19 +73,32 @@ void OptionParser::parse_cmd_line(char **argv, bool dry_run) {
         string arg = string(argv[i]);
         if (arg.compare("--heuristic") == 0) {
             ++i;
-            OptionParser::instance()->predefine_heuristic(argv[i]);
+            Predefinitions<Heuristic>::instance()->predefine(argv[i]);
         } else if (arg.compare("--landmarks") == 0) {
             ++i;
-            OptionParser::instance()->predefine_lm_graph(argv[i]);
+            Predefinitions<LandmarksGraph>::instance()->predefine(argv[i]);
         } else if (arg.compare("--search") == 0) {
             ++i;
-            engine = OptionParser::instance()->parse_search_engine(argv[i]);
+            OptionParser p(argv[i], dry_run);
+            engine = TokenParser<SearchEngine>->parse(p);
         } else if (arg.compare("--random-seed") == 0) {
             ++i;
             srand(atoi(argv[i]));
             cout << "random seed " << argv[i] << endl;
         } else {
             cerr << "unknown option " << arg << endl << endl;
+            string usage =
+                "usage: \n" +
+                string(argv[0]) + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
+                "* SEARCH (SearchEngine): configuration of the search algorithm\n"
+                "* OUTPUT (filename): preprocessor output\n\n"
+                "Options:\n"
+                "--heuristic HEURISTIC_PREDEFINITION\n"
+                "    Predefines a heuristic that can afterwards be referenced\n"
+                "    by the name that is specified in the definition.\n"
+                "--random-seed SEED\n"
+                "    Use random seed SEED\n\n"
+                "See http://www.fast-downward.org/ for details.";
             cout << usage << endl;
             exit(1);
         }
@@ -143,7 +156,7 @@ Options OptionParser::get_configuration() {
         if (find(valid_keys.begin(), 
                  valid_keys.end(), 
                  pt_children->at(i).key) == valid_keys.end()) {
-            //throw error: invalid option: ptChildren->at(i)
+            throw ParseError(pt_children->at(i), "invalid keyword")
         }
     }    
     return configuration;

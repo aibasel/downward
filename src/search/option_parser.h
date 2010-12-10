@@ -131,8 +131,8 @@ public:
 template <> 
 class TokenParser<bool> {
 public: 
-    static bool parse(const ParseTree& pt) {
-        if(pt.value.compare("false") == 0) {
+    static bool parse(OptionParser p) {
+        if(p.get_parse_tree()->value.compare("false") == 0) {
             return false;
         } else {
             return true;
@@ -144,28 +144,30 @@ public:
 template <class S>
 class TokenParser<std::vector<S > > {
 public:
-    static std::vector<S> parse(ParseTree& pt) {
+    static std::vector<S> parse(OptionParser p) {
+        pt = p.get_parse_tree();
         std::vector<S> results;
-        if (pt.value.compare("list") != 0) {
+        if (pt->value.compare("list") != 0) {
             //TODO:throw error
         } else {
-            for (size_t i(0); i != pt.get_children()->size(); ++i) {
+            for (size_t i(0); i != pt->get_children()->size(); ++i) {
                 results.push_back(
-                    TokenParser<S>::parse(pt.get_children()->at(i)));
+                    TokenParser<S>::parse(pt->get_children()->at(i)));
             }
         }
         return results;
     }      
 };
 
-/*
+
 template <class Entry>
 class TokenParser<OpenList<Entry > > {
 public:
     static OpenList<Entry> parse(const ParseTree& pt) {
+        if(Registry<OpenList<Entry >>::instance()->contains(
     }
 }
-*/
+
 
 /*The OptionParser stores a parse tree, and a Options. 
 By calling addArgument, the parse tree is partially parsed, 
@@ -184,7 +186,12 @@ public:
 
     void add_int_option(string k, string h = "");
     void add_int_option(string k, int default_val, string h = "");
-    
+    void add_bool_option(string k, string h = "");
+    void add_bool_option(string k, bool default_val, string h = "");
+    void add_double_option(string k, string h = "");
+    void add_double_option(string k, double default_val, string h = "");
+
+
     void add_heuristics_option(string k, string h = "");
     void add_heuristics_option(string k, Heuristic* default_val, string h = "");
 
@@ -199,7 +206,7 @@ public:
         
     
     Options get_configuration();
-
+    ParseTree* get_parse_tree();
     
     bool dry_run;
 
