@@ -700,7 +700,6 @@ void HMLandmarks::propagate_pm_fact(int factindex, bool newly_discovered,
             if (unsat_pc_count_[info.first].first == 0) {
                 // create empty set or clear prev entries -- signals do all possible noop effects
                 trigger[info.first].clear();
-                assert(trigger.find(info.first) != trigger.end());
             }
         }
         // a pc for a conditional noop

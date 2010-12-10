@@ -8,7 +8,6 @@
 #include "classifier.h"
 #include "feature_extractor.h"
 #include "state_space_sample.h"
-#include <limits.h>
 #include <math.h>
 
 class SelectiveMaxHeuristic : public Heuristic {

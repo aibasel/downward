@@ -1,20 +1,22 @@
-#include <vector>
-#include <list>
-#include <utility>
-#include <cassert>
-#include <map>
-#include <set>
-#include <ext/hash_map>
-#include <fstream>
-#include <sstream>
-#include <climits>
-
 #include "landmarks_graph.h"
+
+#include "util.h"
+
+#include "../exact_timer.h"
+#include "../globals.h"
 #include "../operator.h"
 #include "../state.h"
-#include "../globals.h"
-#include "../exact_timer.h"
-#include "util.h"
+
+#include <cassert>
+#include <fstream>
+#include <limits>
+#include <list>
+#include <map>
+#include <set>
+#include <sstream>
+#include <utility>
+#include <vector>
+#include <ext/hash_map>
 
 using namespace std;
 
@@ -302,7 +304,7 @@ bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
      when a proposition / operator can be achieved / become applicable in the relaxed task.
      */
 
-    // Initialize lvl_op and lvl_var to INT_MAX
+    // Initialize lvl_op and lvl_var to numeric_limits<int>::max()
     if (compute_lvl_op) {
         lvl_op.resize(g_operators.size() + g_axioms.size());
         for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
@@ -311,12 +313,14 @@ bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
             const vector<PrePost> &prepost = op.get_pre_post();
             for (unsigned j = 0; j < prepost.size(); j++)
                 lvl_op[i].insert(make_pair(make_pair(prepost[j].var,
-                                                     prepost[j].post), INT_MAX));
+                                                     prepost[j].post),
+                                           numeric_limits<int>::max()));
         }
     }
     lvl_var.resize(g_variable_name.size());
     for (unsigned var = 0; var < g_variable_name.size(); var++) {
-        lvl_var[var].resize(g_variable_domain[var], INT_MAX);
+        lvl_var[var].resize(g_variable_domain[var],
+                            numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
@@ -334,9 +338,10 @@ bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     exploration->compute_reachability_with_excludes(lvl_var, lvl_op, level_out,
                                                     exclude_props, exclude_ops, compute_lvl_op);
 
-    // Test whether all goal propositions have a level of less than INT_MAX
+    // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (int i = 0; i < g_goal.size(); i++)
-        if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX)
+        if (lvl_var[g_goal[i].first][g_goal[i].second] ==
+            numeric_limits<int>::max())
             return false;
 
     return true;
@@ -352,10 +357,11 @@ bool LandmarksGraph::is_causal_landmark(const LandmarkNode &landmark) const {
         return true;
     vector<vector<int> > lvl_var;
     vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
-    // Initialize lvl_var to INT_MAX
+    // Initialize lvl_var to numeric_limits<int>::max()
     lvl_var.resize(g_variable_name.size());
     for (unsigned var = 0; var < g_variable_name.size(); var++) {
-        lvl_var[var].resize(g_variable_domain[var], INT_MAX);
+        lvl_var[var].resize(g_variable_domain[var],
+                            numeric_limits<int>::max());
     }
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
@@ -368,9 +374,10 @@ bool LandmarksGraph::is_causal_landmark(const LandmarkNode &landmark) const {
     exploration->compute_reachability_with_excludes(lvl_var, lvl_op, true,
                                                     exclude_props, exclude_ops, false);
 
-    // Test whether all goal propositions have a level of less than INT_MAX
+    // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (int i = 0; i < g_goal.size(); i++)
-        if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX)
+        if (lvl_var[g_goal[i].first][g_goal[i].second] ==
+            numeric_limits<int>::max())
             return true;
 
     return false;
@@ -1163,7 +1170,7 @@ bool LandmarksGraph::relaxed_task_solvable_without_operator(
      when a proposition / operator can be achieved / become applicable in the relaxed task.
      */
 
-    // Initialize lvl_op and lvl_var to INT_MAX
+    // Initialize lvl_op and lvl_var to numeric_limits<int>::max()
     if (compute_lvl_op) {
         lvl_op.resize(g_operators.size() + g_axioms.size());
         for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
@@ -1172,12 +1179,14 @@ bool LandmarksGraph::relaxed_task_solvable_without_operator(
             const vector<PrePost> &prepost = op.get_pre_post();
             for (unsigned j = 0; j < prepost.size(); j++)
                 lvl_op[i].insert(make_pair(make_pair(prepost[j].var,
-                                                     prepost[j].post), INT_MAX));
+                                                     prepost[j].post),
+                                           numeric_limits<int>::max()));
         }
     }
     lvl_var.resize(g_variable_name.size());
     for (unsigned var = 0; var < g_variable_name.size(); var++) {
-        lvl_var[var].resize(g_variable_domain[var], INT_MAX);
+        lvl_var[var].resize(g_variable_domain[var],
+                            numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
@@ -1189,9 +1198,11 @@ bool LandmarksGraph::relaxed_task_solvable_without_operator(
     exploration->compute_reachability_with_excludes(lvl_var, lvl_op, level_out,
                                                     exclude_props, exclude_ops, compute_lvl_op);
 
-    // Test whether all goal propositions have a level of less than INT_MAX
+    // Test whether all goal propositions have a level of less than
+    // numeric_limits<int>::max()
     for (int i = 0; i < g_goal.size(); i++) {
-        if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX) {
+        if (lvl_var[g_goal[i].first][g_goal[i].second] ==
+            numeric_limits<int>::max()) {
             return false;
         }
     }

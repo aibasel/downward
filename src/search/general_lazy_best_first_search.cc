@@ -56,7 +56,7 @@ void GeneralLazyBestFirstSearch::initialize() {
     for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); it++) {
         heuristics.push_back(*it);
     }
-    assert(heuristics.size() > 0);
+    assert(!heuristics.empty());
 }
 
 //void GeneralLazyBestFirstSearch::add_heuristic(Heuristic *heuristic,

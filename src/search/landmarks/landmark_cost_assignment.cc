@@ -80,7 +80,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
         int lmn_status = node.get_status(false);
         if (lmn_status != lm_reached) {
             const set<int> &achievers = get_achievers(lmn_status, node);
-            assert(achievers.size() >= 1);
+            assert(!achievers.empty());
             if (use_action_landmarks && achievers.size() == 1) {
                 // We have found an action landmark for this state.
                 int op_id = *achievers.begin();
@@ -239,7 +239,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
             int lm_status = lm->get_status(false);
             if (lm_status != lm_reached) {
                 const set<int> &achievers = get_achievers(lm_status, *lm);
-                assert(achievers.size() >= 1);
+                assert(!achievers.empty());
                 set<int>::const_iterator ach_it;
                 for (ach_it = achievers.begin(); ach_it != achievers.end();
                      ++ach_it) {

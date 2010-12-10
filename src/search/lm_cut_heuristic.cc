@@ -301,6 +301,9 @@ void LandmarkCutHeuristic::mark_goal_plateau(RelaxedProposition *subgoal) {
 
 void LandmarkCutHeuristic::validate_h_max() const {
 #ifndef NDEBUG
+    // Using conditional compilation to avoid complaints about unused
+    // variables when using NDEBUG. This whole code does nothing useful
+    // when assertions are switched off anyway.
     for (int i = 0; i < relaxed_operators.size(); i++) {
         const RelaxedOperator *op = &relaxed_operators[i];
         const vector<RelaxedProposition *> prec = op->precondition;
@@ -343,7 +346,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     vector<RelaxedOperator *> cut;
     vector<RelaxedProposition *> queue;
     first_exploration(state);
-    // validate_h_max();
+    // validate_h_max();  // too expensive to use even in regular debug mode
     if (artificial_goal.status == UNREACHED)
         return DEAD_END;
 
@@ -370,7 +373,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
 
 
         first_exploration_incremental(cut);
-        // validate_h_max();
+        // validate_h_max();  // too expensive to use even in regular debug mode
         // TODO: Need better name for all explorations; e.g. this could
         //       be "recompute_h_max"; second_exploration could be
         //       "mark_zones" or whatever.

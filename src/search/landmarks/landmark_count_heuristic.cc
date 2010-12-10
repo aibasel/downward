@@ -1,7 +1,11 @@
-#include <climits>
-#include <cmath>
-
 #include "landmark_count_heuristic.h"
+
+#include "h_m_landmarks.h"
+#include "landmarks_graph_rpg_exhaust.h"
+#include "landmarks_graph_rpg_sasp.h"
+#include "landmarks_graph_rpg_search.h"
+#include "landmarks_graph_zhu_givan.h"
+
 #include "../globals.h"
 #include "../operator.h"
 #include "../option_parser.h"
@@ -9,11 +13,10 @@
 #include "../search_engine.h"
 #include "../successor_generator.h"
 #include "../timer.h"
-#include "h_m_landmarks.h"
-#include "landmarks_graph_rpg_exhaust.h"
-#include "landmarks_graph_rpg_sasp.h"
-#include "landmarks_graph_rpg_search.h"
-#include "landmarks_graph_zhu_givan.h"
+
+#include <cmath>
+#include <limits>
+
 
 using namespace std;
 
@@ -28,7 +31,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(LandmarksGraph &lm_graph, bool pr
       lm_status_manager(lgraph) {
     cout << "Initializing landmarks count heuristic..." << endl;
     use_preferred_operators = preferred_ops;
-    lookahead = INT_MAX;
+    lookahead = numeric_limits<int>::max();
     // When generating preferred operators, we plan towards
     // non-disjunctive landmarks only
     ff_search_disjunctive_lms = false;

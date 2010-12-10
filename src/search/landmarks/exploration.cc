@@ -4,7 +4,7 @@
 #include "../state.h"
 
 #include <cassert>
-#include <climits>
+#include <limits>
 
 using namespace std;
 using namespace __gnu_cxx;
@@ -407,12 +407,12 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
                 ExProposition *prop = op.precondition[i];
                 if (prop->h_max_cost == -1) {
                     // Operator cannot be applied due to unreached precondition
-                    op.h_max_cost = INT_MAX;
+                    op.h_max_cost = numeric_limits<int>::max();
                     break;
                 } else if (op.h_max_cost < prop->h_max_cost + op.base_cost)
                     op.h_max_cost = prop->h_max_cost + op.base_cost;
             }
-            if (op.h_max_cost == INT_MAX)
+            if (op.h_max_cost == numeric_limits<int>::max())
                 break;
             int op_index = operator_index[op.op];
             // We subtract 1 to keep semantics for landmark code:
@@ -483,7 +483,7 @@ int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
         if (heuristic_recomputation_needed) {
             prepare_heuristic_computation(state);
         }
-        int min_cost = INT_MAX;
+        int min_cost = numeric_limits<int>::max();
         ExProposition *target = NULL;
         for (int i = 0; i < termination_propositions.size(); i++) {
             const int prop_cost = termination_propositions[i]->h_add_cost;
@@ -499,7 +499,7 @@ int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
         }
         assert(target != NULL);
         relaxed_plan.resize(2 * min_cost);
-        assert(exported_ops.size() == 0);
+        assert(exported_ops.empty());
         collect_ha(target, relaxed_plan, state);
     } else {
         // search for original goals of the task
