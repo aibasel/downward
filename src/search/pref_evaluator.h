@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-class Options;
 
 class PrefEvaluator : public ScalarEvaluator {
 private:

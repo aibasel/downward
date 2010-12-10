@@ -21,8 +21,6 @@ using namespace __gnu_cxx;
 */
 
 
-static ScalarEvaluatorPlugin max_heuristic_plugin(
-    "hmax", HSPMaxHeuristic::create);
 
 
 // construction and destruction
@@ -148,11 +146,12 @@ int HSPMaxHeuristic::compute_heuristic(const State &state) {
     return max_cost;
 }
 
-ScalarEvaluator *HSPMaxHeuristic::create(const std::vector<string> &config,
-                                         int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+ScalarEvaluator *_parse(OptionParser &parser) {
+    if (parser.dry_run)
         return 0;
     else
         return new HSPMaxHeuristic;
 }
+
+
+static ScalarEvaluatorPlugin _plugin("hmax", _parse);

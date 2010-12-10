@@ -27,8 +27,6 @@ public:
     HSPMaxHeuristic();
     ~HSPMaxHeuristic();
 
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
 };
 
 #endif
