@@ -1,5 +1,7 @@
 #include "landmark_cost_assignment.h"
 
+#include "landmarks_graph.h"
+
 #ifdef USE_LP
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #ifdef COIN_USE_CLP
@@ -32,12 +34,6 @@ using namespace std;
 
 LandmarkCostAssignment::LandmarkCostAssignment(LandmarksGraph &graph)
     : lm_graph(graph) {
-    if (!graph.get_action_landmarks().empty()) {
-        cerr << "Cannot combine cost sharing with action landmarks." << endl
-             << "Note that we get the h value improvement of action " << endl
-             << "landmarks automatically with the new implementation." << endl;
-        ::exit(1);
-    }
 }
 
 

@@ -122,7 +122,6 @@ struct LandmarkNodeComparer {
 
 
 typedef hash_set<LandmarkNode *, hash_pointer> LandmarkSet;
-typedef set<const Operator *> ActionLandmarkSet;
 
 class LandmarksGraph {
 public:
@@ -132,7 +131,6 @@ public:
         bool disjunctive_landmarks;
         bool conjunctive_landmarks;
         bool no_orders;
-        bool discover_action_landmarks;
 
         LandmarkGraphOptions();
 
@@ -217,40 +215,17 @@ public:
         return op;
     }
 
-    inline const ActionLandmarkSet &get_action_landmarks() const {
-        return action_landmarks;
-    }
-
-    double shared_cost_of_landmarks() const {
-        return shared_landmarks_cost;
-    }
     int get_reached_cost() const {
         return reached_cost;
     }
     int get_needed_cost() const {
         return needed_cost;
     }
-    double get_reached_shared_cost() const {
-        return reached_shared_cost;
-    }
-    double get_needed_shared_cost() const {
-        return needed_shared_cost;
-    }
-    double get_not_unused_alm_effect_reached_shared_cost() const {
-        return not_unused_alm_effect_reached_shared_cost;
-    }
-    double get_not_unused_alm_effect_needed_shared_cost() const {
-        return not_unused_alm_effect_needed_shared_cost;
-    }
-    int get_unused_action_landmark_cost() const {return unused_action_landmark_cost; }
-    void set_unused_action_landmark_cost(int cost) {unused_action_landmark_cost = cost; }
     bool is_dead_end() const {return dead_end_found; }
 
     void count_shared_costs();
     void count_costs();
     LandmarkNode *get_lm_for_index(int);
-    const Operator *get_alm_for_index(int i) const;
-    int get_alm_id(const Operator *op) const;
 
     Exploration *get_exploration() const {return exploration; }
     bool is_using_reasonable_orderings() const {return reasonable_orders; }
@@ -283,23 +258,14 @@ protected:
     bool disjunctive_landmarks;
     bool conjunctive_landmarks;
     bool no_orders;
-    bool discover_action_landmarks;
 
     int landmarks_count;
     int conj_lms;
 
-    double shared_landmarks_cost;
     int landmarks_cost;
-
     int reached_cost;
-    double reached_shared_cost;
-    double not_unused_alm_effect_reached_shared_cost;
-
     int needed_cost;
-    double needed_shared_cost;
-    double not_unused_alm_effect_needed_shared_cost;
 
-    int unused_action_landmark_cost;
     bool dead_end_found;
 
     vector<vector<set<pair<int, int> > > > inconsistent_facts;
@@ -311,10 +277,6 @@ protected:
 
     set<LandmarkNode *> nodes;
     vector<LandmarkNode *> ordered_nodes;
-
-    ActionLandmarkSet action_landmarks;
-    vector<const Operator *> ordered_action_landmarks;
-    map<const Operator *, int> action_landmark_ids;
 
     hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
     hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
@@ -355,9 +317,6 @@ protected:
     LandmarkNode &landmark_add_disjunctive(const set<pair<int, int> > &lm);
     void edge_add(LandmarkNode &from, LandmarkNode &to,
                   edge_type type);
-
-    virtual void generate_action_landmarks();
-    bool check_action_landmark(const Operator *op);
 
     void reset_landmarks_count() {landmarks_count = nodes.size(); }
     virtual void calc_achievers();
