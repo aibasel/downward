@@ -283,13 +283,11 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
     }
 }
 
-
 void GeneralEagerBestFirstSearch::reward_progress() {
     // Boost the "preferred operator" open lists somewhat whenever
     // one of the heuristics finds a state with a new best h value.
     open_list->boost_preferred();
 }
-
 
 void GeneralEagerBestFirstSearch::dump_search_space() {
     search_space.dump();
