@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+class Options;
+
 class PrefEvaluator : public ScalarEvaluator {
 private:
     bool value_preferred;
@@ -19,9 +21,6 @@ public:
     bool dead_end_is_reliable() const;
     int get_value() const;
     void get_involved_heuristics(std::set<Heuristic *> &) {return; }
-
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
 };
 
 #endif
