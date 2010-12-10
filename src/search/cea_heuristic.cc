@@ -23,10 +23,6 @@ TODO: The responsibilities between the different classes need to be
  */
 
 
-static ScalarEvaluatorPlugin context_enhanced_additive_heuristic_plugin(
-    "cea", ContextEnhancedAdditiveHeuristic::create);
-
-
 static ContextEnhancedAdditiveHeuristic *g_HACK = 0;
 
 inline void ContextEnhancedAdditiveHeuristic::add_to_heap(
@@ -344,11 +340,12 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
     return DEAD_END;
 }
 
-ScalarEvaluator *ContextEnhancedAdditiveHeuristic::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+ScalarEvaluator _parse(&OptionParser parse) {
+    if (parser.dry_run)
         return 0;
     else
         return new ContextEnhancedAdditiveHeuristic;
 }
+
+
+static ScalarEvaluatorPlugin _plugin("cea", _parse);

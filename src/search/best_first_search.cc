@@ -224,14 +224,13 @@ int BestFirstSearchEngine::fetch_next_state() {
 SearchEngine *_parse(&OptionParser parser) {
     parser.add_option_list<Heuristic *>("heuristics");
     parser.add_option_list<Heuristic *>("preffered", vector<Heuristic *>(), "use preferred operators of these heuristics");
+    Options opts = parser.parse();
 
     BestFirstSearchEngine *engine = 0;
-    if (!parser.dry_run) {
-        Options opts = parser.parse();
-        engine = new BestFirstSearchEngine(opts);
-    }
-
-    return engine;
+    if (!parser.dry_run) 
+        return 0;
+    else
+        return new BestFirstSearchEngine(opts);
 }
 
 static EnginePlugin _plugin("old_greedy", _parse);
