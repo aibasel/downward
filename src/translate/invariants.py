@@ -203,24 +203,12 @@ class Invariant:
         heavy_actions_to_check = set()
         for part in self.parts:
             actions_to_check |= balance_checker.get_threats(part.predicate)
-        old_value = True
-        for action in actions_to_check:
-            if not self.check_action_balance(balance_checker, action, enqueue_func):
-                old_value = False
-                break
-
-        new_value = True
         for action in actions_to_check:
             heavy_action = balance_checker.get_heavy_action(action.name)
             if self.operator_too_heavy(heavy_action):
-                new_value = False
-                break
+                return False
             if self.operator_unbalanced(action, enqueue_func):
-                new_value = False
-                break
-
-        assert old_value == new_value, "%s %s, %s"% (old_value, new_value, self)
-        return old_value
+                return False
     def operator_too_heavy(self, h_action):
         add_effects = [eff for eff in h_action.effects 
                            if not eff.literal.negated and
