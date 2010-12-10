@@ -2,7 +2,8 @@
 # -*- coding: latin-1 -*-
 
 from __future__ import with_statement
-from collections import deque
+from collections import deque, defaultdict
+import copy
 import time
 
 import invariants
@@ -11,14 +12,27 @@ import timers
 
 class BalanceChecker(object):
     def __init__(self, task):
-        self.predicates_to_add_actions = {}
+        self.predicates_to_add_actions = defaultdict(set)
+        self.action_name_to_heavy_action = {}
         for action in task.actions:
+            too_heavy_effects = []
             for eff in action.effects:
+                too_heavy_effects.append(eff)
+                if eff.parameters: # universal effect
+                    too_heavy_effects.append(copy.copy(eff))
                 if not eff.literal.negated:
                     predicate = eff.literal.predicate
-                    self.predicates_to_add_actions.setdefault(predicate, set()).add(action)
+                    self.predicates_to_add_actions[predicate].add(action)
+            heavy_act = pddl.Action(action.name, action.parameters,
+                                    action.precondition, too_heavy_effects,
+                                    action.cost)
+            # heavy_act: duplicated universal effects and assigned unique names
+            # to all quantified variables (implicitly in constructor)
+            self.action_name_to_heavy_action[action.name] = heavy_act
     def get_threats(self, predicate):
         return self.predicates_to_add_actions.get(predicate, set())
+    def get_heavy_action(self, action_name):
+        return self.action_name_to_heavy_action[action_name]
         
 
 def get_fluents(task):

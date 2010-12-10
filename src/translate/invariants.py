@@ -1,5 +1,6 @@
 # -*- coding: latin-1 -*-
 
+from collections import defaultdict
 import copy
 import itertools
 
@@ -58,6 +59,7 @@ class NegativeClause(object):
     # disjunction of inequalities
     def __init__(self, parts):
         self.parts = parts
+        assert len(parts)
     def is_satisfiable(self):
         for part in self.parts:
             if part[0] != part[1]:
@@ -85,9 +87,9 @@ class Assignment(object):
                 for elem in c2:
                     eq_classes[elem] = c1
 
-        # create mapping: each key is mapped to the largest
-        # element in its equivalence class
-        # uses that "?" is lexicographically smaller than normal letters
+        # create mapping: each key is mapped to the smallest
+        # element in its equivalence class (with objects being
+        # smaller than variables)
         mapping = {}
         for eq_class in eq_classes.itervalues():
             variables = [item for item in eq_class if item.startswith("?")]
@@ -190,9 +192,15 @@ class Invariant:
         return self.predicate_to_part[atom.predicate].get_parameters(atom)
     def instantiate(self, parameters):
         return [part.instantiate(parameters) for part in self.parts]
+    def get_covering_assignments(self, parameters, atom):
+        part = self.predicate_to_part[atom.predicate]
+        return [part.get_assignment(parameters, atom)]
+        # if there were more parts for the same predicate the list
+        # contained more than one element
     def check_balance(self, balance_checker, enqueue_func):
         # Check balance for this hypothesis.
         actions_to_check = set()
+        heavy_actions_to_check = set()
         for part in self.parts:
             actions_to_check |= balance_checker.get_threats(part.predicate)
         old_value = True
@@ -203,7 +211,8 @@ class Invariant:
 
         new_value = True
         for action in actions_to_check:
-            if self.operator_too_heavy(action):
+            heavy_action = balance_checker.get_heavy_action(action.name)
+            if self.operator_too_heavy(heavy_action):
                 new_value = False
                 break
             if self.operator_unbalanced(action, enqueue_func):
@@ -212,96 +221,77 @@ class Invariant:
 
         assert old_value == new_value, "%s %s, %s"% (old_value, new_value, self)
         return old_value
-    def operator_too_heavy(self, action):
-        # XXX TODO: some things can be precomputed once
-
-        # duplicate universal effects and assign unique names to all 
-        # quantified variables
-        new_effects = []
-        for eff in action.effects:
-            new_effects.append(eff)
-            if eff.parameters: # universal effect
-                new_effects.append(copy.copy(eff))
-        act = pddl.Action(action.name, action.parameters, action.precondition,
-                          new_effects, action.cost)
-
-        add_effects = [eff for eff in act.effects 
+    def operator_too_heavy(self, h_action):
+        add_effects = [eff for eff in h_action.effects 
                            if not eff.literal.negated and
                               self.predicate_to_part.get(eff.literal.predicate)]
+        inv_vars = find_unique_variables(h_action, self)
+       
+        for eff1, eff2 in itertools.combinations(add_effects, 2):
+            negative_clauses = []
+            combinatorial_assignments = []
+            
+            # eff1.atom != eff2.atom
+            if (eff1.literal.predicate == eff2.literal.predicate and
+                eff1.literal.parts):
+                parts = zip(eff1.literal.parts, eff2.literal.parts)
+                negative_clauses.append(NegativeClause(parts))
+            
+            # covers(V, Phi, eff1.atom)
+            a = self.get_covering_assignments(inv_vars, eff1.literal)
+            combinatorial_assignments.append(a)
+            
+            # covers(V, Phi, eff2.atom)
+            a = self.get_covering_assignments(inv_vars, eff2.literal)
+            combinatorial_assignments.append(a)
 
-        inv_vars = find_unique_variables(act, self)
-        
-        for index1, eff1 in enumerate(add_effects):
-            for index2 in range(index1 + 1, len(add_effects)):
-                eff2 = add_effects[index2]
-                negative_clauses = []
-                combinatorial_assignments = []
+            # precondition plus effect conditions plus both (negated) literals
+            # should be unsatisfiable
+            pos = defaultdict(set)
+            neg = defaultdict(set)
+            neg[eff1.literal.predicate].add(eff1.literal)
+            neg[eff2.literal.predicate].add(eff2.literal)
+            for literal in itertools.chain(get_literals(h_action.precondition),
+                                           get_literals(eff1.condition),
+                                           get_literals(eff2.condition)):
                 
-                # eff1.atom != eff2.atom
-                l1 = eff1.literal
-                l2 = eff2.literal
-                if l1.predicate == l2.predicate:
-                    parts = [(l1.parts[i], l2.parts[i]) 
-                             for i in range(len(l1.parts))]
-                    if len(parts) != 0:
-                        negative_clauses.append(NegativeClause(parts))
-                
-                # covers(V, Phi, eff1.atom)
-                part = self.predicate_to_part[eff1.literal.predicate] 
-                a = part.get_assignment(inv_vars, eff1.literal)
-                combinatorial_assignments.append([a])
-                
-                # covers(V, Phi, eff2.atom)
-                part = self.predicate_to_part[eff2.literal.predicate] 
-                a = part.get_assignment(inv_vars, eff2.literal)
-                combinatorial_assignments.append([a])
-
-                # precondition plus effect conditions plus both literals
-                # false
-                pos, neg = dict(), dict()
-                neg.setdefault(eff1.literal.predicate, set()).add(eff1.literal)
-                neg.setdefault(eff2.literal.predicate, set()).add(eff2.literal)
-                for literal in itertools.chain(get_literals(act.precondition),
-                                               get_literals(eff1.condition),
-                                               get_literals(eff2.condition)):
+                if literal.predicate == "=": # use (in)equalities in conditions
                     if literal.negated:
-                        neg.setdefault(literal.predicate, set()).add(literal)
+                        n = NegativeClause([literal.args])
+                        negative_clauses.append(n)
                     else:
-                        pos.setdefault(literal.predicate, set()).add(literal)
+                        a = Assignment([literal.args])
+                        combinatorial_assignments.append(a)
+                else:
+                    if literal.negated:
+                        neg[literal.predicate].add(literal)
+                    else:
+                        pos[literal.predicate].add(literal)
 
-                    # use (in)equalities in conditions
-                    if literal.predicate == "=": 
-                        if literal.negated:
-                            n = NegativeClause([literal.args])
-                            negative_clauses.append(n)
-                        else:
-                            a = Assignment([literal.args])
-                            combinatorial_assignments.append(a)
+            for pred, posatoms in pos.iteritems():
+                if pred in neg:
+                    for posatom in posatoms:
+                        for negatom in neg[pred]:
+                            parts = zip(negatom.args, posatom.args)
+                            if parts:
+                                negative_clauses.append(NegativeClause(parts))
 
-                for pred, posatoms in pos.iteritems():
-                    if pred in neg:
-                        negatoms = neg[pred]
-                        for posatom in posatoms:
-                            for negatom in negatoms:
-                                parts = zip(negatom.args, posatom.args)
-                                if len(parts) != 0:
-                                    negative_clauses.append(NegativeClause(parts))
-
-                # check for all covering assignments whether they make the
-                # conjunction of all negative_clauses unsatisfiably
-                for assignments in itertools.product(*combinatorial_assignments):
-                    new_equalities = reduce(lambda x,y: x + y, 
-                                            [a.equalities for a in assignments])
-                    mapping = Assignment(new_equalities).get_mapping()
-                    if mapping != None: # otherwise the assignments are inconsistent
-                        satisfiable = True
-                        for neg_clause in negative_clauses:
-                            clause = neg_clause.apply_mapping(mapping)
-                            if not clause.is_satisfiable():
-                                satisfiable = False
-                                break
-                        if satisfiable:
-                            return True
+            # check for all covering assignments whether they make the
+            # conjunction of all negative_clauses unsatisfiably
+            for assignments in itertools.product(*combinatorial_assignments):
+                new_equalities = []
+                for a in assignments:
+                    new_equalities.extend(a.equalities)
+                mapping = Assignment(new_equalities).get_mapping()
+                if mapping != None: # otherwise the assignments are inconsistent
+                    satisfiable = True
+                    for neg_clause in negative_clauses:
+                        clause = neg_clause.apply_mapping(mapping)
+                        if not clause.is_satisfiable():
+                            satisfiable = False
+                            break
+                    if satisfiable:
+                        return True
         return False
     def operator_unbalanced(self, action, enqueue_func):
         inv_vars = find_unique_variables(action, self)
@@ -320,64 +310,73 @@ class Invariant:
                               inv_vars, enqueue_func):
 
         # add_effect must be covered
-        part = self.predicate_to_part[add_effect.literal.predicate] 
-        assignment = part.get_assignment(inv_vars, add_effect.literal)
+        assigs = self.get_covering_assignments(inv_vars, add_effect.literal)
 
-        # renaming of operator parameters must be minimal
-        minimality_clauses = []
+        minimal_renamings = []
         params = [p.name for p in action.parameters]
-        mapping = assignment.get_mapping()
-        for (n1, n2) in itertools.combinations(params, 2):
-            if mapping.get(n1, n1) != mapping.get(n2, n2):
-                minimality_clauses.append(NegativeClause([(n1, n2)]))
+        for assignment in assigs:
+            # renaming of operator parameters must be minimal
+            minimality_clauses = []
+            mapping = assignment.get_mapping()
+            for (n1, n2) in itertools.combinations(params, 2):
+                if mapping.get(n1, n1) != mapping.get(n2, n2):
+                    minimality_clauses.append(NegativeClause([(n1, n2)]))
+            minimal_renamings.append((assignment, minimality_clauses))
        
-        lhs_by_pred = dict()
+        lhs_by_pred = defaultdict(list)
         for lit in itertools.chain(get_literals(action.precondition),
                                    get_literals(add_effect.condition),
                                    get_literals(add_effect.literal.negate())):
-            lhs_by_pred.setdefault(lit.predicate, []).append(lit)
+            lhs_by_pred[lit.predicate].append(lit)
 
-        def check_del_effect(del_effect):
-            """returns true if the del_effects balances the add_effect"""
-            negative_clauses = []
-            # add_eff.atom != del_eff.atom
-            # TODO almost the same code in too heavy
-            l1 = add_effect.literal
-            l2 = del_effect.literal
-            if l1.predicate == l2.predicate:
-                parts = [(l1.parts[i], l2.parts[i]) 
-                         for i in range(len(l1.parts))]
-                if len(parts) != 0:
-                    negative_clauses.append(NegativeClause(parts))
-            
-            combinatorial_assignments = [[assignment]]
-            # del_effect.atom must be covered
-            # XXX TODO: add one possibility for each occurence of the del pred
-            # in the invariant
-            part = self.predicate_to_part[del_effect.literal.predicate] 
-            del_assig = [part.get_assignment(inv_vars, del_effect.literal)]
-            combinatorial_assignments.append(del_assig)
-            
-            # del_effect.cond and del_effect.atom must be implied by lhs
-            for literal in itertools.chain(get_literals(del_effect.condition),
-                                           [del_effect.literal.negate()]):
-                if not literal.predicate in lhs_by_pred:
-                    return False
-                poss_assignments = []
-                for match in lhs_by_pred[literal.predicate]:
-                    if match.negated != literal.negated:
-                        continue
-                    else:
-                        a = Assignment(zip(literal.parts, match.parts))
-                        poss_assignments.append(a)
-                if len(poss_assignments) == 0:
-                    return False
-                combinatorial_assignments.append(poss_assignments)
+        for del_effect in del_effects:
+            if self.del_effect_balances_add_effect(del_effect, add_effect,
+                minimal_renamings, inv_vars, lhs_by_pred):
+                return False
+        
+        # Otherwise, no match => Generate new candidates.
+        part = self.predicate_to_part[add_effect.literal.predicate]
+        for del_eff in [eff for eff in action.effects if eff.literal.negated]:
+            if del_eff.literal.predicate not in self.predicate_to_part:
+                for match in part.possible_matches(add_effect.literal, del_eff.literal):
+                    enqueue_func(Invariant(self.parts.union((match,))))
+        return True # balance check fails
+    def del_effect_balances_add_effect(self, del_effect, add_effect,
+        minimal_renamings, inv_vars, lhs_by_pred):
+        negative_clauses = []
+        combinatorial_assignments = []
 
+        # add_eff.atom != del_eff.atom
+        if (add_effect.literal.predicate == del_effect.literal.predicate and
+            add_effect.literal.parts):
+            parts = zip(add_effect.literal.parts, del_effect.literal.parts)
+            negative_clauses.append(NegativeClause(parts))
+        
+        # del_effect.atom must be covered
+        a = self.get_covering_assignments(inv_vars, del_effect.literal)
+        combinatorial_assignments.append(a)
+        
+        # del_effect.cond and del_effect.atom must be implied by lhs
+        for literal in itertools.chain(get_literals(del_effect.condition),
+                                       [del_effect.literal.negate()]):
+            poss_assignments = []
+            for match in lhs_by_pred[literal.predicate]:
+                if match.negated != literal.negated:
+                    continue
+                else:
+                    a = Assignment(zip(literal.args, match.args))
+                    poss_assignments.append(a)
+            if not poss_assignments:
+                return False
+            combinatorial_assignments.append(poss_assignments)
+
+        for op_param_assignment, minimality_clauses in minimal_renamings:
             # check all promising renamings of the quantified effect variables
+            found_renaming = False
             for assignments in itertools.product(*combinatorial_assignments):
-                new_equalities = reduce(lambda x,y: x + y, 
-                                        [a.equalities for a in assignments])
+                new_equalities = list(op_param_assignment.equalities)
+                for a in assignments:
+                    new_equalities.extend(a.equalities)
                 mapping = Assignment(new_equalities).get_mapping()
                 if mapping == None:
                     continue
@@ -388,20 +387,10 @@ class Invariant:
                         found_renaming = False
                         break
                 if found_renaming:
-                    return True
-            return False
-
-        for del_effect in del_effects:
-            if check_del_effect(del_effect):
+                    break
+            if not found_renaming:
                 return False
-        # Otherwise, no match => Generate new candidates.
-        part = self.predicate_to_part[add_effect.literal.predicate]
-        for del_eff in [eff for eff in action.effects if eff.literal.negated]:
-            if del_eff.literal.predicate not in self.predicate_to_part:
-                for match in part.possible_matches(add_effect.literal, del_eff.literal):
-                    enqueue_func(Invariant(self.parts.union((match,))))
-        return True # balance check fails
-
+        return True
 
     def check_action_balance(self, balance_checker, action, enqueue_func):
         # Check balance for this hypothesis with regard to one action.
