@@ -155,6 +155,8 @@ int LandmarkCountHeuristic::compute_heuristic(const State &state) {
     convert_lms(reached_lms, reached_lms_v);
     const int reached_lms_cost = lgraph.get_reached_cost();
 
+    // BUG/TODO/FIXME: This first test likely does the wrong thing in
+    // the presence of zero-cost landmarks.
     if (reached_lms_cost == lgraph.cost_of_landmarks()
         || !generate_helpful_actions(state, reached_lms)) {
         assert(exploration != NULL);
