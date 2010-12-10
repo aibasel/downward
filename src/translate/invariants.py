@@ -396,7 +396,13 @@ class Invariant:
         for del_effect in del_effects:
             if check_del_effect(del_effect):
                 return False
-        return True # balance check failes
+        # Otherwise, no match => Generate new candidates.
+        part = self.predicate_to_part[add_effect.literal.predicate]
+        for del_eff in [eff for eff in action.effects if eff.literal.negated]:
+            if del_eff.literal.predicate not in self.predicate_to_part:
+                for match in part.possible_matches(add_effect.literal, del_eff.literal):
+                    enqueue_func(Invariant(self.parts.union((match,))))
+        return True # balance check fails
     def check_action_balance(self, balance_checker, action, enqueue_func):
         # Check balance for this hypothesis with regard to one action.
         del_effects = [eff for eff in action.effects if eff.literal.negated]
@@ -419,10 +425,5 @@ class Invariant:
             del_part = self.predicate_to_part.get(del_eff.literal.predicate)
             if del_part and part.matches(del_part, add_effect.literal, del_eff.literal):
                 return True
-        # Otherwise, no match => Generate new candidates.
-        for del_eff in del_effects:
-            if del_eff.literal.predicate not in self.predicate_to_part:
-                for match in part.possible_matches(add_effect.literal, del_eff.literal):
-                    enqueue_func(Invariant(self.parts.union((match,))))
         return False # Balance check failed.
 
