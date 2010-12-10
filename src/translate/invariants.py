@@ -1,10 +1,10 @@
 # -*- coding: latin-1 -*-
 
-import pddl
-import tools
 import copy
 import itertools
-import random # only for tests
+
+import pddl
+import tools
 
 # Ideen:
 # Invarianten sollten ihre eigene Parameter-Zahl ("arity") kennen, nicht nur
@@ -35,9 +35,7 @@ def find_unique_variables(action, invariant):
     for eff in action.effects:
         params.update([p.name for p in eff.parameters])
     inv_vars = []
-    need_more_variables = len(invariant.parts.__iter__().next().order)
-    # TODO: aaahrg. There must be a better way of getting the
-    # arity of the invariant
+    need_more_variables = len(iter(invariant.parts).next().order)
     if need_more_variables:
         for counter in itertools.count(1):
             new_name = "?v%i" % counter
@@ -75,26 +73,33 @@ class Assignment(object):
         # represents a conjunction of expressions ?x = ?y or ?x = d
         # with ?x, ?y being variables and d being a domain value
     def get_mapping(self):
-        eq_classes = dict()
+        # identify equivalence classes
+        eq_classes = {}
         for (v1, v2) in self.equalities:
             c1 = eq_classes.setdefault(v1, set([v1]))
             c2 = eq_classes.setdefault(v2, set([v2]))
-            if id(c1) != id(c2):
+            if c1 is not c2:
                 if len(c2) > len(c1):
                     v1, c1, v2, c2 = v2, c2, v1, c1
                 c1.update(c2)
                 for elem in c2:
                     eq_classes[elem] = c1
-        all_classes = set([frozenset(s) for s in eq_classes.values()])
-        mapping = dict()
-        for eq_class in all_classes:
-            current = list(eq_class)
-            current.sort()
-            maxval = current[-1]
-            if len(current) > 1 and not current[-2].startswith("?"):
-                return None # inconsistent Assignment (d1 = d2)
-            for entry in current:
-                mapping[entry] = maxval
+
+        # create mapping: each key is mapped to the largest
+        # element in its equivalence class
+        # uses that "?" is lexicographically smaller than normal letters
+        mapping = {}
+        for eq_class in eq_classes.itervalues():
+            variables = [item for item in eq_class if item.startswith("?")]
+            constants = [item for item in eq_class if not item.startswith("?")]
+            if len(constants) >= 2:
+                return None # inconsistent assignment (obj1 = obj2)
+            if constants:
+                set_val = constants[0]
+            else:
+                set_val = min(variables)
+            for entry in eq_class:
+                mapping[entry] = set_val
         return mapping
 
 class InvariantPart:
@@ -194,20 +199,15 @@ class Invariant:
         for action in actions_to_check:
             if not self.check_action_balance(balance_checker, action, enqueue_func):
                 old_value = False
-                print "old:", action.name
                 break
 
         new_value = True
         for action in actions_to_check:
             if self.operator_too_heavy(action):
-                print "too heavy"
                 new_value = False
-                print "new:", action.name
                 break
             if self.operator_unbalanced(action, enqueue_func):
-                print "unbalanced"
                 new_value = False
-                print "new:", action.name
                 break
 
         assert old_value == new_value, "%s %s, %s"% (old_value, new_value, self)
@@ -220,7 +220,7 @@ class Invariant:
         new_effects = []
         for eff in action.effects:
             new_effects.append(eff)
-            if len(eff.parameters) > 0: # universal effect
+            if eff.parameters: # universal effect
                 new_effects.append(copy.copy(eff))
         act = pddl.Action(action.name, action.parameters, action.precondition,
                           new_effects, action.cost)
@@ -248,15 +248,13 @@ class Invariant:
                 
                 # covers(V, Phi, eff1.atom)
                 part = self.predicate_to_part[eff1.literal.predicate] 
-                assignments1 = []
-                assignments1.append(part.get_assignment(inv_vars, eff1.literal))
-                combinatorial_assignments.append(assignments1)
+                a = part.get_assignment(inv_vars, eff1.literal)
+                combinatorial_assignments.append([a])
                 
                 # covers(V, Phi, eff2.atom)
                 part = self.predicate_to_part[eff2.literal.predicate] 
-                assignments2 = []
-                assignments2.append(part.get_assignment(inv_vars, eff2.literal))
-                combinatorial_assignments.append(assignments2)
+                a = part.get_assignment(inv_vars, eff2.literal)
+                combinatorial_assignments.append([a])
 
                 # precondition plus effect conditions plus both literals
                 # false
@@ -403,6 +401,8 @@ class Invariant:
                 for match in part.possible_matches(add_effect.literal, del_eff.literal):
                     enqueue_func(Invariant(self.parts.union((match,))))
         return True # balance check fails
+
+
     def check_action_balance(self, balance_checker, action, enqueue_func):
         # Check balance for this hypothesis with regard to one action.
         del_effects = [eff for eff in action.effects if eff.literal.negated]
