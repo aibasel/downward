@@ -5,7 +5,7 @@
 
 #include "option_parser.h"
 
-WeightedEvaluator::WeightedEvaluator(Options opts)
+WeightedEvaluator::WeightedEvaluator(const Options &opts)
     : evaluator(opts.get_list<ScalarEvaluator *>("evals")[0]) 
       w(opts.get_list<ScalarEvaluator *>("weight")) {
 }
