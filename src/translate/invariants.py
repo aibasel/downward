@@ -6,41 +6,9 @@ import copy
 import itertools
 import random # only for tests
 
-# TODO: Rewrite.
-#
-# Ziel:
-# - Die Abhängigkeit von der STRIPS-Kodierung muss reduziert bzw. in einem
-#   kleinen Teil gekapselt werden.
-# - Der Zusammenhang zwischen dem Algorithmus und dem logischen Gehalt der
-#   Invarianten (siehe LaTeX-Ausdruck) muss klarer werden.
-#
 # Ideen:
 # Invarianten sollten ihre eigene Parameter-Zahl ("arity") kennen, nicht nur
-# indirekt über ihre parts erfahren können. Der Test der Erfülltheit einer
-# Invariante für eine bestimmte Aktion könnte so aussehen:
-# a) Gehe die Add-Effekte der Aktion durch und überprüfe, ob sie einen Teil
-#    der Invariante betreffen. Wenn ja, merke Dir die Parameter für die
-#    Invariante sowie den zugehörigen Add-Effekt-Fakt und dessen Condition.
-#    Wenn dieselben Parameter mehrfach auftreten, verwirf die Invariante.
-#    (Problem mit doppelten Add-Effekten; kann man vorher weg-normalisieren,
-#     selbst bei unterschiedlichen conditions).
-#    Ebenso verwerfen, wenn die X-Variable eines Invariantenteils im Effekt
-#    universell quantifiziert ist.
-#    Beispiel:
-#      Forall X:  sum_Z at(X, Z) + sum_Z in(Z, X) <= 1.
-#    Add-Effekt: at(?v, ?w) => Merke dir den Parameter ?v.
-#    Add-Effekt: in(?v, ?w) => Merke dir den Parameter ?w.
-# b) Gehe analog die Delete-Effekte der Aktion durch und streiche die
-#    Parameter aus der Liste, deren assoziierte Conditions die Condition des
-#    Delete-Effekts implizieren (so dass der Delete-Effekt tatsächlich
-#    gelöscht wird) und auch, zusammen mit der Vorbedingung des Operators, den
-#    Delete-Fakt selbst implizieren (da sonst gar nicht unbedingt etwas
-#    gelöscht wird).
-# Bleiben dann noch Dinge übrig, gehe die Delete-Effekte erneut durch und
-# versuche Matchings zu finden.
-#
-# Hmm... leider alles sehr schwammig. :-(
-# Bis Ende der Woche sollte der Algorithmus auf den ADL-Domänen funktionieren.
+# indirekt über ihre parts erfahren können. 
 
 # Notes (from/to Gabi):
 # All parts of an invariant aways use all non-counted variables
@@ -97,12 +65,6 @@ class NegativeClause(object):
             if part[0] != part[1]:
                 return True
         return False
-    def apply_assignment(self, assignment):
-        m = assignment.get_mapping()
-        if not m:
-            return None
-        new_parts = [(m.get(v1, v1), m.get(v2, v2)) for (v1, v2) in self.parts]
-        return NegativeClause(new_parts)
     def apply_mapping(self, m):
         new_parts = [(m.get(v1, v1), m.get(v2, v2)) for (v1, v2) in self.parts]
         return NegativeClause(new_parts)
@@ -434,7 +396,7 @@ class Invariant:
         for del_effect in del_effects:
             if check_del_effect(del_effect):
                 return False
-        return True 
+        return True # balance check failes
     def check_action_balance(self, balance_checker, action, enqueue_func):
         # Check balance for this hypothesis with regard to one action.
         del_effects = [eff for eff in action.effects if eff.literal.negated]
@@ -464,19 +426,3 @@ class Invariant:
                     enqueue_func(Invariant(self.parts.union((match,))))
         return False # Balance check failed.
 
-if __name__ == "__main__":
-    test = [("?a", "?b"), ("?b", "d"), ("?c", "?e"), ("?c", "?f"), ("?a", "?f")]
-    test2 = [("?a", "k"), ("?a", "?b"), ("?b", "d"), ("?c", "?e"), ("?c", "?f"), ("?a", "?f")]
-    test3 = [("?b", "d"), ("?c", "?e"), ("?c", "?f"), ("?a", "?f")]
-    for case in (test, test2, test3):
-        for x in range(5):
-            new_test = []
-            for (v1,v2) in case:
-                if v2.startswith("?") and random.randint(0, 1):
-                    new_test.append((v2, v1))
-                else:
-                    new_test.append((v1, v2))
-            print new_test
-            a = Assignment(set(new_test))
-            print a.get_mapping()
-   
