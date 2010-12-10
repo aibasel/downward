@@ -22,13 +22,6 @@ vector<bool> &LandmarkStatusManager::get_reached_landmarks(const State &state) {
 
 
 void LandmarkStatusManager::set_landmarks_for_initial_state() {
-    if (!lm_graph.get_action_landmarks().empty()) {
-        cerr << "Got " << lm_graph.get_action_landmarks().size()
-             << " action landmarks." << endl
-             << "Action landmarks not supported at the moment!" << endl;
-        ::exit(1);
-    }
-
     vector<bool> &reached = get_reached_landmarks(*g_initial_state);
     reached.resize(lm_graph.number_of_landmarks());
     //cout << "NUMBER OF LANDMARKS: " << lm_graph.number_of_landmarks() << endl;
@@ -145,7 +138,6 @@ bool LandmarkStatusManager::update_lm_status(const State &state) {
         }
     }
 
-    lm_graph.set_unused_action_landmark_cost(0);
     bool dead_end_found = false;
 
     // mark reached and find needed again landmarks

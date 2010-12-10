@@ -49,7 +49,6 @@ struct HMEntry {
     int level;
 
     std::list<int> landmarks;
-    std::list<int> action_landmarks;
     std::list<int> necessary; // greedy necessary landmarks, disjoint from landmarks
 
     std::list<int> first_achievers;
@@ -86,7 +85,6 @@ protected:
     void compute_h_m_landmarks();
     void compute_noop_landmarks(int op_index, int noop_index,
                                 std::list<int> const &local_landmarks,
-                                std::list<int> const &local_action_landmarks,
                                 std::list<int> const &local_necessary,
                                 int level,
                                 TriggerSet &next_trigger);
@@ -99,12 +97,6 @@ protected:
 
 // already generated, so just return
     virtual void calc_achievers();
-
-// already generated, so just return
-    virtual void generate_action_landmarks() {
-        std::cout << "HMLandmarks::generate_action_landmarks: " << action_landmarks.size()
-                  << " action landmarks already generated." << std::endl;
-    }
 
     void add_lm_node(int set_index, bool goal = false);
 

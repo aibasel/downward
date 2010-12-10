@@ -1,17 +1,20 @@
 #ifndef LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 #define LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 
-#include "landmarks_graph.h"
+#include <set>
+
+class LandmarksGraph;
+class LandmarkNode;
 
 class LandmarkCostAssignment {
-    const set<int> empty;
+    const std::set<int> empty;
 protected:
     LandmarksGraph &lm_graph;
 
-    const set<int> &get_achievers(int lmn_status,
-                                  const LandmarkNode &lmn) const;
+    const std::set<int> &get_achievers(int lmn_status,
+                                       const LandmarkNode &lmn) const;
 public:
-    LandmarkCostAssignment(LandmarksGraph &graph);
+    explicit LandmarkCostAssignment(LandmarksGraph &graph);
     virtual ~LandmarkCostAssignment();
 
     virtual double cost_sharing_h_value() = 0;
@@ -35,7 +38,7 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
     OsiSolverInterface *si;
 #endif
 public:
-    LandmarkEfficientOptimalSharedCostAssignment(LandmarksGraph &graph);
+    explicit LandmarkEfficientOptimalSharedCostAssignment(LandmarksGraph &graph);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 
     virtual double cost_sharing_h_value();

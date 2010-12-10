@@ -741,10 +741,10 @@ void HMLandmarks::compute_h_m_landmarks() {
     std::vector<int>::iterator it;
     TriggerSet::iterator op_it;
 
-    std::list<int> local_landmarks, cn_landmarks, local_action_landmarks, cn_action_landmarks;
+    std::list<int> local_landmarks, cn_landmarks;
     std::list<int> local_necessary;
 
-    int prev_size, prev_action_size;
+    int prev_size;
 
     int level = 1;
 
@@ -752,7 +752,6 @@ void HMLandmarks::compute_h_m_landmarks() {
     while (!current_trigger.empty()) {
         for (op_it = current_trigger.begin(); op_it != current_trigger.end(); ++op_it) {
             local_landmarks.clear();
-            local_action_landmarks.clear();
             local_necessary.clear();
 
             int op_index = op_it->first;
@@ -763,7 +762,6 @@ void HMLandmarks::compute_h_m_landmarks() {
             // (only landmarks preceding it)
             for (it = action.pc.begin(); it != action.pc.end(); ++it) {
                 union_with(local_landmarks, h_m_table_[*it].landmarks);
-                union_with(local_action_landmarks, h_m_table_[*it].action_landmarks);
                 insert_into(local_landmarks, *it);
 
                 if (!no_orders) {
@@ -771,18 +769,10 @@ void HMLandmarks::compute_h_m_landmarks() {
                 }
             }
 
-            // add this action to the local action landmarks
-            // (if action landmarks are enabled).
-            if (discover_action_landmarks)
-                insert_into(local_action_landmarks, op_index);
-
             for (it = action.eff.begin(); it != action.eff.end(); ++it) {
                 if (h_m_table_[*it].level != -1) {
                     prev_size = h_m_table_[*it].landmarks.size();
                     intersect_with(h_m_table_[*it].landmarks, local_landmarks);
-
-                    prev_action_size = h_m_table_[*it].action_landmarks.size();
-                    intersect_with(h_m_table_[*it].action_landmarks, local_action_landmarks);
 
                     // if the add effect appears in local landmarks,
                     // fact is being achieved for >1st time
@@ -795,14 +785,11 @@ void HMLandmarks::compute_h_m_landmarks() {
                         }
                     }
 
-                    if ((h_m_table_[*it].landmarks.size() != prev_size) ||
-                        (h_m_table_[*it].action_landmarks.size() != prev_action_size)) {
+                    if (h_m_table_[*it].landmarks.size() != prev_size)
                         propagate_pm_fact(*it, false, next_trigger);
-                    }
                 } else {
                     h_m_table_[*it].level = level;
                     h_m_table_[*it].landmarks = local_landmarks;
-                    h_m_table_[*it].action_landmarks = local_action_landmarks;
                     if (!no_orders) {
                         h_m_table_[*it].necessary = local_necessary;
                     }
@@ -820,7 +807,6 @@ void HMLandmarks::compute_h_m_landmarks() {
                     if (unsat_pc_count_[op_index].second[i] == 0) {
                         compute_noop_landmarks(op_index, i,
                                                local_landmarks,
-                                               local_action_landmarks,
                                                local_necessary,
                                                level, next_trigger);
                     }
@@ -835,7 +821,6 @@ void HMLandmarks::compute_h_m_landmarks() {
 
                     compute_noop_landmarks(op_index, *noop_it,
                                            local_landmarks,
-                                           local_action_landmarks,
                                            local_necessary,
                                            level, next_trigger);
                 }
@@ -853,12 +838,11 @@ void HMLandmarks::compute_h_m_landmarks() {
 void HMLandmarks::compute_noop_landmarks(
     int op_index, int noop_index,
     std::list<int> const &local_landmarks,
-    std::list<int> const &local_action_landmarks,
     std::list<int> const &local_necessary,
     int level,
     TriggerSet &next_trigger) {
-    std::list<int> cn_necessary, cn_landmarks, cn_action_landmarks;
-    int prev_size, prev_action_size;
+    std::list<int> cn_necessary, cn_landmarks;
+    int prev_size;
     int pm_fluent;
 
     PMOp &action = pm_ops_[op_index];
@@ -867,7 +851,6 @@ void HMLandmarks::compute_noop_landmarks(
     cn_landmarks.clear();
 
     cn_landmarks = local_landmarks;
-    cn_action_landmarks = local_action_landmarks;
 
     if (!no_orders) {
         cn_necessary.clear();
@@ -877,7 +860,6 @@ void HMLandmarks::compute_noop_landmarks(
     int i;
     for (i = 0; (pm_fluent = pc_eff_pair[i]) != -1; i++) {
         union_with(cn_landmarks, h_m_table_[pm_fluent].landmarks);
-        union_with(cn_action_landmarks, h_m_table_[pm_fluent].action_landmarks);
         insert_into(cn_landmarks, pm_fluent);
 
         if (!no_orders) {
@@ -894,9 +876,6 @@ void HMLandmarks::compute_noop_landmarks(
             prev_size = h_m_table_[pm_fluent].landmarks.size();
             intersect_with(h_m_table_[pm_fluent].landmarks, cn_landmarks);
 
-            prev_action_size = h_m_table_[pm_fluent].action_landmarks.size();
-            intersect_with(h_m_table_[pm_fluent].action_landmarks, cn_action_landmarks);
-
             // if the add effect appears in cn_landmarks,
             // fact is being achieved for >1st time
             // no need to intersect for gn orderings
@@ -908,14 +887,11 @@ void HMLandmarks::compute_noop_landmarks(
                 }
             }
 
-            if ((h_m_table_[pm_fluent].landmarks.size() != prev_size) ||
-                (h_m_table_[pm_fluent].action_landmarks.size() != prev_action_size)) {
+            if (h_m_table_[pm_fluent].landmarks.size() != prev_size)
                 propagate_pm_fact(pm_fluent, false, next_trigger);
-            }
         } else {
             h_m_table_[pm_fluent].level = level;
             h_m_table_[pm_fluent].landmarks = cn_landmarks;
-            h_m_table_[pm_fluent].action_landmarks = cn_action_landmarks;
             if (!no_orders) {
                 h_m_table_[pm_fluent].necessary = cn_necessary;
             }
@@ -999,13 +975,6 @@ void HMLandmarks::generate_landmarks() {
            print_fluentset(h_m_table_[set_index].fluents);
            std::cout << std::endl;
          */
-
-        // add the action landmarks for this goal
-        for (std::list<int>::iterator act_lms_it = h_m_table_[set_index].action_landmarks.begin();
-             act_lms_it != h_m_table_[set_index].action_landmarks.end(); ++act_lms_it) {
-            //      std::cout << "\tact lm: " << g_operators[*act_lms_it].get_name() << std::endl;
-            action_landmarks.insert(&(g_operators[*act_lms_it]));
-        }
     }
     // now make remaining lm nodes
     for (std::list<int>::iterator it = all_lms.begin(); it != all_lms.end(); ++it) {
