@@ -232,20 +232,20 @@ class Invariant:
         for action in actions_to_check:
             if not self.check_action_balance(balance_checker, action, enqueue_func):
                 old_value = False
-#                print "old:", action.name
+                print "old:", action.name
                 break
 
         new_value = True
         for action in actions_to_check:
             if self.operator_too_heavy(action):
-                #print "too heavy"
+                print "too heavy"
                 new_value = False
-#                print "new:", action.name
+                print "new:", action.name
                 break
             if self.operator_unbalanced(action, enqueue_func):
-                #print "unbalanced"
+                print "unbalanced"
                 new_value = False
-#                print "new:", action.name
+                print "new:", action.name
                 break
 
         assert old_value == new_value, "%s %s, %s"% (old_value, new_value, self)
@@ -268,13 +268,12 @@ class Invariant:
                               self.predicate_to_part.get(eff.literal.predicate)]
 
         inv_vars = find_unique_variables(act, self)
-
+        
         for index1, eff1 in enumerate(add_effects):
             for index2 in range(index1 + 1, len(add_effects)):
                 eff2 = add_effects[index2]
                 negative_clauses = []
-                assignments1 = []
-                assignments2 = []
+                combinatorial_assignments = []
                 
                 # eff1.atom != eff2.atom
                 l1 = eff1.literal
@@ -287,11 +286,15 @@ class Invariant:
                 
                 # covers(V, Phi, eff1.atom)
                 part = self.predicate_to_part[eff1.literal.predicate] 
+                assignments1 = []
                 assignments1.append(part.get_assignment(inv_vars, eff1.literal))
+                combinatorial_assignments.append(assignments1)
                 
                 # covers(V, Phi, eff2.atom)
                 part = self.predicate_to_part[eff2.literal.predicate] 
+                assignments2 = []
                 assignments2.append(part.get_assignment(inv_vars, eff2.literal))
+                combinatorial_assignments.append(assignments2)
 
                 # precondition plus effect conditions plus both literals
                 # false
@@ -305,6 +308,16 @@ class Invariant:
                         neg.setdefault(literal.predicate, set()).add(literal)
                     else:
                         pos.setdefault(literal.predicate, set()).add(literal)
+
+                    # use (in)equalities in conditions
+                    if literal.predicate == "=": 
+                        if literal.negated:
+                            n = NegativeClause([literal.args])
+                            negative_clauses.append(n)
+                        else:
+                            a = Assignment([literal.args])
+                            combinatorial_assignments.append(a)
+
                 for pred, posatoms in pos.iteritems():
                     if pred in neg:
                         negatoms = neg[pred]
@@ -316,19 +329,19 @@ class Invariant:
 
                 # check for all covering assignments whether they make the
                 # conjunction of all negative_clauses unsatisfiably
-                for a1 in assignments1:
-                    for a2 in assignments2:
-                        comb = Assignment(a1.equalities + a2.equalities)
-                        mapping = comb.get_mapping()
-                        if mapping != None: # otherwise a1 and a2 are inconsistent
-                            satisfiable = True
-                            for neg_clause in negative_clauses:
-                                clause = neg_clause.apply_mapping(mapping)
-                                if not clause.is_satisfiable():
-                                    satisfiable = False
-                                    break
-                            if satisfiable:
-                                return True
+                for assignments in itertools.product(*combinatorial_assignments):
+                    new_equalities = reduce(lambda x,y: x + y, 
+                                            [a.equalities for a in assignments])
+                    mapping = Assignment(new_equalities).get_mapping()
+                    if mapping != None: # otherwise the assignments are inconsistent
+                        satisfiable = True
+                        for neg_clause in negative_clauses:
+                            clause = neg_clause.apply_mapping(mapping)
+                            if not clause.is_satisfiable():
+                                satisfiable = False
+                                break
+                        if satisfiable:
+                            return True
         return False
     def operator_unbalanced(self, action, enqueue_func):
         inv_vars = find_unique_variables(action, self)
