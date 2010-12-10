@@ -4,8 +4,8 @@
 
 #include "option_parser.h"
 
-SumEvaluator::SumEvaluator(const std::vector<ScalarEvaluator *> &evals)
-    : evaluators(evals) {
+SumEvaluator::SumEvaluator(const Options &opts)
+    : evaluators(opts.get_list<ScalarEvaluator *>("evals")) {
 }
 
 SumEvaluator::~SumEvaluator() {
@@ -50,29 +50,16 @@ void SumEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
         evaluators[i]->get_involved_heuristics(hset);
 }
 
-ScalarEvaluator *SumEvaluator::create(const std::vector<std::string> &config,
-                                      int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-
-    // create evaluators
-    std::vector<ScalarEvaluator *> evals;
-    OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
-                                                          end, false, evals,
-                                                          dry_run);
-
-    if (evals.empty())
+ScalarEvaluator *_parse(&OptionParser parser) {
+    parser.add_list_option<ScalarEvaluator *>("evals");
+    Options opts = parser.parse();
+    if (opts.get_list<ScalarEvaluator *>("evals").empty())
         throw ParseError(end);
     // need at least one evaluator
-
-    end++;
-    if (config[end] != ")")
-        throw ParseError(end);
-
-    if (dry_run)
+    if (parser.dry_run)
         return 0;
     else
-        return new SumEvaluator(evals);
+        return new SumEvaluator(opts);
 }
 
 static ScalarEvalPlugin _plugin("sum", _parse);
