@@ -10,6 +10,7 @@
 #include "boost/any.hpp"
 
 
+//this class is responsible for holding parsed input as a tree of strings
 class ParseTree{
 public:
     ParseTree();
@@ -56,29 +57,34 @@ public:
     }
 };
 
+
 class OptionParser;
 
-
+//a registry<T> maps a string (e.g. "ff") to a T-factory
+template <class T>
 class Registry {
 public:
-    static Registry* instance()
+    typedef T (*Factory)(OptionParser&);
+    static Registry<T>* instance()
     {
         if (!instance_) {
-            instance_ = new Registry();
+            instance_ = new Registry<T>();
         }
         return instance_;
     }
             
-    typedef SearchEngine (*EngineFactory)(OptionParser&);
-    
+    void register(std::string k, Factory);
+    bool contains(std::string k);
 private:
     Registry(){};
-    static Registry* instance_;
-    std::map<std::string, HeuristicsFactory> heuristics;
+    static Registry<T>* instance_;
+    std::map<std::string, Factory> registered;
 };
 
 template <class T> Registry<T>* Registry<T>::instance_ = 0;
 
+
+//Predefinitions<T> maps strings to already created Heuristics/LandmarksGraphs
 template <class T>
 class Predefinitions {
 public:
@@ -90,6 +96,8 @@ public:
         return instance_;
     }
 
+    void predefine(std::string k, T*);
+    bool contains(std::string k);
 private:
     Predefinitions<T>(){};
     static Predefinitions<T>* instance_;
@@ -99,14 +107,9 @@ private:
 template <class T> Predefinitions<T>* Predefinitions<T>::instance_ = 0;
 
 /*The TokenParser<T> wraps functions to parse supported types T. 
-In the first version, those functions where part of OptionParser, 
-but function template specialization is not as nice as 
-class template specialization (http://www.gotw.ca/publications/mill17.htm). 
-Specifically, partial function template specialization is not possible.
 To add support for a new type T, it should suffice 
-to implement the corresponding TokenParser<T> class.
-Many built-in types are supported automatically (if they can 
-be read from a stringstream), and vectors of supported types are supported too.
+to implement the corresponding TokenParser<T> class, 
+and add the add_type_option and get_type functions to OptionParser and Options.
  */
 
 template <class T>
@@ -118,7 +121,7 @@ public:
         std::stringstream str_stream(pt.value);
         T x;
         if ((str_stream >> x).fail()) {
-            //TODO: throw error;
+            throw ParseError(pt);
         }
         return x;
     }
@@ -205,7 +208,6 @@ private:
     std::vector<ParseTree>::iterator next_unparsed_argument;
     Options configuration;
     std::vector<std::string> valid_keys;
-    static std::string to_lowercase(const std::string& s);
 
     template <class T> void add_option(
         std::string k, std::string h="") {
