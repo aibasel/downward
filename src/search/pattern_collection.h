@@ -20,7 +20,7 @@ class PatternCollection {
 public:
     explicit PatternCollection(const std::vector<std::vector<int> > &pat_coll);
     ~PatternCollection();
-    std::vector<PDBAbstraction> pattern_databases; // final pattern databases
+    std::vector<PDBHeuristic> pattern_databases; // final pattern databases
     int get_heuristic_value(const State &state) const; // returns the canonical heuristic value (with respect
         // to the pattern collection) for a state
     void dump() const;
