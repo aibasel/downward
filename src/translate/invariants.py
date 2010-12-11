@@ -63,7 +63,7 @@ class InvariantPart:
     def __hash__(self):
         return hash((self.predicate, tuple(self.order)))
     def __cmp__(self, other):
-        return cmp(str(self), str(other))
+        return cmp((self.predicate, self.order), (other.predicate, other.order))
     def __str__(self):
         var_string = " ".join(map(str, self.order))
         omitted_string = ""
@@ -128,12 +128,14 @@ class Invariant:
         return self.parts == other.parts
     def __ne__(self, other):
         return self.parts != other.parts
+    def __cmp__(self, other):
+        return cmp(sorted(self.parts), sorted(other.parts))
     def __hash__(self):
         return hash(self.parts)
     def __str__(self):
         return "{%s}" % ", ".join(map(str, self.parts))
     def __repr__(self):
-        return '<Invariant %s>' % str(self)
+        return '<Invariant %s>' % self
     def get_parameters(self, atom):
         return self.predicate_to_part[atom.predicate].get_parameters(atom)
     def instantiate(self, parameters):
@@ -142,7 +144,7 @@ class Invariant:
         # Check balance for this hypothesis.
         actions_to_check = set()
         for part in self.parts:
-            actions_to_check |= balance_checker.get_threats(part.predicate)
+            actions_to_check |= set(balance_checker.get_threats(part.predicate))
         for action in actions_to_check:
             if not self.check_action_balance(balance_checker, action, enqueue_func):
                 return False

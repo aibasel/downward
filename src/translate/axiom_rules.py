@@ -9,13 +9,14 @@ def handle_axioms(operators, axioms, goals):
 
     axiom_literals = compute_necessary_axiom_literals(axioms_by_atom, operators, goals)
     axiom_init = get_axiom_init(axioms_by_atom, axiom_literals)
+    axiom_literals = sorted(axiom_literals)
     with timers.timing("Simplifying axioms"):
         axioms = simplify_axioms(axioms_by_atom, axiom_literals)
     axioms = compute_negative_axioms(axioms_by_atom, axiom_literals)
     # NOTE: compute_negative_axioms more or less invalidates axioms_by_atom.
     #       Careful with that axe, Eugene!
     axiom_layers = compute_axiom_layers(axioms, axiom_init)
-    return axioms, list(axiom_init), axiom_layers
+    return axioms, list(sorted(axiom_init)), axiom_layers
 
 def get_axioms_by_atom(axioms):
     axioms_by_atom = {}
@@ -106,17 +107,15 @@ def get_axiom_init(axioms_by_atom, necessary_literals):
             # Initial value for axiom: False (which is omitted due to closed world
             # assumption) unless it is only needed negatively.
             result.add(atom)
-    # TODO: sort result ?
     return result
 
 def simplify_axioms(axioms_by_atom, necessary_literals):
     necessary_atoms = set([literal.positive() for literal in necessary_literals])
     new_axioms = []
-    for atom in necessary_atoms:
+    for atom in sorted(necessary_atoms):
         axioms = simplify(axioms_by_atom[atom])
         axioms_by_atom[atom] = axioms
         new_axioms += axioms
-    # TODO: sort new_axioms ?
     return new_axioms
 
 def remove_duplicates(alist):
