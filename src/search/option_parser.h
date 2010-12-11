@@ -148,7 +148,7 @@ public:
         pt = p.get_parse_tree();
         std::vector<S> results;
         if (pt->value.compare("list") != 0) {
-            //TODO:throw error
+            throw ParseError(pt, "list expected here");
         } else {
             for (size_t i(0); i != pt->get_children()->size(); ++i) {
                 results.push_back(
@@ -183,38 +183,6 @@ public:
 
     //this is where all parsing starts:
     static void parse_cmd_line(char **argv, bool dry_run);
-
-    void add_int_option(string k, string h = "");
-    void add_int_option(string k, int default_val, string h = "");
-    void add_bool_option(string k, string h = "");
-    void add_bool_option(string k, bool default_val, string h = "");
-    void add_double_option(string k, string h = "");
-    void add_double_option(string k, double default_val, string h = "");
-
-
-    void add_heuristics_option(string k, string h = "");
-    void add_heuristics_option(string k, Heuristic* default_val, string h = "");
-
-    template <class Entry>
-        void add_openlist_option<Entry>(string k, string h);
-    template <class Entry>
-        void add_openlist_option<Entry>(string k, OpenList<Entry> default_val, string h = "");
-
-    void add_enum_option(std::string k, 
-                         const std::vector<std::string >& enumeration, 
-                         std::string def_val = "", std::string h="");
-        
-    
-    Options get_configuration();
-    ParseTree* get_parse_tree();
-    
-    bool dry_run;
-
-private: 
-    ParseTree parse_tree;
-    std::vector<ParseTree>::iterator next_unparsed_argument;
-    Options configuration;
-    std::vector<std::string> valid_keys;
 
     template <class T> void add_option(
         std::string k, std::string h="") {
@@ -253,6 +221,40 @@ private:
         configuration.set(k, def_val);
         add_option<T>(k, h);
     }
+
+
+    void add_enum_option(std::string k, 
+                         const std::vector<std::string >& enumeration, 
+                         std::string def_val = "", std::string h="");
+
+    template <class T>
+        void add_list_option(std::string k, 
+                             vector<T> def_val, std::string h="",
+                             bool empty_allowed = true ) {
+        configuration.set(k, def_val);
+        add_list_option<T>(k,h);
+    }
+
+    template <class T> 
+        void add_list_option(std::string k, std::string h="", 
+                             bool empty_allowed = true) {
+        add_option<vector T>(k, h);
+        if (!empty_allowed && configuration.get<vector T>(k).empty())
+            throw ParseError("list not allowed to be empty");
+    }
+
+    
+    Options parse();
+    ParseTree* get_parse_tree();
+    
+    bool dry_run;
+
+private: 
+    ParseTree parse_tree;
+    std::vector<ParseTree>::iterator next_unparsed_argument;
+    Options configuration;
+    std::vector<std::string> valid_keys;
+
 };
 
 
