@@ -8,7 +8,6 @@
 #include "classifier.h"
 #include "feature_extractor.h"
 #include "state_space_sample.h"
-#include <limits.h>
 #include <math.h>
 
 class SelectiveMaxHeuristic : public Heuristic {
@@ -144,7 +143,7 @@ public:
                              const State &state);
 
     static ScalarEvaluator *create(const std::vector<string> &config,
-                                   int start, int &end, bool dry_run = false);
+                                   int start, int &end, bool dry_run);
 };
 
 #endif
