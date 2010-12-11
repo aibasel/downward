@@ -173,9 +173,8 @@ int FFHeuristic::compute_heuristic(const State &state) {
     return compute_ff_heuristic();
 }
 
-ScalarEvaluator *FFHeuristic::create(const std::vector<string> &config,
-                                     int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.parse();
     if (dry_run)
         return 0;
     else
