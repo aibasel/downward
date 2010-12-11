@@ -46,13 +46,6 @@ public:
     void statistics() const;
 
     void dump_search_space();
-
-    static SearchEngine *create(const std::vector<std::string> &config,
-                                int start, int &end, bool dry_run);
-    static SearchEngine *create_astar(const std::vector<std::string> &config,
-                                      int start, int &end, bool dry_run);
-    static SearchEngine *create_greedy(const std::vector<std::string> &config,
-                                       int start, int &end, bool dry_run);
 };
 
 #endif
