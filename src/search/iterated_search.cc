@@ -1,19 +1,12 @@
 #include "iterated_search.h"
 #include <limits>
 
-IteratedSearch::IteratedSearch(
-    const vector<string> &engine_config_,
-    vector<int> engine_config_start_,
-    bool pass_bound_,
-    bool repeat_last_phase_,
-    bool continue_on_fail_,
-    bool continue_on_solve_)
-    : engine_config(engine_config_),
-      engine_config_start(engine_config_start_),
-      pass_bound(pass_bound_),
-      repeat_last_phase(repeat_last_phase_),
-      continue_on_fail(continue_on_fail_),
-      continue_on_solve(continue_on_solve_) {
+IteratedSearch::IteratedSearch(opts)
+    : engine_configs(opts.get_list<ParseTree>("engine_configs")),
+      pass_bound(opts.get<bool>("pass_bound")),
+      repeat_last_phase(opts.get<bool>("repeat_last_phase")),
+      continue_on_fail(opts.get<bool>("continue_on_fail")),
+      continue_on_solve(opts.get<bool>("continue_on_solve")) {
     last_phase_found_solution = false;
     best_bound = numeric_limits<int>::max();
     found_solution = false;
@@ -27,24 +20,21 @@ void IteratedSearch::initialize() {
 }
 
 SearchEngine *IteratedSearch::get_search_engine(
-    int engine_config_start_index) {
-    int end;
-    current_search_name = "";
-    SearchEngine *engine = OptionParser::instance()->parse_search_engine(
-        engine_config, engine_config_start[engine_config_start_index],
-        end, false);
-    for (int i = engine_config_start[engine_config_start_index]; i <= end; i++) {
-        current_search_name.append(engine_config[i]);
-    }
+    int engine_configs_index) {
+
+    current_search_name = engine_configs[engine_configs_index].toStr();
+    OptionParser parser(engine_configs[engine_configs_index], false);
+    SearchEngine *engine = parser->parse_search_engine()
+
     cout << "Starting search: " << current_search_name << endl;
 
     return engine;
 }
 
 SearchEngine *IteratedSearch::create_phase(int p) {
-    if (p >= engine_config_start.size()) {
+    if (p >= engine_configs.size()) {
         if (repeat_last_phase) {
-            return get_search_engine(engine_config_start.size() - 1);
+            return get_search_engine(engine_configs.size() - 1);
         } else {
             return NULL;
         }
@@ -177,13 +167,10 @@ SearchEngine *IteratedSearch::create(
     return engine;
 }
 
-static EnginePlugin _plugin("iterated", _parse);
 
-/*
 SearchEngine *_parse(OptionsParser &parser) {
-
  
-    parser.add_list_option<SearchEngine *>("engine_config_start", "", false);
+    parser.add_list_option<ParseTree>("engine_config", "", false);
     paser.add_option<bool>("pass_bound", true, 
                            "use bound from previous search");
     parser.add_option<bool>("repeat_last", false, 
@@ -195,12 +182,21 @@ SearchEngine *_parse(OptionsParser &parser) {
 
     Options opts = parser.parse();
 
-    if (dry_run) {
+    if (parser.dry_run) {
+        //check if the supplied search engines can be parsed
+        vector<ParseTree> configs = opts.get_list<ParseTree>("engine_config");
+        for (size_t i(0); i != configs.size(); ++i) {
+            Parser test_parser(configs[i], true);
+            test_parser.parse_search_engine();
+        }
         return 0;
     }
 
-    IteratedSearch *engine = new IteratedSearch(opts(config, engine_config_start, pass_bound, repeat_last,
-                           continue_on_fail, continue_on_solve);
+    IteratedSearch *engine = new IteratedSearch(opts)
 
     return engine;
-}*/
+}
+
+static EnginePlugin _plugin("iterated", _parse);
+
+
