@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 
 from __future__ import with_statement
-from collections import deque
+from collections import deque, defaultdict
 import time
 
 import invariants
@@ -11,15 +11,16 @@ import timers
 
 class BalanceChecker(object):
     def __init__(self, task):
-        self.predicates_to_add_actions = {}
+        self.predicates_to_add_actions = defaultdict(list)
         for action in task.actions:
             for eff in action.effects:
                 if not eff.literal.negated:
                     predicate = eff.literal.predicate
-                    self.predicates_to_add_actions.setdefault(predicate, set()).add(action)
+                    action_list = self.predicates_to_add_actions[predicate]
+                    if not action_list or action_list[-1] is not action:
+                        action_list.append(action)
     def get_threats(self, predicate):
-        # TODO sort?
-        return self.predicates_to_add_actions.get(predicate, set())
+        return self.predicates_to_add_actions.get(predicate)
     def are_compatible(self, add_effect1, add_effect2):
         assert not add_effect1.negated
         assert not add_effect2.negated
@@ -114,15 +115,18 @@ def useful_groups(invariants, initial_facts):
                 nonempty_groups.add(group_key)
             else:
                 overcrowded_groups.add(group_key)
-    useful_groups = list(nonempty_groups - overcrowded_groups)
-    useful_groups.sort(key=lambda (inv, params): str(inv) + str(params))
+
+    def key(group):
+        inv, params = group
+        return str(inv) + str(params)
+
+    useful_groups = sorted(nonempty_groups - overcrowded_groups, key=key)
     for (invariant, parameters) in useful_groups:
         yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
 def get_groups(task):
     with timers.timing("Finding invariants"):
-        invariants = list(find_invariants(task))
-    # TODO: Gabi sorts here, but I think it is deterministic
+        invariants = sorted(find_invariants(task))
     with timers.timing("Checking invariant weight"):
         result = list(useful_groups(invariants, task.init))
     return result

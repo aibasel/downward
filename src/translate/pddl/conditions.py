@@ -276,7 +276,9 @@ class Literal(Condition):
         return "%s %s(%s)" % (self.__class__.__name__, self.predicate,
                               ", ".join(map(str, self.args)))
     def __repr__(self):
-        return '<%s>' % str(self)
+        return '<%s>' % self
+    def __cmp__(self, other):
+        return cmp(str(self), str(other))
     def _dump(self):
         return str(self)
     def change_parts(self, parts):

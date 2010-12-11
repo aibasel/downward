@@ -13,7 +13,6 @@ class PrologProgram:
     def __init__(self):
         self.facts = []
         self.rules = []
-        # TODO: Sort self.objects ?
         self.objects = set()
         def predicate_name_generator():
             for count in itertools.count():
@@ -64,7 +63,7 @@ class PrologProgram:
             if not eff_vars.issubset(cond_vars):
                 must_add_predicate = True
                 eff_vars -= cond_vars
-                for var in eff_vars:
+                for var in sorted(eff_vars):
                     rule.add_condition(pddl.Atom("@object", [var]))
         if must_add_predicate:
             print "Unbound effect variables: Adding @object predicate."
@@ -102,7 +101,6 @@ def get_variables(symbolic_atoms):
     variables = set()
     for sym_atom in symbolic_atoms:
         variables |= set([arg for arg in sym_atom.args if arg[0] == "?"])
-    # TODO: Sort variables ?
     return variables
 
 class Fact:
