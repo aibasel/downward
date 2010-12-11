@@ -18,7 +18,7 @@ PatternCollection::PatternCollection(const vector<vector<int> > &pat_coll) : pat
     // build all pattern databases
     Timer timer;
     for (int i = 0; i < pattern_collection.size(); ++i) {
-        PDBAbstraction pdb(pattern_collection[i]);
+        PDBHeuristic pdb(pattern_collection[i]);
         pattern_databases.push_back(pdb);
     }
     cout << pattern_collection.size() << " pdbs constructed." << endl;
@@ -141,7 +141,9 @@ int PatternCollection::get_heuristic_value(const State &state) const {
         const vector<int> &clique = max_cliques[i];
         int h_val = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
-            int h = pattern_databases[clique[j]].get_heuristic_value(state);
+            PDBHeuristic pdb = pattern_databases[clique[j]];
+            pdb.evaluate(state);
+            int h = pdb.get_heuristic();
             if (h == numeric_limits<int>::max()) {
                 h_val = -1;
                 break;

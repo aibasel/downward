@@ -95,25 +95,35 @@ bool AbstractState::is_goal_state(const vector<pair<int, int> > &abstract_goal) 
 
 void AbstractState::dump(const vector<int> &pattern) const {
     cout << "AbstractState: " << endl;
-    //TODO: if want to display variable and not only index, need pattern to match back index to var
     for (size_t i = 0; i < variable_values.size(); ++i) {
-        //cout << "Index:" << i << "Value:" << variable_values[i] << endl;
         cout << "Variable: " << pattern[i] << " (True name: " 
         << g_variable_name[pattern[i]] << ") Value: " << variable_values[i] << endl;
     }
 }
 
-// PDBAbstraction ---------------------------------------------------------------------------------
+// PDBHeuristic ---------------------------------------------------------------
 
-PDBAbstraction::PDBAbstraction(const vector<int> &pat) : pattern(pat) {
+static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
+static ScalarEvaluatorPlugin pdb_heuristic_plugin("pdb", create);
+
+PDBHeuristic::PDBHeuristic(int max_abstract_states) {
     verify_no_axioms_no_cond_effects();
-    create_pdb();
+    Timer timer;
+    generate_pattern(max_abstract_states);
+    cout << "PDB construction time: " << timer << endl;
 }
 
-PDBAbstraction::~PDBAbstraction() {
+PDBHeuristic::PDBHeuristic(const vector<int> &pattern) {
+    verify_no_axioms_no_cond_effects();
+    Timer timer;
+    set_pattern(pattern);
+    cout << "PDB construction time: " << timer << endl;
 }
 
-void PDBAbstraction::verify_no_axioms_no_cond_effects() const {
+PDBHeuristic::~PDBHeuristic() {
+}
+
+void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
     if (!g_axioms.empty()) {
         cerr << "Heuristic does not support axioms!" << endl << "Terminating." << endl;
         exit(1);
@@ -136,26 +146,91 @@ void PDBAbstraction::verify_no_axioms_no_cond_effects() const {
                 continue;
             
             cerr << "Heuristic does not support conditional effects "
-            << "(operator " << g_operators[i].get_name() << ")"
-            << endl << "Terminating." << endl;
+                 << "(operator " << g_operators[i].get_name() << ")"
+                 << endl << "Terminating." << endl;
             exit(1);
         }
     }
 }
 
-void PDBAbstraction::create_pdb() {
+void PDBHeuristic::set_pattern(const vector<int> &pat) {
+    pattern = pat;
     n_i.reserve(pattern.size());
     variable_to_index.resize(g_variable_name.size(), -1);
     num_states = 1;
-    int p = 1;
+    // int p = 1; ; same as num_states; incrementally computed!
     for (size_t i = 0; i < pattern.size(); ++i) {
-        num_states *= g_variable_domain[pattern[i]];
-        
+        n_i.push_back(num_states);
         variable_to_index[pattern[i]] = i;
-        
-        n_i.push_back(p);
-        p *= g_variable_domain[pattern[i]];
+        num_states *= g_variable_domain[pattern[i]];
+        //p *= g_variable_domain[pattern[i]];
     }
+    create_pdb();
+}
+
+void PDBHeuristic::generate_pattern(int max_abstract_states) {
+#define DEBUG true
+#if DEBUG
+    cout << "dummy cout " << max_abstract_states << endl; //so that ... compiler is happy!
+    // function tests
+    // 1. blocks-7-2 test-pattern
+    int patt[] = {9, 10, 11, 12, 13, 14};
+    //int patt[] = {13, 14};
+    
+    // 2. driverlog-6 test-pattern
+    //int patt[] = {4, 5, 7, 9, 10, 11, 12};
+    
+    // 3. logistics00-6-2 test-pattern
+    //int patt[] = {3, 4, 5, 6, 7, 8};
+    
+    // 4. blocks-9-0 test-pattern
+    //int patt[] = {0};
+    
+    // 5. logistics00-5-1 test-pattern
+    //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
+    
+    pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
+    // TODO: without the = vector<int>, it does not work!
+    n_i.reserve(pattern.size());
+    variable_to_index.resize(g_variable_name.size(), -1);
+    num_states = 1;
+    // int p = 1; ; same as num_states; incrementally computed!
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        n_i.push_back(num_states);
+        variable_to_index[pattern[i]] = i;
+        num_states *= g_variable_domain[pattern[i]];
+        //p *= g_variable_domain[pattern[i]];
+    }
+    create_pdb();
+#else
+    VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL);
+    variable_to_index.resize(g_variable_name.size(), -1);
+    int var = vof.next();
+    num_states = g_variable_domain[var];
+    size_t index = 0;
+    int p = 1;
+    while (num_states <= max_abstract_states) {
+        //cout << "Number of abstract states = " << num_states << endl;
+        //cout << "Including variable: " << var << " (True name:" << g_variable_name[var] << ")" << endl;
+        pattern.push_back(var);
+        variable_to_index[var] = index;
+        n_i.push_back(p);
+        p *= g_variable_domain[var];
+        
+        var = vof.next();
+        ++index;
+        num_states *= g_variable_domain[var];
+        
+    }
+    num_states /= g_variable_domain[var];
+    create_pdb();
+#endif
+}
+
+void PDBHeuristic::create_pdb() {
+    assert(!pattern.empty());
+    assert(!n_i.empty());
+    assert(num_states != 0);
     
     vector<AbstractOperator> operators;
     for (size_t i = 0; i < g_operators.size(); ++i) {
@@ -235,7 +310,7 @@ void PDBAbstraction::create_pdb() {
     }
 }
 
-size_t PDBAbstraction::hash_index(const AbstractState &abstract_state) const {
+size_t PDBHeuristic::hash_index(const AbstractState &abstract_state) const {
     size_t index = 0;
     for (int i = 0; i < pattern.size(); ++i) {
         index += n_i[i] * abstract_state[variable_to_index[pattern[i]]];
@@ -255,11 +330,20 @@ for (int n = 1; n < pattern.size(); ++n) {
     return AbstractState(var_vals);
     }*/
 
-int PDBAbstraction::get_heuristic_value(const State &state) const {
-    return distances[hash_index(AbstractState(state, pattern))];
+void PDBHeuristic::initialize() {
+    cout << "Initializing pattern database heuristic..." << endl;
+
+    cout << "Didn't do anything. Done initializing." << endl;
 }
 
-void PDBAbstraction::dump() const {
+int PDBHeuristic::compute_heuristic(const State &state) {
+    int h = distances[hash_index(AbstractState(state, pattern))];;
+    if (h == numeric_limits<int>::max())
+        return -1;
+    return h;
+}
+
+void PDBHeuristic::dump() const {
     for (size_t i = 0; i < num_states; ++i) {
         //AbstractState abs_state = inv_hash_index(i);
         //abs_state.dump();
@@ -267,67 +351,7 @@ void PDBAbstraction::dump() const {
     }
 }
 
-// PDBHeuristic ---------------------------------------------------------------
-
-static ScalarEvaluatorPlugin pdb_heuristic_plugin("pdb", PDBHeuristic::create);
-
-PDBHeuristic::PDBHeuristic(int max_abs_states) 
-    : pdb_abstraction (0), max_abstract_states(max_abs_states) {
-}
-
-PDBHeuristic::~PDBHeuristic() {
-    delete pdb_abstraction;
-}
-
-void PDBHeuristic::initialize() {
-    cout << "Initializing pattern database heuristic..." << endl;
-    
-    VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL);
-    vector<int> pattern;
-    int var = vof.next();
-    int num_states = g_variable_domain[var];
-    while (num_states <= max_abstract_states) {
-        //cout << "num states" << num_states << endl;
-        //cout << "including Variable: " << var << " (True name:" << g_variable_name[var] << ")" << endl;
-        pattern.push_back(var);
-        var = vof.next();
-        num_states *= g_variable_domain[var];
-    }
-    
-    // function tests
-    // 1. blocks-7-2 test-pattern
-    //int patt[] = {9, 10, 11, 12, 13, 14};
-    //int patt[] = {13, 14};
-    
-    // 2. driverlog-6 test-pattern
-    //int patt[] = {4, 5, 7, 9, 10, 11, 12};
-    
-    // 3. logistics00-6-2 test-pattern
-    //int patt[] = {3, 4, 5, 6, 7, 8};
-    
-    // 4. blocks-9-0 test-pattern
-    //int patt[] = {0};
-    
-    // 5. logistics00-5-1 test-pattern
-    //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
-    
-    //vector<int> pattern(patt, patt + sizeof(patt) / sizeof(int));
-    Timer timer;
-    pdb_abstraction = new PDBAbstraction(pattern);
-    cout << "PDB construction time: " << timer << endl;
-    //pdb_abstraction->dump();
-
-    cout << "Done initializing." << endl;
-}
-
-int PDBHeuristic::compute_heuristic(const State &state) {
-    int h = pdb_abstraction->get_heuristic_value(state);
-    if (h == numeric_limits<int>::max())
-        return -1;
-    return h;
-}
-
-ScalarEvaluator *PDBHeuristic::create(const vector<string> &config, int start, int &end, bool dry_run) {
+static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
     int max_states = -1;
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
@@ -345,18 +369,14 @@ ScalarEvaluator *PDBHeuristic::create(const vector<string> &config, int start, i
     } else {
         end = start;
     }
-    
     if (max_states == -1) {
         max_states = 1000000;
     }
-    
     if (max_states < 1) {
         cerr << "error: abstraction size must be at least 1" << endl;
         exit(2);
     }
-    
     //OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    
     if (dry_run)
         return 0;
     else
