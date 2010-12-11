@@ -3,7 +3,6 @@
 
 #include "../globals.h"
 #include "../heuristic.h"
-#include <limits.h>
 
 #include <fstream>
 

@@ -1,9 +1,17 @@
 #include "landmarks_graph_rpg_search.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 
-LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(Exploration *exploration)
-    : LandmarksGraph(exploration), uniform_sampling(false) {
-    max_depth = 10;
-    num_tries = 10;
+static LandmarkGraphPlugin landmarks_graph_rpg_search_plugin(
+    "lm_search", LandmarksGraphRpgSearch::create);
+
+LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(
+    LandmarkGraphOptions &options, Exploration *exploration,
+    bool uniform_sampling_, int max_depth_, int num_tries_)
+    : LandmarksGraph(options, exploration),
+      uniform_sampling(uniform_sampling_),
+      max_depth(max_depth_),
+      num_tries(num_tries_) {
 }
 
 LandmarksGraphRpgSearch::~LandmarksGraphRpgSearch() {
@@ -104,4 +112,51 @@ int LandmarksGraphRpgSearch::choose_random(vector<int> &evals) {
         }
     }
     return ret;
+}
+
+
+LandmarksGraph *LandmarksGraphRpgSearch::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
+    LandmarksGraph::LandmarkGraphOptions common_options;
+
+    bool uniform_sampling = false;
+    int max_depth = 10;
+    int num_tries = 10;
+
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.add_int_option("max_depth",
+                                         &max_depth,
+                                         "max depth");
+
+            option_parser.add_int_option("num_tries",
+                                         &num_tries,
+                                         "max number of tries");
+
+            option_parser.add_bool_option("uniform_sampling",
+                                          &uniform_sampling,
+                                          "uniform sampling");
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
+        return 0;
+    } else {
+        LandmarksGraph *graph = new LandmarksGraphRpgSearch(
+            common_options, new Exploration,
+            uniform_sampling, max_depth, num_tries);
+        LandmarksGraph::build_lm_graph(graph);
+        return graph;
+    }
 }
