@@ -178,3 +178,29 @@ SearchEngine *IteratedSearch::create(
 }
 
 static EnginePlugin _plugin("iterated", _parse);
+
+/*
+SearchEngine *_parse(OptionsParser &parser) {
+
+ 
+    parser.add_list_option<SearchEngine *>("engine_config_start", "", false);
+    paser.add_option<bool>("pass_bound", true, 
+                           "use bound from previous search");
+    parser.add_option<bool>("repeat_last", false, 
+                            "repeat last phase of search");
+    parser.add_option<bool>("continue_on_fail", false,
+                            "continue search after no solution found");
+    parser.add_option<bool>("continue_on_solve", true,
+                            "continue search after solution found");
+
+    Options opts = parser.parse();
+
+    if (dry_run) {
+        return 0;
+    }
+
+    IteratedSearch *engine = new IteratedSearch(opts(config, engine_config_start, pass_bound, repeat_last,
+                           continue_on_fail, continue_on_solve);
+
+    return engine;
+}*/

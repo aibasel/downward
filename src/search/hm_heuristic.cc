@@ -8,10 +8,8 @@
 #include <set>
 
 
-static ScalarEvaluatorPlugin hm_heuristic_plugin("hm", HMHeuristic::create);
 
-
-HMHeuristic::HMHeuristic(int _m) : m(_m) {
+HMHeuristic::HMHeuristic(Options opts) : m(opts.get<int>("m")) {
     MAX_VALUE = 100000;
     //MAX_VALUE = numeric_limits<int>::max();
 }
@@ -218,19 +216,14 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
     return 0;
 }
 
-ScalarEvaluator *HMHeuristic::create(const std::vector<string> &config,
-                                     int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-    end = start + 2;
-    OptionParser *parser = OptionParser::instance();
-    int m = parser->parse_int(config, end, end);
-    end++;
-    if (config[end] != ")")
-        throw ParseError(end);
-
-    if (dry_run)
+ScalarEvaluator *parse(OptionParser &parser) {
+    parser.add_option<int>("m");
+    Options opts = parser.parse();
+    if (parser.dry_run)
         return 0;
     else
-        return new HMHeuristic(m);
+        return new HMHeuristic(opts);
 }
+
+
+static ScalarEvaluatorPlugin _plugin("hm", _parse);

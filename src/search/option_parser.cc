@@ -149,7 +149,7 @@ void OptionParser::add_enum_option(string k,
         configuration.set(k, it - enumeration.begin());            
 }
 
-Options OptionParser::get_configuration() {
+Options OptionParser::parse() {
     //first check if there were any arguments with invalid keywords
     std::vector<ParseTree>* pt_children = parse_tree.get_children();
     for (size_t i(0); i != pt_children->size(); ++i) {
