@@ -229,18 +229,14 @@ public:
 
     template <class T>
         void add_list_option(std::string k, 
-                             vector<T> def_val, std::string h="",
-                             bool empty_allowed = true ) {
+                             vector<T> def_val, std::string h="") {
         configuration.set(k, def_val);
         add_list_option<T>(k,h);
     }
 
     template <class T> 
-        void add_list_option(std::string k, std::string h="", 
-                             bool empty_allowed = true) {
+        void add_list_option(std::string k, std::string h="") {
         add_option<vector T>(k, h);
-        if (!empty_allowed && configuration.get<vector T>(k).empty())
-            throw ParseError("list not allowed to be empty");
     }
 
     

@@ -29,8 +29,6 @@ using namespace __gnu_cxx;
 */
 
 
-static ScalarEvaluatorPlugin ff_heuristic_plugin("ff", FFHeuristic::create);
-
 
 // construction and destruction
 FFHeuristic::FFHeuristic() {
@@ -183,3 +181,5 @@ ScalarEvaluator *FFHeuristic::create(const std::vector<string> &config,
     else
         return new FFHeuristic;
 }
+
+static ScalarEvaluatorPlugin _plugin("ff", _parse);

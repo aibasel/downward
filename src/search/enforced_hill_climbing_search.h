@@ -15,6 +15,8 @@
 
 using namespace std;
 
+class Options;
+
 typedef pair<state_var_t *, pair<int, const Operator * > > OpenListEntryEHC;
 
 enum PreferredUsage {
@@ -50,16 +52,12 @@ protected:
     void get_successors(const State &state, vector<const Operator *> &ops);
     void evaluate(const State &parent, const Operator *op, const State &state);
 public:
-    EnforcedHillClimbingSearch(Heuristic *heuristic_,
-                               PreferredUsage preferred_usage_, bool use_cost_for_bfs_,
-                               int g_bound);
+    EnforcedHillClimbingSearch(const Options opts);
     virtual ~EnforcedHillClimbingSearch();
     void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
 
     virtual void statistics() const;
 
-    static SearchEngine *create(const vector<string> &config, int start,
-                                int &end, bool dry_run);
 };
 
 #endif

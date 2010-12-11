@@ -6,12 +6,14 @@
 #include "open_lists/tiebreaking_open_list.h"
 #include "pref_evaluator.h"
 
-EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(Heuristic *heuristic_,
-                                                       PreferredUsage preferred_usage_, bool use_cost_for_bfs_, int g_bound)
-    : heuristic(heuristic_), use_preferred(false),
-      preferred_usage(preferred_usage_), use_cost_for_bfs(use_cost_for_bfs_),
-      current_state(*g_initial_state), num_ehc_phases(0) {
-    search_progress.add_heuristic(heuristic_);
+EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(const Options &opts)
+    : heuristic(opts.get<Heuristic *>("h")),
+      use_preferred(false),
+      preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
+      use_cost_for_bfs(opts.get<bool>("use_cost_for_bfs")),
+      current_state(*g_initial_state),
+      num_ehc_phases(0) {
+    search_progress.add_heuristic(heuristic);
     g_evaluator = new GEvaluator();
     bound = g_bound;
 }
@@ -229,49 +231,24 @@ void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
 }
 
 
-SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
-                                                 int start, int &end,
-                                                 bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-    Heuristic *h = \
-        OptionParser::instance()->parse_heuristic(config, start + 2, end,
-                                                  dry_run);
-    end++;
+static SearchEngine *_parse(OptionParser &parser) {
+    parser.add_option<Heuristic *>("h");
 
-    if (end >= config.size())
-        throw ParseError(end);
+    parser.add_option<bool>("bfs_use_cost", false, 
+                            "use cost for bfs");
 
-    // parse options
+    vector<string> preferred_usages;
+    preferred_usages.push_back("PRUNE_BY_PREFERRED");
+    preferred_usages.push_back("RANK_PREFERRED_FIRST");
+    preferred_usages.push_back("MAX_PREFERRED_USAGE");
+    parser.add_enum_option("preferred_usage", preferred_usages, 
+                           "PRUNE_BY_PREFERRED", 
+                           "preferred operator usage");
 
-    int pref_usage = 0;
-    bool use_cost_for_bfs_ = false;
-    int g_bound = numeric_limits<int>::max();
-    vector<Heuristic *> preferred_list;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-        option_parser.add_bool_option("bfs_use_cost",
-                                      &use_cost_for_bfs_, "use cost for bfs");
-        option_parser.add_int_option("preferred_usage",
-                                     &pref_usage,
-                                     "preferred operator usage");
-        option_parser.add_heuristic_list_option("preferred",
-                                                &preferred_list, "use preferred operators of these heuristics");
-        option_parser.add_int_option("bound", &g_bound,
-                                     "depth bound on g-values", true);
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
-
-    if (pref_usage < 0 || pref_usage >= MAX_PREFERRED_USAGE) {
-        cerr << "error: unknown preferred_usage: " << pref_usage << endl;
-        exit(2);
-    }
-    PreferredUsage preferred_usage_ = (PreferredUsage)pref_usage;
+    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), 
+                                        "use preferred operators of these heuristics");
+    parser.add_option<int>("bound", numeric_limits<int>::max(), 
+                           "depth bound on g-values");
 
     EnforcedHillClimbingSearch *engine = 0;
     if (!dry_run) {
