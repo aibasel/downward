@@ -11,13 +11,15 @@
 #include <algorithm>
 #include <limits>
 
-GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(
-    OpenList<OpenListEntryLazy> *open, bool reopen_closed, int g_bound)
-    : open_list(open), reopen_closed_nodes(reopen_closed), succ_mode(pref_first),
+GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(const Options &opts)
+    : open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
+      reopen_closed_nodes(opts.get<bool>("reopen_closed")),
+      succ_mode(pref_first),
       current_state(*g_initial_state),
-      current_predecessor_buffer(NULL), current_operator(NULL),
+      current_predecessor_buffer(0),
+      current_operator(0),
       current_g(0) {
-    bound = g_bound;
+    bound = opts.get<int>("bound");
 }
 
 GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {
@@ -215,82 +217,42 @@ void GeneralLazyBestFirstSearch::statistics() const {
     search_progress.print_statistics();
 }
 
-SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
-                                                 int start, int &end,
-                                                 bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-
-    OpenList<OpenListEntryLazy> *open = \
-        OpenListParser<OpenListEntryLazy>::instance()->parse_open_list(
-            config, start + 2, end, dry_run);
-    end++;
-    if (end >= config.size())
-        throw ParseError(end);
-
-    // parse options
-    bool reopen_closed = false; // TODO make default value visible
-    int g_bound = numeric_limits<int>::max();
-    vector<Heuristic *> preferred_list;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-        option_parser.add_bool_option("reopen_closed", &reopen_closed,
-                                      "reopen closed nodes");
-        option_parser.add_int_option("bound", &g_bound,
-                                     "depth bound on g-values", true);
-        option_parser.add_heuristic_list_option(
-            "preferred", &preferred_list,
-            "use preferred operators of these heuristics");
-
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
+static SearchEngine *_parse(OptionParser &parser) {
+    parser.add_option<Openlist<OpenListEntryLazy> *>("open");
+    parser.add_option<bool>("reopen_closed", false, 
+                            "reopen closed nodes");
+    parser.add_option<int>("bound", numeric_limits<int>::max(),
+                           "depth bound on g-values");
+    parser.add_list_option<Heuristic *>(
+        "preferred", vector<Heuristic *>(), 
+        "use preferred operators of these heuristics");
 
     GeneralLazyBestFirstSearch *engine = 0;
-    if (!dry_run) {
-        engine = new GeneralLazyBestFirstSearch(open, reopen_closed, g_bound);
-        engine->set_pref_operator_heuristics(preferred_list);
+    if (!parser.dry_run) {
+        engine = new GeneralLazyBestFirstSearch(opts);
+        engine->set_pref_operator_heuristics(
+            opts.get_list<Heuristic *>("preferred"));
     }
 
     return engine;
 }
 
 
-SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
-    const vector<string> &config, int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-
-    vector<ScalarEvaluator *> evals;
-    OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
-                                                          end, false, evals,
-                                                          dry_run);
-    if (evals.empty())
-        throw ParseError(end);
-    end++;
-
-    vector<Heuristic *> preferred_list;
-    int boost = 1000;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-        option_parser.add_heuristic_list_option("preferred",
-                                                &preferred_list, "use preferred operators of these heuristics");
-        option_parser.add_int_option("boost", &boost,
-                                     "boost value for successful sub-open-lists");
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
+static SearchEngine _parse_greedy(OptionParser &parser) {
+    parser.add_list_option<ScalarEvaluator *>("evals");
+    parser.add_list_option<Heuristic *>(
+        "preferred", vector<Heuristic *>(),
+        "use preferred operators of these heuristics");
+    parser.add_option<int>("boost", 1000, 
+                           "boost value for successful sub-open-lists");
+    Options opts = parser.parse();
 
     GeneralLazyBestFirstSearch *engine = 0;
-    if (!dry_run) {
+    if (!parser.dry_run) {
+        vector<Heuristic *> evals = 
+            opts.get_list<ScalarEvaluator *>("evals");
+        vector<Heuristic *> preferred_list = 
+            opts.get_list<Heuristic *>("preferred");
         OpenList<OpenListEntryLazy> *open;
         if ((evals.size() == 1) && preferred_list.empty()) {
             open = new StandardScalarOpenList<OpenListEntryLazy>(evals[0],
@@ -310,53 +272,37 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
             open = new AlternationOpenList<OpenListEntryLazy>(inner_lists,
                                                               boost);
         }
-
-        engine = new GeneralLazyBestFirstSearch(open, false,
-                                                numeric_limits<int>::max());
+        opts.set("reopen_closed", false);
+        opts.set("bound", numeric_limits<int>::max());
+        opts.set("open", open);
+        engine = new GeneralLazyBestFirstSearch(opts);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
 }
 
-SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
-    const vector<string> &config, int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-
-    vector<ScalarEvaluator *> evals;
-    OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
-                                                          end, false, evals,
-                                                          dry_run);
+static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
+    parser.add_list_option<ScalarEvaluator *>("evals");
+    parser.add_list_option<Heuristic *>(
+        "preferred", vector<Heuristic *>(),
+        "use preferred operators of these heuristics");
+    parser.add_option<int>("boost", 1000,
+                           "boost value for succesful sub-open-lists");
+    parser.add_option<int>("bound", numeric_limits<int>::max(),
+                           "depth bound on g-values");
+    parser.add_option<int>("w", 1, "heuristic weight");
+    
+    Options opts = parser.parse();
+    vector<ScalarEvaluator *> evals = opts.get_list<ScalarEvaluator *>("evals");
+        
     if (evals.empty())
-        throw ParseError(end);
-    end++;
+        parser.error("expected non-empty list of scalar evaluators");
 
-    vector<Heuristic *> preferred_list;
-    int boost = 1000;
-    int g_bound = numeric_limits<int>::max();
-    int weight = 1;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-        option_parser.add_heuristic_list_option("preferred",
-                                                &preferred_list, "use preferred operators of these heuristics");
-        option_parser.add_int_option("boost", &boost,
-                                     "boost value for successful sub-open-lists");
-        option_parser.add_int_option("bound", &g_bound,
-                                     "depth bound on g-values", true);
-        option_parser.add_int_option("w", &weight,
-                                     "heuristic weight");
-        // may not be named "weight" because this would be parsed as a
-        // weighted evaluator, if it is the first keyword option
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
 
     GeneralLazyBestFirstSearch *engine = 0;
-    if (!dry_run) {
+    if (!parser.dry_run) {
+        vector<Heuristic *> preferred_list = 
+            opts.get_list<Heuristic *>("preferred");
         vector<OpenList<OpenListEntryLazy> *> inner_lists;
         for (int i = 0; i < evals.size(); i++) {
             GEvaluator *g = new GEvaluator();
@@ -386,8 +332,11 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
             open = new AlternationOpenList<OpenListEntryLazy>(inner_lists,
                                                               boost);
         }
+        
+        opts.set("open", open);
+        opts.set("reopen_closed", true);
 
-        engine = new GeneralLazyBestFirstSearch(open, true, g_bound);
+        engine = new GeneralLazyBestFirstSearch(opts);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
