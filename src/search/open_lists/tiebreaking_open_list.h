@@ -10,6 +10,8 @@
 #include <utility>
 
 class ScalarEvaluator;
+class Options;
+class OptionParser;
 
 template<class Entry>
 class TieBreakingOpenList : public OpenList<Entry> {
@@ -33,8 +35,7 @@ protected:
     Evaluator *get_evaluator() {return this; }
 
 public:
-    TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
-                        bool preferred_only, bool unsafe_pruning);
+    TieBreakingOpenList(const Options &opts);
     ~TieBreakingOpenList();
 
     // open list interface
@@ -49,8 +50,7 @@ public:
     bool dead_end_is_reliable() const;
     void get_involved_heuristics(std::set<Heuristic *> &hset);
 
-    static OpenList<Entry> *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run = false);
+    static OpenList<Entry> *_parse(OptionParser &parser);
 };
 
 #include "tiebreaking_open_list.cc"

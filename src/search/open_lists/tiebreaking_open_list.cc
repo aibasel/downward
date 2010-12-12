@@ -14,33 +14,26 @@ using namespace std;
 */
 
 template<class Entry>
-OpenList<Entry> *TieBreakingOpenList<Entry>::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    std::vector<ScalarEvaluator *> evaluators;
-    NamedOptionParser option_parser;
-    bool only_pref_ = false;
-    bool allow_unsafe_ = true;
-    option_parser.add_bool_option("pref_only", &only_pref_,
-                                  "insert only preferred operators");
-    option_parser.add_bool_option("unsafe_pruning", &allow_unsafe_,
-                                  "allow unsafe pruning when the main evaluator regards a state a dead end");
-    OptionParser *parser = OptionParser::instance();
-    parser->parse_evals_and_options(config, start, end, evaluators,
-                                    option_parser, false, dry_run);
+OpenList<Entry> *TieBreakingOpenList<Entry>::_parse(OptionParser &opts) {
+    parser.add_list_option<ScalarEvaluator *>("evals");
+    parser.add_option<bool>(
+        "pref_only", false, 
+        "insert only preferred operators");
+    parser.add_option<bool>(
+        "unsafe_pruning", true,
+        "allow unsafe pruning when the main evaluator regards a state a dead end");
 
-    if (dry_run)
+    if (parser.dry_run)
         return 0;
     else
-        return new TieBreakingOpenList<Entry>(evaluators, only_pref_,
-                                              allow_unsafe_);
+        return new TieBreakingOpenList<Entry>(opts);
 }
 
 template<class Entry>
-TieBreakingOpenList<Entry>::TieBreakingOpenList(
-    const std::vector<ScalarEvaluator *> &evals,
-    bool preferred_only, bool unsafe_pruning)
-    : OpenList<Entry>(preferred_only), size(0), evaluators(evals),
-      allow_unsafe_pruning(unsafe_pruning) {
+TieBreakingOpenList<Entry>::TieBreakingOpenList(const Options &opts)
+    : OpenList<Entry>(opts.get<bool>("pref_only")), 
+      size(0), evaluators(opts.get_list<ScalarEvaluator>("evals")),
+      allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
     last_evaluated_value.resize(evaluators.size());
 }
 

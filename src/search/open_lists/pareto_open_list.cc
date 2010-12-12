@@ -9,7 +9,7 @@
 using namespace std;
 
 template<class Entry>
-OpenList<Entry> *ParetoOpenList<Entry>::create(
+OpenList<Entry> *ParetoOpenList<Entry>::_parse(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     std::vector<ScalarEvaluator *> evaluators;
     NamedOptionParser option_parser;
