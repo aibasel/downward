@@ -146,7 +146,7 @@ int HSPMaxHeuristic::compute_heuristic(const State &state) {
     return max_cost;
 }
 
-ScalarEvaluator *_parse(OptionParser &parser) {
+static ScalarEvaluator *_parse(OptionParser &parser) {
     if (parser.dry_run)
         return 0;
     else

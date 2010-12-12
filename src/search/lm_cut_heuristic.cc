@@ -402,7 +402,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
    values a bit.
  */
 
-ScalarEvaluator *_parse(OptionParser& parser) {
+static ScalarEvaluator *_parse(OptionParser& parser) {
     parser.add_option<int>("iteration_limit", -1, "iteration limit");
     Options opts = parser.parse();
     if (dry_run)

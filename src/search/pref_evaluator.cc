@@ -26,7 +26,7 @@ int PrefEvaluator::get_value() const {
         return 1;
 }
 
-ScalarEvaluator *_parse(OptionParser &parser)
+static ScalarEvaluator *_parse(OptionParser &parser) {
     if (dry_run)
         return 0;
     else

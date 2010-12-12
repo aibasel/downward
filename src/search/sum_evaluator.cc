@@ -50,7 +50,7 @@ void SumEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
         evaluators[i]->get_involved_heuristics(hset);
 }
 
-ScalarEvaluator *_parse(&OptionParser parser) {
+static ScalarEvaluator *_parse(&OptionParser parser) {
     parser.add_list_option<ScalarEvaluator *>("evals");
     Options opts = parser.parse();
     if (opts.get_list<ScalarEvaluator *>("evals").empty())
