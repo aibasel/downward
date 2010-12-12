@@ -17,6 +17,8 @@ class AlternationOpenList : public OpenList<Entry> {
     int size;
     bool dead_end;
     bool dead_end_reliable;
+    // roughly speaking, boosting is how often the boosted queue should be
+    // preferred when removing an entry
     int boosting;
     int last_used_list;
 
@@ -24,10 +26,9 @@ protected:
     Evaluator *get_evaluator() {return this; }
 
 public:
-    AlternationOpenList(const Options opts);
-    // roughly speaking, boost_influence is how often the boosted queue should be
-    // preferred when removing an entry
-
+    AlternationOpenList(const Options &opts);
+     AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
+                        int boost_influence);
     ~AlternationOpenList();
 
     // OpenList interface

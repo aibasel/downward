@@ -16,6 +16,7 @@ private:
 
 public:
     WeightedEvaluator(const Options &opts);
+    WeightedEvaluator(ScalarEvaluator *eval, int weight);
     ~WeightedEvaluator();
 
     void evaluate(int g, bool preferred);

@@ -17,6 +17,7 @@ private:
 
 public:
     SumEvaluator(const Options &opts);
+    SumEvaluator(const std::vector<ScalarEvaluator *> &evals);
     ~SumEvaluator();
 
     void evaluate(int g, bool preferred);

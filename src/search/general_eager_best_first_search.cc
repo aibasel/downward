@@ -7,6 +7,9 @@
 #include "g_evaluator.h"
 #include "sum_evaluator.h"
 #include "open_lists/tiebreaking_open_list.h"
+#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/alternation_open_list.h"
+#include "plugin.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -17,8 +20,8 @@ GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(const Options &opts)
     : reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       do_pathmax(opts.get<bool>("pathmax_correction")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
-      open_list(opts.get<OpenList<state_var *> >("open")),
-      f_evaluator(opts.get<ScalarEvaluator("f_eval")) {
+      open_list(opts.get<OpenList<state_var_t *> *>("open")),
+      f_evaluator(opts.get<ScalarEvaluator *>("f_eval")) {
     bound = opts.get<int>("bound");
 }
 
@@ -301,7 +304,7 @@ void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int> &valu
 
 static SearchEngine *_parse(OptionParser &parser) {
 
-    parser.add_option<OpenList<state_var_t *> >("open");
+    parser.add_option<OpenList<state_var_t *> *>("open");
 
     parser.add_option<bool>("reopen_closed", false, 
                             "reopen closed nodes");
@@ -309,7 +312,7 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "use pathmax correction");
     parser.add_option<ScalarEvaluator *>("progress_evaluator", 0, 
                                          "set evaluator for jump statistics");
-    parser.add_option<int>("bound", numeric_limit<int>::max(),
+    parser.add_option<int>("bound", numeric_limits<int>::max(),
                                   "depth bound on g-values");
     parser.add_list_option<Heuristic *>
         ("preferred", vector<Heuristic *>(), 
@@ -322,8 +325,9 @@ static SearchEngine *_parse(OptionParser &parser) {
     GeneralEagerBestFirstSearch *engine = 0;
     if (!parser.dry_run()) {
         engine = new GeneralEagerBestFirstSearch(opts);
-        engine->set_pref_operator_heuristics
-            (opts.get_list_option<Heuristic *>("preferred_list"));
+        vector<Heuristic *> preferred_list = 
+            opts.get_list<Heuristic *>("preferred");
+        engine->set_pref_operator_heuristics(preferred_list);
     }
 
     return engine;
@@ -342,7 +346,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         GEvaluator *g = new GEvaluator();
         vector<ScalarEvaluator *> sum_evals;
         sum_evals.push_back(g);
-        ScalarEvaluator *eval = opts.get<ScalarEvaluator>("eval");
+        ScalarEvaluator *eval = opts.get<ScalarEvaluator *>("eval");
         sum_evals.push_back(eval);
         SumEvaluator *f_eval = new SumEvaluator(sum_evals);
 
@@ -373,12 +377,15 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
     Options opts =parser.parse();
     if (opts.get_list<ScalarEvaluator *>("evals").empty())
-        throw ParseError(parser.get_parse_tree(), "scalar evaluator list must not be empty");
+        parser.error("scalar evaluator list must not be empty");
 
 
     GeneralEagerBestFirstSearch *engine = 0;
-    if (!dry_run) {
-        vector<Heuristic *> evals = opts.get_list<ScalarEvaluator *>("evals");
+    if (!parser.dry_run()) {
+        vector<ScalarEvaluator *> evals = 
+            opts.get_list<ScalarEvaluator *>("evals");
+        vector<Heuristic *> preferred_list = 
+            opts.get_list<Heuristic *>("preferred");
         OpenList<state_var_t *> *open;
         if ((evals.size() == 1) && preferred_list.empty()) {
             open = new StandardScalarOpenList<state_var_t *>(evals[0], false);
@@ -393,7 +400,8 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
                                                                   true));
                 }
             }
-            open = new AlternationOpenList<state_var_t *>(inner_lists, boost);
+            open = new AlternationOpenList<state_var_t *>(
+                inner_lists, opts.get<int>("boost"));
         }
 
         opts.set("open", open);
@@ -410,5 +418,5 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 }
 
 static EnginePlugin _plugin("eager", _parse);
-static EnginePlugin _plugin("astar", _parse_astar);
-static EnginePlugin _plugin("eager_greedy", _parse_greedy);
+static EnginePlugin _plugin_astar("astar", _parse_astar);
+static EnginePlugin _plugin_greedy("eager_greedy", _parse_greedy);

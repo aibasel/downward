@@ -9,7 +9,7 @@ using namespace std;
 
 
 template<class Entry>
-static OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
+OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_list_option<OpenList<Entry> *>("sublists");
     parser.add_option<int>("boost", 1000,
                            "boost value for successful sub-open-lists");
@@ -29,7 +29,14 @@ template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)
     : open_lists(opts.get_list<OpenList<Entry> *>("sublists")), 
       priorities(open_lists.size(), 0), size(0),
-      boosting(opts.get<int>("boost") {
+      boosting(opts.get<int>("boost")) {
+}
+
+template<class Entry>
+AlternationOpenList<Entry>::AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
+                                                int boost_influence)
+    : open_lists(sublists), priorities(sublists.size(), 0), size(0),
+      boosting(boost_influence) {
 }
 
 template<class Entry>

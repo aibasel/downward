@@ -52,7 +52,7 @@ protected:
     void get_successors(const State &state, vector<const Operator *> &ops);
     void evaluate(const State &parent, const Operator *op, const State &state);
 public:
-    EnforcedHillClimbingSearch(const Options opts);
+    EnforcedHillClimbingSearch(const Options &opts);
     virtual ~EnforcedHillClimbingSearch();
     void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
 

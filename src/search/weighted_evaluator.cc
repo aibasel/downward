@@ -10,6 +10,11 @@ WeightedEvaluator::WeightedEvaluator(const Options &opts)
       w(opts.get_list<ScalarEvaluator *>("weight")) {
 }
 
+WeightedEvaluator::WeightedEvaluator(ScalarEvaluator *eval, int weight)
+    : evaluator(eval), w(weight) {
+}
+
+
 WeightedEvaluator::~WeightedEvaluator() {
 }
 
