@@ -246,7 +246,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 }
 
-ScalarEvaluator *_parse(OptionsParser &parser) {
+static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.parse();
     if (dry_run)
         return 0;

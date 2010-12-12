@@ -36,7 +36,7 @@ return 0;
 */
 }
 
-ScalarEvaluator *_parse(&OptionParser parser) {
+static ScalarEvaluator *_parse(OptionParser &parser) {
     if (parser.dry_run)
         return 0;
     else

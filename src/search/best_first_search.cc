@@ -221,7 +221,7 @@ int BestFirstSearchEngine::fetch_next_state() {
     return IN_PROGRESS;
 }
 
-SearchEngine *_parse(&OptionParser parser) {
+static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option_list<Heuristic *>("heuristics");
     parser.add_option_list<Heuristic *>("preffered", vector<Heuristic *>(), "use preferred operators of these heuristics");
     Options opts = parser.parse();

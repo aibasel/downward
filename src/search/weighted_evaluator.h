@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+class Options;
+
 class WeightedEvaluator : public ScalarEvaluator {
 private:
     ScalarEvaluator *evaluator;
@@ -13,7 +15,7 @@ private:
     int value;
 
 public:
-    WeightedEvaluator(ScalarEvaluator *eval, int weight);
+    WeightedEvaluator(const Options &opts);
     ~WeightedEvaluator();
 
     void evaluate(int g, bool preferred);
@@ -21,9 +23,6 @@ public:
     bool dead_end_is_reliable() const;
     int get_value() const;
     void get_involved_heuristics(std::set<Heuristic *> &hset);
-
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
 };
 
 #endif

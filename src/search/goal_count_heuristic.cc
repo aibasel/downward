@@ -28,7 +28,7 @@ int GoalCountHeuristic::compute_heuristic(const State &state) {
     return unsatisfied_goal_count;
 }
 
-ScalarEvaluator *_parse(OptionParser &parse) {
+static ScalarEvaluator *_parse(OptionParser &parse) {
     parser.parse();
     if (parser.dry_run)
         return 0;

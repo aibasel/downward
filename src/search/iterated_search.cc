@@ -120,55 +120,7 @@ void IteratedSearch::statistics() const {
     search_progress.print_statistics();
 }
 
-
-
-SearchEngine *IteratedSearch::create(
-    const vector<string> &config, int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-
-    vector<int> engine_config_start;
-    OptionParser::instance()->parse_search_engine_list(config, start + 2,
-                                                       end, false, engine_config_start, true);
-
-    if (engine_config_start.empty())
-        throw ParseError(end);
-    end++;
-
-    bool pass_bound = true;
-    bool repeat_last = false;
-    bool continue_on_fail = false;
-    bool continue_on_solve = true;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-        option_parser.add_bool_option("pass_bound", &pass_bound,
-                                      "use bound from previous search");
-        option_parser.add_bool_option("repeat_last", &repeat_last,
-                                      "repeat last phase of search");
-        option_parser.add_bool_option("continue_on_fail", &continue_on_fail,
-                                      "continue search after no solution found");
-        option_parser.add_bool_option("continue_on_solve", &continue_on_solve,
-                                      "continue search after solution found");
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
-
-    if (dry_run)
-        return NULL;
-
-    IteratedSearch *engine = \
-        new IteratedSearch(config, engine_config_start, pass_bound, repeat_last,
-                           continue_on_fail, continue_on_solve);
-
-    return engine;
-}
-
-
-SearchEngine *_parse(OptionsParser &parser) {
+static SearchEngine *_parse(OptionParser &parser) {
  
     parser.add_list_option<ParseTree>("engine_config", "", false);
     paser.add_option<bool>("pass_bound", true, 

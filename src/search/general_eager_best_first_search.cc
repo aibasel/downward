@@ -330,7 +330,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     return engine;
 }
 
-static SearchEngine *_parse_astar(OptionParser &p) {
+static SearchEngine *_parse_astar(OptionParser &parser) {
     parser.add_option<ScalarEvaluator *>("eval");
     parser.add_option<bool>("pathmax", false,
                             "use pathmax correction");
@@ -365,7 +365,7 @@ static SearchEngine *_parse_astar(OptionParser &p) {
     return engine;
 }
 
-SearchEngine *_parse_greedy(OptionParser &parser) {
+static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), "use preferred operators of these heuristics");
     parser.add_option<int>("boost", 1000, "boost value for successful sub-open-lists");

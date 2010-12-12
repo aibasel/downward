@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+class Options;
+
 class SumEvaluator : public ScalarEvaluator {
 private:
     std::vector<ScalarEvaluator *> evaluators;
@@ -14,7 +16,7 @@ private:
     bool dead_end_reliable;
 
 public:
-    SumEvaluator(const std::vector<ScalarEvaluator *> &evals);
+    SumEvaluator(const Options &opts);
     ~SumEvaluator();
 
     void evaluate(int g, bool preferred);
@@ -23,8 +25,6 @@ public:
     int get_value() const;
     void get_involved_heuristics(std::set<Heuristic *> &hset);
 
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
 };
 
 #endif
