@@ -28,9 +28,30 @@ PatternCollection::PatternCollection(const vector<vector<int> > &pat_coll) : pat
 PatternCollection::~PatternCollection() {
 }
 
-//bool PatternCollection::are_additive(int pattern1, int pattern2) const {
-  //  return are_additive[pattern1][pattern2];
-//}
+bool PatternCollection::are_pattern_additive(int pattern1, int pattern2) const {
+    assert(pattern1 != pattern2);
+    const vector<int> &patt1 = pattern_collection[pattern1];
+    cout << "pattern 1" << endl;
+    for (size_t i = 0; i < patt1.size(); ++i) {
+        cout << patt1[i] << " ";
+    }
+    cout << endl;
+    const vector<int> &patt2 = pattern_collection[pattern2];
+    cout << "pattern 2" << endl;
+    for (size_t i = 0; i < patt2.size(); ++i) {
+        cout << patt2[i] << " ";
+    }
+    cout << endl;
+    for (size_t i = 0; i < patt1.size(); ++i) {
+        for (size_t j = 0; j < patt2.size(); ++j) {
+            if (!are_additive[patt1[i]][patt2[j]]) {
+                cout << "not are_additive pattern1 pattern2 with var patt1 " << patt1[i] << " and var patt 2" << patt2[j];
+                return false;
+            }
+        }
+    }
+    return true;
+}
 
 void PatternCollection::precompute_additive_vars() {
     int num_vars = g_variable_domain.size();
@@ -44,6 +65,16 @@ void PatternCollection::precompute_additive_vars() {
             }
         }
     }
+
+   /*cout << "are_additive_matrix" << endl;
+   for (int i = 0; i < are_additive.size(); ++i) {
+        cout << i << ": ";
+        for (int j = 0; j < are_additive[i].size(); ++j) {
+            cout << are_additive[i][j] << " ";
+        }
+        cout << endl;
+   }*/
+
 }
 
 void PatternCollection::compute_max_cliques() {
@@ -69,9 +100,8 @@ void PatternCollection::build_cgraph() {
 
     for (size_t i = 0; i < number_patterns; ++i) {
         for (size_t j = i + 1; j < number_patterns; ++j) {
-            if (are_additive[i][j]) {
+            if (are_pattern_additive(i,j)) {
                 // if the two patterns are additive there is an edge in the compatibility graph
-                cout << "pattern (index) " << i << " additive with " << "pattern (index) " << j << endl;
                 cgraph[i].push_back(j);
                 cgraph[j].push_back(i);
             }
