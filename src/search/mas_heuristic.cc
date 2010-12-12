@@ -333,7 +333,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         max_states_before_merge = max_states;
     }
 
-    if (parser.dry_run)
+    if (parser.dry_run())
         return 0;
     else
         return new MergeAndShrinkHeuristic(opts);

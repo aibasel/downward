@@ -320,7 +320,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     
 
     GeneralEagerBestFirstSearch *engine = 0;
-    if (!parser.dry_run) {
+    if (!parser.dry_run()) {
         engine = new GeneralEagerBestFirstSearch(opts);
         engine->set_pref_operator_heuristics
             (opts.get_list_option<Heuristic *>("preferred_list"));
@@ -338,7 +338,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
     Options opts = parser.parse();
 
     GeneralEagerBestFirstSearch *engine = 0;
-    if (!parser.dry_run) {
+    if (!parser.dry_run()) {
         GEvaluator *g = new GEvaluator();
         vector<ScalarEvaluator *> sum_evals;
         sum_evals.push_back(g);

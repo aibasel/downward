@@ -29,8 +29,7 @@ protected:
     ScalarEvaluator *get_evaluator() {return evaluator; }
 
 public:
-    StandardScalarOpenList(ScalarEvaluator *eval,
-                           bool preferred_only);
+    StandardScalarOpenList(const Options &opts);
     ~StandardScalarOpenList();
 
     int insert(const Entry &entry);

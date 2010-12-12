@@ -41,7 +41,7 @@ static ScalarEvaluator *_parse(&OptionParser parser) {
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_option<int>("weight");
     Options opts parser.parse();
-    if (parser.dry_run)
+    if (parser.dry_run())
         return 0;
     else
         return new WeightedEvaluator(opts);

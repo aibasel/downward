@@ -19,7 +19,7 @@ OpenList<Entry> *StandardScalarOpenList<Entry>::_parse(OptionParser &parser) {
     if(opts.get_list<ScalarEvaluator *>("evaluators").empty())  //NOTE: should size be exactly one? Similar in BucketOpenList. And in that case, why was there a parser call to parse a whole list in the old version? 
         parser.error("expected non-empty list of scalar evaluators");
 
-    if (dry_run)
+    if (parser.dry_run())
         return 0;
     else
         return new StandardScalarOpenList<Entry>(opts);

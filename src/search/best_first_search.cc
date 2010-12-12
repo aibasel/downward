@@ -5,27 +5,32 @@
 #include "successor_generator.h"
 #include "open_lists/standard_scalar_open_list.h"
 #include "open_lists/open_list_buckets.h"
+#include "plugin.h"
 
 
 #include <cassert>
 using namespace std;
 
-OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref)
-    : open(new BucketOpenList<OpenListEntry>(heur, false)) {
+OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref) {
+    Options opts;
+    opts.set("pref_only", false);
+    vector<ScalarEvaluator *> evals;
+    evals.push_back(heur);
+    open = new BucketOpenList<OpenListEntry>(opts);
     heuristic = heur;
     only_preferred_operators = only_pref;
     priority = 0;
 }
 
-BestFirstSearchEngine::BestFirstSearchEngine(opts)
+BestFirstSearchEngine::BestFirstSearchEngine(const Options opts)
     : current_state(*g_initial_state) {
     generated_states = 0;
     current_predecessor = 0;
     current_operator = 0;
     set<Heuristic *> hset;
     set<Heuristic *> pset;
-    vector<Heuristic *> evals = opts.get_list<Heuristics *>("heuristics");
-    vector<Heuristic *> evals = opts.get_list<Heuristics *>("preferred");
+    vector<Heuristic *> evals = opts.get_list<Heuristic *>("heuristics");
+    vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
     hset.insert(evals.begin(), evals.end());
     pset.insert(preferred_list.begin(), preferred_list.end());
     
@@ -222,12 +227,11 @@ int BestFirstSearchEngine::fetch_next_state() {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    parser.add_option_list<Heuristic *>("heuristics");
-    parser.add_option_list<Heuristic *>("preffered", vector<Heuristic *>(), "use preferred operators of these heuristics");
+    parser.add_list_option<Heuristic *>("heuristics");
+    parser.add_list_option<Heuristic *>("preffered", vector<Heuristic *>(), "use preferred operators of these heuristics");
     Options opts = parser.parse();
 
-    BestFirstSearchEngine *engine = 0;
-    if (!parser.dry_run) 
+    if (!parser.dry_run()) 
         return 0;
     else
         return new BestFirstSearchEngine(opts);
