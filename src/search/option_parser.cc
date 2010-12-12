@@ -120,18 +120,22 @@ bool ParseTree::operator != (ParseTree& pt) {
 
 
 OptionParser::OptionParser(const string config, bool dr):
-    parse_tree(generate_parse_tree(config)),
-    next_unparsed_argument(parse_tree.get_children()->begin()),
-    dry_run(dr)
+    state.parse_tree(generate_parse_tree(config)),
+    state.next_unparsed_argument(parse_tree.get_children()->begin()),
+    state.dry_run(dr)
+{
+}
+
+OptionParser::OptionParser(ParseState ps):
+    state(ps)
 {
 }
 
 
-
 OptionParser::OptionParser(ParseTree pt, bool dr):
-    parse_tree(pt),
-    next_unparsed_argument(parse_tree.get_children()->begin()),
-    dry_run(dr)
+    state.parse_tree(pt),
+    state.next_unparsed_argument(parse_tree.get_children()->begin()),
+    state.dry_run(dr)
 {
 }
 

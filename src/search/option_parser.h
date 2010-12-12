@@ -85,6 +85,7 @@ public:
             
     void register_object(std::string k, Factory);
     bool contains(std::string k);
+    Factory get(std::string k);
 private:
     Registry(){};
     static Registry<T>* instance_;
@@ -111,6 +112,7 @@ public:
             
     void register_object(std::string k, Factory);
     bool contains(std::string k);
+    Factory get(std::string k);
 private:
     Registry(){};
     static Registry<Synergy>* instance_;
@@ -134,6 +136,7 @@ public:
 
     void predefine(std::string k, T*);
     bool contains(std::string k);
+    T* get(std::string k);
 private:
     Predefinitions<T>(){};
     static Predefinitions<T>* instance_;
@@ -174,6 +177,29 @@ public:
 };
 
 
+template <class Entry>
+class TokenParser<OpenList<Entry > > {
+public:
+    static OpenList<Entry> parse(ParserState ps) {
+        if(Registry<OpenList<Entry > >::instance()->contains()){}
+    }
+};
+
+template <>
+class TokenParser<Heuristic *> {
+public:
+    static Heuristic* parse(ParserState ps) {
+        ParseTree *pt = ps.parse_tree;
+        if(Predefinitions<Heuristic>::instance()->contains(pt->value)) {
+            return Predefinitions<Heuristic>::instance()->get(pt->value);
+        }
+        if(Registry<Heuristic>::instance()->contains(pt->value)) {
+            return Registry<Heuristic>::instance()->get(pt->value)(OptionParser(ps));
+        }
+        OptionParser(ps).error("heuristic not found");
+    }
+}
+
 template <> 
 class TokenParser<bool> {
 public: 
@@ -207,13 +233,7 @@ public:
     }      
 };
 
-template <class Entry>
-class TokenParser<OpenList<Entry > > {
-public:
-    static OpenList<Entry> parse(ParserState ps) {
-        if(Registry<OpenList<Entry > >::instance()->contains()){}
-    }
-};
+
 
 /*The OptionParser stores a parse tree, and a Options. 
 By calling addArgument, the parse tree is partially parsed, 
@@ -223,6 +243,7 @@ class OptionParser{
 public:
     OptionParser(std::string config);
     OptionParser(ParseTree pt);
+    OptionParser(ParseState ps);
     
     static ParseTree generate_parse_tree(const std::string config);
 
