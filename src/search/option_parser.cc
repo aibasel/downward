@@ -48,6 +48,10 @@ bool ParseTree::is_root() const {
     return (this == parent_);
 } 
 
+string ParseTree::toStr() const {
+    return "implement parseTree.toStr()!";
+}
+
 bool ParseTree::operator == (ParseTree& pt){
     vector<ParseTree>* pt_children = pt.get_children();
     vector<ParseTree>* this_children = get_children();
@@ -64,6 +68,11 @@ bool ParseTree::operator == (ParseTree& pt){
         return true;
     }
 }
+
+bool ParseTree::operator != (ParseTree& pt) {
+    return !(this->operator== (pt));
+}
+
 
 
 ParseError::ParseError(string _msg, ParseTree pt)
@@ -111,11 +120,6 @@ void OptionParser::parse_cmd_line(const char **argv, bool dry_run) {
             exit(1);
         }
     }
-}
-
-
-bool ParseTree::operator != (ParseTree& pt) {
-    return !(this->operator== (pt));
 }
 
 

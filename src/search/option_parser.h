@@ -27,6 +27,7 @@ public:
     ParseTree* find_child(std::string key);
     ParseTree* get_parent() const;
     bool is_root() const;
+    std::string toStr() const;
 
     
     bool operator == (ParseTree& pt);

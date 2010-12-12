@@ -18,8 +18,7 @@ private:
     SearchEngine *current_search;
     string current_search_name;
 
-    const vector<string> engine_config;
-    vector<int> engine_config_start;
+    const vector<ParseTree> engine_configs;
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;
@@ -36,7 +35,7 @@ private:
     virtual void initialize();
     virtual int step();
 public:
-    IteratedSearch(Options opts);
+    IteratedSearch(const Options &opts);
     virtual ~IteratedSearch();
     void statistics() const;
 };

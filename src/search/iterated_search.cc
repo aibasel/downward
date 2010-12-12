@@ -1,7 +1,7 @@
 #include "iterated_search.h"
 #include <limits>
 
-IteratedSearch::IteratedSearch(opts)
+IteratedSearch::IteratedSearch(const Options &opts)
     : engine_configs(opts.get_list<ParseTree>("engine_configs")),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last_phase")),
@@ -24,7 +24,7 @@ SearchEngine *IteratedSearch::get_search_engine(
 
     current_search_name = engine_configs[engine_configs_index].toStr();
     OptionParser parser(engine_configs[engine_configs_index], false);
-    SearchEngine *engine = parser->parse_search_engine()
+    SearchEngine *engine = parser.parse_search_engine();
 
     cout << "Starting search: " << current_search_name << endl;
 
@@ -122,8 +122,8 @@ void IteratedSearch::statistics() const {
 
 static SearchEngine *_parse(OptionParser &parser) {
  
-    parser.add_list_option<ParseTree>("engine_config", "", false);
-    paser.add_option<bool>("pass_bound", true, 
+    parser.add_list_option<ParseTree>("engine_config", "");
+    parser.add_option<bool>("pass_bound", true, 
                            "use bound from previous search");
     parser.add_option<bool>("repeat_last", false, 
                             "repeat last phase of search");
@@ -134,11 +134,14 @@ static SearchEngine *_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
 
+    if(opts.get_list<ParseTree>.empty())
+        parser.error("empty search engine list");
+
     if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
         vector<ParseTree> configs = opts.get_list<ParseTree>("engine_config");
         for (size_t i(0); i != configs.size(); ++i) {
-            Parser test_parser(configs[i], true);
+            OptionParser test_parser(configs[i], true);
             test_parser.parse_search_engine();
         }
         return 0;
