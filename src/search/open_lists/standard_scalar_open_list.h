@@ -9,6 +9,8 @@
 #include <utility>
 
 class ScalarEvaluator;
+class Options;
+class OptionParser;
 
 template<class Entry>
 class StandardScalarOpenList : public OpenList<Entry> {
@@ -41,8 +43,7 @@ public:
     bool dead_end_is_reliable() const;
     void get_involved_heuristics(std::set<Heuristic *> &hset);
 
-    static OpenList<Entry> *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run = false);
+    static OpenList<Entry> *_parse(OptionParser &parser);
 };
 
 #include "standard_scalar_open_list.cc"

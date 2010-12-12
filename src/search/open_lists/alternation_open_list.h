@@ -7,6 +7,7 @@
 #include <vector>
 
 class Options;
+class OptionParser;
 
 template<class Entry>
 class AlternationOpenList : public OpenList<Entry> {
@@ -43,8 +44,7 @@ public:
 
     int boost_preferred();
     void boost_last_used_list();
-    static OpenList<Entry> *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run = false);
+    static OpenList<Entry> *_parse(OptionParser &parser);
 };
 
 #include "alternation_open_list.cc"

@@ -9,7 +9,7 @@ using namespace std;
 
 
 template<class Entry>
-static OpenList<Entry> *_parse(OptionParser &parser) {
+static OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_list_option<OpenList<Entry> *>("sublists");
     parser.add_option<int>("boost", 1000,
                            "boost value for successful sub-open-lists");
