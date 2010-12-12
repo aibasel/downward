@@ -12,14 +12,12 @@
 
 using namespace std;
 
-static ScalarEvaluatorPlugin canonical_heuristic_plugin("pdbs", PDBCollectionHeuristic::create);
+static ScalarEvaluatorPlugin pdbcollection_heuristic_plugin("pdbs", PDBCollectionHeuristic::create);
 
 PDBCollectionHeuristic::PDBCollectionHeuristic() {
-    //pattern_collection = 0;
 }
 
 PDBCollectionHeuristic::~PDBCollectionHeuristic() {
-    //delete pattern_collection;
 }
 
 void PDBCollectionHeuristic::initialize() {
