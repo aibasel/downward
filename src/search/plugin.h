@@ -3,12 +3,13 @@
 
 #include "option_parser.h"
 
+class LandmarksGraph;
 
 class ScalarEvaluatorPlugin {
-    ScalarEvaluatorPlugin(const ScalarEvaluatorPlugin &copy);
+      ScalarEvaluatorPlugin(const ScalarEvaluatorPlugin &copy);
 public:
     ScalarEvaluatorPlugin(const std::string &key,
-                          OptionParser::ScalarEvalFactory factory);
+                          Registry<ScalarEvaluator>::Factory factory);
     ~ScalarEvaluatorPlugin();
 };
 
@@ -17,7 +18,7 @@ class SynergyPlugin {
     SynergyPlugin(const SynergyPlugin &copy);
 public:
     SynergyPlugin(const std::string &key,
-                  OptionParser::SynergyFactory factory);
+                  Registry<Synergy>::Factory factory);
     ~SynergyPlugin();
 };
 
@@ -26,8 +27,18 @@ class LandmarkGraphPlugin {
     LandmarkGraphPlugin(const LandmarkGraphPlugin &copy);
 public:
     LandmarkGraphPlugin(const std::string &key,
-                        OptionParser::LandmarkGraphFactory factory);
+                        Registry<LandmarksGraph>::Factory factory);
     ~LandmarkGraphPlugin();
 };
+
+
+class EnginePlugin {
+    EnginePlugin(const EnginePlugin &copy);
+public:
+    EnginePlugin(const std::string &key,
+                 Registry<SearchEngine>::Factory factory);
+    ~EnginePlugin();
+};
+
 
 #endif

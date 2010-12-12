@@ -27,7 +27,7 @@ static OpenList<Entry> BucketOpenList<Entry>::*_parse(OptionParser &parser) {
     if(opts.get_list<ScalarEvaluator *>("evaluators").empty())
         parser.error("expected non-empty list of scalar evaluators");
 
-    if (dry_run)
+    if (parser.dry_run())
         return 0;
     else
         return new BucketOpenList<Entry>(opts);
@@ -35,7 +35,7 @@ static OpenList<Entry> BucketOpenList<Entry>::*_parse(OptionParser &parser) {
 
 template<class Entry>
 BucketOpenList<Entry>::BucketOpenList(const Options &opts) 
-    : OpenList<Entry>(opts.get<bool>("preferred_only")), 
+    : OpenList<Entry>(opts.get<bool>("pref_only")), 
       lowest_bucket(numeric_limits<int>::max()), 
       size(0), evaluator(opts.get_list<ScalarEvaluator *>("evals")[0]) {
 }

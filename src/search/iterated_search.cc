@@ -134,7 +134,7 @@ static SearchEngine *_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
 
-    if (parser.dry_run) {
+    if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
         vector<ParseTree> configs = opts.get_list<ParseTree>("engine_config");
         for (size_t i(0); i != configs.size(); ++i) {

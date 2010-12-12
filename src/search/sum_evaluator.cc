@@ -56,7 +56,7 @@ static ScalarEvaluator *_parse(&OptionParser parser) {
     if (opts.get_list<ScalarEvaluator *>("evals").empty())
         throw ParseError(end);
     // need at least one evaluator
-    if (parser.dry_run)
+    if (parser.dry_run())
         return 0;
     else
         return new SumEvaluator(opts);

@@ -228,7 +228,7 @@ static SearchEngine *_parse(OptionParser &parser) {
         "use preferred operators of these heuristics");
 
     GeneralLazyBestFirstSearch *engine = 0;
-    if (!parser.dry_run) {
+    if (!parser.dry_run()) {
         engine = new GeneralLazyBestFirstSearch(opts);
         engine->set_pref_operator_heuristics(
             opts.get_list<Heuristic *>("preferred"));
@@ -248,7 +248,7 @@ static SearchEngine _parse_greedy(OptionParser &parser) {
     Options opts = parser.parse();
 
     GeneralLazyBestFirstSearch *engine = 0;
-    if (!parser.dry_run) {
+    if (!parser.dry_run()) {
         vector<Heuristic *> evals = 
             opts.get_list<ScalarEvaluator *>("evals");
         vector<Heuristic *> preferred_list = 
@@ -300,7 +300,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
 
 
     GeneralLazyBestFirstSearch *engine = 0;
-    if (!parser.dry_run) {
+    if (!parser.dry_run()) {
         vector<Heuristic *> preferred_list = 
             opts.get_list<Heuristic *>("preferred");
         vector<OpenList<OpenListEntryLazy> *> inner_lists;

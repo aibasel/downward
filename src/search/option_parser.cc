@@ -66,9 +66,17 @@ bool ParseTree::operator == (ParseTree& pt){
 }
 
 
+ParseError::ParseError(string _msg, ParseTree pt)
+    : msg(_msg),
+      parse_tree(pt)
+{
+}
 
+void OptionParser::error(string msg) {
+    throw ParseError(msg);
+}
 
-void OptionParser::parse_cmd_line(char **argv, bool dry_run) {
+void OptionParser::parse_cmd_line(const char **argv, bool dry_run) {
     for (int i = 1; i < argc; ++i) {
         string arg = string(argv[i]);
         if (arg.compare("--heuristic") == 0) {
@@ -151,15 +159,19 @@ void OptionParser::add_enum_option(string k,
 
 Options OptionParser::parse() {
     //first check if there were any arguments with invalid keywords
-    std::vector<ParseTree>* pt_children = parse_tree.get_children();
+    std::vector<ParseTree>* pt_children = state.parse_tree.get_children();
     for (size_t i(0); i != pt_children->size(); ++i) {
-        if (find(valid_keys.begin(), 
-                 valid_keys.end(), 
-                 pt_children->at(i).key) == valid_keys.end()) {
+        if (find(state.valid_keys.begin(), 
+                 state.valid_keys.end(), 
+                 pt_children->at(i).key) == state.valid_keys.end()) {
             throw ParseError(pt_children->at(i), "invalid keyword")
         }
     }    
-    return configuration;
+    return state.opts;
+}
+
+bool OptionParser::dry_run() {
+    return state.dry_run;
 }
 
 
