@@ -264,12 +264,12 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 }
 
 ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_int_option(
+    parser.add_option<int>(
         "max_states", -1, "maximum abstraction size");
-    parser.add_int_option(
+    parser.add_option<int>(
         "max_states_before_merge", -1,
         "maximum abstraction size for factors of synchronized product");
-    parser.add_int_option(
+    parser.add_option<int>(
         "count", 1, "number of abstractions to build");
 
     vector<string> merge_choices;
@@ -292,18 +292,18 @@ ScalarEvaluator *_parse(OptionParser &parser) {
         "shrink_strategy", shrink_choices, "high_f_low_h",
         "shrink strategy");
 
-    parser.add_bool_option(
+    parser.add_option<bool>(
         "simplify_labels", true, "enable label simplification");
-    parser.add_bool_option(
+    parser.add_option<bool>(
         "expensive_statistics", false,
         "show statistics on \"unique unlabeled edges\" (WARNING: "
         "these are *very* slow -- check the warning in the output)");
 
-    Options opts = parser.get_configuration();
+    Options opts = parser.parse();
 
     // Handle default values for the size options.
-    int max_states = opts.get_int("max_states");
-    int max_states_before_merge = opts.get_int("max_states_before_merge");
+    int max_states = opts.get<int>("max_states");
+    int max_states_before_merge = opts.get<int>("max_states_before_merge");
 
     // If none of the two options was specified, use default limit.
     if (max_states == -1 && max_states_before_merge == -1)
@@ -321,8 +321,8 @@ ScalarEvaluator *_parse(OptionParser &parser) {
     }
 
     // Write back updated values.
-    opts.set_int("max_states", max_states);
-    opts.set_int("max_states_before_merge", max_states_before_merge);
+    opts.set("max_states", max_states);
+    opts.set("max_states_before_merge", max_states_before_merge);
 
     // Normalize values: 1 <= max_states_before_merge <= max_states.
     if (max_states < 1 || max_states_before_merge < 1)
@@ -333,7 +333,7 @@ ScalarEvaluator *_parse(OptionParser &parser) {
         max_states_before_merge = max_states;
     }
 
-    if (parser.dry_run())
+    if (parser.dry_run)
         return 0;
     else
         return new MergeAndShrinkHeuristic(opts);
