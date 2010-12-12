@@ -18,26 +18,26 @@ using namespace std;
 */
 
 template<class Entry>
-OpenList<Entry> *BucketOpenList<Entry>::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    std::vector<ScalarEvaluator *> evaluators;
-    bool only_pref_ = false;
-    NamedOptionParser named_option_parser;
-    named_option_parser.add_bool_option("pref_only", &only_pref_,
-                                        "insert only preferred operators");
-    OptionParser *parser = OptionParser::instance();
-    parser->parse_evals_and_options(config, start, end, evaluators,
-                                    named_option_parser, true, dry_run);
+static OpenList<Entry> *_parse(OptionParser &parser) {
+    parser.add_list_option<ScalarEvaluator *>("evaluators");
+    parser.add_option<bool>("pref_only", false, 
+                            "insert only preferred operators");
+    Options opts = parser.parse();
+    
+    if(opts.get_list<ScalarEvaluator *>("evaluators").empty())
+        parser.error("expected non-empty list of scalar evaluators");
 
     if (dry_run)
         return 0;
     else
-        return new BucketOpenList<Entry>(evaluators[0], only_pref_);
+        return new BucketOpenList<Entry>(opts);
 }
 
 template<class Entry>
-BucketOpenList<Entry>::BucketOpenList(ScalarEvaluator *eval, bool preferred_only)
-    : OpenList<Entry>(preferred_only), lowest_bucket(numeric_limits<int>::max()), size(0), evaluator(eval) {
+BucketOpenList<Entry>::BucketOpenList(const Options &opts) 
+    : OpenList<Entry>(opts.get<bool>("preferred_only")), 
+      lowest_bucket(numeric_limits<int>::max()), 
+      size(0), evaluator(opts.get_list<ScalarEvaluator *>("evals")[0]) {
 }
 
 template<class Entry>
