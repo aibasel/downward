@@ -34,9 +34,9 @@ void PDBCollectionHeuristic::initialize() {
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[3] = {6, 7, 8};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
-    vector<vector<int> > pattern_collection(2);
-    pattern_collection[0] = pattern_1;
-    pattern_collection[1] = pattern_2;*/
+    vector<vector<int> > patt_coll(2);
+    patt_coll[0] = pattern_1;
+    patt_coll[1] = pattern_2;*/
 
     //3. three patterns logistics00 6-2
     /*int patt_1[2] = {3, 4};
