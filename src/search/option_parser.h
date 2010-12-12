@@ -145,15 +145,6 @@ private:
 
 template <class T> Predefinitions<T>* Predefinitions<T>::instance_ = 0;
 
-struct ParserState {
-    Options opts;
-    ParseTree* parse_tree;
-    bool dry_run;
-    std::string help;
-    std::vector<ParseTree>::iterator next_unparsed_argument;
-    std::vector<std::string> valid_keys;
-    std::vector<std::string> helpstrings;
-};
 
 /*The TokenParser<T> wraps functions to parse supported types T. 
 To add support for a new type T, it should suffice 
@@ -165,8 +156,8 @@ class TokenParser {
 public:
     //if T has no template specialization, 
     //try to parse it directly from the input string
-    static T parse(ParserState ps) {
-        ParseTree *pt = ps.parse_tree;
+    static T parse(OptionParser *p) {
+        ParseTree *pt = p->get_parse_tree();
         std::stringstream str_stream(pt->value);
         T x;
         if ((str_stream >> x).fail()) {
@@ -180,7 +171,7 @@ public:
 template <class Entry>
 class TokenParser<OpenList<Entry > > {
 public:
-    static OpenList<Entry> parse(ParserState ps) {
+    static OpenList<Entry> parse(OptionParser *p) {
         if(Registry<OpenList<Entry > >::instance()->contains()){}
     }
 };
@@ -188,23 +179,23 @@ public:
 template <>
 class TokenParser<Heuristic *> {
 public:
-    static Heuristic* parse(ParserState ps) {
-        ParseTree *pt = ps.parse_tree;
+    static Heuristic* parse(OptionParser *p) {
+        ParseTree *pt = p->get_parse_tree();
         if(Predefinitions<Heuristic>::instance()->contains(pt->value)) {
             return Predefinitions<Heuristic>::instance()->get(pt->value);
         }
         if(Registry<Heuristic>::instance()->contains(pt->value)) {
-            return Registry<Heuristic>::instance()->get(pt->value)(OptionParser(ps));
+            return Registry<Heuristic>::instance()->get(pt->value)(*p);
         }
-        OptionParser(ps).error("heuristic not found");
+        p->error("heuristic not found");
     }
 }
 
 template <> 
 class TokenParser<bool> {
 public: 
-    static bool parse(ParserState ps) {
-        ParseTree *pt = ps.parse_tree;
+    static bool parse(OptionParser *p) {
+        ParseTree *pt = p->get_parse_tree();
         if(pt->value.compare("false") == 0) {
             return false;
         } else {
@@ -217,8 +208,8 @@ public:
 template <class S>
 class TokenParser<std::vector<S > > {
 public:
-    static std::vector<S> parse(ParserState ps) {
-        ParseTree *pt = ps.parse_tree;
+    static std::vector<S> parse(OptionParser *p) {
+        ParseTree *pt = p->get_parse_tree();
         std::vector<S> results;
         if (pt->value.compare("list") != 0) {
             throw ParseError("list expected here", pt);
@@ -316,8 +307,14 @@ public:
     
     bool dry_run();
 
-private: 
-    ParserState state;
+private:
+    Options opts;
+    ParseTree* parse_tree;
+    bool dry_run;
+    std::string help;
+    std::vector<ParseTree>::iterator next_unparsed_argument;
+    std::vector<std::string> valid_keys;
+    std::vector<std::string> helpstrings; 
 };
 
 #endif /* OPTION_PARSER_H_ */
