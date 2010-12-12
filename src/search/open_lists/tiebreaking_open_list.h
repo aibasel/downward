@@ -36,6 +36,8 @@ protected:
 
 public:
     TieBreakingOpenList(const Options &opts);
+    TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
+                        bool preferred_only, bool unsafe_pruning);
     ~TieBreakingOpenList();
 
     // open list interface

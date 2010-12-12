@@ -1,5 +1,6 @@
 #include "g_evaluator.h"
 #include "option_parser.h"
+#include "plugin.h"
 
 GEvaluator::GEvaluator() {
 }
@@ -31,4 +32,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new GEvaluator;
 }
 
-static ScalarEvalPlugin _parse("g", _parse);
+static ScalarEvaluatorPlugin _plugin("g", _parse);

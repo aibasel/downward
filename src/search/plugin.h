@@ -2,6 +2,7 @@
 #define PLUGIN_H
 
 #include "option_parser.h"
+#include "search_engine.h"
 
 class LandmarksGraph;
 

@@ -61,11 +61,15 @@ public:
         return boost::any_cast<T>(*it);
     }
 
-    template <class T> vector<T> get_list(std::string key) const {
-        return get<vector<T> >(key);
+    template <class T> std::vector<T> get_list(std::string key) const {
+        return get<std::vector<T> >(key);
     }
 
-    bool contains(std::string key) {
+    int get_enum(std::string key) const {
+        return get<int>(key);
+    }
+
+    bool contains(std::string key) const {
         return storage.find(key) != storage.end();
     }
 };
@@ -249,14 +253,14 @@ public:
 
     template <class T>
         void add_list_option(std::string k, 
-                             vector<T> def_val, std::string h="") {
+                             std::vector<T> def_val, std::string h="") {
         opts.set(k, def_val);
         add_list_option<T>(k,h);
     }
 
     template <class T> 
         void add_list_option(std::string k, std::string h="") {
-        add_option<vector<T> >(k, h);
+        add_option<std::vector<T> >(k, h);
     }
 
     void error(std::string msg);

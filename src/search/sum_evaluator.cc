@@ -8,6 +8,10 @@ SumEvaluator::SumEvaluator(const Options &opts)
     : evaluators(opts.get_list<ScalarEvaluator *>("evals")) {
 }
 
+SumEvaluator::SumEvaluator(const std::vector<ScalarEvaluator *> &evals)
+    : evaluators(evals) {
+}
+
 SumEvaluator::~SumEvaluator() {
 }
 

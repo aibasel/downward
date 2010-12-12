@@ -39,6 +39,14 @@ StandardScalarOpenList<Entry>::StandardScalarOpenList(const Options &opts)
 }
 
 template<class Entry>
+StandardScalarOpenList<Entry>::StandardScalarOpenList(ScalarEvaluator *eval,
+                                                      bool preferred_only)
+    : OpenList<Entry>(preferred_only), size(0), evaluator(eval) {
+    lowest_bucket = numeric_limits<int>::max();
+}
+
+
+template<class Entry>
 StandardScalarOpenList<Entry>::~StandardScalarOpenList() {
 }
 

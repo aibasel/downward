@@ -7,6 +7,7 @@
 #include "g_evaluator.h"
 #include "sum_evaluator.h"
 #include "weighted_evaluator.h"
+#include "plugin.h"
 
 #include <algorithm>
 #include <limits>
@@ -218,7 +219,7 @@ void GeneralLazyBestFirstSearch::statistics() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    parser.add_option<Openlist<OpenListEntryLazy> *>("open");
+    parser.add_option<OpenList<OpenListEntryLazy> *>("open");
     parser.add_option<bool>("reopen_closed", false, 
                             "reopen closed nodes");
     parser.add_option<int>("bound", numeric_limits<int>::max(),
@@ -227,18 +228,21 @@ static SearchEngine *_parse(OptionParser &parser) {
         "preferred", vector<Heuristic *>(), 
         "use preferred operators of these heuristics");
 
+    Options opts = parser.parse();
+
     GeneralLazyBestFirstSearch *engine = 0;
     if (!parser.dry_run()) {
         engine = new GeneralLazyBestFirstSearch(opts);
-        engine->set_pref_operator_heuristics(
-            opts.get_list<Heuristic *>("preferred"));
+        vector<Heuristic *> preferred_list = 
+            opts.get_list<Heuristic *>("preferred");
+        engine->set_pref_operator_heuristics(preferred_list);
     }
 
     return engine;
 }
 
 
-static SearchEngine _parse_greedy(OptionParser &parser) {
+static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_list_option<Heuristic *>(
         "preferred", vector<Heuristic *>(),
@@ -249,7 +253,7 @@ static SearchEngine _parse_greedy(OptionParser &parser) {
 
     GeneralLazyBestFirstSearch *engine = 0;
     if (!parser.dry_run()) {
-        vector<Heuristic *> evals = 
+        vector<ScalarEvaluator *> evals = 
             opts.get_list<ScalarEvaluator *>("evals");
         vector<Heuristic *> preferred_list = 
             opts.get_list<Heuristic *>("preferred");
@@ -269,8 +273,8 @@ static SearchEngine _parse_greedy(OptionParser &parser) {
                                                                       true));
                 }
             }
-            open = new AlternationOpenList<OpenListEntryLazy>(inner_lists,
-                                                              boost);
+            open = new AlternationOpenList<OpenListEntryLazy>(
+                inner_lists, opts.get<int>("boost"));
         }
         opts.set("reopen_closed", false);
         opts.set("bound", numeric_limits<int>::max());
@@ -308,10 +312,12 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
             GEvaluator *g = new GEvaluator();
             vector<ScalarEvaluator *> sum_evals;
             sum_evals.push_back(g);
-            if (weight == 1) {
+            if (opts.get<int>("w") == 1) {
                 sum_evals.push_back(evals[i]);
             } else {
-                WeightedEvaluator *w = new WeightedEvaluator(evals[i], weight);
+                WeightedEvaluator *w = new WeightedEvaluator(
+                    evals[i], 
+                    opts.get<int>("weight"));
                 sum_evals.push_back(w);
             }
             SumEvaluator *f_eval = new SumEvaluator(sum_evals);
@@ -329,8 +335,8 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         if (inner_lists.size() == 1) {
             open = inner_lists[0];
         } else {
-            open = new AlternationOpenList<OpenListEntryLazy>(inner_lists,
-                                                              boost);
+            open = new AlternationOpenList<OpenListEntryLazy>(
+                inner_lists, opts.get<int>("boost"));
         }
         
         opts.set("open", open);
@@ -343,5 +349,5 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
 }
 
 static EnginePlugin _plugin("lazy", _parse);
-static EnginePlugin _plugin("lazy_greedy", _parse_greedy);
-static EnginePlugin _plugin("lazy_wastar", _parse_weighted_astar);
+static EnginePlugin _plugin_greedy("lazy_greedy", _parse_greedy);
+static EnginePlugin _plugin_weighted_astar("lazy_wastar", _parse_weighted_astar);

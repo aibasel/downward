@@ -14,7 +14,7 @@ using namespace std;
 */
 
 template<class Entry>
-OpenList<Entry> *TieBreakingOpenList<Entry>::_parse(OptionParser &opts) {
+OpenList<Entry> *TieBreakingOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_option<bool>(
         "pref_only", false, 
@@ -22,8 +22,8 @@ OpenList<Entry> *TieBreakingOpenList<Entry>::_parse(OptionParser &opts) {
     parser.add_option<bool>(
         "unsafe_pruning", true,
         "allow unsafe pruning when the main evaluator regards a state a dead end");
-
-    if (parser.dry_run)
+    Options opts = parser.parse();
+    if (parser.dry_run())
         return 0;
     else
         return new TieBreakingOpenList<Entry>(opts);
@@ -34,6 +34,15 @@ TieBreakingOpenList<Entry>::TieBreakingOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")), 
       size(0), evaluators(opts.get_list<ScalarEvaluator>("evals")),
       allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
+    last_evaluated_value.resize(evaluators.size());
+}
+
+template<class Entry>
+TieBreakingOpenList<Entry>::TieBreakingOpenList(
+    const std::vector<ScalarEvaluator *> &evals,
+    bool preferred_only, bool unsafe_pruning)
+    : OpenList<Entry>(preferred_only), size(0), evaluators(evals),
+      allow_unsafe_pruning(unsafe_pruning) {
     last_evaluated_value.resize(evaluators.size());
 }
 

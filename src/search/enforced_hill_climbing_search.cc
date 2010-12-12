@@ -5,6 +5,7 @@
 #include "open_lists/standard_scalar_open_list.h"
 #include "open_lists/tiebreaking_open_list.h"
 #include "pref_evaluator.h"
+#include "plugin.h"
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(const Options &opts)
     : heuristic(opts.get<Heuristic *>("h")),
@@ -15,7 +16,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(const Options &opts)
       num_ehc_phases(0) {
     search_progress.add_heuristic(heuristic);
     g_evaluator = new GEvaluator();
-    bound = g_bound;
+    bound = opts.get<int>("bound");
 }
 
 EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
@@ -250,10 +251,13 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<int>("bound", numeric_limits<int>::max(), 
                            "depth bound on g-values");
 
+    Options opts = parser.parse();
+
     EnforcedHillClimbingSearch *engine = 0;
-    if (!dry_run) {
-        engine = new EnforcedHillClimbingSearch(h, preferred_usage_,
-                                                use_cost_for_bfs_, g_bound);
+    if (!parser.dry_run()) {
+        engine = new EnforcedHillClimbingSearch(opts);
+        vector<Heuristic *> preferred_list = 
+            opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
 

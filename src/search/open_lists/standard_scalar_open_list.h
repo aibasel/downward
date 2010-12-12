@@ -30,6 +30,8 @@ protected:
 
 public:
     StandardScalarOpenList(const Options &opts);
+    StandardScalarOpenList(ScalarEvaluator *eval,
+                           bool preferred_only);
     ~StandardScalarOpenList();
 
     int insert(const Entry &entry);
