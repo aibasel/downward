@@ -237,7 +237,7 @@ static SearchEngine *_parse(OptionParser &parser) {
         return new BestFirstSearchEngine(opts);
 }
 
-static EnginePlugin _plugin("old_greedy", _parse);
+static EnginePlugin _plugin("old_greedy", _parse) ;
 
 OpenListInfo *BestFirstSearchEngine::select_open_queue() {
     OpenListInfo *best = 0;

@@ -74,7 +74,7 @@ public:
 template <class T>
 class Registry {
 public:
-    typedef T (*Factory)(OptionParser&);
+    typedef T* (*Factory)(OptionParser&);
     static Registry<T>* instance()
     {
         if (!instance_) {
@@ -144,11 +144,12 @@ template <class T> Predefinitions<T>* Predefinitions<T>::instance_ = 0;
 
 struct ParserState {
     Options opts;
-    ParseTree parse_tree;
+    ParseTree* parse_tree;
     bool dry_run;
     std::string help;
     std::vector<ParseTree>::iterator next_unparsed_argument;
     std::vector<std::string> valid_keys;
+    std::vector<std::string> helpstrings;
 };
 
 /*The TokenParser<T> wraps functions to parse supported types T. 
@@ -162,8 +163,8 @@ public:
     //if T has no template specialization, 
     //try to parse it directly from the input string
     static T parse(ParserState ps) {
-        ParseTree pt = ps.parse_tree;
-        std::stringstream str_stream(pt.value);
+        ParseTree *pt = ps.parse_tree;
+        std::stringstream str_stream(pt->value);
         T x;
         if ((str_stream >> x).fail()) {
             throw ParseError(pt);
@@ -177,8 +178,8 @@ template <>
 class TokenParser<bool> {
 public: 
     static bool parse(ParserState ps) {
-        ParseTree pt = ps.parse_tree;
-        if(pt.value.compare("false") == 0) {
+        ParseTree *pt = ps.parse_tree;
+        if(pt->value.compare("false") == 0) {
             return false;
         } else {
             return true;
@@ -191,14 +192,14 @@ template <class S>
 class TokenParser<std::vector<S > > {
 public:
     static std::vector<S> parse(ParserState ps) {
-        ParseTree pt = ps.parse_tree;
+        ParseTree *pt = ps.parse_tree;
         std::vector<S> results;
-        if (pt.value.compare("list") != 0) {
-            throw ParseError(pt, "list expected here");
+        if (pt->value.compare("list") != 0) {
+            throw ParseError("list expected here", pt);
         }
-        for (size_t i(0); i != pt.get_children()->size(); ++i) {
+        for (size_t i(0); i != pt->get_children()->size(); ++i) {
             ParserState substate = ps;
-            substate.parse_tree = pt.get_children();
+            substate.parse_tree = &pt->get_children()->at(i);
             results.push_back(
                 TokenParser<S>::parse(substate));
         }
@@ -230,10 +231,11 @@ public:
 
     template <class T> void add_option(
         std::string k, std::string h="") {
+        state.helpstrings.push_back(h);
         state.valid_keys.push_back(k);
         T result;
         if (state.next_unparsed_argument 
-            >= state.parse_tree.get_children()->end()) {
+            >= state.parse_tree->get_children()->end()) {
             if (state.opts.contains(k)){
                 return; //use default value
             } else {
@@ -242,7 +244,7 @@ public:
         }
         ParseTree* arg = &*state.next_unparsed_argument;
         if (arg->key.size() > 0) {
-            arg = state.parse_tree.find_child(k);
+            arg = state.parse_tree->find_child(k);
             if (!arg) {
                 if (!state.opts.contains(k)) {
                     //throw error
@@ -253,7 +255,7 @@ public:
         } 
        
         ParserState substate = state;
-        state.parse_tree = *arg;
+        state.parse_tree = arg;
         result = TokenParser<T>::parse(substate);
         state.opts.set(k, result);
         //if we have not reached the keyword parameters yet, 
