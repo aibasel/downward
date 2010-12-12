@@ -34,7 +34,7 @@ ParseTree* ParseTree::last_child() {
     return &children_.back();
 }
 
-ParseTree* ParseTree::find_child(std::string key) {
+ParseTree* ParseTree::find_child(string key) {
     for (size_t i(0); i != children_.size(); ++i) {
         if (children_[i].key.compare(key) == 0) {
             return &children_[i];
@@ -158,7 +158,7 @@ void OptionParser::add_enum_option(string k,
 
 Options OptionParser::parse() {
     //first check if there were any arguments with invalid keywords
-    std::vector<ParseTree>* pt_children = state.parse_tree.get_children();
+    vector<ParseTree>* pt_children = state.parse_tree.get_children();
     for (size_t i(0); i != pt_children->size(); ++i) {
         if (find(state.valid_keys.begin(), 
                  state.valid_keys.end(), 
@@ -231,4 +231,62 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
         
     return *root.last_child();
 }
+
+template <class T>
+T TokenParser<T>::parse(OptionsParser* p){
+    ParseTree *pt = p->get_parse_tree();
+    stringstream str_stream(pt->value);
+    T x;
+    if ((str_stream >> x).fail()) {
+        throw ParseError(pt);
+    }
+    return x;
+}
+
+template <class Entry>
+OpenList<Entry> *TokenParser<OpenList<Entry > *>::parse(OptionParser *p) {
+    if(Registry<OpenList<Entry > >::instance()->contains()){}
+    }
+}
+
+template <>
+Heuristic *TokenParser<Heuristic *>::parse(OptionParser *p) {
+    ParseTree *pt = p->get_parse_tree();
+    if(Predefinitions<Heuristic>::instance()->contains(pt->value)) {
+        return Predefinitions<Heuristic>::instance()->get(pt->value);
+    }
+    if(Registry<Heuristic>::instance()->contains(pt->value)) {
+        return Registry<Heuristic>::instance()->get(pt->value)(*p);
+    }
+    p->error("heuristic not found");
+}
+
+
+template <> 
+bool TokenParser<bool>::parse(OptionParser *p) {
+    ParseTree *pt = p->get_parse_tree();
+    if(pt->value.compare("false") == 0) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+
+
+template <class S>
+vector<S> TokenParser<vector<S > >::parse(OptionParser *p) {
+    ParseTree *pt = p->get_parse_tree();
+    vector<S> results;
+    if (pt->value.compare("list") != 0) {
+        throw ParseError("list expected here", pt);
+    }
+    for (size_t i(0); i != pt->get_children()->size(); ++i) {
+        ParserState substate = ps;
+        substate.parse_tree = &pt->get_children()->at(i);
+        results.push_back(
+            TokenParser<S>::parse(substate));
+    }
+    return results;
+}      
 

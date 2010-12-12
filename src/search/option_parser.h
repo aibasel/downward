@@ -156,72 +156,33 @@ class TokenParser {
 public:
     //if T has no template specialization, 
     //try to parse it directly from the input string
-    static T parse(OptionParser *p) {
-        ParseTree *pt = p->get_parse_tree();
-        std::stringstream str_stream(pt->value);
-        T x;
-        if ((str_stream >> x).fail()) {
-            throw ParseError(pt);
-        }
-        return x;
-    }
+    static T parse(OptionParser *p);
 };
 
 
 template <class Entry>
 class TokenParser<OpenList<Entry > > {
 public:
-    static OpenList<Entry> parse(OptionParser *p) {
-        if(Registry<OpenList<Entry > >::instance()->contains()){}
-    }
+    static OpenList<Entry> parse(OptionParser *p);
 };
 
 template <>
 class TokenParser<Heuristic *> {
 public:
-    static Heuristic* parse(OptionParser *p) {
-        ParseTree *pt = p->get_parse_tree();
-        if(Predefinitions<Heuristic>::instance()->contains(pt->value)) {
-            return Predefinitions<Heuristic>::instance()->get(pt->value);
-        }
-        if(Registry<Heuristic>::instance()->contains(pt->value)) {
-            return Registry<Heuristic>::instance()->get(pt->value)(*p);
-        }
-        p->error("heuristic not found");
-    }
-}
+    static Heuristic* parse(OptionParser *p);
+};
 
 template <> 
 class TokenParser<bool> {
 public: 
-    static bool parse(OptionParser *p) {
-        ParseTree *pt = p->get_parse_tree();
-        if(pt->value.compare("false") == 0) {
-            return false;
-        } else {
-            return true;
-        }
-    }
+    static bool parse(OptionParser *p);
 };
 
 
 template <class S>
 class TokenParser<std::vector<S > > {
 public:
-    static std::vector<S> parse(OptionParser *p) {
-        ParseTree *pt = p->get_parse_tree();
-        std::vector<S> results;
-        if (pt->value.compare("list") != 0) {
-            throw ParseError("list expected here", pt);
-        }
-        for (size_t i(0); i != pt->get_children()->size(); ++i) {
-            ParserState substate = ps;
-            substate.parse_tree = &pt->get_children()->at(i);
-            results.push_back(
-                TokenParser<S>::parse(substate));
-        }
-        return results;
-    }      
+    static std::vector<S> parse(OptionParser *p);
 };
 
 
@@ -232,33 +193,32 @@ and the result is added to the Options.
  */
 class OptionParser{
 public:
-    OptionParser(std::string config);
-    OptionParser(ParseTree pt);
-    OptionParser(ParseState ps);
+    OptionParser(std::string config, bool dr);
+    OptionParser(ParseTree pt, bool dr);
     
     static ParseTree generate_parse_tree(const std::string config);
 
     //this is where all parsing starts:
-    static void parse_cmd_line(const char **argv, bool dry_run);
+    static void parse_cmd_line(const char **argv, bool dr);
 
     template <class T> void add_option(
         std::string k, std::string h="") {
-        state.helpstrings.push_back(h);
-        state.valid_keys.push_back(k);
+        helpstrings.push_back(h);
+        valid_keys.push_back(k);
         T result;
-        if (state.next_unparsed_argument 
-            >= state.parse_tree->get_children()->end()) {
-            if (state.opts.contains(k)){
+        if (next_unparsed_argument 
+            >= parse_tree->get_children()->end()) {
+            if (opts.contains(k)){
                 return; //use default value
             } else {
                 //throw error: not enough arguments supplied
             }
         }
-        ParseTree* arg = &*state.next_unparsed_argument;
+        ParseTree* arg = &*next_unparsed_argument;
         if (arg->key.size() > 0) {
-            arg = state.parse_tree->find_child(k);
+            arg = parse_tree->find_child(k);
             if (!arg) {
-                if (!state.opts.contains(k)) {
+                if (!opts.contains(k)) {
                     //throw error
                 } else {
                     return; //use default value
@@ -266,20 +226,19 @@ public:
             }
         } 
        
-        ParserState substate = state;
-        state.parse_tree = arg;
-        result = TokenParser<T>::parse(substate);
-        state.opts.set(k, result);
+        OptionParser subparser(*arg, dry_run());
+        result = TokenParser<T>::parse(&subparser);
+        opts.set(k, result);
         //if we have not reached the keyword parameters yet, 
         //increment the argument position pointer
         if (arg->key.size() == 0)
-            ++state.next_unparsed_argument;        
+            ++next_unparsed_argument;        
     }
 
     //add option with default value
     template <class T> void add_option(
         std::string k, T def_val, std::string h="") {
-        state.opts.set(k, def_val);
+        opts.set(k, def_val);
         add_option<T>(k, h);
     }
 
@@ -291,7 +250,7 @@ public:
     template <class T>
         void add_list_option(std::string k, 
                              vector<T> def_val, std::string h="") {
-        state.opts.set(k, def_val);
+        opts.set(k, def_val);
         add_list_option<T>(k,h);
     }
 
@@ -310,7 +269,7 @@ public:
 private:
     Options opts;
     ParseTree* parse_tree;
-    bool dry_run;
+    bool dry_run_;
     std::string help;
     std::vector<ParseTree>::iterator next_unparsed_argument;
     std::vector<std::string> valid_keys;
