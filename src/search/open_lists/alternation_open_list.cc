@@ -1,7 +1,7 @@
 // HACK! Ignore this if used as a top-level compile target.
 #ifdef OPEN_LISTS_ALTERNATION_OPEN_LIST_H
 
-#include "../open_list_parser.h"
+#include "../option_parser.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -9,54 +9,27 @@ using namespace std;
 
 
 template<class Entry>
-OpenList<Entry> *AlternationOpenList<Entry>::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-    // create sublists
-    vector<OpenList<Entry> *> sublists;
-    end = start + 2;
-    OpenListParser<Entry> *open_list_parser = OpenListParser<Entry>::instance();
-    while (open_list_parser->knows_open_list(config[end])) {
-        OpenList<Entry> *sublist =
-            open_list_parser->parse_open_list(config, end, end, dry_run);
-        sublists.push_back(sublist);
-        end++;
-        if (config[end] == ")")
-            break;
-        if (config[end] != ",")
-            throw ParseError(end);
-        end++;
-    }
+static OpenList<Entry> *_parse(OptionParser &parser) {
+    parser.add_list_option<OpenList<Entry> *>("sublists");
+    parser.add_option<int>("boost", 1000,
+                           "boost value for successful sub-open-lists");
+    
+    Options opts = parser.parse();
+    
+    if (opts.get_list<OpenList<Entry> *>("sublists").empty())
+        parser.error("need at least one internal open list");
 
-    if (sublists.empty())
-        throw ParseError(start + 2);
-    // need at least one internal open list
-
-    // parse options
-    int boost = 1000; // TODO make default value visible
-    if (config[end] != ")") {
-        NamedOptionParser option_parser;
-        option_parser.add_int_option("boost", &boost,
-                                     "boost value for successful sub-open-lists");
-
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
-
-    if (dry_run)
+    if (parser.dry_run)
         return 0;
     else
-        return new AlternationOpenList<Entry>(sublists, boost);
+        return new AlternationOpenList<Entry>(opts);
 }
 
 template<class Entry>
-AlternationOpenList<Entry>::AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
-                                                int boost_influence)
-    : open_lists(sublists), priorities(sublists.size(), 0), size(0),
-      boosting(boost_influence) {
+AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)
+    : open_lists(opts.get_list<OpenList<Entry> *>("sublists")), 
+      priorities(open_lists.size(), 0), size(0),
+      boosting(opts.get<int>("boost") {
 }
 
 template<class Entry>
