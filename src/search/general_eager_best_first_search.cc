@@ -2,7 +2,6 @@
 
 #include "globals.h"
 #include "heuristic.h"
-#include "open_list_parser.h"
 #include "option_parser.h"
 #include "successor_generator.h"
 #include "g_evaluator.h"

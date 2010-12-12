@@ -6,6 +6,8 @@
 
 #include <vector>
 
+class Options;
+
 template<class Entry>
 class AlternationOpenList : public OpenList<Entry> {
     std::vector<OpenList<Entry> *> open_lists;
@@ -21,8 +23,7 @@ protected:
     Evaluator *get_evaluator() {return this; }
 
 public:
-    AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
-                        int boost_influence);
+    AlternationOpenList(const Options opts);
     // roughly speaking, boost_influence is how often the boosted queue should be
     // preferred when removing an entry
 
