@@ -14,6 +14,9 @@
 #include "landmarks_types.h"
 #include "../option_parser.h"
 
+class OptionParser;
+class Options;
+
 using namespace __gnu_cxx;
 
 enum edge_type {
@@ -135,8 +138,9 @@ public:
         bool discover_action_landmarks;
 
         LandmarkGraphOptions();
+        LandmarkGraphOptions(const Options &opts);
 
-        void add_option_to_parser(NamedOptionParser &option_parser);
+        void add_option_to_parser(OptionParser &parser);
     };
     class Pddl_proposition {
 public:

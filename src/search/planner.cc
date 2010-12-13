@@ -51,8 +51,8 @@ int main(int argc, const char **argv) {
     //the input will be parsed twice: 
     //once in dry-run mode, to check for simple input errors, 
     //then in normal mode
-    OptionParser::parse_cmd_line(argv, true);
-    OptionParser::parse_cmd_line(argv, false);
+    OptionParser::parse_cmd_line(argc, argv, true);
+    OptionParser::parse_cmd_line(argc, argv, false);
     
 
     Timer search_timer;
