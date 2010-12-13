@@ -284,7 +284,7 @@ protected:
     hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
     map<string, int> pddl_proposition_indeces; //TODO: make this a hash_map
 
-    bool inconsistent(const pair<int, int> &a, const pair<int, int> &b) const;
+    //bool inconsistent(const pair<int, int> &a, const pair<int, int> &b) const;
     void collect_ancestors(hash_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
                            bool use_reasonable);
     inline bool relaxed_task_solvable(bool level_out,
@@ -315,11 +315,32 @@ protected:
 
     LandmarkNode &landmark_add_simple(const pair<int, int> &lm);
     LandmarkNode &landmark_add_disjunctive(const set<pair<int, int> > &lm);
-    void edge_add(LandmarkNode &from, LandmarkNode &to,
-                  edge_type type);
+    //void edge_add(LandmarkNode &from, LandmarkNode &to,
+    //              edge_type type);
 
     void reset_landmarks_count() {landmarks_count = nodes.size(); }
     virtual void calc_achievers();
+    
+// methods needed for h_m_landmarks (which no longer inherit landmarks_graph)
+public:
+    bool use_orders() const { return !no_orders; }
+    void insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj) {
+        nodes.insert(&node);
+        ++landmarks_count;
+        if (conj) {
+            ++conj_lms;
+        } else {
+            simple_lms_to_nodes.insert(std::make_pair(lm, node));
+        }
+    }
+    const set<pair<int, int> > &get_inconsistent_facts(int index1, int index2) {
+        return inconsistent_facts[index1][index2];
+    }
+    
+    // made public from protected
+    bool inconsistent(const pair<int, int> &a, const pair<int, int> &b) const;
+    void edge_add(LandmarkNode &from, LandmarkNode &to,
+                  edge_type type);
 };
 
 inline bool LandmarksGraph::inconsistent(const pair<int, int> &a, const pair<

@@ -65,9 +65,9 @@ struct HMEntry {
 
 typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
-class HMLandmarks : public LandmarksGraph {
+class HMLandmarks {
 public:
-    HMLandmarks(LandmarkGraphOptions &options, Exploration *expl, int m);
+    HMLandmarks(/*LandmarksGraph::LandmarkGraphOptions &options, Exploration *expl, */int m);
     ~HMLandmarks() {
     }
 
@@ -145,6 +145,8 @@ protected:
 
     void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
+                          
+    LandmarksGraph *l_graph;
 };
 
 #endif
