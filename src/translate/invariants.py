@@ -382,28 +382,3 @@ class Invariant:
             if not found_renaming:
                 return False
         return True
-
-    def check_action_balance(self, balance_checker, action, enqueue_func):
-        # Check balance for this hypothesis with regard to one action.
-        del_effects = [eff for eff in action.effects if eff.literal.negated]
-        add_effects = [eff for eff in action.effects if not eff.literal.negated]
-        matched_add_effects = []
-        for eff in add_effects:
-            part = self.predicate_to_part.get(eff.literal.predicate)
-            if part:
-                for previous_part, previous_literal in matched_add_effects:
-                    if previous_part.matches(part, previous_literal, eff.literal) \
-                       and previous_literal != eff.literal: # "Airport" has duplicate effects
-                        return False
-                if not self.find_matching_del_effect(part, eff, del_effects, enqueue_func):
-                    return False
-                matched_add_effects.append((part, eff.literal))
-        return True
-    def find_matching_del_effect(self, part, add_effect, del_effects, enqueue_func):
-        # Check balance for this hypothesis with regard to one add effect.
-        for del_eff in del_effects:
-            del_part = self.predicate_to_part.get(del_eff.literal.predicate)
-            if del_part and part.matches(del_part, add_effect.literal, del_eff.literal):
-                return True
-        return False # Balance check failed.
-
