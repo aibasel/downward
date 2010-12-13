@@ -6,8 +6,11 @@
 class LandmarksGraphExhaust : public LandmarksGraph {
     void generate_landmarks();
 public:
-    LandmarksGraphExhaust(Exploration *exploration) : LandmarksGraph(exploration) {}
+    LandmarksGraphExhaust(LandmarkGraphOptions &options, Exploration *exploration)
+        : LandmarksGraph(options, exploration) {}
     ~LandmarksGraphExhaust() {}
+    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
+                                  int &end, bool dry_run);
 };
 
 #endif

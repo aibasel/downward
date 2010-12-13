@@ -4,6 +4,7 @@
 #include "../search_space.h"
 
 #include <cassert>
+#include <limits>
 
 MaxHeuristic::MaxHeuristic(bool arff) : num_evals(0), arff_out("max.arff") {
     //name = "max";
@@ -63,7 +64,7 @@ int MaxHeuristic::compute_heuristic(const State &state) {
             if (heuristics[i]->dead_ends_are_reliable()) {
                 return DEAD_END;
             } else {
-                hvalue[i] = INT_MAX;
+                hvalue[i] = numeric_limits<int>::max();
                 dead_end = true;
             }
         } else {

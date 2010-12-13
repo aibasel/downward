@@ -22,3 +22,11 @@ SynergyPlugin::SynergyPlugin(
 
 SynergyPlugin::~SynergyPlugin() {
 }
+
+LandmarkGraphPlugin::LandmarkGraphPlugin(
+    const string &key, OptionParser::LandmarkGraphFactory factory) {
+    OptionParser::instance()->register_lm_graph_factory(key, factory);
+}
+
+LandmarkGraphPlugin::~LandmarkGraphPlugin() {
+}

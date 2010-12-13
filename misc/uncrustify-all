@@ -30,7 +30,7 @@
 ## calling uncrustify again for each argument. I think we can live
 ## with this for now.
 
-CONFIG="$(dirname "$0")/downward-uncrustify.cfg"
+CONFIG="$(dirname "$0")/../.uncrustify.cfg"
 
 function run-on-arg {
     if [ -f "$1" ]; then
