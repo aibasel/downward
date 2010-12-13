@@ -11,13 +11,13 @@ import tools
 # Invarianten sollten ihre eigene Parameter-Zahl ("arity") kennen, nicht nur
 # indirekt über ihre parts erfahren können. 
 
-# Notes (from/to Gabi):
-# All parts of an invariant aways use all non-counted variables
+# Notes:
+# All parts of an invariant always use all non-counted variables
 # -> the arity of all predicates covered by an invariant is either the
 # number of the invariant variables or this value + 1
 #
 # we currently keep the assumption that each predicate occurs at most once
-# in every invariant. This will be changed in it's own commit
+# in every invariant.
 
 def invert_list(alist):
     result = {}
@@ -36,7 +36,7 @@ def find_unique_variables(action, invariant):
     for eff in action.effects:
         params.update([p.name for p in eff.parameters])
     inv_vars = []
-    need_more_variables = len(iter(invariant.parts).next().order)
+    need_more_variables = invariant.arity()
     if need_more_variables:
         for counter in itertools.count(1):
             new_name = "?v%i" % counter
@@ -122,6 +122,8 @@ class InvariantPart:
         if self.omitted_pos != -1:
             omitted_string = " [%d]" % self.omitted_pos
         return "%s %s%s" % (self.predicate, var_string, omitted_string)
+    def arity(self):
+        return len(self.order)
     def get_assignment(self, parameters, literal):
         equalities = [(arg, literal.args[argpos]) 
                       for arg, argpos in zip(parameters, self.order)] 
@@ -188,6 +190,8 @@ class Invariant:
         return hash(self.parts)
     def __str__(self):
         return "{%s}" % ", ".join(map(str, self.parts))
+    def arity(self):
+        return iter(self.parts).next().arity()
     def get_parameters(self, atom):
         return self.predicate_to_part[atom.predicate].get_parameters(atom)
     def instantiate(self, parameters):
@@ -296,7 +300,6 @@ class Invariant:
         return False
     def add_effect_unbalanced(self, action, add_effect, del_effects, 
                               inv_vars, enqueue_func):
-
         # add_effect must be covered
         assigs = self.get_covering_assignments(inv_vars, add_effect.literal)
 
