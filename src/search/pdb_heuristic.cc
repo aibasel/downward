@@ -106,12 +106,12 @@ void AbstractState::dump(const vector<int> &pattern) const {
 static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
 static ScalarEvaluatorPlugin pdb_heuristic_plugin("pdb", create);
 
-PDBHeuristic::PDBHeuristic(int max_abstract_states) {
+/*PDBHeuristic::PDBHeuristic(int max_abstract_states) {
     verify_no_axioms_no_cond_effects();
     Timer timer;
     generate_pattern(max_abstract_states);
     cout << "PDB construction time: " << timer << endl;
-}
+}*/
 
 PDBHeuristic::PDBHeuristic(const vector<int> &pattern) {
     verify_no_axioms_no_cond_effects();
@@ -168,8 +168,8 @@ void PDBHeuristic::set_pattern(const vector<int> &pat) {
     create_pdb();
 }
 
-void PDBHeuristic::generate_pattern(int max_abstract_states) {
-#define DEBUG true
+/*void PDBHeuristic::generate_pattern(int max_abstract_states) {
+#define DEBUG false
 #if DEBUG
     cout << "dummy cout " << max_abstract_states << endl; //so that ... compiler is happy!
     // function tests
@@ -220,12 +220,11 @@ void PDBHeuristic::generate_pattern(int max_abstract_states) {
         var = vof.next();
         ++index;
         num_states *= g_variable_domain[var];
-        
     }
     num_states /= g_variable_domain[var];
     create_pdb();
 #endif
-}
+}*/
 
 void PDBHeuristic::create_pdb() {
     assert(!pattern.empty());
@@ -379,6 +378,18 @@ static ScalarEvaluator *create(const vector<string> &config, int start, int &end
     //OptionParser::instance()->set_end_for_simple_config(config, start, end);
     if (dry_run)
         return 0;
-    else
-        return new PDBHeuristic(max_states);
+    
+    vector<int> pattern;
+    VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL);
+    int var = vof.next();
+    int num_states = g_variable_domain[var];
+    while (num_states <= max_states) {
+        //cout << "Number of abstract states = " << num_states << endl;
+        //cout << "Including variable: " << var << " (True name:" << g_variable_name[var] << ")" << endl;
+        pattern.push_back(var);
+        var = vof.next();
+        num_states *= g_variable_domain[var];
+    }
+    
+    return new PDBHeuristic(pattern);
 }
