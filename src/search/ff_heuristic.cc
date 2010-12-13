@@ -175,7 +175,7 @@ int FFHeuristic::compute_heuristic(const State &state) {
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.parse();
-    if (dry_run)
+    if (parser.dry_run())
         return 0;
     else
         return new FFHeuristic;

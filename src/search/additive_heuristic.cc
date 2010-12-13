@@ -134,11 +134,12 @@ int AdditiveHeuristic::compute_heuristic(const State &state) {
     return total_cost;
 }
 
-static ScalarEvaluator* _parse(&OptionParser parser) {
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.parse();
     if (parser.dry_run())
         return 0;
     else
         return new AdditiveHeuristic;
 }
 
-static ScalarEvaluatorPlugin additive_heuristic_plugin("add", _parse);
+static ScalarEvaluatorPlugin _plugin("add", _parse);

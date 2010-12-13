@@ -48,20 +48,23 @@ bool ParseTree::is_root() const {
     return (this == parent_);
 } 
 
-string ParseTree::toStr() const {
-    return "implement parseTree.toStr()!";
-}
+std::ostream& operator<< (std::ostream& o, const ParseTree &pt)
+ {
+     return o << "implement << for ParseTree!" << pt.value;
+ }
 
-bool ParseTree::operator == (ParseTree& pt){
-    vector<ParseTree>* pt_children = pt.get_children();
-    vector<ParseTree>* this_children = get_children();
+bool ParseTree::operator == (const ParseTree &pt){
+    vector<ParseTree> const* pt_children = pt.get_children();
+    vector<ParseTree> const* this_children = get_children();
     if (pt.value != value 
         || pt.key != key 
         || pt_children->size() != this_children->size()){
         return false;
     } else {
         for (size_t i(0); i != pt_children->size(); ++i){
-            if(pt_children->at(i) != this_children->at(i)){
+            ParseTree c1 = pt_children->at(i);
+            ParseTree c2 = this_children->at(i);
+            if(c1 != c2){
                 return false;
             }
         }
@@ -69,7 +72,7 @@ bool ParseTree::operator == (ParseTree& pt){
     }
 }
 
-bool ParseTree::operator != (ParseTree& pt) {
+bool ParseTree::operator != (const ParseTree &pt) {
     return !(this->operator== (pt));
 }
 
@@ -85,19 +88,21 @@ void OptionParser::error(string msg) {
     throw ParseError(msg);
 }
 
-void OptionParser::parse_cmd_line(const char **argv, bool dry_run) {
+SearchEngine *OptionParser::parse_cmd_line(
+    int argc, const char **argv, bool dry_run) {
+    SearchEngine *engine(0);
     for (int i = 1; i < argc; ++i) {
         string arg = string(argv[i]);
         if (arg.compare("--heuristic") == 0) {
             ++i;
-            Predefinitions<Heuristic>::instance()->predefine(argv[i]);
+            OptionParser::predefine<Heuristic *>(argv[i]);
         } else if (arg.compare("--landmarks") == 0) {
             ++i;
-            Predefinitions<LandmarksGraph>::instance()->predefine(argv[i]);
+            OptionParser::predefine<LandmarksGraph *>(argv[i]);
         } else if (arg.compare("--search") == 0) {
             ++i;
             OptionParser p(argv[i], dry_run);
-            engine = TokenParser<SearchEngine>->parse(p);
+            engine = p.start_parsing<SearchEngine *>();
         } else if (arg.compare("--random-seed") == 0) {
             ++i;
             srand(atoi(argv[i]));
@@ -120,21 +125,22 @@ void OptionParser::parse_cmd_line(const char **argv, bool dry_run) {
             exit(1);
         }
     }
+    return engine;
 }
 
 
 OptionParser::OptionParser(const string config, bool dr):
     parse_tree(generate_parse_tree(config)),
-    next_unparsed_argument(parse_tree.get_children()->begin()),
-    dry_run(dr)
+    dry_run_(dr),
+    next_unparsed_argument(parse_tree.get_children()->begin())
 {
 }
 
 
 OptionParser::OptionParser(ParseTree pt, bool dr):
     parse_tree(pt),
-    next_unparsed_argument(parse_tree.get_children()->begin()),
-    dry_run(dr)
+    dry_run_(dr),
+    next_unparsed_argument(parse_tree.get_children()->begin())
 {
 }
 
@@ -142,7 +148,7 @@ OptionParser::OptionParser(ParseTree pt, bool dr):
 
 void OptionParser::add_enum_option(string k, 
                                    const vector<string >& enumeration, 
-                                   string def_val = "", string h="") {
+                                   string def_val, string h) {
         //first parse the corresponding string like a normal argument... 
         if (def_val.compare("") != 0) {
             add_option<string>(k, def_val, h);
@@ -151,30 +157,30 @@ void OptionParser::add_enum_option(string k,
         }
 
         //...then map that string to its position in the enumeration vector
-        string name = configuration.get<string>(k);
+        string name = opts.get<string>(k);
         vector<string>::const_iterator it = 
             find(enumeration.begin(), enumeration.end(), name);
         if (it == enumeration.end()) {
-            //throw error
+            error("invalid enum argument");
         }
-        configuration.set(k, it - enumeration.begin());            
+        opts.set(k, it - enumeration.begin());            
 }
 
 Options OptionParser::parse() {
     //first check if there were any arguments with invalid keywords
-    vector<ParseTree>* pt_children = state.parse_tree.get_children();
+    vector<ParseTree>* pt_children = parse_tree.get_children();
     for (size_t i(0); i != pt_children->size(); ++i) {
-        if (find(state.valid_keys.begin(), 
-                 state.valid_keys.end(), 
-                 pt_children->at(i).key) == state.valid_keys.end()) {
-            throw ParseError(pt_children->at(i), "invalid keyword")
+        if (find(valid_keys.begin(), 
+                 valid_keys.end(), 
+                 pt_children->at(i).key) == valid_keys.end()) {
+            error("invalid keyword");
         }
     }    
-    return state.opts;
+    return opts;
 }
 
 bool OptionParser::dry_run() {
-    return dry_run;
+    return dry_run_;
 }
 
 
@@ -196,13 +202,13 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
             cur_node = cur_node->last_child();
             break;
         case ')':
-            if(cur_node.isRoot()) 
-                throw ParseError(cur_node, "missing (");
+            if(cur_node->is_root()) 
+                throw ParseError("missing (", *cur_node);
             cur_node = cur_node->get_parent();
             break;
         case '[':
             if(!buffer.empty())
-                throw ParseError(cur_node, "misplaced opening bracket");
+                throw ParseError("misplaced opening bracket", *cur_node);
             cur_node->add_child("list", key);
             key.clear();
             cur_node = cur_node->last_child();
@@ -214,14 +220,14 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
                 key.clear();
             }
             cur_node = cur_node->get_parent();
-            if(cur_node.value.compare("list") != 0)
-                throw ParseError(cur_node, "mismatched brackets");
+            if(cur_node->value.compare("list") != 0)
+                throw ParseError("mismatched brackets", *cur_node);
             break;
         case ',':
             break;
         case '=':
             if (key.empty())
-                throw ParseError(cur_node, "expected keyword before =");
+                throw ParseError("expected keyword before =", *cur_node);
             key = buffer;
             buffer.clear();
             break;
@@ -230,43 +236,23 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
             break;
         }    
     }
-    if (!cur_node.isRoot())
-        throw ParseError(cur_node, "missing )");
+    if (!cur_node->is_root())
+        throw ParseError("missing )", *cur_node);
         
     return *root.last_child();
 }
 
 template <class T>
-T TokenParser<T>::parse(OptionsParser* p){
+T TokenParser<T>::parse(OptionParser* p){
     ParseTree *pt = p->get_parse_tree();
     stringstream str_stream(pt->value);
     T x;
     if ((str_stream >> x).fail()) {
-        throw ParseError(pt);
+        p->error("could not parse argument");
     }
     return x;
 }
 
-template <class Entry>
-OpenList<Entry> *TokenParser<OpenList<Entry > *>::parse(OptionParser *p) {
-    if(Registry<OpenList<Entry > >::instance()->contains()){}
-    }
-}
-
-template <>
-Heuristic *TokenParser<Heuristic *>::parse(OptionParser *p) {
-    ParseTree *pt = p->get_parse_tree();
-    if(Predefinitions<Heuristic>::instance()->contains(pt->value)) {
-        return Predefinitions<Heuristic>::instance()->get(pt->value);
-    }
-    if(Registry<Heuristic>::instance()->contains(pt->value)) {
-        return Registry<Heuristic>::instance()->get(pt->value)(*p);
-    }
-    p->error("heuristic not found");
-}
-
-
-template <> 
 bool TokenParser<bool>::parse(OptionParser *p) {
     ParseTree *pt = p->get_parse_tree();
     if(pt->value.compare("false") == 0) {
@@ -276,7 +262,31 @@ bool TokenParser<bool>::parse(OptionParser *p) {
     }
 }
 
+template <class Entry>
+OpenList<Entry> *TokenParser<OpenList<Entry > *>::parse(OptionParser *p) {
+    if(Registry<OpenList<Entry > *>::instance()->contains()){}
+}
 
+Heuristic *TokenParser<Heuristic *>::parse(OptionParser *p) {
+    ParseTree *pt = p->get_parse_tree();
+    if(Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
+        return Predefinitions<Heuristic *>::instance()->get(pt->value);
+    }
+    if(Registry<Heuristic *>::instance()->contains(pt->value)) {
+        return Registry<Heuristic *>::instance()->get(pt->value)(*p);
+    }
+    p->error("heuristic not found");
+    return 0;
+}
+
+SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser *p) {
+    ParseTree *pt = p->get_parse_tree();
+    if(Registry<SearchEngine *>::instance()->contains(pt->value)) {
+        return Registry<SearchEngine *>::instance()->get(pt->value)(*p);
+    }
+    p->error("search engine not found");
+    return 0;
+}
 
 template <class S>
 vector<S> TokenParser<vector<S > >::parse(OptionParser *p) {
@@ -286,10 +296,10 @@ vector<S> TokenParser<vector<S > >::parse(OptionParser *p) {
         throw ParseError("list expected here", pt);
     }
     for (size_t i(0); i != pt->get_children()->size(); ++i) {
-        ParserState substate = ps;
-        substate.parse_tree = &pt->get_children()->at(i);
+        OptionParser subparser = *p;
+        subparser.parse_tree = &pt->get_children()->at(i);
         results.push_back(
-            TokenParser<S>::parse(substate));
+            TokenParser<S>::parse(subparser));
     }
     return results;
 }      

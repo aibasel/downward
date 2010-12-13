@@ -3,6 +3,7 @@
 #include <limits>
 
 #include "option_parser.h"
+#include "plugin.h"
 
 SumEvaluator::SumEvaluator(const Options &opts)
     : evaluators(opts.get_list<ScalarEvaluator *>("evals")) {
@@ -54,16 +55,15 @@ void SumEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
         evaluators[i]->get_involved_heuristics(hset);
 }
 
-static ScalarEvaluator *_parse(&OptionParser parser) {
+static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals");
     Options opts = parser.parse();
     if (opts.get_list<ScalarEvaluator *>("evals").empty())
-        throw ParseError(end);
-    // need at least one evaluator
+        parser.error("expected non-empty list of scalar evaluators");
     if (parser.dry_run())
         return 0;
     else
         return new SumEvaluator(opts);
 }
 
-static ScalarEvalPlugin _plugin("sum", _parse);
+static ScalarEvaluatorPlugin _plugin("sum", _parse);

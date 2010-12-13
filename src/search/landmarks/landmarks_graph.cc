@@ -1370,23 +1370,32 @@ LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
       discover_action_landmarks(false) {
 }
 
-void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(NamedOptionParser &option_parser) {
-    option_parser.add_bool_option("reasonable_orders",
-                                  &reasonable_orders,
-                                  "generate reasonable orders");
-    option_parser.add_bool_option("only_causal_landmarks",
-                                  &only_causal_landmarks,
-                                  "keep only causal landmarks");
-    option_parser.add_bool_option("disjunctive_landmarks",
-                                  &disjunctive_landmarks,
-                                  "keep disjunctive landmarks");
-    option_parser.add_bool_option("conjunctive_landmarks",
-                                  &conjunctive_landmarks,
-                                  "keep conjunctive landmarks");
-    option_parser.add_bool_option("no_orders",
-                                  &no_orders,
-                                  "discard all orderings");
-    option_parser.add_bool_option("discover_action_landmarks",
-                                  &discover_action_landmarks,
-                                  "discover action landmarks in preprocessing");
+LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
+    : reasonable_orders(opts.get<bool>("reasonable_orders")),
+      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
+      disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
+      conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
+      no_orders(opts.get<bool>("no_orders"))
+      discover_action_landmarks(opts.get<bool>("discover_action_landmarks")) {
+}
+
+void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(OptionParser &parser) {
+    parser.add_option<bool>("reasonable_orders",
+                            reasonable_orders,
+                            "generate reasonable orders");
+    parser.add_option<bool>("only_causal_landmarks",
+                            only_causal_landmarks,
+                            "keep only causal landmarks");
+    parser.add_option<bool>("disjunctive_landmarks",
+                            disjunctive_landmarks,
+                            "keep disjunctive landmarks");
+    parser.add_option<bool>("conjunctive_landmarks",
+                            conjunctive_landmarks,
+                            "keep conjunctive landmarks");
+    parser.add_option<bool>("no_orders",
+                            no_orders,
+                            "discard all orderings");
+    parser.add_option<bool>("discover_action_landmarks",
+                            discover_action_landmarks,
+                            "discover action landmarks in preprocessing");
 }

@@ -83,6 +83,8 @@ public:
     LamaFFSynergy(LandmarksGraph &lm_graph,
                   bool lm_pref_, bool lm_admissible_, bool lm_optimal_,
                   bool use_action_landmarks_);
+    LamaFFSynergy(const Options &opts);
+
     ~LamaFFSynergy() {}
 
     int lama_heuristic_value;
@@ -96,8 +98,7 @@ public:
         return &lama_heuristic_proxy;
     }
 
-    static void create_heuristics(const std::vector<string> &config, int start,
-                                  int &end, vector<Heuristic *> &heuristics);
+
 };
 
 #endif

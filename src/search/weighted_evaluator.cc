@@ -4,10 +4,11 @@
 #include <sstream>
 
 #include "option_parser.h"
+#include "plugin.h"
 
 WeightedEvaluator::WeightedEvaluator(const Options &opts)
-    : evaluator(opts.get_list<ScalarEvaluator *>("evals")[0]) 
-      w(opts.get_list<ScalarEvaluator *>("weight")) {
+    : evaluator(opts.get_list<ScalarEvaluator *>("evals")[0]),
+      w(opts.get<int>("weight")) {
 }
 
 WeightedEvaluator::WeightedEvaluator(ScalarEvaluator *eval, int weight)
@@ -40,16 +41,16 @@ void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
     evaluator->get_involved_heuristics(hset);
 }
 
-static ScalarEvaluator *_parse(&OptionParser parser) {
+static ScalarEvaluator *_parse(OptionParser &parser) {
     // create evaluator
     std::vector<ScalarEvaluator *> evals;
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_option<int>("weight");
-    Options opts parser.parse();
+    Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
     else
         return new WeightedEvaluator(opts);
 }
 
-static ScalarEvalPlugin _plugin("weight", _parse);
+static ScalarEvaluatorPlugin _plugin("weight", _parse);

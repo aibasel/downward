@@ -17,8 +17,6 @@
 
 using namespace std;
 
-static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(
-    "lmcount", LandmarkCountHeuristic::create);
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(LandmarksGraph &lm_graph, bool preferred_ops,
                                                bool admissible, bool optimal,
@@ -348,3 +346,6 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
         return new LandmarkCountHeuristic(*lm_graph, pref_, admissible_, optimal_,
                                           use_action_landmarks_);
 }
+
+static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(
+    "lmcount", LandmarkCountHeuristic::create);

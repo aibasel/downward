@@ -1,4 +1,5 @@
 #include "pref_evaluator.h"
+#include "plugin.h"
 #include "option_parser.h"
 
 PrefEvaluator::PrefEvaluator() {
@@ -27,10 +28,11 @@ int PrefEvaluator::get_value() const {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    if (dry_run)
+    parser.parse(); //to check if no superfluous options were supplied
+    if (parser.dry_run())
         return 0;
     else
         return new PrefEvaluator;
 }
 
-static ScalarEvalPlugin("pref", parse_);
+static ScalarEvaluatorPlugin _plugin("pref", _parse);

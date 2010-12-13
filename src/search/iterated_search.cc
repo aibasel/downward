@@ -1,4 +1,5 @@
 #include "iterated_search.h"
+#include "plugin.h"
 #include <limits>
 
 IteratedSearch::IteratedSearch(const Options &opts)
@@ -22,11 +23,10 @@ void IteratedSearch::initialize() {
 SearchEngine *IteratedSearch::get_search_engine(
     int engine_configs_index) {
 
-    current_search_name = engine_configs[engine_configs_index].toStr();
     OptionParser parser(engine_configs[engine_configs_index], false);
-    SearchEngine *engine = parser.parse_search_engine();
+    SearchEngine *engine = parser.start_parsing<SearchEngine *>();
 
-    cout << "Starting search: " << current_search_name << endl;
+    cout << "Starting search: " << engine_configs[engine_configs_index] << endl;
 
     return engine;
 }
@@ -134,7 +134,7 @@ static SearchEngine *_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
 
-    if(opts.get_list<ParseTree>.empty())
+    if(opts.get_list<ParseTree>("engine_config").empty())
         parser.error("empty search engine list");
 
     if (parser.dry_run()) {
@@ -142,12 +142,12 @@ static SearchEngine *_parse(OptionParser &parser) {
         vector<ParseTree> configs = opts.get_list<ParseTree>("engine_config");
         for (size_t i(0); i != configs.size(); ++i) {
             OptionParser test_parser(configs[i], true);
-            test_parser.parse_search_engine();
+            test_parser.start_parsing<SearchEngine *>();
         }
         return 0;
     }
 
-    IteratedSearch *engine = new IteratedSearch(opts)
+    IteratedSearch *engine = new IteratedSearch(opts);
 
     return engine;
 }

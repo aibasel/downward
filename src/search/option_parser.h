@@ -9,6 +9,8 @@
 #include <map>
 #include "boost/any.hpp"
 #include "open_lists/open_list.h"
+#include "search_engine.h"
+#include "landmarks/landmarks_graph.h"
 
 class OptionParser;
 
@@ -22,16 +24,17 @@ public:
     std::string key;
 
     std::vector<ParseTree>* get_children();
+    std::vector<ParseTree> const* get_children() const;
     void add_child(std::string value = "", std::string key = "");
     ParseTree* last_child();
     ParseTree* find_child(std::string key);
     ParseTree* get_parent() const;
     bool is_root() const;
-    std::string toStr() const;
 
+    friend std::ostream& operator<< (std::ostream& o, const ParseTree &pt);
     
-    bool operator == (ParseTree& pt);
-    bool operator != (ParseTree& pt);
+    bool operator == (const ParseTree& pt);
+    bool operator != (const ParseTree& pt);
 
 private:
     std::vector<ParseTree> children_;
@@ -75,11 +78,11 @@ public:
     }
 };
 
-//a registry<T> maps a string (e.g. "ff") to a T-factory
+//a registry<T> maps a string to a T-factory
 template <class T>
 class Registry {
 public:
-    typedef T* (*Factory)(OptionParser&);
+    typedef T (*Factory)(OptionParser&);
     static Registry<T>* instance()
     {
         if (!instance_) {
@@ -104,13 +107,13 @@ class Synergy {
 };
 
 template <>
-class Registry<Synergy> {
+class Registry<Synergy *> {
 public:
-    typedef void (*Factory)(OptionParser&);
-    static Registry<Synergy>* instance()
+    typedef void (*Factory)(OptionParser&, std::vector<Heuristic *>&);
+    static Registry<Synergy *>* instance()
     {
         if (!instance_) {
-            instance_ = new Registry<Synergy>();
+            instance_ = new Registry<Synergy *>();
         }
         return instance_;
     }
@@ -120,14 +123,15 @@ public:
     Factory get(std::string k);
 private:
     Registry(){};
-    static Registry<Synergy>* instance_;
+    static Registry<Synergy *>* instance_;
     std::map<std::string, Factory> registered;
 };
 
-Registry<Synergy>* Registry<Synergy>::instance_ = 0;
+Registry<Synergy *>* Registry<Synergy *>::instance_ = 0;
 
 
-//Predefinitions<T> maps strings to already created Heuristics/LandmarksGraphs
+//Predefinitions<T> maps strings to pointers to
+//already created Heuristics/LandmarksGraphs
 template <class T>
 class Predefinitions {
 public:
@@ -139,13 +143,13 @@ public:
         return instance_;
     }
 
-    void predefine(std::string k, T*);
+    void predefine(std::string k, T);
     bool contains(std::string k);
-    T* get(std::string k);
+    T get(std::string k);
 private:
     Predefinitions<T>(){};
     static Predefinitions<T>* instance_;
-    std::map<std::string, T*> predefined;
+    std::map<std::string, T> predefined;
 };
 
 template <class T> Predefinitions<T>* Predefinitions<T>::instance_ = 0;
@@ -164,11 +168,16 @@ public:
     static T parse(OptionParser *p);
 };
 
+template <> 
+class TokenParser<bool> {
+public: 
+    static bool parse(OptionParser *p);
+};
 
 template <class Entry>
-class TokenParser<OpenList<Entry > > {
+class TokenParser<OpenList<Entry > *> {
 public:
-    static OpenList<Entry> parse(OptionParser *p);
+    static OpenList<Entry> *parse(OptionParser *p);
 };
 
 template <>
@@ -177,19 +186,17 @@ public:
     static Heuristic* parse(OptionParser *p);
 };
 
-template <> 
-class TokenParser<bool> {
-public: 
-    static bool parse(OptionParser *p);
+template <>
+class TokenParser<SearchEngine *> {
+public:
+    static SearchEngine* parse(OptionParser *p);
 };
-
 
 template <class S>
 class TokenParser<std::vector<S > > {
 public:
     static std::vector<S> parse(OptionParser *p);
 };
-
 
 
 /*The OptionParser stores a parse tree, and a Options. 
@@ -203,28 +210,39 @@ public:
     
     static ParseTree generate_parse_tree(const std::string config);
 
-    //this is where all parsing starts:
-    static void parse_cmd_line(const char **argv, bool dr);
+    //this is where input from the commandline goes:
+    static SearchEngine *parse_cmd_line(int argc, const char **argv, bool dr);
+    
+    template <class T>
+        static void predefine(std::string s) {
+        std::cout << "implement predefine" << s << endl;
+    }
 
+    //this function initiates parsing of T (the root node of parse_tree
+    //will be parsed as T). Usually T=SearchEngine* or T=Heuristic*
+    template <class T> T start_parsing() {
+        return TokenParser<T>::parse(this);
+    }
+    
     template <class T> void add_option(
         std::string k, std::string h="") {
         helpstrings.push_back(h);
         valid_keys.push_back(k);
         T result;
         if (next_unparsed_argument 
-            >= parse_tree->get_children()->end()) {
+            >= parse_tree.get_children()->end()) {
             if (opts.contains(k)){
                 return; //use default value
             } else {
-                //throw error: not enough arguments supplied
+                error("not enough arguments given");
             }
         }
         ParseTree* arg = &*next_unparsed_argument;
         if (arg->key.size() > 0) {
-            arg = parse_tree->find_child(k);
+            arg = parse_tree.find_child(k);
             if (!arg) {
                 if (!opts.contains(k)) {
-                    //throw error
+                    error("missing option");
                 } else {
                     return; //use default value
                 }
@@ -265,6 +283,7 @@ public:
     }
 
     void error(std::string msg);
+    void warning(std::string msg);
     
     Options parse();
     ParseTree* get_parse_tree();
@@ -273,7 +292,7 @@ public:
 
 private:
     Options opts;
-    ParseTree* parse_tree;
+    ParseTree parse_tree;
     bool dry_run_;
     std::string help;
     std::vector<ParseTree>::iterator next_unparsed_argument;

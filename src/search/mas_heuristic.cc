@@ -17,18 +17,15 @@ using namespace std;
 
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
-    : max_abstract_states(opts.get_int("max_states")),
-      max_abstract_states_before_merge(opts.get_int("max_states_before_merge")),
-      abstraction_count(opts.get_int("count")),
-      merge_strategy(opts.get_enum("merge_strategy")),
-      shrink_strategy(opts.get_enum("shrink_strategy")),
-      use_label_simplification_(opts.get_bool("simplify_labels")),
-      use_expensive_statistics(opts.get_bool("expensive_statistics")) {
+    : max_abstract_states(opts.get<int>("max_states")),
+      max_abstract_states_before_merge(opts.get<int>("max_states_before_merge")),
+      abstraction_count(opts.get<int>("count")),
+      merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
+      shrink_strategy(ShrinkStrategy(opts.get_enum("shrink_strategy"))),
+      use_label_simplification(opts.get<bool>("simplify_labels")),
+      use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
     assert(max_abstract_states_before_merge > 0);
     assert(max_abstract_states >= max_abstract_states_before_merge);
-}
-
-MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
