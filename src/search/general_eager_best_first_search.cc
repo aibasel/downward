@@ -67,7 +67,7 @@ void GeneralEagerBestFirstSearch::initialize() {
         heuristics.push_back(*it);
     }
 
-    assert(heuristics.size() > 0);
+    assert(!heuristics.empty());
 
     for (size_t i = 0; i < heuristics.size(); i++)
         heuristics[i]->evaluate(*g_initial_state);
@@ -185,7 +185,9 @@ int GeneralEagerBestFirstSearch::step() {
             succ_node.open(succ_h, node, op);
 
             open_list->insert(succ_node.get_state_buffer());
-            search_progress.check_h_progress(succ_node.get_g());
+            if (search_progress.check_h_progress(succ_node.get_g())) {
+                reward_progress();
+            }
         } else if (succ_node.get_g() > node.get_g() + op->get_cost()) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
@@ -279,6 +281,12 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
         search_progress.inc_expanded();
         return make_pair(node, true);
     }
+}
+
+void GeneralEagerBestFirstSearch::reward_progress() {
+    // Boost the "preferred operator" open lists somewhat whenever
+    // one of the heuristics finds a state with a new best h value.
+    open_list->boost_preferred();
 }
 
 void GeneralEagerBestFirstSearch::dump_search_space() {
@@ -417,7 +425,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
     end++;
 
     vector<Heuristic *> preferred_list;
-    int boost = 1000;
+    int boost = 0;
     int g_bound = numeric_limits<int>::max();
 
     if (config[end] != ")") {

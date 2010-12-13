@@ -30,6 +30,12 @@ void OptionParser::register_scalar_evaluator(const string &key,
     scalar_evaluator_map[key] = func;
 }
 
+void OptionParser::register_lm_graph_factory(const std::string &key,
+                                             LandmarkGraphFactory func) {
+    lm_graph_map[key] = func;
+}
+
+
 void OptionParser::register_synergy(const string &key, SynergyFactory func) {
     synergy_map[key] = func;
 }
@@ -52,6 +58,26 @@ ScalarEvaluator *OptionParser::parse_scalar_evaluator(
         throw ParseError(start);
     return it->second(input, start, end, dry_run);
 }
+
+LandmarksGraph *OptionParser::parse_lm_graph(
+    const vector<string> &input, int start, int &end, bool dry_run) {
+    // predefined object
+    map<string, LandmarksGraph *>::iterator iter;
+    iter = predefined_lm_graphs.find(input[start]);
+    if (iter != predefined_lm_graphs.end()) {
+        end = start;
+        return iter->second;
+    }
+
+    // object definition
+    map<string, LandmarkGraphFactory>::iterator it;
+    it = lm_graph_map.find(input[start]);
+    if (it == lm_graph_map.end())
+        throw ParseError(start);
+    return it->second(input, start, end, dry_run);
+}
+
+
 
 Heuristic *OptionParser::parse_heuristic(const vector<string> &input,
                                          int start, int &end, bool dry_run) {
@@ -79,6 +105,10 @@ bool OptionParser::knows_scalar_evaluator(const string &name) const {
            predefined_heuristics.find(name) != predefined_heuristics.end();
 }
 
+bool OptionParser::knows_lm_graph(const string &name) const {
+    return lm_graph_map.count(name) || predefined_lm_graphs.count(name);
+}
+
 bool OptionParser::knows_search_engine(const string &name) const {
     return engine_map.find(name) != engine_map.end();
 }
@@ -91,7 +121,7 @@ SearchEngine *OptionParser::parse_search_engine(const char *str) {
     try {
         int end = 0;
         engine = parse_search_engine(tokens, 0, end, false);
-    } catch (ParseError e) {
+    } catch (ParseError &e) {
         print_parse_error(tokens, e);
         exit(2);
     }
@@ -112,7 +142,7 @@ void OptionParser::predefine_heuristic(const char *str) {
     tokenize_options(str, tokens);
     try {
         predefine_heuristic(tokens);
-    } catch (ParseError e) {
+    } catch (ParseError &e) {
         print_parse_error(tokens, e);
         exit(2);
     }
@@ -155,6 +185,30 @@ void OptionParser::predefine_heuristic(const vector<string> &input) {
         throw ParseError(1);
     }
 }
+
+void OptionParser::predefine_lm_graph(const char *str) {
+    vector<string> tokens;
+    tokenize_options(str, tokens);
+    try {
+        predefine_lm_graph(tokens);
+    } catch (ParseError &e) {
+        print_parse_error(tokens, e);
+        exit(2);
+    }
+}
+
+void OptionParser::predefine_lm_graph(const vector<string> &input) {
+    if (input[1].compare("=") == 0) {
+        string name = input[0];
+        if (knows_lm_graph(name) || name == "(" || name == ")")
+            throw ParseError(0);
+        int end = 2;
+        predefined_lm_graphs[name] = parse_lm_graph(input, 2, end, false);
+    } else {
+        throw ParseError(1);
+    }
+}
+
 
 // sets "end" on the last position of the last scalar evaluator
 // in the list.

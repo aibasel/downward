@@ -61,6 +61,7 @@ HEADERS += mas_heuristic.h \
            variable_order_finder.h
 
 HEADERS += landmarks/exploration.h \
+           landmarks/h_m_landmarks.h \
            landmarks/lama_ff_synergy.h \
            landmarks/landmark_cost_assignment.h \
            landmarks/landmark_count_heuristic.h \
