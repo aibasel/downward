@@ -1017,7 +1017,10 @@ void HMLandmarks::generate_landmarks() {
     free_unneeded_memory();
 }
 
-
+LandmarksGraph *HMLandmarks::create_lm_graph() {
+    // add the caller logic of HMLandmarks here
+    return l_graph;
+}
 
 LandmarksGraph *HMLandmarks::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
@@ -1045,8 +1048,10 @@ LandmarksGraph *HMLandmarks::create(
     if (dry_run) {
         return 0;
     } else {
-        l_graph = new HMLandmarks(common_options, new Exploration, m);
-        LandmarksGraph::build_lm_graph(l_graph);
-        return l_graph;
+        HMLandmarks lm_graph_factory(m);
+        //new HMLandmarks(common_options, new Exploration, m);
+        LandmarksGraph *graph = lm_graph_factory.create_lm_graph();
+        //LandmarksGraph::build_lm_graph(l_graph);
+        return graph;
     }
 }

@@ -330,7 +330,7 @@ public:
         if (conj) {
             ++conj_lms;
         } else {
-            simple_lms_to_nodes.insert(std::make_pair(lm, node));
+            simple_lms_to_nodes.insert(std::make_pair(lm, &node));
         }
     }
     const set<pair<int, int> > &get_inconsistent_facts(int index1, int index2) {

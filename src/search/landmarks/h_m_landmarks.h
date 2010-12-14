@@ -75,6 +75,7 @@ public:
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
+    LandmarksGraph *create_lm_graph();
     static LandmarksGraph *create(const std::vector<std::string> &config, int start,
                                   int &end, bool dry_run);
 
