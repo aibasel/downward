@@ -17,8 +17,6 @@ public:
                             Exploration *exploration,
                             bool uniform_sampling_, int max_depth_, int num_tries_);
     virtual ~LandmarksGraphRpgSearch();
-    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
-                                  int &end, bool dry_run);
 };
 
 #endif

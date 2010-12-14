@@ -302,50 +302,29 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 }
 
 
-ScalarEvaluator *LandmarkCountHeuristic::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    bool admissible_ = false;
-    bool optimal_ = false;
-    bool pref_ = false;
-    bool use_action_landmarks_ = true;
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.add_option<LandmarksGraph *>("lm_graph");
+    parser.add_option<bool>("admissible", false, "get admissible estimate");
+    parser.add_option<bool>("optimal", false, "optimal cost sharing");
+    parser.add_option<bool>("pref_ops", false, "identify preferred operators");
+    parser.add_option<bool>("action_landmarks", true, "use action landmarks");
 
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
+    Options opts = parser.parse();
 
-    LandmarksGraph *lm_graph = OptionParser::instance()->parse_lm_graph(config,
-                                                                        start + 2, end, dry_run);
-    ++end;
+    if (!parser.dry_run() && opts.get<LandmarksGraph *>("lm_graph") == 0)
+        parser.error("landmarks graph could not be constructed");
 
-    if (!dry_run && lm_graph == 0)
-        throw ParseError(start);
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-        option_parser.add_bool_option("admissible",
-                                      &admissible_,
-                                      "get admissible estimate");
-        option_parser.add_bool_option("optimal",
-                                      &optimal_,
-                                      "optimal cost sharing");
-        option_parser.add_bool_option("pref_ops",
-                                      &pref_,
-                                      "identify preferred operators");
-        option_parser.add_bool_option("action_landmarks",
-                                      &use_action_landmarks_,
-                                      "use action landmarks");
-        option_parser.parse_options(config, end, end, dry_run);
-        ++end;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
-
-    if (dry_run)
+    if (parser.dry_run())
         return 0;
     else
-        return new LandmarkCountHeuristic(*lm_graph, pref_, admissible_, optimal_,
-                                          use_action_landmarks_);
+        //NOTE: it seems inconvenient to add a constructor that takes an Options object - the old constructor is needed anyway and there's a lot happening in the constructor. But maybe better solution possible.
+        return new LandmarkCountHeuristic( 
+            *opts.get<LandmarksGraph *>("lm_graph"), 
+            opts.get<bool>("pref_ops"),
+            opts.get<bool>("admissible"),
+            opts.get<bool>("optimal"),
+            opts.get<bool>("action_landmarks"));
 }
 
 static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(
-    "lmcount", LandmarkCountHeuristic::create);
+    "lmcount", _parse);

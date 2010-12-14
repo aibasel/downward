@@ -6,8 +6,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-static LandmarkGraphPlugin landmarks_graph_exhaust_plugin(
-    "lmgraph_exhaust", LandmarksGraphExhaust::create);
 
 /* Problem: We don't get any orders here. (All we have is the reasonable orders
    that are inferred later.) It's thus best to combine this landmark generation
@@ -34,32 +32,23 @@ void LandmarksGraphExhaust::generate_landmarks() {
 
 }
 
-
-LandmarksGraph *LandmarksGraphExhaust::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
+static LandmarksGraph *_parse(OptionParser &parser) {
     LandmarksGraph::LandmarkGraphOptions common_options;
+    
+    common_options.add_option_to_parser(parser);
 
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
+    Options opts = parser.parse();
 
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
-
-    if (dry_run) {
+    if (parser.dry_run()) {
         return 0;
     } else {
-        LandmarksGraph *graph = new LandmarksGraphExhaust(common_options,
-                                                          new Exploration);
+        common_options = LandmarksGraph::LandmarkGraphOptions(opts);
+        LandmarksGraph *graph = 
+            new LandmarksGraphExhaust(common_options, new Exploration);
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }
 }
+
+static LandmarkGraphPlugin _plugin(
+    "lmgraph_exhaust", _parse);

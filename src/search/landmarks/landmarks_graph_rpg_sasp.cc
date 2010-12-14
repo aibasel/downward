@@ -15,9 +15,6 @@
 
 using namespace __gnu_cxx;
 
-static LandmarkGraphPlugin landmarks_graph_new_plugin(
-    "lmgraph_rpg_sasp", LandmarksGraphNew::create);
-
 void LandmarksGraphNew::get_greedy_preconditions_for_lm(
     const LandmarkNode *lmp, const Operator &o, hash_map<int, int> &result) const {
     // Computes a subset of the actual preconditions of o for achieving lmp - takes into account
@@ -440,31 +437,22 @@ void LandmarksGraphNew::add_lm_forward_orders() {
 
 
 
-LandmarksGraph *LandmarksGraphNew::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
+static LandmarksGraph *_parse(OptionParser &parser) {
     LandmarksGraph::LandmarkGraphOptions common_options;
 
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
+    common_options.add_option_to_parser(parser);
 
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
+    Options opts = parser.parse();
 
-    if (dry_run) {
+    if (parser.dry_run()) {
         return 0;
     } else {
+        common_options = LandmarksGraph::LandmarkGraphOptions(opts);
         LandmarksGraph *graph = new LandmarksGraphNew(common_options,
                                                       new Exploration);
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }
 }
+
+static LandmarkGraphPlugin _plugin("lmgraph_rpg_sasp", _parse);
