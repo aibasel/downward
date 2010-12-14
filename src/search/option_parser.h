@@ -127,7 +127,6 @@ private:
     std::map<std::string, Factory> registered;
 };
 
-Registry<Synergy *>* Registry<Synergy *>::instance_ = 0;
 
 
 //Predefinitions<T> maps strings to pointers to
@@ -165,37 +164,84 @@ class TokenParser {
 public:
     //if T has no template specialization, 
     //try to parse it directly from the input string
-    static T parse(OptionParser *p);
+    static T parse(OptionParser *p) {
+        ParseTree *pt = p->get_parse_tree();
+        stringstream str_stream(pt->value);
+        T x;
+        if ((str_stream >> x).fail()) {
+            p->error("could not parse argument");
+        }
+        return x;
+    }
 };
 
 template <> 
 class TokenParser<bool> {
 public: 
-    static bool parse(OptionParser *p);
+    static bool parse(OptionParser *p) {
+        ParseTree *pt = p->get_parse_tree();
+        if(pt->value.compare("false") == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 };
 
 template <class Entry>
 class TokenParser<OpenList<Entry > *> {
 public:
-    static OpenList<Entry> *parse(OptionParser *p);
+    static OpenList<Entry> *parse(OptionParser *p) {
+        if(Registry<OpenList<Entry > *>::instance()->contains()){}
+    }
 };
 
 template <>
 class TokenParser<Heuristic *> {
 public:
-    static Heuristic* parse(OptionParser *p);
+    static Heuristic* parse(OptionParser *p) {
+        ParseTree *pt = p->get_parse_tree();
+        if(Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
+            return Predefinitions<Heuristic *>::instance()->get(pt->value);
+        }
+        if(Registry<Heuristic *>::instance()->contains(pt->value)) {
+            return Registry<Heuristic *>::instance()->get(pt->value)(*p);
+        }
+        p->error("heuristic not found");
+        return 0;
+    }
 };
 
 template <>
 class TokenParser<SearchEngine *> {
 public:
-    static SearchEngine* parse(OptionParser *p);
+    static SearchEngine* parse(OptionParser *p) {
+        ParseTree *pt = p->get_parse_tree();
+        if(Registry<SearchEngine *>::instance()->contains(pt->value)) {
+            return Registry<SearchEngine *>::instance()->get(pt->value)(*p);
+        }
+        p->error("search engine not found");
+        return 0;
+    }
 };
 
 template <class S>
 class TokenParser<std::vector<S > > {
 public:
-    static std::vector<S> parse(OptionParser *p);
+    static std::vector<S> parse(OptionParser *p) {
+        ParseTree *pt = p->get_parse_tree();
+        vector<S> results;
+        if (pt->value.compare("list") != 0) {
+            throw ParseError("list expected here", pt);
+        }
+        for (size_t i(0); i != pt->get_children()->size(); ++i) {
+            OptionParser subparser = *p;
+            subparser.parse_tree = &pt->get_children()->at(i);
+            results.push_back(
+                TokenParser<S>::parse(subparser));
+        }
+        return results;
+    }      
 };
 
 

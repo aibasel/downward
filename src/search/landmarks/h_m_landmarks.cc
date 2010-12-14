@@ -1048,7 +1048,7 @@ void HMLandmarks::generate_landmarks() {
     free_unneeded_memory();
 }
 
-LandmarksGraph *_parse(OptionParser &parser) {
+static LandmarksGraph *_parse(OptionParser &parser) {
     LandmarksGraph::LandmarkGraphOptions common_options;
     common_options.add_option_to_parser(parser);
     parser.add_option<int>("m", 2, "m (as in h^m)");

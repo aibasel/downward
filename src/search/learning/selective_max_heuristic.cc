@@ -14,10 +14,6 @@
 #include <limits>
 
 
-static ScalarEvaluatorPlugin selective_max_heuristic_plugin(
-    "selmax", SelectiveMaxHeuristic::create);
-
-
 SelectiveMaxHeuristic::SelectiveMaxHeuristic() : num_always_calc(0) {
     // default parameter
     min_training_set = 100;
@@ -558,79 +554,49 @@ void SelectiveMaxHeuristic::print_statistics() const {
     cout << "Total evaluation time: " << eval_time << endl;
 }
 
-ScalarEvaluator *SelectiveMaxHeuristic::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(") {
-        throw ParseError(start + 1);
-    }
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.add_list_option<Heuristic *>("heuristics");
+    parser.add_option<double>("alpha", 1.0, "alpha");
+    parser.add_option<int>( //NOTE: maybe this should be an enum option
+        "classifier", NB, "classifier type (0: NB, 1:AODE)");
+    parser.add_option<double>("conf_threshold", 0.6, "confidence threshold");
+    parser.add_option<int>("training_set", 100, "minimum size of training set");
+    parser.add_option<int>("eval_always", 0,
+                           "number of heuristics that should always be evaluated");
+    parser.add_option<bool>("random_sel", false, "random selection");
+    parser.add_option<bool>("retime", false, "retime heuristics");
+    parser.add_option<int>("sample", Probe, "state space sample type (0: Probe, 1: ProbAStar, 2: PDB");
+    parser.add_option<bool>("uniform", false, "uniform sampling");
+    parser.add_option<bool>("zero_threshold", false, 
+                            "set threshold constant 0");
+    
+    Options opts = parser.parse();
+    vector<Heuristic *> heuristics_ = opts.get_list<Heuristic *>("heuristics");
 
-    vector<Heuristic *> heuristics_;
-    OptionParser::instance()->parse_heuristic_list(config, start + 2,
-                                                   end, false, heuristics_,
-                                                   dry_run);
     if (heuristics_.empty()) {
-        throw ParseError(end);
+        parser.error("non-empty list of heuristics expected");
     }
-    end++;
 
-    // default parameter
-    double alpha_ = 1.0;
-    int classifier_type_ = NB;
-    double conf_threshold_ = 0.6;
-    int min_training_set_ = 100;
-    int num_always_calc_ = 0;
-    bool random_selection_ = false;
-    bool retime_heuristics_ = false;
-    int state_space_sample_type_ = Probe;
-    bool uniform_sampling_ = false;
-    bool zero_threshold_ = false;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-        option_parser.add_double_option("alpha", &alpha_, "alpha");
-        option_parser.add_int_option("classifier", &classifier_type_,
-                                     "classifier type (0: NB, 1: AODE)");
-        option_parser.add_double_option("conf_threshold", &conf_threshold_,
-                                        "confidence threshold");
-        option_parser.add_int_option("training_set", &min_training_set_,
-                                     "minimum size of training set");
-        option_parser.add_int_option("eval_always", &num_always_calc_,
-                                     "number of heuristics that should always be evaluated");
-        option_parser.add_bool_option("random_sel", &random_selection_,
-                                      "random selection");
-        option_parser.add_bool_option("retime", &retime_heuristics_,
-                                      "retime heuristics");
-        option_parser.add_int_option("sample", &state_space_sample_type_,
-                                     "state space sample type (0: Probe, 1: ProbAStar, 2: PDB)");
-        option_parser.add_bool_option("uniform", &uniform_sampling_,
-                                      "uniform sampling");
-        option_parser.add_bool_option("zero_threshold", &zero_threshold_,
-                                      "set threshold constant 0");
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")") {
-        throw ParseError(end);
-    }
 
     SelectiveMaxHeuristic *heur = 0;
-    if (!dry_run) {
+    if (!parser.dry_run()) {
         heur = new SelectiveMaxHeuristic();
         for (unsigned int i = 0; i < heuristics_.size(); i++) {
             heur->add_heuristic(heuristics_[i]);
         }
-        heur->set_alpha(alpha_);
-        heur->set_classifier((classifier_t)classifier_type_);
-        heur->set_confidence(conf_threshold_);
-        heur->set_num_always_calc(num_always_calc_);
-        heur->set_training_set_size(min_training_set_);
-        heur->set_random_selection(random_selection_);
-        heur->set_retime_heuristics(retime_heuristics_);
+        heur->set_alpha(opts.get<double>("alpha"));
+        heur->set_classifier((classifier_t)opts.get<int>("classifier"));
+        heur->set_confidence(opts.get<double>("conf_threshold_"));
+        heur->set_num_always_calc(opts.get<int>("eval_always"));
+        heur->set_training_set_size(opts.get<int>("training_set"));
+        heur->set_random_selection(opts.get<bool>("random_selection"));
+        heur->set_retime_heuristics(opts.get<bool>("retime"));
         heur->set_state_space_sample(
-            (state_space_sample_t)state_space_sample_type_);
-        heur->set_uniform_sampling(uniform_sampling_);
-        heur->set_zero_threshold(zero_threshold_);
+            (state_space_sample_t)opts.get<int>("sample"));
+        heur->set_uniform_sampling(opts.get<bool>("uniform"));
+        heur->set_zero_threshold(opts.get<bool>("zero_threshold"));
     }
     return heur;
 }
+
+static ScalarEvaluatorPlugin _plugin("selmax", _parse);
