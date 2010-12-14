@@ -73,8 +73,6 @@ public:
     }
     ~LandmarksGraphZhuGivan() {
     }
-    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
-                                  int &end, bool dry_run);
 };
 
 #endif

@@ -1370,12 +1370,12 @@ LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
       discover_action_landmarks(false) {
 }
 
-LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
+LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions(const Options &opts)
     : reasonable_orders(opts.get<bool>("reasonable_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
-      no_orders(opts.get<bool>("no_orders"))
+      no_orders(opts.get<bool>("no_orders")),
       discover_action_landmarks(opts.get<bool>("discover_action_landmarks")) {
 }
 
