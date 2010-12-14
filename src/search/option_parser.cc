@@ -25,6 +25,10 @@ vector<ParseTree>* ParseTree::get_children() {
     return &children_;
 }
 
+vector<ParseTree> const *ParseTree::get_children() const {
+    return &children_;
+}
+
 
 void ParseTree::add_child(string value, string key) {
     children_.push_back(ParseTree(this, value, key));
@@ -84,8 +88,14 @@ ParseError::ParseError(string _msg, ParseTree pt)
 {
 }
 
+Registry<Synergy *>* Registry<Synergy *>::instance_ = 0;
+
 void OptionParser::error(string msg) {
     throw ParseError(msg);
+}
+
+void OptionParser::warning(string msg) {
+    cout << "Parser Warning: " << msg << endl;
 }
 
 SearchEngine *OptionParser::parse_cmd_line(
