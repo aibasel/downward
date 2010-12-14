@@ -340,7 +340,7 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
     return DEAD_END;
 }
 
-ScalarEvaluator* _parse(OptionParser &parser) {
+static ScalarEvaluator* _parse(OptionParser &parser) {
     parser.parse();
     if (parser.dry_run())
         return 0;
