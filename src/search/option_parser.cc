@@ -183,6 +183,13 @@ bool OptionParser::dry_run() {
     return dry_run_;
 }
 
+void OptionParser::set_parse_tree(const ParseTree& pt) {
+    parse_tree = pt;
+}
+
+ParseTree* OptionParser::get_parse_tree() {
+    return &parse_tree;
+}
 
 ParseTree OptionParser::generate_parse_tree(const string config) {
     ParseTree root;

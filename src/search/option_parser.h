@@ -13,6 +13,7 @@
 #include "landmarks/landmarks_graph.h"
 
 class OptionParser;
+class LandmarksGraph;
 
 //this class is responsible for holding parsed input as a tree of strings
 class ParseTree{
@@ -91,9 +92,12 @@ public:
         return instance_;
     }
             
-    void register_object(std::string k, Factory);
+    void register_object(std::string k, Factory f) {
+        return 
     bool contains(std::string k);
-    Factory get(std::string k);
+    Factory get(std::string k) {
+        return registered[k];
+    }
 private:
     Registry(){};
     static Registry<T>* instance_;
@@ -164,84 +168,55 @@ class TokenParser {
 public:
     //if T has no template specialization, 
     //try to parse it directly from the input string
-    static T parse(OptionParser *p) {
-        ParseTree *pt = p->get_parse_tree();
-        stringstream str_stream(pt->value);
-        T x;
-        if ((str_stream >> x).fail()) {
-            p->error("could not parse argument");
-        }
-        return x;
-    }
+    static T parse(OptionParser &p);
 };
 
 template <> 
 class TokenParser<bool> {
 public: 
-    static bool parse(OptionParser *p) {
-        ParseTree *pt = p->get_parse_tree();
-        if(pt->value.compare("false") == 0) {
-            return false;
-        } else {
-            return true;
-        }
-    }
+    static bool parse(OptionParser &p); 
 };
 
 template <class Entry>
 class TokenParser<OpenList<Entry > *> {
 public:
-    static OpenList<Entry> *parse(OptionParser *p) {
-        if(Registry<OpenList<Entry > *>::instance()->contains()){}
-    }
+    static OpenList<Entry> *parse(OptionParser &p);
 };
 
 template <>
 class TokenParser<Heuristic *> {
 public:
-    static Heuristic* parse(OptionParser *p) {
-        ParseTree *pt = p->get_parse_tree();
-        if(Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
-            return Predefinitions<Heuristic *>::instance()->get(pt->value);
-        }
-        if(Registry<Heuristic *>::instance()->contains(pt->value)) {
-            return Registry<Heuristic *>::instance()->get(pt->value)(*p);
-        }
-        p->error("heuristic not found");
-        return 0;
-    }
+    static Heuristic *parse(OptionParser &p);
+};
+
+template <>
+class TokenParser<LandmarksGraph *> {
+public:
+    static LandmarksGraph *parse(OptionParser &p);
+};
+
+template <>
+class TokenParser<ScalarEvaluator *> {
+public:
+    static ScalarEvaluator *parse(OptionParser &p);
 };
 
 template <>
 class TokenParser<SearchEngine *> {
 public:
-    static SearchEngine* parse(OptionParser *p) {
-        ParseTree *pt = p->get_parse_tree();
-        if(Registry<SearchEngine *>::instance()->contains(pt->value)) {
-            return Registry<SearchEngine *>::instance()->get(pt->value)(*p);
-        }
-        p->error("search engine not found");
-        return 0;
-    }
+    static SearchEngine *parse(OptionParser &p);
 };
 
-template <class S>
-class TokenParser<std::vector<S > > {
+template <>
+class TokenParser<ParseTree> {
 public:
-    static std::vector<S> parse(OptionParser *p) {
-        ParseTree *pt = p->get_parse_tree();
-        vector<S> results;
-        if (pt->value.compare("list") != 0) {
-            throw ParseError("list expected here", pt);
-        }
-        for (size_t i(0); i != pt->get_children()->size(); ++i) {
-            OptionParser subparser = *p;
-            subparser.parse_tree = &pt->get_children()->at(i);
-            results.push_back(
-                TokenParser<S>::parse(subparser));
-        }
-        return results;
-    }      
+    static ParseTree parse(OptionParser &p);
+};
+
+template <class T>
+class TokenParser<std::vector<T > > {
+public:
+    static std::vector<T> parse(OptionParser &p);
 };
 
 
@@ -267,7 +242,7 @@ public:
     //this function initiates parsing of T (the root node of parse_tree
     //will be parsed as T). Usually T=SearchEngine* or T=Heuristic*
     template <class T> T start_parsing() {
-        return TokenParser<T>::parse(this);
+        return TokenParser<T>::parse(*this);
     }
     
     template <class T> void add_option(
@@ -296,7 +271,7 @@ public:
         } 
        
         OptionParser subparser(*arg, dry_run());
-        result = TokenParser<T>::parse(&subparser);
+        result = TokenParser<T>::parse(subparser);
         opts.set(k, result);
         //if we have not reached the keyword parameters yet, 
         //increment the argument position pointer
@@ -333,6 +308,7 @@ public:
     
     Options parse();
     ParseTree* get_parse_tree();
+    void set_parse_tree(const ParseTree& pt); 
     
     bool dry_run();
 
@@ -345,5 +321,103 @@ private:
     std::vector<std::string> valid_keys;
     std::vector<std::string> helpstrings; 
 };
+
+
+template <class T>
+T TokenParser<T>::parse(OptionParser &p) {
+    ParseTree *pt = p.get_parse_tree();
+    stringstream str_stream(pt->value);
+    T x;
+    if ((str_stream >> x).fail()) {
+        p.error("could not parse argument");
+    }
+    return x;
+}
+
+
+
+bool TokenParser<bool>::parse(OptionParser &p) {
+    ParseTree *pt = p.get_parse_tree();
+    if(pt->value.compare("false") == 0) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+template <class Entry>
+OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
+    ParseTree *pt = p.get_parse_tree();
+    if(Registry<OpenList<Entry > *>::instance()->contains(pt->value)) {
+        return Registry<OpenList<Entry > *>::instance()->get(pt->value)(p);
+    }
+    p.error("openlist not found");
+    return 0;
+}
+
+
+Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
+    ParseTree *pt = p.get_parse_tree();
+    if(Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
+        return Predefinitions<Heuristic *>::instance()->get(pt->value);
+    }
+    if(Registry<Heuristic *>::instance()->contains(pt->value)) {
+        return Registry<Heuristic *>::instance()->get(pt->value)(p);
+    }
+    p.error("heuristic not found");
+    return 0;
+}
+
+LandmarksGraph *TokenParser<LandmarksGraph *>::parse(OptionParser &p) {
+    ParseTree *pt = p.get_parse_tree();
+    if(Predefinitions<LandmarksGraph *>::instance()->contains(pt->value)) {
+        return Predefinitions<LandmarksGraph *>::instance()->get(pt->value);
+    }
+    if(Registry<LandmarksGraph *>::instance()->contains(pt->value)) {
+        return Registry<LandmarksGraph *>::instance()->get(pt->value)(p);
+    }
+    p.error("landmarks graph not found");
+    return 0;
+}
+
+ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
+    ParseTree *pt = p.get_parse_tree();
+    if(Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
+        return Registry<ScalarEvaluator *>::instance()->get(pt->value)(p);
+    }
+    p.error("scalar evaluator not found");
+    return 0;
+}
+
+
+SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
+    ParseTree *pt = p.get_parse_tree();
+    if(Registry<SearchEngine *>::instance()->contains(pt->value)) {
+        return Registry<SearchEngine *>::instance()->get(pt->value)(p);
+    }
+    p.error("search engine not found");
+    return 0;
+}
+
+ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
+    return *p.get_parse_tree();
+}
+
+template <class T>
+std::vector<T > TokenParser<std::vector<T > >::parse(OptionParser &p) {
+    ParseTree *pt = p.get_parse_tree();
+    vector<T> results;
+    if (pt->value.compare("list") != 0) {
+        throw ParseError("list expected here", pt);
+    }
+    for (size_t i(0); i != pt->get_children()->size(); ++i) {
+        OptionParser subparser = p;
+        subparser.set_parse_tree(&pt->get_children()->at(i));
+        results.push_back(
+            TokenParser<T>::parse(subparser));
+    }
+    return results;
+}      
+
 
 #endif /* OPTION_PARSER_H_ */
