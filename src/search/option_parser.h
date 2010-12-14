@@ -93,8 +93,13 @@ public:
     }
             
     void register_object(std::string k, Factory f) {
-        return 
-    bool contains(std::string k);
+        registered[k] = f;
+    }
+
+    bool contains(std::string k) {
+        return registered.find(k) != registered.end();
+    }
+
     Factory get(std::string k) {
         return registered[k];
     }
@@ -121,16 +126,23 @@ public:
         }
         return instance_;
     }
-            
-    void register_object(std::string k, Factory);
-    bool contains(std::string k);
-    Factory get(std::string k);
+    
+    void register_object(std::string k, Factory f) {
+        registered[k] = f;
+    }
+
+    bool contains(std::string k) {
+        return registered.find(k) != registered.end();
+    }
+
+    Factory get(std::string k) {
+        return registered[k];
+    }
 private:
     Registry(){};
-    static Registry<Synergy *>* instance_;
+    static Registry<Synergy *> *instance_;
     std::map<std::string, Factory> registered;
 };
-
 
 
 //Predefinitions<T> maps strings to pointers to
@@ -146,9 +158,18 @@ public:
         return instance_;
     }
 
-    void predefine(std::string k, T);
-    bool contains(std::string k);
-    T get(std::string k);
+    void predefine(std::string k, T obj) {
+        predefined[k] = obj;
+    }
+
+    bool contains(std::string k) {
+        return predefined.find(k) != predefined.end();
+    }
+
+    T get(std::string k) {
+        return predefined[k];
+    }
+
 private:
     Predefinitions<T>(){};
     static Predefinitions<T>* instance_;
@@ -168,55 +189,55 @@ class TokenParser {
 public:
     //if T has no template specialization, 
     //try to parse it directly from the input string
-    static T parse(OptionParser &p);
+    static inline T parse(OptionParser &p);
 };
 
 template <> 
 class TokenParser<bool> {
 public: 
-    static bool parse(OptionParser &p); 
+    static inline bool parse(OptionParser &p); 
 };
 
 template <class Entry>
 class TokenParser<OpenList<Entry > *> {
 public:
-    static OpenList<Entry> *parse(OptionParser &p);
+    static inline OpenList<Entry> *parse(OptionParser &p);
 };
 
 template <>
 class TokenParser<Heuristic *> {
 public:
-    static Heuristic *parse(OptionParser &p);
+    static inline Heuristic *parse(OptionParser &p);
 };
 
 template <>
 class TokenParser<LandmarksGraph *> {
 public:
-    static LandmarksGraph *parse(OptionParser &p);
+    static inline LandmarksGraph *parse(OptionParser &p);
 };
 
 template <>
 class TokenParser<ScalarEvaluator *> {
 public:
-    static ScalarEvaluator *parse(OptionParser &p);
+    static inline ScalarEvaluator *parse(OptionParser &p);
 };
 
 template <>
 class TokenParser<SearchEngine *> {
 public:
-    static SearchEngine *parse(OptionParser &p);
+    static inline SearchEngine *parse(OptionParser &p);
 };
 
 template <>
 class TokenParser<ParseTree> {
 public:
-    static ParseTree parse(OptionParser &p);
+    static inline ParseTree parse(OptionParser &p);
 };
 
 template <class T>
 class TokenParser<std::vector<T > > {
 public:
-    static std::vector<T> parse(OptionParser &p);
+    static inline std::vector<T> parse(OptionParser &p);
 };
 
 
