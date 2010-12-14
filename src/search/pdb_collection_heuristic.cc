@@ -82,6 +82,11 @@ void PDBCollectionHeuristic::precompute_additive_vars() {
 void PDBCollectionHeuristic::initialize() {
     cout << "Initializing pattern database heuristic..." << endl;
 
+    // Simple selection strategy. Take all goal variables as patterns.
+    for (size_t i = 0; i < g_goal.size(); ++i) {
+        pattern_collection.push_back(vector<int>(1, g_goal[i].first));
+    }
+
     // Canonical heuristic function tests
     //1. one pattern logistics00 6-2
     /*int patt_1[6] = {3, 4, 5, 6, 7, 8};
@@ -153,7 +158,7 @@ void PDBCollectionHeuristic::initialize() {
     pattern_collection[1] = pattern_2;*/
 
     //3. three patterns blocks 7-2
-    int patt_1[2] = {9, 10};
+    /*int patt_1[2] = {9, 10};
     vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
     int patt_2[2] = {11, 12};
     vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
@@ -162,7 +167,7 @@ void PDBCollectionHeuristic::initialize() {
     pattern_collection.push_back(pattern_1);
     pattern_collection.push_back(pattern_2);
     pattern_collection.push_back(pattern_3);
-    cout << "Pattern collection filled with patterns.";
+    cout << "Pattern collection filled with patterns.";*/
 
     // additional two patterns for logistics00 9-1
     /*int patt_1[4] = {4, 5, 6, 7};
