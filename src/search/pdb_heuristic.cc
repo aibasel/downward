@@ -227,9 +227,9 @@ void PDBHeuristic::set_pattern(const vector<int> &pat) {
 }*/
 
 void PDBHeuristic::create_pdb() {
-    assert(!pattern.empty());
-    assert(!n_i.empty());
-    assert(num_states != 0);
+    //assert(!pattern.empty());
+    //assert(!n_i.empty());
+    //assert(num_states != 0);
     
     vector<AbstractOperator> operators;
     for (size_t i = 0; i < g_operators.size(); ++i) {
