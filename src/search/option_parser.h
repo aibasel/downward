@@ -12,6 +12,11 @@
 #include "search_engine.h"
 #include "landmarks/landmarks_graph.h"
 #include "option_parser_util.h"
+#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/open_list_buckets.h"
+#include "open_lists/tiebreaking_open_list.h"
+#include "open_lists/alternation_open_list.h"
+#include "open_lists/pareto_open_list.h"
 
 class OptionParser;
 class LandmarksGraph;
@@ -107,13 +112,54 @@ public:
     }
 private:
     Registry(){};
-    static Registry<T>* instance_;
+    static Registry<T> *instance_;
     std::map<std::string, Factory> registered;
 };
 
 template <class T> Registry<T>* Registry<T>::instance_ = 0;
 
-//pseudoclass Synergy for the registry
+//the openlist registry is separate, and registration takes place centrally on demand. This is similar to the old approach in open_list_parser.h. Might try to find something better.
+template <class Entry>
+class Registry<OpenList<Entry > *> {
+public:
+    typedef OpenList<Entry> *(*Factory)(OptionParser&);
+    static Registry<OpenList<Entry > *>* instance()
+    {
+        if (!instance_) {
+            instance_ = new Registry<OpenList<Entry > *>();
+            instance_->register_object(
+                "single", StandardScalarOpenList<Entry>::_parse);
+            instance_->register_object(
+                "single_buckets", BucketOpenList<Entry>::_parse);
+            instance_->register_object(
+                "tiebreaking", TieBreakingOpenList<Entry>::_parse);
+            instance_->register_object(
+                "alt", AlternationOpenList<Entry>::_parse);
+            instance_->register_object(
+                "pareto", ParetoOpenList<Entry>::_parse);
+        }
+        return instance_;
+    }
+            
+    void register_object(std::string k, Factory f) {
+        registered[k] = f;
+    }
+
+    bool contains(std::string k) {
+        return registered.find(k) != registered.end();
+    }
+
+    Factory get(std::string k) {
+        return registered[k];
+    }
+private:
+    Registry(){};
+    static Registry<OpenList<Entry > *> *instance_;
+    std::map<std::string, Factory> registered;
+};
+
+
+//pseudoclass Synergy for the synergy registry
 class Synergy {
 };
 

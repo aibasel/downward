@@ -89,6 +89,8 @@ ParseError::ParseError(string _msg, ParseTree pt)
 }
 
 Registry<Synergy *>* Registry<Synergy *>::instance_ = 0;
+template <class Entry> 
+Registry<OpenList<Entry > *> Registry<OpenList<Entry > *>::instance_ = 0;
 
 HelpElement::HelpElement(string k, string h, string t_n) 
     : kwd(k),
@@ -110,25 +112,30 @@ void OptionParser::set_help_mode(bool m) {
     help_mode_ = m;
 }
 
+template <class T>
+static void get_help_t(const ParseTree &pt) {
+    if (Registry<T>::instance()->contains(pt.value)) {
+        cout << pt.value << " is registered as a " << TypeNamer<T>::name() 
+             << endl << "Usage: " << endl;        
+        OptionParser p(pt, true);
+        p.set_help_mode(true);
+        p.start_parsing<T>();
+    }
+}
+
 static void get_help(string k) {
     ParseTree pt;
     pt.value = k;
-    if (Registry<Heuristic *>::instance()->contains(k)) {
-        OptionParser p(pt, true);
-        p.set_help_mode(true);
-        p.start_parsing<Heuristic *>();
-    }
-    if (Registry<ScalarEvaluator *>::instance()->contains(k)) {
-        OptionParser p(pt, true);
-        p.set_help_mode(true);
-        p.start_parsing<ScalarEvaluator *>();
-    }
-    if (Registry<SearchEngine *>::instance()->contains(k)) {
-        OptionParser p(pt, true);
-        p.set_help_mode(true);
-        p.start_parsing<SearchEngine *>();
-    }
+    get_help_t<SearchEngine *>(pt);
+    get_help_t<Heuristic *>(pt);
+    get_help_t<ScalarEvaluator *>(pt);
+    get_help_t<OpenList<int > *>(pt);
 }
+
+static void get_help() {
+
+}
+
 SearchEngine *OptionParser::parse_cmd_line(
     int argc, const char **argv, bool dry_run) {
     SearchEngine *engine(0);
@@ -154,7 +161,7 @@ SearchEngine *OptionParser::parse_cmd_line(
                 string helpiand = string(argv[i+1]);
                 get_help(helpiand);
             } else {
-                //get_help();
+                get_help();
             }
             exit(1);
         } else {

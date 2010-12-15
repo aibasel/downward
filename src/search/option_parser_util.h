@@ -74,6 +74,13 @@ struct TypeNamer<ScalarEvaluator *> {
 };
 
 template <>
+struct TypeNamer<SearchEngine *> {
+    static std::string name() {
+        return "search engine";
+    }
+};
+
+template <>
 struct TypeNamer<ParseTree> {
     static std::string name() {
         return "parse tree (this just means the input is parsed at a later point. The real type is probably a search engine.)";
