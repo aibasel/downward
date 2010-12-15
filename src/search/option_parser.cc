@@ -123,7 +123,11 @@ static void get_help(string k) {
         p.set_help_mode(true);
         p.start_parsing<ScalarEvaluator *>();
     }
-
+    if (Registry<SearchEngine *>::instance()->contains(k)) {
+        OptionParser p(pt, true);
+        p.set_help_mode(true);
+        p.start_parsing<SearchEngine *>();
+    }
 }
 SearchEngine *OptionParser::parse_cmd_line(
     int argc, const char **argv, bool dry_run) {
@@ -215,8 +219,17 @@ void OptionParser::add_enum_option(string k,
 
 Options OptionParser::parse() {
     if(help_mode_) {
+        cout << parse_tree.value << "(";
         for (size_t i(0); i != helpers.size(); ++i) {
-            cout << helpers[i].kwd << endl;
+            cout << helpers[i].kwd;
+            if( i != helpers.size() - 1) {
+                cout << ", ";
+            }
+        }
+        cout << ")" << endl;
+        for (size_t i(0); i != helpers.size(); ++i) {
+            cout << helpers[i].kwd << "(" << helpers[i].type_name << "): "
+                 << helpers[i].help << endl;
         }
     }
     //first check if there were any arguments with invalid keywords
