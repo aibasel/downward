@@ -1,7 +1,6 @@
 # -*- coding: latin-1 -*-
 
 from collections import defaultdict
-import copy
 import itertools
 
 import pddl

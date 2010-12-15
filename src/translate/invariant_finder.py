@@ -3,7 +3,6 @@
 
 from __future__ import with_statement
 from collections import deque, defaultdict
-import copy
 import time
 
 import invariants
@@ -19,7 +18,7 @@ class BalanceChecker(object):
             for eff in action.effects:
                 too_heavy_effects.append(eff)
                 if eff.parameters: # universal effect
-                    too_heavy_effects.append(copy.copy(eff))
+                    too_heavy_effects.append(eff.copy())
                 if not eff.literal.negated:
                     predicate = eff.literal.predicate
                     self.predicates_to_add_actions[predicate].add(action)
