@@ -86,10 +86,8 @@ bool LamaFFSynergy::lama_reach_state(const State &parent_state,
     return lama_heuristic->reach_state(parent_state, op, state);
 }
 
-static void
-_create_heuristics(OptionParser& parser,
-                                 vector<Heuristic *> &heuristics) {
-
+static Synergy *_create_heuristics(OptionParser& parser) {
+    Synergy *syn = new Synergy; 
     parser.add_option<LandmarksGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");
@@ -105,9 +103,9 @@ _create_heuristics(OptionParser& parser,
     LamaFFSynergy *lama_ff_synergy = 
         new LamaFFSynergy(opts);
 
-    heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
-    heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
-    return;
+    syn->heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
+    syn->heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
+    return syn;
 }
 
 static SynergyPlugin lama_ff_synergy_plugin("lm_ff_syn", _create_heuristics);

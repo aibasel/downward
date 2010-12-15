@@ -38,3 +38,14 @@ EnginePlugin::EnginePlugin(
 
 EnginePlugin::~EnginePlugin() {
 }
+
+template <class Entry>
+OpenListPlugin<Entry>::OpenListPlugin(
+    const string &key, typename Registry<OpenList<Entry > *>::Factory factory) {
+    Registry<OpenList<Entry > *>::instance()->register_object(key, factory);
+}
+
+template <class Entry>
+OpenListPlugin<Entry>::~OpenListPlugin() {
+}
+

@@ -26,6 +26,9 @@ OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
 }
 
 template<class Entry>
+OpenListPlugin<Entry> AlternationOpenList<Entry>::_plugin("alt", AlternationOpenList<Entry>::_parse);
+
+template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)
     : open_lists(opts.get_list<OpenList<Entry> *>("sublists")), 
       priorities(open_lists.size(), 0), size(0),
