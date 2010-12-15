@@ -3,6 +3,7 @@
 
 #include "open_list.h"
 #include "../evaluator.h"
+#include "../plugin.h"
 
 #include <vector>
 
@@ -46,6 +47,7 @@ public:
     int boost_preferred();
     void boost_last_used_list();
     static OpenList<Entry> *_parse(OptionParser &parser);
+    static OpenListPlugin<Entry> _plugin;
 };
 
 #include "alternation_open_list.cc"

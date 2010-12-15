@@ -88,9 +88,7 @@ ParseError::ParseError(string _msg, ParseTree pt)
 {
 }
 
-Registry<Synergy *>* Registry<Synergy *>::instance_ = 0;
-template <class Entry> 
-Registry<OpenList<Entry > *> Registry<OpenList<Entry > *>::instance_ = 0;
+
 
 HelpElement::HelpElement(string k, string h, string t_n) 
     : kwd(k),
@@ -112,6 +110,12 @@ void OptionParser::set_help_mode(bool m) {
     help_mode_ = m;
 }
 
+
+/*
+Functions for printing help
+*/
+
+
 template <class T>
 static void get_help_t(const ParseTree &pt) {
     if (Registry<T>::instance()->contains(pt.value)) {
@@ -129,7 +133,9 @@ static void get_help(string k) {
     get_help_t<SearchEngine *>(pt);
     get_help_t<Heuristic *>(pt);
     get_help_t<ScalarEvaluator *>(pt);
-    get_help_t<OpenList<int > *>(pt);
+    get_help_t<Synergy *>(pt);
+    get_help_t<LandmarksGraph *>(pt);
+    //get_help_t<OpenList< > *>(pt); //Note: unsolved how to output help on openlists.
 }
 
 static void get_help() {

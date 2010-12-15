@@ -11,11 +11,10 @@
 #include "open_lists/open_list.h"
 #include "search_engine.h"
 #include "option_parser_util.h"
+#include "plugin.h"
 
 class OptionParser;
 class LandmarksGraph;
-template class <Entry>
-class StandardScalarOpenList<
 
 //this class is responsible for holding parsed input as a tree of strings
 class ParseTree{
@@ -82,146 +81,6 @@ public:
     }
 };
 
-//a registry<T> maps a string to a T-factory
-template <class T>
-class Registry {
-public:
-    typedef T (*Factory)(OptionParser&);
-    static Registry<T>* instance()
-    {
-        if (!instance_) {
-            instance_ = new Registry<T>();
-        }
-        return instance_;
-    }
-            
-    void register_object(std::string k, Factory f) {
-        registered[k] = f;
-    }
-
-    bool contains(std::string k) {
-        return registered.find(k) != registered.end();
-    }
-
-    Factory get(std::string k) {
-        return registered[k];
-    }
-private:
-    Registry(){};
-    static Registry<T> *instance_;
-    std::map<std::string, Factory> registered;
-};
-
-template <class T> Registry<T>* Registry<T>::instance_ = 0;
-
-//the openlist registry is separate, and registration takes place centrally on demand. This is similar to the old approach in open_list_parser.h. Might try to find something better.
-template <class Entry>
-class Registry<OpenList<Entry > *> {
-public:
-    typedef OpenList<Entry> *(*Factory)(OptionParser&);
-    static Registry<OpenList<Entry > *>* instance()
-    {
-        if (!instance_) {
-            instance_ = new Registry<OpenList<Entry > *>();
-            instance_->register_object(
-                "single", StandardScalarOpenList<Entry>::_parse);
-            instance_->register_object(
-                "single_buckets", BucketOpenList<Entry>::_parse);
-            instance_->register_object(
-                "tiebreaking", TieBreakingOpenList<Entry>::_parse);
-            instance_->register_object(
-                "alt", AlternationOpenList<Entry>::_parse);
-            instance_->register_object(
-                "pareto", ParetoOpenList<Entry>::_parse);
-        }
-        return instance_;
-    }
-            
-    void register_object(std::string k, Factory f) {
-        registered[k] = f;
-    }
-
-    bool contains(std::string k) {
-        return registered.find(k) != registered.end();
-    }
-
-    Factory get(std::string k) {
-        return registered[k];
-    }
-private:
-    Registry(){};
-    static Registry<OpenList<Entry > *> *instance_;
-    std::map<std::string, Factory> registered;
-};
-
-
-//pseudoclass Synergy for the synergy registry
-class Synergy {
-};
-
-template <>
-class Registry<Synergy *> {
-public:
-    typedef void (*Factory)(OptionParser&, std::vector<Heuristic *>&);
-    static Registry<Synergy *>* instance()
-    {
-        if (!instance_) {
-            instance_ = new Registry<Synergy *>();
-        }
-        return instance_;
-    }
-    
-    void register_object(std::string k, Factory f) {
-        registered[k] = f;
-    }
-
-    bool contains(std::string k) {
-        return registered.find(k) != registered.end();
-    }
-
-    Factory get(std::string k) {
-        return registered[k];
-    }
-private:
-    Registry(){};
-    static Registry<Synergy *> *instance_;
-    std::map<std::string, Factory> registered;
-};
-
-
-//Predefinitions<T> maps strings to pointers to
-//already created Heuristics/LandmarksGraphs
-template <class T>
-class Predefinitions {
-public:
-    static Predefinitions<T>* instance()
-    {
-        if (!instance_) {
-            instance_ = new Predefinitions<T>();
-        }
-        return instance_;
-    }
-
-    void predefine(std::string k, T obj) {
-        predefined[k] = obj;
-    }
-
-    bool contains(std::string k) {
-        return predefined.find(k) != predefined.end();
-    }
-
-    T get(std::string k) {
-        return predefined[k];
-    }
-
-private:
-    Predefinitions<T>(){};
-    static Predefinitions<T>* instance_;
-    std::map<std::string, T> predefined;
-};
-
-template <class T> Predefinitions<T>* Predefinitions<T>::instance_ = 0;
-
 
 /*The TokenParser<T> wraps functions to parse supported types T. 
 To add support for a new type T, it should suffice 
@@ -271,6 +130,13 @@ class TokenParser<SearchEngine *> {
 public:
     static inline SearchEngine *parse(OptionParser &p);
 };
+
+template <>
+class TokenParser<Synergy *> {
+public:
+    static inline Synergy *parse(OptionParser &p);
+};
+
 
 template <>
 class TokenParser<ParseTree> {
@@ -479,6 +345,15 @@ SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
         return Registry<SearchEngine *>::instance()->get(pt->value)(p);
     }
     p.error("search engine not found");
+    return 0;
+}
+
+Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
+    ParseTree *pt = p.get_parse_tree();
+    if(Registry<Synergy *>::instance()->contains(pt->value)) {
+        return Registry<Synergy *>::instance()->get(pt->value)(p);
+    }
+    p.error("synergy not found");
     return 0;
 }
 
