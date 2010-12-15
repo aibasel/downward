@@ -90,6 +90,13 @@ ParseError::ParseError(string _msg, ParseTree pt)
 
 Registry<Synergy *>* Registry<Synergy *>::instance_ = 0;
 
+HelpElement::HelpElement(string k, string h, string t_n) 
+    : kwd(k),
+      help(h),
+      type_name(t_n)
+{
+}
+
 void OptionParser::error(string msg) {
     throw ParseError(msg);
 }
@@ -98,6 +105,26 @@ void OptionParser::warning(string msg) {
     cout << "Parser Warning: " << msg << endl;
 }
 
+void OptionParser::set_help_mode(bool m) {
+    dry_run_ = dry_run_ && m;
+    help_mode_ = m;
+}
+
+static void get_help(string k) {
+    ParseTree pt;
+    pt.value = k;
+    if (Registry<Heuristic *>::instance()->contains(k)) {
+        OptionParser p(pt, true);
+        p.set_help_mode(true);
+        p.start_parsing<Heuristic *>();
+    }
+    if (Registry<ScalarEvaluator *>::instance()->contains(k)) {
+        OptionParser p(pt, true);
+        p.set_help_mode(true);
+        p.start_parsing<ScalarEvaluator *>();
+    }
+
+}
 SearchEngine *OptionParser::parse_cmd_line(
     int argc, const char **argv, bool dry_run) {
     SearchEngine *engine(0);
@@ -117,6 +144,15 @@ SearchEngine *OptionParser::parse_cmd_line(
             ++i;
             srand(atoi(argv[i]));
             cout << "random seed " << argv[i] << endl;
+        } else if (arg.compare("--help") == 0) {
+            cout << "Help:" << endl;
+            if( i+1 < argc) {
+                string helpiand = string(argv[i+1]);
+                get_help(helpiand);
+            } else {
+                //get_help();
+            }
+            exit(1);
         } else {
             cerr << "unknown option " << arg << endl << endl;
             string usage =
@@ -137,6 +173,7 @@ SearchEngine *OptionParser::parse_cmd_line(
     }
     return engine;
 }
+
 
 
 OptionParser::OptionParser(const string config, bool dr):
@@ -177,6 +214,11 @@ void OptionParser::add_enum_option(string k,
 }
 
 Options OptionParser::parse() {
+    if(help_mode_) {
+        for (size_t i(0); i != helpers.size(); ++i) {
+            cout << helpers[i].kwd << endl;
+        }
+    }
     //first check if there were any arguments with invalid keywords
     vector<ParseTree>* pt_children = parse_tree.get_children();
     for (size_t i(0); i != pt_children->size(); ++i) {

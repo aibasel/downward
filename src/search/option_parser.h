@@ -11,6 +11,7 @@
 #include "open_lists/open_list.h"
 #include "search_engine.h"
 #include "landmarks/landmarks_graph.h"
+#include "option_parser_util.h"
 
 class OptionParser;
 class LandmarksGraph;
@@ -49,6 +50,7 @@ public:
     std::string msg;
     ParseTree parse_tree;
 };
+
 
 
 //Options is just a wrapper for map<string, boost::any>
@@ -241,6 +243,15 @@ public:
 };
 
 
+struct HelpElement {
+    HelpElement(std::string k, std::string h, std::string tn);
+    void set_default_value(std::string d_v);
+    std::string kwd;
+    std::string help;
+    std::string type_name;
+    std::string default_value;
+};
+
 /*The OptionParser stores a parse tree, and a Options. 
 By calling addArgument, the parse tree is partially parsed, 
 and the result is added to the Options.
@@ -250,7 +261,7 @@ public:
     OptionParser(std::string config, bool dr);
     OptionParser(ParseTree pt, bool dr);
     
-    static ParseTree generate_parse_tree(const std::string config);
+    static ParseTree generate_parse_tree(const std::string config); //TODO: move this outside
 
     //this is where input from the commandline goes:
     static SearchEngine *parse_cmd_line(int argc, const char **argv, bool dr);
@@ -268,7 +279,14 @@ public:
     
     template <class T> void add_option(
         std::string k, std::string h="") {
-        helpstrings.push_back(h);
+        if(help_mode_) {
+            helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
+            if(opts.contains(k)){
+                //helpers.back().default_value = 
+                //  DefaultValueNamer<T>::name(opts.get<T>(k));
+            }
+            return;
+        }
         valid_keys.push_back(k);
         T result;
         if (next_unparsed_argument 
@@ -330,6 +348,7 @@ public:
     Options parse();
     ParseTree* get_parse_tree();
     void set_parse_tree(const ParseTree& pt); 
+    void set_help_mode(bool m);
     
     bool dry_run();
 
@@ -337,7 +356,8 @@ private:
     Options opts;
     ParseTree parse_tree;
     bool dry_run_;
-    std::string help;
+    bool help_mode_;
+    std::vector<HelpElement> helpers;
     std::vector<ParseTree>::iterator next_unparsed_argument;
     std::vector<std::string> valid_keys;
     std::vector<std::string> helpstrings; 

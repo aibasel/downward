@@ -10,7 +10,6 @@
 using namespace std;
 
 
-void register_parsers();
 
 int main(int argc, const char **argv) {
     register_event_handlers();
@@ -46,11 +45,12 @@ int main(int argc, const char **argv) {
 
     read_everything(in);
 
+
     SearchEngine *engine = 0;
 
     //the input will be parsed twice: 
     //once in dry-run mode, to check for simple input errors, 
-    //then in normal mode
+    //then in normal mode TODO: catch parse errors
     OptionParser::parse_cmd_line(argc, argv, true);
     OptionParser::parse_cmd_line(argc, argv, false);
     
