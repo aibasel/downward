@@ -2,6 +2,7 @@
 #define OPEN_LISTS_STANDARD_SCALAR_OPEN_LIST_H
 
 #include "open_list.h"
+#include "../option_parser.h"
 
 #include <deque>
 #include <map>
@@ -9,8 +10,6 @@
 #include <utility>
 
 class ScalarEvaluator;
-class Options;
-class OptionParser;
 
 template<class Entry>
 class StandardScalarOpenList : public OpenList<Entry> {
