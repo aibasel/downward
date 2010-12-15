@@ -14,9 +14,6 @@
 #include "landmarks_types.h"
 #include "../option_parser.h"
 
-class OptionParser;
-class Options;
-
 using namespace __gnu_cxx;
 
 enum edge_type {

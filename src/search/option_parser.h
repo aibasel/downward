@@ -10,16 +10,12 @@
 #include "boost/any.hpp"
 #include "open_lists/open_list.h"
 #include "search_engine.h"
-#include "landmarks/landmarks_graph.h"
 #include "option_parser_util.h"
-#include "open_lists/standard_scalar_open_list.h"
-#include "open_lists/open_list_buckets.h"
-#include "open_lists/tiebreaking_open_list.h"
-#include "open_lists/alternation_open_list.h"
-#include "open_lists/pareto_open_list.h"
 
 class OptionParser;
 class LandmarksGraph;
+template class <Entry>
+class StandardScalarOpenList<
 
 //this class is responsible for holding parsed input as a tree of strings
 class ParseTree{
