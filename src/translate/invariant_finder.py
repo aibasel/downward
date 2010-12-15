@@ -15,16 +15,20 @@ class BalanceChecker(object):
         self.action_name_to_heavy_action = {}
         for action in task.actions:
             too_heavy_effects = []
+            create_heavy_act = False
+            heavy_act = action
             for eff in action.effects:
                 too_heavy_effects.append(eff)
                 if eff.parameters: # universal effect
+                    create_heavy_act = True
                     too_heavy_effects.append(eff.copy())
                 if not eff.literal.negated:
                     predicate = eff.literal.predicate
                     self.predicates_to_add_actions[predicate].add(action)
-            heavy_act = pddl.Action(action.name, action.parameters,
-                                    action.precondition, too_heavy_effects,
-                                    action.cost)
+            if create_heavy_act:
+                heavy_act = pddl.Action(action.name, action.parameters,
+                                        action.precondition, too_heavy_effects,
+                                        action.cost)
             # heavy_act: duplicated universal effects and assigned unique names
             # to all quantified variables (implicitly in constructor)
             self.action_name_to_heavy_action[action.name] = heavy_act
@@ -75,10 +79,10 @@ def find_invariants(task):
             yield candidate
 
 def useful_groups(invariants, initial_facts):
-    predicate_to_invariants = {}
+    predicate_to_invariants = defaultdict(list)
     for invariant in invariants:
         for predicate in invariant.predicates:
-            predicate_to_invariants.setdefault(predicate, []).append(invariant)
+            predicate_to_invariants[predicate].append(invariant)
 
     nonempty_groups = set()
     overcrowded_groups = set()

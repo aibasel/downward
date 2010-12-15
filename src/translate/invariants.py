@@ -212,6 +212,7 @@ class Invariant:
                 return False
             if self.operator_unbalanced(action, enqueue_func):
                 return False
+        return True
     def operator_too_heavy(self, h_action):
         add_effects = [eff for eff in h_action.effects 
                            if not eff.literal.negated and
