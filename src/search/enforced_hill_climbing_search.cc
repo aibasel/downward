@@ -2,8 +2,6 @@
 #include "successor_generator.h"
 #include "heuristic.h"
 #include "operator.h"
-#include "open_lists/standard_scalar_open_list.h"
-#include "open_lists/tiebreaking_open_list.h"
 #include "pref_evaluator.h"
 #include "plugin.h"
 

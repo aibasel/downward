@@ -3,8 +3,6 @@
 #include "globals.h"
 #include "heuristic.h"
 #include "successor_generator.h"
-#include "open_lists/standard_scalar_open_list.h"
-#include "open_lists/open_list_buckets.h"
 #include "plugin.h"
 
 

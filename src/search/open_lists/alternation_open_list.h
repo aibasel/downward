@@ -28,7 +28,7 @@ protected:
 
 public:
     AlternationOpenList(const Options &opts);
-     AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
+    AlternationOpenList(const std::vector<OpenList<Entry> *> &sublists,
                         int boost_influence);
     ~AlternationOpenList();
 
@@ -46,8 +46,9 @@ public:
 
     int boost_preferred();
     void boost_last_used_list();
+
     static OpenList<Entry> *_parse(OptionParser &parser);
-    static OpenListPlugin<Entry> _plugin;
+    static void reg();
 };
 
 #include "alternation_open_list.cc"

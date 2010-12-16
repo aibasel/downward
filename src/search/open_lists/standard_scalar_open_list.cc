@@ -34,7 +34,7 @@ OpenList<Entry> *StandardScalarOpenList<Entry>::_parse(OptionParser &parser) {
 template<class Entry>
 StandardScalarOpenList<Entry>::StandardScalarOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")), 
-      size(0), evaluator(opts.get_list<ScalarEvaluator>("evaluators")[0]) {
+      size(0), evaluator(opts.get_list<ScalarEvaluator *>("evaluators")[0]) {
     lowest_bucket = numeric_limits<int>::max();
 }
 

@@ -32,7 +32,7 @@ OpenList<Entry> *TieBreakingOpenList<Entry>::_parse(OptionParser &parser) {
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")), 
-      size(0), evaluators(opts.get_list<ScalarEvaluator>("evals")),
+      size(0), evaluators(opts.get_list<ScalarEvaluator *>("evals")),
       allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
     last_evaluated_value.resize(evaluators.size());
 }

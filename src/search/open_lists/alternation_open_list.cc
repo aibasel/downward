@@ -18,15 +18,18 @@ OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
     
     if (opts.get_list<OpenList<Entry> *>("sublists").empty())
         parser.error("need at least one internal open list");
-
-    if (parser.dry_run)
+    if (parser.dry_run())
         return 0;
     else
         return new AlternationOpenList<Entry>(opts);
 }
 
 template<class Entry>
-OpenListPlugin<Entry> AlternationOpenList<Entry>::_plugin("alt", AlternationOpenList<Entry>::_parse);
+void AlternationOpenList<Entry>::reg() {
+    Registry<OpenList<Entry > *>::instance()->register_object(
+        "alt", 
+        *AlternationOpenList<Entry>::_parse);
+}
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)

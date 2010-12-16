@@ -9,18 +9,19 @@
 using namespace std;
 
 template<class Entry>
-OpenList<Entry> *ParetoOpenList<Entry>::_parse(OptionParser &p) {
+OpenList<Entry> *ParetoOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_option<bool>("pref_only", false, 
                             "insert only preferred operators");
     parser.add_option<bool>("state_uniform_selection", false,
                             "select uniformly from the candidate *states*");
 
+    Options opts = parser.parse();
+
     if (parser.dry_run())
         return 0;
     else
-        return new ParetoOpenList<Entry>(opts)evaluators, only_pref_,
-                                         state_uniform_);
+        return new ParetoOpenList<Entry>(opts);
 }
 
 template<class Entry>

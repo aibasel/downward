@@ -135,7 +135,6 @@ static void get_help(string k) {
     get_help_t<ScalarEvaluator *>(pt);
     get_help_t<Synergy *>(pt);
     get_help_t<LandmarksGraph *>(pt);
-    //get_help_t<OpenList< > *>(pt); //Note: unsolved how to output help on openlists.
 }
 
 static void get_help() {

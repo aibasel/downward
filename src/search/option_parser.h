@@ -8,13 +8,13 @@
 #include <algorithm>
 #include <map>
 #include "boost/any.hpp"
-#include "open_lists/open_list.h"
-#include "search_engine.h"
 #include "option_parser_util.h"
-#include "plugin.h"
 
 class OptionParser;
 class LandmarksGraph;
+template<class Entry>
+class OpenList;
+class SearchEngine;
 
 //this class is responsible for holding parsed input as a tree of strings
 class ParseTree{
@@ -50,7 +50,6 @@ public:
     std::string msg;
     ParseTree parse_tree;
 };
-
 
 
 //Options is just a wrapper for map<string, boost::any>
@@ -176,7 +175,7 @@ public:
     
     template <class T>
         static void predefine(std::string s) {
-        std::cout << "implement predefine" << s << endl;
+        std::cout << "implement predefine" << s << std::endl;
     }
 
     //this function initiates parsing of T (the root node of parse_tree
@@ -275,7 +274,7 @@ private:
 template <class T>
 T TokenParser<T>::parse(OptionParser &p) {
     ParseTree *pt = p.get_parse_tree();
-    stringstream str_stream(pt->value);
+    std::stringstream str_stream(pt->value);
     T x;
     if ((str_stream >> x).fail()) {
         p.error("could not parse argument");
@@ -364,7 +363,7 @@ ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
 template <class T>
 std::vector<T > TokenParser<std::vector<T > >::parse(OptionParser &p) {
     ParseTree *pt = p.get_parse_tree();
-    vector<T> results;
+    std::vector<T> results;
     if (pt->value.compare("list") != 0) {
         throw ParseError("list expected here", pt);
     }
@@ -376,6 +375,8 @@ std::vector<T > TokenParser<std::vector<T > >::parse(OptionParser &p) {
     }
     return results;
 }      
+
+
 
 
 #endif /* OPTION_PARSER_H_ */
