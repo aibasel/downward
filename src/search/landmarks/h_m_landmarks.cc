@@ -576,8 +576,9 @@ bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
                l_graph->get_inconsistent_facts(var1, val1).end();
 }
 
-HMLandmarks::HMLandmarks(/*LandmarksGraph::LandmarkGraphOptions &options, Exploration *expl, */int m)
-    : /*LandmarksGraph(options, expl), */m_(m) {
+HMLandmarks::HMLandmarks(LandmarksGraph::LandmarkGraphOptions &options, Exploration *expl, int m)
+    : m_(m) {
+    l_graph = new LandmarksGraph(options, expl);
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
     // need this to be able to print propositions for debugging
     // already called in global.cc
@@ -1018,7 +1019,8 @@ void HMLandmarks::generate_landmarks() {
 }
 
 LandmarksGraph *HMLandmarks::create_lm_graph() {
-    // add the caller logic of HMLandmarks here
+    generate_landmarks();
+    LandmarksGraph::build_lm_graph(l_graph);
     return l_graph;
 }
 
@@ -1048,10 +1050,10 @@ LandmarksGraph *HMLandmarks::create(
     if (dry_run) {
         return 0;
     } else {
-        HMLandmarks lm_graph_factory(m);
-        //new HMLandmarks(common_options, new Exploration, m);
+        HMLandmarks lm_graph_factory(common_options, new Exploration, m);
+        //LandmarksGraph *graph = new HMLandmarks(common_options, new Exploration, m);
         LandmarksGraph *graph = lm_graph_factory.create_lm_graph();
-        //LandmarksGraph::build_lm_graph(l_graph);
+        //LandmarksGraph::build_lm_graph(graph);
         return graph;
     }
 }
