@@ -74,7 +74,7 @@ void SearchNode::open(int h, const SearchNode &parent_node,
                       const Operator *parent_op) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
-    info.g = parent_node.info.g + parent_op->get_cost();
+    info.g = parent_node.info.g + parent_op->get_cost(normal);
     info.h = h;
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
@@ -88,7 +88,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
     info.status = SearchNodeInfo::OPEN;
-    info.g = parent_node.info.g + parent_op->get_cost();
+    info.g = parent_node.info.g + parent_op->get_cost(normal);
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
 }
@@ -100,7 +100,7 @@ void SearchNode::update_parent(const SearchNode &parent_node,
            info.status == SearchNodeInfo::CLOSED);
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
-    info.g = parent_node.info.g + parent_op->get_cost();
+    info.g = parent_node.info.g + parent_op->get_cost(normal);
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
 }

@@ -86,8 +86,8 @@ void Operator::dump() const {
 }
 
 
-int Operator::get_cost() const {
-    switch (g_cost_type) {
+int Operator::get_cost(operator_cost cost_type) const {
+    switch (cost_type) {
     case normal:
         return cost;
     case one:
