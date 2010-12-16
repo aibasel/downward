@@ -237,7 +237,7 @@ private:
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
     bool effect_always_happens(const vector<PrePost> &prepost,
                                set<pair<int, int> > &eff) const;
-    virtual void generate_landmarks() = 0;
+    //virtual void generate_landmarks() = 0;
     vector<int> empty_pre_operators;
     vector<vector<vector<int> > > operators_eff_lookup;
     vector<vector<vector<int> > > operators_pre_lookup;
