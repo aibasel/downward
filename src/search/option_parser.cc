@@ -232,10 +232,24 @@ OptionParser::OptionParser(ParseTree pt, bool dr):
 void OptionParser::add_enum_option(string k, 
                                    const vector<string >& enumeration, 
                                    string def_val, string h) {
-    if (help_mode_) {
-        cout << "implement help for enums!";
+    if(help_mode_) {
+        string enum_descr = "{";
+        for (size_t i(0); i != enumeration.size(); ++i) {
+            enum_descr += enumeration[i];
+            if( i != enumeration.size() - 1) {
+                enum_descr += ", ";
+            }
+        }
+        enum_descr += "}";
+        
+        helpers.push_back(HelpElement(k, h, enum_descr));
+        if(def_val.compare("") != 0){
+            helpers.back().default_value = def_val;
+        }
         return;
     }
+    
+    
     //first parse the corresponding string like a normal argument... 
     if (def_val.compare("") != 0) {
         add_option<string>(k, def_val, h);
@@ -257,7 +271,9 @@ Options OptionParser::parse() {
     if(help_mode_) {
         cout << parse_tree.value << "(";
         for (size_t i(0); i != helpers.size(); ++i) {
-            cout << helpers[i].kwd;
+            cout << helpers[i].kwd 
+                 << (helpers[i].default_value.compare("") != 0 ? " = " : "") 
+                 << helpers[i].default_value;
             if( i != helpers.size() - 1) {
                 cout << ", ";
             }

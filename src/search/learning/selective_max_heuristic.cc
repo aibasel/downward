@@ -557,15 +557,23 @@ void SelectiveMaxHeuristic::print_statistics() const {
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>("heuristics");
     parser.add_option<double>("alpha", 1.0, "alpha");
-    parser.add_option<int>( //NOTE: maybe this should be an enum option
-        "classifier", NB, "classifier type (0: NB, 1:AODE)");
+    vector<string> classifier_types;
+    classifier_types.push_back("NB");
+    classifier_types.push_back("AODE");
+    parser.add_enum_option( 
+        "classifier", classifier_types, "NB", "classifier type");
     parser.add_option<double>("conf_threshold", 0.6, "confidence threshold");
     parser.add_option<int>("training_set", 100, "minimum size of training set");
     parser.add_option<int>("eval_always", 0,
                            "number of heuristics that should always be evaluated");
     parser.add_option<bool>("random_sel", false, "random selection");
     parser.add_option<bool>("retime", false, "retime heuristics");
-    parser.add_option<int>("sample", Probe, "state space sample type (0: Probe, 1: ProbAStar, 2: PDB");
+    vector<string>sample_types;
+    sample_types.push_back("Probe");
+    sample_types.push_back("ProbAStar");
+    sample_types.push_back("PDB");
+    parser.add_enum_option(
+        "sample", sample_types, "Probe", "state space sample type");
     parser.add_option<bool>("uniform", false, "uniform sampling");
     parser.add_option<bool>("zero_threshold", false, 
                             "set threshold constant 0");
@@ -588,14 +596,14 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
             heur->add_heuristic(heuristics_[i]);
         }
         heur->set_alpha(opts.get<double>("alpha"));
-        heur->set_classifier((classifier_t)opts.get<int>("classifier"));
+        heur->set_classifier((classifier_t)opts.get_enum("classifier"));
         heur->set_confidence(opts.get<double>("conf_threshold_"));
         heur->set_num_always_calc(opts.get<int>("eval_always"));
         heur->set_training_set_size(opts.get<int>("training_set"));
         heur->set_random_selection(opts.get<bool>("random_selection"));
         heur->set_retime_heuristics(opts.get<bool>("retime"));
         heur->set_state_space_sample(
-            (state_space_sample_t)opts.get<int>("sample"));
+            (state_space_sample_t)opts.get_enum("sample"));
         heur->set_uniform_sampling(opts.get<bool>("uniform"));
         heur->set_zero_threshold(opts.get<bool>("zero_threshold"));
     }

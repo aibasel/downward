@@ -1054,7 +1054,9 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     parser.add_option<int>("m", 2, "m (as in h^m)");
 
     Options opts = parser.parse();
-    
+    if(parser.help_mode())
+        return 0;
+
     opts.set("expl", new Exploration);
     
     if (parser.dry_run()) {

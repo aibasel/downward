@@ -123,13 +123,6 @@ struct TypeNamer<bool> {
 };
 
 template <>
-struct TypeNamer<float> {
-    static std::string name() {
-        return "float";
-    }
-};
-
-template <>
 struct TypeNamer<double> {
     static std::string name() {
         return "double";
@@ -196,6 +189,41 @@ template <class T>
 struct TypeNamer<std::vector<T> > {
     static std::string name() {
         return "list of "+TypeNamer<T>::name();
+    }
+};
+
+//DefaultValueNamer is for printing default values.
+//Maybe a better solution would be to implement "<<" for everything that's needed.
+
+template <class T>
+struct DefaultValueNamer {
+    static std::string toStr(T val) {
+        std::ostringstream strs;
+        strs << val;
+        return strs.str();
+    }
+};
+
+template <>
+struct DefaultValueNamer<bool> {
+    static std::string toStr(bool val) {
+        if(val) {
+            return "true";
+        } else {
+            return "false";
+        }
+    }
+};
+
+template <class T>
+struct DefaultValueNamer<std::vector<T> > {
+    static std::string toStr(std::vector<T> val) {
+        std::string s = "[";
+        for(size_t i(0); i != val.size(); ++i) {
+            s += DefaultValueNamer<T>::toStr(val[i]);
+        }
+        s += "]";
+        return s;
     }
 };
 
