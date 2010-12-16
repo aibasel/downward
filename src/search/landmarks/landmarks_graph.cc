@@ -190,7 +190,7 @@ LandmarkNode *LandmarksGraph::get_lm_for_index(int i) {
 
 void LandmarksGraph::generate() {
     //cout << "generating landmarks" << endl;
-    generate_landmarks();
+    //generate_landmarks();
 
     if (only_causal_landmarks)
         discard_noncausal_landmarks();
