@@ -123,28 +123,82 @@ class Assignment(object):
 
 class ConstraintSystem(object):
     def __init__(self):
-        self.combinatorial_assignments = [] 
-        self.negative_clauses = [] 
+        self.comb_assignments = []
+        self.neg_clauses = []
 
     def add_assignment_disjunction(self, assignments):
-        self.combinatorial_assignments.append(assignments)
+        self.comb_assignments.append(assignments)
+
+    def add_assignment(self, assignment):
+        self.add_assignment_disjunction([assignment])
 
     def add_negative_clause(self, negative_clause):
-        self.negative_clauses.append(negative_clause)
-    
+        self.neg_clauses.append(negative_clause)
+
+    def combine(self, other):
+        """Combines two constraint systems to a new system"""
+        comb = ConstraintSystem()
+        comb.comb_assignments = self.comb_assignments + other.comb_assignments
+        comb.neg_clauses = self.neg_clauses + other.neg_clauses
+        return comb
+
     def is_solvable(self):
         """Check whether the combinatorial assignments include at least
            one consistent assignment under which the negative clauses
            are satisfiable"""
         at = AssignmentToolbox()
-        for assignments in itertools.product(*self.combinatorial_assignments):
+        for assignments in itertools.product(*self.comb_assignments):
             combined = at.combine_assignments(assignments)
             if not combined.is_consistent():
                 continue
-            if at.all_clauses_satisfiable(combined, self.negative_clauses):
+            if at.all_clauses_satisfiable(combined, self.neg_clauses):
                 return True
         return False
 
+    def ensure_inequality(self, literal1, literal2):
+        """Modifies the system such that it is only solvable if the
+           literal instantiations are not equal (ignoring 
+           whether one is negated and the other is not)"""
+        if (literal1.predicate == literal2.predicate and
+            literal1.parts):
+            parts = zip(literal1.parts, literal2.parts)
+            self.add_negative_clause(NegativeClause(parts))
+
+    def ensure_conjunction_sat(self, *parts):
+        """Modifies the system such that it is only solvable if the conjunction
+           of all parts is satisfiable. 
+
+           Each part must be an iterator, generator, or an iterable over
+           literals."""
+        pos = defaultdict(set)
+        neg = defaultdict(set)
+        for literal in itertools.chain(*parts):
+            if literal.predicate == "=": # use (in)equalities in conditions
+                if literal.negated:
+                    n = NegativeClause([literal.args])
+                    self.add_negative_clause(n)
+                else:
+                    a = Assignment([literal.args])
+                    self.add_assignment_disjunction([a])
+            else:
+                if literal.negated:
+                    neg[literal.predicate].add(literal)
+                else:
+                    pos[literal.predicate].add(literal)
+
+        for pred, posatoms in pos.iteritems():
+            if pred in neg:
+                for posatom in posatoms:
+                    for negatom in neg[pred]:
+                        parts = zip(negatom.args, posatom.args)
+                        if parts:
+                            self.add_negative_clause(NegativeClause(parts))
+
+    def ensure_cover(self, literal, invariant, inv_vars):
+        """Modifies the system such that it is only solvable if the 
+           invariant covers the literal"""
+        a = invariant.get_covering_assignments(inv_vars, literal)
+        self.add_assignment_disjunction(a)
 
 class AssignmentToolbox(object):
     def __init__(self):
@@ -246,6 +300,7 @@ class InvariantPart:
     def matches(self, other, own_literal, other_literal):
         return self.get_parameters(own_literal) == other.get_parameters(other_literal)
 
+
 class Invariant:
     # An invariant is a logical expression of the type
     #   forall V1...Vk: sum_(part in parts) weight(part, V1, ..., Vk) <= 1.
@@ -258,25 +313,34 @@ class Invariant:
         self.predicates = set([part.predicate for part in parts])
         self.predicate_to_part = dict([(part.predicate, part) for part in parts])
         assert len(self.parts) == len(self.predicates)
+    
     def __eq__(self, other):
         return self.parts == other.parts
+    
     def __ne__(self, other):
         return self.parts != other.parts
+    
     def __hash__(self):
         return hash(self.parts)
+
     def __str__(self):
         return "{%s}" % ", ".join(map(str, self.parts))
+
     def arity(self):
         return iter(self.parts).next().arity()
+
     def get_parameters(self, atom):
         return self.predicate_to_part[atom.predicate].get_parameters(atom)
+
     def instantiate(self, parameters):
         return [part.instantiate(parameters) for part in self.parts]
+
     def get_covering_assignments(self, parameters, atom):
         part = self.predicate_to_part[atom.predicate]
         return [part.get_assignment(parameters, atom)]
         # if there were more parts for the same predicate the list
         # contained more than one element
+
     def check_balance(self, balance_checker, enqueue_func):
         # Check balance for this hypothesis.
         actions_to_check = set()
@@ -299,90 +363,53 @@ class Invariant:
        
         for eff1, eff2 in itertools.combinations(add_effects, 2):
             system = ConstraintSystem()
-            
-            # eff1.atom != eff2.atom
-            if (eff1.literal.predicate == eff2.literal.predicate and
-                eff1.literal.parts):
-                parts = zip(eff1.literal.parts, eff2.literal.parts)
-                system.add_negative_clause(NegativeClause(parts))
-            
-            # covers(V, Phi, eff1.atom)
-            a = self.get_covering_assignments(inv_vars, eff1.literal)
-            system.add_assignment_disjunction(a)
-            
-            # covers(V, Phi, eff2.atom)
-            a = self.get_covering_assignments(inv_vars, eff2.literal)
-            system.add_assignment_disjunction(a)
-
-            # precondition plus effect conditions plus both (negated) literals
-            # should be unsatisfiable
-            pos = defaultdict(set)
-            neg = defaultdict(set)
-            neg[eff1.literal.predicate].add(eff1.literal)
-            neg[eff2.literal.predicate].add(eff2.literal)
-            for literal in itertools.chain(get_literals(h_action.precondition),
-                                           get_literals(eff1.condition),
-                                           get_literals(eff2.condition)):
-                
-                if literal.predicate == "=": # use (in)equalities in conditions
-                    if literal.negated:
-                        n = NegativeClause([literal.args])
-                        system.add_negative_clause(n)
-                    else:
-                        a = Assignment([literal.args])
-                        system.add_assignment_disjunction([a])
-                else:
-                    if literal.negated:
-                        neg[literal.predicate].add(literal)
-                    else:
-                        pos[literal.predicate].add(literal)
-
-            for pred, posatoms in pos.iteritems():
-                if pred in neg:
-                    for posatom in posatoms:
-                        for negatom in neg[pred]:
-                            parts = zip(negatom.args, posatom.args)
-                            if parts:
-                                system.add_negative_clause(NegativeClause(parts))
-
+            system.ensure_inequality(eff1.literal, eff2.literal)
+            system.ensure_cover(eff1.literal, self, inv_vars)
+            system.ensure_cover(eff2.literal, self, inv_vars)
+            system.ensure_conjunction_sat(get_literals(h_action.precondition),
+                                          get_literals(eff1.condition),
+                                          get_literals(eff2.condition),
+                                          [eff1.literal.negate()],
+                                          [eff2.literal.negate()])
             if system.is_solvable():
                 return True
         return False
             
     def operator_unbalanced(self, action, enqueue_func):
         inv_vars = find_unique_variables(action, self)
-        rel_effects = [eff for eff in action.effects 
-                           if self.predicate_to_part.get(eff.literal.predicate)]
-        add_effects = [eff for eff in rel_effects
-                           if not eff.literal.negated]
-        del_effects = [eff for eff in rel_effects
-                           if eff.literal.negated]
+        relevant_effs = [eff for eff in action.effects 
+                         if self.predicate_to_part.get(eff.literal.predicate)]
+        add_effects = [eff for eff in relevant_effs
+                       if not eff.literal.negated]
+        del_effects = [eff for eff in relevant_effs
+                       if eff.literal.negated]
         for eff in add_effects:
-            if self.add_effect_unbalanced(action, eff, del_effects, 
-                                          inv_vars, enqueue_func):
+            if self.add_effect_unbalanced(action, eff, del_effects, inv_vars,
+                                          enqueue_func):
                 return True
         return False
 
     def minimal_covering_renamings(self, action, add_effect, inv_vars):
         """computes the minimal renamings of the action parameters such
            that the add effect is covered by the action. 
-           Each renaming is an assignment plus a list of negative clauses that
-           describes the minimality property"""
+           Each renaming is an constraint system"""
+
         # add_effect must be covered
         assigs = self.get_covering_assignments(inv_vars, add_effect.literal)
 
         minimal_renamings = []
         params = [p.name for p in action.parameters]
         for assignment in assigs:
+            system = ConstraintSystem()
+            system.add_assignment(assignment)
             # renaming of operator parameters must be minimal
             minimality_clauses = []
             mapping = assignment.get_mapping()
             for (n1, n2) in itertools.combinations(params, 2):
                 if mapping.get(n1, n1) != mapping.get(n2, n2):
-                    minimality_clauses.append(NegativeClause([(n1, n2)]))
-            minimal_renamings.append((assignment, minimality_clauses))
+                    system.add_negative_clause(NegativeClause([(n1, n2)]))
+            minimal_renamings.append(system)
         return minimal_renamings
-        ### TODO this could be a list of ConstraintSystems
         
     def add_effect_unbalanced(self, action, add_effect, del_effects, 
                               inv_vars, enqueue_func):
@@ -416,18 +443,9 @@ class Invariant:
 
     def del_effect_balances_add_effect(self, del_effect, add_effect,
         minimal_renamings, inv_vars, lhs_by_pred):
-        negative_clauses = []
-        combinatorial_assignments = []
-
-        # add_eff.atom != del_eff.atom
-        if (add_effect.literal.predicate == del_effect.literal.predicate and
-            add_effect.literal.parts):
-            parts = zip(add_effect.literal.parts, del_effect.literal.parts)
-            negative_clauses.append(NegativeClause(parts))
-        
-        # del_effect.atom must be covered
-        a = self.get_covering_assignments(inv_vars, del_effect.literal)
-        combinatorial_assignments.append(a)
+        system = ConstraintSystem()
+        system.ensure_inequality(add_effect.literal, del_effect.literal)
+        system.ensure_cover(del_effect.literal, self, inv_vars)
         
         # del_effect.cond and del_effect.atom must be implied by lhs
         for literal in itertools.chain(get_literals(del_effect.condition),
@@ -441,13 +459,10 @@ class Invariant:
                     poss_assignments.append(a)
             if not poss_assignments:
                 return False
-            combinatorial_assignments.append(poss_assignments)
+            system.add_assignment_disjunction(poss_assignments)
 
-        at = AssignmentToolbox()
-        for op_param_assignment, minimality_clauses in minimal_renamings:
-            # check all promising renamings of the quantified effect variables
-            comb_assigns = combinatorial_assignments + [[op_param_assignment]]
-            all_neg_clauses = negative_clauses + minimality_clauses
-            if not at.contains_good_assignment(comb_assigns, all_neg_clauses):
+        for minimal_renaming in minimal_renamings:
+            new_sys = system.combine(minimal_renaming) 
+            if not new_sys.is_solvable():
                 return False
         return True
