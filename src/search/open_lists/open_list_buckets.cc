@@ -18,7 +18,7 @@ using namespace std;
 */
 
 template<class Entry>
-static OpenList<Entry> BucketOpenList<Entry>::*_parse(OptionParser &parser) {
+OpenList<Entry> *BucketOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evaluators");
     parser.add_option<bool>("pref_only", false, 
                             "insert only preferred operators");
@@ -32,6 +32,7 @@ static OpenList<Entry> BucketOpenList<Entry>::*_parse(OptionParser &parser) {
     else
         return new BucketOpenList<Entry>(opts);
 }
+
 
 template<class Entry>
 BucketOpenList<Entry>::BucketOpenList(const Options &opts) 

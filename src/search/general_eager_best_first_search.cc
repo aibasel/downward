@@ -6,9 +6,6 @@
 #include "successor_generator.h"
 #include "g_evaluator.h"
 #include "sum_evaluator.h"
-#include "open_lists/tiebreaking_open_list.h"
-#include "open_lists/standard_scalar_open_list.h"
-#include "open_lists/alternation_open_list.h"
 #include "plugin.h"
 
 #include <cassert>
@@ -303,9 +300,8 @@ void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int> &valu
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-
+    OpenListPlugin<state_var_t *>::register_open_lists();
     parser.add_option<OpenList<state_var_t *> *>("open");
-
     parser.add_option<bool>("reopen_closed", false, 
                             "reopen closed nodes");
     parser.add_option<bool>("pathmax", false, 
