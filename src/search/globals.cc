@@ -30,9 +30,9 @@ int save_plan(const vector<const Operator *> &plan) {
     int plan_cost = 0;
     outfile.open("sas_plan", ios::out);
     for (int i = 0; i < plan.size(); i++) {
-        cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
+        cout << plan[i]->get_name() << " (" << plan[i]->get_cost(normal) << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
-        plan_cost += plan[i]->get_cost();
+        plan_cost += plan[i]->get_cost(normal);
     }
     outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;

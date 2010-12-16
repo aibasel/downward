@@ -77,7 +77,7 @@ void HMHeuristic::update_hm_table() {
                 get_operator_eff(op, eff);
                 generate_all_partial_tuple(eff, partial_eff);
                 for (int i = 0; i < partial_eff.size(); i++) {
-                    update_hm_entry(partial_eff[i], c1 + op.get_cost());
+                    update_hm_entry(partial_eff[i], c1 + op.get_cost(g_cost_type));
 
                     if (partial_eff[i].size() < m) {
                         extend_tuple(partial_eff[i], op);
@@ -131,7 +131,7 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
             if (is_valid) {
                 int c2 = eval(pre);
                 if (c2 < MAX_VALUE) {
-                    update_hm_entry(entry, c2 + op.get_cost());
+                    update_hm_entry(entry, c2 + op.get_cost(g_cost_type));
                 }
             }
         }

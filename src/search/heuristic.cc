@@ -66,7 +66,7 @@ void Heuristic::get_preferred_operators(std::vector<const Operator *> &result) {
 bool Heuristic::reach_state(const State &parent_state,
                             const Operator &op, const State &state) {
     // todo: just for warning
-    if ((parent_state.hash() == state.hash()) && (op.get_cost() == 0))
+    if ((parent_state.hash() == state.hash()) && (op.get_cost(normal) == 0))
         cout << "weird" << endl;
 
     return false;
