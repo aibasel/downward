@@ -64,7 +64,7 @@ public:
     template <class T> T get(std::string key) const {
         std::map<std::string, boost::any>::const_iterator it;
         it = storage.find(key);
-        return boost::any_cast<T>(*it);
+        return boost::any_cast<T>(it->second);
     }
 
     template <class T> std::vector<T> get_list(std::string key) const {
@@ -189,8 +189,8 @@ public:
         if(help_mode_) {
             helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
             if(opts.contains(k)){
-                //helpers.back().default_value = 
-                //  DefaultValueNamer<T>::name(opts.get<T>(k));
+                helpers.back().default_value = 
+                    DefaultValueNamer<T>::toStr(opts.get<T>(k));
             }
             return;
         }
