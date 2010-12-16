@@ -176,5 +176,7 @@ AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
+operator_cost g_cost_type = normal;
+
 
 Timer g_timer;

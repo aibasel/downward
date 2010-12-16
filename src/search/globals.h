@@ -6,6 +6,8 @@
 #include <vector>
 using namespace std;
 
+enum operator_cost {normal = 0, one = 1, plusone = 2};
+
 class AxiomEvaluator;
 class CausalGraph;
 class DomainTransitionGraph;
@@ -39,6 +41,7 @@ extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
 extern vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
+extern operator_cost g_cost_type;
 
 extern Timer g_timer;
 

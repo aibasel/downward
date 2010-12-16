@@ -28,6 +28,10 @@ int main(int argc, const char **argv) {
         "* SEARCH (SearchEngine): configuration of the search algorithm\n"
         "* OUTPUT (filename): preprocessor output\n\n"
         "Options:\n"
+        "--costs cost_type\n"
+        "    0 - normal action costs\n"
+        "    1 - all actions costs = 1\n"
+        "    2 - all actions costs increased by 1 (as in LAMA)\n"
         "--landmarks LANDMARKS_PREDEFINITION\n"
         "    Predefines a set of landmarks that can afterwards be referenced\n"
         "    by the name that is specified in the definition.\n"
@@ -65,6 +69,9 @@ int main(int argc, const char **argv) {
         if (arg.compare("--heuristic") == 0) {
             ++i;
             OptionParser::instance()->predefine_heuristic(argv[i]);
+        } else if (arg.compare("--costs") == 0) {
+            ++i;
+            g_cost_type = (operator_cost) atoi(argv[i]);
         } else if (arg.compare("--landmarks") == 0) {
             ++i;
             OptionParser::instance()->predefine_lm_graph(argv[i]);
