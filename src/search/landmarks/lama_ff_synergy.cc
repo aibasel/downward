@@ -94,6 +94,8 @@ static Synergy *_create_heuristics(OptionParser& parser) {
     parser.add_option<bool>("alm", true, "use action landmarks");
     
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
     bool lm_pref_ = true; // this will always be the case because it
                           // does not make sense to use the synergy without
                           // using lm preferred operators

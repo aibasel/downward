@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 class ParseTree;
 class LandmarksGraph;
@@ -39,6 +40,17 @@ public:
     Factory get(std::string k) {
         return registered[k];
     }
+
+    std::vector<std::string> get_keys() {
+        std::vector<std::string> keys;
+        for(typename std::map<std::string,Factory>::iterator it = 
+                registered.begin(); 
+            it != registered.end(); ++it) {
+            keys.push_back(it->first);
+        }
+        return keys;
+    }
+
 private:
     Registry(){};
     static Registry<T> *instance_;

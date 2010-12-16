@@ -133,11 +133,9 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "continue search after solution found");
 
     Options opts = parser.parse();
-
-    if(opts.get_list<ParseTree>("engine_config").empty())
-        parser.error("empty search engine list");
-
-    if (parser.dry_run()) {
+    if(parser.help_mode()) {
+        return 0;
+    } else if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
         vector<ParseTree> configs = opts.get_list<ParseTree>("engine_config");
         for (size_t i(0); i != configs.size(); ++i) {
@@ -145,11 +143,13 @@ static SearchEngine *_parse(OptionParser &parser) {
             test_parser.start_parsing<SearchEngine *>();
         }
         return 0;
+    } else {
+        if(opts.get_list<ParseTree>("engine_config").empty())
+            parser.error("empty search engine list");
+        IteratedSearch *engine = new IteratedSearch(opts);
+        
+        return engine;
     }
-
-    IteratedSearch *engine = new IteratedSearch(opts);
-
-    return engine;
 }
 
 static EnginePlugin _plugin("iterated", _parse);
