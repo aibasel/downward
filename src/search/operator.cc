@@ -84,3 +84,16 @@ void Operator::dump() const {
     }
     cout << endl;
 }
+
+
+int Operator::get_cost() const {
+    switch (g_cost_type) {
+    case normal:
+        return cost;
+    case one:
+        return 1;
+    case plusone:
+        return cost + 1;
+    }
+    return -1;
+}
