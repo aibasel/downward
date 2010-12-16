@@ -20,11 +20,13 @@ def invert_list(alist):
         result[arg].append(pos)
     return result
 
+
 def instantiate_factored_mapping(pairs):
     part_mappings = [[zip(preimg, perm_img) for perm_img in tools.permutations(img)]
                      for (preimg, img) in pairs]
     return tools.cartesian_product(part_mappings)
                 
+
 def find_unique_variables(action, invariant):
     # find unique names for invariant variables
     params = set([p.name for p in action.parameters])
@@ -43,12 +45,14 @@ def find_unique_variables(action, invariant):
                     break
     return inv_vars
 
+
 def get_literals(condition):
     if isinstance(condition, pddl.Literal):
         yield condition
     elif isinstance(condition, pddl.Conjunction):
         for literal in condition.parts:
                 yield literal
+
 
 class NegativeClause(object):
     # disjunction of inequalities
@@ -115,6 +119,7 @@ class Assignment(object):
             self.__compute_mapping()
         return self.consistent
 
+
     def get_mapping(self):
         if self.consistent is None:
             self.__compute_mapping()
@@ -126,11 +131,25 @@ class ConstraintSystem(object):
         self.comb_assignments = []
         self.neg_clauses = []
 
-    def add_assignment_disjunction(self, assignments):
-        self.comb_assignments.append(assignments)
+    def __all_clauses_satisfiable(self, assignment):
+        mapping = assignment.get_mapping()
+        for neg_clause in self.neg_clauses:
+            clause = neg_clause.apply_mapping(mapping)
+            if not clause.is_satisfiable():
+                return False
+        return True
+    
+    def __combine_assignments(self, assignments):
+        new_equalities = []
+        for a in assignments:
+            new_equalities.extend(a.equalities)
+        return Assignment(new_equalities)
 
     def add_assignment(self, assignment):
         self.add_assignment_disjunction([assignment])
+
+    def add_assignment_disjunction(self, assignments):
+        self.comb_assignments.append(assignments)
 
     def add_negative_clause(self, negative_clause):
         self.neg_clauses.append(negative_clause)
@@ -141,28 +160,6 @@ class ConstraintSystem(object):
         comb.comb_assignments = self.comb_assignments + other.comb_assignments
         comb.neg_clauses = self.neg_clauses + other.neg_clauses
         return comb
-
-    def is_solvable(self):
-        """Check whether the combinatorial assignments include at least
-           one consistent assignment under which the negative clauses
-           are satisfiable"""
-        at = AssignmentToolbox()
-        for assignments in itertools.product(*self.comb_assignments):
-            combined = at.combine_assignments(assignments)
-            if not combined.is_consistent():
-                continue
-            if at.all_clauses_satisfiable(combined, self.neg_clauses):
-                return True
-        return False
-
-    def ensure_inequality(self, literal1, literal2):
-        """Modifies the system such that it is only solvable if the
-           literal instantiations are not equal (ignoring 
-           whether one is negated and the other is not)"""
-        if (literal1.predicate == literal2.predicate and
-            literal1.parts):
-            parts = zip(literal1.parts, literal2.parts)
-            self.add_negative_clause(NegativeClause(parts))
 
     def ensure_conjunction_sat(self, *parts):
         """Modifies the system such that it is only solvable if the conjunction
@@ -200,71 +197,68 @@ class ConstraintSystem(object):
         a = invariant.get_covering_assignments(inv_vars, literal)
         self.add_assignment_disjunction(a)
 
-class AssignmentToolbox(object):
-    def __init__(self):
-        pass
+    def ensure_inequality(self, literal1, literal2):
+        """Modifies the system such that it is only solvable if the
+           literal instantiations are not equal (ignoring 
+           whether one is negated and the other is not)"""
+        if (literal1.predicate == literal2.predicate and
+            literal1.parts):
+            parts = zip(literal1.parts, literal2.parts)
+            self.add_negative_clause(NegativeClause(parts))
 
-    def all_clauses_satisfiable(self, assignment, negative_clauses):
-        """Check whether all negative clauses are satisfiable under
-           a consistent assignment"""
-        assert assignment.is_consistent()
-        mapping = assignment.get_mapping()
-        for neg_clause in negative_clauses:
-            clause = neg_clause.apply_mapping(mapping)
-            if not clause.is_satisfiable():
-                return False
-        return True
-
-    def combine_assignments(self, assignments):
-        new_equalities = []
-        for a in assignments:
-            new_equalities.extend(a.equalities)
-        return Assignment(new_equalities)
-
-    def contains_good_assignment(self, combinatorial_assignments, 
-                                 negative_clauses):
+    def is_solvable(self):
         """Check whether the combinatorial assignments include at least
            one consistent assignment under which the negative clauses
            are satisfiable"""
-        for assignments in itertools.product(*combinatorial_assignments):
-            combined = self.combine_assignments(assignments)
+        for assignments in itertools.product(*self.comb_assignments):
+            combined = self.__combine_assignments(assignments)
             if not combined.is_consistent():
                 continue
-            if self.all_clauses_satisfiable(combined, negative_clauses):
+            if self.__all_clauses_satisfiable(combined):
                 return True
         return False
+
 
 class InvariantPart:
     def __init__(self, predicate, order, omitted_pos=-1):
         self.predicate = predicate
         self.order = order
         self.omitted_pos = omitted_pos
+
     def __eq__(self, other):
         # This implies equality of the omitted_pos component.
         return self.predicate == other.predicate and self.order == other.order
+
     def __ne__(self, other):
         return self.predicate != other.predicate or self.order != other.order
+
     def __hash__(self):
         return hash((self.predicate, tuple(self.order)))
+
     def __str__(self):
         var_string = " ".join(map(str, self.order))
         omitted_string = ""
         if self.omitted_pos != -1:
             omitted_string = " [%d]" % self.omitted_pos
         return "%s %s%s" % (self.predicate, var_string, omitted_string)
+
     def arity(self):
         return len(self.order)
+
     def get_assignment(self, parameters, literal):
         equalities = [(arg, literal.args[argpos]) 
                       for arg, argpos in zip(parameters, self.order)] 
         return Assignment(equalities)
+
     def get_parameters(self, literal):
         return [literal.args[pos] for pos in self.order]
+
     def instantiate(self, parameters):
         args = ["?X"] * (len(self.order) + (self.omitted_pos != -1))
         for arg, argpos in zip(parameters, self.order):
             args[argpos] = arg
         return pddl.Atom(self.predicate, args)
+
     def possible_mappings(self, own_literal, other_literal):
         allowed_omissions = len(other_literal.args) - len(self.order)
         if allowed_omissions not in (0, 1):
@@ -284,6 +278,7 @@ class InvariantPart:
                 allowed_omissions = 0
             factored_mapping.append((other_positions, own_positions))
         return instantiate_factored_mapping(factored_mapping)
+
     def possible_matches(self, own_literal, other_literal):
         assert self.predicate == own_literal.predicate
         result = []
@@ -297,6 +292,7 @@ class InvariantPart:
                     new_order[value] = key
             result.append(InvariantPart(other_literal.predicate, new_order, omitted))
         return result
+
     def matches(self, other, own_literal, other_literal):
         return self.get_parameters(own_literal) == other.get_parameters(other_literal)
 
