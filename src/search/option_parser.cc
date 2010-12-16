@@ -105,40 +105,59 @@ void OptionParser::warning(string msg) {
     cout << "Parser Warning: " << msg << endl;
 }
 
-void OptionParser::set_help_mode(bool m) {
-    dry_run_ = dry_run_ && m;
-    help_mode_ = m;
-}
-
 
 /*
 Functions for printing help
 */
 
+void OptionParser::set_help_mode(bool m) {
+    dry_run_ = dry_run_ && m;
+    help_mode_ = m;
+}
 
 template <class T>
-static void get_help_t(const ParseTree &pt) {
+static void get_help_templ(const ParseTree &pt) {
     if (Registry<T>::instance()->contains(pt.value)) {
-        cout << pt.value << " is registered as a " << TypeNamer<T>::name() 
+        cout << pt.value << " is a " << TypeNamer<T>::name() 
              << endl << "Usage: " << endl;        
         OptionParser p(pt, true);
         p.set_help_mode(true);
         p.start_parsing<T>();
+        cout << endl;
     }
 }
 
 static void get_help(string k) {
     ParseTree pt;
     pt.value = k;
-    get_help_t<SearchEngine *>(pt);
-    get_help_t<Heuristic *>(pt);
-    get_help_t<ScalarEvaluator *>(pt);
-    get_help_t<Synergy *>(pt);
-    get_help_t<LandmarksGraph *>(pt);
+    get_help_templ<SearchEngine *>(pt);
+    get_help_templ<Heuristic *>(pt);
+    get_help_templ<ScalarEvaluator *>(pt);
+    get_help_templ<Synergy *>(pt);
+    get_help_templ<LandmarksGraph *>(pt);
+    cout << "For help with open lists, please use --help with no specifier."
+         << "Open lists are only registered when needed by other objects."
+         << endl;
 }
 
-static void get_help() {
+template <class T>
+static void get_full_help_templ() {
+    cout << endl << "Help for " << TypeNamer<T>::name() << "s:" << endl << endl;
+    vector<string> keys = Registry<T>::instance()->get_keys();
+    for(size_t i(0); i != keys.size(); ++i) {
+        ParseTree pt;
+        pt.value = keys[i];
+        get_help_templ<T>(pt);
+    }
+}
 
+static void get_full_help() {
+    get_full_help_templ<SearchEngine *>();
+    get_full_help_templ<Heuristic *>();
+    get_full_help_templ<ScalarEvaluator *>();
+    get_full_help_templ<Synergy *>();
+    get_full_help_templ<LandmarksGraph *>();
+    get_full_help_templ<OpenList<short *> *>();
 }
 
 SearchEngine *OptionParser::parse_cmd_line(
@@ -160,14 +179,15 @@ SearchEngine *OptionParser::parse_cmd_line(
             ++i;
             srand(atoi(argv[i]));
             cout << "random seed " << argv[i] << endl;
-        } else if (arg.compare("--help") == 0) {
+        } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
             if( i+1 < argc) {
                 string helpiand = string(argv[i+1]);
                 get_help(helpiand);
             } else {
-                get_help();
+                get_full_help();
             }
+            cout << "Help finished." << endl;
             exit(1);
         } else {
             cerr << "unknown option " << arg << endl << endl;
@@ -212,21 +232,25 @@ OptionParser::OptionParser(ParseTree pt, bool dr):
 void OptionParser::add_enum_option(string k, 
                                    const vector<string >& enumeration, 
                                    string def_val, string h) {
-        //first parse the corresponding string like a normal argument... 
-        if (def_val.compare("") != 0) {
-            add_option<string>(k, def_val, h);
-        } else {
-            add_option<string>(k, h);
-        }
+    if (help_mode_) {
+        cout << "implement help for enums!";
+        return;
+    }
+    //first parse the corresponding string like a normal argument... 
+    if (def_val.compare("") != 0) {
+        add_option<string>(k, def_val, h);
+    } else {
+        add_option<string>(k, h);
+    }
 
-        //...then map that string to its position in the enumeration vector
-        string name = opts.get<string>(k);
-        vector<string>::const_iterator it = 
-            find(enumeration.begin(), enumeration.end(), name);
-        if (it == enumeration.end()) {
-            error("invalid enum argument");
-        }
-        opts.set(k, it - enumeration.begin());            
+    //...then map that string to its position in the enumeration vector
+    string name = opts.get<string>(k);
+    vector<string>::const_iterator it = 
+        find(enumeration.begin(), enumeration.end(), name);
+    if (it == enumeration.end()) {
+        error("invalid enum argument");
+    }
+    opts.set(k, it - enumeration.begin());            
 }
 
 Options OptionParser::parse() {
@@ -258,6 +282,10 @@ Options OptionParser::parse() {
 
 bool OptionParser::dry_run() {
     return dry_run_;
+}
+
+bool OptionParser::help_mode() {
+    return help_mode_;
 }
 
 void OptionParser::set_parse_tree(const ParseTree& pt) {

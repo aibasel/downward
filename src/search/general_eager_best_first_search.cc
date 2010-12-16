@@ -315,6 +315,8 @@ static SearchEngine *_parse(OptionParser &parser) {
          "use preferred operators of these heuristics");
 
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
     opts.set<bool>("mpd", false);
     
 
@@ -336,6 +338,8 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
     parser.add_option<bool>("mpd", false,
                             "use multi-path dependence (LM-A*)");
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
 
     GeneralEagerBestFirstSearch *engine = 0;
     if (!parser.dry_run()) {
@@ -372,12 +376,13 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
 
     Options opts =parser.parse();
-    if (opts.get_list<ScalarEvaluator *>("evals").empty())
-        parser.error("scalar evaluator list must not be empty");
-
-
+    if(parser.help_mode())
+        return 0;
+    
     GeneralEagerBestFirstSearch *engine = 0;
     if (!parser.dry_run()) {
+        if (opts.get_list<ScalarEvaluator *>("evals").empty())
+            parser.error("scalar evaluator list must not be empty");
         vector<ScalarEvaluator *> evals = 
             opts.get_list<ScalarEvaluator *>("evals");
         vector<Heuristic *> preferred_list = 

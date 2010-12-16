@@ -571,6 +571,9 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
                             "set threshold constant 0");
     
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
+
     vector<Heuristic *> heuristics_ = opts.get_list<Heuristic *>("heuristics");
 
     if (heuristics_.empty()) {

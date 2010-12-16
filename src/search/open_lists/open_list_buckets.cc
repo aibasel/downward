@@ -23,7 +23,9 @@ OpenList<Entry> *BucketOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_option<bool>("pref_only", false, 
                             "insert only preferred operators");
     Options opts = parser.parse();
-    
+    if(parser.help_mode())
+        return 0;
+
     if(opts.get_list<ScalarEvaluator *>("evaluators").empty())
         parser.error("expected non-empty list of scalar evaluators");
 

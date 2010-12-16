@@ -294,11 +294,13 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.add_option<int>("w", 1, "heuristic weight");
     
     Options opts = parser.parse();
-    vector<ScalarEvaluator *> evals = opts.get_list<ScalarEvaluator *>("evals");
-        
+    if(parser.help_mode())
+        return 0;
+    
+    vector<ScalarEvaluator *> evals = 
+        opts.get_list<ScalarEvaluator *>("evals");
     if (evals.empty())
         parser.error("expected non-empty list of scalar evaluators");
-
 
     GeneralLazyBestFirstSearch *engine = 0;
     if (!parser.dry_run()) {

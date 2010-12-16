@@ -229,7 +229,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>("preffered", vector<Heuristic *>(), "use preferred operators of these heuristics");
     Options opts = parser.parse();
 
-    if (!parser.dry_run()) 
+    if (parser.dry_run()) 
         return 0;
     else
         return new BestFirstSearchEngine(opts);

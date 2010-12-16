@@ -15,6 +15,8 @@ OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
                            "boost value for successful sub-open-lists");
     
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
     
     if (opts.get_list<OpenList<Entry> *>("sublists").empty())
         parser.error("need at least one internal open list");

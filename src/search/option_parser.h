@@ -258,6 +258,7 @@ public:
     void set_help_mode(bool m);
     
     bool dry_run();
+    bool help_mode();
 
 private:
     Options opts;
