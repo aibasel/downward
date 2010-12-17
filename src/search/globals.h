@@ -6,6 +6,8 @@
 #include <vector>
 using namespace std;
 
+enum OperatorCost {NORMAL = 0, ONE = 1, PLUSONE = 2, MAX_OPERATOR_COST};
+
 class AxiomEvaluator;
 class CausalGraph;
 class DomainTransitionGraph;
@@ -23,6 +25,7 @@ void read_everything(istream &in);
 void dump_everything();
 
 void check_magic(istream &in, string magic);
+int get_adjusted_action_cost(int cost, OperatorCost cost_type);
 
 extern bool g_legacy_file_format;
 extern bool g_use_metric;

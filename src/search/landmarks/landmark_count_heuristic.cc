@@ -57,7 +57,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(HeuristicOptions &options,
             exit(1);
 #endif
         } else {
-            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, use_action_landmarks);
+            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, use_action_landmarks, cost_type);
         }
     } else {
         use_cost_sharing = false;
