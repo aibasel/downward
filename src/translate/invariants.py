@@ -356,7 +356,10 @@ class Invariant:
                        if not eff.literal.negated and
                           self.predicate_to_part.get(eff.literal.predicate)]
         inv_vars = find_unique_variables(h_action, self)
-       
+      
+        if len(add_effects) < 1:
+            return False
+            
         for eff1, eff2 in itertools.combinations(add_effects, 2):
             system = ConstraintSystem()
             system.ensure_inequality(eff1.literal, eff2.literal)
@@ -401,9 +404,10 @@ class Invariant:
             # renaming of operator parameters must be minimal
             minimality_clauses = []
             mapping = assignment.get_mapping()
-            for (n1, n2) in itertools.combinations(params, 2):
-                if mapping.get(n1, n1) != mapping.get(n2, n2):
-                    system.add_negative_clause(NegativeClause([(n1, n2)]))
+            if len(params) > 1:
+                for (n1, n2) in itertools.combinations(params, 2):
+                    if mapping.get(n1, n1) != mapping.get(n2, n2):
+                        system.add_negative_clause(NegativeClause([(n1, n2)]))
             minimal_renamings.append(system)
         return minimal_renamings
         
