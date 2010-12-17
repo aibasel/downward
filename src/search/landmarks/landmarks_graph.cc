@@ -1292,6 +1292,9 @@ LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
 }
 
 void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(NamedOptionParser &option_parser) {
+
+    heuristic_options.add_option_to_parser(option_parser);
+
     option_parser.add_bool_option("reasonable_orders",
                                   &reasonable_orders,
                                   "generate reasonable orders");
