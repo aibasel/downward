@@ -128,7 +128,7 @@ int GeneralEagerBestFirstSearch::step() {
     for (int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
 
-        if ((node.get_g() + op->get_cost(normal)) >= bound)
+        if ((node.get_g() + op->get_cost()) >= bound)
             continue;
 
         State succ_state(s, *op);
@@ -165,7 +165,7 @@ int GeneralEagerBestFirstSearch::step() {
             // before having checked that we're not in a dead end. The
             // division of responsibilities is a bit tricky here -- we
             // may want to refactor this later.
-            open_list->evaluate(node.get_g() + op->get_cost(normal), is_preferred);
+            open_list->evaluate(node.get_g() + op->get_cost(), is_preferred);
             bool dead_end = open_list->is_dead_end() && open_list->dead_end_is_reliable();
             if (dead_end) {
                 succ_node.mark_as_dead_end();
@@ -175,9 +175,9 @@ int GeneralEagerBestFirstSearch::step() {
             //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
             int succ_h = heuristics[0]->get_heuristic();
             if (do_pathmax) {
-                if ((node.get_h() - op->get_cost(normal)) > succ_h) {
+                if ((node.get_h() - op->get_cost()) > succ_h) {
                     //cout << "Pathmax correction: " << succ_h << " -> " << node.get_h() - op->get_cost() << endl;
-                    succ_h = node.get_h() - op->get_cost(normal);
+                    succ_h = node.get_h() - op->get_cost();
                     heuristics[0]->set_evaluator_value(succ_h);
                     search_progress.inc_pathmax_corrections();
                 }
@@ -188,7 +188,7 @@ int GeneralEagerBestFirstSearch::step() {
             if (search_progress.check_h_progress(succ_node.get_g())) {
                 reward_progress();
             }
-        } else if (succ_node.get_g() > node.get_g() + op->get_cost(normal)) {
+        } else if (succ_node.get_g() > node.get_g() + op->get_cost()) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
                 //TODO:CR - test if we should add a reevaluate flag and if it helps

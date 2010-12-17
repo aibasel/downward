@@ -154,7 +154,7 @@ LandmarksGraph *LandmarksGraphRpgSearch::create(
         return 0;
     } else {
         LandmarksGraph *graph = new LandmarksGraphRpgSearch(
-            common_options, new Exploration,
+            common_options, new Exploration(default_options),
             uniform_sampling, max_depth, num_tries);
         LandmarksGraph::build_lm_graph(graph);
         return graph;

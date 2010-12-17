@@ -239,7 +239,7 @@ void ValueTransition::simplify_labels(
                         subset.push_back(key[i]);
                 HashMap::iterator found = label_index.find(subset);
                 if (found != label_index.end()) {
-                    if (old_labels[label_no].op->get_cost(normal) >= old_labels[found->second].op->get_cost(normal)) {
+                    if (old_labels[label_no].op->get_cost() >= old_labels[found->second].op->get_cost()) {
                         match = true;
                         break;
                     }

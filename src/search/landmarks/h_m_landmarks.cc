@@ -1046,7 +1046,7 @@ LandmarksGraph *HMLandmarks::create(
         return 0;
     } else {
         LandmarksGraph *graph = new HMLandmarks(common_options,
-                                                new Exploration, m);
+                                                new Exploration(default_options), m);
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }

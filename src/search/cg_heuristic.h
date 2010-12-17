@@ -24,7 +24,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    CGHeuristic();
+    CGHeuristic(HeuristicOptions &options);
     ~CGHeuristic();
     virtual bool dead_ends_are_reliable() {return false; }
 
