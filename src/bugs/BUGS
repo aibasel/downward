@@ -1,22 +1,3 @@
-The JAIR experiments uncovered a number of bugs and problems:
-- The FF/h1+ heuristic does not support operators without preconditions,
-  causing problems for Movie. This is documented in ff_heuristic.cc.
-  A fix (only changing ff_heuristic.cc) is in ff-no-preconditions.
-  NOTE: This is already fixed now.
-- The termination and open queue selection logic in best_first_search.cc 
-  is not correct. Moreover, states with infinite CG estimate but finite FF 
-  estimate should not be ignored by the multi-heuristic configurations for 
-  those to be complete. Moreover, if CG best-first search fails, an FF
-  heuristic evaluation should be used as a safety net (this needs to be 
-  somehow integrated with dead-end detection). A corrected version is in
-  safety-net (I hope -- as of this writing, I am somewhat confused by the
-  various versions floating around and am no longer exactly sure which
-  does which.)
-  NOTE: The termination and queue selection logic is now more reasonable
-  as of the Canberra refactoring. The logic is now only off if the CG
-  heuristic is used exclusively. Doing a re-run of the planner with the
-  FF heuristic in such a case is something that can be done externally;
-  no point in messing up the planner code with this logic.
 - The "psr-strips-derived-predicates" directory contains an instance
   for which the translator used to generate rubbish. This bug has been
   fixed, but the translator could be improved further for tasks like
