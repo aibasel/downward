@@ -3,6 +3,7 @@
 
 #include "scalar_evaluator.h"
 #include "option_parser.h"
+#include "globals.h"
 
 #include <map>
 #include <set>
@@ -11,8 +12,6 @@
 
 class Operator;
 class State;
-
-enum OperatorCost {NORMAL = 0, ONE = 1, PLUSONE = 2, MAX_OPERATOR_COST};
 
 struct HeuristicOptions {
     int cost_type;
@@ -25,7 +24,6 @@ struct HeuristicOptions {
 class Heuristic : public ScalarEvaluator {
 private:
     enum {NOT_INITIALIZED = -2};
-    OperatorCost cost_type;
     int heuristic;
     int evaluator_value; // usually equal to heuristic but can be different
     // if set with set_evaluator_value which is done if we use precalculated
@@ -34,6 +32,7 @@ private:
     std::vector<const Operator *> preferred_operators;
 
 protected:
+    OperatorCost cost_type;
     enum {DEAD_END = -1};
     virtual void initialize() {}
     virtual int compute_heuristic(const State &state) = 0;

@@ -55,8 +55,9 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 /* Uniform cost partioning */
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    LandmarksGraph &graph, bool use_action_landmarks_)
-    : LandmarkCostAssignment(graph), use_action_landmarks(use_action_landmarks_) {
+    LandmarksGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_)
+    : LandmarkCostAssignment(graph), use_action_landmarks(use_action_landmarks_),
+      cost_type(cost_type_){
 }
 
 
@@ -89,7 +90,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                     action_landmarks[op_id] = true;
                     const Operator &op = lm_graph.get_operator_for_lookup_index(
                         op_id);
-                    h += op.get_cost(); // TODO: use adjusted cost
+                    h += get_adjusted_action_cost(op.get_cost(), cost_type); // TODO: use adjusted cost
                 }
             } else {
                 set<int>::const_iterator ach_it;
@@ -152,7 +153,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                 op_id);
             int num_achieved = achieved_lms_by_op[op_id];
             assert(num_achieved >= 1);
-            double shared_cost = double(op.get_cost()) / num_achieved; // TODO: use adjusted cost
+            double shared_cost = double(get_adjusted_action_cost(op.get_cost(), cost_type)) / num_achieved; // TODO: use adjusted cost
             min_cost = min(min_cost, shared_cost);
         }
         h += min_cost;

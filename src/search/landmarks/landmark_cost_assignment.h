@@ -2,6 +2,7 @@
 #define LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 
 #include <set>
+#include "../globals.h"
 
 class LandmarksGraph;
 class LandmarkNode;
@@ -22,8 +23,9 @@ public:
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
     bool use_action_landmarks;
+    OperatorCost cost_type;
 public:
-    LandmarkUniformSharedCostAssignment(LandmarksGraph &graph, bool use_action_landmarks_);
+    LandmarkUniformSharedCostAssignment(LandmarksGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_);
     virtual ~LandmarkUniformSharedCostAssignment();
 
     virtual double cost_sharing_h_value();

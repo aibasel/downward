@@ -162,6 +162,21 @@ void dump_everything() {
     */
 }
 
+int get_adjusted_action_cost(int cost, OperatorCost cost_type) {
+    switch (cost_type) {
+    case NORMAL:
+        return cost;
+    case ONE:
+        return 1;
+    case PLUSONE:
+        return cost + 1;
+    case MAX_OPERATOR_COST:
+        break;
+    }
+    cerr << "Unknown cost type" << endl;
+    exit(2);
+}
+
 bool g_legacy_file_format = false; // TODO: Can rip this out after migration.
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();

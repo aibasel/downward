@@ -1,5 +1,6 @@
 #include "heuristic.h"
 #include "operator.h"
+#include "globals.h"
 
 #include <cassert>
 #include <stdlib.h>
@@ -99,18 +100,7 @@ void Heuristic::set_evaluator_value(int val) {
 }
 
 int Heuristic::get_adjusted_cost(int cost) const {
-    switch (cost_type) {
-    case NORMAL:
-        return cost;
-    case ONE:
-        return 1;
-    case PLUSONE:
-        return cost + 1;
-    case MAX_OPERATOR_COST:
-        break;
-    }
-    cerr << "Unknown cost type" << endl;
-    exit(2);
+    return get_adjusted_action_cost(cost, cost_type);
 }
 
 
