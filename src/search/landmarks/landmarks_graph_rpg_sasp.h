@@ -32,8 +32,7 @@ class LandmarksGraphNew : public LandmarksGraph {
                                     const hash_set<int> &exclude);
 public:
     LandmarksGraphNew(LandmarkGraphOptions &options, Exploration *exploration)
-        : LandmarksGraph(options, exploration) {
-    }
+        : LandmarksGraph(options, exploration) {}
     ~LandmarksGraphNew() {
     }
     static LandmarksGraph *create(const std::vector<std::string> &config, int start,

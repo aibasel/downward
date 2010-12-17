@@ -95,7 +95,7 @@ int LandmarksGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
         // and calculate the minimum cost of those that can make
         // bp true for the first time according to lvl_var
             if(_possibly_reaches_lm(op, lvl_var, bp))
-        min_cost = min(min_cost, op.get_cost());
+        min_cost = min(min_cost, get_adjusted_action_cost(op.get_cost(), lm_cost_type));
         }
     }
     assert(min_cost < numeric_limits<int>::max());

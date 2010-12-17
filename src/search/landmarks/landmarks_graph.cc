@@ -71,6 +71,11 @@ LandmarksGraph::LandmarksGraph(LandmarkGraphOptions &options, Exploration *explo
     disjunctive_landmarks = options.disjunctive_landmarks;
     conjunctive_landmarks = options.conjunctive_landmarks;
     no_orders = options.no_orders;
+    if ((options.lm_cost_type < 0) || (options.lm_cost_type >= MAX_OPERATOR_COST)) {
+        cerr << "Illegal action cost type" << endl;
+        exit(2);
+    }
+    lm_cost_type = static_cast<OperatorCost>(options.lm_cost_type);
     generate_operators_lookups();
 }
 
@@ -1312,4 +1317,8 @@ void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(NamedOptionParse
     option_parser.add_bool_option("no_orders",
                                   &no_orders,
                                   "discard all orderings");
+    option_parser.add_int_option("lm_cost_type",
+                                  &lm_cost_type,
+                                  "landmark action cost adjustment type");
+
 }
