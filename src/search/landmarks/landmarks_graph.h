@@ -131,6 +131,7 @@ public:
         bool disjunctive_landmarks;
         bool conjunctive_landmarks;
         bool no_orders;
+        HeuristicOptions heuristic_options;
 
         LandmarkGraphOptions();
 

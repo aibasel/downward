@@ -329,7 +329,7 @@ LandmarksGraph *LandmarksGraphZhuGivan::create(
         return 0;
     } else {
         LandmarksGraph *graph = new LandmarksGraphZhuGivan(common_options,
-                                                           new Exploration(default_options));
+                                                           new Exploration(common_options.heuristic_options));
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }
