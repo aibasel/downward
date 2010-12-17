@@ -1,5 +1,0 @@
-- The "psr-strips-derived-predicates" directory contains an instance
-  for which the translator used to generate rubbish. This bug has been
-  fixed, but the translator could be improved further for tasks like
-  this to simplify the derived variables a bit. See NOTES in the
-  directory.
