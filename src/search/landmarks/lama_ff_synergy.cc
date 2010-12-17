@@ -7,7 +7,9 @@ static SynergyPlugin lama_ff_synergy_plugin(
     "lm_ff_syn", LamaFFSynergy::create_heuristics);
 
 
-LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_) {
+LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_):
+    Heuristic(default_options)
+{
     synergy = synergy_;
     is_first_proxy = false;
 }
@@ -19,7 +21,8 @@ void LamaFFSynergy::HeuristicProxy::initialize() {
     }
 }
 
-LamaFFSynergy::LamaFFSynergy(LandmarksGraph &lm_graph,
+LamaFFSynergy::LamaFFSynergy(HeuristicOptions &options,
+                             LandmarksGraph &lm_graph,
                              bool lm_pref_, bool lm_admissible_, bool lm_optimal_,
                              bool use_action_landmarks_)
     : lama_heuristic_proxy(this), ff_heuristic_proxy(this),
@@ -27,7 +30,7 @@ LamaFFSynergy::LamaFFSynergy(LandmarksGraph &lm_graph,
       lm_optimal(lm_optimal_),
       use_action_landmarks(use_action_landmarks_) {
     cout << "Initializing LAMA-FF Synergy Object" << endl;
-    lama_heuristic = new LandmarkCountHeuristic(lm_graph,
+    lama_heuristic = new LandmarkCountHeuristic(options, lm_graph,
                                                 lm_pref, lm_admissible, lm_optimal,
                                                 use_action_landmarks_);
     //lama_heuristic->initialize(); // must be called here explicitly
@@ -79,6 +82,7 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
     bool lm_admissible_ = false;
     bool lm_optimal_ = false;
     bool use_action_landmarks_ = true;
+    HeuristicOptions common_options;
 
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
@@ -93,6 +97,9 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+
+        common_options.add_option_to_parser(option_parser);
+
         option_parser.add_bool_option("admissible",
                                       &lm_admissible_,
                                       "get admissible estimate");
@@ -111,8 +118,10 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
     bool lm_pref_ = true; // this will always be the case because it
                           // does not make sense to use the synergy without
                           // using lm preferred operators
-    LamaFFSynergy *lama_ff_synergy = new LamaFFSynergy(*lm_graph,
-                                                       lm_pref_, lm_admissible_, lm_optimal_, use_action_landmarks_);
+    LamaFFSynergy *lama_ff_synergy = new LamaFFSynergy(
+            common_options, *lm_graph,
+            lm_pref_, lm_admissible_,
+            lm_optimal_, use_action_landmarks_);
 
     heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
     heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());

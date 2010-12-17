@@ -11,7 +11,9 @@
 static ScalarEvaluatorPlugin hm_heuristic_plugin("hm", HMHeuristic::create);
 
 
-HMHeuristic::HMHeuristic(int _m) : m(_m) {
+HMHeuristic::HMHeuristic(HeuristicOptions &options,int _m) :
+    Heuristic(options),m(_m)
+{
     MAX_VALUE = 100000;
     //MAX_VALUE = numeric_limits<int>::max();
 }
@@ -77,7 +79,7 @@ void HMHeuristic::update_hm_table() {
                 get_operator_eff(op, eff);
                 generate_all_partial_tuple(eff, partial_eff);
                 for (int i = 0; i < partial_eff.size(); i++) {
-                    update_hm_entry(partial_eff[i], c1 + op.get_cost(g_cost_type));
+                    update_hm_entry(partial_eff[i], c1 + get_adjusted_cost(op.get_cost()));
 
                     if (partial_eff[i].size() < m) {
                         extend_tuple(partial_eff[i], op);
@@ -131,7 +133,7 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
             if (is_valid) {
                 int c2 = eval(pre);
                 if (c2 < MAX_VALUE) {
-                    update_hm_entry(entry, c2 + op.get_cost(g_cost_type));
+                    update_hm_entry(entry, c2 + get_adjusted_cost(op.get_cost()));
                 }
             }
         }
@@ -218,19 +220,34 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
     return 0;
 }
 
-ScalarEvaluator *HMHeuristic::create(const std::vector<string> &config,
-                                     int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-    end = start + 2;
-    OptionParser *parser = OptionParser::instance();
-    int m = parser->parse_int(config, end, end);
-    end++;
-    if (config[end] != ")")
-        throw ParseError(end);
+ScalarEvaluator *HMHeuristic::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
+    HeuristicOptions common_options;
 
-    if (dry_run)
+    if (config.size() <= start)
+            throw ParseError(start);
+
+    int m = 2;
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.add_int_option("m", &m, "m");
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
         return 0;
-    else
-        return new HMHeuristic(m);
+    } else {
+        return new HMHeuristic(common_options, m);
+    }
 }

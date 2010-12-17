@@ -27,7 +27,7 @@ using namespace __gnu_cxx;
 */
 
 // Construction and destruction
-Exploration::Exploration() {
+Exploration::Exploration(HeuristicOptions &options):Heuristic(options) {
     cout << "Initializing Exploration..." << endl;
 
     // Build propositions.
@@ -93,7 +93,7 @@ void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_g
 
 void Exploration::build_unary_operators(const Operator &op) {
     // Note: changed from the original to allow sorting of operator conditions
-    int base_cost = op.get_cost(g_cost_type);
+    int base_cost = get_adjusted_cost(op.get_cost());
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<ExProposition *> precondition;
@@ -320,7 +320,7 @@ int Exploration::compute_ff_heuristic(const State &state) {
         int cost = 0;
         RelaxedPlan::iterator it = relaxed_plan.begin();
         for (; it != relaxed_plan.end(); ++it)
-            cost += (*it)->get_cost(g_cost_type);
+            cost += get_adjusted_cost((*it)->get_cost());
         return cost;
     }
 }

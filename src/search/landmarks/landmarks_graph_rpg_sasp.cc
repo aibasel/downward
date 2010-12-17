@@ -466,7 +466,7 @@ LandmarksGraph *LandmarksGraphNew::create(
         return 0;
     } else {
         LandmarksGraph *graph = new LandmarksGraphNew(common_options,
-                                                      new Exploration);
+                                                      new Exploration(default_options));
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }

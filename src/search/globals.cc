@@ -15,6 +15,7 @@ using namespace std;
 #include "state.h"
 #include "successor_generator.h"
 #include "timer.h"
+#include "heuristic.h"
 
 bool test_goal(const State &state) {
     for (int i = 0; i < g_goal.size(); i++) {
@@ -30,9 +31,9 @@ int save_plan(const vector<const Operator *> &plan) {
     int plan_cost = 0;
     outfile.open("sas_plan", ios::out);
     for (int i = 0; i < plan.size(); i++) {
-        cout << plan[i]->get_name() << " (" << plan[i]->get_cost(normal) << ")" << endl;
+        cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
-        plan_cost += plan[i]->get_cost(normal);
+        plan_cost += plan[i]->get_cost();
     }
     outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
@@ -176,7 +177,6 @@ AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
-operator_cost g_cost_type = normal;
-
+HeuristicOptions default_options;
 
 Timer g_timer;
