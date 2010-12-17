@@ -84,13 +84,22 @@ void LandmarksGraphNew::get_greedy_preconditions_for_lm(
 
 int LandmarksGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
                                                                           int> > &lvl_var) {
-    /* For now, the cost for each landmark is 1. When extending this to action
-     costs later, we will calculate here the minimum cost of operators that can
-     make bp true for the first time (according to lvl_var) */
-
-    bp->vars.size(); // silence compiler...
-    lvl_var.size(); // silence compiler...
-    return 1;
+    int min_cost = numeric_limits<int>::max();
+    // For each proposition in bp...
+    for(unsigned int k = 0; k < bp->vars.size(); k++) {
+        pair<int, int> b = make_pair(bp->vars[k], bp->vals[k]);
+    // ...look at all achieving operators
+        const vector<int>& ops = get_operators_including_eff(b);
+        for (unsigned i = 0; i < ops.size(); i++) {
+        const Operator& op = get_operator_for_lookup_index(ops[i]);
+        // and calculate the minimum cost of those that can make
+        // bp true for the first time according to lvl_var
+            if(_possibly_reaches_lm(op, lvl_var, bp))
+        min_cost = min(min_cost, op.get_cost());
+        }
+    }
+    assert(min_cost < numeric_limits<int>::max());
+    return min_cost;
 }
 
 void LandmarksGraphNew::found_simple_lm_and_order(const pair<int, int> a,
