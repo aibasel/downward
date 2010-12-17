@@ -1212,7 +1212,7 @@ bool LandmarksGraph::relaxed_task_solvable_without_operator(
 void LandmarksGraph::compute_predecessor_information(
     LandmarkNode *bp,
     vector<vector<int> > &lvl_var, vector<hash_map<pair<int, int>, int,
-    hash_int_pair> > &lvl_op) {
+                                                   hash_int_pair> > &lvl_op) {
     /* Collect information at what time step propositions can be reached
      (in lvl_var) in a relaxed plan that excludes bp, and similarly
      when operators can be applied (in lvl_op).  */
