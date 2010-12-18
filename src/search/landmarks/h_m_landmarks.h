@@ -70,16 +70,19 @@ public:
     HMLandmarks(LandmarksGraph::LandmarkGraphOptions &options, Exploration *expl, int m);
     ~HMLandmarks() {
     }
+    // TODO: get_lm_graph *must* be called to avoid memory leeks!
+    // returns a landmargraph created by HMLandmarks. take care to delete the pointer when you don't need it anymore!
+    LandmarksGraph *get_lm_graph();
 
     virtual void generate_landmarks();
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
-    LandmarksGraph *create_lm_graph();
+
     static LandmarksGraph *create(const std::vector<std::string> &config, int start,
                                   int &end, bool dry_run);
 
-protected:
+private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
     typedef __gnu_cxx::hash_map<int, std::set<int> > TriggerSet;
 
@@ -108,6 +111,7 @@ protected:
     void print_pm_op(const PMOp &op);
 
     int m_;
+    LandmarksGraph *lm_graph;
 
     std::map<int, LandmarkNode *> lm_node_table_;
 
@@ -146,8 +150,6 @@ protected:
 
     void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
-                          
-    LandmarksGraph *l_graph;
 };
 
 #endif

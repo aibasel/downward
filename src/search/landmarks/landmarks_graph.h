@@ -231,13 +231,36 @@ public:
     bool is_using_reasonable_orderings() const {return reasonable_orders; }
 
     static void build_lm_graph(LandmarksGraph *lm_graph);
+    
+    inline bool inconsistent(const pair<int, int> &a, const pair<int, int> &b) const {
+        //if (a.first == b.first && a.second == b.second)
+        if (a == b)
+            return false;
+        if (a.first != b.first || a.second != b.second)
+            if (a.first == b.first && a.second != b.second)
+                return true;
+            if (external_inconsistencies_read &&
+                inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
+                return true;
+            return false;
+    }
+    
+    // added while refactoring
+    // methods needed for h_m_landmarks (which no longer inherit landmarks_graph)
+    bool use_orders() const { return !no_orders; }
+    void insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj);
+    
+    // made public from protected
+    void edge_add(LandmarkNode &from, LandmarkNode &to, edge_type type);
+    
+    
 private:
     Exploration *exploration;
 
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
     bool effect_always_happens(const vector<PrePost> &prepost,
                                set<pair<int, int> > &eff) const;
-    //virtual void generate_landmarks() = 0;
+    void generate_landmarks();
     vector<int> empty_pre_operators;
     vector<vector<vector<int> > > operators_eff_lookup;
     vector<vector<vector<int> > > operators_pre_lookup;
@@ -320,38 +343,6 @@ protected:
 
     void reset_landmarks_count() {landmarks_count = nodes.size(); }
     virtual void calc_achievers();
-    
-// methods needed for h_m_landmarks (which no longer inherit landmarks_graph)
-public:
-    bool use_orders() const { return !no_orders; }
-    void insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj) {
-        nodes.insert(&node);
-        ++landmarks_count;
-        if (conj) {
-            ++conj_lms;
-        } else {
-            simple_lms_to_nodes.insert(std::make_pair(lm, &node));
-        }
-    }
-    const set<pair<int, int> > &get_inconsistent_facts(int index1, int index2) {
-        return inconsistent_facts[index1][index2];
-    }
-    
-    // made public from protected
-    bool inconsistent(const pair<int, int> &a, const pair<int, int> &b) const;
-    void edge_add(LandmarkNode &from, LandmarkNode &to,
-                  edge_type type);
 };
-
-inline bool LandmarksGraph::inconsistent(const pair<int, int> &a, const pair<
-                                             int, int> &b) const {
-    assert(a.first != b.first || a.second != b.second);
-    if (a.first == b.first && a.second != b.second)
-        return true;
-    if (external_inconsistencies_read &&
-        inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
-        return true;
-    return false;
-}
 
 #endif

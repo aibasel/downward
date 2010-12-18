@@ -188,9 +188,13 @@ LandmarkNode *LandmarksGraph::get_lm_for_index(int i) {
     return ordered_nodes[i];
 }
 
+void LandmarksGraph::generate_landmarks() {
+    // TODO: dummy method while refactoring
+}
+
 void LandmarksGraph::generate() {
     //cout << "generating landmarks" << endl;
-    //generate_landmarks();
+    generate_landmarks();
 
     if (only_causal_landmarks)
         discard_noncausal_landmarks();
@@ -1267,10 +1271,20 @@ int LandmarksGraph::relaxed_plan_length_without(LandmarkNode *exclude) {
     return val;
 }
 
+void LandmarksGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj) {
+    nodes.insert(&node);
+    ++landmarks_count;
+    if (conj) {
+        ++conj_lms;
+    } else {
+        simple_lms_to_nodes.insert(std::make_pair(lm, &node));
+    }
+}
+
 // static function to generate landmarks and print message
 void LandmarksGraph::build_lm_graph(LandmarksGraph *lm_graph) {
     ExactTimer lm_generation_timer;
-    lm_graph->read_external_inconsistencies();
+    //lm_graph->read_external_inconsistencies();
     lm_graph->generate();
     cout << "Landmarks generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
