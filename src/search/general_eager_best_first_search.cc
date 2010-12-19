@@ -15,10 +15,10 @@ using namespace std;
 
 GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(const Options &opts)
     : reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      do_pathmax(opts.get<bool>("pathmax_correction")),
+      do_pathmax(opts.get<bool>("pathmax")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<OpenList<state_var_t *> *>("open")),
-      f_evaluator(opts.get<ScalarEvaluator *>("f_eval")) {
+      f_evaluator(opts.get<SumEvaluator *>("f_eval")) {
     bound = opts.get<int>("bound");
 }
 
@@ -361,7 +361,6 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         opts.set("f_eval", f_eval);
         opts.set("reopen_closed", true);
         opts.set("bound", numeric_limits<int>::max());
-
         engine = new GeneralEagerBestFirstSearch(opts);
     }
 
