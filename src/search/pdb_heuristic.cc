@@ -342,6 +342,10 @@ int PDBHeuristic::compute_heuristic(const State &state) {
     return h;
 }
 
+vector<int> PDBHeuristic::get_pattern() {
+    return pattern;
+}
+
 void PDBHeuristic::dump() const {
     for (size_t i = 0; i < num_states; ++i) {
         //AbstractState abs_state = inv_hash_index(i);

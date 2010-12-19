@@ -8,7 +8,7 @@
 
 // Implements the canonical heuristic function.
 class PDBCollectionHeuristic : public Heuristic {
-    std::vector<std::vector<int> > pattern_collection;
+    //std::vector<std::vector<int> > pattern_collection;
     std::vector<std::vector<int> > max_cliques; // final computed max_cliques
     std::vector<std::vector<bool> > are_additive; // variables which are additive
     std::vector<PDBHeuristic *> pattern_databases; // final pattern databases
@@ -21,7 +21,7 @@ protected:
 public:
     PDBCollectionHeuristic();
     virtual ~PDBCollectionHeuristic();
-    void add_new_pattern(const std::vector<int> &pattern, PDBHeuristic *pdb);
+    void add_new_pattern(PDBHeuristic *pdb);
     void get_max_additive_subsets(const std::vector<int> &new_pattern,
                                   std::vector<std::vector<int> > &max_additive_subsets); // checks for all max cliques if they would be additive to this pattern
     static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
