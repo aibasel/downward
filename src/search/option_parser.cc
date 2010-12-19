@@ -54,7 +54,7 @@ bool ParseTree::is_root() const {
 
 std::ostream& operator<< (std::ostream& o, const ParseTree &pt)
  {
-     return o << "implement << for ParseTree!" << pt.value;
+     return o << pt.key << "=" << pt.value;
  }
 
 bool ParseTree::operator == (const ParseTree &pt){
@@ -98,7 +98,7 @@ HelpElement::HelpElement(string k, string h, string t_n)
 }
 
 void OptionParser::error(string msg) {
-    throw ParseError(msg);
+    throw ParseError(msg, *this->get_parse_tree());
 }
 
 void OptionParser::warning(string msg) {
@@ -167,10 +167,10 @@ SearchEngine *OptionParser::parse_cmd_line(
         string arg = string(argv[i]);
         if (arg.compare("--heuristic") == 0) {
             ++i;
-            OptionParser::predefine<Heuristic *>(argv[i]);
+            OptionParser::predefine_heuristic(argv[i], dry_run);
         } else if (arg.compare("--landmarks") == 0) {
             ++i;
-            OptionParser::predefine<LandmarksGraph *>(argv[i]);
+            OptionParser::predefine_lmgraph(argv[i], dry_run);
         } else if (arg.compare("--search") == 0) {
             ++i;
             OptionParser p(argv[i], dry_run);
@@ -350,14 +350,14 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
                 buffer.clear();
                 key.clear();
             }
-            cur_node = cur_node->get_parent();
             if(cur_node->value.compare("list") != 0)
                 throw ParseError("mismatched brackets", *cur_node);
+            cur_node = cur_node->get_parent();
             break;
         case ',':
             break;
         case '=':
-            if (key.empty())
+            if (buffer.empty())
                 throw ParseError("expected keyword before =", *cur_node);
             key = buffer;
             buffer.clear();
