@@ -1,11 +1,13 @@
 #include "planning_utilities.h"
 
+#include <iostream>
 #include <algorithm>
 
 using namespace std;
 
 int get_maximizing_vertex(const vector<int> &subg, const vector<int> &cand, const vector<vector<int> > &cgraph) {
     // assert that subg and cand are sorted
+    //dump(subg, cand);
     size_t max = 0;
     int vertex = subg[0];
 
@@ -25,6 +27,7 @@ int get_maximizing_vertex(const vector<int> &subg, const vector<int> &cand, cons
 
 void expand(vector<int> &subg, vector<int> &cand, vector<int> &q_clique, const vector<vector<int> > &cgraph,
             vector<vector<int> > &max_cliques) {
+    //dump(subg, cand);
     if (subg.empty()) {
         //cout << "clique" << endl;
         max_cliques.push_back(q_clique);
@@ -35,8 +38,9 @@ void expand(vector<int> &subg, vector<int> &cand, vector<int> &q_clique, const v
         ext_u.reserve(cand.size());
         set_difference(cand.begin(), cand.end(), cgraph[u].begin(), cgraph[u].end(), back_inserter(ext_u));
 
-        for (size_t i = 0; i < ext_u.size(); ++i) { // while cand - gamma(u) is not empty
-            int q = ext_u[i]; // q is a vertex in cand - gamma(u)
+        while (!ext_u.empty()) {
+            int q = ext_u.back();
+            ext_u.pop_back();
             //cout << q << ",";
             q_clique.push_back(q);
 
@@ -48,14 +52,14 @@ void expand(vector<int> &subg, vector<int> &cand, vector<int> &q_clique, const v
             // cand_q = cand n gamma(q)
             vector<int> cand_q;
             cand_q.reserve(cand.size());
-            set_intersection(cand.begin() + i, cand.end(), cgraph[q].begin(), cgraph[q].end(), back_inserter(cand_q));
-
+            set_intersection(cand.begin(), cand.end(), cgraph[q].begin(), cgraph[q].end(), back_inserter(cand_q));
             expand(subg_q, cand_q, q_clique, cgraph, max_cliques);
 
             // remove q from cand --> cand = cand - q
-            // is done --> with index i
+            // why? we removed it from ext_u and q is never in subg_q or cand_q--> is it worse to remove it (we don't know
+            // the position) or to leave it and always have a bigger set_intersection vector
 
-            //cout << "back"  << endl;
+            //cout << "back" << endl;
             q_clique.pop_back();
         }
     }
@@ -73,3 +77,15 @@ void compute_max_cliques(const vector<vector<int> > &cgraph, vector<vector<int> 
     expand(vertices_1, vertices_2, q_clique, cgraph, max_cliques);
 }
 
+void dump(const vector<int> &subg, const vector<int> &cand) {
+    cout << "subg" << endl;
+    for (size_t i = 0; i < subg.size(); ++i) {
+        cout << subg[i] << ", ";
+    }
+    cout << endl;
+    cout << "cand" << endl;
+    for (size_t i = 0; i < cand.size(); ++i) {
+        cout << cand[i] << ", ";
+    }
+    cout << endl;
+}
