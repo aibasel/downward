@@ -188,7 +188,7 @@ SearchEngine *OptionParser::parse_cmd_line(
                 get_full_help();
             }
             cout << "Help finished." << endl;
-            exit(1);
+            exit(0);
         } else {
             cerr << "unknown option " << arg << endl << endl;
             string usage =
@@ -215,6 +215,7 @@ SearchEngine *OptionParser::parse_cmd_line(
 OptionParser::OptionParser(const string config, bool dr):
     parse_tree(generate_parse_tree(config)),
     dry_run_(dr),
+    help_mode_(false),
     next_unparsed_argument(parse_tree.get_children()->begin())
 {
 }
@@ -223,6 +224,7 @@ OptionParser::OptionParser(const string config, bool dr):
 OptionParser::OptionParser(ParseTree pt, bool dr):
     parse_tree(pt),
     dry_run_(dr),
+    help_mode_(false),
     next_unparsed_argument(parse_tree.get_children()->begin())
 {
 }
@@ -287,7 +289,8 @@ Options OptionParser::parse() {
     //first check if there were any arguments with invalid keywords
     vector<ParseTree>* pt_children = parse_tree.get_children();
     for (size_t i(0); i != pt_children->size(); ++i) {
-        if (find(valid_keys.begin(), 
+        if (pt_children->at(i).key.compare("") != 0 &&
+            find(valid_keys.begin(), 
                  valid_keys.end(), 
                  pt_children->at(i).key) == valid_keys.end()) {
             error("invalid keyword");

@@ -43,8 +43,7 @@ private:
     ParseTree* parent_;
 };
 
-class ParseError{
-public:
+struct ParseError{
     ParseError(std::string _msg, ParseTree pt = ParseTree());
     
     std::string msg;

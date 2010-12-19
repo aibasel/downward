@@ -50,10 +50,14 @@ int main(int argc, const char **argv) {
 
     //the input will be parsed twice: 
     //once in dry-run mode, to check for simple input errors, 
-    //then in normal mode TODO: catch parse errors
+    //then in normal mode 
+    try {
     OptionParser::parse_cmd_line(argc, argv, true);
-    OptionParser::parse_cmd_line(argc, argv, false);
-    
+    cout << "checked arguments" << endl;
+    engine = OptionParser::parse_cmd_line(argc, argv, false);
+    } catch (ParseError &pe) {
+        cout << pe.msg << endl;
+    }
 
     Timer search_timer;
     engine->search();
