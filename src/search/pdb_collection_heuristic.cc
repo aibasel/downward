@@ -27,13 +27,13 @@ void PDBCollectionHeuristic::add_new_pattern(PDBHeuristic *pdb) {
 }
 
 void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pattern,
-                                                      vector<vector<int> > &max_additive_subsets) {
+                                                      vector<vector<PDBHeuristic *> > &max_additive_subsets) {
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         // take all patterns which are additive to new_pattern
-        vector<int> subset;
+        vector<PDBHeuristic *> subset;
         subset.reserve(max_cliques[i].size());
         for (size_t j = 0; j < max_cliques[i].size(); ++j) {
-            if (are_pattern_additive(new_pattern, pattern_databases[max_cliques[i][j]]->get_pattern())) {
+            if (are_pattern_additive(new_pattern, max_cliques[i][j]->get_pattern())) {
                 subset.push_back(max_cliques[i][j]);
             }
         }
@@ -70,7 +70,18 @@ void PDBCollectionHeuristic::precompute_max_cliques() {
     }
     cout << "built cgraph." << endl;
 
-    compute_max_cliques(cgraph, max_cliques);
+    vector<vector<int> > max_cliques_cgraph;
+    max_cliques_cgraph.reserve(pattern_databases.size());
+    compute_max_cliques(cgraph, max_cliques_cgraph);
+
+    for (size_t i = 0; i < max_cliques_cgraph.size(); ++i) {
+        vector<PDBHeuristic *> clique;
+        clique.reserve(max_cliques_cgraph[i].size());
+        for (size_t j = 0; j < max_cliques_cgraph[i].size(); ++j) {
+            clique.push_back(pattern_databases[max_cliques_cgraph[i][j]]);
+        }
+        max_cliques.push_back(clique);
+    }
 
     dump(cgraph);
 }
@@ -113,7 +124,7 @@ void PDBCollectionHeuristic::initialize() {
     /*vector<int> test_pattern;
     test_pattern.push_back(2);
     test_pattern.push_back(7);
-    vector<vector<int> > max_add_sub;
+    vector<vector<PDBHeuristic *> > max_add_sub;
     get_max_additive_subsets(test_pattern, max_add_sub);
     cout << "Maximal additive subsets are { ";
     for (size_t i = 0; i < max_add_sub.size(); ++i) {
@@ -131,11 +142,11 @@ void PDBCollectionHeuristic::initialize() {
 int PDBCollectionHeuristic::compute_heuristic(const State &state) {
     int max_val = -1;
     for (size_t i = 0; i < max_cliques.size(); ++i) {
-        const vector<int> &clique = max_cliques[i];
+        const vector<PDBHeuristic *> clique = max_cliques[i];
         int h_val = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
-            pattern_databases[clique[j]]->evaluate(state);
-            int h = pattern_databases[clique[j]]->get_heuristic();
+            clique[j]->evaluate(state);
+            int h = clique[j]->get_heuristic();
             if (h == numeric_limits<int>::max()) {
                 return -1;
             }
@@ -162,15 +173,20 @@ void PDBCollectionHeuristic::dump(const vector<vector<int> > &cgraph) const {
     // print maximal cliques
     assert(max_cliques.size() > 0);
     cout << max_cliques.size() << " maximal clique(s)" << endl;
-    cout << "Maximal cliques are { ";
+    cout << "Maximal cliques are (";
     for (size_t i = 0; i < max_cliques.size(); ++i) {
-        cout << "[ ";
+        cout << "[";
         for (size_t j = 0; j < max_cliques[i].size(); ++j) {
-            cout << max_cliques[i][j] << " ";
+            vector<int> pattern = max_cliques[i][j]->get_pattern();
+            cout << "{";
+            for (size_t k = 0; k < pattern.size(); ++k) {
+                cout << pattern[k] << " ";
+            }
+            cout << "}";
         }
-        cout << "] ";
+        cout << "]";
     }
-    cout << "}" << endl;
+    cout << ")" << endl;
 }
 
 ScalarEvaluator *PDBCollectionHeuristic::create(const vector<string> &config, int start, int &end, bool dry_run) {
