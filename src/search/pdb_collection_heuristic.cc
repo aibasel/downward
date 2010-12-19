@@ -20,11 +20,32 @@ PDBCollectionHeuristic::PDBCollectionHeuristic() {
 PDBCollectionHeuristic::~PDBCollectionHeuristic() {
 }
 
-bool PDBCollectionHeuristic::are_pattern_additive(int pattern1, int pattern2) const {
-    assert(pattern1 != pattern2);
-    const vector<int> &patt1 = pattern_collection[pattern1];
-    const vector<int> &patt2 = pattern_collection[pattern2];
+void PDBCollectionHeuristic::add_new_pattern(const vector<int> &pattern, PDBHeuristic *pdb) {
+    // TODO only pdb-abstraction and no more ints
+    pattern_collection.push_back(pattern);
+    pattern_databases.push_back(pdb);
+    max_cliques.clear();
+    precompute_max_cliques();
+}
 
+void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pattern,
+                                                      vector<vector<int> > &max_additive_subsets) {
+    for (size_t i = 0; i < max_cliques.size(); ++i) {
+        // take all patterns which are additive to new_pattern
+        vector<int> subset;
+        subset.reserve(max_cliques[i].size());
+        for (size_t j = 0; j < max_cliques[i].size(); ++j) {
+            if (are_pattern_additive(new_pattern, pattern_collection[max_cliques[i][j]])) {
+                subset.push_back(max_cliques[i][j]);
+            }
+        }
+        if (subset.size() > 0) {
+            max_additive_subsets.push_back(subset);
+        }
+    }
+}
+
+bool PDBCollectionHeuristic::are_pattern_additive(const vector<int> &patt1, const vector<int> &patt2) const {
     for (size_t i = 0; i < patt1.size(); ++i) {
         for (size_t j = 0; j < patt2.size(); ++j) {
             if (!are_additive[patt1[i]][patt2[j]]) {
@@ -42,7 +63,7 @@ void PDBCollectionHeuristic::precompute_max_cliques() {
 
     for (size_t i = 0; i < pattern_collection.size(); ++i) {
         for (size_t j = i + 1; j < pattern_collection.size(); ++j) {
-            if (are_pattern_additive(i,j)) {
+            if (are_pattern_additive(pattern_collection[i],pattern_collection[j])) {
                 // if the two patterns are additive there is an edge in the compatibility graph
                 cgraph[i].push_back(j);
                 cgraph[j].push_back(i);
@@ -87,115 +108,6 @@ void PDBCollectionHeuristic::initialize() {
         pattern_collection.push_back(vector<int>(1, g_goal[i].first));
     }
 
-    // Canonical heuristic function tests
-    //1. one pattern logistics00 6-2
-    /*int patt_1[6] = {3, 4, 5, 6, 7, 8};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    vector<vector<int> > pattern_collection(1);
-    pattern_collection[0] = pattern_1;*/
-
-    //2. two patterns logistics00 6-2
-    /*int patt_1[3] = {3, 4, 5};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    int patt_2[3] = {6, 7, 8};
-    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
-    vector<vector<int> > patt_coll(2);
-    patt_coll[0] = pattern_1;
-    patt_coll[1] = pattern_2;*/
-
-    //3. three patterns logistics00 6-2
-    /*int patt_1[2] = {3, 4};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    int patt_2[2] = {5, 6};
-    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
-    int patt_3[2] = {7, 8};
-    vector<int> pattern_3(patt_3, patt_3 + sizeof(patt_3) / sizeof(int));
-    vector<vector<int> > patt_coll(3);
-    patt_coll[0] = pattern_1;
-    patt_coll[1] = pattern_2;
-    patt_coll[2] = pattern_3;*/
-
-    //1. one pattern driverlog 6
-    /*int patt_1[7] = {4, 5, 7, 9, 10, 11, 12};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    vector<vector<int> > pattern_collection(1);
-    pattern_collection[0] = pattern_1;*/
-
-    //2. two patterns driverlog 6
-    /*int patt_1[3] = {4, 5, 7};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    int patt_2[4] = {9, 10, 11, 12};
-    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
-    vector<vector<int> > pattern_collection(2);
-    pattern_collection[0] = pattern_1;
-    pattern_collection[1] = pattern_2;*/
-
-    //3. three patterns driverlog 6
-    /*int patt_1[2] = {4, 5};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    int patt_2[2] = {7, 9};
-    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
-    int patt_3[3] = {10, 11, 12};
-    vector<int> pattern_3(patt_3, patt_3 + sizeof(patt_3) / sizeof(int));
-    vector<vector<int> > pattern_collection(3);
-    pattern_collection[0] = pattern_1;
-    pattern_collection[1] = pattern_2;
-    pattern_collection[2] = pattern_3;*/
-
-    //1. one pattern blocks 7-2
-    /*int patt_1[6] = {9, 10, 11, 12, 13, 14};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    vector<vector<int> > pattern_collection(1);
-    pattern_collection[0] = pattern_1;*/
-
-    //2. two patterns blocks 7-2
-    /*int patt_1[3] = {9, 10, 11};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    int patt_2[3] = {12, 13, 14};
-    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
-    vector<vector<int> > pattern_collection(2);
-    pattern_collection[0] = pattern_1;
-    pattern_collection[1] = pattern_2;*/
-
-    //3. three patterns blocks 7-2
-    /*int patt_1[2] = {9, 10};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    int patt_2[2] = {11, 12};
-    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
-    int patt_3[2] = {13, 14};
-    vector<int> pattern_3(patt_3, patt_3 + sizeof(patt_3) / sizeof(int));
-    pattern_collection.push_back(pattern_1);
-    pattern_collection.push_back(pattern_2);
-    pattern_collection.push_back(pattern_3);
-    cout << "Pattern collection filled with patterns.";*/
-
-    // additional two patterns for logistics00 9-1
-    /*int patt_1[4] = {4, 5, 6, 7};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    int patt_2[5] = {8, 9, 10, 11, 12};
-    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
-    vector<vector<int> > pattern_collection(2);
-    pattern_collection[0] = pattern_1;
-    pattern_collection[1] = pattern_2;*/
-
-    // additional five patterns for logistics00 9-1
-    /*int patt_1[2] = {4, 5};
-    vector<int> pattern_1(patt_1, patt_1 + sizeof(patt_1) / sizeof(int));
-    int patt_2[2] = {6, 7};
-    vector<int> pattern_2(patt_2, patt_2 + sizeof(patt_2) / sizeof(int));
-    int patt_3[2] = {8, 9};
-    vector<int> pattern_3(patt_3, patt_3 + sizeof(patt_3) / sizeof(int));
-    int patt_4[2] = {10, 11};
-    vector<int> pattern_4(patt_4, patt_4 + sizeof(patt_4) / sizeof(int));
-    int patt_5[1] = {12};
-    vector<int> pattern_5(patt_5, patt_5 + sizeof(patt_5) / sizeof(int));
-    vector<vector<int> > pattern_collection(5);
-    pattern_collection[0] = pattern_1;
-    pattern_collection[1] = pattern_2;
-    pattern_collection[2] = pattern_3;
-    pattern_collection[3] = pattern_4;
-    pattern_collection[4] = pattern_5;*/
-
     precompute_additive_vars();
     precompute_max_cliques();
 
@@ -206,6 +118,24 @@ void PDBCollectionHeuristic::initialize() {
     }
     cout << pattern_collection.size() << " pdbs constructed." << endl;
     cout << "Construction time for all pdbs: " << timer << endl;
+
+    // testing logistics 6-2
+    /*vector<int> test_pattern;
+    test_pattern.push_back(2);
+    test_pattern.push_back(7);
+    vector<vector<int> > max_add_sub;
+    get_max_additive_subsets(test_pattern, max_add_sub);
+    cout << "Maximal additive subsets are { ";
+    for (size_t i = 0; i < max_add_sub.size(); ++i) {
+        cout << "[ ";
+        for (size_t j = 0; j < max_add_sub[i].size(); ++j) {
+            cout << max_add_sub[i][j] << " ";
+        }
+        cout << "] ";
+    }
+    cout << "}" << endl;
+
+    add_new_pattern(test_pattern, new PDBHeuristic(test_pattern));*/
 }
 
 int PDBCollectionHeuristic::compute_heuristic(const State &state) {
