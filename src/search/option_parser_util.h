@@ -102,7 +102,7 @@ struct Synergy {
 };
 
 //TypeNamer prints out names of types. 
-//There's something built in for this (typeid().name(), but the output is not always very readable
+//There's something built in for this (typeid().name()), but the output is not always very readable
 
 template <class T>
 struct TypeNamer {

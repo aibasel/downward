@@ -56,7 +56,10 @@ int main(int argc, const char **argv) {
     cout << "checked arguments" << endl;
     engine = OptionParser::parse_cmd_line(argc, argv, false);
     } catch (ParseError &pe) {
-        cout << pe.msg << endl;
+        cout << "Parse Error: " << endl
+             << pe.msg << " at: " << endl
+             << pe.parse_tree << endl;
+        exit(1);
     }
 
     Timer search_timer;

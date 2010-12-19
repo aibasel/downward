@@ -9,6 +9,7 @@
 #include <map>
 #include "boost/any.hpp"
 #include "option_parser_util.h"
+#include "heuristic.h"
 
 class OptionParser;
 class LandmarksGraph;
@@ -158,6 +159,25 @@ struct HelpElement {
     std::string default_value;
 };
 
+//takes a string of the form "word1, word2, word3 " and converts it to a vector
+static std::vector<std::string> to_list(std::string s) {
+    std::vector<std::string> result;
+    std::string buffer;
+    for(size_t i(0); i != s.size(); ++i) {
+        if (s[i] == ',') {
+            result.push_back(buffer);
+            buffer.clear();
+        } else if (s[i] == ' ') {
+            continue;
+        } else {
+            buffer.push_back(s[i]);
+        }
+    }
+    result.push_back(buffer);
+    return result;
+}
+        
+
 /*The OptionParser stores a parse tree, and a Options. 
 By calling addArgument, the parse tree is partially parsed, 
 and the result is added to the Options.
@@ -172,13 +192,46 @@ public:
     //this is where input from the commandline goes:
     static SearchEngine *parse_cmd_line(int argc, const char **argv, bool dr);
     
-    template <class T>
-        static void predefine(std::string s) {
-        std::cout << "implement predefine" << s << std::endl;
+
+    //Note: originally the following function was templated,
+    //but there is no Synergy<LandmarksGraph>, so I split it up for now.
+    static void predefine_heuristic(std::string s, bool dry_run) { //TODO: move this outside
+        size_t split = s.find("=");
+        std::string ls = s.substr(0, split);
+        std::vector<std::string> definees = to_list(s);
+        std::string rs = s.substr(split + 1);
+        OptionParser op(rs, dry_run);
+        if (definees.size() == 1) { //normal predefinition
+            Predefinitions<Heuristic* >::instance()->predefine(
+                definees[0], op.start_parsing<Heuristic *>());
+        } else if (definees.size() > 1) { //synergy
+            std::vector<Heuristic *> heur = 
+                op.start_parsing<Synergy *>()->heuristics;
+            for(size_t i(0); i != definees.size(); ++i) {
+                Predefinitions<Heuristic *>::instance()->predefine(
+                    definees[i], heur[i]);
+            }            
+        } else {
+            op.error("predefinition has invalid left side");
+        }
+    }
+
+    static void predefine_lmgraph(std::string s, bool dry_run) { //TODO: move this outside
+        size_t split = s.find("=");
+        std::string ls = s.substr(0, split);
+        std::vector<std::string> definees = to_list(s);
+        std::string rs = s.substr(split + 1);
+        OptionParser op(rs, dry_run);
+        if (definees.size() == 1) { 
+            Predefinitions<LandmarksGraph *>::instance()->predefine(
+                definees[0], op.start_parsing<LandmarksGraph *>());
+        } else {
+            op.error("predefinition has invalid left side");
+        }
     }
 
     //this function initiates parsing of T (the root node of parse_tree
-    //will be parsed as T). Usually T=SearchEngine* or T=Heuristic*
+    //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarksGraph*
     template <class T> T start_parsing() {
         return TokenParser<T>::parse(*this);
     }
@@ -308,10 +361,16 @@ Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
     ParseTree *pt = p.get_parse_tree();
     if(Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
         return Predefinitions<Heuristic *>::instance()->get(pt->value);
-    }
-    if(Registry<Heuristic *>::instance()->contains(pt->value)) {
+    } else if(Registry<Heuristic *>::instance()->contains(pt->value)) {
         return Registry<Heuristic *>::instance()->get(pt->value)(p);
+        //look if there's a scalar evaluator registered by this name, 
+        //assume that's what's meant (same behaviour as old parser)
+    } else if(Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
+        ScalarEvaluator *eval = 
+            Registry<ScalarEvaluator *>::instance()->get(pt->value)(p);
+        return dynamic_cast<Heuristic *>(eval);
     }
+
     p.error("heuristic not found");
     return 0;
 }
@@ -330,7 +389,10 @@ LandmarksGraph *TokenParser<LandmarksGraph *>::parse(OptionParser &p) {
 
 ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     ParseTree *pt = p.get_parse_tree();
-    if(Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
+    if(Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
+        return (ScalarEvaluator *)
+            Predefinitions<Heuristic *>::instance()->get(pt->value);
+    } else if(Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
         return Registry<ScalarEvaluator *>::instance()->get(pt->value)(p);
     }
     p.error("scalar evaluator not found");
