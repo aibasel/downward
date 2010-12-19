@@ -57,6 +57,7 @@ public:
     //PDBHeuristic(int max_abstract_states);
     PDBHeuristic(const std::vector<int> &pattern);
     virtual ~PDBHeuristic();
+    std::vector<int> get_pattern();
     void dump() const;
     //static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
 };

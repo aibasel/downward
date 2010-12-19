@@ -20,9 +20,7 @@ PDBCollectionHeuristic::PDBCollectionHeuristic() {
 PDBCollectionHeuristic::~PDBCollectionHeuristic() {
 }
 
-void PDBCollectionHeuristic::add_new_pattern(const vector<int> &pattern, PDBHeuristic *pdb) {
-    // TODO only pdb-abstraction and no more ints
-    pattern_collection.push_back(pattern);
+void PDBCollectionHeuristic::add_new_pattern(PDBHeuristic *pdb) {
     pattern_databases.push_back(pdb);
     max_cliques.clear();
     precompute_max_cliques();
@@ -35,7 +33,7 @@ void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pat
         vector<int> subset;
         subset.reserve(max_cliques[i].size());
         for (size_t j = 0; j < max_cliques[i].size(); ++j) {
-            if (are_pattern_additive(new_pattern, pattern_collection[max_cliques[i][j]])) {
+            if (are_pattern_additive(new_pattern, pattern_databases[max_cliques[i][j]]->get_pattern())) {
                 subset.push_back(max_cliques[i][j]);
             }
         }
@@ -59,11 +57,11 @@ bool PDBCollectionHeuristic::are_pattern_additive(const vector<int> &patt1, cons
 void PDBCollectionHeuristic::precompute_max_cliques() {
     // initialize compatibility graph
     vector<vector<int> > cgraph;
-    cgraph.resize(pattern_collection.size());
+    cgraph.resize(pattern_databases.size());
 
-    for (size_t i = 0; i < pattern_collection.size(); ++i) {
-        for (size_t j = i + 1; j < pattern_collection.size(); ++j) {
-            if (are_pattern_additive(pattern_collection[i],pattern_collection[j])) {
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        for (size_t j = i + 1; j < pattern_databases.size(); ++j) {
+            if (are_pattern_additive(pattern_databases[i]->get_pattern(),pattern_databases[j]->get_pattern())) {
                 // if the two patterns are additive there is an edge in the compatibility graph
                 cgraph[i].push_back(j);
                 cgraph[j].push_back(i);
@@ -89,27 +87,16 @@ void PDBCollectionHeuristic::precompute_additive_vars() {
             }
         }
     }
-
-   /*cout << "are_additive_matrix" << endl;
-   for (int i = 0; i < are_additive.size(); ++i) {
-        cout << i << ": ";
-        for (int j = 0; j < are_additive[i].size(); ++j) {
-            cout << are_additive[i][j] << " ";
-        }
-        cout << endl;
-   }*/
 }
 
 void PDBCollectionHeuristic::initialize() {
     cout << "Initializing pattern database heuristic..." << endl;
+    vector<vector<int> > pattern_collection;
 
     // Simple selection strategy. Take all goal variables as patterns.
     for (size_t i = 0; i < g_goal.size(); ++i) {
         pattern_collection.push_back(vector<int>(1, g_goal[i].first));
     }
-
-    precompute_additive_vars();
-    precompute_max_cliques();
 
     // build all pattern databases
     Timer timer;
@@ -118,6 +105,9 @@ void PDBCollectionHeuristic::initialize() {
     }
     cout << pattern_collection.size() << " pdbs constructed." << endl;
     cout << "Construction time for all pdbs: " << timer << endl;
+
+    precompute_additive_vars();
+    precompute_max_cliques();
 
     // testing logistics 6-2
     /*vector<int> test_pattern;
@@ -135,7 +125,7 @@ void PDBCollectionHeuristic::initialize() {
     }
     cout << "}" << endl;
 
-    add_new_pattern(test_pattern, new PDBHeuristic(test_pattern));*/
+    add_new_pattern(new PDBHeuristic(test_pattern));*/
 }
 
 int PDBCollectionHeuristic::compute_heuristic(const State &state) {
