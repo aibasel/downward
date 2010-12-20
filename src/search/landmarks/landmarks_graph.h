@@ -239,7 +239,7 @@ public:
         if (a.first != b.first || a.second != b.second)
             if (a.first == b.first && a.second != b.second)
                 return true;
-            if (external_inconsistencies_read &&
+            if (/*external_inconsistencies_read &&*/
                 inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
                 return true;
             return false;

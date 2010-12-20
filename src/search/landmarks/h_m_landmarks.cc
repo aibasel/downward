@@ -1,5 +1,6 @@
 #include "h_m_landmarks.h"
 #include "../plugin.h"
+#include "../exact_timer.h"
 
 static LandmarkGraphPlugin h_m_landmarks_graph_plugin(
     "lm_hm", HMLandmarks::create);
@@ -575,9 +576,11 @@ bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
 HMLandmarks::HMLandmarks(LandmarksGraph::LandmarkGraphOptions &options, Exploration *expl, int m)
 : m_(m), lm_graph(new LandmarksGraph(options, expl))  {
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
+    ExactTimer lm_generation_timer;
     lm_graph->read_external_inconsistencies();
     generate_landmarks();
     LandmarksGraph::build_lm_graph(lm_graph);
+    cout << "Landmarks generation time: " << lm_generation_timer << endl;
     // need this to be able to print propositions for debugging
     // already called in global.cc
     //  read_external_inconsistencies();
