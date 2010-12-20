@@ -136,7 +136,7 @@ POSTLINKOPT =
 ##        For details, see man gcc on -static-libgcc.
 
 CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
-CCOPT_DEBUG    = -O3
+CCOPT_DEBUG    = 
 CCOPT_PROFILE  = -O3 -pg
 
 LINKOPT_RELEASE  = -static -static-libgcc

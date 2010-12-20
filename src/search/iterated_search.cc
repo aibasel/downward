@@ -26,7 +26,7 @@ SearchEngine *IteratedSearch::get_search_engine(
     OptionParser parser(engine_configs[engine_configs_index], false);
     SearchEngine *engine = parser.start_parsing<SearchEngine *>();
 
-    cout << "Starting search: " << engine_configs[engine_configs_index] << endl;
+    cout << "Starting search: implement this!" << endl; //<< engine_configs[engine_configs_index] << endl;
 
     return engine;
 }

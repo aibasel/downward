@@ -4,101 +4,11 @@
 
 using namespace std;
 
-ParseTree::ParseTree():
-    parent_(this)
-{
-}
-    
-ParseTree::ParseTree(ParseTree* parent, string v, string k):
-    value(v),
-    key(k),
-    parent_(parent)
-{
-}
-
-void ParseTree::set_parent(ParseTree* p) {
-    parent_ = p;
-}
-
-ParseTree* ParseTree::get_parent() const {
-    return parent_;
-}
-
-vector<ParseTree>* ParseTree::get_children() {
-    return &children_;
-}
-
-vector<ParseTree> const *ParseTree::get_children() const {
-    return &children_;
-}
-
-
-void ParseTree::add_child(string value, string key) {
-    children_.push_back(ParseTree(this, value, key));
-}
-
-ParseTree* ParseTree::last_child() {
-    return &children_.back();
-}
-
-ParseTree* ParseTree::find_child(string key) {
-    for (size_t i(0); i != children_.size(); ++i) {
-        if (children_[i].key.compare(key) == 0) {
-            return &children_[i];
-        }
-    }
-    return 0;
-}
-
-
-bool ParseTree::is_root() const {
-    return (this == parent_);
-} 
-
-std::ostream& operator<< (std::ostream& o, const ParseTree &pt)
- {
-     if (pt.key.compare("") != 0)
-         o << pt.key << "=";
-     o << pt.value;
-     vector<ParseTree> const* children = pt.get_children();
-     if (!children->empty()) {
-         o << "(";
-     }
-     return o;
- }
-
-bool ParseTree::operator == (const ParseTree &pt){
-    vector<ParseTree> const* pt_children = pt.get_children();
-    vector<ParseTree> const* this_children = get_children();
-    if (pt.value != value 
-        || pt.key != key 
-        || pt_children->size() != this_children->size()){
-        return false;
-    } else {
-        for (size_t i(0); i != pt_children->size(); ++i){
-            ParseTree c1 = pt_children->at(i);
-            ParseTree c2 = this_children->at(i);
-            if(c1 != c2){
-                return false;
-            }
-        }
-        return true;
-    }
-}
-
-bool ParseTree::operator != (const ParseTree &pt) {
-    return !(this->operator== (pt));
-}
-
-
-
 ParseError::ParseError(string _msg, ParseTree pt)
     : msg(_msg),
       parse_tree(pt)
 {
 }
-
-
 
 HelpElement::HelpElement(string k, string h, string t_n) 
     : kwd(k),
@@ -127,8 +37,8 @@ void OptionParser::set_help_mode(bool m) {
 
 template <class T>
 static void get_help_templ(const ParseTree &pt) {
-    if (Registry<T>::instance()->contains(pt.value)) {
-        cout << pt.value << " is a " << TypeNamer<T>::name() 
+    if (Registry<T>::instance()->contains(pt.begin()->value)) {
+        cout << pt.begin()->value << " is a " << TypeNamer<T>::name() 
              << endl << "Usage: " << endl;        
         OptionParser p(pt, true);
         p.set_help_mode(true);
@@ -139,7 +49,7 @@ static void get_help_templ(const ParseTree &pt) {
 
 static void get_help(string k) {
     ParseTree pt;
-    pt.value = k;
+    pt.insert(pt.begin(), ParseNode(k));
     get_help_templ<SearchEngine *>(pt);
     get_help_templ<Heuristic *>(pt);
     get_help_templ<ScalarEvaluator *>(pt);
@@ -156,7 +66,7 @@ static void get_full_help_templ() {
     vector<string> keys = Registry<T>::instance()->get_keys();
     for(size_t i(0); i != keys.size(); ++i) {
         ParseTree pt;
-        pt.value = keys[i];
+        pt.insert(pt.begin(), ParseNode(keys[i]));
         get_help_templ<T>(pt);
     }
 }
@@ -197,7 +107,7 @@ SearchEngine *OptionParser::parse_cmd_line(
             } else {
                 get_full_help();
             }
-            cout << "Help finished." << endl;
+            cout << "Help output finished." << endl;
             exit(0);
         } else {
             cerr << "unknown option " << arg << endl << endl;
@@ -226,7 +136,7 @@ OptionParser::OptionParser(const string config, bool dr):
     parse_tree(generate_parse_tree(config)),
     dry_run_(dr),
     help_mode_(false),
-    next_unparsed_argument(parse_tree.get_children()->begin())
+    next_unparsed_argument(parse_tree.begin(parse_tree.begin()))
 {
 }
 
@@ -235,7 +145,7 @@ OptionParser::OptionParser(ParseTree pt, bool dr):
     parse_tree(pt),
     dry_run_(dr),
     help_mode_(false),
-    next_unparsed_argument(parse_tree.get_children()->begin())
+    next_unparsed_argument(parse_tree.begin(parse_tree.begin()))
 {
 }
 
@@ -281,7 +191,7 @@ void OptionParser::add_enum_option(string k,
 
 Options OptionParser::parse() {
     if(help_mode_) {
-        cout << parse_tree.value << "(";
+        cout << parse_tree.begin()->value << "(";
         for (size_t i(0); i != helpers.size(); ++i) {
             cout << helpers[i].kwd 
                  << (helpers[i].default_value.compare("") != 0 ? " = " : "") 
@@ -297,12 +207,12 @@ Options OptionParser::parse() {
         }
     }
     //first check if there were any arguments with invalid keywords
-    vector<ParseTree>* pt_children = parse_tree.get_children();
-    for (size_t i(0); i != pt_children->size(); ++i) {
-        if (pt_children->at(i).key.compare("") != 0 &&
+    for(ParseTree::iterator pti = parse_tree.begin(parse_tree.begin());
+        pti != parse_tree.end(); ++pti) {
+        if (pti->key.compare("") != 0 &&
             find(valid_keys.begin(), 
                  valid_keys.end(), 
-                 pt_children->at(i).key) == valid_keys.end()) {
+                 pti->key) == valid_keys.end()) {
             error("invalid keyword");
         }
     }    
@@ -328,12 +238,14 @@ ParseTree* OptionParser::get_parse_tree() {
 ParseTree OptionParser::generate_parse_tree(const string config) {
     ParseTree tr;
     ParseTree::iterator top = tr.begin();
-    ParseTree::iterator cur_node = tr.insert(top, ParseNode("",""));
+    ParseTree::sibling_iterator cur_node = 
+        tr.insert(top, ParseNode("pseudoroot",""));
+    ParseTree::sibling_iterator pseudoroot = cur_node;
     string buffer(""), key("");
     for (size_t i(0); i != config.size(); ++i){
         char next = config.at(i);
         if((next == '(' || next == ')' || next == ',') && buffer.size() > 0){
-            tree->append_child(cur_node, ParseNode(buffer, key));
+            tr.append_child(cur_node, ParseNode(buffer, key));
             buffer.clear();
             key.clear();
         }
@@ -341,7 +253,7 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
         case ' ':
             break;
         case '(':
-            cur_node = tr.end(cur_node) - 1;
+            cur_node = --tr.end(cur_node);
             break;
         case ')':
             if(cur_node == top) 
@@ -353,7 +265,7 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
                 throw ParseError("misplaced opening bracket [", *cur_node);
             tr.append_child(cur_node, ParseNode("list", key));
             key.clear();
-            cur_node = tr.end(cur_node) -1;
+            cur_node = --tr.end(cur_node);
             break;
         case ']':
             if(!buffer.empty()) {
@@ -361,7 +273,7 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
                 buffer.clear();
                 key.clear();
             }
-            if(cur_node->data.value.compare("list") != 0)
+            if(cur_node->value.compare("list") != 0)
                 throw ParseError("mismatched brackets", *cur_node);
             cur_node = tr.parent(cur_node);
             break;
@@ -378,10 +290,10 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
             break;
         }    
     }
-    if (cur_node != top)
+    if (cur_node->value.compare("pseudoroot") != 0)
         throw ParseError("missing )", *cur_node);
         
-    ParseTree real_tr = tr.subtree(tr.end(top) - 1, tr.end(top));
+    ParseTree real_tr = tr.subtree(tr.begin(pseudoroot), tr.end(pseudoroot));
     return real_tr;
 }
 

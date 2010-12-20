@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
+#include "tree_util.hh"
 #include "timer.h"
 #include "utilities.h"
 #include "search_engine.h"
@@ -56,15 +57,9 @@ int main(int argc, const char **argv) {
     cout << "checked arguments" << endl;
     engine = OptionParser::parse_cmd_line(argc, argv, false);
     } catch (ParseError &pe) {
-        ParseTree* pt = &pe.parse_tree;
         cout << "Parse Error: " << endl  //TODO: move this printing inside ParseError
-             << pe.msg << " at: " << endl
-             << *pt << endl;
-        while (!pt->is_root()) {
-            pt = pt->get_parent();
-            cout << "in " << endl
-                 << *pt << endl;
-        }
+             << pe.msg << " at: " << pe.parse_tree.begin()->value << endl;
+        kptree::print_tree_bracketed(pe.parse_tree, cout);            
         exit(1);
     }
 
