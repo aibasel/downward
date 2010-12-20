@@ -357,7 +357,7 @@ class Invariant:
                           self.predicate_to_part.get(eff.literal.predicate)]
         inv_vars = find_unique_variables(h_action, self)
       
-        if len(add_effects) < 1:
+        if len(add_effects) <= 1:
             return False
             
         for eff1, eff2 in itertools.combinations(add_effects, 2):
