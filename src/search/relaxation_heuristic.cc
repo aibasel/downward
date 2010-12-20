@@ -101,6 +101,11 @@ public:
     }
 };
 
+bool compare_prop_pointer(Proposition *p1, Proposition *p2) {
+    return p1->id < p2->id;
+}
+
+
 void RelaxationHeuristic::simplify() {
     // Remove duplicate or dominated unary operators.
 
@@ -124,7 +129,7 @@ void RelaxationHeuristic::simplify() {
 
     for (int i = 0; i < unary_operators.size(); i++) {
         UnaryOperator &op = unary_operators[i];
-        sort(op.precondition.begin(), op.precondition.end());
+        sort(op.precondition.begin(), op.precondition.end(), compare_prop_pointer);
         HashKey key(op.precondition, op.effect);
         unary_operator_index[key] = i;
     }
