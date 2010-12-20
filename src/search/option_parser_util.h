@@ -112,6 +112,7 @@ public:
 
     void predefine(std::string k, T obj) {
         predefined[k] = obj;
+        std::cout << "predefined " << k << std::endl;
     }
 
     bool contains(std::string k) {

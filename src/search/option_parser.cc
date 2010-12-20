@@ -1,4 +1,5 @@
 #include "option_parser.h"
+#include "tree_util.hh"
 #include <string>
 #include <iostream>
 
@@ -294,6 +295,7 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
         throw ParseError("missing )", *cur_node);
         
     ParseTree real_tr = tr.subtree(tr.begin(pseudoroot), tr.end(pseudoroot));
+    kptree::print_tree_bracketed<ParseNode>(real_tr, cout); cout << endl;
     return real_tr;
 }
 

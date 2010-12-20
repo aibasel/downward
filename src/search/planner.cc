@@ -58,8 +58,9 @@ int main(int argc, const char **argv) {
     engine = OptionParser::parse_cmd_line(argc, argv, false);
     } catch (ParseError &pe) {
         cout << "Parse Error: " << endl  //TODO: move this printing inside ParseError
-             << pe.msg << " at: " << pe.parse_tree.begin()->value << endl;
-        kptree::print_tree_bracketed(pe.parse_tree, cout);            
+             << pe.msg << " at: " << endl;
+        kptree::print_tree_bracketed<ParseNode>(pe.parse_tree, cout);
+        cout << endl;      
         exit(1);
     }
 

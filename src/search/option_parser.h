@@ -165,7 +165,7 @@ public:
     static void predefine_heuristic(std::string s, bool dry_run) { //TODO: move this outside
         size_t split = s.find("=");
         std::string ls = s.substr(0, split);
-        std::vector<std::string> definees = to_list(s);
+        std::vector<std::string> definees = to_list(ls);
         std::string rs = s.substr(split + 1);
         OptionParser op(rs, dry_run);
         if (definees.size() == 1) { //normal predefinition
@@ -186,7 +186,7 @@ public:
     static void predefine_lmgraph(std::string s, bool dry_run) { //TODO: move this outside
         size_t split = s.find("=");
         std::string ls = s.substr(0, split);
-        std::vector<std::string> definees = to_list(s);
+        std::vector<std::string> definees = to_list(ls);
         std::string rs = s.substr(split + 1);
         OptionParser op(rs, dry_run);
         if (definees.size() == 1) { 
@@ -205,6 +205,7 @@ public:
     
     template <class T> void add_option(
         std::string k, std::string h="") {
+        std::cout << "adding option " << k << std::endl;
         if(help_mode_) {
             helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
             if(opts.contains(k)){
@@ -216,6 +217,7 @@ public:
         valid_keys.push_back(k);
         T result;
         ParseTree::sibling_iterator arg = next_unparsed_argument;
+        //scenario where we have already handled all arguments
         if (arg == parse_tree.end(parse_tree.begin())) {
             if (!opts.contains(k)) {
                 error("missing option: " + k);
@@ -223,23 +225,22 @@ public:
                 return; //use default value
             }
         } 
+        //handling arguments with explicit keyword:
         if (!arg->key.empty()) {
-            //try to find a parameter passed with that keyword
-            for (ParseTree::sibling_iterator it = arg;
-                 it != parse_tree.end(parse_tree.begin());
-                 ++it) {
-                arg = it;
+            //try to find a parameter passed with keyword k
+            for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
                 if (arg->key.compare(k) == 0) 
                     break;
             }
+            if (arg == parse_tree.end(parse_tree.begin())) {
+                if (!opts.contains(k)) {
+                    error("missing option: " + k);
+                } else {
+                    return; //use default value
+                }
+            } 
         }
-        if (arg == parse_tree.end(parse_tree.begin())) {
-            if (!opts.contains(k)) {
-                error("missing option: " + k);
-            } else {
-                return; //use default value
-            }
-        } 
+        
         ParseTree::sibling_iterator arg_end = arg;
         ++arg_end;
         OptionParser subparser(parse_tree.subtree(arg, arg_end), dry_run());
