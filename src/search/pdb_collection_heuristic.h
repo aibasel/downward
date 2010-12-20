@@ -4,7 +4,6 @@
 #include "heuristic.h"
 #include "pdb_heuristic.h"
 #include <vector>
-#include <string>
 
 // Implements the canonical heuristic function.
 class PDBCollectionHeuristic : public Heuristic {
@@ -24,7 +23,7 @@ public:
     void add_new_pattern(PDBHeuristic *pdb);
     void get_max_additive_subsets(const std::vector<int> &new_pattern,
                                   std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets); // checks for all max cliques if they would be additive to this pattern
-    static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
+    //static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
     void dump(const std::vector<std::vector<int> > &cgraph) const;
 };
 

@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include <cassert>
 #include <queue>
+#include <vector>
+#include <string>
 
 using namespace std;
 
@@ -342,7 +344,7 @@ int PDBHeuristic::compute_heuristic(const State &state) {
     return h;
 }
 
-vector<int> PDBHeuristic::get_pattern() {
+const vector<int> &PDBHeuristic::get_pattern() {
     return pattern;
 }
 
