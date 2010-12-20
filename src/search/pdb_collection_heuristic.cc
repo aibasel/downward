@@ -12,7 +12,8 @@
 
 using namespace std;
 
-static ScalarEvaluatorPlugin pdbcollection_heuristic_plugin("pdbs", PDBCollectionHeuristic::create);
+static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
+static ScalarEvaluatorPlugin pdbcollection_heuristic_plugin("pdbs", create);
 
 PDBCollectionHeuristic::PDBCollectionHeuristic() {
 }
@@ -189,7 +190,7 @@ void PDBCollectionHeuristic::dump(const vector<vector<int> > &cgraph) const {
     cout << ")" << endl;
 }
 
-ScalarEvaluator *PDBCollectionHeuristic::create(const vector<string> &config, int start, int &end, bool dry_run) {
+ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
     //TODO: check what we have to do here!
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
     if (dry_run)

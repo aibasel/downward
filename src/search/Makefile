@@ -88,7 +88,8 @@ HEADERS += learning/AODE.h \
 HEADERS += pdb_heuristic.h \
            abstract_state_iterator.h \
            pdb_collection_heuristic.h \
-           planning_utilities.h
+           planning_utilities.h \
+           pattern_generation_haslum.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward
