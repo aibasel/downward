@@ -7,9 +7,11 @@
 #include <sstream>
 #include <algorithm>
 #include <map>
+#include <memory>
 #include "boost/any.hpp"
 #include "option_parser_util.h"
 #include "heuristic.h"
+#include "tree.h"
 
 class OptionParser;
 class LandmarksGraph;
@@ -17,35 +19,16 @@ template<class Entry>
 class OpenList;
 class SearchEngine;
 
-//this class is responsible for holding parsed input as a tree of strings
-class ParseTree{
-public:
-    ParseTree();
-    ParseTree(ParseTree* parent, std::string value = "", std::string key = "");
-
-    std::string value;
+struct ParseNode {
+    ParseNode (std::string val, std::string key = "");
+    std::string val;
     std::string key;
-
-    std::vector<ParseTree>* get_children();
-    std::vector<ParseTree> const* get_children() const;
-    void add_child(std::string value = "", std::string key = "");
-    ParseTree* last_child();
-    ParseTree* find_child(std::string key);
-    ParseTree* get_parent() const;
-    bool is_root() const;
-
-    friend std::ostream& operator<< (std::ostream& o, const ParseTree &pt);
-    
-    bool operator == (const ParseTree& pt);
-    bool operator != (const ParseTree& pt);
-
-private:
-    std::vector<ParseTree> children_;
-    ParseTree* parent_;
 };
 
+typedef ParseTree tree<ParseNode>;
+
 struct ParseError{
-    ParseError(std::string _msg, ParseTree pt = ParseTree());
+    ParseError(std::string _msg, ParseTree pt);
     
     std::string msg;
     ParseTree parse_tree;
