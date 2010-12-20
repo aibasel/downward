@@ -155,21 +155,6 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
     }
 }
 
-void PDBHeuristic::set_pattern(const vector<int> &pat) {
-    pattern = pat;
-    n_i.reserve(pattern.size());
-    variable_to_index.resize(g_variable_name.size(), -1);
-    num_states = 1;
-    // int p = 1; ; same as num_states; incrementally computed!
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        n_i.push_back(num_states);
-        variable_to_index[pattern[i]] = i;
-        num_states *= g_variable_domain[pattern[i]];
-        //p *= g_variable_domain[pattern[i]];
-    }
-    create_pdb();
-}
-
 /*void PDBHeuristic::generate_pattern(int max_abstract_states) {
 #define DEBUG false
 #if DEBUG
@@ -311,6 +296,21 @@ void PDBHeuristic::create_pdb() {
     }
 }
 
+void PDBHeuristic::set_pattern(const vector<int> &pat) {
+    pattern = pat;
+    n_i.reserve(pattern.size());
+    variable_to_index.resize(g_variable_name.size(), -1);
+    num_states = 1;
+    // int p = 1; ; same as num_states; incrementally computed!
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        n_i.push_back(num_states);
+        variable_to_index[pattern[i]] = i;
+        num_states *= g_variable_domain[pattern[i]];
+        //p *= g_variable_domain[pattern[i]];
+    }
+    create_pdb();
+}
+
 size_t PDBHeuristic::hash_index(const AbstractState &abstract_state) const {
     size_t index = 0;
     for (int i = 0; i < pattern.size(); ++i) {
@@ -356,16 +356,17 @@ void PDBHeuristic::dump() const {
     }
 }
 
-static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
+ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
+    //OptionParser::instance()->set_end_for_simple_config(config, start, end);
+    if (dry_run)
+        return 0;
+    
     int max_states = -1;
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
         if (config[end] != ")") {
             NamedOptionParser option_parser;
-            option_parser.add_int_option(
-                "max_states",
-                &max_states,
-                "maximum abstraction size");
+            option_parser.add_int_option("max_states", &max_states, "maximum abstraction size");
             option_parser.parse_options(config, end, end, dry_run);
             end++;
         }
@@ -374,6 +375,7 @@ static ScalarEvaluator *create(const vector<string> &config, int start, int &end
     } else {
         end = start;
     }
+    // Default value
     if (max_states == -1) {
         max_states = 1000000;
     }
@@ -381,9 +383,6 @@ static ScalarEvaluator *create(const vector<string> &config, int start, int &end
         cerr << "error: abstraction size must be at least 1" << endl;
         exit(2);
     }
-    //OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
-        return 0;
     
     vector<int> pattern;
     VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL);

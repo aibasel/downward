@@ -59,7 +59,6 @@ public:
     virtual ~PDBHeuristic();
     const std::vector<int> &get_pattern();
     void dump() const;
-    //static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
 };
 
 #endif

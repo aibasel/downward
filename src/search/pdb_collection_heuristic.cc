@@ -1,4 +1,5 @@
 #include "pdb_collection_heuristic.h"
+#include "pdb_heuristic.h"
 #include "globals.h"
 #include "plugin.h"
 #include "state.h"
@@ -15,33 +16,18 @@ using namespace std;
 static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
 static ScalarEvaluatorPlugin pdbcollection_heuristic_plugin("pdbs", create);
 
-PDBCollectionHeuristic::PDBCollectionHeuristic() {
-}
-
-PDBCollectionHeuristic::~PDBCollectionHeuristic() {
-}
-
-void PDBCollectionHeuristic::add_new_pattern(PDBHeuristic *pdb) {
-    pattern_databases.push_back(pdb);
-    max_cliques.clear();
+PDBCollectionHeuristic::PDBCollectionHeuristic(const vector<vector<int> > &pattern_collection) {
+    Timer timer;
+    for (int i = 0; i < pattern_collection.size(); ++i) {
+        pattern_databases.push_back(new PDBHeuristic(pattern_collection[i]));
+    }
+    cout << pattern_collection.size() << " pdbs constructed." << endl;
+    cout << "Construction time for all pdbs: " << timer << endl;
+    precompute_additive_vars();
     precompute_max_cliques();
 }
 
-void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pattern,
-                                                      vector<vector<PDBHeuristic *> > &max_additive_subsets) {
-    for (size_t i = 0; i < max_cliques.size(); ++i) {
-        // take all patterns which are additive to new_pattern
-        vector<PDBHeuristic *> subset;
-        subset.reserve(max_cliques[i].size());
-        for (size_t j = 0; j < max_cliques[i].size(); ++j) {
-            if (are_pattern_additive(new_pattern, max_cliques[i][j]->get_pattern())) {
-                subset.push_back(max_cliques[i][j]);
-            }
-        }
-        if (subset.size() > 0) {
-            max_additive_subsets.push_back(subset);
-        }
-    }
+PDBCollectionHeuristic::~PDBCollectionHeuristic() {
 }
 
 bool PDBCollectionHeuristic::are_pattern_additive(const vector<int> &patt1, const vector<int> &patt2) const {
@@ -59,7 +45,7 @@ void PDBCollectionHeuristic::precompute_max_cliques() {
     // initialize compatibility graph
     vector<vector<int> > cgraph;
     cgraph.resize(pattern_databases.size());
-
+    
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         for (size_t j = i + 1; j < pattern_databases.size(); ++j) {
             if (are_pattern_additive(pattern_databases[i]->get_pattern(),pattern_databases[j]->get_pattern())) {
@@ -70,11 +56,11 @@ void PDBCollectionHeuristic::precompute_max_cliques() {
         }
     }
     cout << "built cgraph." << endl;
-
+    
     vector<vector<int> > max_cliques_cgraph;
     max_cliques_cgraph.reserve(pattern_databases.size());
     compute_max_cliques(cgraph, max_cliques_cgraph);
-
+    
     for (size_t i = 0; i < max_cliques_cgraph.size(); ++i) {
         vector<PDBHeuristic *> clique;
         clique.reserve(max_cliques_cgraph[i].size());
@@ -83,7 +69,7 @@ void PDBCollectionHeuristic::precompute_max_cliques() {
         }
         max_cliques.push_back(clique);
     }
-
+    
     dump(cgraph);
 }
 
@@ -103,23 +89,7 @@ void PDBCollectionHeuristic::precompute_additive_vars() {
 
 void PDBCollectionHeuristic::initialize() {
     cout << "Initializing pattern database heuristic..." << endl;
-    vector<vector<int> > pattern_collection;
-
-    // Simple selection strategy. Take all goal variables as patterns.
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        pattern_collection.push_back(vector<int>(1, g_goal[i].first));
-    }
-
-    // build all pattern databases
-    Timer timer;
-    for (int i = 0; i < pattern_collection.size(); ++i) {
-        pattern_databases.push_back(new PDBHeuristic(pattern_collection[i]));
-    }
-    cout << pattern_collection.size() << " pdbs constructed." << endl;
-    cout << "Construction time for all pdbs: " << timer << endl;
-
-    precompute_additive_vars();
-    precompute_max_cliques();
+    cout << "Didn't do anything. Done initializing." << endl;
 
     // testing logistics 6-2
     /*vector<int> test_pattern;
@@ -161,6 +131,30 @@ int PDBCollectionHeuristic::compute_heuristic(const State &state) {
     //TODO check if this is correct!
 }
 
+
+void PDBCollectionHeuristic::add_new_pattern(PDBHeuristic *pdb) {
+    pattern_databases.push_back(pdb);
+    max_cliques.clear();
+    precompute_max_cliques();
+}
+
+void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pattern,
+                                                      vector<vector<PDBHeuristic *> > &max_additive_subsets) {
+    for (size_t i = 0; i < max_cliques.size(); ++i) {
+        // take all patterns which are additive to new_pattern
+        vector<PDBHeuristic *> subset;
+        subset.reserve(max_cliques[i].size());
+        for (size_t j = 0; j < max_cliques[i].size(); ++j) {
+            if (are_pattern_additive(new_pattern, max_cliques[i][j]->get_pattern())) {
+                subset.push_back(max_cliques[i][j]);
+            }
+        }
+        if (!subset.empty()) {
+            max_additive_subsets.push_back(subset);
+        }
+    }
+}
+
 void PDBCollectionHeuristic::dump(const vector<vector<int> > &cgraph) const {
     // print compatibility graph
     cout << "Compatibility graph" << endl;
@@ -191,11 +185,16 @@ void PDBCollectionHeuristic::dump(const vector<vector<int> > &cgraph) const {
 }
 
 ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
-    //TODO: check what we have to do here!
     OptionParser::instance()->set_end_for_simple_config(config, start, end);
     if (dry_run)
         return 0;
-    else
-        return new PDBCollectionHeuristic;
+    
+    vector<vector<int> > pattern_collection;
+    // Simple selection strategy. Take all goal variables as patterns.
+    for (size_t i = 0; i < g_goal.size(); ++i) {
+        pattern_collection.push_back(vector<int>(1, g_goal[i].first));
+    }
+    
+    return new PDBCollectionHeuristic(pattern_collection);
 }
 
