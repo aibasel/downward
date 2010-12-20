@@ -56,9 +56,15 @@ int main(int argc, const char **argv) {
     cout << "checked arguments" << endl;
     engine = OptionParser::parse_cmd_line(argc, argv, false);
     } catch (ParseError &pe) {
-        cout << "Parse Error: " << endl
+        ParseTree* pt = &pe.parse_tree;
+        cout << "Parse Error: " << endl  //TODO: move this printing inside ParseError
              << pe.msg << " at: " << endl
-             << pe.parse_tree << endl;
+             << *pt << endl;
+        while (!pt->is_root()) {
+            pt = pt->get_parent();
+            cout << "in " << endl
+                 << *pt << endl;
+        }
         exit(1);
     }
 

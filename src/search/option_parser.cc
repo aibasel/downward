@@ -16,6 +16,9 @@ ParseTree::ParseTree(ParseTree* parent, string v, string k):
 {
 }
 
+void ParseTree::set_parent(ParseTree* p) {
+    parent_ = p;
+}
 
 ParseTree* ParseTree::get_parent() const {
     return parent_;
@@ -54,7 +57,14 @@ bool ParseTree::is_root() const {
 
 std::ostream& operator<< (std::ostream& o, const ParseTree &pt)
  {
-     return o << pt.key << "=" << pt.value;
+     if (pt.key.compare("") != 0)
+         o << pt.key << "=";
+     o << pt.value;
+     vector<ParseTree> const* children = pt.get_children();
+     if (!children->empty()) {
+         o << "(";
+     }
+     return o;
  }
 
 bool ParseTree::operator == (const ParseTree &pt){
@@ -316,13 +326,14 @@ ParseTree* OptionParser::get_parse_tree() {
 }
 
 ParseTree OptionParser::generate_parse_tree(const string config) {
-    ParseTree root;
-    ParseTree* cur_node(&root);
+    ParseTree tr;
+    ParseTree::iterator top = tr.begin();
+    ParseTree::iterator cur_node = tr.insert(top, ParseNode("",""));
     string buffer(""), key("");
     for (size_t i(0); i != config.size(); ++i){
         char next = config.at(i);
         if((next == '(' || next == ')' || next == ',') && buffer.size() > 0){
-            cur_node->add_child(buffer, key);
+            tree->append_child(cur_node, ParseNode(buffer, key));
             buffer.clear();
             key.clear();
         }
@@ -330,29 +341,29 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
         case ' ':
             break;
         case '(':
-            cur_node = cur_node->last_child();
+            cur_node = tr.end(cur_node) - 1;
             break;
         case ')':
-            if(cur_node->is_root()) 
+            if(cur_node == top) 
                 throw ParseError("missing (", *cur_node);
-            cur_node = cur_node->get_parent();
+            cur_node = tr.parent(cur_node);
             break;
         case '[':
             if(!buffer.empty())
-                throw ParseError("misplaced opening bracket", *cur_node);
-            cur_node->add_child("list", key);
+                throw ParseError("misplaced opening bracket [", *cur_node);
+            tr.append_child(cur_node, ParseNode("list", key));
             key.clear();
-            cur_node = cur_node->last_child();
+            cur_node = tr.end(cur_node) -1;
             break;
         case ']':
-            if(buffer.size() > 0) {
-                cur_node->add_child(buffer, key);
+            if(!buffer.empty()) {
+                tr.append_child(cur_node, ParseNode(buffer, key));
                 buffer.clear();
                 key.clear();
             }
-            if(cur_node->value.compare("list") != 0)
+            if(cur_node->data.value.compare("list") != 0)
                 throw ParseError("mismatched brackets", *cur_node);
-            cur_node = cur_node->get_parent();
+            cur_node = tr.parent(cur_node);
             break;
         case ',':
             break;
@@ -367,10 +378,11 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
             break;
         }    
     }
-    if (!cur_node->is_root())
+    if (cur_node != top)
         throw ParseError("missing )", *cur_node);
         
-    return *root.last_child();
+    ParseTree real_tr = tr.subtree(tr.end(top) - 1, tr.end(top));
+    return real_tr;
 }
 
 
