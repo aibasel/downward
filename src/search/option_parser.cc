@@ -131,6 +131,58 @@ SearchEngine *OptionParser::parse_cmd_line(
     return engine;
 }
 
+//takes a string of the form "word1, word2, word3 " and converts it to a vector
+static std::vector<std::string> to_list(std::string s) {
+    std::vector<std::string> result;
+    std::string buffer;
+    for(size_t i(0); i != s.size(); ++i) {
+        if (s[i] == ',') {
+            result.push_back(buffer);
+            buffer.clear();
+        } else if (s[i] == ' ') {
+            continue;
+        } else {
+            buffer.push_back(s[i]);
+        }
+    }
+    result.push_back(buffer);
+    return result;
+}
+
+void OptionParser::predefine_heuristic(std::string s, bool dry_run) { 
+    size_t split = s.find("=");
+    std::string ls = s.substr(0, split);
+    std::vector<std::string> definees = to_list(ls);
+    std::string rs = s.substr(split + 1);
+    OptionParser op(rs, dry_run);
+    if (definees.size() == 1) { //normal predefinition
+        Predefinitions<Heuristic* >::instance()->predefine(
+            definees[0], op.start_parsing<Heuristic *>());
+    } else if (definees.size() > 1) { //synergy
+        std::vector<Heuristic *> heur = 
+            op.start_parsing<Synergy *>()->heuristics;
+        for(size_t i(0); i != definees.size(); ++i) {
+            Predefinitions<Heuristic *>::instance()->predefine(
+                definees[i], heur[i]);
+        }            
+    } else {
+        op.error("predefinition has invalid left side");
+    }
+}
+
+void OptionParser::predefine_lmgraph(std::string s, bool dry_run) { 
+    size_t split = s.find("=");
+    std::string ls = s.substr(0, split);
+    std::vector<std::string> definees = to_list(ls);
+    std::string rs = s.substr(split + 1);
+    OptionParser op(rs, dry_run);
+    if (definees.size() == 1) { 
+        Predefinitions<LandmarksGraph *>::instance()->predefine(
+            definees[0], op.start_parsing<LandmarksGraph *>());
+    } else {
+        op.error("predefinition has invalid left side");
+    }
+}
 
 
 OptionParser::OptionParser(const string config, bool dr):
@@ -295,7 +347,7 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
         throw ParseError("missing )", *cur_node);
         
     ParseTree real_tr = tr.subtree(tr.begin(pseudoroot), tr.end(pseudoroot));
-    kptree::print_tree_bracketed<ParseNode>(real_tr, cout); cout << endl;
+    kptree::print_tree_bracketed<ParseNode>(real_tr, cout);
     return real_tr;
 }
 

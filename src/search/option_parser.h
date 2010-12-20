@@ -126,24 +126,6 @@ struct HelpElement {
     std::string default_value;
 };
 
-//takes a string of the form "word1, word2, word3 " and converts it to a vector
-static std::vector<std::string> to_list(std::string s) {
-    std::vector<std::string> result;
-    std::string buffer;
-    for(size_t i(0); i != s.size(); ++i) {
-        if (s[i] == ',') {
-            result.push_back(buffer);
-            buffer.clear();
-        } else if (s[i] == ' ') {
-            continue;
-        } else {
-            buffer.push_back(s[i]);
-        }
-    }
-    result.push_back(buffer);
-    return result;
-}
-        
 
 /*The OptionParser stores a parse tree, and a Options. 
 By calling addArgument, the parse tree is partially parsed, 
@@ -160,104 +142,20 @@ public:
     static SearchEngine *parse_cmd_line(int argc, const char **argv, bool dr);
     
 
-    //Note: originally the following function was templated,
+    //Note: originally the following function was templated predefine<T>,
     //but there is no Synergy<LandmarksGraph>, so I split it up for now.
-    static void predefine_heuristic(std::string s, bool dry_run) { //TODO: move this outside
-        size_t split = s.find("=");
-        std::string ls = s.substr(0, split);
-        std::vector<std::string> definees = to_list(ls);
-        std::string rs = s.substr(split + 1);
-        OptionParser op(rs, dry_run);
-        if (definees.size() == 1) { //normal predefinition
-            Predefinitions<Heuristic* >::instance()->predefine(
-                definees[0], op.start_parsing<Heuristic *>());
-        } else if (definees.size() > 1) { //synergy
-            std::vector<Heuristic *> heur = 
-                op.start_parsing<Synergy *>()->heuristics;
-            for(size_t i(0); i != definees.size(); ++i) {
-                Predefinitions<Heuristic *>::instance()->predefine(
-                    definees[i], heur[i]);
-            }            
-        } else {
-            op.error("predefinition has invalid left side");
-        }
-    }
-
-    static void predefine_lmgraph(std::string s, bool dry_run) { //TODO: move this outside
-        size_t split = s.find("=");
-        std::string ls = s.substr(0, split);
-        std::vector<std::string> definees = to_list(ls);
-        std::string rs = s.substr(split + 1);
-        OptionParser op(rs, dry_run);
-        if (definees.size() == 1) { 
-            Predefinitions<LandmarksGraph *>::instance()->predefine(
-                definees[0], op.start_parsing<LandmarksGraph *>());
-        } else {
-            op.error("predefinition has invalid left side");
-        }
-    }
+    static void predefine_heuristic(std::string s, bool dry_run);
+    static void predefine_lmgraph(std::string s, bool dry_run);
 
     //this function initiates parsing of T (the root node of parse_tree
     //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarksGraph*
-    template <class T> T start_parsing() {
-        return TokenParser<T>::parse(*this);
-    }
+    template <class T> T start_parsing();
     
-    template <class T> void add_option(
-        std::string k, std::string h="") {
-        std::cout << "adding option " << k << std::endl;
-        if(help_mode_) {
-            helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
-            if(opts.contains(k)){
-                helpers.back().default_value = 
-                    DefaultValueNamer<T>::toStr(opts.get<T>(k));
-            }
-            return;
-        }
-        valid_keys.push_back(k);
-        T result;
-        ParseTree::sibling_iterator arg = next_unparsed_argument;
-        //scenario where we have already handled all arguments
-        if (arg == parse_tree.end(parse_tree.begin())) {
-            if (!opts.contains(k)) {
-                error("missing option: " + k);
-            } else {
-                return; //use default value
-            }
-        } 
-        //handling arguments with explicit keyword:
-        if (!arg->key.empty()) {
-            //try to find a parameter passed with keyword k
-            for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
-                if (arg->key.compare(k) == 0) 
-                    break;
-            }
-            if (arg == parse_tree.end(parse_tree.begin())) {
-                if (!opts.contains(k)) {
-                    error("missing option: " + k);
-                } else {
-                    return; //use default value
-                }
-            } 
-        }
-        
-        ParseTree::sibling_iterator arg_end = arg;
-        ++arg_end;
-        OptionParser subparser(parse_tree.subtree(arg, arg_end), dry_run());
-        result = TokenParser<T>::parse(subparser);
-        opts.set(k, result);
-        //if we have not reached the keyword parameters yet, 
-        //increment the argument position pointer
-        if (arg->key.size() == 0)
-            ++next_unparsed_argument;     
-    }
-
+    template <class T> void add_option(std::string k, std::string h="");
+       
     //add option with default value
     template <class T> void add_option(
-        std::string k, T def_val, std::string h="") {
-        opts.set(k, def_val);
-        add_option<T>(k, h);
-    }
+        std::string k, T def_val, std::string h="");
 
 
     void add_enum_option(std::string k, 
@@ -266,15 +164,10 @@ public:
 
     template <class T>
         void add_list_option(std::string k, 
-                             std::vector<T> def_val, std::string h="") {
-        opts.set(k, def_val);
-        add_list_option<T>(k,h);
-    }
+                             std::vector<T> def_val, std::string h="");
 
     template <class T> 
-        void add_list_option(std::string k, std::string h="") {
-        add_option<std::vector<T> >(k, h);
-    }
+        void add_list_option(std::string k, std::string h="");
 
     void error(std::string msg);
     void warning(std::string msg);
@@ -298,7 +191,80 @@ private:
     std::vector<std::string> helpstrings; 
 };
 
+//Definitions of OptionParsers template functions:
 
+template <class T> T OptionParser::start_parsing() {
+    return TokenParser<T>::parse(*this);
+}
+
+template <class T> void OptionParser::add_option(
+    std::string k, std::string h) {
+    std::cout << "adding option " << k << std::endl;
+    if(help_mode_) {
+        helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
+        if(opts.contains(k)){
+            helpers.back().default_value = 
+                DefaultValueNamer<T>::toStr(opts.get<T>(k));
+        }
+        return;
+    }
+    valid_keys.push_back(k);
+    T result;
+    ParseTree::sibling_iterator arg = next_unparsed_argument;
+    //scenario where we have already handled all arguments
+    if (arg == parse_tree.end(parse_tree.begin())) {
+        if (!opts.contains(k)) {
+            error("missing option: " + k);
+        } else {
+            return; //use default value
+        }
+    } 
+    //handling arguments with explicit keyword:
+    if (!arg->key.empty()) {
+        //try to find a parameter passed with keyword k
+        for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
+            if (arg->key.compare(k) == 0) 
+                break;
+        }
+        if (arg == parse_tree.end(parse_tree.begin())) {
+            if (!opts.contains(k)) {
+                error("missing option: " + k);
+            } else {
+                return; //use default value
+            }
+        } 
+    }
+        
+    ParseTree::sibling_iterator arg_end = arg;
+    ++arg_end;
+    OptionParser subparser(parse_tree.subtree(arg, arg_end), dry_run());
+    result = TokenParser<T>::parse(subparser);
+    opts.set(k, result);
+    //if we have not reached the keyword parameters yet, 
+    //increment the argument position pointer
+    if (arg->key.size() == 0)
+        ++next_unparsed_argument;     
+}
+
+template <class T>
+void OptionParser::add_list_option(std::string k, 
+                     std::vector<T> def_val, std::string h) {
+    opts.set(k, def_val);
+    add_list_option<T>(k,h);
+}
+
+template <class T> void OptionParser::add_option(
+    std::string k, T def_val, std::string h) {
+    opts.set(k, def_val);
+    add_option<T>(k, h);
+}
+
+template <class T> 
+void OptionParser::add_list_option(std::string k, std::string h) {
+    add_option<std::vector<T> >(k, h);
+}
+
+//Definitions of TokenParser<T>:
 template <class T>
 T TokenParser<T>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
