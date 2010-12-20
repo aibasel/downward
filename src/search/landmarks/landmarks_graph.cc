@@ -64,8 +64,8 @@ static inline bool _operator_condition_includes(const Operator &o,
 }
 
 LandmarksGraph::LandmarksGraph(LandmarkGraphOptions &options, Exploration *explor)
-    : exploration(explor), landmarks_count(0), conj_lms(0),
-      external_inconsistencies_read(false) {
+    : exploration(explor), landmarks_count(0), conj_lms(0)/*,
+      external_inconsistencies_read(false)*/ {
     reasonable_orders = options.reasonable_orders;
     only_causal_landmarks = options.only_causal_landmarks;
     disjunctive_landmarks = options.disjunctive_landmarks;
@@ -291,7 +291,7 @@ void LandmarksGraph::read_external_inconsistencies() {
         }
         check_magic(in, "end_groups");
         myfile.close();
-        external_inconsistencies_read = true;
+        //external_inconsistencies_read = true;
         cout << "done" << endl;
     } else {
         cout << "Unable to open invariants file!" << endl;
@@ -1283,10 +1283,10 @@ void LandmarksGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, boo
 
 // static function to generate landmarks and print message
 void LandmarksGraph::build_lm_graph(LandmarksGraph *lm_graph) {
-    ExactTimer lm_generation_timer;
+    //ExactTimer lm_generation_timer;
     //lm_graph->read_external_inconsistencies();
     lm_graph->generate();
-    cout << "Landmarks generation time: " << lm_generation_timer << endl;
+    //cout << "Landmarks generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;
     cout << "Discovered " << lm_graph->number_of_landmarks()
