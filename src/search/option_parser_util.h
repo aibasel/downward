@@ -4,8 +4,10 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <ios>
+#include "tree.hh"
 
-class ParseTree;
+
 class LandmarksGraph;
 class Heuristic;
 class ScalarEvaluator;
@@ -14,6 +16,39 @@ class SearchEngine;
 class OptionParser;
 template<class Entry>
 class OpenList;
+
+
+struct ParseNode {
+    ParseNode()
+        :value(""),
+         key("")
+    {
+    }
+
+    ParseNode(std::string val, std::string k = "")
+        :value(val),
+         key(k) 
+    {
+    }        
+    std::string value;
+    std::string key;
+
+    friend std::ostream& operator<< (std::ostream &out, const ParseNode &pn) {
+        if (pn.key.compare("") != 0) 
+            out << pn.key << " = ";
+        out << pn.value;
+        return out;
+    }
+};
+
+typedef tree<ParseNode> ParseTree;
+
+struct ParseError{
+    ParseError(std::string _msg, ParseTree pt);
+    
+    std::string msg;
+    ParseTree parse_tree;
+};
 
 
 //a registry<T> maps a string to a T-factory
@@ -212,6 +247,14 @@ struct DefaultValueNamer<bool> {
         } else {
             return "false";
         }
+    }
+};
+
+template <>
+struct DefaultValueNamer<ParseTree> {
+    static std::string toStr(ParseTree val) {
+        return "implement default value naming for parse trees!" 
+            + val.begin()->value;
     }
 };
 
