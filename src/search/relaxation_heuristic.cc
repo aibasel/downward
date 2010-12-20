@@ -53,7 +53,11 @@ void RelaxationHeuristic::initialize() {
 }
 
 void RelaxationHeuristic::build_unary_operators(const Operator &op) {
-    int base_cost = op.is_axiom() ? 0 : 1; //op.get_cost();
+    int base_cost = op.is_axiom() ? 0 : 1; //TODO: CAREFUL: NEXT LINE:
+    // When changing this to op.get_cost() or whatever, must also
+    // adapt simplify() so that the dominance test also takes action
+    // cost into account. (A more expensive operator cannot dominate a
+    // cheaper operator.)
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<Proposition *> precondition;
@@ -101,6 +105,12 @@ public:
     }
 };
 
+
+static bool compare_prop_pointer(const Proposition *p1, const Proposition *p2) {
+    return p1->id < p2->id;
+}
+
+
 void RelaxationHeuristic::simplify() {
     // Remove duplicate or dominated unary operators.
 
@@ -124,7 +134,7 @@ void RelaxationHeuristic::simplify() {
 
     for (int i = 0; i < unary_operators.size(); i++) {
         UnaryOperator &op = unary_operators[i];
-        sort(op.precondition.begin(), op.precondition.end());
+        sort(op.precondition.begin(), op.precondition.end(), compare_prop_pointer);
         HashKey key(op.precondition, op.effect);
         unary_operator_index[key] = i;
     }
