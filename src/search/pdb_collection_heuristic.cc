@@ -55,7 +55,7 @@ void PDBCollectionHeuristic::precompute_max_cliques() {
             }
         }
     }
-    cout << "built cgraph." << endl;
+    //cout << "built cgraph." << endl;
     
     vector<vector<int> > max_cliques_cgraph;
     max_cliques_cgraph.reserve(pattern_databases.size());
@@ -70,7 +70,7 @@ void PDBCollectionHeuristic::precompute_max_cliques() {
         max_cliques.push_back(clique);
     }
     
-    dump(cgraph);
+    //dump(cgraph);
 }
 
 void PDBCollectionHeuristic::precompute_additive_vars() {
