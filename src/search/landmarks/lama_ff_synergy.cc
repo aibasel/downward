@@ -16,22 +16,6 @@ void LamaFFSynergy::HeuristicProxy::initialize() {
     }
 }
 
-LamaFFSynergy::LamaFFSynergy(LandmarksGraph &lm_graph,
-                             bool lm_pref_, bool lm_admissible_, bool lm_optimal_,
-                             bool use_action_landmarks_)
-    : lama_heuristic_proxy(this), ff_heuristic_proxy(this),
-      lm_pref(lm_pref_), lm_admissible(lm_admissible_),
-      lm_optimal(lm_optimal_),
-      use_action_landmarks(use_action_landmarks_) {
-    cout << "Initializing LAMA-FF Synergy Object" << endl;
-    lama_heuristic = new LandmarkCountHeuristic(lm_graph,
-                                                lm_pref, lm_admissible, lm_optimal,
-                                                use_action_landmarks_);
-    //lama_heuristic->initialize(); // must be called here explicitly
-    exploration = lama_heuristic->get_exploration();
-    initialized = false;
-}
-
 LamaFFSynergy::LamaFFSynergy(const Options &opts)
     : lama_heuristic_proxy(this), ff_heuristic_proxy(this),
       lm_pref(opts.get<bool>("pref")), 
@@ -41,9 +25,7 @@ LamaFFSynergy::LamaFFSynergy(const Options &opts)
 {
     cout << "Initializing LAMA-FF Synergy Object" << endl;
     lama_heuristic = 
-        new LandmarkCountHeuristic(*opts.get<LandmarksGraph *>("lm_graph"),
-                                   lm_pref, lm_admissible, lm_optimal,
-                                   use_action_landmarks);
+        new LandmarkCountHeuristic(opts);
     //lama_heuristic->initialize(); // must be called here explicitly
     exploration = lama_heuristic->get_exploration();
     initialized = false;
@@ -101,12 +83,16 @@ static Synergy *_parse_heuristics(OptionParser& parser) {
                           // using lm preferred operators
     opts.set("pref", lm_pref_);
 
-    //NOTE: ask if synergy is supposed to be created in dry_run mode
-    LamaFFSynergy *lama_ff_synergy = 
-        new LamaFFSynergy(opts);
+    if(!parser.dry_run()){
+        LamaFFSynergy *lama_ff_synergy = 
+            new LamaFFSynergy(opts);
 
-    syn->heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
-    syn->heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
+        syn->heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
+        syn->heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
+    } else {
+        syn->heuristics.push_back(0);
+        syn->heuristics.push_back(0);
+    }
     return syn;
 }
 

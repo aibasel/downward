@@ -17,21 +17,18 @@
 
 using namespace std;
 
-
-LandmarkCountHeuristic::LandmarkCountHeuristic(LandmarksGraph &lm_graph, bool preferred_ops,
-                                               bool admissible, bool optimal,
-                                               bool use_action_landmarks)
-    : lgraph(lm_graph),
-      exploration(lm_graph.get_exploration()),
-      lm_status_manager(lgraph) {
+LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
+    : lgraph(*opts.get<LandmarksGraph *>("lm_graph")),
+      exploration(lgraph.get_exploration()),
+      lm_status_manager(lgraph) {   
     cout << "Initializing landmarks count heuristic..." << endl;
-    use_preferred_operators = preferred_ops;
+    use_preferred_operators = opts.get<bool>("pref");
     lookahead = INT_MAX;
     // When generating preferred operators, we plan towards
     // non-disjunctive landmarks only
     ff_search_disjunctive_lms = false;
 
-    if (admissible) {
+    if (opts.get<bool>("admissible")) {
         use_cost_sharing = true;
         if (lgraph.is_using_reasonable_orderings()) {
             cerr << "Reasonable orderings should not be used for admissble heuristics" << endl;
@@ -41,7 +38,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(LandmarksGraph &lm_graph, bool pr
             cerr << "cost partitioning does not support axioms" << endl;
             ::exit(1);
         }
-        if (optimal) {
+        if (opts.get<bool>("optimal")) {
 #ifdef USE_LP
             lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph);
 #else
@@ -50,7 +47,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(LandmarksGraph &lm_graph, bool pr
             exit(1);
 #endif
         } else {
-            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, use_action_landmarks);
+            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, opts.get<bool>("alm"));
         }
     } else {
         use_cost_sharing = false;
@@ -307,7 +304,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");
     parser.add_option<bool>("pref_ops", false, "identify preferred operators");
-    parser.add_option<bool>("action_landmarks", true, "use action landmarks");
+    parser.add_option<bool>("alm", true, "use action landmarks");
 
     Options opts = parser.parse();
 
@@ -317,13 +314,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        //NOTE: it seems inconvenient to add a constructor that takes an Options object - the old constructor is needed anyway and there's a lot happening in the constructor. But maybe better solution possible.
-        return new LandmarkCountHeuristic( 
-            *opts.get<LandmarksGraph *>("lm_graph"), 
-            opts.get<bool>("pref_ops"),
-            opts.get<bool>("admissible"),
-            opts.get<bool>("optimal"),
-            opts.get<bool>("action_landmarks"));
+        return new LandmarkCountHeuristic(opts);
 }
 
 static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(

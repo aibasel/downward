@@ -5,7 +5,7 @@
 IteratedSearch::IteratedSearch(const Options &opts)
     : engine_configs(opts.get_list<ParseTree>("engine_configs")),
       pass_bound(opts.get<bool>("pass_bound")),
-      repeat_last_phase(opts.get<bool>("repeat_last_phase")),
+      repeat_last_phase(opts.get<bool>("repeat_last")),
       continue_on_fail(opts.get<bool>("continue_on_fail")),
       continue_on_solve(opts.get<bool>("continue_on_solve")) {
     last_phase_found_solution = false;
@@ -122,7 +122,7 @@ void IteratedSearch::statistics() const {
 
 static SearchEngine *_parse(OptionParser &parser) {
  
-    parser.add_list_option<ParseTree>("engine_config", "");
+    parser.add_list_option<ParseTree>("engine_configs", "");
     parser.add_option<bool>("pass_bound", true, 
                            "use bound from previous search");
     parser.add_option<bool>("repeat_last", false, 
@@ -133,19 +133,21 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "continue search after solution found");
 
     Options opts = parser.parse();
-    if(parser.help_mode()) {
+    if(parser.help_mode())
         return 0;
-    } else if (parser.dry_run()) {
+    
+    if(opts.get_list<ParseTree>("engine_configs").empty())
+        parser.error("empty search engine list");
+    
+    if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
-        vector<ParseTree> configs = opts.get_list<ParseTree>("engine_config");
+        vector<ParseTree> configs = opts.get_list<ParseTree>("engine_configs");
         for (size_t i(0); i != configs.size(); ++i) {
             OptionParser test_parser(configs[i], true);
             test_parser.start_parsing<SearchEngine *>();
         }
         return 0;
     } else {
-        if(opts.get_list<ParseTree>("engine_config").empty())
-            parser.error("empty search engine list");
         IteratedSearch *engine = new IteratedSearch(opts);
         
         return engine;
