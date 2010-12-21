@@ -189,7 +189,7 @@ OptionParser::OptionParser(const string config, bool dr):
     parse_tree(generate_parse_tree(config)),
     dry_run_(dr),
     help_mode_(false),
-    next_unparsed_argument(parse_tree.begin(parse_tree.begin()))
+    next_unparsed_argument(first_child_of_root(parse_tree))
 {
 }
 
@@ -198,7 +198,7 @@ OptionParser::OptionParser(ParseTree pt, bool dr):
     parse_tree(pt),
     dry_run_(dr),
     help_mode_(false),
-    next_unparsed_argument(parse_tree.begin(parse_tree.begin()))
+    next_unparsed_argument(first_child_of_root(parse_tree))
 {
 }
 
@@ -260,7 +260,7 @@ Options OptionParser::parse() {
         }
     }
     //first check if there were any arguments with invalid keywords
-    for(ParseTree::iterator pti = parse_tree.begin(parse_tree.begin());
+    for(ParseTree::iterator pti = first_child_of_root(parse_tree);
         pti != parse_tree.end(); ++pti) {
         if (pti->key.compare("") != 0 &&
             find(valid_keys.begin(), 
@@ -306,7 +306,7 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
         case ' ':
             break;
         case '(':
-            cur_node = --tr.end(cur_node);
+            cur_node = last_child(tr, cur_node);
             break;
         case ')':
             if(cur_node == top) 
@@ -318,7 +318,7 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
                 throw ParseError("misplaced opening bracket [", *cur_node);
             tr.append_child(cur_node, ParseNode("list", key));
             key.clear();
-            cur_node = --tr.end(cur_node);
+            cur_node = last_child(tr, cur_node);
             break;
         case ']':
             if(!buffer.empty()) {
@@ -346,7 +346,9 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
     if (cur_node->value.compare("pseudoroot") != 0)
         throw ParseError("missing )", *cur_node);
         
-    ParseTree real_tr = tr.subtree(tr.begin(pseudoroot), tr.end(pseudoroot));
+    //the real parse tree is the first (and only) child of the pseudoroot.
+    //pseudoroot is only a placeholder.
+    ParseTree real_tr = subtree(tr, tr.begin(pseudoroot)); 
     kptree::print_tree_bracketed<ParseNode>(real_tr, cout);
     return real_tr;
 }
