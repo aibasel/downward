@@ -52,12 +52,14 @@ class PDBHeuristic : public Heuristic {
     //AbstractState inv_hash_index(int index) const; // inverts the hash-index-function
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    //virtual int compute_heuristic(const State &state);
 public:
     //PDBHeuristic(int max_abstract_states);
     PDBHeuristic(const std::vector<int> &pattern);
     virtual ~PDBHeuristic();
-    const std::vector<int> &get_pattern();
+    const std::vector<int> &get_pattern() const { return pattern; };
+    // TODO: check whether public is ok! (probably only needed for the moment)
+    int compute_heuristic(const State &state);
     void dump() const;
 };
 

@@ -344,10 +344,6 @@ int PDBHeuristic::compute_heuristic(const State &state) {
     return h;
 }
 
-const vector<int> &PDBHeuristic::get_pattern() {
-    return pattern;
-}
-
 void PDBHeuristic::dump() const {
     for (size_t i = 0; i < num_states; ++i) {
         //AbstractState abs_state = inv_hash_index(i);
@@ -392,8 +388,12 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         //cout << "Number of abstract states = " << num_states << endl;
         //cout << "Including variable: " << var << " (True name:" << g_variable_name[var] << ")" << endl;
         pattern.push_back(var);
-        var = vof.next();
-        num_states *= g_variable_domain[var];
+        if (!vof.done()) {
+            var = vof.next();
+            num_states *= g_variable_domain[var];
+        }
+        else
+            break;
     }
     
     return new PDBHeuristic(pattern);
