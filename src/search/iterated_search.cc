@@ -1,5 +1,6 @@
 #include "iterated_search.h"
 #include "plugin.h"
+#include "tree_util.hh"
 #include <limits>
 
 IteratedSearch::IteratedSearch(const Options &opts)
@@ -25,7 +26,9 @@ SearchEngine *IteratedSearch::get_search_engine(
     OptionParser parser(engine_configs[engine_configs_index], false);
     SearchEngine *engine = parser.start_parsing<SearchEngine *>();
 
-    cout << "Starting search: implement this!" << endl; //<< engine_configs[engine_configs_index] << endl;
+    cout << "Starting search: ";
+    kptree::print_tree_bracketed(engine_configs[engine_configs_index], cout);
+    cout << endl;
 
     return engine;
 }
