@@ -29,16 +29,22 @@ void PatternGenerationHaslum::generate_successors(const PDBCollectionHeuristic &
     // TODO: super inefficient!
     for (size_t i = 0; i < current_collection.get_pattern_databases().size(); ++i) {
         vector<int> current_pattern = current_collection.get_pattern_databases()[i]->get_pattern();
+        cout << "current pattern: ";
+        for (size_t l = 0; l < current_pattern.size(); ++l) {
+            cout << current_pattern[l] << " ";
+        }
+        cout << endl;
         for (size_t j = 0; j < current_pattern.size(); ++j) {
             const vector<int> &relevant_vars = g_causal_graph->get_predecessors(current_pattern[j]);
             for (size_t k = 0; k < relevant_vars.size(); ++k) {
                 vector<int> new_pattern(current_pattern);
                 new_pattern.push_back(relevant_vars[k]);
                 successor_patterns.push_back(new_pattern);
-                /*cout << "added new pattern:" << endl;
+                cout << "one successor pattern: ";
                 for (size_t l = 0; l < new_pattern.size(); ++l) {
-                    cout << new_pattern[l] << " " << endl;
-                }*/
+                    cout << new_pattern[l] << " ";
+                }
+                cout << endl;
             }
         }
     }
@@ -58,7 +64,7 @@ void PatternGenerationHaslum::hill_climbing() {
     current_collection = new PDBCollectionHeuristic(pattern_collection);
     
     bool improved = true;
-    while (improved) {
+    while (improved) { // TODO and enough memory
         improved = false;
         // TODO: drop PDBHeuristic and use Astar instead
         vector<vector<int> > successor_patterns;
@@ -68,7 +74,7 @@ void PatternGenerationHaslum::hill_climbing() {
         for (size_t i = 0; i < successor_patterns.size(); ++i) {
             PDBHeuristic *pdbheuristic = new PDBHeuristic(successor_patterns[i]);
             cout << "successor_pattern[i]" << endl;
-            for (size_t x = 0; x < successor_patterns.size(); ++x) {
+            for (size_t x = 0; x < successor_patterns[i].size(); ++x) {
                 cout << successor_patterns[i][x] << " " << endl;
             }
             vector<vector<PDBHeuristic *> > max_additive_subsets;
@@ -99,6 +105,7 @@ void PatternGenerationHaslum::hill_climbing() {
             cout << "yippieee! we found a better pattern!" << endl;
             current_collection->add_new_pattern(successor_patterns[best_pattern_index]);
         }
+        exit(2);
     }
 }
 
