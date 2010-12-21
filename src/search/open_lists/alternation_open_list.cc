@@ -13,11 +13,11 @@ OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_list_option<OpenList<Entry> *>("sublists");
     parser.add_option<int>("boost", 1000,
                            "boost value for successful sub-open-lists");
-    
+
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
-    
+
     if (opts.get_list<OpenList<Entry> *>("sublists").empty())
         parser.error("need at least one internal open list");
     if (parser.dry_run())
@@ -29,13 +29,13 @@ OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
 template<class Entry>
 void AlternationOpenList<Entry>::reg() {
     Registry<OpenList<Entry > *>::instance()->register_object(
-        "alt", 
+        "alt",
         *AlternationOpenList<Entry>::_parse);
 }
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)
-    : open_lists(opts.get_list<OpenList<Entry> *>("sublists")), 
+    : open_lists(opts.get_list<OpenList<Entry> *>("sublists")),
       priorities(open_lists.size(), 0), size(0),
       boosting(opts.get<int>("boost")) {
 }

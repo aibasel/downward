@@ -20,21 +20,19 @@ class OpenList;
 
 struct ParseNode {
     ParseNode()
-        :value(""),
-         key("")
-    {
+        : value(""),
+          key("") {
     }
 
     ParseNode(std::string val, std::string k = "")
-        :value(val),
-         key(k) 
-    {
-    }        
+        : value(val),
+          key(k) {
+    }
     std::string value;
     std::string key;
 
-    friend std::ostream& operator<< (std::ostream &out, const ParseNode &pn) {
-        if (pn.key.compare("") != 0) 
+    friend std::ostream &operator<<(std::ostream &out, const ParseNode &pn) {
+        if (pn.key.compare("") != 0)
             out << pn.key << " = ";
         out << pn.value;
         return out;
@@ -43,9 +41,9 @@ struct ParseNode {
 
 typedef tree<ParseNode> ParseTree;
 
-struct ParseError{
+struct ParseError {
     ParseError(std::string m, ParseTree pt);
-    
+
     std::string msg;
     ParseTree parse_tree;
 };
@@ -53,17 +51,16 @@ struct ParseError{
 
 //a registry<T> maps a string to a T-factory
 template <class T>
-class Registry{
+class Registry {
 public:
-    typedef T (*Factory)(OptionParser&);
-    static Registry<T>* instance()
-    {
+    typedef T (*Factory)(OptionParser &);
+    static Registry<T> *instance() {
         if (!instance_) {
             instance_ = new Registry<T>();
         }
         return instance_;
     }
-            
+
     void register_object(std::string k, Factory f) {
         registered[k] = f;
     }
@@ -78,21 +75,22 @@ public:
 
     std::vector<std::string> get_keys() {
         std::vector<std::string> keys;
-        for(typename std::map<std::string,Factory>::iterator it = 
-                registered.begin(); 
-            it != registered.end(); ++it) {
+        for (typename std::map<std::string, Factory>::iterator it =
+                 registered.begin();
+             it != registered.end(); ++it) {
             keys.push_back(it->first);
         }
         return keys;
     }
 
 private:
-    Registry(){};
+    Registry() {}
     static Registry<T> *instance_;
     std::map<std::string, Factory> registered;
 };
 
-template <class T> Registry<T>* Registry<T>::instance_ = 0;
+template <class T>
+Registry<T> *Registry<T>::instance_ = 0;
 
 
 
@@ -102,8 +100,7 @@ template <class T> Registry<T>* Registry<T>::instance_ = 0;
 template <class T>
 class Predefinitions {
 public:
-    static Predefinitions<T>* instance()
-    {
+    static Predefinitions<T> *instance() {
         if (!instance_) {
             instance_ = new Predefinitions<T>();
         }
@@ -124,12 +121,13 @@ public:
     }
 
 private:
-    Predefinitions<T>(){};
-    static Predefinitions<T>* instance_;
+    Predefinitions<T>() {}
+    static Predefinitions<T> *instance_;
     std::map<std::string, T> predefined;
 };
 
-template <class T> Predefinitions<T>* Predefinitions<T>::instance_ = 0;
+template <class T>
+Predefinitions<T> *Predefinitions<T>::instance_ = 0;
 
 
 
@@ -137,7 +135,7 @@ struct Synergy {
     std::vector<Heuristic *> heuristics;
 };
 
-//TypeNamer prints out names of types. 
+//TypeNamer prints out names of types.
 //There's something built in for this (typeid().name()), but the output is not always very readable
 
 template <class T>
@@ -224,7 +222,7 @@ struct TypeNamer<OpenList<Entry> *> {
 template <class T>
 struct TypeNamer<std::vector<T> > {
     static std::string name() {
-        return "list of "+TypeNamer<T>::name();
+        return "list of " + TypeNamer<T>::name();
     }
 };
 
@@ -243,7 +241,7 @@ struct DefaultValueNamer {
 template <>
 struct DefaultValueNamer<bool> {
     static std::string toStr(bool val) {
-        if(val) {
+        if (val) {
             return "true";
         } else {
             return "false";
@@ -254,8 +252,8 @@ struct DefaultValueNamer<bool> {
 template <>
 struct DefaultValueNamer<ParseTree> {
     static std::string toStr(ParseTree val) {
-        return "implement default value naming for parse trees!" 
-            + val.begin()->value;
+        return "implement default value naming for parse trees!"
+               + val.begin()->value;
     }
 };
 
@@ -263,7 +261,7 @@ template <class T>
 struct DefaultValueNamer<std::vector<T> > {
     static std::string toStr(std::vector<T> val) {
         std::string s = "[";
-        for(size_t i(0); i != val.size(); ++i) {
+        for (size_t i(0); i != val.size(); ++i) {
             s += DefaultValueNamer<T>::toStr(val[i]);
         }
         s += "]";
@@ -276,34 +274,34 @@ struct DefaultValueNamer<std::vector<T> > {
 
 template<class T>
 typename tree<T>::sibling_iterator last_child(
-    const tree<T>& tr, typename tree<T>::sibling_iterator ti) {
+    const tree<T> &tr, typename tree<T>::sibling_iterator ti) {
     return --tr.end(ti);
 }
 
 template<class T>
-typename tree<T>::sibling_iterator last_child_of_root(const tree<T>& tr) {
+typename tree<T>::sibling_iterator last_child_of_root(const tree<T> &tr) {
     return last_child(tr, tr.begin());
 }
 
 template<class T>
 typename tree<T>::sibling_iterator first_child(
-    const tree<T>& tr, typename tree<T>::sibling_iterator ti) {
+    const tree<T> &tr, typename tree<T>::sibling_iterator ti) {
     return tr.begin(ti);
 }
 
 template<class T>
-typename tree<T>::sibling_iterator first_child_of_root(const tree<T>& tr) {
+typename tree<T>::sibling_iterator first_child_of_root(const tree<T> &tr) {
     return first_child(tr, tr.begin());
 }
 
 template<class T>
-typename tree<T>::sibling_iterator end_of_root_childs(const tree<T>& tr) {
+typename tree<T>::sibling_iterator end_of_root_childs(const tree<T> &tr) {
     return tr.end(tr.begin());
 }
 
 template<class T>
 tree<T> subtree(
-    const tree<T>& tr, typename tree<T>::sibling_iterator ti) {
+    const tree<T> &tr, typename tree<T>::sibling_iterator ti) {
     typename tree<T>::sibling_iterator ti_next = ti;
     ++ti_next;
     return tr.subtree(ti, ti_next);

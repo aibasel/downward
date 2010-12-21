@@ -20,7 +20,7 @@ using namespace std;
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     : lgraph(*opts.get<LandmarksGraph *>("lm_graph")),
       exploration(lgraph.get_exploration()),
-      lm_status_manager(lgraph) {   
+      lm_status_manager(lgraph) {
     cout << "Initializing landmarks count heuristic..." << endl;
     use_preferred_operators = opts.get<bool>("pref");
     lookahead = INT_MAX;

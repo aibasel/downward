@@ -22,7 +22,6 @@ void IteratedSearch::initialize() {
 
 SearchEngine *IteratedSearch::get_search_engine(
     int engine_configs_index) {
-
     OptionParser parser(engine_configs[engine_configs_index], false);
     SearchEngine *engine = parser.start_parsing<SearchEngine *>();
 
@@ -121,11 +120,10 @@ void IteratedSearch::statistics() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
- 
     parser.add_list_option<ParseTree>("engine_configs", "");
-    parser.add_option<bool>("pass_bound", true, 
-                           "use bound from previous search");
-    parser.add_option<bool>("repeat_last", false, 
+    parser.add_option<bool>("pass_bound", true,
+                            "use bound from previous search");
+    parser.add_option<bool>("repeat_last", false,
                             "repeat last phase of search");
     parser.add_option<bool>("continue_on_fail", false,
                             "continue search after no solution found");
@@ -133,12 +131,12 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "continue search after solution found");
 
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
-    
-    if(opts.get_list<ParseTree>("engine_configs").empty())
+
+    if (opts.get_list<ParseTree>("engine_configs").empty())
         parser.error("empty search engine list");
-    
+
     if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
         vector<ParseTree> configs = opts.get_list<ParseTree>("engine_configs");
@@ -149,11 +147,9 @@ static SearchEngine *_parse(OptionParser &parser) {
         return 0;
     } else {
         IteratedSearch *engine = new IteratedSearch(opts);
-        
+
         return engine;
     }
 }
 
 static EnginePlugin _plugin("iterated", _parse);
-
-

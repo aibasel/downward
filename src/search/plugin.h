@@ -21,7 +21,7 @@ class OpenList;
 
 
 class ScalarEvaluatorPlugin {
-      ScalarEvaluatorPlugin(const ScalarEvaluatorPlugin &copy);
+    ScalarEvaluatorPlugin(const ScalarEvaluatorPlugin &copy);
 public:
     ScalarEvaluatorPlugin(const std::string &key,
                           Registry<ScalarEvaluator *>::Factory factory);
@@ -32,7 +32,7 @@ public:
 class SynergyPlugin {
     SynergyPlugin(const SynergyPlugin &copy);
 public:
-    //there isn't really a Synergy class, it's just a pseudoclass 
+    //there isn't really a Synergy class, it's just a pseudoclass
     //to unify syntax.
     SynergyPlugin(const std::string &key,
                   Registry<Synergy *>::Factory factory);

@@ -26,7 +26,6 @@ protected:
 public:
     HSPMaxHeuristic();
     ~HSPMaxHeuristic();
-
 };
 
 #endif

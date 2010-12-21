@@ -12,20 +12,19 @@ using namespace std;
 template<class Entry>
 OpenList<Entry> *StandardScalarOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evaluators");
-    parser.add_option<bool>("pref_only", false, 
+    parser.add_option<bool>("pref_only", false,
                             "insert only preferred operators");
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
-    
-    if(opts.get_list<ScalarEvaluator *>("evaluators").empty())  //NOTE: should size be exactly one? Similar in BucketOpenList. And in that case, why was there a parser call to parse a whole list in the old version? 
+
+    if (opts.get_list<ScalarEvaluator *>("evaluators").empty()) //NOTE: should size be exactly one? Similar in BucketOpenList. And in that case, why was there a parser call to parse a whole list in the old version?
         parser.error("expected non-empty list of scalar evaluators");
 
     if (parser.dry_run())
         return 0;
     else
         return new StandardScalarOpenList<Entry>(opts);
-
 }
 
 /*
@@ -35,7 +34,7 @@ OpenList<Entry> *StandardScalarOpenList<Entry>::_parse(OptionParser &parser) {
 
 template<class Entry>
 StandardScalarOpenList<Entry>::StandardScalarOpenList(const Options &opts)
-    : OpenList<Entry>(opts.get<bool>("pref_only")), 
+    : OpenList<Entry>(opts.get<bool>("pref_only")),
       size(0), evaluator(opts.get_list<ScalarEvaluator *>("evaluators")[0]) {
     lowest_bucket = numeric_limits<int>::max();
 }

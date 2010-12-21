@@ -44,4 +44,3 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 static ScalarEvaluatorPlugin _plugin("blind", _parse);
-

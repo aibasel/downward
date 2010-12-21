@@ -560,7 +560,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     vector<string> classifier_types;
     classifier_types.push_back("NB");
     classifier_types.push_back("AODE");
-    parser.add_enum_option( 
+    parser.add_enum_option(
         "classifier", classifier_types, "NB", "classifier type");
     parser.add_option<double>("conf_threshold", 0.6, "confidence threshold");
     parser.add_option<int>("training_set", 100, "minimum size of training set");
@@ -575,11 +575,11 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option(
         "sample", sample_types, "Probe", "state space sample type");
     parser.add_option<bool>("uniform", false, "uniform sampling");
-    parser.add_option<bool>("zero_threshold", false, 
+    parser.add_option<bool>("zero_threshold", false,
                             "set threshold constant 0");
-    
+
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
 
     vector<Heuristic *> heuristics_ = opts.get_list<Heuristic *>("heuristics");

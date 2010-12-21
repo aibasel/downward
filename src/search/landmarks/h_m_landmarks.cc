@@ -6,7 +6,7 @@ std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }
 
-std::ostream & operator<<(std::ostream &os, const FluentSet &fs) {
+std::ostream &operator<<(std::ostream &os, const FluentSet &fs) {
     FluentSet::const_iterator it;
     os << "[";
     for (it = fs.begin(); it != fs.end(); ++it) {
@@ -17,7 +17,7 @@ std::ostream & operator<<(std::ostream &os, const FluentSet &fs) {
 }
 
 template<typename T>
-std::ostream & operator<<(std::ostream &os, const std::list<T> &alist) {
+std::ostream &operator<<(std::ostream &os, const std::list<T> &alist) {
     typename std::list<T>::const_iterator it;
 
     os << "(";
@@ -1054,18 +1054,18 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     parser.add_option<int>("m", 2, "m (as in h^m)");
 
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
 
     opts.set("expl", new Exploration);
-    
+
     if (parser.dry_run()) {
         return 0;
     } else {
         LandmarksGraph::LandmarkGraphOptions lmg_opts(opts);
         LandmarksGraph *graph = new HMLandmarks(  //there was a problem with a reference to a temporary object in the HMLandmarks initialization list when trying to do this in the new 'normal' way, so I'll leave it like this for now.
-            lmg_opts, 
-            opts.get<Exploration *>("expl"), opts.get<int>("m"));  
+            lmg_opts,
+            opts.get<Exploration *>("expl"), opts.get<int>("m"));
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }

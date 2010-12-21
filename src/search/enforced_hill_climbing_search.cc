@@ -233,20 +233,20 @@ void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
 static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<Heuristic *>("h");
 
-    parser.add_option<bool>("bfs_use_cost", false, 
+    parser.add_option<bool>("bfs_use_cost", false,
                             "use cost for bfs");
 
     vector<string> preferred_usages;
     preferred_usages.push_back("PRUNE_BY_PREFERRED");
     preferred_usages.push_back("RANK_PREFERRED_FIRST");
     preferred_usages.push_back("MAX_PREFERRED_USAGE");
-    parser.add_enum_option("preferred_usage", preferred_usages, 
-                           "PRUNE_BY_PREFERRED", 
+    parser.add_enum_option("preferred_usage", preferred_usages,
+                           "PRUNE_BY_PREFERRED",
                            "preferred operator usage");
 
-    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), 
+    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(),
                                         "use preferred operators of these heuristics");
-    parser.add_option<int>("bound", numeric_limits<int>::max(), 
+    parser.add_option<int>("bound", numeric_limits<int>::max(),
                            "depth bound on g-values");
 
     Options opts = parser.parse();
@@ -254,7 +254,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     EnforcedHillClimbingSearch *engine = 0;
     if (!parser.dry_run()) {
         engine = new EnforcedHillClimbingSearch(opts);
-        vector<Heuristic *> preferred_list = 
+        vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
@@ -263,4 +263,3 @@ static SearchEngine *_parse(OptionParser &parser) {
 }
 
 static EnginePlugin _plugin("ehc", _parse);
-

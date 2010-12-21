@@ -302,28 +302,28 @@ void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int> &valu
 static SearchEngine *_parse(OptionParser &parser) {
     OpenListPlugin<state_var_t *>::register_open_lists();
     parser.add_option<OpenList<state_var_t *> *>("open");
-    parser.add_option<bool>("reopen_closed", false, 
+    parser.add_option<bool>("reopen_closed", false,
                             "reopen closed nodes");
-    parser.add_option<bool>("pathmax", false, 
+    parser.add_option<bool>("pathmax", false,
                             "use pathmax correction");
-    parser.add_option<ScalarEvaluator *>("progress_evaluator", 0, 
+    parser.add_option<ScalarEvaluator *>("progress_evaluator", 0,
                                          "set evaluator for jump statistics");
     parser.add_option<int>("bound", numeric_limits<int>::max(),
-                                  "depth bound on g-values");
+                           "depth bound on g-values");
     parser.add_list_option<Heuristic *>
-        ("preferred", vector<Heuristic *>(), 
-         "use preferred operators of these heuristics");
+        ("preferred", vector<Heuristic *>(),
+        "use preferred operators of these heuristics");
 
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
     opts.set<bool>("mpd", false);
-    
+
 
     GeneralEagerBestFirstSearch *engine = 0;
     if (!parser.dry_run()) {
         engine = new GeneralEagerBestFirstSearch(opts);
-        vector<Heuristic *> preferred_list = 
+        vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
@@ -338,7 +338,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
     parser.add_option<bool>("mpd", false,
                             "use multi-path dependence (LM-A*)");
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
 
     GeneralEagerBestFirstSearch *engine = 0;
@@ -374,17 +374,17 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
 
 
-    Options opts =parser.parse();
-    if(parser.help_mode())
+    Options opts = parser.parse();
+    if (parser.help_mode())
         return 0;
-    
+
     GeneralEagerBestFirstSearch *engine = 0;
     if (!parser.dry_run()) {
         if (opts.get_list<ScalarEvaluator *>("evals").empty())
             parser.error("scalar evaluator list must not be empty");
-        vector<ScalarEvaluator *> evals = 
+        vector<ScalarEvaluator *> evals =
             opts.get_list<ScalarEvaluator *>("evals");
-        vector<Heuristic *> preferred_list = 
+        vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
         OpenList<state_var_t *> *open;
         if ((evals.size() == 1) && preferred_list.empty()) {

@@ -306,9 +306,9 @@ void LandmarksGraphZhuGivan::compute_triggers() {
 static LandmarksGraph *_parse(OptionParser &parser) {
     LandmarksGraph::LandmarkGraphOptions common_options;
     common_options.add_option_to_parser(parser);
-    
+
     Options opts = parser.parse();
-    
+
     if (parser.dry_run()) {
         return 0;
     } else {

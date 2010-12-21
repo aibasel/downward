@@ -37,5 +37,3 @@ EnginePlugin::EnginePlugin(
 
 EnginePlugin::~EnginePlugin() {
 }
-
-

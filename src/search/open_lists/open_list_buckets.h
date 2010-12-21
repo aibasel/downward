@@ -40,7 +40,6 @@ public:
     void get_involved_heuristics(std::set<Heuristic *> &hset);
 
     static OpenList<Entry> *_parse(OptionParser &parser);
-
 };
 
 #include "open_list_buckets.cc"
