@@ -31,6 +31,11 @@ public:
     template <class T> T get(std::string key) const {
         std::map<std::string, boost::any>::const_iterator it;
         it = storage.find(key);
+        if (it == storage.end()) {
+            std::cout << "attempt to retrieve nonexisting object of name "
+                      << key << " from Options. Aborting." << std::endl;
+            exit(1);
+        }
         return boost::any_cast<T>(it->second);
     }
 
@@ -141,11 +146,6 @@ public:
     //this is where input from the commandline goes:
     static SearchEngine *parse_cmd_line(int argc, const char **argv, bool dr);
     
-
-    //Note: originally the following function was templated predefine<T>,
-    //but there is no Synergy<LandmarksGraph>, so I split it up for now.
-    static void predefine_heuristic(std::string s, bool dry_run);
-    static void predefine_lmgraph(std::string s, bool dry_run);
 
     //this function initiates parsing of T (the root node of parse_tree
     //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarksGraph*
@@ -367,13 +367,11 @@ std::vector<T > TokenParser<std::vector<T > >::parse(OptionParser &p) {
     if (pt->value.compare("list") != 0) {
         throw ParseError("list expected here", pt);
     }
-    for (ParseTree::iterator pti = p.get_parse_tree()->begin(pt);
-         pti != p.get_parse_tree()->end(pt);
+    for (ParseTree::sibling_iterator pti = 
+             first_child_of_root(*p.get_parse_tree());
+         pti != end_of_root_childs(*p.get_parse_tree());
          ++pti) {
-        ParseTree::sibling_iterator pti_end = pti;
-        ++pti_end;
-        OptionParser subparser(
-            p.get_parse_tree()->subtree(pti, pti_end), p.dry_run());
+        OptionParser subparser(subtree(*p.get_parse_tree(), pti), p.dry_run());
         results.push_back(
             TokenParser<T>::parse(subparser));
     }

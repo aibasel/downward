@@ -316,7 +316,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
             } else {
                 WeightedEvaluator *w = new WeightedEvaluator(
                     evals[i], 
-                    opts.get<int>("weight"));
+                    opts.get<int>("w"));
                 sum_evals.push_back(w);
             }
             SumEvaluator *f_eval = new SumEvaluator(sum_evals);

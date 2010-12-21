@@ -44,7 +44,7 @@ struct ParseNode {
 typedef tree<ParseNode> ParseTree;
 
 struct ParseError{
-    ParseError(std::string _msg, ParseTree pt);
+    ParseError(std::string m, ParseTree pt);
     
     std::string msg;
     ParseTree parse_tree;
@@ -294,6 +294,11 @@ typename tree<T>::sibling_iterator first_child(
 template<class T>
 typename tree<T>::sibling_iterator first_child_of_root(const tree<T>& tr) {
     return first_child(tr, tr.begin());
+}
+
+template<class T>
+typename tree<T>::sibling_iterator end_of_root_childs(const tree<T>& tr) {
+    return tr.end(tr.begin());
 }
 
 template<class T>

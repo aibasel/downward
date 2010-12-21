@@ -5,8 +5,8 @@
 
 using namespace std;
 
-ParseError::ParseError(string _msg, ParseTree pt)
-    : msg(_msg),
+ParseError::ParseError(string m, ParseTree pt)
+    : msg(m),
       parse_tree(pt)
 {
 }
@@ -81,6 +81,63 @@ static void get_full_help() {
     get_full_help_templ<OpenList<short *> *>();
 }
 
+//takes a string of the form "word1, word2, word3 " and converts it to a vector
+static std::vector<std::string> to_list(std::string s) {
+    std::vector<std::string> result;
+    std::string buffer;
+    for(size_t i(0); i != s.size(); ++i) {
+        if (s[i] == ',') {
+            result.push_back(buffer);
+            buffer.clear();
+        } else if (s[i] == ' ') {
+            continue;
+        } else {
+            buffer.push_back(s[i]);
+        }
+    }
+    result.push_back(buffer);
+    return result;
+}
+
+//Note: originally the following function was templated (predefine<T>),
+//but there is no Synergy<LandmarksGraph>, so I split it up for now.
+static void predefine_heuristic(std::string s, bool dry_run) { 
+    size_t split = s.find("=");
+    std::string ls = s.substr(0, split);
+    std::vector<std::string> definees = to_list(ls);
+    std::string rs = s.substr(split + 1);
+    OptionParser op(rs, dry_run);
+    if (definees.size() == 1) { //normal predefinition
+        Predefinitions<Heuristic* >::instance()->predefine(
+            definees[0], op.start_parsing<Heuristic *>());
+    } else if (definees.size() > 1) { //synergy
+        std::vector<Heuristic *> heur = 
+            op.start_parsing<Synergy *>()->heuristics;
+        for(size_t i(0); i != definees.size(); ++i) {
+            Predefinitions<Heuristic *>::instance()->predefine(
+                definees[i], heur[i]);
+        }            
+    } else {
+        op.error("predefinition has invalid left side");
+    }
+}
+
+static void predefine_lmgraph(std::string s, bool dry_run) { 
+    size_t split = s.find("=");
+    std::string ls = s.substr(0, split);
+    std::vector<std::string> definees = to_list(ls);
+    std::string rs = s.substr(split + 1);
+    OptionParser op(rs, dry_run);
+    if (definees.size() == 1) { 
+        Predefinitions<LandmarksGraph *>::instance()->predefine(
+            definees[0], op.start_parsing<LandmarksGraph *>());
+    } else {
+        op.error("predefinition has invalid left side");
+    }
+}
+
+
+
 SearchEngine *OptionParser::parse_cmd_line(
     int argc, const char **argv, bool dry_run) {
     SearchEngine *engine(0);
@@ -88,10 +145,10 @@ SearchEngine *OptionParser::parse_cmd_line(
         string arg = string(argv[i]);
         if (arg.compare("--heuristic") == 0) {
             ++i;
-            OptionParser::predefine_heuristic(argv[i], dry_run);
+            predefine_heuristic(argv[i], dry_run);
         } else if (arg.compare("--landmarks") == 0) {
             ++i;
-            OptionParser::predefine_lmgraph(argv[i], dry_run);
+            predefine_lmgraph(argv[i], dry_run);
         } else if (arg.compare("--search") == 0) {
             ++i;
             OptionParser p(argv[i], dry_run);
@@ -130,60 +187,6 @@ SearchEngine *OptionParser::parse_cmd_line(
     }
     return engine;
 }
-
-//takes a string of the form "word1, word2, word3 " and converts it to a vector
-static std::vector<std::string> to_list(std::string s) {
-    std::vector<std::string> result;
-    std::string buffer;
-    for(size_t i(0); i != s.size(); ++i) {
-        if (s[i] == ',') {
-            result.push_back(buffer);
-            buffer.clear();
-        } else if (s[i] == ' ') {
-            continue;
-        } else {
-            buffer.push_back(s[i]);
-        }
-    }
-    result.push_back(buffer);
-    return result;
-}
-
-void OptionParser::predefine_heuristic(std::string s, bool dry_run) { 
-    size_t split = s.find("=");
-    std::string ls = s.substr(0, split);
-    std::vector<std::string> definees = to_list(ls);
-    std::string rs = s.substr(split + 1);
-    OptionParser op(rs, dry_run);
-    if (definees.size() == 1) { //normal predefinition
-        Predefinitions<Heuristic* >::instance()->predefine(
-            definees[0], op.start_parsing<Heuristic *>());
-    } else if (definees.size() > 1) { //synergy
-        std::vector<Heuristic *> heur = 
-            op.start_parsing<Synergy *>()->heuristics;
-        for(size_t i(0); i != definees.size(); ++i) {
-            Predefinitions<Heuristic *>::instance()->predefine(
-                definees[i], heur[i]);
-        }            
-    } else {
-        op.error("predefinition has invalid left side");
-    }
-}
-
-void OptionParser::predefine_lmgraph(std::string s, bool dry_run) { 
-    size_t split = s.find("=");
-    std::string ls = s.substr(0, split);
-    std::vector<std::string> definees = to_list(ls);
-    std::string rs = s.substr(split + 1);
-    OptionParser op(rs, dry_run);
-    if (definees.size() == 1) { 
-        Predefinitions<LandmarksGraph *>::instance()->predefine(
-            definees[0], op.start_parsing<LandmarksGraph *>());
-    } else {
-        op.error("predefinition has invalid left side");
-    }
-}
-
 
 OptionParser::OptionParser(const string config, bool dr):
     parse_tree(generate_parse_tree(config)),
@@ -260,13 +263,15 @@ Options OptionParser::parse() {
         }
     }
     //first check if there were any arguments with invalid keywords
-    for(ParseTree::iterator pti = first_child_of_root(parse_tree);
-        pti != parse_tree.end(); ++pti) {
+    for(ParseTree::sibling_iterator pti = first_child_of_root(parse_tree);
+        pti != end_of_root_childs(parse_tree); ++pti) {
         if (pti->key.compare("") != 0 &&
             find(valid_keys.begin(), 
                  valid_keys.end(), 
                  pti->key) == valid_keys.end()) {
-            error("invalid keyword");
+            error("invalid keyword " 
+                  + pti->key + " for " 
+                  + parse_tree.begin()->value);
         }
     }    
     return opts;
