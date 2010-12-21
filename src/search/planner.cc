@@ -49,18 +49,18 @@ int main(int argc, const char **argv) {
 
     SearchEngine *engine = 0;
 
-    //the input will be parsed twice: 
-    //once in dry-run mode, to check for simple input errors, 
-    //then in normal mode 
+    //the input will be parsed twice:
+    //once in dry-run mode, to check for simple input errors,
+    //then in normal mode
     try {
-    OptionParser::parse_cmd_line(argc, argv, true);
-    cout << "checked arguments" << endl;
-    engine = OptionParser::parse_cmd_line(argc, argv, false);
+        OptionParser::parse_cmd_line(argc, argv, true);
+        cout << "checked arguments" << endl;
+        engine = OptionParser::parse_cmd_line(argc, argv, false);
     } catch (ParseError &pe) {
         cout << "Parse Error: " << endl  //TODO: move this printing inside ParseError
              << pe.msg << " at: " << endl;
         kptree::print_tree_bracketed<ParseNode>(pe.parse_tree, cout);
-        cout << endl;      
+        cout << endl;
         exit(1);
     }
 
@@ -78,5 +78,3 @@ int main(int argc, const char **argv) {
 
     return engine->found_solution() ? 0 : 1;
 }
-
-

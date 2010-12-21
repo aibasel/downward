@@ -297,7 +297,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         "these are *very* slow -- check the warning in the output)");
 
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
 
     // Handle default values for the size options.

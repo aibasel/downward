@@ -10,7 +10,6 @@ protected:
 public:
     GoalCountHeuristic();
     ~GoalCountHeuristic();
-
 };
 
 #endif

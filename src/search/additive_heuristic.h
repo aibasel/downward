@@ -39,7 +39,6 @@ protected:
 public:
     AdditiveHeuristic();
     ~AdditiveHeuristic();
-
 };
 
 #endif

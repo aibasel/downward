@@ -7,15 +7,13 @@ using namespace std;
 
 ParseError::ParseError(string m, ParseTree pt)
     : msg(m),
-      parse_tree(pt)
-{
+      parse_tree(pt) {
 }
 
-HelpElement::HelpElement(string k, string h, string t_n) 
+HelpElement::HelpElement(string k, string h, string t_n)
     : kwd(k),
       help(h),
-      type_name(t_n)
-{
+      type_name(t_n) {
 }
 
 void OptionParser::error(string msg) {
@@ -39,8 +37,8 @@ void OptionParser::set_help_mode(bool m) {
 template <class T>
 static void get_help_templ(const ParseTree &pt) {
     if (Registry<T>::instance()->contains(pt.begin()->value)) {
-        cout << pt.begin()->value << " is a " << TypeNamer<T>::name() 
-             << endl << "Usage: " << endl;        
+        cout << pt.begin()->value << " is a " << TypeNamer<T>::name()
+             << endl << "Usage: " << endl;
         OptionParser p(pt, true);
         p.set_help_mode(true);
         p.start_parsing<T>();
@@ -65,7 +63,7 @@ template <class T>
 static void get_full_help_templ() {
     cout << endl << "Help for " << TypeNamer<T>::name() << "s:" << endl << endl;
     vector<string> keys = Registry<T>::instance()->get_keys();
-    for(size_t i(0); i != keys.size(); ++i) {
+    for (size_t i(0); i != keys.size(); ++i) {
         ParseTree pt;
         pt.insert(pt.begin(), ParseNode(keys[i]));
         get_help_templ<T>(pt);
@@ -85,7 +83,7 @@ static void get_full_help() {
 static std::vector<std::string> to_list(std::string s) {
     std::vector<std::string> result;
     std::string buffer;
-    for(size_t i(0); i != s.size(); ++i) {
+    for (size_t i(0); i != s.size(); ++i) {
         if (s[i] == ',') {
             result.push_back(buffer);
             buffer.clear();
@@ -101,34 +99,34 @@ static std::vector<std::string> to_list(std::string s) {
 
 //Note: originally the following function was templated (predefine<T>),
 //but there is no Synergy<LandmarksGraph>, so I split it up for now.
-static void predefine_heuristic(std::string s, bool dry_run) { 
+static void predefine_heuristic(std::string s, bool dry_run) {
     size_t split = s.find("=");
     std::string ls = s.substr(0, split);
     std::vector<std::string> definees = to_list(ls);
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) { //normal predefinition
-        Predefinitions<Heuristic* >::instance()->predefine(
+        Predefinitions<Heuristic * >::instance()->predefine(
             definees[0], op.start_parsing<Heuristic *>());
     } else if (definees.size() > 1) { //synergy
-        std::vector<Heuristic *> heur = 
+        std::vector<Heuristic *> heur =
             op.start_parsing<Synergy *>()->heuristics;
-        for(size_t i(0); i != definees.size(); ++i) {
+        for (size_t i(0); i != definees.size(); ++i) {
             Predefinitions<Heuristic *>::instance()->predefine(
                 definees[i], heur[i]);
-        }            
+        }
     } else {
         op.error("predefinition has invalid left side");
     }
 }
 
-static void predefine_lmgraph(std::string s, bool dry_run) { 
+static void predefine_lmgraph(std::string s, bool dry_run) {
     size_t split = s.find("=");
     std::string ls = s.substr(0, split);
     std::vector<std::string> definees = to_list(ls);
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
-    if (definees.size() == 1) { 
+    if (definees.size() == 1) {
         Predefinitions<LandmarksGraph *>::instance()->predefine(
             definees[0], op.start_parsing<LandmarksGraph *>());
     } else {
@@ -159,8 +157,8 @@ SearchEngine *OptionParser::parse_cmd_line(
             cout << "random seed " << argv[i] << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
-            if( i+1 < argc) {
-                string helpiand = string(argv[i+1]);
+            if (i + 1 < argc) {
+                string helpiand = string(argv[i + 1]);
                 get_help(helpiand);
             } else {
                 get_full_help();
@@ -188,47 +186,45 @@ SearchEngine *OptionParser::parse_cmd_line(
     return engine;
 }
 
-OptionParser::OptionParser(const string config, bool dr):
-    parse_tree(generate_parse_tree(config)),
-    dry_run_(dr),
-    help_mode_(false),
-    next_unparsed_argument(first_child_of_root(parse_tree))
-{
+OptionParser::OptionParser(const string config, bool dr)
+    : parse_tree(generate_parse_tree(config)),
+      dry_run_(dr),
+      help_mode_(false),
+      next_unparsed_argument(first_child_of_root(parse_tree)) {
 }
 
 
-OptionParser::OptionParser(ParseTree pt, bool dr):
-    parse_tree(pt),
-    dry_run_(dr),
-    help_mode_(false),
-    next_unparsed_argument(first_child_of_root(parse_tree))
-{
+OptionParser::OptionParser(ParseTree pt, bool dr)
+    : parse_tree(pt),
+      dry_run_(dr),
+      help_mode_(false),
+      next_unparsed_argument(first_child_of_root(parse_tree)) {
 }
 
-                           
 
-void OptionParser::add_enum_option(string k, 
-                                   const vector<string >& enumeration, 
+
+void OptionParser::add_enum_option(string k,
+                                   const vector<string > &enumeration,
                                    string def_val, string h) {
-    if(help_mode_) {
+    if (help_mode_) {
         string enum_descr = "{";
         for (size_t i(0); i != enumeration.size(); ++i) {
             enum_descr += enumeration[i];
-            if( i != enumeration.size() - 1) {
+            if (i != enumeration.size() - 1) {
                 enum_descr += ", ";
             }
         }
         enum_descr += "}";
-        
+
         helpers.push_back(HelpElement(k, h, enum_descr));
-        if(def_val.compare("") != 0){
+        if (def_val.compare("") != 0) {
             helpers.back().default_value = def_val;
         }
         return;
     }
-    
-    
-    //first parse the corresponding string like a normal argument... 
+
+
+    //first parse the corresponding string like a normal argument...
     if (def_val.compare("") != 0) {
         add_option<string>(k, def_val, h);
     } else {
@@ -237,22 +233,22 @@ void OptionParser::add_enum_option(string k,
 
     //...then map that string to its position in the enumeration vector
     string name = opts.get<string>(k);
-    vector<string>::const_iterator it = 
+    vector<string>::const_iterator it =
         find(enumeration.begin(), enumeration.end(), name);
     if (it == enumeration.end()) {
         error("invalid enum argument");
     }
-    opts.set(k, it - enumeration.begin());            
+    opts.set(k, it - enumeration.begin());
 }
 
 Options OptionParser::parse() {
-    if(help_mode_) {
+    if (help_mode_) {
         cout << parse_tree.begin()->value << "(";
         for (size_t i(0); i != helpers.size(); ++i) {
-            cout << helpers[i].kwd 
-                 << (helpers[i].default_value.compare("") != 0 ? " = " : "") 
+            cout << helpers[i].kwd
+                 << (helpers[i].default_value.compare("") != 0 ? " = " : "")
                  << helpers[i].default_value;
-            if( i != helpers.size() - 1) {
+            if (i != helpers.size() - 1) {
                 cout << ", ";
             }
         }
@@ -263,17 +259,17 @@ Options OptionParser::parse() {
         }
     }
     //first check if there were any arguments with invalid keywords
-    for(ParseTree::sibling_iterator pti = first_child_of_root(parse_tree);
-        pti != end_of_root_childs(parse_tree); ++pti) {
+    for (ParseTree::sibling_iterator pti = first_child_of_root(parse_tree);
+         pti != end_of_root_childs(parse_tree); ++pti) {
         if (pti->key.compare("") != 0 &&
-            find(valid_keys.begin(), 
-                 valid_keys.end(), 
+            find(valid_keys.begin(),
+                 valid_keys.end(),
                  pti->key) == valid_keys.end()) {
-            error("invalid keyword " 
-                  + pti->key + " for " 
+            error("invalid keyword "
+                  + pti->key + " for "
                   + parse_tree.begin()->value);
         }
-    }    
+    }
     return opts;
 }
 
@@ -285,53 +281,53 @@ bool OptionParser::help_mode() {
     return help_mode_;
 }
 
-void OptionParser::set_parse_tree(const ParseTree& pt) {
+void OptionParser::set_parse_tree(const ParseTree &pt) {
     parse_tree = pt;
 }
 
-ParseTree* OptionParser::get_parse_tree() {
+ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
 }
 
 ParseTree OptionParser::generate_parse_tree(const string config) {
     ParseTree tr;
     ParseTree::iterator top = tr.begin();
-    ParseTree::sibling_iterator cur_node = 
-        tr.insert(top, ParseNode("pseudoroot",""));
+    ParseTree::sibling_iterator cur_node =
+        tr.insert(top, ParseNode("pseudoroot", ""));
     ParseTree::sibling_iterator pseudoroot = cur_node;
     string buffer(""), key("");
-    for (size_t i(0); i != config.size(); ++i){
+    for (size_t i(0); i != config.size(); ++i) {
         char next = config.at(i);
-        if((next == '(' || next == ')' || next == ',') && buffer.size() > 0){
+        if ((next == '(' || next == ')' || next == ',') && buffer.size() > 0) {
             tr.append_child(cur_node, ParseNode(buffer, key));
             buffer.clear();
             key.clear();
         }
-        switch (next){
+        switch (next) {
         case ' ':
             break;
         case '(':
             cur_node = last_child(tr, cur_node);
             break;
         case ')':
-            if(cur_node == top) 
+            if (cur_node == top)
                 throw ParseError("missing (", *cur_node);
             cur_node = tr.parent(cur_node);
             break;
         case '[':
-            if(!buffer.empty())
+            if (!buffer.empty())
                 throw ParseError("misplaced opening bracket [", *cur_node);
             tr.append_child(cur_node, ParseNode("list", key));
             key.clear();
             cur_node = last_child(tr, cur_node);
             break;
         case ']':
-            if(!buffer.empty()) {
+            if (!buffer.empty()) {
                 tr.append_child(cur_node, ParseNode(buffer, key));
                 buffer.clear();
                 key.clear();
             }
-            if(cur_node->value.compare("list") != 0)
+            if (cur_node->value.compare("list") != 0)
                 throw ParseError("mismatched brackets", *cur_node);
             cur_node = tr.parent(cur_node);
             break;
@@ -346,17 +342,14 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
         default:
             buffer.push_back(tolower(next));
             break;
-        }    
+        }
     }
     if (cur_node->value.compare("pseudoroot") != 0)
         throw ParseError("missing )", *cur_node);
-        
+
     //the real parse tree is the first (and only) child of the pseudoroot.
     //pseudoroot is only a placeholder.
-    ParseTree real_tr = subtree(tr, tr.begin(pseudoroot)); 
+    ParseTree real_tr = subtree(tr, tr.begin(pseudoroot));
     kptree::print_tree_bracketed<ParseNode>(real_tr, cout);
     return real_tr;
 }
-
-
-

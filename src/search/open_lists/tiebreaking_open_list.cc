@@ -17,7 +17,7 @@ template<class Entry>
 OpenList<Entry> *TieBreakingOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_option<bool>(
-        "pref_only", false, 
+        "pref_only", false,
         "insert only preferred operators");
     parser.add_option<bool>(
         "unsafe_pruning", true,
@@ -31,7 +31,7 @@ OpenList<Entry> *TieBreakingOpenList<Entry>::_parse(OptionParser &parser) {
 
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(const Options &opts)
-    : OpenList<Entry>(opts.get<bool>("pref_only")), 
+    : OpenList<Entry>(opts.get<bool>("pref_only")),
       size(0), evaluators(opts.get_list<ScalarEvaluator *>("evals")),
       allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
     last_evaluated_value.resize(evaluators.size());

@@ -34,7 +34,7 @@ void LandmarksGraphExhaust::generate_landmarks() {
 
 static LandmarksGraph *_parse(OptionParser &parser) {
     LandmarksGraph::LandmarkGraphOptions common_options;
-    
+
     common_options.add_option_to_parser(parser);
 
     Options opts = parser.parse();
@@ -43,7 +43,7 @@ static LandmarksGraph *_parse(OptionParser &parser) {
         return 0;
     } else {
         common_options = LandmarksGraph::LandmarkGraphOptions(opts);
-        LandmarksGraph *graph = 
+        LandmarksGraph *graph =
             new LandmarksGraphExhaust(common_options, new Exploration);
         LandmarksGraph::build_lm_graph(graph);
         return graph;

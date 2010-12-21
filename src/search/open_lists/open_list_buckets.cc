@@ -20,13 +20,13 @@ using namespace std;
 template<class Entry>
 OpenList<Entry> *BucketOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evaluators");
-    parser.add_option<bool>("pref_only", false, 
+    parser.add_option<bool>("pref_only", false,
                             "insert only preferred operators");
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
 
-    if(opts.get_list<ScalarEvaluator *>("evaluators").empty())
+    if (opts.get_list<ScalarEvaluator *>("evaluators").empty())
         parser.error("expected non-empty list of scalar evaluators");
 
     if (parser.dry_run())
@@ -37,9 +37,9 @@ OpenList<Entry> *BucketOpenList<Entry>::_parse(OptionParser &parser) {
 
 
 template<class Entry>
-BucketOpenList<Entry>::BucketOpenList(const Options &opts) 
-    : OpenList<Entry>(opts.get<bool>("pref_only")), 
-      lowest_bucket(numeric_limits<int>::max()), 
+BucketOpenList<Entry>::BucketOpenList(const Options &opts)
+    : OpenList<Entry>(opts.get<bool>("pref_only")),
+      lowest_bucket(numeric_limits<int>::max()),
       size(0), evaluator(opts.get_list<ScalarEvaluator *>("evals")[0]) {
 }
 

@@ -18,13 +18,12 @@ void LamaFFSynergy::HeuristicProxy::initialize() {
 
 LamaFFSynergy::LamaFFSynergy(const Options &opts)
     : lama_heuristic_proxy(this), ff_heuristic_proxy(this),
-      lm_pref(opts.get<bool>("pref")), 
-      lm_admissible(opts.get<bool>("admissible")),  
-      lm_optimal(opts.get<bool>("optimal")), 
-      use_action_landmarks(opts.get<bool>("alm"))
-{
+      lm_pref(opts.get<bool>("pref")),
+      lm_admissible(opts.get<bool>("admissible")),
+      lm_optimal(opts.get<bool>("optimal")),
+      use_action_landmarks(opts.get<bool>("alm")) {
     cout << "Initializing LAMA-FF Synergy Object" << endl;
-    lama_heuristic = 
+    lama_heuristic =
         new LandmarkCountHeuristic(opts);
     //lama_heuristic->initialize(); // must be called here explicitly
     exploration = lama_heuristic->get_exploration();
@@ -68,23 +67,23 @@ bool LamaFFSynergy::lama_reach_state(const State &parent_state,
     return lama_heuristic->reach_state(parent_state, op, state);
 }
 
-static Synergy *_parse_heuristics(OptionParser& parser) {
-    Synergy *syn = new Synergy; 
+static Synergy *_parse_heuristics(OptionParser &parser) {
+    Synergy *syn = new Synergy;
     parser.add_option<LandmarksGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");
     parser.add_option<bool>("alm", true, "use action landmarks");
-    
+
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
     bool lm_pref_ = true; // this will always be the case because it
                           // does not make sense to use the synergy without
                           // using lm preferred operators
     opts.set("pref", lm_pref_);
 
-    if(!parser.dry_run()){
-        LamaFFSynergy *lama_ff_synergy = 
+    if (!parser.dry_run()) {
+        LamaFFSynergy *lama_ff_synergy =
             new LamaFFSynergy(opts);
 
         syn->heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());

@@ -57,7 +57,6 @@ public:
     void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
 
     virtual void statistics() const;
-
 };
 
 #endif

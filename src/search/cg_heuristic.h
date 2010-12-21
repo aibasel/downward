@@ -27,8 +27,6 @@ public:
     CGHeuristic();
     ~CGHeuristic();
     virtual bool dead_ends_are_reliable() {return false; }
-
-
 };
 
 #endif

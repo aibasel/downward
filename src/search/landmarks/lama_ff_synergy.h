@@ -94,8 +94,6 @@ public:
     Heuristic *get_lama_heuristic_proxy() {
         return &lama_heuristic_proxy;
     }
-
-
 };
 
 #endif
