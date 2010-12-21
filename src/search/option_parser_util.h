@@ -272,6 +272,37 @@ struct DefaultValueNamer<std::vector<T> > {
 };
 
 
+//helper functions for the ParseTree (tree<ParseNode>
+
+template<class T>
+typename tree<T>::sibling_iterator last_child(
+    const tree<T>& tr, typename tree<T>::sibling_iterator ti) {
+    return --tr.end(ti);
+}
+
+template<class T>
+typename tree<T>::sibling_iterator last_child_of_root(const tree<T>& tr) {
+    return last_child(tr, tr.begin());
+}
+
+template<class T>
+typename tree<T>::sibling_iterator first_child(
+    const tree<T>& tr, typename tree<T>::sibling_iterator ti) {
+    return tr.begin(ti);
+}
+
+template<class T>
+typename tree<T>::sibling_iterator first_child_of_root(const tree<T>& tr) {
+    return first_child(tr, tr.begin());
+}
+
+template<class T>
+tree<T> subtree(
+    const tree<T>& tr, typename tree<T>::sibling_iterator ti) {
+    typename tree<T>::sibling_iterator ti_next = ti;
+    ++ti_next;
+    return tr.subtree(ti, ti_next);
+}
 
 
 #endif /* OPTION_PARSER_UTIL_H_ */

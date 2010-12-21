@@ -234,10 +234,7 @@ template <class T> void OptionParser::add_option(
             }
         } 
     }
-        
-    ParseTree::sibling_iterator arg_end = arg;
-    ++arg_end;
-    OptionParser subparser(parse_tree.subtree(arg, arg_end), dry_run());
+    OptionParser subparser(subtree(parse_tree,arg), dry_run());
     result = TokenParser<T>::parse(subparser);
     opts.set(k, result);
     //if we have not reached the keyword parameters yet, 
