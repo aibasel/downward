@@ -132,8 +132,8 @@ int PDBCollectionHeuristic::compute_heuristic(const State &state) {
 }
 
 
-void PDBCollectionHeuristic::add_new_pattern(PDBHeuristic *pdb) {
-    pattern_databases.push_back(pdb);
+void PDBCollectionHeuristic::add_new_pattern(const vector<int> &pattern) {
+    pattern_databases.push_back(new PDBHeuristic(pattern));
     max_cliques.clear();
     precompute_max_cliques();
 }

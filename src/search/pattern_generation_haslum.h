@@ -3,14 +3,21 @@
 
 #include <vector>
 
+class PDBCollectionHeuristic;
+class State;
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
-    std::vector<std::vector<int> > pattern_collection;
+    int max_pdb_memory;
+    std::vector<const State *> samples;
+    PDBCollectionHeuristic *current_collection;
+    void sample_states();
+    void generate_successors(const PDBCollectionHeuristic &current_collection,
+                             std::vector<std::vector<int> > &successor_patterns);
     void hill_climbing();
 public:
     PatternGenerationHaslum(int max_pdb_memory);
     virtual ~PatternGenerationHaslum();
-    const std::vector<std::vector<int> > &get_pattern_collection();
+    PDBCollectionHeuristic *get_pattern_collection_heuristic() { return current_collection; };
 };
 
 #endif
