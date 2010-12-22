@@ -184,6 +184,12 @@ class ConstraintSystem(object):
         comb.neg_clauses = self.neg_clauses + other.neg_clauses
         return comb
 
+    def copy(self):
+        other = ConstraintSystem()
+        other.comb_assignments = list(self.comb_assignments)
+        other.neg_clauses = list(self.neg_clauses)
+        return other
+
     def dump(self):
         print "AssignmentSystem:"
         for comb_assignment in self.comb_assignments:
@@ -477,8 +483,33 @@ class Invariant:
         system = ConstraintSystem()
         system.ensure_inequality(add_effect.literal, del_effect.literal)
         system.ensure_cover(del_effect.literal, self, inv_vars)
-        
+       
+        implies_system = self.imply_del_effect(del_effect, lhs_by_pred)
+
+        for minimal_renaming in minimal_renamings:
+            new_sys = system.combine(minimal_renaming)
+            if self.lhs_satisfiable(minimal_renaming, lhs_by_pred):
+                if not new_sys.is_solvable():
+                    return False
+            else:
+                if not implies_system:
+                    return False
+                new_sys = new_sys.combine(implies_system)
+                if not new_sys.is_solvable():
+                    return False
+        return True
+   
+    def lhs_satisfiable(self, renaming, lhs_by_pred):
+        system = renaming.copy()
+        system.ensure_conjunction_sat(*itertools.chain(lhs_by_pred.values()))
+        return system.is_solvable()
+
+    def imply_del_effect(self, del_effect, lhs_by_pred):
+        """returns a constraint system that is solvable if lhs implies
+           the del effect (only if lhs is satisfiable). If a solvable
+           lhs never implies the del effect, return None."""
         # del_effect.cond and del_effect.atom must be implied by lhs
+        implies_system = ConstraintSystem()
         for literal in itertools.chain(get_literals(del_effect.condition),
                                        [del_effect.literal.negate()]):
             poss_assignments = []
@@ -489,11 +520,6 @@ class Invariant:
                     a = Assignment(zip(literal.args, match.args))
                     poss_assignments.append(a)
             if not poss_assignments:
-                return False
-            system.add_assignment_disjunction(poss_assignments)
-
-        for minimal_renaming in minimal_renamings:
-            new_sys = system.combine(minimal_renaming) 
-            if not new_sys.is_solvable():
-                return False
-        return True
+                return None
+            implies_system.add_assignment_disjunction(poss_assignments)
+        return implies_system
