@@ -59,6 +59,12 @@ class NegativeClause(object):
     def __init__(self, parts):
         self.parts = parts
         assert len(parts)
+
+    def __str__(self):
+        disj = " or ".join(["(%s != %s)" % (v1, v2) 
+                            for (v1, v2) in self.parts])
+        return "(%s)" % disj
+
     def is_satisfiable(self):
         for part in self.parts:
             if part[0] != part[1]:
@@ -77,6 +83,11 @@ class Assignment(object):
         self.consistent = None
         self.mapping = None
         self.eq_classes = None
+
+    def __str__(self):
+        conj = " and ".join(["(%s = %s)" % (v1, v2) 
+                            for (v1, v2) in self.equalities])
+        return "(%s)" % conj
     
     def __compute_equivalence_classes(self):
         eq_classes = {}
@@ -130,6 +141,18 @@ class ConstraintSystem(object):
     def __init__(self):
         self.comb_assignments = []
         self.neg_clauses = []
+    
+    def __str__(self):
+        comb_assignments = []
+        for comb_assignment in self.comb_assignments:
+            disj = " or ".join([str(assig) for assig in comb_assignment])
+            disj = "(%s)" % disj 
+            comb_assignments.append(disj)
+        assigs = " and\n".join(comb_assignments)
+        
+        neg_clauses = [str(clause) for clause in self.neg_clauses]
+        neg_clauses = " and ".join(neg_clauses)
+        return assigs + "(" + neg_clauses + ")"
 
     def __all_clauses_satisfiable(self, assignment):
         mapping = assignment.get_mapping()
@@ -161,6 +184,14 @@ class ConstraintSystem(object):
         comb.neg_clauses = self.neg_clauses + other.neg_clauses
         return comb
 
+    def dump(self):
+        print "AssignmentSystem:"
+        for comb_assignment in self.comb_assignments:
+            disj = " or ".join([str(assig) for assig in comb_assignment])
+            print "  ASS: ", disj
+        for neg_clause in self.neg_clauses:
+            print "  NEG: ", str(neg_clause)
+        
     def ensure_conjunction_sat(self, *parts):
         """Modifies the system such that it is only solvable if the conjunction
            of all parts is satisfiable. 
