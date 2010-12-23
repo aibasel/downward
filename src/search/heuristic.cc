@@ -1,9 +1,12 @@
 #include "heuristic.h"
 #include "operator.h"
 #include "globals.h"
+#include "option_parser.h"
+#include "operator_cost.h"
 
 #include <cassert>
-#include <stdlib.h>
+#include <cstdlib>
+
 using namespace std;
 
 Heuristic::Heuristic(HeuristicOptions &options) {
@@ -99,13 +102,13 @@ void Heuristic::set_evaluator_value(int val) {
     evaluator_value = val;
 }
 
-int Heuristic::get_adjusted_cost(int cost) const {
-    return get_adjusted_action_cost(cost, cost_type);
+int Heuristic::get_adjusted_cost(const Operator &op) const {
+    return get_adjusted_action_cost(op, cost_type);
 }
 
 
 HeuristicOptions::HeuristicOptions()
-    : cost_type(0)
+    : cost_type(static_cast<int>(NORMAL))
 {
 }
 

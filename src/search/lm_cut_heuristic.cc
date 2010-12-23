@@ -73,7 +73,7 @@ void LandmarkCutHeuristic::initialize() {
 }
 
 void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
-    int base_cost = get_adjusted_cost(op.get_cost());
+    int base_cost = get_adjusted_cost(op);
     if (base_cost > 1000) {
         // HACK -- but doing it this way and failing noisily is better
         // than using this implementation for high action cost settings

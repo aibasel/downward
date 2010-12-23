@@ -2,8 +2,7 @@
 #define HEURISTIC_H
 
 #include "scalar_evaluator.h"
-#include "option_parser.h"
-#include "globals.h"
+#include "operator_cost.h"
 
 #include <map>
 #include <set>
@@ -12,6 +11,7 @@
 
 class Operator;
 class State;
+class NamedOptionParser;
 
 struct HeuristicOptions {
     int cost_type;
@@ -22,7 +22,6 @@ struct HeuristicOptions {
 };
 
 class Heuristic : public ScalarEvaluator {
-private:
     enum {NOT_INITIALIZED = -2};
     int heuristic;
     int evaluator_value; // usually equal to heuristic but can be different
@@ -40,7 +39,7 @@ protected:
     // multiple times -- it will still only appear in the list of
     // preferred operators for this heuristic once.
     void set_preferred(const Operator *op);
-    int get_adjusted_cost(int cost) const;
+    int get_adjusted_cost(const Operator &op) const;
 public:
     Heuristic(HeuristicOptions &options);
     virtual ~Heuristic();
