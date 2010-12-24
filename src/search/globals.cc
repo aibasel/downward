@@ -178,6 +178,6 @@ AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
-HeuristicOptions default_options;
+HeuristicOptions g_default_heuristic_options;
 
 Timer g_timer;

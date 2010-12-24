@@ -161,7 +161,7 @@ void SelectiveMaxHeuristic::train() {
     cout << "Beginning Training" << endl;
     total_training_time.reset();
 
-    MaxHeuristic max(default_options);
+    MaxHeuristic max(g_default_heuristic_options);
     for (int i = 0; i < num_heuristics; i++) {
         max.add_heuristic(heuristics[i]);
     }
