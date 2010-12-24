@@ -8,7 +8,7 @@ static SynergyPlugin lama_ff_synergy_plugin(
 
 
 LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_):
-    Heuristic(default_options)
+    Heuristic(g_default_heuristic_options)
 {
     synergy = synergy_;
     is_first_proxy = false;

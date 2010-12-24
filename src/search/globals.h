@@ -43,7 +43,7 @@ extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
 extern vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
-extern HeuristicOptions default_options;
+extern HeuristicOptions g_default_heuristic_options;
 extern Timer g_timer;
 
 #endif
