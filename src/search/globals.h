@@ -16,7 +16,7 @@ class SuccessorGenerator;
 class Timer;
 
 bool test_goal(const State &state);
-int save_plan(const vector<const Operator *> &plan);
+int save_plan(const vector<const Operator *> &plan, int iter);
 
 void read_everything(istream &in);
 void dump_everything();
@@ -41,5 +41,6 @@ extern vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
 
 extern Timer g_timer;
+extern string g_plan_filename;
 
 #endif
