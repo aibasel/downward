@@ -71,7 +71,7 @@ int IteratedSearch::step() {
     if (last_phase_found_solution) {
         found_solution = true;
         found_plan = current_search->get_plan();
-        plan_cost = save_plan(found_plan);
+        plan_cost = save_plan(found_plan, phase);
         if (plan_cost < best_bound)
             best_bound = plan_cost;
         set_plan(found_plan);
