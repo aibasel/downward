@@ -1,5 +1,6 @@
 ## Set USE_LP to 1 to enable linear programming stuff.
 USE_LP=0
+STATE_VAR_BYTES=1
 
 HEADERS = \
           axioms.h \
@@ -92,12 +93,12 @@ ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
 
 
 
-OBJECT_SUFFIX_RELEASE =
-TARGET_SUFFIX_RELEASE =
-OBJECT_SUFFIX_DEBUG   = .debug
-TARGET_SUFFIX_DEBUG   = -debug
-OBJECT_SUFFIX_PROFILE = .profile
-TARGET_SUFFIX_PROFILE = -profile
+OBJECT_SUFFIX_RELEASE = .$(STATE_VAR_BYTES)
+TARGET_SUFFIX_RELEASE = -$(STATE_VAR_BYTES)
+OBJECT_SUFFIX_DEBUG   = .$(STATE_VAR_BYTES).debug
+TARGET_SUFFIX_DEBUG   = -$(STATE_VAR_BYTES)-debug
+OBJECT_SUFFIX_PROFILE = .$(STATE_VAR_BYTES).profile
+TARGET_SUFFIX_PROFILE = -$(STATE_VAR_BYTES)-profile
 
 OBJECTS_RELEASE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_RELEASE).o)
 TARGET_RELEASE  = $(TARGET)$(TARGET_SUFFIX_RELEASE)
@@ -118,12 +119,12 @@ DEPEND = g++ -MM
 
 CCOPT  =
 CCOPT += -m32
-CCOPT += -g
-CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
+CCOPT += 
+CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
 
 LINKOPT  =
 LINKOPT += -m32
-LINKOPT += -g
+LINKOPT += 
 
 POSTLINKOPT =
 
@@ -136,12 +137,12 @@ POSTLINKOPT =
 ##        For details, see man gcc on -static-libgcc.
 
 CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
-CCOPT_DEBUG    = -O3
-CCOPT_PROFILE  = -O3 -pg
+CCOPT_DEBUG    = -O3 -g
+CCOPT_PROFILE  = -O3 -pg -g
 
 LINKOPT_RELEASE  = -static -static-libgcc
-LINKOPT_DEBUG    = -lrt
-LINKOPT_PROFILE  = -pg -lrt
+LINKOPT_DEBUG    = -lrt -g
+LINKOPT_PROFILE  = -pg -lrt -g
 # LINKOPT_PROFILE += -lc_p
 
 POSTLINKOPT_RELEASE  = -Wl,-Bstatic -lrt
