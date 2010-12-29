@@ -5,7 +5,7 @@
 typedef unsigned char state_var_t;
 
 #elif STATE_VAR_BYTES==2
-typedef short state_var_t;
+typedef unsigned short state_var_t;
 
 #elif STATE_VAR_BYTES==4
 typedef int state_var_t;
