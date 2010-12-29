@@ -1294,7 +1294,7 @@ LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
       disjunctive_landmarks(true),
       conjunctive_landmarks(true),
       no_orders(false),
-      lm_cost_type(0) {
+      lm_cost_type(NORMAL) {
 }
 
 void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(NamedOptionParser &option_parser) {

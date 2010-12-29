@@ -1,6 +1,5 @@
 #include "heuristic.h"
 #include "operator.h"
-#include "globals.h"
 #include "option_parser.h"
 #include "operator_cost.h"
 
@@ -108,8 +107,7 @@ int Heuristic::get_adjusted_cost(const Operator &op) const {
 
 
 HeuristicOptions::HeuristicOptions()
-    : cost_type(static_cast<int>(NORMAL))
-{
+    : cost_type(NORMAL) {
 }
 
 void HeuristicOptions::add_option_to_parser(NamedOptionParser &option_parser) {

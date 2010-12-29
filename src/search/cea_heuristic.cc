@@ -265,7 +265,7 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-        HeuristicOptions &options):Heuristic(options) {
+    HeuristicOptions &options) : Heuristic(options) {
     if (g_HACK)
         abort();
     g_HACK = this;
@@ -344,7 +344,6 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
     }
     return DEAD_END;
 }
-
 
 ScalarEvaluator *ContextEnhancedAdditiveHeuristic::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
