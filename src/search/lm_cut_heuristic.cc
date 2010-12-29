@@ -19,8 +19,8 @@ static ScalarEvaluatorPlugin landmark_cut_heuristic_plugin(
 
 
 // construction and destruction
-LandmarkCutHeuristic::LandmarkCutHeuristic(int _iteration_limit)
-    : iteration_limit(_iteration_limit) {
+LandmarkCutHeuristic::LandmarkCutHeuristic(const HeuristicOptions &options, int _iteration_limit)
+    : Heuristic(options), iteration_limit(_iteration_limit) {
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
@@ -73,7 +73,7 @@ void LandmarkCutHeuristic::initialize() {
 }
 
 void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
-    int base_cost = op.get_cost();
+    int base_cost = get_adjusted_cost(op);
     if (base_cost > 1000) {
         // HACK -- but doing it this way and failing noisily is better
         // than using this implementation for high action cost settings
@@ -411,6 +411,8 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
 ScalarEvaluator *LandmarkCutHeuristic::create(const std::vector<string> &config,
                                               int start, int &end,
                                               bool dry_run) {
+    HeuristicOptions common_options;
+
     if (config.size() <= start)
         throw ParseError(start);
 
@@ -422,6 +424,9 @@ ScalarEvaluator *LandmarkCutHeuristic::create(const std::vector<string> &config,
 
         if (config[end] != ")") {
             NamedOptionParser option_parser;
+
+            common_options.add_option_to_parser(option_parser);
+
             option_parser.add_int_option("iteration_limit", &iteration_limit_,
                                          "iteration limit");
             option_parser.parse_options(config, end, end, dry_run);
@@ -436,5 +441,5 @@ ScalarEvaluator *LandmarkCutHeuristic::create(const std::vector<string> &config,
     if (dry_run)
         return 0;
     else
-        return new LandmarkCutHeuristic(iteration_limit_);
+        return new LandmarkCutHeuristic(common_options, iteration_limit_);
 }

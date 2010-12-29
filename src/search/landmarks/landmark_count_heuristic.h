@@ -49,7 +49,7 @@ class LandmarkCountHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const State &state);
 public:
-    LandmarkCountHeuristic(LandmarksGraph &lm_graph,
+    LandmarkCountHeuristic(const HeuristicOptions &options, LandmarksGraph &lm_graph,
                            bool use_preferred_operators, bool admissible,
                            bool optimal, bool use_action_landmarks);
     ~LandmarkCountHeuristic() {

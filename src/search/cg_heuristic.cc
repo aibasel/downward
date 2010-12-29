@@ -19,8 +19,8 @@ using namespace std;
 static ScalarEvaluatorPlugin cg_heuristic_plugin("cg", CGHeuristic::create);
 
 
-CGHeuristic::CGHeuristic()
-    : cache(new CGCache), cache_hits(0), cache_misses(0),
+CGHeuristic::CGHeuristic(const HeuristicOptions &options)
+    : Heuristic(options), cache(new CGCache), cache_hits(0), cache_misses(0),
       helpful_transition_extraction_counter(0) {
 }
 
@@ -247,11 +247,29 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 }
 
-ScalarEvaluator *CGHeuristic::create(const std::vector<string> &config,
-                                     int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+
+ScalarEvaluator *CGHeuristic::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
+    HeuristicOptions common_options;
+
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
         return 0;
-    else
-        return new CGHeuristic;
+    } else {
+        return new CGHeuristic(common_options);
+    }
 }

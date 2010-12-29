@@ -10,7 +10,8 @@ static ScalarEvaluatorPlugin blind_search_heuristic_plugin(
     "blind", BlindSearchHeuristic::create);
 
 
-BlindSearchHeuristic::BlindSearchHeuristic() {
+BlindSearchHeuristic::BlindSearchHeuristic(const HeuristicOptions &options)
+    : Heuristic(options) {
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {
@@ -38,12 +39,28 @@ return 0;
 */
 }
 
-ScalarEvaluator *BlindSearchHeuristic::create(const std::vector<string> &config,
-                                              int start, int &end,
-                                              bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+ScalarEvaluator *BlindSearchHeuristic::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
+    HeuristicOptions common_options;
+
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
         return 0;
-    else
-        return new BlindSearchHeuristic();
+    } else {
+        return new BlindSearchHeuristic(common_options);
+    }
 }
