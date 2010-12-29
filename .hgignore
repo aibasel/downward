@@ -7,7 +7,9 @@
 ^src/preprocess/preprocess-profile$
 ^src/search/\.obj/
 ^src/search/Makefile\.depend$
-^src/search/downward$
+^src/search/downward-1$
+^src/search/downward-2$
+^src/search/downward-4$
 ^src/search/downward-debug$
 ^src/search/downward-profile$
 ^src/search/lp/coin/
