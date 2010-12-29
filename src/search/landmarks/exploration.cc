@@ -27,7 +27,8 @@ using namespace __gnu_cxx;
 */
 
 // Construction and destruction
-Exploration::Exploration(HeuristicOptions &options):Heuristic(options) {
+Exploration::Exploration(HeuristicOptions &options)
+    : Heuristic(options) {
     cout << "Initializing Exploration..." << endl;
 
     // Build propositions.

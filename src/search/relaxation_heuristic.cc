@@ -13,7 +13,7 @@ using namespace __gnu_cxx;
 
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(HeuristicOptions &options)
- : Heuristic(options) {
+    : Heuristic(options) {
 }
 
 RelaxationHeuristic::~RelaxationHeuristic() {

@@ -28,7 +28,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(HeuristicOptions &options,
                                                bool preferred_ops,
                                                bool admissible, bool optimal,
                                                bool use_action_landmarks)
-    : Heuristic(options),lgraph(lm_graph),
+    : Heuristic(options), lgraph(lm_graph),
       exploration(lm_graph.get_exploration()),
       lm_status_manager(lgraph) {
     cout << "Initializing landmarks count heuristic..." << endl;

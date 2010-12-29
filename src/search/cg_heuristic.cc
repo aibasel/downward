@@ -273,6 +273,3 @@ ScalarEvaluator *CGHeuristic::create(
         return new CGHeuristic(common_options);
     }
 }
-
-
-
