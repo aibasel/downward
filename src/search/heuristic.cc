@@ -112,6 +112,6 @@ HeuristicOptions::HeuristicOptions()
 
 void HeuristicOptions::add_option_to_parser(NamedOptionParser &option_parser) {
     option_parser.add_int_option("cost_type",
-                                  &cost_type,
-                                  "operator cost adjustment type");
+                                 &cost_type,
+                                 "operator cost adjustment type");
 }

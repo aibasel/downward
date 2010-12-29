@@ -20,7 +20,7 @@ static ScalarEvaluatorPlugin additive_heuristic_plugin(
 
 // construction and destruction
 AdditiveHeuristic::AdditiveHeuristic(HeuristicOptions &options)
- : RelaxationHeuristic(options) {
+    : RelaxationHeuristic(options) {
 }
 
 AdditiveHeuristic::~AdditiveHeuristic() {

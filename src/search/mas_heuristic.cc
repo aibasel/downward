@@ -20,7 +20,8 @@ static ScalarEvaluatorPlugin merge_and_shrink_heuristic_plugin(
     "mas", MergeAndShrinkHeuristic::create);
 
 
-MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(HeuristicOptions &options,
+MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
+    HeuristicOptions &options,
     int max_abstract_states_, int max_abstract_states_before_merge_,
     int abstraction_count_,
     MergeStrategy merge_strategy_, ShrinkStrategy shrink_strategy_,

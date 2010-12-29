@@ -46,7 +46,8 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    MergeAndShrinkHeuristic(HeuristicOptions &options,
+    MergeAndShrinkHeuristic(
+        HeuristicOptions &options,
         int max_abstract_states, int max_abstract_states_before_merge,
         int abstraction_count,
         MergeStrategy merge_strategy, ShrinkStrategy shrink_strategy,

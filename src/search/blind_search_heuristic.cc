@@ -11,7 +11,7 @@ static ScalarEvaluatorPlugin blind_search_heuristic_plugin(
 
 
 BlindSearchHeuristic::BlindSearchHeuristic(HeuristicOptions &options)
- : Heuristic(options) {
+    : Heuristic(options) {
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {

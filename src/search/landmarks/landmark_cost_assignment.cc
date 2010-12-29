@@ -57,7 +57,7 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
     LandmarksGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_)
     : LandmarkCostAssignment(graph), use_action_landmarks(use_action_landmarks_),
-      cost_type(cost_type_){
+      cost_type(cost_type_) {
 }
 
 

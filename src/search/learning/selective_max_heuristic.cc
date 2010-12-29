@@ -18,9 +18,8 @@ static ScalarEvaluatorPlugin selective_max_heuristic_plugin(
     "selmax", SelectiveMaxHeuristic::create);
 
 
-SelectiveMaxHeuristic::SelectiveMaxHeuristic(HeuristicOptions &options) :
-    Heuristic(options), num_always_calc(0)
-{
+SelectiveMaxHeuristic::SelectiveMaxHeuristic(HeuristicOptions &options)
+    : Heuristic(options), num_always_calc(0) {
     // default parameter
     min_training_set = 100;
     conf_threshold = 0.6;
