@@ -6,7 +6,7 @@
 #include <set>
 #include <string>
 
-typedef short state_var_t;
+#include "state_var_t.h"
 
 class Heuristic;
 class ScalarEvaluator;
