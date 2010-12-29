@@ -32,8 +32,8 @@ typedef OsiCpxSolverInterface OsiXxxSolverInterface;
 using namespace std;
 
 
-LandmarkCostAssignment::LandmarkCostAssignment(LandmarksGraph &graph)
-    : lm_graph(graph) {
+LandmarkCostAssignment::LandmarkCostAssignment(LandmarksGraph &graph, OperatorCost cost_type_)
+  : lm_graph(graph),cost_type(cost_type_) {
 }
 
 
@@ -56,8 +56,7 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 /* Uniform cost partioning */
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
     LandmarksGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_)
-    : LandmarkCostAssignment(graph), use_action_landmarks(use_action_landmarks_),
-      cost_type(cost_type_){
+  : LandmarkCostAssignment(graph, cost_type_), use_action_landmarks(use_action_landmarks_) {
 }
 
 
@@ -164,8 +163,8 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarksGraph &graph)
-    : LandmarkCostAssignment(graph) {
+					      LandmarksGraph &graph, OperatorCost cost_type_)
+  : LandmarkCostAssignment(graph, cost_type_) {
 #ifdef USE_LP
     si = new OsiXxxSolverInterface();
 #else
@@ -223,7 +222,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         for (int op_id = 0; op_id < g_operators.size(); ++op_id) {
             const Operator &op = g_operators[op_id];
             row_lb[op_id] = 0;
-            row_ub[op_id] = op.get_cost();
+            row_ub[op_id] = get_adjusted_action_cost(op, cost_type);
         }
 
         // Define the constraint matrix. The constraints are of the form
