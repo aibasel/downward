@@ -31,9 +31,8 @@ int save_plan(const vector<const Operator *> &plan, int iter) {
     int plan_cost = 0;
     if (iter == 0) {
         outfile.open(g_plan_filename.c_str(), ios::out);
-    }
-    else {
-        std::stringstream out;
+    } else {
+        ostringstream out;
         out << g_plan_filename << "." << iter;
         outfile.open(out.str().c_str(), ios::out);
     }
