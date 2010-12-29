@@ -13,8 +13,7 @@ static ScalarEvaluatorPlugin hm_heuristic_plugin("hm", HMHeuristic::create);
 
 HMHeuristic::HMHeuristic(const HeuristicOptions &options, int _m)
     : Heuristic(options), m(_m) {
-    MAX_VALUE = 100000;
-    //MAX_VALUE = numeric_limits<int>::max();
+    MAX_VALUE = numeric_limits<int>::max();
 }
 
 HMHeuristic::~HMHeuristic() {
