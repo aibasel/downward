@@ -26,6 +26,14 @@ bool test_goal(const State &state) {
     return true;
 }
 
+int calculate_plan_cost(const vector<const Operator *> &plan) {
+  int plan_cost = 0;
+  for (int i = 0; i < plan.size(); i++) {
+    plan_cost += plan[i]->get_cost();
+  }
+  return plan_cost;
+}
+
 int save_plan(const vector<const Operator *> &plan, int iter) {
     ofstream outfile;
     int plan_cost = 0;

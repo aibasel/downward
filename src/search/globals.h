@@ -17,6 +17,7 @@ class Timer;
 
 bool test_goal(const State &state);
 int save_plan(const vector<const Operator *> &plan, int iter);
+int calculate_plan_cost(const vector<const Operator *> &plan);
 
 void read_everything(istream &in);
 void dump_everything();
