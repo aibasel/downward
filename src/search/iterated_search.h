@@ -12,6 +12,7 @@ private:
     bool last_phase_found_solution;
     int best_bound;
     bool found_solution;
+    int plan_counter;
 
     SearchEngine *current_search;
     string current_search_name;
@@ -41,6 +42,7 @@ public:
                    bool continue_on_fail,
                    bool continue_on_solve);
     virtual ~IteratedSearch();
+    virtual void save_plan_if_necessary() const;
     void statistics() const;
     static SearchEngine *create(
         const std::vector<std::string> &config, int start, int &end,
