@@ -12,8 +12,7 @@ static ScalarEvaluatorPlugin hm_heuristic_plugin("hm", HMHeuristic::create);
 
 
 HMHeuristic::HMHeuristic(HeuristicOptions &options,int _m) :
-    Heuristic(options),m(_m)
-{
+    Heuristic(options), m(_m) {
     MAX_VALUE = 100000;
     //MAX_VALUE = numeric_limits<int>::max();
 }
@@ -225,7 +224,7 @@ ScalarEvaluator *HMHeuristic::create(
     HeuristicOptions common_options;
 
     if (config.size() <= start)
-            throw ParseError(start);
+        throw ParseError(start);
 
     int m = 2;
     if (config.size() > start + 2 && config[start + 1] == "(") {

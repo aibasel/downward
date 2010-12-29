@@ -10,7 +10,8 @@ static ScalarEvaluatorPlugin blind_search_heuristic_plugin(
     "blind", BlindSearchHeuristic::create);
 
 
-BlindSearchHeuristic::BlindSearchHeuristic(HeuristicOptions &options):Heuristic(options) {
+BlindSearchHeuristic::BlindSearchHeuristic(HeuristicOptions &options)
+ : Heuristic(options) {
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {
@@ -63,6 +64,3 @@ ScalarEvaluator *BlindSearchHeuristic::create(
         return new BlindSearchHeuristic(common_options);
     }
 }
-
-
-

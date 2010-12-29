@@ -33,9 +33,8 @@ static ScalarEvaluatorPlugin ff_heuristic_plugin("ff", FFHeuristic::create);
 
 
 // construction and destruction
-FFHeuristic::FFHeuristic(HeuristicOptions &options):
-    RelaxationHeuristic(options)
-{
+FFHeuristic::FFHeuristic(HeuristicOptions &options)
+    : RelaxationHeuristic(options) {
     reachable_queue_start = 0;
     reachable_queue_read_pos = 0;
     reachable_queue_write_pos = 0;
@@ -204,4 +203,3 @@ ScalarEvaluator *FFHeuristic::create(
         return new FFHeuristic(common_options);
     }
 }
-

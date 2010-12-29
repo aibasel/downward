@@ -2,6 +2,7 @@
 #include "operator.h"
 
 #include <cstdlib>
+using namespace std;
 
 int get_adjusted_action_cost(const Operator &op, OperatorCost cost_type) {
     switch (cost_type) {
