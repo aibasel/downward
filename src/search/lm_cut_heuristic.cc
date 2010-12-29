@@ -19,7 +19,7 @@ static ScalarEvaluatorPlugin landmark_cut_heuristic_plugin(
 
 
 // construction and destruction
-LandmarkCutHeuristic::LandmarkCutHeuristic(HeuristicOptions &options, int _iteration_limit)
+LandmarkCutHeuristic::LandmarkCutHeuristic(const HeuristicOptions &options, int _iteration_limit)
     : Heuristic(options), iteration_limit(_iteration_limit) {
 }
 

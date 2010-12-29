@@ -8,7 +8,7 @@
 
 using namespace std;
 
-Heuristic::Heuristic(HeuristicOptions &options) {
+Heuristic::Heuristic(const HeuristicOptions &options) {
     heuristic = NOT_INITIALIZED;
 
     if (options.cost_type < 0 || options.cost_type >= MAX_OPERATOR_COST) {

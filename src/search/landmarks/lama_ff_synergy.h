@@ -80,7 +80,7 @@ public:
     void get_lama_preferred_operators(std::vector<const Operator *> &result);
     void get_ff_preferred_operators(std::vector<const Operator *> &result);
 public:
-    LamaFFSynergy(HeuristicOptions &options, LandmarksGraph &lm_graph,
+    LamaFFSynergy(const HeuristicOptions &options, LandmarksGraph &lm_graph,
                   bool lm_pref_, bool lm_admissible_, bool lm_optimal_,
                   bool use_action_landmarks_);
     ~LamaFFSynergy() {}

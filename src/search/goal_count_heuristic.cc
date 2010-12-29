@@ -10,7 +10,7 @@ static ScalarEvaluatorPlugin goal_count_heuristic_plugin(
     "goalcount", GoalCountHeuristic::create);
 
 
-GoalCountHeuristic::GoalCountHeuristic(HeuristicOptions &options)
+GoalCountHeuristic::GoalCountHeuristic(const HeuristicOptions &options)
     : Heuristic(options) {
 }
 

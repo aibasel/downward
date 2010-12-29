@@ -26,7 +26,7 @@ static ScalarEvaluatorPlugin max_heuristic_plugin(
 
 
 // construction and destruction
-HSPMaxHeuristic::HSPMaxHeuristic(HeuristicOptions &options)
+HSPMaxHeuristic::HSPMaxHeuristic(const HeuristicOptions &options)
     : RelaxationHeuristic(options) {
     reachable_queue_start = 0;
     reachable_queue_read_pos = 0;

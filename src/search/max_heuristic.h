@@ -24,7 +24,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    HSPMaxHeuristic(HeuristicOptions &options);
+    HSPMaxHeuristic(const HeuristicOptions &options);
     ~HSPMaxHeuristic();
 
     static ScalarEvaluator *create(const std::vector<std::string> &config,
