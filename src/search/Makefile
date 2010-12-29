@@ -16,6 +16,7 @@ HEADERS = \
           heuristic.h \
           iterated_search.h \
           operator.h \
+          operator_cost.h \
           option_parser.h \
           plugin.h \
           pref_evaluator.h \

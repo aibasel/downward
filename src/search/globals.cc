@@ -16,6 +16,7 @@ using namespace std;
 #include "state.h"
 #include "successor_generator.h"
 #include "timer.h"
+#include "heuristic.h"
 
 bool test_goal(const State &state) {
     for (int i = 0; i < g_goal.size(); i++) {
@@ -168,6 +169,7 @@ void dump_everything() {
     */
 }
 
+
 bool g_legacy_file_format = false; // TODO: Can rip this out after migration.
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
@@ -183,6 +185,7 @@ AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
+HeuristicOptions g_default_heuristic_options;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";

@@ -19,7 +19,8 @@ static ScalarEvaluatorPlugin additive_heuristic_plugin(
 
 
 // construction and destruction
-AdditiveHeuristic::AdditiveHeuristic() {
+AdditiveHeuristic::AdditiveHeuristic(const HeuristicOptions &options)
+    : RelaxationHeuristic(options) {
 }
 
 AdditiveHeuristic::~AdditiveHeuristic() {
@@ -136,11 +137,30 @@ int AdditiveHeuristic::compute_heuristic(const State &state) {
     return total_cost;
 }
 
-ScalarEvaluator *AdditiveHeuristic::create(const std::vector<string> &config,
-                                           int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+
+
+ScalarEvaluator *AdditiveHeuristic::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
+    HeuristicOptions common_options;
+
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
         return 0;
-    else
-        return new AdditiveHeuristic;
+    } else {
+        return new AdditiveHeuristic(common_options);
+    }
 }

@@ -33,7 +33,8 @@ static ScalarEvaluatorPlugin ff_heuristic_plugin("ff", FFHeuristic::create);
 
 
 // construction and destruction
-FFHeuristic::FFHeuristic() {
+FFHeuristic::FFHeuristic(const HeuristicOptions &options)
+    : RelaxationHeuristic(options) {
     reachable_queue_start = 0;
     reachable_queue_read_pos = 0;
     reachable_queue_write_pos = 0;
@@ -175,11 +176,30 @@ int FFHeuristic::compute_heuristic(const State &state) {
     return compute_ff_heuristic();
 }
 
-ScalarEvaluator *FFHeuristic::create(const std::vector<string> &config,
-                                     int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+
+ScalarEvaluator *FFHeuristic::create(
+    const std::vector<string> &config, int start, int &end, bool dry_run) {
+    HeuristicOptions common_options;
+
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
         return 0;
-    else
-        return new FFHeuristic;
+    } else {
+        return new FFHeuristic(common_options);
+    }
 }

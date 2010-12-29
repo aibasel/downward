@@ -61,7 +61,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state) = 0;
 public:
-    RelaxationHeuristic();
+    RelaxationHeuristic(const HeuristicOptions &options);
     virtual ~RelaxationHeuristic();
 };
 

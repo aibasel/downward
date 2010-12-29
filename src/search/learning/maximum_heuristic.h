@@ -25,7 +25,7 @@ protected:
     ofstream arff_out;
     int max_diff;
 public:
-    MaxHeuristic(bool arff = false);
+    MaxHeuristic(const HeuristicOptions &options, bool arff = false);
     virtual ~MaxHeuristic();
 
     inline vector<int> &get_winners() {

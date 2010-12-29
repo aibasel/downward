@@ -4,7 +4,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "operator_cost.h"
+
 using namespace std;
+
 
 class AxiomEvaluator;
 class CausalGraph;
@@ -14,6 +17,7 @@ class Axiom;
 class State;
 class SuccessorGenerator;
 class Timer;
+class HeuristicOptions;
 
 bool test_goal(const State &state);
 int save_plan(const vector<const Operator *> &plan, int iter);
@@ -39,7 +43,7 @@ extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
 extern vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
-
+extern HeuristicOptions g_default_heuristic_options;
 extern Timer g_timer;
 extern string g_plan_filename;
 
