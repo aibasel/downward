@@ -6,7 +6,7 @@
 #include <cassert>
 #include <limits>
 
-MaxHeuristic::MaxHeuristic(HeuristicOptions &options, bool arff)
+MaxHeuristic::MaxHeuristic(const HeuristicOptions &options, bool arff)
     : Heuristic(options), num_evals(0), arff_out("max.arff") {
     //name = "max";
     dump_arff = arff;

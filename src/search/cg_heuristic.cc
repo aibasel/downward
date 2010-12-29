@@ -19,7 +19,7 @@ using namespace std;
 static ScalarEvaluatorPlugin cg_heuristic_plugin("cg", CGHeuristic::create);
 
 
-CGHeuristic::CGHeuristic(HeuristicOptions &options)
+CGHeuristic::CGHeuristic(const HeuristicOptions &options)
     : Heuristic(options), cache(new CGCache), cache_hits(0), cache_misses(0),
       helpful_transition_extraction_counter(0) {
 }

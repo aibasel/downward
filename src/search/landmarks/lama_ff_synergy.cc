@@ -20,7 +20,7 @@ void LamaFFSynergy::HeuristicProxy::initialize() {
     }
 }
 
-LamaFFSynergy::LamaFFSynergy(HeuristicOptions &options,
+LamaFFSynergy::LamaFFSynergy(const HeuristicOptions &options,
                              LandmarksGraph &lm_graph,
                              bool lm_pref_, bool lm_admissible_, bool lm_optimal_,
                              bool use_action_landmarks_)

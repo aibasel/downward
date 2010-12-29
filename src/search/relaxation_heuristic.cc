@@ -12,7 +12,7 @@ using namespace std;
 using namespace __gnu_cxx;
 
 // construction and destruction
-RelaxationHeuristic::RelaxationHeuristic(HeuristicOptions &options)
+RelaxationHeuristic::RelaxationHeuristic(const HeuristicOptions &options)
     : Heuristic(options) {
 }
 

@@ -265,7 +265,7 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    HeuristicOptions &options) : Heuristic(options) {
+    const HeuristicOptions &options) : Heuristic(options) {
     if (g_HACK)
         abort();
     g_HACK = this;
