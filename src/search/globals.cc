@@ -36,7 +36,6 @@ int calculate_plan_cost(const vector<const Operator *> &plan) {
 
 int save_plan(const vector<const Operator *> &plan, int iter) {
     ofstream outfile;
-    int plan_cost = 0;
     if (iter == 0) {
         outfile.open(g_plan_filename.c_str(), ios::out);
     } else {
@@ -47,11 +46,10 @@ int save_plan(const vector<const Operator *> &plan, int iter) {
     for (int i = 0; i < plan.size(); i++) {
         cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
-        plan_cost += plan[i]->get_cost();
     }
     outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
-    cout << "Plan cost: " << plan_cost << endl;
+    cout << "Plan cost: " << calculate_plan_cost(plan) << endl;
     return plan_cost;
 }
 
