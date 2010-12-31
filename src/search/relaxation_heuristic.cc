@@ -54,11 +54,7 @@ void RelaxationHeuristic::initialize() {
 }
 
 void RelaxationHeuristic::build_unary_operators(const Operator &op) {
-    int base_cost = op.is_axiom() ? 0 : 1; //TODO: CAREFUL: NEXT LINE:
-    // When changing this to op.get_cost() or whatever, must also
-    // adapt simplify() so that the dominance test also takes action
-    // cost into account. (A more expensive operator cannot dominate a
-    // cheaper operator.)
+    int base_cost = op.is_axiom() ? 0 : get_adjusted_cost(op);
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<Proposition *> precondition;
@@ -123,6 +119,9 @@ void RelaxationHeuristic::simplify() {
       Then go through the hash_map, checking for each element if
       none of the possible dominators are part of the hash_map.
       Put the element into the new operator vector iff this is the case.
+
+      In both loops, be careful to ensure that a higher-cost operator
+      never dominates a lower-cost operator.
     */
 
 
@@ -137,7 +136,19 @@ void RelaxationHeuristic::simplify() {
         UnaryOperator &op = unary_operators[i];
         sort(op.precondition.begin(), op.precondition.end(), compare_prop_pointer);
         HashKey key(op.precondition, op.effect);
-        unary_operator_index[key] = i;
+        pair<HashMap::iterator, bool> inserted = unary_operator_index.insert(
+            make_pair(key, i));
+        if (!inserted.second) {
+            // We already had an element with this key; check its cost.
+            HashMap::iterator iter = inserted.first;
+            int old_op_no = iter->second;
+            int old_cost = unary_operators[old_op_no].base_cost;
+            int new_cost = unary_operators[i].base_cost;
+            if (new_cost < old_cost)
+                iter->second = i;
+            assert(unary_operators[unary_operator_index[key]].base_cost ==
+                   min(old_cost, new_cost));
+        }
     }
 
     vector<UnaryOperator> old_unary_operators;
@@ -155,9 +166,16 @@ void RelaxationHeuristic::simplify() {
                 for (int i = 0; i < key.first.size(); i++)
                     if (mask & (1 << i))
                         dominating_key.first.push_back(key.first[i]);
-                if (unary_operator_index.count(dominating_key)) {
-                    match = true;
-                    break;
+                HashMap::iterator found = unary_operator_index.find(
+                    dominating_key);
+                if (found != unary_operator_index.end()) {
+                    int my_cost = old_unary_operators[unary_operator_no].base_cost;
+                    int dominator_op_no = found->second;
+                    int dominator_cost = old_unary_operators[dominator_op_no].base_cost;
+                    if (dominator_cost <= my_cost) {
+                        match = true;
+                        break;
+                    }
                 }
             }
         }
