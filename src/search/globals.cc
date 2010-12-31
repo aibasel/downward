@@ -27,11 +27,11 @@ bool test_goal(const State &state) {
 }
 
 int calculate_plan_cost(const vector<const Operator *> &plan) {
-  int plan_cost = 0;
-  for (int i = 0; i < plan.size(); i++) {
-    plan_cost += plan[i]->get_cost();
-  }
-  return plan_cost;
+    int plan_cost = 0;
+    for (int i = 0; i < plan.size(); i++) {
+        plan_cost += plan[i]->get_cost();
+    }
+    return plan_cost;
 }
 
 int save_plan(const vector<const Operator *> &plan, int iter) {
@@ -39,8 +39,7 @@ int save_plan(const vector<const Operator *> &plan, int iter) {
     int plan_cost = 0;
     if (iter == 0) {
         outfile.open(g_plan_filename.c_str(), ios::out);
-    }
-    else {
+    } else {
         std::stringstream out;
         out << g_plan_filename << "." << iter;
         outfile.open(out.str().c_str(), ios::out);
