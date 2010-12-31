@@ -32,8 +32,6 @@ public:
     virtual void statistics() const;
     virtual void heuristic_statistics() const {}
     virtual void save_plan_if_necessary() const;
-//    virtual void add_heuristic(Heuristic *heuristic, bool use_estimates,
-//                               bool use_preferred_operators) = 0;
     bool found_solution() const;
     const Plan &get_plan() const;
     void search();
