@@ -11,11 +11,12 @@ class LandmarkCostAssignment {
     const std::set<int> empty;
 protected:
     LandmarksGraph &lm_graph;
+    OperatorCost cost_type;
 
     const std::set<int> &get_achievers(int lmn_status,
                                        const LandmarkNode &lmn) const;
 public:
-    explicit LandmarkCostAssignment(LandmarksGraph &graph);
+    LandmarkCostAssignment(LandmarksGraph &graph, OperatorCost cost_type_);
     virtual ~LandmarkCostAssignment();
 
     virtual double cost_sharing_h_value() = 0;
@@ -23,7 +24,6 @@ public:
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
     bool use_action_landmarks;
-    OperatorCost cost_type;
 public:
     LandmarkUniformSharedCostAssignment(LandmarksGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_);
     virtual ~LandmarkUniformSharedCostAssignment();
@@ -40,7 +40,7 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
     OsiSolverInterface *si;
 #endif
 public:
-    explicit LandmarkEfficientOptimalSharedCostAssignment(LandmarksGraph &graph);
+    LandmarkEfficientOptimalSharedCostAssignment(LandmarksGraph &graph, OperatorCost cost_type);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 
     virtual double cost_sharing_h_value();
