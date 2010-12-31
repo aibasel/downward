@@ -7,7 +7,6 @@
 #include "option_parser.h"
 
 class IteratedSearch : public SearchEngine {
-private:
     int phase;
     bool last_phase_found_solution;
     int best_bound;
@@ -25,8 +24,6 @@ private:
     bool continue_on_solve;
 
     vector<SearchProgress> phase_statistics;
-    vector<bool> phase_found_solution;
-    vector<int> phase_solution_cost;
 
     SearchEngine *get_search_engine(int engine_config_start_index);
     SearchEngine *create_phase(int p);
