@@ -5,6 +5,12 @@
 
 #include <ext/hash_set>
 
+struct hash_operator_ptr {
+    size_t operator()(const Operator *key) const {
+        return reinterpret_cast<unsigned long>(key);
+    }
+};
+
 class FFHeuristic : public RelaxationHeuristic {
     typedef __gnu_cxx::hash_set<const Operator *, hash_operator_ptr> RelaxedPlan;
 
