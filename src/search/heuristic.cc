@@ -74,8 +74,8 @@ void Heuristic::get_preferred_operators(std::vector<const Operator *> &result) {
                   preferred_operators.end());
 }
 
-bool Heuristic::reach_state(const State &/*parent_state*/,
-                            const Operator &/*op*/, const State &/*state*/) {
+bool Heuristic::reach_state(const State & /*parent_state*/,
+                            const Operator & /*op*/, const State & /*state*/) {
     return false;
 }
 
