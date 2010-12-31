@@ -17,6 +17,7 @@ IteratedSearch::IteratedSearch(
     last_phase_found_solution = false;
     best_bound = numeric_limits<int>::max();
     found_solution = false;
+    plan_counter = 0;
 }
 
 IteratedSearch::~IteratedSearch() {
@@ -71,14 +72,15 @@ int IteratedSearch::step() {
     if (last_phase_found_solution) {
         found_solution = true;
         found_plan = current_search->get_plan();
-        plan_cost = save_plan(found_plan, phase);
-        if (plan_cost < best_bound)
+        plan_cost = calculate_plan_cost(found_plan);
+        if (plan_cost < best_bound) {
+            ++plan_counter;
+            save_plan(found_plan, plan_counter);
             best_bound = plan_cost;
-        set_plan(found_plan);
+            set_plan(found_plan);
+        }
     }
     phase_statistics.push_back(current_search->get_search_progress());
-    phase_solution_cost.push_back(plan_cost);
-    phase_found_solution.push_back(last_phase_found_solution);
 
     current_search->statistics();
     search_progress.inc_expanded(
@@ -175,4 +177,9 @@ SearchEngine *IteratedSearch::create(
                            continue_on_fail, continue_on_solve);
 
     return engine;
+}
+
+void IteratedSearch::save_plan_if_necessary() const {
+    // Don't need to save here, as we automatically save after
+    // each successful search iteration.
 }

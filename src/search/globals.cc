@@ -27,9 +27,21 @@ bool test_goal(const State &state) {
     return true;
 }
 
-int save_plan(const vector<const Operator *> &plan, int iter) {
-    ofstream outfile;
+int calculate_plan_cost(const vector<const Operator *> &plan) {
+    // TODO: Refactor: this is only used by save_plan (see below)
+    //       and the SearchEngine classes and hence should maybe
+    //       be moved into the SearchEngine (along with save_plan).
     int plan_cost = 0;
+    for (int i = 0; i < plan.size(); i++) {
+        plan_cost += plan[i]->get_cost();
+    }
+    return plan_cost;
+}
+
+void save_plan(const vector<const Operator *> &plan, int iter) {
+    // TODO: Refactor: this is only used by the SearchEngine classes
+    //       and hence should maybe be moved into the SearchEngine.
+    ofstream outfile;
     if (iter == 0) {
         outfile.open(g_plan_filename.c_str(), ios::out);
     } else {
@@ -40,12 +52,10 @@ int save_plan(const vector<const Operator *> &plan, int iter) {
     for (int i = 0; i < plan.size(); i++) {
         cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
-        plan_cost += plan[i]->get_cost();
     }
     outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
-    cout << "Plan cost: " << plan_cost << endl;
-    return plan_cost;
+    cout << "Plan cost: " << calculate_plan_cost(plan) << endl;
 }
 
 bool peek_magic(istream &in, string magic) {
@@ -168,7 +178,6 @@ void dump_everything() {
       g_transition_graphs[i]->dump();
     */
 }
-
 
 bool g_legacy_file_format = false; // TODO: Can rip this out after migration.
 bool g_use_metric;
