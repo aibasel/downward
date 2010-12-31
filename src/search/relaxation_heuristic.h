@@ -15,7 +15,7 @@ struct UnaryOperator {
     const Operator *op;
     std::vector<Proposition *> precondition;
     Proposition *effect;
-    int base_cost; // 0 for axioms, 1 for regular operators
+    int base_cost;
 
     int unsatisfied_preconditions;
     int h_add_cost;
@@ -41,12 +41,6 @@ struct Proposition {
         h_add_cost = -1;
         reached_by = 0;
         marked = false;
-    }
-};
-
-struct hash_operator_ptr {
-    size_t operator()(const Operator *key) const {
-        return reinterpret_cast<unsigned long>(key);
     }
 };
 
