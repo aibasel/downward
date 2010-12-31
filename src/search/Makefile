@@ -118,14 +118,14 @@ DEPEND = g++ -MM
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
-CCOPT  =
+CCOPT  = -g
 CCOPT += -m32
-CCOPT += 
+CCOPT +=
 CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
 
-LINKOPT  =
+LINKOPT  = -g
 LINKOPT += -m32
-LINKOPT += 
+LINKOPT +=
 
 POSTLINKOPT =
 
@@ -138,12 +138,12 @@ POSTLINKOPT =
 ##        For details, see man gcc on -static-libgcc.
 
 CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
-CCOPT_DEBUG    = -O3 -g
-CCOPT_PROFILE  = -O3 -pg -g
+CCOPT_DEBUG    = -O3
+CCOPT_PROFILE  = -O3 -pg
 
 LINKOPT_RELEASE  = -static -static-libgcc
-LINKOPT_DEBUG    = -lrt -g
-LINKOPT_PROFILE  = -pg -lrt -g
+LINKOPT_DEBUG    = -lrt
+LINKOPT_PROFILE  = -pg -lrt
 # LINKOPT_PROFILE += -lc_p
 
 POSTLINKOPT_RELEASE  = -Wl,-Bstatic -lrt
@@ -186,7 +186,7 @@ COIN_LIBS = OsiClp Clp CoinUtils Osi
 ## http://ubuntuforums.org/showthread.php?t=491455
 
 COIN_CCOPT = -I $(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
-COIN_LINKOPT = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %) 
+COIN_LINKOPT = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
 
 CCOPT += $(COIN_CCOPT)
 
