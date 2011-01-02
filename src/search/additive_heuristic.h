@@ -12,7 +12,7 @@ class AdditiveHeuristic : public RelaxationHeuristic {
     void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
     void relaxed_exploration();
-    void mark_preferred_operators(Proposition *goal);
+    void mark_preferred_operators(const State &state, Proposition *goal);
 
     void enqueue_if_necessary(Proposition *prop, int cost, UnaryOperator *op) {
         assert(cost >= 0);
