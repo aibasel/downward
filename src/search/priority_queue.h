@@ -17,7 +17,13 @@
   a HeapQueue when the number of required buckets exceeds both
   BucketQueue::MIN_BUCKETS_BEFORE_SWITCH and the total number of
   pushes to the queue since it was last clear()ed or constructed.
-*/
+
+  Note: AdaptiveQueue does not derive from AbstractQueue since this is
+  currently not necessary, and by not deriving we can save virtual
+  function calls and do some additional inlining. The class has the
+  same interface as AbstractQueue, however, to facilitate swapping the
+  different implementations in and out.
+ */
 
 
 template<typename Value>
@@ -199,19 +205,19 @@ public:
 
 
 template<typename Value>
-class AdaptiveQueue : public AbstractQueue<Value> {
+class AdaptiveQueue {
     AbstractQueue<Value> *wrapped_queue;
 public:
-    typedef typename AbstractQueue<Value>::Entry Entry;
+    typedef std::pair<int, Value> Entry;
 
     AdaptiveQueue() : wrapped_queue(new BucketQueue<Value>) {
     }
 
-    virtual ~AdaptiveQueue() {
+    ~AdaptiveQueue() {
         delete wrapped_queue;
     }
 
-    virtual void push(int key, const Value &value) {
+    void push(int key, const Value &value) {
         AbstractQueue<Value> *q = wrapped_queue->convert_if_necessary(key);
         if (q != wrapped_queue) {
             delete wrapped_queue;
@@ -220,15 +226,15 @@ public:
         wrapped_queue->push(key, value);
     }
 
-    virtual Entry pop() {
+    Entry pop() {
         return wrapped_queue->pop();
     }
 
-    virtual bool empty() const {
+    bool empty() const {
         return wrapped_queue->empty();
     }
 
-    virtual void clear() {
+    void clear() {
         wrapped_queue->clear();
     }
 };
