@@ -50,7 +50,7 @@ void EnforcedHillClimbingSearch::initialize() {
              << (preferred_usage == RANK_PREFERRED_FIRST ? "ranking successors"
             : "pruning") << endl;
     }
-    cout << "g-bound = " << bound << endl;
+    cout << "(real) g-bound = " << bound << endl;
 
     SearchNode node = search_space.get_node(current_state);
     evaluate(node.get_state(), NULL, node.get_state());
@@ -147,7 +147,7 @@ int EnforcedHillClimbingSearch::ehc() {
         int d = next.second.first;
         const Operator *last_op = next.second.second;
 
-        if (search_space.get_node(last_parent).get_g() + get_adjusted_cost(*last_op) >= bound)
+        if (search_space.get_node(last_parent).get_real_g() + last_op->get_cost() >= bound)
             continue;
 
         State s(last_parent, *last_op);

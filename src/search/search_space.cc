@@ -41,6 +41,10 @@ int SearchNode::get_g() const {
     return info.g;
 }
 
+int SearchNode::get_real_g() const {
+    return info.real_g;
+}
+
 int SearchNode::get_h() const {
     return info.h;
 }
@@ -65,6 +69,7 @@ void SearchNode::open_initial(int h) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
     info.g = 0;
+    info.real_g = 0;
     info.h = h;
     info.parent_state = 0;
     info.creating_operator = 0;
@@ -75,6 +80,7 @@ void SearchNode::open(int h, const SearchNode &parent_node,
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op,cost_type);
+    info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.h = h;
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
@@ -89,6 +95,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
     // may require reopening closed nodes.
     info.status = SearchNodeInfo::OPEN;
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op,cost_type);
+    info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
 }
@@ -101,6 +108,7 @@ void SearchNode::update_parent(const SearchNode &parent_node,
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op,cost_type);
+    info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
 }

@@ -84,8 +84,7 @@ void SearchEngineOptions::add_option_to_parser(NamedOptionParser &option_parser)
     option_parser.add_int_option("cost_type",
                                  &cost_type,
                                  "operator cost adjustment type");
-//TODO: add this back when we can support this properly with action cost adjustment
-//    option_parser.add_int_option("bound",
-//                                 &bound,
-//                                 "bound on plan cost");
+    option_parser.add_int_option("bound",
+                                 &bound,
+                                 "bound on plan cost", true);
 }
