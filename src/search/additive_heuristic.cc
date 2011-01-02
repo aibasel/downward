@@ -95,23 +95,22 @@ void AdditiveHeuristic::relaxed_exploration() {
     }
 }
 
-void AdditiveHeuristic::mark_preferred_operators(Proposition *goal) {
+void AdditiveHeuristic::mark_preferred_operators(
+    const State &state, Proposition *goal) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         UnaryOperator *unary_op = goal->reached_by;
         if (unary_op) { // We have not yet chained back to a start node.
             for (int i = 0; i < unary_op->precondition.size(); i++)
-                mark_preferred_operators(unary_op->precondition[i]);
+                mark_preferred_operators(state, unary_op->precondition[i]);
             if (unary_op->h_add_cost == unary_op->base_cost) {
-                // This may be applicable in the current state.
-                //
-                // TODO: This is no longer a sure-fire way to test
-                // applicability with zero-cost actions!
-                // Should we test for applicability directly, or should
-                // we make it so that operators that are not applicable
-                // can safely be marked as preferred?
+                // Necessary condition for this being a preferred
+                // operator, which we use as a quick test before the
+                // more expensive applicability test.
+                // If we had no 0-cost operators (and axioms) to worry
+                // about, this would also be a sufficient condition.
                 const Operator *op = unary_op->op;
-                if (!op->is_axiom())
+                if (!op->is_axiom() && op->is_applicable(state))
                     set_preferred(op);
             }
         }
@@ -132,12 +131,10 @@ int AdditiveHeuristic::compute_heuristic(const State &state) {
     }
 
     for (int i = 0; i < goal_propositions.size(); i++)
-        mark_preferred_operators(goal_propositions[i]);
+        mark_preferred_operators(state, goal_propositions[i]);
 
     return total_cost;
 }
-
-
 
 ScalarEvaluator *AdditiveHeuristic::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
