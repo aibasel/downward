@@ -34,7 +34,7 @@ void AdditiveHeuristic::initialize() {
 
 // heuristic computation
 void AdditiveHeuristic::setup_exploration_queue() {
-    reachable_queue.clear();
+    queue.clear();
 
     for (int var = 0; var < propositions.size(); var++) {
         for (int value = 0; value < propositions[var].size(); value++) {
@@ -64,33 +64,26 @@ void AdditiveHeuristic::setup_exploration_queue_state(const State &state) {
 
 void AdditiveHeuristic::relaxed_exploration() {
     int unsolved_goals = goal_propositions.size();
-    for (int distance = 0; distance < reachable_queue.size(); distance++) {
-        for (;;) {
-            Bucket &bucket = reachable_queue[distance];
-            // NOTE: Cannot set "bucket" outside the loop because the
-            //       reference can change if reachable_queue is
-            //       resized.
-            if (bucket.empty())
-                break;
-            Proposition *prop = bucket.back();
-            bucket.pop_back();
-            int prop_cost = prop->h_add_cost;
-            assert(prop_cost <= distance);
-            if (prop_cost < distance)
-                continue;
-            if (prop->is_goal && --unsolved_goals == 0)
-                return;
-            const vector<UnaryOperator *> &triggered_operators =
-                prop->precondition_of;
-            for (int i = 0; i < triggered_operators.size(); i++) {
-                UnaryOperator *unary_op = triggered_operators[i];
-                unary_op->unsatisfied_preconditions--;
-                unary_op->h_add_cost += prop_cost;
-                assert(unary_op->unsatisfied_preconditions >= 0);
-                if (unary_op->unsatisfied_preconditions == 0)
-                    enqueue_if_necessary(unary_op->effect,
-                                         unary_op->h_add_cost, unary_op);
-            }
+    while (!queue.empty()) {
+        pair<int, Proposition *> top_pair = queue.pop();
+        int distance = top_pair.first;
+        Proposition *prop = top_pair.second;
+        int prop_cost = prop->h_add_cost;
+        assert(prop_cost <= distance);
+        if (prop_cost < distance)
+            continue;
+        if (prop->is_goal && --unsolved_goals == 0)
+            return;
+        const vector<UnaryOperator *> &triggered_operators =
+            prop->precondition_of;
+        for (int i = 0; i < triggered_operators.size(); i++) {
+            UnaryOperator *unary_op = triggered_operators[i];
+            unary_op->unsatisfied_preconditions--;
+            unary_op->h_add_cost += prop_cost;
+            assert(unary_op->unsatisfied_preconditions >= 0);
+            if (unary_op->unsatisfied_preconditions == 0)
+                enqueue_if_necessary(unary_op->effect,
+                                     unary_op->h_add_cost, unary_op);
         }
     }
 }
