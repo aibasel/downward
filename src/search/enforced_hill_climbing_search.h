@@ -50,7 +50,7 @@ protected:
     void get_successors(const State &state, vector<const Operator *> &ops);
     void evaluate(const State &parent, const Operator *op, const State &state);
 public:
-    EnforcedHillClimbingSearch(Heuristic *heuristic_,
+    EnforcedHillClimbingSearch(const SearchEngineOptions &options, Heuristic *heuristic_,
                                PreferredUsage preferred_usage_, bool use_cost_for_bfs_,
                                int g_bound);
     virtual ~EnforcedHillClimbingSearch();

@@ -8,6 +8,15 @@ class Heuristic;
 #include "operator.h"
 #include "search_space.h"
 #include "search_progress.h"
+#include "operator_cost.h"
+
+struct SearchEngineOptions {
+    int cost_type;
+
+    SearchEngineOptions();
+
+    void add_option_to_parser(NamedOptionParser &option_parser);
+};
 
 class SearchEngine {
 public:
@@ -19,6 +28,7 @@ protected:
     SearchSpace search_space;
     SearchProgress search_progress;
     int bound;
+    OperatorCost cost_type;
 
     enum {FAILED, SOLVED, IN_PROGRESS};
     virtual void initialize() {}
@@ -27,7 +37,7 @@ protected:
     void set_plan(const Plan &plan);
     bool check_goal_and_set_plan(const State &state);
 public:
-    SearchEngine();
+    SearchEngine(const SearchEngineOptions &options);
     virtual ~SearchEngine();
     virtual void statistics() const;
     virtual void heuristic_statistics() const {}

@@ -15,10 +15,12 @@
 using namespace std;
 
 GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(
+    const SearchEngineOptions &options,
     OpenList<state_var_t *> *open,
     bool reopen_closed, bool pathmax_correction,
     bool use_multi_path_dependence_, ScalarEvaluator *f_eval, int g_bound)
-    : reopen_closed_nodes(reopen_closed),
+    : SearchEngine(options),
+      reopen_closed_nodes(reopen_closed),
       do_pathmax(pathmax_correction),
       use_multi_path_dependence(use_multi_path_dependence_),
       open_list(open), f_evaluator(f_eval) {
@@ -316,6 +318,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
+    SearchEngineOptions common_options;
     OpenListParser<state_var_t *> *p = OpenListParser<state_var_t *>::instance();
     OpenList<state_var_t *> *open = p->parse_open_list(config, start + 2, end,
                                                        dry_run);
@@ -334,6 +337,8 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+
+        common_options.add_option_to_parser(option_parser);
         option_parser.add_bool_option("reopen_closed", &reopen_closed,
                                       "reopen closed nodes");
         option_parser.add_bool_option("pathmax", &pathmax,
@@ -353,7 +358,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
 
     GeneralEagerBestFirstSearch *engine = 0;
     if (!dry_run) {
-        engine = new GeneralEagerBestFirstSearch(
+        engine = new GeneralEagerBestFirstSearch(common_options,
             open, reopen_closed, pathmax, false, f_eval, g_bound);
         engine->set_pref_operator_heuristics(preferred_list);
     }
@@ -366,6 +371,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
+    SearchEngineOptions common_options;
     ScalarEvaluator *eval = OptionParser::instance()->parse_scalar_evaluator(
         config, start + 2, end, dry_run);
     end++;
@@ -376,6 +382,8 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+
+        common_options.add_option_to_parser(option_parser);
 
         option_parser.add_bool_option("pathmax", &pathmax,
                                       "use pathmax correction");
@@ -404,8 +412,9 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
         OpenList<state_var_t *> *open = \
             new TieBreakingOpenList<state_var_t *>(evals, false, false);
 
-        engine = new GeneralEagerBestFirstSearch(open, true, pathmax, mpd,
-                                                 f_eval, numeric_limits<int>::max());
+        engine = new GeneralEagerBestFirstSearch(
+                         common_options, open, true, pathmax, mpd,
+                         f_eval, numeric_limits<int>::max());
     }
 
     return engine;
@@ -416,6 +425,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
+    SearchEngineOptions common_options;
     vector<ScalarEvaluator *> evals;
     OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
                                                           end, false, evals,
@@ -431,6 +441,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+        common_options.add_option_to_parser(option_parser);
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost,
@@ -462,8 +473,9 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
             open = new AlternationOpenList<state_var_t *>(inner_lists, boost);
         }
 
-        engine = new GeneralEagerBestFirstSearch(open, false, false, false,
-                                                 NULL, g_bound);
+        engine = new GeneralEagerBestFirstSearch(
+                common_options, open,
+                false, false, false, NULL, g_bound);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
