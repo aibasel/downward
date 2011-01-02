@@ -4,7 +4,6 @@
 #include "priority_queue.h"
 #include "relaxation_heuristic.h"
 #include <cassert>
-#include <ext/hash_set>
 
 class AdditiveHeuristic : public RelaxationHeuristic {
     AdaptiveQueue<Proposition *> queue;
