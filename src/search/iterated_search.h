@@ -32,7 +32,8 @@ class IteratedSearch : public SearchEngine {
     virtual void initialize();
     virtual int step();
 public:
-    IteratedSearch(const std::vector<std::string> &engine_config,
+    IteratedSearch(const SearchEngineOptions &options,
+                   const std::vector<std::string> &engine_config,
                    std::vector<int> engine_config_start,
                    bool pass_bound,
                    bool repeat_last_phase,

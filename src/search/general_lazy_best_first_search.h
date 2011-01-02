@@ -46,7 +46,8 @@ protected:
     void get_successor_operators(vector<const Operator *> &ops);
 public:
 
-    GeneralLazyBestFirstSearch(OpenList<OpenListEntryLazy> *open,
+    GeneralLazyBestFirstSearch(const SearchEngineOptions &options,
+                               OpenList<OpenListEntryLazy> *open,
                                bool reopen_closed, int g_bound);
     virtual ~GeneralLazyBestFirstSearch();
 

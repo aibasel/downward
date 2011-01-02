@@ -6,9 +6,12 @@
 #include "open_lists/tiebreaking_open_list.h"
 #include "pref_evaluator.h"
 
-EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(Heuristic *heuristic_,
-                                                       PreferredUsage preferred_usage_, bool use_cost_for_bfs_, int g_bound)
-    : heuristic(heuristic_), use_preferred(false),
+EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
+        const SearchEngineOptions &options,
+        Heuristic *heuristic_,
+        PreferredUsage preferred_usage_,
+        bool use_cost_for_bfs_, int g_bound)
+    : SearchEngine(options), heuristic(heuristic_), use_preferred(false),
       preferred_usage(preferred_usage_), use_cost_for_bfs(use_cost_for_bfs_),
       current_state(*g_initial_state), num_ehc_phases(0) {
     search_progress.add_heuristic(heuristic_);
@@ -234,6 +237,7 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
                                                  bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
+    SearchEngineOptions common_options;
     Heuristic *h = \
         OptionParser::instance()->parse_heuristic(config, start + 2, end,
                                                   dry_run);
@@ -252,6 +256,7 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+        common_options.add_option_to_parser(option_parser);
         option_parser.add_bool_option("bfs_use_cost",
                                       &use_cost_for_bfs_, "use cost for bfs");
         option_parser.add_int_option("preferred_usage",
@@ -275,7 +280,7 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
 
     EnforcedHillClimbingSearch *engine = 0;
     if (!dry_run) {
-        engine = new EnforcedHillClimbingSearch(h, preferred_usage_,
+        engine = new EnforcedHillClimbingSearch(common_options, h, preferred_usage_,
                                                 use_cost_for_bfs_, g_bound);
         engine->set_pref_operator_heuristics(preferred_list);
     }
