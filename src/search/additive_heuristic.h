@@ -7,8 +7,6 @@
 #include <ext/hash_set>
 
 class AdditiveHeuristic : public RelaxationHeuristic {
-    // BucketQueue<Proposition *> queue;
-    // HeapQueue<Proposition *> queue;
     AdaptiveQueue<Proposition *> queue;
 
     void setup_exploration_queue();
