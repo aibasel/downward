@@ -11,7 +11,11 @@ SearchEngine::SearchEngine(const SearchEngineOptions &options):
     search_space(static_cast<OperatorCost>(options.cost_type))
 {
     solved = false;
-    bound = numeric_limits<int>::max();
+    if (options.bound < 0) {
+        cerr << "error: negative cost bound (?): " << options.bound << endl;
+        exit(2);
+    }
+    bound = options.bound;
 
     if (options.cost_type < 0 || options.cost_type >= MAX_OPERATOR_COST) {
         cerr << "error: unknown operator cost type: " << options.cost_type << endl;
@@ -71,11 +75,17 @@ int SearchEngine::get_adjusted_cost(const Operator &op) const {
 
 
 SearchEngineOptions::SearchEngineOptions()
-    : cost_type(NORMAL) {
+    : cost_type(NORMAL),
+      bound(numeric_limits<int>::max())
+{
 }
 
 void SearchEngineOptions::add_option_to_parser(NamedOptionParser &option_parser) {
     option_parser.add_int_option("cost_type",
                                  &cost_type,
                                  "operator cost adjustment type");
+//TODO: add this back when we can support this properly with action cost adjustment
+//    option_parser.add_int_option("bound",
+//                                 &bound,
+//                                 "bound on plan cost");
 }

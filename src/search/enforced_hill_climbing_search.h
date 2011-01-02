@@ -51,8 +51,7 @@ protected:
     void evaluate(const State &parent, const Operator *op, const State &state);
 public:
     EnforcedHillClimbingSearch(const SearchEngineOptions &options, Heuristic *heuristic_,
-                               PreferredUsage preferred_usage_, bool use_cost_for_bfs_,
-                               int g_bound);
+                               PreferredUsage preferred_usage_, bool use_cost_for_bfs_);
     virtual ~EnforcedHillClimbingSearch();
     void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
 

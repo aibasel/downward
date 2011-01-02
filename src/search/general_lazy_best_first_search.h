@@ -48,7 +48,7 @@ public:
 
     GeneralLazyBestFirstSearch(const SearchEngineOptions &options,
                                OpenList<OpenListEntryLazy> *open,
-                               bool reopen_closed, int g_bound);
+                               bool reopen_closed);
     virtual ~GeneralLazyBestFirstSearch();
 
     virtual void statistics() const;
