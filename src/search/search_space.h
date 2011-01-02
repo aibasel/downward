@@ -7,6 +7,7 @@
 #include "state.h"
 #include "state_proxy.h"
 #include "search_node_info.h"
+#include "operator_cost.h"
 
 #include <vector>
 
@@ -17,8 +18,9 @@ class StateProxy;
 class SearchNode {
     state_var_t *state_buffer;
     SearchNodeInfo &info;
+    OperatorCost cost_type;
 public:
-    SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_);
+    SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_, OperatorCost cost_type_);
 
     state_var_t *get_state_buffer() {
         return state_buffer;
@@ -55,8 +57,9 @@ public:
 class SearchSpace {
     class HashTable;
     HashTable *nodes;
+    OperatorCost cost_type;
 public:
-    SearchSpace();
+    SearchSpace(OperatorCost cost_type_);
     ~SearchSpace();
     int size() const;
     SearchNode get_node(const State &state);

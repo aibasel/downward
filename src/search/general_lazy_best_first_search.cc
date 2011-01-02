@@ -123,7 +123,7 @@ void GeneralLazyBestFirstSearch::generate_successors() {
         search_space.get_node(current_state).get_state_buffer();
 
     for (int i = 0; i < operators.size(); i++) {
-        int new_g = current_g + operators[i]->get_cost();
+        int new_g = current_g + get_adjusted_cost(*operators[i]);
         bool is_preferred = operators[i]->is_marked();
         if (is_preferred)
             operators[i]->unmark();
@@ -148,7 +148,7 @@ int GeneralLazyBestFirstSearch::fetch_next_state() {
     State current_predecessor(current_predecessor_buffer);
     current_state = State(current_predecessor, *current_operator);
     current_g = search_space.get_node(current_predecessor).get_g() +
-                current_operator->get_cost();
+                get_adjusted_cost(*current_operator);
 
 
     return IN_PROGRESS;
