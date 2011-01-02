@@ -76,6 +76,7 @@ public:
 template<typename Value>
 class HeapQueue {
     typedef std::pair<int, Value> Entry;
+
     class compare_func {
         // TODO: Test impact of using greater<Entry> instead (which
         //       would use the Value elements for tie-breaking).
@@ -84,7 +85,21 @@ class HeapQueue {
             return lhs.first > rhs.first;
         }
     };
-    typedef std::priority_queue<Entry, std::vector<Entry>, compare_func> Heap;
+
+    class Heap : public std::priority_queue<
+        Entry, std::vector<Entry>, compare_func> {
+        // We inherit since priority_queue doesn't have clear() or swap().
+        // Inheriting gives us access to the protected element c, the
+        // underlying container.
+    public:
+        void clear() {
+            this->c.clear();
+        }
+        void clear_and_release_memory() {
+            this->c.swap(std::vector<Entry>());
+        }
+    };
+
     Heap heap;
 public:
     HeapQueue() {
@@ -112,7 +127,7 @@ public:
     }
 
     void clear_and_release_memory() {
-        heap.swap(Heap());
+        heap.clear_and_release_memory();
     }
 };
 
