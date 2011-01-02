@@ -11,6 +11,11 @@ SearchEngine::SearchEngine(const SearchEngineOptions &options) {
     solved = false;
     bound = numeric_limits<int>::max();
 
+    if (options.cost_type < 0 || options.cost_type >= MAX_OPERATOR_COST) {
+        cerr << "error: unknown operator cost type: " << options.cost_type << endl;
+        exit(2);
+    }
+
     cost_type = static_cast<OperatorCost>(options.cost_type);
 }
 
