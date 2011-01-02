@@ -36,6 +36,7 @@ protected:
 
     void set_plan(const Plan &plan);
     bool check_goal_and_set_plan(const State &state);
+    int get_adjusted_cost(const Operator &op) const;
 public:
     SearchEngine(const SearchEngineOptions &options);
     virtual ~SearchEngine();

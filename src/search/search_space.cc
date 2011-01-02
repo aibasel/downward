@@ -13,8 +13,8 @@ using namespace __gnu_cxx;
 
 
 
-SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_)
-    : state_buffer(state_buffer_), info(info_) {
+SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_, OperatorCost cost_type_)
+    : state_buffer(state_buffer_), info(info_), cost_type(cost_type_) {
 }
 
 State SearchNode::get_state() const {
@@ -74,7 +74,7 @@ void SearchNode::open(int h, const SearchNode &parent_node,
                       const Operator *parent_op) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
-    info.g = parent_node.info.g + parent_op->get_cost();
+    info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op,cost_type);
     info.h = h;
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
@@ -88,7 +88,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
     info.status = SearchNodeInfo::OPEN;
-    info.g = parent_node.info.g + parent_op->get_cost();
+    info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op,cost_type);
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
 }
@@ -100,7 +100,7 @@ void SearchNode::update_parent(const SearchNode &parent_node,
            info.status == SearchNodeInfo::CLOSED);
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
-    info.g = parent_node.info.g + parent_op->get_cost();
+    info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op,cost_type);
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
 }
@@ -136,7 +136,9 @@ class SearchSpace::HashTable
 };
 
 
-SearchSpace::SearchSpace() {
+SearchSpace::SearchSpace(OperatorCost cost_type_):
+    cost_type(cost_type_)
+{
     nodes = new HashTable;
 }
 
@@ -157,7 +159,7 @@ SearchNode SearchSpace::get_node(const State &state) {
         result.first->first.make_permanent();
     }
     HashTable::iterator iter = result.first;
-    return SearchNode(iter->first.state_data, iter->second);
+    return SearchNode(iter->first.state_data, iter->second, cost_type);
 }
 
 void SearchSpace::trace_path(const State &goal_state,

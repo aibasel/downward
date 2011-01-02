@@ -7,7 +7,9 @@ using namespace std;
 #include "timer.h"
 #include "option_parser.h"
 
-SearchEngine::SearchEngine(const SearchEngineOptions &options) {
+SearchEngine::SearchEngine(const SearchEngineOptions &options):
+    search_space(static_cast<OperatorCost>(options.cost_type))
+{
     solved = false;
     bound = numeric_limits<int>::max();
 
@@ -61,6 +63,10 @@ bool SearchEngine::check_goal_and_set_plan(const State &state) {
 void SearchEngine::save_plan_if_necessary() const {
     if (found_solution())
         save_plan(get_plan(), 0);
+}
+
+int SearchEngine::get_adjusted_cost(const Operator &op) const {
+    return get_adjusted_action_cost(op, cost_type);
 }
 
 
