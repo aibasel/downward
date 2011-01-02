@@ -36,6 +36,7 @@ public:
     void set_h_dirty();
     void clear_h_dirty();
     int get_g() const;
+    int get_real_g() const;
     int get_h() const;
     const state_var_t *get_parent_buffer() const;
 

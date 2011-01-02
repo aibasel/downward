@@ -36,7 +36,7 @@ void GeneralEagerBestFirstSearch::initialize() {
     //TODO children classes should output which kind of search
     cout << "Conducting best first search"
          << (reopen_closed_nodes ? " with" : " without")
-         << " reopening closed nodes, bound = " << bound
+         << " reopening closed nodes, (real) bound = " << bound
          << endl;
     if (do_pathmax)
         cout << "Using pathmax correction" << endl;
@@ -129,7 +129,7 @@ int GeneralEagerBestFirstSearch::step() {
     for (int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
 
-        if ((node.get_g() + get_adjusted_cost(*op)) >= bound)
+        if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
         State succ_state(s, *op);

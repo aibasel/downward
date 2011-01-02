@@ -22,7 +22,9 @@ GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(
       succ_mode(pref_first),
       current_state(*g_initial_state),
       current_predecessor_buffer(NULL), current_operator(NULL),
-      current_g(0) {
+      current_g(0),
+      current_real_g(0)
+{
 }
 
 GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {
@@ -40,7 +42,7 @@ GeneralLazyBestFirstSearch::set_pref_operator_heuristics(
 
 void GeneralLazyBestFirstSearch::initialize() {
     //TODO children classes should output which kind of search
-    cout << "Conducting lazy best first search, bound = " << bound << endl;
+    cout << "Conducting lazy best first search, (real) bound = " << bound << endl;
 
     assert(open_list != NULL);
     set<Heuristic *> hset;
@@ -105,8 +107,9 @@ void GeneralLazyBestFirstSearch::get_successor_operators(
                 ops.push_back(all_operators[i]);
     } else {
         for (int i = 0; i < preferred_operators.size(); i++)
-            if (!preferred_operators[i]->is_marked())
+            if (!preferred_operators[i]->is_marked()) {
                 preferred_operators[i]->mark();
+            }
         ops.swap(all_operators);
         if (succ_mode == shuffled)
             random_shuffle(ops.begin(), ops.end());
@@ -123,10 +126,11 @@ void GeneralLazyBestFirstSearch::generate_successors() {
 
     for (int i = 0; i < operators.size(); i++) {
         int new_g = current_g + get_adjusted_cost(*operators[i]);
+        int new_real_g = current_real_g + operators[i]->get_cost();
         bool is_preferred = operators[i]->is_marked();
         if (is_preferred)
             operators[i]->unmark();
-        if (new_g < bound) {
+        if (new_real_g < bound) {
             open_list->evaluate(new_g, is_preferred);
             open_list->insert(
                 make_pair(current_state_buffer, operators[i]));
@@ -145,9 +149,13 @@ int GeneralLazyBestFirstSearch::fetch_next_state() {
     current_predecessor_buffer = next.first;
     current_operator = next.second;
     State current_predecessor(current_predecessor_buffer);
+
+    assert(current_operator->is_applicable(current_predecessor));
+
     current_state = State(current_predecessor, *current_operator);
     current_g = search_space.get_node(current_predecessor).get_g() +
                 get_adjusted_cost(*current_operator);
+    current_real_g = search_space.get_node(current_predecessor).get_real_g() + current_operator->get_cost();
 
 
     return IN_PROGRESS;
