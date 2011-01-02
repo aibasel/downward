@@ -12,6 +12,7 @@ class Heuristic;
 
 struct SearchEngineOptions {
     int cost_type;
+    int bound;
 
     SearchEngineOptions();
 

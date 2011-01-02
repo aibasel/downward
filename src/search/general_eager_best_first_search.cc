@@ -18,13 +18,12 @@ GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(
     const SearchEngineOptions &options,
     OpenList<state_var_t *> *open,
     bool reopen_closed, bool pathmax_correction,
-    bool use_multi_path_dependence_, ScalarEvaluator *f_eval, int g_bound)
+    bool use_multi_path_dependence_, ScalarEvaluator *f_eval)
     : SearchEngine(options),
       reopen_closed_nodes(reopen_closed),
       do_pathmax(pathmax_correction),
       use_multi_path_dependence(use_multi_path_dependence_),
       open_list(open), f_evaluator(f_eval) {
-    bound = g_bound;
 }
 
 void
@@ -332,7 +331,6 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
     bool pathmax = false;
     ScalarEvaluator *f_eval = 0;
     vector<Heuristic *> preferred_list;
-    int g_bound = numeric_limits<int>::max();
 
     if (config[end] != ")") {
         end++;
@@ -345,8 +343,6 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
                                       "use pathmax correction");
         option_parser.add_scalar_evaluator_option(
             "progress_evaluator", &f_eval, "set evaluator for jump statistics", true);
-        option_parser.add_int_option("bound", &g_bound,
-                                     "depth bound on g-values", true);
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
 
@@ -359,7 +355,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
     GeneralEagerBestFirstSearch *engine = 0;
     if (!dry_run) {
         engine = new GeneralEagerBestFirstSearch(common_options,
-            open, reopen_closed, pathmax, false, f_eval, g_bound);
+            open, reopen_closed, pathmax, false, f_eval);
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
@@ -414,7 +410,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
 
         engine = new GeneralEagerBestFirstSearch(
                          common_options, open, true, pathmax, mpd,
-                         f_eval, numeric_limits<int>::max());
+                         f_eval);
     }
 
     return engine;
@@ -436,7 +432,6 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
 
     vector<Heuristic *> preferred_list;
     int boost = 0;
-    int g_bound = numeric_limits<int>::max();
 
     if (config[end] != ")") {
         end++;
@@ -446,8 +441,6 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost,
                                      "boost value for successful sub-open-lists");
-        //option_parser.add_int_option("bound", &g_bound,
-        //                             "depth bound on g-values",true);
         option_parser.parse_options(config, end, end, dry_run);
         end++;
     }
@@ -475,7 +468,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
 
         engine = new GeneralEagerBestFirstSearch(
                 common_options, open,
-                false, false, false, NULL, g_bound);
+                false, false, false, NULL);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
