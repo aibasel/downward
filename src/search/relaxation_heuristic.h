@@ -12,7 +12,7 @@ class Proposition;
 class UnaryOperator;
 
 struct UnaryOperator {
-    const Operator *op;
+    int operator_no; // -1 for axioms; index into g_operators otherwise
     std::vector<Proposition *> precondition;
     Proposition *effect;
     int base_cost;
@@ -21,8 +21,9 @@ struct UnaryOperator {
     int cost; // Used for h^max cost or h^add cost;
               // includes operator cost (base_cost)
     UnaryOperator(const std::vector<Proposition *> &pre, Proposition *eff,
-                  const Operator *the_op, int base)
-        : op(the_op), precondition(pre), effect(eff), base_cost(base) {}
+                  int operator_no_, int base)
+        : operator_no(operator_no_), precondition(pre), effect(eff),
+          base_cost(base) {}
 };
 
 struct Proposition {
@@ -44,7 +45,7 @@ struct Proposition {
 };
 
 class RelaxationHeuristic : public Heuristic {
-    void build_unary_operators(const Operator &op);
+    void build_unary_operators(const Operator &op, int operator_no);
     void simplify();
 protected:
     std::vector<UnaryOperator> unary_operators;

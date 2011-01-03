@@ -92,21 +92,22 @@ void AdditiveHeuristic::mark_preferred_operators(
         if (unary_op) { // We have not yet chained back to a start node.
             for (int i = 0; i < unary_op->precondition.size(); i++)
                 mark_preferred_operators(state, unary_op->precondition[i]);
-            if (unary_op->cost == unary_op->base_cost) {
+            int operator_no = unary_op->operator_no;
+            if (unary_op->cost == unary_op->base_cost && operator_no != -1) {
                 // Necessary condition for this being a preferred
                 // operator, which we use as a quick test before the
                 // more expensive applicability test.
-                // If we had no 0-cost operators (and axioms) to worry
+                // If we had no 0-cost operators and axioms to worry
                 // about, this would also be a sufficient condition.
-                const Operator *op = unary_op->op;
-                if (!op->is_axiom() && op->is_applicable(state))
+                const Operator *op = &g_operators[operator_no];
+                if (op->is_applicable(state))
                     set_preferred(op);
             }
         }
     }
 }
 
-int AdditiveHeuristic::compute_heuristic(const State &state) {
+int AdditiveHeuristic::compute_add_and_ff(const State &state) {
     setup_exploration_queue();
     setup_exploration_queue_state(state);
     relaxed_exploration();
@@ -118,11 +119,16 @@ int AdditiveHeuristic::compute_heuristic(const State &state) {
             return DEAD_END;
         total_cost += prop_cost;
     }
-
-    for (int i = 0; i < goal_propositions.size(); i++)
-        mark_preferred_operators(state, goal_propositions[i]);
-
     return total_cost;
+}
+
+int AdditiveHeuristic::compute_heuristic(const State &state) {
+    int h = compute_add_and_ff(state);
+    if (h != DEAD_END) {
+        for (int i = 0; i < goal_propositions.size(); i++)
+            mark_preferred_operators(state, goal_propositions[i]);
+    }
+    return h;
 }
 
 ScalarEvaluator *AdditiveHeuristic::create(

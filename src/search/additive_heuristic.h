@@ -25,6 +25,9 @@ class AdditiveHeuristic : public RelaxationHeuristic {
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
+
+    // Common part of h^add and h^ff computation.
+    int compute_add_and_ff(const State &state);
 public:
     AdditiveHeuristic(const HeuristicOptions &options);
     ~AdditiveHeuristic();
