@@ -14,11 +14,11 @@ class HSPMaxHeuristic : public RelaxationHeuristic {
 
     void enqueue_if_necessary(Proposition *prop, int cost) {
         assert(cost >= 0);
-        if (prop->h_max_cost == -1 || prop->h_max_cost > cost) {
-            prop->h_max_cost = cost;
+        if (prop->cost == -1 || prop->cost > cost) {
+            prop->cost = cost;
             queue.push(cost, prop);
         }
-        assert(prop->h_max_cost != -1 && prop->h_max_cost <= cost);
+        assert(prop->cost != -1 && prop->cost <= cost);
     }
 protected:
     virtual void initialize();

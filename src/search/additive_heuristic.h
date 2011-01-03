@@ -15,12 +15,12 @@ class AdditiveHeuristic : public RelaxationHeuristic {
 
     void enqueue_if_necessary(Proposition *prop, int cost, UnaryOperator *op) {
         assert(cost >= 0);
-        if (prop->h_add_cost == -1 || prop->h_add_cost > cost) {
-            prop->h_add_cost = cost;
+        if (prop->cost == -1 || prop->cost > cost) {
+            prop->cost = cost;
             prop->reached_by = op;
             queue.push(cost, prop);
         }
-        assert(prop->h_add_cost != -1 && prop->h_add_cost <= cost);
+        assert(prop->cost != -1 && prop->cost <= cost);
     }
 protected:
     virtual void initialize();

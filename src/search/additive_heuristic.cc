@@ -35,7 +35,7 @@ void AdditiveHeuristic::setup_exploration_queue() {
     for (int var = 0; var < propositions.size(); var++) {
         for (int value = 0; value < propositions[var].size(); value++) {
             Proposition &prop = propositions[var][value];
-            prop.h_add_cost = -1;
+            prop.cost = -1;
             prop.marked = false;
         }
     }
@@ -44,7 +44,7 @@ void AdditiveHeuristic::setup_exploration_queue() {
     for (int i = 0; i < unary_operators.size(); i++) {
         UnaryOperator &op = unary_operators[i];
         op.unsatisfied_preconditions = op.precondition.size();
-        op.h_add_cost = op.base_cost; // will be increased by precondition costs
+        op.cost = op.base_cost; // will be increased by precondition costs
 
         if (op.unsatisfied_preconditions == 0)
             enqueue_if_necessary(op.effect, op.base_cost, &op);
@@ -64,7 +64,7 @@ void AdditiveHeuristic::relaxed_exploration() {
         pair<int, Proposition *> top_pair = queue.pop();
         int distance = top_pair.first;
         Proposition *prop = top_pair.second;
-        int prop_cost = prop->h_add_cost;
+        int prop_cost = prop->cost;
         assert(prop_cost <= distance);
         if (prop_cost < distance)
             continue;
@@ -75,11 +75,11 @@ void AdditiveHeuristic::relaxed_exploration() {
         for (int i = 0; i < triggered_operators.size(); i++) {
             UnaryOperator *unary_op = triggered_operators[i];
             unary_op->unsatisfied_preconditions--;
-            unary_op->h_add_cost += prop_cost;
+            unary_op->cost += prop_cost;
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0)
                 enqueue_if_necessary(unary_op->effect,
-                                     unary_op->h_add_cost, unary_op);
+                                     unary_op->cost, unary_op);
         }
     }
 }
@@ -92,7 +92,7 @@ void AdditiveHeuristic::mark_preferred_operators(
         if (unary_op) { // We have not yet chained back to a start node.
             for (int i = 0; i < unary_op->precondition.size(); i++)
                 mark_preferred_operators(state, unary_op->precondition[i]);
-            if (unary_op->h_add_cost == unary_op->base_cost) {
+            if (unary_op->cost == unary_op->base_cost) {
                 // Necessary condition for this being a preferred
                 // operator, which we use as a quick test before the
                 // more expensive applicability test.
@@ -113,7 +113,7 @@ int AdditiveHeuristic::compute_heuristic(const State &state) {
 
     int total_cost = 0;
     for (int i = 0; i < goal_propositions.size(); i++) {
-        int prop_cost = goal_propositions[i]->h_add_cost;
+        int prop_cost = goal_propositions[i]->cost;
         if (prop_cost == -1)
             return DEAD_END;
         total_cost += prop_cost;

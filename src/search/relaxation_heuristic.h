@@ -18,8 +18,8 @@ struct UnaryOperator {
     int base_cost;
 
     int unsatisfied_preconditions;
-    int h_add_cost;
-    int h_max_cost;
+    int cost; // Used for h^max cost or h^add cost;
+              // includes operator cost (base_cost)
     UnaryOperator(const std::vector<Proposition *> &pre, Proposition *eff,
                   const Operator *the_op, int base)
         : op(the_op), precondition(pre), effect(eff), base_cost(base) {}
@@ -30,15 +30,14 @@ struct Proposition {
     int id;
     std::vector<UnaryOperator *> precondition_of;
 
-    int h_add_cost;
-    int h_max_cost;
+    int cost; // Used for h^max cost or h^add cost
     UnaryOperator *reached_by;
     bool marked; // used when computing preferred operators for h^add and h^FF
 
     Proposition(int id_) {
         id = id_;
         is_goal = false;
-        h_add_cost = -1;
+        cost = -1;
         reached_by = 0;
         marked = false;
     }

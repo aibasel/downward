@@ -47,7 +47,7 @@ void HSPMaxHeuristic::setup_exploration_queue() {
     for (int var = 0; var < propositions.size(); var++) {
         for (int value = 0; value < propositions[var].size(); value++) {
             Proposition &prop = propositions[var][value];
-            prop.h_max_cost = -1;
+            prop.cost = -1;
         }
     }
 
@@ -55,7 +55,7 @@ void HSPMaxHeuristic::setup_exploration_queue() {
     for (int i = 0; i < unary_operators.size(); i++) {
         UnaryOperator &op = unary_operators[i];
         op.unsatisfied_preconditions = op.precondition.size();
-        op.h_max_cost = op.base_cost; // will be increased by precondition costs
+        op.cost = op.base_cost; // will be increased by precondition costs
 
         if (op.unsatisfied_preconditions == 0)
             enqueue_if_necessary(op.effect, op.base_cost);
@@ -75,7 +75,7 @@ void HSPMaxHeuristic::relaxed_exploration() {
         pair<int, Proposition *> top_pair = queue.pop();
         int distance = top_pair.first;
         Proposition *prop = top_pair.second;
-        int prop_cost = prop->h_max_cost;
+        int prop_cost = prop->cost;
         assert(prop_cost <= distance);
         if (prop_cost < distance)
             continue;
@@ -86,11 +86,11 @@ void HSPMaxHeuristic::relaxed_exploration() {
         for (int i = 0; i < triggered_operators.size(); i++) {
             UnaryOperator *unary_op = triggered_operators[i];
             unary_op->unsatisfied_preconditions--;
-            unary_op->h_max_cost = max(unary_op->h_max_cost,
-                                       unary_op->base_cost + prop_cost);
+            unary_op->cost = max(unary_op->cost,
+                                 unary_op->base_cost + prop_cost);
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0)
-                enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost);
+                enqueue_if_necessary(unary_op->effect, unary_op->cost);
         }
     }
 }
@@ -102,7 +102,7 @@ int HSPMaxHeuristic::compute_heuristic(const State &state) {
 
     int total_cost = 0;
     for (int i = 0; i < goal_propositions.size(); i++) {
-        int prop_cost = goal_propositions[i]->h_max_cost;
+        int prop_cost = goal_propositions[i]->cost;
         if (prop_cost == -1)
             return DEAD_END;
         total_cost = max(total_cost, prop_cost);
