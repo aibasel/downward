@@ -38,9 +38,9 @@ void RelaxationHeuristic::initialize() {
 
     // Build unary operators for operators and axioms.
     for (int i = 0; i < g_operators.size(); i++)
-        build_unary_operators(g_operators[i]);
+        build_unary_operators(g_operators[i], i);
     for (int i = 0; i < g_axioms.size(); i++)
-        build_unary_operators(g_axioms[i]);
+        build_unary_operators(g_axioms[i], -1);
 
     // Simplify unary operators.
     simplify();
@@ -53,7 +53,7 @@ void RelaxationHeuristic::initialize() {
     }
 }
 
-void RelaxationHeuristic::build_unary_operators(const Operator &op) {
+void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
     int base_cost = op.is_axiom() ? 0 : get_adjusted_cost(op);
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
@@ -80,7 +80,7 @@ void RelaxationHeuristic::build_unary_operators(const Operator &op) {
             assert(eff_cond[j].prev >= 0 && eff_cond[j].prev < g_variable_domain[eff_cond[j].var]);
             precondition.push_back(&propositions[eff_cond[j].var][eff_cond[j].prev]);
         }
-        unary_operators.push_back(UnaryOperator(precondition, effect, &op, base_cost));
+        unary_operators.push_back(UnaryOperator(precondition, effect, op_no, base_cost));
         precondition.erase(precondition.end() - eff_cond.size(), precondition.end());
     }
 }
