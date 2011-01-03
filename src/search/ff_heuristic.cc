@@ -64,7 +64,7 @@ void FFHeuristic::setup_exploration_queue() {
     for (int var = 0; var < propositions.size(); var++) {
         for (int value = 0; value < propositions[var].size(); value++) {
             Proposition &prop = propositions[var][value];
-            prop.h_add_cost = -1;
+            prop.cost = -1;
         }
     }
 
@@ -72,15 +72,15 @@ void FFHeuristic::setup_exploration_queue() {
     for (int i = 0; i < unary_operators.size(); i++) {
         UnaryOperator &op = unary_operators[i];
         op.unsatisfied_preconditions = op.precondition.size();
-        op.h_add_cost = op.base_cost; // will be increased by precondition costs
+        op.cost = op.base_cost; // will be increased by precondition costs
 
         if (op.unsatisfied_preconditions == 0) {
-            if (op.effect->h_add_cost == -1) {
+            if (op.effect->cost == -1) {
                 *reachable_queue_write_pos++ = op.effect;
-                op.effect->h_add_cost = op.base_cost;
+                op.effect->cost = op.base_cost;
                 op.effect->reached_by = &op;
-            } else if (op.effect->h_add_cost > op.base_cost) {
-                op.effect->h_add_cost = op.base_cost;
+            } else if (op.effect->cost > op.base_cost) {
+                op.effect->cost = op.base_cost;
                 op.effect->reached_by = &op;
             }
         }
@@ -90,9 +90,9 @@ void FFHeuristic::setup_exploration_queue() {
 void FFHeuristic::setup_exploration_queue_state(const State &state) {
     for (int var = 0; var < propositions.size(); var++) {
         Proposition *init_prop = &propositions[var][state[var]];
-        if (init_prop->h_add_cost == -1)
+        if (init_prop->cost == -1)
             *reachable_queue_write_pos++ = init_prop;
-        init_prop->h_add_cost = 0;
+        init_prop->cost = 0;
         init_prop->reached_by = 0; // only needed for FF heuristic
     }
 }
@@ -101,24 +101,24 @@ void FFHeuristic::relaxed_exploration() {
     int unsolved_goals = goal_propositions.size();
     while (reachable_queue_read_pos != reachable_queue_write_pos) {
         Proposition *prop = *reachable_queue_read_pos++;
-        int prop_cost = prop->h_add_cost;
+        int prop_cost = prop->cost;
         if (prop->is_goal && --unsolved_goals == 0)
             break;
         const vector<UnaryOperator *> &triggered_operators = prop->precondition_of;
         for (int i = 0; i < triggered_operators.size(); i++) {
             UnaryOperator *unary_op = triggered_operators[i];
             unary_op->unsatisfied_preconditions--;
-            unary_op->h_add_cost += prop_cost;
+            unary_op->cost += prop_cost;
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0) {
                 Proposition *effect = unary_op->effect;
-                if (effect->h_add_cost == -1) {
+                if (effect->cost == -1) {
                     // Proposition reached for the first time: put into queue
-                    effect->h_add_cost = unary_op->h_add_cost;
+                    effect->cost = unary_op->cost;
                     effect->reached_by = unary_op;
                     *reachable_queue_write_pos++ = effect;
-                } else if (unary_op->h_add_cost < effect->h_add_cost) {
-                    effect->h_add_cost = unary_op->h_add_cost;
+                } else if (unary_op->cost < effect->cost) {
+                    effect->cost = unary_op->cost;
                     effect->reached_by = unary_op;
                 }
             }
@@ -131,7 +131,7 @@ int FFHeuristic::compute_hsp_add_heuristic() {
 
     int total_cost = 0;
     for (int i = 0; i < goal_propositions.size(); i++) {
-        int prop_cost = goal_propositions[i]->h_add_cost;
+        int prop_cost = goal_propositions[i]->cost;
         if (prop_cost == -1)
             return DEAD_END;
         total_cost += prop_cost;
@@ -163,7 +163,7 @@ void FFHeuristic::collect_relaxed_plan(Proposition *goal,
         // TODO: we should actually not add axioms to the relaxed plan.
         bool added_to_relaxed_plan = relaxed_plan.insert(op).second;
         if (added_to_relaxed_plan
-            && unary_op->h_add_cost == unary_op->base_cost
+            && unary_op->cost == unary_op->base_cost
             && !op->is_axiom()) {
             set_preferred(op); // This is a helpful action.
         }
