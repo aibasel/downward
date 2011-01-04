@@ -3,7 +3,6 @@
 
 #include "combining_evaluator.h"
 
-#include <string>
 #include <vector>
 
 class SumEvaluator : public CombiningEvaluator {
