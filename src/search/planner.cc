@@ -123,8 +123,7 @@ void register_parsers() {
                                                      IteratedSearch::create);
 
     // register combinations and g evaluator
-    OptionParser::instance()->register_scalar_evaluator("sum",
-                                                        SumEvaluator::create);
+    // (Note: some additional ones are already registered as plugins.)
     OptionParser::instance()->register_scalar_evaluator("weight",
                                                         WeightedEvaluator::create);
     OptionParser::instance()->register_scalar_evaluator("g",
