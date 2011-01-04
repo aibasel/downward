@@ -12,7 +12,7 @@ int get_adjusted_action_cost(const Operator &op, OperatorCost cost_type) {
         return 1;
     case PLUSONE:
         return op.get_cost() + 1;
-    case MAX_OPERATOR_COST:
+    default:
         cerr << "Unknown cost type" << endl;
         abort();
     }
