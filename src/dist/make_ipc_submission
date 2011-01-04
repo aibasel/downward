@@ -1,5 +1,14 @@
 #! /bin/bash
 
+## Set these variables to 1/0 do enable/disable the individual sanity
+## tests. Note that the "UNPACK" and "COMPILE" tests are prerequisites
+## for the following tests.
+
+SANITY_TEST_UNPACK=1
+SANITY_TEST_COMPILE=1
+SANITY_TEST_RUN_TEST1=1
+
+
 set -o errexit
 
 DIST=seq-opt-bjolp
@@ -24,18 +33,13 @@ chmod 755 $DIST/plan
 
 # Packaging
 echo "Packaging..."
+rm -f $PACKAGE
 tar czf $PACKAGE $DIST/
 rm -rf $DIST
 
 # Sanity tests
-echo "Sanity test: Unpacking package..."
-tar xzf $PACKAGE
 
-#testdir=`pwd`/data/tests
-
-#echo "Sanity test: Compiling..."
-#cd $DIST
-#./build
+testdir=`pwd`/data/tests
 
 function planner-test-run () {
     TESTID=$1
@@ -45,11 +49,22 @@ function planner-test-run () {
     rm -f output.sas output sas_plan
 }
 
-#planner-test-run test1
-#planner-test-run test2
+if [[ "$SANITY_TEST_UNPACK" == 1 ]]; then
+    echo "Sanity test: Unpacking package..."
+    tar xzf $PACKAGE
 
+    if [[ "$SANITY_TEST_COMPILE" == 1 ]]; then
+        echo "Sanity test: Compiling..."
+        cd $DIST
+        ./build
 
-echo "Cleaning up..."
-rm -rf $DIST
+        if [[ "$SANITY_TEST_RUN_TEST1" == 1 ]]; then
+            planner-test-run test1
+        fi
+    fi
+
+    echo "Cleaning up..."
+    rm -rf $DIST
+fi
 
 echo "Done: $PACKAGE"
