@@ -7,9 +7,9 @@ SEARCH="./src/search/downward"
 
 run_planner() {
     echo "1. Running translator"
-    "$TRANSLATE" "$1" "$2"
+    "$TRANSLATE" "$1" "$2" || exit 1
     echo "2. Running preprocessor"
-    "$PREPROCESS" < output.sas
+    "$PREPROCESS" < output.sas || exit 1
     echo "3. Running search"
     "$SEARCH" COMMANDLINEOPTIONS --plan-file "$3" < output
 }
@@ -36,4 +36,4 @@ check_input_files "$1" "$2"
 # Command line arguments seem to be fine, run planner
 run_planner "$1" "$2" "$3"
 
-# We do not clean up temporary files here (not necessary for IPC-2008)
+# We do not clean up temporary files here (not necessary for the IPC)
