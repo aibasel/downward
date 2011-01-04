@@ -488,7 +488,7 @@ class Invariant:
 
         for minimal_renaming in minimal_renamings:
             new_sys = system.combine(minimal_renaming)
-            if self.lhs_satisfiable(minimal_renaming, lhs_by_pred):
+            if not self.lhs_satisfiable(minimal_renaming, lhs_by_pred):
                 if not new_sys.is_solvable():
                     return False
             else:
