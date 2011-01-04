@@ -17,6 +17,7 @@ HEADERS = \
           globals.h \
           heuristic.h \
           iterated_search.h \
+          max_evaluator.h \
           operator.h \
           operator_cost.h \
           option_parser.h \
