@@ -52,6 +52,7 @@ def add_effect(tmp_effect, result):
             effect = tmp_effect.effect
         assert isinstance(effect, conditions.Literal)
         # Check for contradictory effects
+        condition = condition.simplified()
         new_effect = Effect(parameters, condition, effect)
         contradiction = Effect(parameters, condition, effect.negate())
         if not contradiction in result:
