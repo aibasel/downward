@@ -543,6 +543,7 @@ void NamedOptionParser::parse_heuristic_list_option(
     OptionParser *parser = OptionParser::instance();
 
     if (config[end] == "(" && config[end + 1] == ")") {
+        end++;
         return;
     } else if (config[end] == "(") {
         end++;
