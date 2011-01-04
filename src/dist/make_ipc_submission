@@ -31,7 +31,10 @@ cp build $DIST/
 sed "s/COMMANDLINEOPTIONS/$COMMANDLINEOPTIONS/" plan > $DIST/plan
 chmod 755 $DIST/plan
 
-echo "Switching -m32 compile option to -m64"
+echo "Removing LP code..."
+rm -r $DIST/src/search/lp
+
+echo "Changing -m32 compiler option to -m64"
 sed -i -e "s/-m32/-m64/g" $DIST/src/preprocess/Makefile
 sed -i -e "s/-m32/-m64/g" $DIST/src/search/Makefile
 
