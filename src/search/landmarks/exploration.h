@@ -3,6 +3,7 @@
 
 #include "../heuristic.h"
 #include "../globals.h"
+#include "../priority_queue.h"
 #include "landmarks_types.h"
 
 #include <vector>
@@ -92,8 +93,7 @@ private:
     std::vector<ExProposition *> goal_propositions;
     std::vector<ExProposition *> termination_propositions;
 
-    typedef std::vector<ExProposition *> Bucket;
-    std::vector<Bucket> reachable_queue;
+    AdaptiveQueue<ExProposition *> prop_queue;
 
     bool heuristic_recomputation_needed;
 
