@@ -164,6 +164,7 @@ void read_everything(istream &in) {
 void dump_everything() {
     cout << "Use metric? " << g_use_metric << endl;
     cout << "Min Action Cost: " << g_min_action_cost << endl;
+    cout << "Max Action Cost: " << g_max_action_cost << endl;
     cout << "Variables (" << g_variable_name.size() << "):" << endl;
     for (int i = 0; i < g_variable_name.size(); i++)
         cout << "  " << g_variable_name[i]
@@ -182,6 +183,7 @@ void dump_everything() {
 bool g_legacy_file_format = false; // TODO: Can rip this out after migration.
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
+int g_max_action_cost = 0;
 vector<string> g_variable_name;
 vector<int> g_variable_domain;
 vector<int> g_axiom_layers;
