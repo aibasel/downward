@@ -7,10 +7,10 @@
 #include "pref_evaluator.h"
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
-        const SearchEngineOptions &options,
-        Heuristic *heuristic_,
-        PreferredUsage preferred_usage_,
-        bool use_cost_for_bfs_)
+    const SearchEngineOptions &options,
+    Heuristic *heuristic_,
+    PreferredUsage preferred_usage_,
+    bool use_cost_for_bfs_)
     : SearchEngine(options), heuristic(heuristic_), use_preferred(false),
       preferred_usage(preferred_usage_), use_cost_for_bfs(use_cost_for_bfs_),
       current_state(*g_initial_state), num_ehc_phases(0) {

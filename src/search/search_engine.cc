@@ -7,9 +7,8 @@ using namespace std;
 #include "timer.h"
 #include "option_parser.h"
 
-SearchEngine::SearchEngine(const SearchEngineOptions &options):
-    search_space(static_cast<OperatorCost>(options.cost_type))
-{
+SearchEngine::SearchEngine(const SearchEngineOptions &options)
+    : search_space(static_cast<OperatorCost>(options.cost_type)) {
     solved = false;
     if (options.bound < 0) {
         cerr << "error: negative cost bound (?): " << options.bound << endl;
@@ -76,8 +75,7 @@ int SearchEngine::get_adjusted_cost(const Operator &op) const {
 
 SearchEngineOptions::SearchEngineOptions()
     : cost_type(NORMAL),
-      bound(numeric_limits<int>::max())
-{
+      bound(numeric_limits<int>::max()) {
 }
 
 void SearchEngineOptions::add_option_to_parser(NamedOptionParser &option_parser) {

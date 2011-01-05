@@ -23,8 +23,7 @@ GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(
       current_state(*g_initial_state),
       current_predecessor_buffer(NULL), current_operator(NULL),
       current_g(0),
-      current_real_g(0)
-{
+      current_real_g(0) {
 }
 
 GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {
@@ -110,6 +109,7 @@ void GeneralLazyBestFirstSearch::get_successor_operators(
             if (!preferred_operators[i]->is_marked()) {
                 preferred_operators[i]->mark();
             }
+
         ops.swap(all_operators);
         if (succ_mode == shuffled)
             random_shuffle(ops.begin(), ops.end());
@@ -265,7 +265,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
     GeneralLazyBestFirstSearch *engine = 0;
     if (!dry_run) {
         engine = new GeneralLazyBestFirstSearch(
-                common_options, open, reopen_closed);
+            common_options, open, reopen_closed);
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
@@ -327,7 +327,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
         }
 
         engine = new GeneralLazyBestFirstSearch(
-                common_options, open, false);
+            common_options, open, false);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
@@ -402,7 +402,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
         }
 
         engine = new GeneralLazyBestFirstSearch(
-                common_options, open, true);
+            common_options, open, true);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;

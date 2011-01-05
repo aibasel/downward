@@ -180,8 +180,8 @@ SearchEngine *IteratedSearch::create(
 
     IteratedSearch *engine = \
         new IteratedSearch(common_options,
-                config, engine_config_start, pass_bound,
-                repeat_last, continue_on_fail, continue_on_solve);
+                           config, engine_config_start, pass_bound,
+                           repeat_last, continue_on_fail, continue_on_solve);
 
     return engine;
 }
