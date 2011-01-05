@@ -461,8 +461,9 @@ class Invariant:
             lhs_by_pred[lit.predicate].append(lit)
 
         for del_effect in del_effects:
-            if self.del_effect_balances_add_effect(del_effect, add_effect,
-                minimal_renamings, inv_vars, lhs_by_pred):
+            self.remove_balanced_renamings(del_effect, add_effect,
+                inv_vars, lhs_by_pred, minimal_renamings)
+            if not minimal_renamings:
                 return False
         
         # Otherwise, the balance check fails => Generate new candidates.
@@ -475,29 +476,30 @@ class Invariant:
         part = self.predicate_to_part[add_effect.literal.predicate]
         for del_eff in [eff for eff in action.effects if eff.literal.negated]:
             if del_eff.literal.predicate not in self.predicate_to_part:
-                for match in part.possible_matches(add_effect.literal, del_eff.literal):
+                for match in part.possible_matches(add_effect.literal, 
+                                                   del_eff.literal):
                     enqueue_func(Invariant(self.parts.union((match,))))
 
-    def del_effect_balances_add_effect(self, del_effect, add_effect,
-        minimal_renamings, inv_vars, lhs_by_pred):
+    def remove_balanced_renamings(self, del_effect, add_effect,
+        inv_vars, lhs_by_pred, unbalanced_renamings):
+        """removes the renamings from unbalanced renamings for which
+           the del_effect balances the add_effect."""
         system = ConstraintSystem()
         system.ensure_inequality(add_effect.literal, del_effect.literal)
         system.ensure_cover(del_effect.literal, self, inv_vars)
-       
-        implies_system = self.imply_del_effect(del_effect, lhs_by_pred)
-
-        for minimal_renaming in minimal_renamings:
-            new_sys = system.combine(minimal_renaming)
-            if not self.lhs_satisfiable(minimal_renaming, lhs_by_pred):
-                if not new_sys.is_solvable():
-                    return False
-            else:
+        
+        for i in range(len(unbalanced_renamings) - 1, 0, -1):
+        # we use this strange way of "iterating" the unbalanced_renamings
+        # because we delete elements from the list and do not want to copy
+            renaming = unbalanced_renamings[i]
+            new_sys = system.combine(renaming)
+            if self.lhs_satisfiable(renaming, lhs_by_pred):
+                implies_system = self.imply_del_effect(del_effect, lhs_by_pred)
                 if not implies_system:
-                    return False
+                    continue
                 new_sys = new_sys.combine(implies_system)
-                if not new_sys.is_solvable():
-                    return False
-        return True
+            if new_sys.is_solvable():
+                del unbalanced_renamings[i]
    
     def lhs_satisfiable(self, renaming, lhs_by_pred):
         system = renaming.copy()
