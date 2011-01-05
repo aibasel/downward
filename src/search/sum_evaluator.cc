@@ -49,4 +49,4 @@ static ScalarEvaluator *create(const vector<string> &config,
         return new SumEvaluator(evals);
 }
 
-static ScalarEvaluatorPlugin pdb_heuristic_plugin("sum", create);
+static ScalarEvaluatorPlugin plugin("sum", create);
