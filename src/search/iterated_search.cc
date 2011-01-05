@@ -2,13 +2,15 @@
 #include <limits>
 
 IteratedSearch::IteratedSearch(
+    const SearchEngineOptions &options,
     const vector<string> &engine_config_,
     vector<int> engine_config_start_,
     bool pass_bound_,
     bool repeat_last_phase_,
     bool continue_on_fail_,
     bool continue_on_solve_)
-    : engine_config(engine_config_),
+    : SearchEngine(options),
+      engine_config(engine_config_),
       engine_config_start(engine_config_start_),
       pass_bound(pass_bound_),
       repeat_last_phase(repeat_last_phase_),
@@ -139,6 +141,8 @@ SearchEngine *IteratedSearch::create(
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
+    SearchEngineOptions common_options;
+
     vector<int> engine_config_start;
     OptionParser::instance()->parse_search_engine_list(config, start + 2,
                                                        end, false, engine_config_start, true);
@@ -155,6 +159,8 @@ SearchEngine *IteratedSearch::create(
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+        common_options.add_options_to_parser(option_parser);
+
         option_parser.add_bool_option("pass_bound", &pass_bound,
                                       "use bound from previous search");
         option_parser.add_bool_option("repeat_last", &repeat_last,
@@ -173,8 +179,9 @@ SearchEngine *IteratedSearch::create(
         return NULL;
 
     IteratedSearch *engine = \
-        new IteratedSearch(config, engine_config_start, pass_bound, repeat_last,
-                           continue_on_fail, continue_on_solve);
+        new IteratedSearch(common_options,
+                           config, engine_config_start, pass_bound,
+                           repeat_last, continue_on_fail, continue_on_solve);
 
     return engine;
 }

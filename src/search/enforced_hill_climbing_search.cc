@@ -6,14 +6,15 @@
 #include "open_lists/tiebreaking_open_list.h"
 #include "pref_evaluator.h"
 
-EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(Heuristic *heuristic_,
-                                                       PreferredUsage preferred_usage_, bool use_cost_for_bfs_, int g_bound)
-    : heuristic(heuristic_), use_preferred(false),
-      preferred_usage(preferred_usage_), use_cost_for_bfs(use_cost_for_bfs_),
+EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
+    const SearchEngineOptions &options,
+    Heuristic *heuristic_,
+    PreferredUsage preferred_usage_)
+    : SearchEngine(options), heuristic(heuristic_), use_preferred(false),
+      preferred_usage(preferred_usage_),
       current_state(*g_initial_state), num_ehc_phases(0) {
     search_progress.add_heuristic(heuristic_);
     g_evaluator = new GEvaluator();
-    bound = g_bound;
 }
 
 EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
@@ -48,7 +49,7 @@ void EnforcedHillClimbingSearch::initialize() {
              << (preferred_usage == RANK_PREFERRED_FIRST ? "ranking successors"
             : "pruning") << endl;
     }
-    cout << "g-bound = " << bound << endl;
+    cout << "(real) g-bound = " << bound << endl;
 
     SearchNode node = search_space.get_node(current_state);
     evaluate(node.get_state(), NULL, node.get_state());
@@ -127,9 +128,7 @@ int EnforcedHillClimbingSearch::step() {
     current_node.close();
 
     for (int i = 0; i < ops.size(); i++) {
-        int d = 1;
-        if (use_cost_for_bfs)
-            d = ops[i]->get_cost();
+        int d = get_adjusted_cost(*ops[i]);
         OpenListEntryEHC entry = make_pair(current_node.get_state_buffer(), make_pair(d, ops[i]));
         open_list->evaluate(d, ops[i]->is_marked());
         open_list->insert(entry);
@@ -145,7 +144,7 @@ int EnforcedHillClimbingSearch::ehc() {
         int d = next.second.first;
         const Operator *last_op = next.second.second;
 
-        if (search_space.get_node(last_parent).get_g() + last_op->get_cost() >= bound)
+        if (search_space.get_node(last_parent).get_real_g() + last_op->get_cost() >= bound)
             continue;
 
         State s(last_parent, *last_op);
@@ -185,9 +184,7 @@ int EnforcedHillClimbingSearch::ehc() {
 
                 node.close();
                 for (int i = 0; i < ops.size(); i++) {
-                    int new_d = d + 1;
-                    if (use_cost_for_bfs)
-                        new_d = d + ops[i]->get_cost();
+                    int new_d = d + get_adjusted_cost(*ops[i]);
                     OpenListEntryEHC entry = make_pair(node.get_state_buffer(), make_pair(new_d, ops[i]));
                     open_list->evaluate(new_d, ops[i]->is_marked());
                     open_list->insert(entry);
@@ -195,9 +192,6 @@ int EnforcedHillClimbingSearch::ehc() {
                 }
             }
         }
-        //else if ((search_space.get_node(last_parent).get_g() + last_op->get_cost()) < node.get_g()) {
-        //    node.reopen(search_space.get_node(last_parent), last_op);
-        //}
     }
     cout << "No solution - FAILED" << endl;
     return FAILED;
@@ -234,6 +228,7 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
                                                  bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
+    SearchEngineOptions common_options;
     Heuristic *h = \
         OptionParser::instance()->parse_heuristic(config, start + 2, end,
                                                   dry_run);
@@ -245,22 +240,17 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
     // parse options
 
     int pref_usage = 0;
-    bool use_cost_for_bfs_ = false;
-    int g_bound = numeric_limits<int>::max();
     vector<Heuristic *> preferred_list;
 
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
-        option_parser.add_bool_option("bfs_use_cost",
-                                      &use_cost_for_bfs_, "use cost for bfs");
+        common_options.add_options_to_parser(option_parser);
         option_parser.add_int_option("preferred_usage",
                                      &pref_usage,
                                      "preferred operator usage");
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
-        option_parser.add_int_option("bound", &g_bound,
-                                     "depth bound on g-values", true);
         option_parser.parse_options(config, end, end, dry_run);
         end++;
     }
@@ -275,8 +265,8 @@ SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
 
     EnforcedHillClimbingSearch *engine = 0;
     if (!dry_run) {
-        engine = new EnforcedHillClimbingSearch(h, preferred_usage_,
-                                                use_cost_for_bfs_, g_bound);
+        engine = new EnforcedHillClimbingSearch(
+            common_options, h, preferred_usage_);
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
