@@ -86,7 +86,6 @@ class LocalProblem {
     friend class ContextEnhancedAdditiveHeuristic;
     friend class LocalProblemNode;
     friend class LocalTransition;
-    enum {QUITE_A_LOT = 1000000};
 
     int base_priority;
 

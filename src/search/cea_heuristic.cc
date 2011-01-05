@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <limits>
 #include <vector>
 using namespace std;
 
@@ -65,7 +66,7 @@ void LocalTransition::on_source_expanded(const State &state) {
        the node that will tell us the correct value. */
 
     assert(source->cost >= 0);
-    assert(source->cost < LocalProblem::QUITE_A_LOT);
+    assert(source->cost < numeric_limits<int>::max());
 
     target_cost = source->cost + action_cost;
 
@@ -221,7 +222,7 @@ void LocalProblem::initialize(int base_priority_, int start_value,
 
     for (int to_value = 0; to_value < nodes.size(); to_value++) {
         nodes[to_value].expanded = false;
-        nodes[to_value].cost = QUITE_A_LOT;
+        nodes[to_value].cost = numeric_limits<int>::max();
         nodes[to_value].waiting_list.clear();
         nodes[to_value].reached_by = 0;
     }
@@ -235,7 +236,7 @@ void LocalProblem::initialize(int base_priority_, int start_value,
 }
 
 void LocalProblemNode::mark_helpful_transitions(const State &state) {
-    assert(cost >= 0 && cost < LocalProblem::QUITE_A_LOT);
+    assert(cost >= 0 && cost < numeric_limits<int>::max());
     if (reached_by) {
         LocalTransition *first_on_path = reached_by;
         reached_by = 0; // Clear to avoid revisiting this node later.
