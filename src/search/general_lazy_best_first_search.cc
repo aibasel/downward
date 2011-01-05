@@ -106,10 +106,8 @@ void GeneralLazyBestFirstSearch::get_successor_operators(
                 ops.push_back(all_operators[i]);
     } else {
         for (int i = 0; i < preferred_operators.size(); i++)
-            if (!preferred_operators[i]->is_marked()) {
+            if (!preferred_operators[i]->is_marked())
                 preferred_operators[i]->mark();
-            }
-
         ops.swap(all_operators);
         if (succ_mode == shuffled)
             random_shuffle(ops.begin(), ops.end());
@@ -149,14 +147,12 @@ int GeneralLazyBestFirstSearch::fetch_next_state() {
     current_predecessor_buffer = next.first;
     current_operator = next.second;
     State current_predecessor(current_predecessor_buffer);
-
     assert(current_operator->is_applicable(current_predecessor));
-
     current_state = State(current_predecessor, *current_operator);
-    current_g = search_space.get_node(current_predecessor).get_g() +
-                get_adjusted_cost(*current_operator);
-    current_real_g = search_space.get_node(current_predecessor).get_real_g() + current_operator->get_cost();
 
+    SearchNode pred_node = search_space.get_node(current_predecessor);
+    current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
+    current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
     return IN_PROGRESS;
 }
@@ -166,7 +162,8 @@ int GeneralLazyBestFirstSearch::step() {
     // - current_state is the next state for which we want to compute the heuristic.
     // - current_predecessor is a permanent pointer to the predecessor of that state.
     // - current_operator is the operator which leads to current_state from predecessor.
-    // - current_g is the g value of the current state
+    // - current_g is the g value of the current state according to the cost_type
+    // - current_g is the g value of the current state (using real costs)
 
 
     SearchNode node = search_space.get_node(current_state);
