@@ -177,7 +177,7 @@ int GeneralEagerBestFirstSearch::step() {
             int succ_h = heuristics[0]->get_heuristic();
             if (do_pathmax) {
                 if ((node.get_h() - get_adjusted_cost(*op)) > succ_h) {
-                    //cout << "Pathmax correction: " << succ_h << " -> " << node.get_h() - op->get_cost() << endl;
+                    //cout << "Pathmax correction: " << succ_h << " -> " << node.get_h() - get_adjusted_cost(*op) << endl;
                     succ_h = node.get_h() - get_adjusted_cost(*op);
                     heuristics[0]->set_evaluator_value(succ_h);
                     search_progress.inc_pathmax_corrections();
