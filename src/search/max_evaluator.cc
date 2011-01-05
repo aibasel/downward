@@ -48,4 +48,4 @@ static ScalarEvaluator *create(const vector<string> &config,
         return new MaxEvaluator(evals);
 }
 
-static ScalarEvaluatorPlugin pdb_heuristic_plugin("max", create);
+static ScalarEvaluatorPlugin plugin("max", create);
