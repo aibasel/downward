@@ -54,7 +54,7 @@ void RelaxationHeuristic::initialize() {
 }
 
 void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
-    int base_cost = op.is_axiom() ? 0 : get_adjusted_cost(op);
+    int base_cost = get_adjusted_cost(op);
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<Proposition *> precondition;
