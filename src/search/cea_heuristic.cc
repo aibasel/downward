@@ -223,6 +223,7 @@ void LocalProblem::initialize(int base_priority_, int start_value,
         nodes[to_value].expanded = false;
         nodes[to_value].cost = QUITE_A_LOT;
         nodes[to_value].waiting_list.clear();
+        nodes[to_value].reached_by = 0;
     }
 
     LocalProblemNode *start = &nodes[start_value];
