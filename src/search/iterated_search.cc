@@ -159,7 +159,7 @@ SearchEngine *IteratedSearch::create(
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
-        common_options.add_option_to_parser(option_parser);
+        common_options.add_options_to_parser(option_parser);
 
         option_parser.add_bool_option("pass_bound", &pass_bound,
                                       "use bound from previous search");

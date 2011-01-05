@@ -15,8 +15,9 @@ struct SearchEngineOptions {
     int bound;
 
     SearchEngineOptions();
+    ~SearchEngineOptions();
 
-    void add_option_to_parser(NamedOptionParser &option_parser);
+    void add_options_to_parser(NamedOptionParser &option_parser);
 };
 
 class SearchEngine {

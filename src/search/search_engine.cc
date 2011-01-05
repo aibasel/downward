@@ -11,7 +11,7 @@ SearchEngine::SearchEngine(const SearchEngineOptions &options)
     : search_space(static_cast<OperatorCost>(options.cost_type)) {
     solved = false;
     if (options.bound < 0) {
-        cerr << "error: negative cost bound (?): " << options.bound << endl;
+        cerr << "error: negative cost bound " << options.bound << endl;
         exit(2);
     }
     bound = options.bound;
@@ -78,7 +78,11 @@ SearchEngineOptions::SearchEngineOptions()
       bound(numeric_limits<int>::max()) {
 }
 
-void SearchEngineOptions::add_option_to_parser(NamedOptionParser &option_parser) {
+SearchEngineOptions::~SearchEngineOptions() {
+}
+
+void SearchEngineOptions::add_options_to_parser(
+    NamedOptionParser &option_parser) {
     option_parser.add_int_option("cost_type",
                                  &cost_type,
                                  "operator cost adjustment type");

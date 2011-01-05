@@ -249,7 +249,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
-        common_options.add_option_to_parser(option_parser);
+        common_options.add_options_to_parser(option_parser);
         option_parser.add_bool_option("reopen_closed", &reopen_closed,
                                       "reopen closed nodes");
         option_parser.add_heuristic_list_option(
@@ -293,7 +293,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
-        common_options.add_option_to_parser(option_parser);
+        common_options.add_options_to_parser(option_parser);
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost,
@@ -354,7 +354,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
-        common_options.add_option_to_parser(option_parser);
+        common_options.add_options_to_parser(option_parser);
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost,
