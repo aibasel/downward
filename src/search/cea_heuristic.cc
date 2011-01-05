@@ -172,7 +172,6 @@ void LocalProblem::build_nodes_for_variable(int var_no) {
         nodes.push_back(LocalProblemNode(this, num_parents));
 
     // Compile the DTG arcs into LocalTransition objects.
-    int action_cost = dtg->is_axiom ? 0 : 1;
     for (int value = 0; value < nodes.size(); value++) {
         LocalProblemNode &node = nodes[value];
         const ValueNode &dtg_node = dtg->nodes[value];
@@ -182,6 +181,7 @@ void LocalProblem::build_nodes_for_variable(int var_no) {
             LocalProblemNode &target = nodes[target_value];
             for (int j = 0; j < dtg_trans.cea_labels.size(); j++) {
                 const ValueTransitionLabel &label = dtg_trans.cea_labels[j];
+                int action_cost = g_HACK->get_adjusted_cost(*label.op);
                 LocalTransition trans(&node, &target, &label, action_cost);
                 node.outgoing_transitions.push_back(trans);
             }
@@ -243,9 +243,12 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
         if (reached_by->target_cost == reached_by->action_cost) {
             // Transition applicable, all preconditions achieved.
             const Operator *op = reached_by->label->op;
-            assert(!op->is_axiom());
-            assert(op->is_applicable(state));
-            g_HACK->set_preferred(op);
+            if (g_min_action_cost != 0 || op->is_applicable(state)) {
+                // If there are no zero-cost actions, the target_cost/
+                // action_cost test above already guarantees applicability.
+                assert(!op->is_axiom());
+                g_HACK->set_preferred(op);
+            }
         } else {
             // Recursively compute helpful transitions for precondition variables.
             const vector<LocalAssignment> &precond = reached_by->label->precond;
