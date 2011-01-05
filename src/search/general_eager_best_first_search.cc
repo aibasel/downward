@@ -355,7 +355,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
     GeneralEagerBestFirstSearch *engine = 0;
     if (!dry_run) {
         engine = new GeneralEagerBestFirstSearch(common_options,
-            open, reopen_closed, pathmax, false, f_eval);
+                                                 open, reopen_closed, pathmax, false, f_eval);
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
@@ -409,8 +409,8 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
             new TieBreakingOpenList<state_var_t *>(evals, false, false);
 
         engine = new GeneralEagerBestFirstSearch(
-                         common_options, open, true, pathmax, mpd,
-                         f_eval);
+            common_options, open, true, pathmax, mpd,
+            f_eval);
     }
 
     return engine;
@@ -467,8 +467,8 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
         }
 
         engine = new GeneralEagerBestFirstSearch(
-                common_options, open,
-                false, false, false, NULL);
+            common_options, open,
+            false, false, false, NULL);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
