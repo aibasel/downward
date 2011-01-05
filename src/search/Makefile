@@ -7,6 +7,7 @@ HEADERS = \
           best_first_search.h \
           causal_graph.h \
           closed_list.h \
+          combining_evaluator.h \
           domain_transition_graph.h \
           enforced_hill_climbing_search.h \
           exact_timer.h \
@@ -16,6 +17,7 @@ HEADERS = \
           globals.h \
           heuristic.h \
           iterated_search.h \
+          max_evaluator.h \
           operator.h \
           operator_cost.h \
           option_parser.h \
