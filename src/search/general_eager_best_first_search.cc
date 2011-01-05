@@ -76,7 +76,6 @@ void GeneralEagerBestFirstSearch::initialize() {
     search_progress.inc_evaluations(heuristics.size());
 
     if (open_list->is_dead_end()) {
-        assert(open_list->dead_end_is_reliable());
         cout << "Initial state is a dead end." << endl;
     } else {
         search_progress.get_initial_h_values();
