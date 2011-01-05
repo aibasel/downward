@@ -31,11 +31,7 @@ static ContextEnhancedAdditiveHeuristic *g_HACK = 0;
 
 inline void ContextEnhancedAdditiveHeuristic::add_to_heap(
     LocalProblemNode *node) {
-    int bucket_no = node->priority();
-    if (bucket_no >= buckets.size())
-        buckets.resize(max<size_t>(bucket_no + 1, 2 * buckets.size()));
-    buckets[bucket_no].push_back(node);
-    ++heap_size;
+    node_queue.push(node->priority(), node);
 }
 
 LocalTransition::LocalTransition(
@@ -274,7 +270,6 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     g_HACK = this;
     goal_problem = 0;
     goal_node = 0;
-    heap_size = -1;
 }
 
 ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
@@ -316,34 +311,25 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
 }
 
 void ContextEnhancedAdditiveHeuristic::initialize_heap() {
-    /* This was just "buckets.clear()", but it may be advantageous to
-       keep the empty buckets around so that there are fewer
-       reallocations. At least changing this from buckets.clear() gave
-       a significant speed boost (about 7%) for depots #10 on alfons.
-    */
-    for (int i = 0; i < buckets.size(); i++)
-        buckets[i].clear();
-    heap_size = 0;
+    node_queue.clear();
 }
 
 int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
-    for (int curr_priority = 0; heap_size != 0; curr_priority++) {
-        assert(curr_priority < buckets.size());
-        for (int pos = 0; pos < buckets[curr_priority].size(); pos++) {
-            LocalProblemNode *node = buckets[curr_priority][pos];
-            assert(node->owner->is_initialized());
-            if (node->priority() < curr_priority)
-                continue;
-            if (node == goal_node)
-                return node->cost;
+    while (!node_queue.empty()) {
+        pair<int, LocalProblemNode *> top_pair = node_queue.pop();
+        int curr_priority = top_pair.first;
+        LocalProblemNode *node = top_pair.second;
 
-            assert(node->priority() == curr_priority);
-            node->on_expand();
-            for (int i = 0; i < node->outgoing_transitions.size(); i++)
-                node->outgoing_transitions[i].on_source_expanded(state);
-        }
-        heap_size -= buckets[curr_priority].size();
-        buckets[curr_priority].clear();
+        assert(node->owner->is_initialized());
+        if (node->priority() < curr_priority)
+            continue;
+        if (node == goal_node)
+            return node->cost;
+
+        assert(node->priority() == curr_priority);
+        node->on_expand();
+        for (int i = 0; i < node->outgoing_transitions.size(); i++)
+            node->outgoing_transitions[i].on_source_expanded(state);
     }
     return DEAD_END;
 }

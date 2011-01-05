@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "heuristic.h"
+#include "priority_queue.h"
 
 class ValueTransitionLabel;
 class State;
@@ -51,7 +52,7 @@ class LocalProblemNode {
     inline int priority() const;
     // Nodes have both a "cost" and a "priority", which are related.
     // The cost is an estimate of how expensive it is to reach this
-    // node. The "priority" is the lowest bucket value in the overall
+    // node. The "priority" is the lowest cost value in the overall
     // cost computation for which this node will be important. It is
     // essentially the sum of the cost and a local-problem-specific
     // "base priority", which depends on where this local problem is
@@ -109,8 +110,7 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     LocalProblem *goal_problem;
     LocalProblemNode *goal_node;
 
-    std::vector<std::vector<LocalProblemNode *> > buckets;
-    int heap_size;
+    AdaptiveQueue<LocalProblemNode *> node_queue;
 
     int compute_costs(const State &state);
     void initialize_heap();
