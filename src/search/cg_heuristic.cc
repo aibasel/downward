@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <limits>
 #include <vector>
 using namespace std;
 
@@ -38,11 +39,13 @@ int CGHeuristic::compute_heuristic(const State &state) {
     for (int i = 0; i < g_goal.size(); i++) {
         int var_no = g_goal[i].first, from = state[var_no], to = g_goal[i].second;
         DomainTransitionGraph *dtg = g_transition_graphs[var_no];
-        heuristic += get_transition_cost(state, dtg, from, to);
-        if (heuristic >= QUITE_A_LOT)
+        int cost_for_goal = get_transition_cost(state, dtg, from, to);
+        if (cost_for_goal == numeric_limits<int>::max()) {
             return DEAD_END;
-        else
+        } else {
+            heuristic += cost_for_goal;
             mark_helpful_transitions(state, dtg, to);
+        }
     }
     return heuristic;
 }
@@ -94,7 +97,7 @@ int CGHeuristic::get_transition_cost(const State &state,
         int base_transition_cost = dtg->is_axiom ? 0 : 1;
 
         // Initialize data of initial node.
-        start->distances.resize(dtg->nodes.size(), QUITE_A_LOT);
+        start->distances.resize(dtg->nodes.size(), numeric_limits<int>::max());
         start->helpful_transitions.resize(dtg->nodes.size(), 0);
         start->distances[start_val] = 0;
         start->reached_from = 0;
@@ -148,8 +151,14 @@ int CGHeuristic::get_transition_cost(const State &state,
                                 int global_var = dtg->local_to_global_child[local_var];
                                 DomainTransitionGraph *precond_dtg =
                                     g_transition_graphs[global_var];
-                                new_distance += get_transition_cost(
+                                int recursive_cost = get_transition_cost(
                                     state, precond_dtg, current_val, precond[k].value);
+                                if (recursive_cost == numeric_limits<int>::max()) {
+                                    new_distance = numeric_limits<int>::max();
+                                    break;
+                                } else {
+                                    new_distance += recursive_cost;
+                                }
                             }
 
                             if (new_distance == 0)
@@ -189,7 +198,8 @@ int CGHeuristic::get_transition_cost(const State &state,
 
     // Fill cache.
     if (USE_CACHE && cache->is_cached(var_no)) {
-        assert(transition_cost == QUITE_A_LOT || start->helpful_transitions[goal_val]);
+        assert(transition_cost == numeric_limits<int>::max() ||
+               start->helpful_transitions[goal_val]);
         cache->store(var_no, state, start_val, goal_val, transition_cost);
         cache->store_helpful_transition(var_no, state, start_val, goal_val,
                                         start->helpful_transitions[goal_val]);
