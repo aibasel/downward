@@ -14,7 +14,6 @@ class CGHeuristic : public Heuristic {
     int cache_hits;
     int cache_misses;
 
-    enum {QUITE_A_LOT = 1000000};
     int helpful_transition_extraction_counter;
 
     void setup_domain_transition_graphs();
