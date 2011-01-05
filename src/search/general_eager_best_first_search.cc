@@ -166,7 +166,7 @@ int GeneralEagerBestFirstSearch::step() {
             // division of responsibilities is a bit tricky here -- we
             // may want to refactor this later.
             open_list->evaluate(node.get_g() + op->get_cost(), is_preferred);
-            bool dead_end = open_list->is_dead_end() && open_list->dead_end_is_reliable();
+            bool dead_end = open_list->is_dead_end();
             if (dead_end) {
                 succ_node.mark_as_dead_end();
                 continue;
@@ -260,7 +260,7 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
                 search_progress.inc_evaluations(heuristics.size());
 
                 open_list->evaluate(node.get_g(), false);
-                bool dead_end = open_list->is_dead_end() && open_list->dead_end_is_reliable();
+                bool dead_end = open_list->is_dead_end();
                 if (dead_end) {
                     node.mark_as_dead_end();
                     continue;
