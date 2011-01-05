@@ -94,8 +94,6 @@ int CGHeuristic::get_transition_cost(const State &state,
 
     ValueNode *start = &dtg->nodes[start_val];
     if (start->distances.empty()) {
-        int base_transition_cost = dtg->is_axiom ? 0 : 1;
-
         // Initialize data of initial node.
         start->distances.resize(dtg->nodes.size(), numeric_limits<int>::max());
         start->helpful_transitions.resize(dtg->nodes.size(), 0);
@@ -139,51 +137,51 @@ int CGHeuristic::get_transition_cost(const State &state,
                     ValueNode *target = transition->target;
                     int *target_distance_ptr = &start->distances[target->value];
 
-                    if (*target_distance_ptr > source_distance + base_transition_cost) {
-                        // Scan labels of the transition.
-                        for (int j = 0; j < transition->labels.size(); j++) {
-                            ValueTransitionLabel *label = &transition->labels[j];
-                            int new_distance = source_distance + base_transition_cost;
-                            vector<LocalAssignment> &precond = label->precond;
-                            for (int k = 0; k < precond.size(); k++) {
-                                int local_var = precond[k].local_var;
-                                int current_val = source->children_state[local_var];
-                                int global_var = dtg->local_to_global_child[local_var];
-                                DomainTransitionGraph *precond_dtg =
-                                    g_transition_graphs[global_var];
-                                int recursive_cost = get_transition_cost(
-                                    state, precond_dtg, current_val, precond[k].value);
-                                if (recursive_cost == numeric_limits<int>::max()) {
-                                    new_distance = numeric_limits<int>::max();
-                                    break;
-                                } else {
-                                    new_distance += recursive_cost;
-                                }
+                    // Scan labels of the transition.
+                    for (int j = 0; j < transition->labels.size(); j++) {
+                        ValueTransitionLabel *label = &transition->labels[j];
+                        int new_distance = source_distance + get_adjusted_cost(*label->op);
+                        vector<LocalAssignment> &precond = label->precond;
+                        for (int k = 0; k < precond.size(); k++) {
+                            if (new_distance >= *target_distance_ptr)
+                                break; // We already know this isn't an improved path.
+                            int local_var = precond[k].local_var;
+                            int current_val = source->children_state[local_var];
+                            int global_var = dtg->local_to_global_child[local_var];
+                            DomainTransitionGraph *precond_dtg =
+                                g_transition_graphs[global_var];
+                            int recursive_cost = get_transition_cost(
+                                state, precond_dtg, current_val, precond[k].value);
+                            if (recursive_cost == numeric_limits<int>::max())
+                                new_distance = numeric_limits<int>::max();
+                            else
+                                new_distance += recursive_cost;
+                        }
+
+                        if (new_distance == 0) {
+                            // HACK -- originally for axioms, but crashes without this
+                            new_distance = 1;
+                        }
+
+                        if (*target_distance_ptr > new_distance) {
+                            // Update node in heap and update its internal state.
+                            *target_distance_ptr = new_distance;
+                            target->reached_from = source;
+                            target->reached_by = label;
+
+                            if (current_helpful_transition == 0) {
+                                // This transition starts at the start node;
+                                // no helpful transitions recorded yet.
+                                start->helpful_transitions[target->value] = label;
+                            } else {
+                                start->helpful_transitions[target->value] = current_helpful_transition;
                             }
 
-                            if (new_distance == 0)
-                                new_distance = 1;  // HACK for axioms
-
-                            if (*target_distance_ptr > new_distance) {
-                                // Update node in heap and update its internal state.
-                                *target_distance_ptr = new_distance;
-                                target->reached_from = source;
-                                target->reached_by = label;
-
-                                if (current_helpful_transition == 0) {
-                                    // This transition starts at the start node;
-                                    // no helpful transitions recorded yet.
-                                    start->helpful_transitions[target->value] = label;
-                                } else {
-                                    start->helpful_transitions[target->value] = current_helpful_transition;
-                                }
-
-                                if (new_distance >= buckets.size())
-                                    buckets.resize(max(new_distance + 1,
-                                                       static_cast<int>(buckets.size()) * 2));
-                                buckets[new_distance].push_back(target);
-                                bucket_contents++;
-                            }
+                            if (new_distance >= buckets.size())
+                                buckets.resize(max(new_distance + 1,
+                                                   static_cast<int>(buckets.size()) * 2));
+                            buckets[new_distance].push_back(target);
+                            bucket_contents++;
                         }
                     }
                 }
