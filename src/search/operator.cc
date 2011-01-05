@@ -41,8 +41,6 @@ Operator::Operator(istream &in, bool axiom) {
         }
         g_min_action_cost = min(g_min_action_cost, cost);
 
-        // TODO: add option to increase all action costs by 1
-
         check_magic(in, "end_operator");
     } else {
         name = "<axiom>";
