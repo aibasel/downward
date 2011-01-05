@@ -488,7 +488,7 @@ class Invariant:
         system.ensure_inequality(add_effect.literal, del_effect.literal)
         system.ensure_cover(del_effect.literal, self, inv_vars)
         
-        for i in range(len(unbalanced_renamings) - 1, 0, -1):
+        for i in range(len(unbalanced_renamings) - 1, -1, -1):
         # we use this strange way of "iterating" the unbalanced_renamings
         # because we delete elements from the list and do not want to copy
             renaming = unbalanced_renamings[i]
