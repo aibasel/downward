@@ -75,7 +75,10 @@ class LocalProblemNode {
     LocalProblemNode(LocalProblem *owner, int children_state_size);
     void add_to_waiting_list(LocalTransition *transition);
     void on_expand();
+
     void mark_helpful_transitions(const State &state);
+    // Clears "reached_by" of visited nodes as a side effect to avoid
+    // recursing to the same node again.
 };
 
 

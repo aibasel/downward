@@ -236,9 +236,11 @@ void LocalProblem::initialize(int base_priority_, int start_value,
 void LocalProblemNode::mark_helpful_transitions(const State &state) {
     assert(cost >= 0 && cost < LocalProblem::QUITE_A_LOT);
     if (reached_by) {
-        if (reached_by->target_cost == reached_by->action_cost) {
+        LocalTransition *first_on_path = reached_by;
+        reached_by = 0; // Clear to avoid revisiting this node later.
+        if (first_on_path->target_cost == first_on_path->action_cost) {
             // Transition applicable, all preconditions achieved.
-            const Operator *op = reached_by->label->op;
+            const Operator *op = first_on_path->label->op;
             if (g_min_action_cost != 0 || op->is_applicable(state)) {
                 // If there are no zero-cost actions, the target_cost/
                 // action_cost test above already guarantees applicability.
@@ -247,7 +249,7 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
             }
         } else {
             // Recursively compute helpful transitions for precondition variables.
-            const vector<LocalAssignment> &precond = reached_by->label->precond;
+            const vector<LocalAssignment> &precond = first_on_path->label->precond;
             int *parent_vars = &*owner->causal_graph_parents->begin();
             for (int i = 0; i < precond.size(); i++) {
                 int precond_value = precond[i].value;
