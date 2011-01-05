@@ -33,8 +33,6 @@ protected:
     bool use_preferred;
     PreferredUsage preferred_usage;
 
-    bool use_cost_for_bfs;
-
     State current_state;
     int current_h;
     int current_g;
@@ -50,8 +48,9 @@ protected:
     void get_successors(const State &state, vector<const Operator *> &ops);
     void evaluate(const State &parent, const Operator *op, const State &state);
 public:
-    EnforcedHillClimbingSearch(const SearchEngineOptions &options, Heuristic *heuristic_,
-                               PreferredUsage preferred_usage_, bool use_cost_for_bfs_);
+    EnforcedHillClimbingSearch(
+        const SearchEngineOptions &options, Heuristic *heuristic_,
+        PreferredUsage preferred_usage_);
     virtual ~EnforcedHillClimbingSearch();
     void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
 

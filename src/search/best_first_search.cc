@@ -224,7 +224,7 @@ SearchEngine *BestFirstSearchEngine::create(const vector<string> &config,
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
-        common_options.add_option_to_parser(option_parser);
+        common_options.add_options_to_parser(option_parser);
 
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");

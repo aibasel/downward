@@ -336,7 +336,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
         end++;
         NamedOptionParser option_parser;
 
-        common_options.add_option_to_parser(option_parser);
+        common_options.add_options_to_parser(option_parser);
         option_parser.add_bool_option("reopen_closed", &reopen_closed,
                                       "reopen closed nodes");
         option_parser.add_bool_option("pathmax", &pathmax,
@@ -379,7 +379,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
         end++;
         NamedOptionParser option_parser;
 
-        common_options.add_option_to_parser(option_parser);
+        common_options.add_options_to_parser(option_parser);
 
         option_parser.add_bool_option("pathmax", &pathmax,
                                       "use pathmax correction");
@@ -436,7 +436,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
-        common_options.add_option_to_parser(option_parser);
+        common_options.add_options_to_parser(option_parser);
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost,
