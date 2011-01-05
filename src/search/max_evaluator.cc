@@ -1,4 +1,4 @@
-#include "sum_evaluator.h"
+#include "max_evaluator.h"
 
 #include "option_parser.h"
 #include "plugin.h"
@@ -8,19 +8,18 @@
 using namespace std;
 
 
-SumEvaluator::SumEvaluator(const vector<ScalarEvaluator *> &subevaluators)
+MaxEvaluator::MaxEvaluator(const vector<ScalarEvaluator *> &subevaluators)
     : CombiningEvaluator(subevaluators) {
 }
 
-SumEvaluator::~SumEvaluator() {
+MaxEvaluator::~MaxEvaluator() {
 }
 
-int SumEvaluator::combine_values(const vector<int> &values) {
+int MaxEvaluator::combine_values(const vector<int> &values) {
     int result = 0;
     for (size_t i = 0; i < values.size(); ++i) {
         assert(values[i] >= 0);
-        result += values[i];
-        assert(result >= 0); // Check against overflow.
+        result = max(result, values[i]);
     }
     return result;
 }
@@ -46,7 +45,7 @@ static ScalarEvaluator *create(const vector<string> &config,
     if (dry_run)
         return 0;
     else
-        return new SumEvaluator(evals);
+        return new MaxEvaluator(evals);
 }
 
-static ScalarEvaluatorPlugin plugin("sum", create);
+static ScalarEvaluatorPlugin plugin("max", create);

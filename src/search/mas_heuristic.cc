@@ -245,6 +245,19 @@ void MergeAndShrinkHeuristic::initialize() {
          << timer << "]" << endl
          << "initial h value: " << compute_heuristic(*g_initial_state)
          << endl;
+
+    /* TODO: The peak memory reported in the next line is wrong --
+             this seems to be the maximum over the memory amounts
+             required by the *last* abstraction of each iteration,
+             rather than the peaks of each iteration.
+             Abstraction::peak_memory doesn't seem to contain what
+             we're interested in -- need to set it based on the child
+             values for composite abstractions?
+
+       TODO: Since this memory estimate is just an estimate, might be a
+             good idea to complement it with a report on the peak memory
+             usage of the process as provided in utilities.h.
+    */
     cout << "Estimated peak memory: " << peak_memory << " bytes" << endl;
 }
 
