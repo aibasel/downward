@@ -107,6 +107,8 @@ class Effect(object):
             print "%sthen" % indent
             indent += "  "
         print "%s%s" % (indent, self.literal)
+    def copy(self):
+        return Effect(self.parameters, self.condition, self.literal)
     def uniquify_variables(self, type_map):
         renamings = {}
         self.parameters = [par.uniquify_name(type_map, renamings)
