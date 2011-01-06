@@ -22,7 +22,9 @@ static ScalarEvaluatorPlugin cg_heuristic_plugin("cg", CGHeuristic::create);
 
 
 CGHeuristic::CGHeuristic(const HeuristicOptions &options)
-    : Heuristic(options), cache(new CGCache), cache_hits(0), cache_misses(0),
+    : Heuristic(options),
+      bucket_queues(g_transition_graphs.size()),
+      cache(new CGCache), cache_hits(0), cache_misses(0),
       helpful_transition_extraction_counter(0) {
 }
 
@@ -96,16 +98,17 @@ int CGHeuristic::get_transition_cost(const State &state,
             start->children_state[i] = state[dtg->local_to_global_child[i]];
 
         // Initialize Heap for Dijkstra's algorithm.
-        vector<vector<ValueNode *> > buckets;
-        buckets.resize(10); // Arbitrary initial size, expanded as needed.
+        BucketQueue &bucket_queue = bucket_queues[var_no];
+        bucket_queue.clear();
         int bucket_contents = 1;
-        buckets[0].push_back(start);
+        bucket_queue.resize(1);
+        bucket_queue[0].push_back(start);
         int source_distance = 0;
 
         // Dijkstra algorithm main loop.
         while (bucket_contents) {
-            for (int pos = 0; pos < buckets[source_distance].size(); pos++) {
-                ValueNode *source = buckets[source_distance][pos];
+            for (int pos = 0; pos < bucket_queue[source_distance].size(); pos++) {
+                ValueNode *source = bucket_queue[source_distance][pos];
 
                 assert(start->distances[source->value] <= source_distance);
                 if (start->distances[source->value] < source_distance)
@@ -176,17 +179,17 @@ int CGHeuristic::get_transition_cost(const State &state,
                                 start->helpful_transitions[target->value] = current_helpful_transition;
                             }
 
-                            if (new_distance >= buckets.size())
-                                buckets.resize(max(new_distance + 1,
-                                                   static_cast<int>(buckets.size()) * 2));
-                            buckets[new_distance].push_back(target);
+                            if (new_distance >= bucket_queue.size())
+                                bucket_queue.resize(max(new_distance + 1,
+                                                   static_cast<int>(bucket_queue.size()) * 2));
+                            bucket_queue[new_distance].push_back(target);
                             bucket_contents++;
                         }
                     }
                 }
             }
-            bucket_contents -= buckets[source_distance].size();
-            buckets[source_distance].clear();
+            bucket_contents -= bucket_queue[source_distance].size();
+            bucket_queue[source_distance].clear();
             source_distance++;
         }
     }
