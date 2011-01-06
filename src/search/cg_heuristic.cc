@@ -63,15 +63,6 @@ void CGHeuristic::setup_domain_transition_graphs() {
     helpful_transition_extraction_counter++;
 }
 
-/*
-  TODO: A note on caching in get_transition_cost. It seems wasteful to
-  do so little caching. Why store costs from "start_val" to "goal_val"
-  only, when values have been computed from "start_val" to all values?
-
-  Check if this can be done better without causing problems with helpful
-  transitions etc. (But I don't see why this should cause any problems.)
-*/
-
 int CGHeuristic::get_transition_cost(const State &state,
                                      DomainTransitionGraph *dtg, int start_val,
                                      int goal_val) {
@@ -81,7 +72,8 @@ int CGHeuristic::get_transition_cost(const State &state,
     int var_no = dtg->var;
 
     // Check cache.
-    if (USE_CACHE && cache->is_cached(var_no)) {
+    bool use_the_cache = USE_CACHE && cache->is_cached(var_no);
+    if (use_the_cache) {
         int cached_val = cache->lookup(var_no, state, start_val, goal_val);
         if (cached_val != CGCache::NOT_COMPUTED) {
             ++cache_hits;
@@ -199,18 +191,21 @@ int CGHeuristic::get_transition_cost(const State &state,
         }
     }
 
-    int transition_cost = start->distances[goal_val];
-
-    // Fill cache.
-    if (USE_CACHE && cache->is_cached(var_no)) {
-        assert(transition_cost == numeric_limits<int>::max() ||
-               start->helpful_transitions[goal_val]);
-        cache->store(var_no, state, start_val, goal_val, transition_cost);
-        cache->store_helpful_transition(var_no, state, start_val, goal_val,
-                                        start->helpful_transitions[goal_val]);
+    if (use_the_cache) {
+        for (int val = 0; val < start->distances.size(); val++) {
+            if (val == start_val)
+                continue;
+            int distance = start->distances[val];
+            ValueTransitionLabel *helpful = start->helpful_transitions[val];
+            // We should have a helpful transition iff distance is infinite.
+            assert((distance == numeric_limits<int>::max()) == !helpful);
+            cache->store(var_no, state, start_val, val, distance);
+            cache->store_helpful_transition(
+                var_no, state, start_val, val, helpful);
+        }
     }
 
-    return transition_cost;
+    return start->distances[goal_val];
 }
 
 void CGHeuristic::mark_helpful_transitions(const State &state,
