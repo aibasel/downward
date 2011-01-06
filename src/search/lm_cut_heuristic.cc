@@ -73,7 +73,6 @@ void LandmarkCutHeuristic::initialize() {
 }
 
 void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
-    int base_cost = get_adjusted_cost(op);
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<RelaxedProposition *> precondition;
@@ -102,7 +101,7 @@ void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
                                        pre_post[i].pre]);
         effects.push_back(&propositions[pre_post[i].var][pre_post[i].post]);
     }
-    add_relaxed_operator(precondition, effects, &op, base_cost);
+    add_relaxed_operator(precondition, effects, &op, get_adjusted_cost(op));
 }
 
 void LandmarkCutHeuristic::add_relaxed_operator(
@@ -297,7 +296,7 @@ void LandmarkCutHeuristic::validate_h_max() const {
     // when assertions are switched off anyway.
     for (int i = 0; i < relaxed_operators.size(); i++) {
         const RelaxedOperator *op = &relaxed_operators[i];
-        const vector<RelaxedProposition *> prec = op->precondition;
+        const vector<RelaxedProposition *> &prec = op->precondition;
         if (op->unsatisfied_preconditions) {
             bool reachable = true;
             for (int j = 0; j < prec.size(); j++) {
