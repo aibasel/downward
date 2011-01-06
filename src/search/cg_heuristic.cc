@@ -23,12 +23,16 @@ static ScalarEvaluatorPlugin cg_heuristic_plugin("cg", CGHeuristic::create);
 
 CGHeuristic::CGHeuristic(const HeuristicOptions &options)
     : Heuristic(options),
-      bucket_queues(g_transition_graphs.size()),
       cache(new CGCache), cache_hits(0), cache_misses(0),
       helpful_transition_extraction_counter(0) {
+    prio_queues.reserve(g_transition_graphs.size());
+    for (int i = 0; i < g_transition_graphs.size(); ++i)
+        prio_queues.push_back(new AdaptiveQueue<ValueNode *>);
 }
 
 CGHeuristic::~CGHeuristic() {
+    for (int i = 0; i < prio_queues.size(); ++i)
+        delete prio_queues[i];
 }
 
 void CGHeuristic::initialize() {
@@ -98,99 +102,90 @@ int CGHeuristic::get_transition_cost(const State &state,
             start->children_state[i] = state[dtg->local_to_global_child[i]];
 
         // Initialize Heap for Dijkstra's algorithm.
-        BucketQueue &bucket_queue = bucket_queues[var_no];
-        bucket_queue.clear();
-        int bucket_contents = 1;
-        bucket_queue.resize(1);
-        bucket_queue[0].push_back(start);
-        int source_distance = 0;
+        AdaptiveQueue<ValueNode *> &prio_queue = *prio_queues[var_no];
+        prio_queue.clear();
+        prio_queue.push(0, start);
 
         // Dijkstra algorithm main loop.
-        while (bucket_contents) {
-            for (int pos = 0; pos < bucket_queue[source_distance].size(); pos++) {
-                ValueNode *source = bucket_queue[source_distance][pos];
+        while (!prio_queue.empty()) {
+            pair<int, ValueNode *> top_pair = prio_queue.pop();
+            int source_distance = top_pair.first;
+            ValueNode *source = top_pair.second;
 
-                assert(start->distances[source->value] <= source_distance);
-                if (start->distances[source->value] < source_distance)
-                    continue;
+            assert(start->distances[source->value] <= source_distance);
+            if (start->distances[source->value] < source_distance)
+                continue;
 
-                ValueTransitionLabel *current_helpful_transition =
-                    start->helpful_transitions[source->value];
+            ValueTransitionLabel *current_helpful_transition =
+                start->helpful_transitions[source->value];
 
-                // Set children state for all nodes but the initial.
-                if (source->value != start_val) {
-                    source->children_state = source->reached_from->children_state;
-                    vector<LocalAssignment> &precond = source->reached_by->precond;
-                    for (int k = 0; k < precond.size(); k++)
-                        source->children_state[precond[k].local_var] = precond[k].value;
-                }
+            // Set children state for all nodes but the initial.
+            if (source->value != start_val) {
+                source->children_state = source->reached_from->children_state;
+                vector<LocalAssignment> &precond = source->reached_by->precond;
+                for (int k = 0; k < precond.size(); k++)
+                    source->children_state[precond[k].local_var] = precond[k].value;
+            }
 
-                // Scan outgoing transitions.
-                for (int i = 0; i < source->transitions.size(); i++) {
-                    ValueTransition *transition = &source->transitions[i];
-                    ValueNode *target = transition->target;
-                    int *target_distance_ptr = &start->distances[target->value];
+            // Scan outgoing transitions.
+            for (int i = 0; i < source->transitions.size(); i++) {
+                ValueTransition *transition = &source->transitions[i];
+                ValueNode *target = transition->target;
+                int *target_distance_ptr = &start->distances[target->value];
 
-                    // Scan labels of the transition.
-                    for (int j = 0; j < transition->labels.size(); j++) {
-                        ValueTransitionLabel *label = &transition->labels[j];
-                        int new_distance = source_distance + get_adjusted_cost(*label->op);
-                        vector<LocalAssignment> &precond = label->precond;
-                        for (int k = 0; k < precond.size(); k++) {
-                            if (new_distance >= *target_distance_ptr)
-                                break; // We already know this isn't an improved path.
-                            int local_var = precond[k].local_var;
-                            int current_val = source->children_state[local_var];
-                            int global_var = dtg->local_to_global_child[local_var];
-                            DomainTransitionGraph *precond_dtg =
-                                g_transition_graphs[global_var];
-                            int recursive_cost = get_transition_cost(
-                                state, precond_dtg, current_val, precond[k].value);
-                            if (recursive_cost == numeric_limits<int>::max())
-                                new_distance = numeric_limits<int>::max();
-                            else
-                                new_distance += recursive_cost;
+                // Scan labels of the transition.
+                for (int j = 0; j < transition->labels.size(); j++) {
+                    ValueTransitionLabel *label = &transition->labels[j];
+                    int new_distance = source_distance + get_adjusted_cost(*label->op);
+                    vector<LocalAssignment> &precond = label->precond;
+                    for (int k = 0; k < precond.size(); k++) {
+                        if (new_distance >= *target_distance_ptr)
+                            break;  // We already know this isn't an improved path.
+                        int local_var = precond[k].local_var;
+                        int current_val = source->children_state[local_var];
+                        int global_var = dtg->local_to_global_child[local_var];
+                        DomainTransitionGraph *precond_dtg =
+                            g_transition_graphs[global_var];
+                        int recursive_cost = get_transition_cost(
+                            state, precond_dtg, current_val, precond[k].value);
+                        if (recursive_cost == numeric_limits<int>::max())
+                            new_distance = numeric_limits<int>::max();
+                        else
+                            new_distance += recursive_cost;
+                    }
+
+                    if (new_distance < g_min_action_cost) {
+                        /*
+                          If the cost is lower than the min action
+                          cost, we know we're too optimistic, so we
+                          might as well increase it. This helps quite
+                          a bit in PSR-Large, apparently, which is why
+                          this is in, but this should probably an
+                          option.
+
+                          TODO: Evaluate impact of this.
+                        */
+                        new_distance = g_min_action_cost;
+                    }
+
+                    if (*target_distance_ptr > new_distance) {
+                        // Update node in heap and update its internal state.
+                        *target_distance_ptr = new_distance;
+                        target->reached_from = source;
+                        target->reached_by = label;
+
+                        if (current_helpful_transition == 0) {
+                            // This transition starts at the start node;
+                            // no helpful transitions recorded yet.
+                            start->helpful_transitions[target->value] = label;
+                        } else {
+                            start->helpful_transitions[target->value] = current_helpful_transition;
                         }
 
-                        if (new_distance < g_min_action_cost) {
-                            /*
-                              If the cost is lower than the min action
-                              cost, we know we're too optimistic, so
-                              we might as well increase it. This helps
-                              quite a bit in PSR-Large, apparently,
-                              which is why this is in, but this should
-                              probably an option.
-                              TODO: Evaluate impact of this.
-                            */
-                            new_distance = g_min_action_cost;
-                        }
-
-                        if (*target_distance_ptr > new_distance) {
-                            // Update node in heap and update its internal state.
-                            *target_distance_ptr = new_distance;
-                            target->reached_from = source;
-                            target->reached_by = label;
-
-                            if (current_helpful_transition == 0) {
-                                // This transition starts at the start node;
-                                // no helpful transitions recorded yet.
-                                start->helpful_transitions[target->value] = label;
-                            } else {
-                                start->helpful_transitions[target->value] = current_helpful_transition;
-                            }
-
-                            if (new_distance >= bucket_queue.size())
-                                bucket_queue.resize(max(new_distance + 1,
-                                                   static_cast<int>(bucket_queue.size()) * 2));
-                            bucket_queue[new_distance].push_back(target);
-                            bucket_contents++;
-                        }
+                        prio_queue.push(new_distance, target);
                     }
                 }
             }
-            bucket_contents -= bucket_queue[source_distance].size();
-            bucket_queue[source_distance].clear();
-            source_distance++;
         }
     }
 
