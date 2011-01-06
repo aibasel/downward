@@ -2,6 +2,7 @@
 #define LM_CUT_HEURISTIC_H
 
 #include "heuristic.h"
+#include "priority_queue.h"
 
 #include <algorithm>
 #include <cassert>
@@ -84,17 +85,18 @@ struct RelaxedProposition {
        this for tie breaking, and it led to better landmark extraction
        than just using the cost. However, the Python implementation
        used a heap for the priority queue whereas we use a bucket
-       implementation, which automatically gets a lot of tie-breaking
-       by depth anyway (although not complete tie-breaking on depth --
-       if we add a proposition from cost/depth (4, 9) with (+1,+1),
-       we'll process it before one which is added from cost/depth
-       (5,5) with (+0,+1). The disadvantage of using depth is that we
-       would need a more complicated open queue implementation -- however,
-       in the unit action cost case, we might exploit that we never need
-       to keep more than the current and next cost layer in memory, and
-       simply use two bucket vectors (for two costs, and arbitrarily many
-       depths). See if the init h values degrade compared to Python without
-       explicit depth tie-breaking, then decide.
+       implementation [NOTE: no longer true], which automatically gets
+       a lot of tie-breaking by depth anyway (although not complete
+       tie-breaking on depth -- if we add a proposition from
+       cost/depth (4, 9) with (+1,+1), we'll process it before one
+       which is added from cost/depth (5,5) with (+0,+1). The
+       disadvantage of using depth is that we would need a more
+       complicated open queue implementation -- however, in the unit
+       action cost case, we might exploit that we never need to keep
+       more than the current and next cost layer in memory, and simply
+       use two bucket vectors (for two costs, and arbitrarily many
+       depths). See if the init h values degrade compared to Python
+       without explicit depth tie-breaking, then decide.
     */
 
     RelaxedProposition() {
@@ -102,13 +104,11 @@ struct RelaxedProposition {
 };
 
 class LandmarkCutHeuristic : public Heuristic {
-    typedef std::vector<RelaxedProposition *> Bucket;
-
     std::vector<RelaxedOperator> relaxed_operators;
     std::vector<std::vector<RelaxedProposition> > propositions;
     RelaxedProposition artificial_precondition;
     RelaxedProposition artificial_goal;
-    std::vector<Bucket> reachable_queue;
+    AdaptiveQueue<RelaxedProposition *> priority_queue;
     int iteration_limit;
 
     virtual void initialize();
@@ -129,9 +129,7 @@ class LandmarkCutHeuristic : public Heuristic {
         if (prop->status == UNREACHED || prop->h_max_cost > cost) {
             prop->status = REACHED;
             prop->h_max_cost = cost;
-            if (cost >= reachable_queue.size())
-                reachable_queue.resize(cost + 1);
-            reachable_queue[cost].push_back(prop);
+            priority_queue.push(cost, prop);
         }
     }
 
