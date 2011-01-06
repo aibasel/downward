@@ -4,12 +4,17 @@
 #include "heuristic.h"
 
 #include <string>
+#include <vector>
 
 class CGCache;
 class DomainTransitionGraph;
 class State;
+class ValueNode;
 
 class CGHeuristic : public Heuristic {
+    typedef std::vector<std::vector<ValueNode *> > BucketQueue;
+    std::vector<BucketQueue> bucket_queues;
+
     CGCache *cache;
     int cache_hits;
     int cache_misses;
