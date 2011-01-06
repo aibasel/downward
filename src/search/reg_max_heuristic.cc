@@ -1,4 +1,4 @@
-#include "reg_max_heuristic.h"
+#include "ipc_max_heuristic.h"
 
 #include <limits>
 
@@ -6,18 +6,18 @@
 #include "globals.h"
 #include "plugin.h"
 
-static ScalarEvaluatorPlugin reg_max_heuristic_plugin(
-    "max", RegMaxHeuristic::create);
+static ScalarEvaluatorPlugin reg_ipc_heuristic_plugin(
+    "max", IPCMaxHeuristic::create);
 
 
-RegMaxHeuristic::RegMaxHeuristic(const HeuristicOptions &options, const std::vector<Heuristic *> &evals)
+IPCMaxHeuristic::IPCMaxHeuristic(const HeuristicOptions &options, const std::vector<Heuristic *> &evals)
     : Heuristic(options), evaluators(evals) {
 }
 
-RegMaxHeuristic::~RegMaxHeuristic() {
+IPCMaxHeuristic::~IPCMaxHeuristic() {
 }
 
-int RegMaxHeuristic::compute_heuristic(const State &state) {
+int IPCMaxHeuristic::compute_heuristic(const State &state) {
     dead_end = false;
     dead_end_reliable = false;
     value = 0;
@@ -41,7 +41,7 @@ int RegMaxHeuristic::compute_heuristic(const State &state) {
     return value;
 }
 
-bool RegMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
+bool IPCMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
                                   const State &state) {
     int ret = false;
     int val;
@@ -52,7 +52,7 @@ bool RegMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
     return ret;
 }
 
-ScalarEvaluator *RegMaxHeuristic::create(const std::vector<string> &config, int start, int &end, bool dry_run) {
+ScalarEvaluator *IPCMaxHeuristic::create(const std::vector<string> &config, int start, int &end, bool dry_run) {
     if (config[start + 1] != "(") {
         throw ParseError(start + 1);
     }
@@ -85,5 +85,5 @@ ScalarEvaluator *RegMaxHeuristic::create(const std::vector<string> &config, int 
     if (dry_run)
         return 0;
     else
-        return new RegMaxHeuristic(common_options, heuristics_);
+        return new IPCMaxHeuristic(common_options, heuristics_);
 }
