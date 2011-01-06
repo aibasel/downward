@@ -1,17 +1,21 @@
 #include "blind_search_heuristic.h"
 
 #include "globals.h"
+#include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "state.h"
 
-
-static ScalarEvaluatorPlugin blind_search_heuristic_plugin(
-    "blind", BlindSearchHeuristic::create);
-
+#include <limits>
+#include <utility>
+using namespace std;
 
 BlindSearchHeuristic::BlindSearchHeuristic(const HeuristicOptions &options)
     : Heuristic(options) {
+    min_operator_cost = numeric_limits<int>::max();
+    for (int i = 0; i < g_operators.size(); ++i)
+        min_operator_cost = min(min_operator_cost,
+                                get_adjusted_cost(g_operators[i]));
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {
@@ -22,24 +26,13 @@ void BlindSearchHeuristic::initialize() {
 }
 
 int BlindSearchHeuristic::compute_heuristic(const State &state) {
-    bool is_goal = test_goal(state);
-
-    if (is_goal)
+    if (test_goal(state))
         return 0;
     else
-        return g_min_action_cost;
-
-    /*
-for(int i = 0; i < g_goal.size(); i++) {
-    int var = g_goal[i].first, value = g_goal[i].second;
-    if(state[var] != value)
-        return 1;
-}
-return 0;
-*/
+        return min_operator_cost;
 }
 
-ScalarEvaluator *BlindSearchHeuristic::create(
+static ScalarEvaluator *create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     HeuristicOptions common_options;
 
@@ -64,3 +57,5 @@ ScalarEvaluator *BlindSearchHeuristic::create(
         return new BlindSearchHeuristic(common_options);
     }
 }
+
+static ScalarEvaluatorPlugin plugin("blind", create);
