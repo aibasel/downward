@@ -207,6 +207,9 @@ public:
 template<typename Value>
 class AdaptiveQueue {
     AbstractQueue<Value> *wrapped_queue;
+    // Forbid assigning or copying -- would need to implement them properly.
+    AdaptiveQueue &operator=(const AdaptiveQueue<Value> &);
+    AdaptiveQueue(const AdaptiveQueue<Value> &);
 public:
     typedef std::pair<int, Value> Entry;
 
