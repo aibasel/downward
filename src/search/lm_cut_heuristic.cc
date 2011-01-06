@@ -116,7 +116,7 @@ void LandmarkCutHeuristic::add_relaxed_operator(
 
 // heuristic computation
 void LandmarkCutHeuristic::setup_exploration_queue() {
-    reachable_queue.clear();
+    priority_queue.clear();
 
     for (int var = 0; var < propositions.size(); var++) {
         for (int value = 0; value < propositions[var].size(); value++) {
@@ -146,33 +146,26 @@ void LandmarkCutHeuristic::setup_exploration_queue_state(const State &state) {
 void LandmarkCutHeuristic::first_exploration(const State &state) {
     setup_exploration_queue();
     setup_exploration_queue_state(state);
-    for (int bucket_no = 0; bucket_no < reachable_queue.size(); bucket_no++) {
-        for (;;) {
-            Bucket &bucket = reachable_queue[bucket_no];
-            // NOTE: Cannot set "bucket" outside the loop because the
-            //       reference can change if reachable_queue is
-            //       resized.
-            if (bucket.empty())
-                break;
-            RelaxedProposition *prop = bucket.back();
-            bucket.pop_back();
-            int prop_cost = prop->h_max_cost;
-            assert(prop_cost <= bucket_no);
-            if (prop_cost < bucket_no)
-                continue;
-            const vector<RelaxedOperator *> &triggered_operators =
-                prop->precondition_of;
-            for (int i = 0; i < triggered_operators.size(); i++) {
-                RelaxedOperator *relaxed_op = triggered_operators[i];
-                relaxed_op->unsatisfied_preconditions--;
-                assert(relaxed_op->unsatisfied_preconditions >= 0);
-                if (relaxed_op->unsatisfied_preconditions == 0) {
-                    relaxed_op->h_max_supporter = prop;
-                    int target_cost = prop_cost + relaxed_op->cost;
-                    for (int j = 0; j < relaxed_op->effects.size(); j++) {
-                        RelaxedProposition *effect = relaxed_op->effects[j];
-                        enqueue_if_necessary(effect, target_cost);
-                    }
+    while (!priority_queue.empty()) {
+        pair<int, RelaxedProposition *> top_pair = priority_queue.pop();
+        int popped_cost = top_pair.first;
+        RelaxedProposition *prop = top_pair.second;
+        int prop_cost = prop->h_max_cost;
+        assert(prop_cost <= popped_cost);
+        if (prop_cost < popped_cost)
+            continue;
+        const vector<RelaxedOperator *> &triggered_operators =
+            prop->precondition_of;
+        for (int i = 0; i < triggered_operators.size(); i++) {
+            RelaxedOperator *relaxed_op = triggered_operators[i];
+            relaxed_op->unsatisfied_preconditions--;
+            assert(relaxed_op->unsatisfied_preconditions >= 0);
+            if (relaxed_op->unsatisfied_preconditions == 0) {
+                relaxed_op->h_max_supporter = prop;
+                int target_cost = prop_cost + relaxed_op->cost;
+                for (int j = 0; j < relaxed_op->effects.size(); j++) {
+                    RelaxedProposition *effect = relaxed_op->effects[j];
+                    enqueue_if_necessary(effect, target_cost);
                 }
             }
         }
