@@ -74,15 +74,6 @@ void LandmarkCutHeuristic::initialize() {
 
 void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
     int base_cost = get_adjusted_cost(op);
-    if (base_cost > 1000) {
-        // HACK -- but doing it this way and failing noisily is better
-        // than using this implementation for high action cost settings
-        // accidentally.
-        // TODO: Think about how to do this properly.
-        cerr << "error: LM-cut heuristic implementation not suitable "
-             << "for high action costs" << endl;
-        ::exit(1);
-    }
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<RelaxedProposition *> precondition;
