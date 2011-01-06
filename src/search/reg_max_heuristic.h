@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-class RegMaxHeuristic : public Heuristic {
+class IPCMaxHeuristic : public Heuristic {
 private:
     std::vector<Heuristic *> evaluators;
     int value;
@@ -17,8 +17,8 @@ protected:
     virtual int compute_heuristic(const State &state);
 
 public:
-    RegMaxHeuristic(const HeuristicOptions &options, const std::vector<Heuristic *> &evals);
-    ~RegMaxHeuristic();
+    IPCMaxHeuristic(const HeuristicOptions &options, const std::vector<Heuristic *> &evals);
+    ~IPCMaxHeuristic();
     virtual bool reach_state(const State &parent_state, const Operator &op,
                              const State &state);
 
