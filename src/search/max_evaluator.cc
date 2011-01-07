@@ -24,6 +24,8 @@ int MaxEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
+/* commented out to silence compiler warning while this is unused.
+
 static ScalarEvaluator *create(const vector<string> &config,
                                int start, int &end, bool dry_run) {
     if (config[start + 1] != "(")
@@ -47,5 +49,9 @@ static ScalarEvaluator *create(const vector<string> &config,
     else
         return new MaxEvaluator(evals);
 }
+*/
 
-static ScalarEvaluatorPlugin plugin("max", create);
+// TODO: Comment this in once the max/sum evaluator stuff is fixed.
+//       For now, it's commented out to use the IPC implementation of
+//       max again, see issue181.
+// static ScalarEvaluatorPlugin plugin("max", create);

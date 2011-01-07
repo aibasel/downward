@@ -16,6 +16,7 @@ HEADERS = \
           general_lazy_best_first_search.h \
           globals.h \
           heuristic.h \
+          ipc_max_heuristic.h \
           iterated_search.h \
           max_evaluator.h \
           operator.h \
