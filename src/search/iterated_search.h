@@ -23,8 +23,6 @@ class IteratedSearch : public SearchEngine {
     bool continue_on_fail;
     bool continue_on_solve;
 
-    vector<SearchProgress> phase_statistics;
-
     SearchEngine *get_search_engine(int engine_config_start_index);
     SearchEngine *create_phase(int p);
     int step_return_value();
