@@ -3,11 +3,9 @@
 
 #include "heuristic.h"
 
-#include <string>
 #include <vector>
 
 class IPCMaxHeuristic : public Heuristic {
-private:
     std::vector<Heuristic *> evaluators;
     int value;
     bool dead_end;
@@ -21,9 +19,6 @@ public:
     ~IPCMaxHeuristic();
     virtual bool reach_state(const State &parent_state, const Operator &op,
                              const State &state);
-
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
 };
 
 #endif
