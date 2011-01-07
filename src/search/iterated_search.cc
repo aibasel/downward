@@ -82,8 +82,6 @@ int IteratedSearch::step() {
             set_plan(found_plan);
         }
     }
-    phase_statistics.push_back(current_search->get_search_progress());
-
     current_search->statistics();
     search_progress.inc_expanded(
         current_search->get_search_progress().get_expanded());
@@ -125,12 +123,7 @@ int IteratedSearch::step_return_value() {
 }
 
 void IteratedSearch::statistics() const {
-    for (int i = 0; i < phase_statistics.size(); i++) {
-        cout << "Phase " << i << endl;
-        phase_statistics[i].print_statistics();
-    }
-
-    cout << "Total" << endl;
+    cout << "Cumulative statistics:" << endl;
     search_progress.print_statistics();
 }
 
