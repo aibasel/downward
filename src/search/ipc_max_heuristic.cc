@@ -1,16 +1,17 @@
 #include "ipc_max_heuristic.h"
 
-#include <limits>
-
 #include "option_parser.h"
-#include "globals.h"
 #include "plugin.h"
 
-static ScalarEvaluatorPlugin reg_ipc_heuristic_plugin(
-    "max", IPCMaxHeuristic::create);
+#include <limits>
+#include <string>
+#include <vector>
+
+using namespace std;
 
 
-IPCMaxHeuristic::IPCMaxHeuristic(const HeuristicOptions &options, const std::vector<Heuristic *> &evals)
+IPCMaxHeuristic::IPCMaxHeuristic(const HeuristicOptions &options,
+                                 const vector<Heuristic *> &evals)
     : Heuristic(options), evaluators(evals) {
 }
 
@@ -24,35 +25,31 @@ int IPCMaxHeuristic::compute_heuristic(const State &state) {
     for (unsigned int i = 0; i < evaluators.size(); i++) {
         evaluators[i]->evaluate(state);
 
-        // check for dead end
         if (evaluators[i]->is_dead_end()) {
-            value = std::numeric_limits<int>::max();
+            value = numeric_limits<int>::max();
             dead_end = true;
             if (evaluators[i]->dead_end_is_reliable()) {
                 dead_end_reliable = true;
                 value = -1;
                 break;
             }
+        } else {
+            value = max(value, evaluators[i]->get_value());
         }
-
-        if (evaluators[i]->get_value() > value)
-            value = evaluators[i]->get_value();
     }
     return value;
 }
 
 bool IPCMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
                                   const State &state) {
-    int ret = false;
-    int val;
-    for (int i = 0; i < evaluators.size(); i++) {
-        val = evaluators[i]->reach_state(parent_state, op, state);
-        ret = ret || val;
-    }
-    return ret;
+    bool result = false;
+    for (int i = 0; i < evaluators.size(); i++)
+        result = result || evaluators[i]->reach_state(parent_state, op, state);
+    return result;
 }
 
-ScalarEvaluator *IPCMaxHeuristic::create(const std::vector<string> &config, int start, int &end, bool dry_run) {
+static ScalarEvaluator *create(const vector<string> &config,
+                               int start, int &end, bool dry_run) {
     if (config[start + 1] != "(") {
         throw ParseError(start + 1);
     }
@@ -87,3 +84,5 @@ ScalarEvaluator *IPCMaxHeuristic::create(const std::vector<string> &config, int 
     else
         return new IPCMaxHeuristic(common_options, heuristics_);
 }
+
+static ScalarEvaluatorPlugin plugin("max", create);

@@ -15,6 +15,7 @@ HEADERS = \
           general_lazy_best_first_search.h \
           globals.h \
           heuristic.h \
+          ipc_max_heuristic.h \
           iterated_search.h \
           operator.h \
           operator_cost.h \
@@ -22,7 +23,6 @@ HEADERS = \
           plugin.h \
           pref_evaluator.h \
           relaxation_heuristic.h \
-          ipc_max_heuristic.h \
           search_engine.h \
           search_node_info.h \
           search_progress.h \
