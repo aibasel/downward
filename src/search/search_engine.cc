@@ -3,6 +3,7 @@
 #include <limits>
 using namespace std;
 
+#include "globals.h"
 #include "search_engine.h"
 #include "timer.h"
 #include "option_parser.h"
@@ -49,7 +50,8 @@ void SearchEngine::search() {
     Timer timer;
     while (step() == IN_PROGRESS)
         ;
-    cout << "Actual search time: " << timer << endl;
+    cout << "Actual search time: " << timer
+         << " [t=" << g_timer << "]" << endl;
 }
 
 bool SearchEngine::check_goal_and_set_plan(const State &state) {
