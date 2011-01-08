@@ -102,8 +102,13 @@ int Abstraction::size() const {
 }
 
 void Abstraction::compute_distances() {
-    compute_init_distances();
-    compute_goal_distances();
+    if (is_unit_cost) {
+        compute_init_distances_unit_cost();
+        compute_goal_distances_unit_cost();
+    } else {
+        compute_init_distances_general_cost();
+        compute_goal_distances_general_cost();
+    }
 
     max_f = 0;
     max_g = 0;
@@ -149,7 +154,7 @@ static void breadth_first_search(
     }
 }
 
-void Abstraction::compute_init_distances() {
+void Abstraction::compute_init_distances_unit_cost() {
     vector<vector<AbstractStateRef> > forward_graph(num_states);
     for (int i = 0; i < transitions_by_op.size(); i++) {
         const vector<AbstractTransition> &transitions = transitions_by_op[i];
@@ -171,7 +176,17 @@ void Abstraction::compute_init_distances() {
     breadth_first_search(forward_graph, queue, init_distances);
 }
 
-void Abstraction::compute_goal_distances() {
+void Abstraction::compute_init_distances_general_cost() {
+    cerr << "TODO: Implement this." << endl;
+    exit(2);
+}
+
+void Abstraction::compute_goal_distances_general_cost() {
+    cerr << "TODO: Implement this." << endl;
+    exit(2);
+}
+
+void Abstraction::compute_goal_distances_unit_cost() {
     vector<vector<AbstractStateRef> > backward_graph(num_states);
     for (int i = 0; i < transitions_by_op.size(); i++) {
         const vector<AbstractTransition> &transitions = transitions_by_op[i];
@@ -676,6 +691,21 @@ struct Signature {
 void Abstraction::compute_abstraction_dfp(
     int target_size,
     vector<slist<AbstractStateRef> > &collapsed_groups) const {
+    if (!is_unit_cost) {
+        cerr << "DFP shrink strategy is only implemented for "
+             << "unit cost problems." << endl;
+        exit(2);
+        /*
+          TODO: Implement this properly.
+
+          The code currently has the assumption that there is at least
+          one state for every h value in the range 0..h_max.
+          Hence it won't work for problems with costs > 1.
+          (It might actually already work for problems where all
+          operators are cost 0 or 1 -- would need to look into that.)
+         */
+    }
+
     int num_groups = max_h + 1;
 
     // cout << num_states << "***" << target_size << endl;
