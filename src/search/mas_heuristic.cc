@@ -33,12 +33,20 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
       merge_strategy(merge_strategy_),
       shrink_strategy(shrink_strategy_),
       use_label_simplification(use_label_simplification_),
-      use_expensive_statistics(use_expensive_statistics_) {
+      use_expensive_statistics(use_expensive_statistics_),
+      is_unit_cost(is_unit_cost_problem()) {
     assert(max_abstract_states_before_merge > 0);
     assert(max_abstract_states >= max_abstract_states_before_merge);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
+}
+
+bool MergeAndShrinkHeuristic::is_unit_cost_problem() const {
+    for (int i = 0; i < g_operators.size(); ++i)
+        if (get_adjusted_cost(g_operators[i]) != 1)
+            return false;
+    return true;
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
@@ -177,7 +185,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     cout << "Building atomic abstractions..." << endl;
     vector<Abstraction *> atomic_abstractions;
     Abstraction::build_atomic_abstractions(
-        get_cost_type(), atomic_abstractions);
+        is_unit_cost, get_cost_type(), atomic_abstractions);
 
     cout << "Merging abstractions..." << endl;
 
@@ -206,8 +214,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             abstraction->statistics(use_expensive_statistics);
         }
         Abstraction *new_abstraction = new CompositeAbstraction(
-            abstraction, other_abstraction, use_label_simplification,
-            get_cost_type());
+            is_unit_cost, get_cost_type(),
+            abstraction, other_abstraction, use_label_simplification);
         if (first_iteration)
             first_iteration = false;
         else

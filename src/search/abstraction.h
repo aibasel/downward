@@ -41,7 +41,8 @@ class Abstraction {
     friend class AtomicAbstraction;
     friend class CompositeAbstraction;
 
-    OperatorCost cost_type;
+    const bool is_unit_cost;
+    const OperatorCost cost_type;
 
     vector<const Operator *> relevant_operators;
     int num_states;
@@ -86,11 +87,12 @@ protected:
         const vector<AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
 public:
-    Abstraction(OperatorCost cost_type);
+    Abstraction(bool is_unit_cost, OperatorCost cost_type);
     virtual ~Abstraction();
 
-    static void build_atomic_abstractions(OperatorCost cost_type,
-                                          vector<Abstraction *> &result);
+    static void build_atomic_abstractions(
+        bool is_unit_cost, OperatorCost cost_type,
+        vector<Abstraction *> &result);
     bool is_solvable() const;
 
     int get_cost(const State &state) const;
@@ -119,7 +121,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    AtomicAbstraction(int variable_, OperatorCost cost_type);
+    AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, int variable);
 };
 
 class CompositeAbstraction : public Abstraction {
@@ -131,8 +133,9 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    CompositeAbstraction(Abstraction *abs1, Abstraction *abs2,
-                         bool simplify_labels, OperatorCost cost_type);
+    CompositeAbstraction(bool is_unit_cost, OperatorCost cost_type,
+                         Abstraction *abs1, Abstraction *abs2,
+                         bool simplify_labels);
 };
 
 #endif
