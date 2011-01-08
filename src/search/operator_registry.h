@@ -2,6 +2,7 @@
 #define OPERATOR_REGISTRY_H
 
 #include "globals.h"
+#include "operator_cost.h"
 
 #include <vector>
 
@@ -11,13 +12,15 @@ class OperatorRegistry {
     std::vector<const Operator *> canonical_operators;
     inline int get_op_index(const Operator *op) const;
 
+    const OperatorCost cost_type;
     int num_vars;
     int num_operators;
     int num_canonical_operators;
 public:
     OperatorRegistry(
         const std::vector<const Operator *> &relevant_operators,
-        const std::vector<int> &pruned_vars);
+        const std::vector<int> &pruned_vars,
+        OperatorCost cost_type);
     ~OperatorRegistry();
     inline const Operator *get_canonical_operator(
         const Operator *) const;

@@ -183,7 +183,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     //       allocates memory.
     cout << "Building atomic abstractions..." << endl;
     vector<Abstraction *> atomic_abstractions;
-    Abstraction::build_atomic_abstractions(atomic_abstractions);
+    Abstraction::build_atomic_abstractions(
+        get_cost_type(), atomic_abstractions);
 
     cout << "Merging abstractions..." << endl;
 
@@ -212,7 +213,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             abstraction->statistics(use_expensive_statistics);
         }
         Abstraction *new_abstraction = new CompositeAbstraction(
-            abstraction, other_abstraction, use_label_simplification);
+            abstraction, other_abstraction, use_label_simplification,
+            get_cost_type());
         if (first_iteration)
             first_iteration = false;
         else

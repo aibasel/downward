@@ -3,6 +3,7 @@
 
 #include "mas_heuristic.h" // needed for ShrinkStrategy type;
                            // TODO: move that type somewhere else?
+#include "operator_cost.h"
 
 #include <ext/slist>
 #include <vector>
@@ -40,6 +41,8 @@ class Abstraction {
     enum {QUITE_A_LOT = 1000000000};
     friend class AtomicAbstraction;
     friend class CompositeAbstraction;
+
+    OperatorCost cost_type;
 
     vector<const Operator *> relevant_operators;
     int num_states;
@@ -84,10 +87,11 @@ protected:
         const vector<AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
 public:
-    Abstraction();
+    Abstraction(OperatorCost cost_type);
     virtual ~Abstraction();
 
-    static void build_atomic_abstractions(vector<Abstraction *> &result);
+    static void build_atomic_abstractions(OperatorCost cost_type,
+                                          vector<Abstraction *> &result);
     bool is_solvable() const;
 
     int get_cost(const State &state) const;
@@ -116,7 +120,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    AtomicAbstraction(int variable_);
+    AtomicAbstraction(int variable_, OperatorCost cost_type);
 };
 
 class CompositeAbstraction : public Abstraction {
@@ -129,7 +133,7 @@ protected:
     virtual int memory_estimate() const;
 public:
     CompositeAbstraction(Abstraction *abs1, Abstraction *abs2,
-                         bool simplify_labels);
+                         bool simplify_labels, OperatorCost cost_type);
 };
 
 #endif

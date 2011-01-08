@@ -65,7 +65,9 @@ struct hash<OperatorSignature> {
 
 OperatorRegistry::OperatorRegistry(
     const vector<const Operator *> &relevant_operators,
-    const vector<int> &pruned_vars) {
+    const vector<int> &pruned_vars,
+    OperatorCost cost_type_)
+    : cost_type(cost_type_) {
     num_vars = pruned_vars.size();
     num_operators = relevant_operators.size();
     num_canonical_operators = 0;
