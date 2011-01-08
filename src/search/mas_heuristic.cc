@@ -119,13 +119,6 @@ void MergeAndShrinkHeuristic::verify_no_axioms_no_cond_effects() const {
              << "Terminating." << endl;
         exit(1);
     }
-    if (g_use_metric) {
-        cerr << "Warning: M&S heuristic does not support action costs!" << endl;
-        if (g_min_action_cost == 0) {
-            cerr << "Alert: 0-cost actions exist. M&S Heuristic is not admissible" << endl;
-        }
-    }
-
 
     for (int i = 0; i < g_operators.size(); i++) {
         const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
