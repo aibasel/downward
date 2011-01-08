@@ -182,7 +182,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_abstractions also
     //       allocates memory.
-    cout << "Building atomic abstractions..." << endl;
     vector<Abstraction *> atomic_abstractions;
     Abstraction::build_atomic_abstractions(
         is_unit_cost, get_cost_type(), atomic_abstractions);
