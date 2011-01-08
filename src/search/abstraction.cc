@@ -88,8 +88,8 @@ inline int get_op_index(const Operator *op) {
     return op_index;
 }
 
-Abstraction::Abstraction()
-    : peak_memory(0) {
+Abstraction::Abstraction(OperatorCost cost_type_)
+    : cost_type(cost_type_), peak_memory(0) {
     transitions_by_op.resize(g_operators.size());
 }
 
@@ -227,7 +227,7 @@ void Abstraction::normalize(bool simplify_labels) {
 
     OperatorRegistry *op_reg = 0;
     if (simplify_labels) {
-        op_reg = new OperatorRegistry(relevant_operators, varset);
+        op_reg = new OperatorRegistry(relevant_operators, varset, cost_type);
         op_reg->statistics();
     }
 
@@ -285,14 +285,15 @@ void Abstraction::normalize(bool simplify_labels) {
     // dump();
 }
 
-void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result) {
+void Abstraction::build_atomic_abstractions(OperatorCost cost_type,
+                                            vector<Abstraction *> &result) {
     assert(result.empty());
     cout << "Building atomic abstractions... " << flush;
     int var_count = g_variable_domain.size();
 
     // Step 1: Create the abstraction objects without transitions.
     for (int var_no = 0; var_no < var_count; var_no++)
-        result.push_back(new AtomicAbstraction(var_no));
+        result.push_back(new AtomicAbstraction(var_no, cost_type));
 
     // Step 2: Add transitions.
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {
@@ -340,8 +341,8 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result) {
     cout << "done!" << endl;
 }
 
-AtomicAbstraction::AtomicAbstraction(int variable_)
-    : variable(variable_) {
+AtomicAbstraction::AtomicAbstraction(int variable_, OperatorCost cost_type)
+    : Abstraction(cost_type), variable(variable_) {
     varset.push_back(variable);
     /*
       This generates the nodes of the atomic abstraction, but not the
@@ -373,7 +374,9 @@ AtomicAbstraction::AtomicAbstraction(int variable_)
 }
 
 CompositeAbstraction::CompositeAbstraction(
-    Abstraction *abs1, Abstraction *abs2, bool simplify_labels) {
+    Abstraction *abs1, Abstraction *abs2, bool simplify_labels,
+    OperatorCost cost_type)
+    : Abstraction(cost_type) {
     assert(abs1->is_solvable() && abs2->is_solvable());
 
     components[0] = abs1;
