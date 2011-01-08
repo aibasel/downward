@@ -264,20 +264,6 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
             return DEAD_END;
         cost = max(cost, abs_cost);
     }
-    if (cost == 0) {
-        /* We don't want to report 0 for non-goal states because the
-           search code doesn't like that. Note that we might report 0
-           for non-goal states if we use tiny abstraction sizes (like
-           1) or random shrinking. */
-        // TODO: Change this once we support action costs!
-        for (int i = 0; i < g_goal.size(); i++) {
-            int var = g_goal[i].first, value = g_goal[i].second;
-            if (state[var] != value) {
-                cost = 1;
-                break;
-            }
-        }
-    }
     return cost;
 }
 
