@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <deque>
 #include <iostream>
+#include <limits>
 using namespace std;
 
 #include "abstraction.h"
@@ -112,9 +113,9 @@ void Abstraction::compute_distances() {
     for (int i = 0; i < num_states; i++) {
         int g = init_distances[i];
         int h = goal_distances[i];
-        if (g == QUITE_A_LOT) {
+        if (g == numeric_limits<int>::max()) {
             unreachable_count++;
-        } else if (h == QUITE_A_LOT) {
+        } else if (h == numeric_limits<int>::max()) {
             irrelevant_count++;
         } else {
             max_f = max(max_f, g + h);
@@ -164,7 +165,7 @@ void Abstraction::compute_init_distances() {
             init_distances[state] = 0;
             queue.push_back(state);
         } else {
-            init_distances[state] = QUITE_A_LOT;
+            init_distances[state] = numeric_limits<int>::max();
         }
     }
     breadth_first_search(forward_graph, queue, init_distances);
@@ -186,7 +187,7 @@ void Abstraction::compute_goal_distances() {
             goal_distances[state] = 0;
             queue.push_back(state);
         } else {
-            goal_distances[state] = QUITE_A_LOT;
+            goal_distances[state] = numeric_limits<int>::max();
         }
     }
     breadth_first_search(backward_graph, queue, goal_distances);
@@ -514,7 +515,7 @@ void Abstraction::partition_into_buckets(
     for (AbstractStateRef state = 0; state < num_states; state++) {
         int g = init_distances[state];
         int h = goal_distances[state];
-        if (g == QUITE_A_LOT || h == QUITE_A_LOT)
+        if (g == numeric_limits<int>::max() || h == numeric_limits<int>::max())
             continue;
 
         int f = g + h;
@@ -680,7 +681,8 @@ void Abstraction::compute_abstraction_dfp(
     vector<int> state_to_group(num_states);
     for (int state = 0; state < num_states; state++) {
         int h = goal_distances[state];
-        if (h == QUITE_A_LOT || init_distances[state] == QUITE_A_LOT) {
+        if (h == numeric_limits<int>::max() ||
+            init_distances[state] == numeric_limits<int>::max()) {
             state_to_group[state] = -1;
         } else {
             assert(h >= 0 && h <= max_h);
@@ -705,7 +707,8 @@ void Abstraction::compute_abstraction_dfp(
             Signature(-1, -1, SuccessorSignature(), -1));
         for (int state = 0; state < num_states; state++) {
             int h = goal_distances[state];
-            if (h == QUITE_A_LOT || init_distances[state] == QUITE_A_LOT) {
+            if (h == numeric_limits<int>::max() ||
+                init_distances[state] == numeric_limits<int>::max()) {
                 h = -1;
                 assert(state_to_group[state] == -1);
             }
@@ -952,7 +955,7 @@ int Abstraction::get_cost(const State &state) const {
     if (abs_state == -1)
         return -1;
     int cost = goal_distances[abs_state];
-    assert(cost != INVALID && cost != QUITE_A_LOT);
+    assert(cost != INVALID && cost != numeric_limits<int>::max());
     return cost;
 }
 

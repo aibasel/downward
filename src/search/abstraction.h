@@ -38,7 +38,6 @@ struct AbstractTransition {
 };
 
 class Abstraction {
-    enum {QUITE_A_LOT = 1000000000};
     friend class AtomicAbstraction;
     friend class CompositeAbstraction;
 
