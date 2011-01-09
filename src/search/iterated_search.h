@@ -10,7 +10,7 @@ class IteratedSearch : public SearchEngine {
     int phase;
     bool last_phase_found_solution;
     int best_bound;
-    bool found_solution;
+    bool iterated_found_solution;
     int plan_counter;
 
     SearchEngine *current_search;

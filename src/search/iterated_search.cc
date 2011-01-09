@@ -18,7 +18,7 @@ IteratedSearch::IteratedSearch(
       continue_on_solve(continue_on_solve_) {
     last_phase_found_solution = false;
     best_bound = numeric_limits<int>::max();
-    found_solution = false;
+    iterated_found_solution = false;
     plan_counter = 0;
 }
 
@@ -59,7 +59,7 @@ SearchEngine *IteratedSearch::create_phase(int p) {
 int IteratedSearch::step() {
     current_search = create_phase(phase);
     if (current_search == NULL) {
-        return (last_phase_found_solution) ? SOLVED : FAILED;
+        return found_solution() ? SOLVED : FAILED;
     }
     if (pass_bound) {
         current_search->set_bound(best_bound);
@@ -72,7 +72,7 @@ int IteratedSearch::step() {
     int plan_cost = 0;
     last_phase_found_solution = current_search->found_solution();
     if (last_phase_found_solution) {
-        found_solution = true;
+        iterated_found_solution = true;
         found_plan = current_search->get_plan();
         plan_cost = calculate_plan_cost(found_plan);
         if (plan_cost < best_bound) {
@@ -100,7 +100,7 @@ int IteratedSearch::step() {
 }
 
 int IteratedSearch::step_return_value() {
-    if (found_solution)
+    if (iterated_found_solution)
         cout << "Best solution cost so far: " << best_bound << endl;
 
     if (last_phase_found_solution) {
@@ -117,7 +117,7 @@ int IteratedSearch::step_return_value() {
             return IN_PROGRESS;
         } else {
             cout << "No solution found - stop searching" << endl;
-            return found_solution ? SOLVED : FAILED;
+            return iterated_found_solution ? SOLVED : FAILED;
         }
     }
 }
