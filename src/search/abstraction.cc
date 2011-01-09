@@ -12,6 +12,7 @@ using namespace std;
 #include "globals.h"
 #include "operator.h"
 #include "operator_registry.h"
+#include "priority_queue.h"
 #include "timer.h"
 
 /* Implementation note: Transitions are grouped by their operators,
@@ -176,16 +177,6 @@ void Abstraction::compute_init_distances_unit_cost() {
     breadth_first_search(forward_graph, queue, init_distances);
 }
 
-void Abstraction::compute_init_distances_general_cost() {
-    cerr << "TODO: Implement this." << endl;
-    exit(2);
-}
-
-void Abstraction::compute_goal_distances_general_cost() {
-    cerr << "TODO: Implement this." << endl;
-    exit(2);
-}
-
 void Abstraction::compute_goal_distances_unit_cost() {
     vector<vector<AbstractStateRef> > backward_graph(num_states);
     for (int i = 0; i < transitions_by_op.size(); i++) {
@@ -206,6 +197,79 @@ void Abstraction::compute_goal_distances_unit_cost() {
         }
     }
     breadth_first_search(backward_graph, queue, goal_distances);
+}
+
+static void dijkstra_search(
+    const vector<vector<pair<int, int> > > &graph,
+    AdaptiveQueue<int> &queue,
+    vector<int> &distances) {
+    while (!queue.empty()) {
+        pair<int, int> top_pair = queue.pop();
+        int distance = top_pair.first;
+        int state = top_pair.second;
+        int state_distance = distances[state];
+        assert(state_distance <= distance);
+        if (state_distance < distance)
+            continue;
+        for (int i = 0; i < graph[state].size(); i++) {
+            const pair<int, int> &transition = graph[state][i];
+            int successor = transition.first;
+            int cost = transition.second;
+            int successor_cost = state_distance + cost;
+            if (distances[successor] > successor_cost) {
+                distances[successor] = successor_cost;
+                queue.push(successor_cost, successor);
+            }
+        }
+    }
+}
+
+void Abstraction::compute_init_distances_general_cost() {
+    vector<vector<pair<int, int> > > forward_graph(num_states);
+    for (int i = 0; i < transitions_by_op.size(); i++) {
+        int op_cost = get_adjusted_action_cost(g_operators[i], cost_type);
+        const vector<AbstractTransition> &transitions = transitions_by_op[i];
+        for (int j = 0; j < transitions.size(); j++) {
+            const AbstractTransition &trans = transitions[j];
+            forward_graph[trans.src].push_back(
+                make_pair(trans.target, op_cost));
+        }
+    }
+
+    AdaptiveQueue<int> queue;
+    for (AbstractStateRef state = 0; state < num_states; state++) {
+        if (state == init_state) {
+            init_distances[state] = 0;
+            queue.push(0, state);
+        } else {
+            init_distances[state] = numeric_limits<int>::max();
+        }
+    }
+    dijkstra_search(forward_graph, queue, init_distances);
+}
+
+void Abstraction::compute_goal_distances_general_cost() {
+    vector<vector<pair<int, int> > > backward_graph(num_states);
+    for (int i = 0; i < transitions_by_op.size(); i++) {
+        int op_cost = get_adjusted_action_cost(g_operators[i], cost_type);
+        const vector<AbstractTransition> &transitions = transitions_by_op[i];
+        for (int j = 0; j < transitions.size(); j++) {
+            const AbstractTransition &trans = transitions[j];
+            backward_graph[trans.target].push_back(
+                make_pair(trans.src, op_cost));
+        }
+    }
+
+    AdaptiveQueue<int> queue;
+    for (AbstractStateRef state = 0; state < num_states; state++) {
+        if (goal_distances[state] == 0) {
+            goal_distances[state] = 0;
+            queue.push(0, state);
+        } else {
+            goal_distances[state] = numeric_limits<int>::max();
+        }
+    }
+    dijkstra_search(backward_graph, queue, goal_distances);
 }
 
 void AtomicAbstraction::apply_abstraction_to_lookup_table(
