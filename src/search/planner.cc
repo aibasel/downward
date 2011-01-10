@@ -31,21 +31,22 @@ int main(int argc, const char **argv) {
         cout << usage << endl;
         exit(1);
     }
+    
+    if (string(argv[1]).compare("--help") != 0) {
+        // read prepropressor output first because we need to know the initial
+        // state when we create a general lazy search engine
+        bool poly_time_method = false;
 
-    // read prepropressor output first because we need to know the initial
-    // state when we create a general lazy search engine
-    bool poly_time_method = false;
+        istream &in = cin;
 
-    istream &in = cin;
+        in >> poly_time_method;
+        if (poly_time_method) {
+            cout << "Poly-time method not implemented in this branch." << endl;
+            cout << "Starting normal solver." << endl;
+        }
 
-    in >> poly_time_method;
-    if (poly_time_method) {
-        cout << "Poly-time method not implemented in this branch." << endl;
-        cout << "Starting normal solver." << endl;
+        read_everything(in);
     }
-
-    read_everything(in);
-
 
     SearchEngine *engine = 0;
 
@@ -54,13 +55,9 @@ int main(int argc, const char **argv) {
     //then in normal mode
     try {
         OptionParser::parse_cmd_line(argc, argv, true);
-        cout << "checked arguments" << endl;
         engine = OptionParser::parse_cmd_line(argc, argv, false);
     } catch (ParseError &pe) {
-        cout << "Parse Error: " << endl  //TODO: move this printing inside ParseError
-             << pe.msg << " at: " << endl;
-        kptree::print_tree_bracketed<ParseNode>(pe.parse_tree, cout);
-        cout << endl;
+        cout << pe << endl;
         exit(1);
     }
 

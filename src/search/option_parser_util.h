@@ -6,6 +6,8 @@
 #include <map>
 #include <ios>
 #include "tree.hh"
+#include "tree_util.hh"
+#include "boost/any.hpp"
 
 
 class LandmarksGraph;
@@ -16,6 +18,42 @@ class SearchEngine;
 class OptionParser;
 template<class Entry>
 class OpenList;
+
+//Options is just a wrapper for map<string, boost::any>
+class Options {
+public:
+    std::map<std::string, boost::any> storage;
+
+    template <class T>
+    void set(std::string key, T value) {
+        storage[key] = value;
+    }
+
+    template <class T>
+    T get(std::string key) const {
+        std::map<std::string, boost::any>::const_iterator it;
+        it = storage.find(key);
+        if (it == storage.end()) {
+            std::cout << "attempt to retrieve nonexisting object of name "
+                      << key << " from Options. Aborting." << std::endl;
+            exit(1);
+        }
+        return boost::any_cast<T>(it->second);
+    }
+
+    template <class T>
+    std::vector<T> get_list(std::string key) const {
+        return get<std::vector<T> >(key);
+    }
+
+    int get_enum(std::string key) const {
+        return get<int>(key);
+    }
+
+    bool contains(std::string key) const {
+        return storage.find(key) != storage.end();
+    }
+};
 
 
 struct ParseNode {
@@ -46,6 +84,14 @@ struct ParseError {
 
     std::string msg;
     ParseTree parse_tree;
+    
+    friend std::ostream &operator<<(std::ostream &out, const ParseError &pe) {
+        out << "Parse Error: " << std::endl  
+            << pe.msg << " at: " << std::endl;
+        kptree::print_tree_bracketed<ParseNode>(pe.parse_tree, out);
+        out << std::endl;
+        return out;
+    }
 };
 
 
@@ -109,7 +155,6 @@ public:
 
     void predefine(std::string k, T obj) {
         predefined[k] = obj;
-        std::cout << "predefined " << k << std::endl;
     }
 
     bool contains(std::string k) {
@@ -270,7 +315,7 @@ struct DefaultValueNamer<std::vector<T> > {
 };
 
 
-//helper functions for the ParseTree (tree<ParseNode>
+//helper functions for the ParseTree (=tree<ParseNode>)
 
 template<class T>
 typename tree<T>::sibling_iterator last_child(
@@ -295,7 +340,7 @@ typename tree<T>::sibling_iterator first_child_of_root(const tree<T> &tr) {
 }
 
 template<class T>
-typename tree<T>::sibling_iterator end_of_root_childs(const tree<T> &tr) {
+typename tree<T>::sibling_iterator end_of_roots_children(const tree<T> &tr) {
     return tr.end(tr.begin());
 }
 

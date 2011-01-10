@@ -5,10 +5,10 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <limits>
 #include <algorithm>
 #include <map>
 #include <memory>
-#include "boost/any.hpp"
 #include "option_parser_util.h"
 #include "heuristic.h"
 
@@ -19,46 +19,8 @@ class OpenList;
 class SearchEngine;
 
 
-//Options is just a wrapper for map<string, boost::any>
-class Options {
-public:
-    std::map<std::string, boost::any> storage;
-
-    template <class T>
-    void set(std::string key, T value) {
-        storage[key] = value;
-    }
-
-    template <class T>
-    T get(std::string key) const {
-        std::map<std::string, boost::any>::const_iterator it;
-        it = storage.find(key);
-        if (it == storage.end()) {
-            std::cout << "attempt to retrieve nonexisting object of name "
-                      << key << " from Options. Aborting." << std::endl;
-            exit(1);
-        }
-        return boost::any_cast<T>(it->second);
-    }
-
-    template <class T>
-    std::vector<T> get_list(std::string key) const {
-        return get<std::vector<T> >(key);
-    }
-
-    int get_enum(std::string key) const {
-        return get<int>(key);
-    }
-
-    bool contains(std::string key) const {
-        return storage.find(key) != storage.end();
-    }
-};
-
-
-/*The TokenParser<T> wraps functions to parse supported types T.
-To add support for a new type T, it should suffice
-to implement the corresponding TokenParser<T> class
+/*
+The TokenParser<T> wraps functions to parse supported types T.
  */
 
 template <class T>
@@ -69,11 +31,14 @@ public:
     static inline T parse(OptionParser &p);
 };
 
+
+//int needs a specialization to allow "infinity" (=numeric_limits<int>::max())
 template <>
-class TokenParser<bool> {
+class TokenParser<int> {
 public:
-    static inline bool parse(OptionParser &p);
+    static inline int parse(OptionParser &p);
 };
+
 
 template <class Entry>
 class TokenParser<OpenList<Entry > *> {
@@ -178,7 +143,7 @@ public:
     void error(std::string msg);
     void warning(std::string msg);
 
-    Options parse();
+    Options parse(); //parse is not a good name for this function. It just does some checks and returns the parsed options. Change?
     ParseTree *get_parse_tree();
     void set_parse_tree(const ParseTree &pt);
     void set_help_mode(bool m);
@@ -207,7 +172,6 @@ T OptionParser::start_parsing() {
 template <class T>
 void OptionParser::add_option(
     std::string k, std::string h) {
-    std::cout << "adding option " << k << std::endl;
     if (help_mode_) {
         helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
         if (opts.contains(k)) {
@@ -276,22 +240,26 @@ T TokenParser<T>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     std::stringstream str_stream(pt->value);
     T x;
-    if ((str_stream >> x).fail()) {
+    if ((str_stream >> std::boolalpha >> x).fail()) {
         p.error("could not parse argument");
     }
     return x;
 }
 
-
-
-bool TokenParser<bool>::parse(OptionParser &p) {
+int TokenParser<int>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (pt->value.compare("false") == 0) {
-        return false;
+    if (pt->value.compare("infinity") == 0) {
+        return std::numeric_limits<int>::max();
     } else {
-        return true;
+        std::stringstream str_stream(pt->value);
+        int x;
+        if ((str_stream >> x).fail()) {
+            p.error("could not parse argument");
+        }
+        return x;
     }
 }
+
 
 template <class Entry>
 OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
@@ -306,12 +274,12 @@ OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
 
 Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
+    if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) { 
         return Predefinitions<Heuristic *>::instance()->get(pt->value);
     } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
         return Registry<Heuristic *>::instance()->get(pt->value) (p);
-        //look if there's a scalar evaluator registered by this name,
-        //assume that's what's meant (same behaviour as old parser)
+    //look if there's a scalar evaluator registered by this name,
+    //and cast (same behaviour as old parser)
     } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
         ScalarEvaluator *eval =
             Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
@@ -378,7 +346,7 @@ std::vector<T > TokenParser<std::vector<T > >::parse(OptionParser &p) {
     }
     for (ParseTree::sibling_iterator pti =
              first_child_of_root(*p.get_parse_tree());
-         pti != end_of_root_childs(*p.get_parse_tree());
+         pti != end_of_roots_children(*p.get_parse_tree());
          ++pti) {
         OptionParser subparser(subtree(*p.get_parse_tree(), pti), p.dry_run());
         results.push_back(
@@ -386,8 +354,5 @@ std::vector<T > TokenParser<std::vector<T > >::parse(OptionParser &p) {
     }
     return results;
 }
-
-
-
 
 #endif /* OPTION_PARSER_H_ */
