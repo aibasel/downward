@@ -44,7 +44,7 @@ bool IPCMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
                                   const State &state) {
     bool result = false;
     for (int i = 0; i < evaluators.size(); i++)
-        result = result || evaluators[i]->reach_state(parent_state, op, state);
+        result = result | evaluators[i]->reach_state(parent_state, op, state);
     return result;
 }
 
