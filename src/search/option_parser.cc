@@ -243,6 +243,7 @@ void OptionParser::add_enum_option(string k,
 
 Options OptionParser::parse() {
     if (help_mode_) {
+        //print out collected help information
         cout << parse_tree.begin()->value << "(";
         for (size_t i(0); i != helpers.size(); ++i) {
             cout << helpers[i].kwd
@@ -258,9 +259,11 @@ Options OptionParser::parse() {
                  << helpers[i].help << endl;
         }
     }
-    //first check if there were any arguments with invalid keywords
+    //check if there were any arguments with invalid keywords, 
+    //or positional arguments after keyword arguments
+    string last_key = "";
     for (ParseTree::sibling_iterator pti = first_child_of_root(parse_tree);
-         pti != end_of_root_childs(parse_tree); ++pti) {
+         pti != end_of_roots_children(parse_tree); ++pti) {
         if (pti->key.compare("") != 0 &&
             find(valid_keys.begin(),
                  valid_keys.end(),
@@ -269,6 +272,11 @@ Options OptionParser::parse() {
                   + pti->key + " for "
                   + parse_tree.begin()->value);
         }
+        if (pti->key.compare("") == 0 &&
+            last_key.compare("") != 0) {
+            error("positional argument after keyword argument");
+        }
+        last_key = pti->key;
     }
     return opts;
 }
@@ -350,6 +358,5 @@ ParseTree OptionParser::generate_parse_tree(const string config) {
     //the real parse tree is the first (and only) child of the pseudoroot.
     //pseudoroot is only a placeholder.
     ParseTree real_tr = subtree(tr, tr.begin(pseudoroot));
-    kptree::print_tree_bracketed<ParseNode>(real_tr, cout);
     return real_tr;
 }

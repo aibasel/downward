@@ -455,4 +455,4 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     }
 }
 
-static LandmarkGraphPlugin _plugin("lmgraph_rpg_sasp", _parse);
+static LandmarkGraphPlugin _plugin("lm_rhw", _parse);
