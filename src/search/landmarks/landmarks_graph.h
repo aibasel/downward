@@ -139,7 +139,7 @@ public:
         void add_option_to_parser(NamedOptionParser &option_parser);
     };
     class Pddl_proposition {
-public:
+    public:
         string predicate;
         vector<string> arguments;
         string to_string() const {
