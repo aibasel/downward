@@ -43,8 +43,12 @@ int IPCMaxHeuristic::compute_heuristic(const State &state) {
 bool IPCMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
                                   const State &state) {
     bool result = false;
-    for (int i = 0; i < evaluators.size(); i++)
-        result = result || evaluators[i]->reach_state(parent_state, op, state);
+    for (int i = 0; i < evaluators.size(); i++) {
+        if (evaluators[i]->reach_state(parent_state, op, state)) {
+            result = true;
+            // Don't break: we must call reached_state everywhere.
+        }
+    }
     return result;
 }
 
