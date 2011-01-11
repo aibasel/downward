@@ -797,6 +797,7 @@ void LandmarksGraph::dump_node(const LandmarkNode *node_p) const {
         cout << "}";
     if (node_p->in_goal)
         cout << "(goal)";
+    cout << " Achievers (" << node_p->possible_achievers.size() << ", " << node_p->first_achievers.size() << ")";
     cout << endl;
 }
 
