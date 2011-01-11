@@ -11,7 +11,7 @@ static LandmarkGraphPlugin landmarks_graph_merged_plugin(
 
 LandmarksGraphMerged::LandmarksGraphMerged(
     LandmarkGraphOptions &options, Exploration *exploration,
-    vector<LandmarksGraph *> &lm_graphs_)
+    const vector<LandmarksGraph *> &lm_graphs_)
     : LandmarksGraph(options, exploration),
       lm_graphs(lm_graphs_) {
 }

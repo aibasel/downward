@@ -6,13 +6,13 @@
 
 
 class LandmarksGraphMerged : public LandmarksGraph {
-    vector<LandmarksGraph *> lm_graphs;
+    std::vector<LandmarksGraph *> lm_graphs;
     void generate_landmarks();
     LandmarkNode *get_matching_landmark(const LandmarkNode &lm) const;
 public:
     LandmarksGraphMerged(LandmarkGraphOptions &options,
                          Exploration *exploration,
-                         std::vector<LandmarksGraph *> &lm_graphs_);
+                         const std::vector<LandmarksGraph *> &lm_graphs_);
     virtual ~LandmarksGraphMerged();
     static LandmarksGraph *create(const std::vector<std::string> &config, int start,
                                   int &end, bool dry_run);
