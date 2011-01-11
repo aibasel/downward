@@ -625,6 +625,7 @@ bool LandmarksGraph::interferes(const LandmarkNode *node_a,
                     return true;
         }
 
+        /* // Experimentally commenting this out -- see issue202.
         // 3. Exists LM x, inconsistent x, b and x->_gn a
         const LandmarkNode &node = *node_a;
         for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
@@ -638,6 +639,7 @@ bool LandmarksGraph::interferes(const LandmarkNode *node_a,
                     return true;
             }
         }
+        */
     }
     // No inconsistency found
     return false;
