@@ -71,6 +71,7 @@ HEADERS += landmarks/exploration.h \
            landmarks/landmark_cost_assignment.h \
            landmarks/landmark_count_heuristic.h \
            landmarks/landmark_status_manager.h \
+           landmarks/landmarks_graph_merged.h \
            landmarks/landmarks_graph.h \
            landmarks/landmarks_graph_rpg_exhaust.h \
            landmarks/landmarks_graph_rpg_sasp.h \
