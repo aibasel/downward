@@ -14,4 +14,4 @@
 ^src/VAL/.*\.o$
 ^src/VAL/lex\.yy\.cc$
 ^src/VAL/validate$
-^src/validate$
+^src/validate-orig$
