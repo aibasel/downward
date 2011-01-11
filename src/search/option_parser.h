@@ -142,9 +142,9 @@ public:
                               std::vector<Heuristic *> &heuristics,
                               bool dry_run);
     void parse_landmark_graph_list(const std::vector<std::string> &input,
-                                  int start, int &end, bool only_one,
-                                  std::vector<LandmarksGraph *> &lm_graphs,
-                                  bool dry_run);
+                                   int start, int &end, bool only_one,
+                                   std::vector<LandmarksGraph *> &lm_graphs,
+                                   bool dry_run);
     void parse_scalar_evaluator_list(const std::vector<std::string> &input,
                                      int start, int &end, bool only_one_eval,
                                      std::vector<ScalarEvaluator *> &evals,

@@ -13,8 +13,7 @@ LandmarksGraphMerged::LandmarksGraphMerged(
     LandmarkGraphOptions &options, Exploration *exploration,
     vector<LandmarksGraph *> &lm_graphs_)
     : LandmarksGraph(options, exploration),
-      lm_graphs(lm_graphs_)
-{
+      lm_graphs(lm_graphs_) {
 }
 
 LandmarksGraphMerged::~LandmarksGraphMerged() {
@@ -24,29 +23,25 @@ LandmarkNode *LandmarksGraphMerged::get_matching_landmark(const LandmarkNode &lm
     if (!lm.disjunctive && !lm.conjunctive) {
         pair<int, int> lm_fact = make_pair(lm.vars[0], lm.vals[0]);
         hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
-                simple_lms_to_nodes.find(lm_fact);
+            simple_lms_to_nodes.find(lm_fact);
         if (it != simple_lms_to_nodes.end()) {
             return it->second;
-        }
-        else {
+        } else {
             return 0;
         }
-    }
-    else if (lm.disjunctive) {
+    } else if (lm.disjunctive) {
         set<pair<int, int> > lm_facts;
         for (int j = 0; j < lm.vars.size(); j++) {
-            lm_facts.insert(make_pair(lm.vars[j],lm.vals[j]));
+            lm_facts.insert(make_pair(lm.vars[j], lm.vals[j]));
         }
         if (exact_same_disj_landmark_exists(lm_facts)) {
             hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
-                    disj_lms_to_nodes.find(make_pair(lm.vars[0],lm.vals[0]));
+                disj_lms_to_nodes.find(make_pair(lm.vars[0], lm.vals[0]));
             return it->second;
-        }
-        else {
+        } else {
             return 0;
         }
-    }
-    else if (lm.conjunctive) {
+    } else if (lm.conjunctive) {
         cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
         abort();
     }
@@ -58,11 +53,11 @@ void LandmarksGraphMerged::generate_landmarks() {
 
     cout << "Adding simple landmarks" << endl;
     for (int i = 0; i < lm_graphs.size(); i++) {
-        const set<LandmarkNode *> & nodes = lm_graphs[i]->get_nodes();
+        const set<LandmarkNode *> &nodes = lm_graphs[i]->get_nodes();
         set<LandmarkNode *>::const_iterator it;
         for (it = nodes.begin(); it != nodes.end(); it++) {
             const LandmarkNode &node = **it;
-            pair<int, int> lm_fact = make_pair(node.vars[0],node.vals[0]);
+            pair<int, int> lm_fact = make_pair(node.vars[0], node.vals[0]);
             if (!node.conjunctive && !node.disjunctive && !landmark_exists(lm_fact)) {
                 LandmarkNode &new_node = landmark_add_simple(lm_fact);
                 new_node.in_goal = node.in_goal;
@@ -72,21 +67,20 @@ void LandmarksGraphMerged::generate_landmarks() {
 
     cout << "Adding disjunctive landmarks" << endl;
     for (int i = 0; i < lm_graphs.size(); i++) {
-        const set<LandmarkNode *> & nodes = lm_graphs[i]->get_nodes();
+        const set<LandmarkNode *> &nodes = lm_graphs[i]->get_nodes();
         set<LandmarkNode *>::const_iterator it;
         for (it = nodes.begin(); it != nodes.end(); it++) {
             const LandmarkNode &node = **it;
             if (node.disjunctive) {
                 set<pair<int, int> > lm_facts;
                 for (int j = 0; j < node.vars.size(); j++) {
-                    lm_facts.insert(make_pair(node.vars[j],node.vals[j]));
+                    lm_facts.insert(make_pair(node.vars[j], node.vals[j]));
                 }
                 if (!disj_landmark_exists(lm_facts)) {
                     LandmarkNode &new_node = landmark_add_disjunctive(lm_facts);
                     new_node.in_goal = node.in_goal;
                 }
-            }
-            else if (node.conjunctive) {
+            } else if (node.conjunctive) {
                 cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
                 abort();
             }
@@ -95,7 +89,7 @@ void LandmarksGraphMerged::generate_landmarks() {
 
     cout << "Adding orderings" << endl;
     for (int i = 0; i < lm_graphs.size(); i++) {
-        const set<LandmarkNode *> & nodes = lm_graphs[i]->get_nodes();
+        const set<LandmarkNode *> &nodes = lm_graphs[i]->get_nodes();
         set<LandmarkNode *>::const_iterator it;
         for (it = nodes.begin(); it != nodes.end(); it++) {
             const LandmarkNode &from_orig = **it;
@@ -108,13 +102,11 @@ void LandmarksGraphMerged::generate_landmarks() {
                     LandmarkNode *to = get_matching_landmark(to_orig);
                     if (to) {
                         edge_add(*from, *to, e_type);
-                    }
-                    else {
+                    } else {
                         cout << "No to" << endl;
                     }
                 }
-            }
-            else {
+            } else {
                 cout << "No from" << endl;
             }
         }
@@ -129,8 +121,8 @@ LandmarksGraph *LandmarksGraphMerged::create(
 
     vector<LandmarksGraph *> lm_graphs_;
     OptionParser::instance()->parse_landmark_graph_list(config, start + 2,
-                                                   end, false, lm_graphs_,
-                                                   dry_run);
+                                                        end, false, lm_graphs_,
+                                                        dry_run);
 
     if (lm_graphs_.empty()) {
         throw ParseError(end);
@@ -143,7 +135,7 @@ LandmarksGraph *LandmarksGraphMerged::create(
 
         common_options.add_option_to_parser(option_parser);
 
-	option_parser.parse_options(config, end, end, dry_run);
+        option_parser.parse_options(config, end, end, dry_run);
         end++;
     }
     if (config[end] != ")") {
