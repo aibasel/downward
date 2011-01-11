@@ -7,15 +7,20 @@ import effects
 import pddl_types
 
 class Action(object):
-    def __init__(self, name, parameters, precondition, effects, cost):
+    def __init__(self, name, parameters, precondition, effects, cost,
+                 uniquify_variables=True):
         self.name = name
         self.parameters = parameters
         self.precondition = precondition
         self.effects = effects
         self.cost = cost
-        self.uniquify_variables() # TODO: uniquify variables in cost?
+        if uniquify_variables:
+            self.uniquify_variables() # TODO: uniquify variables in cost?
     def __repr__(self):
         return "<Action %r at %#x>" % (self.name, id(self))
+    def copy(self):
+        return Action(self.name, self.parameters, self.precondition,
+                      self.effects, self.cost, uniquify_variables=False)
     def parse(alist):
         iterator = iter(alist)
         assert iterator.next() == ":action"
