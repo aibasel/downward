@@ -143,6 +143,7 @@ LandmarksGraph *LandmarksGraphMerged::create(
 
         common_options.add_option_to_parser(option_parser);
 
+	option_parser.parse_options(config, end, end, dry_run);
         end++;
     }
     if (config[end] != ")") {
