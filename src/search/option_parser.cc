@@ -266,7 +266,7 @@ Options OptionParser::parse() {
                  << helpers[i].help << endl;
         }
     }
-    //check if there were any arguments with invalid keywords, 
+    //check if there were any arguments with invalid keywords,
     //or positional arguments after keyword arguments
     string last_key = "";
     for (ParseTree::sibling_iterator pti = first_child_of_root(parse_tree);

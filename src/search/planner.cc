@@ -31,7 +31,7 @@ int main(int argc, const char **argv) {
         cout << usage << endl;
         exit(1);
     }
-    
+
     if (string(argv[1]).compare("--help") != 0) {
         // read prepropressor output first because we need to know the initial
         // state when we create a general lazy search engine

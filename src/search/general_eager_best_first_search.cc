@@ -408,7 +408,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         opts.set("reopen_closed", false);
         opts.set("pathmax", false);
         opts.set("mpd", false);
-        ScalarEvaluator* sep;
+        ScalarEvaluator *sep;
         opts.set("f_eval", sep);
         opts.set("bound", numeric_limits<int>::max());
         engine = new GeneralEagerBestFirstSearch(opts);
