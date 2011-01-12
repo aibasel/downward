@@ -597,10 +597,10 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         }
         heur->set_alpha(opts.get<double>("alpha"));
         heur->set_classifier((classifier_t)opts.get_enum("classifier"));
-        heur->set_confidence(opts.get<double>("conf_threshold_"));
+        heur->set_confidence(opts.get<double>("conf_threshold"));
         heur->set_num_always_calc(opts.get<int>("eval_always"));
         heur->set_training_set_size(opts.get<int>("training_set"));
-        heur->set_random_selection(opts.get<bool>("random_selection"));
+        heur->set_random_selection(opts.get<bool>("random_sel"));
         heur->set_retime_heuristics(opts.get<bool>("retime"));
         heur->set_state_space_sample(
             (state_space_sample_t)opts.get_enum("sample"));

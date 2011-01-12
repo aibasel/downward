@@ -303,7 +303,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<LandmarksGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");
-    parser.add_option<bool>("pref_ops", false, "identify preferred operators");
+    parser.add_option<bool>("pref", false, "identify preferred operators");
     parser.add_option<bool>("alm", true, "use action landmarks");
 
     Options opts = parser.parse();

@@ -1,6 +1,7 @@
 #include "option_parser.h"
 #include "tree_util.hh"
 #include <string>
+#include <algorithm>
 #include <iostream>
 
 using namespace std;
@@ -202,9 +203,13 @@ OptionParser::OptionParser(ParseTree pt, bool dr)
 }
 
 
+string str_to_lower(string s) {
+    transform(s.begin(), s.end(), s.begin(), ::tolower);
+    return s;
+}
 
 void OptionParser::add_enum_option(string k,
-                                   const vector<string > &enumeration,
+                                   vector<string > enumeration,
                                    string def_val, string h) {
     if (help_mode_) {
         string enum_descr = "{";
@@ -232,11 +237,13 @@ void OptionParser::add_enum_option(string k,
     }
 
     //...then map that string to its position in the enumeration vector
-    string name = opts.get<string>(k);
+    string name = str_to_lower(opts.get<string>(k));
+    transform(enumeration.begin(), enumeration.end(), enumeration.begin(),
+              str_to_lower); //make the enumeration lower case
     vector<string>::const_iterator it =
         find(enumeration.begin(), enumeration.end(), name);
     if (it == enumeration.end()) {
-        error("invalid enum argument");
+        error("invalid enum argument " + name);
     }
     opts.set(k, it - enumeration.begin());
 }

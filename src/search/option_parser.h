@@ -130,7 +130,7 @@ public:
 
 
     void add_enum_option(std::string k,
-                         const std::vector<std::string > &enumeration,
+                         std::vector<std::string > enumeration,
                          std::string def_val = "", std::string h = "");
 
     template <class T>

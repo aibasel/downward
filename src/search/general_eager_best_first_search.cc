@@ -18,7 +18,7 @@ GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(const Options &opts)
       do_pathmax(opts.get<bool>("pathmax")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<OpenList<state_var_t *> *>("open")),
-      f_evaluator(opts.get<SumEvaluator *>("f_eval")) {
+      f_evaluator(opts.get<ScalarEvaluator *>("f_eval")) {
     bound = opts.get<int>("bound");
 }
 
@@ -306,7 +306,7 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "reopen closed nodes");
     parser.add_option<bool>("pathmax", false,
                             "use pathmax correction");
-    parser.add_option<ScalarEvaluator *>("progress_evaluator", 0,
+    parser.add_option<ScalarEvaluator *>("f_eval", 0,
                                          "set evaluator for jump statistics");
     parser.add_option<int>("bound", numeric_limits<int>::max(),
                            "depth bound on g-values");
@@ -406,9 +406,10 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
         opts.set("open", open);
         opts.set("reopen_closed", false);
-        opts.set("pathmax_correction", false);
+        opts.set("pathmax", false);
         opts.set("mpd", false);
-        opts.set("f_eval", 0);
+        ScalarEvaluator* sep;
+        opts.set("f_eval", sep);
         opts.set("bound", numeric_limits<int>::max());
         engine = new GeneralEagerBestFirstSearch(opts);
 
