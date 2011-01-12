@@ -14,6 +14,7 @@ OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref) {
     opts.set("pref_only", false);
     vector<ScalarEvaluator *> evals;
     evals.push_back(heur);
+    opts.set("evals", evals);
     open = new BucketOpenList<OpenListEntry>(opts);
     heuristic = heur;
     only_preferred_operators = only_pref;
@@ -226,7 +227,7 @@ int BestFirstSearchEngine::fetch_next_state() {
 
 static SearchEngine *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>("heuristics");
-    parser.add_list_option<Heuristic *>("preffered", vector<Heuristic *>(), "use preferred operators of these heuristics");
+    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), "use preferred operators of these heuristics");
     Options opts = parser.parse();
 
     if (parser.dry_run())

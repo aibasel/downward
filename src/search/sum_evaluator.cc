@@ -60,7 +60,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
-
+    
     if (opts.get_list<ScalarEvaluator *>("evals").empty())
         parser.error("expected non-empty list of scalar evaluators");
     if (parser.dry_run())

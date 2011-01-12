@@ -42,8 +42,6 @@ void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    // create evaluator
-    std::vector<ScalarEvaluator *> evals;
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_option<int>("weight");
     Options opts = parser.parse();

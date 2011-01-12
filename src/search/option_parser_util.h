@@ -19,42 +19,6 @@ class OptionParser;
 template<class Entry>
 class OpenList;
 
-//Options is just a wrapper for map<string, boost::any>
-class Options {
-public:
-    std::map<std::string, boost::any> storage;
-
-    template <class T>
-    void set(std::string key, T value) {
-        storage[key] = value;
-    }
-
-    template <class T>
-    T get(std::string key) const {
-        std::map<std::string, boost::any>::const_iterator it;
-        it = storage.find(key);
-        if (it == storage.end()) {
-            std::cout << "attempt to retrieve nonexisting object of name "
-                      << key << " from Options. Aborting." << std::endl;
-            exit(1);
-        }
-        return boost::any_cast<T>(it->second);
-    }
-
-    template <class T>
-    std::vector<T> get_list(std::string key) const {
-        return get<std::vector<T> >(key);
-    }
-
-    int get_enum(std::string key) const {
-        return get<int>(key);
-    }
-
-    bool contains(std::string key) const {
-        return storage.find(key) != storage.end();
-    }
-};
-
 
 struct ParseNode {
     ParseNode()
@@ -185,6 +149,9 @@ struct Synergy {
 
 template <class T>
 struct TypeNamer {
+    static std::string name() {
+        return typeid(T()).name();
+    }
 };
 
 template <>
@@ -272,25 +239,14 @@ struct TypeNamer<std::vector<T> > {
 };
 
 //DefaultValueNamer is for printing default values.
-//Maybe a better solution would be to implement "<<" for everything that's needed.
+//Maybe a better solution would be to implement "<<" for everything that's needed. Don't know.
 
 template <class T>
 struct DefaultValueNamer {
     static std::string toStr(T val) {
         std::ostringstream strs;
-        strs << val;
+        strs << std::boolalpha << val;
         return strs.str();
-    }
-};
-
-template <>
-struct DefaultValueNamer<bool> {
-    static std::string toStr(bool val) {
-        if (val) {
-            return "true";
-        } else {
-            return "false";
-        }
     }
 };
 
@@ -352,5 +308,52 @@ tree<T> subtree(
     return tr.subtree(ti, ti_next);
 }
 
+
+
+//Options is just a wrapper for map<string, boost::any>
+class Options {
+public:
+    std::map<std::string, boost::any> storage;
+
+    template <class T>
+    void set(std::string key, T value) {
+        storage[key] = value;
+    }
+
+    template <class T>
+    T get(std::string key) const {
+        std::map<std::string, boost::any>::const_iterator it;
+        it = storage.find(key);
+        if (it == storage.end()) {
+            std::cout << "attempt to retrieve nonexisting object of name "
+                      << key << " (type: " << TypeNamer<T>::name() << ")"
+                      << " from Options. Aborting." << std::endl;
+            exit(1);
+        }
+        try {
+            T result = boost::any_cast<T>(it->second);
+            return result;
+        } catch (const boost::bad_any_cast &bac) {
+            std::cout << "Invalid conversion while retrieving config options!"
+                      << std::endl 
+                      << key << " is not of type " << TypeNamer<T>::name() 
+                      << std::endl << "exiting" << std::endl; 
+            exit(1);
+        }
+    }
+
+    template <class T>
+    std::vector<T> get_list(std::string key) const {
+        return get<std::vector<T> >(key);
+    }
+
+    int get_enum(std::string key) const {
+        return get<int>(key);
+    }
+
+    bool contains(std::string key) const {
+        return storage.find(key) != storage.end();
+    }
+};
 
 #endif /* OPTION_PARSER_UTIL_H_ */

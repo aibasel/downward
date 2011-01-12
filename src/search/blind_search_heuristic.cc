@@ -37,6 +37,7 @@ return 0;
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.parse();
     if (parser.dry_run())
         return 0;
     else
