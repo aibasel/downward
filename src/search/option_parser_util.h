@@ -48,10 +48,10 @@ struct ParseError {
 
     std::string msg;
     ParseTree parse_tree;
-    
+
     friend std::ostream &operator<<(std::ostream &out, const ParseError &pe) {
-        out << "Parse Error: " << std::endl  
-            << pe.msg << " at: " << std::endl;
+        out << "Parse Error: " << std::endl
+        << pe.msg << " at: " << std::endl;
         kptree::print_tree_bracketed<ParseNode>(pe.parse_tree, out);
         out << std::endl;
         return out;
@@ -335,9 +335,9 @@ public:
             return result;
         } catch (const boost::bad_any_cast &bac) {
             std::cout << "Invalid conversion while retrieving config options!"
-                      << std::endl 
-                      << key << " is not of type " << TypeNamer<T>::name() 
-                      << std::endl << "exiting" << std::endl; 
+                      << std::endl
+                      << key << " is not of type " << TypeNamer<T>::name()
+                      << std::endl << "exiting" << std::endl;
             exit(1);
         }
     }

@@ -274,12 +274,12 @@ OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
 
 Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) { 
+    if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
         return Predefinitions<Heuristic *>::instance()->get(pt->value);
     } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
         return Registry<Heuristic *>::instance()->get(pt->value) (p);
-    //look if there's a scalar evaluator registered by this name,
-    //and cast (same behaviour as old parser)
+        //look if there's a scalar evaluator registered by this name,
+        //and cast (same behaviour as old parser)
     } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
         ScalarEvaluator *eval =
             Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
