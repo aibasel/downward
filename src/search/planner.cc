@@ -15,20 +15,8 @@ using namespace std;
 int main(int argc, const char **argv) {
     register_event_handlers();
 
-    string usage =
-        "usage: \n" +
-        string(argv[0]) + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
-        "* SEARCH (SearchEngine): configuration of the search algorithm\n"
-        "* OUTPUT (filename): preprocessor output\n\n"
-        "Options:\n"
-        "--heuristic HEURISTIC_PREDEFINITION\n"
-        "    Predefines a heuristic that can afterwards be referenced\n"
-        "    by the name that is specified in the definition.\n"
-        "--random-seed SEED\n"
-        "    Use random seed SEED\n\n"
-        "See http://www.fast-downward.org/ for details.";
     if (argc < 2) {
-        cout << usage << endl;
+        cout << OptionParser::usage(argv[0]) << endl;
         exit(1);
     }
 

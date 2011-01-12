@@ -1,5 +1,6 @@
 #include "option_parser.h"
 #include "tree_util.hh"
+#include "plugin.h"
 #include <string>
 #include <algorithm>
 #include <iostream>
@@ -55,9 +56,8 @@ static void get_help(string k) {
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
     get_help_templ<LandmarksGraph *>(pt);
-    cout << "For help with open lists, please use --help with no specifier."
-         << "Open lists are only registered when needed by other objects."
-         << endl;
+    OpenListPlugin<int>::register_open_lists();
+    get_help_templ<OpenList<int> *>(pt);
 }
 
 template <class T>
@@ -168,23 +168,101 @@ SearchEngine *OptionParser::parse_cmd_line(
             exit(0);
         } else {
             cerr << "unknown option " << arg << endl << endl;
-            string usage =
-                "usage: \n" +
-                string(argv[0]) + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
-                "* SEARCH (SearchEngine): configuration of the search algorithm\n"
-                "* OUTPUT (filename): preprocessor output\n\n"
-                "Options:\n"
-                "--heuristic HEURISTIC_PREDEFINITION\n"
-                "    Predefines a heuristic that can afterwards be referenced\n"
-                "    by the name that is specified in the definition.\n"
-                "--random-seed SEED\n"
-                "    Use random seed SEED\n\n"
-                "See http://www.fast-downward.org/ for details.";
-            cout << usage << endl;
+            cout << OptionParser::usage(argv[0]) << endl;
             exit(1);
         }
     }
     return engine;
+}
+
+string OptionParser::usage(string progname) {
+    string usage =
+        "usage: \n" +
+        progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
+        "* SEARCH (SearchEngine): configuration of the search algorithm\n"
+        "* OUTPUT (filename): preprocessor output\n\n"
+        "Options:\n"
+        "--help [NAME]\n"
+        "    Prints help for all heuristics, openlists, etc. called NAME."
+        "    Without parameter: prints help for everything available"
+        "--landmarks LANDMARKS_PREDEFINITION\n"
+        "    Predefines a set of landmarks that can afterwards be referenced\n"
+        "    by the name that is specified in the definition.\n"
+        "--heuristic HEURISTIC_PREDEFINITION\n"
+        "    Predefines a heuristic that can afterwards be referenced\n"
+        "    by the name that is specified in the definition.\n"
+        "--random-seed SEED\n"
+        "    Use random seed SEED\n\n"
+        "See http://www.fast-downward.org/ for details.";
+    return usage;
+}
+
+
+static ParseTree generate_parse_tree(const string config) {
+    ParseTree tr;
+    ParseTree::iterator top = tr.begin();
+    ParseTree::sibling_iterator pseudoroot =
+        tr.insert(top, ParseNode("pseudoroot", ""));
+    ParseTree::sibling_iterator cur_node = pseudoroot;
+    string buffer(""), key("");
+    char next=' ';
+    for (size_t i(0); i != config.size(); ++i) {
+        next = config.at(i);
+        if ((next == '(' || next == ')' || next == ',') && buffer.size() > 0) {
+            tr.append_child(cur_node, ParseNode(buffer, key));
+            buffer.clear();
+            key.clear();
+        }
+        switch (next) {
+        case ' ':
+            break;
+        case '(':
+            cur_node = last_child(tr, cur_node);
+            break;
+        case ')':
+            if (cur_node == top)
+                throw ParseError("missing (", *cur_node);
+            cur_node = tr.parent(cur_node);
+            break;
+        case '[':
+            if (!buffer.empty())
+                throw ParseError("misplaced opening bracket [", *cur_node);
+            tr.append_child(cur_node, ParseNode("list", key));
+            key.clear();
+            cur_node = last_child(tr, cur_node);
+            break;
+        case ']':
+            if (!buffer.empty()) {
+                tr.append_child(cur_node, ParseNode(buffer, key));
+                buffer.clear();
+                key.clear();
+            }
+            if (cur_node->value.compare("list") != 0)
+                throw ParseError("mismatched brackets", *cur_node);
+            cur_node = tr.parent(cur_node);
+            break;
+        case ',':
+            break;
+        case '=':
+            if (buffer.empty())
+                throw ParseError("expected keyword before =", *cur_node);
+            key = buffer;
+            buffer.clear();
+            break;
+        default:
+            buffer.push_back(tolower(next));
+            break;
+        }
+    }
+    if (next != ')')  
+        throw ParseError("expected ) at end of configuration after " + buffer, *cur_node);
+    if (cur_node->value.compare("pseudoroot") != 0)
+        throw ParseError("missing )", *cur_node);
+
+    //the real parse tree is the first (and only) child of the pseudoroot.
+    //pseudoroot is only a placeholder.
+    ParseTree real_tr = subtree(tr, tr.begin(pseudoroot));
+    return real_tr;
 }
 
 OptionParser::OptionParser(const string config, bool dr)
@@ -304,66 +382,4 @@ ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
 }
 
-ParseTree OptionParser::generate_parse_tree(const string config) {
-    ParseTree tr;
-    ParseTree::iterator top = tr.begin();
-    ParseTree::sibling_iterator cur_node =
-        tr.insert(top, ParseNode("pseudoroot", ""));
-    ParseTree::sibling_iterator pseudoroot = cur_node;
-    string buffer(""), key("");
-    for (size_t i(0); i != config.size(); ++i) {
-        char next = config.at(i);
-        if ((next == '(' || next == ')' || next == ',') && buffer.size() > 0) {
-            tr.append_child(cur_node, ParseNode(buffer, key));
-            buffer.clear();
-            key.clear();
-        }
-        switch (next) {
-        case ' ':
-            break;
-        case '(':
-            cur_node = last_child(tr, cur_node);
-            break;
-        case ')':
-            if (cur_node == top)
-                throw ParseError("missing (", *cur_node);
-            cur_node = tr.parent(cur_node);
-            break;
-        case '[':
-            if (!buffer.empty())
-                throw ParseError("misplaced opening bracket [", *cur_node);
-            tr.append_child(cur_node, ParseNode("list", key));
-            key.clear();
-            cur_node = last_child(tr, cur_node);
-            break;
-        case ']':
-            if (!buffer.empty()) {
-                tr.append_child(cur_node, ParseNode(buffer, key));
-                buffer.clear();
-                key.clear();
-            }
-            if (cur_node->value.compare("list") != 0)
-                throw ParseError("mismatched brackets", *cur_node);
-            cur_node = tr.parent(cur_node);
-            break;
-        case ',':
-            break;
-        case '=':
-            if (buffer.empty())
-                throw ParseError("expected keyword before =", *cur_node);
-            key = buffer;
-            buffer.clear();
-            break;
-        default:
-            buffer.push_back(tolower(next));
-            break;
-        }
-    }
-    if (cur_node->value.compare("pseudoroot") != 0)
-        throw ParseError("missing )", *cur_node);
 
-    //the real parse tree is the first (and only) child of the pseudoroot.
-    //pseudoroot is only a placeholder.
-    ParseTree real_tr = subtree(tr, tr.begin(pseudoroot));
-    return real_tr;
-}
