@@ -105,6 +105,8 @@ def add_inequality_preconditions(task, reachable_action_params):
     new_actions = []
     for action in modified_task.actions:
         inequal_params = []
+        if len(action.parameters) < 2:
+            continue
         combs = itertools.combinations(range(len(action.parameters)), 2)
         for pos1, pos2 in combs:
             inequality = True
