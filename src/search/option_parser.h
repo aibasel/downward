@@ -109,10 +109,9 @@ public:
     OptionParser(std::string config, bool dr);
     OptionParser(ParseTree pt, bool dr);
 
-    static ParseTree generate_parse_tree(const std::string config); //TODO: move this outside
-
     //this is where input from the commandline goes:
     static SearchEngine *parse_cmd_line(int argc, const char **argv, bool dr);
+    static std::string usage(std::string progname);
 
 
     //this function initiates parsing of T (the root node of parse_tree

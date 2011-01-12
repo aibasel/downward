@@ -348,7 +348,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         sum_evals.push_back(g);
         ScalarEvaluator *eval = opts.get<ScalarEvaluator *>("eval");
         sum_evals.push_back(eval);
-        SumEvaluator *f_eval = new SumEvaluator(sum_evals);
+        ScalarEvaluator *f_eval = new SumEvaluator(sum_evals);
 
         // use eval for tiebreaking
         std::vector<ScalarEvaluator *> evals;

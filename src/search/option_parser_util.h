@@ -309,7 +309,6 @@ tree<T> subtree(
 }
 
 
-
 //Options is just a wrapper for map<string, boost::any>
 class Options {
 public:
