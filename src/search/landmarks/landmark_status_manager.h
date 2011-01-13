@@ -9,12 +9,12 @@ private:
     hash_map<StateProxy, vector<bool> > reached_lms;
 
     bool do_intersection;
-    LandmarksGraph &lm_graph;
+    LandmarkGraph &lm_graph;
 
     bool landmark_is_leaf(const LandmarkNode &node, const vector<bool> &reached) const;
     bool check_lost_landmark_children_needed_again(const LandmarkNode &node) const;
 public:
-    LandmarkStatusManager(LandmarksGraph &graph);
+    LandmarkStatusManager(LandmarkGraph &graph);
     virtual ~LandmarkStatusManager();
 
     void clear_reached();

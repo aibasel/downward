@@ -3,18 +3,18 @@
 
 #include <set>
 
-class LandmarksGraph;
+class LandmarkGraph;
 class LandmarkNode;
 
 class LandmarkCostAssignment {
     const std::set<int> empty;
 protected:
-    LandmarksGraph &lm_graph;
+    LandmarkGraph &lm_graph;
 
     const std::set<int> &get_achievers(int lmn_status,
                                        const LandmarkNode &lmn) const;
 public:
-    explicit LandmarkCostAssignment(LandmarksGraph &graph);
+    explicit LandmarkCostAssignment(LandmarkGraph &graph);
     virtual ~LandmarkCostAssignment();
 
     virtual double cost_sharing_h_value() = 0;
@@ -23,7 +23,7 @@ public:
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
     bool use_action_landmarks;
 public:
-    LandmarkUniformSharedCostAssignment(LandmarksGraph &graph, bool use_action_landmarks_);
+    LandmarkUniformSharedCostAssignment(LandmarkGraph &graph, bool use_action_landmarks_);
     virtual ~LandmarkUniformSharedCostAssignment();
 
     virtual double cost_sharing_h_value();
@@ -38,7 +38,7 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
     OsiSolverInterface *si;
 #endif
 public:
-    explicit LandmarkEfficientOptimalSharedCostAssignment(LandmarksGraph &graph);
+    explicit LandmarkEfficientOptimalSharedCostAssignment(LandmarkGraph &graph);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 
     virtual double cost_sharing_h_value();

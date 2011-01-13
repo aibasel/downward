@@ -13,7 +13,7 @@ class ScalarEvaluator;
 class SearchEngine;
 template<class Entry>
 class OpenList;
-class LandmarksGraph;
+class LandmarkGraph;
 
 struct ParseError {
     int pos;
@@ -78,11 +78,11 @@ public:
         ConfigRef, int, int &, std::vector<Heuristic *> &);
     typedef OpenList<state_var_t *> *(*OpenListFactory)(
         ConfigRef, int, int &);
-    typedef LandmarksGraph *(*LandmarkGraphFactory)(
+    typedef LandmarkGraph *(*LandmarkGraphFactory)(
         ConfigRef, int, int &, bool);
 private:
     std::map<std::string, Heuristic *> predefined_heuristics;
-    std::map<std::string, LandmarksGraph *> predefined_lm_graphs;
+    std::map<std::string, LandmarkGraph *> predefined_lm_graphs;
 
     std::map<std::string, EngineFactory> engine_map;
     std::map<std::string, ScalarEvalFactory> scalar_evaluator_map;
@@ -116,7 +116,7 @@ public:
     ScalarEvaluator *parse_scalar_evaluator(
         const std::vector<std::string> &input, int start, int &end,
         bool dry_run);
-    LandmarksGraph *parse_lm_graph(
+    LandmarkGraph *parse_lm_graph(
         const std::vector<std::string> &input, int start, int &end,
         bool dry_run);
     Heuristic *parse_heuristic(const std::vector<std::string> &input,

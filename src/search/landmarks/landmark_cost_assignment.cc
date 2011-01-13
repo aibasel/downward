@@ -32,7 +32,7 @@ typedef OsiCpxSolverInterface OsiXxxSolverInterface;
 using namespace std;
 
 
-LandmarkCostAssignment::LandmarkCostAssignment(LandmarksGraph &graph)
+LandmarkCostAssignment::LandmarkCostAssignment(LandmarkGraph &graph)
     : lm_graph(graph) {
 }
 
@@ -55,7 +55,7 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 /* Uniform cost partioning */
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    LandmarksGraph &graph, bool use_action_landmarks_)
+    LandmarkGraph &graph, bool use_action_landmarks_)
     : LandmarkCostAssignment(graph), use_action_landmarks(use_action_landmarks_) {
 }
 
@@ -163,7 +163,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarksGraph &graph)
+    LandmarkGraph &graph)
     : LandmarkCostAssignment(graph) {
 #ifdef USE_LP
     si = new OsiXxxSolverInterface();
