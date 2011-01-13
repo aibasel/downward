@@ -250,9 +250,18 @@ public:
     bool use_orders() const { return !no_orders; }
     void insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj);
     
-    // made public from protected
+    // made public from protected for h_m_landmarks
     void edge_add(LandmarkNode &from, LandmarkNode &to, edge_type type);
     
+    // made public from proteced for rpg_exhaust
+    inline bool relaxed_task_solvable(bool level_out,
+                                      const LandmarkNode *exclude,
+                                      bool compute_lvl_op = false) const {
+                                          vector<vector<int> > lvl_var;
+                                          vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
+                                          return relaxed_task_solvable(lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
+                                      }
+    LandmarkNode &landmark_add_simple(const pair<int, int> &lm);
     
 private:
     Exploration *exploration;
@@ -310,13 +319,6 @@ protected:
     //bool inconsistent(const pair<int, int> &a, const pair<int, int> &b) const;
     void collect_ancestors(hash_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
                            bool use_reasonable);
-    inline bool relaxed_task_solvable(bool level_out,
-                                      const LandmarkNode *exclude,
-                                      bool compute_lvl_op = false) const {
-        vector<vector<int> > lvl_var;
-        vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
-        return relaxed_task_solvable(lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
-    }
     bool relaxed_task_solvable(vector<vector<int> > &lvl_var,
                                vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op,
                                bool level_out,
@@ -336,7 +338,7 @@ protected:
 
     int relaxed_plan_length_without(LandmarkNode *lm);
 
-    LandmarkNode &landmark_add_simple(const pair<int, int> &lm);
+
     LandmarkNode &landmark_add_disjunctive(const set<pair<int, int> > &lm);
     //void edge_add(LandmarkNode &from, LandmarkNode &to,
     //              edge_type type);
