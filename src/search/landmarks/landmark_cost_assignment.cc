@@ -1,6 +1,6 @@
 #include "landmark_cost_assignment.h"
 
-#include "landmarks_graph.h"
+#include "landmark_graph.h"
 
 #ifdef USE_LP
 #pragma GCC diagnostic ignored "-Wunused-parameter"

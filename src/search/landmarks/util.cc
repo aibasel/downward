@@ -1,6 +1,6 @@
 #include "util.h"
 
-#include "landmarks_graph.h"
+#include "landmark_graph.h"
 
 #include "../operator.h"
 

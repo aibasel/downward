@@ -1,7 +1,7 @@
 #include "lama_ff_synergy.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "landmarks_graph_rpg_sasp.h"
+#include "landmark_graph_rpg_sasp.h"
 
 static SynergyPlugin lama_ff_synergy_plugin(
     "lm_ff_syn", LamaFFSynergy::create_heuristics);

@@ -3,7 +3,7 @@
 
 #include "../state.h"
 #include "../heuristic.h"
-#include "landmarks_graph.h"
+#include "landmark_graph.h"
 #include "exploration.h"
 #include "landmark_status_manager.h"
 #include "landmark_cost_assignment.h"
