@@ -1,9 +1,9 @@
-#ifndef LANDMARKS_EXPLORATION_H
-#define LANDMARKS_EXPLORATION_H
+#ifndef LANDMARKS_LANDMARK_EXPLORATION_H
+#define LANDMARKS_LANDMARK_EXPLORATION_H
 
 #include "../heuristic.h"
 #include "../globals.h"
-#include "landmarks_types.h"
+#include "landmark_types.h"
 
 #include <vector>
 #include <ext/hash_set>

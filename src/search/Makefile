@@ -61,16 +61,16 @@ HEADERS += mas_heuristic.h \
            variable_order_finder.h
 
 HEADERS += landmarks/exploration.h \
-           landmarks/h_m_landmarks.h \
+           landmarks/h_m_landmark.h \
            landmarks/lama_ff_synergy.h \
            landmarks/landmark_cost_assignment.h \
            landmarks/landmark_count_heuristic.h \
            landmarks/landmark_status_manager.h \
-           landmarks/landmarks_graph.h \
-           landmarks/landmarks_graph_rpg_exhaust.h \
-           landmarks/landmarks_graph_rpg_sasp.h \
-           landmarks/landmarks_graph_rpg_search.h \
-           landmarks/landmarks_graph_zhu_givan.h \
+           landmarks/landmark_graph.h \
+           landmarks/landmark_graph_rpg_exhaust.h \
+           landmarks/landmark_graph_rpg_sasp.h \
+           landmarks/landmark_graph_rpg_search.h \
+           landmarks/landmark_graph_zhu_givan.h \
            landmarks/util.h
 
 HEADERS += learning/AODE.h \
