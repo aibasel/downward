@@ -1,7 +1,6 @@
 # -*- coding: latin-1 -*-
 
 from __future__ import with_statement
-import itertools
 
 import invariant_finder
 import pddl
@@ -100,41 +99,8 @@ def collect_all_mutex_groups(groups, atoms):
     all_groups += [[fact] for fact in uncovered_facts]
     return all_groups
 
-def add_inequality_preconditions(task, reachable_action_params):
-    modified_task = task.copy()
-    new_actions = []
-    for action in modified_task.actions:
-        inequal_params = []
-        if len(action.parameters) < 2:
-            new_actions.append(action)
-            continue
-        combs = itertools.combinations(range(len(action.parameters)), 2)
-        for pos1, pos2 in combs:
-            inequality = True
-            for params in reachable_action_params[action.name]:
-                if params[pos1] == params[pos2]:
-                    inequality = False
-                    break
-            if inequality:
-                inequal_params.append((pos1, pos2))
-        new_action = action.copy()
-        new_precond_parts = list(action.precondition.parts)
-        for pos1, pos2 in inequal_params:
-            param1 = action.parameters[pos1].name
-            param2 = action.parameters[pos2].name
-            new_cond = pddl.NegatedAtom("=", (param1, param2))
-            new_precond_parts.append(new_cond)
-        precond = new_action.precondition.change_parts(new_precond_parts)
-        new_action.precondition = precond
-        new_actions.append(new_action)
-
-    modified_task.actions = new_actions
-    return modified_task
-
 def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
-    with timers.timing("Adding inequality preconditions"):
-        new_task = add_inequality_preconditions(task, reachable_action_params) 
-    groups = invariant_finder.get_groups(new_task)
+    groups = invariant_finder.get_groups(task, reachable_action_params)
     with timers.timing("Instantiating groups"):
         groups = instantiate_groups(groups, task, atoms)
 
