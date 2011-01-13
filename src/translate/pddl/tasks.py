@@ -32,14 +32,6 @@ class Task(object):
         self.axioms.append(axiom)
         return axiom
 
-    def copy(self):
-        t = Task(self.domain_name, self.task_name, self.requirements, 
-                 self.types, self.objects, self.predicates, self.functions,
-                 self.init, self.goal, self.actions, self.axioms,
-                 self.use_min_cost_metric)
-        t.axiom_counter = self.axiom_counter
-        return t
-        
     def parse(domain_pddl, task_pddl):
         domain_name, requirements, types, constants, predicates, functions, actions, axioms \
                      = parse_domain(domain_pddl)
