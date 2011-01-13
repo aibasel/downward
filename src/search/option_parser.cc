@@ -59,10 +59,10 @@ ScalarEvaluator *OptionParser::parse_scalar_evaluator(
     return it->second(input, start, end, dry_run);
 }
 
-LandmarksGraph *OptionParser::parse_lm_graph(
+LandmarkGraph *OptionParser::parse_lm_graph(
     const vector<string> &input, int start, int &end, bool dry_run) {
     // predefined object
-    map<string, LandmarksGraph *>::iterator iter;
+    map<string, LandmarkGraph *>::iterator iter;
     iter = predefined_lm_graphs.find(input[start]);
     if (iter != predefined_lm_graphs.end()) {
         end = start;
