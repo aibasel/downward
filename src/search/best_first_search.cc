@@ -17,8 +17,8 @@ OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref)
     priority = 0;
 }
 
-BestFirstSearchEngine::BestFirstSearchEngine()
-    : current_state(*g_initial_state) {
+BestFirstSearchEngine::BestFirstSearchEngine(const SearchEngineOptions &options)
+    : SearchEngine(options), current_state(*g_initial_state) {
     generated_states = 0;
     current_predecessor = 0;
     current_operator = 0;
@@ -211,6 +211,7 @@ SearchEngine *BestFirstSearchEngine::create(const vector<string> &config,
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
+    SearchEngineOptions common_options;
     vector<Heuristic *> evals;
     OptionParser::instance()->parse_heuristic_list(config, start + 2,
                                                    end, false, evals, dry_run);
@@ -223,6 +224,8 @@ SearchEngine *BestFirstSearchEngine::create(const vector<string> &config,
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+        common_options.add_options_to_parser(option_parser);
+
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.parse_options(config, end, end, dry_run);
@@ -233,7 +236,7 @@ SearchEngine *BestFirstSearchEngine::create(const vector<string> &config,
 
     BestFirstSearchEngine *engine = 0;
     if (!dry_run) {
-        engine = new BestFirstSearchEngine();
+        engine = new BestFirstSearchEngine(common_options);
 
         set<Heuristic *> hset;
         set<Heuristic *> pset;

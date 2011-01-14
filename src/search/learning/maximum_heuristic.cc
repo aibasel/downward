@@ -6,7 +6,8 @@
 #include <cassert>
 #include <limits>
 
-MaxHeuristic::MaxHeuristic(bool arff) : num_evals(0), arff_out("max.arff") {
+MaxHeuristic::MaxHeuristic(const HeuristicOptions &options, bool arff)
+    : Heuristic(options), num_evals(0), arff_out("max.arff") {
     //name = "max";
     dump_arff = arff;
     max_diff = 5;

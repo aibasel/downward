@@ -22,7 +22,7 @@ typedef vector<pair<int, int> > tuple;
  */
 class HMHeuristic : public Heuristic {
 public:
-    HMHeuristic(int _m);
+    HMHeuristic(const HeuristicOptions &options, int _m);
     virtual ~HMHeuristic();
     static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end, bool dry_run);

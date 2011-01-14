@@ -240,6 +240,13 @@ void ValueTransition::simplify_labels(
                 HashMap::iterator found = label_index.find(subset);
                 if (found != label_index.end()) {
                     if (old_labels[label_no].op->get_cost() >= old_labels[found->second].op->get_cost()) {
+                        /* TODO: Depending on how clever we want to
+                           be, we could prune based on the *adjusted*
+                           cost for the respective heuristic instead.
+                           This would potentially allow us more pruning
+                           when using unit costs as adjusted costs.
+                           Seems a minor optimization though.
+                        */
                         match = true;
                         break;
                     }

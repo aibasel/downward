@@ -131,13 +131,14 @@ public:
         bool disjunctive_landmarks;
         bool conjunctive_landmarks;
         bool no_orders;
+        HeuristicOptions heuristic_options;
+        int lm_cost_type;
 
         LandmarkGraphOptions();
 
         void add_option_to_parser(NamedOptionParser &option_parser);
     };
-    class Pddl_proposition {
-public:
+    struct Pddl_proposition {
         string predicate;
         vector<string> arguments;
         string to_string() const {
@@ -258,6 +259,7 @@ protected:
     bool disjunctive_landmarks;
     bool conjunctive_landmarks;
     bool no_orders;
+    OperatorCost lm_cost_type;
 
     int landmarks_count;
     int conj_lms;

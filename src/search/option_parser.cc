@@ -265,6 +265,32 @@ void OptionParser::parse_heuristic_list(
     }
 }
 
+void OptionParser::parse_landmark_graph_list(
+    const vector<string> &input, int start, int &end, bool only_one,
+    vector<LandmarksGraph *> &lm_graphs, bool dry_run) {
+    end = start;
+    bool break_loop = false;
+    while (knows_lm_graph(input[end])) {
+        if (only_one && lm_graphs.size() > 0)
+            throw ParseError(end);
+        LandmarksGraph *lmg =
+            parse_lm_graph(input, end, end, dry_run);
+        lm_graphs.push_back(lmg);
+        end++;
+        if (input[end] != ",") {
+            break_loop = true;
+            break;
+        }
+        end++;
+    }
+    if (!lm_graphs.empty()) {
+        end--;
+        if (!break_loop) {
+            end--;
+        }
+    }
+}
+
 void OptionParser::parse_search_engine_list(
     const vector<string> &input, int start, int &end, bool only_one,
     vector<int> &engines, bool dry_run) {
@@ -543,6 +569,7 @@ void NamedOptionParser::parse_heuristic_list_option(
     OptionParser *parser = OptionParser::instance();
 
     if (config[end] == "(" && config[end + 1] == ")") {
+        end++;
         return;
     } else if (config[end] == "(") {
         end++;

@@ -33,6 +33,7 @@ protected:
     state_var_t *current_predecessor_buffer;
     const Operator *current_operator;
     int current_g;
+    int current_real_g;
 
     void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     virtual void initialize();
@@ -46,8 +47,9 @@ protected:
     void get_successor_operators(vector<const Operator *> &ops);
 public:
 
-    GeneralLazyBestFirstSearch(OpenList<OpenListEntryLazy> *open,
-                               bool reopen_closed, int g_bound);
+    GeneralLazyBestFirstSearch(const SearchEngineOptions &options,
+                               OpenList<OpenListEntryLazy> *open,
+                               bool reopen_closed);
     virtual ~GeneralLazyBestFirstSearch();
 
     virtual void statistics() const;
