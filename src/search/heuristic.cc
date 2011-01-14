@@ -1,11 +1,22 @@
 #include "heuristic.h"
 #include "operator.h"
+#include "option_parser.h"
+#include "operator_cost.h"
 
 #include <cassert>
+#include <cstdlib>
+
 using namespace std;
 
-Heuristic::Heuristic() {
+Heuristic::Heuristic(const HeuristicOptions &options) {
     heuristic = NOT_INITIALIZED;
+
+    if (options.cost_type < 0 || options.cost_type >= MAX_OPERATOR_COST) {
+        cerr << "error: unknown operator cost type: " << options.cost_type << endl;
+        exit(2);
+    }
+
+    cost_type = static_cast<OperatorCost>(options.cost_type);
 }
 
 Heuristic::~Heuristic() {
@@ -63,12 +74,8 @@ void Heuristic::get_preferred_operators(std::vector<const Operator *> &result) {
                   preferred_operators.end());
 }
 
-bool Heuristic::reach_state(const State &parent_state,
-                            const Operator &op, const State &state) {
-    // todo: just for warning
-    if ((parent_state.hash() == state.hash()) && (op.get_cost() == 0))
-        cout << "weird" << endl;
-
+bool Heuristic::reach_state(const State & /*parent_state*/,
+                            const Operator & /*op*/, const State & /*state*/) {
     return false;
 }
 
@@ -88,4 +95,19 @@ bool Heuristic::dead_end_is_reliable() const {
 
 void Heuristic::set_evaluator_value(int val) {
     evaluator_value = val;
+}
+
+int Heuristic::get_adjusted_cost(const Operator &op) const {
+    return get_adjusted_action_cost(op, cost_type);
+}
+
+
+HeuristicOptions::HeuristicOptions()
+    : cost_type(NORMAL) {
+}
+
+void HeuristicOptions::add_option_to_parser(NamedOptionParser &option_parser) {
+    option_parser.add_int_option("cost_type",
+                                 &cost_type,
+                                 "operator cost adjustment type");
 }

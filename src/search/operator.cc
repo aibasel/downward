@@ -40,8 +40,7 @@ Operator::Operator(istream &in, bool axiom) {
             cost = g_use_metric ? op_cost : 1;
         }
         g_min_action_cost = min(g_min_action_cost, cost);
-
-        // TODO: add option to increase all action costs by 1
+        g_max_action_cost = max(g_max_action_cost, cost);
 
         check_magic(in, "end_operator");
     } else {

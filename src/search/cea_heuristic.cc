@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <limits>
 #include <vector>
 using namespace std;
 
@@ -31,11 +32,7 @@ static ContextEnhancedAdditiveHeuristic *g_HACK = 0;
 
 inline void ContextEnhancedAdditiveHeuristic::add_to_heap(
     LocalProblemNode *node) {
-    int bucket_no = node->priority();
-    if (bucket_no >= buckets.size())
-        buckets.resize(max<size_t>(bucket_no + 1, 2 * buckets.size()));
-    buckets[bucket_no].push_back(node);
-    ++heap_size;
+    node_queue.push(node->priority(), node);
 }
 
 LocalTransition::LocalTransition(
@@ -69,7 +66,7 @@ void LocalTransition::on_source_expanded(const State &state) {
        the node that will tell us the correct value. */
 
     assert(source->cost >= 0);
-    assert(source->cost < LocalProblem::QUITE_A_LOT);
+    assert(source->cost < numeric_limits<int>::max());
 
     target_cost = source->cost + action_cost;
 
@@ -172,7 +169,6 @@ void LocalProblem::build_nodes_for_variable(int var_no) {
         nodes.push_back(LocalProblemNode(this, num_parents));
 
     // Compile the DTG arcs into LocalTransition objects.
-    int action_cost = dtg->is_axiom ? 0 : 1;
     for (int value = 0; value < nodes.size(); value++) {
         LocalProblemNode &node = nodes[value];
         const ValueNode &dtg_node = dtg->nodes[value];
@@ -182,6 +178,7 @@ void LocalProblem::build_nodes_for_variable(int var_no) {
             LocalProblemNode &target = nodes[target_value];
             for (int j = 0; j < dtg_trans.cea_labels.size(); j++) {
                 const ValueTransitionLabel &label = dtg_trans.cea_labels[j];
+                int action_cost = g_HACK->get_adjusted_cost(*label.op);
                 LocalTransition trans(&node, &target, &label, action_cost);
                 node.outgoing_transitions.push_back(trans);
             }
@@ -225,8 +222,9 @@ void LocalProblem::initialize(int base_priority_, int start_value,
 
     for (int to_value = 0; to_value < nodes.size(); to_value++) {
         nodes[to_value].expanded = false;
-        nodes[to_value].cost = QUITE_A_LOT;
+        nodes[to_value].cost = numeric_limits<int>::max();
         nodes[to_value].waiting_list.clear();
+        nodes[to_value].reached_by = 0;
     }
 
     LocalProblemNode *start = &nodes[start_value];
@@ -238,17 +236,22 @@ void LocalProblem::initialize(int base_priority_, int start_value,
 }
 
 void LocalProblemNode::mark_helpful_transitions(const State &state) {
-    assert(cost >= 0 && cost < LocalProblem::QUITE_A_LOT);
+    assert(cost >= 0 && cost < numeric_limits<int>::max());
     if (reached_by) {
-        if (reached_by->target_cost == reached_by->action_cost) {
-            // Transition applicable, all preconditions achieved.
-            const Operator *op = reached_by->label->op;
-            assert(!op->is_axiom());
-            assert(op->is_applicable(state));
-            g_HACK->set_preferred(op);
+        LocalTransition *first_on_path = reached_by;
+        reached_by = 0; // Clear to avoid revisiting this node later.
+        if (first_on_path->target_cost == first_on_path->action_cost) {
+            // Transition possibly applicable.
+            const Operator *op = first_on_path->label->op;
+            if (g_min_action_cost != 0 || op->is_applicable(state)) {
+                // If there are no zero-cost actions, the target_cost/
+                // action_cost test above already guarantees applicability.
+                assert(!op->is_axiom());
+                g_HACK->set_preferred(op);
+            }
         } else {
             // Recursively compute helpful transitions for precondition variables.
-            const vector<LocalAssignment> &precond = reached_by->label->precond;
+            const vector<LocalAssignment> &precond = first_on_path->label->precond;
             int *parent_vars = &*owner->causal_graph_parents->begin();
             for (int i = 0; i < precond.size(); i++) {
                 int precond_value = precond[i].value;
@@ -264,13 +267,13 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
     }
 }
 
-ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic() {
+ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
+    const HeuristicOptions &options) : Heuristic(options) {
     if (g_HACK)
         abort();
     g_HACK = this;
     goal_problem = 0;
     goal_node = 0;
-    heap_size = -1;
 }
 
 ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
@@ -312,43 +315,51 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
 }
 
 void ContextEnhancedAdditiveHeuristic::initialize_heap() {
-    /* This was just "buckets.clear()", but it may be advantageous to
-       keep the empty buckets around so that there are fewer
-       reallocations. At least changing this from buckets.clear() gave
-       a significant speed boost (about 7%) for depots #10 on alfons.
-    */
-    for (int i = 0; i < buckets.size(); i++)
-        buckets[i].clear();
-    heap_size = 0;
+    node_queue.clear();
 }
 
 int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
-    for (int curr_priority = 0; heap_size != 0; curr_priority++) {
-        assert(curr_priority < buckets.size());
-        for (int pos = 0; pos < buckets[curr_priority].size(); pos++) {
-            LocalProblemNode *node = buckets[curr_priority][pos];
-            assert(node->owner->is_initialized());
-            if (node->priority() < curr_priority)
-                continue;
-            if (node == goal_node)
-                return node->cost;
+    while (!node_queue.empty()) {
+        pair<int, LocalProblemNode *> top_pair = node_queue.pop();
+        int curr_priority = top_pair.first;
+        LocalProblemNode *node = top_pair.second;
 
-            assert(node->priority() == curr_priority);
-            node->on_expand();
-            for (int i = 0; i < node->outgoing_transitions.size(); i++)
-                node->outgoing_transitions[i].on_source_expanded(state);
-        }
-        heap_size -= buckets[curr_priority].size();
-        buckets[curr_priority].clear();
+        assert(node->owner->is_initialized());
+        if (node->priority() < curr_priority)
+            continue;
+        if (node == goal_node)
+            return node->cost;
+
+        assert(node->priority() == curr_priority);
+        node->on_expand();
+        for (int i = 0; i < node->outgoing_transitions.size(); i++)
+            node->outgoing_transitions[i].on_source_expanded(state);
     }
     return DEAD_END;
 }
 
 ScalarEvaluator *ContextEnhancedAdditiveHeuristic::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+    HeuristicOptions common_options;
+
+    if (config.size() > start + 2 && config[start + 1] == "(") {
+        end = start + 2;
+        if (config[end] != ")") {
+            NamedOptionParser option_parser;
+            common_options.add_option_to_parser(option_parser);
+
+            option_parser.parse_options(config, end, end, dry_run);
+            end++;
+        }
+        if (config[end] != ")")
+            throw ParseError(end);
+    } else {
+        end = start;
+    }
+
+    if (dry_run) {
         return 0;
-    else
-        return new ContextEnhancedAdditiveHeuristic;
+    } else {
+        return new ContextEnhancedAdditiveHeuristic(common_options);
+    }
 }
