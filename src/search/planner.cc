@@ -8,6 +8,7 @@
 #include "operator.h"
 #include "option_parser.h"
 #include "pref_evaluator.h"
+#include "rng.h"
 #include "sum_evaluator.h"
 #include "timer.h"
 #include "utilities.h"
@@ -75,7 +76,7 @@ int main(int argc, const char **argv) {
             engine = OptionParser::instance()->parse_search_engine(argv[i]);
         } else if (arg.compare("--random-seed") == 0) {
             ++i;
-            srand(atoi(argv[i]));
+            g_rng.seed(atoi(argv[i]));
             cout << "random seed " << argv[i] << endl;
         } else if (arg.compare("--plan-file") == 0) {
             ++i;

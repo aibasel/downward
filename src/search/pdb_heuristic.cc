@@ -115,7 +115,8 @@ static ScalarEvaluatorPlugin pdb_heuristic_plugin("pdb", create);
     cout << "PDB construction time: " << timer << endl;
 }*/
 
-PDBHeuristic::PDBHeuristic(const vector<int> &pattern) {
+PDBHeuristic::PDBHeuristic(const vector<int> &pattern)
+    : Heuristic(HeuristicOptions()) {
     verify_no_axioms_no_cond_effects();
     Timer timer;
     set_pattern(pattern);
