@@ -16,7 +16,8 @@ using namespace std;
 static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
 static ScalarEvaluatorPlugin pdbcollection_heuristic_plugin("pdbs", create);
 
-PDBCollectionHeuristic::PDBCollectionHeuristic(const vector<vector<int> > &pattern_collection) {
+PDBCollectionHeuristic::PDBCollectionHeuristic(const vector<vector<int> > &pattern_collection)
+    : Heuristic(HeuristicOptions()) {
     Timer timer;
     for (int i = 0; i < pattern_collection.size(); ++i) {
         pattern_databases.push_back(new PDBHeuristic(pattern_collection[i]));

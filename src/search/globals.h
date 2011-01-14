@@ -18,6 +18,7 @@ class State;
 class SuccessorGenerator;
 class Timer;
 class HeuristicOptions;
+class RandomNumberGenerator;
 
 bool test_goal(const State &state);
 void save_plan(const vector<const Operator *> &plan, int iter);
@@ -48,5 +49,6 @@ extern CausalGraph *g_causal_graph;
 extern HeuristicOptions g_default_heuristic_options;
 extern Timer g_timer;
 extern string g_plan_filename;
+extern RandomNumberGenerator g_rng;
 
 #endif
