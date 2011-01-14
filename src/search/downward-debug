@@ -1,0 +1,8 @@
+#! /bin/bash
+BASEDIR="$(dirname "$0")"
+TEMPFILE=downward.tmp.$$
+cat > $TEMPFILE
+STATE_SIZE=$("$BASEDIR/dispatch" $TEMPFILE)
+echo Dispatcher selected state size $STATE_SIZE.
+"$BASEDIR/downward-$STATE_SIZE-debug" "$@" < $TEMPFILE
+rm -f $TEMPFILE
