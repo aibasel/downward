@@ -142,13 +142,13 @@ public:
     void error(std::string msg);
     void warning(std::string msg);
 
-    Options parse(); //parse is not a good name for this function. It just does some checks and returns the parsed options. Change?
+    Options parse(); //parse is not the best name for this function. It just does some checks and returns the parsed options Parsing happens before that. Change?
     ParseTree *get_parse_tree();
     void set_parse_tree(const ParseTree &pt);
     void set_help_mode(bool m);
 
-    bool dry_run();
-    bool help_mode();
+    bool dry_run() const;
+    bool help_mode() const;
 
 private:
     Options opts;

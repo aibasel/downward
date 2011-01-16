@@ -28,7 +28,7 @@ void OptionParser::warning(string msg) {
 
 
 /*
-Functions for printing help
+Functions for printing help:
 */
 
 void OptionParser::set_help_mode(bool m) {
@@ -80,7 +80,13 @@ static void get_full_help() {
     get_full_help_templ<OpenList<short *> *>();
 }
 
-//takes a string of the form "word1, word2, word3 " and converts it to a vector
+
+/*
+Predefining landmarks and heuristics:
+*/
+
+//takes a string of the form "word1, word2, word3 " and converts it to a vector 
+//(used for predefining synergies)
 static std::vector<std::string> to_list(std::string s) {
     std::vector<std::string> result;
     std::string buffer;
@@ -136,6 +142,9 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
 }
 
 
+/*
+Parse command line options
+*/
 
 SearchEngine *OptionParser::parse_cmd_line(
     int argc, const char **argv, bool dry_run) {
@@ -366,11 +375,11 @@ Options OptionParser::parse() {
     return opts;
 }
 
-bool OptionParser::dry_run() {
+bool OptionParser::dry_run() const {
     return dry_run_;
 }
 
-bool OptionParser::help_mode() {
+bool OptionParser::help_mode() const {
     return help_mode_;
 }
 
