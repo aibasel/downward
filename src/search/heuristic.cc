@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <limits>
 
 using namespace std;
 
@@ -63,7 +64,23 @@ int Heuristic::get_heuristic() {
     // The -1 value for dead ends is an implementation detail which is
     // not supposed to leak. Thus, calling this for dead ends is an
     // error. Call "is_dead_end()" first.
-    assert(heuristic >= 0);
+
+    /*
+      TODO: I've commented the assertion out for now because there is
+      currently code that calls get_heuristic for dead ends. For
+      example, if we use alternation with h^FF and h^cea and have an
+      instance where the initial state has infinite h^cea value, we
+      should expand this state since h^cea is unreliable. The search
+      progress class will then want to print the h^cea value of the
+      initial state since this is the "best know h^cea state" so far.
+
+      However, we should clean up the code again so that the assertion
+      is valid or rethink the interface so that we don't need it.
+     */
+
+    // assert(heuristic >= 0);
+    if (heuristic == DEAD_END)
+        return numeric_limits<int>::max();
     return heuristic;
 }
 

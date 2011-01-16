@@ -66,9 +66,9 @@ AlternationOpenList<Entry>::~AlternationOpenList() {
 template<class Entry>
 int AlternationOpenList<Entry>::insert(const Entry &entry) {
     int new_entries = 0;
-    for (size_t i = 0; i < open_lists.size(); i++) {
-        new_entries += open_lists[i]->insert(entry);
-    }
+    for (size_t i = 0; i < open_lists.size(); i++)
+        if (!open_lists[i]->is_dead_end())
+            new_entries += open_lists[i]->insert(entry);
     size += new_entries;
     return new_entries;
 }
@@ -80,10 +80,10 @@ Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
         cerr << "not implemented -- see msg639 in the tracker" << endl;
         ::abort();
     }
-    int best = 0;
+    int best = -1;
     for (size_t i = 0; i < open_lists.size(); i++) {
         if (!open_lists[i]->empty() &&
-            priorities[i] < priorities[best]) {
+            (best == -1 || priorities[i] < priorities[best])) {
             best = i;
         }
     }
@@ -109,16 +109,25 @@ void AlternationOpenList<Entry>::clear() {
 
 template<class Entry>
 void AlternationOpenList<Entry>::evaluate(int g, bool preferred) {
-    dead_end = false;
+    /*
+      Treat as a dead end if
+      1. at least one heuristic reliably recognizes it as a dead end, or
+      2. all heuristics unreliably recognize it as a dead end
+      In case 1., the dead end is reliable; in case 2. it is not.
+     */
+
+    dead_end = true;
     dead_end_reliable = false;
     for (size_t i = 0; i < open_lists.size(); i++) {
         open_lists[i]->evaluate(g, preferred);
         if (open_lists[i]->is_dead_end()) {
-            dead_end = true;
             if (open_lists[i]->dead_end_is_reliable()) {
+                dead_end = true; // Might have been set to false.
                 dead_end_reliable = true;
                 break;
             }
+        } else {
+            dead_end = false;
         }
     }
 }

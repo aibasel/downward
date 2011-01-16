@@ -115,12 +115,14 @@ int GeneralEagerBestFirstSearch::step() {
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
     // This evaluates the expanded state (again) to get preferred ops
     for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
-        vector<const Operator *> pref;
-        pref.clear();
-        preferred_operator_heuristics[i]->evaluate(s);
-        preferred_operator_heuristics[i]->get_preferred_operators(pref);
-        for (int i = 0; i < pref.size(); i++) {
-            preferred_ops.insert(pref[i]);
+        Heuristic *h = preferred_operator_heuristics[i];
+        h->evaluate(s);
+        if (!h->is_dead_end()) {
+            // In an alternation search with unreliable heuristics, it is
+            // possible that this heuristic considers the state a dead end.
+            vector<const Operator *> preferred;
+            h->get_preferred_operators(preferred);
+            preferred_ops.insert(preferred.begin(), preferred.end());
         }
     }
     search_progress.inc_evaluations(preferred_operator_heuristics.size());
