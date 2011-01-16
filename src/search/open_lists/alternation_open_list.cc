@@ -66,7 +66,7 @@ AlternationOpenList<Entry>::~AlternationOpenList() {
 template<class Entry>
 int AlternationOpenList<Entry>::insert(const Entry &entry) {
     int new_entries = 0;
-    for (unsigned int i = 0; i < open_lists.size(); i++) {
+    for (size_t i = 0; i < open_lists.size(); i++) {
         new_entries += open_lists[i]->insert(entry);
     }
     size += new_entries;
@@ -81,7 +81,7 @@ Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
         ::abort();
     }
     int best = 0;
-    for (unsigned int i = 0; i < open_lists.size(); i++) {
+    for (size_t i = 0; i < open_lists.size(); i++) {
         if (!open_lists[i]->empty() &&
             priorities[i] < priorities[best]) {
             best = i;
@@ -103,7 +103,7 @@ bool AlternationOpenList<Entry>::empty() const {
 template<class Entry>
 void AlternationOpenList<Entry>::clear() {
     size = 0;
-    for (unsigned int i = 0; i < open_lists.size(); i++)
+    for (size_t i = 0; i < open_lists.size(); i++)
         open_lists[i]->clear();
 }
 
@@ -111,7 +111,7 @@ template<class Entry>
 void AlternationOpenList<Entry>::evaluate(int g, bool preferred) {
     dead_end = false;
     dead_end_reliable = false;
-    for (unsigned int i = 0; i < open_lists.size(); i++) {
+    for (size_t i = 0; i < open_lists.size(); i++) {
         open_lists[i]->evaluate(g, preferred);
         if (open_lists[i]->is_dead_end()) {
             dead_end = true;
@@ -135,14 +135,14 @@ bool AlternationOpenList<Entry>::dead_end_is_reliable() const {
 
 template<class Entry>
 void AlternationOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {
-    for (unsigned int i = 0; i < open_lists.size(); i++)
+    for (size_t i = 0; i < open_lists.size(); i++)
         open_lists[i]->get_involved_heuristics(hset);
 }
 
 template<class Entry>
 int AlternationOpenList<Entry>::boost_preferred() {
     int total_boost = 0;
-    for (unsigned int i = 0; i < open_lists.size(); i++) {
+    for (size_t i = 0; i < open_lists.size(); i++) {
         // if the open list is not an alternation open list
         // (these have always only_preferred==false) and
         // it takes only preferred states, we boost it
