@@ -11,8 +11,8 @@ SANITY_TEST_RUN_TEST1=1
 
 set -o errexit
 
-DIST=seq-opt-bjolp
-COMMANDLINEOPTIONS='--search "astar(lmcount(lm_hm(m=1),admissible=true),mpd=true)"'
+DIST=seq-opt-selmax
+COMMANDLINEOPTIONS='--search "astar(selmax(lmcut(),lmcount(lm_merged(lm_hm(m=1),lm_rhw()),admissible=true),training_set=1000),mpd=true)"'
 
 PACKAGE=$DIST.tar.gz
 
