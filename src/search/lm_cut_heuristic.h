@@ -64,6 +64,7 @@ struct RelaxedOperator {
 
     int cost;
     int unsatisfied_preconditions;
+    int h_max_supporter_cost; // h_max_cost of h_max_supporter
     RelaxedProposition *h_max_supporter;
     RelaxedOperator(const std::vector<RelaxedProposition *> &pre,
                     const std::vector<RelaxedProposition *> &eff,
@@ -71,7 +72,6 @@ struct RelaxedOperator {
         : op(the_op), precondition(pre), effects(eff), base_cost(base) {
     }
 
-    inline int h_max_cost() const;
     inline void update_h_max_supporter();
 };
 
@@ -142,20 +142,12 @@ public:
                                    int start, int &end, bool dry_run);
 };
 
-inline int RelaxedOperator::h_max_cost() const {
-    assert(!unsatisfied_preconditions);
-    int result = precondition[0]->h_max_cost;
-    for (int i = 1; i < precondition.size(); i++)
-        result = std::max(result, precondition[i]->h_max_cost);
-    return result;
-}
-
 inline void RelaxedOperator::update_h_max_supporter() {
     assert(!unsatisfied_preconditions);
     for (int i = 0; i < precondition.size(); i++)
         if (precondition[i]->h_max_cost > h_max_supporter->h_max_cost)
             h_max_supporter = precondition[i];
-    assert(h_max_cost() == h_max_supporter->h_max_cost);
+    h_max_supporter_cost = h_max_supporter->h_max_cost;
 }
 
 #endif
