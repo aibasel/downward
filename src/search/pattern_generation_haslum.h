@@ -14,7 +14,7 @@ class PatternGenerationHaslum {
     void sample_states();
     void generate_successors(const PDBCollectionHeuristic &current_collection,
                              std::vector<std::vector<int> > &successor_patterns);
-    void generate_successors(std::vector<int> &pattern,
+    void generate_successors(std::vector<int> pattern,
                              std::vector<std::vector<int> > &successor_patterns);
     void hill_climbing();
 public:
