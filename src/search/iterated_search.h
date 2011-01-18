@@ -10,7 +10,7 @@ class IteratedSearch : public SearchEngine {
     int phase;
     bool last_phase_found_solution;
     int best_bound;
-    bool found_solution;
+    bool iterated_found_solution;
     int plan_counter;
 
     SearchEngine *current_search;
@@ -22,8 +22,6 @@ class IteratedSearch : public SearchEngine {
     bool repeat_last_phase;
     bool continue_on_fail;
     bool continue_on_solve;
-
-    vector<SearchProgress> phase_statistics;
 
     SearchEngine *get_search_engine(int engine_config_start_index);
     SearchEngine *create_phase(int p);

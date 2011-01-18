@@ -3,6 +3,7 @@
 
 from __future__ import with_statement
 from collections import deque, defaultdict
+import itertools
 import time
 
 import invariants
@@ -10,10 +11,11 @@ import pddl
 import timers
 
 class BalanceChecker(object):
-    def __init__(self, task):
+    def __init__(self, task, reachable_action_params):
         self.predicates_to_add_actions = defaultdict(set)
         self.action_name_to_heavy_action = {}
-        for action in task.actions:
+        for act in task.actions:
+            action = self.add_inequality_preconds(act, reachable_action_params)
             too_heavy_effects = []
             create_heavy_act = False
             heavy_act = action
@@ -32,11 +34,39 @@ class BalanceChecker(object):
             # heavy_act: duplicated universal effects and assigned unique names
             # to all quantified variables (implicitly in constructor)
             self.action_name_to_heavy_action[action.name] = heavy_act
+
     def get_threats(self, predicate):
         return self.predicates_to_add_actions.get(predicate, set())
+
     def get_heavy_action(self, action_name):
         return self.action_name_to_heavy_action[action_name]
-        
+
+    def add_inequality_preconds(self, action, reachable_action_params):
+        if reachable_action_params is None or len(action.parameters) < 2:
+            return action
+        inequal_params = []
+        combs = itertools.combinations(range(len(action.parameters)), 2)
+        for pos1, pos2 in combs:
+            inequality = True
+            for params in reachable_action_params[action.name]:
+                if params[pos1] == params[pos2]:
+                    inequality = False
+                    break
+            if inequality:
+                inequal_params.append((pos1, pos2))
+
+        if inequal_params:
+            precond_parts = list(action.precondition.parts)
+            for pos1, pos2 in inequal_params:
+                param1 = action.parameters[pos1].name
+                param2 = action.parameters[pos2].name
+                new_cond = pddl.NegatedAtom("=", (param1, param2))
+                precond_parts.append(new_cond)
+            precond = action.precondition.change_parts(precond_parts)
+            return pddl.Action(action.name, action.parameters, precond,
+                               action.effects, action.cost)
+        else:
+            return action
 
 def get_fluents(task):
     fluent_names = set()
@@ -57,12 +87,12 @@ def get_initial_invariants(task):
 MAX_CANDIDATES = 100000
 MAX_TIME = 300
 
-def find_invariants(task):
+def find_invariants(task, reachable_action_params):
     candidates = deque(get_initial_invariants(task))
     print len(candidates), "initial candidates"
     seen_candidates = set(candidates)
 
-    balance_checker = BalanceChecker(task)
+    balance_checker = BalanceChecker(task, reachable_action_params)
 
     def enqueue_func(invariant):
         if len(seen_candidates) < MAX_CANDIDATES and invariant not in seen_candidates:
@@ -99,9 +129,9 @@ def useful_groups(invariants, initial_facts):
     for (invariant, parameters) in useful_groups:
         yield [part.instantiate(parameters) for part in invariant.parts]
 
-def get_groups(task):
+def get_groups(task, reachable_action_params=None):
     with timers.timing("Finding invariants"):
-        invariants = list(find_invariants(task))
+        invariants = list(find_invariants(task, reachable_action_params))
     with timers.timing("Checking invariant weight"):
         result = list(useful_groups(invariants, task.init))
     return result

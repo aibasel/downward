@@ -16,6 +16,7 @@ HEADERS = \
           general_lazy_best_first_search.h \
           globals.h \
           heuristic.h \
+          ipc_max_heuristic.h \
           iterated_search.h \
           max_evaluator.h \
           operator.h \
@@ -70,6 +71,7 @@ HEADERS += landmarks/exploration.h \
            landmarks/landmark_cost_assignment.h \
            landmarks/landmark_count_heuristic.h \
            landmarks/landmark_status_manager.h \
+           landmarks/landmarks_graph_merged.h \
            landmarks/landmarks_graph.h \
            landmarks/landmarks_graph_rpg_exhaust.h \
            landmarks/landmarks_graph_rpg_sasp.h \
