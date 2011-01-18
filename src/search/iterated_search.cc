@@ -46,7 +46,14 @@ SearchEngine *IteratedSearch::get_search_engine(
 
 SearchEngine *IteratedSearch::create_phase(int p) {
     if (p >= engine_config_start.size()) {
-        if (repeat_last_phase) {
+        /* We've gone through all searches. We continue if
+           repeat_last_phase is true, but *not* if we didn't find a
+           solution the last time around, since then this search would
+           just behave the same way again (assuming determinism, which
+           we might not actually have right now, but strive for). So
+           this overrides continue_on_fail.
+        */
+        if (repeat_last_phase && last_phase_found_solution) {
             return get_search_engine(engine_config_start.size() - 1);
         } else {
             return NULL;
