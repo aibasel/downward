@@ -29,5 +29,5 @@ fi
 
 cd VAL
 make validate || exit 1
-cp validate ..
+cp validate ../
 cd ..

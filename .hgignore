@@ -15,3 +15,6 @@
 ^src/VAL/lex\.yy\.cc$
 ^src/VAL/validate$
 ^src/validate$
+^new-scripts/reports/
+^new-scripts/preprocessed-tasks/
+^new-scripts/exp-.*/

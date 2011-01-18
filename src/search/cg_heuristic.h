@@ -30,7 +30,7 @@ protected:
 public:
     CGHeuristic(const HeuristicOptions &options);
     ~CGHeuristic();
-    virtual bool dead_ends_are_reliable() {return false; }
+    virtual bool dead_ends_are_reliable() const {return false; }
 
     static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end, bool dry_run);
