@@ -6,6 +6,7 @@
 #include "causal_graph.h"
 #include "state.h"
 #include "operator.h"
+#include "rng.h"
 
 #include <vector>
 #include <string>
@@ -51,7 +52,7 @@ void PatternGenerationHaslum::generate_successors(vector<int> &pattern,
     sort(pattern.begin(), pattern.end());
     for (size_t i = 0; i < pattern.size(); ++i) {
         const vector<int> &rel_vars = g_causal_graph->get_predecessors(pattern[i]);
-        const vector<int> &relevant_vars;
+        vector<int> relevant_vars;
         set_difference(rel_vars.begin(), rel_vars.end(), pattern.begin(), pattern.end(), back_inserter(relevant_vars));
         for (size_t j = 0; j < relevant_vars.size(); ++j) {
             vector<int> new_pattern(pattern);
@@ -63,29 +64,28 @@ void PatternGenerationHaslum::generate_successors(vector<int> &pattern,
 
 // random walk for state sampling
 void PatternGenerationHaslum::sample_states() {
-    srand(time(NULL));
     double b = 2.0; // TODO: correct branching factor?
     double d = 2.0 * current_collection->compute_heuristic(*g_initial_state);
     int length = 0;
-    float denominator = pow(b, d + 1) - 1;
+    double denominator = pow(b, d + 1) - 1;
     State *current_state = g_initial_state;
     while (true) {
-        float numerator = pow(b, length + 1.0) - pow(b, length);
+        double numerator = pow(b, length + 1.0) - pow(b, length);
         double fraction = numerator / denominator;
-        float random = (rand() % 101) / 100.0; // 0.00, 0.01, ... 1.0
-        if (random <= fraction) {
+        double random = g_rng(); // [0..1)
+        if (random < fraction) {
             samples.push_back(current_state);
             break;
         }
         
         // TODO: whats faster: precompute applicable operators, then use a random one,
         // or get random numbers until you find an applicable operator?
-        vector<const Operator *> applicable_operators;
+        vector<Operator> applicable_operators;
         for (size_t i = 0; i < g_operators.size(); ++i) {
             if (g_operators[i].is_applicable(*current_state))
                 applicable_operators.push_back(g_operators[i]);
         }
-        int random2 = rand() % applicable_operators.size();
+        int random2 = g_rng.next(applicable_operators.size()); // [0..applicalbe_operators.size())
         assert(applicable_operators[random].is_applicable(*current_state));
         
         // get new state, 
