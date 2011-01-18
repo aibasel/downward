@@ -7,6 +7,7 @@
 #include "state.h"
 #include "operator.h"
 #include "rng.h"
+#include "successor_generator.h"
 
 #include <vector>
 #include <string>
@@ -40,31 +41,78 @@ void PatternGenerationHaslum::generate_successors(const PDBCollectionHeuristic &
             for (size_t k = 0; k < relevant_vars.size(); ++k) {
                 vector<int> new_pattern(current_pattern);
                 new_pattern.push_back(relevant_vars[k]);
+                // sort pattern
+                sort(new_pattern.begin(), new_pattern.end());
                 successor_patterns.push_back(new_pattern);
             }
         }
     }
+    cout << "all possible new pattern candidates (after first round)" << endl;
+    for (size_t i = 0; i < successor_patterns.size(); ++i) {
+        cout << "[ ";
+        for (size_t j = 0; j < successor_patterns[i].size(); ++j) {
+            cout << successor_patterns[i][j] << " ";
+        }
+        cout << " ]";
+    }
+    cout << endl;
 }
 
 // incrementally generates successors for the new best pattern (old successors always remain successors)
-void PatternGenerationHaslum::generate_successors(vector<int> &pattern,
+// TODO: if we pass pattern as reference (const not possible because of set_difference), then weird things happen
+void PatternGenerationHaslum::generate_successors(vector<int> pattern,
                                                   vector<vector<int> > &successor_patterns) {
-    sort(pattern.begin(), pattern.end());
+    //sort(pattern.begin(), pattern.end()); // TODO necessary if we sort new pattern?
     for (size_t i = 0; i < pattern.size(); ++i) {
         const vector<int> &rel_vars = g_causal_graph->get_predecessors(pattern[i]);
         vector<int> relevant_vars;
         set_difference(rel_vars.begin(), rel_vars.end(), pattern.begin(), pattern.end(), back_inserter(relevant_vars));
         for (size_t j = 0; j < relevant_vars.size(); ++j) {
+            cout << "old pattern... ";
+            for (size_t x = 0; x < pattern.size(); ++x) {
+                cout << pattern[x] << " ";
+            }
+            cout << endl;
             vector<int> new_pattern(pattern);
             new_pattern.push_back(relevant_vars[j]);
+            cout << "add " << relevant_vars[j] << " to old pattern" << endl;
+            cout << "new pattern... ";
+            for (size_t x = 0; x < new_pattern.size(); ++x) {
+                cout << new_pattern[x] << " ";
+            }
+            cout << endl;
+            sort(new_pattern.begin(), new_pattern.end());
+            cout << "old pattern before push_back... ";
+            for (size_t x = 0; x < pattern.size(); ++x) {
+                cout << pattern[x] << " ";
+            }
+            cout << endl;
             successor_patterns.push_back(new_pattern);
+            cout << "old pattern after push_back... ";
+            for (size_t x = 0; x < pattern.size(); ++x) {
+                cout << pattern[x] << " ";
+            }
+            cout << endl;
+            cout << endl;
         }
     }
+    cout << "all possible new pattern candidates (after incremental call)" << endl;
+    for (size_t i = 0; i < successor_patterns.size(); ++i) {
+        cout << "[ ";
+        for (size_t j = 0; j < successor_patterns[i].size(); ++j) {
+            cout << successor_patterns[i][j] << " ";
+        }
+        cout << " ]";
+    }
+    cout << endl;
 }
 
 // random walk for state sampling
 void PatternGenerationHaslum::sample_states() {
-    double b = 2.0; // TODO: correct branching factor?
+    // TODO update branching factor (later)
+    vector<const Operator *> applicable_ops;
+    g_successor_generator->generate_applicable_ops(*g_initial_state, applicable_ops);
+    double b = applicable_ops.size();
     double d = 2.0 * current_collection->compute_heuristic(*g_initial_state);
     int length = 0;
     double denominator = pow(b, d + 1) - 1;
@@ -150,6 +198,11 @@ void PatternGenerationHaslum::hill_climbing() {
         }
         if (improved) {
             cout << "yippieee! we found a better pattern!" << endl;
+            cout << "pattern [";
+            for (size_t i = 0; i < successor_patterns[best_pattern_index].size(); ++i) {
+                cout << successor_patterns[best_pattern_index][i] << " ";
+            }
+            cout << "]" << endl;
             current_collection->add_new_pattern(successor_patterns[best_pattern_index]);
             // successors for next iteration
             generate_successors(successor_patterns[best_pattern_index], successor_patterns);
