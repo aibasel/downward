@@ -182,15 +182,18 @@ void LandmarkCutHeuristic::first_exploration_incremental(
     //       often.
     // TODO: Maybe it's worth storing h_max values in the actual operators.
     //       Or maybe not.
-    vector<pair<int, RelaxedOperator *> > queue;
+
+    // TODO: Should not be static, but instance variable.
+    static AdaptiveQueue<RelaxedOperator *> inc_queue;
+
     for (int i = 0; i < cut.size(); i++) {
         RelaxedOperator *op = cut[i];
-        queue.push_back(make_pair(op->h_max_cost() + op->cost, op));
+        inc_queue.push(op->h_max_cost() + op->cost, op);
     }
-    while (!queue.empty()) {
-        int cost = queue.back().first;
-        RelaxedOperator *op = queue.back().second;
-        queue.pop_back();
+    while (!inc_queue.empty()) {
+        pair<int, RelaxedOperator *> top_pair = inc_queue.pop();
+        int cost = top_pair.first;
+        RelaxedOperator *op = top_pair.second;
         for (int i = 0; i < op->effects.size(); i++) {
             RelaxedProposition *prop = op->effects[i];
             int old_prop_cost = prop->h_max_cost;
@@ -211,9 +214,8 @@ void LandmarkCutHeuristic::first_exploration_incremental(
                         int next_op_cost = next_op->h_max_cost();
                         next_op->update_h_max_supporter();
                         if (next_op_cost < old_prop_cost) {
-                            queue.push_back(
-                                make_pair(next_op_cost + next_op->cost,
-                                          next_op));
+                            inc_queue.push(next_op_cost + next_op->cost,
+                                           next_op);
                         }
                     }
                 }
@@ -375,8 +377,6 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
             cut[i]->cost -= cut_cost;
         //cout << "{" << cut_cost << "}" << flush;
         total_cost += cut_cost;
-
-
 
         first_exploration_incremental(cut);
         // validate_h_max();  // too expensive to use even in regular debug mode
