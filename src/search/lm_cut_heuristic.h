@@ -108,8 +108,8 @@ class LandmarkCutHeuristic : public Heuristic {
     std::vector<std::vector<RelaxedProposition> > propositions;
     RelaxedProposition artificial_precondition;
     RelaxedProposition artificial_goal;
+    int num_propositions;
     AdaptiveQueue<RelaxedProposition *> priority_queue;
-    int iteration_limit;
 
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
@@ -136,7 +136,7 @@ class LandmarkCutHeuristic : public Heuristic {
     void mark_goal_plateau(RelaxedProposition *subgoal);
     void validate_h_max() const;
 public:
-    LandmarkCutHeuristic(const HeuristicOptions &options, int _iteration_limit = -1);
+    LandmarkCutHeuristic(const HeuristicOptions &options);
     virtual ~LandmarkCutHeuristic();
     static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end, bool dry_run);

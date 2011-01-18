@@ -19,8 +19,9 @@ static ScalarEvaluatorPlugin landmark_cut_heuristic_plugin(
 
 
 // construction and destruction
-LandmarkCutHeuristic::LandmarkCutHeuristic(const HeuristicOptions &options, int _iteration_limit)
-    : Heuristic(options), iteration_limit(_iteration_limit) {
+LandmarkCutHeuristic::LandmarkCutHeuristic(const HeuristicOptions &options)
+    : Heuristic(options) {
+    num_propositions = 2; // artifical goal and artificical precondition
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
@@ -31,10 +32,12 @@ void LandmarkCutHeuristic::initialize() {
     cout << "Initializing landmark cut heuristic..." << endl;
 
     // Build propositions.
+    assert(num_propositions == 2);
     propositions.resize(g_variable_domain.size());
     for (int var = 0; var < g_variable_domain.size(); var++) {
         for (int value = 0; value < g_variable_domain[var]; value++)
             propositions[var].push_back(RelaxedProposition());
+        num_propositions += g_variable_domain[var];
     }
 
     // Build relaxed operators for operators and axioms.
@@ -178,6 +181,12 @@ void LandmarkCutHeuristic::first_exploration(const State &state) {
 void LandmarkCutHeuristic::first_exploration_incremental(
     vector<RelaxedOperator *> &cut) {
     assert(priority_queue.empty());
+    /* We pretend that this queue has had as many pushes already as we
+       have propositions to avoid switching from bucket-based to
+       heap-based too aggressively. This should prevent ever switching
+       to heap-based in problems where action costs are at most 1.
+    */
+    priority_queue.add_virtual_pushes(num_propositions);
     for (int i = 0; i < cut.size(); i++) {
         RelaxedOperator *relaxed_op = cut[i];
         int cost = relaxed_op->h_max_supporter_cost + relaxed_op->cost;
@@ -332,7 +341,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
         return DEAD_END;
 
     int num_iterations = 0;
-    while ((artificial_goal.h_max_cost != 0) && ((iteration_limit == -1) || (num_iterations < iteration_limit))) {
+    while (artificial_goal.h_max_cost != 0) {
         num_iterations++;
         //cout << "h_max = " << artificial_goal.h_max_cost << "..." << endl;
         //cout << "total_cost = " << total_cost << "..." << endl;
@@ -417,19 +426,13 @@ ScalarEvaluator *LandmarkCutHeuristic::create(const std::vector<string> &config,
     if (config.size() <= start)
         throw ParseError(start);
 
-    int iteration_limit_ = -1;
-
     // "<name>()" or "<name>(<options>)"
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
 
         if (config[end] != ")") {
             NamedOptionParser option_parser;
-
             common_options.add_option_to_parser(option_parser);
-
-            option_parser.add_int_option("iteration_limit", &iteration_limit_,
-                                         "iteration limit");
             option_parser.parse_options(config, end, end, dry_run);
             end++;
         }
@@ -442,5 +445,5 @@ ScalarEvaluator *LandmarkCutHeuristic::create(const std::vector<string> &config,
     if (dry_run)
         return 0;
     else
-        return new LandmarkCutHeuristic(common_options, iteration_limit_);
+        return new LandmarkCutHeuristic(common_options);
 }
