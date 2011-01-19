@@ -11,8 +11,14 @@ SANITY_TEST_RUN_TEST1=1
 
 set -o errexit
 
-DIST=seq-opt-selmax
-COMMANDLINEOPTIONS='--search "astar(selmax(lmcut(),lmcount(lm_merged(lm_hm(m=1),lm_rhw()),admissible=true),training_set=1000),mpd=true)"'
+if [[ $# != 1 ]]; then
+    echo need exactly one argument: seq-opt-bjolp, seq-sat-lama-2008 or some such
+    exit 2
+fi
+
+DIST=$1
+
+COMMANDLINEOPTIONS="ipc $DIST"
 
 PACKAGE=$DIST.tar.gz
 
