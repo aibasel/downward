@@ -40,7 +40,11 @@ if [[ "$1" == "ipc" ]]; then
         "$PLANNER" --search "astar(lmcut())" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-merge-and-shrink" ]]; then
         # TODO: Malte: take care of this.
-        "$PLANNER" "TODO: options" "$@" "$@" < $TEMPFILE
+        # The following configs were recommended by Raz and should be
+        # run as a 50%/50% sequential portfolio, with the shrink_strategy=12
+        # one first since it's more likely to run out of memory quickly.
+        "$PLANNER" --search "astar(mas(max_states=1,merge_strategy=5,shrink_strategy=12))" "$@" < $TEMPFILE
+        ## "$PLANNER" --search "astar(mas(max_states=200000,merge_strategy=5,shrink_strategy=7))" "$@" < $TEMPFILE
     else
         echo "unknown IPC planner name: $2"
         exit 2
