@@ -4,5 +4,47 @@ TEMPFILE=downward.tmp.$$
 cat > $TEMPFILE
 STATE_SIZE=$("$BASEDIR/dispatch" $TEMPFILE)
 echo Dispatcher selected state size $STATE_SIZE.
-"$BASEDIR/downward-$STATE_SIZE" "$@" < $TEMPFILE
+PLANNER="$BASEDIR/downward-$STATE_SIZE"
+if [[ "$1" == "ipc" ]]; then
+    if [[ "$2" == "seq-sat-fd-autotune" ]]; then
+        # TODO: Erez: take care of this.
+        "$PLANNER" "TODO: options" < $TEMPFILE
+    elif [[ "$2" == "seq-sat-fdss-1" ]]; then
+        # TODO: Malte and Gabi: take care of this.
+        "$PLANNER" "TODO: options" < $TEMPFILE
+    elif [[ "$2" == "seq-sat-fdss-2" ]]; then
+        # TODO: Malte and Gabi: take care of this.
+        "$PLANNER" "TODO: options" < $TEMPFILE
+    elif [[ "$2" == "seq-sat-lama-2008" ]]; then
+        # TODO: Malte: take care of this.
+        "$PLANNER" "TODO: options" < $TEMPFILE
+    elif [[ "$2" == "seq-sat-lama-2011" ]]; then
+        # TODO: Malte: take care of this.
+        "$PLANNER" "TODO: options" < $TEMPFILE
+    elif [[ "$2" == "seq-opt-fd-autotune" ]]; then
+        # TODO: Erez: take care of this.
+        "$PLANNER" "TODO: options" < $TEMPFILE
+    elif [[ "$2" == "seq-opt-fdss-1" ]]; then
+        # TODO: Malte and Gabi: take care of this.
+        "$PLANNER" "TODO: options" < $TEMPFILE
+    elif [[ "$2" == "seq-opt-fdss-2" ]]; then
+        # TODO: Malte and Gabi: take care of this.
+        "$PLANNER" "TODO: options" < $TEMPFILE
+    elif [[ "$2" == "seq-opt-selective-max" ]]; then
+        # TODO: Erez: take care of this.
+        "$PLANNER" "TODO: options" < $TEMPFILE
+    elif [[ "$2" == "seq-opt-bjolp" ]]; then
+        "$PLANNER" --search "astar(lmcount(lm_merged(lm_rhw(),lm_hm(m=1)),admissible=true),mpd=true)" < $TEMPFILE
+    elif [[ "$2" == "seq-opt-lmcut" ]]; then
+        "$PLANNER" --search "astar(lmcut())" < $TEMPFILE
+    elif [[ "$2" == "seq-opt-merge-and-shrink" ]]; then
+        # TODO: Malte: take care of this.
+        "$PLANNER" "TODO: options" < $TEMPFILE
+    else
+        echo "unknown IPC planner name: $2"
+        exit 2
+    fi
+else
+    "$PLANNER" "$@" < $TEMPFILE
+fi
 rm -f $TEMPFILE
