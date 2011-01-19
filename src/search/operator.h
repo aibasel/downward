@@ -21,6 +21,18 @@ struct Prevail {
         return state[var] == prev;
     }
 
+    /* [raz-ipc-integration] HACK HACK HACK: The following
+       two methods were added for the IPC integration.
+    */
+
+    bool operator==(const Prevail &other) const {
+        return var == other.var && prev == other.prev;
+    }
+
+    bool operator!=(const Prevail &other) const {
+        return !(*this == other);
+    }
+
     void dump() const;
 };
 
@@ -44,6 +56,21 @@ struct PrePost {
             if (!cond[i].is_applicable(state))
                 return false;
         return true;
+    }
+
+    /* [raz-ipc-integration] HACK HACK HACK: The following
+       method was added for the IPC integration.
+    */
+
+    bool operator==(const PrePost &other) const {
+        if (var == other.var && pre == other.pre && post == other.post &&
+            cond.size() == other.cond.size()) {
+            for (int i = 0; i < cond.size(); i++)
+                if (cond[i] != other.cond[i])
+                    return false;
+            return true;
+        }
+        return false;
     }
 
     void dump() const;
@@ -90,6 +117,14 @@ public:
     mutable bool marker1, marker2; // HACK! HACK!
 
     int get_cost() const {return cost; }
+
+    /* [raz-ipc-integration] HACK HACK HACK: The following
+       three method declarations were added for the IPC integration.
+    */
+
+    int get_distance_from_op(const Operator *other_op);
+    bool have_same_op_name(const Operator *other_op) const;
+    bool affect_a_common_variable(const Operator *other_op) const;
 };
 
 #endif
