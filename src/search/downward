@@ -6,39 +6,41 @@ STATE_SIZE=$("$BASEDIR/dispatch" $TEMPFILE)
 echo Dispatcher selected state size $STATE_SIZE.
 PLANNER="$BASEDIR/downward-$STATE_SIZE"
 if [[ "$1" == "ipc" ]]; then
-    if [[ "$2" == "seq-sat-fd-autotune" ]]; then
+    CONFIG="$2"
+    shift 2
+    if [[ "$CONFIG" == "seq-sat-fd-autotune" ]]; then
         # TODO: Erez: take care of this.
-        "$PLANNER" "TODO: options" < $TEMPFILE
-    elif [[ "$2" == "seq-sat-fdss-1" ]]; then
+        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-sat-fdss-1" ]]; then
         # TODO: Malte and Gabi: take care of this.
-        "$PLANNER" "TODO: options" < $TEMPFILE
-    elif [[ "$2" == "seq-sat-fdss-2" ]]; then
+        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-sat-fdss-2" ]]; then
         # TODO: Malte and Gabi: take care of this.
-        "$PLANNER" "TODO: options" < $TEMPFILE
-    elif [[ "$2" == "seq-sat-lama-2008" ]]; then
+        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-sat-lama-2008" ]]; then
         # TODO: Malte: take care of this.
-        "$PLANNER" "TODO: options" < $TEMPFILE
-    elif [[ "$2" == "seq-sat-lama-2011" ]]; then
+        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-sat-lama-2011" ]]; then
         # TODO: Malte: take care of this.
-        "$PLANNER" "TODO: options" < $TEMPFILE
-    elif [[ "$2" == "seq-opt-fd-autotune" ]]; then
+        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-fd-autotune" ]]; then
         # TODO: Erez: take care of this.
-        "$PLANNER" "TODO: options" < $TEMPFILE
-    elif [[ "$2" == "seq-opt-fdss-1" ]]; then
+        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-fdss-1" ]]; then
         # TODO: Malte and Gabi: take care of this.
-        "$PLANNER" "TODO: options" < $TEMPFILE
-    elif [[ "$2" == "seq-opt-fdss-2" ]]; then
+        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-fdss-2" ]]; then
         # TODO: Malte and Gabi: take care of this.
-        "$PLANNER" "TODO: options" < $TEMPFILE
-    elif [[ "$2" == "seq-opt-selmax" ]]; then
-        "$PLANNER" --search "astar(selmax(lmcut(),lmcount(lm_merged(lm_hm(m=1),lm_rhw()),admissible=true),training_set=1000),mpd=true)" < $TEMPFILE
-    elif [[ "$2" == "seq-opt-bjolp" ]]; then
-        "$PLANNER" --search "astar(lmcount(lm_merged(lm_rhw(),lm_hm(m=1)),admissible=true),mpd=true)" < $TEMPFILE
-    elif [[ "$2" == "seq-opt-lmcut" ]]; then
-        "$PLANNER" --search "astar(lmcut())" < $TEMPFILE
-    elif [[ "$2" == "seq-opt-merge-and-shrink" ]]; then
+        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-selmax" ]]; then
+        "$PLANNER" --search "astar(selmax(lmcut(),lmcount(lm_merged(lm_hm(m=1),lm_rhw()),admissible=true),training_set=1000),mpd=true)" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-bjolp" ]]; then
+        "$PLANNER" --search "astar(lmcount(lm_merged(lm_rhw(),lm_hm(m=1)),admissible=true),mpd=true)" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-lmcut" ]]; then
+        "$PLANNER" --search "astar(lmcut())" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-merge-and-shrink" ]]; then
         # TODO: Malte: take care of this.
-        "$PLANNER" "TODO: options" < $TEMPFILE
+        "$PLANNER" "TODO: options" "$@" "$@" < $TEMPFILE
     else
         echo "unknown IPC planner name: $2"
         exit 2
