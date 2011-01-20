@@ -7,9 +7,11 @@ SEARCH="./src/search/downward"
 
 run_planner() {
     echo "1. Running translator"
-    "$TRANSLATE" "$1" "$2" || exit 1
+    time --output=elapsed.time --format='%S\n%U\n' \
+        "$TRANSLATE" "$1" "$2" || exit 1
     echo "2. Running preprocessor"
-    "$PREPROCESS" < output.sas || exit 1
+    time --output=elapsed.time --append --format='%S\n%U\n' \
+        "$PREPROCESS" < output.sas || exit 1
     echo "3. Running search"
     "$SEARCH" ipc "$PLANNER" --plan-file "$3" < output
 }
