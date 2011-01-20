@@ -32,9 +32,12 @@ except EnvironmentError:
     pass
 
 remaining_time_at_start = float(TIMEOUT)
-for line in open("elapsed.time"):
-    if line.strip():
-        remaining_time_at_start -= float(line)
+try:
+    for line in open("elapsed.time"):
+        if line.strip():
+            remaining_time_at_start -= float(line)
+except EnvironmentError:
+    print "WARNING! elapsed_time not found -- assuming full time available."
 
 print "remaining time at start: %s" % remaining_time_at_start
 
