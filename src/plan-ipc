@@ -11,7 +11,7 @@ run_planner() {
     echo "2. Running preprocessor"
     "$PREPROCESS" < output.sas || exit 1
     echo "3. Running search"
-    "$SEARCH" COMMANDLINEOPTIONS --plan-file "$3" < output
+    "$SEARCH" ipc "$PLANNER" --plan-file "$3" < output
 }
 
 check_input_files() {
@@ -26,10 +26,13 @@ check_input_files() {
 }
 
 # Make sure we have exactly 3 command line arguments
-if [ $# -ne 3 ]; then
-    echo "Usage: \"plan <domain_file> <problem_file> <result_file>\""
+if [ $# -ne 4 ]; then
+    echo "Usage: \"plan-ipc <planner> <domain_file> <problem_file> <result_file>\""
     exit 1
 fi
+
+PLANNER="$1"
+shift
 
 check_input_files "$1" "$2"
 
