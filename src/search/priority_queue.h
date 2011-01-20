@@ -53,6 +53,15 @@ public:
         */
         return this;
     }
+
+    /* The following method is a bit of a hack to influence the
+       conversion strategy to convert to the heap-based queue less
+       aggressively in the incremental LM-cut configurations. A better
+       solution would be to use a priority queue that is generally
+       more performant, or a better conversion strategy, but both of
+       these would require much more experimentation. */
+
+    virtual void add_virtual_pushes(int num_extra_pushes) = 0;
 };
 
 
@@ -108,6 +117,9 @@ public:
         result->heap.c.swap(entries);
         // Since the entries are sorted, we do not need to heapify.
         return result;
+    }
+
+    virtual void add_virtual_pushes(int /*num_extra_pushes*/) {
     }
 };
 
@@ -201,6 +213,10 @@ public:
         }
         return this;
     }
+
+    virtual void add_virtual_pushes(int num_extra_pushes) {
+        num_pushes += num_extra_pushes;
+    }
 };
 
 
@@ -239,6 +255,10 @@ public:
 
     void clear() {
         wrapped_queue->clear();
+    }
+
+    virtual void add_virtual_pushes(int num_extra_pushes) {
+        wrapped_queue->add_virtual_pushes(num_extra_pushes);
     }
 };
 
