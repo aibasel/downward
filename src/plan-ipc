@@ -1,9 +1,11 @@
 #! /bin/sh
 
+BASEDIR="$(dirname "$0")"
+
 # Paths to planner components
-TRANSLATE="./src/translate/translate.py"
-PREPROCESS="./src/preprocess/preprocess"
-SEARCH="./src/search/downward"
+TRANSLATE="$BASEDIR/translate/translate.py"
+PREPROCESS="$BASEDIR/preprocess/preprocess"
+SEARCH="$BASEDIR/search/downward"
 
 run_planner() {
     echo "1. Running translator"
