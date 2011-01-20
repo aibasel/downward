@@ -22,19 +22,74 @@ NONUNIT_CONFIGS = [
           "--heuristic", "hcg=cg(cost_type=1)",
           "--search",
           "eager_greedy(hadd,hcg,preferred=(hadd,hcg),cost_type=1,bound=BOUND)"]),
-    (569, ["--search",
-           "astar(lmcut(),bound=BOUND)"]),
+    (30, ["--heuristic", "h=cg(cost_type=1)",
+          "--search",
+          "eager_greedy(h,preferred=(h),cost_type=0,bound=BOUND)"]),
+    (79, ["--heuristic", "h=cg(cost_type=1)",
+          "--search",
+          "eager(single(sum(g(),weight(h,3))),preferred=(h),cost_type=0,bound=BOUND)"]),
+    (105, ["--heuristic", "h=ff(cost_type=1)",
+          "--search",
+          "eager(single(sum(g(),weight(h,3))),preferred=(h),cost_type=1,bound=BOUND)"]),
+    (356, ["--heuristic", "h=cg(cost_type=1)",
+          "--search",
+          "lazy_greedy(h,preferred=(h),cost_type=0,bound=BOUND)"]),
+    (104, ["--heuristic", "h=add(cost_type=1)",
+          "--search",
+          "lazy_wastar(h,w=3,preferred=(h),cost_type=0,bound=BOUND)"]),
+    (37, ["--heuristic", "h=add(cost_type=1)",
+          "--search",
+          "lazy_wastar(h,w=3,preferred=(h),cost_type=1,bound=BOUND)"]),
+    (93, ["--heuristic", "h=ff(cost_type=1)",
+          "--search",
+          "lazy_wastar(h,w=3,preferred=(h),cost_type=1,bound=BOUND)"]),
+    (139, ["--heuristic", "h=ff(cost_type=1)", 
+          "--search",
+          "lazy_wastar(h,w=3,preferred=(h),cost_type=0,bound=BOUND)"]),
      ]
 
 UNIT_CONFIGS = [
-    (175, ["--search",
-           "astar(mas(max_states=1,merge_strategy=5,shrink_strategy=12), bound=BOUND)"]),
-    (432, ["--search",
-           "astar(mas(max_states=200000,merge_strategy=5,shrink_strategy=7), bound=BOUND)"]),
-    (455, ["--search",
-           "astar(lmcount(lm_merged(lm_rhw(),lm_hm(m=1)),admissible=true),mpd=true, bound=BOUND)"]),
-    (569, ["--search",
-           "astar(lmcut(), bound=BOUND)"]),
+    (106, ["--heuristic", "hff=ff(cost_type=1)", 
+          "--heuristic", "hadd=add(cost_type=1)",
+          "--search",
+          "eager_greedy(hff,hadd,preferred=(hff,hadd),cost_type=1,bound=BOUND)"]),
+    (117, ["--heuristic", "hff=ff(cost_type=1)",
+          "--heuristic", "hcea=cea(cost_type=1)", 
+          "--heuristic", "hcg=cg(cost_type=1)",
+          "--search",
+          "eager_greedy(hff,hcea,hcg,preferred=(hff,hcea,hcg),cost_type=1,bound=BOUND)"]),
+    (50, ["--heuristic", "hff=ff(cost_type=1)",
+          "--heuristic", "hcea=cea(cost_type=1)",
+          "--heuristic", "hcg=cg(cost_type=1)",
+          "--search",
+          "lazy_greedy(hff,hcea,hcg,preferred=(hff,hcea,hcg),cost_type=1,bound=BOUND)"]),
+    (213, ["--heuristic", "h=cea(cost_type=1)",
+          "--search",
+          "eager_greedy(h,preferred=(h),cost_type=0,bound=BOUND)"]),
+    (93, ["--heuristic", "h=cg(cost_type=1)",
+          "--search",
+          "eager_greedy(h,preferred=(h),cost_type=0,bound=BOUND)"]),
+    (94, ["--heuristic", "h=add(cost_type=1)", 
+          "--search",
+          "eager(single(sum(g(),weight(h,3))),preferred=(h),cost_type=0,bound=BOUND)"]),
+    (98, ["--heuristic", "h=ff(cost_type=1)",
+         "--search",
+         "eager(single(sum(g(),weight(h,3))),preferred=(h),cost_type=0,bound=BOUND)"]),
+    (57, ["--heuristic", "h=cea(cost_type=1)", 
+          "--search",
+          "lazy_greedy(h,preferred=(h),cost_type=0,bound=BOUND)"]),
+    (111, ["--heuristic", "h=ff(cost_type=1)",
+          "--search",
+          "lazy_greedy(h,preferred=(h),cost_type=0,bound=BOUND)"]),
+    (65, ["--heuristic", "h=cea(cost_type=1)", 
+         "--search",
+         "lazy_wastar(h,w=3,preferred=(h),cost_type=0,bound=BOUND)"]),
+    (88, ["--heuristic", "h=cg(cost_type=1)",
+         "--search",
+         "lazy_wastar(h,w=3,preferred=(h),cost_type=0,bound=BOUND)"]),
+    (340, ["--heuristic", "h=ff(cost_type=1)",
+         "--search",
+         "lazy_wastar(h,w=3,preferred=(h),cost_type=0,bound=BOUND)"]),
      ]
 
 extra_args = sys.argv[1:]
@@ -70,21 +125,18 @@ else:
 
 for pos, (relative_time, args) in enumerate(CONFIGS):
     g_bound = "infinity"
-    plan_no = -1
+    plan_no = 0
     try:
         for line in open("plan_numbers_and_cost"):
-            entry = line.split()
-            if len(entry) != 2:
-                break
-            plan_no = int(entry[0])
-            g_bound = entry[1]
+            plan_no += 1
+            g_bound = int(line.split()[1])
     except IOError:
         pass
     plan_no += 1
-    print "g bound:" % g_bound
-    print "next plan number:" % plan_no
+    print "g bound: %s" % g_bound
+    print "next plan number: %d" % plan_no
     adapted_search = False
-    for index, arg in enumerat(args):
+    for index, arg in enumerate(args):
         if arg == "--search":
             search_config = args[index + 1]
             if (search_config.startswith("iterated") or
@@ -92,8 +144,8 @@ for pos, (relative_time, args) in enumerate(CONFIGS):
                 extra_args[1] = plan_file
             else:
                 extra_args[1] = "%s.%d" % (plan_file, plan_no)
-            search_config = search_config.replace("BOUND", g_bound)
-            search_config = search_config.replace("PLANCOUNTER", str(plan_no)
+            search_config = search_config.replace("BOUND", str(g_bound))
+            search_config = search_config.replace("PLANCOUNTER", str(plan_no))
             args[index + 1] = search_config
             adapted_search = True
             break
