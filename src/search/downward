@@ -19,8 +19,8 @@ if [[ "$1" == "ipc" ]]; then
         # TODO: Malte and Gabi: take care of this.
         "$PLANNER" "TODO: options" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-sat-lama-2008" ]]; then
-        # TODO: Malte: take care of this.
-        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+        echo "The seq-sat-lama-2008 planner should not use this code."
+        exit 2
     elif [[ "$CONFIG" == "seq-sat-lama-2011" ]]; then
         # TODO: Malte: take care of this.
         "$PLANNER" "TODO: options" "$@" < $TEMPFILE
@@ -30,8 +30,7 @@ if [[ "$1" == "ipc" ]]; then
     elif [[ "$CONFIG" == "seq-opt-fdss-1" ]]; then
         "$BASEDIR/downward-seq-opt-fdss-1.py" "$PLANNER" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-fdss-2" ]]; then
-        # TODO: Malte and Gabi: take care of this.
-        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+        "$BASEDIR/downward-seq-opt-fdss-2.py" "$PLANNER" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-selmax" ]]; then
         "$PLANNER" --search "astar(selmax(lmcut(),lmcount(lm_merged(lm_hm(m=1),lm_rhw()),admissible=true),training_set=1000),mpd=true)" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-bjolp" ]]; then
@@ -39,12 +38,7 @@ if [[ "$1" == "ipc" ]]; then
     elif [[ "$CONFIG" == "seq-opt-lmcut" ]]; then
         "$PLANNER" --search "astar(lmcut())" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-merge-and-shrink" ]]; then
-        # TODO: Malte: take care of this.
-        # The following configs were recommended by Raz and should be
-        # run as a 50%/50% sequential portfolio, with the shrink_strategy=12
-        # one first since it's more likely to run out of memory quickly.
-        "$PLANNER" --search "astar(mas(max_states=1,merge_strategy=5,shrink_strategy=12))" "$@" < $TEMPFILE
-        ## "$PLANNER" --search "astar(mas(max_states=200000,merge_strategy=5,shrink_strategy=7))" "$@" < $TEMPFILE
+        "$BASEDIR/downward-seq-opt-merge-and-shrink.py" "$PLANNER" "$@" < $TEMPFILE
     else
         echo "unknown IPC planner name: $2"
         exit 2
