@@ -36,7 +36,8 @@ public:
                    bool pass_bound,
                    bool repeat_last_phase,
                    bool continue_on_fail,
-                   bool continue_on_solve);
+                   bool continue_on_solve,
+                   int plan_counter);
     virtual ~IteratedSearch();
     virtual void save_plan_if_necessary() const;
     void statistics() const;

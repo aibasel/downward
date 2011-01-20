@@ -8,7 +8,8 @@ IteratedSearch::IteratedSearch(
     bool pass_bound_,
     bool repeat_last_phase_,
     bool continue_on_fail_,
-    bool continue_on_solve_)
+    bool continue_on_solve_,
+    int plan_counter_)
     : SearchEngine(options),
       engine_config(engine_config_),
       engine_config_start(engine_config_start_),
@@ -19,7 +20,7 @@ IteratedSearch::IteratedSearch(
     last_phase_found_solution = false;
     best_bound = numeric_limits<int>::max();
     iterated_found_solution = false;
-    plan_counter = 0;
+    plan_counter = plan_counter_;
 }
 
 IteratedSearch::~IteratedSearch() {
@@ -155,6 +156,7 @@ SearchEngine *IteratedSearch::create(
     bool repeat_last = false;
     bool continue_on_fail = false;
     bool continue_on_solve = true;
+    int plan_counter = 0;
 
     if (config[end] != ")") {
         end++;
@@ -169,6 +171,8 @@ SearchEngine *IteratedSearch::create(
                                       "continue search after no solution found");
         option_parser.add_bool_option("continue_on_solve", &continue_on_solve,
                                       "continue search after solution found");
+        option_parser.add_int_option("plan_counter", &plan_counter, 
+                                      "start enumerating plans with this number");
         option_parser.parse_options(config, end, end, dry_run);
         end++;
     }
@@ -181,7 +185,8 @@ SearchEngine *IteratedSearch::create(
     IteratedSearch *engine = \
         new IteratedSearch(common_options,
                            config, engine_config_start, pass_bound,
-                           repeat_last, continue_on_fail, continue_on_solve);
+                           repeat_last, continue_on_fail, continue_on_solve,
+                           plan_counter);
 
     return engine;
 }
