@@ -18,7 +18,7 @@ fi
 
 DIST=$1
 
-COMMANDLINEOPTIONS="ipc $DIST"
+COMMANDLINEOPTIONS="$DIST"
 
 PACKAGE=$DIST.tar.gz
 
@@ -30,11 +30,13 @@ hg archive -I 're:src\/translate\/' $DIST
 hg archive -I 're:src\/preprocess\/' $DIST
 hg archive -I 're:src\/search\/' $DIST
 hg archive -I 're:src\/build_all' $DIST
+hg archive -I 're:src\/plan-ipc' $DIST
 
 
 echo "Preparing distribution directory..."
 cp build $DIST/
-sed "s/COMMANDLINEOPTIONS/$COMMANDLINEOPTIONS/" plan > $DIST/plan
+echo '#! /bin/bash' > $DIST/plan
+echo '"$(dirname "$0")"/src/plan-ipc' "$COMMANDLINEOPTIONS" '"$@"' >> $DIST/plan
 chmod 755 $DIST/plan
 
 echo "Removing LP code..."
