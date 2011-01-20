@@ -2,7 +2,7 @@
 BASEDIR="$(dirname "$0")"
 TEMPFILE=downward.tmp.$$
 cat > $TEMPFILE
-STATE_SIZE=$("$BASEDIR/dispatch" $TEMPFILE)
+STATE_SIZE=$(command time --output=elapsed.time --append --format='%S\n%U\n' "$BASEDIR/dispatch" $TEMPFILE)
 echo Dispatcher selected state size $STATE_SIZE.
 PLANNER="$BASEDIR/downward-$STATE_SIZE"
 if [[ "$1" == "ipc" ]]; then
@@ -27,8 +27,7 @@ if [[ "$1" == "ipc" ]]; then
         # TODO: Erez: take care of this.
         "$PLANNER" "TODO: options" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-fdss-1" ]]; then
-        # TODO: Malte and Gabi: take care of this.
-        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+        "$BASEDIR/downward-seq-opt-fdss-1.py" "$PLANNER" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-fdss-2" ]]; then
         # TODO: Malte and Gabi: take care of this.
         "$PLANNER" "TODO: options" "$@" < $TEMPFILE
