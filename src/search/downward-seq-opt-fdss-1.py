@@ -51,6 +51,7 @@ for pos, (relative_time, args) in enumerate(CONFIGS):
     print "timeout: %.2f" % timeout
     complete_args = [planner] + args + extra_args
     print "args: %s" % complete_args
+    sys.stdout.flush()
     if not os.fork():
         os.close(0)
         os.open("output", os.O_RDONLY)
