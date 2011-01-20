@@ -11,8 +11,50 @@ if [[ "$1" == "ipc" ]]; then
     CONFIG="$2"
     shift 2
     if [[ "$CONFIG" == "seq-sat-fd-autotune" ]]; then
-        # TODO: Erez: take care of this.
-        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+        "$PLANNER" \
+            --heuristic "hFF=ff(cost_type=1)" \
+            --heuristic "hCea=cea(cost_type=0)" \
+            --heuristic "hCg=cg(cost_type=2)" \
+            --heuristic "hGoalCount=goalcount(cost_type=0)" \
+            --heuristic "hAdd=add(cost_type=0)" \
+            --search "iterated(
+                lazy(alt(single(sum(g(),weight(hFF, 10))),
+                         single(sum(g(),weight(hFF, 10)),pref_only=true),
+                         boost=2000),
+                     preferred=(hFF),reopen_closed=false,cost_type=1),
+                lazy(alt(single(sum(g(),weight(hAdd, 7))),
+                         single(sum(g(),weight(hAdd, 7)),pref_only=true),
+                         single(sum(g(),weight(hCg, 7))),
+                         single(sum(g(),weight(hCg, 7)),pref_only=true),
+                         single(sum(g(),weight(hCea, 7))),
+                         single(sum(g(),weight(hCea, 7)),pref_only=true),
+                         single(sum(g(),weight(hGoalCount, 7))),
+                         single(sum(g(),weight(hGoalCount, 7)),pref_only=true),
+                         boost=1000),
+                     preferred=(hCea,hGoalCount),
+                     reopen_closed=false,cost_type=1),
+                lazy(alt(tiebreaking(sum(g(),weight(hAdd, 3)),hAdd),
+                         tiebreaking(sum(g(),weight(hAdd, 3)),hAdd,pref_only=true),
+                         tiebreaking(sum(g(),weight(hCg, 3)),hCg),
+                         tiebreaking(sum(g(),weight(hCg, 3)),hCg,pref_only=true),
+                         tiebreaking(sum(g(),weight(hCea, 3)),hCea),
+                         tiebreaking(sum(g(),weight(hCea, 3)),hCea,pref_only=true),
+                         tiebreaking(sum(g(),weight(hGoalCount, 3)),hGoalCount),
+                         tiebreaking(sum(g(),weight(hGoalCount, 3)),hGoalCount,pref_only=true),
+                         boost=5000),
+                     preferred=(hCea,hGoalCount),reopen_closed=false,cost_type=0),
+                eager(alt(tiebreaking(sum(g(),weight(hAdd, 10)),hAdd),
+                          tiebreaking(sum(g(),weight(hAdd, 10)),hAdd,pref_only=true),
+                          tiebreaking(sum(g(),weight(hCg, 10)),hCg),
+                          tiebreaking(sum(g(),weight(hCg, 10)),hCg,pref_only=true),
+                          tiebreaking(sum(g(),weight(hCea, 10)),hCea),
+                          tiebreaking(sum(g(),weight(hCea, 10)),hCea,pref_only=true),
+                          tiebreaking(sum(g(),weight(hGoalCount, 10)),hGoalCount),
+                          tiebreaking(sum(g(),weight(hGoalCount, 10)),hGoalCount,pref_only=true),
+                          boost=500),
+                      preferred=(hCea,hGoalCount),reopen_closed=true,
+                      pathmax=true,cost_type=0),
+                repeat_last=true,continue_on_fail=true)" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-sat-fdss-1" ]]; then
         "$BASEDIR/downward-seq-sat-fdss-1.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-sat-fdss-2" ]]; then
@@ -25,8 +67,14 @@ if [[ "$1" == "ipc" ]]; then
         # TODO: Malte: take care of this.
         "$PLANNER" "TODO: options" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-fd-autotune" ]]; then
-        # TODO: Erez: take care of this.
-        "$PLANNER" "TODO: options" "$@" < $TEMPFILE
+        "$PLANNER" \
+            --heuristic "hLMCut=lmcut()" \
+            --heuristic "hHMax=hmax()" \
+            --heuristic "hCombinedSelMax=selmax(
+                hLMCut,hHMax,alpha=4,classifier=0,conf_threshold=0.85,
+                training_set=10,sample=0,uniform=true)" \
+            --search "astar(hCombinedSelMax,mpd=false,
+                            pathmax=true,cost_type=0)" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-fdss-1" ]]; then
         "$BASEDIR/downward-seq-opt-fdss-1.py" "$PLANNER" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-fdss-2" ]]; then
@@ -40,7 +88,7 @@ if [[ "$1" == "ipc" ]]; then
     elif [[ "$CONFIG" == "seq-opt-merge-and-shrink" ]]; then
         "$BASEDIR/downward-seq-opt-merge-and-shrink.py" "$PLANNER" "$@" < $TEMPFILE
     else
-        echo "unknown IPC planner name: $2"
+        echo "unknown IPC planner name: $CONFIG"
         exit 2
     fi
 else
