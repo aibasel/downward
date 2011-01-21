@@ -1,8 +1,5 @@
 #! /bin/bash
 
-#    seq-sat-fdss-1 \
-#    seq-sat-fdss-2 \
-
 for PLANNER in \
     seq-opt-fd-autotune \
     seq-opt-fdss-1 \
@@ -13,6 +10,8 @@ for PLANNER in \
     seq-opt-merge-and-shrink \
     seq-sat-fd-autotune-1 \
     seq-sat-fd-autotune-2 \
+    seq-sat-fdss-1 \
+    seq-sat-fdss-2 \
     seq-sat-lama-2011 \
     ; do
     ./make_ipc_submission $PLANNER
