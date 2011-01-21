@@ -21,9 +21,9 @@ using namespace std;
 static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
 static ScalarEvaluatorPlugin pattern_generation_haslum_plugin("haslum", create);
 
-PatternGenerationHaslum::PatternGenerationHaslum(int max_mem, int samples)
-    : max_pdb_memory(max_mem), samples_number(samples) {
-    // TODO: add functionality for max_memory and possibly for max number of pdbs, max variables/pdb etc.
+PatternGenerationHaslum::PatternGenerationHaslum(int max_pdb, int max_coll, int samples)
+    : max_pdb_size(max_pdb), max_collection_size(max_coll), samples_number(samples) {
+    // TODO: add functionality for the parameter options max_pdb_size and max_collection_size
     hill_climbing();
 }
 
@@ -59,10 +59,13 @@ void PatternGenerationHaslum::generate_successors(const PDBCollectionHeuristic &
 }
 
 // incrementally generates successors for the new best pattern (old successors always remain successors)
-// TODO: if we pass pattern as reference (const not possible because of set_difference), then weird things happen
+// TODO: if we pass pattern as reference (const not possible because of set_difference), then weird things happen,
+// namely the copied "new_pattern" seems still to be able to change "pattern", which contradicts the copy constructor.
+// precisely when inserting the "new_pattern" into "successor_patterns", one of the entries of "pattern" was changed
+// from 1 to 1352341374 (or similar) on some logistics problem.
 void PatternGenerationHaslum::generate_successors(vector<int> pattern,
                                                   vector<vector<int> > &successor_patterns) {
-    //sort(pattern.begin(), pattern.end()); // TODO necessary if we sort new pattern?
+    //sort(pattern.begin(), pattern.end()); // TODO necessary if we sort new pattern? should work without sorting.
     for (size_t i = 0; i < pattern.size(); ++i) {
         const vector<int> &rel_vars = g_causal_graph->get_predecessors(pattern[i]);
         vector<int> relevant_vars;
@@ -108,7 +111,7 @@ void PatternGenerationHaslum::generate_successors(vector<int> pattern,
 }
 
 // random walk for state sampling
-void PatternGenerationHaslum::sample_states() {
+void PatternGenerationHaslum::sample_states(vector<const State *> &samples) {
     // TODO update branching factor (later)
     vector<const Operator *> applicable_ops;
     g_successor_generator->generate_applicable_ops(*g_initial_state, applicable_ops);
@@ -125,22 +128,20 @@ void PatternGenerationHaslum::sample_states() {
             samples.push_back(current_state);
             break;
         }
+        // restart takes place by calling this method as long as we don't have enough sample states
         
         // TODO: whats faster: precompute applicable operators, then use a random one,
         // or get random numbers until you find an applicable operator?
-        vector<Operator> applicable_operators;
-        for (size_t i = 0; i < g_operators.size(); ++i) {
-            if (g_operators[i].is_applicable(*current_state))
-                applicable_operators.push_back(g_operators[i]);
-        }
-        int random2 = g_rng.next(applicable_operators.size()); // [0..applicalbe_operators.size())
-        assert(applicable_operators[random].is_applicable(*current_state));
+        vector<const Operator *> applicable_ops;
+        g_successor_generator->generate_applicable_ops(*current_state, applicable_ops);
+        
+        int random2 = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
+        assert(applicable_ops[random]->is_applicable(*current_state));
         
         // get new state, 
-        current_state = new State(*current_state, applicable_operators[random2]);
+        current_state = new State(*current_state, *applicable_ops[random2]);
         
         // check whether new state is a dead end (h == -1)
-        // restart takes place by calling sample_states() as long as we don't have enough sample states
         if (current_collection->compute_heuristic(*current_state) == -1)
             break;
         ++length;
@@ -155,17 +156,20 @@ void PatternGenerationHaslum::hill_climbing() {
     }
     current_collection = new PDBCollectionHeuristic(pattern_collection);
     
-    // sample states until we have enough
-    while (samples.size() < samples_number) {
-        sample_states();
-    }
-    
     // actual hillclimbing loop
     vector<vector<int> > successor_patterns;
     generate_successors(*current_collection, successor_patterns);
     bool improved = true;
     while (improved) {
         improved = false;
+        // sample states until we have enough
+        // TODO: this resampling (instead of only sampling once before the loop, as it was before) 
+        // slows down the whole process by at least 10
+        vector<const State *> samples;
+        while (samples.size() < samples_number) {
+            sample_states(samples);
+        }
+        
         // TODO: drop PDBHeuristic and use astar instead to compute h values for the sample states only
         int best_pattern_count = 0;
         int best_pattern_index = 0;
@@ -175,13 +179,18 @@ void PatternGenerationHaslum::hill_climbing() {
             current_collection->get_max_additive_subsets(successor_patterns[i], max_additive_subsets);
             int count = 0;
             // calculate the "counting approximation" for all sample states
+            // TODO: stop after m/t and use statistical confidence intervall
             for (size_t j = 0; j < samples.size(); ++j) {
+                // TODO: can h_pattern be dead_end value? only relevant vars are considered!
                 int h_pattern = pdbheuristic->compute_heuristic(*samples[j]);
                 int h_collection = current_collection->compute_heuristic(*samples[j]);
                 int max_h = 0;
                 for (size_t k = 0; k < max_additive_subsets.size(); ++k) {
                     int h_subset = 0;
                     for (size_t l = 0; l < max_additive_subsets[k].size(); ++l) {
+                        // TODO: can this value really have infitie h_value?
+                        // rather not, because for the sample states, the current collection never
+                        // yields an infinite value, because this is checked in the sampling step?
                         h_subset += max_additive_subsets[k][l]->compute_heuristic(*samples[j]);
                     }
                     max_h = max(max_h, h_subset);
@@ -215,13 +224,15 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     if (dry_run)
         return 0;
     
-    int max_pdb_memory = -1;
+    int max_pdb_size = -1;
+    int max_collection_size = -1;
     int samples_number = -1;
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
         if (config[end] != ")") {
             NamedOptionParser option_parser;
-            option_parser.add_int_option("max_pdb_memory", &max_pdb_memory, "maximum pdbs size");
+            option_parser.add_int_option("max_pdb_size", &max_pdb_size, "maximum size per pdb");
+            option_parser.add_int_option("max_collection_size", &max_collection_size, "max collection size");
             option_parser.add_int_option("samples_number", &samples_number, "number of samples");
             option_parser.parse_options(config, end, end, dry_run);
             end++;
@@ -232,12 +243,16 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         end = start;
     }
     // TODO: Default value
-    if (max_pdb_memory == -1) {
-        max_pdb_memory = 1000000;
+    if (max_pdb_size == -1) {
+        max_pdb_size = 2000000;
+    }
+    // TODO: Default value
+    if (max_collection_size == -1) {
+        max_collection_size = 20000000;
     }
     // TODO: required meaningful value
-    if (max_pdb_memory < 1) {
-        cerr << "error: abstraction size must be at least 1" << endl;
+    if (max_pdb_size < 1) {
+        cerr << "error: size per pdb must be at least 1" << endl;
         exit(2);
     }
     // TODO: Default value
@@ -245,7 +260,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         samples_number = 100;
     }
     
-    PatternGenerationHaslum pgh(max_pdb_memory, samples_number);
+    PatternGenerationHaslum pgh(max_pdb_size, max_collection_size, samples_number);
     cout << "Haslum et al. done." << endl;
     return pgh.get_pattern_collection_heuristic();
 }
