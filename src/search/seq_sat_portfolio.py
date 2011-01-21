@@ -72,7 +72,7 @@ def determine_timeout(remaining_time_at_start, configs, pos):
     print "timeout: %.2f" % run_timeout
     return run_timeout
 
-def run(configs, final_config=None, timeout=DEFAULT_TIMEOUT):
+def run(configs, final_config=None, final_config_builder=None, timeout=DEFAULT_TIMEOUT):
     extra_args = sys.argv[1:]
     assert len(extra_args) == 4, extra_args
     assert extra_args[0] in ["unit", "nonunit"], extra_args
@@ -111,23 +111,26 @@ def run(configs, final_config=None, timeout=DEFAULT_TIMEOUT):
             run_search(planner, complete_args, run_timeout)
 
             curr_plan_file = "%s.%d" % (plan_file, plan_no + 1)
-            
-            if (not changed_cost_types and unitcost != "unit" and
-                os.path.exists(curr_plan_file)):
-                # found a plan -> switch to real costs
-                changed_cost_types = True
-                search_cost_type = 0
-                heuristic_cost_type = 2
-
-                # repeat last run with real costs
-                # TODO: refactor: do not copy code
-                args = list(configs[pos][1])
-                plan_no = adapt_search(args, extra_args, search_cost_type, 
-                                       heuristic_cost_type, plan_file)
-                run_timeout = determine_timeout(remaining_time_at_start, 
-                                                configs, pos)
-                complete_args = [planner] + args + extra_args
-                run_search(planner, complete_args, run_timeout)
+            if os.path.exists(curr_plan_file):
+                # found a plan in last run
+                if not changed_cost_types and unitcost != "unit":
+                    # switch to real cost and repeat last run
+                    changed_cost_types = True
+                    search_cost_type = 0
+                    heuristic_cost_type = 2
+                    # TODO: refactor: thou shalt not copy code!
+                    args = list(configs[pos][1])
+                    plan_no = adapt_search(args, extra_args, search_cost_type, 
+                                           heuristic_cost_type, plan_file)
+                    run_timeout = determine_timeout(remaining_time_at_start, 
+                                                    configs, pos)
+                    complete_args = [planner] + args + extra_args
+                    run_search(planner, complete_args, run_timeout)
+                if final_config_builder:
+                    # abort scheduled portfolio and start final config
+                    args = list(configs[pos][1])
+                    final_config = final_config_builder(args)
+                    break
                 
         if final_config:
             break
