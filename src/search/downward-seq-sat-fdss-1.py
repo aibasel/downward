@@ -132,18 +132,16 @@ for pos, (relative_time, args) in enumerate(CONFIGS):
             g_bound = int(line.split()[1])
     except IOError:
         pass
-    plan_no += 1
     print "g bound: %s" % g_bound
-    print "next plan number: %d" % plan_no
+    print "next plan number: %d" % (plan_no + 1)
     adapted_search = False
     for index, arg in enumerate(args):
         if arg == "--search":
             search_config = args[index + 1]
-            if (search_config.startswith("iterated") or
-                plan_no == 0):
+            if search_config.startswith("iterated"):
                 extra_args[1] = plan_file
             else:
-                extra_args[1] = "%s.%d" % (plan_file, plan_no)
+                extra_args[1] = "%s.%d" % (plan_file, plan_no + 1)
             search_config = search_config.replace("BOUND", str(g_bound))
             search_config = search_config.replace("PLANCOUNTER", str(plan_no))
             args[index + 1] = search_config
