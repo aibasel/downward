@@ -197,7 +197,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     for (size_t i = 0; i < g_goal.size(); ++i) {
         pattern_collection.push_back(vector<int>(1, g_goal[i].first));
     }
-    cout << "goals are" << endl;
+    /*cout << "goals are" << endl;
     for (size_t i = 0; i < pattern_collection.size(); ++i) {
         cout << "[ ";
         for (size_t j = 0; j < pattern_collection[i].size(); ++j) {
@@ -205,7 +205,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         }
         cout << "]" << endl;
     }
-    cout << endl;
+    cout << endl;*/
     
     return new PDBCollectionHeuristic(pattern_collection);
 }
