@@ -71,6 +71,11 @@ CONFIGS = [
           "eager(single(sum(g(),weight(h,3))),preferred=(h),cost_type=S_COST_TYPE,bound=BOUND)"]),
      ]
 
+FINAL_CONFIG = [
+    "--heuristic", "h=ff(cost_type=H_COST_TYPE)",
+    "--search",
+    "iterated(eager(single(sum(g(),weight(h,3))),preferred=(h),cost_type=S_COST_TYPE,bound=BOUND),bound=BOUND,repeat_last=true,plan_counter=PLANCOUNTER)"]
 
 seq_sat_portfolio.run(unit_configs=CONFIGS,
-                      nonunit_configs=CONFIGS)
+                      nonunit_configs=CONFIGS,
+                      final_config=FINAL_CONFIG, timeout=10)
