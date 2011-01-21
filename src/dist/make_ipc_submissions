@@ -4,9 +4,9 @@
 #    seq-sat-fdss-1 \
 #    seq-sat-fdss-2 \
 #    seq-sat-lama-2011 \
-#    seq-opt-fd-autotune \
 
 for PLANNER in \
+    seq-opt-fd-autotune \
     seq-opt-fdss-1 \
     seq-opt-fdss-2 \
     seq-opt-selmax \
