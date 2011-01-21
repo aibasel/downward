@@ -47,7 +47,7 @@ void PatternGenerationHaslum::generate_successors(const PDBCollectionHeuristic &
             }
         }
     }
-    cout << "all possible new pattern candidates (after first round)" << endl;
+    /*cout << "all possible new pattern candidates (after first round)" << endl;
     for (size_t i = 0; i < successor_patterns.size(); ++i) {
         cout << "[ ";
         for (size_t j = 0; j < successor_patterns[i].size(); ++j) {
@@ -55,7 +55,7 @@ void PatternGenerationHaslum::generate_successors(const PDBCollectionHeuristic &
         }
         cout << " ]";
     }
-    cout << endl;
+    cout << endl;*/
 }
 
 // incrementally generates successors for the new best pattern (old successors always remain successors)
