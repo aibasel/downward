@@ -16,7 +16,7 @@ class PDBCollectionHeuristic : public Heuristic {
     void precompute_additive_vars();
 protected:
     virtual void initialize();
-    //virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const State &state);
 public:
     PDBCollectionHeuristic(const std::vector<std::vector<int> > &pattern_collection);
     virtual ~PDBCollectionHeuristic();
@@ -25,8 +25,6 @@ public:
     void get_max_additive_subsets(const std::vector<int> &new_pattern,
                                   std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
     const std::vector<PDBHeuristic *> &get_pattern_databases() const { return pattern_databases; }
-    // TODO: public ok?
-    int compute_heuristic(const State &state);
     void dump(const std::vector<std::vector<int> > &cgraph) const;
 };
 

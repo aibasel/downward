@@ -116,7 +116,9 @@ void PatternGenerationHaslum::sample_states(vector<const State *> &samples) {
     vector<const Operator *> applicable_ops;
     g_successor_generator->generate_applicable_ops(*g_initial_state, applicable_ops);
     double b = applicable_ops.size();
-    double d = 2.0 * current_collection->compute_heuristic(*g_initial_state);
+    current_collection->evaluate(*g_initial_state);
+    assert(!current_collection->is_dead_end());
+    double d = 2.0 * current_collection->get_heuristic();
     int length = 0;
     double denominator = pow(b, d + 1) - 1;
     State *current_state = g_initial_state;
@@ -136,14 +138,15 @@ void PatternGenerationHaslum::sample_states(vector<const State *> &samples) {
         g_successor_generator->generate_applicable_ops(*current_state, applicable_ops);
         
         int random2 = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
-        assert(applicable_ops[random]->is_applicable(*current_state));
+        assert(applicable_ops[random2]->is_applicable(*current_state));
         
         // get new state, 
         current_state = new State(*current_state, *applicable_ops[random2]);
         
         // check whether new state is a dead end (h == -1)
-        if (current_collection->compute_heuristic(*current_state) == -1)
-            break;
+        current_collection->evaluate(*current_state);
+        if (current_collection->is_dead_end())
+            break; // stop sampling. no restart, this is done by calling this method again
         ++length;
     }
 }
@@ -182,8 +185,10 @@ void PatternGenerationHaslum::hill_climbing() {
             // TODO: stop after m/t and use statistical confidence intervall
             for (size_t j = 0; j < samples.size(); ++j) {
                 // TODO: can h_pattern be dead_end value? only relevant vars are considered!
-                int h_pattern = pdbheuristic->compute_heuristic(*samples[j]);
-                int h_collection = current_collection->compute_heuristic(*samples[j]);
+                pdbheuristic->evaluate(*samples[j]);
+                int h_pattern = pdbheuristic->get_heuristic();
+                current_collection->evaluate(*samples[j]);
+                int h_collection = current_collection->get_heuristic();
                 int max_h = 0;
                 for (size_t k = 0; k < max_additive_subsets.size(); ++k) {
                     int h_subset = 0;
@@ -191,7 +196,12 @@ void PatternGenerationHaslum::hill_climbing() {
                         // TODO: can this value really have infitie h_value?
                         // rather not, because for the sample states, the current collection never
                         // yields an infinite value, because this is checked in the sampling step?
-                        h_subset += max_additive_subsets[k][l]->compute_heuristic(*samples[j]);
+                        max_additive_subsets[k][l]->evaluate(*samples[j]);
+                        if (max_additive_subsets[k][l]->is_dead_end()) {
+                            // TODO
+                            cout << "dead end" << endl;
+                        }
+                        h_subset += max_additive_subsets[k][l]->get_heuristic();
                     }
                     max_h = max(max_h, h_subset);
                 }

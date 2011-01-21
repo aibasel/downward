@@ -48,22 +48,17 @@ class PDBHeuristic : public Heuristic {
     std::vector<int> n_i; // multipliers for perfect hash function
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
     void set_pattern(const std::vector<int> &pattern);
-    //void generate_pattern(int max_abstract_states);
     void create_pdb(); // builds the graph-structure and does a dijkstra-backward-search
     size_t hash_index(const AbstractState &state) const; // maps an abstract state to an index
     //AbstractState inv_hash_index(int index) const; // inverts the hash-index-function
 protected:
     virtual void initialize();
-    //virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const State &state);
 public:
     //PDBHeuristic(int max_abstract_states);
     PDBHeuristic(const std::vector<int> &pattern);
     virtual ~PDBHeuristic();
     const std::vector<int> &get_pattern() const { return pattern; };
-    // TODO: check whether public is ok! (if left protected, then any class using PDBHeuristic has to
-    // first call evaluate(state) and the get_heuristic(), as it is done for compue_heuristic in the
-    // base class Heuristic.)
-    int compute_heuristic(const State &state);
     void dump() const;
 };
 
