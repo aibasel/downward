@@ -271,9 +271,8 @@ for (int n = 1; n < pattern.size(); ++n) {
     }*/
 
 void PDBHeuristic::initialize() {
-    cout << "Initializing pattern database heuristic..." << endl;
-
-    cout << "Didn't do anything. Done initializing." << endl;
+    //cout << "Initializing pattern database heuristic..." << endl;
+    //cout << "Didn't do anything. Done initializing." << endl;
 }
 
 int PDBHeuristic::compute_heuristic(const State &state) {
