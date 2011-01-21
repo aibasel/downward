@@ -19,7 +19,7 @@ using namespace std;
 
 // AbstractOperator -------------------------------------------------------------------------------
 
-AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_index) {
+AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_index) : cost(o.get_cost()) {
     const vector<Prevail> &prevail = o.get_prevail();
     const vector<PrePost> &pre_post = o.get_pre_post();
     for (size_t j = 0; j < prevail.size(); ++j) {
@@ -157,61 +157,7 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
 }
 
 /*void PDBHeuristic::generate_pattern(int max_abstract_states) {
-#define DEBUG false
-#if DEBUG
-    cout << "dummy cout " << max_abstract_states << endl; //so that ... compiler is happy!
-    // function tests
-    // 1. blocks-7-2 test-pattern
-    int patt[] = {9, 10, 11, 12, 13, 14};
-    //int patt[] = {13, 14};
-    
-    // 2. driverlog-6 test-pattern
-    //int patt[] = {4, 5, 7, 9, 10, 11, 12};
-    
-    // 3. logistics00-6-2 test-pattern
-    //int patt[] = {3, 4, 5, 6, 7, 8};
-    
-    // 4. blocks-9-0 test-pattern
-    //int patt[] = {0};
-    
-    // 5. logistics00-5-1 test-pattern
-    //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
-    
-    pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
-    // TODO: without the = vector<int>, it does not work!
-    n_i.reserve(pattern.size());
-    variable_to_index.resize(g_variable_name.size(), -1);
-    num_states = 1;
-    // int p = 1; ; same as num_states; incrementally computed!
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        n_i.push_back(num_states);
-        variable_to_index[pattern[i]] = i;
-        num_states *= g_variable_domain[pattern[i]];
-        //p *= g_variable_domain[pattern[i]];
-    }
-    create_pdb();
-#else
-    VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL);
-    variable_to_index.resize(g_variable_name.size(), -1);
-    int var = vof.next();
-    num_states = g_variable_domain[var];
-    size_t index = 0;
-    int p = 1;
-    while (num_states <= max_abstract_states) {
-        //cout << "Number of abstract states = " << num_states << endl;
-        //cout << "Including variable: " << var << " (True name:" << g_variable_name[var] << ")" << endl;
-        pattern.push_back(var);
-        variable_to_index[var] = index;
-        n_i.push_back(p);
-        p *= g_variable_domain[var];
-        
-        var = vof.next();
-        ++index;
-        num_states *= g_variable_domain[var];
-    }
-    num_states /= g_variable_domain[var];
-    create_pdb();
-#endif
+
 }*/
 
 void PDBHeuristic::create_pdb() {
@@ -270,7 +216,7 @@ void PDBHeuristic::create_pdb() {
                     continue;
                 } else {
                     assert(counter != state_index);
-                    back_edges[state_index].push_back(Edge(g_operators[j].get_cost(), counter));
+                    back_edges[state_index].push_back(Edge(operators[j].get_cost(), counter));
                 }
             }
         }
@@ -382,6 +328,31 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     }
     
     vector<int> pattern;
+#define DEBUG false
+#if DEBUG
+    // function tests
+    // 1. blocks-7-2 test-pattern
+    //int patt[] = {9, 10, 11, 12, 13, 14};
+    //int patt[] = {13, 14};
+    
+    // 2. driverlog-6 test-pattern
+    //int patt[] = {4, 5, 7, 9, 10, 11, 12};
+    
+    // 3. logistics00-6-2 test-pattern
+    //int patt[] = {3, 4, 5, 6, 7, 8};
+    
+    // 4. blocks-9-0 test-pattern
+    //int patt[] = {0};
+    
+    // 5. logistics00-5-1 test-pattern
+    //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
+    
+    // 6. some other test
+    int patt[] = {9};
+    
+    pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
+    // TODO: without the = vector<int>, it does not work!
+#else
     VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL);
     int var = vof.next();
     int num_states = g_variable_domain[var];
@@ -396,6 +367,6 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         else
             break;
     }
-    
+#endif
     return new PDBHeuristic(pattern);
 }

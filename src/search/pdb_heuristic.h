@@ -13,6 +13,7 @@ struct Edge {
 
 class Operator;
 class AbstractOperator {
+    int cost;
     std::vector<std::pair<int, int> > conditions;
     std::vector<std::pair<int, int> > effects;
 public:
@@ -20,6 +21,7 @@ public:
     ~AbstractOperator();
     const std::vector<std::pair<int, int> > &get_conditions() const { return conditions; }
     const std::vector<std::pair<int, int> > &get_effects() const { return effects; }
+    int get_cost() const { return cost; }
     void dump(const std::vector<int> &pattern) const;
 };
 
@@ -58,7 +60,9 @@ public:
     PDBHeuristic(const std::vector<int> &pattern);
     virtual ~PDBHeuristic();
     const std::vector<int> &get_pattern() const { return pattern; };
-    // TODO: check whether public is ok! (probably only needed for the moment)
+    // TODO: check whether public is ok! (if left protected, then any class using PDBHeuristic has to
+    // first call evaluate(state) and the get_heuristic(), as it is done for compue_heuristic in the
+    // base class Heuristic.)
     int compute_heuristic(const State &state);
     void dump() const;
 };
