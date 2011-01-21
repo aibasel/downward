@@ -1,9 +1,7 @@
 #! /bin/bash
 
-#    seq-sat-fd-autotune \
 #    seq-sat-fdss-1 \
 #    seq-sat-fdss-2 \
-#    seq-sat-lama-2011 \
 
 for PLANNER in \
     seq-opt-fd-autotune \
@@ -13,6 +11,9 @@ for PLANNER in \
     seq-opt-bjolp \
     seq-opt-lmcut \
     seq-opt-merge-and-shrink \
+    seq-sat-fd-autotune-1 \
+    seq-sat-fd-autotune-2 \
+    seq-sat-lama-2011 \
     ; do
     ./make_ipc_submission $PLANNER
 done
