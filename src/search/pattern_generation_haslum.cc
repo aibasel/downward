@@ -163,6 +163,7 @@ void PatternGenerationHaslum::hill_climbing() {
     bool improved = true;
     while (improved) {
         improved = false;
+        
         // sample states until we have enough
         // TODO: resampling seems to be much slower than sampling once
         vector<const State *> samples;
@@ -187,6 +188,10 @@ void PatternGenerationHaslum::hill_climbing() {
             // TODO: stop after m/t and use statistical confidence intervall
             for (size_t j = 0; j < samples.size(); ++j) {
                 pdbheuristic->evaluate(*samples[j]);
+                if (pdbheuristic->is_dead_end()) {
+                    // TODO
+                    cout << "dead end" << endl;
+                }
                 int h_pattern = pdbheuristic->get_heuristic();
                 current_collection->evaluate(*samples[j]);
                 int h_collection = current_collection->get_heuristic();
