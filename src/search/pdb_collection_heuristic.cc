@@ -89,8 +89,8 @@ void PDBCollectionHeuristic::precompute_additive_vars() {
 }
 
 void PDBCollectionHeuristic::initialize() {
-    cout << "Initializing pattern database heuristic..." << endl;
-    cout << "Didn't do anything. Done initializing." << endl;
+    //cout << "Initializing pattern database heuristic..." << endl;
+    //cout << "Didn't do anything. Done initializing." << endl;
 
     // testing logistics 6-2
     /*vector<int> test_pattern;
