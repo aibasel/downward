@@ -7,7 +7,7 @@ import resource
 import sys
 
 
-DEFAULT_TIMEOUT = 18
+DEFAULT_TIMEOUT = 1800
 
 
 def safe_unlink(filename):
@@ -87,6 +87,7 @@ def run(nonunit_configs, unit_configs, final_config=None, timeout=DEFAULT_TIMEOU
             heuristic_cost_type = 2
             second_iteration = True
         for pos, (relative_time, args) in enumerate(configs):
+            args = list(args)
             g_bound, plan_no = adapt_search(args, extra_args, search_cost_type, 
                                             heuristic_cost_type, plan_file)
             print "g bound: %s" % g_bound
@@ -109,22 +110,24 @@ def run(nonunit_configs, unit_configs, final_config=None, timeout=DEFAULT_TIMEOU
                         int(run_timeout), int(run_timeout)))
                 os.execl(planner, *complete_args)
             os.wait()
-            
+
             curr_plan_file = "%s.%d" % (plan_file, plan_no + 1)
-            if (not unitcost and not restarted and
+            if (unitcost != "unit" and not restarted and
                 os.path.exists(curr_plan_file)):
                 # found a plan -> restart with "true" costs
                 restarted = True
+                configs = configs[pos:] + configs[:pos]
                 break
-        if final_config and (second_iteration or unitcost):
+        if final_config and (second_iteration or unitcost == "unit"):
             break
 
     # run final config without time limit
+    final_config = list(final_config)
     g_bound, plan_no = adapt_search(final_config, extra_args, search_cost_type,
                                     heuristic_cost_type, plan_file)
     print "g bound: %s" % g_bound
     print "next plan number: %d" % (plan_no + 1)
-    complete_args = [planner] + args + extra_args
+    complete_args = [planner] + final_config + extra_args
     print "args: %s" % complete_args
     sys.stdout.flush()
     if not os.fork():
@@ -132,4 +135,3 @@ def run(nonunit_configs, unit_configs, final_config=None, timeout=DEFAULT_TIMEOU
         os.open("output", os.O_RDONLY)
         os.execl(planner, *complete_args)
     os.wait()
-
