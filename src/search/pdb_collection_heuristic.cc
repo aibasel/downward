@@ -114,24 +114,19 @@ void PDBCollectionHeuristic::initialize() {
 int PDBCollectionHeuristic::compute_heuristic(const State &state) {
     int max_val = -1;
     for (size_t i = 0; i < max_cliques.size(); ++i) {
-        const vector<PDBHeuristic *> clique = max_cliques[i];
+        const vector<PDBHeuristic *> &clique = max_cliques[i];
         int h_val = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
             clique[j]->evaluate(state);
-            int h = clique[j]->get_heuristic();
-            if (h == numeric_limits<int>::max()) {
+            if (clique[j]->is_dead_end())
                 return -1;
-            }
+            int h = clique[j]->get_heuristic();
             h_val += h;
         }
-        if (h_val > max_val) {
-            max_val = h_val;
-        }
+        max_val = max(max_val, h_val);
     }
     return max_val;
-    //TODO check if this is correct!
 }
-
 
 void PDBCollectionHeuristic::add_new_pattern(const vector<int> &pattern) {
     pattern_databases.push_back(new PDBHeuristic(pattern));
