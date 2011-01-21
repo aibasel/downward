@@ -165,6 +165,7 @@ void PatternGenerationHaslum::hill_climbing() {
     bool improved = true;
     while (improved) {
         improved = false;
+        
         // sample states until we have enough
         // TODO: this resampling (instead of only sampling once before the loop, as it was before) 
         // slows down the whole process by at least 10
@@ -186,6 +187,10 @@ void PatternGenerationHaslum::hill_climbing() {
             for (size_t j = 0; j < samples.size(); ++j) {
                 // TODO: can h_pattern be dead_end value? only relevant vars are considered!
                 pdbheuristic->evaluate(*samples[j]);
+                if (pdbheuristic->is_dead_end()) {
+                    // TODO
+                    cout << "dead end" << endl;
+                }
                 int h_pattern = pdbheuristic->get_heuristic();
                 current_collection->evaluate(*samples[j]);
                 int h_collection = current_collection->get_heuristic();
