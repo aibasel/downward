@@ -76,6 +76,5 @@ FINAL_CONFIG = [
     "--search",
     "iterated(eager(single(sum(g(),weight(h,3))),preferred=(h),cost_type=S_COST_TYPE,bound=BOUND),bound=BOUND,repeat_last=true,plan_counter=PLANCOUNTER)"]
 
-seq_sat_portfolio.run(unit_configs=CONFIGS,
-                      nonunit_configs=CONFIGS,
-                      final_config=FINAL_CONFIG, timeout=10)
+seq_sat_portfolio.run(configs=CONFIGS,
+                      final_config=FINAL_CONFIG, timeout=1800) # TODO: set timeout to 1800

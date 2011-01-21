@@ -45,9 +45,34 @@ def adapt_search(args, extra_args, search_cost_type, heuristic_cost_type, plan_f
                                str(search_cost_type))
             args[index + 1] = search_config
             break
-    return g_bound, plan_no
+    print "g bound: %s" % g_bound
+    print "next plan number: %d" % (plan_no + 1)
+    return plan_no
 
-def run(nonunit_configs, unit_configs, final_config=None, timeout=DEFAULT_TIMEOUT):
+def run_search(planner, complete_args, timeout=None):
+    print "args: %s" % complete_args
+    sys.stdout.flush()
+    if not os.fork():
+        os.close(0)
+        os.open("output", os.O_RDONLY)
+        if timeout:
+            resource.setrlimit(resource.RLIMIT_CPU, (
+                    int(timeout), int(timeout)))
+        os.execl(planner, *complete_args)
+    os.wait()
+
+def determine_timeout(remaining_time_at_start, configs, pos):
+    remaining_time = remaining_time_at_start - sum(os.times()[:4])
+    relative_time = configs[pos][0]
+    print "remaining time: %s" % remaining_time
+    remaining_relative_time = sum(config[0] for config in configs[pos:])
+    print "config %d: relative time %d, remaining %d" % (
+        pos, relative_time, remaining_relative_time)
+    run_timeout = remaining_time * relative_time / remaining_relative_time
+    print "timeout: %.2f" % run_timeout
+    return run_timeout
+
+def run(configs, final_config=None, timeout=DEFAULT_TIMEOUT):
     extra_args = sys.argv[1:]
     assert len(extra_args) == 4, extra_args
     assert extra_args[0] in ["unit", "nonunit"], extra_args
@@ -72,66 +97,44 @@ def run(nonunit_configs, unit_configs, final_config=None, timeout=DEFAULT_TIMEOU
 
     print "remaining time at start: %s" % remaining_time_at_start
 
-    if unitcost == "unit":
-        configs = unit_configs
-    else:
-        configs = nonunit_configs
-
-    restarted = False
     heuristic_cost_type = 1
     search_cost_type = 1
+    changed_cost_types = False
     while True:
-        second_iteration = False
-        if restarted:
-            search_cost_type = 0
-            heuristic_cost_type = 2
-            second_iteration = True
         for pos, (relative_time, args) in enumerate(configs):
             args = list(args)
-            g_bound, plan_no = adapt_search(args, extra_args, search_cost_type, 
-                                            heuristic_cost_type, plan_file)
-            print "g bound: %s" % g_bound
-            print "next plan number: %d" % (plan_no + 1)
-            remaining_time = remaining_time_at_start - sum(os.times()[:4])
-            print "remaining time: %s" % remaining_time
-            remaining_relative_time = sum(config[0] for config in configs[pos:])
-            print "config %d: relative time %d, remaining %d" % (
-                pos, relative_time, remaining_relative_time)
-            run_timeout = remaining_time * relative_time / remaining_relative_time
-            print "timeout: %.2f" % run_timeout
+            plan_no = adapt_search(args, extra_args, search_cost_type, 
+                                   heuristic_cost_type, plan_file)
+            run_timeout = determine_timeout(remaining_time_at_start, 
+                                            configs, pos)
             complete_args = [planner] + args + extra_args
-            print "args: %s" % complete_args
-            sys.stdout.flush()
-            if not os.fork():
-                os.close(0)
-                os.open("output", os.O_RDONLY)
-                if relative_time != remaining_relative_time:
-                    resource.setrlimit(resource.RLIMIT_CPU, (
-                        int(run_timeout), int(run_timeout)))
-                os.execl(planner, *complete_args)
-            os.wait()
+            run_search(planner, complete_args, run_timeout)
 
             curr_plan_file = "%s.%d" % (plan_file, plan_no + 1)
-            if (unitcost != "unit" and not restarted and
+            
+            if (not changed_cost_types and unitcost != "unit" and
                 os.path.exists(curr_plan_file)):
-                # found a plan -> restart with "true" costs
-                restarted = True
-                configs = configs[pos:] + configs[:pos]
-                break
-        if final_config and (second_iteration or unitcost == "unit"):
+                # found a plan -> switch to real costs
+                changed_cost_types = True
+                search_cost_type = 0
+                heuristic_cost_type = 2
+
+                # repeat last run with real costs
+                # TODO: refactor: do not copy code
+                args = list(configs[pos][1])
+                plan_no = adapt_search(args, extra_args, search_cost_type, 
+                                       heuristic_cost_type, plan_file)
+                run_timeout = determine_timeout(remaining_time_at_start, 
+                                                configs, pos)
+                complete_args = [planner] + args + extra_args
+                run_search(planner, complete_args, run_timeout)
+                
+        if final_config:
             break
 
     # run final config without time limit
     final_config = list(final_config)
-    g_bound, plan_no = adapt_search(final_config, extra_args, search_cost_type,
-                                    heuristic_cost_type, plan_file)
-    print "g bound: %s" % g_bound
-    print "next plan number: %d" % (plan_no + 1)
+    adapt_search(final_config, extra_args, search_cost_type,
+                 heuristic_cost_type, plan_file)
     complete_args = [planner] + final_config + extra_args
-    print "args: %s" % complete_args
-    sys.stdout.flush()
-    if not os.fork():
-        os.close(0)
-        os.open("output", os.O_RDONLY)
-        os.execl(planner, *complete_args)
-    os.wait()
+    run_search(planner, complete_args)
