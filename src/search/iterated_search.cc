@@ -18,7 +18,7 @@ IteratedSearch::IteratedSearch(
       continue_on_fail(continue_on_fail_),
       continue_on_solve(continue_on_solve_) {
     last_phase_found_solution = false;
-    best_bound = numeric_limits<int>::max();
+    best_bound = bound;
     iterated_found_solution = false;
     plan_counter = plan_counter_;
 }
