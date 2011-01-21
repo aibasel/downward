@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import glob
 import os
 import os.path
 import resource
 import sys
 
 
-DEFAULT_TIMEOUT = 1800
+DEFAULT_TIMEOUT = 18
+
+
+def safe_unlink(filename):
+    try:
+        os.unlink(filename)
+    except EnvironmentError:
+        pass
 
 
 def run(nonunit_configs, unit_configs, timeout=DEFAULT_TIMEOUT):
@@ -19,12 +27,10 @@ def run(nonunit_configs, unit_configs, timeout=DEFAULT_TIMEOUT):
     assert extra_args[0] == "--plan-file", extra_args
     plan_file = extra_args[1]
 
-    # TODO should also unlink plan_file.1, plan_file.2, ...?
-    try:
-        os.unlink(plan_file)
-        os.unlink("plan_numbers_and_cost")
-    except EnvironmentError:
-        pass
+    safe_unlink(plan_file)
+    for filename in glob.glob("%s.*" % plan_file):
+        safe_unlink(filename)
+    safe_unlink("plan_numbers_and_cost")
 
     remaining_time_at_start = float(timeout)
     try:
@@ -79,7 +85,8 @@ def run(nonunit_configs, unit_configs, timeout=DEFAULT_TIMEOUT):
         if not os.fork():
             os.close(0)
             os.open("output", os.O_RDONLY)
-            resource.setrlimit(resource.RLIMIT_CPU, (
-                int(run_timeout), int(run_timeout)))
+            if relative_time != remaining_relative_time:
+                resource.setrlimit(resource.RLIMIT_CPU, (
+                    int(run_timeout), int(run_timeout)))
             os.execl(planner, *complete_args)
         os.wait()
