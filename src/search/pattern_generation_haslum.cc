@@ -132,8 +132,6 @@ void PatternGenerationHaslum::sample_states(vector<const State *> &samples) {
         }
         // restart takes place by calling this method as long as we don't have enough sample states
         
-        // TODO: whats faster: precompute applicable operators, then use a random one,
-        // or get random numbers until you find an applicable operator?
         vector<const Operator *> applicable_ops;
         g_successor_generator->generate_applicable_ops(*current_state, applicable_ops);
         
@@ -166,25 +164,28 @@ void PatternGenerationHaslum::hill_climbing() {
     while (improved) {
         improved = false;
         // sample states until we have enough
-        // TODO: this resampling (instead of only sampling once before the loop, as it was before) 
-        // slows down the whole process by at least 10
+        // TODO: resampling seems to be much slower than sampling once
         vector<const State *> samples;
         while (samples.size() < samples_number) {
             sample_states(samples);
         }
         
         // TODO: drop PDBHeuristic and use astar instead to compute h values for the sample states only
+        // How is the advance of astar if we always have new samples? If we use pdbs and we don't rebuild
+        // them in every loop, there is no problem with new samples.
         int best_pattern_count = 0;
         int best_pattern_index = 0;
         for (size_t i = 0; i < successor_patterns.size(); ++i) {
             PDBHeuristic *pdbheuristic = new PDBHeuristic(successor_patterns[i]);
+            // at the moment we always calculate all PDBs. But only few new successor-patterns are
+            // really new. If we have enough memory, we should save all constructed pdbs.
+            // (And delete them before the real search for a plan)
             vector<vector<PDBHeuristic *> > max_additive_subsets;
             current_collection->get_max_additive_subsets(successor_patterns[i], max_additive_subsets);
             int count = 0;
             // calculate the "counting approximation" for all sample states
             // TODO: stop after m/t and use statistical confidence intervall
             for (size_t j = 0; j < samples.size(); ++j) {
-                // TODO: can h_pattern be dead_end value? only relevant vars are considered!
                 pdbheuristic->evaluate(*samples[j]);
                 int h_pattern = pdbheuristic->get_heuristic();
                 current_collection->evaluate(*samples[j]);
@@ -193,12 +194,9 @@ void PatternGenerationHaslum::hill_climbing() {
                 for (size_t k = 0; k < max_additive_subsets.size(); ++k) {
                     int h_subset = 0;
                     for (size_t l = 0; l < max_additive_subsets[k].size(); ++l) {
-                        // TODO: can this value really have infitie h_value?
-                        // rather not, because for the sample states, the current collection never
-                        // yields an infinite value, because this is checked in the sampling step?
                         max_additive_subsets[k][l]->evaluate(*samples[j]);
                         if (max_additive_subsets[k][l]->is_dead_end()) {
-                            // TODO
+                            // TODO: how to handle dead ends? Delete this sample?
                             cout << "dead end" << endl;
                         }
                         h_subset += max_additive_subsets[k][l]->get_heuristic();
