@@ -63,7 +63,7 @@ void PatternGenerationHaslum::generate_successors(const PDBCollectionHeuristic &
 // namely the copied "new_pattern" seems still to be able to change "pattern", which contradicts the copy constructor.
 // precisely when inserting the "new_pattern" into "successor_patterns", one of the entries of "pattern" was changed
 // from 1 to 1352341374 (or similar) on some logistics problem.
-void PatternGenerationHaslum::generate_successors(vector<int> pattern,
+void PatternGenerationHaslum::generate_successors(const vector<int> &pattern,
                                                   vector<vector<int> > &successor_patterns) {
     //sort(pattern.begin(), pattern.end()); // TODO necessary if we sort new pattern? should work without sorting.
     for (size_t i = 0; i < pattern.size(); ++i) {
@@ -111,7 +111,7 @@ void PatternGenerationHaslum::generate_successors(vector<int> pattern,
 }
 
 // random walk for state sampling
-void PatternGenerationHaslum::sample_states(vector<const State *> &samples) {
+void PatternGenerationHaslum::sample_states(vector<State> &samples) {
     // TODO update branching factor (later)
     vector<const Operator *> applicable_ops;
     g_successor_generator->generate_applicable_ops(*g_initial_state, applicable_ops);
@@ -121,7 +121,7 @@ void PatternGenerationHaslum::sample_states(vector<const State *> &samples) {
     double d = 2.0 * current_collection->get_heuristic();
     int length = 0;
     double denominator = pow(b, d + 1) - 1;
-    State *current_state = g_initial_state;
+    State current_state(*g_initial_state);
     while (true) {
         double numerator = pow(b, length + 1.0) - pow(b, length);
         double fraction = numerator / denominator;
@@ -133,16 +133,16 @@ void PatternGenerationHaslum::sample_states(vector<const State *> &samples) {
         // restart takes place by calling this method as long as we don't have enough sample states
         
         vector<const Operator *> applicable_ops;
-        g_successor_generator->generate_applicable_ops(*current_state, applicable_ops);
+        g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
         
         int random2 = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
-        assert(applicable_ops[random2]->is_applicable(*current_state));
+        assert(applicable_ops[random2]->is_applicable(current_state));
         
         // get new state, 
-        current_state = new State(*current_state, *applicable_ops[random2]);
+        current_state = State(current_state, *applicable_ops[random2]);
         
         // check whether new state is a dead end (h == -1)
-        current_collection->evaluate(*current_state);
+        current_collection->evaluate(current_state);
         if (current_collection->is_dead_end())
             break; // stop sampling. no restart, this is done by calling this method again
         ++length;
@@ -166,7 +166,7 @@ void PatternGenerationHaslum::hill_climbing() {
         
         // sample states until we have enough
         // TODO: resampling seems to be much slower than sampling once
-        vector<const State *> samples;
+        vector<State> samples;
         while (samples.size() < samples_number) {
             sample_states(samples);
         }
@@ -177,7 +177,7 @@ void PatternGenerationHaslum::hill_climbing() {
         int best_pattern_count = 0;
         int best_pattern_index = 0;
         for (size_t i = 0; i < successor_patterns.size(); ++i) {
-            PDBHeuristic *pdbheuristic = new PDBHeuristic(successor_patterns[i]);
+            PDBHeuristic pdbheuristic(successor_patterns[i]);
             // at the moment we always calculate all PDBs. But only few new successor-patterns are
             // really new. If we have enough memory, we should save all constructed pdbs.
             // (And delete them before the real search for a plan)
@@ -187,19 +187,19 @@ void PatternGenerationHaslum::hill_climbing() {
             // calculate the "counting approximation" for all sample states
             // TODO: stop after m/t and use statistical confidence intervall
             for (size_t j = 0; j < samples.size(); ++j) {
-                pdbheuristic->evaluate(*samples[j]);
-                if (pdbheuristic->is_dead_end()) {
+                pdbheuristic.evaluate(samples[j]);
+                if (pdbheuristic.is_dead_end()) {
                     // TODO
                     cout << "dead end" << endl;
                 }
-                int h_pattern = pdbheuristic->get_heuristic();
-                current_collection->evaluate(*samples[j]);
+                int h_pattern = pdbheuristic.get_heuristic();
+                current_collection->evaluate(samples[j]);
                 int h_collection = current_collection->get_heuristic();
                 int max_h = 0;
                 for (size_t k = 0; k < max_additive_subsets.size(); ++k) {
                     int h_subset = 0;
                     for (size_t l = 0; l < max_additive_subsets[k].size(); ++l) {
-                        max_additive_subsets[k][l]->evaluate(*samples[j]);
+                        max_additive_subsets[k][l]->evaluate(samples[j]);
                         if (max_additive_subsets[k][l]->is_dead_end()) {
                             // TODO: how to handle dead ends? Delete this sample?
                             cout << "dead end" << endl;
