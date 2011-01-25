@@ -1,28 +1,28 @@
 #include "pattern_generation_haslum.h"
-#include "plugin.h"
-#include "pdb_collection_heuristic.h"
-#include "globals.h"
-#include "pdb_heuristic.h"
 #include "causal_graph.h"
-#include "state.h"
+#include "globals.h"
 #include "operator.h"
+#include "pdb_collection_heuristic.h"
+#include "pdb_heuristic.h"
+#include "plugin.h"
 #include "rng.h"
+#include "state.h"
 #include "successor_generator.h"
 
-#include <vector>
-#include <string>
-#include <cstdlib>
-#include <cassert>
 #include <algorithm>
-#include <math.h>
+#include <cassert>
+#include <cmath>
+#include <cstdlib>
+#include <string>
+#include <vector>
 
 using namespace std;
 
 static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
-static ScalarEvaluatorPlugin pattern_generation_haslum_plugin("haslum", create);
+static ScalarEvaluatorPlugin pattern_generation_haslum_plugin("ipdb", create);
 
 PatternGenerationHaslum::PatternGenerationHaslum(int max_pdb, int max_coll, int samples)
-    : max_pdb_size(max_pdb), max_collection_size(max_coll), samples_number(samples) {
+: max_pdb_size(max_pdb), max_collection_size(max_coll), num_samples(samples) {
     // TODO: add functionality for the parameter options max_pdb_size and max_collection_size
     hill_climbing();
 }
@@ -31,9 +31,9 @@ PatternGenerationHaslum::~PatternGenerationHaslum() {
 }
 
 // generates successors for the initial pattern-collection, called once before the first hillclimbing iteration
-void PatternGenerationHaslum::generate_successors(const PDBCollectionHeuristic &current_collection,
-                                                  vector<vector<int> > &successor_patterns) {
-    // TODO: more efficiency?
+/*void PatternGenerationHaslum::initial_candidates(const PDBCollectionHeuristic &current_collection,
+                                                  vector<vector<int> > &candidate_patterns) {
+    assert(candidate_patterns.empty());
     for (size_t i = 0; i < current_collection.get_pattern_databases().size(); ++i) {
         const vector<int> &current_pattern = current_collection.get_pattern_databases()[i]->get_pattern();
         for (size_t j = 0; j < current_pattern.size(); ++j) {
@@ -41,33 +41,19 @@ void PatternGenerationHaslum::generate_successors(const PDBCollectionHeuristic &
             for (size_t k = 0; k < relevant_vars.size(); ++k) {
                 vector<int> new_pattern(current_pattern);
                 new_pattern.push_back(relevant_vars[k]);
-                // sort pattern
                 sort(new_pattern.begin(), new_pattern.end());
-                successor_patterns.push_back(new_pattern);
+                candidate_patterns.push_back(new_pattern);
             }
         }
     }
-    /*cout << "all possible new pattern candidates (after first round)" << endl;
-    for (size_t i = 0; i < successor_patterns.size(); ++i) {
-        cout << "[ ";
-        for (size_t j = 0; j < successor_patterns[i].size(); ++j) {
-            cout << successor_patterns[i][j] << " ";
-        }
-        cout << " ]";
-    }
-    cout << endl;*/
-}
+}*/
 
 // incrementally generates successors for the new best pattern (old successors always remain successors)
-// TODO: if we pass pattern as reference (const not possible because of set_difference), then weird things happen,
-// namely the copied "new_pattern" seems still to be able to change "pattern", which contradicts the copy constructor.
-// precisely when inserting the "new_pattern" into "successor_patterns", one of the entries of "pattern" was changed
-// from 1 to 1352341374 (or similar) on some logistics problem.
-void PatternGenerationHaslum::generate_successors(const vector<int> &pattern,
-                                                  vector<vector<int> > &successor_patterns) {
-    //sort(pattern.begin(), pattern.end()); // TODO necessary if we sort new pattern? should work without sorting.
+void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pattern,
+                                                          vector<vector<int> > &candidate_patterns) {
     for (size_t i = 0; i < pattern.size(); ++i) {
-        const vector<int> &rel_vars = g_causal_graph->get_predecessors(pattern[i]);
+        vector<int> rel_vars = g_causal_graph->get_predecessors(pattern[i]);
+        sort(rel_vars.begin(), rel_vars.end());
         vector<int> relevant_vars;
         set_difference(rel_vars.begin(), rel_vars.end(), pattern.begin(), pattern.end(), back_inserter(relevant_vars));
         for (size_t j = 0; j < relevant_vars.size(); ++j) {
@@ -85,13 +71,13 @@ void PatternGenerationHaslum::generate_successors(const vector<int> &pattern,
             }
             cout << endl;
             sort(new_pattern.begin(), new_pattern.end());
-            cout << "old pattern before push_back... ";
+            cout << "old pattern after sorting new pattern... ";
             for (size_t x = 0; x < pattern.size(); ++x) {
                 cout << pattern[x] << " ";
             }
             cout << endl;
-            successor_patterns.push_back(new_pattern);
-            cout << "old pattern after push_back... ";
+            candidate_patterns.push_back(new_pattern);
+            cout << "old pattern after inserting into collection... ";
             for (size_t x = 0; x < pattern.size(); ++x) {
                 cout << pattern[x] << " ";
             }
@@ -99,11 +85,11 @@ void PatternGenerationHaslum::generate_successors(const vector<int> &pattern,
             cout << endl;
         }
     }
-    cout << "all possible new pattern candidates (after incremental call)" << endl;
-    for (size_t i = 0; i < successor_patterns.size(); ++i) {
+    cout << "all possible new pattern candidates" << endl;
+    for (size_t i = 0; i < candidate_patterns.size(); ++i) {
         cout << "[ ";
-        for (size_t j = 0; j < successor_patterns[i].size(); ++j) {
-            cout << successor_patterns[i][j] << " ";
+        for (size_t j = 0; j < candidate_patterns[i].size(); ++j) {
+            cout << candidate_patterns[i][j] << " ";
         }
         cout << " ]";
     }
@@ -157,9 +143,18 @@ void PatternGenerationHaslum::hill_climbing() {
     }
     current_collection = new PDBCollectionHeuristic(pattern_collection);
     
+    // initial candidate patterns, computed separatedly for each pattern from the initial collection
+    vector<vector<int> > candidate_patterns;
+    for (size_t i = 0; i < current_collection->get_pattern_databases().size(); ++i) {
+        const vector<int> &current_pattern = current_collection->get_pattern_databases()[i]->get_pattern();
+        generate_candidate_patterns(current_pattern, candidate_patterns);
+    }
+    // remove duplicates in the final candidate list
+    sort(candidate_patterns.begin(), candidate_patterns.end());
+    candidate_patterns.erase(unique(candidate_patterns.begin(), candidate_patterns.end()), candidate_patterns.end());
+    cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
+    
     // actual hillclimbing loop
-    vector<vector<int> > successor_patterns;
-    generate_successors(*current_collection, successor_patterns);
     bool improved = true;
     while (improved) {
         improved = false;
@@ -167,7 +162,7 @@ void PatternGenerationHaslum::hill_climbing() {
         // sample states until we have enough
         // TODO: resampling seems to be much slower than sampling once
         vector<State> samples;
-        while (samples.size() < samples_number) {
+        while (samples.size() < num_samples) {
             sample_states(samples);
         }
         
@@ -176,13 +171,13 @@ void PatternGenerationHaslum::hill_climbing() {
         // them in every loop, there is no problem with new samples.
         int best_pattern_count = 0;
         int best_pattern_index = 0;
-        for (size_t i = 0; i < successor_patterns.size(); ++i) {
-            PDBHeuristic pdbheuristic(successor_patterns[i]);
+        for (size_t i = 0; i < candidate_patterns.size(); ++i) {
+            PDBHeuristic pdbheuristic(candidate_patterns[i]);
             // at the moment we always calculate all PDBs. But only few new successor-patterns are
             // really new. If we have enough memory, we should save all constructed pdbs.
             // (And delete them before the real search for a plan)
             vector<vector<PDBHeuristic *> > max_additive_subsets;
-            current_collection->get_max_additive_subsets(successor_patterns[i], max_additive_subsets);
+            current_collection->get_max_additive_subsets(candidate_patterns[i], max_additive_subsets);
             int count = 0;
             // calculate the "counting approximation" for all sample states
             // TODO: stop after m/t and use statistical confidence intervall
@@ -200,10 +195,7 @@ void PatternGenerationHaslum::hill_climbing() {
                     int h_subset = 0;
                     for (size_t l = 0; l < max_additive_subsets[k].size(); ++l) {
                         max_additive_subsets[k][l]->evaluate(samples[j]);
-                        if (max_additive_subsets[k][l]->is_dead_end()) {
-                            // TODO: how to handle dead ends? Delete this sample?
-                            cout << "dead end" << endl;
-                        }
+                        assert(!max_additive_subsets[k][l]->is_dead_end());
                         h_subset += max_additive_subsets[k][l]->get_heuristic();
                     }
                     max_h = max(max_h, h_subset);
@@ -221,32 +213,28 @@ void PatternGenerationHaslum::hill_climbing() {
         if (improved) {
             cout << "yippieee! we found a better pattern!" << endl;
             cout << "pattern [";
-            for (size_t i = 0; i < successor_patterns[best_pattern_index].size(); ++i) {
-                cout << successor_patterns[best_pattern_index][i] << " ";
+            for (size_t i = 0; i < candidate_patterns[best_pattern_index].size(); ++i) {
+                cout << candidate_patterns[best_pattern_index][i] << " ";
             }
             cout << "]" << endl;
-            current_collection->add_new_pattern(successor_patterns[best_pattern_index]);
+            current_collection->add_new_pattern(candidate_patterns[best_pattern_index]);
             // successors for next iteration
-            generate_successors(successor_patterns[best_pattern_index], successor_patterns);
+            generate_candidate_patterns(candidate_patterns[best_pattern_index], candidate_patterns);
         }
     }
 }
 
 ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
-    //OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
-        return 0;
-    
-    int max_pdb_size = -1;
-    int max_collection_size = -1;
-    int samples_number = -1;
+    int max_pdb_size = 2000000;
+    int max_collection_size = 20000000;
+    int num_samples = 100;
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
         if (config[end] != ")") {
             NamedOptionParser option_parser;
             option_parser.add_int_option("max_pdb_size", &max_pdb_size, "maximum size per pdb");
             option_parser.add_int_option("max_collection_size", &max_collection_size, "max collection size");
-            option_parser.add_int_option("samples_number", &samples_number, "number of samples");
+            option_parser.add_int_option("num_samples", &num_samples, "number of samples");
             option_parser.parse_options(config, end, end, dry_run);
             end++;
         }
@@ -255,25 +243,17 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     } else {
         end = start;
     }
-    // TODO: Default value
-    if (max_pdb_size == -1) {
-        max_pdb_size = 2000000;
-    }
-    // TODO: Default value
-    if (max_collection_size == -1) {
-        max_collection_size = 20000000;
-    }
+
     // TODO: required meaningful value
     if (max_pdb_size < 1) {
         cerr << "error: size per pdb must be at least 1" << endl;
         exit(2);
     }
-    // TODO: Default value
-    if (samples_number == -1) {
-        samples_number = 100;
-    }
     
-    PatternGenerationHaslum pgh(max_pdb_size, max_collection_size, samples_number);
+    if (dry_run)
+        return 0;
+    
+    PatternGenerationHaslum pgh(max_pdb_size, max_collection_size, num_samples);
     cout << "Haslum et al. done." << endl;
     return pgh.get_pattern_collection_heuristic();
 }
