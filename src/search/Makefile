@@ -61,10 +61,15 @@ HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
-HEADERS += mas_heuristic.h \
-           abstraction.h \
-           operator_registry.h \
-           variable_order_finder.h
+# HEADERS += mas_heuristic.h \
+#            abstraction.h \
+#            operator_registry.h \
+#            variable_order_finder.h
+
+HEADERS += raz_mas_heuristic.h \
+           raz_abstraction.h \
+           raz_operator_registry.h \
+           raz_variable_order_finder.h
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
@@ -133,6 +138,11 @@ CCOPT  = -g
 CCOPT += -m32
 CCOPT +=
 CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
+
+## The following line is a HACK to cross-compile a 64-bit executable
+## on a 32-bit Ubuntu machine (it also needs the -m32 to be changed to
+## -m64, of course.) See http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
+CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
 
 LINKOPT  = -g
 LINKOPT += -m32

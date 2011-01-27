@@ -39,10 +39,13 @@ def instantiate(task, model):
 
     instantiated_actions = []
     instantiated_axioms = []
+    reachable_action_parameters = defaultdict(list)
     for atom in model:
         if isinstance(atom.predicate, pddl.Action):
             action = atom.predicate
             parameters = action.parameters
+            inst_parameters = atom.args[:len(parameters)]
+            reachable_action_parameters[action.name].append(inst_parameters)
             if isinstance(action.precondition, pddl.ExistentialCondition):
                 parameters = list(parameters)
                 parameters += action.precondition.parameters
@@ -66,7 +69,8 @@ def instantiate(task, model):
         elif atom.predicate == "@goal-reachable":
             relaxed_reachable = True
 
-    return relaxed_reachable, fluent_facts, instantiated_actions, instantiated_axioms
+    return (relaxed_reachable, fluent_facts, instantiated_actions,
+           instantiated_axioms, reachable_action_parameters)
 
 def explore(task):
     prog = pddl_to_prolog.translate(task)
