@@ -86,11 +86,18 @@ void PDBCollectionHeuristic::precompute_additive_vars() {
             }
         }
     }
+    /*cout << "are additive variables matrix" << endl;
+    for (size_t i = 0; i < are_additive.size(); ++i) {
+        for (size_t j = 0; j < are_additive[i].size(); ++j) {
+            cout << are_additive[i][j] << " ";
+        }
+        cout << endl;
+    }*/
 }
 
 void PDBCollectionHeuristic::initialize() {
-    cout << "Initializing pattern database heuristic..." << endl;
-    cout << "Didn't do anything. Done initializing." << endl;
+    //cout << "Initializing pattern database heuristic..." << endl;
+    //cout << "Didn't do anything. Done initializing." << endl;
 
     // testing logistics 6-2
     /*vector<int> test_pattern;
@@ -190,6 +197,15 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     for (size_t i = 0; i < g_goal.size(); ++i) {
         pattern_collection.push_back(vector<int>(1, g_goal[i].first));
     }
+    /*cout << "goals are" << endl;
+    for (size_t i = 0; i < pattern_collection.size(); ++i) {
+        cout << "[ ";
+        for (size_t j = 0; j < pattern_collection[i].size(); ++j) {
+            cout << pattern_collection[i][j] << " ";
+        }
+        cout << "]" << endl;
+    }
+    cout << endl;*/
     
     return new PDBCollectionHeuristic(pattern_collection);
 }

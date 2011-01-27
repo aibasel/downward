@@ -271,9 +271,8 @@ for (int n = 1; n < pattern.size(); ++n) {
     }*/
 
 void PDBHeuristic::initialize() {
-    cout << "Initializing pattern database heuristic..." << endl;
-
-    cout << "Didn't do anything. Done initializing." << endl;
+    //cout << "Initializing pattern database heuristic..." << endl;
+    //cout << "Didn't do anything. Done initializing." << endl;
 }
 
 int PDBHeuristic::compute_heuristic(const State &state) {
@@ -292,11 +291,7 @@ void PDBHeuristic::dump() const {
 }
 
 ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
-    //OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
-        return 0;
-    
-    int max_states = -1;
+    int max_states = 1000000;
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
         if (config[end] != ")") {
@@ -310,14 +305,14 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     } else {
         end = start;
     }
-    // Default value
-    if (max_states == -1) {
-        max_states = 1000000;
-    }
+
     if (max_states < 1) {
         cerr << "error: abstraction size must be at least 1" << endl;
         exit(2);
     }
+    
+    if (dry_run)
+        return 0;
     
     vector<int> pattern;
 #define DEBUG false
@@ -343,7 +338,6 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     int patt[] = {9};
     
     pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
-    // TODO: without the = vector<int>, it does not work!
 #else
     VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL, 0.0);
     int var = vof.next();
