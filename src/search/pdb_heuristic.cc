@@ -6,7 +6,7 @@
 #include "operator.h"
 #include "timer.h"
 #include "abstract_state_iterator.h"
-#include "variable_order_finder.h"
+#include "raz_variable_order_finder.h"
 
 #include <limits>
 #include <cstdlib>
@@ -345,7 +345,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
     // TODO: without the = vector<int>, it does not work!
 #else
-    VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL);
+    VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL, 0.0);
     int var = vof.next();
     int num_states = g_variable_domain[var];
     while (num_states <= max_states) {
