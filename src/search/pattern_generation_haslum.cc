@@ -98,9 +98,39 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
 
 // random walk for state sampling
 void PatternGenerationHaslum::sample_states(vector<State> &samples) {
-    // TODO update branching factor (later)
-    vector<const Operator *> applicable_ops;
-    g_successor_generator->generate_applicable_ops(*g_initial_state, applicable_ops);
+    // calculate length of random walk accoring to a binomial distribution
+    current_collection->evaluate(*g_initial_state);
+    assert(!current_collection->is_dead_end());
+    double h = current_collection->get_heuristic();
+    // TODO: hack! (prevent division by 0)
+    if (h == 0)
+        h = 10;
+    double mean = 2 * h + 1;
+    double n = 4 * h;
+    double p = mean / n;
+    int length = 0;
+    for (int i = 0; i < n; ++i) {
+        double random = g_rng(); // [0..1)
+        if (random < p)
+            ++length;
+    }
+    
+    // sample length many states
+    State current_state(*g_initial_state);
+    samples.push_back(current_state);
+    for (int i = 1; i < length; ++i) {
+        vector<const Operator *> applicable_ops;
+        g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
+        int random = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
+        assert(applicable_ops[random]->is_applicable(current_state));
+        current_state = State(current_state, *applicable_ops[random]);
+        // if current state is dead-end, then restart with initial state
+        current_collection->evaluate(current_state);
+        if (current_collection->is_dead_end())
+            current_state = *g_initial_state;
+        samples.push_back(current_state);
+    }
+    /*
     double b = applicable_ops.size();
     current_collection->evaluate(*g_initial_state);
     assert(!current_collection->is_dead_end());
@@ -132,7 +162,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples) {
         if (current_collection->is_dead_end())
             break; // stop sampling. no restart, this is done by calling this method again
         ++length;
-    }
+    }*/
 }
 
 bool PatternGenerationHaslum::counting_approximation(PDBHeuristic &pdbheuristic,
@@ -163,11 +193,14 @@ bool PatternGenerationHaslum::counting_approximation(PDBHeuristic &pdbheuristic,
 
 void PatternGenerationHaslum::hill_climbing() {
     // initial collection: a pdb for each goal variable
-    vector<vector<int> > pattern_collection;
+    vector<vector<int> > initial_pattern_collection;
     for (size_t i = 0; i < g_goal.size(); ++i) {
-        pattern_collection.push_back(vector<int>(1, g_goal[i].first));
+        initial_pattern_collection.push_back(vector<int>(1, g_goal[i].first));
     }
-    current_collection = new PDBCollectionHeuristic(pattern_collection);
+    current_collection = new PDBCollectionHeuristic(initial_pattern_collection);
+    current_collection->evaluate(*g_initial_state);
+    if (current_collection->is_dead_end())
+        return;
     
     // initial candidate patterns, computed separatedly for each pattern from the initial collection
     vector<vector<int> > candidate_patterns;
@@ -184,13 +217,8 @@ void PatternGenerationHaslum::hill_climbing() {
     bool improved = true;
     while (improved) {
         improved = false;
-        
-        // sample states until we have enough
-        // TODO: resampling seems to be much slower than sampling once
         vector<State> samples;
-        while (samples.size() < num_samples) {
-            sample_states(samples);
-        }
+        sample_states(samples);
         
         // TODO: drop PDBHeuristic and use astar instead to compute h values for the sample states only
         // How is the advance of astar if we always have new samples? If we use pdbs and we don't rebuild
