@@ -135,6 +135,33 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples) {
     }
 }
 
+void PatternGenerationHaslum::counting_approximation(PDBHeuristic &pdbheuristic,
+                                                     const State &sample,
+                                                     PDBCollectionHeuristic *current_collection,
+                                                     vector<vector<PDBHeuristic *> > &max_additive_subsets,
+                                                     int &count) {
+    pdbheuristic.evaluate(sample);
+    if (pdbheuristic.is_dead_end()) {
+        // TODO
+        cout << "dead end" << endl;
+    }
+    int h_pattern = pdbheuristic.get_heuristic();
+    current_collection->evaluate(sample);
+    int h_collection = current_collection->get_heuristic();
+    for (size_t k = 0; k < max_additive_subsets.size(); ++k) {
+        int h_subset = 0;
+        for (size_t l = 0; l < max_additive_subsets[k].size(); ++l) {
+            max_additive_subsets[k][l]->evaluate(sample);
+            assert(!max_additive_subsets[k][l]->is_dead_end());
+            h_subset += max_additive_subsets[k][l]->get_heuristic();
+        }
+        if (h_pattern + h_subset> h_collection) {
+            ++count;
+            break;
+        }
+    }
+}
+
 void PatternGenerationHaslum::hill_climbing() {
     // initial collection: a pdb for each goal variable
     vector<vector<int> > pattern_collection;
@@ -182,27 +209,11 @@ void PatternGenerationHaslum::hill_climbing() {
             // calculate the "counting approximation" for all sample states
             // TODO: stop after m/t and use statistical confidence intervall
             for (size_t j = 0; j < samples.size(); ++j) {
-                pdbheuristic.evaluate(samples[j]);
-                if (pdbheuristic.is_dead_end()) {
-                    // TODO
-                    cout << "dead end" << endl;
-                }
-                int h_pattern = pdbheuristic.get_heuristic();
-                current_collection->evaluate(samples[j]);
-                int h_collection = current_collection->get_heuristic();
-                int max_h = 0;
-                for (size_t k = 0; k < max_additive_subsets.size(); ++k) {
-                    int h_subset = 0;
-                    for (size_t l = 0; l < max_additive_subsets[k].size(); ++l) {
-                        max_additive_subsets[k][l]->evaluate(samples[j]);
-                        assert(!max_additive_subsets[k][l]->is_dead_end());
-                        h_subset += max_additive_subsets[k][l]->get_heuristic();
-                    }
-                    max_h = max(max_h, h_subset);
-                }
-                if (h_pattern > h_collection - max_h) {
-                    ++count;
-                }
+                counting_approximation(pdbheuristic,
+                                       samples[j],
+                                       current_collection,
+                                       max_additive_subsets,
+                                       count);
             }
             if (count > best_pattern_count) {
                 best_pattern_count = count;
@@ -218,8 +229,13 @@ void PatternGenerationHaslum::hill_climbing() {
             }
             cout << "]" << endl;
             current_collection->add_new_pattern(candidate_patterns[best_pattern_index]);
+            // Do NOT make this a const ref! one really needs to copy this pattern, as passing
+            // an object as an argument which is part of a vector (the second argument) may
+            // cause memory leaks, i.e. when the vector needs to be resized after an insert
+            // operation the first argument is an invalid reference
+            vector<int> best_pattern = candidate_patterns[best_pattern_index];
             // successors for next iteration
-            generate_candidate_patterns(candidate_patterns[best_pattern_index], candidate_patterns);
+            generate_candidate_patterns(best_pattern, candidate_patterns);
         }
     }
 }
