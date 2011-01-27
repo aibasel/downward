@@ -57,32 +57,32 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
         vector<int> relevant_vars;
         set_difference(rel_vars.begin(), rel_vars.end(), pattern.begin(), pattern.end(), back_inserter(relevant_vars));
         for (size_t j = 0; j < relevant_vars.size(); ++j) {
-            cout << "old pattern... ";
+            /*cout << "old pattern... ";
             for (size_t x = 0; x < pattern.size(); ++x) {
                 cout << pattern[x] << " ";
             }
-            cout << endl;
+            cout << endl;*/
             vector<int> new_pattern(pattern);
             new_pattern.push_back(relevant_vars[j]);
-            cout << "add " << relevant_vars[j] << " to old pattern" << endl;
+            /*cout << "add " << relevant_vars[j] << " to old pattern" << endl;
             cout << "new pattern... ";
             for (size_t x = 0; x < new_pattern.size(); ++x) {
                 cout << new_pattern[x] << " ";
             }
-            cout << endl;
+            cout << endl;*/
             sort(new_pattern.begin(), new_pattern.end());
-            cout << "old pattern after sorting new pattern... ";
+            /*cout << "old pattern after sorting new pattern... ";
             for (size_t x = 0; x < pattern.size(); ++x) {
                 cout << pattern[x] << " ";
             }
-            cout << endl;
+            cout << endl;*/
             candidate_patterns.push_back(new_pattern);
-            cout << "old pattern after inserting into collection... ";
+            /*cout << "old pattern after inserting into collection... ";
             for (size_t x = 0; x < pattern.size(); ++x) {
                 cout << pattern[x] << " ";
             }
             cout << endl;
-            cout << endl;
+            cout << endl;*/
         }
     }
     cout << "all possible new pattern candidates" << endl;
@@ -135,15 +135,14 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples) {
     }
 }
 
-void PatternGenerationHaslum::counting_approximation(PDBHeuristic &pdbheuristic,
+bool PatternGenerationHaslum::counting_approximation(PDBHeuristic &pdbheuristic,
                                                      const State &sample,
                                                      PDBCollectionHeuristic *current_collection,
-                                                     vector<vector<PDBHeuristic *> > &max_additive_subsets,
-                                                     int &count) {
+                                                     vector<vector<PDBHeuristic *> > &max_additive_subsets) {
     pdbheuristic.evaluate(sample);
     if (pdbheuristic.is_dead_end()) {
-        // TODO
         cout << "dead end" << endl;
+        return true;
     }
     int h_pattern = pdbheuristic.get_heuristic();
     current_collection->evaluate(sample);
@@ -156,10 +155,10 @@ void PatternGenerationHaslum::counting_approximation(PDBHeuristic &pdbheuristic,
             h_subset += max_additive_subsets[k][l]->get_heuristic();
         }
         if (h_pattern + h_subset> h_collection) {
-            ++count;
-            break;
+            return true;
         }
     }
+    return false;
 }
 
 void PatternGenerationHaslum::hill_climbing() {
@@ -209,11 +208,11 @@ void PatternGenerationHaslum::hill_climbing() {
             // calculate the "counting approximation" for all sample states
             // TODO: stop after m/t and use statistical confidence intervall
             for (size_t j = 0; j < samples.size(); ++j) {
-                counting_approximation(pdbheuristic,
-                                       samples[j],
-                                       current_collection,
-                                       max_additive_subsets,
-                                       count);
+                if (counting_approximation(pdbheuristic,
+                                           samples[j],
+                                           current_collection,
+                                           max_additive_subsets))
+                    ++count;
             }
             if (count > best_pattern_count) {
                 best_pattern_count = count;

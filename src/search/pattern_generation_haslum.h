@@ -17,11 +17,10 @@ class PatternGenerationHaslum {
                              std::vector<std::vector<int> > &candidate_patterns);*/
     void generate_candidate_patterns(const std::vector<int> &pattern,
                                      std::vector<std::vector<int> > &candidate_patterns);
-    void counting_approximation(PDBHeuristic &pdbheuristic,
+    bool counting_approximation(PDBHeuristic &pdbheuristic,
                                 const State &sample,
                                 PDBCollectionHeuristic *current_collection,
-                                std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets,
-                                int &count);
+                                std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
     void hill_climbing();
 public:
     PatternGenerationHaslum(int max_pdb_size, int max_collection_size, int num_samples);
