@@ -220,9 +220,10 @@ void PatternGenerationHaslum::hill_climbing() {
                 best_pattern_index = i;
                 improved = true;
             }
+            cout << "improvement for pattern " << i << " : " << count << endl;
         }
         if (improved) {
-            cout << "yippieee! we found a better pattern!" << endl;
+            cout << "yippieee! we found a better pattern! Its improvement is " << best_pattern_count << endl;
             cout << "pattern [";
             for (size_t i = 0; i < candidate_patterns[best_pattern_index].size(); ++i) {
                 cout << candidate_patterns[best_pattern_index][i] << " ";
