@@ -286,11 +286,14 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
 
     vector<Heuristic *> preferred_list;
     int boost = DEFAULT_LAZY_BOOST;
+    bool reopen_closed = false;
 
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
         common_options.add_options_to_parser(option_parser);
+        option_parser.add_bool_option("reopen_closed", &reopen_closed,
+                                      "reopen closed nodes");
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost,
@@ -324,7 +327,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
         }
 
         engine = new GeneralLazyBestFirstSearch(
-            common_options, open, false);
+            common_options, open, reopen_closed);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
@@ -346,12 +349,15 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
 
     vector<Heuristic *> preferred_list;
     int boost = DEFAULT_LAZY_BOOST;
+    bool reopen_closed = true;
     int weight = 1;
 
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
         common_options.add_options_to_parser(option_parser);
+        option_parser.add_bool_option("reopen_closed", &reopen_closed,
+                                      "reopen closed nodes");
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost,
@@ -399,7 +405,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
         }
 
         engine = new GeneralLazyBestFirstSearch(
-            common_options, open, true);
+            common_options, open, reopen_closed);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;

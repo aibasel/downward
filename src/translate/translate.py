@@ -420,7 +420,8 @@ def unsolvable_sas_task(msg):
 
 def pddl_to_sas(task):
     with timers.timing("Instantiating", block=True):
-        relaxed_reachable, atoms, actions, axioms = instantiate.explore(task)
+        (relaxed_reachable, atoms, actions, axioms, 
+         reachable_action_params) = instantiate.explore(task)
 
     if not relaxed_reachable:
         return unsolvable_sas_task("No relaxed solution")
@@ -432,10 +433,11 @@ def pddl_to_sas(task):
         goal_list = [task.goal]
     for item in goal_list:
         assert isinstance(item, pddl.Literal)
-
+    
     with timers.timing("Computing fact groups", block=True):
         groups, mutex_groups, translation_key = fact_groups.compute_groups(
-            task, atoms, partial_encoding=USE_PARTIAL_ENCODING)
+            task, atoms, reachable_action_params, 
+            partial_encoding=USE_PARTIAL_ENCODING)
 
     with timers.timing("Building STRIPS to SAS dictionary"):
         ranges, strips_to_sas = strips_to_sas_dictionary(
@@ -461,7 +463,7 @@ def pddl_to_sas(task):
     print "%d effect conditions simplified" % simplified_effect_condition_counter
     print "%d implied preconditions added" % added_implied_precondition_counter
 
-    with timers.timing("Building mutex information"):
+    with timers.timing("Building mutex information", block=True):
         mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
 
     if DETECT_UNREACHABLE:
