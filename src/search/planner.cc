@@ -1,7 +1,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
-#include "tree_util.hh"
+#include "ext/tree_util.hh"
 #include "timer.h"
 #include "utilities.h"
 #include "search_engine.h"
