@@ -113,12 +113,12 @@ public:
     static SearchEngine *parse_cmd_line(int argc, const char **argv, bool dr);
     static std::string usage(std::string progname);
 
-
     //this function initiates parsing of T (the root node of parse_tree
     //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarksGraph*
     template <class T>
     T start_parsing();
 
+    //add option with no default value, optional help
     template <class T>
     void add_option(std::string k, std::string h = "");
 
@@ -127,17 +127,16 @@ public:
     void add_option(
         std::string k, T def_val, std::string h = "");
 
-
     void add_enum_option(std::string k,
                          std::vector<std::string > enumeration,
                          std::string def_val = "", std::string h = "");
 
     template <class T>
-    void add_list_option(std::string k,
-                         std::vector<T> def_val, std::string h = "");
+    void add_list_option(std::string k, std::string h = "");
 
     template <class T>
-    void add_list_option(std::string k, std::string h = "");
+    void add_list_option(std::string k,
+                         std::vector<T> def_val, std::string h = "");
 
     void error(std::string msg);
     void warning(std::string msg);

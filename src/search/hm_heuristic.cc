@@ -9,7 +9,7 @@
 
 
 
-HMHeuristic::HMHeuristic(Options opts) : m(opts.get<int>("m")) {
+HMHeuristic::HMHeuristic(const Options &opts) : m(opts.get<int>("m")) {
     MAX_VALUE = 100000;
     //MAX_VALUE = numeric_limits<int>::max();
 }
@@ -216,7 +216,7 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
     return 0;
 }
 
-ScalarEvaluator *_parse(OptionParser &parser) {
+static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("m");
     Options opts = parser.parse();
     if (parser.dry_run())

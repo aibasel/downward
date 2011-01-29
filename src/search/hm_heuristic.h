@@ -23,7 +23,7 @@ class Options;
  */
 class HMHeuristic : public Heuristic {
 public:
-    HMHeuristic(Options opts);
+    HMHeuristic(const Options &opts);
     virtual ~HMHeuristic();
 protected:
     int MAX_VALUE;
