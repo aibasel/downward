@@ -1,5 +1,5 @@
 #include "option_parser.h"
-#include "tree_util.hh"
+#include "ext/tree_util.hh"
 #include "plugin.h"
 #include <string>
 #include <algorithm>
