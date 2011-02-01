@@ -1165,15 +1165,15 @@ void LandmarkGraph::count_costs() {
     }
 }
 
-bool LandmarkGraph::relaxed_task_solvable_without_operator(
+/* Test whether the relaxed planning task is solvable without achieving the propositions in
+"exclude" (do not apply operators that would add a proposition from "exclude").
+As a side effect, collect in lvl_var and lvl_op the earliest possible point in time
+when a proposition / operator can be achieved / become applicable in the relaxed task.
+*/
+/*bool LandmarkGraph::relaxed_task_solvable_without_operator(
     vector<vector<int> > &lvl_var, vector<hash_map<pair<int, int>, int,
                                                    hash_int_pair> > &lvl_op, bool level_out,
     const Operator *exclude, bool compute_lvl_op) const {
-    /* Test whether the relaxed planning task is solvable without achieving the propositions in
-     "exclude" (do not apply operators that would add a proposition from "exclude").
-     As a side effect, collect in lvl_var and lvl_op the earliest possible point in time
-     when a proposition / operator can be achieved / become applicable in the relaxed task.
-     */
 
     // Initialize lvl_op and lvl_var to numeric_limits<int>::max()
     if (compute_lvl_op) {
@@ -1212,7 +1212,7 @@ bool LandmarkGraph::relaxed_task_solvable_without_operator(
         }
     }
     return true;
-}
+}*/
 
 void LandmarkGraph::compute_predecessor_information(
     LandmarkNode *bp,
