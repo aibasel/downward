@@ -32,20 +32,12 @@ class LandmarkGraphNew {
     static bool domain_connectivity(const pair<int, int> &landmark,
                                     const hash_set<int> &exclude);
 public:
-<<<<<<<
-    LandmarksGraphNew(LandmarkGraphOptions &options, Exploration *exploration)
-        : LandmarksGraph(options, exploration) {}
-    ~LandmarksGraphNew() {
-    }
-    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
-=======
     LandmarkGraphNew(LandmarkGraph::Options &options, Exploration *exploration);
     ~LandmarkGraphNew() {
     }
     LandmarkGraph *get_lm_graph();
     static LandmarkGraph *create(const std::vector<std::string> &config, int start,
->>>>>>>
-                                  int &end, bool dry_run);
+                                 int &end, bool dry_run);
 };
 
 #endif

@@ -1,4 +1,4 @@
-#include "landmarks_graph_merged.h"
+#include "landmark_graph_merged.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -6,20 +6,20 @@
 
 using namespace std;
 
-static LandmarkGraphPlugin landmarks_graph_merged_plugin(
-    "lm_merged", LandmarksGraphMerged::create);
+static LandmarkGraphPlugin landmark_graph_merged_plugin(
+    "lm_merged", LandmarkGraphMerged::create);
 
-LandmarksGraphMerged::LandmarksGraphMerged(
-    LandmarkGraphOptions &options, Exploration *exploration,
-    const vector<LandmarksGraph *> &lm_graphs_)
-    : LandmarksGraph(options, exploration),
+LandmarkGraphMerged::LandmarkGraphMerged(
+    LandmarkGraph::Options &options, Exploration *exploration,
+    const vector<LandmarkGraph *> &lm_graphs_)
+    : LandmarkGraph(options, exploration),
       lm_graphs(lm_graphs_) {
 }
 
-LandmarksGraphMerged::~LandmarksGraphMerged() {
+LandmarkGraphMerged::~LandmarkGraphMerged() {
 }
 
-LandmarkNode *LandmarksGraphMerged::get_matching_landmark(const LandmarkNode &lm) const {
+LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm) const {
     if (!lm.disjunctive && !lm.conjunctive) {
         pair<int, int> lm_fact = make_pair(lm.vars[0], lm.vals[0]);
         hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
@@ -48,7 +48,7 @@ LandmarkNode *LandmarksGraphMerged::get_matching_landmark(const LandmarkNode &lm
     return 0;
 }
 
-void LandmarksGraphMerged::generate_landmarks() {
+void LandmarkGraphMerged::generate_landmarks() {
     cout << "Merging " << lm_graphs.size() << " landmark graphs" << endl;
 
     cout << "Adding simple landmarks" << endl;
@@ -114,12 +114,12 @@ void LandmarksGraphMerged::generate_landmarks() {
 }
 
 
-LandmarksGraph *LandmarksGraphMerged::create(
+LandmarkGraph *LandmarkGraphMerged::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarksGraph::LandmarkGraphOptions common_options;
+    LandmarkGraph::Options common_options;
 
 
-    vector<LandmarksGraph *> lm_graphs_;
+    vector<LandmarkGraph *> lm_graphs_;
     OptionParser::instance()->parse_landmark_graph_list(config, start + 2,
                                                         end, false, lm_graphs_,
                                                         dry_run);
@@ -146,10 +146,10 @@ LandmarksGraph *LandmarksGraphMerged::create(
     if (dry_run) {
         return 0;
     } else {
-        LandmarksGraph *graph = new LandmarksGraphMerged(
+        LandmarkGraph *graph = new LandmarkGraphMerged(
             common_options, new Exploration(common_options.heuristic_options),
             lm_graphs_);
-        LandmarksGraph::build_lm_graph(graph);
+        LandmarkGraph::build_lm_graph(graph);
         return graph;
     }
 }
