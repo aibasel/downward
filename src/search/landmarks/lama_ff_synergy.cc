@@ -21,7 +21,7 @@ void LamaFFSynergy::HeuristicProxy::initialize() {
 }
 
 LamaFFSynergy::LamaFFSynergy(const HeuristicOptions &options,
-                             LandmarksGraph &lm_graph,
+                             LandmarkGraph &lm_graph,
                              bool lm_pref_, bool lm_admissible_, bool lm_optimal_,
                              bool use_action_landmarks_)
     : lama_heuristic_proxy(this), ff_heuristic_proxy(this),
@@ -91,7 +91,7 @@ LamaFFSynergy::create_heuristics(const std::vector<string> &config,
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
-    LandmarksGraph *lm_graph = OptionParser::instance()->parse_lm_graph(
+    LandmarkGraph *lm_graph = OptionParser::instance()->parse_lm_graph(
         config, start + 2, end, false);
     ++end;
 
