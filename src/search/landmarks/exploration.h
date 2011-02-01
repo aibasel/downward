@@ -1,9 +1,10 @@
-#ifndef LANDMARKS_LANDMARK_EXPLORATION_H
-#define LANDMARKS_LANDMARK_EXPLORATION_H
+#ifndef LANDMARKS_EXPLORATION_H
+#define LANDMARKS_EXPLORATION_H
 
 #include "../heuristic.h"
 #include "../globals.h"
-#include "landmark_types.h"
+#include "../priority_queue.h"
+#include "landmarks_types.h"
 
 #include <vector>
 #include <ext/hash_set>
@@ -92,8 +93,7 @@ private:
     std::vector<ExProposition *> goal_propositions;
     std::vector<ExProposition *> termination_propositions;
 
-    typedef std::vector<ExProposition *> Bucket;
-    std::vector<Bucket> reachable_queue;
+    AdaptiveQueue<ExProposition *> prop_queue;
 
     bool heuristic_recomputation_needed;
 
@@ -138,7 +138,7 @@ public:
                                             bool compute_lvl_ops);
     std::vector<const Operator *> exported_ops; // only needed for landmarks count heuristic ha
     int plan_for_disj(std::vector<std::pair<int, int> > &disj_goal, const State &state);
-    Exploration();
+    Exploration(const HeuristicOptions &options);
     ~Exploration();
     int compute_ff_heuristic_with_excludes(const State &state,
                                            const vector<pair<int, int> > &excluded_props,

@@ -1,11 +1,13 @@
 ## Set USE_LP to 1 to enable linear programming stuff.
 USE_LP=0
+STATE_VAR_BYTES=1
 
 HEADERS = \
           axioms.h \
           best_first_search.h \
           causal_graph.h \
           closed_list.h \
+          combining_evaluator.h \
           domain_transition_graph.h \
           enforced_hill_climbing_search.h \
           exact_timer.h \
@@ -14,8 +16,11 @@ HEADERS = \
           general_lazy_best_first_search.h \
           globals.h \
           heuristic.h \
+          ipc_max_heuristic.h \
           iterated_search.h \
+          max_evaluator.h \
           operator.h \
+          operator_cost.h \
           option_parser.h \
           plugin.h \
           pref_evaluator.h \
@@ -55,22 +60,28 @@ HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
-HEADERS += mas_heuristic.h \
-           abstraction.h \
-           operator_registry.h \
-           variable_order_finder.h
+# HEADERS += mas_heuristic.h \
+#            abstraction.h \
+#            operator_registry.h \
+#            variable_order_finder.h
+
+HEADERS += raz_mas_heuristic.h \
+           raz_abstraction.h \
+           raz_operator_registry.h \
+           raz_variable_order_finder.h
 
 HEADERS += landmarks/exploration.h \
-           landmarks/h_m_landmark.h \
+           landmarks/h_m_landmarks.h \
            landmarks/lama_ff_synergy.h \
            landmarks/landmark_cost_assignment.h \
            landmarks/landmark_count_heuristic.h \
            landmarks/landmark_status_manager.h \
-           landmarks/landmark_graph.h \
-           landmarks/landmark_graph_rpg_exhaust.h \
-           landmarks/landmark_graph_rpg_sasp.h \
-           landmarks/landmark_graph_rpg_search.h \
-           landmarks/landmark_graph_zhu_givan.h \
+           landmarks/landmarks_graph_merged.h \
+           landmarks/landmarks_graph.h \
+           landmarks/landmarks_graph_rpg_exhaust.h \
+           landmarks/landmarks_graph_rpg_sasp.h \
+           landmarks/landmarks_graph_rpg_search.h \
+           landmarks/landmarks_graph_zhu_givan.h \
            landmarks/util.h
 
 HEADERS += learning/AODE.h \
@@ -92,12 +103,12 @@ ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
 
 
 
-OBJECT_SUFFIX_RELEASE =
-TARGET_SUFFIX_RELEASE =
-OBJECT_SUFFIX_DEBUG   = .debug
-TARGET_SUFFIX_DEBUG   = -debug
-OBJECT_SUFFIX_PROFILE = .profile
-TARGET_SUFFIX_PROFILE = -profile
+OBJECT_SUFFIX_RELEASE = .$(STATE_VAR_BYTES)
+TARGET_SUFFIX_RELEASE = -$(STATE_VAR_BYTES)
+OBJECT_SUFFIX_DEBUG   = .$(STATE_VAR_BYTES).debug
+TARGET_SUFFIX_DEBUG   = -$(STATE_VAR_BYTES)-debug
+OBJECT_SUFFIX_PROFILE = .$(STATE_VAR_BYTES).profile
+TARGET_SUFFIX_PROFILE = -$(STATE_VAR_BYTES)-profile
 
 OBJECTS_RELEASE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_RELEASE).o)
 TARGET_RELEASE  = $(TARGET)$(TARGET_SUFFIX_RELEASE)
@@ -116,14 +127,19 @@ DEPEND = g++ -MM
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
-CCOPT  =
+CCOPT  = -g
 CCOPT += -m32
-CCOPT += -g
-CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
+CCOPT +=
+CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
 
-LINKOPT  =
+## The following line is a HACK to cross-compile a 64-bit executable
+## on a 32-bit Ubuntu machine (it also needs the -m32 to be changed to
+## -m64, of course.) See http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
+CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+
+LINKOPT  = -g
 LINKOPT += -m32
-LINKOPT += -g
+LINKOPT +=
 
 POSTLINKOPT =
 
@@ -184,7 +200,7 @@ COIN_LIBS = OsiClp Clp CoinUtils Osi
 ## http://ubuntuforums.org/showthread.php?t=491455
 
 COIN_CCOPT = -I $(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
-COIN_LINKOPT = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %) 
+COIN_LINKOPT = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
 
 CCOPT += $(COIN_CCOPT)
 

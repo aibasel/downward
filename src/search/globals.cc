@@ -6,6 +6,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <sstream>
 using namespace std;
 
 #include "axioms.h"
@@ -15,6 +16,7 @@ using namespace std;
 #include "state.h"
 #include "successor_generator.h"
 #include "timer.h"
+#include "heuristic.h"
 
 bool test_goal(const State &state) {
     for (int i = 0; i < g_goal.size(); i++) {
@@ -25,19 +27,40 @@ bool test_goal(const State &state) {
     return true;
 }
 
-int save_plan(const vector<const Operator *> &plan) {
-    ofstream outfile;
+int calculate_plan_cost(const vector<const Operator *> &plan) {
+    // TODO: Refactor: this is only used by save_plan (see below)
+    //       and the SearchEngine classes and hence should maybe
+    //       be moved into the SearchEngine (along with save_plan).
     int plan_cost = 0;
-    outfile.open("sas_plan", ios::out);
+    for (int i = 0; i < plan.size(); i++) {
+        plan_cost += plan[i]->get_cost();
+    }
+    return plan_cost;
+}
+
+void save_plan(const vector<const Operator *> &plan, int iter) {
+    // TODO: Refactor: this is only used by the SearchEngine classes
+    //       and hence should maybe be moved into the SearchEngine.
+    ofstream outfile;
+    if (iter == 0) {
+        outfile.open(g_plan_filename.c_str(), ios::out);
+    } else {
+        ostringstream out;
+        out << g_plan_filename << "." << iter;
+        outfile.open(out.str().c_str(), ios::out);
+    }
     for (int i = 0; i < plan.size(); i++) {
         cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
-        plan_cost += plan[i]->get_cost();
     }
     outfile.close();
+    int plan_cost = calculate_plan_cost(plan);
+    ofstream statusfile;
+    statusfile.open("plan_numbers_and_cost", ios::out|ios::app);
+    statusfile << iter << " " << plan_cost << endl;
+    statusfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
     cout << "Plan cost: " << plan_cost << endl;
-    return plan_cost;
 }
 
 bool peek_magic(istream &in, string magic) {
@@ -146,6 +169,7 @@ void read_everything(istream &in) {
 void dump_everything() {
     cout << "Use metric? " << g_use_metric << endl;
     cout << "Min Action Cost: " << g_min_action_cost << endl;
+    cout << "Max Action Cost: " << g_max_action_cost << endl;
     cout << "Variables (" << g_variable_name.size() << "):" << endl;
     for (int i = 0; i < g_variable_name.size(); i++)
         cout << "  " << g_variable_name[i]
@@ -164,6 +188,7 @@ void dump_everything() {
 bool g_legacy_file_format = false; // TODO: Can rip this out after migration.
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
+int g_max_action_cost = 0;
 vector<string> g_variable_name;
 vector<int> g_variable_domain;
 vector<int> g_axiom_layers;
@@ -176,5 +201,7 @@ AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
+HeuristicOptions g_default_heuristic_options;
 
 Timer g_timer;
+string g_plan_filename = "sas_plan";

@@ -21,11 +21,13 @@ static ScalarEvaluatorPlugin merge_and_shrink_heuristic_plugin(
 
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
+    HeuristicOptions &options,
     int max_abstract_states_, int max_abstract_states_before_merge_,
     int abstraction_count_,
     MergeStrategy merge_strategy_, ShrinkStrategy shrink_strategy_,
     bool use_label_simplification_, bool use_expensive_statistics_)
-    : max_abstract_states(max_abstract_states_),
+    : Heuristic(options),
+      max_abstract_states(max_abstract_states_),
       max_abstract_states_before_merge(max_abstract_states_before_merge_),
       abstraction_count(abstraction_count_),
       merge_strategy(merge_strategy_),
@@ -243,6 +245,19 @@ void MergeAndShrinkHeuristic::initialize() {
          << timer << "]" << endl
          << "initial h value: " << compute_heuristic(*g_initial_state)
          << endl;
+
+    /* TODO: The peak memory reported in the next line is wrong --
+             this seems to be the maximum over the memory amounts
+             required by the *last* abstraction of each iteration,
+             rather than the peaks of each iteration.
+             Abstraction::peak_memory doesn't seem to contain what
+             we're interested in -- need to set it based on the child
+             values for composite abstractions?
+
+       TODO: Since this memory estimate is just an estimate, might be a
+             good idea to complement it with a report on the peak memory
+             usage of the process as provided in utilities.h.
+    */
     cout << "Estimated peak memory: " << peak_memory << " bytes" << endl;
 }
 
@@ -280,6 +295,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
     int shrink_strategy = SHRINK_HIGH_F_LOW_H;
     bool use_label_simplification = true;
     bool use_expensive_statistics = false;
+    HeuristicOptions common_options;
 
     // "<name>()" or "<name>(<options>)"
     if (config.size() > start + 2 && config[start + 1] == "(") {
@@ -288,6 +304,9 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
         // TODO: better documentation what each parameter does
         if (config[end] != ")") {
             NamedOptionParser option_parser;
+
+            common_options.add_option_to_parser(option_parser);
+
             option_parser.add_int_option(
                 "max_states",
                 &max_states,
@@ -374,6 +393,7 @@ ScalarEvaluator *MergeAndShrinkHeuristic::create(
         return 0;
     } else {
         MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(
+            common_options,
             max_states,
             max_states_before_merge,
             abstraction_count,

@@ -67,11 +67,7 @@ LandmarksGraph *LandmarksGraphExhaust::create(
     if (dry_run) {
         return 0;
     } else {
-        /*LandmarksGraph *graph = new LandmarksGraphExhaust(common_options,
-                                                          new Exploration);
-        LandmarksGraph::build_lm_graph(graph);
-        return graph;*/
-        LandmarksGraphExhaust lm_graph_factory(common_options, new Exploration);
+        LandmarksGraphExhaust lm_graph_factory(common_options, new Exploration(common_options.heuristic_options));
         LandmarksGraph *graph = lm_graph_factory.get_lm_graph();
         return graph;
     }

@@ -42,9 +42,10 @@ protected:
 
 public:
     GeneralEagerBestFirstSearch(
+        const SearchEngineOptions &options,
         OpenList<state_var_t *> *open,
         bool reopen_closed, bool pathmax_correction,
-        bool use_multi_path_dependence, ScalarEvaluator *f_eval, int g_bound);
+        bool use_multi_path_dependence, ScalarEvaluator *f_eval);
     void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     void statistics() const;
 

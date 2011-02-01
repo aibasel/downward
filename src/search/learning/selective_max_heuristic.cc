@@ -18,7 +18,8 @@ static ScalarEvaluatorPlugin selective_max_heuristic_plugin(
     "selmax", SelectiveMaxHeuristic::create);
 
 
-SelectiveMaxHeuristic::SelectiveMaxHeuristic() : num_always_calc(0) {
+SelectiveMaxHeuristic::SelectiveMaxHeuristic(const HeuristicOptions &options)
+    : Heuristic(options), num_always_calc(0) {
     // default parameter
     min_training_set = 100;
     conf_threshold = 0.6;
@@ -159,7 +160,7 @@ void SelectiveMaxHeuristic::train() {
     cout << "Beginning Training" << endl;
     total_training_time.reset();
 
-    MaxHeuristic max;
+    MaxHeuristic max(g_default_heuristic_options);
     for (int i = 0; i < num_heuristics; i++) {
         max.add_heuristic(heuristics[i]);
     }
@@ -584,10 +585,15 @@ ScalarEvaluator *SelectiveMaxHeuristic::create(
     int state_space_sample_type_ = Probe;
     bool uniform_sampling_ = false;
     bool zero_threshold_ = false;
+    HeuristicOptions common_options;
+
 
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+
+        common_options.add_option_to_parser(option_parser);
+
         option_parser.add_double_option("alpha", &alpha_, "alpha");
         option_parser.add_int_option("classifier", &classifier_type_,
                                      "classifier type (0: NB, 1: AODE)");
@@ -616,7 +622,7 @@ ScalarEvaluator *SelectiveMaxHeuristic::create(
 
     SelectiveMaxHeuristic *heur = 0;
     if (!dry_run) {
-        heur = new SelectiveMaxHeuristic();
+        heur = new SelectiveMaxHeuristic(common_options);
         for (unsigned int i = 0; i < heuristics_.size(); i++) {
             heur->add_heuristic(heuristics_[i]);
         }

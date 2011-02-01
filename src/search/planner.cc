@@ -36,6 +36,8 @@ int main(int argc, const char **argv) {
         "    by the name that is specified in the definition.\n"
         "--random-seed SEED\n"
         "    Use random seed SEED\n\n"
+        "--plan-file FILENAME\n"
+        "    Plan will be output to a file called FILENAME\n\n"
         "See http://www.fast-downward.org/ for details.";
 
     if (argc < 2) {
@@ -75,6 +77,9 @@ int main(int argc, const char **argv) {
             ++i;
             srand(atoi(argv[i]));
             cout << "random seed " << argv[i] << endl;
+        } else if (arg.compare("--plan-file") == 0) {
+            ++i;
+            g_plan_filename = argv[i];
         } else {
             cerr << "unknown option " << arg << endl << endl;
             cout << usage << endl;
@@ -87,8 +92,7 @@ int main(int argc, const char **argv) {
     search_timer.stop();
     g_timer.stop();
 
-    if (engine->found_solution())
-        save_plan(engine->get_plan());
+    engine->save_plan_if_necessary();
     engine->statistics();
     engine->heuristic_statistics();
     cout << "Search time: " << search_timer << endl;
@@ -119,8 +123,7 @@ void register_parsers() {
                                                      IteratedSearch::create);
 
     // register combinations and g evaluator
-    OptionParser::instance()->register_scalar_evaluator("sum",
-                                                        SumEvaluator::create);
+    // (Note: some additional ones are already registered as plugins.)
     OptionParser::instance()->register_scalar_evaluator("weight",
                                                         WeightedEvaluator::create);
     OptionParser::instance()->register_scalar_evaluator("g",

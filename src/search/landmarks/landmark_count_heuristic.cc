@@ -23,10 +23,12 @@ using namespace std;
 static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(
     "lmcount", LandmarkCountHeuristic::create);
 
-LandmarkCountHeuristic::LandmarkCountHeuristic(LandmarksGraph &lm_graph, bool preferred_ops,
+LandmarkCountHeuristic::LandmarkCountHeuristic(const HeuristicOptions &options,
+                                               LandmarksGraph &lm_graph,
+                                               bool preferred_ops,
                                                bool admissible, bool optimal,
                                                bool use_action_landmarks)
-    : lgraph(lm_graph),
+    : Heuristic(options), lgraph(lm_graph),
       exploration(lm_graph.get_exploration()),
       lm_status_manager(lgraph) {
     cout << "Initializing landmarks count heuristic..." << endl;
@@ -48,14 +50,14 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(LandmarksGraph &lm_graph, bool pr
         }
         if (optimal) {
 #ifdef USE_LP
-            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph);
+            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph, cost_type);
 #else
             cerr << "You must build the planner with the USE_LP symbol defined." << endl
                  << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
             exit(1);
 #endif
         } else {
-            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, use_action_landmarks);
+            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, use_action_landmarks, cost_type);
         }
     } else {
         use_cost_sharing = false;
@@ -311,6 +313,7 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
     bool optimal_ = false;
     bool pref_ = false;
     bool use_action_landmarks_ = true;
+    HeuristicOptions common_options;
 
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
@@ -325,6 +328,9 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+
+        common_options.add_option_to_parser(option_parser);
+
         option_parser.add_bool_option("admissible",
                                       &admissible_,
                                       "get admissible estimate");
@@ -351,6 +357,6 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
     if (dry_run)
         return 0;
     else
-        return new LandmarkCountHeuristic(*lm_graph, pref_, admissible_, optimal_,
+        return new LandmarkCountHeuristic(common_options, *lm_graph, pref_, admissible_, optimal_,
                                           use_action_landmarks_);
 }
