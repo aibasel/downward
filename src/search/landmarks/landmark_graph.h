@@ -246,6 +246,7 @@ public:
             return false;
     }
     
+    // TODO: check how some of the added methods may be improved. remove comments later
     // added while refactoring
     // methods needed for h_m_landmarks (which no longer inherit landmarks_graph)
     bool use_orders() const { return !no_orders; }
@@ -288,7 +289,6 @@ private:
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
     bool effect_always_happens(const vector<PrePost> &prepost,
                                set<pair<int, int> > &eff) const;
-    void generate_landmarks();
     vector<int> empty_pre_operators;
     vector<vector<vector<int> > > operators_eff_lookup;
     vector<vector<vector<int> > > operators_pre_lookup;
@@ -303,11 +303,7 @@ private:
                                          list<pair<LandmarkNode *, edge_type> > &path,
                                          list<pair<LandmarkNode *, edge_type> >::iterator it);
 
-public: // HACK! (Temporary accessor needed for LandmarkGraphNew.)
-    OperatorCost get_lm_cost_type() const {
-        return lm_cost_type;
-    }
-protected:
+//protected:
     bool reasonable_orders;
     bool only_causal_landmarks;
     bool disjunctive_landmarks;
@@ -325,11 +321,11 @@ protected:
     bool dead_end_found;
 
     vector<vector<set<pair<int, int> > > > inconsistent_facts;
-private:
+//private:
     int calculate_lms_cost() const;
     bool external_inconsistencies_read;
 
-protected:
+//protected:
 
     set<LandmarkNode *> nodes;
     vector<LandmarkNode *> ordered_nodes;
