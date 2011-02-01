@@ -46,7 +46,7 @@ protected:
     virtual void initialize();
     virtual int step();
 public:
-    BestFirstSearchEngine();
+    BestFirstSearchEngine(const SearchEngineOptions &options);
     ~BestFirstSearchEngine();
     virtual void add_heuristic(Heuristic *heuristic, bool use_estimates,
                                bool use_preferred_operators);

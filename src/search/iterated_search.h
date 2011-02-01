@@ -7,11 +7,11 @@
 #include "option_parser.h"
 
 class IteratedSearch : public SearchEngine {
-private:
     int phase;
     bool last_phase_found_solution;
     int best_bound;
-    bool found_solution;
+    bool iterated_found_solution;
+    int plan_counter;
 
     SearchEngine *current_search;
     string current_search_name;
@@ -23,10 +23,6 @@ private:
     bool continue_on_fail;
     bool continue_on_solve;
 
-    vector<SearchProgress> phase_statistics;
-    vector<bool> phase_found_solution;
-    vector<int> phase_solution_cost;
-
     SearchEngine *get_search_engine(int engine_config_start_index);
     SearchEngine *create_phase(int p);
     int step_return_value();
@@ -34,13 +30,16 @@ private:
     virtual void initialize();
     virtual int step();
 public:
-    IteratedSearch(const std::vector<std::string> &engine_config,
+    IteratedSearch(const SearchEngineOptions &options,
+                   const std::vector<std::string> &engine_config,
                    std::vector<int> engine_config_start,
                    bool pass_bound,
                    bool repeat_last_phase,
                    bool continue_on_fail,
-                   bool continue_on_solve);
+                   bool continue_on_solve,
+                   int plan_counter);
     virtual ~IteratedSearch();
+    virtual void save_plan_if_necessary() const;
     void statistics() const;
     static SearchEngine *create(
         const std::vector<std::string> &config, int start, int &end,

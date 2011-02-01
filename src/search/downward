@@ -1,0 +1,166 @@
+#! /bin/bash
+BASEDIR="$(dirname "$0")"
+TEMPFILE=downward.tmp.$$
+cat > $TEMPFILE
+STATE_SIZE=$(command time --output=elapsed.time --append --format='%S\n%U\n' "$BASEDIR/dispatch" $TEMPFILE)
+echo Dispatcher selected state size $STATE_SIZE.
+UNIT_COST=$(command time --output=elapsed.time --append --format='%S\n%U\n' "$BASEDIR/unitcost" $TEMPFILE)
+echo This is a $UNIT_COST task.
+PLANNER="$BASEDIR/downward-$STATE_SIZE"
+if [[ "$1" == "ipc" ]]; then
+    CONFIG="$2"
+    shift 2
+    if [[ "$CONFIG" == "seq-sat-fd-autotune-1" ]]; then
+        "$PLANNER" \
+            --heuristic "hFF=ff(cost_type=1)" \
+            --heuristic "hCea=cea(cost_type=0)" \
+            --heuristic "hCg=cg(cost_type=2)" \
+            --heuristic "hGoalCount=goalcount(cost_type=0)" \
+            --heuristic "hAdd=add(cost_type=0)" \
+            --search "iterated(
+                lazy(alt(single(sum(g(),weight(hFF, 10))),
+                         single(sum(g(),weight(hFF, 10)),pref_only=true),
+                         boost=2000),
+                     preferred=(hFF),reopen_closed=false,cost_type=1),
+                lazy(alt(single(sum(g(),weight(hAdd, 7))),
+                         single(sum(g(),weight(hAdd, 7)),pref_only=true),
+                         single(sum(g(),weight(hCg, 7))),
+                         single(sum(g(),weight(hCg, 7)),pref_only=true),
+                         single(sum(g(),weight(hCea, 7))),
+                         single(sum(g(),weight(hCea, 7)),pref_only=true),
+                         single(sum(g(),weight(hGoalCount, 7))),
+                         single(sum(g(),weight(hGoalCount, 7)),pref_only=true),
+                         boost=1000),
+                     preferred=(hCea,hGoalCount),
+                     reopen_closed=false,cost_type=1),
+                lazy(alt(tiebreaking(sum(g(),weight(hAdd, 3)),hAdd),
+                         tiebreaking(sum(g(),weight(hAdd, 3)),hAdd,pref_only=true),
+                         tiebreaking(sum(g(),weight(hCg, 3)),hCg),
+                         tiebreaking(sum(g(),weight(hCg, 3)),hCg,pref_only=true),
+                         tiebreaking(sum(g(),weight(hCea, 3)),hCea),
+                         tiebreaking(sum(g(),weight(hCea, 3)),hCea,pref_only=true),
+                         tiebreaking(sum(g(),weight(hGoalCount, 3)),hGoalCount),
+                         tiebreaking(sum(g(),weight(hGoalCount, 3)),hGoalCount,pref_only=true),
+                         boost=5000),
+                     preferred=(hCea,hGoalCount),reopen_closed=false,cost_type=0),
+                eager(alt(tiebreaking(sum(g(),weight(hAdd, 10)),hAdd),
+                          tiebreaking(sum(g(),weight(hAdd, 10)),hAdd,pref_only=true),
+                          tiebreaking(sum(g(),weight(hCg, 10)),hCg),
+                          tiebreaking(sum(g(),weight(hCg, 10)),hCg,pref_only=true),
+                          tiebreaking(sum(g(),weight(hCea, 10)),hCea),
+                          tiebreaking(sum(g(),weight(hCea, 10)),hCea,pref_only=true),
+                          tiebreaking(sum(g(),weight(hGoalCount, 10)),hGoalCount),
+                          tiebreaking(sum(g(),weight(hGoalCount, 10)),hGoalCount,pref_only=true),
+                          boost=500),
+                      preferred=(hCea,hGoalCount),reopen_closed=true,
+                      pathmax=true,cost_type=0),
+                repeat_last=true,continue_on_fail=true)" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-sat-fd-autotune-2" ]]; then
+        "$PLANNER" \
+            --heuristic "hCea=cea(cost_type=2)" \
+            --heuristic "hCg=cg(cost_type=1)" \
+            --heuristic "hGoalCount=goalcount(cost_type=2)" \
+            --heuristic "hFF=ff(cost_type=0)" \
+            --search "iterated(
+                ehc(hCea, preferred=(hCea),preferred_usage=0,cost_type=0),
+                lazy(alt(single(sum(weight(g(), 2),weight(hFF, 3))),
+                         single(sum(weight(g(), 2),weight(hFF, 3)),pref_only=true),
+                         single(sum(weight(g(), 2),weight(hCg, 3))),
+                         single(sum(weight(g(), 2),weight(hCg, 3)),pref_only=true),
+                         single(sum(weight(g(), 2),weight(hCea, 3))),
+                         single(sum(weight(g(), 2),weight(hCea, 3)),pref_only=true),
+                         single(sum(weight(g(), 2),weight(hGoalCount, 3))),
+                         single(sum(weight(g(), 2),weight(hGoalCount, 3)),pref_only=true),
+                         boost=200),
+                     preferred=(hCea,hGoalCount),reopen_closed=false,cost_type=1),
+                lazy(alt(single(sum(g(),weight(hFF, 5))),
+                         single(sum(g(),weight(hFF, 5)),pref_only=true),
+                         single(sum(g(),weight(hCg, 5))),
+                         single(sum(g(),weight(hCg, 5)),pref_only=true),
+                         single(sum(g(),weight(hCea, 5))),
+                         single(sum(g(),weight(hCea, 5)),pref_only=true),
+                         single(sum(g(),weight(hGoalCount, 5))),
+                         single(sum(g(),weight(hGoalCount, 5)),pref_only=true),
+                         boost=5000),
+                     preferred=(hCea,hGoalCount),reopen_closed=true,cost_type=0),
+                lazy(alt(single(sum(g(),weight(hFF, 2))),
+                         single(sum(g(),weight(hFF, 2)),pref_only=true),
+                         single(sum(g(),weight(hCg, 2))),
+                         single(sum(g(),weight(hCg, 2)),pref_only=true),
+                         single(sum(g(),weight(hCea, 2))),
+                         single(sum(g(),weight(hCea, 2)),pref_only=true),
+                         single(sum(g(),weight(hGoalCount, 2))),
+                         single(sum(g(),weight(hGoalCount, 2)),pref_only=true),
+                         boost=1000),
+                     preferred=(hCea,hGoalCount),reopen_closed=true,cost_type=1),
+                repeat_last=true,continue_on_fail=true)" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-sat-fdss-1" ]]; then
+        "$BASEDIR/downward-seq-sat-fdss-1.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-sat-fdss-2" ]]; then
+        "$BASEDIR/downward-seq-sat-fdss-2.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-sat-lama-2008" ]]; then
+        echo "The seq-sat-lama-2008 planner should not use this code."
+        exit 2
+    elif [[ "$CONFIG" == "seq-sat-lama-2011" ]]; then
+        if [[ "$UNIT_COST" == "unit" ]]; then
+            "$PLANNER" \
+                --heuristic "hlm,hff=lm_ff_syn(lm_rhw(
+                    reasonable_orders=true,lm_cost_type=2,cost_type=2))" \
+                --search "iterated(
+                    lazy_greedy(hff,hlm,preferred=(hff,hlm)),
+                    lazy_wastar(hff,hlm,preferred=(hff,hlm),w=5),
+                    lazy_wastar(hff,hlm,preferred=(hff,hlm),w=3),
+                    lazy_wastar(hff,hlm,preferred=(hff,hlm),w=2),
+                    lazy_wastar(hff,hlm,preferred=(hff,hlm),w=1),
+                    repeat_last=true,continue_on_fail=true)" \
+                "$@" < $TEMPFILE
+        elif [[ "$UNIT_COST" == "nonunit" ]]; then
+            "$PLANNER" \
+                --heuristic "hlm1,hff1=lm_ff_syn(lm_rhw(
+                    reasonable_orders=true,lm_cost_type=1,cost_type=1))" \
+                --heuristic "hlm2,hff2=lm_ff_syn(lm_rhw(
+                    reasonable_orders=true,lm_cost_type=2,cost_type=2))" \
+                --search "iterated(
+                    lazy_greedy(hff1,hlm1,preferred=(hff1,hlm1),
+                                cost_type=1,reopen_closed=false),
+                    lazy_greedy(hff2,hlm2,preferred=(hff2,hlm2),
+                                reopen_closed=false),
+                    lazy_wastar(hff2,hlm2,preferred=(hff2,hlm2),w=5),
+                    lazy_wastar(hff2,hlm2,preferred=(hff2,hlm2),w=3),
+                    lazy_wastar(hff2,hlm2,preferred=(hff2,hlm2),w=2),
+                    lazy_wastar(hff2,hlm2,preferred=(hff2,hlm2),w=1),
+                    repeat_last=true,continue_on_fail=true)" \
+                "$@" < $TEMPFILE
+        else
+            echo "Something is seriously messed up!"
+            exit 2
+        fi
+    elif [[ "$CONFIG" == "seq-opt-fd-autotune" ]]; then
+        "$PLANNER" \
+            --heuristic "hLMCut=lmcut()" \
+            --heuristic "hHMax=hmax()" \
+            --heuristic "hCombinedSelMax=selmax(
+                hLMCut,hHMax,alpha=4,classifier=0,conf_threshold=0.85,
+                training_set=10,sample=0,uniform=true)" \
+            --search "astar(hCombinedSelMax,mpd=false,
+                            pathmax=true,cost_type=0)" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-fdss-1" ]]; then
+        "$BASEDIR/downward-seq-opt-fdss-1.py" "$PLANNER" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-fdss-2" ]]; then
+        "$BASEDIR/downward-seq-opt-fdss-2.py" "$PLANNER" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-selmax" ]]; then
+        "$PLANNER" --search "astar(selmax(lmcut(),lmcount(lm_merged(lm_hm(m=1),lm_rhw()),admissible=true),training_set=1000),mpd=true)" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-bjolp" ]]; then
+        "$PLANNER" --search "astar(lmcount(lm_merged(lm_rhw(),lm_hm(m=1)),admissible=true),mpd=true)" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-lmcut" ]]; then
+        "$PLANNER" --search "astar(lmcut())" "$@" < $TEMPFILE
+    elif [[ "$CONFIG" == "seq-opt-merge-and-shrink" ]]; then
+        "$BASEDIR/downward-seq-opt-merge-and-shrink.py" "$PLANNER" "$@" < $TEMPFILE
+    else
+        echo "unknown IPC planner name: $CONFIG"
+        exit 2
+    fi
+else
+    "$PLANNER" "$@" < $TEMPFILE
+fi
+rm -f $TEMPFILE

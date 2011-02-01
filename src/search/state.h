@@ -7,7 +7,7 @@ using namespace std;
 
 class Operator;
 
-typedef short state_var_t;
+#include "state_var_t.h"
 
 class State {
     state_var_t *vars; // values for vars

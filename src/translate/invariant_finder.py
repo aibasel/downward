@@ -2,7 +2,8 @@
 # -*- coding: latin-1 -*-
 
 from __future__ import with_statement
-from collections import deque
+from collections import deque, defaultdict
+import itertools
 import time
 
 import invariants
@@ -10,51 +11,62 @@ import pddl
 import timers
 
 class BalanceChecker(object):
-    def __init__(self, task):
-        self.predicates_to_add_actions = {}
-        for action in task.actions:
+    def __init__(self, task, reachable_action_params):
+        self.predicates_to_add_actions = defaultdict(set)
+        self.action_name_to_heavy_action = {}
+        for act in task.actions:
+            action = self.add_inequality_preconds(act, reachable_action_params)
+            too_heavy_effects = []
+            create_heavy_act = False
+            heavy_act = action
             for eff in action.effects:
+                too_heavy_effects.append(eff)
+                if eff.parameters: # universal effect
+                    create_heavy_act = True
+                    too_heavy_effects.append(eff.copy())
                 if not eff.literal.negated:
                     predicate = eff.literal.predicate
-                    self.predicates_to_add_actions.setdefault(predicate, set()).add(action)
+                    self.predicates_to_add_actions[predicate].add(action)
+            if create_heavy_act:
+                heavy_act = pddl.Action(action.name, action.parameters,
+                                        action.precondition, too_heavy_effects,
+                                        action.cost)
+            # heavy_act: duplicated universal effects and assigned unique names
+            # to all quantified variables (implicitly in constructor)
+            self.action_name_to_heavy_action[action.name] = heavy_act
+
     def get_threats(self, predicate):
         return self.predicates_to_add_actions.get(predicate, set())
-    def are_compatible(self, add_effect1, add_effect2):
-        assert not add_effect1.negated
-        assert not add_effect2.negated
-        # Check whether two add effects of the same action can happen together.
-        # Should always be true for STRIPS actions, but ADL actions can have
-        # conditional effects with conflicting triggers.
-        # For the invariant finding algorithm to be correct, this may never return
-        # "False" unless there really is a conflict. Return "True" although there
-        # is no conflict is fine, but can lead to fewer invariants being found.
-        return True
-    def can_compensate(self, del_effect, add_effect):
-        assert del_effect.negated
-        assert not add_effect.negated
-        # Check whether the del_effect always happens whenever the add_effect
-        # happens; they are always effects of the same action.
-        # For STRIPS actions, we only need to check whether the del_effect is
-        # guaranteed to delete something, i.e. contains a fact mentioned in the
-        # precondition. For ADL actions, we should also check that a possible
-        # triggering condition always holds whenever the add effect is triggered.
-        # For the invariant finding algorithm to be correct, this may never return
-        # "True" unless the delete effect is guaranteed to happen when the add
-        # effect happens. Returning "False" too often is no problem, but leads to
-        # fewer invariants being found.
-        # TODO: The current implementation is not correct, but works well enough
-        #       in practice. Should perhaps be rectified in the future.
-        if add_effect.parameters:
-            # Dealing with these in a less conservative ways requires checking that
-            # the quantification is *not* over an [omitted] variable, checking that
-            # the delete effect is also quantified and unifying the quantified variables
-            # in some way. Quite difficult, and besides might need to be done *earlier*
-            # than these, because can_compensate might not even be called if the
-            # variables in the delete effect are named differently. (This will be the
-            # case because of unique variable names.)
-            return False
+
+    def get_heavy_action(self, action_name):
+        return self.action_name_to_heavy_action[action_name]
+
+    def add_inequality_preconds(self, action, reachable_action_params):
+        if reachable_action_params is None or len(action.parameters) < 2:
+            return action
+        inequal_params = []
+        combs = itertools.combinations(range(len(action.parameters)), 2)
+        for pos1, pos2 in combs:
+            inequality = True
+            for params in reachable_action_params[action.name]:
+                if params[pos1] == params[pos2]:
+                    inequality = False
+                    break
+            if inequality:
+                inequal_params.append((pos1, pos2))
+
+        if inequal_params:
+            precond_parts = list(action.precondition.parts)
+            for pos1, pos2 in inequal_params:
+                param1 = action.parameters[pos1].name
+                param2 = action.parameters[pos2].name
+                new_cond = pddl.NegatedAtom("=", (param1, param2))
+                precond_parts.append(new_cond)
+            precond = action.precondition.change_parts(precond_parts)
+            return pddl.Action(action.name, action.parameters, precond,
+                               action.effects, action.cost)
         else:
-            return True
+            return action
 
 def get_fluents(task):
     fluent_names = set()
@@ -75,12 +87,12 @@ def get_initial_invariants(task):
 MAX_CANDIDATES = 100000
 MAX_TIME = 300
 
-def find_invariants(task):
+def find_invariants(task, reachable_action_params):
     candidates = deque(get_initial_invariants(task))
     print len(candidates), "initial candidates"
     seen_candidates = set(candidates)
 
-    balance_checker = BalanceChecker(task)
+    balance_checker = BalanceChecker(task, reachable_action_params)
 
     def enqueue_func(invariant):
         if len(seen_candidates) < MAX_CANDIDATES and invariant not in seen_candidates:
@@ -97,10 +109,10 @@ def find_invariants(task):
             yield candidate
 
 def useful_groups(invariants, initial_facts):
-    predicate_to_invariants = {}
+    predicate_to_invariants = defaultdict(list)
     for invariant in invariants:
         for predicate in invariant.predicates:
-            predicate_to_invariants.setdefault(predicate, []).append(invariant)
+            predicate_to_invariants[predicate].append(invariant)
 
     nonempty_groups = set()
     overcrowded_groups = set()
@@ -117,9 +129,9 @@ def useful_groups(invariants, initial_facts):
     for (invariant, parameters) in useful_groups:
         yield [part.instantiate(parameters) for part in invariant.parts]
 
-def get_groups(task):
+def get_groups(task, reachable_action_params=None):
     with timers.timing("Finding invariants"):
-        invariants = list(find_invariants(task))
+        invariants = list(find_invariants(task, reachable_action_params))
     with timers.timing("Checking invariant weight"):
         result = list(useful_groups(invariants, task.init))
     return result

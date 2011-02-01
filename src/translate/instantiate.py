@@ -2,6 +2,7 @@
 # -*- coding: latin-1 -*-
 
 from __future__ import with_statement
+from collections import defaultdict
 
 import build_model
 import pddl_to_prolog
@@ -18,10 +19,15 @@ def get_fluent_facts(task, model):
     return set([fact for fact in model
                 if fact.predicate in fluent_predicates])
 
-def get_objects_by_type(typed_objects):
-    result = {}
+def get_objects_by_type(typed_objects, types):
+    result = defaultdict(list)
+    supertypes = {}
+    for type in types:
+        supertypes[type.name] = type.supertype_names
     for obj in typed_objects:
-        result.setdefault(obj.type, []).append(obj.name)
+        result[obj.type].append(obj.name)
+        for type in supertypes[obj.type]:
+            result[type].append(obj.name)
     return result
 
 def instantiate(task, model):
@@ -29,14 +35,17 @@ def instantiate(task, model):
     fluent_facts = get_fluent_facts(task, model)
     init_facts = set(task.init)
 
-    type_to_objects = get_objects_by_type(task.objects)
+    type_to_objects = get_objects_by_type(task.objects, task.types)
 
     instantiated_actions = []
     instantiated_axioms = []
+    reachable_action_parameters = defaultdict(list)
     for atom in model:
         if isinstance(atom.predicate, pddl.Action):
             action = atom.predicate
             parameters = action.parameters
+            inst_parameters = atom.args[:len(parameters)]
+            reachable_action_parameters[action.name].append(inst_parameters)
             if isinstance(action.precondition, pddl.ExistentialCondition):
                 parameters = list(parameters)
                 parameters += action.precondition.parameters
@@ -60,7 +69,8 @@ def instantiate(task, model):
         elif atom.predicate == "@goal-reachable":
             relaxed_reachable = True
 
-    return relaxed_reachable, fluent_facts, instantiated_actions, instantiated_axioms
+    return (relaxed_reachable, fluent_facts, instantiated_actions,
+           instantiated_axioms, reachable_action_parameters)
 
 def explore(task):
     prog = pddl_to_prolog.translate(task)

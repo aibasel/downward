@@ -14,12 +14,16 @@
 static const int DEFAULT_LAZY_BOOST = 1000;
 
 GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(
-    OpenList<OpenListEntryLazy> *open, bool reopen_closed, int g_bound)
-    : open_list(open), reopen_closed_nodes(reopen_closed), succ_mode(pref_first),
+    const SearchEngineOptions &options,
+    OpenList<OpenListEntryLazy> *open, bool reopen_closed)
+    : SearchEngine(options),
+      open_list(open),
+      reopen_closed_nodes(reopen_closed),
+      succ_mode(pref_first),
       current_state(*g_initial_state),
       current_predecessor_buffer(NULL), current_operator(NULL),
-      current_g(0) {
-    bound = g_bound;
+      current_g(0),
+      current_real_g(0) {
 }
 
 GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {
@@ -37,7 +41,7 @@ GeneralLazyBestFirstSearch::set_pref_operator_heuristics(
 
 void GeneralLazyBestFirstSearch::initialize() {
     //TODO children classes should output which kind of search
-    cout << "Conducting lazy best first search, bound = " << bound << endl;
+    cout << "Conducting lazy best first search, (real) bound = " << bound << endl;
 
     assert(open_list != NULL);
     set<Heuristic *> hset;
@@ -119,11 +123,12 @@ void GeneralLazyBestFirstSearch::generate_successors() {
         search_space.get_node(current_state).get_state_buffer();
 
     for (int i = 0; i < operators.size(); i++) {
-        int new_g = current_g + operators[i]->get_cost();
+        int new_g = current_g + get_adjusted_cost(*operators[i]);
+        int new_real_g = current_real_g + operators[i]->get_cost();
         bool is_preferred = operators[i]->is_marked();
         if (is_preferred)
             operators[i]->unmark();
-        if (new_g < bound) {
+        if (new_real_g < bound) {
             open_list->evaluate(new_g, is_preferred);
             open_list->insert(
                 make_pair(current_state_buffer, operators[i]));
@@ -142,10 +147,12 @@ int GeneralLazyBestFirstSearch::fetch_next_state() {
     current_predecessor_buffer = next.first;
     current_operator = next.second;
     State current_predecessor(current_predecessor_buffer);
+    assert(current_operator->is_applicable(current_predecessor));
     current_state = State(current_predecessor, *current_operator);
-    current_g = search_space.get_node(current_predecessor).get_g() +
-                current_operator->get_cost();
 
+    SearchNode pred_node = search_space.get_node(current_predecessor);
+    current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
+    current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
     return IN_PROGRESS;
 }
@@ -155,7 +162,8 @@ int GeneralLazyBestFirstSearch::step() {
     // - current_state is the next state for which we want to compute the heuristic.
     // - current_predecessor is a permanent pointer to the predecessor of that state.
     // - current_operator is the operator which leads to current_state from predecessor.
-    // - current_g is the g value of the current state
+    // - current_g is the g value of the current state according to the cost_type
+    // - current_g is the g value of the current state (using real costs)
 
 
     SearchNode node = search_space.get_node(current_state);
@@ -223,6 +231,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
+    SearchEngineOptions common_options;
     OpenList<OpenListEntryLazy> *open = \
         OpenListParser<OpenListEntryLazy>::instance()->parse_open_list(
             config, start + 2, end, dry_run);
@@ -232,16 +241,14 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
 
     // parse options
     bool reopen_closed = false; // TODO make default value visible
-    int g_bound = numeric_limits<int>::max();
     vector<Heuristic *> preferred_list;
 
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+        common_options.add_options_to_parser(option_parser);
         option_parser.add_bool_option("reopen_closed", &reopen_closed,
                                       "reopen closed nodes");
-        option_parser.add_int_option("bound", &g_bound,
-                                     "depth bound on g-values", true);
         option_parser.add_heuristic_list_option(
             "preferred", &preferred_list,
             "use preferred operators of these heuristics");
@@ -254,7 +261,8 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
 
     GeneralLazyBestFirstSearch *engine = 0;
     if (!dry_run) {
-        engine = new GeneralLazyBestFirstSearch(open, reopen_closed, g_bound);
+        engine = new GeneralLazyBestFirstSearch(
+            common_options, open, reopen_closed);
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
@@ -267,6 +275,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
+    SearchEngineOptions common_options;
     vector<ScalarEvaluator *> evals;
     OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
                                                           end, false, evals,
@@ -277,10 +286,14 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
 
     vector<Heuristic *> preferred_list;
     int boost = DEFAULT_LAZY_BOOST;
+    bool reopen_closed = false;
 
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+        common_options.add_options_to_parser(option_parser);
+        option_parser.add_bool_option("reopen_closed", &reopen_closed,
+                                      "reopen closed nodes");
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost,
@@ -313,8 +326,8 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
                                                               boost);
         }
 
-        engine = new GeneralLazyBestFirstSearch(open, false,
-                                                numeric_limits<int>::max());
+        engine = new GeneralLazyBestFirstSearch(
+            common_options, open, reopen_closed);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
@@ -325,6 +338,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
+    SearchEngineOptions common_options;
     vector<ScalarEvaluator *> evals;
     OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
                                                           end, false, evals,
@@ -335,18 +349,19 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
 
     vector<Heuristic *> preferred_list;
     int boost = DEFAULT_LAZY_BOOST;
-    int g_bound = numeric_limits<int>::max();
+    bool reopen_closed = true;
     int weight = 1;
 
     if (config[end] != ")") {
         end++;
         NamedOptionParser option_parser;
+        common_options.add_options_to_parser(option_parser);
+        option_parser.add_bool_option("reopen_closed", &reopen_closed,
+                                      "reopen closed nodes");
         option_parser.add_heuristic_list_option("preferred",
                                                 &preferred_list, "use preferred operators of these heuristics");
         option_parser.add_int_option("boost", &boost,
                                      "boost value for successful sub-open-lists");
-        option_parser.add_int_option("bound", &g_bound,
-                                     "depth bound on g-values", true);
         option_parser.add_int_option("w", &weight,
                                      "heuristic weight");
         // may not be named "weight" because this would be parsed as a
@@ -389,7 +404,8 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
                                                               boost);
         }
 
-        engine = new GeneralLazyBestFirstSearch(open, true, g_bound);
+        engine = new GeneralLazyBestFirstSearch(
+            common_options, open, reopen_closed);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;

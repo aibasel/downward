@@ -72,8 +72,11 @@ State::~State() {
 }
 
 void State::dump() const {
+    // We cast the values to int since we'd get bad output otherwise
+    // if state_var_t == char.
     for (int i = 0; i < g_variable_domain.size(); i++)
-        cout << "  " << g_variable_name[i] << ": " << vars[i] << endl;
+        cout << "  " << g_variable_name[i] << ": "
+             << static_cast<int>(vars[i]) << endl;
 }
 
 bool State::operator==(const State &other) const {
