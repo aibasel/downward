@@ -1,6 +1,6 @@
-#include "landmarks_graph_rpg_sasp.h"
+#include "landmark_graph_rpg_sasp.h"
 
-#include "landmarks_graph.h"
+#include "landmark_graph.h"
 #include "util.h"
 
 #include "../operator.h"
@@ -18,9 +18,16 @@
 using namespace __gnu_cxx;
 
 static LandmarkGraphPlugin landmarks_graph_new_plugin(
-    "lm_rhw", LandmarksGraphNew::create);
+    "lm_rhw", LandmarkGraphNew::create);
+    
+LandmarkGraphNew::LandmarkGraphNew(LandmarkGraph::Options &options, Exploration *exploration)
+: lm_graph(new LandmarkGraph(options, exploration)) {
+    lm_graph->read_external_inconsistencies();
+    generate_landmarks();
+    LandmarkGraph::build_lm_graph(lm_graph);
+}
 
-void LandmarksGraphNew::get_greedy_preconditions_for_lm(
+void LandmarkGraphNew::get_greedy_preconditions_for_lm(
     const LandmarkNode *lmp, const Operator &o, hash_map<int, int> &result) const {
     // Computes a subset of the actual preconditions of o for achieving lmp - takes into account
     // operator preconditions, but only reports those effect conditions that are true for ALL
@@ -82,7 +89,7 @@ void LandmarksGraphNew::get_greedy_preconditions_for_lm(
     result.insert(intersection.begin(), intersection.end());
 }
 
-int LandmarksGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
+int LandmarkGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
                                                                           int> > &lvl_var) {
     int min_cost = numeric_limits<int>::max();
     // For each proposition in bp...
@@ -102,24 +109,31 @@ int LandmarksGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
     return min_cost;
 }
 
-void LandmarksGraphNew::found_simple_lm_and_order(const pair<int, int> a,
+void LandmarkGraphNew::found_simple_lm_and_order(const pair<int, int> a,
                                                   LandmarkNode &b, edge_type t) {
     LandmarkNode *new_lm;
-    if (simple_landmark_exists(a)) {
-        new_lm = &(get_simple_lm_node(a));
-        edge_add(*new_lm, b, t);
+    if (lm_graph->simple_landmark_exists(a)) {
+        new_lm = &lm_graph->get_simple_lm_node(a);
+        lm_graph->edge_add(*new_lm, b, t);
         return;
     }
     set<pair<int, int> > a_set;
     a_set.insert(a);
-    if (disj_landmark_exists(a_set)) {
+    if (lm_graph->disj_landmark_exists(a_set)) {
         // Simple landmarks are more informative than disjunctive ones,
         // change disj. landmark into simple
-        LandmarkNode &node = get_disj_lm_node(a);
+        
+        // TODO: can be removed when sure this is correct
+        // old functionality
+        /*LandmarkNode &node = lm_graph->get_disj_lm_node(a);
         node.disjunctive = false;
         for (int i = 0; i < node.vars.size(); i++)
             disj_lms_to_nodes.erase(make_pair(node.vars[i], node.vals[i]));
-        simple_lms_to_nodes.insert(make_pair(a, &node));
+        simple_lms_to_nodes.insert(make_pair(a, &node));*/
+        
+        // new
+        LandmarkNode &node = lm_graph->make_disj_node_simple(a);
+        
         node.vars.clear();
         node.vals.clear();
         node.vars.push_back(a.first);
@@ -132,7 +146,7 @@ void LandmarksGraphNew::found_simple_lm_and_order(const pair<int, int> a,
         node.children.clear();
         node.forward_orders.clear();
 
-        edge_add(node, b, t);
+        lm_graph->edge_add(node, b, t);
         // Node has changed, reexamine it again. This also fixes min_cost.
         for (list<LandmarkNode *>::const_iterator it = open_landmarks.begin(); it
              != open_landmarks.end(); it++)
@@ -140,13 +154,13 @@ void LandmarksGraphNew::found_simple_lm_and_order(const pair<int, int> a,
                 return;
         open_landmarks.push_back(&node);
     } else {
-        new_lm = &(landmark_add_simple(a));
+        new_lm = &lm_graph->landmark_add_simple(a);
         open_landmarks.push_back(new_lm);
-        edge_add(*new_lm, b, t);
+        lm_graph->edge_add(*new_lm, b, t);
     }
 }
 
-void LandmarksGraphNew::found_disj_lm_and_order(const set<pair<int, int> > a,
+void LandmarkGraphNew::found_disj_lm_and_order(const set<pair<int, int> > a,
                                                 LandmarkNode &b, edge_type t) {
     bool simple_lm_exists = false;
     pair<int, int> lm_prop;
@@ -156,7 +170,7 @@ void LandmarksGraphNew::found_disj_lm_and_order(const set<pair<int, int> > a,
             //<< g_variable_name[it->first] << " -> " << it->second << endl;
             return;
         }
-        if (simple_landmark_exists(*it)) {
+        if (lm_graph->simple_landmark_exists(*it)) {
             // Propositions in this disj. LM exist already as simple LMs.
             simple_lm_exists = true;
             lm_prop = *it;
@@ -167,23 +181,23 @@ void LandmarksGraphNew::found_disj_lm_and_order(const set<pair<int, int> > a,
     if (simple_lm_exists) {
         // Note: don't add orders as we can't be sure that they're correct
         return;
-    } else if (disj_landmark_exists(a)) {
-        if (exact_same_disj_landmark_exists(a)) {
+    } else if (lm_graph->disj_landmark_exists(a)) {
+        if (lm_graph->exact_same_disj_landmark_exists(a)) {
             // LM already exists, just add order.
-            new_lm = &(get_disj_lm_node(*a.begin()));
-            edge_add(*new_lm, b, t);
+            new_lm = &lm_graph->get_disj_lm_node(*a.begin());
+            lm_graph->edge_add(*new_lm, b, t);
             return;
         }
         // LM overlaps with existing disj. LM, do not add.
         return;
     }
     // This LM and no part of it exist, add the LM to the landmarks graph.
-    new_lm = &(landmark_add_disjunctive(a));
+    new_lm = &lm_graph->landmark_add_disjunctive(a);
     open_landmarks.push_back(new_lm);
-    edge_add(*new_lm, b, t);
+    lm_graph->edge_add(*new_lm, b, t);
 }
 
-void LandmarksGraphNew::compute_shared_preconditions(
+void LandmarkGraphNew::compute_shared_preconditions(
     hash_map<int, int> &shared_pre, vector<vector<int> > &lvl_var,
     LandmarkNode *bp) {
     /* Compute the shared preconditions of all operators that can potentially
@@ -191,10 +205,10 @@ void LandmarksGraphNew::compute_shared_preconditions(
     bool init = true;
     for (unsigned int k = 0; k < bp->vars.size(); k++) {
         pair<int, int> b = make_pair(bp->vars[k], bp->vals[k]);
-        const vector<int> &ops = get_operators_including_eff(b);
+        const vector<int> &ops = lm_graph->get_operators_including_eff(b);
 
         for (unsigned i = 0; i < ops.size(); i++) {
-            const Operator &op = get_operator_for_lookup_index(ops[i]);
+            const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
             if (!init && shared_pre.empty())
                 break;
 
@@ -211,7 +225,7 @@ void LandmarksGraphNew::compute_shared_preconditions(
     }
 }
 
-void LandmarksGraphNew::compute_disjunctive_preconditions(vector<set<pair<int,
+void LandmarkGraphNew::compute_disjunctive_preconditions(vector<set<pair<int,
                                                                           int> > > &disjunctive_pre, vector<vector<int> > &lvl_var,
                                                           LandmarkNode *bp) {
     /* Compute disjunctive preconditions from all operators than can potentially
@@ -223,7 +237,7 @@ void LandmarksGraphNew::compute_disjunctive_preconditions(vector<set<pair<int,
     vector<int> ops;
     for (int i = 0; i < bp->vars.size(); i++) {
         pair<int, int> b = make_pair(bp->vars[i], bp->vals[i]);
-        const vector<int> &tmp_ops = get_operators_including_eff(b);
+        const vector<int> &tmp_ops = lm_graph->get_operators_including_eff(b);
         for (int j = 0; j < tmp_ops.size(); j++)
             ops.push_back(tmp_ops[j]);
     }
@@ -231,25 +245,25 @@ void LandmarksGraphNew::compute_disjunctive_preconditions(vector<set<pair<int,
     hash_map<int, vector<pair<int, int> > > preconditions; // maps from
     // pddl_proposition_indeces to props
     for (unsigned i = 0; i < ops.size(); i++) {
-        const Operator &op = get_operator_for_lookup_index(ops[i]);
+        const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
         if (_possibly_reaches_lm(op, lvl_var, bp)) {
             no_ops++;
             hash_map<int, int> next_pre;
             get_greedy_preconditions_for_lm(bp, op, next_pre);
             for (hash_map<int, int>::iterator it = next_pre.begin(); it
                  != next_pre.end(); it++) {
-                hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::iterator
-                    it2 = pddl_propositions.find(make_pair(it->first,
+                hash_map<pair<int, int>, LandmarkGraph::Pddl_proposition, hash_int_pair>::const_iterator
+                    it2 = lm_graph->get_pddl_propositions().find(make_pair(it->first,
                                                            it->second));
-                if (it2 == pddl_propositions.end()) // this can happen as translator
+                if (it2 == lm_graph->get_pddl_propositions().end()) // this can happen as translator
                     //introduces additional vars
                     continue;
                 string pred = it2->second.predicate;
-                int pred_index = pddl_proposition_indeces.find(pred)->second;
+                int pred_index = lm_graph->get_pddl_proposition_indices().find(pred)->second;
 
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
-                if (!simple_landmark_exists(make_pair(it->first, it->second))) {
+                if (!lm_graph->simple_landmark_exists(make_pair(it->first, it->second))) {
                     if (preconditions.find(pred_index) == preconditions.end())
                         preconditions.insert(make_pair(pred_index, vector<pair<
                                                                               int, int> > ()));
@@ -270,10 +284,10 @@ void LandmarksGraphNew::compute_disjunctive_preconditions(vector<set<pair<int,
     }
 }
 
-void LandmarksGraphNew::generate_landmarks() {
+void LandmarkGraphNew::generate_landmarks() {
     cout << "Generating landmarks using the RPG/SAS+ approach\n";
     for (unsigned i = 0; i < g_goal.size(); i++) {
-        LandmarkNode &lmn = landmark_add_simple(g_goal[i]);
+        LandmarkNode &lmn = lm_graph->landmark_add_simple(g_goal[i]);
         lmn.in_goal = true;
         open_landmarks.push_back(&lmn);
     }
@@ -290,7 +304,7 @@ void LandmarksGraphNew::generate_landmarks() {
             // applied (in lvl_ops).
             vector<vector<int> > lvl_var;
             vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
-            compute_predecessor_information(bp, lvl_var, lvl_op);
+            lm_graph->compute_predecessor_information(bp, lvl_var, lvl_op);
             // Use this information to determine all operators that can possibly achieve bp
             // for the first time, and collect any precondition propositions that all such
             // operators share (if there are any).
@@ -319,7 +333,7 @@ void LandmarksGraphNew::generate_landmarks() {
     add_lm_forward_orders();
 }
 
-void LandmarksGraphNew::approximate_lookahead_orders(
+void LandmarkGraphNew::approximate_lookahead_orders(
     const vector<vector<int> > &lvl_var, LandmarkNode *lmp) {
     // Find all var-val pairs that can only be reached after the landmark
     // (according to relaxed plan graph as captured in lvl_var)
@@ -357,7 +371,7 @@ void LandmarksGraphNew::approximate_lookahead_orders(
 
 }
 
-bool LandmarksGraphNew::domain_connectivity(const pair<int, int> &landmark,
+bool LandmarkGraphNew::domain_connectivity(const pair<int, int> &landmark,
                                             const hash_set<int> &exclude) {
     /* Tests whether in the domain transition graph of the LM variable, there is
      a path from the initial state value to the LM value, without passing through
@@ -392,7 +406,7 @@ bool LandmarksGraphNew::domain_connectivity(const pair<int, int> &landmark,
     return true;
 }
 
-void LandmarksGraphNew::find_forward_orders(
+void LandmarkGraphNew::find_forward_orders(
     const vector<vector<int> > &lvl_var, LandmarkNode *lmp) {
     /* lmp is ordered before any var-val pair that cannot be reached before lmp according to
      relaxed planning graph (as captured in lvl_var).
@@ -410,9 +424,9 @@ void LandmarksGraphNew::find_forward_orders(
                 if (make_pair(i, j) != lm) {
                     // Make sure there is no operator that reaches both lm and (i, j) at the same time
                     bool intersection_empty = true;
-                    const vector<int> &reach_ij = get_operators_including_eff(
+                    const vector<int> &reach_ij = lm_graph->get_operators_including_eff(
                         make_pair(i, j));
-                    const vector<int> &reach_lm = get_operators_including_eff(
+                    const vector<int> &reach_lm = lm_graph->get_operators_including_eff(
                         lm);
 
                     for (int k = 0; k < reach_ij.size() && intersection_empty; k++)
@@ -432,29 +446,31 @@ void LandmarksGraphNew::find_forward_orders(
 
 }
 
-void LandmarksGraphNew::add_lm_forward_orders() {
-    set<LandmarkNode *>::iterator node_it;
-    for (node_it = nodes.begin(); node_it != nodes.end(); ++node_it) {
+void LandmarkGraphNew::add_lm_forward_orders() {
+    set<LandmarkNode *>::const_iterator node_it;
+    for (node_it = lm_graph->get_nodes().begin(); node_it != lm_graph->get_nodes().end(); ++node_it) {
         LandmarkNode &node = **node_it;
 
         for (hash_set<pair<int, int>, hash_int_pair>::iterator it2 =
                  node.forward_orders.begin(); it2 != node.forward_orders.end(); ++it2) {
             pair<int, int> node2_pair = *it2;
 
-            if (simple_landmark_exists(node2_pair)) {
-                LandmarkNode &node2 = get_simple_lm_node(node2_pair);
-                edge_add(node, node2, natural);
+            if (lm_graph->simple_landmark_exists(node2_pair)) {
+                LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
+                lm_graph->edge_add(node, node2, natural);
             }
         }
         node.forward_orders.clear();
     }
 }
 
+LandmarkGraph *LandmarkGraphNew::get_lm_graph() {
+    return lm_graph;
+}
 
-
-LandmarksGraph *LandmarksGraphNew::create(
+LandmarkGraph *LandmarkGraphNew::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarksGraph::LandmarkGraphOptions common_options;
+    LandmarkGraph::Options common_options;
 
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
@@ -474,9 +490,9 @@ LandmarksGraph *LandmarksGraphNew::create(
     if (dry_run) {
         return 0;
     } else {
-        LandmarksGraph *graph = new LandmarksGraphNew(common_options,
-                                                      new Exploration(common_options.heuristic_options));
-        LandmarksGraph::build_lm_graph(graph);
+        LandmarkGraph *graph = new LandmarkGraphNew(common_options,
+                                                    new Exploration(common_options.heuristic_options));
+        LandmarkGraph::build_lm_graph(graph);
         return graph;
     }
 }

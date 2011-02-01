@@ -1,26 +1,26 @@
 #include <vector>
 #include <ext/hash_map>
 
-#include "landmarks_graph_rpg_exhaust.h"
+#include "landmark_graph_rpg_exhaust.h"
 #include "../state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
 static LandmarkGraphPlugin landmarks_graph_exhaust_plugin(
-    "lm_exhaust", LandmarksGraphExhaust::create);
+    "lm_exhaust", LandmarkGraphExhaust::create);
 
 /* Problem: We don't get any orders here. (All we have is the reasonable orders
    that are inferred later.) It's thus best to combine this landmark generation
    method with others, don't use it by itself. */
 
-LandmarksGraphExhaust::LandmarksGraphExhaust(LandmarksGraph::LandmarkGraphOptions &options, Exploration *exploration)
-: lm_graph(new LandmarksGraph(options, exploration)) {
+LandmarkGraphExhaust::LandmarkGraphExhaust(LandmarkGraph::Options &options, Exploration *exploration)
+: lm_graph(new LandmarkGraph(options, exploration)) {
     lm_graph->read_external_inconsistencies();
     generate_landmarks();
-    LandmarksGraph::build_lm_graph(lm_graph);
+    LandmarkGraph::build_lm_graph(lm_graph);
 }
 
-void LandmarksGraphExhaust::generate_landmarks() {
+void LandmarkGraphExhaust::generate_landmarks() {
     cout << "Generating landmarks by testing all facts with RPG method" << endl;
 
     // insert goal landmarks and mark them as goals
@@ -41,13 +41,13 @@ void LandmarksGraphExhaust::generate_landmarks() {
 
 }
 
-LandmarksGraph *LandmarksGraphExhaust::get_lm_graph() {
+LandmarkGraph *LandmarkGraphExhaust::get_lm_graph() {
     return lm_graph;
 }
 
-LandmarksGraph *LandmarksGraphExhaust::create(
+LandmarkGraph *LandmarkGraphExhaust::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarksGraph::LandmarkGraphOptions common_options;
+    LandmarkGraph::Options common_options;
 
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
@@ -67,8 +67,8 @@ LandmarksGraph *LandmarksGraphExhaust::create(
     if (dry_run) {
         return 0;
     } else {
-        LandmarksGraphExhaust lm_graph_factory(common_options, new Exploration(common_options.heuristic_options));
-        LandmarksGraph *graph = lm_graph_factory.get_lm_graph();
+        LandmarkGraphExhaust lm_graph_factory(common_options, new Exploration(common_options.heuristic_options));
+        LandmarkGraph *graph = lm_graph_factory.get_lm_graph();
         return graph;
     }
 }

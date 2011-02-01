@@ -1,19 +1,19 @@
-#ifndef LANDMARKS_LANDMARKS_GRAPH_RPG_EXHAUST_H
-#define LANDMARKS_LANDMARKS_GRAPH_RPG_EXHAUST_H
+#ifndef LANDMARKS_LANDMARK_GRAPH_RPG_EXHAUST_H
+#define LANDMARKS_LANDMARK_GRAPH_RPG_EXHAUST_H
 
-#include "landmarks_graph.h"
+#include "landmark_graph.h"
 
-class LandmarksGraphExhaust {
+class LandmarkGraphExhaust {
 public:
-    LandmarksGraphExhaust(LandmarksGraph::LandmarkGraphOptions &options, Exploration *exploration);
-    ~LandmarksGraphExhaust() {}
+    LandmarkGraphExhaust(LandmarkGraph::Options &options, Exploration *exploration);
+    ~LandmarkGraphExhaust() {}
     // TODO: get_lm_graph *must* be called to avoid memory leeks!
-    // returns a landmargraph created by HMLandmarks. take care to delete the pointer when you don't need it anymore!
-    LandmarksGraph *get_lm_graph();
-    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
+    // returns a landmargraph created by HMLandmark. take care to delete the pointer when you don't need it anymore!
+    LandmarkGraph *get_lm_graph();
+    static LandmarkGraph *create(const std::vector<std::string> &config, int start,
                                   int &end, bool dry_run);
 private:
-    LandmarksGraph *lm_graph;
+    LandmarkGraph *lm_graph;
     void generate_landmarks();
 };
 

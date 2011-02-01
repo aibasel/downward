@@ -1,4 +1,4 @@
-#include "landmarks_graph.h"
+#include "landmark_graph.h"
 
 #include "util.h"
 
@@ -63,7 +63,7 @@ static inline bool _operator_condition_includes(const Operator &o,
     return false;
 }
 
-LandmarksGraph::LandmarksGraph(LandmarkGraphOptions &options, Exploration *explor)
+LandmarkGraph::LandmarkGraph(Options &options, Exploration *explor)
     : exploration(explor), landmarks_count(0), conj_lms(0)/*,
       external_inconsistencies_read(false)*/ {
     reasonable_orders = options.reasonable_orders;
@@ -79,14 +79,14 @@ LandmarksGraph::LandmarksGraph(LandmarkGraphOptions &options, Exploration *explo
     generate_operators_lookups();
 }
 
-bool LandmarksGraph::simple_landmark_exists(const pair<int, int> &lm) const {
+bool LandmarkGraph::simple_landmark_exists(const pair<int, int> &lm) const {
     hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
         simple_lms_to_nodes.find(lm);
     assert(it == simple_lms_to_nodes.end() || !it->second->disjunctive);
     return it != simple_lms_to_nodes.end();
 }
 
-bool LandmarksGraph::landmark_exists(const pair<int, int> &lm) const {
+bool LandmarkGraph::landmark_exists(const pair<int, int> &lm) const {
     // Note: this only checks for one fact whether it's part of a landmark, hence only
     // simple and disjunctive landmarks are checked.
     set<pair<int, int> > lm_set;
@@ -94,7 +94,7 @@ bool LandmarksGraph::landmark_exists(const pair<int, int> &lm) const {
     return simple_landmark_exists(lm) || disj_landmark_exists(lm_set);
 }
 
-bool LandmarksGraph::disj_landmark_exists(const set<pair<int, int> > &lm) const {
+bool LandmarkGraph::disj_landmark_exists(const set<pair<int, int> > &lm) const {
     // Test whether ONE of the facts in lm is present in some disj. LM
     for (set<pair<int, int> >::const_iterator it = lm.begin(); it != lm.end(); ++it) {
         const pair<int, int> &prop = *it;
@@ -106,7 +106,7 @@ bool LandmarksGraph::disj_landmark_exists(const set<pair<int, int> > &lm) const 
     return false;
 }
 
-bool LandmarksGraph::exact_same_disj_landmark_exists(
+bool LandmarkGraph::exact_same_disj_landmark_exists(
     const set<pair<int, int> > &lm) const {
     // Test whether a disj. LM exists which consists EXACTLY of those facts in lm
     LandmarkNode *lmn = NULL;
@@ -126,7 +126,7 @@ bool LandmarksGraph::exact_same_disj_landmark_exists(
     return true;
 }
 
-LandmarkNode *LandmarksGraph::landmark_reached(const pair<int, int> &prop) const {
+LandmarkNode *LandmarkGraph::landmark_reached(const pair<int, int> &prop) const {
     /* Return pointer to landmark node that corresponds to the given fact, or 0 if no such
      landmark exists. (TODO: rename to "get_landmark()")
      */
@@ -144,7 +144,7 @@ LandmarkNode *LandmarksGraph::landmark_reached(const pair<int, int> &prop) const
     return node_p;
 }
 
-LandmarkNode &LandmarksGraph::landmark_add_simple(const pair<int, int> &lm) {
+LandmarkNode &LandmarkGraph::landmark_add_simple(const pair<int, int> &lm) {
     assert(!landmark_exists(lm));
     vector<int> vars;
     vector<int> vals;
@@ -157,7 +157,7 @@ LandmarkNode &LandmarksGraph::landmark_add_simple(const pair<int, int> &lm) {
     return *new_node_p;
 }
 
-LandmarkNode &LandmarksGraph::landmark_add_disjunctive(
+LandmarkNode &LandmarkGraph::landmark_add_disjunctive(
     const set<pair<int, int> > &lm) {
     vector<int> vars;
     vector<int> vals;
@@ -176,7 +176,7 @@ LandmarkNode &LandmarksGraph::landmark_add_disjunctive(
     return *new_node_p;
 }
 
-void LandmarksGraph::set_landmark_ids() {
+void LandmarkGraph::set_landmark_ids() {
     ordered_nodes.resize(number_of_landmarks());
     int id = 0;
     for (set<LandmarkNode *>::iterator node_it =
@@ -188,16 +188,16 @@ void LandmarksGraph::set_landmark_ids() {
     }
 }
 
-LandmarkNode *LandmarksGraph::get_lm_for_index(int i) {
+LandmarkNode *LandmarkGraph::get_lm_for_index(int i) {
     assert(ordered_nodes[i]->get_id() == i);
     return ordered_nodes[i];
 }
 
-void LandmarksGraph::generate_landmarks() {
+void LandmarkGraph::generate_landmarks() {
     // TODO: dummy method while refactoring
 }
 
-void LandmarksGraph::generate() {
+void LandmarkGraph::generate() {
     //cout << "generating landmarks" << endl;
     generate_landmarks();
 
@@ -223,7 +223,7 @@ void LandmarksGraph::generate() {
     //dump();
 }
 
-void LandmarksGraph::read_external_inconsistencies() {
+void LandmarkGraph::read_external_inconsistencies() {
     /* Read inconsistencies that were found by translator from separate file. Note: this
      is somewhat cumbersome, but avoids substantial changes to translator and predecessor
      output structure. Translator finds groups of facts such that exactly one of those facts
@@ -304,7 +304,7 @@ void LandmarksGraph::read_external_inconsistencies() {
     }
 }
 
-bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
+bool LandmarkGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
                                            vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op,
                                            bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
@@ -356,7 +356,7 @@ bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     return true;
 }
 
-bool LandmarksGraph::is_causal_landmark(const LandmarkNode &landmark) const {
+bool LandmarkGraph::is_causal_landmark(const LandmarkNode &landmark) const {
     /* Test whether the relaxed planning task is unsolvable without using any operator
        that has "landmark" has a precondition.
        Similar to "relaxed_task_solvable" above.
@@ -392,7 +392,7 @@ bool LandmarksGraph::is_causal_landmark(const LandmarkNode &landmark) const {
     return false;
 }
 
-void LandmarksGraph::generate_operators_lookups() {
+void LandmarkGraph::generate_operators_lookups() {
     /* Build datastructures for efficient landmark computation. Map propositions
      to the operators that achieve them or have them as preconditions */
 
@@ -425,7 +425,7 @@ void LandmarksGraph::generate_operators_lookups() {
     }
 }
 
-bool LandmarksGraph::effect_always_happens(const vector<PrePost> &prepost, set<
+bool LandmarkGraph::effect_always_happens(const vector<PrePost> &prepost, set<
                                                pair<int, int> > &eff) const {
     /* Test whether the condition of a conditional effect is trivial, i.e. always true.
      We test for the simple case that the same effect proposition is triggered by
@@ -537,7 +537,7 @@ bool LandmarksGraph::effect_always_happens(const vector<PrePost> &prepost, set<
     return eff.empty();
 }
 
-bool LandmarksGraph::interferes(const LandmarkNode *node_a,
+bool LandmarkGraph::interferes(const LandmarkNode *node_a,
                                 const LandmarkNode *node_b) const {
     /* Facts a and b interfere (i.e., achieving b before a would mean having to delete b
      and re-achieve it in order to achieve a) if one of the following condition holds:
@@ -658,7 +658,7 @@ inline static bool _in_goal(const pair<int, int> &l) {
     return false;
 }
 
-void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
+void LandmarkGraph::approximate_reasonable_orders(bool obedient_orders) {
     /* Approximate reasonable and obedient reasonable orders according to Hoffmann et al. If flag
      "obedient_orders" is true, we calculate obedient reasonable orders, otherwise reasonable orders.
 
@@ -728,7 +728,7 @@ void LandmarksGraph::approximate_reasonable_orders(bool obedient_orders) {
     }
 }
 
-void LandmarksGraph::collect_ancestors(
+void LandmarkGraph::collect_ancestors(
     hash_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
     bool use_reasonable) {
     /* Returns all ancestors in the landmark graph of landmark node "start" */
@@ -766,7 +766,7 @@ void LandmarksGraph::collect_ancestors(
     }
 }
 
-void LandmarksGraph::print_proposition(const pair<int, int> &fluent) const {
+void LandmarkGraph::print_proposition(const pair<int, int> &fluent) const {
     hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator it =
         pddl_propositions.find(fluent);
     if (it != pddl_propositions.end()) {
@@ -778,7 +778,7 @@ void LandmarksGraph::print_proposition(const pair<int, int> &fluent) const {
          << "->" << fluent.second << ")";
 }
 
-void LandmarksGraph::dump_node(const LandmarkNode *node_p) const {
+void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
     cout << "LM " << node_p->get_id() << " ";
     if (node_p->disjunctive)
         cout << "disj {";
@@ -807,8 +807,8 @@ void LandmarksGraph::dump_node(const LandmarkNode *node_p) const {
     cout << endl;
 }
 
-void LandmarksGraph::dump() const {
-    cout << "Landmarks graph: " << endl;
+void LandmarkGraph::dump() const {
+    cout << "Landmark graph: " << endl;
     set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
 
     for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
@@ -866,10 +866,10 @@ void LandmarksGraph::dump() const {
             dump_node(child_p);
         }
     }
-    cout << "Landmarks graph end." << endl;
+    cout << "Landmark graph end." << endl;
 }
 
-int LandmarksGraph::number_of_edges() const {
+int LandmarkGraph::number_of_edges() const {
     int total = 0;
     for (set<LandmarkNode *>::const_iterator it = nodes.begin(); it
          != nodes.end(); it++)
@@ -877,7 +877,7 @@ int LandmarksGraph::number_of_edges() const {
     return total;
 }
 
-void LandmarksGraph::edge_add(LandmarkNode &from, LandmarkNode &to,
+void LandmarkGraph::edge_add(LandmarkNode &from, LandmarkNode &to,
                               edge_type type) {
     /* Adds an edge in the landmarks graph if there is no contradicting edge (simple measure to
      reduce cycles. If the edge is already present, the stronger edge type wins.
@@ -918,7 +918,7 @@ void LandmarksGraph::edge_add(LandmarkNode &from, LandmarkNode &to,
     assert(to.parents.find(&from) != to.parents.end());
 }
 
-void LandmarksGraph::discard_noncausal_landmarks() {
+void LandmarkGraph::discard_noncausal_landmarks() {
     int number_of_noncausal_landmarks = 0;
     bool change = true;
     while (change) {
@@ -940,7 +940,7 @@ void LandmarksGraph::discard_noncausal_landmarks() {
          << " non-causal landmarks" << endl;
 }
 
-void LandmarksGraph::discard_disjunctive_landmarks() {
+void LandmarkGraph::discard_disjunctive_landmarks() {
     /* Using disjunctive landmarks during landmark generation can be
      beneficial even if we don't want to use disunctive landmarks during s
      search. This function deletes all disjunctive landmarks that have been
@@ -968,7 +968,7 @@ void LandmarksGraph::discard_disjunctive_landmarks() {
     assert(disj_lms_to_nodes.size() == 0);
 }
 
-void LandmarksGraph::discard_conjunctive_landmarks() {
+void LandmarkGraph::discard_conjunctive_landmarks() {
     if (number_of_conj_landmarks() == 0)
         return;
     cout << "Discarding " << number_of_conj_landmarks()
@@ -989,7 +989,7 @@ void LandmarksGraph::discard_conjunctive_landmarks() {
     assert(number_of_conj_landmarks() == 0);
 }
 
-void LandmarksGraph::rm_landmark_node(LandmarkNode *node) {
+void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     /* Called by "discard_disjunctive_landmarks()" */
 
     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
@@ -1020,7 +1020,7 @@ void LandmarksGraph::rm_landmark_node(LandmarkNode *node) {
     assert(nodes.find(node) == nodes.end());
 }
 
-void LandmarksGraph::rm_landmark(const pair<int, int> &lm) {
+void LandmarkGraph::rm_landmark(const pair<int, int> &lm) {
     assert(landmark_exists(lm));
     LandmarkNode *node;
     if (simple_landmark_exists(lm))
@@ -1030,7 +1030,7 @@ void LandmarksGraph::rm_landmark(const pair<int, int> &lm) {
     rm_landmark_node(node);
 }
 
-void LandmarksGraph::discard_all_orderings() {
+void LandmarkGraph::discard_all_orderings() {
     cout << "Removing all orderings." << endl;
     for (set<LandmarkNode *>::iterator it =
              nodes.begin(); it != nodes.end(); it++) {
@@ -1040,7 +1040,7 @@ void LandmarksGraph::discard_all_orderings() {
     }
 }
 
-void LandmarksGraph::mk_acyclic_graph() {
+void LandmarkGraph::mk_acyclic_graph() {
     hash_set<LandmarkNode *, hash_pointer> acyclic_node_set(number_of_landmarks());
     int removed_edges = 0;
     for (set<LandmarkNode *>::iterator it = nodes.begin(); it != nodes.end(); it++) {
@@ -1053,7 +1053,7 @@ void LandmarksGraph::mk_acyclic_graph() {
          << " reasonable or obedient reasonable orders\n";
 }
 
-bool LandmarksGraph::remove_first_weakest_cycle_edge(LandmarkNode *cur,
+bool LandmarkGraph::remove_first_weakest_cycle_edge(LandmarkNode *cur,
                                                      list<pair<LandmarkNode *, edge_type> > &path, list<pair<LandmarkNode *,
                                                                                                              edge_type> >::iterator it) {
     LandmarkNode *parent_p = 0;
@@ -1084,7 +1084,7 @@ bool LandmarksGraph::remove_first_weakest_cycle_edge(LandmarkNode *cur,
     return true;
 }
 
-int LandmarksGraph::loop_acyclic_graph(LandmarkNode &lmn, hash_set<
+int LandmarkGraph::loop_acyclic_graph(LandmarkNode &lmn, hash_set<
                                            LandmarkNode *, hash_pointer> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
@@ -1141,7 +1141,7 @@ int LandmarksGraph::loop_acyclic_graph(LandmarkNode &lmn, hash_set<
     assert(acyclic_node_set.find(&lmn) != acyclic_node_set.end());
     return nr_removed;
 }
-int LandmarksGraph::calculate_lms_cost() const {
+int LandmarkGraph::calculate_lms_cost() const {
     int result = 0;
     for (set<LandmarkNode *>::const_iterator it = nodes.begin(); it
          != nodes.end(); it++)
@@ -1150,7 +1150,7 @@ int LandmarksGraph::calculate_lms_cost() const {
     return result;
 }
 
-void LandmarksGraph::count_costs() {
+void LandmarkGraph::count_costs() {
     reached_cost = 0;
     needed_cost = 0;
 
@@ -1172,7 +1172,7 @@ void LandmarksGraph::count_costs() {
     }
 }
 
-bool LandmarksGraph::relaxed_task_solvable_without_operator(
+bool LandmarkGraph::relaxed_task_solvable_without_operator(
     vector<vector<int> > &lvl_var, vector<hash_map<pair<int, int>, int,
                                                    hash_int_pair> > &lvl_op, bool level_out,
     const Operator *exclude, bool compute_lvl_op) const {
@@ -1221,7 +1221,7 @@ bool LandmarksGraph::relaxed_task_solvable_without_operator(
     return true;
 }
 
-void LandmarksGraph::compute_predecessor_information(
+void LandmarkGraph::compute_predecessor_information(
     LandmarkNode *bp,
     vector<vector<int> > &lvl_var, vector<hash_map<pair<int, int>, int,
                                                    hash_int_pair> > &lvl_op) {
@@ -1232,7 +1232,7 @@ void LandmarksGraph::compute_predecessor_information(
     relaxed_task_solvable(lvl_var, lvl_op, true, bp);
 }
 
-void LandmarksGraph::calc_achievers() {
+void LandmarkGraph::calc_achievers() {
     for (set<LandmarkNode *>::iterator node_it = nodes.begin(); node_it
          != nodes.end(); ++node_it) {
         LandmarkNode &lmn = **node_it;
@@ -1263,7 +1263,7 @@ void LandmarksGraph::calc_achievers() {
     }
 }
 
-int LandmarksGraph::relaxed_plan_length_without(LandmarkNode *exclude) {
+int LandmarkGraph::relaxed_plan_length_without(LandmarkNode *exclude) {
     vector<pair<int, int> > exclude_props;
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
     if (exclude != NULL) {
@@ -1279,7 +1279,7 @@ int LandmarksGraph::relaxed_plan_length_without(LandmarkNode *exclude) {
     return val;
 }
 
-void LandmarksGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj) {
+void LandmarkGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj) {
     nodes.insert(&node);
     ++landmarks_count;
     if (conj) {
@@ -1289,12 +1289,21 @@ void LandmarksGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, boo
     }
 }
 
+LandmarkNode &LandmarkGraph::make_disj_node_simple(std::pair<int, int> lm) {
+    LandmarkNode &node = get_disj_lm_node(lm);
+    node.disjunctive = false;
+    for (int i = 0; i < node.vars.size(); i++)
+        disj_lms_to_nodes.erase(make_pair(node.vars[i], node.vals[i]));
+    simple_lms_to_nodes.insert(std::make_pair(lm, &node));
+    return node;
+}
+
 // static function to generate landmarks and print message
-void LandmarksGraph::build_lm_graph(LandmarksGraph *lm_graph) {
+void LandmarkGraph::build_lm_graph(LandmarkGraph *lm_graph) {
     //ExactTimer lm_generation_timer;
     //lm_graph->read_external_inconsistencies();
     lm_graph->generate();
-    //cout << "Landmarks generation time: " << lm_generation_timer << endl;
+    //cout << "Landmark generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;
     cout << "Discovered " << lm_graph->number_of_landmarks()
@@ -1305,7 +1314,7 @@ void LandmarksGraph::build_lm_graph(LandmarksGraph *lm_graph) {
 }
 
 
-LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
+LandmarkGraph::Options::Options()
     : reasonable_orders(false),
       only_causal_landmarks(false),
       disjunctive_landmarks(true),
@@ -1314,7 +1323,7 @@ LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
       lm_cost_type(NORMAL) {
 }
 
-void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(NamedOptionParser &option_parser) {
+void LandmarkGraph::Options::add_option_to_parser(NamedOptionParser &option_parser) {
     heuristic_options.add_option_to_parser(option_parser);
     // TODO: this is an ugly hack, which we need to pass the cost_type parameter to the
     // Exploration class, which is generated by the LandmarkGraph's create method

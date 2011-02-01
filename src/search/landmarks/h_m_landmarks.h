@@ -1,8 +1,8 @@
-#ifndef LANDMARKS_H_M_LANDMARKS_H
-#define LANDMARKS_H_M_LANDMARKS_H
+#ifndef LANDMARKS_H_M_LANDMARK_H
+#define LANDMARKS_H_M_LANDMARK_H
 
 #include "../globals.h"
-#include "landmarks_graph.h"
+#include "landmark_graph.h"
 
 typedef std::pair<int, int> Fluent;
 typedef std::vector<Fluent> FluentSet;
@@ -65,21 +65,21 @@ struct HMEntry {
 
 typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
-class HMLandmarks {
+class HMLandmark {
 public:
-    HMLandmarks(LandmarksGraph::LandmarkGraphOptions &options, Exploration *expl, int m);
-    ~HMLandmarks() {
+    HMLandmark(LandmarkGraph::Options &options, Exploration *expl, int m);
+    ~HMLandmark() {
     }
     // TODO: get_lm_graph *must* be called to avoid memory leeks!
-    // returns a landmargraph created by HMLandmarks. take care to delete the pointer when you don't need it anymore!
-    LandmarksGraph *get_lm_graph();
+    // returns a landmargraph created by HMLandmark. take care to delete the pointer when you don't need it anymore!
+    LandmarkGraph *get_lm_graph();
 
     virtual void generate_landmarks();
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
 
-    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
+    static LandmarkGraph *create(const std::vector<std::string> &config, int start,
                                   int &end, bool dry_run);
 
 private:
@@ -111,7 +111,7 @@ private:
     void print_pm_op(const PMOp &op);
 
     int m_;
-    LandmarksGraph *lm_graph;
+    LandmarkGraph *lm_graph;
 
     std::map<int, LandmarkNode *> lm_node_table_;
 
