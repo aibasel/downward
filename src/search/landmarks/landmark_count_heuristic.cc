@@ -24,7 +24,7 @@ static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(
     "lmcount", LandmarkCountHeuristic::create);
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(const HeuristicOptions &options,
-                                               LandmarksGraph &lm_graph,
+                                               LandmarkGraph &lm_graph,
                                                bool preferred_ops,
                                                bool admissible, bool optimal,
                                                bool use_action_landmarks)
@@ -318,7 +318,7 @@ ScalarEvaluator *LandmarkCountHeuristic::create(
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
-    LandmarksGraph *lm_graph = OptionParser::instance()->parse_lm_graph(config,
+    LandmarkGraph *lm_graph = OptionParser::instance()->parse_lm_graph(config,
                                                                         start + 2, end, dry_run);
     ++end;
 
