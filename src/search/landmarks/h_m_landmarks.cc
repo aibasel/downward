@@ -1,9 +1,9 @@
-#include "h_m_landmark.h"
+#include "h_m_landmarks.h"
 #include "../plugin.h"
 #include "../exact_timer.h"
 
 static LandmarkGraphPlugin h_m_landmarks_graph_plugin(
-    "lm_hm", HMLandmark::create);
+    "lm_hm", HMLandmarks::create);
 
 std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
@@ -127,7 +127,7 @@ bool contains(std::list<T> &alist, const T &val) {
 
 // find partial variable assignments with size m or less
 // (look at all the variables in the problem)
-void HMLandmark::get_m_sets_(int m, int num_included, int current_var,
+void HMLandmarks::get_m_sets_(int m, int num_included, int current_var,
                               FluentSet &current,
                               std::vector<FluentSet > &subsets) {
     if (num_included == m) {
@@ -161,7 +161,7 @@ void HMLandmark::get_m_sets_(int m, int num_included, int current_var,
 }
 
 // find all size m or less subsets of superset
-void HMLandmark::get_m_sets_of_set_(int m, int num_included, int current_var_index,
+void HMLandmarks::get_m_sets_of_set_(int m, int num_included, int current_var_index,
                                      FluentSet &current,
                                      std::vector<FluentSet > &subsets,
                                      const FluentSet &superset) {
@@ -199,7 +199,7 @@ void HMLandmark::get_m_sets_of_set_(int m, int num_included, int current_var_ind
 
 // get subsets of superset1 \cup superset2 with size m or less,
 // such that they have >= 1 elements from each set.
-void HMLandmark::get_split_m_sets_(
+void HMLandmarks::get_split_m_sets_(
     int m, int ss1_num_included, int ss2_num_included,
     int ss1_var_index, int ss2_var_index,
     FluentSet &current, std::vector<FluentSet> &subsets,
@@ -276,13 +276,13 @@ void HMLandmark::get_split_m_sets_(
 // e.g. we don't want to represent (truck1-loc x, truck2-loc y) type stuff
 
 // get partial assignments of size <= m in the problem
-void HMLandmark::get_m_sets(int m, std::vector<FluentSet> &subsets) {
+void HMLandmarks::get_m_sets(int m, std::vector<FluentSet> &subsets) {
     FluentSet c;
     get_m_sets_(m, 0, 0, c, subsets);
 }
 
 // get subsets of superset with size <= m
-void HMLandmark::get_m_sets(int m, std::vector<FluentSet> &subsets, const FluentSet &superset) {
+void HMLandmarks::get_m_sets(int m, std::vector<FluentSet> &subsets, const FluentSet &superset) {
     FluentSet c;
     get_m_sets_of_set_(m, 0, 0, c, subsets, superset);
 }
@@ -290,7 +290,7 @@ void HMLandmark::get_m_sets(int m, std::vector<FluentSet> &subsets, const Fluent
 // second function to get subsets of size at most m that
 // have at least one element in ss1 and same in ss2
 // assume disjoint
-void HMLandmark::get_split_m_sets(
+void HMLandmarks::get_split_m_sets(
     int m, std::vector<FluentSet> &subsets,
     const FluentSet &superset1, const FluentSet &superset2) {
     FluentSet c;
@@ -298,7 +298,7 @@ void HMLandmark::get_split_m_sets(
 }
 
 // get subsets of state with size <= m
-void HMLandmark::get_m_sets(int m,
+void HMLandmarks::get_m_sets(int m,
                              std::vector<FluentSet> &subsets,
                              const State &s) {
     FluentSet state_fluents;
@@ -345,7 +345,7 @@ void get_operator_effect(int op_index, FluentSet &eff) {
 }
 
 
-void HMLandmark::print_pm_op(const PMOp &op) {
+void HMLandmarks::print_pm_op(const PMOp &op) {
     std::set<Fluent> pcs, effs, cond_pc, cond_eff;
     std::vector<std::pair<std::set<Fluent>, std::set<Fluent> > > conds;
     std::set<Fluent>::iterator it;
@@ -422,7 +422,7 @@ void HMLandmark::print_pm_op(const PMOp &op) {
     }
 }
 
-void HMLandmark::print_fluentset(const FluentSet &fs) {
+void HMLandmarks::print_fluentset(const FluentSet &fs) {
     FluentSet::const_iterator it;
 
     std::cout << "( ";
@@ -435,7 +435,7 @@ void HMLandmark::print_fluentset(const FluentSet &fs) {
 
 // check whether fs2 is a possible noop set for action with fs1 as effect
 // sets cannot be 1) defined on same variable, 2) otherwise mutex
-bool HMLandmark::possible_noop_set(const FluentSet &fs1, const FluentSet &fs2) {
+bool HMLandmarks::possible_noop_set(const FluentSet &fs1, const FluentSet &fs2) {
     FluentSet::const_iterator fs1it = fs1.begin(), fs2it = fs2.begin();
 
     while (fs1it != fs1.end() && fs2it != fs2.end()) {
@@ -460,7 +460,7 @@ bool HMLandmark::possible_noop_set(const FluentSet &fs1, const FluentSet &fs2) {
 
 
 // make the operators of the P_m problem
-void HMLandmark::build_pm_ops() {
+void HMLandmarks::build_pm_ops() {
     FluentSet pc, eff;
     std::vector<FluentSet> pc_subsets, eff_subsets, noop_pc_subsets, noop_eff_subsets;
 
@@ -568,12 +568,12 @@ void HMLandmark::build_pm_ops() {
     }
 }
 
-bool HMLandmark::interesting(int var1, int val1, int var2, int val2) {
+bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
     // mutexes can always be safely pruned
     return lm_graph->inconsistent(make_pair(var1, val1), make_pair(var2, val2));
 }
 
-HMLandmark::HMLandmark(LandmarkGraph::Options &options, Exploration *expl, int m)
+HMLandmarks::HMLandmarks(LandmarkGraph::Options &options, Exploration *expl, int m)
 : m_(m), lm_graph(new LandmarkGraph(options, expl))  {
     std::cout << "H_m_Landmark(" << m_ << ")" << std::endl;
     ExactTimer lm_generation_timer;
@@ -589,7 +589,7 @@ HMLandmark::HMLandmark(LandmarkGraph::Options &options, Exploration *expl, int m
     // we can then free all unneeded memory after computation is done.
 }
 
-void HMLandmark::init() {
+void HMLandmarks::init() {
     // get all the m or less size subsets in the domain
     std::vector<std::vector<Fluent> > msets;
     cout << "test" << endl;
@@ -617,7 +617,7 @@ void HMLandmark::init() {
     //  std::cout << "Built P(m) ops, total: " << pm_ops_.size() << "." << std::endl;
 }
 
-void HMLandmark::calc_achievers() {
+void HMLandmarks::calc_achievers() {
     std::cout << "Calculating achievers." << std::endl;
 
     // first_achievers are already filled in by compute_h_m_landmarks
@@ -676,7 +676,7 @@ void HMLandmark::calc_achievers() {
     }
 }
 
-void HMLandmark::free_unneeded_memory() {
+void HMLandmarks::free_unneeded_memory() {
     std::vector<HMEntry>().swap(h_m_table_);
     std::vector<PMOp>().swap(pm_ops_);
     std::vector<std::vector<bool> >().swap(interesting_);
@@ -689,7 +689,7 @@ void HMLandmark::free_unneeded_memory() {
 // called when a fact is discovered or its landmarks change
 // to trigger required actions at next level
 // newly_discovered = first time fact becomes reachable
-void HMLandmark::propagate_pm_fact(int factindex, bool newly_discovered,
+void HMLandmarks::propagate_pm_fact(int factindex, bool newly_discovered,
                                     TriggerSet &trigger) {
     // for each action/noop for which fact is a pc
     for (int i = 0; i < h_m_table_[factindex].pc_for.size(); i++) {
@@ -725,7 +725,7 @@ void HMLandmark::propagate_pm_fact(int factindex, bool newly_discovered,
     }
 }
 
-void HMLandmark::compute_h_m_landmarks() {
+void HMLandmarks::compute_h_m_landmarks() {
     // get subsets of initial state
     std::vector<FluentSet> init_subsets;
     get_m_sets(m_, init_subsets, *g_initial_state);
@@ -838,7 +838,7 @@ void HMLandmark::compute_h_m_landmarks() {
     std::cout << "h^m landmarks computed." << std::endl;
 }
 
-void HMLandmark::compute_noop_landmarks(
+void HMLandmarks::compute_noop_landmarks(
     int op_index, int noop_index,
     std::list<int> const &local_landmarks,
     std::list<int> const &local_necessary,
@@ -904,7 +904,7 @@ void HMLandmark::compute_noop_landmarks(
     }
 }
 
-void HMLandmark::add_lm_node(int set_index, bool goal) {
+void HMLandmarks::add_lm_node(int set_index, bool goal) {
     std::vector<int> vars, vals;
 
     std::map<int, LandmarkNode *>::iterator it = lm_node_table_.find(set_index);
@@ -927,7 +927,7 @@ void HMLandmark::add_lm_node(int set_index, bool goal) {
     }
 }
 
-void HMLandmark::generate_landmarks() {
+void HMLandmarks::generate_landmarks() {
     int set_index;
     init();
     compute_h_m_landmarks();
@@ -1014,11 +1014,11 @@ void HMLandmark::generate_landmarks() {
     free_unneeded_memory();
 }
 
-LandmarkGraph *HMLandmark::get_lm_graph() {
+LandmarkGraph *HMLandmarks::get_lm_graph() {
     return lm_graph;
 }
 
-LandmarkGraph *HMLandmark::create(
+LandmarkGraph *HMLandmarks::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarkGraph::Options common_options;
 

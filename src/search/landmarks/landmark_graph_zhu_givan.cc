@@ -337,9 +337,10 @@ LandmarkGraph *LandmarkGraphZhuGivan::create(
     if (dry_run) {
         return 0;
     } else {
-        LandmarkGraph *graph = new LandmarkGraphZhuGivan(common_options,
-                                                         new Exploration(common_options.heuristic_options));
-        LandmarkGraph::build_lm_graph(graph);
+        LandmarkGraphZhuGivan lm_graph_factory(
+            common_options,
+            new Exploration(common_options.heuristic_options));
+        LandmarkGraph *graph = lm_graph_factory.get_lm_graph();
         return graph;
     }
 }

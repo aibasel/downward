@@ -267,13 +267,13 @@ void OptionParser::parse_heuristic_list(
 
 void OptionParser::parse_landmark_graph_list(
     const vector<string> &input, int start, int &end, bool only_one,
-    vector<LandmarksGraph *> &lm_graphs, bool dry_run) {
+    vector<LandmarkGraph *> &lm_graphs, bool dry_run) {
     end = start;
     bool break_loop = false;
     while (knows_lm_graph(input[end])) {
         if (only_one && lm_graphs.size() > 0)
             throw ParseError(end);
-        LandmarksGraph *lmg =
+        LandmarkGraph *lmg =
             parse_lm_graph(input, end, end, dry_run);
         lm_graphs.push_back(lmg);
         end++;

@@ -4,7 +4,7 @@
 #include "../heuristic.h"
 #include "../globals.h"
 #include "../priority_queue.h"
-#include "landmarks_types.h"
+#include "landmark_types.h"
 
 #include <vector>
 #include <ext/hash_set>

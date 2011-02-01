@@ -303,6 +303,10 @@ private:
                                          list<pair<LandmarkNode *, edge_type> > &path,
                                          list<pair<LandmarkNode *, edge_type> >::iterator it);
 
+public: // HACK! (Temporary accessor needed for LandmarkGraphNew.)
+    OperatorCost get_lm_cost_type() const {
+        return lm_cost_type;
+    }
 protected:
     bool reasonable_orders;
     bool only_causal_landmarks;

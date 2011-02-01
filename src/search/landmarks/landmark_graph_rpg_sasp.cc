@@ -96,13 +96,13 @@ int LandmarkGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
     for (unsigned int k = 0; k < bp->vars.size(); k++) {
         pair<int, int> b = make_pair(bp->vars[k], bp->vals[k]);
         // ...look at all achieving operators
-        const vector<int> &ops = get_operators_including_eff(b);
+        const vector<int> &ops = lm_graph->get_operators_including_eff(b);
         for (unsigned i = 0; i < ops.size(); i++) {
-            const Operator &op = get_operator_for_lookup_index(ops[i]);
+            const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
             if (_possibly_reaches_lm(op, lvl_var, bp))
-                min_cost = min(min_cost, get_adjusted_action_cost(op, lm_cost_type));
+                min_cost = min(min_cost, get_adjusted_action_cost(op, lm_graph->get_lm_cost_type()));
         }
     }
     assert(min_cost < numeric_limits<int>::max());
@@ -490,9 +490,10 @@ LandmarkGraph *LandmarkGraphNew::create(
     if (dry_run) {
         return 0;
     } else {
-        LandmarkGraph *graph = new LandmarkGraphNew(common_options,
-                                                    new Exploration(common_options.heuristic_options));
-        LandmarkGraph::build_lm_graph(graph);
+        LandmarkGraphNew lm_graph_factory(
+            common_options,
+            new Exploration(common_options.heuristic_options));
+        LandmarkGraph *graph = lm_graph_factory.get_lm_graph();
         return graph;
     }
 }

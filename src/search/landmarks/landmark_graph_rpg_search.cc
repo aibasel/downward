@@ -159,10 +159,10 @@ LandmarkGraph *LandmarkGraphRpgSearch::create(
     if (dry_run) {
         return 0;
     } else {
-        LandmarkGraph *graph = new LandmarkGraphRpgSearch(
+        LandmarkGraphRpgSearch lm_graph_factory(
             common_options, new Exploration(common_options.heuristic_options),
             uniform_sampling, max_depth, num_tries);
-        LandmarkGraph::build_lm_graph(graph);
+        LandmarkGraph *graph = lm_graph_factory.get_lm_graph();
         return graph;
     }
 }

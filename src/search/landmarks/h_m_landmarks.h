@@ -65,13 +65,13 @@ struct HMEntry {
 
 typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
-class HMLandmark {
+class HMLandmarks {
 public:
-    HMLandmark(LandmarkGraph::Options &options, Exploration *expl, int m);
-    ~HMLandmark() {
+    HMLandmarks(LandmarkGraph::Options &options, Exploration *expl, int m);
+    ~HMLandmarks() {
     }
     // TODO: get_lm_graph *must* be called to avoid memory leeks!
-    // returns a landmargraph created by HMLandmark. take care to delete the pointer when you don't need it anymore!
+    // returns a landmargraph created by HMLandmarks. take care to delete the pointer when you don't need it anymore!
     LandmarkGraph *get_lm_graph();
 
     virtual void generate_landmarks();
