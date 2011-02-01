@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_LANDMARKS_GRAPH_H
-#define LANDMARKS_LANDMARKS_GRAPH_H
+#ifndef LANDMARKS_LANDMARK_GRAPH_H
+#define LANDMARKS_LANDMARK_GRAPH_H
 
 #include <vector>
 #include <set>
@@ -11,7 +11,7 @@
 
 #include "../operator.h"
 #include "exploration.h"
-#include "landmarks_types.h"
+#include "landmark_types.h"
 #include "../option_parser.h"
 
 using namespace __gnu_cxx;
@@ -123,9 +123,9 @@ struct LandmarkNodeComparer {
 
 typedef hash_set<LandmarkNode *, hash_pointer> LandmarkSet;
 
-class LandmarksGraph {
+class LandmarkGraph {
 public:
-    struct LandmarkGraphOptions {
+    struct Options {
         bool reasonable_orders;
         bool only_causal_landmarks;
         bool disjunctive_landmarks;
@@ -134,7 +134,7 @@ public:
         HeuristicOptions heuristic_options;
         int lm_cost_type;
 
-        LandmarkGraphOptions();
+        Options();
 
         void add_option_to_parser(NamedOptionParser &option_parser);
     };
@@ -152,8 +152,8 @@ public:
     };
     void rm_landmark_node(LandmarkNode *node);
     void rm_landmark(const pair<int, int> &lmk);
-    LandmarksGraph(LandmarkGraphOptions &options, Exploration *explor);
-    virtual ~LandmarksGraph() {}
+    LandmarkGraph(Options &options, Exploration *explor);
+    virtual ~LandmarkGraph() {}
 
     void print_proposition(const pair<int, int> &fluent) const;
     void read_external_inconsistencies();
@@ -231,7 +231,7 @@ public:
     Exploration *get_exploration() const {return exploration; }
     bool is_using_reasonable_orderings() const {return reasonable_orders; }
 
-    static void build_lm_graph(LandmarksGraph *lm_graph);
+    static void build_lm_graph(LandmarkGraph *lm_graph);
     
     inline bool inconsistent(const pair<int, int> &a, const pair<int, int> &b) const {
         //if (a.first == b.first && a.second == b.second)
@@ -251,6 +251,15 @@ public:
     bool use_orders() const { return !no_orders; }
     void insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj);
     
+    // methods needed for rpg_sasp
+    LandmarkNode &make_disj_node_simple(std::pair<int, int> lm);
+    const hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> &get_pddl_propositions() const {
+        return pddl_propositions; 
+    }
+    const map<string, int> &get_pddl_proposition_indices() const {
+        return pddl_proposition_indeces;
+    }
+    
     // made public from protected for h_m_landmarks
     void edge_add(LandmarkNode &from, LandmarkNode &to, edge_type type);
     
@@ -263,6 +272,15 @@ public:
                                           return relaxed_task_solvable(lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
                                       }
     LandmarkNode &landmark_add_simple(const pair<int, int> &lm);
+    
+    // made public from protected for rpg_search
+    int relaxed_plan_length_without(LandmarkNode *lm);
+    LandmarkNode &landmark_add_disjunctive(const set<pair<int, int> > &lm);
+    
+    //made public from protected for rpg_sasp
+    void compute_predecessor_information(LandmarkNode *bp,
+                                         vector<vector<int> > &lvl_var,
+                                         vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op);
     
 private:
     Exploration *exploration;
@@ -333,17 +351,6 @@ protected:
                                                 const Operator *exclude,
                                                 bool compute_lvl_op = false) const;
     bool is_causal_landmark(const LandmarkNode &landmark) const;
-
-    void compute_predecessor_information(LandmarkNode *bp,
-                                         vector<vector<int> > &lvl_var,
-                                         vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op);
-
-    int relaxed_plan_length_without(LandmarkNode *lm);
-
-
-    LandmarkNode &landmark_add_disjunctive(const set<pair<int, int> > &lm);
-    //void edge_add(LandmarkNode &from, LandmarkNode &to,
-    //              edge_type type);
 
     void reset_landmarks_count() {landmarks_count = nodes.size(); }
     virtual void calc_achievers();

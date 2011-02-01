@@ -1,13 +1,13 @@
-#ifndef LANDMARKS_LANDMARKS_GRAPH_ZHU_GIVAN_H
-#define LANDMARKS_LANDMARKS_GRAPH_ZHU_GIVAN_H
+#ifndef LANDMARKS_LANDMARK_GRAPH_ZHU_GIVAN_H
+#define LANDMARKS_LANDMARK_GRAPH_ZHU_GIVAN_H
 
 #include "../globals.h"
-#include "landmarks_graph.h"
-#include "landmarks_types.h"
+#include "landmark_graph.h"
+#include "landmark_types.h"
 
 using namespace __gnu_cxx;
 
-class LandmarksGraphZhuGivan : public LandmarksGraph {
+class LandmarkGraphZhuGivan {
 private:
 
     class plan_graph_node {
@@ -30,6 +30,8 @@ public:
 
     // Note: must include operators that only have conditional effects
     vector<int> operators_without_preconditions;
+    
+    LandmarkGraph *lm_graph;
 
     bool operator_applicable(const Operator &, const proposition_layer &) const;
 
@@ -67,13 +69,11 @@ public:
     void generate_landmarks();
 
 public:
-    LandmarksGraphZhuGivan(
-        LandmarkGraphOptions &options, Exploration *exploration)
-        : LandmarksGraph(options, exploration) {
+    LandmarkGraphZhuGivan(LandmarkGraph::Options &options, Exploration *exploration);
+    ~LandmarkGraphZhuGivan() {
     }
-    ~LandmarksGraphZhuGivan() {
-    }
-    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
+    LandmarkGraph *get_lm_graph();
+    static LandmarkGraph *create(const std::vector<std::string> &config, int start,
                                   int &end, bool dry_run);
 };
 
