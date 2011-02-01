@@ -193,14 +193,7 @@ LandmarkNode *LandmarkGraph::get_lm_for_index(int i) {
     return ordered_nodes[i];
 }
 
-void LandmarkGraph::generate_landmarks() {
-    // TODO: dummy method while refactoring
-}
-
 void LandmarkGraph::generate() {
-    //cout << "generating landmarks" << endl;
-    generate_landmarks();
-
     if (only_causal_landmarks)
         discard_noncausal_landmarks();
     if (!disjunctive_landmarks)
