@@ -131,7 +131,7 @@ static LandmarksGraph *_parse(OptionParser &parser) {
         return 0;
     } else {
         LandmarksGraph *graph = new LandmarksGraphRpgSearch(
-            common_options, new Exploration,
+            common_options, new Exploration(common_options.heuristic_options),
             opts.get<bool>("uniform_sampling"),
             opts.get<int>("max_depth"),
             opts.get<int>("num_tries"));

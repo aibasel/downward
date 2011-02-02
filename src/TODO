@@ -1,5 +1,0 @@
- * Eliminite distinction between "prevail conditions" and "preconditions"
-   (in all programs).
- * Unify axioms and actions (in all programs).
- * Store relationship of SAS pairs to STRIPS propositions so that it can
-   be used for debugging purposes.

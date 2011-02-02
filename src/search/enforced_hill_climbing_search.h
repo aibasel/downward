@@ -35,8 +35,6 @@ protected:
     bool use_preferred;
     PreferredUsage preferred_usage;
 
-    bool use_cost_for_bfs;
-
     State current_state;
     int current_h;
     int current_g;

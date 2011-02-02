@@ -21,8 +21,8 @@ OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref) {
     priority = 0;
 }
 
-BestFirstSearchEngine::BestFirstSearchEngine(const Options opts)
-    : current_state(*g_initial_state) {
+BestFirstSearchEngine::BestFirstSearchEngine(const Options &opts)
+    : SearchEngine(opts), current_state(*g_initial_state) {
     generated_states = 0;
     current_predecessor = 0;
     current_operator = 0;
@@ -226,9 +226,15 @@ int BestFirstSearchEngine::fetch_next_state() {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
+    SearchEngine::add_options_to_parser(parser);
     parser.add_list_option<Heuristic *>("heuristics");
     parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), "use preferred operators of these heuristics");
     Options opts = parser.parse();
+	if (parser.help_mode())
+		return 0;
+
+	if (opts.get_list<Heuristic *>("heuristics").empty())
+		parser.error();
 
     if (parser.dry_run())
         return 0;

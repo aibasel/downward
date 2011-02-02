@@ -4,7 +4,8 @@
 #include "landmarks_graph_rpg_sasp.h"
 
 
-LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_) {
+LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_)
+    : Heuristic(g_default_heuristic_options) {
     synergy = synergy_;
     is_first_proxy = false;
 }
@@ -47,18 +48,23 @@ void LamaFFSynergy::compute_heuristics(const State &state) {
        actual work is delegated to the heuristics. */
 
     exploration->set_recompute_heuristic();
+    lama_preferred_operators.clear();
+    ff_preferred_operators.clear();
 
     lama_heuristic->evaluate(state);
     if (!lama_heuristic->is_dead_end()) {
         lama_heuristic_value = lama_heuristic->get_heuristic();
-        lama_preferred_operators.clear();
         lama_heuristic->get_preferred_operators(lama_preferred_operators);
+    } else {
+        lama_heuristic_value = -1;
     }
+
     exploration->evaluate(state);
     if (!exploration->is_dead_end()) {
         ff_heuristic_value = exploration->get_heuristic();
-        ff_preferred_operators.clear();
         exploration->get_preferred_operators(ff_preferred_operators);
+    } else {
+        ff_heuristic_value = -1;
     }
 }
 
@@ -69,6 +75,7 @@ bool LamaFFSynergy::lama_reach_state(const State &parent_state,
 
 static Synergy *_parse_heuristics(OptionParser &parser) {
     Synergy *syn = new Synergy;
+	Heuristic::add_options_to_parser(parser);
     parser.add_option<LandmarksGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");

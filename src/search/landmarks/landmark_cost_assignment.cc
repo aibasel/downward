@@ -1,5 +1,7 @@
 #include "landmark_cost_assignment.h"
 
+#include "landmarks_graph.h"
+
 #ifdef USE_LP
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #ifdef COIN_USE_CLP
@@ -30,14 +32,9 @@ typedef OsiCpxSolverInterface OsiXxxSolverInterface;
 using namespace std;
 
 
-LandmarkCostAssignment::LandmarkCostAssignment(LandmarksGraph &graph)
-    : lm_graph(graph) {
-    if (!graph.get_action_landmarks().empty()) {
-        cerr << "Cannot combine cost sharing with action landmarks." << endl
-             << "Note that we get the h value improvement of action " << endl
-             << "landmarks automatically with the new implementation." << endl;
-        ::exit(1);
-    }
+LandmarkCostAssignment::LandmarkCostAssignment(
+    LandmarksGraph &graph, OperatorCost cost_type_)
+    : lm_graph(graph), cost_type(cost_type_) {
 }
 
 
@@ -59,8 +56,8 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 /* Uniform cost partioning */
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    LandmarksGraph &graph, bool use_action_landmarks_)
-    : LandmarkCostAssignment(graph), use_action_landmarks(use_action_landmarks_) {
+    LandmarksGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_)
+    : LandmarkCostAssignment(graph, cost_type_), use_action_landmarks(use_action_landmarks_) {
 }
 
 
@@ -84,7 +81,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
         int lmn_status = node.get_status(false);
         if (lmn_status != lm_reached) {
             const set<int> &achievers = get_achievers(lmn_status, node);
-            assert(achievers.size() >= 1);
+            assert(!achievers.empty());
             if (use_action_landmarks && achievers.size() == 1) {
                 // We have found an action landmark for this state.
                 int op_id = *achievers.begin();
@@ -93,7 +90,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                     action_landmarks[op_id] = true;
                     const Operator &op = lm_graph.get_operator_for_lookup_index(
                         op_id);
-                    h += op.get_cost();
+                    h += get_adjusted_action_cost(op, cost_type);
                 }
             } else {
                 set<int>::const_iterator ach_it;
@@ -156,7 +153,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                 op_id);
             int num_achieved = achieved_lms_by_op[op_id];
             assert(num_achieved >= 1);
-            double shared_cost = double(op.get_cost()) / num_achieved;
+            double shared_cost = double(get_adjusted_action_cost(op, cost_type)) / num_achieved;
             min_cost = min(min_cost, shared_cost);
         }
         h += min_cost;
@@ -165,10 +162,9 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     return h;
 }
 
-
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarksGraph &graph)
-    : LandmarkCostAssignment(graph) {
+    LandmarksGraph &graph, OperatorCost cost_type)
+    : LandmarkCostAssignment(graph, cost_type) {
 #ifdef USE_LP
     si = new OsiXxxSolverInterface();
 #else
@@ -226,7 +222,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         for (int op_id = 0; op_id < g_operators.size(); ++op_id) {
             const Operator &op = g_operators[op_id];
             row_lb[op_id] = 0;
-            row_ub[op_id] = op.get_cost();
+            row_ub[op_id] = get_adjusted_action_cost(op, cost_type);
         }
 
         // Define the constraint matrix. The constraints are of the form
@@ -243,7 +239,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
             int lm_status = lm->get_status(false);
             if (lm_status != lm_reached) {
                 const set<int> &achievers = get_achievers(lm_status, *lm);
-                assert(achievers.size() >= 1);
+                assert(!achievers.empty());
                 set<int>::const_iterator ach_it;
                 for (ach_it = achievers.begin(); ach_it != achievers.end();
                      ++ach_it) {

@@ -30,6 +30,7 @@ class Action(object):
             precondition_tag_opt = parameters_tag_opt
         if precondition_tag_opt == ":precondition":
             precondition = conditions.parse_condition(iterator.next())
+            precondition = precondition.simplified()
             effect_tag = iterator.next()
         else:
             precondition = conditions.Conjunction([])

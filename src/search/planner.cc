@@ -54,8 +54,7 @@ int main(int argc, const char **argv) {
     search_timer.stop();
     g_timer.stop();
 
-    if (engine->found_solution())
-        save_plan(engine->get_plan());
+    engine->save_plan_if_necessary();
     engine->statistics();
     engine->heuristic_statistics();
     cout << "Search time: " << search_timer << endl;

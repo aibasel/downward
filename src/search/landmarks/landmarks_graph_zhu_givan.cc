@@ -314,10 +314,10 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     } else {
         common_options = LandmarksGraph::LandmarkGraphOptions(opts);
         LandmarksGraph *graph = new LandmarksGraphZhuGivan(common_options,
-                                                           new Exploration);
+                                                           new Exploration(common_options.heuristic_options));
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }
 }
 
-static LandmarkGraphPlugin _plugin("lmgraph_zhu_givan", _parse);
+static LandmarkGraphPlugin _plugin("lm_zg", _parse);

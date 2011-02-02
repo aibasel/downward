@@ -2,19 +2,23 @@
 #define CG_HEURISTIC_H
 
 #include "heuristic.h"
+#include "priority_queue.h"
 
 #include <string>
+#include <vector>
 
 class CGCache;
 class DomainTransitionGraph;
 class State;
+class ValueNode;
 
 class CGHeuristic : public Heuristic {
+    std::vector<AdaptiveQueue<ValueNode *> *> prio_queues;
+
     CGCache *cache;
     int cache_hits;
     int cache_misses;
 
-    enum {QUITE_A_LOT = 1000000};
     int helpful_transition_extraction_counter;
 
     void setup_domain_transition_graphs();
@@ -24,7 +28,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    CGHeuristic();
+    CGHeuristic(const Options &opts);
     ~CGHeuristic();
     virtual bool dead_ends_are_reliable() {return false; }
 };

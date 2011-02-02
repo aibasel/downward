@@ -14,7 +14,9 @@
 #include <limits>
 
 
-SelectiveMaxHeuristic::SelectiveMaxHeuristic() : num_always_calc(0) {
+SelectiveMaxHeuristic::SelectiveMaxHeuristic(const Options &opts) 
+    : Heuristic(options),
+      num_always_calc(0) {
     // default parameter
     min_training_set = 100;
     conf_threshold = 0.6;
@@ -155,7 +157,7 @@ void SelectiveMaxHeuristic::train() {
     cout << "Beginning Training" << endl;
     total_training_time.reset();
 
-    MaxHeuristic max;
+    MaxHeuristic max(g_default_heuristic_options);
     for (int i = 0; i < num_heuristics; i++) {
         max.add_heuristic(heuristics[i]);
     }
@@ -555,6 +557,7 @@ void SelectiveMaxHeuristic::print_statistics() const {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
     parser.add_list_option<Heuristic *>("heuristics");
     parser.add_option<double>("alpha", 1.0, "alpha");
     vector<string> classifier_types;
@@ -591,7 +594,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 
     SelectiveMaxHeuristic *heur = 0;
     if (!parser.dry_run()) {
-        heur = new SelectiveMaxHeuristic();
+        heur = new SelectiveMaxHeuristic(opts);
         for (unsigned int i = 0; i < heuristics_.size(); i++) {
             heur->add_heuristic(heuristics_[i]);
         }

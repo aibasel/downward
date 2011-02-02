@@ -1,17 +1,19 @@
-#include <cassert>
-#include <climits>
-#include <ext/hash_map>
-#include <ext/hash_set>
-
 #include "landmarks_graph_rpg_sasp.h"
+
 #include "landmarks_graph.h"
+#include "util.h"
+
 #include "../operator.h"
 #include "../state.h"
 #include "../globals.h"
 #include "../domain_transition_graph.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "util.h"
+
+#include <cassert>
+#include <limits>
+#include <ext/hash_map>
+#include <ext/hash_set>
 
 using namespace __gnu_cxx;
 
@@ -79,13 +81,22 @@ void LandmarksGraphNew::get_greedy_preconditions_for_lm(
 
 int LandmarksGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
                                                                           int> > &lvl_var) {
-    /* For now, the cost for each landmark is 1. When extending this to action
-     costs later, we will calculate here the minimum cost of operators that can
-     make bp true for the first time (according to lvl_var) */
-
-    bp->vars.size(); // silence compiler...
-    lvl_var.size(); // silence compiler...
-    return 1;
+    int min_cost = numeric_limits<int>::max();
+    // For each proposition in bp...
+    for (unsigned int k = 0; k < bp->vars.size(); k++) {
+        pair<int, int> b = make_pair(bp->vars[k], bp->vals[k]);
+        // ...look at all achieving operators
+        const vector<int> &ops = get_operators_including_eff(b);
+        for (unsigned i = 0; i < ops.size(); i++) {
+            const Operator &op = get_operator_for_lookup_index(ops[i]);
+            // and calculate the minimum cost of those that can make
+            // bp true for the first time according to lvl_var
+            if (_possibly_reaches_lm(op, lvl_var, bp))
+                min_cost = min(min_cost, get_adjusted_action_cost(op, lm_cost_type));
+        }
+    }
+    assert(min_cost < numeric_limits<int>::max());
+    return min_cost;
 }
 
 void LandmarksGraphNew::found_simple_lm_and_order(const pair<int, int> a,
@@ -324,7 +335,8 @@ void LandmarksGraphNew::approximate_lookahead_orders(
     // before the LM value (in the relaxed plan graph)
     hash_set<int> unreached(g_variable_domain[lmk.first]);
     for (int i = 0; i < g_variable_domain[lmk.first]; i++)
-        if (lvl_var[lmk.first][i] == INT_MAX && lmk.second != i)
+        if (lvl_var[lmk.first][i] == numeric_limits<int>::max()
+            && lmk.second != i)
             unreached.insert(i);
     // The set "exclude" will contain all those values of the LM variable that
     // cannot be reached before the LM value (as in "unreached") PLUS
@@ -385,7 +397,7 @@ void LandmarksGraphNew::find_forward_orders(
      */
     for (int i = 0; i < g_variable_domain.size(); i++)
         for (int j = 0; j < g_variable_domain[i]; j++) {
-            if (lvl_var[i][j] != INT_MAX)
+            if (lvl_var[i][j] != numeric_limits<int>::max())
                 continue;
 
             bool insert = true;
@@ -449,7 +461,7 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     } else {
         common_options = LandmarksGraph::LandmarkGraphOptions(opts);
         LandmarksGraph *graph = new LandmarksGraphNew(common_options,
-                                                      new Exploration);
+                                                      new Exploration(common_options.heuristic_options));
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }

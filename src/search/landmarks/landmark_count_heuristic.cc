@@ -1,7 +1,11 @@
-#include <climits>
-#include <cmath>
-
 #include "landmark_count_heuristic.h"
+
+#include "h_m_landmarks.h"
+#include "landmarks_graph_rpg_exhaust.h"
+#include "landmarks_graph_rpg_sasp.h"
+#include "landmarks_graph_rpg_search.h"
+#include "landmarks_graph_zhu_givan.h"
+
 #include "../globals.h"
 #include "../operator.h"
 #include "../option_parser.h"
@@ -9,21 +13,21 @@
 #include "../search_engine.h"
 #include "../successor_generator.h"
 #include "../timer.h"
-#include "h_m_landmarks.h"
-#include "landmarks_graph_rpg_exhaust.h"
-#include "landmarks_graph_rpg_sasp.h"
-#include "landmarks_graph_rpg_search.h"
-#include "landmarks_graph_zhu_givan.h"
+
+#include <cmath>
+#include <limits>
+
 
 using namespace std;
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
-    : lgraph(*opts.get<LandmarksGraph *>("lm_graph")),
+    : Heuristic(options),
+	  lgraph(*opts.get<LandmarksGraph *>("lm_graph")),
       exploration(lgraph.get_exploration()),
       lm_status_manager(lgraph) {
     cout << "Initializing landmarks count heuristic..." << endl;
     use_preferred_operators = opts.get<bool>("pref");
-    lookahead = INT_MAX;
+    lookahead = numeric_limits<int>::max();
     // When generating preferred operators, we plan towards
     // non-disjunctive landmarks only
     ff_search_disjunctive_lms = false;
@@ -31,7 +35,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     if (opts.get<bool>("admissible")) {
         use_cost_sharing = true;
         if (lgraph.is_using_reasonable_orderings()) {
-            cerr << "Reasonable orderings should not be used for admissble heuristics" << endl;
+            cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             ::exit(2);
         }
         if (!g_axioms.empty()) {
@@ -40,14 +44,14 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         }
         if (opts.get<bool>("optimal")) {
 #ifdef USE_LP
-            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph);
+            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph, cost_type);
 #else
             cerr << "You must build the planner with the USE_LP symbol defined." << endl
                  << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
             exit(1);
 #endif
         } else {
-            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, opts.get<bool>("alm"));
+            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, use_action_landmarks, cost_type);
         }
     } else {
         use_cost_sharing = false;
@@ -100,8 +104,6 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
         int needed_cost = lgraph.get_needed_cost();
 
         h = total_cost - reached_cost + needed_cost;
-        assert(-epsilon <= needed_cost);
-        assert(reached_cost - needed_cost >= -epsilon);
     }
 
     assert(h >= 0);
@@ -112,7 +114,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
     // are used where some actions have cost 0.
     if (h == 0 && !goal_reached) {
         assert(g_use_metric);
-        int max = 0;
+        bool all_costs_are_zero = true;
         //cout << "WARNING! Landmark heuristic is 0, but goal not reached" << endl;
         for (int i = 0; i < g_goal.size(); i++) {
             if (state[g_goal[i].first] != g_goal[i].second) {
@@ -120,13 +122,11 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
                 //<< g_goal[i].second << endl;
                 LandmarkNode *node_p = lgraph.landmark_reached(g_goal[i]);
                 assert(node_p != NULL);
-                int cost = node_p->min_cost;
-
-                if (cost > max)
-                    max = cost;
+                if (node_p->min_cost != 0)
+                    all_costs_are_zero = false;
             }
         }
-        assert(max == 0);
+        assert(all_costs_are_zero);
     }
 #endif
 
@@ -150,6 +150,8 @@ int LandmarkCountHeuristic::compute_heuristic(const State &state) {
     convert_lms(reached_lms, reached_lms_v);
     const int reached_lms_cost = lgraph.get_reached_cost();
 
+    // BUG/TODO/FIXME: This first test likely does the wrong thing in
+    // the presence of zero-cost landmarks.
     if (reached_lms_cost == lgraph.cost_of_landmarks()
         || !generate_helpful_actions(state, reached_lms)) {
         assert(exploration != NULL);
@@ -300,6 +302,7 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
+	Heuristic::add_options_to_parser(parser);
     parser.add_option<LandmarksGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");

@@ -1,30 +1,32 @@
 #ifndef FF_HEURISTIC_H
 #define FF_HEURISTIC_H
 
-#include "relaxation_heuristic.h"
+#include "additive_heuristic.h"
 
-#include <ext/hash_set>
+#include <vector>
 
-class FFHeuristic : public RelaxationHeuristic {
-    typedef __gnu_cxx::hash_set<const Operator *, hash_operator_ptr> RelaxedPlan;
+/*
+  TODO: In a better world, this should not derive from
+        AdditiveHeuristic. Rather, the common parts should be
+        implemented in a common base class. That refactoring could be
+        made at the same time at which we also unify this with the
+        other relaxation heuristics and the additional FF heuristic
+        implementation in the landmark code.
+*/
 
-    Proposition **reachable_queue_start;
-    Proposition **reachable_queue_read_pos;
-    Proposition **reachable_queue_write_pos;
 
-    void setup_exploration_queue();
-    void setup_exploration_queue_state(const State &state);
-    void relaxed_exploration();
-
-    void collect_relaxed_plan(Proposition *goal, RelaxedPlan &relaxed_plan);
-
-    int compute_hsp_add_heuristic();
-    int compute_ff_heuristic();
+class FFHeuristic : public AdditiveHeuristic {
+    // Relaxed plans are represented as a set of operators implemented
+    // as a bit vector.
+    typedef std::vector<bool> RelaxedPlan;
+    RelaxedPlan relaxed_plan;
+    void mark_preferred_operators_and_relaxed_plan(
+        const State &state, Proposition *goal);
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    FFHeuristic();
+    FFHeuristic(const HeuristicOptions &options);
     ~FFHeuristic();
 };
 

@@ -1,0 +1,4 @@
+#!/bin/sh
+# $1 - preprocessor output file
+
+gawk '{if ($1 == "end_variables") {if (max <= 255) print 1; else if (max <= 65535) print 2; else print 4; exit(0);} if (inside >= 2) {if ($2 > max) max = $2;} if (inside > 0) {inside++;} if ($1 == "begin_variables") {inside=1;}}' $1

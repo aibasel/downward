@@ -54,12 +54,11 @@ public:
     }
     virtual bool reach_state(const State &parent_state, const Operator &op,
                              const State &state);
-    virtual bool dead_ends_are_reliable() {
+    virtual bool dead_ends_are_reliable() const {
         return true;
     }
 
     virtual void reset();
-    enum {rpg_sasp = 0, zhu_givan = 1, exhaust = 2, search = 3, hmbased = 4};
 };
 
 #endif
