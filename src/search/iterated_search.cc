@@ -4,14 +4,16 @@
 #include <limits>
 
 IteratedSearch::IteratedSearch(const Options &opts)
-    : engine_configs(opts.get_list<ParseTree>("engine_configs")),
+    : SearchEngine(options),
+	  engine_configs(opts.get_list<ParseTree>("engine_configs")),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
       continue_on_fail(opts.get<bool>("continue_on_fail")),
       continue_on_solve(opts.get<bool>("continue_on_solve")) {
     last_phase_found_solution = false;
-    best_bound = numeric_limits<int>::max();
-    found_solution = false;
+    best_bound = bound;
+    iterated_found_solution = false;
+    plan_counter = opts.get<int>("plan_counter");
 }
 
 IteratedSearch::~IteratedSearch() {
@@ -34,9 +36,16 @@ SearchEngine *IteratedSearch::get_search_engine(
 }
 
 SearchEngine *IteratedSearch::create_phase(int p) {
-    if (p >= engine_configs.size()) {
-        if (repeat_last_phase) {
-            return get_search_engine(engine_configs.size() - 1);
+    if (p >= engine_config_start.size()) {
+        /* We've gone through all searches. We continue if
+           repeat_last_phase is true, but *not* if we didn't find a
+           solution the last time around, since then this search would
+           just behave the same way again (assuming determinism, which
+           we might not actually have right now, but strive for). So
+           this overrides continue_on_fail.
+        */
+        if (repeat_last_phase && last_phase_found_solution) {
+            return get_search_engine(engine_config_start.size() - 1);
         } else {
             return NULL;
         }
@@ -48,7 +57,7 @@ SearchEngine *IteratedSearch::create_phase(int p) {
 int IteratedSearch::step() {
     current_search = create_phase(phase);
     if (current_search == NULL) {
-        return (last_phase_found_solution) ? SOLVED : FAILED;
+        return found_solution() ? SOLVED : FAILED;
     }
     if (pass_bound) {
         current_search->set_bound(best_bound);
@@ -61,17 +70,16 @@ int IteratedSearch::step() {
     int plan_cost = 0;
     last_phase_found_solution = current_search->found_solution();
     if (last_phase_found_solution) {
-        found_solution = true;
+        iterated_found_solution = true;
         found_plan = current_search->get_plan();
-        plan_cost = save_plan(found_plan);
-        if (plan_cost < best_bound)
+        plan_cost = calculate_plan_cost(found_plan);
+        if (plan_cost < best_bound) {
+            ++plan_counter;
+            save_plan(found_plan, plan_counter);
             best_bound = plan_cost;
-        set_plan(found_plan);
+            set_plan(found_plan);
+        }
     }
-    phase_statistics.push_back(current_search->get_search_progress());
-    phase_solution_cost.push_back(plan_cost);
-    phase_found_solution.push_back(last_phase_found_solution);
-
     current_search->statistics();
     search_progress.inc_expanded(
         current_search->get_search_progress().get_expanded());
@@ -90,7 +98,7 @@ int IteratedSearch::step() {
 }
 
 int IteratedSearch::step_return_value() {
-    if (found_solution)
+    if (iterated_found_solution)
         cout << "Best solution cost so far: " << best_bound << endl;
 
     if (last_phase_found_solution) {
@@ -107,22 +115,23 @@ int IteratedSearch::step_return_value() {
             return IN_PROGRESS;
         } else {
             cout << "No solution found - stop searching" << endl;
-            return found_solution ? SOLVED : FAILED;
+            return iterated_found_solution ? SOLVED : FAILED;
         }
     }
 }
 
 void IteratedSearch::statistics() const {
-    for (int i = 0; i < phase_statistics.size(); i++) {
-        cout << "Phase " << i << endl;
-        phase_statistics[i].print_statistics();
-    }
-
-    cout << "Total" << endl;
+    cout << "Cumulative statistics:" << endl;
     search_progress.print_statistics();
 }
 
+void IteratedSearch::save_plan_if_necessary() const {
+    // Don't need to save here, as we automatically save after
+    // each successful search iteration.
+}
+
 static SearchEngine *_parse(OptionParser &parser) {
+	SearchEngine::add_options_to_parser(parser);
     parser.add_list_option<ParseTree>("engine_configs", "");
     parser.add_option<bool>("pass_bound", true,
                             "use bound from previous search");
@@ -132,6 +141,8 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "continue search after no solution found");
     parser.add_option<bool>("continue_on_solve", true,
                             "continue search after solution found");
+	parser.add_option<int>("plan_counter", 0,
+						   "start enumerating plans with this number");
 
     Options opts = parser.parse();
     if (parser.help_mode())

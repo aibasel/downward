@@ -8,7 +8,8 @@
 
 
 
-GoalCountHeuristic::GoalCountHeuristic() {
+GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
+    : Heuristic(opts) {
 }
 
 GoalCountHeuristic::~GoalCountHeuristic() {
@@ -29,11 +30,12 @@ int GoalCountHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.parse();
+	Heuristic::add_options_to_parser();
+    Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
     else
-        return new GoalCountHeuristic;
+        return new GoalCountHeuristic(opts);
 }
 
 

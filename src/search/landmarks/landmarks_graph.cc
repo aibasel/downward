@@ -1,20 +1,22 @@
-#include <vector>
-#include <list>
-#include <utility>
-#include <cassert>
-#include <map>
-#include <set>
-#include <ext/hash_map>
-#include <fstream>
-#include <sstream>
-#include <climits>
-
 #include "landmarks_graph.h"
+
+#include "util.h"
+
+#include "../exact_timer.h"
+#include "../globals.h"
 #include "../operator.h"
 #include "../state.h"
-#include "../globals.h"
-#include "../exact_timer.h"
-#include "util.h"
+
+#include <cassert>
+#include <fstream>
+#include <limits>
+#include <list>
+#include <map>
+#include <set>
+#include <sstream>
+#include <utility>
+#include <vector>
+#include <ext/hash_map>
 
 using namespace std;
 
@@ -69,7 +71,11 @@ LandmarksGraph::LandmarksGraph(LandmarkGraphOptions &options, Exploration *explo
     disjunctive_landmarks = options.disjunctive_landmarks;
     conjunctive_landmarks = options.conjunctive_landmarks;
     no_orders = options.no_orders;
-    discover_action_landmarks = options.discover_action_landmarks;
+    if (options.lm_cost_type < 0 || options.lm_cost_type >= MAX_OPERATOR_COST) {
+        cerr << "Illegal action cost type" << endl;
+        exit(2);
+    }
+    lm_cost_type = static_cast<OperatorCost>(options.lm_cost_type);
     generate_operators_lookups();
 }
 
@@ -180,15 +186,6 @@ void LandmarksGraph::set_landmark_ids() {
         ordered_nodes[id] = lmn;
         id++;
     }
-
-    ordered_action_landmarks.resize(action_landmarks.size());
-    id = 0;
-    for (set<const Operator *>::iterator alm_it =
-             action_landmarks.begin(); alm_it != action_landmarks.end(); alm_it++) {
-        ordered_action_landmarks[id] = *alm_it;
-        action_landmark_ids[*alm_it] = id;
-        id++;
-    }
 }
 
 LandmarkNode *LandmarksGraph::get_lm_for_index(int i) {
@@ -200,8 +197,6 @@ void LandmarksGraph::generate() {
     //cout << "generating landmarks" << endl;
     generate_landmarks();
 
-    if (discover_action_landmarks)
-        generate_action_landmarks();
     if (only_causal_landmarks)
         discard_noncausal_landmarks();
     if (!disjunctive_landmarks)
@@ -314,7 +309,7 @@ bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
      when a proposition / operator can be achieved / become applicable in the relaxed task.
      */
 
-    // Initialize lvl_op and lvl_var to INT_MAX
+    // Initialize lvl_op and lvl_var to numeric_limits<int>::max()
     if (compute_lvl_op) {
         lvl_op.resize(g_operators.size() + g_axioms.size());
         for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
@@ -323,12 +318,14 @@ bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
             const vector<PrePost> &prepost = op.get_pre_post();
             for (unsigned j = 0; j < prepost.size(); j++)
                 lvl_op[i].insert(make_pair(make_pair(prepost[j].var,
-                                                     prepost[j].post), INT_MAX));
+                                                     prepost[j].post),
+                                           numeric_limits<int>::max()));
         }
     }
     lvl_var.resize(g_variable_name.size());
     for (unsigned var = 0; var < g_variable_name.size(); var++) {
-        lvl_var[var].resize(g_variable_domain[var], INT_MAX);
+        lvl_var[var].resize(g_variable_domain[var],
+                            numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
@@ -346,9 +343,10 @@ bool LandmarksGraph::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     exploration->compute_reachability_with_excludes(lvl_var, lvl_op, level_out,
                                                     exclude_props, exclude_ops, compute_lvl_op);
 
-    // Test whether all goal propositions have a level of less than INT_MAX
+    // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (int i = 0; i < g_goal.size(); i++)
-        if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX)
+        if (lvl_var[g_goal[i].first][g_goal[i].second] ==
+            numeric_limits<int>::max())
             return false;
 
     return true;
@@ -364,10 +362,11 @@ bool LandmarksGraph::is_causal_landmark(const LandmarkNode &landmark) const {
         return true;
     vector<vector<int> > lvl_var;
     vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
-    // Initialize lvl_var to INT_MAX
+    // Initialize lvl_var to numeric_limits<int>::max()
     lvl_var.resize(g_variable_name.size());
     for (unsigned var = 0; var < g_variable_name.size(); var++) {
-        lvl_var[var].resize(g_variable_domain[var], INT_MAX);
+        lvl_var[var].resize(g_variable_domain[var],
+                            numeric_limits<int>::max());
     }
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
@@ -380,9 +379,10 @@ bool LandmarksGraph::is_causal_landmark(const LandmarkNode &landmark) const {
     exploration->compute_reachability_with_excludes(lvl_var, lvl_op, true,
                                                     exclude_props, exclude_ops, false);
 
-    // Test whether all goal propositions have a level of less than INT_MAX
+    // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (int i = 0; i < g_goal.size(); i++)
-        if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX)
+        if (lvl_var[g_goal[i].first][g_goal[i].second] ==
+            numeric_limits<int>::max())
             return true;
 
     return false;
@@ -625,6 +625,7 @@ bool LandmarksGraph::interferes(const LandmarkNode *node_a,
                     return true;
         }
 
+        /* // Experimentally commenting this out -- see issue202.
         // 3. Exists LM x, inconsistent x, b and x->_gn a
         const LandmarkNode &node = *node_a;
         for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
@@ -638,6 +639,7 @@ bool LandmarksGraph::interferes(const LandmarkNode *node_a,
                     return true;
             }
         }
+        */
     }
     // No inconsistency found
     return false;
@@ -797,6 +799,7 @@ void LandmarksGraph::dump_node(const LandmarkNode *node_p) const {
         cout << "}";
     if (node_p->in_goal)
         cout << "(goal)";
+    cout << " Achievers (" << node_p->possible_achievers.size() << ", " << node_p->first_achievers.size() << ")";
     cout << endl;
 }
 
@@ -1143,38 +1146,9 @@ int LandmarksGraph::calculate_lms_cost() const {
     return result;
 }
 
-void LandmarksGraph::count_shared_costs() {
-    shared_landmarks_cost = 0;
-    reached_shared_cost = 0;
-    needed_shared_cost = 0;
-    not_unused_alm_effect_needed_shared_cost = 0;
-    not_unused_alm_effect_reached_shared_cost = 0;
-    set<LandmarkNode *>::iterator node_it;
-    for (node_it = nodes.begin(); node_it != nodes.end(); ++node_it) {
-        LandmarkNode &node = **node_it;
-
-        shared_landmarks_cost += node.shared_cost;
-        if (node.status == lm_reached) {
-            reached_shared_cost += node.shared_cost;
-            if (!node.effect_of_ununsed_alm) {
-                not_unused_alm_effect_reached_shared_cost += node.shared_cost;
-            }
-        } else if (node.status == lm_needed_again) {
-            reached_shared_cost += node.shared_cost;
-            needed_shared_cost += node.shared_cost;
-            if (!node.effect_of_ununsed_alm) {
-                not_unused_alm_effect_reached_shared_cost += node.shared_cost;
-                not_unused_alm_effect_needed_shared_cost += node.shared_cost;
-            }
-        }
-    }
-}
-
 void LandmarksGraph::count_costs() {
     reached_cost = 0;
-    reached_shared_cost = 0.0;
     needed_cost = 0;
-    needed_shared_cost = 0.0;
 
     set<LandmarkNode *>::iterator node_it;
     for (node_it = nodes.begin(); node_it != nodes.end(); ++node_it) {
@@ -1183,13 +1157,10 @@ void LandmarksGraph::count_costs() {
         switch (node.status) {
         case lm_reached:
             reached_cost += node.min_cost;
-            reached_shared_cost += node.shared_cost;
             break;
         case lm_needed_again:
             reached_cost += node.min_cost;
-            reached_shared_cost += node.shared_cost;
             needed_cost += node.min_cost;
-            needed_shared_cost += node.shared_cost;
             break;
         case lm_not_reached:
             break;
@@ -1207,7 +1178,7 @@ bool LandmarksGraph::relaxed_task_solvable_without_operator(
      when a proposition / operator can be achieved / become applicable in the relaxed task.
      */
 
-    // Initialize lvl_op and lvl_var to INT_MAX
+    // Initialize lvl_op and lvl_var to numeric_limits<int>::max()
     if (compute_lvl_op) {
         lvl_op.resize(g_operators.size() + g_axioms.size());
         for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
@@ -1216,12 +1187,14 @@ bool LandmarksGraph::relaxed_task_solvable_without_operator(
             const vector<PrePost> &prepost = op.get_pre_post();
             for (unsigned j = 0; j < prepost.size(); j++)
                 lvl_op[i].insert(make_pair(make_pair(prepost[j].var,
-                                                     prepost[j].post), INT_MAX));
+                                                     prepost[j].post),
+                                           numeric_limits<int>::max()));
         }
     }
     lvl_var.resize(g_variable_name.size());
     for (unsigned var = 0; var < g_variable_name.size(); var++) {
-        lvl_var[var].resize(g_variable_domain[var], INT_MAX);
+        lvl_var[var].resize(g_variable_domain[var],
+                            numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
@@ -1233,51 +1206,21 @@ bool LandmarksGraph::relaxed_task_solvable_without_operator(
     exploration->compute_reachability_with_excludes(lvl_var, lvl_op, level_out,
                                                     exclude_props, exclude_ops, compute_lvl_op);
 
-    // Test whether all goal propositions have a level of less than INT_MAX
+    // Test whether all goal propositions have a level of less than
+    // numeric_limits<int>::max()
     for (int i = 0; i < g_goal.size(); i++) {
-        if (lvl_var[g_goal[i].first][g_goal[i].second] == INT_MAX) {
+        if (lvl_var[g_goal[i].first][g_goal[i].second] ==
+            numeric_limits<int>::max()) {
             return false;
         }
     }
     return true;
 }
 
-void LandmarksGraph::generate_action_landmarks() {
-    cout << "Discovering action landmarks" << endl;
-    int alm = 0;
-    for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
-        const Operator &op = get_operator_for_lookup_index(i);
-        bool lm = check_action_landmark(&op);
-        if (lm) {
-            action_landmarks.insert(&op);
-            //if (add_landmarks_from_action_landmarks) {
-            //add_landmarks_from_action(&op);
-            //}
-            alm++;
-        }
-    }
-    cout << "Discovered " << alm << " action landmarks" << endl;
-
-    /*
-     if (g_verbose) {
-     cout << "Action landmarks: " << alm << endl;
-     }
-     */
-}
-
-bool LandmarksGraph::check_action_landmark(const Operator *op) {
-    /* Check if operator is an action landmark  */
-
-    vector<vector<int> > lvl_var;
-    vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
-
-    return !relaxed_task_solvable_without_operator(lvl_var, lvl_op, true, op,
-                                                   false);
-}
-
-void LandmarksGraph::compute_predecessor_information(LandmarkNode *bp, vector<
-                                                         vector<int> > &lvl_var, vector<hash_map<pair<int, int>, int,
-                                                                                                 hash_int_pair> > &lvl_op) {
+void LandmarksGraph::compute_predecessor_information(
+    LandmarkNode *bp,
+    vector<vector<int> > &lvl_var, vector<hash_map<pair<int, int>, int,
+                                                   hash_int_pair> > &lvl_op) {
     /* Collect information at what time step propositions can be reached
      (in lvl_var) in a relaxed plan that excludes bp, and similarly
      when operators can be applied (in lvl_op).  */
@@ -1332,19 +1275,6 @@ int LandmarksGraph::relaxed_plan_length_without(LandmarkNode *exclude) {
     return val;
 }
 
-
-const Operator *LandmarksGraph::get_alm_for_index(int i) const {
-    return ordered_action_landmarks[i];
-}
-
-// return action landmark id if op is an action landmark, -1 otherwisr
-int LandmarksGraph::get_alm_id(const Operator *op) const {
-    map<const Operator *, int>::const_iterator it = action_landmark_ids.find(op);
-    if (it != action_landmark_ids.end())
-        return it->second;
-    return -1;
-}
-
 // static function to generate landmarks and print message
 void LandmarksGraph::build_lm_graph(LandmarksGraph *lm_graph) {
     ExactTimer lm_generation_timer;
@@ -1367,7 +1297,7 @@ LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions()
       disjunctive_landmarks(true),
       conjunctive_landmarks(true),
       no_orders(false),
-      discover_action_landmarks(false) {
+      lm_cost_type(NORMAL) {
 }
 
 LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions(const Options &opts)
@@ -1376,10 +1306,14 @@ LandmarksGraph::LandmarkGraphOptions::LandmarkGraphOptions(const Options &opts)
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
       no_orders(opts.get<bool>("no_orders")),
-      discover_action_landmarks(opts.get<bool>("discover_action_landmarks")) {
+      lm_cost_type(opts.get<int>("lm_cost_type")) {
 }
 
 void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    // TODO: this is an ugly hack, which we need to pass the cost_type parameter to the
+    // Exploration class, which is generated by the LandmarkGraph's create method
+
     parser.add_option<bool>("reasonable_orders",
                             reasonable_orders,
                             "generate reasonable orders");
@@ -1395,7 +1329,7 @@ void LandmarksGraph::LandmarkGraphOptions::add_option_to_parser(OptionParser &pa
     parser.add_option<bool>("no_orders",
                             no_orders,
                             "discard all orderings");
-    parser.add_option<bool>("discover_action_landmarks",
-                            discover_action_landmarks,
-                            "discover action landmarks in preprocessing");
+    parser.add_option<bool>("lm_cost_type",
+                            lm_cost_type,
+                            "landmark action cost adjustment");
 }

@@ -44,7 +44,7 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     } else {
         common_options = LandmarksGraph::LandmarkGraphOptions(opts);
         LandmarksGraph *graph =
-            new LandmarksGraphExhaust(common_options, new Exploration);
+            new LandmarksGraphExhaust(common_options, new Exploration(common_options.heuristic_options));
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }

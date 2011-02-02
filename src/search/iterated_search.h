@@ -9,11 +9,11 @@
 class Options;
 
 class IteratedSearch : public SearchEngine {
-private:
     int phase;
     bool last_phase_found_solution;
     int best_bound;
-    bool found_solution;
+    bool iterated_found_solution;
+    int plan_counter;
 
     SearchEngine *current_search;
     string current_search_name;
@@ -24,10 +24,6 @@ private:
     bool continue_on_fail;
     bool continue_on_solve;
 
-    vector<SearchProgress> phase_statistics;
-    vector<bool> phase_found_solution;
-    vector<int> phase_solution_cost;
-
     SearchEngine *get_search_engine(int engine_config_start_index);
     SearchEngine *create_phase(int p);
     int step_return_value();
@@ -37,6 +33,7 @@ private:
 public:
     IteratedSearch(const Options &opts);
     virtual ~IteratedSearch();
+    virtual void save_plan_if_necessary() const;
     void statistics() const;
 };
 

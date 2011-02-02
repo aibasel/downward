@@ -1,8 +1,18 @@
 #include "util.h"
 
+#include "landmarks_graph.h"
+
+#include "../operator.h"
+
+#include <limits>
+
+using namespace std;
+using namespace __gnu_cxx;
+
 bool _possibly_fires(const vector<Prevail> &prevail, const vector<vector<int> > &lvl_var) {
     for (int j = 0; j < prevail.size(); j++)
-        if (lvl_var[prevail[j].var][prevail[j].prev] == INT_MAX)
+        if (lvl_var[prevail[j].var][prevail[j].prev] ==
+            numeric_limits<int>::max())
             return false;
     return true;
 }
@@ -31,7 +41,8 @@ bool _possibly_reaches_lm(const Operator &o, const vector<vector<int> > &lvl_var
     // Otherwise, operator is not applicable
     const vector<Prevail> &prevail = o.get_prevail();
     for (unsigned i = 0; i < prevail.size(); i++)
-        if (lvl_var[prevail[i].var][prevail[i].prev] == INT_MAX)
+        if (lvl_var[prevail[i].var][prevail[i].prev] ==
+            numeric_limits<int>::max())
             return false;
 
     // Test remaining preconditions and conditions in effects
@@ -42,7 +53,8 @@ bool _possibly_reaches_lm(const Operator &o, const vector<vector<int> > &lvl_var
         // If there is a precondition on the effect, check whether it can be reached
         // Otherwise, operator is not applicable
         if (prepost[i].pre != -1)
-            if (lvl_var[prepost[i].var][prepost[i].pre] == INT_MAX)
+            if (lvl_var[prepost[i].var][prepost[i].pre] ==
+                numeric_limits<int>::max())
                 return false;
 
         // If lmp is a conditional effect, check the condition

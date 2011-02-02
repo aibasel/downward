@@ -9,9 +9,10 @@
 
 
 
-HMHeuristic::HMHeuristic(const Options &opts) : m(opts.get<int>("m")) {
-    MAX_VALUE = 100000;
-    //MAX_VALUE = numeric_limits<int>::max();
+HMHeuristic::HMHeuristic(const Options &opts)
+	: Heuristic(options),
+	  m(opts.get<int>("m")) {
+      MAX_VALUE = numeric_limits<int>::max();
 }
 
 HMHeuristic::~HMHeuristic() {
@@ -75,7 +76,7 @@ void HMHeuristic::update_hm_table() {
                 get_operator_eff(op, eff);
                 generate_all_partial_tuple(eff, partial_eff);
                 for (int i = 0; i < partial_eff.size(); i++) {
-                    update_hm_entry(partial_eff[i], c1 + op.get_cost());
+                    update_hm_entry(partial_eff[i], c1 + get_adjusted_cost(op));
 
                     if (partial_eff[i].size() < m) {
                         extend_tuple(partial_eff[i], op);
@@ -129,7 +130,7 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
             if (is_valid) {
                 int c2 = eval(pre);
                 if (c2 < MAX_VALUE) {
-                    update_hm_entry(entry, c2 + op.get_cost());
+                    update_hm_entry(entry, c2 + get_adjusted_cost(op));
                 }
             }
         }
@@ -217,6 +218,7 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
     parser.add_option<int>("m");
     Options opts = parser.parse();
     if (parser.dry_run())

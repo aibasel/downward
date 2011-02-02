@@ -33,7 +33,9 @@ protected:
     state_var_t *current_predecessor_buffer;
     const Operator *current_operator;
     int current_g;
+    int current_real_g;
 
+    void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     virtual void initialize();
     virtual int step();
 
@@ -48,7 +50,6 @@ public:
     GeneralLazyBestFirstSearch(const Options &opts);
     virtual ~GeneralLazyBestFirstSearch();
 
-    void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     virtual void statistics() const;
 };
 

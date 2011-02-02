@@ -1,14 +1,21 @@
 #include "blind_search_heuristic.h"
 
 #include "globals.h"
+#include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "state.h"
 
+#include <limits>
+#include <utility>
+using namespace std;
 
-
-
-BlindSearchHeuristic::BlindSearchHeuristic() {
+BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
+    : Heuristic(opts) {
+    min_operator_cost = numeric_limits<int>::max();
+    for (int i = 0; i < g_operators.size(); ++i)
+        min_operator_cost = min(min_operator_cost,
+                                get_adjusted_cost(g_operators[i]));
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {
@@ -19,29 +26,19 @@ void BlindSearchHeuristic::initialize() {
 }
 
 int BlindSearchHeuristic::compute_heuristic(const State &state) {
-    bool is_goal = test_goal(state);
-
-    if (is_goal)
+    if (test_goal(state))
         return 0;
     else
-        return g_min_action_cost;
-
-    /*
-for(int i = 0; i < g_goal.size(); i++) {
-    int var = g_goal[i].first, value = g_goal[i].second;
-    if(state[var] != value)
-        return 1;
-}
-return 0;
-*/
+        return min_operator_cost;
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.parse();
+	Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
     else
-        return new BlindSearchHeuristic();
+        return new BlindSearchHeuristic(opts);
 }
 
 static ScalarEvaluatorPlugin _plugin("blind", _parse);

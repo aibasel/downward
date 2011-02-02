@@ -4,7 +4,7 @@
 #include "../state.h"
 
 #include <cassert>
-#include <climits>
+#include <limits>
 
 using namespace std;
 using namespace __gnu_cxx;
@@ -27,7 +27,8 @@ using namespace __gnu_cxx;
 */
 
 // Construction and destruction
-Exploration::Exploration() {
+Exploration::Exploration(const HeuristicOptions &options)
+    : Heuristic(options) {
     cout << "Initializing Exploration..." << endl;
 
     // Build propositions.
@@ -93,7 +94,7 @@ void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_g
 
 void Exploration::build_unary_operators(const Operator &op) {
     // Note: changed from the original to allow sorting of operator conditions
-    int base_cost = op.get_cost();
+    int base_cost = get_adjusted_cost(op);
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<ExProposition *> precondition;
@@ -156,7 +157,7 @@ void Exploration::setup_exploration_queue(const State &state,
                                           const hash_set<const Operator *,
                                                          ex_hash_operator_ptr> &excluded_ops,
                                           bool use_h_max = false) {
-    reachable_queue.clear();
+    prop_queue.clear();
 
     for (int var = 0; var < propositions.size(); var++) {
         for (int value = 0; value < propositions[var].size(); value++) {
@@ -202,46 +203,40 @@ void Exploration::setup_exploration_queue(const State &state,
 
 void Exploration::relaxed_exploration(bool use_h_max = false, bool level_out = false) {
     int unsolved_goals = termination_propositions.size();
-    for (int distance = 0; distance < reachable_queue.size(); distance++) {
-        for (;;) {
-            Bucket &bucket = reachable_queue[distance];
-            // NOTE: Cannot set "bucket" outside the loop because the
-            //       reference can change if reachable_queue is
-            //       resized.
-            if (bucket.empty())
-                break;
-            ExProposition *prop = bucket.back();
-            bucket.pop_back();
-            int prop_cost;
-            if (use_h_max)
-                prop_cost = prop->h_max_cost;
-            else
-                prop_cost = prop->h_add_cost;
-            assert(prop_cost <= distance);
-            if (prop_cost < distance)
+    while (!prop_queue.empty()) {
+        pair<int, ExProposition *> top_pair = prop_queue.pop();
+        int distance = top_pair.first;
+        ExProposition *prop = top_pair.second;
+
+        int prop_cost;
+        if (use_h_max)
+            prop_cost = prop->h_max_cost;
+        else
+            prop_cost = prop->h_add_cost;
+        assert(prop_cost <= distance);
+        if (prop_cost < distance)
+            continue;
+        if (!level_out && prop->is_termination_condition && --unsolved_goals == 0)
+            return;
+        const vector<ExUnaryOperator *> &triggered_operators = prop->precondition_of;
+        for (int i = 0; i < triggered_operators.size(); i++) {
+            ExUnaryOperator *unary_op = triggered_operators[i];
+            if (unary_op->h_add_cost == -2) // operator is not applied
                 continue;
-            if (!level_out && prop->is_termination_condition && --unsolved_goals == 0)
-                return;
-            const vector<ExUnaryOperator *> &triggered_operators = prop->precondition_of;
-            for (int i = 0; i < triggered_operators.size(); i++) {
-                ExUnaryOperator *unary_op = triggered_operators[i];
-                if (unary_op->h_add_cost == -2) // operator is not applied
-                    continue;
-                unary_op->unsatisfied_preconditions--;
-                unary_op->h_add_cost += prop_cost;
-                unary_op->h_max_cost = max(prop_cost + unary_op->base_cost,
-                                           unary_op->h_max_cost);
-                unary_op->depth = max(unary_op->depth, prop->depth);
-                assert(unary_op->unsatisfied_preconditions >= 0);
-                if (unary_op->unsatisfied_preconditions == 0) {
-                    int depth = unary_op->op->is_axiom() ? unary_op->depth : unary_op->depth + 1;
-                    if (use_h_max)
-                        enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
-                                             depth, unary_op, use_h_max);
-                    else
-                        enqueue_if_necessary(unary_op->effect, unary_op->h_add_cost,
-                                             depth, unary_op, use_h_max);
-                }
+            unary_op->unsatisfied_preconditions--;
+            unary_op->h_add_cost += prop_cost;
+            unary_op->h_max_cost = max(prop_cost + unary_op->base_cost,
+                                       unary_op->h_max_cost);
+            unary_op->depth = max(unary_op->depth, prop->depth);
+            assert(unary_op->unsatisfied_preconditions >= 0);
+            if (unary_op->unsatisfied_preconditions == 0) {
+                int depth = unary_op->op->is_axiom() ? unary_op->depth : unary_op->depth + 1;
+                if (use_h_max)
+                    enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
+                                         depth, unary_op, use_h_max);
+                else
+                    enqueue_if_necessary(unary_op->effect, unary_op->h_add_cost,
+                                         depth, unary_op, use_h_max);
             }
         }
     }
@@ -255,16 +250,12 @@ void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
         prop->h_max_cost = cost;
         prop->depth = depth;
         prop->reached_by = op;
-        if (cost >= reachable_queue.size())
-            reachable_queue.resize(cost + 1);
-        reachable_queue[cost].push_back(prop);
+        prop_queue.push(cost, prop);
     } else if (!use_h_max && (prop->h_add_cost == -1 || prop->h_add_cost > cost)) {
         prop->h_add_cost = cost;
         prop->depth = depth;
         prop->reached_by = op;
-        if (cost >= reachable_queue.size())
-            reachable_queue.resize(cost + 1);
-        reachable_queue[cost].push_back(prop);
+        prop_queue.push(cost, prop);
     }
     if (use_h_max)
         assert(prop->h_max_cost != -1 &&
@@ -320,7 +311,7 @@ int Exploration::compute_ff_heuristic(const State &state) {
         int cost = 0;
         RelaxedPlan::iterator it = relaxed_plan.begin();
         for (; it != relaxed_plan.end(); ++it)
-            cost += (*it)->get_cost();
+            cost += get_adjusted_cost(**it);
         return cost;
     }
 }
@@ -407,12 +398,12 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
                 ExProposition *prop = op.precondition[i];
                 if (prop->h_max_cost == -1) {
                     // Operator cannot be applied due to unreached precondition
-                    op.h_max_cost = INT_MAX;
+                    op.h_max_cost = numeric_limits<int>::max();
                     break;
                 } else if (op.h_max_cost < prop->h_max_cost + op.base_cost)
                     op.h_max_cost = prop->h_max_cost + op.base_cost;
             }
-            if (op.h_max_cost == INT_MAX)
+            if (op.h_max_cost == numeric_limits<int>::max())
                 break;
             int op_index = operator_index[op.op];
             // We subtract 1 to keep semantics for landmark code:
@@ -483,7 +474,7 @@ int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
         if (heuristic_recomputation_needed) {
             prepare_heuristic_computation(state);
         }
-        int min_cost = INT_MAX;
+        int min_cost = numeric_limits<int>::max();
         ExProposition *target = NULL;
         for (int i = 0; i < termination_propositions.size(); i++) {
             const int prop_cost = termination_propositions[i]->h_add_cost;
@@ -499,7 +490,7 @@ int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
         }
         assert(target != NULL);
         relaxed_plan.resize(2 * min_cost);
-        assert(exported_ops.size() == 0);
+        assert(exported_ops.empty());
         collect_ha(target, relaxed_plan, state);
     } else {
         // search for original goals of the task
