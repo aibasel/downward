@@ -234,7 +234,7 @@ static SearchEngine *_parse(OptionParser &parser) {
 		return 0;
 
 	if (opts.get_list<Heuristic *>("heuristics").empty())
-		parser.error();
+		parser.error("list of heuristics must not be empty");
 
     if (parser.dry_run())
         return 0;

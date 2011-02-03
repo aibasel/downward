@@ -201,7 +201,6 @@ AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
-HeuristicOptions g_default_heuristic_options;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";

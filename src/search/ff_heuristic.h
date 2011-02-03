@@ -26,7 +26,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    FFHeuristic(const HeuristicOptions &options);
+    FFHeuristic(const Options &options);
     ~FFHeuristic();
 };
 

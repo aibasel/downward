@@ -8,21 +8,15 @@ using namespace std;
 #include "timer.h"
 #include "option_parser.h"
 
-SearchEngine::SearchEngine(const SearchEngineOptions &options)
-    : search_space(static_cast<OperatorCost>(options.cost_type)) {
+SearchEngine::SearchEngine(const Options &opts)
+    : search_space(OperatorCost(opts.get_enum("cost_type"))),
+      cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     solved = false;
-    if (options.bound < 0) {
-        cerr << "error: negative cost bound " << options.bound << endl;
+    if (opts.get<int>("bound") < 0) {
+        cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
         exit(2);
     }
-    bound = options.bound;
-
-    if (options.cost_type < 0 || options.cost_type >= MAX_OPERATOR_COST) {
-        cerr << "error: unknown operator cost type: " << options.cost_type << endl;
-        exit(2);
-    }
-
-    cost_type = static_cast<OperatorCost>(options.cost_type);
+    bound = opts.get<int>("bound");
 }
 
 SearchEngine::~SearchEngine() {
@@ -74,21 +68,18 @@ int SearchEngine::get_adjusted_cost(const Operator &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 
-
-SearchEngineOptions::SearchEngineOptions()
-    : cost_type(NORMAL),
-      bound(numeric_limits<int>::max()) {
+void SearchEngine::add_options_to_parser(OptionParser &parser) {
+    vector<string> cost_types;
+    cost_types.push_back("NORMAL");
+    cost_types.push_back("ONE");
+    cost_types.push_back("PLUSONE");
+    parser.add_enum_option("cost_type",
+                                  cost_types,
+                                  "NORMAL",
+                                  "operator cost adjustment type");
+    parser.add_option<int>("bound",
+                           numeric_limits<int>::max(),
+                                 "bound on plan cost");
 }
 
-SearchEngineOptions::~SearchEngineOptions() {
-}
 
-void SearchEngineOptions::add_options_to_parser(
-    NamedOptionParser &option_parser) {
-    option_parser.add_int_option("cost_type",
-                                 &cost_type,
-                                 "operator cost adjustment type");
-    option_parser.add_int_option("bound",
-                                 &bound,
-                                 "bound on plan cost", true);
-}
