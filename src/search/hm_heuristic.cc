@@ -10,7 +10,7 @@
 
 
 HMHeuristic::HMHeuristic(const Options &opts)
-	: Heuristic(options),
+	: Heuristic(opts),
 	  m(opts.get<int>("m")) {
       MAX_VALUE = numeric_limits<int>::max();
 }

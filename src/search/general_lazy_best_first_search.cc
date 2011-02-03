@@ -12,7 +12,7 @@
 static const int DEFAULT_LAZY_BOOST = 1000;
 
 GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(const Options &opts)
-    : SearchEngine(options),
+    : SearchEngine(opts),
 	  open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       succ_mode(pref_first),

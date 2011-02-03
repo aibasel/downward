@@ -1,10 +1,10 @@
 #include "iterated_search.h"
 #include "plugin.h"
-#include "tree_util.hh"
+#include "ext/tree_util.hh"
 #include <limits>
 
 IteratedSearch::IteratedSearch(const Options &opts)
-    : SearchEngine(options),
+    : SearchEngine(opts),
 	  engine_configs(opts.get_list<ParseTree>("engine_configs")),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
@@ -36,7 +36,7 @@ SearchEngine *IteratedSearch::get_search_engine(
 }
 
 SearchEngine *IteratedSearch::create_phase(int p) {
-    if (p >= engine_config_start.size()) {
+    if (p >= engine_configs.size()) {
         /* We've gone through all searches. We continue if
            repeat_last_phase is true, but *not* if we didn't find a
            solution the last time around, since then this search would
@@ -45,7 +45,7 @@ SearchEngine *IteratedSearch::create_phase(int p) {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            return get_search_engine(engine_config_start.size() - 1);
+            return get_search_engine(engine_configs.size() - 1);
         } else {
             return NULL;
         }

@@ -11,7 +11,7 @@ SumEvaluator::SumEvaluator(const Options &opts)
 }
 
 SumEvaluator::SumEvaluator(const std::vector<ScalarEvaluator *> &evals)
-    : CombiningEvaluators(evals) {
+    : CombiningEvaluator(evals) {
 }
 
 SumEvaluator::~SumEvaluator() {

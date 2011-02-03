@@ -13,7 +13,7 @@ protected:
 public:
     SumEvaluator(const Options &opts);
     SumEvaluator(const std::vector<ScalarEvaluator *> &evals);
-    ~SumEvaluator();;
+    ~SumEvaluator();
 };
 
 #endif

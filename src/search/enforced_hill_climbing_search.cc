@@ -7,11 +7,10 @@
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
 	const Options &opts)
-    : SearchEngine(opts)
+    : SearchEngine(opts),
 	  heuristic(opts.get<Heuristic *>("h")),
       use_preferred(false),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
-      use_cost_for_bfs(opts.get<bool>("bfs_use_cost")),
       current_state(*g_initial_state),
       num_ehc_phases(0) {
     search_progress.add_heuristic(heuristic);
