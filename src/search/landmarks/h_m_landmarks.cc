@@ -574,8 +574,9 @@ bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
            inconsistent_facts[var1][val1].end();
 }
 
-HMLandmarks::HMLandmarks(LandmarkGraphOptions &options, Exploration *expl, int m)
-    : LandmarksGraph(options, expl), m_(m) {
+HMLandmarks::HMLandmarks(const Options &opts)
+    : LandmarksGraph(opts), 
+      m_(opts.get<int>("m")) {
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
     // need this to be able to print propositions for debugging
     // already called in global.cc
@@ -1016,24 +1017,19 @@ void HMLandmarks::generate_landmarks() {
 }
 
 static LandmarksGraph *_parse(OptionParser &parser) {
-	//TODO: change the way landmarks common_options are handled, see SearchEngine and Heuristic
-    LandmarksGraph::LandmarkGraphOptions common_options;
-    common_options.add_option_to_parser(parser);
+    LandmarksGraph::add_options_to_parser(parser);
     parser.add_option<int>("m", 2, "m (as in h^m)");
 
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
 
-    opts.set("expl", new Exploration);
+    opts.set("expl", new Exploration(opts));
 
     if (parser.dry_run()) {
         return 0;
     } else {
-        LandmarksGraph::LandmarkGraphOptions lmg_opts(opts);
-        LandmarksGraph *graph = new HMLandmarks(  //there was a problem with a reference to a temporary object in the HMLandmarks initialization list when trying to do this in the new 'normal' way, so I'll leave it like this for now.
-            lmg_opts,
-            opts.get<Exploration *>("expl"), opts.get<int>("m"));
+        LandmarksGraph *graph = new HMLandmarks(opts);
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }

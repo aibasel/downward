@@ -35,6 +35,7 @@ protected:
     int get_adjusted_cost(const Operator &op) const;
 public:
     Heuristic(const Options &options);
+    Heuristic(); //construct with default values
     virtual ~Heuristic();
 
     void evaluate(const State &state);

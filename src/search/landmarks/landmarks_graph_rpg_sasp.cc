@@ -450,18 +450,15 @@ void LandmarksGraphNew::add_lm_forward_orders() {
 
 
 static LandmarksGraph *_parse(OptionParser &parser) {
-    LandmarksGraph::LandmarkGraphOptions common_options;
-
-    common_options.add_option_to_parser(parser);
+    LandmarksGraph::add_options_to_parser(parser);;
 
     Options opts = parser.parse();
 
     if (parser.dry_run()) {
         return 0;
     } else {
-        common_options = LandmarksGraph::LandmarkGraphOptions(opts);
-        LandmarksGraph *graph = new LandmarksGraphNew(common_options,
-                                                      new Exploration(common_options.heuristic_options));
+        opts.set<Exploration *>("explor", new Exploration(opts));
+        LandmarksGraph *graph = new LandmarksGraphNew(opts);
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }

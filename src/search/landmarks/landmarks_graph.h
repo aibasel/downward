@@ -125,20 +125,7 @@ typedef hash_set<LandmarkNode *, hash_pointer> LandmarkSet;
 
 class LandmarksGraph {
 public:
-    struct LandmarkGraphOptions {
-        bool reasonable_orders;
-        bool only_causal_landmarks;
-        bool disjunctive_landmarks;
-        bool conjunctive_landmarks;
-        bool no_orders;
-        HeuristicOptions heuristic_options;
-        int lm_cost_type;
-
-        LandmarkGraphOptions();
-        LandmarkGraphOptions(const Options &opts);
-
-        void add_option_to_parser(OptionParser &parser);
-    };
+    static void add_options_to_parser(OptionParser &parser);
     struct Pddl_proposition {
         string predicate;
         vector<string> arguments;
@@ -153,7 +140,7 @@ public:
     };
     void rm_landmark_node(LandmarkNode *node);
     void rm_landmark(const pair<int, int> &lmk);
-    LandmarksGraph(LandmarkGraphOptions &options, Exploration *explor);
+    LandmarksGraph(const Options &opts);
     virtual ~LandmarksGraph() {}
 
     void print_proposition(const pair<int, int> &fluent) const;

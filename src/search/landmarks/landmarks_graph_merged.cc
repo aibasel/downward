@@ -6,14 +6,10 @@
 
 using namespace std;
 
-static LandmarkGraphPlugin landmarks_graph_merged_plugin(
-    "lm_merged", LandmarksGraphMerged::create);
 
-LandmarksGraphMerged::LandmarksGraphMerged(
-    LandmarkGraphOptions &options, Exploration *exploration,
-    const vector<LandmarksGraph *> &lm_graphs_)
-    : LandmarksGraph(options, exploration),
-      lm_graphs(lm_graphs_) {
+LandmarksGraphMerged::LandmarksGraphMerged(const Options &opts)
+    : LandmarksGraph(opts),
+      lm_graphs(opts.get_list<LandmarksGraph *>("lm_graphs")) {
 }
 
 LandmarksGraphMerged::~LandmarksGraphMerged() {
@@ -114,42 +110,27 @@ void LandmarksGraphMerged::generate_landmarks() {
 }
 
 
-LandmarksGraph *LandmarksGraphMerged::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarksGraph::LandmarkGraphOptions common_options;
+LandmarksGraph *_parse(OptionParser &parser) {
+    LandmarksGraph::add_options_to_parser(parser);
+    parser.add_list_option<LandmarksGraph *>("lm_graphs");
 
-
-    vector<LandmarksGraph *> lm_graphs_;
-    OptionParser::instance()->parse_landmark_graph_list(config, start + 2,
-                                                        end, false, lm_graphs_,
-                                                        dry_run);
-
-    if (lm_graphs_.empty()) {
-        throw ParseError(end);
-    }
-    end++;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-
-        common_options.add_option_to_parser(option_parser);
-
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")") {
-        throw ParseError(end);
+    Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
+    
+    if (opts.get_list<LandmarksGraph *>("lm_graphs").empty()) {
+        parser.error("list of landmarks graph must not be empty");
     }
 
-
-    if (dry_run) {
+    if (parser.dry_run()) {
         return 0;
     } else {
-        LandmarksGraph *graph = new LandmarksGraphMerged(
-            common_options, new Exploration(common_options.heuristic_options),
-            lm_graphs_);
+        opts.set<Exploration *>("explor", new Exploration(opts));
+        LandmarksGraph *graph = new LandmarksGraphMerged(opts);
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }
 }
+
+static LandmarkGraphPlugin landmarks_graph_merged_plugin(
+    "lm_merged", _parse);

@@ -6,8 +6,8 @@
 class LandmarksGraphExhaust : public LandmarksGraph {
     void generate_landmarks();
 public:
-    LandmarksGraphExhaust(LandmarkGraphOptions &options, Exploration *exploration)
-        : LandmarksGraph(options, exploration) {}
+    LandmarksGraphExhaust(const Options &opts)
+        : LandmarksGraph(opts) {}
     ~LandmarksGraphExhaust() {}
 };
 

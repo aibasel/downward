@@ -3,13 +3,11 @@
 #include "../plugin.h"
 
 
-LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(
-    LandmarkGraphOptions &options, Exploration *exploration,
-    bool uniform_sampling_, int max_depth_, int num_tries_)
-    : LandmarksGraph(options, exploration),
-      uniform_sampling(uniform_sampling_),
-      max_depth(max_depth_),
-      num_tries(num_tries_) {
+LandmarksGraphRpgSearch::LandmarksGraphRpgSearch(const Options &opts)
+    : LandmarksGraph(opts),
+      uniform_sampling(opts.get<bool>("uniform_sampling")),
+      max_depth(opts.get<int>("max_depth")),
+      num_tries(opts.get<int>("num_tries")) {
 }
 
 LandmarksGraphRpgSearch::~LandmarksGraphRpgSearch() {
@@ -114,9 +112,7 @@ int LandmarksGraphRpgSearch::choose_random(vector<int> &evals) {
 
 
 static LandmarksGraph *_parse(OptionParser &parser) {
-    LandmarksGraph::LandmarkGraphOptions common_options;
-
-    common_options.add_option_to_parser(parser);
+    LandmarksGraph::add_options_to_parser(parser);
     parser.add_option<int>("max_depth", 10, "max depth");
     parser.add_option<int>("num_tries", 10, "max number of tries");
     parser.add_option<bool>("uniform_sampling", false, "uniform sampling");
@@ -125,16 +121,11 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     if (parser.help_mode())
         return 0;
 
-    common_options = LandmarksGraph::LandmarkGraphOptions(opts);
-
     if (parser.dry_run()) {
         return 0;
     } else {
-        LandmarksGraph *graph = new LandmarksGraphRpgSearch(
-            common_options, new Exploration(common_options.heuristic_options),
-            opts.get<bool>("uniform_sampling"),
-            opts.get<int>("max_depth"),
-            opts.get<int>("num_tries"));
+        opts.set<Exploration *>("explor", new Exploration(opts));
+        LandmarksGraph *graph = new LandmarksGraphRpgSearch(opts);
         LandmarksGraph::build_lm_graph(graph);
         return graph;
     }
