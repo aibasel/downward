@@ -14,6 +14,11 @@ Heuristic::Heuristic(const Options &opts)
     heuristic = NOT_INITIALIZED;
 }
 
+Heuristic::Heuristic()
+    : cost_type(NORMAL) {
+}
+    
+
 Heuristic::~Heuristic() {
 }
 

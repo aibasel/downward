@@ -21,7 +21,7 @@
 using namespace std;
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
-    : Heuristic(options),
+    : Heuristic(opts),
 	  lgraph(*opts.get<LandmarksGraph *>("lm_graph")),
       exploration(lgraph.get_exploration()),
       lm_status_manager(lgraph) {
@@ -44,14 +44,16 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         }
         if (opts.get<bool>("optimal")) {
 #ifdef USE_LP
-            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph, cost_type);
+            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph, 
+                                                                                  OperatorCost(opts.get_enum("cost_type")));
 #else
             cerr << "You must build the planner with the USE_LP symbol defined." << endl
                  << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
             exit(1);
 #endif
         } else {
-            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, use_action_landmarks, cost_type);
+            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, opts.get<bool>("alm"), 
+                                                                         OperatorCost(opts.get_enum("cost_type")));
         }
     } else {
         use_cost_sharing = false;

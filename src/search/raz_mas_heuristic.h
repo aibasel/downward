@@ -73,14 +73,8 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    MergeAndShrinkHeuristic(int max_abstract_states,
-                            int max_abstract_states_before_merge, int abstraction_count,
-                            MergeStrategy merge_strategy, ShrinkStrategy shrink_strategy,
-                            bool use_label_simplification, bool use_expensive_statistics,
-                            double merge_mixing_parameter);
+    MergeAndShrinkHeuristic(const Options &opts);
     ~MergeAndShrinkHeuristic();
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
 };
 
 #endif

@@ -67,9 +67,8 @@ public:
     void generate_landmarks();
 
 public:
-    LandmarksGraphZhuGivan(
-        LandmarkGraphOptions &options, Exploration *exploration)
-        : LandmarksGraph(options, exploration) {
+    LandmarksGraphZhuGivan(const Options &opts)
+        : LandmarksGraph(opts) {
     }
     ~LandmarksGraphZhuGivan() {
     }
