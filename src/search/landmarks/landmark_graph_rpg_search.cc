@@ -117,10 +117,6 @@ int LandmarkGraphRpgSearch::choose_random(vector<int> &evals) {
     return ret;
 }
 
-LandmarkGraph *LandmarkGraphRpgSearch::get_lm_graph() {
-    return lm_graph;
-}
-
 LandmarkGraph *LandmarkGraphRpgSearch::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarkGraph::Options common_options;
@@ -162,7 +158,7 @@ LandmarkGraph *LandmarkGraphRpgSearch::create(
         LandmarkGraphRpgSearch lm_graph_factory(
             common_options, new Exploration(common_options.heuristic_options),
             uniform_sampling, max_depth, num_tries);
-        LandmarkGraph *graph = lm_graph_factory.get_lm_graph();
+        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
         return graph;
     }
 }

@@ -15,9 +15,6 @@ static LandmarkGraphPlugin landmarks_graph_exhaust_plugin(
 
 LandmarkGraphExhaust::LandmarkGraphExhaust(LandmarkGraph::Options &options, Exploration *exploration) 
     : LandmarkFactory(options, exploration) {
-    lm_graph->read_external_inconsistencies();
-    generate_landmarks();
-    LandmarkGraph::build_lm_graph(lm_graph);
 }
 
 void LandmarkGraphExhaust::generate_landmarks() {
@@ -39,10 +36,6 @@ void LandmarkGraphExhaust::generate_landmarks() {
             }
         }
 
-}
-
-LandmarkGraph *LandmarkGraphExhaust::get_lm_graph() {
-    return lm_graph;
 }
 
 LandmarkGraph *LandmarkGraphExhaust::create(
@@ -68,7 +61,7 @@ LandmarkGraph *LandmarkGraphExhaust::create(
         return 0;
     } else {
         LandmarkGraphExhaust lm_graph_factory(common_options, new Exploration(common_options.heuristic_options));
-        LandmarkGraph *graph = lm_graph_factory.get_lm_graph();
+        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
         return graph;
     }
 }
