@@ -34,7 +34,6 @@ class LandmarkGraphNew : public LandmarkFactory {
 public:
     LandmarkGraphNew(LandmarkGraph::Options &options, Exploration *exploration);
     virtual ~LandmarkGraphNew() {}
-    LandmarkGraph *get_lm_graph();
     static LandmarkGraph *create(const std::vector<std::string> &config, int start,
                                  int &end, bool dry_run);
 };

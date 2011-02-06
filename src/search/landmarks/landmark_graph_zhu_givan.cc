@@ -311,10 +311,6 @@ void LandmarkGraphZhuGivan::compute_triggers() {
     }
 }
 
-LandmarkGraph *LandmarkGraphZhuGivan::get_lm_graph() {
-    return lm_graph;
-}
-
 LandmarkGraph *LandmarkGraphZhuGivan::create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarkGraph::Options common_options;
@@ -340,7 +336,7 @@ LandmarkGraph *LandmarkGraphZhuGivan::create(
         LandmarkGraphZhuGivan lm_graph_factory(
             common_options,
             new Exploration(common_options.heuristic_options));
-        LandmarkGraph *graph = lm_graph_factory.get_lm_graph();
+        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
         return graph;
     }
 }
