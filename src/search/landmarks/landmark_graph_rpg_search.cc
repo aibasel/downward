@@ -8,7 +8,7 @@ static LandmarkGraphPlugin landmarks_graph_rpg_search_plugin(
 LandmarkGraphRpgSearch::LandmarkGraphRpgSearch(
     LandmarkGraph::Options &options, Exploration *exploration,
     bool uniform_sampling_, int max_depth_, int num_tries_)
-    : lm_graph(new LandmarkGraph(options, exploration)),
+    : LandmarkFactory(options, exploration),
       uniform_sampling(uniform_sampling_),
       max_depth(max_depth_),
       num_tries(num_tries_) {

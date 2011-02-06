@@ -21,7 +21,7 @@ static LandmarkGraphPlugin landmarks_graph_new_plugin(
     "lm_rhw", LandmarkGraphNew::create);
     
 LandmarkGraphNew::LandmarkGraphNew(LandmarkGraph::Options &options, Exploration *exploration)
-: lm_graph(new LandmarkGraph(options, exploration)) {
+    : LandmarkFactory(options, exploration)  {
     lm_graph->read_external_inconsistencies();
     generate_landmarks();
     LandmarkGraph::build_lm_graph(lm_graph);

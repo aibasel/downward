@@ -13,8 +13,8 @@ static LandmarkGraphPlugin landmarks_graph_exhaust_plugin(
    that are inferred later.) It's thus best to combine this landmark generation
    method with others, don't use it by itself. */
 
-LandmarkGraphExhaust::LandmarkGraphExhaust(LandmarkGraph::Options &options, Exploration *exploration)
-: lm_graph(new LandmarkGraph(options, exploration)) {
+LandmarkGraphExhaust::LandmarkGraphExhaust(LandmarkGraph::Options &options, Exploration *exploration) 
+    : LandmarkFactory(options, exploration) {
     lm_graph->read_external_inconsistencies();
     generate_landmarks();
     LandmarkGraph::build_lm_graph(lm_graph);

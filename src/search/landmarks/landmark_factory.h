@@ -6,8 +6,10 @@
 
 class LandmarkFactory {
 public:
-    LandmarkFactory(LandmarkGraph::Options &options, Exploration *expl);
-    virtual ~LandmarkFactory();
+    LandmarkFactory(LandmarkGraph::Options &options, Exploration *exploration);
+    virtual ~LandmarkFactory() {};
+protected:
+    LandmarkGraph *lm_graph;
 };
 
 #endif

@@ -1,8 +1,9 @@
 #ifndef LANDMARKS_H_M_LANDMARKS_H
 #define LANDMARKS_H_M_LANDMARKS_H
 
-#include "../globals.h"
+#include "landmark_factory.h"
 #include "landmark_graph.h"
+#include "../globals.h"
 
 typedef std::pair<int, int> Fluent;
 typedef std::vector<Fluent> FluentSet;
@@ -65,10 +66,10 @@ struct HMEntry {
 
 typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
-class HMLandmarks {
+class HMLandmarks : public LandmarkFactory {
 public:
-    HMLandmarks(LandmarkGraph::Options &options, Exploration *expl, int m);
-    virtual ~HMLandmarks();
+    HMLandmarks(LandmarkGraph::Options &options, Exploration *exploration, int m);
+    virtual ~HMLandmarks() {};
     // TODO: get_lm_graph *must* be called to avoid memory leeks!
     // returns a landmargraph created by HMLandmarks. take care to delete the pointer when you don't need it anymore!
     LandmarkGraph *get_lm_graph();
@@ -110,7 +111,6 @@ private:
     void print_pm_op(const PMOp &op);
 
     int m_;
-    LandmarkGraph *lm_graph;
 
     std::map<int, LandmarkNode *> lm_node_table_;
 

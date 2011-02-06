@@ -1,12 +1,12 @@
 #ifndef LANDMARKS_LANDMARK_GRAPH_RPG_SEARCH_H
 #define LANDMARKS_LANDMARK_GRAPH_RPG_SEARCH_H
 
+#include "landmark_factory.h"
 #include "landmark_graph.h"
 
 typedef LandmarkNode *LMOpenListEntry;
 
-class LandmarkGraphRpgSearch {
-    LandmarkGraph *lm_graph;
+class LandmarkGraphRpgSearch : public LandmarkFactory {
     bool uniform_sampling;
     int max_depth;
     int num_tries;
