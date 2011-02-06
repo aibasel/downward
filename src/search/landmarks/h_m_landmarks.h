@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_H_M_LANDMARK_H
-#define LANDMARKS_H_M_LANDMARK_H
+#ifndef LANDMARKS_H_M_LANDMARKS_H
+#define LANDMARKS_H_M_LANDMARKS_H
 
 #include "../globals.h"
 #include "landmark_graph.h"
@@ -68,13 +68,12 @@ typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 class HMLandmarks {
 public:
     HMLandmarks(LandmarkGraph::Options &options, Exploration *expl, int m);
-    ~HMLandmarks() {
-    }
+    virtual ~HMLandmarks();
     // TODO: get_lm_graph *must* be called to avoid memory leeks!
     // returns a landmargraph created by HMLandmarks. take care to delete the pointer when you don't need it anymore!
     LandmarkGraph *get_lm_graph();
 
-    virtual void generate_landmarks();
+    void generate_landmarks();
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
