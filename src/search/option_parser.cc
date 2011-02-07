@@ -202,6 +202,8 @@ string OptionParser::usage(string progname) {
         "    by the name that is specified in the definition.\n"
         "--random-seed SEED\n"
         "    Use random seed SEED\n\n"
+        "--plan-file FILENAME\n"
+        "    Plan will be output to a file called FILENAME\n\n"
         "See http://www.fast-downward.org/ for details.";
     return usage;
 }
@@ -330,12 +332,8 @@ void OptionParser::add_enum_option(string k,
     vector<string>::const_iterator it =
         find(enumeration.begin(), enumeration.end(), name);
     if (it == enumeration.end()) {
-        if (opts.contains(k)) {
-            return;
-        } else {
-            error("invalid enum argument " + name 
-                  + " for option " + k );
-        }
+        error("invalid enum argument " + name 
+              + " for option " + k );
     }
     opts.set(k, it - enumeration.begin());
 }
