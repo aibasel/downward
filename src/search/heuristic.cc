@@ -14,11 +14,6 @@ Heuristic::Heuristic(const Options &opts)
     heuristic = NOT_INITIALIZED;
 }
 
-Heuristic::Heuristic()
-    : cost_type(NORMAL) {
-}
-    
-
 Heuristic::~Heuristic() {
 }
 
@@ -126,4 +121,11 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
                                   cost_types,
                                   "NORMAL",
                                   "operator cost adjustment type");
+}
+
+//this solution to get default values seems not optimal:
+Options Heuristic::default_options() {
+    Options opts = Options();
+    opts.set<int>("cost_type", 0);
+    return opts;
 }

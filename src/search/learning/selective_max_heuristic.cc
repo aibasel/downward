@@ -15,7 +15,7 @@
 
 
 SelectiveMaxHeuristic::SelectiveMaxHeuristic(const Options &opts) 
-    : Heuristic(options),
+    : Heuristic(opts),
       num_always_calc(0) {
     // default parameter
     min_training_set = 100;
@@ -157,7 +157,7 @@ void SelectiveMaxHeuristic::train() {
     cout << "Beginning Training" << endl;
     total_training_time.reset();
 
-    MaxHeuristic max(g_default_heuristic_options);
+    MaxHeuristic max(Heuristic::default_options());
     for (int i = 0; i < num_heuristics; i++) {
         max.add_heuristic(heuristics[i]);
     }
