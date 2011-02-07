@@ -75,11 +75,11 @@ bool LamaFFSynergy::lama_reach_state(const State &parent_state,
 
 static Synergy *_parse_heuristics(OptionParser &parser) {
     Synergy *syn = new Synergy;
-	Heuristic::add_options_to_parser(parser);
     parser.add_option<LandmarksGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");
     parser.add_option<bool>("alm", true, "use action landmarks");
+	Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.help_mode())

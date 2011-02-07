@@ -112,11 +112,10 @@ int LandmarksGraphRpgSearch::choose_random(vector<int> &evals) {
 
 
 static LandmarksGraph *_parse(OptionParser &parser) {
-    LandmarksGraph::add_options_to_parser(parser);
     parser.add_option<int>("max_depth", 10, "max depth");
     parser.add_option<int>("num_tries", 10, "max number of tries");
     parser.add_option<bool>("uniform_sampling", false, "uniform sampling");
-
+    LandmarksGraph::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;

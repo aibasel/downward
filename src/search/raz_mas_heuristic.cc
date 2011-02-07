@@ -532,7 +532,6 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    Heuristic::add_options_to_parser(parser);
     // TODO: better documentation what each parameter does
     parser.add_option<int>("max_states", -1, "maximum abstraction size");
     parser.add_option<int>("max_states_before_merge", -1, 
@@ -574,6 +573,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("expensive_statistics", false, "show statistics on \"unique unlabeled edges\" (WARNING: "
                                           "these are *very* slow -- check the warning in the output)");
     parser.add_option<double>("merge_mixing_parameter", -1.0, "merge mixing parameter");
+    Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if(parser.help_mode())
         return 0;

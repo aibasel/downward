@@ -223,7 +223,6 @@ void GeneralLazyBestFirstSearch::statistics() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-	SearchEngine::add_options_to_parser(parser);
     OpenListPlugin<OpenListEntryLazy>::register_open_lists();
     parser.add_option<OpenList<OpenListEntryLazy> *>("open");
     parser.add_option<bool>("reopen_closed", false,
@@ -231,7 +230,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>(
         "preferred", vector<Heuristic *>(),
         "use preferred operators of these heuristics");
-
+	SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     GeneralLazyBestFirstSearch *engine = 0;
@@ -247,13 +246,13 @@ static SearchEngine *_parse(OptionParser &parser) {
 
 
 static SearchEngine *_parse_greedy(OptionParser &parser) {
-	SearchEngine::add_options_to_parser(parser);
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_list_option<Heuristic *>(
         "preferred", vector<Heuristic *>(),
         "use preferred operators of these heuristics");
     parser.add_option<int>("boost", DEFAULT_LAZY_BOOST,
                            "boost value for successful sub-open-lists");
+	SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     GeneralLazyBestFirstSearch *engine = 0;
@@ -290,7 +289,6 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 }
 
 static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
-	SearchEngine::add_options_to_parser(parser);    
 	parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_list_option<Heuristic *>(
         "preferred", vector<Heuristic *>(),
@@ -298,7 +296,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.add_option<int>("boost", DEFAULT_LAZY_BOOST,
                            "boost value for succesful sub-open-lists");
     parser.add_option<int>("w", 1, "heuristic weight");
-
+	SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;

@@ -330,7 +330,12 @@ void OptionParser::add_enum_option(string k,
     vector<string>::const_iterator it =
         find(enumeration.begin(), enumeration.end(), name);
     if (it == enumeration.end()) {
-        error("invalid enum argument " + name);
+        if (opts.contains(k)) {
+            return;
+        } else {
+            error("invalid enum argument " + name 
+                  + " for option " + k );
+        }
     }
     opts.set(k, it - enumeration.begin());
 }

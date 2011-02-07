@@ -224,7 +224,6 @@ void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
 
 
 static SearchEngine *_parse(OptionParser &parser) {
-	SearchEngine::add_options_to_parser(parser);
     parser.add_option<Heuristic *>("h");
 
     parser.add_option<bool>("bfs_use_cost", false,
@@ -240,7 +239,7 @@ static SearchEngine *_parse(OptionParser &parser) {
 
     parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(),
                                         "use preferred operators of these heuristics");
-
+	SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     EnforcedHillClimbingSearch *engine = 0;

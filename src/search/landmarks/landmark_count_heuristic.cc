@@ -304,13 +304,12 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-	Heuristic::add_options_to_parser(parser);
     parser.add_option<LandmarksGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");
     parser.add_option<bool>("pref", false, "identify preferred operators");
     parser.add_option<bool>("alm", true, "use action landmarks");
-
+	Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     if (!parser.dry_run() && opts.get<LandmarksGraph *>("lm_graph") == 0)

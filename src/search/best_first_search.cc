@@ -226,9 +226,10 @@ int BestFirstSearchEngine::fetch_next_state() {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    SearchEngine::add_options_to_parser(parser);
     parser.add_list_option<Heuristic *>("heuristics");
-    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), "use preferred operators of these heuristics");
+    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), 
+                                        "use preferred operators of these heuristics");
+    SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 	if (parser.help_mode())
 		return 0;
