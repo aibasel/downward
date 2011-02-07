@@ -310,7 +310,6 @@ void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int> &valu
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-	SearchEngine::add_options_to_parser(parser);
     OpenListPlugin<state_var_t *>::register_open_lists();
     parser.add_option<OpenList<state_var_t *> *>("open");
     parser.add_option<bool>("reopen_closed", false,
@@ -322,7 +321,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>
         ("preferred", vector<Heuristic *>(),
         "use preferred operators of these heuristics");
-
+	SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
@@ -341,12 +340,12 @@ static SearchEngine *_parse(OptionParser &parser) {
 }
 
 static SearchEngine *_parse_astar(OptionParser &parser) {
-	SearchEngine::add_options_to_parser(parser);
     parser.add_option<ScalarEvaluator *>("eval");
     parser.add_option<bool>("pathmax", false,
                             "use pathmax correction");
     parser.add_option<bool>("mpd", false,
                             "use multi-path dependence (LM-A*)");
+	SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
@@ -377,11 +376,10 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
 }
 
 static SearchEngine *_parse_greedy(OptionParser &parser) {
-	SearchEngine::add_options_to_parser(parser);
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), "use preferred operators of these heuristics");
     parser.add_option<int>("boost", 0, "boost value for successful sub-open-lists");
-
+	SearchEngine::add_options_to_parser(parser);
 
 
     Options opts = parser.parse();

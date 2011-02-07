@@ -179,7 +179,7 @@ void OptionParser::add_option(
         return;
     }
     valid_keys.push_back(k);
-    T result;
+
     ParseTree::sibling_iterator arg = next_unparsed_argument;
     //scenario where we have already handled all arguments
     if (arg == parse_tree.end(parse_tree.begin())) {
@@ -205,7 +205,7 @@ void OptionParser::add_option(
         }
     }
     OptionParser subparser(subtree(parse_tree, arg), dry_run());
-    result = TokenParser<T>::parse(subparser);
+    T result = TokenParser<T>::parse(subparser);
     opts.set(k, result);
     //if we have not reached the keyword parameters yet,
     //increment the argument position pointer

@@ -1017,9 +1017,8 @@ void HMLandmarks::generate_landmarks() {
 }
 
 static LandmarksGraph *_parse(OptionParser &parser) {
-    LandmarksGraph::add_options_to_parser(parser);
     parser.add_option<int>("m", 2, "m (as in h^m)");
-
+    LandmarksGraph::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;

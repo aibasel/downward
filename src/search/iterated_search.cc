@@ -131,7 +131,6 @@ void IteratedSearch::save_plan_if_necessary() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-	SearchEngine::add_options_to_parser(parser);
     parser.add_list_option<ParseTree>("engine_configs", "");
     parser.add_option<bool>("pass_bound", true,
                             "use bound from previous search");
@@ -143,7 +142,7 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "continue search after solution found");
 	parser.add_option<int>("plan_counter", 0,
 						   "start enumerating plans with this number");
-
+	SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;

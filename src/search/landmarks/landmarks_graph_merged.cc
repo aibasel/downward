@@ -111,9 +111,8 @@ void LandmarksGraphMerged::generate_landmarks() {
 
 
 static LandmarksGraph *_parse(OptionParser &parser) {
-    LandmarksGraph::add_options_to_parser(parser);
     parser.add_list_option<LandmarksGraph *>("lm_graphs");
-
+    LandmarksGraph::add_options_to_parser(parser);
     Options opts = parser.parse();
     if(parser.help_mode())
         return 0;

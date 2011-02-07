@@ -557,7 +557,6 @@ void SelectiveMaxHeuristic::print_statistics() const {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    Heuristic::add_options_to_parser(parser);
     parser.add_list_option<Heuristic *>("heuristics");
     parser.add_option<double>("alpha", 1.0, "alpha");
     vector<string> classifier_types;
@@ -580,7 +579,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("uniform", false, "uniform sampling");
     parser.add_option<bool>("zero_threshold", false,
                             "set threshold constant 0");
-
+    Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
