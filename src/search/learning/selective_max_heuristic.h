@@ -87,7 +87,7 @@ protected:
     void train();
     void reset_statistics();
 public:
-    SelectiveMaxHeuristic(const HeuristicOptions &options);
+    SelectiveMaxHeuristic(const Options &opts);
     virtual ~SelectiveMaxHeuristic();
 
     inline void add_heuristic(Heuristic *h) {

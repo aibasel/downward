@@ -5,7 +5,7 @@
 
 
 LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_)
-    : Heuristic() {
+    : Heuristic(Heuristic::default_options()) {
     synergy = synergy_;
     is_first_proxy = false;
 }
