@@ -131,4 +131,4 @@ static LandmarksGraph *_parse(OptionParser &parser) {
 }
 
 static LandmarkGraphPlugin _plugin(
-    "lmgraph_search", _parse);
+    "lm_search", _parse);
