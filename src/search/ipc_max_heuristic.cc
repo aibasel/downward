@@ -55,7 +55,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>("heuristics");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
 
     if (opts.get_list<Heuristic *>("heuristics").empty()) {

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Heuristic::Heuristic(const Options &opts) 
+Heuristic::Heuristic(const Options &opts)
     : cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
 }
@@ -118,9 +118,9 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
     cost_types.push_back("ONE");
     cost_types.push_back("PLUSONE");
     parser.add_enum_option("cost_type",
-                                  cost_types,
-                                  "NORMAL",
-                                  "operator cost adjustment type");
+                           cost_types,
+                           "NORMAL",
+                           "operator cost adjustment type");
 }
 
 //this solution to get default values seems not optimal:

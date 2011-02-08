@@ -64,7 +64,7 @@ static inline bool _operator_condition_includes(const Operator &o,
 }
 
 LandmarksGraph::LandmarksGraph(const Options &opts)
-    : exploration(opts.get<Exploration *>("explor")), 
+    : exploration(opts.get<Exploration *>("explor")),
       landmarks_count(0), conj_lms(0),
       external_inconsistencies_read(false) {
     reasonable_orders = opts.get<bool>("reasonable_orders");

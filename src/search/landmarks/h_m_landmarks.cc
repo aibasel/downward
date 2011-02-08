@@ -575,7 +575,7 @@ bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
 }
 
 HMLandmarks::HMLandmarks(const Options &opts)
-    : LandmarksGraph(opts), 
+    : LandmarksGraph(opts),
       m_(opts.get<int>("m")) {
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
     // need this to be able to print propositions for debugging

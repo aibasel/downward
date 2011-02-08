@@ -14,9 +14,9 @@
 using namespace std;
 
 GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(
-	const Options &opts)
+    const Options &opts)
     : SearchEngine(opts),
-	  reopen_closed_nodes(opts.get<bool>("reopen_closed")),
+      reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       do_pathmax(opts.get<bool>("pathmax")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<OpenList<state_var_t *> *>("open")),
@@ -321,7 +321,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>
         ("preferred", vector<Heuristic *>(),
         "use preferred operators of these heuristics");
-	SearchEngine::add_options_to_parser(parser);
+    SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
@@ -345,7 +345,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
                             "use pathmax correction");
     parser.add_option<bool>("mpd", false,
                             "use multi-path dependence (LM-A*)");
-	SearchEngine::add_options_to_parser(parser);
+    SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
@@ -379,14 +379,14 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), "use preferred operators of these heuristics");
     parser.add_option<int>("boost", 0, "boost value for successful sub-open-lists");
-	SearchEngine::add_options_to_parser(parser);
+    SearchEngine::add_options_to_parser(parser);
 
 
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
-	if (opts.get_list<ScalarEvaluator *>("evals").empty())
-            parser.error("scalar evaluator list must not be empty");
+    if (opts.get_list<ScalarEvaluator *>("evals").empty())
+        parser.error("scalar evaluator list must not be empty");
 
     GeneralEagerBestFirstSearch *engine = 0;
     if (!parser.dry_run()) {

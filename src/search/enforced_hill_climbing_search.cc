@@ -6,9 +6,9 @@
 #include "plugin.h"
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
-	const Options &opts)
+    const Options &opts)
     : SearchEngine(opts),
-	  heuristic(opts.get<Heuristic *>("h")),
+      heuristic(opts.get<Heuristic *>("h")),
       use_preferred(false),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
       current_state(*g_initial_state),
@@ -239,7 +239,7 @@ static SearchEngine *_parse(OptionParser &parser) {
 
     parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(),
                                         "use preferred operators of these heuristics");
-	SearchEngine::add_options_to_parser(parser);
+    SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     EnforcedHillClimbingSearch *engine = 0;
