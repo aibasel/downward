@@ -77,7 +77,8 @@ static void get_full_help() {
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
     get_full_help_templ<LandmarksGraph *>();
-    get_full_help_templ<OpenList<short *> *>();
+    OpenListPlugin<int>::register_open_lists();
+    get_full_help_templ<OpenList<int> *>();
 }
 
 
