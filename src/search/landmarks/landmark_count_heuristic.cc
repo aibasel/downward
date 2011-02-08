@@ -22,7 +22,7 @@ using namespace std;
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     : Heuristic(opts),
-	  lgraph(*opts.get<LandmarksGraph *>("lm_graph")),
+      lgraph(*opts.get<LandmarksGraph *>("lm_graph")),
       exploration(lgraph.get_exploration()),
       lm_status_manager(lgraph) {
     cout << "Initializing landmarks count heuristic..." << endl;
@@ -44,7 +44,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         }
         if (opts.get<bool>("optimal")) {
 #ifdef USE_LP
-            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph, 
+            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph,
                                                                                   OperatorCost(opts.get_enum("cost_type")));
 #else
             cerr << "You must build the planner with the USE_LP symbol defined." << endl
@@ -52,7 +52,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
             exit(1);
 #endif
         } else {
-            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, opts.get<bool>("alm"), 
+            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, opts.get<bool>("alm"),
                                                                          OperatorCost(opts.get_enum("cost_type")));
         }
     } else {
@@ -309,7 +309,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("optimal", false, "optimal cost sharing");
     parser.add_option<bool>("pref", false, "identify preferred operators");
     parser.add_option<bool>("alm", true, "use action landmarks");
-	Heuristic::add_options_to_parser(parser);
+    Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     if (!parser.dry_run() && opts.get<LandmarksGraph *>("lm_graph") == 0)

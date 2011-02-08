@@ -86,7 +86,7 @@ static void get_full_help() {
 Predefining landmarks and heuristics:
 */
 
-//takes a string of the form "word1, word2, word3 " and converts it to a vector 
+//takes a string of the form "word1, word2, word3 " and converts it to a vector
 //(used for predefining synergies)
 static std::vector<std::string> to_list(std::string s) {
     std::vector<std::string> result;
@@ -217,7 +217,7 @@ static ParseTree generate_parse_tree(const string config) {
         tr.insert(top, ParseNode("pseudoroot", ""));
     ParseTree::sibling_iterator cur_node = pseudoroot;
     string buffer(""), key("");
-    char next=' ';
+    char next = ' ';
     for (size_t i(0); i != config.size(); ++i) {
         next = config.at(i);
         if ((next == '(' || next == ')' || next == ',') && buffer.size() > 0) {
@@ -266,7 +266,7 @@ static ParseTree generate_parse_tree(const string config) {
             break;
         }
     }
-    if (next != ')')  
+    if (next != ')')
         throw ParseError("expected ) at end of configuration after " + buffer, *cur_node);
     if (cur_node->value.compare("pseudoroot") != 0)
         throw ParseError("missing )", *cur_node);
@@ -333,8 +333,8 @@ void OptionParser::add_enum_option(string k,
     vector<string>::const_iterator it =
         find(enumeration.begin(), enumeration.end(), name);
     if (it == enumeration.end()) {
-        error("invalid enum argument " + name 
-              + " for option " + k );
+        error("invalid enum argument " + name
+              + " for option " + k);
     }
     opts.set(k, it - enumeration.begin());
 }
@@ -394,5 +394,3 @@ void OptionParser::set_parse_tree(const ParseTree &pt) {
 ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
 }
-
-

@@ -5,7 +5,7 @@
 
 IteratedSearch::IteratedSearch(const Options &opts)
     : SearchEngine(opts),
-	  engine_configs(opts.get_list<ParseTree>("engine_configs")),
+      engine_configs(opts.get_list<ParseTree>("engine_configs")),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
       continue_on_fail(opts.get<bool>("continue_on_fail")),
@@ -140,9 +140,9 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "continue search after no solution found");
     parser.add_option<bool>("continue_on_solve", true,
                             "continue search after solution found");
-	parser.add_option<int>("plan_counter", 0,
-						   "start enumerating plans with this number");
-	SearchEngine::add_options_to_parser(parser);
+    parser.add_option<int>("plan_counter", 0,
+                           "start enumerating plans with this number");
+    SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;

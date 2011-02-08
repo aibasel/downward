@@ -14,7 +14,7 @@
 #include <limits>
 
 
-SelectiveMaxHeuristic::SelectiveMaxHeuristic(const Options &opts) 
+SelectiveMaxHeuristic::SelectiveMaxHeuristic(const Options &opts)
     : Heuristic(opts),
       num_always_calc(0) {
     // default parameter

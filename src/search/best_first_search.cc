@@ -227,15 +227,15 @@ int BestFirstSearchEngine::fetch_next_state() {
 
 static SearchEngine *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>("heuristics");
-    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), 
+    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(),
                                         "use preferred operators of these heuristics");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
-	if (parser.help_mode())
-		return 0;
+    if (parser.help_mode())
+        return 0;
 
-	if (opts.get_list<Heuristic *>("heuristics").empty())
-		parser.error("list of heuristics must not be empty");
+    if (opts.get_list<Heuristic *>("heuristics").empty())
+        parser.error("list of heuristics must not be empty");
 
     if (parser.dry_run())
         return 0;

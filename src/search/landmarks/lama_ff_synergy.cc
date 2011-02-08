@@ -79,7 +79,7 @@ static Synergy *_parse_heuristics(OptionParser &parser) {
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");
     parser.add_option<bool>("alm", true, "use action landmarks");
-	Heuristic::add_options_to_parser(parser);
+    Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.help_mode())

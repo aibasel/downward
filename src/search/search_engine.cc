@@ -74,12 +74,10 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
     cost_types.push_back("ONE");
     cost_types.push_back("PLUSONE");
     parser.add_enum_option("cost_type",
-                                  cost_types,
-                                  "NORMAL",
-                                  "operator cost adjustment type");
+                           cost_types,
+                           "NORMAL",
+                           "operator cost adjustment type");
     parser.add_option<int>("bound",
                            numeric_limits<int>::max(),
-                                 "bound on plan cost");
+                           "bound on plan cost");
 }
-
-

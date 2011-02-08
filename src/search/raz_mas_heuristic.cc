@@ -24,7 +24,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
       shrink_strategy(ShrinkStrategy(opts.get_enum("shrink_strategy"))),
       use_label_simplification(opts.get<bool>("simplify_labels")),
-      use_expensive_statistics(opts.get<bool>("expensive_statistics")), 
+      use_expensive_statistics(opts.get<bool>("expensive_statistics")),
       merge_mixing_parameter(opts.get<double>("merge_mixing_parameter")) {
     assert(max_abstract_states_before_merge > 0);
     assert(max_abstract_states >= max_abstract_states_before_merge);
@@ -534,7 +534,7 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 static ScalarEvaluator *_parse(OptionParser &parser) {
     // TODO: better documentation what each parameter does
     parser.add_option<int>("max_states", -1, "maximum abstraction size");
-    parser.add_option<int>("max_states_before_merge", -1, 
+    parser.add_option<int>("max_states_before_merge", -1,
                            "maximum abstraction size for factors of synchronized product");
     parser.add_option<int>("count", 1, "nr of abstractions to build");
     vector<string> merge_strategies;
@@ -547,7 +547,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     merge_strategies.push_back("MERGE_LINEAR_REVERSE_LEVEL");
     merge_strategies.push_back("MERGE_LEVEL_THEN_INVERSE");
     merge_strategies.push_back("MERGE_INVERSE_THEN_LEVEL");
-    parser.add_enum_option("merge_strategy", merge_strategies, 
+    parser.add_enum_option("merge_strategy", merge_strategies,
                            "MERGE_LINEAR_CG_GOAL_LEVEL",
                            "merge strategy");
     vector<string> shrink_strategies;
@@ -571,13 +571,13 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
                            "shrink strategy");
     parser.add_option<bool>("simplify_labels", true, "enable label simplification");
     parser.add_option<bool>("expensive_statistics", false, "show statistics on \"unique unlabeled edges\" (WARNING: "
-                                          "these are *very* slow -- check the warning in the output)");
+                            "these are *very* slow -- check the warning in the output)");
     parser.add_option<double>("merge_mixing_parameter", -1.0, "merge mixing parameter");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
-    
+
     //read values from opts for processing.
     int max_states = opts.get<int>("max_states");
     int max_states_before_merge = opts.get<int>("max_states_before_merge");
@@ -635,7 +635,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
              << merge_mixing_parameter << endl;
         exit(2);
     }
-    
+
     //write values back:
     opts.set<int>("max_states", max_states);
     opts.set<int>("max_states_before_merge", max_states_before_merge);

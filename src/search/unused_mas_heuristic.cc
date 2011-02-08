@@ -278,7 +278,7 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    // TODO: better documentation what each parameter does 
+    // TODO: better documentation what each parameter does
     parser.add_option<int>(
         "max_states", -1, "maximum abstraction size");
     parser.add_option<int>(

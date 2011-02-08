@@ -450,7 +450,7 @@ void LandmarksGraphNew::add_lm_forward_orders() {
 
 
 static LandmarksGraph *_parse(OptionParser &parser) {
-    LandmarksGraph::add_options_to_parser(parser);;
+    LandmarksGraph::add_options_to_parser(parser);
 
     Options opts = parser.parse();
 
