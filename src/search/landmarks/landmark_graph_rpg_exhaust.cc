@@ -31,11 +31,10 @@ void LandmarkGraphExhaust::generate_landmarks() {
             const pair<int, int> lm = make_pair(i, j);
             if (!lm_graph->simple_landmark_exists(lm)) {
                 LandmarkNode *new_lm = &lm_graph->landmark_add_simple(lm);
-                if ((*g_initial_state)[lm.first] != lm.second && lm_graph->relaxed_task_solvable(true, new_lm))
+                if ((*g_initial_state)[lm.first] != lm.second && relaxed_task_solvable(true, new_lm))
                     lm_graph->rm_landmark(lm);
             }
         }
-
 }
 
 LandmarkGraph *LandmarkGraphExhaust::create(

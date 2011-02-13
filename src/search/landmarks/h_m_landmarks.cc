@@ -397,25 +397,25 @@ void HMLandmarks::print_pm_op(const PMOp &op) {
     std::cout << "Action " << op.index << std::endl;
     std::cout << "Precondition: ";
     for (it = pcs.begin(); it != pcs.end(); it++) {
-        lm_graph->print_proposition(*it);
+        print_proposition(*it);
         std::cout << " ";
     }
 
     std::cout << std::endl << "Effect: ";
     for (it = effs.begin(); it != effs.end(); it++) {
-        lm_graph->print_proposition(*it);
+        print_proposition(*it);
         std::cout << " ";
     }
     std::cout << std::endl << "Conditionals: " << std::endl;
     for (int i = 0; i < conds.size(); i++) {
         std::cout << "Cond PC #" << i << ":" << std::endl << "\t";
         for (it = conds[i].first.begin(); it != conds[i].first.end(); it++) {
-            lm_graph->print_proposition(*it);
+            print_proposition(*it);
             std::cout << " ";
         }
         std::cout << std::endl << "Cond Effect #" << i << ":" << std::endl << "\t";
         for (it = conds[i].second.begin(); it != conds[i].second.end(); it++) {
-            lm_graph->print_proposition(*it);
+            print_proposition(*it);
             std::cout << " ";
         }
         std::cout << std::endl << std::endl;
@@ -427,7 +427,7 @@ void HMLandmarks::print_fluentset(const FluentSet &fs) {
 
     std::cout << "( ";
     for (it = fs.begin(); it != fs.end(); it++) {
-        lm_graph->print_proposition(*it);
+        print_proposition(*it);
         std::cout << " ";
     }
     std::cout << ")";
@@ -450,7 +450,7 @@ bool HMLandmarks::possible_noop_set(const FluentSet &fs1, const FluentSet &fs2) 
 
     for (fs1it = fs1.begin(); fs1it != fs1.end(); ++fs1it) {
         for (fs2it = fs2.begin(); fs2it != fs2.end(); ++fs2it) {
-            if (lm_graph->inconsistent(make_pair(fs1it->first, fs1it->second), make_pair(fs2it->first, fs2it->second)))
+            if (inconsistent(make_pair(fs1it->first, fs1it->second), make_pair(fs2it->first, fs2it->second)))
                 return false;
         }
     }
@@ -570,7 +570,7 @@ void HMLandmarks::build_pm_ops() {
 
 bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
     // mutexes can always be safely pruned
-    return lm_graph->inconsistent(make_pair(var1, val1), make_pair(var2, val2));
+    return inconsistent(make_pair(var1, val1), make_pair(var2, val2));
 }
 
 HMLandmarks::HMLandmarks(LandmarkGraph::Options &options, Exploration *exploration, int m)
@@ -645,7 +645,7 @@ void HMLandmarks::calc_achievers() {
                     continue;
                 int k;
                 for (k = 0; k < eff.size(); k++) {
-                    if (lm_graph->inconsistent(eff[k], lm_val)) {
+                    if (inconsistent(eff[k], lm_val)) {
                         break;
                     }
                 }
@@ -655,7 +655,7 @@ void HMLandmarks::calc_achievers() {
                 for (k = 0; k < pc.size(); k++) {
                     // we know that lm_val is not added by the operator
                     // so if it incompatible with the pc, this can't be an achiever
-                    if (lm_graph->inconsistent(pc[k], lm_val)) {
+                    if (inconsistent(pc[k], lm_val)) {
                         break;
                     }
                 }
@@ -996,12 +996,12 @@ void HMLandmarks::generate_landmarks() {
                 assert(lm_node_table_.find(*lms_it) != lm_node_table_.end());
                 assert(lm_node_table_.find(set_index) != lm_node_table_.end());
 
-                lm_graph->edge_add(*lm_node_table_[*lms_it], *lm_node_table_[set_index], natural);
+                edge_add(*lm_node_table_[*lms_it], *lm_node_table_[set_index], natural);
             }
             if (lm_graph->use_orders()) {
                 for (std::list<int>::iterator gn_it = h_m_table_[set_index].necessary.begin();
-                     gn_it != h_m_table_[set_index].necessary.end(); ++gn_it) {
-                    lm_graph->edge_add(*lm_node_table_[*gn_it], *lm_node_table_[set_index], greedy_necessary);
+                    gn_it != h_m_table_[set_index].necessary.end(); ++gn_it) {
+                    edge_add(*lm_node_table_[*gn_it], *lm_node_table_[set_index], greedy_necessary);
                 }
             }
         }

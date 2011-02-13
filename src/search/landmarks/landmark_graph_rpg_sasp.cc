@@ -111,7 +111,7 @@ void LandmarkGraphNew::found_simple_lm_and_order(const pair<int, int> a,
     LandmarkNode *new_lm;
     if (lm_graph->simple_landmark_exists(a)) {
         new_lm = &lm_graph->get_simple_lm_node(a);
-        lm_graph->edge_add(*new_lm, b, t);
+        edge_add(*new_lm, b, t);
         return;
     }
     set<pair<int, int> > a_set;
@@ -143,7 +143,7 @@ void LandmarkGraphNew::found_simple_lm_and_order(const pair<int, int> a,
         node.children.clear();
         node.forward_orders.clear();
 
-        lm_graph->edge_add(node, b, t);
+        edge_add(node, b, t);
         // Node has changed, reexamine it again. This also fixes min_cost.
         for (list<LandmarkNode *>::const_iterator it = open_landmarks.begin(); it
              != open_landmarks.end(); it++)
@@ -153,7 +153,7 @@ void LandmarkGraphNew::found_simple_lm_and_order(const pair<int, int> a,
     } else {
         new_lm = &lm_graph->landmark_add_simple(a);
         open_landmarks.push_back(new_lm);
-        lm_graph->edge_add(*new_lm, b, t);
+        edge_add(*new_lm, b, t);
     }
 }
 
@@ -182,7 +182,7 @@ void LandmarkGraphNew::found_disj_lm_and_order(const set<pair<int, int> > a,
         if (lm_graph->exact_same_disj_landmark_exists(a)) {
             // LM already exists, just add order.
             new_lm = &lm_graph->get_disj_lm_node(*a.begin());
-            lm_graph->edge_add(*new_lm, b, t);
+            edge_add(*new_lm, b, t);
             return;
         }
         // LM overlaps with existing disj. LM, do not add.
@@ -191,7 +191,7 @@ void LandmarkGraphNew::found_disj_lm_and_order(const set<pair<int, int> > a,
     // This LM and no part of it exist, add the LM to the landmarks graph.
     new_lm = &lm_graph->landmark_add_disjunctive(a);
     open_landmarks.push_back(new_lm);
-    lm_graph->edge_add(*new_lm, b, t);
+    edge_add(*new_lm, b, t);
 }
 
 void LandmarkGraphNew::compute_shared_preconditions(
@@ -249,14 +249,14 @@ void LandmarkGraphNew::compute_disjunctive_preconditions(vector<set<pair<int,
             get_greedy_preconditions_for_lm(bp, op, next_pre);
             for (hash_map<int, int>::iterator it = next_pre.begin(); it
                  != next_pre.end(); it++) {
-                hash_map<pair<int, int>, LandmarkGraph::Pddl_proposition, hash_int_pair>::const_iterator
-                    it2 = lm_graph->get_pddl_propositions().find(make_pair(it->first,
+                hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator
+                    it2 = get_pddl_propositions().find(make_pair(it->first,
                                                            it->second));
-                if (it2 == lm_graph->get_pddl_propositions().end()) // this can happen as translator
+                if (it2 == get_pddl_propositions().end()) // this can happen as translator
                     //introduces additional vars
                     continue;
                 string pred = it2->second.predicate;
-                int pred_index = lm_graph->get_pddl_proposition_indices().find(pred)->second;
+                int pred_index = get_pddl_proposition_indices().find(pred)->second;
 
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
@@ -301,7 +301,7 @@ void LandmarkGraphNew::generate_landmarks() {
             // applied (in lvl_ops).
             vector<vector<int> > lvl_var;
             vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
-            lm_graph->compute_predecessor_information(bp, lvl_var, lvl_op);
+            compute_predecessor_information(bp, lvl_var, lvl_op);
             // Use this information to determine all operators that can possibly achieve bp
             // for the first time, and collect any precondition propositions that all such
             // operators share (if there are any).
@@ -454,7 +454,7 @@ void LandmarkGraphNew::add_lm_forward_orders() {
 
             if (lm_graph->simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
-                lm_graph->edge_add(node, node2, natural);
+                edge_add(node, node2, natural);
             }
         }
         node.forward_orders.clear();

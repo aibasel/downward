@@ -113,7 +113,7 @@ void LandmarkGraphMerged::generate_landmarks() {
                     edge_type e_type = to_it->second;
                     LandmarkNode *to = get_matching_landmark(to_orig);
                     if (to) {
-                        lm_graph->edge_add(*from, *to, e_type);
+                        edge_add(*from, *to, e_type);
                     } else {
                         cout << "No to" << endl;
                     }
