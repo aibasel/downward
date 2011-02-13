@@ -12,9 +12,6 @@ LandmarkGraphRpgSearch::LandmarkGraphRpgSearch(
       uniform_sampling(uniform_sampling_),
       max_depth(max_depth_),
       num_tries(num_tries_) {
-    lm_graph->read_external_inconsistencies();
-    generate_landmarks();
-    LandmarkGraph::build_lm_graph(lm_graph);
 }
 
 LandmarkGraphRpgSearch::~LandmarkGraphRpgSearch() {

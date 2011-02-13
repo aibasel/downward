@@ -576,11 +576,6 @@ bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
 HMLandmarks::HMLandmarks(LandmarkGraph::Options &options, Exploration *exploration, int m)
     : LandmarkFactory(options, exploration), m_(m) {
     std::cout << "H_m_Landmark(" << m_ << ")" << std::endl;
-    ExactTimer lm_generation_timer;
-    lm_graph->read_external_inconsistencies();
-    generate_landmarks();
-    LandmarkGraph::build_lm_graph(lm_graph);
-    cout << "Landmark generation time: " << lm_generation_timer << endl;
     // need this to be able to print propositions for debugging
     // already called in global.cc
     //  read_external_inconsistencies();
