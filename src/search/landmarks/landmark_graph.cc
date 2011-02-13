@@ -79,6 +79,39 @@ LandmarkGraph::LandmarkGraph(Options &options, Exploration *explor)
     generate_operators_lookups();
 }
 
+void LandmarkGraph::generate_operators_lookups() {
+    /* Build datastructures for efficient landmark computation. Map propositions
+    to the operators that achieve them or have them as preconditions */
+    
+    operators_pre_lookup.resize(g_variable_domain.size());
+    operators_eff_lookup.resize(g_variable_domain.size());
+    for (unsigned i = 0; i < g_variable_domain.size(); i++) {
+        operators_pre_lookup[i].resize(g_variable_domain[i]);
+        operators_eff_lookup[i].resize(g_variable_domain[i]);
+    }
+    for (unsigned i = 0; i < g_operators.size() + g_axioms.size(); i++) {
+        const Operator &op = get_operator_for_lookup_index(i);
+        
+        const vector<PrePost> &prepost = op.get_pre_post();
+        bool no_pre = true;
+        for (unsigned j = 0; j < prepost.size(); j++) {
+            if (prepost[j].pre != -1) {
+                no_pre = false;
+                operators_pre_lookup[prepost[j].var][prepost[j].pre].push_back(
+                i);
+            }
+            operators_eff_lookup[prepost[j].var][prepost[j].post].push_back(i);
+        }
+        const vector<Prevail> &prevail = op.get_prevail();
+        for (unsigned j = 0; j < prevail.size(); j++) {
+            no_pre = false;
+            operators_pre_lookup[prevail[j].var][prevail[j].prev].push_back(i);
+        }
+        if (no_pre)
+            empty_pre_operators.push_back(i);
+    }
+}
+
 bool LandmarkGraph::simple_landmark_exists(const pair<int, int> &lm) const {
     hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
         simple_lms_to_nodes.find(lm);
@@ -383,39 +416,6 @@ bool LandmarkGraph::is_causal_landmark(const LandmarkNode &landmark) const {
             return true;
 
     return false;
-}
-
-void LandmarkGraph::generate_operators_lookups() {
-    /* Build datastructures for efficient landmark computation. Map propositions
-     to the operators that achieve them or have them as preconditions */
-
-    operators_pre_lookup.resize(g_variable_domain.size());
-    operators_eff_lookup.resize(g_variable_domain.size());
-    for (unsigned i = 0; i < g_variable_domain.size(); i++) {
-        operators_pre_lookup[i].resize(g_variable_domain[i]);
-        operators_eff_lookup[i].resize(g_variable_domain[i]);
-    }
-    for (unsigned i = 0; i < g_operators.size() + g_axioms.size(); i++) {
-        const Operator &op = get_operator_for_lookup_index(i);
-
-        const vector<PrePost> &prepost = op.get_pre_post();
-        bool no_pre = true;
-        for (unsigned j = 0; j < prepost.size(); j++) {
-            if (prepost[j].pre != -1) {
-                no_pre = false;
-                operators_pre_lookup[prepost[j].var][prepost[j].pre].push_back(
-                    i);
-            }
-            operators_eff_lookup[prepost[j].var][prepost[j].post].push_back(i);
-        }
-        const vector<Prevail> &prevail = op.get_prevail();
-        for (unsigned j = 0; j < prevail.size(); j++) {
-            no_pre = false;
-            operators_pre_lookup[prevail[j].var][prevail[j].prev].push_back(i);
-        }
-        if (no_pre)
-            empty_pre_operators.push_back(i);
-    }
 }
 
 bool LandmarkGraph::effect_always_happens(const vector<PrePost> &prepost, set<

@@ -150,8 +150,9 @@ public:
             return output;
         }
     };
+    
     // ------------------------------------------------------------------------------
-    // methods needed only by non-landmarkgraph-factories
+    // methods and fields needed only by non-landmarkgraph-factories
     inline int cost_of_landmarks() const {
         return landmarks_cost;
     }
@@ -166,9 +167,14 @@ public:
     }
     bool is_using_reasonable_orderings() const {return reasonable_orders; }
     LandmarkNode *landmark_reached(const pair<int, int> &prop) const;
+private:
+    int reached_cost;
+    int needed_cost;
+    Exploration *exploration;
 
     // ------------------------------------------------------------------------------
-    // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories
+    // methods and fields needed by both landmarkgraph-factories and non-landmarkgraph-factories
+public:
     inline const set<LandmarkNode *> &get_nodes() const {
         return nodes;
     }
@@ -181,9 +187,14 @@ public:
         assert(landmarks_count == nodes.size());
         return landmarks_count;
     }
+private:
+    int landmarks_cost;
+    hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
+    hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
 
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
+public:
     LandmarkGraph(Options &options, Exploration *explor);
     virtual ~LandmarkGraph() {}
     static void build_lm_graph(LandmarkGraph *lm_graph);
@@ -289,41 +300,7 @@ public:
     OperatorCost get_lm_cost_type() const {
         return lm_cost_type;
     }
-protected:
-    hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
-    hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
-private:
-    Exploration *exploration;
-
-    vector<int> empty_pre_operators;
-    vector<vector<vector<int> > > operators_eff_lookup;
-    vector<vector<vector<int> > > operators_pre_lookup;
-
-    bool reasonable_orders;
-    bool only_causal_landmarks;
-    bool disjunctive_landmarks;
-    bool conjunctive_landmarks;
-    bool no_orders;
-    OperatorCost lm_cost_type;
-
-    int landmarks_count;
-    int conj_lms;
-
-    int landmarks_cost;
-    int reached_cost;
-    int needed_cost;
-
-    bool dead_end_found;
-
-    vector<vector<set<pair<int, int> > > > inconsistent_facts;
-    bool external_inconsistencies_read;
-
-    set<LandmarkNode *> nodes;
-    vector<LandmarkNode *> ordered_nodes;
-
-    hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
-    map<string, int> pddl_proposition_indeces; //TODO: make this a hash_map
-    
+private:   
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
     bool effect_always_happens(const vector<PrePost> &prepost,
                                set<pair<int, int> > &eff) const;
@@ -356,6 +333,34 @@ private:
 
     //void reset_landmarks_count() {landmarks_count = nodes.size(); }
     void calc_achievers();
+    
+    // fields for construction
+    vector<int> empty_pre_operators;
+    vector<vector<vector<int> > > operators_eff_lookup;
+    vector<vector<vector<int> > > operators_pre_lookup;
+    
+    bool reasonable_orders;
+    bool only_causal_landmarks;
+    bool disjunctive_landmarks;
+    bool conjunctive_landmarks;
+    bool no_orders;
+    
+    OperatorCost lm_cost_type;
+    
+    // other fields
+    int landmarks_count;
+    int conj_lms;
+    
+    bool dead_end_found;
+    
+    vector<vector<set<pair<int, int> > > > inconsistent_facts;
+    bool external_inconsistencies_read;
+    
+    set<LandmarkNode *> nodes;
+    vector<LandmarkNode *> ordered_nodes;
+    
+    hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
+    map<string, int> pddl_proposition_indeces; //TODO: make this a hash_map
 };
 
 #endif

@@ -12,7 +12,7 @@ static LandmarkGraphPlugin landmark_graph_merged_plugin(
 LandmarkGraphMerged::LandmarkGraphMerged(
     LandmarkGraph::Options &options, Exploration *exploration,
     const vector<LandmarkGraph *> &lm_graphs_)
-    : LandmarkGraph(options, exploration),
+    : LandmarkFactory(options, exploration) ,
       lm_graphs(lm_graphs_) {
 }
 
@@ -22,25 +22,37 @@ LandmarkGraphMerged::~LandmarkGraphMerged() {
 LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm) const {
     if (!lm.disjunctive && !lm.conjunctive) {
         pair<int, int> lm_fact = make_pair(lm.vars[0], lm.vals[0]);
+        if (lm_graph->simple_landmark_exists(lm_fact))
+            return &lm_graph->get_simple_lm_node(lm_fact);
+        else
+            return 0;
+        
+        /* old version of the code. TODO: check whether this is correctly changed!
         hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
-            simple_lms_to_nodes.find(lm_fact);
+            lm_graph->simple_lms_to_nodes.find(lm_fact);
         if (it != simple_lms_to_nodes.end()) {
             return it->second;
         } else {
             return 0;
-        }
+        }*/
     } else if (lm.disjunctive) {
         set<pair<int, int> > lm_facts;
         for (int j = 0; j < lm.vars.size(); j++) {
             lm_facts.insert(make_pair(lm.vars[j], lm.vals[j]));
         }
-        if (exact_same_disj_landmark_exists(lm_facts)) {
+        if (lm_graph->exact_same_disj_landmark_exists(lm_facts))
+            return &lm_graph->get_disj_lm_node(make_pair(lm.vars[0], lm.vals[0]));
+        else
+            return 0;
+        
+        /* old version of the code. TODO: check whether this is correctly changed!
+        if (lm_graph->exact_same_disj_landmark_exists(lm_facts)) {
             hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
-                disj_lms_to_nodes.find(make_pair(lm.vars[0], lm.vals[0]));
+            lm_graph->disj_lms_to_nodes.find(make_pair(lm.vars[0], lm.vals[0]));
             return it->second;
         } else {
             return 0;
-        }
+        }*/
     } else if (lm.conjunctive) {
         cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
         abort();
@@ -58,8 +70,8 @@ void LandmarkGraphMerged::generate_landmarks() {
         for (it = nodes.begin(); it != nodes.end(); it++) {
             const LandmarkNode &node = **it;
             pair<int, int> lm_fact = make_pair(node.vars[0], node.vals[0]);
-            if (!node.conjunctive && !node.disjunctive && !landmark_exists(lm_fact)) {
-                LandmarkNode &new_node = landmark_add_simple(lm_fact);
+            if (!node.conjunctive && !node.disjunctive && !lm_graph->landmark_exists(lm_fact)) {
+                LandmarkNode &new_node = lm_graph->landmark_add_simple(lm_fact);
                 new_node.in_goal = node.in_goal;
             }
         }
@@ -76,8 +88,8 @@ void LandmarkGraphMerged::generate_landmarks() {
                 for (int j = 0; j < node.vars.size(); j++) {
                     lm_facts.insert(make_pair(node.vars[j], node.vals[j]));
                 }
-                if (!disj_landmark_exists(lm_facts)) {
-                    LandmarkNode &new_node = landmark_add_disjunctive(lm_facts);
+                if (!lm_graph->disj_landmark_exists(lm_facts)) {
+                    LandmarkNode &new_node = lm_graph->landmark_add_disjunctive(lm_facts);
                     new_node.in_goal = node.in_goal;
                 }
             } else if (node.conjunctive) {
@@ -101,7 +113,7 @@ void LandmarkGraphMerged::generate_landmarks() {
                     edge_type e_type = to_it->second;
                     LandmarkNode *to = get_matching_landmark(to_orig);
                     if (to) {
-                        edge_add(*from, *to, e_type);
+                        lm_graph->edge_add(*from, *to, e_type);
                     } else {
                         cout << "No to" << endl;
                     }
@@ -146,10 +158,11 @@ LandmarkGraph *LandmarkGraphMerged::create(
     if (dry_run) {
         return 0;
     } else {
-        LandmarkGraph *graph = new LandmarkGraphMerged(
-            common_options, new Exploration(common_options.heuristic_options),
+        LandmarkGraphMerged lm_graph_factory(
+            common_options,
+            new Exploration(common_options.heuristic_options),
             lm_graphs_);
-        LandmarkGraph::build_lm_graph(graph);
+        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
         return graph;
     }
 }

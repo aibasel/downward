@@ -17,7 +17,7 @@ static LandmarkGraphPlugin landmarks_graph_zhu_givan_plugin(
     "lm_zg", LandmarkGraphZhuGivan::create);
     
 LandmarkGraphZhuGivan::LandmarkGraphZhuGivan(LandmarkGraph::Options &options, Exploration *exploration)
-    : LandmarkFactory(options, exploration)  {
+    : LandmarkFactory(options, exploration) {
 }
 
 void LandmarkGraphZhuGivan::generate_landmarks() {
