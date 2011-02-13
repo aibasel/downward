@@ -1291,6 +1291,7 @@ LandmarkNode &LandmarkGraph::make_disj_node_simple(std::pair<int, int> lm) {
     return node;
 }
 
+/*
 // static function to generate landmarks and print message
 void LandmarkGraph::build_lm_graph(LandmarkGraph *lm_graph) {
     //ExactTimer lm_generation_timer;
@@ -1304,7 +1305,7 @@ void LandmarkGraph::build_lm_graph(LandmarkGraph *lm_graph) {
          << " are disjunctive and "
          << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
          << lm_graph->number_of_edges() << " edges\n";
-}
+}*/
 
 
 LandmarkGraph::Options::Options()
