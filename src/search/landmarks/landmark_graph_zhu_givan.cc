@@ -80,7 +80,7 @@ void LandmarkGraphZhuGivan::extract_landmarks(
             // Add order: *it ->_{nat} g_goal[i]
             assert(node->parents.find(lmp) == node->parents.end());
             assert(lmp->children.find(node) == lmp->children.end());
-            lm_graph->edge_add(*node, *lmp, natural);
+            edge_add(*node, *lmp, natural);
         }
     }
 }

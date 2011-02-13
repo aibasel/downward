@@ -36,7 +36,7 @@ void LandmarkGraphRpgSearch::generate_landmarks() {
             if (!lm_graph->simple_landmark_exists(lm)) {
                 LandmarkNode *new_lm = &lm_graph->landmark_add_simple(lm);
                 if ((*g_initial_state)[lm.first] != lm.second) {
-                    int rp = lm_graph->relaxed_plan_length_without(new_lm);
+                    int rp = relaxed_plan_length_without(new_lm);
                     //dump_node(new_lm);
                     //cout << "H = " << rp << endl;
                     if (rp >= 0) {
@@ -72,7 +72,7 @@ void LandmarkGraphRpgSearch::landmark_search(LandmarkNode *node, int depth) {
                 }
                 lm.insert(new_fact);
                 LandmarkNode *new_lm = &lm_graph->landmark_add_disjunctive(lm);
-                int rp = lm_graph->relaxed_plan_length_without(new_lm);
+                int rp = relaxed_plan_length_without(new_lm);
                 //dump_node(new_lm);
                 //cout << "H = " << rp << endl;
                 if (rp >= 0) {
