@@ -195,10 +195,6 @@ private:
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
 public:
-    LandmarkGraph(Options &options, Exploration *explor);
-    virtual ~LandmarkGraph() {}
-    static void build_lm_graph(LandmarkGraph *lm_graph);
-    
     void rm_landmark_node(LandmarkNode *node);
     void rm_landmark(const pair<int, int> &lmk);
 
@@ -226,26 +222,6 @@ public:
     }
     int number_of_edges() const;
 
-    inline LandmarkNode &get_simple_lm_node(const pair<int, int> &a) const {
-        assert(simple_landmark_exists(a));
-        return *(simple_lms_to_nodes.find(a)->second);
-    }
-
-    inline LandmarkNode &get_disj_lm_node(const pair<int, int> &a) const {
-        // Note: this only works because every proposition appears in only one disj. LM
-        assert(!simple_landmark_exists(a));
-        assert(disj_lms_to_nodes.find(a) != disj_lms_to_nodes.end());
-        return *(disj_lms_to_nodes.find(a)->second);
-    }
-
-    inline const vector<int> &get_operators_including_eff(const pair<int, int> &eff) const {
-        return operators_eff_lookup[eff.first][eff.second];
-    }
-
-    //inline const vector<int> &get_operators_including_pre(const pair<int, int> &pre) const {
-    //    return operators_pre_lookup[pre.first][pre.second];
-    //}
-
     //bool is_dead_end() const {return dead_end_found; }
 
     //void count_shared_costs();
@@ -266,7 +242,7 @@ public:
     // TODO: check how some of the following added methods may be improved. remove comments later
     // added while refactoring
     // methods needed for h_m_landmarks (which no longer inherit landmarks_graph)
-    bool use_orders() const { return !no_orders; }
+
     void insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj);
     
     // 2 methods needed for rpg_sasp
@@ -304,7 +280,7 @@ private:
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
     bool effect_always_happens(const vector<PrePost> &prepost,
                                set<pair<int, int> > &eff) const;
-    void generate_operators_lookups();
+
     void set_landmark_ids();
     void approximate_reasonable_orders(bool obedient_orders);
     void mk_acyclic_graph();
@@ -334,20 +310,6 @@ private:
     //void reset_landmarks_count() {landmarks_count = nodes.size(); }
     void calc_achievers();
     
-    // fields for construction
-    vector<int> empty_pre_operators;
-    vector<vector<vector<int> > > operators_eff_lookup;
-    vector<vector<vector<int> > > operators_pre_lookup;
-    
-    bool reasonable_orders;
-    bool only_causal_landmarks;
-    bool disjunctive_landmarks;
-    bool conjunctive_landmarks;
-    bool no_orders;
-    
-    OperatorCost lm_cost_type;
-    
-    // other fields
     int landmarks_count;
     int conj_lms;
     
@@ -361,6 +323,47 @@ private:
     
     hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
     map<string, int> pddl_proposition_indeces; //TODO: make this a hash_map
+    
+    // methods and fields believed to remain in LandmarkGraph:
+public:
+    LandmarkGraph(Options &options, Exploration *explor);
+    virtual ~LandmarkGraph() {}
+    //static void build_lm_graph(LandmarkGraph *lm_graph);
+    
+    inline LandmarkNode &get_simple_lm_node(const pair<int, int> &a) const {
+        assert(simple_landmark_exists(a));
+        return *(simple_lms_to_nodes.find(a)->second);
+    }
+    inline LandmarkNode &get_disj_lm_node(const pair<int, int> &a) const {
+        // Note: this only works because every proposition appears in only one disj. LM
+        assert(!simple_landmark_exists(a));
+        assert(disj_lms_to_nodes.find(a) != disj_lms_to_nodes.end());
+        return *(disj_lms_to_nodes.find(a)->second);
+    }
+    inline const vector<int> &get_operators_including_eff(const pair<int, int> &eff) const {
+        return operators_eff_lookup[eff.first][eff.second];
+    }
+    
+    //inline const vector<int> &get_operators_including_pre(const pair<int, int> &pre) const {
+        //    return operators_pre_lookup[pre.first][pre.second];
+        //}
+    bool use_orders() const { return !no_orders; }
+    
+private:
+    void generate_operators_lookups();
+    
+    // fields for construction
+    vector<int> empty_pre_operators;
+    vector<vector<vector<int> > > operators_eff_lookup;
+    vector<vector<vector<int> > > operators_pre_lookup;
+    
+    bool reasonable_orders;
+    bool only_causal_landmarks;
+    bool disjunctive_landmarks;
+    bool conjunctive_landmarks;
+    bool no_orders;
+    
+    OperatorCost lm_cost_type;
 };
 
 #endif
