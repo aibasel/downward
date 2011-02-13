@@ -22,9 +22,6 @@ static LandmarkGraphPlugin landmarks_graph_new_plugin(
     
 LandmarkGraphNew::LandmarkGraphNew(LandmarkGraph::Options &options, Exploration *exploration)
     : LandmarkFactory(options, exploration)  {
-    lm_graph->read_external_inconsistencies();
-    generate_landmarks();
-    LandmarkGraph::build_lm_graph(lm_graph);
 }
 
 void LandmarkGraphNew::get_greedy_preconditions_for_lm(
