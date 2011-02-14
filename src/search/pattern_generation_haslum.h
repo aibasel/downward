@@ -25,7 +25,7 @@ class PatternGenerationHaslum {
 public:
     PatternGenerationHaslum(int max_pdb_size, int max_collection_size, int num_samples);
     virtual ~PatternGenerationHaslum();
-    PDBCollectionHeuristic *get_pattern_collection_heuristic() { return current_collection; };
+    PDBCollectionHeuristic *get_pattern_collection_heuristic() { return current_collection; }
 };
 
 #endif
