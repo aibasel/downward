@@ -59,6 +59,7 @@ public:
     PDBHeuristic(const std::vector<int> &pattern);
     virtual ~PDBHeuristic();
     const std::vector<int> &get_pattern() const { return pattern; };
+    const std::vector<int> &get_h_values() const { return distances; };
     void dump() const;
 };
 
