@@ -155,19 +155,31 @@ void PatternGenerationEdelkamp::mutate() {
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
             vector<bool> &pattern = pattern_collections[i][j];
+            //cout << "pattern before mutate:" << endl;
+            //for (size_t k = 0; k < pattern.size(); ++k) {
+              //  cout << pattern_collections[i][j][k] << " ";
+            //}
+            //cout << endl;
             for (size_t k = 0; k < pattern.size(); ++k) {
                 double random = g_rng(); // [0..1)
                 if (random < 0.01)
                     pattern[k] = !pattern[k];
             }
+           /* cout << "pattern after mutate:" << endl;
+            for (size_t k = 0; k < pattern.size(); ++k) {
+                cout << pattern_collections[i][j][k] << " ";
+            }
+            cout << endl;*/
         }
     }
 }
 
 void PatternGenerationEdelkamp::evaluate(vector<pair<int, int> > &fitness_values) const {
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
+        cout << "evaluate pattern collection " << i << " of " << pattern_collections.size() << endl;
         double fitness = 0;
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
+            cout << "calculate mean value for pattern " << j << endl;
             vector<int> pattern;
             for (size_t k = 0; k < pattern_collections[i][j].size(); ++k) {
                 if (pattern_collections[i][j][k])
