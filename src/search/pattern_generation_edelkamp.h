@@ -11,12 +11,13 @@ class PatternGenerationEdelkamp {
     void initialize(int initial_pdb_max_size);
     void recombine();
     void mutate();
-    void evaluate(std::vector<std::pair<int, int> > &fitness_values);
+    void evaluate(std::vector<std::pair<int, int> > &fitness_values) const;
     void select(const std::vector<std::pair<int, int> > &fitness_values);
 public:
     PatternGenerationEdelkamp(int initial_pdb_max_size, int max_collection_number);
     virtual ~PatternGenerationEdelkamp();
-    PDBCollectionHeuristic *get_pattern_collection_heuristic();
+    void dump() const;
+    PDBCollectionHeuristic *get_pattern_collection_heuristic() const;
 };
 
 #endif
