@@ -29,8 +29,10 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(int initial_pdb_max_size, i
         cout << "current t = " << t << endl;
         recombine();
         cout << "recombined" << endl;
+        dump();
         mutate();
         cout << "mutated" << endl;
+        dump();
         vector<pair<int, int> > fitness_values;
         evaluate(fitness_values);
         cout << "evaluated" << endl;
@@ -110,22 +112,42 @@ void PatternGenerationEdelkamp::initialize(int initial_pdb_max_size) {
 void PatternGenerationEdelkamp::recombine() {
     size_t vector_size = pattern_collections.size();
     for (size_t i = 1; i < vector_size; i += 2) {
+        //cout << "--- new pattern combination ---" << endl;
         vector<vector<bool> > collection1;
         vector<vector<bool> > collection2;
+        //cout << "pattern collection " << i-1 << endl;
         for (size_t j = 0; j < pattern_collections[i-1].size(); ++j) {
-            if (j < pattern_collections[i-1].size() / 2)
+            /*cout << "pushing pattern [ ";
+            for (size_t k = 0; k < pattern_collections[i-1][j].size(); ++k) {
+                cout << pattern_collections[i-1][j][k] << " ";
+            }*/
+            if (j < pattern_collections[i-1].size() / 2) {
+                //cout << "] into collection 1" << endl;
                 collection1.push_back(pattern_collections[i-1][j]);
-            else
+            }
+            else {
+                //cout << "] into collection 2" << endl;
                 collection2.push_back(pattern_collections[i-1][j]);
+            }
         }
+        //cout << "pattern collection " << i << endl;
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
-            if (j < pattern_collections[i].size() / 2)
+            /*cout << "pushing pattern [ ";
+            for (size_t k = 0; k < pattern_collections[i][j].size(); ++k) {
+                cout << pattern_collections[i][j][k] << " ";
+            }*/
+            if (j < pattern_collections[i].size() / 2) {
+                //cout << "] into collection 1" << endl;
                 collection1.push_back(pattern_collections[i][j]);
-            else
+            }
+            else {
+                //cout << "] into collection 2" << endl;
                 collection2.push_back(pattern_collections[i][j]);
+            }
         }
         pattern_collections.push_back(collection1);
         pattern_collections.push_back(collection2);
+        //cout << endl;
     }
 }
 
@@ -173,7 +195,7 @@ void PatternGenerationEdelkamp::select(const vector<pair<int, int> > &fitness_va
     // for the moment, we just take the x best pattern collections, where x is the number of collections
     // we should have.
     vector<vector<vector<bool> > > new_pattern_collections;
-    for (size_t i = fitness_values.size() - 1; i > fitness_values.size() - max_collection_number; --i) {
+    for (size_t i = fitness_values.size() - 1; i > fitness_values.size() - max_collection_number - 1; --i) {
         new_pattern_collections.push_back(pattern_collections[fitness_values[i].second]);
     }
     pattern_collections = new_pattern_collections;
