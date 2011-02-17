@@ -120,7 +120,7 @@ PDBHeuristic::PDBHeuristic(const vector<int> &pattern)
     verify_no_axioms_no_cond_effects();
     Timer timer;
     set_pattern(pattern);
-    cout << "PDB construction time: " << timer << endl;
+    //cout << "PDB construction time: " << timer << endl;
 }
 
 PDBHeuristic::~PDBHeuristic() {
