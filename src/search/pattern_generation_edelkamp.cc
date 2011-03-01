@@ -16,16 +16,15 @@ using namespace std;
 static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
 static ScalarEvaluatorPlugin pattern_generation_edelkamp_plugin("gapdb", create);
 
-PatternGenerationEdelkamp::PatternGenerationEdelkamp(int initial_pdb_max_size, int mcn)
+PatternGenerationEdelkamp::PatternGenerationEdelkamp(int initial_pdb_max_size, int mcn, int num_episodes)
     : max_collection_number(mcn) {
-    int t = 0;
     initialize(initial_pdb_max_size);
     cout << "initial pattern collections" << endl;
     dump();
     vector<pair<int, int> > initial_fitness_values;
     evaluate(initial_fitness_values);
     int current_best_h = initial_fitness_values[initial_fitness_values.size()-1].first;
-    while(t < 100) {
+    for (int t = 0; t < num_episodes; ++t) {
         cout << "current t = " << t << endl;
         recombine();
         cout << "recombined" << endl;
@@ -43,7 +42,6 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(int initial_pdb_max_size, i
             current_best_h = new_best_h;
         else
             break;
-        ++t;
     }
 }
 
@@ -64,6 +62,17 @@ void PatternGenerationEdelkamp::dump() const {
     }
 }
 
+/* TODO: Generell alle Variablen aus den
+Patterns entfernen, die nicht "kausal gerechtfertigt" sind, d.h.
+
+* Zielvariablen sind, oder
+* in Vorbedingungen von Operatoren auftauchen, die bereits
+kausal gerechtfertigte Variablen in den Effekten haben
+
+Damit bekäme man kleinere Patterns und vermutlich auch mehr Duplikate,
+d.h. Patterns, wo man schon auf gecachete Kosten zurückgreifen kann.
+*/
+
 void PatternGenerationEdelkamp::initialize(int initial_pdb_max_size) {
     vector<int> variables;
     variables.resize(g_variable_domain.size());
@@ -72,40 +81,29 @@ void PatternGenerationEdelkamp::initialize(int initial_pdb_max_size) {
     }
     
     for (size_t num_pcs = 0; num_pcs < max_collection_number; ++num_pcs) {
+        random_shuffle(variables.begin(), variables.end(), g_rng);
         vector<vector<bool> > pattern_collection;
-        int i = 0;
-        int current_size = 1;
-        vector<bool> pattern;
-        pattern.resize(g_variable_name.size(), false);
-        while (i < variables.size()) {
-            if (current_size * g_variable_domain[variables[i]] < initial_pdb_max_size) {
-                //pattern.push_back(variables[i]);
-                pattern[variables[i]] = true;
-                //cout << "pushing variable " << variables[i] << endl;
-                current_size *= g_variable_domain[variables[i]];
-                ++i;
-            } else if (!pattern.empty()) {
-                pattern_collection.push_back(pattern);
-                /*cout << "pushing pattern into collection:" << endl;
-                for (size_t j = 0; j < pattern.size(); ++j) {
-                    cout << pattern[j] << " ";
+        vector<bool> pattern(g_variable_name.size(), false);
+        size_t current_size = 1;
+        for (size_t i = 0; i < variables.size(); ++i) {
+            int var = variables[i];
+            int next_var_size = g_variable_domain[var];
+            if (next_var_size <= initial_pdb_max_size) {
+                if (current_size * next_var_size > initial_pdb_max_size) {
+                    if (pattern.empty())
+                        cout << "Warning! Pushed an empty pattern" << endl;
+                    pattern_collection.push_back(pattern);
+                    pattern.clear();
+                    pattern.resize(g_variable_name.size(), false);
+                    current_size = 1;
                 }
-                cout << endl;*/
-                current_size = 1;
-                pattern.clear();
-                pattern.resize(g_variable_name.size(), false);
-            } else { //pattern.empty()
-                cout << "no more variables fitted into pattern" << endl;
-                ++i;
+                current_size *= next_var_size;
+                pattern[var] = true;
             }
         }
+        if (!pattern.empty())
+            pattern_collection.push_back(pattern);
         pattern_collections.push_back(pattern_collection);
-        random_shuffle(variables.begin(), variables.end());
-        /*cout << "new variable ordering after shuffling:" << endl;
-        for (size_t i = 0; i < g_variable_domain.size(); ++i) {
-            cout << variables[i] << " ";
-        }
-        cout << endl;*/
     }
 }
 
@@ -231,14 +229,16 @@ PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuris
 }
 
 ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
-    int initial_pdb_max_size = 32;
+    int initial_pdb_max_size = 100;
     int max_collection_number = 10;
+    int num_episodes = 5;
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
         if (config[end] != ")") {
             NamedOptionParser option_parser;
             option_parser.add_int_option("initial_pdb_max_size", &initial_pdb_max_size, "initial max size for pdbs");
             option_parser.add_int_option("max_collection_number", &max_collection_number, "max number of pattern collections");
+            option_parser.add_int_option("num_episodes", &num_episodes, "number of episodes");
             option_parser.parse_options(config, end, end, dry_run);
             end++;
         }
@@ -249,19 +249,23 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     }
     
     // TODO: required meaningful value
-    if (initial_pdb_max_size < 10) {
-        cerr << "error: size per pdb must be at least 10" << endl;
+    if (initial_pdb_max_size < 1) {
+        cerr << "error: size per pdb must be at least 1" << endl;
         exit(2);
     }
     if (max_collection_number < 1) {
         cerr << "error: number of pattern collections must be at least 1" << endl;
         exit(2);
     }
+    if (num_episodes < 1) {
+        cerr << "error: number of episodes must be at least 1" << endl;
+        exit(2);
+    }
     
     if (dry_run)
         return 0;
     
-    PatternGenerationEdelkamp pge(initial_pdb_max_size, max_collection_number);
-    cout << "Edelkamp et al. done." << endl;
+    PatternGenerationEdelkamp pge(initial_pdb_max_size, max_collection_number, num_episodes);
+    cout << "Edelkamp done." << endl;
     return pge.get_pattern_collection_heuristic();
 }
