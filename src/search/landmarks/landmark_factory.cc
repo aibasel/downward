@@ -662,27 +662,27 @@ void LandmarkFactory::dump() const {
         child_it = node_p->children.begin(); child_it
         != node_p->children.end(); child_it++) {
         const edge_type &edge = child_it->second;
-    const LandmarkNode *child_p = child_it->first;
-    cout << "\t\t->_";
-    switch (edge) {
-        case necessary:
-            cout << "nec ";
-            break;
-        case greedy_necessary:
-            cout << "gn  ";
-            break;
-        case natural:
-            cout << "nat ";
-            break;
-        case reasonable:
-            cout << "r   ";
-            break;
-        case obedient_reasonable:
-            cout << "o_r ";
-            break;
-    }
-    dump_node(child_p);
-    }
+        const LandmarkNode *child_p = child_it->first;
+        cout << "\t\t->_";
+        switch (edge) {
+            case necessary:
+                cout << "nec ";
+                break;
+            case greedy_necessary:
+                cout << "gn  ";
+                break;
+            case natural:
+                cout << "nat ";
+                break;
+            case reasonable:
+                cout << "r   ";
+                break;
+            case obedient_reasonable:
+                cout << "o_r ";
+                break;
+        }
+        dump_node(child_p);
+        }
     }
     cout << "Landmark graph end." << endl;
 }
