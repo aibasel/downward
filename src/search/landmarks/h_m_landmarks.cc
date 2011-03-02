@@ -308,6 +308,19 @@ void HMLandmarks::get_m_sets(int m,
     get_m_sets(m, subsets, state_fluents);
 }
 
+void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
+    hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator it =
+    pddl_propositions.find(fluent);
+    if (it != pddl_propositions.end()) {
+        cout << it->second.to_string();
+    } else {
+        cout << "Name unknown";
+    }
+    cout << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
+    << "->" << fluent.second << ")";
+}
+
+// TODO: not a method of any class
 void get_operator_precondition(int op_index, FluentSet &pc) {
     Operator &op = g_operators[op_index];
 
@@ -327,6 +340,7 @@ void get_operator_precondition(int op_index, FluentSet &pc) {
     std::sort(pc.begin(), pc.end());
 }
 
+// TODO: not a method of any class
 void get_operator_effect(int op_index, FluentSet &eff) {
     Operator &op = g_operators[op_index];
 

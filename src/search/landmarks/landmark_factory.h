@@ -33,7 +33,6 @@ public:
         }
     };
     
-    void print_proposition(const pair<int, int> &fluent) const;
     void read_external_inconsistencies();
     void discard_noncausal_landmarks();
     void discard_disjunctive_landmarks();
@@ -62,18 +61,6 @@ public:
             return false;
     }
     
-    // TODO: check how some of the following added methods may be improved. remove comments later
-    // added while refactoring
-    // methods needed for h_m_landmarks (which no longer inherit landmarks_graph)
-    
-    // 2 methods needed for rpg_sasp
-    const hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> &get_pddl_propositions() const {
-        return pddl_propositions; 
-    }
-    const map<string, int> &get_pddl_proposition_indices() const {
-        return pddl_proposition_indeces;
-    }
-    
     void edge_add(LandmarkNode &from, LandmarkNode &to, edge_type type);
     
     inline bool relaxed_task_solvable(bool level_out,
@@ -84,11 +71,16 @@ public:
         return relaxed_task_solvable(lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
     }
 
+    // TODO: move this method to LandmarkGraphRpgSearch and deal with the static methods in
+    // landmark_factory.cc
     int relaxed_plan_length_without(LandmarkNode *lm);
 
     void compute_predecessor_information(LandmarkNode *bp,
                                          vector<vector<int> > &lvl_var,
                                          vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op);
+protected:
+    hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
+    map<string, int> pddl_proposition_indices; //TODO: make this a hash_map
 
 private:   
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
@@ -128,9 +120,6 @@ private:
 
     vector<vector<set<pair<int, int> > > > inconsistent_facts;
     bool external_inconsistencies_read;
-
-    hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
-    map<string, int> pddl_proposition_indeces; //TODO: make this a hash_map
 };
 
 #endif

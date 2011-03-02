@@ -250,13 +250,13 @@ void LandmarkGraphNew::compute_disjunctive_preconditions(vector<set<pair<int,
             for (hash_map<int, int>::iterator it = next_pre.begin(); it
                  != next_pre.end(); it++) {
                 hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator
-                    it2 = get_pddl_propositions().find(make_pair(it->first,
+                    it2 = pddl_propositions.find(make_pair(it->first,
                                                            it->second));
-                if (it2 == get_pddl_propositions().end()) // this can happen as translator
+                if (it2 == pddl_propositions.end()) // this can happen as translator
                     //introduces additional vars
                     continue;
                 string pred = it2->second.predicate;
-                int pred_index = get_pddl_proposition_indices().find(pred)->second;
+                int pred_index = pddl_proposition_indices.find(pred)->second;
 
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).

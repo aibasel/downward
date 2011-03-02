@@ -127,10 +127,10 @@ void LandmarkFactory::read_external_inconsistencies() {
                     prop.predicate = predicate;
                     prop.arguments = args;
                     pddl_propositions.insert(make_pair(var_val_pair, prop));
-                    if (pddl_proposition_indeces.find(predicate)
-                        == pddl_proposition_indeces.end()) {
-                        pddl_proposition_indeces.insert(make_pair(predicate,
-                                                                  pddl_proposition_indeces.size()));
+                    if (pddl_proposition_indices.find(predicate)
+                        == pddl_proposition_indices.end()) {
+                        pddl_proposition_indices.insert(make_pair(predicate,
+                                                                  pddl_proposition_indices.size()));
                     }
                 }
             }
@@ -596,18 +596,6 @@ hash_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
     }
 }
 
-void LandmarkFactory::print_proposition(const pair<int, int> &fluent) const {
-    hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator it =
-    pddl_propositions.find(fluent);
-    if (it != pddl_propositions.end()) {
-        cout << it->second.to_string();
-    } else {
-        cout << "Name unknown";
-    }
-    cout << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
-    << "->" << fluent.second << ")";
-}
-
 void LandmarkFactory::dump_node(const LandmarkNode *node_p) const {
     cout << "LM " << node_p->get_id() << " ";
     if (node_p->disjunctive)
@@ -948,29 +936,29 @@ void LandmarkFactory::calc_achievers() {
         != lm_graph->get_nodes().end(); ++node_it) {
         LandmarkNode &lmn = **node_it;
     
-    for (int k = 0; k < lmn.vars.size(); k++) {
-        vector<int> ops = lm_graph->get_operators_including_eff(make_pair(
-            lmn.vars[k], lmn.vals[k]));
-        lmn.possible_achievers.insert(ops.begin(), ops.end());
-        
-        if (g_axiom_layers[lmn.vars[k]] != -1)
-            lmn.is_derived = true;
-    }
-    
-    vector<vector<int> > lvl_var;
-    vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
-    compute_predecessor_information(&lmn, lvl_var, lvl_op);
-    
-    set<int>::iterator ach_it;
-    for (ach_it = lmn.possible_achievers.begin(); ach_it
-        != lmn.possible_achievers.end(); ++ach_it) {
-        int op_id = *ach_it;
-    const Operator &op = lm_graph->get_operator_for_lookup_index(op_id);
-    
-    if (_possibly_reaches_lm(op, lvl_var, &lmn)) {
-        lmn.first_achievers.insert(op_id);
-    }
-    }
+        for (int k = 0; k < lmn.vars.size(); k++) {
+            vector<int> ops = lm_graph->get_operators_including_eff(make_pair(
+                lmn.vars[k], lmn.vals[k]));
+            lmn.possible_achievers.insert(ops.begin(), ops.end());
+
+            if (g_axiom_layers[lmn.vars[k]] != -1)
+                lmn.is_derived = true;
+        }
+
+        vector<vector<int> > lvl_var;
+        vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
+        compute_predecessor_information(&lmn, lvl_var, lvl_op);
+
+        set<int>::iterator ach_it;
+        for (ach_it = lmn.possible_achievers.begin(); ach_it
+            != lmn.possible_achievers.end(); ++ach_it) {
+            int op_id = *ach_it;
+            const Operator &op = lm_graph->get_operator_for_lookup_index(op_id);
+
+            if (_possibly_reaches_lm(op, lvl_var, &lmn)) {
+                lmn.first_achievers.insert(op_id);
+            }
+        }
     }
 }
 
