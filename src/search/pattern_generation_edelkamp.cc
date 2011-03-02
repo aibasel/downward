@@ -4,12 +4,15 @@
 #include "pdb_heuristic.h"
 #include "plugin.h"
 #include "rng.h"
+#include "timer.h"
 
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <limits>
 #include <vector>
+
+namespace std { using namespace __gnu_cxx; }
 
 using namespace std;
 
@@ -30,19 +33,20 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(int pdb_size, int num_coll,
     //best_collection = pattern_collections[initial_fitness_values.back().second];
     
     for (int t = 0; t < num_episodes; ++t) {
-        cout << "episode no " << t << endl;
+        cout << endl;
+        cout << "--------- episode no " << t << " ---------" << endl;
         mutate(mutation_probability);
         cout << "mutated" << endl;
         //dump();
         vector<double> fitness_values;
-        evaluate(fitness_values);
+        double fitness_sum = evaluate(fitness_values);
         cout << "evaluated" << endl;
-        cout << "fitness values:" << endl;
-        for (size_t i = 0; i < fitness_values.size() - 1; ++i) {
+        /*cout << "fitness values:" << endl;
+        for (size_t i = 0; i < fitness_values.size(); ++i) {
             cout << "fitness: " << fitness_values[i] << endl;
-        }
+        }*/
         //double new_best_h = fitness_values.back().first;
-        select(fitness_values);
+        select(fitness_values, fitness_sum);
         //dump();
         /*if (new_best_h > current_best_h) {
             current_best_h = new_best_h;
@@ -171,40 +175,47 @@ void PatternGenerationEdelkamp::mutate(double probability) {
     }
 }
 
-void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) const {
+double PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
     double total_sum = 0;
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         cout << "evaluate pattern collection " << i << " of " << pattern_collections.size() << endl;
         double fitness = 0;
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
-            cout << "calculate mean value for pattern " << j << endl;
-            vector<int> pattern;
-            transform_to_pattern_normal_form(pattern_collections[i][j], pattern);
-            cout << "transformed into normal pattern form" << endl;
-            PDBHeuristic pdb_heuristic(pattern);
-            cout << "calculated pdb" << endl;
-            const vector<int> &h_values = pdb_heuristic.get_h_values();
-            double sum = 0;
-            for (size_t k = 0; k < h_values.size(); ++k) {
-                if (h_values[k] == numeric_limits<int>::max())
-                    continue;
-                sum += h_values[k];
+            //cout << "calculate mean value for pattern " << j << endl;
+            const vector<bool> &bitvector = pattern_collections[i][j];
+            //hash_map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
+            map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
+            double mean_h = 0;
+            if (it == pattern_to_fitness.end()) {
+                vector<int> pattern;
+                transform_to_pattern_normal_form(bitvector, pattern);
+                //cout << "transformed into normal pattern form" << endl;
+                PDBHeuristic pdb_heuristic(pattern);
+                //cout << "calculated pdb" << endl;
+                const vector<int> &h_values = pdb_heuristic.get_h_values();
+                double sum = 0;
+                for (size_t k = 0; k < h_values.size(); ++k) {
+                    if (h_values[k] == numeric_limits<int>::max())
+                        continue;
+                    sum += h_values[k];
+                }
+                mean_h = sum / h_values.size();
+                pattern_to_fitness.insert(make_pair(bitvector, mean_h));
+            } else {
+                mean_h = (*it).second;
             }
-            double mean_h = sum / h_values.size();
             fitness += mean_h;
-            cout << "calculated mean value for pattern" << endl;
         }
         fitness_values.push_back(fitness);
         total_sum += fitness;
     }
-    fitness_values.push_back(total_sum); // last element is the sum of all values
+    return total_sum;
 }
 
-void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
+void PatternGenerationEdelkamp::select(const vector<double> &fitness_values, double fitness_sum) {
     vector<double> probabilities;
-    double total_sum = fitness_values.back();
-    for (size_t i = 0; i < fitness_values.size() - 1; ++i) {
-        probabilities.push_back(fitness_values[i] / total_sum);
+    for (size_t i = 0; i < fitness_values.size(); ++i) {
+        probabilities.push_back(fitness_values[i] / fitness_sum);
         if (i > 0)
             probabilities[i] += probabilities[i-1];
     }
@@ -213,8 +224,7 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
         cout << probabilities[i] << " ";
     }
     cout << endl;
-    //cout << "last entry of fitness_values (should be 1): " << probabilities.back() << endl;
-    
+
     vector<vector<vector<bool> > > new_pattern_collections;
     for (size_t i = 0; i < num_collections; ++i) {
         double random = g_rng(); // [0..1)
@@ -228,19 +238,18 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
     pattern_collections = new_pattern_collections;
 }
 
-PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() const {
+PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() {
     // return the best collection of the last pattern collections (after all episodes)
     vector<double> fitness_values;
     evaluate(fitness_values);
     double best_fitness = fitness_values[0];
     int best_index = 0;
-    for (size_t i = 1; i < fitness_values.size() - 1; ++i) {
+    for (size_t i = 1; i < fitness_values.size(); ++i) {
         if (fitness_values[i] > best_fitness) {
             best_fitness = fitness_values[i];
             best_index = i;
         }
     }
-    cout << "calculated best index: " << best_index << endl;
     const vector<vector<bool> > &best_collection = pattern_collections[best_index];
     vector<vector<int> > pattern_collection;
     for (size_t j = 0; j < best_collection.size(); ++j) {
@@ -254,7 +263,7 @@ PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuris
 }
 
 ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
-    int pdb_max_size = 10000;
+    int pdb_max_size = 100;
     int num_collections = 10;
     int num_episodes = 5;
     int mutation_probability = 1;
@@ -274,8 +283,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     } else {
         end = start;
     }
-    
-    // TODO: required meaningful value
+
     if (pdb_max_size < 1) {
         cerr << "error: size per pdb must be at least 1" << endl;
         exit(2);
@@ -292,11 +300,11 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         cerr << "error: mutation probability must be in [0..100]" << endl;
         exit(2);
     }
-    
+
     if (dry_run)
         return 0;
-    
+    Timer timer;
     PatternGenerationEdelkamp pge(pdb_max_size, num_collections, num_episodes, mutation_probability / 100.0);
-    cout << "Edelkamp done." << endl;
+    cout << "Pattern Generation (Edelkamp) time: " << timer << endl;
     return pge.get_pattern_collection_heuristic();
 }
