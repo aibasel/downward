@@ -205,7 +205,7 @@ public:
     //inline const vector<int> &get_operators_including_pre(const pair<int, int> &pre) const {
         //    return operators_pre_lookup[pre.first][pre.second];
         //}
-    bool use_orders() const { return !no_orders; }
+    bool use_orders() const { return !no_orders; } // only needed by HMLandmark
     bool use_only_causal_landmarks() const { return only_causal_landmarks; }
     bool use_disjunctive_landmarks() const { return disjunctive_landmarks; }
     bool use_conjunctive_landmarks() const { return conjunctive_landmarks; }
@@ -223,18 +223,20 @@ public:
         return lm_cost_type;
     }
     
-    bool simple_landmark_exists(const pair<int, int> &lm) const;
-    bool disj_landmark_exists(const set<pair<int, int> > &lm) const;
-    bool landmark_exists(const pair<int, int> &lm) const;
+    bool simple_landmark_exists(const pair<int, int> &lm) const; // not needed by HMLandmark
+    bool disj_landmark_exists(const set<pair<int, int> > &lm) const; // not needed by HMLandmark
+    bool landmark_exists(const pair<int, int> &lm) const; // not needed by HMLandmark
     bool exact_same_disj_landmark_exists(const set<pair<int, int> > &lm) const;
     
-    LandmarkNode &landmark_add_simple(const pair<int, int> &lm);
+    LandmarkNode &landmark_add_simple(const pair<int, int> &lm); // not needed by HMLandmark
     LandmarkNode &landmark_add_disjunctive(const set<pair<int, int> > &lm);
     // TODO: check whether this method (insert_node) can be delegated to the simple add methods
     // only calling class is HMLandmark
     void insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj);
     void rm_landmark_node(LandmarkNode *node);
-    void rm_landmark(const pair<int, int> &lmk);
+    void rm_landmark(const pair<int, int> &lmk); // only needed by LandmarkGraphExhaust
+    // TODO: only calling class of make_disj_node_simple is LandmarkGraphNew - maybe delegate
+    // the call to add/remove methods
     LandmarkNode &make_disj_node_simple(std::pair<int, int> lm);
     void set_landmark_ids();
     void set_landmark_cost(int cost) {

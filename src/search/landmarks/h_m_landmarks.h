@@ -146,6 +146,7 @@ private:
 
     void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
+    void print_proposition(const pair<int, int> &fluent) const;
 };
 
 #endif
