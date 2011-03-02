@@ -188,7 +188,7 @@ private:
 public:
     LandmarkGraph(Options &options, Exploration *explor);
     virtual ~LandmarkGraph() {}
-    
+
     inline LandmarkNode &get_simple_lm_node(const pair<int, int> &a) const {
         assert(simple_landmark_exists(a));
         return *(simple_lms_to_nodes.find(a)->second);
