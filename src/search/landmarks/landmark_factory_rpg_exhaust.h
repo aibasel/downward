@@ -4,10 +4,10 @@
 #include "landmark_factory.h"
 #include "landmark_graph.h"
 
-class LandmarkGraphExhaust : public LandmarkFactory {
+class LandmarkFactoryRpgExhaust : public LandmarkFactory {
 public:
-    LandmarkGraphExhaust(LandmarkGraph::Options &options, Exploration *exploration);
-    virtual ~LandmarkGraphExhaust() {}
+    LandmarkFactoryRpgExhaust(LandmarkGraph::Options &options, Exploration *exploration);
+    virtual ~LandmarkFactoryRpgExhaust() {}
 private:
     void generate_landmarks();
 };
