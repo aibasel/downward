@@ -1,10 +1,10 @@
 #include "landmark_count_heuristic.h"
 
 #include "h_m_landmarks.h"
-#include "landmark_graph_rpg_exhaust.h"
-#include "landmark_graph_rpg_sasp.h"
-#include "landmark_graph_rpg_search.h"
-#include "landmark_graph_zhu_givan.h"
+#include "landmark_factory_rpg_exhaust.h"
+#include "landmark_factory_rpg_sasp.h"
+#include "landmark_factory_rpg_search.h"
+#include "landmark_factory_zhu_givan.h"
 
 #include "../globals.h"
 #include "../operator.h"

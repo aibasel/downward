@@ -1,4 +1,4 @@
-#include "landmark_graph_rpg_search.h"
+#include "landmark_factory_rpg_search.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 

@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_LANDMARK_GRAPH_ZHU_GIVAN_H
-#define LANDMARKS_LANDMARK_GRAPH_ZHU_GIVAN_H
+#ifndef LANDMARKS_LANDMARK_FACTORY_ZHU_GIVAN_H
+#define LANDMARKS_LANDMARK_FACTORY_ZHU_GIVAN_H
 
 #include "landmark_factory.h"
 #include "landmark_graph.h"

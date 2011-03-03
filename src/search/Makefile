@@ -78,10 +78,10 @@ HEADERS += landmarks/exploration.h \
            landmarks/landmark_status_manager.h \
            landmarks/landmark_graph_merged.h \
            landmarks/landmark_graph.h \
-           landmarks/landmark_graph_rpg_exhaust.h \
-           landmarks/landmark_graph_rpg_sasp.h \
-           landmarks/landmark_graph_rpg_search.h \
-           landmarks/landmark_graph_zhu_givan.h \
+           landmarks/landmark_factory_rpg_exhaust.h \
+           landmarks/landmark_factory_rpg_sasp.h \
+           landmarks/landmark_factory_rpg_search.h \
+           landmarks/landmark_factory_zhu_givan.h \
            landmarks/util.h \
            landmarks/landmark_factory.h
 

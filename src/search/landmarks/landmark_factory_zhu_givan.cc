@@ -1,15 +1,15 @@
-#include <iostream>
-#include <vector>
-#include <utility>
-#include <ext/hash_map>
-
-#include "landmark_graph_zhu_givan.h"
+#include "landmark_factory_zhu_givan.h"
 #include "landmark_graph.h"
 #include "../operator.h"
 #include "../state.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+
+#include <iostream>
+#include <vector>
+#include <utility>
+#include <ext/hash_map>
 
 using namespace __gnu_cxx;
 

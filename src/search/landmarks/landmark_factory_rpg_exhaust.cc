@@ -1,7 +1,7 @@
 #include <vector>
 #include <ext/hash_map>
 
-#include "landmark_graph_rpg_exhaust.h"
+#include "landmark_factory_rpg_exhaust.h"
 #include "../state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
