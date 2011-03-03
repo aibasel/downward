@@ -1,20 +1,21 @@
 #include "pdb_collection_heuristic.h"
 #include "pdb_heuristic.h"
 #include "globals.h"
+#include "operator.h"
+#include "planning_utilities.h"
 #include "plugin.h"
 #include "state.h"
-#include "operator.h"
 #include "timer.h"
-#include "planning_utilities.h"
 
+#include <cassert>
 #include <cstdlib>
 #include <limits>
-#include <cassert>
+#include <vector>
 
 using namespace std;
 
 static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
-static ScalarEvaluatorPlugin pdbcollection_heuristic_plugin("pdbs", create);
+static ScalarEvaluatorPlugin plugin("pdbs", create);
 
 PDBCollectionHeuristic::PDBCollectionHeuristic(const vector<vector<int> > &pattern_collection)
     : Heuristic(HeuristicOptions()) {
