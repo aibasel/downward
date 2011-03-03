@@ -6,14 +6,13 @@
 #include "../state.h"
 
 #include <cassert>
-
+#include <ext/hash_map>
 #include <list>
 #include <map>
 #include <set>
 #include <sstream>
 #include <utility>
 #include <vector>
-#include <ext/hash_map>
 
 using namespace std;
 
@@ -204,8 +203,7 @@ bool LandmarkGraph::disj_landmark_exists(const set<pair<int, int> > &lm) const {
     return false;
 }
 
-bool LandmarkGraph::exact_same_disj_landmark_exists(
-const set<pair<int, int> > &lm) const {
+bool LandmarkGraph::exact_same_disj_landmark_exists(const set<pair<int, int> > &lm) const {
     // Test whether a disj. LM exists which consists EXACTLY of those facts in lm
     LandmarkNode *lmn = NULL;
     for (set<pair<int, int> >::const_iterator it = lm.begin(); it != lm.end(); ++it) {

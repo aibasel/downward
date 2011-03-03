@@ -41,8 +41,8 @@ public:
 
     void generate();
 
-    // TODO: move those to landmarkgraph eventually? get rid of pddl_propositions in dump_node
-    // they should only be needed by LandmarkGraphNew anyways
+    // TODO: move those to LandmarkGraph eventually? get rid of pddl_propositions in dump_node
+    // they should only be needed by LandmarkFactoryRpgSasp anyways
     void dump_node(const LandmarkNode *node_p) const;
     void dump() const;
 
@@ -77,11 +77,11 @@ public:
                                          vector<vector<int> > &lvl_var,
                                          vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op);
 protected:
-    // TODO: only needed by LandmarkGraphNew and dump_node... get rid of it here
+    // TODO: only needed by LandmarkFactoryRpgSasp and dump_node... get rid of it here
     hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
     map<string, int> pddl_proposition_indices; //TODO: make this a hash_map
 
-    // protected not private for LandmarkGraphRpgSearch
+    // protected not private for LandmarkFactoryRpgSearch
     bool achieves_non_conditional(const Operator &o, const LandmarkNode *lmp) const;
     bool is_landmark_precondition(const Operator &o, const LandmarkNode *lmp) const;
 
@@ -121,7 +121,7 @@ private:
     bool dead_end_found;
 
     vector<vector<set<pair<int, int> > > > inconsistent_facts;
-    bool external_inconsistencies_read;
+    //bool external_inconsistencies_read;
 };
 
 #endif
