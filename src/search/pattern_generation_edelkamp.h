@@ -12,7 +12,7 @@ class PatternGenerationEdelkamp {
     int num_collections;
     // TODO: check why it doesn't work with hash_map
     //__gnu_cxx::hash_map<std::vector<bool>, double> pattern_to_fitness;
-    std::map<std::vector<bool>, double> pattern_to_fitness;
+    std::map<std::vector<bool>, double> pattern_to_fitness; // cache fitness values for already calculated patterns
     std::vector<std::vector<std::vector<bool> > > pattern_collections; // all current pattern collections
     //std::vector<std::vector<bool> > best_collection; // remember the best pattern collection over all episodes
     void initialize(); // bin packing (for variables) to determine initial pattern collections
@@ -23,7 +23,7 @@ class PatternGenerationEdelkamp {
     double evaluate(std::vector<double> &fitness_values);
 
     // select each pattern collection with a probability (obtained by normalizing the fitness function)
-    void select(const std::vector<double> &fitness_values, double fitness_sumS);
+    void select(const std::vector<double> &fitness_values, double fitness_sum);
 
     // transforms a vector of bools (pattern representation in this algorithm) to the "normal" pattern form
     // vector<int> (needed for PDBHeuristic)
