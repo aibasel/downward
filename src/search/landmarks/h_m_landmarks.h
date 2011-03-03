@@ -73,10 +73,6 @@ public:
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
-
-    static LandmarkGraph *create(const std::vector<std::string> &config, int start,
-                                  int &end, bool dry_run);
-
 private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
     typedef __gnu_cxx::hash_map<int, std::set<int> > TriggerSet;

@@ -70,8 +70,6 @@ public:
 public:
     LandmarkGraphZhuGivan(LandmarkGraph::Options &options, Exploration *exploration);
     virtual ~LandmarkGraphZhuGivan() {}
-    static LandmarkGraph *create(const std::vector<std::string> &config, int start,
-                                  int &end, bool dry_run);
 };
 
 #endif

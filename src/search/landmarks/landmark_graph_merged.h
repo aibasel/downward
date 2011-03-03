@@ -14,8 +14,6 @@ public:
                         Exploration *exploration,
                         const std::vector<LandmarkGraph *> &lm_graphs_);
     virtual ~LandmarkGraphMerged();
-    static LandmarkGraph *create(const std::vector<std::string> &config, int start,
-                                 int &end, bool dry_run);
 };
 
 #endif

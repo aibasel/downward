@@ -73,10 +73,6 @@ public:
         return relaxed_task_solvable(lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
     }
 
-    // TODO: move this method to LandmarkGraphRpgSearch and deal with the static methods in
-    // landmark_factory.cc
-    int relaxed_plan_length_without(LandmarkNode *lm);
-
     void compute_predecessor_information(LandmarkNode *bp,
                                          vector<vector<int> > &lvl_var,
                                          vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op);
@@ -84,6 +80,10 @@ protected:
     // TODO: only needed by LandmarkGraphNew and dump_node... get rid of it here
     hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
     map<string, int> pddl_proposition_indices; //TODO: make this a hash_map
+
+    // protected not private for LandmarkGraphRpgSearch
+    bool achieves_non_conditional(const Operator &o, const LandmarkNode *lmp) const;
+    bool is_landmark_precondition(const Operator &o, const LandmarkNode *lmp) const;
 
 private:   
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
