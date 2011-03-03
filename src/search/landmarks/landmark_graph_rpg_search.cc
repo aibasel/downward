@@ -2,8 +2,9 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-static LandmarkGraphPlugin landmarks_graph_rpg_search_plugin(
-    "lm_search", LandmarkGraphRpgSearch::create);
+static LandmarkGraph *create(const std::vector<std::string> &config, int start,
+                             int &end, bool dry_run);
+static LandmarkGraphPlugin plugin("lm_search", create);
 
 LandmarkGraphRpgSearch::LandmarkGraphRpgSearch(
     LandmarkGraph::Options &options, Exploration *exploration,
@@ -114,8 +115,24 @@ int LandmarkGraphRpgSearch::choose_random(vector<int> &evals) {
     return ret;
 }
 
-LandmarkGraph *LandmarkGraphRpgSearch::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
+int LandmarkGraphRpgSearch::relaxed_plan_length_without(LandmarkNode *exclude) {
+    vector<pair<int, int> > exclude_props;
+    hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
+    if (exclude != NULL) {
+        for (int op = 0; op < g_operators.size(); op++) {
+            if (achieves_non_conditional(g_operators[op], exclude))
+                exclude_ops.insert(&g_operators[op]);
+        }
+        for (int i = 0; i < exclude->vars.size(); i++)
+            exclude_props.push_back(make_pair(exclude->vars[i],
+                                              exclude->vals[i]));
+    }
+    int val = lm_graph->get_exploration()->compute_ff_heuristic_with_excludes(
+        *g_initial_state, exclude_props, exclude_ops);
+    return val;
+}
+
+LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarkGraph::Options common_options;
 
     bool uniform_sampling = false;

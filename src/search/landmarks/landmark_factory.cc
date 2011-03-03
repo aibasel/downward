@@ -29,8 +29,8 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
 // ------------------------------------------------------------------------------------------------
 // from LandmarkGraph
 
-static inline bool _operator_eff_includes_non_conditional(const Operator &o,
-                                                          const LandmarkNode *lmp) {
+bool LandmarkFactory::achieves_non_conditional(const Operator &o,
+                                               const LandmarkNode *lmp) const {
     /* Test whether the landmark is achieved by the operator unconditionally.
     A disjunctive landmarks is achieved if one of its disjuncts is achieved. */
     assert(lmp != NULL);
@@ -46,8 +46,8 @@ static inline bool _operator_eff_includes_non_conditional(const Operator &o,
     return false;
 }
 
-static inline bool _operator_condition_includes(const Operator &o,
-                                                const LandmarkNode *lmp) {
+bool LandmarkFactory::is_landmark_precondition(const Operator &o,
+                                               const LandmarkNode *lmp) const {
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
     assert(lmp != NULL);
@@ -185,7 +185,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     vector<pair<int, int> > exclude_props;
     if (exclude != NULL) {
         for (int op = 0; op < g_operators.size(); op++) {
-            if (_operator_eff_includes_non_conditional(g_operators[op], exclude))
+            if (achieves_non_conditional(g_operators[op], exclude))
                 exclude_ops.insert(&g_operators[op]);
         }
         for (int i = 0; i < exclude->vars.size(); i++)
@@ -224,7 +224,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
     for (int op = 0; op < g_operators.size(); op++) {
-        if (_operator_condition_includes(g_operators[op], &landmark)) {
+        if (is_landmark_precondition(g_operators[op], &landmark)) {
             exclude_ops.insert(&g_operators[op]);
         }
     }
@@ -960,21 +960,4 @@ void LandmarkFactory::calc_achievers() {
             }
         }
     }
-}
-
-int LandmarkFactory::relaxed_plan_length_without(LandmarkNode *exclude) {
-    vector<pair<int, int> > exclude_props;
-    hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
-    if (exclude != NULL) {
-        for (int op = 0; op < g_operators.size(); op++) {
-            if (_operator_eff_includes_non_conditional(g_operators[op], exclude))
-                exclude_ops.insert(&g_operators[op]);
-        }
-        for (int i = 0; i < exclude->vars.size(); i++)
-            exclude_props.push_back(make_pair(exclude->vars[i],
-                                              exclude->vals[i]));
-    }
-    int val = lm_graph->get_exploration()->compute_ff_heuristic_with_excludes(
-        *g_initial_state, exclude_props, exclude_ops);
-    return val;
 }

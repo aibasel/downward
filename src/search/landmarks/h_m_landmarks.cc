@@ -2,8 +2,9 @@
 #include "../plugin.h"
 #include "../exact_timer.h"
 
-static LandmarkGraphPlugin h_m_landmarks_graph_plugin(
-    "lm_hm", HMLandmarks::create);
+static LandmarkGraph *create(const std::vector<std::string> &config, int start,
+                             int &end, bool dry_run);
+static LandmarkGraphPlugin plugin("lm_hm", create);
 
 std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
@@ -320,8 +321,7 @@ void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
     << "->" << fluent.second << ")";
 }
 
-// TODO: not a method of any class
-void get_operator_precondition(int op_index, FluentSet &pc) {
+static void get_operator_precondition(int op_index, FluentSet &pc) {
     Operator &op = g_operators[op_index];
 
     const std::vector<Prevail> &prevail = op.get_prevail();
@@ -340,8 +340,7 @@ void get_operator_precondition(int op_index, FluentSet &pc) {
     std::sort(pc.begin(), pc.end());
 }
 
-// TODO: not a method of any class
-void get_operator_effect(int op_index, FluentSet &eff) {
+static void get_operator_effect(int op_index, FluentSet &eff) {
     Operator &op = g_operators[op_index];
 
     const std::vector<PrePost> &pre_post = op.get_pre_post();
@@ -1023,8 +1022,7 @@ void HMLandmarks::generate_landmarks() {
     free_unneeded_memory();
 }
 
-LandmarkGraph *HMLandmarks::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
+LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarkGraph::Options common_options;
 
     int m = 2;

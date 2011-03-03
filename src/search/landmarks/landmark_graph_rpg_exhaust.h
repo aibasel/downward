@@ -8,8 +8,6 @@ class LandmarkGraphExhaust : public LandmarkFactory {
 public:
     LandmarkGraphExhaust(LandmarkGraph::Options &options, Exploration *exploration);
     virtual ~LandmarkGraphExhaust() {}
-    static LandmarkGraph *create(const std::vector<std::string> &config, int start,
-                                  int &end, bool dry_run);
 private:
     void generate_landmarks();
 };

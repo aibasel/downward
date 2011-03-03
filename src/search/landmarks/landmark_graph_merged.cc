@@ -6,8 +6,9 @@
 
 using namespace std;
 
-static LandmarkGraphPlugin landmark_graph_merged_plugin(
-    "lm_merged", LandmarkGraphMerged::create);
+static LandmarkGraph *create(const std::vector<std::string> &config, int start,
+                             int &end, bool dry_run);
+static LandmarkGraphPlugin plugin("lm_merged", create);
 
 LandmarkGraphMerged::LandmarkGraphMerged(
     LandmarkGraph::Options &options, Exploration *exploration,
@@ -126,10 +127,8 @@ void LandmarkGraphMerged::generate_landmarks() {
 }
 
 
-LandmarkGraph *LandmarkGraphMerged::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
+LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarkGraph::Options common_options;
-
 
     vector<LandmarkGraph *> lm_graphs_;
     OptionParser::instance()->parse_landmark_graph_list(config, start + 2,

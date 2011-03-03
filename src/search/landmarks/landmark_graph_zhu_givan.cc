@@ -13,8 +13,9 @@
 
 using namespace __gnu_cxx;
 
-static LandmarkGraphPlugin landmarks_graph_zhu_givan_plugin(
-    "lm_zg", LandmarkGraphZhuGivan::create);
+static LandmarkGraph *create(const std::vector<std::string> &config, int start,
+                             int &end, bool dry_run);
+static LandmarkGraphPlugin plugin("lm_zg", create);
     
 LandmarkGraphZhuGivan::LandmarkGraphZhuGivan(LandmarkGraph::Options &options, Exploration *exploration)
     : LandmarkFactory(options, exploration) {
@@ -308,7 +309,7 @@ void LandmarkGraphZhuGivan::compute_triggers() {
     }
 }
 
-LandmarkGraph *LandmarkGraphZhuGivan::create(
+LandmarkGraph *create(
     const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarkGraph::Options common_options;
 

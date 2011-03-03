@@ -13,13 +13,12 @@ class LandmarkGraphRpgSearch : public LandmarkFactory {
     void generate_landmarks();
     void landmark_search(LandmarkNode *node, int depth);
     int choose_random(vector<int> &evals);
+    int relaxed_plan_length_without(LandmarkNode *lm);
 public:
     LandmarkGraphRpgSearch(LandmarkGraph::Options &options,
                             Exploration *exploration,
                             bool uniform_sampling_, int max_depth_, int num_tries_);
     virtual ~LandmarkGraphRpgSearch();
-    static LandmarkGraph *create(const std::vector<std::string> &config, int start,
-                                  int &end, bool dry_run);
 };
 
 #endif

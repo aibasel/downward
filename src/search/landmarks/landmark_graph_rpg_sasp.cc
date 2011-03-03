@@ -17,8 +17,9 @@
 
 using namespace __gnu_cxx;
 
-static LandmarkGraphPlugin landmarks_graph_new_plugin(
-    "lm_rhw", LandmarkGraphNew::create);
+static LandmarkGraph *create(const std::vector<std::string> &config, int start,
+                             int &end, bool dry_run);
+static LandmarkGraphPlugin plugin("lm_rhw", create);
     
 LandmarkGraphNew::LandmarkGraphNew(LandmarkGraph::Options &options, Exploration *exploration)
     : LandmarkFactory(options, exploration)  {
@@ -461,8 +462,7 @@ void LandmarkGraphNew::add_lm_forward_orders() {
     }
 }
 
-LandmarkGraph *LandmarkGraphNew::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
+LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarkGraph::Options common_options;
 
     if (config.size() > start + 2 && config[start + 1] == "(") {

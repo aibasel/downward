@@ -6,8 +6,9 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-static LandmarkGraphPlugin landmarks_graph_exhaust_plugin(
-    "lm_exhaust", LandmarkGraphExhaust::create);
+static LandmarkGraph *create(const std::vector<std::string> &config, int start,
+                             int &end, bool dry_run);
+static LandmarkGraphPlugin plugin("lm_exhaust", create);
 
 /* Problem: We don't get any orders here. (All we have is the reasonable orders
    that are inferred later.) It's thus best to combine this landmark generation
@@ -37,8 +38,7 @@ void LandmarkGraphExhaust::generate_landmarks() {
         }
 }
 
-LandmarkGraph *LandmarkGraphExhaust::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
+LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bool dry_run) {
     LandmarkGraph::Options common_options;
 
     if (config.size() > start + 2 && config[start + 1] == "(") {
