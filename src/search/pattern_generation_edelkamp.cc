@@ -17,7 +17,7 @@ namespace std { using namespace __gnu_cxx; }
 using namespace std;
 
 static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
-static ScalarEvaluatorPlugin pattern_generation_edelkamp_plugin("gapdb", create);
+static ScalarEvaluatorPlugin plugin("gapdb", create);
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(int pdb_size, int num_coll, int num_episodes,
                                                      double mutation_probability)

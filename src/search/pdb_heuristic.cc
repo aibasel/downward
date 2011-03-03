@@ -1,19 +1,18 @@
 #include "pdb_heuristic.h"
-#include "globals.h"
-//#include "option_parser.h"
-#include "plugin.h"
-#include "state.h"
-#include "operator.h"
-#include "timer.h"
 #include "abstract_state_iterator.h"
+#include "globals.h"
+#include "operator.h"
+#include "plugin.h"
 #include "raz_variable_order_finder.h"
+#include "state.h"
+#include "timer.h"
 
-#include <limits>
-#include <cstdlib>
 #include <cassert>
+#include <cstdlib>
+#include <limits>
 #include <queue>
-#include <vector>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -106,7 +105,7 @@ void AbstractState::dump(const vector<int> &pattern) const {
 // PDBHeuristic ---------------------------------------------------------------
 
 static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
-static ScalarEvaluatorPlugin pdb_heuristic_plugin("pdb", create);
+static ScalarEvaluatorPlugin plugin("pdb", create);
 
 /*PDBHeuristic::PDBHeuristic(int max_abstract_states) {
     verify_no_axioms_no_cond_effects();

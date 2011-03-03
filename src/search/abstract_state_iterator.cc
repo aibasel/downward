@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <vector>
+
 using namespace std;
 
 AbstractStateIterator::AbstractStateIterator(const vector<int> &ranges_)

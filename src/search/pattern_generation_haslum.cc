@@ -8,6 +8,7 @@
 #include "rng.h"
 #include "state.h"
 #include "successor_generator.h"
+#include "timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -19,7 +20,7 @@
 using namespace std;
 
 static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
-static ScalarEvaluatorPlugin pattern_generation_haslum_plugin("ipdb", create);
+static ScalarEvaluatorPlugin plugin("ipdb", create);
 
 PatternGenerationHaslum::PatternGenerationHaslum(int max_pdb, int max_coll, int samples)
 : max_pdb_size(max_pdb), max_collection_size(max_coll), num_samples(samples) {
@@ -292,7 +293,6 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         end = start;
     }
 
-    // TODO: required meaningful value
     if (max_pdb_size < 1) {
         cerr << "error: size per pdb must be at least 1" << endl;
         exit(2);
@@ -300,8 +300,8 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     
     if (dry_run)
         return 0;
-    
+    Timer timer;
     PatternGenerationHaslum pgh(max_pdb_size, max_collection_size, num_samples);
-    cout << "Haslum et al. done." << endl;
+    cout << "Pattern Generation (Haslum et al.) time: " << timer << endl;
     return pgh.get_pattern_collection_heuristic();
 }
