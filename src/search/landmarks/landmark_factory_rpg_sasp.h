@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_LANDMARK_GRAPH_RPG_SASP_H
-#define LANDMARKS_LANDMARK_GRAPH_RPG_SASP_H
+#ifndef LANDMARKS_LANDMARK_FACTORY_RPG_SASP_H
+#define LANDMARKS_LANDMARK_FACTORY_RPG_SASP_H
 
 #include "landmark_factory.h"
 #include "landmark_graph.h"
