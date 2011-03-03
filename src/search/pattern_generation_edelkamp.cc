@@ -23,7 +23,7 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(int pdb_size, int num_coll,
                                                      double mutation_probability)
     : pdb_max_size(pdb_size), num_collections(num_coll) {
     initialize();
-    cout << "initial pattern collections" << endl;
+    //cout << "initial pattern collections:" << endl;
     //dump();
     vector<double> initial_fitness_values;
     evaluate(initial_fitness_values);
@@ -41,12 +41,14 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(int pdb_size, int num_coll,
         vector<double> fitness_values;
         double fitness_sum = evaluate(fitness_values);
         cout << "evaluated" << endl;
-        /*cout << "fitness values:" << endl;
+        cout << "fitness values:";
         for (size_t i = 0; i < fitness_values.size(); ++i) {
-            cout << "fitness: " << fitness_values[i] << endl;
-        }*/
+            cout << " " << fitness_values[i];
+        }
+        cout << endl;
         //double new_best_h = fitness_values.back().first;
         select(fitness_values, fitness_sum);
+        //cout << "current pattern collections:" << endl;
         //dump();
         /*if (new_best_h > current_best_h) {
             current_best_h = new_best_h;
@@ -59,7 +61,6 @@ PatternGenerationEdelkamp::~PatternGenerationEdelkamp() {
 }
 
 void PatternGenerationEdelkamp::dump() const {
-    cout << "current pattern collections:" << endl;
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         cout << "pattern collection no " << i << endl;
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
@@ -264,8 +265,8 @@ PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuris
 
 ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
     int pdb_max_size = 100;
-    int num_collections = 10;
-    int num_episodes = 5;
+    int num_collections = 5;
+    int num_episodes = 30;
     int mutation_probability = 1;
     if (config.size() > start + 2 && config[start + 1] == "(") {
         end = start + 2;
@@ -296,7 +297,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         cerr << "error: number of episodes must be at least 1" << endl;
         exit(2);
     }
-    if (mutation_probability < 0 || mutation_probability > 1) {
+    if (mutation_probability < 0 || mutation_probability > 100) {
         cerr << "error: mutation probability must be in [0..100]" << endl;
         exit(2);
     }
