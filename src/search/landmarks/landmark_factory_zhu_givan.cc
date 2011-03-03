@@ -17,11 +17,11 @@ static LandmarkGraph *create(const std::vector<std::string> &config, int start,
                              int &end, bool dry_run);
 static LandmarkGraphPlugin plugin("lm_zg", create);
     
-LandmarkGraphZhuGivan::LandmarkGraphZhuGivan(LandmarkGraph::Options &options, Exploration *exploration)
+LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(LandmarkGraph::Options &options, Exploration *exploration)
     : LandmarkFactory(options, exploration) {
 }
 
-void LandmarkGraphZhuGivan::generate_landmarks() {
+void LandmarkFactoryZhuGivan::generate_landmarks() {
     cout << "Generating landmarks using Zhu/Givan label propagation\n";
 
     compute_triggers();
@@ -36,7 +36,7 @@ void LandmarkGraphZhuGivan::generate_landmarks() {
     extract_landmarks(last_prop_layer);
 }
 
-bool LandmarkGraphZhuGivan::satisfies_goal_conditions(
+bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
     const proposition_layer &layer) const {
     for (unsigned i = 0; i < g_goal.size(); i++)
         if (!layer[g_goal[i].first][g_goal[i].second].reached())
@@ -45,7 +45,7 @@ bool LandmarkGraphZhuGivan::satisfies_goal_conditions(
     return true;
 }
 
-void LandmarkGraphZhuGivan::extract_landmarks(
+void LandmarkFactoryZhuGivan::extract_landmarks(
     const proposition_layer &last_prop_layer) {
     // insert goal landmarks and mark them as goals
     for (unsigned i = 0; i < g_goal.size(); i++) {
@@ -86,7 +86,7 @@ void LandmarkGraphZhuGivan::extract_landmarks(
     }
 }
 
-LandmarkGraphZhuGivan::proposition_layer LandmarkGraphZhuGivan::build_relaxed_plan_graph_with_labels() const {
+LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxed_plan_graph_with_labels() const {
     assert(!triggers.empty());
 
     proposition_layer current_prop_layer;
@@ -137,7 +137,7 @@ LandmarkGraphZhuGivan::proposition_layer LandmarkGraphZhuGivan::build_relaxed_pl
     return current_prop_layer;
 }
 
-bool LandmarkGraphZhuGivan::operator_applicable(const Operator &op,
+bool LandmarkFactoryZhuGivan::operator_applicable(const Operator &op,
                                                  const proposition_layer &state) const {
     // test preconditions
     const vector<Prevail> &prevail = op.get_prevail();
@@ -154,7 +154,7 @@ bool LandmarkGraphZhuGivan::operator_applicable(const Operator &op,
     return true;
 }
 
-bool LandmarkGraphZhuGivan::operator_cond_effect_fires(
+bool LandmarkFactoryZhuGivan::operator_cond_effect_fires(
     const vector<Prevail> &cond, const proposition_layer &state) const {
     for (unsigned i = 0; i < cond.size(); i++)
         if (!state[cond[i].var][cond[i].prev].reached())
@@ -185,7 +185,7 @@ static lm_set _intersection(const lm_set &a, const lm_set &b) {
     return result;
 }
 
-lm_set LandmarkGraphZhuGivan::union_of_precondition_labels(const Operator &op,
+lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const Operator &op,
                                                             const proposition_layer &current) const {
     lm_set result;
 
@@ -204,7 +204,7 @@ lm_set LandmarkGraphZhuGivan::union_of_precondition_labels(const Operator &op,
     return result;
 }
 
-lm_set LandmarkGraphZhuGivan::union_of_condition_labels(
+lm_set LandmarkFactoryZhuGivan::union_of_condition_labels(
     const vector<Prevail> &cond, const proposition_layer &current) const {
     lm_set result;
     for (unsigned i = 0; i < cond.size(); i++)
@@ -237,7 +237,7 @@ static bool _propagate_labels(lm_set &labels, const lm_set &new_labels,
     return false;
 }
 
-lm_set LandmarkGraphZhuGivan::apply_operator_and_propagate_labels(
+lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
     const Operator &op, const proposition_layer &current,
     proposition_layer &next) const {
     assert(operator_applicable(op, current));
@@ -268,7 +268,7 @@ lm_set LandmarkGraphZhuGivan::apply_operator_and_propagate_labels(
     return result;
 }
 
-void LandmarkGraphZhuGivan::compute_triggers() {
+void LandmarkFactoryZhuGivan::compute_triggers() {
     assert(triggers.empty());
 
     // initialize empty triggers
@@ -331,7 +331,7 @@ LandmarkGraph *create(
     if (dry_run) {
         return 0;
     } else {
-        LandmarkGraphZhuGivan lm_graph_factory(
+        LandmarkFactoryZhuGivan lm_graph_factory(
             common_options,
             new Exploration(common_options.heuristic_options));
         LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();

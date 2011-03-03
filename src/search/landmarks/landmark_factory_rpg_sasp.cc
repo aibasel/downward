@@ -21,11 +21,11 @@ static LandmarkGraph *create(const std::vector<std::string> &config, int start,
                              int &end, bool dry_run);
 static LandmarkGraphPlugin plugin("lm_rhw", create);
     
-LandmarkGraphNew::LandmarkGraphNew(LandmarkGraph::Options &options, Exploration *exploration)
+LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(LandmarkGraph::Options &options, Exploration *exploration)
     : LandmarkFactory(options, exploration)  {
 }
 
-void LandmarkGraphNew::get_greedy_preconditions_for_lm(
+void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     const LandmarkNode *lmp, const Operator &o, hash_map<int, int> &result) const {
     // Computes a subset of the actual preconditions of o for achieving lmp - takes into account
     // operator preconditions, but only reports those effect conditions that are true for ALL
@@ -87,7 +87,7 @@ void LandmarkGraphNew::get_greedy_preconditions_for_lm(
     result.insert(intersection.begin(), intersection.end());
 }
 
-int LandmarkGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
+int LandmarkFactoryRpgSasp::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
                                                                           int> > &lvl_var) {
     int min_cost = numeric_limits<int>::max();
     // For each proposition in bp...
@@ -107,7 +107,7 @@ int LandmarkGraphNew::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
     return min_cost;
 }
 
-void LandmarkGraphNew::found_simple_lm_and_order(const pair<int, int> a,
+void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
                                                   LandmarkNode &b, edge_type t) {
     LandmarkNode *new_lm;
     if (lm_graph->simple_landmark_exists(a)) {
@@ -158,7 +158,7 @@ void LandmarkGraphNew::found_simple_lm_and_order(const pair<int, int> a,
     }
 }
 
-void LandmarkGraphNew::found_disj_lm_and_order(const set<pair<int, int> > a,
+void LandmarkFactoryRpgSasp::found_disj_lm_and_order(const set<pair<int, int> > a,
                                                 LandmarkNode &b, edge_type t) {
     bool simple_lm_exists = false;
     pair<int, int> lm_prop;
@@ -195,7 +195,7 @@ void LandmarkGraphNew::found_disj_lm_and_order(const set<pair<int, int> > a,
     edge_add(*new_lm, b, t);
 }
 
-void LandmarkGraphNew::compute_shared_preconditions(
+void LandmarkFactoryRpgSasp::compute_shared_preconditions(
     hash_map<int, int> &shared_pre, vector<vector<int> > &lvl_var,
     LandmarkNode *bp) {
     /* Compute the shared preconditions of all operators that can potentially
@@ -223,7 +223,7 @@ void LandmarkGraphNew::compute_shared_preconditions(
     }
 }
 
-void LandmarkGraphNew::compute_disjunctive_preconditions(vector<set<pair<int,
+void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<int,
                                                                           int> > > &disjunctive_pre, vector<vector<int> > &lvl_var,
                                                           LandmarkNode *bp) {
     /* Compute disjunctive preconditions from all operators than can potentially
@@ -282,7 +282,7 @@ void LandmarkGraphNew::compute_disjunctive_preconditions(vector<set<pair<int,
     }
 }
 
-void LandmarkGraphNew::generate_landmarks() {
+void LandmarkFactoryRpgSasp::generate_landmarks() {
     cout << "Generating landmarks using the RPG/SAS+ approach\n";
     for (unsigned i = 0; i < g_goal.size(); i++) {
         LandmarkNode &lmn = lm_graph->landmark_add_simple(g_goal[i]);
@@ -331,7 +331,7 @@ void LandmarkGraphNew::generate_landmarks() {
     add_lm_forward_orders();
 }
 
-void LandmarkGraphNew::approximate_lookahead_orders(
+void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     const vector<vector<int> > &lvl_var, LandmarkNode *lmp) {
     // Find all var-val pairs that can only be reached after the landmark
     // (according to relaxed plan graph as captured in lvl_var)
@@ -369,7 +369,7 @@ void LandmarkGraphNew::approximate_lookahead_orders(
 
 }
 
-bool LandmarkGraphNew::domain_connectivity(const pair<int, int> &landmark,
+bool LandmarkFactoryRpgSasp::domain_connectivity(const pair<int, int> &landmark,
                                             const hash_set<int> &exclude) {
     /* Tests whether in the domain transition graph of the LM variable, there is
      a path from the initial state value to the LM value, without passing through
@@ -404,7 +404,7 @@ bool LandmarkGraphNew::domain_connectivity(const pair<int, int> &landmark,
     return true;
 }
 
-void LandmarkGraphNew::find_forward_orders(
+void LandmarkFactoryRpgSasp::find_forward_orders(
     const vector<vector<int> > &lvl_var, LandmarkNode *lmp) {
     /* lmp is ordered before any var-val pair that cannot be reached before lmp according to
      relaxed planning graph (as captured in lvl_var).
@@ -444,7 +444,7 @@ void LandmarkGraphNew::find_forward_orders(
 
 }
 
-void LandmarkGraphNew::add_lm_forward_orders() {
+void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     set<LandmarkNode *>::const_iterator node_it;
     for (node_it = lm_graph->get_nodes().begin(); node_it != lm_graph->get_nodes().end(); ++node_it) {
         LandmarkNode &node = **node_it;
@@ -483,7 +483,7 @@ LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bo
     if (dry_run) {
         return 0;
     } else {
-        LandmarkGraphNew lm_graph_factory(
+        LandmarkFactoryRpgSasp lm_graph_factory(
             common_options,
             new Exploration(common_options.heuristic_options));
         LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();

@@ -14,11 +14,11 @@ static LandmarkGraphPlugin plugin("lm_exhaust", create);
    that are inferred later.) It's thus best to combine this landmark generation
    method with others, don't use it by itself. */
 
-LandmarkGraphExhaust::LandmarkGraphExhaust(LandmarkGraph::Options &options, Exploration *exploration) 
+LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(LandmarkGraph::Options &options, Exploration *exploration)
     : LandmarkFactory(options, exploration) {
 }
 
-void LandmarkGraphExhaust::generate_landmarks() {
+void LandmarkFactoryRpgExhaust::generate_landmarks() {
     cout << "Generating landmarks by testing all facts with RPG method" << endl;
 
     // insert goal landmarks and mark them as goals
@@ -59,7 +59,7 @@ LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bo
     if (dry_run) {
         return 0;
     } else {
-        LandmarkGraphExhaust lm_graph_factory(common_options, new Exploration(common_options.heuristic_options));
+        LandmarkFactoryRpgExhaust lm_graph_factory(common_options, new Exploration(common_options.heuristic_options));
         LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
         return graph;
     }

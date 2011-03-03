@@ -6,7 +6,7 @@
 
 typedef LandmarkNode *LMOpenListEntry;
 
-class LandmarkGraphRpgSearch : public LandmarkFactory {
+class LandmarkFactoryRpgSearch : public LandmarkFactory {
     bool uniform_sampling;
     int max_depth;
     int num_tries;
@@ -15,10 +15,10 @@ class LandmarkGraphRpgSearch : public LandmarkFactory {
     int choose_random(vector<int> &evals);
     int relaxed_plan_length_without(LandmarkNode *lm);
 public:
-    LandmarkGraphRpgSearch(LandmarkGraph::Options &options,
+    LandmarkFactoryRpgSearch(LandmarkGraph::Options &options,
                             Exploration *exploration,
                             bool uniform_sampling_, int max_depth_, int num_tries_);
-    virtual ~LandmarkGraphRpgSearch();
+    virtual ~LandmarkFactoryRpgSearch();
 };
 
 #endif

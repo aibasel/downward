@@ -6,7 +6,7 @@
 #include <ext/hash_set>
 #include "../globals.h"
 
-class LandmarkGraphNew : public LandmarkFactory {
+class LandmarkFactoryRpgSasp : public LandmarkFactory {
     list<LandmarkNode *> open_landmarks;
 
     void find_forward_orders(const vector<vector<int> > &lvl_var,
@@ -32,8 +32,8 @@ class LandmarkGraphNew : public LandmarkFactory {
     static bool domain_connectivity(const pair<int, int> &landmark,
                                     const hash_set<int> &exclude);
 public:
-    LandmarkGraphNew(LandmarkGraph::Options &options, Exploration *exploration);
-    virtual ~LandmarkGraphNew() {}
+    LandmarkFactoryRpgSasp(LandmarkGraph::Options &options, Exploration *exploration);
+    virtual ~LandmarkFactoryRpgSasp() {}
 };
 
 #endif

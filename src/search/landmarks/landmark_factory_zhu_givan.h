@@ -8,7 +8,7 @@
 
 using namespace __gnu_cxx;
 
-class LandmarkGraphZhuGivan : public LandmarkFactory {
+class LandmarkFactoryZhuGivan : public LandmarkFactory {
 private:
 
     class plan_graph_node {
@@ -68,8 +68,8 @@ public:
     void generate_landmarks();
 
 public:
-    LandmarkGraphZhuGivan(LandmarkGraph::Options &options, Exploration *exploration);
-    virtual ~LandmarkGraphZhuGivan() {}
+    LandmarkFactoryZhuGivan(LandmarkGraph::Options &options, Exploration *exploration);
+    virtual ~LandmarkFactoryZhuGivan() {}
 };
 
 #endif

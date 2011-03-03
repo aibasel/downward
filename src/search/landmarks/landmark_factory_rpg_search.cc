@@ -6,7 +6,7 @@ static LandmarkGraph *create(const std::vector<std::string> &config, int start,
                              int &end, bool dry_run);
 static LandmarkGraphPlugin plugin("lm_search", create);
 
-LandmarkGraphRpgSearch::LandmarkGraphRpgSearch(
+LandmarkFactoryRpgSearch::LandmarkFactoryRpgSearch(
     LandmarkGraph::Options &options, Exploration *exploration,
     bool uniform_sampling_, int max_depth_, int num_tries_)
     : LandmarkFactory(options, exploration),
@@ -15,11 +15,11 @@ LandmarkGraphRpgSearch::LandmarkGraphRpgSearch(
       num_tries(num_tries_) {
 }
 
-LandmarkGraphRpgSearch::~LandmarkGraphRpgSearch() {
+LandmarkFactoryRpgSearch::~LandmarkFactoryRpgSearch() {
 }
 
 
-void LandmarkGraphRpgSearch::generate_landmarks() {
+void LandmarkFactoryRpgSearch::generate_landmarks() {
     cout << "Generating landmarks by search, verify using RPG method" << endl;
 
     vector<LandmarkNode *> not_landmarks;
@@ -57,7 +57,7 @@ void LandmarkGraphRpgSearch::generate_landmarks() {
 }
 
 
-void LandmarkGraphRpgSearch::landmark_search(LandmarkNode *node, int depth) {
+void LandmarkFactoryRpgSearch::landmark_search(LandmarkNode *node, int depth) {
     if (depth <= 0)
         return;
     bool lm_created = false;
@@ -96,7 +96,7 @@ void LandmarkGraphRpgSearch::landmark_search(LandmarkNode *node, int depth) {
 /*!
  * Return a random index between 0 and evals.size() - 1, with probability for i being evals[i]
  */
-int LandmarkGraphRpgSearch::choose_random(vector<int> &evals) {
+int LandmarkFactoryRpgSearch::choose_random(vector<int> &evals) {
     int ret = 0;
     if (uniform_sampling) {
         ret = rand() % evals.size();
@@ -115,7 +115,7 @@ int LandmarkGraphRpgSearch::choose_random(vector<int> &evals) {
     return ret;
 }
 
-int LandmarkGraphRpgSearch::relaxed_plan_length_without(LandmarkNode *exclude) {
+int LandmarkFactoryRpgSearch::relaxed_plan_length_without(LandmarkNode *exclude) {
     vector<pair<int, int> > exclude_props;
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
     if (exclude != NULL) {
@@ -169,7 +169,7 @@ LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bo
     if (dry_run) {
         return 0;
     } else {
-        LandmarkGraphRpgSearch lm_graph_factory(
+        LandmarkFactoryRpgSearch lm_graph_factory(
             common_options, new Exploration(common_options.heuristic_options),
             uniform_sampling, max_depth, num_tries);
         LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
