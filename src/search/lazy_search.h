@@ -1,5 +1,5 @@
-#ifndef GENERAL_LAZY_BEST_FIRST_SEARCH_H
-#define GENERAL_LAZY_BEST_FIRST_SEARCH_H
+#ifndef LAZY_SEARCH_H
+#define LAZY_SEARCH_H
 
 #include <vector>
 
@@ -17,7 +17,7 @@ class Operator;
 
 typedef pair<state_var_t *, const Operator *> OpenListEntryLazy;
 
-class GeneralLazyBestFirstSearch : public SearchEngine {
+class LazySearch : public SearchEngine {
 protected:
     OpenList<OpenListEntryLazy> *open_list;
 
@@ -47,10 +47,10 @@ protected:
     void get_successor_operators(vector<const Operator *> &ops);
 public:
 
-    GeneralLazyBestFirstSearch(const SearchEngineOptions &options,
-                               OpenList<OpenListEntryLazy> *open,
-                               bool reopen_closed);
-    virtual ~GeneralLazyBestFirstSearch();
+    LazySearch(const SearchEngineOptions &options,
+               OpenList<OpenListEntryLazy> *open,
+               bool reopen_closed);
+    virtual ~LazySearch();
 
     virtual void statistics() const;
 
