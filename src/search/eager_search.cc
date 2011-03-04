@@ -1,4 +1,4 @@
-#include "general_eager_best_first_search.h"
+#include "eager_search.h"
 
 #include "globals.h"
 #include "heuristic.h"

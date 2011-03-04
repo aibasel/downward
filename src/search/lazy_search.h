@@ -1,5 +1,5 @@
-#ifndef GENERAL_LAZY_BEST_FIRST_SEARCH_H
-#define GENERAL_LAZY_BEST_FIRST_SEARCH_H
+#ifndef LAZY_SEARCH_H
+#define LAZY_SEARCH_H
 
 #include <vector>
 
