@@ -29,12 +29,7 @@ GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(
 GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {
 }
 
-//void GeneralLazyBestFirstSearch::set_open_list(OpenList<OpenListEntryLazy> *open) {
-//    open_list = open;
-//}
-
-void
-GeneralLazyBestFirstSearch::set_pref_operator_heuristics(
+void GeneralLazyBestFirstSearch::set_pref_operator_heuristics(
     vector<Heuristic *> &heur) {
     preferred_operator_heuristics = heur;
 }
@@ -62,22 +57,6 @@ void GeneralLazyBestFirstSearch::initialize() {
     }
     assert(!heuristics.empty());
 }
-
-//void GeneralLazyBestFirstSearch::add_heuristic(Heuristic *heuristic,
-//                      bool use_estimates,
-//                      bool use_preferred_operators) {
-//    assert(use_estimates || use_preferred_operators);
-//    if (use_estimates || use_preferred_operators) {
-//        heuristics.push_back(heuristic);
-//    }
-//    if(use_estimates) {
-//        estimate_heuristics.push_back(heuristic);
-//        search_progress.add_heuristic(heuristic);
-//    }
-//    if(use_preferred_operators) {
-//        preferred_operator_heuristics.push_back(heuristic);
-//    }
-//}
 
 void GeneralLazyBestFirstSearch::get_successor_operators(
     vector<const Operator *> &ops) {
