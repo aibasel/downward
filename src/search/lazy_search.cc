@@ -1,10 +1,11 @@
-#include "general_lazy_best_first_search.h"
+#include "lazy_search.h"
+
+#include "g_evaluator.h"
 #include "heuristic.h"
-#include "successor_generator.h"
 #include "open_lists/standard_scalar_open_list.h"
 #include "open_lists/alternation_open_list.h"
 #include "open_lists/tiebreaking_open_list.h"
-#include "g_evaluator.h"
+#include "successor_generator.h"
 #include "sum_evaluator.h"
 #include "weighted_evaluator.h"
 

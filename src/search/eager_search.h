@@ -1,5 +1,5 @@
-#ifndef GENERAL_EAGER_BEST_FIRST_SEARCH_H
-#define GENERAL_EAGER_BEST_FIRST_SEARCH_H
+#ifndef EAGER_SEARCH_H
+#define EAGER_SEARCH_H
 
 #include <vector>
 
