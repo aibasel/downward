@@ -14,9 +14,9 @@
  * the virtual method step() until a solution is found, or the search space is exhausted.
  *
  * There are two main implementations of SearchEngine:
- * - GeneralEagerBestFirstSearch - implements eager search (i.e. each
+ * - EagerSearch - implements eager search (i.e. each
  * state and its heuristic value is computed before inserting into the open list)
- * - GeneralLazyBestFirstSearch - implements lazy search (i.e. each
+ * - LazySearch - implements lazy search (i.e. each
  * state and its heuristic value is computed only when removed from the open list)
  *
  * Each of these main classes can use a generic open list to support using multiple heuristics
@@ -54,6 +54,4 @@
  * - WeightedEvaluator - the evaluation of a state is weighted by a constant factor.
  * This can be used in weighted A* (i.e. f=g+wh)
  *
- *
- * And now we have a buildbot, which I am testing now.
  */

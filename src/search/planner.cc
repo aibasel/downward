@@ -45,7 +45,7 @@ int main(int argc, const char **argv) {
     }
 
     // read prepropressor output first because we need to know the initial
-    // state when we create a general lazy search engine
+    // state when we create a lazy search engine
     bool poly_time_method = false;
 
     istream &in = cin;
@@ -102,31 +102,31 @@ int main(int argc, const char **argv) {
 
 void register_parsers() {
     // Register search engines
-    OptionParser::instance()->register_search_engine("eager",
-                                                     GeneralEagerBestFirstSearch::create);
-    OptionParser::instance()->register_search_engine("astar",
-                                                     GeneralEagerBestFirstSearch::create_astar);
-    OptionParser::instance()->register_search_engine("eager_greedy",
-                                                     GeneralEagerBestFirstSearch::create_greedy);
-    OptionParser::instance()->register_search_engine("lazy",
-                                                     GeneralLazyBestFirstSearch::create);
-    OptionParser::instance()->register_search_engine("lazy_greedy",
-                                                     GeneralLazyBestFirstSearch::create_greedy);
-    OptionParser::instance()->register_search_engine("lazy_wastar",
-                                                     GeneralLazyBestFirstSearch::create_weighted_astar);
-    OptionParser::instance()->register_search_engine("ehc",
-                                                     EnforcedHillClimbingSearch::create);
-    OptionParser::instance()->register_search_engine("iterated",
-                                                     IteratedSearch::create);
+    OptionParser::instance()->register_search_engine(
+        "eager", EagerSearch::create);
+    OptionParser::instance()->register_search_engine(
+        "astar", EagerSearch::create_astar);
+    OptionParser::instance()->register_search_engine(
+        "eager_greedy", EagerSearch::create_greedy);
+    OptionParser::instance()->register_search_engine(
+        "lazy", LazySearch::create);
+    OptionParser::instance()->register_search_engine(
+        "lazy_greedy", LazySearch::create_greedy);
+    OptionParser::instance()->register_search_engine(
+        "lazy_wastar", LazySearch::create_weighted_astar);
+    OptionParser::instance()->register_search_engine(
+        "ehc", EnforcedHillClimbingSearch::create);
+    OptionParser::instance()->register_search_engine(
+        "iterated", IteratedSearch::create);
 
     // register combinations and g evaluator
     // (Note: some additional ones are already registered as plugins.)
-    OptionParser::instance()->register_scalar_evaluator("weight",
-                                                        WeightedEvaluator::create);
-    OptionParser::instance()->register_scalar_evaluator("g",
-                                                        GEvaluator::create);
-    OptionParser::instance()->register_scalar_evaluator("pref",
-                                                        PrefEvaluator::create);
+    OptionParser::instance()->register_scalar_evaluator(
+        "weight", WeightedEvaluator::create);
+    OptionParser::instance()->register_scalar_evaluator(
+        "g", GEvaluator::create);
+    OptionParser::instance()->register_scalar_evaluator(
+        "pref", PrefEvaluator::create);
 
     // Note:
     // open lists are registered in the constructor of OpenListParser.

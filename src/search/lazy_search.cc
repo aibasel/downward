@@ -14,9 +14,8 @@
 
 static const int DEFAULT_LAZY_BOOST = 1000;
 
-GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(
-    const SearchEngineOptions &options,
-    OpenList<OpenListEntryLazy> *open, bool reopen_closed)
+LazySearch::LazySearch(const SearchEngineOptions &options,
+                       OpenList<OpenListEntryLazy> *open, bool reopen_closed)
     : SearchEngine(options),
       open_list(open),
       reopen_closed_nodes(reopen_closed),
@@ -27,15 +26,15 @@ GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(
       current_real_g(0) {
 }
 
-GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {
+LazySearch::~LazySearch() {
 }
 
-void GeneralLazyBestFirstSearch::set_pref_operator_heuristics(
+void LazySearch::set_pref_operator_heuristics(
     vector<Heuristic *> &heur) {
     preferred_operator_heuristics = heur;
 }
 
-void GeneralLazyBestFirstSearch::initialize() {
+void LazySearch::initialize() {
     //TODO children classes should output which kind of search
     cout << "Conducting lazy best first search, (real) bound = " << bound << endl;
 
@@ -59,8 +58,7 @@ void GeneralLazyBestFirstSearch::initialize() {
     assert(!heuristics.empty());
 }
 
-void GeneralLazyBestFirstSearch::get_successor_operators(
-    vector<const Operator *> &ops) {
+void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
     vector<const Operator *> all_operators;
     vector<const Operator *> preferred_operators;
 
@@ -94,7 +92,7 @@ void GeneralLazyBestFirstSearch::get_successor_operators(
     }
 }
 
-void GeneralLazyBestFirstSearch::generate_successors() {
+void LazySearch::generate_successors() {
     vector<const Operator *> operators;
     get_successor_operators(operators);
     search_progress.inc_generated(operators.size());
@@ -116,7 +114,7 @@ void GeneralLazyBestFirstSearch::generate_successors() {
     }
 }
 
-int GeneralLazyBestFirstSearch::fetch_next_state() {
+int LazySearch::fetch_next_state() {
     if (open_list->empty()) {
         cout << "Completely explored state space -- no solution!" << endl;
         return FAILED;
@@ -137,7 +135,7 @@ int GeneralLazyBestFirstSearch::fetch_next_state() {
     return IN_PROGRESS;
 }
 
-int GeneralLazyBestFirstSearch::step() {
+int LazySearch::step() {
     // Invariants:
     // - current_state is the next state for which we want to compute the heuristic.
     // - current_predecessor is a permanent pointer to the predecessor of that state.
@@ -197,18 +195,18 @@ int GeneralLazyBestFirstSearch::step() {
     return fetch_next_state();
 }
 
-void GeneralLazyBestFirstSearch::reward_progress() {
+void LazySearch::reward_progress() {
     // Boost the "preferred operator" open lists somewhat whenever
     open_list->boost_preferred();
 }
 
-void GeneralLazyBestFirstSearch::statistics() const {
+void LazySearch::statistics() const {
     search_progress.print_statistics();
 }
 
-SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
-                                                 int start, int &end,
-                                                 bool dry_run) {
+SearchEngine *LazySearch::create(const vector<string> &config,
+                                 int start, int &end,
+                                 bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
@@ -240,10 +238,9 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
     if (config[end] != ")")
         throw ParseError(end);
 
-    GeneralLazyBestFirstSearch *engine = 0;
+    LazySearch *engine = 0;
     if (!dry_run) {
-        engine = new GeneralLazyBestFirstSearch(
-            common_options, open, reopen_closed);
+        engine = new LazySearch(common_options, open, reopen_closed);
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
@@ -251,7 +248,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create(const vector<string> &config,
 }
 
 
-SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
+SearchEngine *LazySearch::create_greedy(
     const vector<string> &config, int start, int &end, bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
@@ -285,7 +282,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
     if (config[end] != ")")
         throw ParseError(end);
 
-    GeneralLazyBestFirstSearch *engine = 0;
+    LazySearch *engine = 0;
     if (!dry_run) {
         OpenList<OpenListEntryLazy> *open;
         if ((evals.size() == 1) && preferred_list.empty()) {
@@ -307,14 +304,13 @@ SearchEngine *GeneralLazyBestFirstSearch::create_greedy(
                                                               boost);
         }
 
-        engine = new GeneralLazyBestFirstSearch(
-            common_options, open, reopen_closed);
+        engine = new LazySearch(common_options, open, reopen_closed);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
 }
 
-SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
+SearchEngine *LazySearch::create_weighted_astar(
     const vector<string> &config, int start, int &end, bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
@@ -353,7 +349,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
     if (config[end] != ")")
         throw ParseError(end);
 
-    GeneralLazyBestFirstSearch *engine = 0;
+    LazySearch *engine = 0;
     if (!dry_run) {
         vector<OpenList<OpenListEntryLazy> *> inner_lists;
         for (int i = 0; i < evals.size(); i++) {
@@ -385,8 +381,7 @@ SearchEngine *GeneralLazyBestFirstSearch::create_weighted_astar(
                                                               boost);
         }
 
-        engine = new GeneralLazyBestFirstSearch(
-            common_options, open, reopen_closed);
+        engine = new LazySearch(common_options, open, reopen_closed);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
