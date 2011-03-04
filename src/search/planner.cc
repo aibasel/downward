@@ -1,4 +1,3 @@
-#include "best_first_search.h"
 #include "enforced_hill_climbing_search.h"
 #include "g_evaluator.h"
 #include "general_eager_best_first_search.h"
@@ -117,8 +116,6 @@ void register_parsers() {
                                                      GeneralLazyBestFirstSearch::create_weighted_astar);
     OptionParser::instance()->register_search_engine("ehc",
                                                      EnforcedHillClimbingSearch::create);
-    OptionParser::instance()->register_search_engine("old_greedy",
-                                                     BestFirstSearchEngine::create);
     OptionParser::instance()->register_search_engine("iterated",
                                                      IteratedSearch::create);
 
