@@ -190,6 +190,7 @@ int GeneralLazyBestFirstSearch::step() {
             search_progress.inc_expanded();
         } else {
             node.mark_as_dead_end();
+            search_progress.inc_dead_ends();
         }
     }
     return fetch_next_state();

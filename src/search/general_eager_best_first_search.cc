@@ -171,6 +171,7 @@ int GeneralEagerBestFirstSearch::step() {
             bool dead_end = open_list->is_dead_end();
             if (dead_end) {
                 succ_node.mark_as_dead_end();
+                search_progress.inc_dead_ends();
                 continue;
             }
 
@@ -265,6 +266,7 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
                 bool dead_end = open_list->is_dead_end();
                 if (dead_end) {
                     node.mark_as_dead_end();
+                    search_progress.inc_dead_ends();
                     continue;
                 }
                 int new_h = heuristics[0]->get_heuristic();
