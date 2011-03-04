@@ -15,7 +15,7 @@ class Heuristic;
 class Operator;
 class ScalarEvaluator;
 
-class GeneralEagerBestFirstSearch : public SearchEngine {
+class EagerSearch : public SearchEngine {
     // Search Behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
     bool do_pathmax; // whether to use pathmax correction
@@ -41,11 +41,10 @@ protected:
     virtual void initialize();
 
 public:
-    GeneralEagerBestFirstSearch(
-        const SearchEngineOptions &options,
-        OpenList<state_var_t *> *open,
-        bool reopen_closed, bool pathmax_correction,
-        bool use_multi_path_dependence, ScalarEvaluator *f_eval);
+    EagerSearch(const SearchEngineOptions &options,
+                OpenList<state_var_t *> *open,
+                bool reopen_closed, bool pathmax_correction,
+                bool use_multi_path_dependence, ScalarEvaluator *f_eval);
     void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     void statistics() const;
 
