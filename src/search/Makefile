@@ -4,7 +4,6 @@ STATE_VAR_BYTES=1
 
 HEADERS = \
           axioms.h \
-          best_first_search.h \
           causal_graph.h \
           closed_list.h \
           combining_evaluator.h \
