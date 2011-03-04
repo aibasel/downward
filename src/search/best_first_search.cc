@@ -20,6 +20,7 @@ OpenListInfo::OpenListInfo(Heuristic *heur, bool only_pref)
 BestFirstSearchEngine::BestFirstSearchEngine(const SearchEngineOptions &options)
     : SearchEngine(options), current_state(*g_initial_state) {
     generated_states = 0;
+    dead_end_states = 0;
     current_predecessor = 0;
     current_operator = 0;
 }
@@ -49,6 +50,7 @@ void BestFirstSearchEngine::initialize() {
 void BestFirstSearchEngine::statistics() const {
     cout << "Expanded " << closed_list.size() << " state(s)." << endl;
     cout << "Generated " << generated_states << " state(s)." << endl;
+    cout << "Dead ends: " << dead_end_states << " state(s)." << endl;
 }
 
 int BestFirstSearchEngine::step() {
@@ -65,7 +67,9 @@ int BestFirstSearchEngine::step() {
                 heuristics[i]->reach_state(*current_predecessor, *current_operator, *parent_ptr);
             heuristics[i]->evaluate(current_state);
         }
-        if (!is_dead_end()) {
+        if (is_dead_end()) {
+            dead_end_states++;
+        } else {
             if (check_goal())
                 return SOLVED;
             if (check_progress()) {
