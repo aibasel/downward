@@ -29,6 +29,7 @@ class BestFirstSearchEngine : public SearchEngine {
 
     std::vector<int> best_heuristic_values;
     int generated_states;
+    int dead_end_states;
 
     State current_state;
     const State *current_predecessor;
