@@ -25,6 +25,7 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
         << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
         << lm_graph->number_of_edges() << " edges\n";
     }
+    lm_graph->dump();
     return lm_graph;
 }
 
@@ -112,11 +113,15 @@ void LandmarkFactory::read_external_inconsistencies() {
                 in >> var >> val;
                 string predicate, endline;
                 in >> predicate >> no_args;
+                // TODO: re-think this again!
+                vector<string> predicates;
+                predicates.push_back(predicate);
                 vector<string> args;
                 for (int k = 0; k < no_args; k++) {
                     string arg;
                     in >> arg;
                     args.push_back(arg);
+                    predicates.push_back(arg);
                 }
                 getline(in, endline);
                 // Variable may not be in index if it has been discarded by preprocessor
@@ -129,6 +134,7 @@ void LandmarkFactory::read_external_inconsistencies() {
                     prop.predicate = predicate;
                     prop.arguments = args;
                     pddl_propositions.insert(make_pair(var_val_pair, prop));
+                    lm_graph->insert_var_val_predicate(var_val_pair, predicates);
                     if (pddl_proposition_indices.find(predicate)
                         == pddl_proposition_indices.end()) {
                         pddl_proposition_indices.insert(make_pair(predicate,
@@ -487,7 +493,6 @@ void LandmarkFactory::generate() {
     mk_acyclic_graph();
     lm_graph->set_landmark_cost(calculate_lms_cost());
     calc_achievers();
-    //dump();
 }
 
 void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
@@ -598,97 +603,6 @@ hash_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
     }
 }
 
-void LandmarkFactory::dump_node(const LandmarkNode *node_p) const {
-    cout << "LM " << node_p->get_id() << " ";
-    if (node_p->disjunctive)
-        cout << "disj {";
-    else if (node_p->conjunctive)
-        cout << "conj {";
-    for (unsigned int i = 0; i < node_p->vars.size(); i++) {
-        pair<int, int> node_prop = make_pair(node_p->vars[i], node_p->vals[i]);
-        hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator
-        it = pddl_propositions.find(node_prop);
-        if (it != pddl_propositions.end()) {
-            cout << it->second.to_string() << " ("
-            << g_variable_name[node_prop.first] << "(" << node_prop.first << ")"
-            << "->" << node_prop.second << ")";
-        } else {
-            cout << g_variable_name[node_prop.first] << " (" << node_prop.first << ") "
-            << "->" << node_prop.second;
-        }
-        if (i < node_p->vars.size() - 1)
-            cout << ", ";
-    }
-    if (node_p->disjunctive || node_p->conjunctive)
-        cout << "}";
-    if (node_p->in_goal)
-        cout << "(goal)";
-    cout << " Achievers (" << node_p->possible_achievers.size() << ", " << node_p->first_achievers.size() << ")";
-    cout << endl;
-}
-
-void LandmarkFactory::dump() const {
-    cout << "Landmark graph: " << endl;
-    set<LandmarkNode *, LandmarkNodeComparer> nodes2(lm_graph->get_nodes().begin(), lm_graph->get_nodes().end());
-    
-    for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
-        != nodes2.end(); it++) {
-        LandmarkNode *node_p = *it;
-    dump_node(node_p);
-    for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
-        parent_it = node_p->parents.begin(); parent_it
-        != node_p->parents.end(); parent_it++) {
-        const edge_type &edge = parent_it->second;
-    const LandmarkNode *parent_p = parent_it->first;
-    cout << "\t\t<-_";
-    switch (edge) {
-        case necessary:
-            cout << "nec ";
-            break;
-        case greedy_necessary:
-            cout << "gn  ";
-            break;
-        case natural:
-            cout << "nat ";
-            break;
-        case reasonable:
-            cout << "r   ";
-            break;
-        case obedient_reasonable:
-            cout << "o_r ";
-            break;
-    }
-    dump_node(parent_p);
-    }
-    for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
-        child_it = node_p->children.begin(); child_it
-        != node_p->children.end(); child_it++) {
-        const edge_type &edge = child_it->second;
-        const LandmarkNode *child_p = child_it->first;
-        cout << "\t\t->_";
-        switch (edge) {
-            case necessary:
-                cout << "nec ";
-                break;
-            case greedy_necessary:
-                cout << "gn  ";
-                break;
-            case natural:
-                cout << "nat ";
-                break;
-            case reasonable:
-                cout << "r   ";
-                break;
-            case obedient_reasonable:
-                cout << "o_r ";
-                break;
-        }
-        dump_node(child_p);
-        }
-    }
-    cout << "Landmark graph end." << endl;
-}
-
 void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
                             edge_type type) {
     /* Adds an edge in the landmarks graph if there is no contradicting edge (simple measure to
@@ -740,7 +654,7 @@ void LandmarkFactory::discard_noncausal_landmarks() {
             LandmarkNode *n = *it;
         if (!is_causal_landmark(*n)) {
             cout << "Discarding non-causal landmark: ";
-            dump_node(n);
+            lm_graph->dump_node(n);
             lm_graph->rm_landmark_node(n);
             number_of_noncausal_landmarks++;
             change = true;
