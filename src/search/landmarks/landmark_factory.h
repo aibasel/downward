@@ -43,8 +43,7 @@ public:
 
     // TODO: move those to LandmarkGraph eventually? get rid of pddl_propositions in dump_node
     // they should only be needed by LandmarkFactoryRpgSasp anyways
-    void dump_node(const LandmarkNode *node_p) const;
-    void dump() const;
+
 
     //bool is_dead_end() const {return dead_end_found; }
 
@@ -77,7 +76,7 @@ public:
                                          vector<vector<int> > &lvl_var,
                                          vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op);
 protected:
-    // TODO: only needed by LandmarkFactoryRpgSasp and dump_node... get rid of it here
+    // protected not private for LandmarkFactoryRpgSasp
     hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
     map<string, int> pddl_proposition_indices; //TODO: make this a hash_map
 

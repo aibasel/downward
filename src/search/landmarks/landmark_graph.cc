@@ -326,6 +326,100 @@ void LandmarkGraph::set_landmark_ids() {
     }
 }
 
+void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
+    cout << "LM " << node_p->get_id() << " ";
+    if (node_p->disjunctive)
+        cout << "disj {";
+    else if (node_p->conjunctive)
+        cout << "conj {";
+    for (unsigned int i = 0; i < node_p->vars.size(); i++) {
+        pair<int, int> node_prop = make_pair(node_p->vars[i], node_p->vals[i]);
+        hash_map<pair<int, int>, vector<string>, hash_int_pair>::const_iterator
+        it = var_val_to_predicates.find(node_prop);
+        if (it != var_val_to_predicates.end()) {
+            for (size_t j = 0; j < it->second.size(); ++j) {
+                cout << it->second[j] << " ";
+            }
+            cout << "("
+            << g_variable_name[node_prop.first] << "(" << node_prop.first << ")"
+            << "->" << node_prop.second << ")";
+        } else {
+            cout << g_variable_name[node_prop.first] << " (" << node_prop.first << ") "
+            << "->" << node_prop.second;
+        }
+        if (i < node_p->vars.size() - 1)
+            cout << ", ";
+    }
+    if (node_p->disjunctive || node_p->conjunctive)
+        cout << "}";
+    if (node_p->in_goal)
+        cout << "(goal)";
+    cout << " Achievers (" << node_p->possible_achievers.size() << ", " << node_p->first_achievers.size() << ")";
+    cout << endl;
+}
+
+void LandmarkGraph::dump() const {
+    cout << "Landmark graph: " << endl;
+    set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
+
+    for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
+        != nodes2.end(); it++) {
+        LandmarkNode *node_p = *it;
+        dump_node(node_p);
+        for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
+            parent_it = node_p->parents.begin(); parent_it
+            != node_p->parents.end(); parent_it++) {
+            const edge_type &edge = parent_it->second;
+            const LandmarkNode *parent_p = parent_it->first;
+            cout << "\t\t<-_";
+            switch (edge) {
+                case necessary:
+                    cout << "nec ";
+                    break;
+                case greedy_necessary:
+                    cout << "gn  ";
+                    break;
+                case natural:
+                    cout << "nat ";
+                    break;
+                case reasonable:
+                    cout << "r   ";
+                    break;
+                case obedient_reasonable:
+                    cout << "o_r ";
+                    break;
+            }
+            dump_node(parent_p);
+        }
+        for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
+            child_it = node_p->children.begin(); child_it
+            != node_p->children.end(); child_it++) {
+            const edge_type &edge = child_it->second;
+            const LandmarkNode *child_p = child_it->first;
+            cout << "\t\t->_";
+            switch (edge) {
+                case necessary:
+                    cout << "nec ";
+                    break;
+                case greedy_necessary:
+                    cout << "gn  ";
+                    break;
+                case natural:
+                    cout << "nat ";
+                    break;
+                case reasonable:
+                    cout << "r   ";
+                    break;
+                case obedient_reasonable:
+                    cout << "o_r ";
+                    break;
+            }
+            dump_node(child_p);
+        }
+    }
+    cout << "Landmark graph end." << endl;
+}
+
 LandmarkGraph::Options::Options()
     : reasonable_orders(false),
       only_causal_landmarks(false),
