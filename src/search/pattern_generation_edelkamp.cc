@@ -25,12 +25,12 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(int pdb_size, int num_coll,
     initialize();
     //cout << "initial pattern collections:" << endl;
     //dump();
-    vector<double> initial_fitness_values;
+    vector<pair<double, int> > initial_fitness_values;
     evaluate(initial_fitness_values);
     
-    //double current_best_h = initial_fitness_values.back().first;
+    double current_best_h = initial_fitness_values.back().first;
     // TODO: can do this without copying? reference as instance variable does not work (initializing problem)
-    //best_collection = pattern_collections[initial_fitness_values.back().second];
+    best_collection = pattern_collections[initial_fitness_values.back().second];
     
     for (int t = 0; t < num_episodes; ++t) {
         cout << endl;
@@ -38,22 +38,22 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(int pdb_size, int num_coll,
         mutate(mutation_probability);
         cout << "mutated" << endl;
         //dump();
-        vector<double> fitness_values;
+        vector<pair<double, int> > fitness_values;
         double fitness_sum = evaluate(fitness_values);
         cout << "evaluated" << endl;
         cout << "fitness values:";
         for (size_t i = 0; i < fitness_values.size(); ++i) {
-            cout << " " << fitness_values[i];
+            cout << " " << fitness_values[i].first << " (index: " << fitness_values[i].second << ")";
         }
         cout << endl;
-        //double new_best_h = fitness_values.back().first;
+        double new_best_h = fitness_values.back().first;
         select(fitness_values, fitness_sum);
         //cout << "current pattern collections:" << endl;
         //dump();
-        /*if (new_best_h > current_best_h) {
+        if (new_best_h > current_best_h) {
             current_best_h = new_best_h;
             best_collection = pattern_collections[fitness_values.back().second];
-        }*/
+        }
     }
 }
 
@@ -176,7 +176,7 @@ void PatternGenerationEdelkamp::mutate(double probability) {
     }
 }
 
-double PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
+double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values) {
     double total_sum = 0;
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         cout << "evaluate pattern collection " << i << " of " << pattern_collections.size() << endl;
@@ -207,16 +207,16 @@ double PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
             }
             fitness += mean_h;
         }
-        fitness_values.push_back(fitness);
+        fitness_values.push_back(make_pair(fitness, i));
         total_sum += fitness;
     }
     return total_sum;
 }
 
-void PatternGenerationEdelkamp::select(const vector<double> &fitness_values, double fitness_sum) {
+void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness_values, double fitness_sum) {
     vector<double> probabilities;
     for (size_t i = 0; i < fitness_values.size(); ++i) {
-        probabilities.push_back(fitness_values[i] / fitness_sum);
+        probabilities.push_back(fitness_values[i].first / fitness_sum);
         if (i > 0)
             probabilities[i] += probabilities[i-1];
     }
@@ -234,6 +234,7 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values, dou
             ++j;
         }
         assert(0 <= j && j <= pattern_collections.size());
+        assert(j == fitness_values[j].second);
         new_pattern_collections.push_back(pattern_collections[j]);
     }
     pattern_collections = new_pattern_collections;
@@ -241,7 +242,7 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values, dou
 
 PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() {
     // return the best collection of the last pattern collections (after all episodes)
-    vector<double> fitness_values;
+    /*vector<double> fitness_values;
     evaluate(fitness_values);
     double best_fitness = fitness_values[0];
     int best_index = 0;
@@ -251,7 +252,7 @@ PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuris
             best_index = i;
         }
     }
-    const vector<vector<bool> > &best_collection = pattern_collections[best_index];
+    const vector<vector<bool> > &best_collection = pattern_collections[best_index];*/
     vector<vector<int> > pattern_collection;
     for (size_t j = 0; j < best_collection.size(); ++j) {
         vector<int> pattern;
