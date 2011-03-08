@@ -1,4 +1,4 @@
-#include "general_eager_best_first_search.h"
+#include "eager_search.h"
 
 #include "globals.h"
 #include "heuristic.h"
@@ -14,7 +14,7 @@
 #include <set>
 using namespace std;
 
-GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(
+EagerSearch::EagerSearch(
     const SearchEngineOptions &options,
     OpenList<state_var_t *> *open,
     bool reopen_closed, bool pathmax_correction,
@@ -26,13 +26,11 @@ GeneralEagerBestFirstSearch::GeneralEagerBestFirstSearch(
       open_list(open), f_evaluator(f_eval) {
 }
 
-void
-GeneralEagerBestFirstSearch::set_pref_operator_heuristics(
-    vector<Heuristic *> &heur) {
+void EagerSearch::set_pref_operator_heuristics(vector<Heuristic *> &heur) {
     preferred_operator_heuristics = heur;
 }
 
-void GeneralEagerBestFirstSearch::initialize() {
+void EagerSearch::initialize() {
     //TODO children classes should output which kind of search
     cout << "Conducting best first search"
          << (reopen_closed_nodes ? " with" : " without")
@@ -93,12 +91,12 @@ void GeneralEagerBestFirstSearch::initialize() {
 }
 
 
-void GeneralEagerBestFirstSearch::statistics() const {
+void EagerSearch::statistics() const {
     search_progress.print_statistics();
     search_space.statistics();
 }
 
-int GeneralEagerBestFirstSearch::step() {
+int EagerSearch::step() {
     pair<SearchNode, bool> n = fetch_next_node();
     if (!n.second) {
         return FAILED;
@@ -171,6 +169,7 @@ int GeneralEagerBestFirstSearch::step() {
             bool dead_end = open_list->is_dead_end();
             if (dead_end) {
                 succ_node.mark_as_dead_end();
+                search_progress.inc_dead_ends();
                 continue;
             }
 
@@ -224,7 +223,7 @@ int GeneralEagerBestFirstSearch::step() {
     return IN_PROGRESS;
 }
 
-pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
+pair<SearchNode, bool> EagerSearch::fetch_next_node() {
     /* TODO: The bulk of this code deals with multi-path dependence,
        which is a bit unfortunate since that is a special case that
        makes the common case look more complicated than it would need
@@ -265,6 +264,7 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
                 bool dead_end = open_list->is_dead_end();
                 if (dead_end) {
                     node.mark_as_dead_end();
+                    search_progress.inc_dead_ends();
                     continue;
                 }
                 int new_h = heuristics[0]->get_heuristic();
@@ -285,17 +285,17 @@ pair<SearchNode, bool> GeneralEagerBestFirstSearch::fetch_next_node() {
     }
 }
 
-void GeneralEagerBestFirstSearch::reward_progress() {
+void EagerSearch::reward_progress() {
     // Boost the "preferred operator" open lists somewhat whenever
     // one of the heuristics finds a state with a new best h value.
     open_list->boost_preferred();
 }
 
-void GeneralEagerBestFirstSearch::dump_search_space() {
+void EagerSearch::dump_search_space() {
     search_space.dump();
 }
 
-void GeneralEagerBestFirstSearch::update_jump_statistic(const SearchNode &node) {
+void EagerSearch::update_jump_statistic(const SearchNode &node) {
     if (f_evaluator) {
         heuristics[0]->set_evaluator_value(node.get_h());
         f_evaluator->evaluate(node.get_g(), false);
@@ -304,7 +304,7 @@ void GeneralEagerBestFirstSearch::update_jump_statistic(const SearchNode &node) 
     }
 }
 
-void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int> &values) const {
+void EagerSearch::print_heuristic_values(const vector<int> &values) const {
     for (int i = 0; i < values.size(); i++) {
         cout << values[i];
         if (i != values.size() - 1)
@@ -312,9 +312,9 @@ void GeneralEagerBestFirstSearch::print_heuristic_values(const vector<int> &valu
     }
 }
 
-SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
-                                                  int start, int &end,
-                                                  bool dry_run) {
+SearchEngine *EagerSearch::create(const vector<string> &config,
+                                  int start, int &end,
+                                  bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
 
@@ -353,17 +353,17 @@ SearchEngine *GeneralEagerBestFirstSearch::create(const vector<string> &config,
     if (config[end] != ")")
         throw ParseError(end);
 
-    GeneralEagerBestFirstSearch *engine = 0;
+    EagerSearch *engine = 0;
     if (!dry_run) {
-        engine = new GeneralEagerBestFirstSearch(common_options,
-                                                 open, reopen_closed, pathmax, false, f_eval);
+        engine = new EagerSearch(common_options,
+                                 open, reopen_closed, pathmax, false, f_eval);
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
     return engine;
 }
 
-SearchEngine *GeneralEagerBestFirstSearch::create_astar(
+SearchEngine *EagerSearch::create_astar(
     const vector<string> &config, int start, int &end, bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
@@ -394,7 +394,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
         throw ParseError(end);
 
 
-    GeneralEagerBestFirstSearch *engine = 0;
+    EagerSearch *engine = 0;
     if (!dry_run) {
         GEvaluator *g = new GEvaluator();
         vector<ScalarEvaluator *> sum_evals;
@@ -409,15 +409,14 @@ SearchEngine *GeneralEagerBestFirstSearch::create_astar(
         OpenList<state_var_t *> *open = \
             new TieBreakingOpenList<state_var_t *>(evals, false, false);
 
-        engine = new GeneralEagerBestFirstSearch(
-            common_options, open, true, pathmax, mpd,
-            f_eval);
+        engine = new EagerSearch(common_options, open, true, pathmax, mpd,
+                                 f_eval);
     }
 
     return engine;
 }
 
-SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
+SearchEngine *EagerSearch::create_greedy(
     const vector<string> &config, int start, int &end, bool dry_run) {
     if (config[start + 1] != "(")
         throw ParseError(start + 1);
@@ -448,7 +447,7 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
     if (config[end] != ")")
         throw ParseError(end);
 
-    GeneralEagerBestFirstSearch *engine = 0;
+    EagerSearch *engine = 0;
     if (!dry_run) {
         OpenList<state_var_t *> *open;
         if ((evals.size() == 1) && preferred_list.empty()) {
@@ -467,9 +466,8 @@ SearchEngine *GeneralEagerBestFirstSearch::create_greedy(
             open = new AlternationOpenList<state_var_t *>(inner_lists, boost);
         }
 
-        engine = new GeneralEagerBestFirstSearch(
-            common_options, open,
-            false, false, false, NULL);
+        engine = new EagerSearch(common_options, open,
+                                 false, false, false, NULL);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
