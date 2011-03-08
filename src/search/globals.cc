@@ -57,7 +57,7 @@ void save_plan(const vector<const Operator *> &plan, int iter) {
     outfile.close();
     int plan_cost = calculate_plan_cost(plan);
     ofstream statusfile;
-    statusfile.open("plan_numbers_and_cost", ios::out|ios::app);
+    statusfile.open("plan_numbers_and_cost", ios::out | ios::app);
     statusfile << iter << " " << plan_cost << endl;
     statusfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
