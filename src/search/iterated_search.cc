@@ -171,8 +171,8 @@ SearchEngine *IteratedSearch::create(
                                       "continue search after no solution found");
         option_parser.add_bool_option("continue_on_solve", &continue_on_solve,
                                       "continue search after solution found");
-        option_parser.add_int_option("plan_counter", &plan_counter, 
-                                      "start enumerating plans with this number");
+        option_parser.add_int_option("plan_counter", &plan_counter,
+                                     "start enumerating plans with this number");
         option_parser.parse_options(config, end, end, dry_run);
         end++;
     }
