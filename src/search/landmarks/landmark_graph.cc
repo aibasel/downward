@@ -65,9 +65,9 @@ void LandmarkGraph::generate_operators_lookups() {
     }
 }
 
-LandmarkNode *LandmarkGraph::landmark_reached(const pair<int, int> &prop) const {
+LandmarkNode *LandmarkGraph::get_landmark(const pair<int, int> &prop) const {
     /* Return pointer to landmark node that corresponds to the given fact, or 0 if no such
-     landmark exists. (TODO: rename to "get_landmark()")
+     landmark exists.
      */
     LandmarkNode *node_p = 0;
     hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
