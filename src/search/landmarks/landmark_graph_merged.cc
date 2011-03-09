@@ -4,7 +4,7 @@
 
 #include <set>
 
-using namespace std;
+using namespace __gnu_cxx;
 
 static LandmarkGraph *create(const std::vector<std::string> &config, int start,
                              int &end, bool dry_run);

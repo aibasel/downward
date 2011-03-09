@@ -1,10 +1,11 @@
 #include <vector>
-#include <ext/hash_map>
 
 #include "landmark_factory_rpg_exhaust.h"
 #include "../state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+
+using namespace std;
 
 static LandmarkGraph *create(const std::vector<std::string> &config, int start,
                              int &end, bool dry_run);

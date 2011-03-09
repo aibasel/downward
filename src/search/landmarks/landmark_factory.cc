@@ -4,7 +4,7 @@
 #include <limits>
 #include <fstream>
 
-using namespace std;
+using namespace __gnu_cxx;
 
 LandmarkFactory::LandmarkFactory(LandmarkGraph::Options &options, Exploration *exploration) 
     : lm_graph(new LandmarkGraph(options, exploration)) {
@@ -28,9 +28,6 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
     lm_graph->dump();
     return lm_graph;
 }
-
-// ------------------------------------------------------------------------------------------------
-// from LandmarkGraph
 
 bool LandmarkFactory::achieves_non_conditional(const Operator &o,
                                                const LandmarkNode *lmp) const {

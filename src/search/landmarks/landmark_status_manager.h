@@ -6,7 +6,7 @@
 
 class LandmarkStatusManager {
 private:
-    hash_map<StateProxy, vector<bool> > reached_lms;
+    __gnu_cxx::hash_map<StateProxy, vector<bool> > reached_lms;
 
     bool do_intersection;
     LandmarkGraph &lm_graph;

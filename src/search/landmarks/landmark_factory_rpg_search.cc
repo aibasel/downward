@@ -2,6 +2,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+using namespace __gnu_cxx;
+
 static LandmarkGraph *create(const std::vector<std::string> &config, int start,
                              int &end, bool dry_run);
 static LandmarkGraphPlugin plugin("lm_search", create);
