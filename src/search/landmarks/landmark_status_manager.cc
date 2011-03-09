@@ -1,5 +1,7 @@
 #include "landmark_status_manager.h"
 
+using namespace __gnu_cxx;
+
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : lm_graph(graph) {
     do_intersection = true;

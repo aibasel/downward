@@ -4,6 +4,12 @@
 #include "landmark_graph.h"
 #include "exploration.h"
 
+#include <ext/hash_map>
+#include <ext/hash_set>
+#include <map>
+#include <set>
+#include <vector>
+
 class LandmarkFactory {
 public:
     LandmarkFactory(LandmarkGraph::Options &options, Exploration *exploration);
@@ -19,7 +25,7 @@ protected:
     // protected not private for LandmarkFactoryRpgSasp
     struct Pddl_proposition {
         string predicate;
-        vector<string> arguments;
+        std::vector<string> arguments;
         string to_string() const {
             string output = predicate;
             for (unsigned int i = 0; i < arguments.size(); i++) {
@@ -29,8 +35,8 @@ protected:
             return output;
         }
     };
-    hash_map<pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
-    map<string, int> pddl_proposition_indices; //TODO: make this a hash_map
+    __gnu_cxx::hash_map<std::pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
+    std::map<string, int> pddl_proposition_indices; //TODO: make this a hash_map
 
     virtual void generate_landmarks() = 0;
     void read_external_inconsistencies();
@@ -41,7 +47,7 @@ protected:
     void generate();
     //bool is_dead_end() const {return dead_end_found; }
     //void count_shared_costs();
-    inline bool inconsistent(const pair<int, int> &a, const pair<int, int> &b) const {
+    inline bool inconsistent(const std::pair<int, int> &a, const std::pair<int, int> &b) const {
         //if (a.first == b.first && a.second == b.second)
         if (a == b)
             return false;
@@ -56,42 +62,42 @@ protected:
     inline bool relaxed_task_solvable(bool level_out,
                                       const LandmarkNode *exclude,
                                       bool compute_lvl_op = false) const {
-        vector<vector<int> > lvl_var;
-        vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
+        std::vector<std::vector<int> > lvl_var;
+        std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > lvl_op;
         return relaxed_task_solvable(lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
     }
     void edge_add(LandmarkNode &from, LandmarkNode &to, edge_type type);
     void compute_predecessor_information(LandmarkNode *bp,
-                                         vector<vector<int> > &lvl_var,
-                                         vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op);
+                                         std::vector<std::vector<int> > &lvl_var,
+                                         std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op);
 
     // protected not private for LandmarkFactoryRpgSearch
     bool achieves_non_conditional(const Operator &o, const LandmarkNode *lmp) const;
     bool is_landmark_precondition(const Operator &o, const LandmarkNode *lmp) const;
 
 private:
-    vector<vector<set<pair<int, int> > > > inconsistent_facts;
+    std::vector<std::vector<std::set<std::pair<int, int> > > > inconsistent_facts;
 
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
-    bool effect_always_happens(const vector<PrePost> &prepost,
-                               set<pair<int, int> > &eff) const;
+    bool effect_always_happens(const std::vector<PrePost> &prepost,
+                               std::set<std::pair<int, int> > &eff) const;
     void approximate_reasonable_orders(bool obedient_orders);
     void mk_acyclic_graph();
     int loop_acyclic_graph(LandmarkNode &lmn,
-                           hash_set<LandmarkNode *, hash_pointer> &acyclic_node_set);
+                           __gnu_cxx::hash_set<LandmarkNode *, hash_pointer> &acyclic_node_set);
     bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                         list<pair<LandmarkNode *, edge_type> > &path,
-                                         list<pair<LandmarkNode *, edge_type> >::iterator it);
+                                         list<std::pair<LandmarkNode *, edge_type> > &path,
+                                         list<std::pair<LandmarkNode *, edge_type> >::iterator it);
     int calculate_lms_cost() const;
-    void collect_ancestors(hash_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
+    void collect_ancestors(__gnu_cxx::hash_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
                            bool use_reasonable);
-    bool relaxed_task_solvable(vector<vector<int> > &lvl_var,
-                               vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op,
+    bool relaxed_task_solvable(std::vector<std::vector<int> > &lvl_var,
+                               std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op,
                                bool level_out,
                                const LandmarkNode *exclude,
                                bool compute_lvl_op = false) const;
-    /*bool relaxed_task_solvable_without_operator(vector<vector<int> > &lvl_var,
-    vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op,
+    /*bool relaxed_task_solvable_without_operator(std::vector<std::vector<int> > &lvl_var,
+    std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op,
                                         bool level_out,
                                         const Operator *exclude,
                                         bool compute_lvl_op = false) const;*/

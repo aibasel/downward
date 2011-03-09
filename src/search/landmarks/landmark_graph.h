@@ -14,8 +14,6 @@
 #include "landmark_types.h"
 #include "../option_parser.h"
 
-using namespace __gnu_cxx;
-
 enum edge_type {
     /* NOTE: The code relies on the fact that larger numbers are
        stronger in the sense that, e.g., every greedy-necessary
@@ -36,18 +34,18 @@ enum landmark_status {lm_reached = 0, lm_not_reached = 1, lm_needed_again = 2};
 class LandmarkNode {
     int id;
 public:
-    LandmarkNode(vector<int> &variables, vector<int> &values, bool disj, bool conj = false)
+    LandmarkNode(std::vector<int> &variables, std::vector<int> &values, bool disj, bool conj = false)
         : id(-1), vars(variables), vals(values), disjunctive(disj), conjunctive(conj), in_goal(false),
           min_cost(1), shared_cost(0.0), status(lm_not_reached),
           effect_of_ununsed_alm(false), is_derived(false) {
     }
 
-    vector<int> vars;
-    vector<int> vals;
+    std::vector<int> vars;
+    std::vector<int> vals;
     bool disjunctive;
     bool conjunctive;
-    hash_map<LandmarkNode *, edge_type, hash_pointer> parents;
-    hash_map<LandmarkNode *, edge_type, hash_pointer> children;
+    __gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer> parents;
+    __gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer> children;
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
     double shared_cost;
@@ -56,9 +54,9 @@ public:
     bool effect_of_ununsed_alm;
     bool is_derived;
 
-    hash_set<pair<int, int>, hash_int_pair> forward_orders;
-    set<int> first_achievers;
-    set<int> possible_achievers;
+    __gnu_cxx::hash_set<std::pair<int, int>, hash_int_pair> forward_orders;
+    std::set<int> first_achievers;
+    std::set<int> possible_achievers;
 
     int get_id() const {
         return id;
@@ -121,7 +119,7 @@ struct LandmarkNodeComparer {
 };
 
 
-typedef hash_set<LandmarkNode *, hash_pointer> LandmarkSet;
+typedef __gnu_cxx::hash_set<LandmarkNode *, hash_pointer> LandmarkSet;
 
 class LandmarkGraph {
 public:
@@ -175,12 +173,12 @@ public:
     }
     Exploration *get_exploration() const { return exploration; }
 private:
-    hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
-    hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
+    __gnu_cxx::hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
+    __gnu_cxx::hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
     Exploration *exploration;
     int landmarks_count;
-    set<LandmarkNode *> nodes;
-    vector<LandmarkNode *> ordered_nodes;
+    std::set<LandmarkNode *> nodes;
+    std::vector<LandmarkNode *> ordered_nodes;
     int landmarks_cost;
 
     // ------------------------------------------------------------------------------
@@ -199,10 +197,10 @@ public:
         assert(disj_lms_to_nodes.find(a) != disj_lms_to_nodes.end());
         return *(disj_lms_to_nodes.find(a)->second);
     }
-    inline const vector<int> &get_operators_including_eff(const pair<int, int> &eff) const {
+    inline const std::vector<int> &get_operators_including_eff(const pair<int, int> &eff) const {
         return operators_eff_lookup[eff.first][eff.second];
     }
-    //inline const vector<int> &get_operators_including_pre(const pair<int, int> &pre) const {
+    //inline const std::vector<int> &get_operators_including_pre(const pair<int, int> &pre) const {
         //    return operators_pre_lookup[pre.first][pre.second];
         //}
     bool use_orders() const { return !no_orders; } // only needed by HMLandmark
@@ -250,9 +248,9 @@ public:
 private:
     void generate_operators_lookups();
     
-    vector<int> empty_pre_operators;
-    vector<vector<vector<int> > > operators_eff_lookup;
-    vector<vector<vector<int> > > operators_pre_lookup;
+    std::vector<int> empty_pre_operators;
+    std::vector<std::vector<std::vector<int> > > operators_eff_lookup;
+    std::vector<std::vector<std::vector<int> > > operators_pre_lookup;
     
     bool reasonable_orders;
     bool only_causal_landmarks;
@@ -265,7 +263,7 @@ private:
     int conj_lms;
 
     // something similar to pddl_propositions, but only storing predicate and args needed for "dump node"
-    hash_map<pair<int, int>, pair<string, vector<string> >, hash_int_pair> var_val_to_predicate_args;
+    __gnu_cxx::hash_map<pair<int, int>, pair<string, std::vector<string> >, hash_int_pair> var_val_to_predicate_args;
 };
 
 #endif

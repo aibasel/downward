@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-using namespace std;
+using namespace __gnu_cxx;
 
 LandmarkGraph::LandmarkGraph(Options &options, Exploration *explor)
     : exploration(explor), landmarks_count(0), conj_lms(0)/*,

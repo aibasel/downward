@@ -310,7 +310,7 @@ void HMLandmarks::get_m_sets(int m,
 }
 
 void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
-    hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator it =
+    __gnu_cxx::hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator it =
     pddl_propositions.find(fluent);
     if (it != pddl_propositions.end()) {
         cout << it->second.to_string();
