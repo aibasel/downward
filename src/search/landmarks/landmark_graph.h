@@ -151,7 +151,7 @@ public:
         return reached_cost;
     }
     bool is_using_reasonable_orderings() const {return reasonable_orders; }
-    LandmarkNode *landmark_reached(const pair<int, int> &prop) const;
+    LandmarkNode *get_landmark(const pair<int, int> &prop) const;
 private:
     int reached_cost;
     int needed_cost;

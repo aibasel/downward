@@ -126,7 +126,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
             if (state[g_goal[i].first] != g_goal[i].second) {
                 //cout << "missing goal prop " << g_variable_name[g_goal[i].first] << " : "
                 //<< g_goal[i].second << endl;
-                LandmarkNode *node_p = lgraph.landmark_reached(g_goal[i]);
+                LandmarkNode *node_p = lgraph.get_landmarked(g_goal[i]);
                 assert(node_p != NULL);
                 if (node_p->min_cost != 0)
                     all_costs_are_zero = false;
@@ -241,7 +241,7 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
                 continue;
             const pair<int, int> varval = make_pair(prepost[j].var,
                                                     prepost[j].post);
-            LandmarkNode *lm_p = lgraph.landmark_reached(varval);
+            LandmarkNode *lm_p = lgraph.get_landmark(varval);
             if (lm_p != 0 && landmark_is_interesting(state, reached, *lm_p)) {
                 if (lm_p->disjunctive) {
                     ha_disj.push_back(all_operators[i]);
