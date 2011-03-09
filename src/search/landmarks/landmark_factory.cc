@@ -113,15 +113,11 @@ void LandmarkFactory::read_external_inconsistencies() {
                 in >> var >> val;
                 string predicate, endline;
                 in >> predicate >> no_args;
-                // TODO: re-think this again!
-                vector<string> predicates;
-                predicates.push_back(predicate);
                 vector<string> args;
                 for (int k = 0; k < no_args; k++) {
                     string arg;
                     in >> arg;
                     args.push_back(arg);
-                    predicates.push_back(arg);
                 }
                 getline(in, endline);
                 // Variable may not be in index if it has been discarded by preprocessor
@@ -134,7 +130,7 @@ void LandmarkFactory::read_external_inconsistencies() {
                     prop.predicate = predicate;
                     prop.arguments = args;
                     pddl_propositions.insert(make_pair(var_val_pair, prop));
-                    lm_graph->insert_var_val_predicate(var_val_pair, predicates);
+                    lm_graph->insert_var_val_to_predicate_args(var_val_pair, make_pair(predicate, args));
                     if (pddl_proposition_indices.find(predicate)
                         == pddl_proposition_indices.end()) {
                         pddl_proposition_indices.insert(make_pair(predicate,
@@ -153,7 +149,6 @@ void LandmarkFactory::read_external_inconsistencies() {
         }
         check_magic(in, "end_groups");
         myfile.close();
-        //external_inconsistencies_read = true;
         cout << "done" << endl;
     } else {
         cout << "Unable to open invariants file!" << endl;

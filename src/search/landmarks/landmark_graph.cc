@@ -334,11 +334,12 @@ void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
         cout << "conj {";
     for (unsigned int i = 0; i < node_p->vars.size(); i++) {
         pair<int, int> node_prop = make_pair(node_p->vars[i], node_p->vals[i]);
-        hash_map<pair<int, int>, vector<string>, hash_int_pair>::const_iterator
-        it = var_val_to_predicates.find(node_prop);
-        if (it != var_val_to_predicates.end()) {
-            for (size_t j = 0; j < it->second.size(); ++j) {
-                cout << it->second[j] << " ";
+        hash_map<pair<int, int>, pair<string, vector<string> >, hash_int_pair>::const_iterator
+        it = var_val_to_predicate_args.find(node_prop);
+        if (it != var_val_to_predicate_args.end()) {
+            cout << it->second.first << " ";
+            for (size_t j = 0; j < it->second.second.size(); ++j) {
+                cout << it->second.second[j] << " ";
             }
             cout << "("
             << g_variable_name[node_prop.first] << "(" << node_prop.first << ")"

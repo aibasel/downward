@@ -242,8 +242,8 @@ public:
     void set_landmark_cost(int cost) {
         landmarks_cost = cost;
     }
-    void insert_var_val_predicate(const std::pair<int, int> &var_val, const vector<string> &predicates) {
-        var_val_to_predicates.insert(std::make_pair(var_val, predicates));
+    void insert_var_val_to_predicate_args(const std::pair<int, int> &var_val, const std::pair<string, std::vector<string> > &predicates) {
+        var_val_to_predicate_args.insert(std::make_pair(var_val, predicates));
     };
     void dump_node(const LandmarkNode *node_p) const;
     void dump() const;
@@ -264,9 +264,8 @@ private:
     
     int conj_lms;
 
-    // something similar to pddl_propositions, but only storing predicates needed for "dump node"
-    // TODO: check whether vector<string> is a good idea
-    hash_map<pair<int, int>, vector<string>, hash_int_pair> var_val_to_predicates;
+    // something similar to pddl_propositions, but only storing predicate and args needed for "dump node"
+    hash_map<pair<int, int>, pair<string, vector<string> >, hash_int_pair> var_val_to_predicate_args;
 };
 
 #endif
