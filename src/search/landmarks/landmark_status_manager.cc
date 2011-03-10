@@ -134,7 +134,6 @@ bool LandmarkStatusManager::update_lm_status(const State &state) {
     for (lit = nodes.begin(); lit != nodes.end(); lit++) {
         LandmarkNode &node = **lit;
         node.status = lm_not_reached;
-        node.effect_of_ununsed_alm = false;
         if (reached[node.get_id()]) {
             node.status = lm_reached;
         }
