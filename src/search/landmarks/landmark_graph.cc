@@ -235,17 +235,15 @@ LandmarkNode &LandmarkGraph::landmark_add_simple(const pair<int, int> &lm) {
     return *new_node_p;
 }
 
-LandmarkNode &LandmarkGraph::landmark_add_disjunctive(
-const set<pair<int, int> > &lm) {
+LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<pair<int, int> > &lm) {
     vector<int> vars;
     vector<int> vals;
     for (set<pair<int, int> >::iterator it = lm.begin(); it != lm.end(); ++it) {
         vars.push_back(it->first);
         vals.push_back(it->second);
-        assert(!landmark_exists(make_pair(it->first, it->second)));
+        assert(!landmark_exists(*it));
     }
     LandmarkNode *new_node_p = new LandmarkNode(vars, vals, true);
-    new_node_p->disjunctive = true;
     nodes.insert(new_node_p);
     for (set<pair<int, int> >::iterator it = lm.begin(); it != lm.end(); ++it) {
         disj_lms_to_nodes.insert(make_pair(*it, new_node_p));
@@ -253,6 +251,16 @@ const set<pair<int, int> > &lm) {
     landmarks_count++;
     return *new_node_p;
 }
+
+/*LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<pair<int, int> > &Lm) {
+    vector<int> vars;
+    vector<int> vals;
+    for (set<pair<int, int> >::iterator it = lm.begin(); it != lm.end(); ++it) {
+        vars.push_back(it->first);
+        vals.push_back(it->second);
+        assert(!landmark_exists(*it));
+    }
+}*/
 
 void LandmarkGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj) {
     nodes.insert(&node);
