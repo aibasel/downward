@@ -913,25 +913,37 @@ void HMLandmarks::compute_noop_landmarks(
 }
 
 void HMLandmarks::add_lm_node(int set_index, bool goal) {
-    std::vector<int> vars, vals;
+    // TODO: check functionality (seems to work) and maybe make the landmark_add-
+    // methods of landmarkgraph a bit nicer (i.e. have one for all cases)
+    //std::vector<int> vars, vals;
+    std::set<std::pair<int, int> > lm;
 
     std::map<int, LandmarkNode *>::iterator it = lm_node_table_.find(set_index);
 
     if (it == lm_node_table_.end()) {
-        vars.clear();
-        vals.clear();
         for (FluentSet::iterator it = h_m_table_[set_index].fluents.begin();
              it != h_m_table_[set_index].fluents.end(); ++it) {
-            vars.push_back(it->first);
-            vals.push_back(it->second);
+            lm.insert(*it);
+            //vars.push_back(it->first);
+            //vals.push_back(it->second);
         }
-        bool conj = (vars.size() > 1);
+        LandmarkNode *node;
+        if (lm.size() > 1) { // conjunctive landmark
+            node = &lm_graph->landmark_add_conjunctive(lm);
+        } else { // simple landmark
+            node = &lm_graph->landmark_add_simple(h_m_table_[set_index].fluents[0]);
+        }
+        node->in_goal = goal;
+        node->first_achievers.insert(h_m_table_[set_index].first_achievers.begin(),
+                                    h_m_table_[set_index].first_achievers.end());
+        lm_node_table_[set_index] = node;
+        /*bool conj = (vars.size() > 1);
         LandmarkNode *to_add = new LandmarkNode(vars, vals, false, conj);
         to_add->in_goal = goal;
         to_add->first_achievers.insert(h_m_table_[set_index].first_achievers.begin(),
                                        h_m_table_[set_index].first_achievers.end());
         lm_graph->insert_node(h_m_table_[set_index].fluents[0], *to_add, conj);
-        lm_node_table_[set_index] = to_add;
+        lm_node_table_[set_index] = to_add;*/
     }
 }
 

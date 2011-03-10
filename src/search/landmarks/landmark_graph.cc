@@ -252,7 +252,7 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<pair<int, int> >
     return *new_node_p;
 }
 
-/*LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<pair<int, int> > &Lm) {
+LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<pair<int, int> > &lm) {
     vector<int> vars;
     vector<int> vals;
     for (set<pair<int, int> >::iterator it = lm.begin(); it != lm.end(); ++it) {
@@ -262,11 +262,12 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<pair<int, int> >
     }
     LandmarkNode *new_node_p = new LandmarkNode(vars, vals, false, true);
     nodes.insert(new_node_p);
-    landmarks_count++;
+    ++landmarks_count;
+    ++conj_lms;
     return *new_node_p;
-}*/
+}
 
-void LandmarkGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj) {
+/*void LandmarkGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj) {
     nodes.insert(&node);
     ++landmarks_count;
     if (conj) {
@@ -274,7 +275,7 @@ void LandmarkGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, bool
     } else {
         simple_lms_to_nodes.insert(std::make_pair(lm, &node));
     }
-}
+}*/
 
 void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     /* Called by "discard_disjunctive_landmarks()" */

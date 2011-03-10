@@ -225,21 +225,17 @@ public:
     bool landmark_exists(const pair<int, int> &lm) const; // not needed by HMLandmark
     bool exact_same_disj_landmark_exists(const set<pair<int, int> > &lm) const;
     
-    LandmarkNode &landmark_add_simple(const pair<int, int> &lm); // not needed by HMLandmark
+    LandmarkNode &landmark_add_simple(const pair<int, int> &lm);
     LandmarkNode &landmark_add_disjunctive(const set<pair<int, int> > &lm);
-    // TODO: check whether this method (insert_node) can be delegated to the simple add methods
-    // only calling class is HMLandmark
-    void insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj);
+    LandmarkNode &landmark_add_conjunctive(const set<pair<int, int> > &lm);
     void rm_landmark_node(LandmarkNode *node);
-    //void rm_landmark(const pair<int, int> &lmk); // only needed by LandmarkFactoryRpgExhaust
-    // TODO: only calling class of make_disj_node_simple is LandmarkGraphNew - maybe delegate
-    // the call to add/remove methods
-    //LandmarkNode &make_disj_node_simple(std::pair<int, int> lm);
+
     void set_landmark_ids();
     void set_landmark_cost(int cost) {
         landmarks_cost = cost;
     }
-    void insert_var_val_to_predicate_args(const std::pair<int, int> &var_val, const std::pair<string, std::vector<string> > &predicates) {
+    void insert_var_val_to_predicate_args(const std::pair<int, int> &var_val,
+                                          const std::pair<string, std::vector<string> > &predicates) {
         var_val_to_predicate_args.insert(std::make_pair(var_val, predicates));
     };
     void dump_node(const LandmarkNode *node_p) const;
