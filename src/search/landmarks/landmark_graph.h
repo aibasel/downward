@@ -232,7 +232,7 @@ public:
     // only calling class is HMLandmark
     void insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj);
     void rm_landmark_node(LandmarkNode *node);
-    void rm_landmark(const pair<int, int> &lmk); // only needed by LandmarkFactoryRpgExhaust
+    //void rm_landmark(const pair<int, int> &lmk); // only needed by LandmarkFactoryRpgExhaust
     // TODO: only calling class of make_disj_node_simple is LandmarkGraphNew - maybe delegate
     // the call to add/remove methods
     //LandmarkNode &make_disj_node_simple(std::pair<int, int> lm);

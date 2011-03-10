@@ -307,16 +307,6 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     assert(nodes.find(node) == nodes.end());
 }
 
-void LandmarkGraph::rm_landmark(const pair<int, int> &lm) {
-    assert(landmark_exists(lm));
-    LandmarkNode *node;
-    if (simple_landmark_exists(lm))
-        node = &get_simple_lm_node(lm);
-    else
-        node = &get_disj_lm_node(lm);
-    rm_landmark_node(node);
-}
-
 /*LandmarkNode &LandmarkGraph::make_disj_node_simple(std::pair<int, int> lm) {
     LandmarkNode &node = get_disj_lm_node(lm);
     node.disjunctive = false;
