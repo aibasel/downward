@@ -79,7 +79,7 @@ public:
                 }
             }
             return false;
-        } else {
+        } else { // conjunctive or simple
             for (int i = 0; i < vars.size(); i++) {
                 if (state[vars[i]] != vals[i]) {
                     return false;
@@ -235,7 +235,7 @@ public:
     void rm_landmark(const pair<int, int> &lmk); // only needed by LandmarkFactoryRpgExhaust
     // TODO: only calling class of make_disj_node_simple is LandmarkGraphNew - maybe delegate
     // the call to add/remove methods
-    LandmarkNode &make_disj_node_simple(std::pair<int, int> lm);
+    //LandmarkNode &make_disj_node_simple(std::pair<int, int> lm);
     void set_landmark_ids();
     void set_landmark_cost(int cost) {
         landmarks_cost = cost;

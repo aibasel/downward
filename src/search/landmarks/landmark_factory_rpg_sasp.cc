@@ -121,16 +121,14 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
         // Simple landmarks are more informative than disjunctive ones,
         // change disj. landmark into simple
         
-        // TODO: can be removed when sure this is correct
-        // old functionality
-        /*LandmarkNode &node = lm_graph->get_disj_lm_node(a);
-        node.disjunctive = false;
-        for (int i = 0; i < node.vars.size(); i++)
-            disj_lms_to_nodes.erase(make_pair(node.vars[i], node.vals[i]));
-        simple_lms_to_nodes.insert(make_pair(a, &node));*/
-        
-        // new
-        LandmarkNode &node = lm_graph->make_disj_node_simple(a);
+        // old: call to methode
+        //LandmarkNode &node = lm_graph->make_disj_node_simple(a);
+
+        // new: replace by new program logic
+        LandmarkNode &node2 = lm_graph->get_disj_lm_node(a);
+        LandmarkNode node(node2);
+        lm_graph->rm_landmark_node(&node2);
+        lm_graph->landmark_add_simple(a);
         
         node.vars.clear();
         node.vals.clear();

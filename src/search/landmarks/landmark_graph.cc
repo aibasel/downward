@@ -260,6 +260,10 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<pair<int, int> >
         vals.push_back(it->second);
         assert(!landmark_exists(*it));
     }
+    LandmarkNode *new_node_p = new LandmarkNode(vars, vals, false, true);
+    nodes.insert(new_node_p);
+    landmarks_count++;
+    return *new_node_p;
 }*/
 
 void LandmarkGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj) {
@@ -278,14 +282,14 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
         node->parents.begin(); it != node->parents.end(); it++) {
         LandmarkNode &parent = *(it->first);
-    parent.children.erase(node);
-    assert(parent.children.find(node) == parent.children.end());
+        parent.children.erase(node);
+        assert(parent.children.find(node) == parent.children.end());
     }
     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
         node->children.begin(); it != node->children.end(); it++) {
         LandmarkNode &child = *(it->first);
-    child.parents.erase(node);
-    assert(child.parents.find(node) == child.parents.end());
+        child.parents.erase(node);
+        assert(child.parents.find(node) == child.parents.end());
     }
     if (node->disjunctive) {
         for (int i = 0; i < node->vars.size(); i++) {
@@ -313,14 +317,14 @@ void LandmarkGraph::rm_landmark(const pair<int, int> &lm) {
     rm_landmark_node(node);
 }
 
-LandmarkNode &LandmarkGraph::make_disj_node_simple(std::pair<int, int> lm) {
+/*LandmarkNode &LandmarkGraph::make_disj_node_simple(std::pair<int, int> lm) {
     LandmarkNode &node = get_disj_lm_node(lm);
     node.disjunctive = false;
     for (int i = 0; i < node.vars.size(); i++)
         disj_lms_to_nodes.erase(make_pair(node.vars[i], node.vals[i]));
     simple_lms_to_nodes.insert(std::make_pair(lm, &node));
     return node;
-}
+}*/
 
 void LandmarkGraph::set_landmark_ids() {
     ordered_nodes.resize(number_of_landmarks());
