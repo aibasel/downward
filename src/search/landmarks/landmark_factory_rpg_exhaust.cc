@@ -34,7 +34,6 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
             if (!lm_graph->simple_landmark_exists(lm)) {
                 LandmarkNode *new_lm = &lm_graph->landmark_add_simple(lm);
                 if ((*g_initial_state)[lm.first] != lm.second && relaxed_task_solvable(true, new_lm)) {
-                    //lm_graph->rm_landmark(lm);
                     assert(lm_graph->landmark_exists(lm));
                     LandmarkNode *node;
                     if (lm_graph->simple_landmark_exists(lm))

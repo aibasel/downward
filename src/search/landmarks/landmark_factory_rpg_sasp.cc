@@ -124,6 +124,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
         // old: call to methode
         //LandmarkNode &node = lm_graph->make_disj_node_simple(a);
 
+        // TODO: avoid copy constructor, save attributes locally and assign to new lm
         // new: replace by new program logic
         LandmarkNode &node2 = lm_graph->get_disj_lm_node(a);
         LandmarkNode node(node2);
