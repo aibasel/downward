@@ -51,7 +51,6 @@ public:
     double shared_cost;
 
     landmark_status status;
-    // bool effect_of_ununsed_alm;
     bool is_derived;
 
     __gnu_cxx::hash_set<std::pair<int, int>, hash_int_pair> forward_orders;
