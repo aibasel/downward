@@ -37,7 +37,7 @@ public:
     LandmarkNode(std::vector<int> &variables, std::vector<int> &values, bool disj, bool conj = false)
         : id(-1), vars(variables), vals(values), disjunctive(disj), conjunctive(conj), in_goal(false),
           min_cost(1), shared_cost(0.0), status(lm_not_reached),
-          effect_of_ununsed_alm(false), is_derived(false) {
+          is_derived(false) {
     }
 
     std::vector<int> vars;
@@ -51,7 +51,7 @@ public:
     double shared_cost;
 
     landmark_status status;
-    bool effect_of_ununsed_alm;
+    // bool effect_of_ununsed_alm;
     bool is_derived;
 
     __gnu_cxx::hash_set<std::pair<int, int>, hash_int_pair> forward_orders;
@@ -89,8 +89,8 @@ public:
         }
     }
 
-    int get_status(bool exclude_unused_alm_effects) const {
-        return exclude_unused_alm_effects && effect_of_ununsed_alm ? lm_reached : status;
+    int get_status() const {
+        return status;
     }
 };
 
