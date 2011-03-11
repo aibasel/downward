@@ -119,11 +119,10 @@ PDBHeuristic::PDBHeuristic(const vector<int> &pattern)
     verify_no_axioms_no_cond_effects();
     Timer timer;
     set_pattern(pattern);
-    //cout << "PDB construction time: " << timer << endl;
+    cout << "PDB construction time: " << timer << endl;
 }
 
-PDBHeuristic::~PDBHeuristic() {
-}
+PDBHeuristic::~PDBHeuristic() {}
 
 void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
     if (!g_axioms.empty()) {

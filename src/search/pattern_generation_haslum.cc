@@ -173,16 +173,16 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples) {
     }*/
 }
 
-bool PatternGenerationHaslum::counting_approximation(PDBHeuristic &pdbheuristic,
+bool PatternGenerationHaslum::counting_approximation(PDBHeuristic *pdbheuristic,
                                                      const State &sample,
                                                      PDBCollectionHeuristic *current_collection,
                                                      vector<vector<PDBHeuristic *> > &max_additive_subsets) {
-    pdbheuristic.evaluate(sample);
-    if (pdbheuristic.is_dead_end()) {
+    pdbheuristic->evaluate(sample);
+    if (pdbheuristic->is_dead_end()) {
         cout << "dead end" << endl;
         return true;
     }
-    int h_pattern = pdbheuristic.get_heuristic();
+    int h_pattern = pdbheuristic->get_heuristic();
     current_collection->evaluate(sample);
     int h_collection = current_collection->get_heuristic();
     for (size_t k = 0; k < max_additive_subsets.size(); ++k) {
@@ -210,7 +210,7 @@ void PatternGenerationHaslum::hill_climbing() {
     if (current_collection->is_dead_end())
         return;
     
-    // initial candidate patterns, computed separatedly for each pattern from the initial collection
+    // initial candidate patterns, computed separately for each pattern from the initial collection
     vector<vector<int> > candidate_patterns;
     for (size_t i = 0; i < current_collection->get_pattern_databases().size(); ++i) {
         const vector<int> &current_pattern = current_collection->get_pattern_databases()[i]->get_pattern();
@@ -233,11 +233,15 @@ void PatternGenerationHaslum::hill_climbing() {
         // them in every loop, there is no problem with new samples.
         int best_pattern_count = 0;
         int best_pattern_index = 0;
+        PDBHeuristic *pdbheuristic;
         for (size_t i = 0; i < candidate_patterns.size(); ++i) {
-            PDBHeuristic pdbheuristic(candidate_patterns[i]);
-            // at the moment we always calculate all PDBs. But only few new successor-patterns are
-            // really new. If we have enough memory, we should save all constructed pdbs.
-            // (And delete them before the real search for a plan)
+            map<vector<int>, PDBHeuristic *>::const_iterator it = pattern_to_pdb.find(candidate_patterns[i]);
+            if (it == pattern_to_pdb.end()) {
+                pdbheuristic = new PDBHeuristic(candidate_patterns[i]);
+                pattern_to_pdb.insert(make_pair(candidate_patterns[i], pdbheuristic));
+            } else {
+                pdbheuristic = (*it).second;
+            }
             vector<vector<PDBHeuristic *> > max_additive_subsets;
             current_collection->get_max_additive_subsets(candidate_patterns[i], max_additive_subsets);
             int count = 0;
@@ -278,6 +282,8 @@ void PatternGenerationHaslum::hill_climbing() {
             generate_candidate_patterns(best_pattern, candidate_patterns);
         }
     }
+    // TODO Does this swap release the memory?
+    map<vector<int>, PDBHeuristic *>().swap(pattern_to_pdb);
 }
 
 ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
