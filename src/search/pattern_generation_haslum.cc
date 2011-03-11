@@ -102,6 +102,8 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples) {
     // calculate length of random walk accoring to a binomial distribution
     current_collection->evaluate(*g_initial_state);
     assert(!current_collection->is_dead_end());
+    // TODO: handle problems with high action costs. Average costs
+    // of operators instead of initial states h-value
     double h = current_collection->get_heuristic();
     // TODO: hack! (prevent division by 0)
     if (h == 0)
@@ -121,14 +123,20 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples) {
     samples.push_back(current_state);
     for (int i = 1; i < length; ++i) {
         vector<const Operator *> applicable_ops;
-        g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
-        int random = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
-        assert(applicable_ops[random]->is_applicable(current_state));
-        current_state = State(current_state, *applicable_ops[random]);
-        // if current state is dead-end, then restart with initial state
-        current_collection->evaluate(current_state);
-        if (current_collection->is_dead_end())
+        // if there are no applicable operators --> dead end
+        if (applicable_ops.size() == 0) {
             current_state = *g_initial_state;
+        }
+        else {
+            g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
+            int random = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
+            assert(applicable_ops[random]->is_applicable(current_state));
+            current_state = State(current_state, *applicable_ops[random]);
+            // if current state is dead-end, then restart with initial state
+            current_collection->evaluate(current_state);
+            if (current_collection->is_dead_end())
+                current_state = *g_initial_state;
+        }
         samples.push_back(current_state);
     }
     /*
