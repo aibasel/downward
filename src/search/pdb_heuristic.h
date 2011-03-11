@@ -33,6 +33,7 @@ public:
     AbstractState(const State &state, const std::vector<int> &pattern); // for construction from a concrete state
     ~AbstractState();
     int operator[](int index) const { return variable_values[index]; }
+    const std::vector<int> &get_var_vals() const { return variable_values; }
     bool is_applicable(const AbstractOperator &op) const;
     void apply_operator(const AbstractOperator &op);
     bool is_goal_state(const std::vector<std::pair<int, int> > &abstract_goal) const;
@@ -49,8 +50,9 @@ class PDBHeuristic : public Heuristic {
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
     void set_pattern(const std::vector<int> &pattern);
     void create_pdb(); // builds the graph-structure and does a dijkstra-backward-search
+    void create_pdb_new();
     size_t hash_index(const AbstractState &state) const; // maps an abstract state to an index
-    //AbstractState inv_hash_index(int index) const; // inverts the hash-index-function
+    AbstractState inv_hash_index(int index) const; // inverts the hash-index-function
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);

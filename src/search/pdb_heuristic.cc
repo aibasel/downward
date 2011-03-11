@@ -155,6 +155,88 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
     }
 }
 
+void PDBHeuristic::create_pdb_new() {
+    // TODO: use correct operators, preprocess them (see mail Malte)
+    vector<AbstractOperator> operators;
+    for (size_t i = 0; i < g_operators.size(); ++i) {
+        AbstractOperator ao(g_operators[i], variable_to_index);
+        if (!ao.get_effects().empty())
+            operators.push_back(ao);
+    }
+
+    vector<pair<int, int> > abstracted_goal;
+    for (size_t i = 0; i < g_goal.size(); ++i) {
+        if (variable_to_index[g_goal[i].first] != -1) {
+            abstracted_goal.push_back(make_pair(variable_to_index[g_goal[i].first], g_goal[i].second));
+        }
+    }
+
+    distances.reserve(num_states);
+    // first entry: priority, second entry: index for an abstract state
+    priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq;
+
+    vector<int> ranges;
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        ranges.push_back(g_variable_domain[pattern[i]]);
+    }
+    for (AbstractStateIterator it(ranges); !it.is_at_end(); it.next()) {
+        AbstractState abstract_state(it.get_current());
+        int counter = it.get_counter();
+        assert(hash_index(abstract_state) == counter);
+
+        if (abstract_state.is_goal_state(abstracted_goal)) {
+            pq.push(make_pair(0, counter));
+            distances.push_back(0);
+        }
+        else {
+            distances.push_back(numeric_limits<int>::max());
+        }
+    }
+
+    while (!pq.empty()) {
+        pair<int, int> node = pq.top();
+        pq.pop();
+        int distance = node.first;
+        size_t state_index = node.second;
+        if (distance > distances[state_index])
+            continue;
+        AbstractState abstract_state = inv_hash_index(state_index);
+        // regress abstract_state
+        for (size_t i = 0; i < operators.size(); ++i) {
+            const vector<pair<int, int> > &pre = operators[i].get_conditions();
+            const vector<pair<int, int> > &eff = operators[i].get_effects();
+            int cost = operators[i].get_cost();
+            bool eff_in_state = true;
+            for (size_t j = 0; j < eff.size(); ++j) {
+                if (abstract_state[eff[j].first] != eff[j].second) {
+                    eff_in_state = false;
+                    break;
+                }
+            }
+            if (eff_in_state) {
+                // TODO: ask Malte if there is a difference between &var_vals or var_vals
+                // if the methods anyways returns a reference
+                vector<int> var_vals = abstract_state.get_var_vals();
+                for (size_t j = 0; j < var_vals.size(); ++j) {
+                    for (size_t k = 0; k < pre.size(); ++k) {
+                        if (j == pre[k].first)
+                            var_vals[j] = pre[k].second;
+                    }
+                }
+                AbstractState regressed_state(var_vals);
+                size_t predecessor = hash_index(regressed_state);
+                
+                // old pq-code
+                int alternative_cost = distances[state_index] + cost;
+                if (alternative_cost < distances[predecessor]) {
+                    distances[predecessor] = alternative_cost;
+                    pq.push(make_pair(alternative_cost, predecessor));
+                }
+            }
+        }
+    }
+}
+
 void PDBHeuristic::create_pdb() {
     vector<AbstractOperator> operators;
     for (size_t i = 0; i < g_operators.size(); ++i) {
@@ -257,17 +339,17 @@ size_t PDBHeuristic::hash_index(const AbstractState &abstract_state) const {
     return index;
 }
 
-/*AbstractState PDBAbstraction::inv_hash_index(int index) const {
-vector<int> var_vals;
-var_vals.resize(size);
-for (int n = 1; n < pattern.size(); ++n) {
-    int d = index % n_i[n];
-    var_vals[variable_to_index[pattern[n - 1]]] = d / n_i[n - 1];
-    index -= d;
+AbstractState PDBHeuristic::inv_hash_index(int index) const {
+    vector<int> var_vals;
+    var_vals.resize(pattern.size());
+    for (int n = 1; n < pattern.size(); ++n) {
+        int d = index % n_i[n];
+        var_vals[variable_to_index[pattern[n - 1]]] = d / n_i[n - 1];
+        index -= d;
     }
-    var_vals[variable_to_index[pattern[size - 1]]] = index / n_i[size - 1];
+    var_vals[variable_to_index[pattern[pattern.size() - 1]]] = index / n_i[pattern.size() - 1];
     return AbstractState(var_vals);
-    }*/
+}
 
 void PDBHeuristic::initialize() {
     //cout << "Initializing pattern database heuristic..." << endl;
