@@ -191,7 +191,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             // test if variables occur in more than one pattern
             // TODO: iteration through bitvector occurs here and in transformation to pattern normal form
             // any way to avoid this?
-            bool patterns_additive = true;
+            /*bool patterns_additive = true;
             for (size_t i = 0; i < bitvector.size(); ++i) {
                 if (bitvector[i]) {
                     if (variables_used[i]) {
@@ -206,7 +206,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             }
             if (!patterns_additive) {
                 break;
-            }
+            }*/
             // calculate mean h-value for actual pattern collection
             //hash_map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
             map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
