@@ -126,8 +126,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples) {
         // if there are no applicable operators --> dead end
         if (applicable_ops.size() == 0) {
             current_state = *g_initial_state;
-        }
-        else {
+        } else {
             g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
             int random = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
             assert(applicable_ops[random]->is_applicable(current_state));
