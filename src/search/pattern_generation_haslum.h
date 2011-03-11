@@ -1,6 +1,8 @@
 #ifndef PATTERN_GENERATION_HASLUM_H
 #define PATTERN_GENERATION_HASLUM_H
 
+#include <ext/hash_map>
+#include <map>
 #include <vector>
 
 class PDBCollectionHeuristic;
@@ -12,12 +14,13 @@ class PatternGenerationHaslum {
     int max_collection_size;
     int num_samples;
     PDBCollectionHeuristic *current_collection;
+    std::map<std::vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation
     void sample_states(std::vector<State> &samples);
     /*void initial_candidates(const PDBCollectionHeuristic &current_collection,
                              std::vector<std::vector<int> > &candidate_patterns);*/
     void generate_candidate_patterns(const std::vector<int> &pattern,
                                      std::vector<std::vector<int> > &candidate_patterns);
-    bool counting_approximation(PDBHeuristic &pdbheuristic,
+    bool counting_approximation(PDBHeuristic *pdbheuristic,
                                 const State &sample,
                                 PDBCollectionHeuristic *current_collection,
                                 std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
