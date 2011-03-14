@@ -25,6 +25,17 @@ static ScalarEvaluatorPlugin plugin("ipdb", create);
 PatternGenerationHaslum::PatternGenerationHaslum(int max_pdb, int max_coll, int samples)
 : max_pdb_size(max_pdb), max_collection_size(max_coll), num_samples(samples) {
     // TODO: add functionality for the parameter options max_pdb_size and max_collection_size
+
+    // calculate average operator costs
+    average_operator_costs = 0;
+    for (size_t i = 0; i < g_operators.size(); ++i) {
+        average_operator_costs += g_operators[i].get_cost();
+    }
+    average_operator_costs /= g_operators.size();
+    // to avoid dividing through 0
+    if (average_operator_costs == 0)
+        average_operator_costs = 1;
+    cout << "Average operator costs of this problem: " << average_operator_costs << endl;
     hill_climbing();
 }
 
@@ -105,6 +116,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples) {
     // TODO: handle problems with high action costs. Average costs
     // of operators instead of initial states h-value
     double h = current_collection->get_heuristic();
+    h /= average_operator_costs;
     // TODO: hack! (prevent division by 0)
     if (h == 0)
         h = 10;

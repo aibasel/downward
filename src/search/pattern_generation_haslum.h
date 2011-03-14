@@ -13,6 +13,7 @@ class PatternGenerationHaslum {
     int max_pdb_size;
     int max_collection_size;
     int num_samples;
+    double average_operator_costs;
     PDBCollectionHeuristic *current_collection;
     std::map<std::vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation
     void sample_states(std::vector<State> &samples);
