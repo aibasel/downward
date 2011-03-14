@@ -123,11 +123,11 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples) {
     samples.push_back(current_state);
     for (int i = 1; i < length; ++i) {
         vector<const Operator *> applicable_ops;
+        g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
         // if there are no applicable operators --> dead end
         if (applicable_ops.size() == 0) {
             current_state = *g_initial_state;
         } else {
-            g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
             int random = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
             assert(applicable_ops[random]->is_applicable(current_state));
             current_state = State(current_state, *applicable_ops[random]);
