@@ -18,6 +18,8 @@ class AbstractOperator {
     std::vector<std::pair<int, int> > effects;
 public:
     AbstractOperator(const Operator &o, const std::vector<int> &variable_to_index);
+    AbstractOperator(const std::vector<std::pair<int, int> > &conditions,
+                     const std::vector<std::pair<int, int> > &effects, int cost);
     ~AbstractOperator();
     const std::vector<std::pair<int, int> > &get_conditions() const { return conditions; }
     const std::vector<std::pair<int, int> > &get_effects() const { return effects; }
@@ -49,8 +51,13 @@ class PDBHeuristic : public Heuristic {
     std::vector<int> n_i; // multipliers for perfect hash function
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
     void set_pattern(const std::vector<int> &pattern);
-    void create_pdb(); // builds the graph-structure and does a dijkstra-backward-search
+    void build_recursively(int pos, int cost, std::vector<std::pair<int, int> > pre_pairs,
+                           std::vector<std::pair<int, int> > eff_pairs,
+                           const std::vector<std::pair<int, int> > effects_without_pre,
+                           std::vector<AbstractOperator> &operators);
+    void build_abstract_operators(const Operator &op, std::vector<AbstractOperator> &operators);
     void create_pdb_new();
+    void create_pdb(); // builds the graph-structure and does a dijkstra-backward-search
     size_t hash_index(const AbstractState &state) const; // maps an abstract state to an index
     AbstractState inv_hash_index(int index) const; // inverts the hash-index-function
 protected:
