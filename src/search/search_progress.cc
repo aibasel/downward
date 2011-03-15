@@ -1,5 +1,6 @@
 #include "search_progress.h"
 
+using namespace std;
 
 SearchProgress::SearchProgress() {
     expanded_states = 0;
