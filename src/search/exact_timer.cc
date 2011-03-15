@@ -4,7 +4,27 @@
 #include <ostream>
 #include <unistd.h>
 
+#ifdef __APPLE__
+#include <mach/mach_time.h>
+#endif
+
 using namespace std;
+
+#ifdef __APPLE__
+void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {  
+  uint64_t difference = end - start;  
+  static mach_timebase_info_data_t info = {0,0};  
+  
+  if (info.denom == 0)  
+    mach_timebase_info(&info);  
+  
+  uint64_t elapsednano = difference * (info.numer / info.denom);  
+  
+  tp->tv_sec = elapsednano * 1e-9;  
+  tp->tv_nsec = elapsednano - (tp->tv_sec * 1e9);  
+}
+#endif
+
 
 ExactTimer::ExactTimer() {
     last_start_clock = current_clock();
@@ -17,7 +37,13 @@ ExactTimer::~ExactTimer() {
 
 double ExactTimer::current_clock() const {
     timespec tp;
+#ifdef __APPLE__
+    static uint64_t start = mach_absolute_time();
+    uint64_t end = mach_absolute_time();  
+    mach_absolute_difference(end, start, &tp);
+#else
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tp);
+#endif
     return (tp.tv_sec * 1e9) + tp.tv_nsec;
 }
 
