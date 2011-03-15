@@ -15,7 +15,7 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
     generate_landmarks();
     
     // the following replaces the old "build_lm_graph"
-    generate();
+    generate(); // TODO: recheck whether this method actually modifies lm_graph in the intended way
     if (lm_graph->number_of_landmarks() == 0)
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;
     else {
@@ -25,8 +25,30 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
         << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
         << lm_graph->number_of_edges() << " edges\n";
     }
-    lm_graph->dump();
+    //lm_graph->dump();
     return lm_graph;
+}
+
+void LandmarkFactory::generate() {
+    if (lm_graph->use_only_causal_landmarks())
+        discard_noncausal_landmarks();
+    if (!lm_graph->use_disjunctive_landmarks())
+        discard_disjunctive_landmarks();
+    if (!lm_graph->use_conjunctive_landmarks())
+        discard_conjunctive_landmarks();
+    lm_graph->set_landmark_ids();
+    
+    if (!lm_graph->use_orders())
+        discard_all_orderings();
+    else if (lm_graph->is_using_reasonable_orderings()) {
+        cout << "approx. reasonable orders" << endl;
+        approximate_reasonable_orders(false);
+        cout << "approx. obedient reasonable orders" << endl;
+        approximate_reasonable_orders(true);
+    }
+    mk_acyclic_graph();
+    lm_graph->set_landmark_cost(calculate_lms_cost());
+    calc_achievers();
 }
 
 bool LandmarkFactory::achieves_non_conditional(const Operator &o,
@@ -512,28 +534,6 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
     }
     // No inconsistency found
     return false;
-}
-
-void LandmarkFactory::generate() {
-    if (lm_graph->use_only_causal_landmarks())
-        discard_noncausal_landmarks();
-    if (!lm_graph->use_disjunctive_landmarks())
-        discard_disjunctive_landmarks();
-    if (!lm_graph->use_conjunctive_landmarks())
-        discard_conjunctive_landmarks();
-    lm_graph->set_landmark_ids();
-    
-    if (!lm_graph->use_orders())
-        discard_all_orderings();
-    else if (lm_graph->is_using_reasonable_orderings()) {
-        cout << "approx. reasonable orders" << endl;
-        approximate_reasonable_orders(false);
-        cout << "approx. obedient reasonable orders" << endl;
-        approximate_reasonable_orders(true);
-    }
-    mk_acyclic_graph();
-    lm_graph->set_landmark_cost(calculate_lms_cost());
-    calc_achievers();
 }
 
 void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
