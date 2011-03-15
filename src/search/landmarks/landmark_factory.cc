@@ -205,6 +205,55 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     return true;
 }
 
+/* Test whether the relaxed planning task is solvable without achieving the propositions in
+"exclude" (do not apply operators that would add a proposition from "exclude").
+As a side effect, collect in lvl_var and lvl_op the earliest possible point in time
+when a proposition / operator can be achieved / become applicable in the relaxed task.
+*/
+/*bool LandmarkFactory::relaxed_task_solvable_without_operator(
+    vector<vector<int> > &lvl_var, vector<hash_map<pair<int, int>, int,
+                                                   hash_int_pair> > &lvl_op, bool level_out,
+    const Operator *exclude, bool compute_lvl_op) const {
+
+    // Initialize lvl_op and lvl_var to numeric_limits<int>::max()
+    if (compute_lvl_op) {
+        lvl_op.resize(g_operators.size() + g_axioms.size());
+        for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
+            const Operator &op = get_operator_for_lookup_index(i);
+            lvl_op[i] = hash_map<pair<int, int>, int, hash_int_pair> ();
+            const vector<PrePost> &prepost = op.get_pre_post();
+            for (unsigned j = 0; j < prepost.size(); j++)
+                lvl_op[i].insert(make_pair(make_pair(prepost[j].var,
+                                                     prepost[j].post),
+                                           numeric_limits<int>::max()));
+        }
+    }
+    lvl_var.resize(g_variable_name.size());
+    for (unsigned var = 0; var < g_variable_name.size(); var++) {
+        lvl_var[var].resize(g_variable_domain[var],
+                            numeric_limits<int>::max());
+    }
+    // Extract propositions from "exclude"
+    hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
+    vector<pair<int, int> > exclude_props;
+
+    exclude_ops.insert(exclude);
+
+    // Do relaxed exploration
+    exploration->compute_reachability_with_excludes(lvl_var, lvl_op, level_out,
+                                                    exclude_props, exclude_ops, compute_lvl_op);
+
+    // Test whether all goal propositions have a level of less than
+    // numeric_limits<int>::max()
+    for (int i = 0; i < g_goal.size(); i++) {
+        if (lvl_var[g_goal[i].first][g_goal[i].second] ==
+            numeric_limits<int>::max()) {
+            return false;
+        }
+    }
+    return true;
+}*/
+
 bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
     /* Test whether the relaxed planning task is unsolvable without using any operator
        that has "landmark" has a precondition.

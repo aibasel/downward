@@ -17,8 +17,7 @@
 using namespace __gnu_cxx;
 
 LandmarkGraph::LandmarkGraph(Options &options, Exploration *explor)
-    : exploration(explor), landmarks_count(0), conj_lms(0)/*,
-      external_inconsistencies_read(false)*/ {
+    : exploration(explor), landmarks_count(0), conj_lms(0) {
     reasonable_orders = options.reasonable_orders;
     only_causal_landmarks = options.only_causal_landmarks;
     disjunctive_landmarks = options.disjunctive_landmarks;
@@ -35,33 +34,17 @@ LandmarkGraph::LandmarkGraph(Options &options, Exploration *explor)
 void LandmarkGraph::generate_operators_lookups() {
     /* Build datastructures for efficient landmark computation. Map propositions
     to the operators that achieve them or have them as preconditions */
-    
-    operators_pre_lookup.resize(g_variable_domain.size());
+
     operators_eff_lookup.resize(g_variable_domain.size());
     for (unsigned i = 0; i < g_variable_domain.size(); i++) {
-        operators_pre_lookup[i].resize(g_variable_domain[i]);
         operators_eff_lookup[i].resize(g_variable_domain[i]);
     }
     for (unsigned i = 0; i < g_operators.size() + g_axioms.size(); i++) {
         const Operator &op = get_operator_for_lookup_index(i);
-        
         const vector<PrePost> &prepost = op.get_pre_post();
-        bool no_pre = true;
         for (unsigned j = 0; j < prepost.size(); j++) {
-            if (prepost[j].pre != -1) {
-                no_pre = false;
-                operators_pre_lookup[prepost[j].var][prepost[j].pre].push_back(
-                i);
-            }
             operators_eff_lookup[prepost[j].var][prepost[j].post].push_back(i);
         }
-        const vector<Prevail> &prevail = op.get_prevail();
-        for (unsigned j = 0; j < prevail.size(); j++) {
-            no_pre = false;
-            operators_pre_lookup[prevail[j].var][prevail[j].prev].push_back(i);
-        }
-        if (no_pre)
-            empty_pre_operators.push_back(i);
     }
 }
 
@@ -86,15 +69,6 @@ LandmarkNode *LandmarkGraph::get_landmark(const pair<int, int> &prop) const {
 LandmarkNode *LandmarkGraph::get_lm_for_index(int i) {
     assert(ordered_nodes[i]->get_id() == i);
     return ordered_nodes[i];
-}
-
-inline static bool _in_goal(const pair<int, int> &l) {
-    for (vector<pair<int, int> >::const_iterator start = g_goal.begin();
-         start != g_goal.end(); start++)
-        if (*start == l) // l \subseteq goal
-            return true;
-
-    return false;
 }
 
 int LandmarkGraph::number_of_edges() const {
@@ -126,55 +100,6 @@ void LandmarkGraph::count_costs() {
         }
     }
 }
-
-/* Test whether the relaxed planning task is solvable without achieving the propositions in
-"exclude" (do not apply operators that would add a proposition from "exclude").
-As a side effect, collect in lvl_var and lvl_op the earliest possible point in time
-when a proposition / operator can be achieved / become applicable in the relaxed task.
-*/
-/*bool LandmarkGraph::relaxed_task_solvable_without_operator(
-    vector<vector<int> > &lvl_var, vector<hash_map<pair<int, int>, int,
-                                                   hash_int_pair> > &lvl_op, bool level_out,
-    const Operator *exclude, bool compute_lvl_op) const {
-
-    // Initialize lvl_op and lvl_var to numeric_limits<int>::max()
-    if (compute_lvl_op) {
-        lvl_op.resize(g_operators.size() + g_axioms.size());
-        for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
-            const Operator &op = get_operator_for_lookup_index(i);
-            lvl_op[i] = hash_map<pair<int, int>, int, hash_int_pair> ();
-            const vector<PrePost> &prepost = op.get_pre_post();
-            for (unsigned j = 0; j < prepost.size(); j++)
-                lvl_op[i].insert(make_pair(make_pair(prepost[j].var,
-                                                     prepost[j].post),
-                                           numeric_limits<int>::max()));
-        }
-    }
-    lvl_var.resize(g_variable_name.size());
-    for (unsigned var = 0; var < g_variable_name.size(); var++) {
-        lvl_var[var].resize(g_variable_domain[var],
-                            numeric_limits<int>::max());
-    }
-    // Extract propositions from "exclude"
-    hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
-    vector<pair<int, int> > exclude_props;
-
-    exclude_ops.insert(exclude);
-
-    // Do relaxed exploration
-    exploration->compute_reachability_with_excludes(lvl_var, lvl_op, level_out,
-                                                    exclude_props, exclude_ops, compute_lvl_op);
-
-    // Test whether all goal propositions have a level of less than
-    // numeric_limits<int>::max()
-    for (int i = 0; i < g_goal.size(); i++) {
-        if (lvl_var[g_goal[i].first][g_goal[i].second] ==
-            numeric_limits<int>::max()) {
-            return false;
-        }
-    }
-    return true;
-}*/
 
 bool LandmarkGraph::simple_landmark_exists(const pair<int, int> &lm) const {
     hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
@@ -267,19 +192,7 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<pair<int, int> >
     return *new_node_p;
 }
 
-/*void LandmarkGraph::insert_node(std::pair<int, int> lm, LandmarkNode &node, bool conj) {
-    nodes.insert(&node);
-    ++landmarks_count;
-    if (conj) {
-        ++conj_lms;
-    } else {
-        simple_lms_to_nodes.insert(std::make_pair(lm, &node));
-    }
-}*/
-
 void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
-    /* Called by "discard_disjunctive_landmarks()" */
-    
     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
         node->parents.begin(); it != node->parents.end(); it++) {
         LandmarkNode &parent = *(it->first);
@@ -308,17 +221,8 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     assert(nodes.find(node) == nodes.end());
 }
 
-/*LandmarkNode &LandmarkGraph::make_disj_node_simple(std::pair<int, int> lm) {
-    LandmarkNode &node = get_disj_lm_node(lm);
-    node.disjunctive = false;
-    for (int i = 0; i < node.vars.size(); i++)
-        disj_lms_to_nodes.erase(make_pair(node.vars[i], node.vals[i]));
-    simple_lms_to_nodes.insert(std::make_pair(lm, &node));
-    return node;
-}*/
-
 void LandmarkGraph::set_landmark_ids() {
-    ordered_nodes.resize(number_of_landmarks());
+    ordered_nodes.resize(landmarks_count);
     int id = 0;
     for (set<LandmarkNode *>::iterator node_it =
         nodes.begin(); node_it != nodes.end(); node_it++) {
