@@ -132,32 +132,20 @@ public:
         int lm_cost_type;
 
         Options();
-
         void add_option_to_parser(NamedOptionParser &option_parser);
     };
     
     // ------------------------------------------------------------------------------
-    // methods and fields needed only by non-landmarkgraph-factories
-    inline int cost_of_landmarks() const {
-        return landmarks_cost;
-    }
+    // methods needed only by non-landmarkgraph-factories
+    inline int cost_of_landmarks() const { return landmarks_cost; }
     void count_costs();
     LandmarkNode *get_lm_for_index(int);
-    int get_needed_cost() const {
-        return needed_cost;
-    }
-    int get_reached_cost() const {
-        return reached_cost;
-    }
-    bool is_using_reasonable_orderings() const {return reasonable_orders; }
+    int get_needed_cost() const { return needed_cost; }
+    int get_reached_cost() const { return reached_cost; }
     LandmarkNode *get_landmark(const pair<int, int> &prop) const;
-private:
-    int reached_cost;
-    int needed_cost;
 
     // ------------------------------------------------------------------------------
-    // methods and fields needed by both landmarkgraph-factories and non-landmarkgraph-factories
-public:
+    // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories
     inline const set<LandmarkNode *> &get_nodes() const {
         return nodes;
     }
@@ -171,18 +159,10 @@ public:
         return landmarks_count;
     }
     Exploration *get_exploration() const { return exploration; }
-private:
-    __gnu_cxx::hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
-    __gnu_cxx::hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
-    Exploration *exploration;
-    int landmarks_count;
-    std::set<LandmarkNode *> nodes;
-    std::vector<LandmarkNode *> ordered_nodes;
-    int landmarks_cost;
+    bool is_using_reasonable_orderings() const { return reasonable_orders; }
 
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
-public:
     LandmarkGraph(Options &options, Exploration *explor);
     virtual ~LandmarkGraph() {}
 
@@ -199,9 +179,7 @@ public:
     inline const std::vector<int> &get_operators_including_eff(const pair<int, int> &eff) const {
         return operators_eff_lookup[eff.first][eff.second];
     }
-    //inline const std::vector<int> &get_operators_including_pre(const pair<int, int> &pre) const {
-        //    return operators_pre_lookup[pre.first][pre.second];
-        //}
+
     bool use_orders() const { return !no_orders; } // only needed by HMLandmark
     bool use_only_causal_landmarks() const { return only_causal_landmarks; }
     bool use_disjunctive_landmarks() const { return disjunctive_landmarks; }
@@ -242,20 +220,23 @@ public:
     void dump() const;
 private:
     void generate_operators_lookups();
-    
-    std::vector<int> empty_pre_operators;
-    std::vector<std::vector<std::vector<int> > > operators_eff_lookup;
-    std::vector<std::vector<std::vector<int> > > operators_pre_lookup;
-    
+    Exploration *exploration;
+    int landmarks_count;
+    int conj_lms;
     bool reasonable_orders;
     bool only_causal_landmarks;
     bool disjunctive_landmarks;
     bool conjunctive_landmarks;
     bool no_orders;
-    
     OperatorCost lm_cost_type;
-    
-    int conj_lms;
+    int reached_cost;
+    int needed_cost;
+    int landmarks_cost;
+    __gnu_cxx::hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
+    __gnu_cxx::hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
+    std::set<LandmarkNode *> nodes;
+    std::vector<LandmarkNode *> ordered_nodes;
+    std::vector<std::vector<std::vector<int> > > operators_eff_lookup;
 
     // something similar to pddl_propositions, but only storing predicate and args needed for "dump node"
     __gnu_cxx::hash_map<pair<int, int>, pair<string, std::vector<string> >, hash_int_pair> var_val_to_predicate_args;
