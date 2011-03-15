@@ -600,9 +600,7 @@ HMLandmarks::HMLandmarks(LandmarkGraph::Options &options, Exploration *explorati
 void HMLandmarks::init() {
     // get all the m or less size subsets in the domain
     std::vector<std::vector<Fluent> > msets;
-    cout << "test" << endl;
     get_m_sets(m_, msets);
-    cout << "bestanden" << endl;
     //  std::cout << "P^m index\tP fluents" << std::endl;
 
     // map each set to an integer
