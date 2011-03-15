@@ -22,13 +22,12 @@ public:
 protected:
     LandmarkGraph *lm_graph;
     virtual void generate_landmarks() = 0;
+    void generate();
     void read_external_inconsistencies();
     void discard_noncausal_landmarks();
     void discard_disjunctive_landmarks();
     void discard_conjunctive_landmarks();
     void discard_all_orderings();
-    void generate();
-    //void count_shared_costs();
     inline bool inconsistent(const std::pair<int, int> &a, const std::pair<int, int> &b) const {
         if (a == b)
             return false;
