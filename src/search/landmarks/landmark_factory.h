@@ -21,7 +21,36 @@ public:
     LandmarkGraph *compute_lm_graph();
 protected:
     LandmarkGraph *lm_graph;
-    
+    virtual void generate_landmarks() = 0;
+    void read_external_inconsistencies();
+    void discard_noncausal_landmarks();
+    void discard_disjunctive_landmarks();
+    void discard_conjunctive_landmarks();
+    void discard_all_orderings();
+    void generate();
+    //void count_shared_costs();
+    inline bool inconsistent(const std::pair<int, int> &a, const std::pair<int, int> &b) const {
+        if (a == b)
+            return false;
+        if (a.first != b.first || a.second != b.second)
+            if (a.first == b.first && a.second != b.second)
+                return true;
+            if (inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
+                return true;
+            return false;
+    }
+    inline bool relaxed_task_solvable(bool level_out,
+                                      const LandmarkNode *exclude,
+                                      bool compute_lvl_op = false) const {
+        std::vector<std::vector<int> > lvl_var;
+        std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > lvl_op;
+        return relaxed_task_solvable(lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
+    }
+    void edge_add(LandmarkNode &from, LandmarkNode &to, edge_type type);
+    void compute_predecessor_information(LandmarkNode *bp,
+                                         std::vector<std::vector<int> > &lvl_var,
+                                         std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op);
+
     // protected not private for LandmarkFactoryRpgSasp
     struct Pddl_proposition {
         string predicate;
@@ -37,39 +66,6 @@ protected:
     };
     __gnu_cxx::hash_map<std::pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
     std::map<string, int> pddl_proposition_indices; //TODO: make this a hash_map
-
-    virtual void generate_landmarks() = 0;
-    void read_external_inconsistencies();
-    void discard_noncausal_landmarks();
-    void discard_disjunctive_landmarks();
-    void discard_conjunctive_landmarks();
-    void discard_all_orderings();
-    void generate();
-    //bool is_dead_end() const {return dead_end_found; }
-    //void count_shared_costs();
-    inline bool inconsistent(const std::pair<int, int> &a, const std::pair<int, int> &b) const {
-        //if (a.first == b.first && a.second == b.second)
-        if (a == b)
-            return false;
-        if (a.first != b.first || a.second != b.second)
-            if (a.first == b.first && a.second != b.second)
-                return true;
-            if (/*external_inconsistencies_read &&*/
-                inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
-                return true;
-            return false;
-    }
-    inline bool relaxed_task_solvable(bool level_out,
-                                      const LandmarkNode *exclude,
-                                      bool compute_lvl_op = false) const {
-        std::vector<std::vector<int> > lvl_var;
-        std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > lvl_op;
-        return relaxed_task_solvable(lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
-    }
-    void edge_add(LandmarkNode &from, LandmarkNode &to, edge_type type);
-    void compute_predecessor_information(LandmarkNode *bp,
-                                         std::vector<std::vector<int> > &lvl_var,
-                                         std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op);
 
     // protected not private for LandmarkFactoryRpgSearch
     bool achieves_non_conditional(const Operator &o, const LandmarkNode *lmp) const;
@@ -102,7 +98,6 @@ private:
                                         const Operator *exclude,
                                         bool compute_lvl_op = false) const;*/
     bool is_causal_landmark(const LandmarkNode &landmark) const;
-    //void reset_landmarks_count() {landmarks_count = nodes.size(); }
     void calc_achievers();
 };
 
