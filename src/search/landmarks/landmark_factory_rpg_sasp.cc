@@ -124,6 +124,15 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
         // old: call to methode
         //LandmarkNode &node = lm_graph->make_disj_node_simple(a);
 
+        /* TODO: Problem: Schon diese jetzige Implementierung ist nicht mehr korrekt,
+        da rm_landmark_noden nicht nur bei allen children die parents-zeiger auf sich selbst
+        löscht, sondern auch bei allen parents die children-zeiger auf sich selbst. Ein
+        einfaches Speichern aller Attribute von node funktioniert also nicht - entweder man
+        muss dann manuell bei den parents des alten node alle children-Zeiger neu setzen auf
+        den neuen node oder man überarbeitet das ganze komplett anders... Eine andere Vermutung
+        meinerseits wäre, dass die alte Version verbugt ist und eigentlich auch die children-
+        Zeiger der parents von node gelöscht werden müssten, wie es in rm_landmark_node passiert.
+        */
         // TODO: avoid copy constructor, save attributes locally and assign to new lm
         // new: replace by new program logic
         LandmarkNode &node2 = lm_graph->get_disj_lm_node(a);
