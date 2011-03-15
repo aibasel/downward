@@ -6,9 +6,6 @@
 #include <vector>
 #include "operator_cost.h"
 
-using namespace std;
-
-
 class AxiomEvaluator;
 class CausalGraph;
 class DomainTransitionGraph;
@@ -20,33 +17,33 @@ class Timer;
 class HeuristicOptions;
 
 bool test_goal(const State &state);
-void save_plan(const vector<const Operator *> &plan, int iter);
-int calculate_plan_cost(const vector<const Operator *> &plan);
+void save_plan(const std::vector<const Operator *> &plan, int iter);
+int calculate_plan_cost(const std::vector<const Operator *> &plan);
 
-void read_everything(istream &in);
+void read_everything(std::istream &in);
 void dump_everything();
 
-void check_magic(istream &in, string magic);
+void check_magic(std::istream &in, std::string magic);
 
 extern bool g_legacy_file_format;
 extern bool g_use_metric;
 extern int g_min_action_cost;
 extern int g_max_action_cost;
-extern vector<string> g_variable_name;
-extern vector<int> g_variable_domain;
-extern vector<int> g_axiom_layers;
-extern vector<int> g_default_axiom_values;
+extern std::vector<std::string> g_variable_name;
+extern std::vector<int> g_variable_domain;
+extern std::vector<int> g_axiom_layers;
+extern std::vector<int> g_default_axiom_values;
 
 extern State *g_initial_state;
-extern vector<pair<int, int> > g_goal;
-extern vector<Operator> g_operators;
-extern vector<Operator> g_axioms;
+extern std::vector<std::pair<int, int> > g_goal;
+extern std::vector<Operator> g_operators;
+extern std::vector<Operator> g_axioms;
 extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
-extern vector<DomainTransitionGraph *> g_transition_graphs;
+extern std::vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
 extern HeuristicOptions g_default_heuristic_options;
 extern Timer g_timer;
-extern string g_plan_filename;
+extern std::string g_plan_filename;
 
 #endif
