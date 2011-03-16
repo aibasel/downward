@@ -4,20 +4,19 @@ STATE_VAR_BYTES=1
 
 HEADERS = \
           axioms.h \
-          best_first_search.h \
           causal_graph.h \
           closed_list.h \
           combining_evaluator.h \
           domain_transition_graph.h \
+          eager_search.h \
           enforced_hill_climbing_search.h \
           exact_timer.h \
           g_evaluator.h \
-          general_eager_best_first_search.h \
-          general_lazy_best_first_search.h \
           globals.h \
           heuristic.h \
           ipc_max_heuristic.h \
           iterated_search.h \
+          lazy_search.h \
           max_evaluator.h \
           operator.h \
           operator_cost.h \

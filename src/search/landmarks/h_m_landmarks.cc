@@ -325,6 +325,7 @@ void get_operator_precondition(int op_index, FluentSet &pc) {
 }
 
 void get_operator_effect(int op_index, FluentSet &eff) {
+    assert(op_index < g_operators.size());
     Operator &op = g_operators[op_index];
 
     const std::vector<PrePost> &pre_post = op.get_pre_post();
