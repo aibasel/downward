@@ -1,7 +1,8 @@
-#include "general_lazy_best_first_search.h"
+#include "lazy_search.h"
+
+#include "g_evaluator.h"
 #include "heuristic.h"
 #include "successor_generator.h"
-#include "g_evaluator.h"
 #include "sum_evaluator.h"
 #include "weighted_evaluator.h"
 #include "plugin.h"
@@ -11,7 +12,7 @@
 
 static const int DEFAULT_LAZY_BOOST = 1000;
 
-GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(const Options &opts)
+LazySearch::LazySearch(const Options &opts)
     : SearchEngine(opts),
       open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
@@ -23,20 +24,15 @@ GeneralLazyBestFirstSearch::GeneralLazyBestFirstSearch(const Options &opts)
       current_real_g(0) {
 }
 
-GeneralLazyBestFirstSearch::~GeneralLazyBestFirstSearch() {
+LazySearch::~LazySearch() {
 }
 
-//void GeneralLazyBestFirstSearch::set_open_list(OpenList<OpenListEntryLazy> *open) {
-//    open_list = open;
-//}
-
-void
-GeneralLazyBestFirstSearch::set_pref_operator_heuristics(
+void LazySearch::set_pref_operator_heuristics(
     vector<Heuristic *> &heur) {
     preferred_operator_heuristics = heur;
 }
 
-void GeneralLazyBestFirstSearch::initialize() {
+void LazySearch::initialize() {
     //TODO children classes should output which kind of search
     cout << "Conducting lazy best first search, (real) bound = " << bound << endl;
 
@@ -60,24 +56,7 @@ void GeneralLazyBestFirstSearch::initialize() {
     assert(!heuristics.empty());
 }
 
-//void GeneralLazyBestFirstSearch::add_heuristic(Heuristic *heuristic,
-//                      bool use_estimates,
-//                      bool use_preferred_operators) {
-//    assert(use_estimates || use_preferred_operators);
-//    if (use_estimates || use_preferred_operators) {
-//        heuristics.push_back(heuristic);
-//    }
-//    if(use_estimates) {
-//        estimate_heuristics.push_back(heuristic);
-//        search_progress.add_heuristic(heuristic);
-//    }
-//    if(use_preferred_operators) {
-//        preferred_operator_heuristics.push_back(heuristic);
-//    }
-//}
-
-void GeneralLazyBestFirstSearch::get_successor_operators(
-    vector<const Operator *> &ops) {
+void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
     vector<const Operator *> all_operators;
     vector<const Operator *> preferred_operators;
 
@@ -111,7 +90,7 @@ void GeneralLazyBestFirstSearch::get_successor_operators(
     }
 }
 
-void GeneralLazyBestFirstSearch::generate_successors() {
+void LazySearch::generate_successors() {
     vector<const Operator *> operators;
     get_successor_operators(operators);
     search_progress.inc_generated(operators.size());
@@ -133,7 +112,7 @@ void GeneralLazyBestFirstSearch::generate_successors() {
     }
 }
 
-int GeneralLazyBestFirstSearch::fetch_next_state() {
+int LazySearch::fetch_next_state() {
     if (open_list->empty()) {
         cout << "Completely explored state space -- no solution!" << endl;
         return FAILED;
@@ -154,7 +133,7 @@ int GeneralLazyBestFirstSearch::fetch_next_state() {
     return IN_PROGRESS;
 }
 
-int GeneralLazyBestFirstSearch::step() {
+int LazySearch::step() {
     // Invariants:
     // - current_state is the next state for which we want to compute the heuristic.
     // - current_predecessor is a permanent pointer to the predecessor of that state.
@@ -208,17 +187,18 @@ int GeneralLazyBestFirstSearch::step() {
             search_progress.inc_expanded();
         } else {
             node.mark_as_dead_end();
+            search_progress.inc_dead_ends();
         }
     }
     return fetch_next_state();
 }
 
-void GeneralLazyBestFirstSearch::reward_progress() {
+void LazySearch::reward_progress() {
     // Boost the "preferred operator" open lists somewhat whenever
     open_list->boost_preferred();
 }
 
-void GeneralLazyBestFirstSearch::statistics() const {
+void LazySearch::statistics() const {
     search_progress.print_statistics();
 }
 
@@ -233,9 +213,9 @@ static SearchEngine *_parse(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    GeneralLazyBestFirstSearch *engine = 0;
+    LazySearch *engine = 0;
     if (!parser.dry_run()) {
-        engine = new GeneralLazyBestFirstSearch(opts);
+        engine = new LazySearch(opts);
         vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
@@ -255,7 +235,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    GeneralLazyBestFirstSearch *engine = 0;
+    LazySearch *engine = 0;
     if (!parser.dry_run()) {
         vector<ScalarEvaluator *> evals =
             opts.get_list<ScalarEvaluator *>("evals");
@@ -282,7 +262,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         }
         opts.set("reopen_closed", false);
         opts.set("open", open);
-        engine = new GeneralLazyBestFirstSearch(opts);
+        engine = new LazySearch(opts);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
@@ -306,7 +286,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     if (evals.empty())
         parser.error("expected non-empty list of scalar evaluators");
 
-    GeneralLazyBestFirstSearch *engine = 0;
+    LazySearch *engine = 0;
     if (!parser.dry_run()) {
         vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
@@ -345,7 +325,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         opts.set("open", open);
         opts.set("reopen_closed", true);
 
-        engine = new GeneralLazyBestFirstSearch(opts);
+        engine = new LazySearch(opts);
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;

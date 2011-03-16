@@ -157,6 +157,7 @@ int EnforcedHillClimbingSearch::ehc() {
 
             if (heuristic->is_dead_end()) {
                 node.mark_as_dead_end();
+                search_progress.inc_dead_ends();
                 continue;
             }
 
