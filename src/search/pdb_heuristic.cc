@@ -35,9 +35,10 @@ AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_
     }
 }
 
-AbstractOperator::AbstractOperator(const vector<pair<int, int> > &pre_pairs,
+AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
+                                   const vector<pair<int, int> > &pre_pairs,
                                    const vector<pair<int, int> > &eff_pairs, int c)
-                                   : cost(c), conditions(pre_pairs), effects(eff_pairs) {
+                                   : cost(c), prevail(prev_pairs), conditions(pre_pairs), effects(eff_pairs) {
 }
 
 AbstractOperator::~AbstractOperator() {
@@ -159,13 +160,14 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
     }
 }
 
-void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > pre_pairs,
-                                      vector<pair<int, int> > eff_pairs,
-                                      const vector<pair<int, int> > effects_without_pre,
-                                      vector<AbstractOperator> &operators) {
+void PDBHeuristic::build_recursively(int pos, int cost, const vector<pair<int, int> > &prev_pairs,
+                                     vector<pair<int, int> > &pre_pairs,
+                                     vector<pair<int, int> > &eff_pairs,
+                                     const vector<pair<int, int> > &effects_without_pre,
+                                     vector<AbstractOperator> &operators) {
     if (pos == effects_without_pre.size()) {
         if (!eff_pairs.empty()) {
-            operators.push_back(AbstractOperator(pre_pairs, eff_pairs, cost));
+            operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost));
         }
     } else {
         int var = effects_without_pre[pos].first;
@@ -174,7 +176,7 @@ void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > 
             pre_pairs.push_back(make_pair(var, i));
             if (i != eff)
                 eff_pairs.push_back(make_pair(var, eff));
-            build_recursively(pos+1, cost, pre_pairs, eff_pairs,
+            build_recursively(pos+1, cost, prev_pairs, pre_pairs, eff_pairs,
                                 effects_without_pre, operators);
             if (i != eff)
                 eff_pairs.pop_back();
@@ -184,6 +186,7 @@ void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > 
 }
 
 void PDBHeuristic::build_abstract_operators(const Operator &op, vector<AbstractOperator> &operators) {
+    vector<pair<int, int> > prev_pairs;
     vector<pair<int, int> > pre_pairs;
     vector<pair<int, int> > eff_pairs;
     vector<pair<int, int> > effects_without_pre;
@@ -191,7 +194,7 @@ void PDBHeuristic::build_abstract_operators(const Operator &op, vector<AbstractO
     const vector<PrePost> &pre_post = op.get_pre_post();
     for (size_t i = 0; i < prevail.size(); ++i) {
         if (variable_to_index[prevail[i].var] != -1) { // variable occurs in pattern
-            pre_pairs.push_back(make_pair(variable_to_index[prevail[i].var], prevail[i].prev));
+            prev_pairs.push_back(make_pair(variable_to_index[prevail[i].var], prevail[i].prev));
         }
     }
     for (size_t i = 0; i < pre_post.size(); ++i) {
@@ -204,7 +207,7 @@ void PDBHeuristic::build_abstract_operators(const Operator &op, vector<AbstractO
             }
         }
     }
-    build_recursively(0, op.get_cost(), pre_pairs, eff_pairs, effects_without_pre, operators);
+    build_recursively(0, op.get_cost(), prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
 }
 
 void PDBHeuristic::create_pdb_new() {
@@ -220,17 +223,19 @@ void PDBHeuristic::create_pdb_new() {
         }*/
     }
 
-    // assertion tests for domain in which no operators with pre = -1 exist
-    // in this case, both methods should generate the exact same abstract operators
-    vector<AbstractOperator> operators2;
+    // old method for comparison reasons
+    /*vector<AbstractOperator> operators2;
     for (size_t i = 0; i < g_operators.size(); ++i) {
         AbstractOperator ao(g_operators[i], variable_to_index);
         if (!ao.get_effects().empty())
             operators2.push_back(ao);
-    }
-    assert(operators.size() == operators2.size());
+    }*/
+
+    // assertion tests for domain in which no operators with pre = -1 exist
+    // in this case, both methods should generate the exact same abstract operators
+    /*assert(operators.size() == operators2.size());
     for (size_t i = 0; i < operators.size(); ++i) {
-        cout << "i = " << i << endl;
+        //cout << "i = " << i << endl;
         const vector<pair<int, int> > &conditions = operators[i].get_conditions();
         const vector<pair<int, int> > &conditions2 = operators2[i].get_conditions();
         assert(conditions.size() == conditions2.size());
@@ -245,7 +250,7 @@ void PDBHeuristic::create_pdb_new() {
             assert(effects[j].first == effects2[j].first);
             assert(effects[j].second == effects2[j].second);
         }
-    }
+    }*/
 
     vector<pair<int, int> > abstracted_goal;
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -254,10 +259,14 @@ void PDBHeuristic::create_pdb_new() {
         }
     }
 
-    vector<int> distances2;
-    distances2.reserve(num_states);
+    // all data structures ending on "2" is just for comparison (implementing old create_pdb)
+    //vector<vector<Edge> > back_edges;
+    //back_edges.resize(num_states);
+    distances.reserve(num_states);
+    //distances2.reserve(num_states);
     // first entry: priority, second entry: index for an abstract state
     priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq;
+    //priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq2;
 
     vector<int> ranges;
     for (size_t i = 0; i < pattern.size(); ++i) {
@@ -270,27 +279,77 @@ void PDBHeuristic::create_pdb_new() {
 
         if (abstract_state.is_goal_state(abstracted_goal)) {
             pq.push(make_pair(0, counter));
-            distances2.push_back(0);
+            //pq2.push(make_pair(0, counter));
+            distances.push_back(0);
+            //distances2.push_back(0);
         }
         else {
-            distances2.push_back(numeric_limits<int>::max());
+            distances.push_back(numeric_limits<int>::max());
+            //distances2.push_back(numeric_limits<int>::max());
         }
+
+        // old edges generation
+        /*for (size_t j = 0; j < operators2.size(); ++j) {
+            if (abstract_state.is_applicable(operators2[j])) {
+                //cout << "applying operator:" << endl;
+                //operators[j].dump(pattern);
+                AbstractState next_state = abstract_state;
+                next_state.apply_operator(operators2[j]);
+                //next_state.dump(pattern);
+                size_t state_index = hash_index(next_state);
+                if (state_index == counter) {
+                    //cout << "operator didn't lead to a new state, ignoring!" << endl;
+                    continue;
+                } else {
+                    assert(counter != state_index);
+                    back_edges[state_index].push_back(Edge(operators[j].get_cost(), counter));
+                }
+            }
+        }*/
     }
 
-    while (!pq.empty()) {
+    while (!pq.empty()/* && !pq2.empty()*/) {
         pair<int, int> node = pq.top();
+        //pair<int, int> node2 = pq2.top();
+        //cout << "popped (new method): " << node.first << " " << node.second << endl;
+        //cout << "pooped (old method): " << node2.first << " " << node2.second << endl;
+        //assert(node == node2);
         pq.pop();
+        //pq2.pop();
         int distance = node.first;
         size_t state_index = node.second;
-        if (distance > distances2[state_index])
+        if (distance > distances[state_index]) {
+            //assert(distance > distances2[state_index]);
             continue;
-        AbstractState abstract_state = inv_hash_index(state_index);
+        }
+
+        // old dijkstra
+        /*const vector<Edge> &edges = back_edges[state_index];
+        for (size_t i = 0; i < edges.size(); ++i) {
+            size_t predecessor = edges[i].target;
+            //cout << "predecessor index (old): " << predecessor << endl;
+            int cost = edges[i].cost;
+            int alternative_cost = distances2[state_index] + cost;
+            if (alternative_cost < distances2[predecessor]) {
+                distances2[predecessor] = alternative_cost;
+                pq2.push(make_pair(alternative_cost, predecessor));
+            }
+        }*/
+
         // regress abstract_state
+        AbstractState abstract_state = inv_hash_index(state_index);
         for (size_t i = 0; i < operators.size(); ++i) {
+            const vector<pair<int, int> > &prev = operators[i].get_prevail();
             const vector<pair<int, int> > &pre = operators[i].get_conditions();
             const vector<pair<int, int> > &eff = operators[i].get_effects();
             int cost = operators[i].get_cost();
             bool eff_in_state = true;
+            for (size_t j = 0; j < prev.size(); ++j) {
+                if (abstract_state[prev[j].first] != prev[j].second) {
+                    eff_in_state = false;
+                    break;
+                }
+            }
             for (size_t j = 0; j < eff.size(); ++j) {
                 if (abstract_state[eff[j].first] != eff[j].second) {
                     eff_in_state = false;
@@ -309,27 +368,27 @@ void PDBHeuristic::create_pdb_new() {
                 }
                 AbstractState regressed_state(var_vals);
                 size_t predecessor = hash_index(regressed_state);
-                
-                // old pq-code
-                int alternative_cost = distances2[state_index] + cost;
-                if (alternative_cost < distances2[predecessor]) {
-                    distances2[predecessor] = alternative_cost;
+                //cout << "predecessor index (new): " << predecessor << endl;
+
+                // normal dijkstra (as in old code)
+                int alternative_cost = distances[state_index] + cost;
+                if (alternative_cost < distances[predecessor]) {
+                    distances[predecessor] = alternative_cost;
                     pq.push(make_pair(alternative_cost, predecessor));
                 }
             }
         }
     }
-/*
-    assert(distances2.size() == distances.size());
+
+    /*assert(distances2.size() == distances.size());
     for (size_t i = 0; i < distances2.size(); ++i) {
         if (distances2[i] != distances[i]) {
             cout << "distances2[" << i << "] = " << distances2[i] << " != " << distances[i] << " = distances[" << i << "]" << endl;
         }
         assert(distances2[i] == distances[i]);
     }
-    cout << "assertion checked - distances correctly calculated" << endl;*/
-    cout << "done creating." << endl;
-    exit(2);
+    cout << "assertion checked - distances correctly calculated" << endl;
+    cout << "done creating." << endl;*/
 }
 
 void PDBHeuristic::create_pdb() {
@@ -453,7 +512,7 @@ void PDBHeuristic::initialize() {
 }
 
 int PDBHeuristic::compute_heuristic(const State &state) {
-    int h = distances[hash_index(AbstractState(state, pattern))];;
+    int h = distances[hash_index(AbstractState(state, pattern))];
     if (h == numeric_limits<int>::max())
         return -1;
     return h;
