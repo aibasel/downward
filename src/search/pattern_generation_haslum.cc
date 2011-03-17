@@ -24,18 +24,6 @@ static ScalarEvaluatorPlugin plugin("ipdb", create);
 
 PatternGenerationHaslum::PatternGenerationHaslum(int max_pdb, int max_coll, int samples)
 : pdb_max_size(max_pdb), collection_max_size(max_coll), num_samples(samples) {
-    // TODO: add functionality for the parameter options max_pdb_size and max_collection_size
-
-    // calculate average operator costs
-    average_operator_costs = 0;
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        average_operator_costs += g_operators[i].get_cost();
-    }
-    average_operator_costs /= g_operators.size();
-    // to avoid dividing through 0
-    if (average_operator_costs == 0)
-        average_operator_costs = 1;
-    cout << "Average operator costs of this problem: " << average_operator_costs << endl;
     hill_climbing();
 }
 
@@ -79,7 +67,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
 }
 
 // random walk for state sampling
-void PatternGenerationHaslum::sample_states(vector<State> &samples) {
+void PatternGenerationHaslum::sample_states(vector<State> &samples, int average_operator_costs) {
     current_collection->evaluate(*g_initial_state);
     assert(!current_collection->is_dead_end());
     double h = current_collection->get_heuristic();
@@ -150,6 +138,17 @@ bool PatternGenerationHaslum::counting_approximation(PDBHeuristic *pdbheuristic,
 }
 
 void PatternGenerationHaslum::hill_climbing() {
+    // calculate average operator costs
+    int average_operator_costs = 0;
+    for (size_t i = 0; i < g_operators.size(); ++i) {
+        average_operator_costs += g_operators[i].get_cost();
+    }
+    average_operator_costs /= g_operators.size();
+    // to avoid dividing through 0
+    if (average_operator_costs == 0)
+        average_operator_costs = 1;
+    cout << "Average operator costs of this problem: " << average_operator_costs << endl;
+    
     int collection_size = 0;
     // initial collection: a pdb for each goal variable
     vector<vector<int> > initial_pattern_collection;
@@ -184,7 +183,7 @@ void PatternGenerationHaslum::hill_climbing() {
         }
         improved = false;
         vector<State> samples;
-        sample_states(samples);
+        sample_states(samples, average_operator_costs);
 
         // TODO: drop PDBHeuristic and use astar instead to compute h values for the sample states only
         // How is the advance of astar if we always have new samples? If we use pdbs and we don't rebuild
