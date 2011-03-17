@@ -80,7 +80,6 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
 
 // random walk for state sampling
 void PatternGenerationHaslum::sample_states(vector<State> &samples) {
-    // calculate length of random walk accoring to a binomial distribution
     current_collection->evaluate(*g_initial_state);
     assert(!current_collection->is_dead_end());
     double h = current_collection->get_heuristic();
@@ -91,66 +90,37 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples) {
     double mean = 2 * h + 1;
     double n = 4 * h;
     double p = mean / n;
-    int length = 0;
-    for (int i = 0; i < n; ++i) {
-        double random = g_rng(); // [0..1)
-        if (random < p)
-            ++length;
-    }
-    
-    // sample length many states
-    State current_state(*g_initial_state);
-    samples.push_back(current_state);
-    for (int i = 1; i < length; ++i) {
-        vector<const Operator *> applicable_ops;
-        g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
-        // if there are no applicable operators --> dead end
-        if (applicable_ops.size() == 0) {
-            current_state = *g_initial_state;
-        } else {
-            int random = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
-            assert(applicable_ops[random]->is_applicable(current_state));
-            current_state = State(current_state, *applicable_ops[random]);
-            // if current state is dead-end, then restart with initial state
-            current_collection->evaluate(current_state);
-            if (current_collection->is_dead_end())
-                current_state = *g_initial_state;
+
+    while (samples.size() < num_samples) {
+        // calculate length of random walk accoring to a binomial distribution
+        int length = 0;
+        for (int i = 0; i < n; ++i) {
+            double random = g_rng(); // [0..1)
+            if (random < p)
+                ++length;
         }
+
+        // random walk of length length
+        State current_state(*g_initial_state);
+        for (int i = 1; i < length; ++i) {
+            vector<const Operator *> applicable_ops;
+            g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
+            // if there are no applicable operators --> dead end
+            if (applicable_ops.size() == 0) {
+                current_state = *g_initial_state;
+            } else {
+                int random = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
+                assert(applicable_ops[random]->is_applicable(current_state));
+                current_state = State(current_state, *applicable_ops[random]);
+                // if current state is dead-end, then restart with initial state
+                current_collection->evaluate(current_state);
+                if (current_collection->is_dead_end())
+                    current_state = *g_initial_state;
+            }
+        }
+        // last state of the random walk is used as sample
         samples.push_back(current_state);
     }
-    /*
-    double b = applicable_ops.size();
-    current_collection->evaluate(*g_initial_state);
-    assert(!current_collection->is_dead_end());
-    double d = 2.0 * current_collection->get_heuristic();
-    int length = 0;
-    double denominator = pow(b, d + 1) - 1;
-    State current_state(*g_initial_state);
-    while (true) {
-        double numerator = pow(b, length + 1.0) - pow(b, length);
-        double fraction = numerator / denominator;
-        double random = g_rng(); // [0..1)
-        if (random < fraction) {
-            samples.push_back(current_state);
-            break;
-        }
-        // restart takes place by calling this method as long as we don't have enough sample states
-        
-        vector<const Operator *> applicable_ops;
-        g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
-        
-        int random2 = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
-        assert(applicable_ops[random2]->is_applicable(current_state));
-        
-        // get new state, 
-        current_state = State(current_state, *applicable_ops[random2]);
-        
-        // check whether new state is a dead end (h == -1)
-        current_collection->evaluate(current_state);
-        if (current_collection->is_dead_end())
-            break; // stop sampling. no restart, this is done by calling this method again
-        ++length;
-    }*/
 }
 
 bool PatternGenerationHaslum::counting_approximation(PDBHeuristic *pdbheuristic,
@@ -207,14 +177,15 @@ void PatternGenerationHaslum::hill_climbing() {
     // actual hillclimbing loop
     bool improved = true;
     while (improved) {
+        cout << "current collection size is " << collection_size << endl;
         if (collection_size >= collection_max_size) {
             cout << "stopping hill climbing due to collection max size" << endl;
-            return;
+            break;
         }
         improved = false;
         vector<State> samples;
         sample_states(samples);
-        
+
         // TODO: drop PDBHeuristic and use astar instead to compute h values for the sample states only
         // How is the advance of astar if we always have new samples? If we use pdbs and we don't rebuild
         // them in every loop, there is no problem with new samples.
