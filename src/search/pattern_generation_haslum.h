@@ -1,7 +1,6 @@
 #ifndef PATTERN_GENERATION_HASLUM_H
 #define PATTERN_GENERATION_HASLUM_H
 
-#include <ext/hash_map>
 #include <map>
 #include <vector>
 
@@ -10,15 +9,15 @@ class State;
 class PDBHeuristic;
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
-    int max_pdb_size;
-    int max_collection_size;
+    int pdb_max_size;
+    int collection_max_size;
     int num_samples;
     double average_operator_costs;
     PDBCollectionHeuristic *current_collection;
+    // TODO: hash map for those two maps?
+    std::map<std::vector<int>, int> pattern_sizes; // cache size of a pattern
     std::map<std::vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation
     void sample_states(std::vector<State> &samples);
-    /*void initial_candidates(const PDBCollectionHeuristic &current_collection,
-                             std::vector<std::vector<int> > &candidate_patterns);*/
     void generate_candidate_patterns(const std::vector<int> &pattern,
                                      std::vector<std::vector<int> > &candidate_patterns);
     bool counting_approximation(PDBHeuristic *pdbheuristic,

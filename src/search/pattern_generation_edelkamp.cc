@@ -230,7 +230,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 mean_h = sum / num_states;
                 pattern_to_fitness.insert(make_pair(bitvector, mean_h));
             } else {
-                mean_h = (*it).second;
+                mean_h = it->second;
             }
             fitness += mean_h;
         }
