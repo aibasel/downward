@@ -740,10 +740,10 @@ void HMLandmarks::compute_h_m_landmarks() {
 
     // mark actions with no precondition to be applied
     for (int i = 0; i < pm_ops_.size(); i++) {
-      if (unsat_pc_count_[i].first == 0) {
-	// create empty set or clear prev entries
-	current_trigger[i].clear();
-      }
+        if (unsat_pc_count_[i].first == 0) {
+            // create empty set or clear prev entries
+            current_trigger[i].clear();
+        }
     }
 
     std::vector<int>::iterator it;
