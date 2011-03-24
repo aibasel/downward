@@ -173,6 +173,10 @@ void PatternGenerationHaslum::hill_climbing() {
     candidate_patterns.erase(unique(candidate_patterns.begin(), candidate_patterns.end()), candidate_patterns.end());
     cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
     
+    // sample only once
+    vector<State> samples;
+    sample_states(samples, average_operator_costs);
+
     // actual hillclimbing loop
     bool improved = true;
     while (improved) {
@@ -182,8 +186,8 @@ void PatternGenerationHaslum::hill_climbing() {
             break;
         }
         improved = false;
-        vector<State> samples;
-        sample_states(samples, average_operator_costs);
+        //vector<State> samples;
+        //sample_states(samples, average_operator_costs);
 
         // TODO: drop PDBHeuristic and use astar instead to compute h values for the sample states only
         // How is the advance of astar if we always have new samples? If we use pdbs and we don't rebuild
@@ -242,8 +246,12 @@ void PatternGenerationHaslum::hill_climbing() {
             generate_candidate_patterns(best_pattern, candidate_patterns);
         }
     }
-    // TODO Does this swap release the memory?
-    map<vector<int>, PDBHeuristic *>().swap(pattern_to_pdb);
+    // delete all created pattern databases in the map
+    map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.begin();
+    while (it != pattern_to_pdb.end()) {
+        delete it->second;
+        ++it;
+    }
 }
 
 ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {

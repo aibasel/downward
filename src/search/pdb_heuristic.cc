@@ -128,7 +128,8 @@ PDBHeuristic::PDBHeuristic(const vector<int> &pattern)
     cout << "PDB construction time: " << timer << endl;
 }
 
-PDBHeuristic::~PDBHeuristic() {}
+PDBHeuristic::~PDBHeuristic() {
+}
 
 void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
     if (!g_axioms.empty()) {
