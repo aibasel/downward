@@ -1,6 +1,7 @@
 #ifndef OPTION_PARSER_UTIL_H_
 #define OPTION_PARSER_UTIL_H_
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <map>
@@ -72,6 +73,7 @@ public:
     }
 
     void register_object(std::string k, Factory f) {
+        transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
         registered[k] = f;
     }
 
@@ -118,6 +120,7 @@ public:
     }
 
     void predefine(std::string k, T obj) {
+        transform(k.begin(), k.end(), k.begin(), ::tolower);
         predefined[k] = obj;
     }
 
