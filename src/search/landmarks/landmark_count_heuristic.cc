@@ -313,7 +313,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     Options opts = parser.parse();
 
     if (!parser.dry_run() && opts.get<LandmarksGraph *>("lm_graph") == 0)
-        parser.error("landmarks graph could not be constructed");
+        parser.error("landmark graph could not be constructed");
 
     if (parser.dry_run())
         return 0;
@@ -321,5 +321,5 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new LandmarkCountHeuristic(opts);
 }
 
-static ScalarEvaluatorPlugin landmark_count_heuristic_plugin(
+static ScalarEvaluatorPlugin _plugin(
     "lmcount", _parse);
