@@ -43,7 +43,6 @@ protected:
 
 public:
     EagerSearch(const Options &opts);
-    void set_pref_operator_heuristics(vector<Heuristic *> &heur);
     void statistics() const;
 
     void dump_search_space();

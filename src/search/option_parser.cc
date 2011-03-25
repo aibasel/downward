@@ -34,6 +34,7 @@ Functions for printing help:
 void OptionParser::set_help_mode(bool m) {
     dry_run_ = dry_run_ && m;
     help_mode_ = m;
+    opts.set_help_mode(m);
 }
 
 template <class T>
@@ -278,7 +279,8 @@ static ParseTree generate_parse_tree(const string config) {
 }
 
 OptionParser::OptionParser(const string config, bool dr)
-    : parse_tree(generate_parse_tree(config)),
+    : opts(false),
+      parse_tree(generate_parse_tree(config)),
       dry_run_(dr),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
@@ -286,7 +288,8 @@ OptionParser::OptionParser(const string config, bool dr)
 
 
 OptionParser::OptionParser(ParseTree pt, bool dr)
-    : parse_tree(pt),
+    : opts(false),
+      parse_tree(pt),
       dry_run_(dr),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
