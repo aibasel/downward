@@ -218,7 +218,7 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("m");
+    parser.add_option<int>("m",2);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

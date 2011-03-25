@@ -73,7 +73,7 @@ bool LamaFFSynergy::lama_reach_state(const State &parent_state,
     return lama_heuristic->reach_state(parent_state, op, state);
 }
 
-static Synergy *_parse_heuristics(OptionParser &parser) {
+static Synergy *_parse(OptionParser &parser) {
     Synergy *syn = new Synergy;
     parser.add_option<LandmarksGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
@@ -82,24 +82,20 @@ static Synergy *_parse_heuristics(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();
-    if (parser.help_mode())
+    if (parser.dry_run())
         return 0;
+
     bool lm_pref_ = true; // this will always be the case because it
                           // does not make sense to use the synergy without
                           // using lm preferred operators
     opts.set("pref", lm_pref_);
 
-    if (!parser.dry_run()) {
-        LamaFFSynergy *lama_ff_synergy =
-            new LamaFFSynergy(opts);
-
-        syn->heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
-        syn->heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
-    } else {
-        syn->heuristics.push_back(0);
-        syn->heuristics.push_back(0);
-    }
+    LamaFFSynergy *lama_ff_synergy =
+        new LamaFFSynergy(opts);
+    
+    syn->heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
+    syn->heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
     return syn;
 }
 
-static SynergyPlugin lama_ff_synergy_plugin("lm_ff_syn", _parse_heuristics);
+static SynergyPlugin _plugin("lm_ff_syn", _parse);
