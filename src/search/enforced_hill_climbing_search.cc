@@ -13,6 +13,18 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
       current_state(*g_initial_state),
       num_ehc_phases(0) {
+    if(opts.contains("preferred")) {
+        preferred_heuristics = opts.get_list<Heuristic *>("preferred");
+        if (preferred_heuristics.empty()) {
+            use_preferred = false;
+            preferred_contains_eval = false;
+        } else if (find(preferred_heuristics.begin(), 
+                        preferred_heuristics.end(), 
+                        heuristic) != preferred_heuristics.end()) {
+            use_preferred = true;
+            preferred_contains_eval = true;
+        }
+    }
     search_progress.add_heuristic(heuristic);
     g_evaluator = new GEvaluator();
 }
@@ -211,19 +223,6 @@ void EnforcedHillClimbingSearch::statistics() const {
     }
 }
 
-void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
-    vector<Heuristic *> &heur) {
-    preferred_heuristics = heur;
-    if (heur.empty()) {
-        use_preferred = false;
-        preferred_contains_eval = false;
-    } else if (find(heur.begin(), heur.end(), heuristic) != heur.end()) {
-        use_preferred = true;
-        preferred_contains_eval = true;
-    }
-}
-
-
 static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<Heuristic *>("h");
 
@@ -233,7 +232,6 @@ static SearchEngine *_parse(OptionParser &parser) {
     vector<string> preferred_usages;
     preferred_usages.push_back("PRUNE_BY_PREFERRED");
     preferred_usages.push_back("RANK_PREFERRED_FIRST");
-    preferred_usages.push_back("MAX_PREFERRED_USAGE");
     parser.add_enum_option("preferred_usage", preferred_usages,
                            "PRUNE_BY_PREFERRED",
                            "preferred operator usage");
@@ -246,9 +244,6 @@ static SearchEngine *_parse(OptionParser &parser) {
     EnforcedHillClimbingSearch *engine = 0;
     if (!parser.dry_run()) {
         engine = new EnforcedHillClimbingSearch(opts);
-        vector<Heuristic *> preferred_list =
-            opts.get_list<Heuristic *>("preferred");
-        engine->set_pref_operator_heuristics(preferred_list);
     }
 
     return engine;
