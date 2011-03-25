@@ -48,7 +48,6 @@ public:
     void boost_last_used_list();
 
     static OpenList<Entry> *_parse(OptionParser &parser);
-    static void reg();
 };
 
 #include "alternation_open_list.cc"

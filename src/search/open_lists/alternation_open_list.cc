@@ -12,7 +12,7 @@ template<class Entry>
 OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
     parser.add_list_option<OpenList<Entry> *>("sublists");
     parser.add_option<int>("boost", 0,
-                           "boost value for successful sub-open-lists");
+                           "boost value for preferred operator open lists");
 
     Options opts = parser.parse();
     if (parser.help_mode())
@@ -24,13 +24,6 @@ OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
         return 0;
     else
         return new AlternationOpenList<Entry>(opts);
-}
-
-template<class Entry>
-void AlternationOpenList<Entry>::reg() {
-    Registry<OpenList<Entry > *>::instance()->register_object(
-        "alt",
-        *AlternationOpenList<Entry>::_parse);
 }
 
 template<class Entry>

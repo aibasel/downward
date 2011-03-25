@@ -1,5 +1,5 @@
-#ifndef OPTION_PARSER_H_
-#define OPTION_PARSER_H_
+#ifndef OPTION_PARSER_H
+#define OPTION_PARSER_H
 
 #include <vector>
 #include <string>
@@ -354,4 +354,4 @@ std::vector<T > TokenParser<std::vector<T > >::parse(OptionParser &p) {
     return results;
 }
 
-#endif /* OPTION_PARSER_H_ */
+#endif
