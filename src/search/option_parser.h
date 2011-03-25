@@ -340,7 +340,8 @@ std::vector<T > TokenParser<std::vector<T > >::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     std::vector<T> results;
     if (pt->value.compare("list") != 0) {
-        throw ParseError("list expected here", pt);
+        //try to parse the next token as list of length 1 given without brackets
+        results.push_back(TokenParser<T>::parse(p));
     }
     for (ParseTree::sibling_iterator pti =
              first_child_of_root(*p.get_parse_tree());
