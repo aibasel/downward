@@ -21,10 +21,10 @@ EagerSearch::EagerSearch(
       use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<OpenList<state_var_t *> *>("open")),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval")) {
-}
-
-void EagerSearch::set_pref_operator_heuristics(vector<Heuristic *> &heur) {
-    preferred_operator_heuristics = heur;
+    if(opts.contains("preferred")) {
+        preferred_operator_heuristics = 
+            opts.get_list<Heuristic *>("preferred");
+    }
 }
 
 void EagerSearch::initialize() {
@@ -310,7 +310,11 @@ void EagerSearch::print_heuristic_values(const vector<int> &values) const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
+    //open lists are currently registered with the parser on demand,
+    //because for templated classes the usual method of registering
+    //does not work:
     OpenListPlugin<state_var_t *>::register_open_lists();
+
     parser.add_option<OpenList<state_var_t *> *>("open");
     parser.add_option<bool>("reopen_closed", false,
                             "reopen closed nodes");
@@ -323,17 +327,11 @@ static SearchEngine *_parse(OptionParser &parser) {
         "use preferred operators of these heuristics");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
-    opts.set<bool>("mpd", false);
-
 
     EagerSearch *engine = 0;
     if (!parser.dry_run()) {
+        opts.set<bool>("mpd", false);
         engine = new EagerSearch(opts);
-        vector<Heuristic *> preferred_list =
-            opts.get_list<Heuristic *>("preferred");
-        engine->set_pref_operator_heuristics(preferred_list);
     }
 
     return engine;
@@ -347,8 +345,6 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
                             "use multi-path dependence (LM-A*)");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
 
     EagerSearch *engine = 0;
     if (!parser.dry_run()) {
@@ -383,10 +379,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
 
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
-    if (opts.get_list<ScalarEvaluator *>("evals").empty())
-        parser.error("scalar evaluator list must not be empty");
+    opts.verify_non_empty<ScalarEvaluator *>("evals");
 
     EagerSearch *engine = 0;
     if (!parser.dry_run()) {
@@ -419,9 +412,8 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         ScalarEvaluator *sep = 0;
         opts.set("f_eval", sep);
         opts.set("bound", numeric_limits<int>::max());
+        opts.set("preferred", preferred_list);
         engine = new EagerSearch(opts);
-
-        engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
 }

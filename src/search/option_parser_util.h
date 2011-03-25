@@ -315,6 +315,14 @@ tree<T> subtree(
 //Options is just a wrapper for map<string, boost::any>
 class Options {
 public:
+    Options(bool hm = false)
+        :help_mode(hm) {
+    }
+
+    void set_help_mode(bool hm) {
+        help_mode = hm;
+    }
+    
     std::map<std::string, boost::any> storage;
 
     template <class T>
@@ -345,6 +353,20 @@ public:
     }
 
     template <class T>
+    void verify_non_empty(std::string key) const {
+        if(!help_mode) {
+            std::vector<T> temp_vec = get<std::vector<T> >(key);
+            if(temp_vec.empty()) {
+                std::cout << "Error: unexpected empty list!"
+                          << std::endl
+                          << "List " << key << " is empty"
+                          << std::endl;
+                exit(1);
+            }
+        }
+    }
+
+    template <class T>
     std::vector<T> get_list(std::string key) const {
         return get<std::vector<T> >(key);
     }
@@ -356,6 +378,8 @@ public:
     bool contains(std::string key) const {
         return storage.find(key) != storage.end();
     }
+private:
+    bool help_mode;
 };
 
 #endif /* OPTION_PARSER_UTIL_H_ */
