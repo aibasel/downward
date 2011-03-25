@@ -231,7 +231,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "preferred", vector<Heuristic *>(),
         "use preferred operators of these heuristics");
     parser.add_option<int>("boost", DEFAULT_LAZY_BOOST,
-                           "boost value for successful sub-open-lists");
+                           "boost value for preferred operator open lists");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -274,20 +274,16 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         "preferred", vector<Heuristic *>(),
         "use preferred operators of these heuristics");
     parser.add_option<int>("boost", DEFAULT_LAZY_BOOST,
-                           "boost value for succesful sub-open-lists");
+                           "boost value for preferred operator open lists");
     parser.add_option<int>("w", 1, "heuristic weight");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
-
-    vector<ScalarEvaluator *> evals =
-        opts.get_list<ScalarEvaluator *>("evals");
-    if (evals.empty())
-        parser.error("expected non-empty list of scalar evaluators");
+    
+    opts.verify_list_non_empty<ScalarEvaluator *>("evals");
 
     LazySearch *engine = 0;
     if (!parser.dry_run()) {
+        vector<Heuristic *> evals = opts.get_list<Heuristic *>("evals");
         vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
         vector<OpenList<OpenListEntryLazy> *> inner_lists;

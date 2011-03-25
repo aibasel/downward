@@ -1,5 +1,5 @@
-#ifndef OPTION_PARSER_UTIL_H_
-#define OPTION_PARSER_UTIL_H_
+#ifndef OPTION_PARSER_UTIL_H
+#define OPTION_PARSER_UTIL_H
 
 #include <algorithm>
 #include <string>
@@ -353,7 +353,7 @@ public:
     }
 
     template <class T>
-    void verify_non_empty(std::string key) const {
+    void verify_list_non_empty(std::string key) const {
         if(!help_mode) {
             std::vector<T> temp_vec = get<std::vector<T> >(key);
             if(temp_vec.empty()) {
@@ -382,4 +382,4 @@ private:
     bool help_mode;
 };
 
-#endif /* OPTION_PARSER_UTIL_H_ */
+#endif

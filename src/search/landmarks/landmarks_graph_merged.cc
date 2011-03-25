@@ -118,7 +118,7 @@ static LandmarksGraph *_parse(OptionParser &parser) {
         return 0;
 
     if (opts.get_list<LandmarksGraph *>("lm_graphs").empty()) {
-        parser.error("list of landmarks graph must not be empty");
+        parser.error("list of landmark graphs must not be empty");
     }
 
     if (parser.dry_run()) {
@@ -131,5 +131,5 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     }
 }
 
-static LandmarkGraphPlugin landmarks_graph_merged_plugin(
+static LandmarkGraphPlugin _plugin(
     "lm_merged", _parse);

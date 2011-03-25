@@ -32,11 +32,9 @@ int SumEvaluator::combine_values(const vector<int> &values) {
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals");
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
 
-    if (opts.get_list<ScalarEvaluator *>("evals").empty())
-        parser.error("expected non-empty list of scalar evaluators");
+    opts.verify_list_non_empty<ScalarEvaluator *>("evals");
+
     if (parser.dry_run())
         return 0;
     else
