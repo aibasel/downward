@@ -318,7 +318,7 @@ void OptionParser::add_enum_option(string k,
         return;
     }
 
-
+    //enum arguments can be given by name or by number:
     //first parse the corresponding string like a normal argument...
     if (def_val.compare("") != 0) {
         add_option<string>(k, def_val, h);
@@ -326,17 +326,29 @@ void OptionParser::add_enum_option(string k,
         add_option<string>(k, h);
     }
 
-    //...then map that string to its position in the enumeration vector
     string name = str_to_lower(opts.get<string>(k));
-    transform(enumeration.begin(), enumeration.end(), enumeration.begin(),
-              str_to_lower); //make the enumeration lower case
-    vector<string>::const_iterator it =
-        find(enumeration.begin(), enumeration.end(), name);
-    if (it == enumeration.end()) {
-        error("invalid enum argument " + name
-              + " for option " + k);
+
+    //...then check if the parsed string can be treated as a number
+    stringstream str_stream(name);
+    int x;
+    if (!(str_stream >> x).fail()) {
+        if(x > enumeration.size()) {
+            error("invalid enum argument " + name
+                  + " for option " + k);
+        }
+        opts.set(k, x);
+    } else {      
+        //...otherwise try to map the string to its position in the enumeration vector
+        transform(enumeration.begin(), enumeration.end(), enumeration.begin(),
+                  str_to_lower); //make the enumeration lower case
+        vector<string>::const_iterator it =
+            find(enumeration.begin(), enumeration.end(), name);
+        if (it == enumeration.end()) {
+            error("invalid enum argument " + name
+                  + " for option " + k);
+        }
+        opts.set(k, it - enumeration.begin());
     }
-    opts.set(k, it - enumeration.begin());
 }
 
 Options OptionParser::parse() {
