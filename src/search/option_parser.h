@@ -1,6 +1,32 @@
 #ifndef OPTION_PARSER_H
 #define OPTION_PARSER_H
 
+/*
+How to add support for a new type NT to the option parser:
+In this file, tell the parser how to parse NT:
+- Create a template specialization TokenParser<NT> (or overload
+  the ">>"-operator for NT).
+  See the existing specializations for examples.
+
+If you want classes of type NT to be included in the help output:
+In option_parser_util.h:
+- Create a template specialization DefaultValueNamer<NT>, or overload
+   the "<<"-operator for NT.
+- (optional) Create a template specialization for TypeNamer<NT> - you
+   don't have to do this, but it might print the typename in a 
+   more readable way.
+In option_parser.cc:
+- add NT to the functions static void get_help(string k) and 
+  static void get_full_help()
+
+If NT shall be predefinable:
+- See the functions predefine_lmgraph(...) and predefine_heuristic(...) 
+  in option parser.cc for examples. 
+  You will also need to extend OptionParser::parse_cmd_line(...).
+*/
+
+
+
 #include <vector>
 #include <string>
 #include <iostream>
