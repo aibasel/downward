@@ -581,14 +581,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
                             "set threshold constant 0");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
 
-    vector<Heuristic *> heuristics_ = opts.get_list<Heuristic *>("heuristics");
-
-    if (heuristics_.empty()) {
-        parser.error("non-empty list of heuristics expected");
-    }
+    opts.verify_list_non_empty("heuristics");
 
 
     SelectiveMaxHeuristic *heur = 0;
