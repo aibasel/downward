@@ -1,3 +1,4 @@
+#include "globals.h"
 #include "option_parser.h"
 #include "ext/tree_util.hh"
 #include "plugin.h"
@@ -181,6 +182,9 @@ SearchEngine *OptionParser::parse_cmd_line(
             }
             cout << "Help output finished." << endl;
             exit(0);
+        } else if (arg.compare("--plan-file") == 0) {
+            ++i;
+            g_plan_filename = argv[i];
         } else {
             cerr << "unknown option " << arg << endl << endl;
             cout << OptionParser::usage(argv[0]) << endl;

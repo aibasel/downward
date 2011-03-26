@@ -308,7 +308,7 @@ ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
         return Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
     }
-    p.error("scalar evaluator not found");
+    p.error("scalar evaluator " + pt->value +" not found");
     return 0;
 }
 
@@ -342,14 +342,15 @@ std::vector<T > TokenParser<std::vector<T > >::parse(OptionParser &p) {
     if (pt->value.compare("list") != 0) {
         //try to parse the next token as list of length 1 given without brackets
         results.push_back(TokenParser<T>::parse(p));
-    }
-    for (ParseTree::sibling_iterator pti =
-             first_child_of_root(*p.get_parse_tree());
-         pti != end_of_roots_children(*p.get_parse_tree());
-         ++pti) {
-        OptionParser subparser(subtree(*p.get_parse_tree(), pti), p.dry_run());
-        results.push_back(
-            TokenParser<T>::parse(subparser));
+    } else {
+        for (ParseTree::sibling_iterator pti =
+                 first_child_of_root(*p.get_parse_tree());
+             pti != end_of_roots_children(*p.get_parse_tree());
+             ++pti) {
+            OptionParser subparser(subtree(*p.get_parse_tree(), pti), p.dry_run());
+            results.push_back(
+                TokenParser<T>::parse(subparser));
+        }
     }
     return results;
 }

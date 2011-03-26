@@ -582,11 +582,13 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    opts.verify_list_non_empty("heuristics");
+    opts.verify_list_non_empty<ScalarEvaluator *>("heuristics");
 
 
     SelectiveMaxHeuristic *heur = 0;
     if (!parser.dry_run()) {
+        vector<Heuristic *> heuristics_ = 
+            opts.get_list<Heuristic *>("heuristics");
         heur = new SelectiveMaxHeuristic(opts);
         for (unsigned int i = 0; i < heuristics_.size(); i++) {
             heur->add_heuristic(heuristics_[i]);

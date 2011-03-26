@@ -283,7 +283,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
 
     LazySearch *engine = 0;
     if (!parser.dry_run()) {
-        vector<Heuristic *> evals = opts.get_list<Heuristic *>("evals");
+        vector<ScalarEvaluator *> evals = opts.get_list<ScalarEvaluator *>("evals");
         vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
         vector<OpenList<OpenListEntryLazy> *> inner_lists;
