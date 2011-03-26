@@ -23,9 +23,7 @@ SynergyPlugin::~SynergyPlugin() {
 }
 
 LandmarkGraphPlugin::LandmarkGraphPlugin(
-    const string &key, Registry<LandmarksGraph *>::Factory factory) {
-    Registry<LandmarksGraph *>::instance()->register_object(key, factory);
-}
+    const string &key, Registry<LandmarksGraph *>::Factory factory) 
 
 LandmarkGraphPlugin::~LandmarkGraphPlugin() {
 }

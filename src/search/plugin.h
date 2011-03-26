@@ -20,53 +20,27 @@ template <class Entry>
 class OpenList;
 
 
-class ScalarEvaluatorPlugin {
-    ScalarEvaluatorPlugin(const ScalarEvaluatorPlugin &copy);
+template <class T>
+class Plugin {
+    Plugin(const Plugin<T> &copy);
 public:
-    ScalarEvaluatorPlugin(const std::string &key,
-                          Registry<ScalarEvaluator *>::Factory factory);
-    ~ScalarEvaluatorPlugin();
-};
-
-
-class SynergyPlugin {
-    SynergyPlugin(const SynergyPlugin &copy);
-public:
-    //there isn't really a Synergy class, it's just a pseudoclass
-    //to unify syntax.
-    SynergyPlugin(const std::string &key,
-                  Registry<Synergy *>::Factory factory);
-    ~SynergyPlugin();
-};
-
-
-class LandmarkGraphPlugin {
-    LandmarkGraphPlugin(const LandmarkGraphPlugin &copy);
-public:
-    LandmarkGraphPlugin(const std::string &key,
-                        Registry<LandmarksGraph *>::Factory factory);
-    ~LandmarkGraphPlugin();
-};
-
-
-class EnginePlugin {
-    EnginePlugin(const EnginePlugin &copy);
-public:
-    EnginePlugin(const std::string &key,
-                 Registry<SearchEngine *>::Factory factory);
-    ~EnginePlugin();
+    Plugin(const std::string &key,Registry<T *>::Factory factory) {
+        Registry<LandmarksGraph *>::
+            instance()->register_object(key, factory);
+    }
+    ~Plugin(){};
 };
 
 template <class Entry>
-class OpenListPlugin {
-    OpenListPlugin(const OpenListPlugin<Entry> &copy);
+class Plugin<OpenList<Entry > > {
+    Plugin(const Plugin<OpenList<Entry > > &copy);
 public:
-    OpenListPlugin(const std::string &key,
+    Plugin(const std::string &key,
                    typename Registry<OpenList<Entry > *>::Factory factory) {
         std::cout << "registering openlist " << key << std::endl;
         Registry<OpenList<Entry > *>::instance()->register_object(key, factory);
     }
-    ~OpenListPlugin();
+    ~Plugin();
 
     static void register_open_lists() {
         Registry<OpenList<Entry > *>::instance()->register_object(
@@ -82,6 +56,15 @@ public:
     }
 };
 
+
+//the following typedefs are a temporary solution so I don't have to change
+//all the code that uses the old non-templated Plugin classes.
+typedef Plugin<ScalarEvaluator> ScalarEvaluatorPlugin;
+typedef Plugin<Synergy> SynergyPlugin;
+typedef Plugin<LandmarksGraph> LandmarkGraphPlugin;
+typedef Plugin<SearchEngine> EnginePlugin;
+template <class Entry>
+typedef Plugin<OpenList<Entry> > OpenListPlugin<Entry>;
 
 
 #endif
