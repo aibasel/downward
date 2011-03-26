@@ -357,4 +357,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new MergeAndShrinkHeuristic(opts);
 }
 
-static ScalarEvaluatorPlugin _plugin("mas", _parse);
+static Plugin<ScalarEvaluator> _plugin("mas", _parse);

@@ -612,4 +612,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return heur;
 }
 
-static ScalarEvaluatorPlugin _plugin("selmax", _parse);
+static Plugin<ScalarEvaluator> _plugin("selmax", _parse);

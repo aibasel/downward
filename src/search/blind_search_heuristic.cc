@@ -41,4 +41,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new BlindSearchHeuristic(opts);
 }
 
-static ScalarEvaluatorPlugin _plugin("blind", _parse);
+static Plugin<ScalarEvaluator> _plugin("blind", _parse);

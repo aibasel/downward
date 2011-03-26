@@ -51,4 +51,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new WeightedEvaluator(opts);
 }
 
-static ScalarEvaluatorPlugin _plugin("weight", _parse);
+static Plugin<ScalarEvaluator> _plugin("weight", _parse);

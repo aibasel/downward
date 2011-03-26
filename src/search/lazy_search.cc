@@ -327,6 +327,6 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     return engine;
 }
 
-static EnginePlugin _plugin("lazy", _parse);
-static EnginePlugin _plugin_greedy("lazy_greedy", _parse_greedy);
-static EnginePlugin _plugin_weighted_astar("lazy_wastar", _parse_weighted_astar);
+static Plugin<SearchEngine> _plugin("lazy", _parse);
+static Plugin<SearchEngine> _plugin_greedy("lazy_greedy", _parse_greedy);
+static Plugin<SearchEngine> _plugin_weighted_astar("lazy_wastar", _parse_weighted_astar);

@@ -68,4 +68,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new IPCMaxHeuristic(opts);
 }
 
-static ScalarEvaluatorPlugin plugin("max", _parse);
+static Plugin<ScalarEvaluator> plugin("max", _parse);

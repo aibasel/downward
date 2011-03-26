@@ -32,4 +32,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new GEvaluator;
 }
 
-static ScalarEvaluatorPlugin _plugin("g", _parse);
+static Plugin<ScalarEvaluator> _plugin("g", _parse);

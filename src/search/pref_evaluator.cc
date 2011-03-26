@@ -35,4 +35,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new PrefEvaluator;
 }
 
-static ScalarEvaluatorPlugin _plugin("pref", _parse);
+static Plugin<ScalarEvaluator> _plugin("pref", _parse);
