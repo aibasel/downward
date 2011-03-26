@@ -39,4 +39,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 
-static ScalarEvaluatorPlugin _plugin("goalcount", _parse);
+static Plugin<ScalarEvaluator> _plugin("goalcount", _parse);

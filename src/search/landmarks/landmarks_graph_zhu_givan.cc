@@ -317,4 +317,4 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     }
 }
 
-static LandmarkGraphPlugin _plugin("lm_zg", _parse);
+static Plugin<LandmarksGraph> _plugin("lm_zg", _parse);

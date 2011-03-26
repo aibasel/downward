@@ -138,4 +138,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new AdditiveHeuristic(opts);
 }
 
-static ScalarEvaluatorPlugin _plugin("add", _parse);
+static Plugin<ScalarEvaluator> _plugin("add", _parse);

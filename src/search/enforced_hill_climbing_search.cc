@@ -249,4 +249,4 @@ static SearchEngine *_parse(OptionParser &parser) {
     return engine;
 }
 
-static EnginePlugin _plugin("ehc", _parse);
+static Plugin<SearchEngine> _plugin("ehc", _parse);

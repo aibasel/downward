@@ -51,13 +51,4 @@ public:
     }
 };
 
-
-//the following typedefs are a temporary solution so I don't have to change
-//all the code that uses the old non-templated Plugin classes.
-typedef Plugin<ScalarEvaluator> ScalarEvaluatorPlugin;
-typedef Plugin<Synergy> SynergyPlugin;
-typedef Plugin<LandmarksGraph> LandmarkGraphPlugin;
-typedef Plugin<SearchEngine> EnginePlugin;
-
-
 #endif

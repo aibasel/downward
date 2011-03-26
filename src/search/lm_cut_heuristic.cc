@@ -425,4 +425,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 
-static ScalarEvaluatorPlugin _plugin("lmcut", _parse);
+static Plugin<ScalarEvaluator> _plugin("lmcut", _parse);

@@ -345,4 +345,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 
-static ScalarEvaluatorPlugin _plugin("cea", _parse);
+static Plugin<ScalarEvaluator> _plugin("cea", _parse);

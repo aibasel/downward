@@ -321,5 +321,5 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new LandmarkCountHeuristic(opts);
 }
 
-static ScalarEvaluatorPlugin _plugin(
+static Plugin<ScalarEvaluator> _plugin(
     "lmcount", _parse);

@@ -48,5 +48,5 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     }
 }
 
-static LandmarkGraphPlugin _plugin(
+static Plugin<LandmarksGraph> _plugin(
     "lm_exhaust", _parse);

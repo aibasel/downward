@@ -98,4 +98,4 @@ static Synergy *_parse(OptionParser &parser) {
     return syn;
 }
 
-static SynergyPlugin _plugin("lm_ff_syn", _parse);
+static Plugin<Synergy> _plugin("lm_ff_syn", _parse);

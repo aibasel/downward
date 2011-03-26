@@ -41,4 +41,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new SumEvaluator(opts);
 }
 
-static ScalarEvaluatorPlugin _plugin("sum", _parse);
+static Plugin<ScalarEvaluator> _plugin("sum", _parse);

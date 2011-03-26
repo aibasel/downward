@@ -165,4 +165,4 @@ static SearchEngine *_parse(OptionParser &parser) {
     }
 }
 
-static EnginePlugin _plugin("iterated", _parse);
+static Plugin<SearchEngine> _plugin("iterated", _parse);

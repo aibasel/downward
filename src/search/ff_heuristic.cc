@@ -88,4 +88,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new FFHeuristic(opts);
 }
 
-static ScalarEvaluatorPlugin _plugin("ff", _parse);
+static Plugin<ScalarEvaluator> _plugin("ff", _parse);
