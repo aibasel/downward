@@ -57,7 +57,7 @@ static void get_help(string k) {
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
     get_help_templ<LandmarksGraph *>(pt);
-    OpenListPlugin<int>::register_open_lists();
+    Plugin<OpenList<int> >::register_open_lists();
     get_help_templ<OpenList<int> *>(pt);
 }
 
@@ -78,7 +78,7 @@ static void get_full_help() {
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
     get_full_help_templ<LandmarksGraph *>();
-    OpenListPlugin<int>::register_open_lists();
+    Plugin<OpenList<int> >::register_open_lists();
     get_full_help_templ<OpenList<int> *>();
 }
 

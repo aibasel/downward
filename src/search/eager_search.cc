@@ -313,7 +313,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     //open lists are currently registered with the parser on demand,
     //because for templated classes the usual method of registering
     //does not work:
-    OpenListPlugin<state_var_t *>::register_open_lists();
+    Plugin<OpenList<state_var_t *> >::register_open_lists();
 
     parser.add_option<OpenList<state_var_t *> *>("open");
     parser.add_option<bool>("reopen_closed", false,
