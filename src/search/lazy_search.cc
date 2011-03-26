@@ -203,7 +203,7 @@ void LazySearch::statistics() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    OpenListPlugin<OpenListEntryLazy>::register_open_lists();
+    Plugin<OpenList<OpenListEntryLazy > >::register_open_lists();
     parser.add_option<OpenList<OpenListEntryLazy> *>("open");
     parser.add_option<bool>("reopen_closed", false,
                             "reopen closed nodes");

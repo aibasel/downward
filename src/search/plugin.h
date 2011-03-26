@@ -24,8 +24,8 @@ template <class T>
 class Plugin {
     Plugin(const Plugin<T> &copy);
 public:
-    Plugin(const std::string &key,Registry<T *>::Factory factory) {
-        Registry<LandmarksGraph *>::
+    Plugin(const std::string &key,typename Registry<T *>::Factory factory) {
+        Registry<T *>::
             instance()->register_object(key, factory);
     }
     ~Plugin(){};
@@ -35,11 +35,6 @@ template <class Entry>
 class Plugin<OpenList<Entry > > {
     Plugin(const Plugin<OpenList<Entry > > &copy);
 public:
-    Plugin(const std::string &key,
-                   typename Registry<OpenList<Entry > *>::Factory factory) {
-        std::cout << "registering openlist " << key << std::endl;
-        Registry<OpenList<Entry > *>::instance()->register_object(key, factory);
-    }
     ~Plugin();
 
     static void register_open_lists() {
@@ -63,8 +58,6 @@ typedef Plugin<ScalarEvaluator> ScalarEvaluatorPlugin;
 typedef Plugin<Synergy> SynergyPlugin;
 typedef Plugin<LandmarksGraph> LandmarkGraphPlugin;
 typedef Plugin<SearchEngine> EnginePlugin;
-template <class Entry>
-typedef Plugin<OpenList<Entry> > OpenListPlugin<Entry>;
 
 
 #endif
