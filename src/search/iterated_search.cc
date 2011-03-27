@@ -144,11 +144,8 @@ static SearchEngine *_parse(OptionParser &parser) {
                            "start enumerating plans with this number");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
 
-    if (opts.get_list<ParseTree>("engine_configs").empty())
-        parser.error("empty search engine list");
+    opts.verify_list_non_empty<ParseTree>("engine_configs");
 
     if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
