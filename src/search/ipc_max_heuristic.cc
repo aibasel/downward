@@ -55,12 +55,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>("heuristics");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
 
-    if (opts.get_list<Heuristic *>("heuristics").empty()) {
-        parser.error("list of heuristics must not be empty");
-    }
+    opts.verify_list_non_empty<Heuristic *>("heuristics");
 
     if (parser.dry_run())
         return 0;

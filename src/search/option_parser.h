@@ -11,7 +11,8 @@ In this file, tell the parser how to parse NT:
 If you want classes of type NT to be included in the help output:
 In option_parser_util.h:
 - Create a template specialization DefaultValueNamer<NT>, or overload
-   the "<<"-operator for NT.
+  the "<<"-operator for NT. Not necessary if your type will never have
+  a default value. 
 - (optional) Create a template specialization for TypeNamer<NT> - you
    don't have to do this, but it might print the typename in a 
    more readable way.
@@ -20,9 +21,10 @@ In option_parser.cc:
   static void get_full_help()
 
 If NT shall be predefinable:
-- See the functions predefine_lmgraph(...) and predefine_heuristic(...) 
+- See the functions predefine_lmgraph() and predefine_heuristic() 
   in option parser.cc for examples. 
-  You will also need to extend OptionParser::parse_cmd_line(...).
+  You will also need to extend OptionParser::parse_cmd_line(), and
+  should add an explination to OptionParser::usage().
 */
 
 

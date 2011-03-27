@@ -117,8 +117,6 @@ static LandmarksGraph *_parse(OptionParser &parser) {
     parser.add_option<bool>("uniform_sampling", false, "uniform sampling");
     LandmarksGraph::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
 
     if (parser.dry_run()) {
         return 0;
