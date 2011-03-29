@@ -27,8 +27,6 @@ public:
     static ScalarEvaluator *create(const std::vector<std::string> &config,
                                    int start, int &end, bool dry_run);
 protected:
-    int MAX_VALUE;
-
     virtual int compute_heuristic(const State &state);
     virtual void initialize();
 
