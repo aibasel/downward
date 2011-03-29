@@ -117,7 +117,7 @@ bool PatternGenerationHaslum::counting_approximation(PDBHeuristic *pdbheuristic,
                                                      vector<vector<PDBHeuristic *> > &max_additive_subsets) {
     pdbheuristic->evaluate(sample);
     if (pdbheuristic->is_dead_end()) {
-        cout << "dead end" << endl;
+        //cout << "dead end" << endl;
         return true;
     }
     int h_pattern = pdbheuristic->get_heuristic();
