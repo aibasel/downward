@@ -174,8 +174,8 @@ void PatternGenerationHaslum::hill_climbing() {
     cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
     
     // sample only once
-    vector<State> samples;
-    sample_states(samples, average_operator_costs);
+    //vector<State> samples;
+    //sample_states(samples, average_operator_costs);
 
     // actual hillclimbing loop
     bool improved = true;
@@ -186,8 +186,8 @@ void PatternGenerationHaslum::hill_climbing() {
             break;
         }
         improved = false;
-        //vector<State> samples;
-        //sample_states(samples, average_operator_costs);
+        vector<State> samples;
+        sample_states(samples, average_operator_costs);
 
         // TODO: drop PDBHeuristic and use astar instead to compute h values for the sample states only
         // How is the advance of astar if we always have new samples? If we use pdbs and we don't rebuild
