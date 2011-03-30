@@ -55,7 +55,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
             }
         }
     }
-    cout << "all possible new pattern candidates" << endl;
+    /*cout << "all possible new pattern candidates" << endl;
     for (size_t i = 0; i < candidate_patterns.size(); ++i) {
         cout << "[";
         for (size_t j = 0; j < candidate_patterns[i].size(); ++j) {
@@ -63,7 +63,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
         }
         cout << " ]";
     }
-    cout << endl;
+    cout << endl;*/
 }
 
 // random walk for state sampling
@@ -220,11 +220,13 @@ void PatternGenerationHaslum::hill_climbing() {
                 best_pattern_index = i;
                 improved = true;
             }
-            cout << "pattern [";
-            for (size_t j = 0; j < candidate_patterns[i].size(); ++j) {
-                cout << candidate_patterns[i][j] << " ";
+            if (count > 0) {
+                cout << "pattern [";
+                for (size_t j = 0; j < candidate_patterns[i].size(); ++j) {
+                    cout << " " << candidate_patterns[i][j];
+                }
+                cout << " ] improvement: " << count << endl;
             }
-            cout << "] improvement: " << count << endl;
         }
         if (improved) {
             cout << "yippieee! we found a better pattern! Its improvement is " << best_pattern_count << endl;
