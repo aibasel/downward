@@ -492,7 +492,6 @@ int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
             }
         }
         assert(target != NULL);
-        relaxed_plan.resize(2 * min_cost);
         assert(exported_ops.empty());
         collect_ha(target, relaxed_plan, state);
     } else {
