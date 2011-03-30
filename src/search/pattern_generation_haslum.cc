@@ -179,6 +179,8 @@ void PatternGenerationHaslum::hill_climbing() {
 
     Timer timer;
     // actual hillclimbing loop
+    //map<vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation - TODO: hash_map?
+    vector<PDBHeuristic *> pdb_cache; // cache pdbs to avoid recalculation
     bool improved = true;
     while (improved) {
         cout << "current collection size is " << collection_size << endl;
@@ -197,12 +199,18 @@ void PatternGenerationHaslum::hill_climbing() {
         int best_pattern_index = 0;
         PDBHeuristic *pdbheuristic;
         for (size_t i = 0; i < candidate_patterns.size(); ++i) {
-            map<vector<int>, PDBHeuristic *>::const_iterator it = pattern_to_pdb.find(candidate_patterns[i]);
+            /*map<vector<int>, PDBHeuristic *>::const_iterator it = pattern_to_pdb.find(candidate_patterns[i]);
             if (it == pattern_to_pdb.end()) {
                 pdbheuristic = new PDBHeuristic(candidate_patterns[i]);
                 pattern_to_pdb.insert(make_pair(candidate_patterns[i], pdbheuristic));
             } else {
                 pdbheuristic = it->second;
+            }*/
+            if (i < pdb_cache.size()) {
+                pdbheuristic = pdb_cache[i];
+            } else {
+                pdbheuristic = new PDBHeuristic(candidate_patterns[i]);
+                pdb_cache.push_back(pdbheuristic);
             }
             vector<vector<PDBHeuristic *> > max_additive_subsets;
             current_collection->get_max_additive_subsets(candidate_patterns[i], max_additive_subsets);
@@ -251,10 +259,13 @@ void PatternGenerationHaslum::hill_climbing() {
         cout << "Actual time (hill climbing loop): " << timer << endl;
     }
     // delete all created pattern databases in the map
-    map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.begin();
+    /*map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.begin();
     while (it != pattern_to_pdb.end()) {
         delete it->second;
         ++it;
+    }*/
+    for (size_t i = 0; i < pdb_cache.size(); ++i) {
+        delete pdb_cache[i];
     }
 }
 
