@@ -304,7 +304,7 @@ int Exploration::compute_ff_heuristic(const State &state) {
     if (h_add_heuristic == DEAD_END) {
         return DEAD_END;
     } else {
-        static RelaxedPlan relaxed_plan;
+        relaxed_plan.clear();
         // Collecting the relaxed plan also marks helpful actions as preferred.
         for (int i = 0; i < goal_propositions.size(); i++)
             collect_relaxed_plan(goal_propositions[i], relaxed_plan, state);
@@ -357,7 +357,7 @@ int Exploration::compute_ff_heuristic_with_excludes(const State &state,
     if (h == DEAD_END) {
         return DEAD_END;
     } else {
-        RelaxedPlan relaxed_plan;
+        relaxed_plan.clear();
         // Collecting the relaxed plan also marks helpful actions as preferred.
         for (int i = 0; i < goal_propositions.size(); i++)
             collect_relaxed_plan(goal_propositions[i], relaxed_plan, state);
@@ -470,7 +470,7 @@ bool is_landmark(vector<pair<int, int> > &landmarks, int var, int val) {
 
 int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
                                const State &state) {
-    RelaxedPlan relaxed_plan;
+    relaxed_plan.clear();
     // generate plan to reach part of disj. goal OR if no landmarks given, plan to real goal
     if (!landmarks.empty()) {
         // search for quickest achievable landmark leaves
