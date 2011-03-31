@@ -321,7 +321,7 @@ void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
     << "->" << fluent.second << ")";
 }
 
-static void get_operator_precondition(int op_index, FluentSet &pc) {
+void get_operator_precondition(int op_index, FluentSet &pc) {
     Operator &op = g_operators[op_index];
 
     const std::vector<Prevail> &prevail = op.get_prevail();
@@ -340,7 +340,7 @@ static void get_operator_precondition(int op_index, FluentSet &pc) {
     std::sort(pc.begin(), pc.end());
 }
 
-static void get_operator_effect(int op_index, FluentSet &eff) {
+void get_operator_effect(int op_index, FluentSet &eff) {
     Operator &op = g_operators[op_index];
 
     const std::vector<PrePost> &pre_post = op.get_pre_post();
@@ -583,12 +583,12 @@ void HMLandmarks::build_pm_ops() {
 
 bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
     // mutexes can always be safely pruned
-    return inconsistent(make_pair(var1, val1), make_pair(var2, val2));
+    return !inconsistent(make_pair(var1, val1), make_pair(var2, val2));
 }
 
 HMLandmarks::HMLandmarks(LandmarkGraph::Options &options, Exploration *exploration, int m)
     : LandmarkFactory(options, exploration), m_(m) {
-    std::cout << "H_m_Landmark(" << m_ << ")" << std::endl;
+    std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
     // need this to be able to print propositions for debugging
     // already called in global.cc
     //  read_external_inconsistencies();

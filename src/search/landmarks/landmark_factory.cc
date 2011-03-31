@@ -1,4 +1,5 @@
 #include "landmark_factory.h"
+#include "../exact_timer.h"
 #include "util.h"
 
 #include <limits>
@@ -11,11 +12,13 @@ LandmarkFactory::LandmarkFactory(LandmarkGraph::Options &options, Exploration *e
 }
 
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {
+    ExactTimer lm_generation_timer;
     read_external_inconsistencies();
     generate_landmarks();
     
     // the following replaces the old "build_lm_graph"
-    generate(); // TODO: recheck whether this method actually modifies lm_graph in the intended way
+    generate();
+    cout << "Landmarks generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;
     else {
