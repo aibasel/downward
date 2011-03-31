@@ -97,7 +97,7 @@ private:
                                         const Operator *exclude,
                                         bool compute_lvl_op = false) const;*/
     bool is_causal_landmark(const LandmarkNode &landmark) const;
-    void calc_achievers();
+    virtual void calc_achievers();
 };
 
 #endif
