@@ -18,3 +18,6 @@
 ^new-scripts/reports/
 ^new-scripts/preprocessed-tasks/
 ^new-scripts/exp-.*/
+^src/search-implicit-abstractions/obj/
+^src/search-implicit-abstractions/Makefile\.depend$
+^src/search-implicit-abstractions/(release-)?search(_svs)?(_hca)?$
