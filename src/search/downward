@@ -1,5 +1,24 @@
 #! /bin/bash
 BASEDIR="$(dirname "$0")"
+
+if [[ "$1" == SPECIAL_IMPLICIT_ABSTRACTIONS ]]; then
+    # Verify that stdin and "output" are identical since Michael's
+    # executable uses output.
+    if ! diff -q /dev/stdin output; then
+        echo "/dev/stdin and output differ"
+        exit 1
+    fi
+    # Verify that the command-line looks the way we expect.
+    if [[ "$*" == "SPECIAL_IMPLICIT_ABSTRACTIONS" ]]; then
+        SEARCH=$("$BASEDIR/../search-implicit-abstractions/dispatch" output)
+        "$BASEDIR/../search-implicit-abstractions/$SEARCH" oX L sas_plan
+        exit 0
+    else
+        echo "command line different from what we expected: $@"
+        exit 1
+    fi
+fi
+
 TEMPFILE=downward.tmp.$$
 cat > $TEMPFILE
 STATE_SIZE=$(command time --output=elapsed.time --append --format='%S\n%U\n' "$BASEDIR/dispatch" $TEMPFILE)
