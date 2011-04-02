@@ -10,6 +10,10 @@ make STATE_VAR_BYTES=2 || exit 1
 make STATE_VAR_BYTES=4 || exit 1
 cd ..
 
+cd search-implicit-abstractions
+./build_all_configs-release || exit 1
+cd ..
+
 if [ ! -e VAL ]; then
     # Skip building validator if it isn't present.
     exit
