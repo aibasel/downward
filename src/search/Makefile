@@ -155,7 +155,7 @@ CCOPT_PROFILE  = -O3 -pg
 
 LINKOPT_RELEASE  = -static -static-libgcc
 LINKOPT_DEBUG    = -lrt
-LINKOPT_PROFILE  = -pg -lrt 
+LINKOPT_PROFILE  = -pg -lrt
 # LINKOPT_PROFILE += -lc_p
 
 POSTLINKOPT_RELEASE  = -Wl,-Bstatic -lrt
