@@ -12,7 +12,6 @@
 HMHeuristic::HMHeuristic(const Options &opts)
     : Heuristic(opts),
       m(opts.get<int>("m")) {
-    MAX_VALUE = numeric_limits<int>::max();
 }
 
 HMHeuristic::~HMHeuristic() {
@@ -39,9 +38,8 @@ int HMHeuristic::compute_heuristic(const State &state) {
 
         int h = eval(g_goal);
 
-        if (h == MAX_VALUE) {
+        if (h == numeric_limits<int>::max())
             return DEAD_END;
-        }
         return h;
     }
 }
@@ -70,7 +68,7 @@ void HMHeuristic::update_hm_table() {
             get_operator_pre(op, pre);
 
             int c1 = eval(pre);
-            if (c1 < MAX_VALUE) {
+            if (c1 != numeric_limits<int>::max()) {
                 tuple eff;
                 vector<tuple> partial_eff;
                 get_operator_eff(op, eff);
@@ -129,7 +127,7 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
 
             if (is_valid) {
                 int c2 = eval(pre);
-                if (c2 < MAX_VALUE) {
+                if (c2 != numeric_limits<int>::max()) {
                     update_hm_entry(entry, c2 + get_adjusted_cost(op));
                 }
             }
@@ -211,7 +209,7 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
             }
         }
         if (!found) {
-            return MAX_VALUE;
+            return numeric_limits<int>::max();
         }
     }
     return 0;

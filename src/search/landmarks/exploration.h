@@ -28,6 +28,7 @@ struct ExProposition {
     int h_add_cost;
     int h_max_cost;
     int depth;
+    bool marked; // used when computing preferred operators
     ExUnaryOperator *reached_by;
 
     ExProposition() {
@@ -36,6 +37,7 @@ struct ExProposition {
         h_add_cost = -1;
         h_max_cost = -1;
         reached_by = 0;
+        marked = false;
     }
 
     bool operator<(const ExProposition &other) const {
@@ -87,7 +89,7 @@ struct ex_hash_operator_ptr {
 class Exploration : public Heuristic {
 private:
     typedef __gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> RelaxedPlan;
-
+    RelaxedPlan relaxed_plan;
     std::vector<ExUnaryOperator> unary_operators;
     std::vector<std::vector<ExProposition> > propositions;
     std::vector<ExProposition *> goal_propositions;

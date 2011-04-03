@@ -26,8 +26,6 @@ public:
     HMHeuristic(const Options &opts);
     virtual ~HMHeuristic();
 protected:
-    int MAX_VALUE;
-
     virtual int compute_heuristic(const State &state);
     virtual void initialize();
 
