@@ -110,6 +110,9 @@ static std::vector<std::string> to_list(std::string s) {
 //Note: originally the following function was templated (predefine<T>),
 //but there is no Synergy<LandmarksGraph>, so I split it up for now.
 static void predefine_heuristic(std::string s, bool dry_run) {
+    //remove newlines so they don't mess anything up:
+    s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
+
     size_t split = s.find("=");
     std::string ls = s.substr(0, split);
     std::vector<std::string> definees = to_list(ls);
@@ -138,6 +141,9 @@ static void predefine_heuristic(std::string s, bool dry_run) {
 }
 
 static void predefine_lmgraph(std::string s, bool dry_run) {
+    //remove newlines so they don't mess anything up:
+    s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
+
     size_t split = s.find("=");
     std::string ls = s.substr(0, split);
     std::vector<std::string> definees = to_list(ls);
@@ -205,8 +211,8 @@ string OptionParser::usage(string progname) {
         "* OUTPUT (filename): preprocessor output\n\n"
         "Options:\n"
         "--help [NAME]\n"
-        "    Prints help for all heuristics, openlists, etc. called NAME."
-        "    Without parameter: prints help for everything available"
+        "    Prints help for all heuristics, openlists, etc. called NAME.\n"
+        "    Without parameter: prints help for everything available\n"
         "--landmarks LANDMARKS_PREDEFINITION\n"
         "    Predefines a set of landmarks that can afterwards be referenced\n"
         "    by the name that is specified in the definition.\n"
@@ -225,7 +231,7 @@ string OptionParser::usage(string progname) {
 static ParseTree generate_parse_tree(string config) {
     //remove newlines so they don't mess anything up:
     config.erase(std::remove(config.begin(), config.end(), '\n'), config.end());
-    cout << config << endl;
+
     ParseTree tr;
     ParseTree::iterator top = tr.begin();
     ParseTree::sibling_iterator pseudoroot =
@@ -237,7 +243,6 @@ static ParseTree generate_parse_tree(string config) {
         next = config.at(i);
         if ((next == '(' || next == ')' || next == ',') && buffer.size() > 0) {
             tr.append_child(cur_node, ParseNode(buffer, key));
-            cout << buffer << endl;
             buffer.clear();
             key.clear();
         }
