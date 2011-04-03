@@ -119,7 +119,7 @@ static void predefine_heuristic(std::string s, bool dry_run) {
         Predefinitions<Heuristic * >::instance()->predefine(
             definees[0], op.start_parsing<Heuristic *>());
     } else if (definees.size() > 1) { //synergy
-        if(!dry_run){
+        if (!dry_run) {
             std::vector<Heuristic *> heur =
                 op.start_parsing<Synergy *>()->heuristics;
             for (size_t i(0); i != definees.size(); ++i) {
@@ -265,7 +265,7 @@ static ParseTree generate_parse_tree(string config) {
                 buffer.clear();
                 key.clear();
             }
-            if (cur_node->value.compare("list") != 0){
+            if (cur_node->value.compare("list") != 0) {
                 throw ParseError("mismatched brackets", *cur_node);
             }
             cur_node = tr.parent(cur_node);
@@ -393,15 +393,15 @@ Options OptionParser::parse() {
     string last_key = "";
     for (ParseTree::sibling_iterator pti = first_child_of_root(parse_tree);
          pti != end_of_roots_children(parse_tree); ++pti) {
-        if (pti->key.compare("") != 0){
+        if (pti->key.compare("") != 0) {
             bool valid_key = false;
-            for(size_t i(0); i != valid_keys.size(); ++i){
-                if(valid_keys[i].compare(pti->key) == 0){
+            for (size_t i(0); i != valid_keys.size(); ++i) {
+                if (valid_keys[i].compare(pti->key) == 0) {
                     valid_key = true;
                     break;
                 }
             }
-            if(!valid_key) {
+            if (!valid_key) {
                 error("invalid keyword "
                       + pti->key + " for "
                       + parse_tree.begin()->value);

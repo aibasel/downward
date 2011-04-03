@@ -18,6 +18,6 @@ public:
     double reset();
 };
 
-std::ostream & operator<<(std::ostream &os, const Timer &timer);
+std::ostream &operator<<(std::ostream &os, const Timer &timer);
 
 #endif

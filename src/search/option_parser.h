@@ -12,17 +12,17 @@ If you want classes of type NT to be included in the help output:
 In option_parser_util.h:
 - Create a template specialization DefaultValueNamer<NT>, or overload
   the "<<"-operator for NT. Not necessary if your type will never have
-  a default value. 
+  a default value.
 - (optional) Create a template specialization for TypeNamer<NT> - you
-   don't have to do this, but it might print the typename in a 
+   don't have to do this, but it might print the typename in a
    more readable way.
 In option_parser.cc:
-- add NT to the functions static void get_help(string k) and 
+- add NT to the functions static void get_help(string k) and
   static void get_full_help()
 
 If NT shall be predefinable:
-- See the functions predefine_lmgraph() and predefine_heuristic() 
-  in option parser.cc for examples. 
+- See the functions predefine_lmgraph() and predefine_heuristic()
+  in option parser.cc for examples.
   You will also need to extend OptionParser::parse_cmd_line(), and
   should add an explanation to OptionParser::usage().
 */
@@ -267,7 +267,7 @@ T TokenParser<T>::parse(OptionParser &p) {
     std::stringstream str_stream(pt->value);
     T x;
     if ((str_stream >> std::boolalpha >> x).fail()) {
-        p.error("could not parse argument " + pt->value + " of type " + TypeNamer<T>::name() );
+        p.error("could not parse argument " + pt->value + " of type " + TypeNamer<T>::name());
     }
     return x;
 }
