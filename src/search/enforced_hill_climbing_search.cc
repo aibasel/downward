@@ -13,13 +13,13 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
       current_state(*g_initial_state),
       num_ehc_phases(0) {
-    if(opts.contains("preferred")) {
+    if (opts.contains("preferred")) {
         preferred_heuristics = opts.get_list<Heuristic *>("preferred");
         if (preferred_heuristics.empty()) {
             use_preferred = false;
             preferred_contains_eval = false;
-        } else if (find(preferred_heuristics.begin(), 
-                        preferred_heuristics.end(), 
+        } else if (find(preferred_heuristics.begin(),
+                        preferred_heuristics.end(),
                         heuristic) != preferred_heuristics.end()) {
             use_preferred = true;
             preferred_contains_eval = true;

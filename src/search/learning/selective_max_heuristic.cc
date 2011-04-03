@@ -587,7 +587,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 
     SelectiveMaxHeuristic *heur = 0;
     if (!parser.dry_run()) {
-        vector<Heuristic *> heuristics_ = 
+        vector<Heuristic *> heuristics_ =
             opts.get_list<Heuristic *>("heuristics");
         heur = new SelectiveMaxHeuristic(opts);
         for (unsigned int i = 0; i < heuristics_.size(); i++) {

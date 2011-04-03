@@ -92,7 +92,7 @@ static Synergy *_parse(OptionParser &parser) {
 
     LamaFFSynergy *lama_ff_synergy =
         new LamaFFSynergy(opts);
-    
+
     syn->heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
     syn->heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
     return syn;

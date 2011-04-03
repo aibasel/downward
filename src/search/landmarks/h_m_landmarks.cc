@@ -6,7 +6,7 @@ std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }
 
-std::ostream &operator<<(std::ostream &os, const FluentSet &fs) {
+std::ostream & operator<<(std::ostream &os, const FluentSet &fs) {
     FluentSet::const_iterator it;
     os << "[";
     for (it = fs.begin(); it != fs.end(); ++it) {
@@ -17,7 +17,7 @@ std::ostream &operator<<(std::ostream &os, const FluentSet &fs) {
 }
 
 template<typename T>
-std::ostream &operator<<(std::ostream &os, const std::list<T> &alist) {
+std::ostream & operator<<(std::ostream &os, const std::list<T> &alist) {
     typename std::list<T>::const_iterator it;
 
     os << "(";
@@ -735,6 +735,14 @@ void HMLandmarks::compute_h_m_landmarks() {
 
         // set actions to be applied
         propagate_pm_fact(index, true, current_trigger);
+    }
+
+    // mark actions with no precondition to be applied
+    for (int i = 0; i < pm_ops_.size(); i++) {
+        if (unsat_pc_count_[i].first == 0) {
+            // create empty set or clear prev entries
+            current_trigger[i].clear();
+        }
     }
 
     std::vector<int>::iterator it;
