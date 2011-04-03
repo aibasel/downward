@@ -34,7 +34,7 @@ struct ParseNode {
     std::string value;
     std::string key;
 
-    friend std::ostream & operator<<(std::ostream &out, const ParseNode &pn) {
+    friend std::ostream &operator<<(std::ostream &out, const ParseNode &pn) {
         if (pn.key.compare("") != 0)
             out << pn.key << " = ";
         out << pn.value;
