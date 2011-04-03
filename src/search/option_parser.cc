@@ -119,15 +119,18 @@ static void predefine_heuristic(std::string s, bool dry_run) {
         Predefinitions<Heuristic * >::instance()->predefine(
             definees[0], op.start_parsing<Heuristic *>());
     } else if (definees.size() > 1) { //synergy
-        std::vector<Heuristic *> heur =
-            op.start_parsing<Synergy *>()->heuristics;
-        for (size_t i(0); i != definees.size(); ++i) {
-            if (!dry_run)
+        if(!dry_run){
+            std::vector<Heuristic *> heur =
+                op.start_parsing<Synergy *>()->heuristics;
+            for (size_t i(0); i != definees.size(); ++i) {
                 Predefinitions<Heuristic *>::instance()->predefine(
                     definees[i], heur[i]);
-            else
+            }
+        } else {
+            for (size_t i(0); i != definees.size(); ++i) {
                 Predefinitions<Heuristic *>::instance()->predefine(
                     definees[i], 0);
+            }
         }
     } else {
         op.error("predefinition has invalid left side");
