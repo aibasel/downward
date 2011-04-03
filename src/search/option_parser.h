@@ -267,7 +267,7 @@ T TokenParser<T>::parse(OptionParser &p) {
     std::stringstream str_stream(pt->value);
     T x;
     if ((str_stream >> std::boolalpha >> x).fail()) {
-        p.error("could not parse argument");
+        p.error("could not parse argument " + pt->value + " of type " + TypeNamer<T>::name() );
     }
     return x;
 }
@@ -280,7 +280,7 @@ int TokenParser<int>::parse(OptionParser &p) {
         std::stringstream str_stream(pt->value);
         int x;
         if ((str_stream >> x).fail()) {
-            p.error("could not parse argument");
+            p.error("could not parse int argument " + pt->value);
         }
         return x;
     }
@@ -293,7 +293,7 @@ OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
     if (Registry<OpenList<Entry > *>::instance()->contains(pt->value)) {
         return Registry<OpenList<Entry > *>::instance()->get(pt->value) (p);
     }
-    p.error("openlist not found");
+    p.error("openlist " + pt->value + " not found");
     return 0;
 }
 
@@ -312,7 +312,7 @@ Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
         return dynamic_cast<Heuristic *>(eval);
     }
 
-    p.error("heuristic not found");
+    p.error("heuristic " + pt->value + " not found");
     return 0;
 }
 

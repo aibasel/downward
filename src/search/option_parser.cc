@@ -219,7 +219,10 @@ string OptionParser::usage(string progname) {
 }
 
 
-static ParseTree generate_parse_tree(const string config) {
+static ParseTree generate_parse_tree(string config) {
+    //remove newlines so they don't mess anything up:
+    config.erase(std::remove(config.begin(), config.end(), '\n'), config.end());
+    cout << config << endl;
     ParseTree tr;
     ParseTree::iterator top = tr.begin();
     ParseTree::sibling_iterator pseudoroot =
@@ -231,6 +234,7 @@ static ParseTree generate_parse_tree(const string config) {
         next = config.at(i);
         if ((next == '(' || next == ')' || next == ',') && buffer.size() > 0) {
             tr.append_child(cur_node, ParseNode(buffer, key));
+            cout << buffer << endl;
             buffer.clear();
             key.clear();
         }
@@ -258,8 +262,9 @@ static ParseTree generate_parse_tree(const string config) {
                 buffer.clear();
                 key.clear();
             }
-            if (cur_node->value.compare("list") != 0)
+            if (cur_node->value.compare("list") != 0){
                 throw ParseError("mismatched brackets", *cur_node);
+            }
             cur_node = tr.parent(cur_node);
             break;
         case ',':
@@ -385,13 +390,19 @@ Options OptionParser::parse() {
     string last_key = "";
     for (ParseTree::sibling_iterator pti = first_child_of_root(parse_tree);
          pti != end_of_roots_children(parse_tree); ++pti) {
-        if (pti->key.compare("") != 0 &&
-            find(valid_keys.begin(),
-                 valid_keys.end(),
-                 pti->key) == valid_keys.end()) {
-            error("invalid keyword "
-                  + pti->key + " for "
-                  + parse_tree.begin()->value);
+        if (pti->key.compare("") != 0){
+            bool valid_key = false;
+            for(size_t i(0); i != valid_keys.size(); ++i){
+                if(valid_keys[i].compare(pti->key) == 0){
+                    valid_key = true;
+                    break;
+                }
+            }
+            if(!valid_key) {
+                error("invalid keyword "
+                      + pti->key + " for "
+                      + parse_tree.begin()->value);
+            }
         }
         if (pti->key.compare("") == 0 &&
             last_key.compare("") != 0) {
