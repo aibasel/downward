@@ -8,20 +8,33 @@ using namespace std;
 
 #include "utilities.h"
 
+#ifdef __APPLE__
+static void exit_handler();
+#else
 static void exit_handler(int exit_code, void *hint);
+#endif
+
 static void signal_handler(int signal_number);
 
 void register_event_handlers() {
     // On exit or when receiving certain signals such as SIGINT (Ctrl-C),
     // print the peak memory usage.
+#ifdef __APPLE__
+    atexit(exit_handler);
+#else
     on_exit(exit_handler, 0);
+#endif
     signal(SIGABRT, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGSEGV, signal_handler);
     signal(SIGINT, signal_handler);
 }
 
+#ifdef __APPLE__
+void exit_handler() {
+#else
 void exit_handler(int, void *) {
+#endif
     print_peak_memory();
 }
 

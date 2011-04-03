@@ -24,7 +24,7 @@ If NT shall be predefinable:
 - See the functions predefine_lmgraph() and predefine_heuristic() 
   in option parser.cc for examples. 
   You will also need to extend OptionParser::parse_cmd_line(), and
-  should add an explination to OptionParser::usage().
+  should add an explanation to OptionParser::usage().
 */
 
 
@@ -336,7 +336,7 @@ ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
         return Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
     }
-    p.error("scalar evaluator " + pt->value +" not found");
+    p.error("scalar evaluator " + pt->value + " not found");
     return 0;
 }
 
