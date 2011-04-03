@@ -122,10 +122,10 @@ static void predefine_heuristic(std::string s, bool dry_run) {
         std::vector<Heuristic *> heur =
             op.start_parsing<Synergy *>()->heuristics;
         for (size_t i(0); i != definees.size(); ++i) {
-            if(!dry_run)
+            if (!dry_run)
                 Predefinitions<Heuristic *>::instance()->predefine(
                     definees[i], heur[i]);
-            else 
+            else
                 Predefinitions<Heuristic *>::instance()->predefine(
                     definees[i], 0);
         }
@@ -343,12 +343,12 @@ void OptionParser::add_enum_option(string k,
     stringstream str_stream(name);
     int x;
     if (!(str_stream >> x).fail()) {
-        if(x > enumeration.size()) {
+        if (x > enumeration.size()) {
             error("invalid enum argument " + name
                   + " for option " + k);
         }
         opts.set(k, x);
-    } else {      
+    } else {
         //...otherwise try to map the string to its position in the enumeration vector
         transform(enumeration.begin(), enumeration.end(), enumeration.begin(),
                   str_to_lower); //make the enumeration lower case

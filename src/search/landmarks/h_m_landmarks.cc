@@ -6,7 +6,7 @@ std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }
 
-std::ostream &operator<<(std::ostream &os, const FluentSet &fs) {
+std::ostream & operator<<(std::ostream &os, const FluentSet &fs) {
     FluentSet::const_iterator it;
     os << "[";
     for (it = fs.begin(); it != fs.end(); ++it) {
@@ -17,7 +17,7 @@ std::ostream &operator<<(std::ostream &os, const FluentSet &fs) {
 }
 
 template<typename T>
-std::ostream &operator<<(std::ostream &os, const std::list<T> &alist) {
+std::ostream & operator<<(std::ostream &os, const std::list<T> &alist) {
     typename std::list<T>::const_iterator it;
 
     os << "(";

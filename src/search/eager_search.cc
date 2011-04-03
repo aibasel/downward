@@ -21,8 +21,8 @@ EagerSearch::EagerSearch(
       use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<OpenList<state_var_t *> *>("open")),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval")) {
-    if(opts.contains("preferred")) {
-        preferred_operator_heuristics = 
+    if (opts.contains("preferred")) {
+        preferred_operator_heuristics =
             opts.get_list<Heuristic *>("preferred");
     }
 }

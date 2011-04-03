@@ -278,7 +278,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.add_option<int>("w", 1, "heuristic weight");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
-    
+
     opts.verify_list_non_empty<ScalarEvaluator *>("evals");
 
     LazySearch *engine = 0;
