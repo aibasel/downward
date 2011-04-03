@@ -34,7 +34,7 @@ struct ParseNode {
     std::string value;
     std::string key;
 
-    friend std::ostream &operator<<(std::ostream &out, const ParseNode &pn) {
+    friend std::ostream & operator<<(std::ostream &out, const ParseNode &pn) {
         if (pn.key.compare("") != 0)
             out << pn.key << " = ";
         out << pn.value;
@@ -316,13 +316,13 @@ tree<T> subtree(
 class Options {
 public:
     Options(bool hm = false)
-        :help_mode(hm) {
+        : help_mode(hm) {
     }
 
     void set_help_mode(bool hm) {
         help_mode = hm;
     }
-    
+
     std::map<std::string, boost::any> storage;
 
     template <class T>
@@ -354,9 +354,9 @@ public:
 
     template <class T>
     void verify_list_non_empty(std::string key) const {
-        if(!help_mode) {
+        if (!help_mode) {
             std::vector<T> temp_vec = get<std::vector<T> >(key);
-            if(temp_vec.empty()) {
+            if (temp_vec.empty()) {
                 std::cout << "Error: unexpected empty list!"
                           << std::endl
                           << "List " << key << " is empty"

@@ -13,15 +13,15 @@ In option_parser_util.h:
 - Create a template specialization DefaultValueNamer<NT>, or overload
    the "<<"-operator for NT.
 - (optional) Create a template specialization for TypeNamer<NT> - you
-   don't have to do this, but it might print the typename in a 
+   don't have to do this, but it might print the typename in a
    more readable way.
 In option_parser.cc:
-- add NT to the functions static void get_help(string k) and 
+- add NT to the functions static void get_help(string k) and
   static void get_full_help()
 
 If NT shall be predefinable:
-- See the functions predefine_lmgraph(...) and predefine_heuristic(...) 
-  in option parser.cc for examples. 
+- See the functions predefine_lmgraph(...) and predefine_heuristic(...)
+  in option parser.cc for examples.
   You will also need to extend OptionParser::parse_cmd_line(...).
 */
 
@@ -334,7 +334,7 @@ ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
         return Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
     }
-    p.error("scalar evaluator " + pt->value +" not found");
+    p.error("scalar evaluator " + pt->value + " not found");
     return 0;
 }
 

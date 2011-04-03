@@ -24,11 +24,11 @@ template <class T>
 class Plugin {
     Plugin(const Plugin<T> &copy);
 public:
-    Plugin(const std::string &key,typename Registry<T *>::Factory factory) {
+    Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
         Registry<T *>::
-            instance()->register_object(key, factory);
+        instance()->register_object(key, factory);
     }
-    ~Plugin(){};
+    ~Plugin() {}
 };
 
 template <class Entry>
