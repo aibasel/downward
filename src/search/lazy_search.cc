@@ -230,6 +230,8 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_list_option<Heuristic *>(
         "preferred", vector<Heuristic *>(),
         "use preferred operators of these heuristics");
+    parser.add_option<bool>("reopen_closed", false,
+                            "reopen closed nodes");
     parser.add_option<int>("boost", DEFAULT_LAZY_BOOST,
                            "boost value for preferred operator open lists");
     SearchEngine::add_options_to_parser(parser);
@@ -260,7 +262,6 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
             open = new AlternationOpenList<OpenListEntryLazy>(
                 inner_lists, opts.get<int>("boost"));
         }
-        opts.set("reopen_closed", false);
         opts.set("open", open);
         engine = new LazySearch(opts);
         engine->set_pref_operator_heuristics(preferred_list);
@@ -273,6 +274,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.add_list_option<Heuristic *>(
         "preferred", vector<Heuristic *>(),
         "use preferred operators of these heuristics");
+    parser.add_option<bool>("reopen_closed", true, "reopen closed nodes");
     parser.add_option<int>("boost", DEFAULT_LAZY_BOOST,
                            "boost value for preferred operator open lists");
     parser.add_option<int>("w", 1, "heuristic weight");
@@ -319,7 +321,6 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         }
 
         opts.set("open", open);
-        opts.set("reopen_closed", true);
 
         engine = new LazySearch(opts);
         engine->set_pref_operator_heuristics(preferred_list);
