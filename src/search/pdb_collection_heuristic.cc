@@ -21,7 +21,7 @@ PDBCollectionHeuristic::PDBCollectionHeuristic(const vector<vector<int> > &patte
     : Heuristic(HeuristicOptions()) {
     Timer timer;
     for (int i = 0; i < pattern_collection.size(); ++i) {
-        pattern_databases.push_back(new PDBHeuristic(pattern_collection[i]));
+        pattern_databases.push_back(new PDBHeuristic(pattern_collection[i], false));
     }
     cout << pattern_collection.size() << " pdbs constructed." << endl;
     cout << "Construction time for all pdbs: " << timer << endl;
@@ -137,7 +137,7 @@ int PDBCollectionHeuristic::compute_heuristic(const State &state) {
 }
 
 void PDBCollectionHeuristic::add_new_pattern(const vector<int> &pattern) {
-    pattern_databases.push_back(new PDBHeuristic(pattern));
+    pattern_databases.push_back(new PDBHeuristic(pattern, false));
     max_cliques.clear();
     precompute_max_cliques();
 }

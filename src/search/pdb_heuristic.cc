@@ -121,12 +121,13 @@ static ScalarEvaluatorPlugin plugin("pdb", create);
     cout << "PDB construction time: " << timer << endl;
 }*/
 
-PDBHeuristic::PDBHeuristic(const vector<int> &pattern)
+PDBHeuristic::PDBHeuristic(const vector<int> &pattern, bool dump)
     : Heuristic(HeuristicOptions()) {
     verify_no_axioms_no_cond_effects();
     Timer timer;
     set_pattern(pattern);
-    //cout << "PDB construction time: " << timer << endl;
+    if (dump)
+        cout << "PDB construction time: " << timer << endl;
 }
 
 PDBHeuristic::~PDBHeuristic() {
@@ -212,7 +213,7 @@ void PDBHeuristic::build_abstract_operators(const Operator &op, vector<AbstractO
     build_recursively(0, op.get_cost(), prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
 }
 
-void PDBHeuristic::create_pdb_new() {
+void PDBHeuristic::create_pdb() {
     vector<AbstractOperator> operators;
     //size_t index = 0;
     for (size_t i = 0; i < g_operators.size(); ++i) {
@@ -386,85 +387,6 @@ void PDBHeuristic::create_pdb_new() {
     cout << "done creating." << endl;*/
 }
 
-void PDBHeuristic::create_pdb() {
-    vector<AbstractOperator> operators;
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        AbstractOperator ao(g_operators[i], variable_to_index);
-        if (!ao.get_effects().empty())
-            operators.push_back(ao);
-    }
-    
-    vector<pair<int, int> > abstracted_goal;
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        if (variable_to_index[g_goal[i].first] != -1) {
-            abstracted_goal.push_back(make_pair(variable_to_index[g_goal[i].first], g_goal[i].second));
-        }
-    }
-    
-    vector<vector<Edge> > back_edges;
-    back_edges.resize(num_states);
-    distances.reserve(num_states);
-    // first entry: priority, second entry: index for an abstract state
-    priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq;
-    
-    vector<int> ranges;
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        ranges.push_back(g_variable_domain[pattern[i]]);
-    }
-    for (AbstractStateIterator it(ranges); !it.is_at_end(); it.next()) {
-        AbstractState abstract_state(it.get_current());
-        int counter = it.get_counter();
-        assert(hash_index(abstract_state) == counter);
-        
-        if (abstract_state.is_goal_state(abstracted_goal)) {
-            pq.push(make_pair(0, counter));
-            distances.push_back(0);
-        }
-        else {
-            distances.push_back(numeric_limits<int>::max());
-        }
-        //abstract_state.dump(pattern);
-        //cout << "successor states:" << endl;
-        for (size_t j = 0; j < operators.size(); ++j) {
-            if (abstract_state.is_applicable(operators[j])) {
-                //cout << "applying operator:" << endl;
-                //operators[j].dump(pattern);
-                AbstractState next_state = abstract_state;
-                next_state.apply_operator(operators[j]);
-                //next_state.dump(pattern);
-                size_t state_index = hash_index(next_state);
-                if (state_index == counter) {
-                    //cout << "operator didn't lead to a new state, ignoring!" << endl;
-                    continue;
-                } else {
-                    assert(counter != state_index);
-                    back_edges[state_index].push_back(Edge(operators[j].get_cost(), counter));
-                }
-            }
-        }
-        //cout << endl;
-    }
-    
-    while (!pq.empty()) {
-        pair<int, int> node = pq.top();
-        pq.pop();
-        int distance = node.first;
-        size_t state_index = node.second;
-        if (distance > distances[state_index])
-            continue;
-        const vector<Edge> &edges = back_edges[state_index];
-        for (size_t i = 0; i < edges.size(); ++i) {
-            size_t predecessor = edges[i].target;
-            int cost = edges[i].cost;
-            int alternative_cost = distances[state_index] + cost;
-            if (alternative_cost < distances[predecessor]) {
-                distances[predecessor] = alternative_cost;
-                pq.push(make_pair(alternative_cost, predecessor));
-            }
-        }
-    }
-}
-
 void PDBHeuristic::set_pattern(const vector<int> &pat) {
     pattern = pat;
     n_i.reserve(pattern.size());
@@ -477,8 +399,7 @@ void PDBHeuristic::set_pattern(const vector<int> &pat) {
         num_states *= g_variable_domain[pattern[i]];
         //p *= g_variable_domain[pattern[i]];
     }
-    //create_pdb();
-    create_pdb_new();
+    create_pdb();
 }
 
 size_t PDBHeuristic::hash_index(const AbstractState &abstract_state) const {
@@ -585,5 +506,5 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
             break;
     }
 #endif
-    return new PDBHeuristic(pattern);
+    return new PDBHeuristic(pattern, true);
 }

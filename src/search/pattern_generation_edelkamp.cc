@@ -215,7 +215,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 vector<int> pattern;
                 transform_to_pattern_normal_form(bitvector, pattern);
                 //cout << "transformed into normal pattern form" << endl;
-                PDBHeuristic pdb_heuristic(pattern);
+                PDBHeuristic pdb_heuristic(pattern, false);
                 //cout << "calculated pdb" << endl;
                 const vector<int> &h_values = pdb_heuristic.get_h_values();
                 double sum = 0;
