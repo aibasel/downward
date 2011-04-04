@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "plugin.h"
+#include "priority_queue.h"
 #include "raz_variable_order_finder.h"
 #include "state.h"
 #include "timer.h"
@@ -266,8 +267,8 @@ void PDBHeuristic::create_pdb_new() {
     distances.reserve(num_states);
     //distances2.reserve(num_states);
     // first entry: priority, second entry: index for an abstract state
-    priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq;
-    //priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq2;
+
+    AdaptiveQueue<size_t> pq;
 
     vector<int> ranges;
     for (size_t i = 0; i < pattern.size(); ++i) {
@@ -279,7 +280,7 @@ void PDBHeuristic::create_pdb_new() {
         assert(hash_index(abstract_state) == counter);
 
         if (abstract_state.is_goal_state(abstracted_goal)) {
-            pq.push(make_pair(0, counter));
+            pq.push(0, counter);
             //pq2.push(make_pair(0, counter));
             distances.push_back(0);
             //distances2.push_back(0);
@@ -310,13 +311,10 @@ void PDBHeuristic::create_pdb_new() {
     }
 
     while (!pq.empty()/* && !pq2.empty()*/) {
-        pair<int, int> node = pq.top();
-        //pair<int, int> node2 = pq2.top();
+        pair<int, size_t> node = pq.pop();
         //cout << "popped (new method): " << node.first << " " << node.second << endl;
         //cout << "pooped (old method): " << node2.first << " " << node2.second << endl;
         //assert(node == node2);
-        pq.pop();
-        //pq2.pop();
         int distance = node.first;
         size_t state_index = node.second;
         if (distance > distances[state_index]) {
@@ -361,12 +359,8 @@ void PDBHeuristic::create_pdb_new() {
                 // TODO: ask Malte if there is a difference between &var_vals or var_vals
                 // if the methods anyways returns a reference
                 vector<int> var_vals = abstract_state.get_var_vals();
-                for (size_t j = 0; j < var_vals.size(); ++j) {
-                    for (size_t k = 0; k < pre.size(); ++k) {
-                        if (j == pre[k].first)
-                            var_vals[j] = pre[k].second;
-                    }
-                }
+                for (size_t k = 0; k < pre.size(); ++k)
+                    var_vals[pre[k].first] = pre[k].second;
                 AbstractState regressed_state(var_vals);
                 size_t predecessor = hash_index(regressed_state);
                 //cout << "predecessor index (new): " << predecessor << endl;
@@ -375,7 +369,7 @@ void PDBHeuristic::create_pdb_new() {
                 int alternative_cost = distances[state_index] + cost;
                 if (alternative_cost < distances[predecessor]) {
                     distances[predecessor] = alternative_cost;
-                    pq.push(make_pair(alternative_cost, predecessor));
+                    pq.push(alternative_cost, predecessor);
                 }
             }
         }
