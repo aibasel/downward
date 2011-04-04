@@ -734,8 +734,10 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
             }
         }
     }
-    assert(lm_graph->number_of_disj_landmarks() == 0);
-    assert(disj_lms_to_nodes.size() == 0);
+    // [Malte] Commented out the following assertions because
+    // the old methods for this are no longer available.
+    // assert(lm_graph->number_of_disj_landmarks() == 0);
+    // assert(disj_lms_to_nodes.size() == 0);
 }
 
 void LandmarkFactory::discard_conjunctive_landmarks() {
@@ -756,7 +758,9 @@ void LandmarkFactory::discard_conjunctive_landmarks() {
         }
         }
     }
-    assert(number_of_conj_landmarks() == 0);
+    // [Malte] Commented out the following assertion because
+    // the old method for this is no longer available.
+    // assert(number_of_conj_landmarks() == 0);
 }
 
 void LandmarkFactory::discard_all_orderings() {
@@ -777,7 +781,9 @@ void LandmarkFactory::mk_acyclic_graph() {
         if (acyclic_node_set.find(&lmn) == acyclic_node_set.end())
             removed_edges += loop_acyclic_graph(lmn, acyclic_node_set);
     }
-    assert(acyclic_node_set.size() == number_of_landmarks());
+    // [Malte] Commented out the following assertion because
+    // the old method for this is no longer available.
+    // assert(acyclic_node_set.size() == number_of_landmarks());
     cout << "Removed " << removed_edges
     << " reasonable or obedient reasonable orders\n";
 }

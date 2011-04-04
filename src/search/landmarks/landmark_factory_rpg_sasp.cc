@@ -301,7 +301,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
     while (!open_landmarks.empty()) {
         LandmarkNode *bp = open_landmarks.front();
         open_landmarks.pop_front();
-        assert(bp->forward_orders.empty());
+        // assert(bp->forward_orders.empty());
 
         if (!bp->is_true_in_state(*g_initial_state)) {
             // Backchain from landmark bp and compute greedy necessary predecessors.
