@@ -304,7 +304,7 @@ int Exploration::compute_ff_heuristic(const State &state) {
     if (h_add_heuristic == DEAD_END) {
         return DEAD_END;
     } else {
-        static RelaxedPlan relaxed_plan;
+        relaxed_plan.clear();
         // Collecting the relaxed plan also marks helpful actions as preferred.
         for (int i = 0; i < goal_propositions.size(); i++)
             collect_relaxed_plan(goal_propositions[i], relaxed_plan, state);
@@ -320,25 +320,25 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
                                        RelaxedPlan &relaxed_plan, const State &state) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
-	ExUnaryOperator *unary_op = goal->reached_by;
-	if (unary_op) { // We have not yet chained back to a start node.
-	    for (int i = 0; i < unary_op->precondition.size(); i++)
-		collect_relaxed_plan(unary_op->precondition[i], relaxed_plan, state);
-	    const Operator *op = unary_op->op;
-	    bool added_to_relaxed_plan = false;
-	    //if(!op->is_axiom()) // Using axioms in the relaxed plan actually
-	    //improves performance in many domains... We need to look into this.
-	    added_to_relaxed_plan = relaxed_plan.insert(op).second;
-	    
-	    assert(unary_op->depth != -1);
-	    if (added_to_relaxed_plan
-		&& unary_op->h_add_cost == unary_op->base_cost
-		&& unary_op->depth == 0
-		&& !op->is_axiom()) {
-		set_preferred(op);
-		assert(op->is_applicable(state));
-	    }
-	}
+        ExUnaryOperator *unary_op = goal->reached_by;
+        if (unary_op) { // We have not yet chained back to a start node.
+            for (int i = 0; i < unary_op->precondition.size(); i++)
+                collect_relaxed_plan(unary_op->precondition[i], relaxed_plan, state);
+            const Operator *op = unary_op->op;
+            bool added_to_relaxed_plan = false;
+            //if(!op->is_axiom()) // Using axioms in the relaxed plan actually
+            //improves performance in many domains... We need to look into this.
+            added_to_relaxed_plan = relaxed_plan.insert(op).second;
+
+            assert(unary_op->depth != -1);
+            if (added_to_relaxed_plan
+                && unary_op->h_add_cost == unary_op->base_cost
+                && unary_op->depth == 0
+                && !op->is_axiom()) {
+                set_preferred(op);
+                assert(op->is_applicable(state));
+            }
+        }
     }
 }
 
@@ -357,7 +357,7 @@ int Exploration::compute_ff_heuristic_with_excludes(const State &state,
     if (h == DEAD_END) {
         return DEAD_END;
     } else {
-        RelaxedPlan relaxed_plan;
+        relaxed_plan.clear();
         // Collecting the relaxed plan also marks helpful actions as preferred.
         for (int i = 0; i < goal_propositions.size(); i++)
             collect_relaxed_plan(goal_propositions[i], relaxed_plan, state);
@@ -470,7 +470,7 @@ bool is_landmark(vector<pair<int, int> > &landmarks, int var, int val) {
 
 int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
                                const State &state) {
-    RelaxedPlan relaxed_plan;
+    relaxed_plan.clear();
     // generate plan to reach part of disj. goal OR if no landmarks given, plan to real goal
     if (!landmarks.empty()) {
         // search for quickest achievable landmark leaves
@@ -492,7 +492,6 @@ int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
             }
         }
         assert(target != NULL);
-        relaxed_plan.resize(2 * min_cost);
         assert(exported_ops.empty());
         collect_ha(target, relaxed_plan, state);
     } else {

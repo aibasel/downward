@@ -89,7 +89,7 @@ struct ex_hash_operator_ptr {
 class Exploration : public Heuristic {
 private:
     typedef __gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> RelaxedPlan;
-
+    RelaxedPlan relaxed_plan;
     std::vector<ExUnaryOperator> unary_operators;
     std::vector<std::vector<ExProposition> > propositions;
     std::vector<ExProposition *> goal_propositions;
