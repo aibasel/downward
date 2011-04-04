@@ -209,7 +209,7 @@ void PatternGenerationHaslum::hill_climbing() {
             if (i < pdb_cache.size()) {
                 pdbheuristic = pdb_cache[i];
             } else {
-                pdbheuristic = new PDBHeuristic(candidate_patterns[i]);
+                pdbheuristic = new PDBHeuristic(candidate_patterns[i], false);
                 pdb_cache.push_back(pdbheuristic);
             }
             vector<vector<PDBHeuristic *> > max_additive_subsets;
