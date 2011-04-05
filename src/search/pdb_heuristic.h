@@ -18,16 +18,19 @@ class AbstractOperator {
     std::vector<std::pair<int, int> > effects;
     std::vector<std::pair<int, int> > regression_preconditions; // normal effects and prevail combined
     std::vector<std::pair<int, int> > regression_effects; // normal preconditions
+    int hash_effect;
 public:
     AbstractOperator(const Operator &o, const std::vector<int> &variable_to_index);
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
                      const std::vector<std::pair<int, int> > &conditions,
-                     const std::vector<std::pair<int, int> > &effects, int cost);
+                     const std::vector<std::pair<int, int> > &effects, int cost,
+                     const std::vector<int> &n_i);
     ~AbstractOperator();
     const std::vector<std::pair<int, int> > &get_conditions() const { return conditions; }
     const std::vector<std::pair<int, int> > &get_effects() const { return effects; }
     const std::vector<std::pair<int, int> > &get_regression_preconditions() const { return regression_preconditions; }
     const std::vector<std::pair<int, int> > &get_regression_effects() const { return regression_effects; }
+    int get_hash_effect() const { return hash_effect; }
     int get_cost() const { return cost; }
     void dump(const std::vector<int> &pattern) const;
 };
