@@ -38,13 +38,13 @@ AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_
 
 AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
-                                   const vector<pair<int, int> > &eff_pairs, int c,
-                                   const vector<int> &n_i)
-                                   : cost(c), regression_preconditions(prev_pairs) {
+                                   const vector<pair<int, int> > &eff_pairs, int c/*,
+                                   const vector<int> &n_i*/)
+                                   : cost(c), regression_preconditions(prev_pairs), regression_effects(pre_pairs) {
     for (size_t i = 0; i < eff_pairs.size(); ++i) {
         regression_preconditions.push_back(eff_pairs[i]);
     }
-    regression_effects.reserve(pre_pairs.size());
+    /*regression_effects.reserve(pre_pairs.size());
     hash_effect = 0;
     //assert(pre_pairs.size() == eff_pairs.size());
     for (size_t i = 0; i < pre_pairs.size(); ++i) {
@@ -55,7 +55,7 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
         int new_val = pre_pairs[i].second;
         int effect = (new_val - old_val) * n_i[var];
         hash_effect += effect;
-    }
+    }*/
 }
 
 AbstractOperator::~AbstractOperator() {
@@ -186,7 +186,7 @@ void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > 
                                      vector<AbstractOperator> &operators) {
     if (pos == effects_without_pre.size()) {
         if (!eff_pairs.empty()) {
-            operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, n_i));
+            operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost/*, n_i*/));
         }
     } else {
         int var = effects_without_pre[pos].first;

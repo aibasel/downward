@@ -23,8 +23,8 @@ public:
     AbstractOperator(const Operator &o, const std::vector<int> &variable_to_index);
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
                      const std::vector<std::pair<int, int> > &conditions,
-                     const std::vector<std::pair<int, int> > &effects, int cost,
-                     const std::vector<int> &n_i);
+                     const std::vector<std::pair<int, int> > &effects, int cost/*,
+                     const std::vector<int> &n_i*/);
     ~AbstractOperator();
     const std::vector<std::pair<int, int> > &get_conditions() const { return conditions; }
     const std::vector<std::pair<int, int> > &get_effects() const { return effects; }
