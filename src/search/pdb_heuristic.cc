@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <limits>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -265,14 +266,14 @@ void PDBHeuristic::create_pdb() {
     }
 
     // all data structures ending on "2" is just for comparison (implementing old create_pdb)
-    //vector<vector<Edge> > back_edges;
-    //back_edges.resize(num_states);
-    distances.reserve(num_states);
-    //distances2.reserve(num_states);
+    /*vector<vector<Edge> > back_edges;
+    back_edges.resize(num_states);
+    vector<int> distances2;
+    distances2.reserve(num_states);
+    AdaptiveQueue<size_t> pq2; // (first implicit entry: priority,) second entry: index for an abstract state*/
 
-    // first entry: priority, second entry: index for an abstract state
-    //priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq2;
-    AdaptiveQueue<size_t> pq;
+    distances.reserve(num_states);
+    AdaptiveQueue<size_t> pq; // (first implicit entry: priority,) second entry: index for an abstract state
 
     vector<int> ranges;
     for (size_t i = 0; i < pattern.size(); ++i) {
@@ -285,7 +286,7 @@ void PDBHeuristic::create_pdb() {
 
         if (abstract_state.is_goal_state(abstracted_goal)) {
             pq.push(0, counter);
-            //pq2.push(make_pair(0, counter));
+            //pq2.push(0, counter);
             distances.push_back(0);
             //distances2.push_back(0);
         }
@@ -316,8 +317,9 @@ void PDBHeuristic::create_pdb() {
 
     while (!pq.empty()/* && !pq2.empty()*/) {
         pair<int, size_t> node = pq.pop();
+        //pair<int, size_t> node2 = pq2.pop();
         //cout << "popped (new method): " << node.first << " " << node.second << endl;
-        //cout << "pooped (old method): " << node2.first << " " << node2.second << endl;
+        //cout << "popped (old method): " << node2.first << " " << node2.second << endl;
         //assert(node == node2);
         int distance = node.first;
         size_t state_index = node.second;
@@ -335,7 +337,7 @@ void PDBHeuristic::create_pdb() {
             int alternative_cost = distances2[state_index] + cost;
             if (alternative_cost < distances2[predecessor]) {
                 distances2[predecessor] = alternative_cost;
-                pq2.push(make_pair(alternative_cost, predecessor));
+                pq2.push(alternative_cost, predecessor);
             }
         }*/
 
@@ -377,8 +379,9 @@ void PDBHeuristic::create_pdb() {
         }
         assert(distances2[i] == distances[i]);
     }
-    cout << "assertion checked - distances correctly calculated" << endl;
-    cout << "done creating." << endl;*/
+    cout << "assertion checked - distances correctly calculated" << endl;*/
+
+    //cout << "done creating." << endl;
 }
 
 void PDBHeuristic::set_pattern(const vector<int> &pat) {
@@ -461,7 +464,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         return 0;
     
     vector<int> pattern;
-#define DEBUG true
+#define DEBUG false
 #if DEBUG
     // function tests
     // 1. blocks-7-2 test-pattern
@@ -481,7 +484,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
     
     // 6. some other test
-    int patt[] = {30, 35};
+    int patt[] = {9};
     
     pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
 #else
