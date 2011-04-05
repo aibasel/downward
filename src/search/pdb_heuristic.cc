@@ -179,7 +179,7 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
     }
 }
 
-void PDBHeuristic::build_recursively(int pos, int cost, const vector<pair<int, int> > &prev_pairs,
+void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > &prev_pairs,
                                      vector<pair<int, int> > &pre_pairs,
                                      vector<pair<int, int> > &eff_pairs,
                                      const vector<pair<int, int> > &effects_without_pre,
@@ -192,14 +192,21 @@ void PDBHeuristic::build_recursively(int pos, int cost, const vector<pair<int, i
         int var = effects_without_pre[pos].first;
         int eff = effects_without_pre[pos].second;
         for (size_t i = 0; i < g_variable_domain[pattern[var]]; ++i) {
-            pre_pairs.push_back(make_pair(var, i));
-            if (i != eff)
+            if (i != eff) {
+                pre_pairs.push_back(make_pair(var, i));
                 eff_pairs.push_back(make_pair(var, eff));
+            } else {
+                prev_pairs.push_back(make_pair(var, i));
+            }
             build_recursively(pos+1, cost, prev_pairs, pre_pairs, eff_pairs,
-                                effects_without_pre, operators);
-            if (i != eff)
+                              effects_without_pre, operators);
+            if (i != eff) {
+                pre_pairs.pop_back();
                 eff_pairs.pop_back();
-            pre_pairs.pop_back();
+            } else {
+                prev_pairs.pop_back();
+            }
+            
         }
     }
 }

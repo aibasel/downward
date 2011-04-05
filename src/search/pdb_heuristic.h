@@ -60,7 +60,7 @@ class PDBHeuristic : public Heuristic {
     std::vector<int> n_i; // multipliers for perfect hash function
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
     void set_pattern(const std::vector<int> &pattern);
-    void build_recursively(int pos, int cost, const std::vector<std::pair<int, int> > &prev_pairs,
+    void build_recursively(int pos, int cost,  std::vector<std::pair<int, int> > &prev_pairs,
                            std::vector<std::pair<int, int> > &pre_pairs,
                            std::vector<std::pair<int, int> > &eff_pairs,
                            const std::vector<std::pair<int, int> > &effects_without_pre,
