@@ -11,7 +11,6 @@
 #include <cassert>
 #include <cstdlib>
 #include <limits>
-#include <queue>
 #include <string>
 #include <vector>
 
@@ -39,7 +38,10 @@ AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_
 AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
                                    const vector<pair<int, int> > &eff_pairs, int c)
-                                   : cost(c), prevail(prev_pairs), conditions(pre_pairs), effects(eff_pairs) {
+                                   : cost(c), regression_preconditions(prev_pairs), regression_effects(pre_pairs) {
+    for (size_t i = 0; i < eff_pairs.size(); ++i) {
+        regression_preconditions.push_back(eff_pairs[i]);
+    }
 }
 
 AbstractOperator::~AbstractOperator() {
@@ -267,8 +269,9 @@ void PDBHeuristic::create_pdb() {
     //back_edges.resize(num_states);
     distances.reserve(num_states);
     //distances2.reserve(num_states);
-    // first entry: priority, second entry: index for an abstract state
 
+    // first entry: priority, second entry: index for an abstract state
+    //priority_queue<pair<int, size_t>, vector<pair<int, size_t> >, greater<pair<int, size_t> > > pq2;
     AdaptiveQueue<size_t> pq;
 
     vector<int> ranges;
@@ -323,7 +326,7 @@ void PDBHeuristic::create_pdb() {
             continue;
         }
 
-        // old dijkstra
+        // old Dijkstra
         /*const vector<Edge> &edges = back_edges[state_index];
         for (size_t i = 0; i < edges.size(); ++i) {
             size_t predecessor = edges[i].target;
@@ -339,34 +342,25 @@ void PDBHeuristic::create_pdb() {
         // regress abstract_state
         AbstractState abstract_state = inv_hash_index(state_index);
         for (size_t i = 0; i < operators.size(); ++i) {
-            const vector<pair<int, int> > &prev = operators[i].get_prevail();
-            const vector<pair<int, int> > &pre = operators[i].get_conditions();
-            const vector<pair<int, int> > &eff = operators[i].get_effects();
+            const vector<pair<int, int> > &regr_pre = operators[i].get_regression_preconditions();
+            const vector<pair<int, int> > &regr_eff = operators[i].get_regression_effects();
             int cost = operators[i].get_cost();
             bool eff_in_state = true;
-            for (size_t j = 0; j < prev.size(); ++j) {
-                if (abstract_state[prev[j].first] != prev[j].second) {
-                    eff_in_state = false;
-                    break;
-                }
-            }
-            for (size_t j = 0; j < eff.size(); ++j) {
-                if (abstract_state[eff[j].first] != eff[j].second) {
+            for (size_t j = 0; j < regr_pre.size(); ++j) {
+                if (abstract_state[regr_pre[j].first] != regr_pre[j].second) {
                     eff_in_state = false;
                     break;
                 }
             }
             if (eff_in_state) {
-                // TODO: ask Malte if there is a difference between &var_vals or var_vals
-                // if the methods anyways returns a reference
                 vector<int> var_vals = abstract_state.get_var_vals();
-                for (size_t k = 0; k < pre.size(); ++k)
-                    var_vals[pre[k].first] = pre[k].second;
+                for (size_t i = 0; i < regr_eff.size(); ++i)
+                    var_vals[regr_eff[i].first] = regr_eff[i].second;
                 AbstractState regressed_state(var_vals);
                 size_t predecessor = hash_index(regressed_state);
                 //cout << "predecessor index (new): " << predecessor << endl;
 
-                // normal dijkstra (as in old code)
+                // Dijkstra
                 int alternative_cost = distances[state_index] + cost;
                 if (alternative_cost < distances[predecessor]) {
                     distances[predecessor] = alternative_cost;
