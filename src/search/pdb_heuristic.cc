@@ -461,7 +461,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         return 0;
     
     vector<int> pattern;
-#define DEBUG false
+#define DEBUG true
 #if DEBUG
     // function tests
     // 1. blocks-7-2 test-pattern
@@ -481,7 +481,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
     //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
     
     // 6. some other test
-    int patt[] = {9};
+    int patt[] = {30, 35};
     
     pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
 #else
