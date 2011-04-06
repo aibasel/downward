@@ -404,7 +404,8 @@ void PDBHeuristic::create_pdb() {
     }
     cout << "assertion checked - distances correctly calculated" << endl;*/
 
-    //cout << "done creating." << endl;
+    cout << "done creating, exiting" << endl;
+    exit(2);
 }
 
 void PDBHeuristic::set_pattern(const vector<int> &pat) {
