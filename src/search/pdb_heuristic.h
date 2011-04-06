@@ -23,8 +23,8 @@ public:
     AbstractOperator(const Operator &o, const std::vector<int> &variable_to_index);
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
                      const std::vector<std::pair<int, int> > &conditions,
-                     const std::vector<std::pair<int, int> > &effects, int cost/*,
-                     const std::vector<int> &n_i*/);
+                     const std::vector<std::pair<int, int> > &effects, int cost,
+                     const std::vector<int> &n_i);
     ~AbstractOperator();
     const std::vector<std::pair<int, int> > &get_conditions() const { return conditions; }
     const std::vector<std::pair<int, int> > &get_effects() const { return effects; }
@@ -56,7 +56,6 @@ class PDBHeuristic : public Heuristic {
     size_t num_states;
     std::vector<int> variable_to_index;
     std::vector<int> distances; // final h-values for abstract-states
-    //std::vector<int> distances2;
     std::vector<int> n_i; // multipliers for perfect hash function
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
     void set_pattern(const std::vector<int> &pattern);
@@ -65,9 +64,11 @@ class PDBHeuristic : public Heuristic {
                            std::vector<std::pair<int, int> > &eff_pairs,
                            const std::vector<std::pair<int, int> > &effects_without_pre,
                            std::vector<AbstractOperator> &operators);
+    // computes all abstract operators for each normal operator. in the case of pre = -1, for each
+    // possible value of the concerned variable, an abstract operator is computed. calls the
+    // recursive method "build_recursively"
     void build_abstract_operators(const Operator &op, std::vector<AbstractOperator> &operators);
-    void create_pdb_new();
-    void create_pdb(); // builds the graph-structure and does a dijkstra-backward-search
+    void create_pdb(); // builds the graph-structure and does a Dijkstra-backward-search
     size_t hash_index(const AbstractState &state) const; // maps an abstract state to an index
     AbstractState inv_hash_index(int index) const; // inverts the hash-index-function
 protected:

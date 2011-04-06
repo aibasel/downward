@@ -38,24 +38,24 @@ AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_
 
 AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
-                                   const vector<pair<int, int> > &eff_pairs, int c/*,
-                                   const vector<int> &n_i*/)
+                                   const vector<pair<int, int> > &eff_pairs, int c,
+                                   const vector<int> &n_i)
                                    : cost(c), regression_preconditions(prev_pairs), regression_effects(pre_pairs) {
     for (size_t i = 0; i < eff_pairs.size(); ++i) {
         regression_preconditions.push_back(eff_pairs[i]);
     }
-    /*regression_effects.reserve(pre_pairs.size());
+    regression_effects.reserve(pre_pairs.size());
     hash_effect = 0;
-    //assert(pre_pairs.size() == eff_pairs.size());
+    assert(pre_pairs.size() == eff_pairs.size());
     for (size_t i = 0; i < pre_pairs.size(); ++i) {
         regression_effects.push_back(pre_pairs[i]);
         int var = pre_pairs[i].first;
-        //assert(var == eff_pairs[i].first);
+        assert(var == eff_pairs[i].first);
         int old_val = eff_pairs[i].second;
         int new_val = pre_pairs[i].second;
         int effect = (new_val - old_val) * n_i[var];
         hash_effect += effect;
-    }*/
+    }
 }
 
 AbstractOperator::~AbstractOperator() {
@@ -186,7 +186,7 @@ void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > 
                                      vector<AbstractOperator> &operators) {
     if (pos == effects_without_pre.size()) {
         if (!eff_pairs.empty()) {
-            operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost/*, n_i*/));
+            operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, n_i));
         }
     } else {
         int var = effects_without_pre[pos].first;
@@ -206,7 +206,6 @@ void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > 
             } else {
                 prev_pairs.pop_back();
             }
-            
         }
     }
 }
@@ -365,7 +364,7 @@ void PDBHeuristic::create_pdb() {
         AbstractState abstract_state = inv_hash_index(state_index);
         for (size_t i = 0; i < operators.size(); ++i) {
             const vector<pair<int, int> > &regr_pre = operators[i].get_regression_preconditions();
-            const vector<pair<int, int> > &regr_eff = operators[i].get_regression_effects();
+            //const vector<pair<int, int> > &regr_eff = operators[i].get_regression_effects();
             int cost = operators[i].get_cost();
             bool eff_in_state = true;
             for (size_t j = 0; j < regr_pre.size(); ++j) {
@@ -375,15 +374,13 @@ void PDBHeuristic::create_pdb() {
                 }
             }
             if (eff_in_state) {
-                vector<int> var_vals = abstract_state.get_var_vals();
+                /*vector<int> var_vals = abstract_state.get_var_vals();
                 for (size_t j = 0; j < regr_eff.size(); ++j)
                     var_vals[regr_eff[j].first] = regr_eff[j].second;
                 AbstractState regressed_state(var_vals);
                 size_t predecessor = hash_index(regressed_state);
-                //cout << "predecessor index (new): " << predecessor << endl;
-                //size_t predecessor2 = state_index + operators[i].get_hash_effect();
-                //cout << "predecessor " << predecessor << " predecessor2 " << predecessor2 << endl;
-                //assert(predecessor == predecessor2);
+                //cout << "predecessor index (new): " << predecessor << endl;*/
+                size_t predecessor = state_index + operators[i].get_hash_effect();
 
                 // Dijkstra
                 int alternative_cost = distances[state_index] + cost;
