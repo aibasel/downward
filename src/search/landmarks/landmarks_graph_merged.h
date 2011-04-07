@@ -10,12 +10,8 @@ class LandmarksGraphMerged : public LandmarksGraph {
     void generate_landmarks();
     LandmarkNode *get_matching_landmark(const LandmarkNode &lm) const;
 public:
-    LandmarksGraphMerged(LandmarkGraphOptions &options,
-                         Exploration *exploration,
-                         const std::vector<LandmarksGraph *> &lm_graphs_);
+    LandmarksGraphMerged(const Options &opts);
     virtual ~LandmarksGraphMerged();
-    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
-                                  int &end, bool dry_run);
 };
 
 #endif

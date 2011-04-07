@@ -18,11 +18,10 @@ using namespace std;
 #define USE_CACHE true
 
 
-static ScalarEvaluatorPlugin cg_heuristic_plugin("cg", CGHeuristic::create);
 
 
-CGHeuristic::CGHeuristic(const HeuristicOptions &options)
-    : Heuristic(options),
+CGHeuristic::CGHeuristic(const Options &opts)
+    : Heuristic(opts),
       cache(new CGCache), cache_hits(0), cache_misses(0),
       helpful_transition_extraction_counter(0) {
     prio_queues.reserve(g_transition_graphs.size());
@@ -267,28 +266,14 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 }
 
-ScalarEvaluator *CGHeuristic::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    HeuristicOptions common_options;
-
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
-
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
-
-    if (dry_run) {
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (parser.dry_run())
         return 0;
-    } else {
-        return new CGHeuristic(common_options);
-    }
+    else
+        return new CGHeuristic(opts);
 }
+
+
+static Plugin<ScalarEvaluator> _plugin("cg", _parse);

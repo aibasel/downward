@@ -10,8 +10,6 @@
 using namespace std;
 
 
-static ScalarEvaluatorPlugin max_heuristic_plugin(
-    "hmax", HSPMaxHeuristic::create);
 
 
 /*
@@ -27,8 +25,8 @@ static ScalarEvaluatorPlugin max_heuristic_plugin(
  */
 
 // construction and destruction
-HSPMaxHeuristic::HSPMaxHeuristic(const HeuristicOptions &options)
-    : RelaxationHeuristic(options) {
+HSPMaxHeuristic::HSPMaxHeuristic(const Options &opts)
+    : RelaxationHeuristic(opts) {
 }
 
 HSPMaxHeuristic::~HSPMaxHeuristic() {
@@ -111,28 +109,15 @@ int HSPMaxHeuristic::compute_heuristic(const State &state) {
     return total_cost;
 }
 
-ScalarEvaluator *HSPMaxHeuristic::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    HeuristicOptions common_options;
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
 
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
-
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
-
-    if (dry_run) {
+    if (parser.dry_run())
         return 0;
-    } else {
-        return new HSPMaxHeuristic(common_options);
-    }
+    else
+        return new HSPMaxHeuristic(opts);
 }
+
+
+static Plugin<ScalarEvaluator> _plugin("hmax", _parse);

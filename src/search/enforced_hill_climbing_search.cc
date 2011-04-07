@@ -2,18 +2,30 @@
 #include "successor_generator.h"
 #include "heuristic.h"
 #include "operator.h"
-#include "open_lists/standard_scalar_open_list.h"
-#include "open_lists/tiebreaking_open_list.h"
 #include "pref_evaluator.h"
+#include "plugin.h"
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
-    const SearchEngineOptions &options,
-    Heuristic *heuristic_,
-    PreferredUsage preferred_usage_)
-    : SearchEngine(options), heuristic(heuristic_), use_preferred(false),
-      preferred_usage(preferred_usage_),
-      current_state(*g_initial_state), num_ehc_phases(0) {
-    search_progress.add_heuristic(heuristic_);
+    const Options &opts)
+    : SearchEngine(opts),
+      heuristic(opts.get<Heuristic *>("h")),
+      use_preferred(false),
+      preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
+      current_state(*g_initial_state),
+      num_ehc_phases(0) {
+    if (opts.contains("preferred")) {
+        preferred_heuristics = opts.get_list<Heuristic *>("preferred");
+        if (preferred_heuristics.empty()) {
+            use_preferred = false;
+            preferred_contains_eval = false;
+        } else if (find(preferred_heuristics.begin(),
+                        preferred_heuristics.end(),
+                        heuristic) != preferred_heuristics.end()) {
+            use_preferred = true;
+            preferred_contains_eval = true;
+        }
+    }
+    search_progress.add_heuristic(heuristic);
     g_evaluator = new GEvaluator();
 }
 
@@ -211,65 +223,30 @@ void EnforcedHillClimbingSearch::statistics() const {
     }
 }
 
-void EnforcedHillClimbingSearch::set_pref_operator_heuristics(
-    vector<Heuristic *> &heur) {
-    preferred_heuristics = heur;
-    if (heur.empty()) {
-        use_preferred = false;
-        preferred_contains_eval = false;
-    } else if (find(heur.begin(), heur.end(), heuristic) != heur.end()) {
-        use_preferred = true;
-        preferred_contains_eval = true;
-    }
-}
+static SearchEngine *_parse(OptionParser &parser) {
+    parser.add_option<Heuristic *>("h");
 
+    parser.add_option<bool>("bfs_use_cost", false,
+                            "use cost for bfs");
 
-SearchEngine *EnforcedHillClimbingSearch::create(const vector<string> &config,
-                                                 int start, int &end,
-                                                 bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-    SearchEngineOptions common_options;
-    Heuristic *h = \
-        OptionParser::instance()->parse_heuristic(config, start + 2, end,
-                                                  dry_run);
-    end++;
+    vector<string> preferred_usages;
+    preferred_usages.push_back("PRUNE_BY_PREFERRED");
+    preferred_usages.push_back("RANK_PREFERRED_FIRST");
+    parser.add_enum_option("preferred_usage", preferred_usages,
+                           "PRUNE_BY_PREFERRED",
+                           "preferred operator usage");
 
-    if (end >= config.size())
-        throw ParseError(end);
-
-    // parse options
-
-    int pref_usage = 0;
-    vector<Heuristic *> preferred_list;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-        common_options.add_options_to_parser(option_parser);
-        option_parser.add_int_option("preferred_usage",
-                                     &pref_usage,
-                                     "preferred operator usage");
-        option_parser.add_heuristic_list_option("preferred",
-                                                &preferred_list, "use preferred operators of these heuristics");
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
-
-    if (pref_usage < 0 || pref_usage >= MAX_PREFERRED_USAGE) {
-        cerr << "error: unknown preferred_usage: " << pref_usage << endl;
-        exit(2);
-    }
-    PreferredUsage preferred_usage_ = (PreferredUsage)pref_usage;
+    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(),
+                                        "use preferred operators of these heuristics");
+    SearchEngine::add_options_to_parser(parser);
+    Options opts = parser.parse();
 
     EnforcedHillClimbingSearch *engine = 0;
-    if (!dry_run) {
-        engine = new EnforcedHillClimbingSearch(
-            common_options, h, preferred_usage_);
-        engine->set_pref_operator_heuristics(preferred_list);
+    if (!parser.dry_run()) {
+        engine = new EnforcedHillClimbingSearch(opts);
     }
 
     return engine;
 }
+
+static Plugin<SearchEngine> _plugin("ehc", _parse);

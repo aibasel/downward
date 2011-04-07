@@ -1,5 +1,6 @@
 #include "g_evaluator.h"
 #include "option_parser.h"
+#include "plugin.h"
 
 GEvaluator::GEvaluator() {
 }
@@ -23,11 +24,12 @@ int GEvaluator::get_value() const {
     return value;
 }
 
-ScalarEvaluator *GEvaluator::create(const std::vector<std::string> &config,
-                                    int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.parse();
+    if (parser.dry_run())
         return 0;
     else
         return new GEvaluator;
 }
+
+static Plugin<ScalarEvaluator> _plugin("g", _parse);
