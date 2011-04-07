@@ -221,6 +221,15 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     assert(nodes.find(node) == nodes.end());
 }
 
+LandmarkNode &LandmarkGraph::make_disj_node_simple(pair<int, int> lm) {
+    LandmarkNode &node = get_disj_lm_node(lm);
+    node.disjunctive = false;
+    for (int i = 0; i < node.vars.size(); i++)
+        disj_lms_to_nodes.erase(make_pair(node.vars[i], node.vals[i]));
+    simple_lms_to_nodes.insert(std::make_pair(lm, &node));
+    return node;
+}
+
 void LandmarkGraph::set_landmark_ids() {
     ordered_nodes.resize(landmarks_count);
     int id = 0;
