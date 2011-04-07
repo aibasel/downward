@@ -14,13 +14,10 @@
 using namespace std;
 
 
-static ScalarEvaluatorPlugin landmark_cut_heuristic_plugin(
-    "lmcut", LandmarkCutHeuristic::create);
-
 
 // construction and destruction
-LandmarkCutHeuristic::LandmarkCutHeuristic(const HeuristicOptions &options)
-    : Heuristic(options) {
+LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
+    : Heuristic(opts) {
     num_propositions = 2; // artifical goal and artificical precondition
 }
 
@@ -418,32 +415,14 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
    values a bit.
  */
 
-ScalarEvaluator *LandmarkCutHeuristic::create(const std::vector<string> &config,
-                                              int start, int &end,
-                                              bool dry_run) {
-    HeuristicOptions common_options;
-
-    if (config.size() <= start)
-        throw ParseError(start);
-
-    // "<name>()" or "<name>(<options>)"
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        throw ParseError(start + 1);
-    }
-
-    if (dry_run)
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (parser.dry_run())
         return 0;
     else
-        return new LandmarkCutHeuristic(common_options);
+        return new LandmarkCutHeuristic(opts);
 }
+
+
+static Plugin<ScalarEvaluator> _plugin("lmcut", _parse);

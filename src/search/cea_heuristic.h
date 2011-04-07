@@ -122,11 +122,9 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    ContextEnhancedAdditiveHeuristic(const HeuristicOptions &options);
+    ContextEnhancedAdditiveHeuristic(const Options &opts);
     ~ContextEnhancedAdditiveHeuristic();
-    virtual bool dead_ends_are_reliable() const {return false; }
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
+    virtual bool dead_ends_are_reliable() {return false; }
 };
 
 

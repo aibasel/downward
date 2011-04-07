@@ -1,641 +1,438 @@
+#include "globals.h"
 #include "option_parser.h"
-
-#include "heuristic.h"
-
-#include <algorithm>
-#include <cstdlib>
-#include <iostream>
-#include <limits>
-#include <sstream>
+#include "ext/tree_util.hh"
+#include "plugin.h"
 #include <string>
-#include <vector>
+#include <algorithm>
+#include <iostream>
 
 using namespace std;
 
-OptionParser *OptionParser::instance_ = 0;
-
-OptionParser *OptionParser::instance() {
-    if (instance_ == 0)
-        instance_ = new OptionParser();
-    return instance_;
+ParseError::ParseError(string m, ParseTree pt)
+    : msg(m),
+      parse_tree(pt) {
 }
 
-void OptionParser::register_search_engine(const string &key,
-                                          EngineFactory func) {
-    engine_map[key] = func;
+HelpElement::HelpElement(string k, string h, string t_n)
+    : kwd(k),
+      help(h),
+      type_name(t_n) {
 }
 
-void OptionParser::register_scalar_evaluator(const string &key,
-                                             ScalarEvalFactory func) {
-    scalar_evaluator_map[key] = func;
+void OptionParser::error(string msg) {
+    throw ParseError(msg, *this->get_parse_tree());
 }
 
-void OptionParser::register_lm_graph_factory(const std::string &key,
-                                             LandmarkGraphFactory func) {
-    lm_graph_map[key] = func;
+void OptionParser::warning(string msg) {
+    cout << "Parser Warning: " << msg << endl;
 }
 
 
-void OptionParser::register_synergy(const string &key, SynergyFactory func) {
-    synergy_map[key] = func;
+/*
+Functions for printing help:
+*/
+
+void OptionParser::set_help_mode(bool m) {
+    dry_run_ = dry_run_ && m;
+    help_mode_ = m;
+    opts.set_help_mode(m);
 }
 
-
-ScalarEvaluator *OptionParser::parse_scalar_evaluator(
-    const vector<string> &input, int start, int &end, bool dry_run) {
-    // predefined evaluator
-    map<string, Heuristic *>::iterator iter;
-    iter = predefined_heuristics.find(input[start]);
-    if (iter != predefined_heuristics.end()) {
-        end = start;
-        return (ScalarEvaluator *)iter->second;
+template <class T>
+static void get_help_templ(const ParseTree &pt) {
+    if (Registry<T>::instance()->contains(pt.begin()->value)) {
+        cout << pt.begin()->value << " is a " << TypeNamer<T>::name()
+             << endl << "Usage: " << endl;
+        OptionParser p(pt, true);
+        p.set_help_mode(true);
+        p.start_parsing<T>();
+        cout << endl;
     }
-
-    // scalar evaluater definition
-    map<string, ScalarEvalFactory>::iterator it;
-    it = scalar_evaluator_map.find(input[start]);
-    if (it == scalar_evaluator_map.end())
-        throw ParseError(start);
-    return it->second(input, start, end, dry_run);
 }
 
-LandmarksGraph *OptionParser::parse_lm_graph(
-    const vector<string> &input, int start, int &end, bool dry_run) {
-    // predefined object
-    map<string, LandmarksGraph *>::iterator iter;
-    iter = predefined_lm_graphs.find(input[start]);
-    if (iter != predefined_lm_graphs.end()) {
-        end = start;
-        return iter->second;
+static void get_help(string k) {
+    ParseTree pt;
+    pt.insert(pt.begin(), ParseNode(k));
+    get_help_templ<SearchEngine *>(pt);
+    get_help_templ<Heuristic *>(pt);
+    get_help_templ<ScalarEvaluator *>(pt);
+    get_help_templ<Synergy *>(pt);
+    get_help_templ<LandmarksGraph *>(pt);
+    Plugin<OpenList<int> >::register_open_lists();
+    get_help_templ<OpenList<int> *>(pt);
+}
+
+template <class T>
+static void get_full_help_templ() {
+    cout << endl << "Help for " << TypeNamer<T>::name() << "s:" << endl << endl;
+    vector<string> keys = Registry<T>::instance()->get_keys();
+    for (size_t i(0); i != keys.size(); ++i) {
+        ParseTree pt;
+        pt.insert(pt.begin(), ParseNode(keys[i]));
+        get_help_templ<T>(pt);
     }
+}
 
-    // object definition
-    map<string, LandmarkGraphFactory>::iterator it;
-    it = lm_graph_map.find(input[start]);
-    if (it == lm_graph_map.end())
-        throw ParseError(start);
-    return it->second(input, start, end, dry_run);
+static void get_full_help() {
+    get_full_help_templ<SearchEngine *>();
+    get_full_help_templ<Heuristic *>();
+    get_full_help_templ<ScalarEvaluator *>();
+    get_full_help_templ<Synergy *>();
+    get_full_help_templ<LandmarksGraph *>();
+    Plugin<OpenList<int> >::register_open_lists();
+    get_full_help_templ<OpenList<int> *>();
 }
 
 
+/*
+Predefining landmarks and heuristics:
+*/
 
-Heuristic *OptionParser::parse_heuristic(const vector<string> &input,
-                                         int start, int &end, bool dry_run) {
-    ScalarEvaluator *eval = parse_scalar_evaluator(input, start, end, dry_run);
-    Heuristic *h = dynamic_cast<Heuristic *>(eval); // HACK?
-    if (!dry_run && h == 0)
-        throw ParseError(start);
-    // FIXME: With dry_run we need a different implementation to
-    // check that we would get a heuristic
-    return h;
+//takes a string of the form "word1, word2, word3 " and converts it to a vector
+//(used for predefining synergies)
+static std::vector<std::string> to_list(std::string s) {
+    std::vector<std::string> result;
+    std::string buffer;
+    for (size_t i(0); i != s.size(); ++i) {
+        if (s[i] == ',') {
+            result.push_back(buffer);
+            buffer.clear();
+        } else if (s[i] == ' ') {
+            continue;
+        } else {
+            buffer.push_back(s[i]);
+        }
+    }
+    result.push_back(buffer);
+    return result;
 }
 
-void OptionParser::parse_synergy_heuristics(const vector<string> &input,
-                                            int start, int &end,
-                                            vector<Heuristic *> &heuristics) {
-    map<string, SynergyFactory>::iterator it;
-    it = synergy_map.find(input[start]);
-    if (it == synergy_map.end())
-        throw ParseError(start);
-    it->second(input, start, end, heuristics);
+//Note: originally the following function was templated (predefine<T>),
+//but there is no Synergy<LandmarksGraph>, so I split it up for now.
+static void predefine_heuristic(std::string s, bool dry_run) {
+    //remove newlines so they don't mess anything up:
+    s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
+
+    size_t split = s.find("=");
+    std::string ls = s.substr(0, split);
+    std::vector<std::string> definees = to_list(ls);
+    std::string rs = s.substr(split + 1);
+    OptionParser op(rs, dry_run);
+    if (definees.size() == 1) { //normal predefinition
+        Predefinitions<Heuristic * >::instance()->predefine(
+            definees[0], op.start_parsing<Heuristic *>());
+    } else if (definees.size() > 1) { //synergy
+        if (!dry_run) {
+            std::vector<Heuristic *> heur =
+                op.start_parsing<Synergy *>()->heuristics;
+            for (size_t i(0); i != definees.size(); ++i) {
+                Predefinitions<Heuristic *>::instance()->predefine(
+                    definees[i], heur[i]);
+            }
+        } else {
+            for (size_t i(0); i != definees.size(); ++i) {
+                Predefinitions<Heuristic *>::instance()->predefine(
+                    definees[i], 0);
+            }
+        }
+    } else {
+        op.error("predefinition has invalid left side");
+    }
 }
 
-bool OptionParser::knows_scalar_evaluator(const string &name) const {
-    return scalar_evaluator_map.find(name) != scalar_evaluator_map.end() ||
-           predefined_heuristics.find(name) != predefined_heuristics.end();
+static void predefine_lmgraph(std::string s, bool dry_run) {
+    //remove newlines so they don't mess anything up:
+    s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
+
+    size_t split = s.find("=");
+    std::string ls = s.substr(0, split);
+    std::vector<std::string> definees = to_list(ls);
+    std::string rs = s.substr(split + 1);
+    OptionParser op(rs, dry_run);
+    if (definees.size() == 1) {
+        Predefinitions<LandmarksGraph *>::instance()->predefine(
+            definees[0], op.start_parsing<LandmarksGraph *>());
+    } else {
+        op.error("predefinition has invalid left side");
+    }
 }
 
-bool OptionParser::knows_lm_graph(const string &name) const {
-    return lm_graph_map.count(name) || predefined_lm_graphs.count(name);
-}
 
-bool OptionParser::knows_search_engine(const string &name) const {
-    return engine_map.find(name) != engine_map.end();
-}
+/*
+Parse command line options
+*/
 
-SearchEngine *OptionParser::parse_search_engine(const char *str) {
-    vector<string> tokens;
-    tokenize_options(str, tokens);
-
-    SearchEngine *engine;
-    try {
-        int end = 0;
-        engine = parse_search_engine(tokens, 0, end, false);
-    } catch (ParseError &e) {
-        print_parse_error(tokens, e);
-        exit(2);
+SearchEngine *OptionParser::parse_cmd_line(
+    int argc, const char **argv, bool dry_run) {
+    SearchEngine *engine(0);
+    for (int i = 1; i < argc; ++i) {
+        string arg = string(argv[i]);
+        if (arg.compare("--heuristic") == 0) {
+            ++i;
+            predefine_heuristic(argv[i], dry_run);
+        } else if (arg.compare("--landmarks") == 0) {
+            ++i;
+            predefine_lmgraph(argv[i], dry_run);
+        } else if (arg.compare("--search") == 0) {
+            ++i;
+            OptionParser p(argv[i], dry_run);
+            engine = p.start_parsing<SearchEngine *>();
+        } else if (arg.compare("--random-seed") == 0) {
+            ++i;
+            srand(atoi(argv[i]));
+            cout << "random seed " << argv[i] << endl;
+        } else if ((arg.compare("--help") == 0) && dry_run) {
+            cout << "Help:" << endl;
+            if (i + 1 < argc) {
+                string helpiand = string(argv[i + 1]);
+                get_help(helpiand);
+            } else {
+                get_full_help();
+            }
+            cout << "Help output finished." << endl;
+            exit(0);
+        } else if (arg.compare("--plan-file") == 0) {
+            ++i;
+            g_plan_filename = argv[i];
+        } else {
+            cerr << "unknown option " << arg << endl << endl;
+            cout << OptionParser::usage(argv[0]) << endl;
+            exit(1);
+        }
     }
     return engine;
 }
 
-SearchEngine *OptionParser::parse_search_engine(
-    const vector<string> &input, int start, int &end, bool dry_run) {
-    map<string, EngineFactory>::iterator it;
-    it = engine_map.find(input[start]);
-    if (it == engine_map.end())
-        throw ParseError(start);
-    return it->second(input, start, end, dry_run);
+string OptionParser::usage(string progname) {
+    string usage =
+        "usage: \n" +
+        progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
+        "* SEARCH (SearchEngine): configuration of the search algorithm\n"
+        "* OUTPUT (filename): preprocessor output\n\n"
+        "Options:\n"
+        "--help [NAME]\n"
+        "    Prints help for all heuristics, openlists, etc. called NAME.\n"
+        "    Without parameter: prints help for everything available\n"
+        "--landmarks LANDMARKS_PREDEFINITION\n"
+        "    Predefines a set of landmarks that can afterwards be referenced\n"
+        "    by the name that is specified in the definition.\n"
+        "--heuristic HEURISTIC_PREDEFINITION\n"
+        "    Predefines a heuristic that can afterwards be referenced\n"
+        "    by the name that is specified in the definition.\n"
+        "--random-seed SEED\n"
+        "    Use random seed SEED\n\n"
+        "--plan-file FILENAME\n"
+        "    Plan will be output to a file called FILENAME\n\n"
+        "See http://www.fast-downward.org/ for details.";
+    return usage;
 }
 
-void OptionParser::predefine_heuristic(const char *str) {
-    vector<string> tokens;
-    tokenize_options(str, tokens);
-    try {
-        predefine_heuristic(tokens);
-    } catch (ParseError &e) {
-        print_parse_error(tokens, e);
-        exit(2);
+
+static ParseTree generate_parse_tree(string config) {
+    //remove newlines so they don't mess anything up:
+    config.erase(std::remove(config.begin(), config.end(), '\n'), config.end());
+
+    ParseTree tr;
+    ParseTree::iterator top = tr.begin();
+    ParseTree::sibling_iterator pseudoroot =
+        tr.insert(top, ParseNode("pseudoroot", ""));
+    ParseTree::sibling_iterator cur_node = pseudoroot;
+    string buffer(""), key("");
+    char next = ' ';
+    for (size_t i(0); i != config.size(); ++i) {
+        next = config.at(i);
+        if ((next == '(' || next == ')' || next == ',') && buffer.size() > 0) {
+            tr.append_child(cur_node, ParseNode(buffer, key));
+            buffer.clear();
+            key.clear();
+        }
+        switch (next) {
+        case ' ':
+            break;
+        case '(':
+            cur_node = last_child(tr, cur_node);
+            break;
+        case ')':
+            if (cur_node == top)
+                throw ParseError("missing (", *cur_node);
+            cur_node = tr.parent(cur_node);
+            break;
+        case '[':
+            if (!buffer.empty())
+                throw ParseError("misplaced opening bracket [", *cur_node);
+            tr.append_child(cur_node, ParseNode("list", key));
+            key.clear();
+            cur_node = last_child(tr, cur_node);
+            break;
+        case ']':
+            if (!buffer.empty()) {
+                tr.append_child(cur_node, ParseNode(buffer, key));
+                buffer.clear();
+                key.clear();
+            }
+            if (cur_node->value.compare("list") != 0) {
+                throw ParseError("mismatched brackets", *cur_node);
+            }
+            cur_node = tr.parent(cur_node);
+            break;
+        case ',':
+            break;
+        case '=':
+            if (buffer.empty())
+                throw ParseError("expected keyword before =", *cur_node);
+            key = buffer;
+            buffer.clear();
+            break;
+        default:
+            buffer.push_back(tolower(next));
+            break;
+        }
     }
+    if (next != ')')
+        throw ParseError("expected ) at end of configuration after " + buffer, *cur_node);
+    if (cur_node->value.compare("pseudoroot") != 0)
+        throw ParseError("missing )", *cur_node);
+
+    //the real parse tree is the first (and only) child of the pseudoroot.
+    //pseudoroot is only a placeholder.
+    ParseTree real_tr = subtree(tr, tr.begin(pseudoroot));
+    return real_tr;
 }
 
-void OptionParser::predefine_heuristic(const vector<string> &input) {
-    if (input[1].compare("=") == 0) {
-        // define one heuristic (standard case)
-        string name = input[0];
-        if (knows_scalar_evaluator(name) || name == "(" || name == ")")
-            throw ParseError(0);
-        int end = 2;
-        predefined_heuristics[name] = parse_heuristic(input, 2, end, false);
-    } else if (input[1].compare(",") == 0) {
-        // define several heuristics (currently only lama ff synergy)
+OptionParser::OptionParser(const string config, bool dr)
+    : opts(false),
+      parse_tree(generate_parse_tree(config)),
+      dry_run_(dr),
+      help_mode_(false),
+      next_unparsed_argument(first_child_of_root(parse_tree)) {
+}
 
-        vector<string>::const_iterator it = find(input.begin(),
-                                                 input.end(), "=");
-        if (it == input.end())
-            throw ParseError(input.size());
-        int heuristic_pos = it - input.begin() + 1;
 
-        vector<Heuristic *> heuristics;
-        int end = 0;
-        parse_synergy_heuristics(input, heuristic_pos, end, heuristics);
+OptionParser::OptionParser(ParseTree pt, bool dr)
+    : opts(false),
+      parse_tree(pt),
+      dry_run_(dr),
+      help_mode_(false),
+      next_unparsed_argument(first_child_of_root(parse_tree)) {
+}
 
-        for (unsigned int i = 0; i < heuristics.size(); i++) {
-            int name_pos = 2 * i;
-            string name = input[name_pos];
-            if (knows_scalar_evaluator(name) || name == "(" || name == ")")
-                throw ParseError(name_pos);
-            predefined_heuristics[name] = heuristics[i];
-            if (i == heuristics.size() - 1 && input[name_pos + 1] != "=") {
-                throw ParseError(name_pos + 1);
-            } else if (i < heuristics.size() - 1 && input[name_pos + 1] != ",") {
-                throw ParseError(name_pos + 1);
+
+string str_to_lower(string s) {
+    transform(s.begin(), s.end(), s.begin(), ::tolower);
+    return s;
+}
+
+void OptionParser::add_enum_option(string k,
+                                   vector<string > enumeration,
+                                   string def_val, string h) {
+    if (help_mode_) {
+        string enum_descr = "{";
+        for (size_t i(0); i != enumeration.size(); ++i) {
+            enum_descr += enumeration[i];
+            if (i != enumeration.size() - 1) {
+                enum_descr += ", ";
             }
         }
-    } else {
-        throw ParseError(1);
-    }
-}
+        enum_descr += "}";
 
-void OptionParser::predefine_lm_graph(const char *str) {
-    vector<string> tokens;
-    tokenize_options(str, tokens);
-    try {
-        predefine_lm_graph(tokens);
-    } catch (ParseError &e) {
-        print_parse_error(tokens, e);
-        exit(2);
-    }
-}
-
-void OptionParser::predefine_lm_graph(const vector<string> &input) {
-    if (input[1].compare("=") == 0) {
-        string name = input[0];
-        if (knows_lm_graph(name) || name == "(" || name == ")")
-            throw ParseError(0);
-        int end = 2;
-        predefined_lm_graphs[name] = parse_lm_graph(input, 2, end, false);
-    } else {
-        throw ParseError(1);
-    }
-}
-
-
-// sets "end" on the last position of the last scalar evaluator
-// in the list.
-// if the list does not contain any scalar evaluator then end=start
-void OptionParser::parse_scalar_evaluator_list(
-    const vector<string> &input, int start, int &end,
-    bool only_one_eval, vector<ScalarEvaluator *> &evals, bool dry_run) {
-    end = start;
-    bool break_loop = false;
-    while (knows_scalar_evaluator(input[end])) {
-        if (only_one_eval && evals.size() > 0)
-            throw ParseError(end);
-        ScalarEvaluator *eval =
-            parse_scalar_evaluator(input, end, end, dry_run);
-        evals.push_back(eval);
-        end++;
-        if (input[end] != ",") {
-            break_loop = true;
-            break;
+        helpers.push_back(HelpElement(k, h, enum_descr));
+        if (def_val.compare("") != 0) {
+            helpers.back().default_value = def_val;
         }
-        end++;
-    }
-    if (!evals.empty()) {
-        end--;
-        if (!break_loop) {
-            end--;
-        }
-    }
-}
-
-void OptionParser::parse_heuristic_list(
-    const vector<string> &input, int start, int &end, bool only_one_eval,
-    vector<Heuristic *> &evals, bool dry_run) {
-    end = start;
-    bool break_loop = false;
-    while (knows_scalar_evaluator(input[end])) {
-        if (only_one_eval && evals.size() > 0)
-            throw ParseError(end);
-        Heuristic *heur =
-            parse_heuristic(input, end, end, dry_run);
-        evals.push_back(heur);
-        end++;
-        if (input[end] != ",") {
-            break_loop = true;
-            break;
-        }
-        end++;
-    }
-    if (!evals.empty()) {
-        end--;
-        if (!break_loop) {
-            end--;
-        }
-    }
-}
-
-void OptionParser::parse_landmark_graph_list(
-    const vector<string> &input, int start, int &end, bool only_one,
-    vector<LandmarksGraph *> &lm_graphs, bool dry_run) {
-    end = start;
-    bool break_loop = false;
-    while (knows_lm_graph(input[end])) {
-        if (only_one && lm_graphs.size() > 0)
-            throw ParseError(end);
-        LandmarksGraph *lmg =
-            parse_lm_graph(input, end, end, dry_run);
-        lm_graphs.push_back(lmg);
-        end++;
-        if (input[end] != ",") {
-            break_loop = true;
-            break;
-        }
-        end++;
-    }
-    if (!lm_graphs.empty()) {
-        end--;
-        if (!break_loop) {
-            end--;
-        }
-    }
-}
-
-void OptionParser::parse_search_engine_list(
-    const vector<string> &input, int start, int &end, bool only_one,
-    vector<int> &engines, bool dry_run) {
-    end = start;
-    bool break_loop = false;
-    while (knows_search_engine(input[end])) {
-        if (only_one && engines.size() > 0)
-            throw ParseError(end);
-        engines.push_back(end);
-        parse_search_engine(input, end, end, dry_run);
-        end++;
-        if (input[end] != ",") {
-            break_loop = true;
-            break;
-        }
-        end++;
-    }
-    if (!engines.empty()) {
-        end--;
-        if (!break_loop) {
-            end--;
-        }
-    }
-}
-
-// helper method for simple configs that may have the
-// form "<name>()" (e.g. "ff()" for the ff heuristic)
-void OptionParser::set_end_for_simple_config(
-    const vector<string> &config, int start, int &end) {
-    if (config.size() <= start)
-        throw ParseError(start);
-
-    // "<name>()"
-    if (config.size() > start + 2 && config[start + 1] == "(" &&
-        config[start + 2] == ")") {
-        end = start + 2;
-    } else {
-        throw ParseError(start + 2);
-    }
-    return;
-}
-
-double OptionParser::parse_double(
-    const vector<string> &config, int start, int &end) {
-    start = end;
-    string str = config[end];
-    if (str.find_first_not_of(".0123456789") != string::npos)
-        throw ParseError(end);
-    double val = atof(str.c_str());
-    if (val == 0 && str.find_first_not_of(".0") != string::npos)
-        throw ParseError(end);
-
-    return val;
-}
-
-int OptionParser::parse_int(
-    const vector<string> &config, int start, int &end) {
-    start = end;
-    int val = atoi(config[end].c_str());
-    if (val == 0 && config[end] != "0")
-        throw ParseError(end);
-
-    // check that there are no additional characters
-    ostringstream temp;
-    temp << val;
-    if (temp.str() != config[end])
-        throw ParseError(end);
-    return val;
-}
-
-void OptionParser::parse_evals_and_options(
-    const vector<string> &config, int start, int &end,
-    vector<ScalarEvaluator *> &evaluators,
-    NamedOptionParser &option_parser, bool only_one_eval, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-    // create evaluators
-    parse_scalar_evaluator_list(config, start + 2, end,
-                                only_one_eval, evaluators, dry_run);
-
-    if (evaluators.empty())
-        throw ParseError(end);
-    // need at least one scalar evaluator (e.g. a heuristic)
-
-    // parse options
-    end++;
-    if (config[end] != ")") {
-        if (config[end] != ",")
-            throw ParseError(end);
-        end++;
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
-}
-
-void NamedOptionParser::add_bool_option(const string &name,
-                                        bool *var, const string &desc) {
-    bool_options[name] = var;
-    help[name] = "bool " + name + " " + desc;
-    // TODO: add default value to help string
-}
-
-void NamedOptionParser::add_string_option(
-    const string &name, string *var, const string &desc) {
-    str_options[name] = var;
-    help[name] = "string " + name + " " + desc;
-    // TODO: add default value to help string
-}
-
-void NamedOptionParser::add_double_option(
-    const string &name, double *var, const string &desc) {
-    double_options[name] = var;
-    help[name] = "double " + name + " " + desc;
-    // TODO: add default value to help string
-}
-
-void NamedOptionParser::add_int_option(
-    const string &name, int *var, const string &desc, bool allow_infinity) {
-    if (allow_infinity) {
-        can_be_infinity.insert(name);
-        cout << "insert " << name << endl;
-    }
-    int_options[name] = var;
-    help[name] = "int " + name + " " + desc;
-    // TODO: add default value to help string
-}
-
-void NamedOptionParser::add_scalar_evaluator_option(
-    const string &name, ScalarEvaluator **var,
-    const string &desc, bool allow_none) {
-    scalar_evaluator_options[name] = var;
-    if (allow_none)
-        can_be_none.insert(name);
-    help[name] = "scalar evaluator " + name + " " + desc;
-}
-
-void NamedOptionParser::add_heuristic_list_option(
-    const string &name, vector<Heuristic *> *var, const string &desc) {
-    heuristic_list_options[name] = var;
-    help[name] = "heuristic list " + name + " " + desc;
-}
-
-void NamedOptionParser::parse_options(
-    const vector<string> &config, int start, int &end, bool dry_run) {
-    bool first_option = true;
-    end = start;
-    while (first_option || config[end] == ",") {
-        if (first_option) {
-            first_option = false;
-        } else {
-            end++;
-        }
-
-        if (bool_options.count(config[end]) > 0) {
-            parse_bool_option(config, end, end);
-        } else if (str_options.count(config[end]) > 0) {
-            parse_string_option(config, end, end);
-        } else if (int_options.count(config[end]) > 0) {
-            parse_int_option(config, end, end);
-        } else if (double_options.count(config[end]) > 0) {
-            parse_double_option(config, end, end);
-        } else if (scalar_evaluator_options.count(config[end]) > 0) {
-            parse_scalar_evaluator_option(config, end, end, dry_run);
-        } else if (heuristic_list_options.count(config[end]) > 0) {
-            parse_heuristic_list_option(config, end, end, dry_run);
-        } else {
-            throw ParseError(end);
-        }
-        end++;
-    }
-    end--;
-}
-
-void NamedOptionParser::parse_bool_option(const vector<string> &config,
-                                          int start, int &end) {
-    end = start;
-    bool *val = bool_options[config[end]];
-    end++;
-    if (config[end] != "=")
-        throw ParseError(end);
-    end++;
-    if (config[end] == "true") {
-        *val = true;
-    } else if (config[end] == "false") {
-        *val = false;
-    } else {
-        throw ParseError(end);
-    }
-}
-
-void NamedOptionParser::parse_string_option(const vector<string> &config,
-                                            int start, int &end) {
-    end = start;
-    string *val = str_options[config[end]];
-    end++;
-    if (config[end] != "=")
-        throw ParseError(end);
-    end++;
-    *val = config[end];
-}
-
-void NamedOptionParser::parse_double_option(const vector<string> &config,
-                                            int start, int &end) {
-    end = start;
-    double *val = double_options[config[end]];
-    end++;
-    if (config[end] != "=")
-        throw ParseError(end);
-    end++;
-
-    OptionParser *parser = OptionParser::instance();
-    *val = parser->parse_double(config, end, end);
-}
-
-void NamedOptionParser::parse_int_option(const vector<string> &config,
-                                         int start, int &end) {
-    end = start;
-    int *val = int_options[config[end]];
-    string name = config[end];
-    end++;
-    if (config[end] != "=")
-        throw ParseError(end);
-    end++;
-
-    string str_val = config[end];
-    if (str_val == "Infinity" || str_val == "infinity") {
-        if (can_be_infinity.find(name) != can_be_infinity.end()) {
-            *val = numeric_limits<int>::max();
-            return;
-        } else {
-            throw ParseError(end);
-        }
-    }
-
-    OptionParser *parser = OptionParser::instance();
-    *val = parser->parse_int(config, end, end);
-}
-
-void NamedOptionParser::parse_scalar_evaluator_option(
-    const vector<string> &config, int start, int &end, bool dry_run) {
-    end = start;
-    ScalarEvaluator **pp_eval = scalar_evaluator_options[config[end]];
-    string name = config[end];
-    ScalarEvaluator *val;
-    end++;
-    if (config[end] != "=")
-        throw ParseError(end);
-    end++;
-
-    string str_val = config[end];
-    if (str_val == "None" || str_val == "none") {
-        if (can_be_none.find(name) != can_be_none.end()) {
-            val = NULL;
-            return;
-        } else {
-            throw ParseError(end);
-        }
-    }
-
-    OptionParser *parser = OptionParser::instance();
-    val = parser->parse_scalar_evaluator(config, end, end, dry_run);
-    *pp_eval = val;
-}
-
-void NamedOptionParser::parse_heuristic_list_option(
-    const vector<string> &config, int start, int &end, bool dry_run) {
-    end = start;
-    vector<Heuristic *> *val =
-        heuristic_list_options[config[end]];
-    end++;
-    if (config[end] != "=")
-        throw ParseError(end);
-    end++;
-    OptionParser *parser = OptionParser::instance();
-
-    if (config[end] == "(" && config[end + 1] == ")") {
-        end++;
         return;
-    } else if (config[end] == "(") {
-        end++;
-        parser->parse_heuristic_list(config, end, end, false, *val, dry_run);
-        end++;
-        if (config[end] != ")")
-            throw ParseError(end);
+    }
+
+    //enum arguments can be given by name or by number:
+    //first parse the corresponding string like a normal argument...
+    if (def_val.compare("") != 0) {
+        add_option<string>(k, def_val, h);
     } else {
-        parser->parse_heuristic_list(config, end, end, true, *val, dry_run);
+        add_option<string>(k, h);
+    }
+
+    string name = str_to_lower(opts.get<string>(k));
+
+    //...then check if the parsed string can be treated as a number
+    stringstream str_stream(name);
+    int x;
+    if (!(str_stream >> x).fail()) {
+        if (x > enumeration.size()) {
+            error("invalid enum argument " + name
+                  + " for option " + k);
+        }
+        opts.set(k, x);
+    } else {
+        //...otherwise try to map the string to its position in the enumeration vector
+        transform(enumeration.begin(), enumeration.end(), enumeration.begin(),
+                  str_to_lower); //make the enumeration lower case
+        vector<string>::const_iterator it =
+            find(enumeration.begin(), enumeration.end(), name);
+        if (it == enumeration.end()) {
+            error("invalid enum argument " + name
+                  + " for option " + k);
+        }
+        opts.set(k, it - enumeration.begin());
     }
 }
 
-void OptionParser::tokenize_options(const char *str, vector<string> &tokens) {
-    while (true) {
-        const char *begin = str;
-        while (*str != '(' && *str != ',' && *str != ')' && *str != '=' && *str)
-            str++;
-        if (begin != str) {
-            string substring = strip_and_to_lower(begin, str);
-            if (substring != "") {
-                tokens.push_back(substring);
+Options OptionParser::parse() {
+    if (help_mode_) {
+        //print out collected help information
+        cout << parse_tree.begin()->value << "(";
+        for (size_t i(0); i != helpers.size(); ++i) {
+            cout << helpers[i].kwd
+                 << (helpers[i].default_value.compare("") != 0 ? " = " : "")
+                 << helpers[i].default_value;
+            if (i != helpers.size() - 1) {
+                cout << ", ";
             }
         }
-        if (*str)
-            tokens.push_back(string(str, str + 1));
-        if (0 == *str++)
-            break;
-    }
-}
-
-string OptionParser::strip_and_to_lower(const char *begin, const char *end) {
-    const char *b = begin;
-    const char *e = end;
-    // lstrip
-    while ((*b == ' ' || *b == '\n' || *b == '\t') && b < end)
-        b++;
-
-    // return if empty string
-    if (b == end)
-        return "";
-
-    // rstrip
-    do {
-        --e;
-    } while (*e == ' ' && e > b);
-    e++;
-
-    string ret_string = string(b, e);
-
-    // to lower
-    for (unsigned int i = 0; i < ret_string.length(); i++)
-        ret_string[i] = tolower(ret_string[i]);
-    return ret_string;
-}
-
-void OptionParser::print_parse_error(const vector<string> &tokens,
-                                     ParseError &err) {
-    cerr << "ParseError: ";
-    for (unsigned int i = 0; i < tokens.size(); i++)
-        cerr << tokens[i];
-    cerr << endl;
-    cerr << "            ";  // same length as "ParseError: "
-    for (unsigned int i = 0; i < err.pos; i++) {
-        for (unsigned int j = 0; j < tokens[i].size(); j++) {
-            cerr << " ";
+        cout << ")" << endl;
+        for (size_t i(0); i != helpers.size(); ++i) {
+            cout << helpers[i].kwd << "(" << helpers[i].type_name << "): "
+                 << helpers[i].help << endl;
         }
     }
-    cerr << "^" << endl;
+    //check if there were any arguments with invalid keywords,
+    //or positional arguments after keyword arguments
+    string last_key = "";
+    for (ParseTree::sibling_iterator pti = first_child_of_root(parse_tree);
+         pti != end_of_roots_children(parse_tree); ++pti) {
+        if (pti->key.compare("") != 0) {
+            bool valid_key = false;
+            for (size_t i(0); i != valid_keys.size(); ++i) {
+                if (valid_keys[i].compare(pti->key) == 0) {
+                    valid_key = true;
+                    break;
+                }
+            }
+            if (!valid_key) {
+                error("invalid keyword "
+                      + pti->key + " for "
+                      + parse_tree.begin()->value);
+            }
+        }
+        if (pti->key.compare("") == 0 &&
+            last_key.compare("") != 0) {
+            error("positional argument after keyword argument");
+        }
+        last_key = pti->key;
+    }
+    return opts;
+}
+
+bool OptionParser::dry_run() const {
+    return dry_run_;
+}
+
+bool OptionParser::help_mode() const {
+    return help_mode_;
+}
+
+void OptionParser::set_parse_tree(const ParseTree &pt) {
+    parse_tree = pt;
+}
+
+ParseTree *OptionParser::get_parse_tree() {
+    return &parse_tree;
 }

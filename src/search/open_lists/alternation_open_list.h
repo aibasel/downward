@@ -3,8 +3,12 @@
 
 #include "open_list.h"
 #include "../evaluator.h"
+#include "../plugin.h"
 
 #include <vector>
+
+class Options;
+class OptionParser;
 
 template<class Entry>
 class AlternationOpenList : public OpenList<Entry> {
@@ -14,6 +18,8 @@ class AlternationOpenList : public OpenList<Entry> {
     int size;
     bool dead_end;
     bool dead_end_reliable;
+    // roughly speaking, boosting is how often the boosted queue should be
+    // preferred when removing an entry
     int boosting;
     int last_used_list;
 
@@ -21,11 +27,9 @@ protected:
     Evaluator *get_evaluator() {return this; }
 
 public:
-    AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
+    AlternationOpenList(const Options &opts);
+    AlternationOpenList(const std::vector<OpenList<Entry> *> &sublists,
                         int boost_influence);
-    // roughly speaking, boost_influence is how often the boosted queue should be
-    // preferred when removing an entry
-
     ~AlternationOpenList();
 
     // OpenList interface
@@ -42,8 +46,8 @@ public:
 
     int boost_preferred();
     void boost_last_used_list();
-    static OpenList<Entry> *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run = false);
+
+    static OpenList<Entry> *_parse(OptionParser &parser);
 };
 
 #include "alternation_open_list.cc"

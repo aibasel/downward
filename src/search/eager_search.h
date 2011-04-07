@@ -1,5 +1,5 @@
-#ifndef EAGER_SEARCH_H
-#define EAGER_SEARCH_H
+#ifndef GENERAL_EAGER_BEST_FIRST_SEARCH_H
+#define GENERAL_EAGER_BEST_FIRST_SEARCH_H
 
 #include <vector>
 
@@ -14,6 +14,7 @@
 class Heuristic;
 class Operator;
 class ScalarEvaluator;
+class Options;
 
 class EagerSearch : public SearchEngine {
     // Search Behavior parameters
@@ -41,21 +42,10 @@ protected:
     virtual void initialize();
 
 public:
-    EagerSearch(const SearchEngineOptions &options,
-                OpenList<state_var_t *> *open,
-                bool reopen_closed, bool pathmax_correction,
-                bool use_multi_path_dependence, ScalarEvaluator *f_eval);
-    void set_pref_operator_heuristics(vector<Heuristic *> &heur);
+    EagerSearch(const Options &opts);
     void statistics() const;
 
     void dump_search_space();
-
-    static SearchEngine *create(const std::vector<std::string> &config,
-                                int start, int &end, bool dry_run);
-    static SearchEngine *create_astar(const std::vector<std::string> &config,
-                                      int start, int &end, bool dry_run);
-    static SearchEngine *create_greedy(const std::vector<std::string> &config,
-                                       int start, int &end, bool dry_run);
 };
 
 #endif

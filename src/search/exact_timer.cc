@@ -76,7 +76,7 @@ double ExactTimer::reset() {
     return result;
 }
 
-ostream & operator<<(ostream &os, const ExactTimer &timer) {
+ostream &operator<<(ostream &os, const ExactTimer &timer) {
     double value = timer() / 1e9;
     if (value < 0 && value > -1e-10)
         value = 0.0;  // We sometimes get inaccuracies from God knows where.

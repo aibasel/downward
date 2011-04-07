@@ -87,7 +87,7 @@ protected:
     void train();
     void reset_statistics();
 public:
-    SelectiveMaxHeuristic(const HeuristicOptions &options);
+    SelectiveMaxHeuristic(const Options &opts);
     virtual ~SelectiveMaxHeuristic();
 
     inline void add_heuristic(Heuristic *h) {
@@ -141,9 +141,6 @@ public:
     virtual void print_statistics() const;
     virtual bool reach_state(const State &parent_state, const Operator &op,
                              const State &state);
-
-    static ScalarEvaluator *create(const std::vector<string> &config,
-                                   int start, int &end, bool dry_run);
 };
 
 #endif

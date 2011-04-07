@@ -1,15 +1,17 @@
 #include "sum_evaluator.h"
 
+#include <limits>
+#include <cassert>
+
 #include "option_parser.h"
 #include "plugin.h"
 
-#include <cassert>
+SumEvaluator::SumEvaluator(const Options &opts)
+    : CombiningEvaluator(opts.get_list<ScalarEvaluator *>("evals")) {
+}
 
-using namespace std;
-
-
-SumEvaluator::SumEvaluator(const vector<ScalarEvaluator *> &subevaluators)
-    : CombiningEvaluator(subevaluators) {
+SumEvaluator::SumEvaluator(const std::vector<ScalarEvaluator *> &evals)
+    : CombiningEvaluator(evals) {
 }
 
 SumEvaluator::~SumEvaluator() {
@@ -25,28 +27,18 @@ int SumEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-static ScalarEvaluator *create(const vector<string> &config,
-                               int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
 
-    // create evaluators
-    vector<ScalarEvaluator *> evals;
-    OptionParser::instance()->parse_scalar_evaluator_list(
-        config, start + 2, end, false, evals, dry_run);
 
-    if (evals.empty())
-        throw ParseError(end);
-    // need at least one evaluator
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.add_list_option<ScalarEvaluator *>("evals");
+    Options opts = parser.parse();
 
-    end++;
-    if (config[end] != ")")
-        throw ParseError(end);
+    opts.verify_list_non_empty<ScalarEvaluator *>("evals");
 
-    if (dry_run)
+    if (parser.dry_run())
         return 0;
     else
-        return new SumEvaluator(evals);
+        return new SumEvaluator(opts);
 }
 
-static ScalarEvaluatorPlugin plugin("sum", create);
+static Plugin<ScalarEvaluator> _plugin("sum", _parse);

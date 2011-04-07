@@ -4,21 +4,13 @@
 #include <vector>
 
 class Heuristic;
+class OptionParser;
+class Options;
 
 #include "operator.h"
 #include "search_space.h"
 #include "search_progress.h"
 #include "operator_cost.h"
-
-struct SearchEngineOptions {
-    int cost_type;
-    int bound;
-
-    SearchEngineOptions();
-    ~SearchEngineOptions();
-
-    void add_options_to_parser(NamedOptionParser &option_parser);
-};
 
 class SearchEngine {
 public:
@@ -40,7 +32,7 @@ protected:
     bool check_goal_and_set_plan(const State &state);
     int get_adjusted_cost(const Operator &op) const;
 public:
-    SearchEngine(const SearchEngineOptions &options);
+    SearchEngine(const Options &opts);
     virtual ~SearchEngine();
     virtual void statistics() const;
     virtual void heuristic_statistics() const {}
@@ -51,6 +43,7 @@ public:
     SearchProgress get_search_progress() const {return search_progress; }
     void set_bound(int b) {bound = b; }
     int get_bound() {return bound; }
+    static void add_options_to_parser(OptionParser &parser);
 };
 
 #endif
