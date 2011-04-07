@@ -125,6 +125,25 @@ void AbstractState::dump(const vector<int> &pattern) const {
     }
 }
 
+// OperatorTree ---------------------------------------------------------------
+
+OperatorTree::OperatorTree() {
+}
+
+OperatorTree::~OperatorTree() {
+}
+
+void OperatorTree::insert(AbstractOperator op) {
+    // dummy
+    op.dump(vector<int>());
+}
+
+void OperatorTree::traverse(size_t state_index, vector<AbstractOperator *> &applicable_operators) const {
+    // dummies
+    cout << state_index << endl;
+    applicable_operators.clear();
+}
+
 // PDBHeuristic ---------------------------------------------------------------
 
 static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
@@ -247,6 +266,14 @@ void PDBHeuristic::create_pdb() {
             ++index;
         }*/
     }
+
+    // so far still use the multiplied out operators in order to have no more
+    // operators with pre = -1. Better: build abstract operators on the fly
+    // while creating the op_tree
+    /*OperatorTree op_tree;
+    for (size_t i = 0; i < operators.size(); ++i) {
+        op_tree.insert(operators[i]);
+    }*/
 
     // old method for comparison reasons
     /*vector<AbstractOperator> operators2;
