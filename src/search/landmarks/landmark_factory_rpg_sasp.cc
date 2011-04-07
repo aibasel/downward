@@ -122,10 +122,10 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
         // change disj. landmark into simple
         
         // old: call to methode
-        //LandmarkNode &node = lm_graph->make_disj_node_simple(a);
+        LandmarkNode &node = lm_graph->make_disj_node_simple(a);
 
         /* TODO: Problem: Schon diese jetzige Implementierung ist nicht mehr korrekt,
-        da rm_landmark_noden nicht nur bei allen children die parents-zeiger auf sich selbst
+        da rm_landmark_node nicht nur bei allen children die parents-zeiger auf sich selbst
         löscht, sondern auch bei allen parents die children-zeiger auf sich selbst. Ein
         einfaches Speichern aller Attribute von node funktioniert also nicht - entweder man
         muss dann manuell bei den parents des alten node alle children-Zeiger neu setzen auf
@@ -135,10 +135,10 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
         */
         // TODO: avoid copy constructor, save attributes locally and assign to new lm
         // new: replace by new program logic
-        LandmarkNode &node2 = lm_graph->get_disj_lm_node(a);
+        /*LandmarkNode &node2 = lm_graph->get_disj_lm_node(a);
         LandmarkNode node(node2);
         lm_graph->rm_landmark_node(&node2);
-        lm_graph->landmark_add_simple(a);
+        lm_graph->landmark_add_simple(a);*/
         
         node.vars.clear();
         node.vals.clear();
