@@ -510,7 +510,7 @@ AbstractState PDBHeuristic::inv_hash_index(int index) const {
         var_vals[n - 1] = d / n_i[n - 1];
         index -= d;
     }
-    var_vals[variable_to_index[pattern[pattern.size() - 1]]] = index / n_i[pattern.size() - 1];
+    var_vals[pattern.size() - 1] = index / n_i[pattern.size() - 1];
     return AbstractState(var_vals);
 }
 
