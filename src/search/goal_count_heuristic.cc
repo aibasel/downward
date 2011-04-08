@@ -6,12 +6,10 @@
 #include "state.h"
 
 
-static ScalarEvaluatorPlugin goal_count_heuristic_plugin(
-    "goalcount", GoalCountHeuristic::create);
 
 
-GoalCountHeuristic::GoalCountHeuristic(const HeuristicOptions &options)
-    : Heuristic(options) {
+GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
+    : Heuristic(opts) {
 }
 
 GoalCountHeuristic::~GoalCountHeuristic() {
@@ -31,28 +29,14 @@ int GoalCountHeuristic::compute_heuristic(const State &state) {
     return unsatisfied_goal_count;
 }
 
-ScalarEvaluator *GoalCountHeuristic::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    HeuristicOptions common_options;
-
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
-
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
-
-    if (dry_run) {
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (parser.dry_run())
         return 0;
-    } else {
-        return new GoalCountHeuristic(common_options);
-    }
+    else
+        return new GoalCountHeuristic(opts);
 }
+
+
+static Plugin<ScalarEvaluator> _plugin("goalcount", _parse);

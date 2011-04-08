@@ -8,11 +8,10 @@
 #include <set>
 
 
-static ScalarEvaluatorPlugin hm_heuristic_plugin("hm", HMHeuristic::create);
 
-
-HMHeuristic::HMHeuristic(const HeuristicOptions &options, int _m)
-    : Heuristic(options), m(_m) {
+HMHeuristic::HMHeuristic(const Options &opts)
+    : Heuristic(opts),
+      m(opts.get<int>("m")) {
 }
 
 HMHeuristic::~HMHeuristic() {
@@ -216,34 +215,15 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
     return 0;
 }
 
-ScalarEvaluator *HMHeuristic::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    HeuristicOptions common_options;
-
-    if (config.size() <= start)
-        throw ParseError(start);
-
-    int m = 2;
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
-
-            option_parser.add_int_option("m", &m, "m");
-
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
-
-    if (dry_run) {
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.add_option<int>("m", 2);
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (parser.dry_run())
         return 0;
-    } else {
-        return new HMHeuristic(common_options, m);
-    }
+    else
+        return new HMHeuristic(opts);
 }
+
+
+static Plugin<ScalarEvaluator> _plugin("hm", _parse);

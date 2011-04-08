@@ -129,9 +129,6 @@ void AbstractState::dump(const vector<int> &pattern) const {
 
 // PDBHeuristic ---------------------------------------------------------------
 
-static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
-static ScalarEvaluatorPlugin plugin("pdb", create);
-
 /*PDBHeuristic::PDBHeuristic(int max_abstract_states) {
     verify_no_axioms_no_cond_effects();
     Timer timer;
@@ -140,7 +137,10 @@ static ScalarEvaluatorPlugin plugin("pdb", create);
 }*/
 
 PDBHeuristic::PDBHeuristic(const vector<int> &pattern, bool dump)
-    : Heuristic(HeuristicOptions()) {
+    : Heuristic(Heuristic::default_options()) {
+    /*
+      TODO: support cost options.
+     */
     verify_no_axioms_no_cond_effects();
     Timer timer;
     set_pattern(pattern);
@@ -534,59 +534,52 @@ void PDBHeuristic::dump() const {
     }
 }
 
-ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
-    int max_states = 1000000;
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            option_parser.add_int_option("max_states", &max_states, "maximum abstraction size");
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.add_option<int>("max_states", 1000000,
+                           "maximum abstraction size");
+    parser.add_list_option<int>("pattern", vector<int>(), "the pattern");
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
 
-    if (max_states < 1) {
-        cerr << "error: abstraction size must be at least 1" << endl;
-        exit(2);
+    vector<int> pattern = opts.get_list<int>("pattern");
+    if (!pattern.empty()) {
+        // TODO: use this pattern; test that all var numbers
+        // are >= 0 && < num_variables and that they are all unique
     }
-    
-    if (dry_run)
+    if (opts.get<int>("max_states") < 1)
+        parser.error("abstraction size must be at least 1");
+
+    if (parser.dry_run())
         return 0;
-    
-    vector<int> pattern;
+
 #define DEBUG false
 #if DEBUG
     // function tests
     // 1. blocks-7-2 test-pattern
     //int patt[] = {9, 10, 11, 12, 13, 14};
     //int patt[] = {13, 14};
-    
+
     // 2. driverlog-6 test-pattern
     //int patt[] = {4, 5, 7, 9, 10, 11, 12};
-    
+
     // 3. logistics00-6-2 test-pattern
     //int patt[] = {3, 4, 5, 6, 7, 8};
-    
+
     // 4. blocks-9-0 test-pattern
     //int patt[] = {0};
-    
+
     // 5. logistics00-5-1 test-pattern
     //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
-    
+
     // 6. some other test
     int patt[] = {9};
-    
+
     pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
 #else
     VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL, 0.0);
     int var = vof.next();
     int num_states = g_variable_domain[var];
-    while (num_states <= max_states) {
+    while (num_states <= opts.get<int>("max_states")) {
         //cout << "Number of abstract states = " << num_states << endl;
         //cout << "Including variable: " << var << " (True name:" << g_variable_name[var] << ")" << endl;
         pattern.push_back(var);
@@ -598,5 +591,7 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
             break;
     }
 #endif
-    return new PDBHeuristic(pattern, true);
+    return new PDBHeuristic(/*opts, */pattern, true);
 }
+
+static Plugin<ScalarEvaluator> _plugin("pdb", _parse);

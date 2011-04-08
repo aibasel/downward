@@ -2,6 +2,7 @@
 #include "pdb_heuristic.h"
 #include "globals.h"
 #include "operator.h"
+#include "option_parser.h"
 #include "planning_utilities.h"
 #include "plugin.h"
 #include "state.h"
@@ -14,14 +15,14 @@
 
 using namespace std;
 
-static ScalarEvaluator *create(const std::vector<std::string> &config, int start, int &end, bool dry_run);
-static ScalarEvaluatorPlugin plugin("pdbs", create);
-
-PDBCollectionHeuristic::PDBCollectionHeuristic(const vector<vector<int> > &pattern_collection)
-    : Heuristic(HeuristicOptions()) {
+PDBCollectionHeuristic::PDBCollectionHeuristic(
+    /* const Options &opts, */
+    const vector<vector<int> > &pattern_collection)
+    : Heuristic(Heuristic::default_options()) {
     Timer timer;
     for (int i = 0; i < pattern_collection.size(); ++i) {
-        pattern_databases.push_back(new PDBHeuristic(pattern_collection[i], false));
+        pattern_databases.push_back(
+            new PDBHeuristic(pattern_collection[i], false));
     }
     cout << pattern_collection.size() << " pdbs constructed." << endl;
     cout << "Construction time for all pdbs: " << timer << endl;
@@ -188,11 +189,13 @@ void PDBCollectionHeuristic::dump(const vector<vector<int> > &cgraph) const {
     cout << ")" << endl;
 }
 
-ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+
+    if (parser.dry_run())
         return 0;
-    
+
     vector<vector<int> > pattern_collection;
     // Simple selection strategy. Take all goal variables as patterns.
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -207,7 +210,8 @@ ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool 
         cout << "]" << endl;
     }
     cout << endl;*/
-    
-    return new PDBCollectionHeuristic(pattern_collection);
+
+    return new PDBCollectionHeuristic(/*opts, */ pattern_collection);
 }
 
+static Plugin<ScalarEvaluator> _plugin("pdbs", _parse);

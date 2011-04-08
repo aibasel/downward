@@ -1,33 +1,54 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
-#include "option_parser.h"
+#include <vector>
+#include <string>
+#include <map>
+#include <iostream>
+#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/open_list_buckets.h"
+#include "open_lists/tiebreaking_open_list.h"
+#include "open_lists/alternation_open_list.h"
+#include "open_lists/pareto_open_list.h"
+
+class SearchEngine;
+class LandmarksGraph;
+class ScalarEvaluator;
+class OptionParser;
+class Heuristic;
+template <class Entry>
+class OpenList;
 
 
-class ScalarEvaluatorPlugin {
-    ScalarEvaluatorPlugin(const ScalarEvaluatorPlugin &copy);
+template <class T>
+class Plugin {
+    Plugin(const Plugin<T> &copy);
 public:
-    ScalarEvaluatorPlugin(const std::string &key,
-                          OptionParser::ScalarEvalFactory factory);
-    ~ScalarEvaluatorPlugin();
+    Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
+        Registry<T *>::
+        instance()->register_object(key, factory);
+    }
+    ~Plugin() {}
 };
 
-
-class SynergyPlugin {
-    SynergyPlugin(const SynergyPlugin &copy);
+template <class Entry>
+class Plugin<OpenList<Entry > > {
+    Plugin(const Plugin<OpenList<Entry > > &copy);
 public:
-    SynergyPlugin(const std::string &key,
-                  OptionParser::SynergyFactory factory);
-    ~SynergyPlugin();
-};
+    ~Plugin();
 
-
-class LandmarkGraphPlugin {
-    LandmarkGraphPlugin(const LandmarkGraphPlugin &copy);
-public:
-    LandmarkGraphPlugin(const std::string &key,
-                        OptionParser::LandmarkGraphFactory factory);
-    ~LandmarkGraphPlugin();
+    static void register_open_lists() {
+        Registry<OpenList<Entry > *>::instance()->register_object(
+            "single", StandardScalarOpenList<Entry>::_parse);
+        Registry<OpenList<Entry > *>::instance()->register_object(
+            "single_buckets", BucketOpenList<Entry>::_parse);
+        Registry<OpenList<Entry > *>::instance()->register_object(
+            "tiebreaking", TieBreakingOpenList<Entry>::_parse);
+        Registry<OpenList<Entry > *>::instance()->register_object(
+            "alt", AlternationOpenList<Entry>::_parse);
+        Registry<OpenList<Entry > *>::instance()->register_object(
+            "pareto", ParetoOpenList<Entry>::_parse);
+    }
 };
 
 #endif

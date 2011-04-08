@@ -10,9 +10,8 @@
 using namespace std;
 
 
-IPCMaxHeuristic::IPCMaxHeuristic(const HeuristicOptions &options,
-                                 const vector<Heuristic *> &evals)
-    : Heuristic(options), evaluators(evals) {
+IPCMaxHeuristic::IPCMaxHeuristic(const Options &opts)
+    : Heuristic(opts), evaluators(opts.get_list<Heuristic *>("heuristics")) {
 }
 
 IPCMaxHeuristic::~IPCMaxHeuristic() {
@@ -52,41 +51,17 @@ bool IPCMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
     return result;
 }
 
-static ScalarEvaluator *create(const vector<string> &config,
-                               int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(") {
-        throw ParseError(start + 1);
-    }
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.add_list_option<Heuristic *>("heuristics");
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
 
-    vector<Heuristic *> heuristics_;
-    OptionParser::instance()->parse_heuristic_list(config, start + 2,
-                                                   end, false, heuristics_,
-                                                   dry_run);
-    if (heuristics_.empty()) {
-        throw ParseError(end);
-    }
-    end++;
+    opts.verify_list_non_empty<Heuristic *>("heuristics");
 
-    HeuristicOptions common_options;
-
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-
-        common_options.add_option_to_parser(option_parser);
-
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")") {
-        throw ParseError(end);
-    }
-
-    if (dry_run)
+    if (parser.dry_run())
         return 0;
     else
-        return new IPCMaxHeuristic(common_options, heuristics_);
+        return new IPCMaxHeuristic(opts);
 }
 
-static ScalarEvaluatorPlugin plugin("max", create);
+static Plugin<ScalarEvaluator> plugin("max", _parse);

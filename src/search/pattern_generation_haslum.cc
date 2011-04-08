@@ -19,11 +19,10 @@
 
 using namespace std;
 
-static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
-static ScalarEvaluatorPlugin plugin("ipdb", create);
-
-PatternGenerationHaslum::PatternGenerationHaslum(int max_pdb, int max_coll, int samples)
-: pdb_max_size(max_pdb), collection_max_size(max_coll), num_samples(samples) {
+PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
+    : pdb_max_size(opts.get<int>("pdb_max_size")),
+      collection_max_size(opts.get<int>("collection_max_size")),
+      num_samples(opts.get<int>("num_samples")) {
     hill_climbing();
 }
 
@@ -269,39 +268,27 @@ void PatternGenerationHaslum::hill_climbing() {
     }
 }
 
-ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
-    int pdb_max_size = 2000000;
-    int collection_max_size = 20000000;
-    int num_samples = 100;
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            option_parser.add_int_option("pdb_max_size", &pdb_max_size, "max number of states per pdb");
-            option_parser.add_int_option("collection_max_size", &collection_max_size, "max number of states for collection");
-            option_parser.add_int_option("num_samples", &num_samples, "number of samples");
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.add_option<int>("pdb_max_size", 2000000,
+                           "max number of states per pdb");
+    parser.add_option<int>("collection_max_size", 20000000,
+                           "max number of states for collection");
+    parser.add_option<int>("num_samples", 100, "number of samples");
 
-    if (pdb_max_size < 1) {
-        cerr << "error: size per pdb must be at least 1" << endl;
-        exit(2);
-    }
-    if (collection_max_size < 1) {
-        cerr << "error: size per pdb must be at least 1" << endl;
-        exit(2);
-    }
-    
-    if (dry_run)
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+
+    if (opts.get<int>("pdb_max_size") < 1)
+        parser.error("size per pdb must be at least 1");
+    if (opts.get<int>("collection_max_size") < 1)
+        parser.error("total pdb collection size must be at least 1");
+
+    if (parser.dry_run())
         return 0;
     Timer timer;
-    PatternGenerationHaslum pgh(pdb_max_size, collection_max_size, num_samples);
+    PatternGenerationHaslum pgh(opts);
     cout << "Pattern Generation (Haslum et al.) time: " << timer << endl;
     return pgh.get_pattern_collection_heuristic();
 }
+
+static Plugin<ScalarEvaluator> plugin("ipdb", _parse);
