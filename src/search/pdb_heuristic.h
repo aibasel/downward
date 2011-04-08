@@ -50,26 +50,32 @@ public:
     void dump(const std::vector<int> &pattern) const;
 };
 
+// Implements a Successor Generator for abstract operators
+class MatchTree {
+    struct Node {
+        Node(int test_var);
+        ~Node();
+        std::vector<const AbstractOperator *> applicable_operators;
+        int test_var;
+        Node **successors;
+        Node *star_successor;
+    };
+    std::vector<int> pattern;
+    std::vector<int> n_i;
+    Node *root;
+    void build_recursively(const AbstractOperator &op, int pre_index, Node *node, Node *parent);
+    void traverse(Node *node, int var_index, const size_t state_index,
+                  std::vector<const AbstractOperator *> &applicable_operators) const;
+public:
+    MatchTree(const std::vector<int> &pattern, const std::vector<int> &n_i);
+    ~MatchTree();
+    void insert(const AbstractOperator &op);
+    void get_applicable_operators(size_t state_index,
+                                  std::vector<const AbstractOperator *> &applicable_operators) const;
+};
+
 // Implements a single PDB
 class PDBHeuristic : public Heuristic {
-    // Implements a Successor Generator for abstract operators
-    class MatchTree {
-        struct Node {
-            Node(int test_var); 
-            ~Node();
-            std::vector<const AbstractOperator *> applicable_operators;
-            int test_var;
-            Node **successors;
-            Node *star_successor;
-        };
-        void build_recursively(const AbstractOperator &op, int pre_index, Node *node, Node *parent);
-    public:
-        MatchTree();
-        ~MatchTree();
-        void insert(const AbstractOperator &op);
-        void traverse(size_t state_index, std::vector<AbstractOperator *> &applicable_operators) const;
-    };
-    
     std::vector<int> pattern;
     size_t num_states;
     std::vector<int> variable_to_index;
