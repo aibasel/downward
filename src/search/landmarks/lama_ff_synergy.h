@@ -80,9 +80,8 @@ public:
     void get_lama_preferred_operators(std::vector<const Operator *> &result);
     void get_ff_preferred_operators(std::vector<const Operator *> &result);
 public:
-    LamaFFSynergy(const HeuristicOptions &options, LandmarksGraph &lm_graph,
-                  bool lm_pref_, bool lm_admissible_, bool lm_optimal_,
-                  bool use_action_landmarks_);
+    LamaFFSynergy(const Options &opts);
+
     ~LamaFFSynergy() {}
 
     int lama_heuristic_value;
@@ -95,9 +94,6 @@ public:
     Heuristic *get_lama_heuristic_proxy() {
         return &lama_heuristic_proxy;
     }
-
-    static void create_heuristics(const std::vector<string> &config, int start,
-                                  int &end, vector<Heuristic *> &heuristics);
 };
 
 #endif

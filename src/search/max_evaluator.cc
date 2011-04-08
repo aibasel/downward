@@ -54,4 +54,4 @@ static ScalarEvaluator *create(const vector<string> &config,
 // TODO: Comment this in once the max/sum evaluator stuff is fixed.
 //       For now, it's commented out to use the IPC implementation of
 //       max again, see issue181.
-// static ScalarEvaluatorPlugin plugin("max", create);
+// static Plugin<ScalarEvaluator> plugin("max", create);

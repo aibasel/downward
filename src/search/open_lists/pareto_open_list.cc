@@ -9,25 +9,19 @@
 using namespace std;
 
 template<class Entry>
-OpenList<Entry> *ParetoOpenList<Entry>::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    std::vector<ScalarEvaluator *> evaluators;
-    NamedOptionParser option_parser;
-    bool only_pref_ = false;
-    bool state_uniform_ = false;
-    option_parser.add_bool_option("pref_only", &only_pref_,
-                                  "insert only preferred operators");
-    option_parser.add_bool_option("state_uniform_selection", &state_uniform_,
-                                  "select uniformly from the candidate *states*");
-    OptionParser *parser = OptionParser::instance();
-    parser->parse_evals_and_options(config, start, end, evaluators,
-                                    option_parser, false, dry_run);
+OpenList<Entry> *ParetoOpenList<Entry>::_parse(OptionParser &parser) {
+    parser.add_list_option<ScalarEvaluator *>("evals");
+    parser.add_option<bool>("pref_only", false,
+                            "insert only preferred operators");
+    parser.add_option<bool>("state_uniform_selection", false,
+                            "select uniformly from the candidate *states*");
 
-    if (dry_run)
+    Options opts = parser.parse();
+
+    if (parser.dry_run())
         return 0;
     else
-        return new ParetoOpenList<Entry>(evaluators, only_pref_,
-                                         state_uniform_);
+        return new ParetoOpenList<Entry>(opts);
 }
 
 template<class Entry>
@@ -79,6 +73,14 @@ ParetoOpenList<Entry>::ParetoOpenList(const std::vector<ScalarEvaluator *> &eval
                                       bool preferred_only, bool state_uniform_selection_)
     : OpenList<Entry>(preferred_only),
       state_uniform_selection(state_uniform_selection_), evaluators(evals) {
+    last_evaluated_value.resize(evaluators.size());
+}
+
+template<class Entry>
+ParetoOpenList<Entry>::ParetoOpenList(const Options &opts)
+    : OpenList<Entry>(opts.get<bool>("pref_only")),
+      state_uniform_selection(opts.get<bool>("state_uniform_selection")),
+      evaluators(opts.get_list<ScalarEvaluator *>("evals")) {
     last_evaluated_value.resize(evaluators.size());
 }
 

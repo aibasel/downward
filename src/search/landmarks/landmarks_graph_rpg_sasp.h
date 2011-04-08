@@ -31,8 +31,8 @@ class LandmarksGraphNew : public LandmarksGraph {
     static bool domain_connectivity(const pair<int, int> &landmark,
                                     const hash_set<int> &exclude);
 public:
-    LandmarksGraphNew(LandmarkGraphOptions &options, Exploration *exploration)
-        : LandmarksGraph(options, exploration) {}
+    LandmarksGraphNew(const Options &opts)
+        : LandmarksGraph(opts) {}
     ~LandmarksGraphNew() {
     }
     static LandmarksGraph *create(const std::vector<std::string> &config, int start,

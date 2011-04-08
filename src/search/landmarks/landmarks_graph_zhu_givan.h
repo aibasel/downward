@@ -67,14 +67,11 @@ public:
     void generate_landmarks();
 
 public:
-    LandmarksGraphZhuGivan(
-        LandmarkGraphOptions &options, Exploration *exploration)
-        : LandmarksGraph(options, exploration) {
+    LandmarksGraphZhuGivan(const Options &opts)
+        : LandmarksGraph(opts) {
     }
     ~LandmarksGraphZhuGivan() {
     }
-    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
-                                  int &end, bool dry_run);
 };
 
 #endif

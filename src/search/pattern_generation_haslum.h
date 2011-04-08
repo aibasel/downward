@@ -4,9 +4,10 @@
 #include <map>
 #include <vector>
 
+class Options;
 class PDBCollectionHeuristic;
-class State;
 class PDBHeuristic;
+class State;
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
     int pdb_max_size;
@@ -24,7 +25,7 @@ class PatternGenerationHaslum {
                                 std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
     void hill_climbing();
 public:
-    PatternGenerationHaslum(int max_pdb_size, int max_collection_size, int num_samples);
+    PatternGenerationHaslum(const Options &opts);
     virtual ~PatternGenerationHaslum();
     PDBCollectionHeuristic *get_pattern_collection_heuristic() const { return current_collection; }
 };

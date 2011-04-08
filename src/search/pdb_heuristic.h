@@ -94,7 +94,8 @@ protected:
     virtual int compute_heuristic(const State &state);
 public:
     //PDBHeuristic(int max_abstract_states);
-    PDBHeuristic(const std::vector<int> &pattern, bool dump);
+    PDBHeuristic(/*const Options &opts, */
+                 const std::vector<int> &pattern, bool dump);
     virtual ~PDBHeuristic();
     const std::vector<int> &get_pattern() const { return pattern; };
     const std::vector<int> &get_h_values() const { return distances; };
