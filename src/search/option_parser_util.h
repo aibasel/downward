@@ -6,9 +6,9 @@
 #include <vector>
 #include <map>
 #include <ios>
-#include "ext/tree.hh"
-#include "ext/tree_util.hh"
-#include "ext/boost/any.hpp"
+#include <tree.hh>
+#include <tree_util.hh>
+#include <boost/any.hpp>
 
 
 class LandmarksGraph;
