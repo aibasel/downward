@@ -127,6 +127,89 @@ void AbstractState::dump(const vector<int> &pattern) const {
     }
 }
 
+// MatchTree ------------------------------------------------------------------
+
+MatchTree::MatchTree(const vector<int> &pattern_, const vector<int> &n_i_)
+    : pattern(pattern_), n_i(n_i_) {
+}
+
+MatchTree::~MatchTree() {
+}
+
+MatchTree::Node::Node(int test_var_) : test_var(test_var_),
+successors(new Node *[g_variable_domain[/*pattern[test_var_]*/0]]), star_successor(0) {
+}
+
+MatchTree::Node::~Node() {
+    delete[] successors;
+    delete star_successor;
+}
+
+void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, Node *node, Node *parent) {
+    const vector<pair<int, int> > &regression_preconditions = op.get_regression_preconditions();
+    if (pre_index == regression_preconditions.size()) { // all preconditions have been checked, insert op
+        node->applicable_operators.push_back(&op);
+    } else {
+        const pair<int, int> &var_val = regression_preconditions[pre_index];
+        if (node->test_var == var_val.first) { // operator has a precondition on test_var
+            if (node->successors[var_val.second] == 0) { // child with correct value doesn't exist, create
+                Node *new_node = new Node(-1);
+                node->successors[var_val.second] = new_node;
+                build_recursively(op, pre_index + 1, new_node, node);
+            } else { // child already exists
+                build_recursively(op, pre_index + 1, node->successors[var_val.second], node);
+            }
+        } else if (node->test_var == -1) { // node is a leaf
+            node->test_var = var_val.first;
+            Node *new_node = new Node(-1);
+            node->successors[var_val.second] = new_node;
+            build_recursively(op, pre_index + 1, new_node, node);
+        } else if (node->test_var > var_val.first) { // variable has been left out
+            assert(parent != 0); // if node is root and therefore parent 0, we should never get in this if clause
+            assert(parent->successors[regression_preconditions[pre_index - 1].second]->test_var == node->test_var);
+            Node *new_node = new Node(var_val.first); // new node gets the left out variable as test_var
+            parent->successors[regression_preconditions[pre_index - 1].second] = new_node; // parent points to new_node
+            new_node->star_successor = node; // new_node's *-edge points to node
+            Node *new_nodes_child = new Node(-1);
+            new_node->successors[var_val.second] = new_nodes_child; // new_node gets a default child
+            build_recursively(op, pre_index + 1, new_nodes_child, node);
+        } else { // operator doesn't have a precondition on test_var, follow/create *-edge
+            if (node->star_successor == 0) { // *-edge doesn't exist
+                Node *new_node = new Node(-1);
+                node->star_successor = new_node;
+                build_recursively(op, pre_index + 1, new_node, node);
+            } else { // *-edge exists
+                build_recursively(op, pre_index + 1, node->star_successor, node);
+            }
+        }
+    }
+}
+
+void MatchTree::insert(const AbstractOperator &op) {
+    root = new Node(0); // initialize root-node with var0
+    build_recursively(op, 0, root, 0);
+}
+
+void MatchTree::traverse(Node *node, int var_index, const size_t state_index,
+                         vector<const AbstractOperator *> &applicable_operators) const {
+    for (size_t i = 0; i < node->applicable_operators.size(); ++i) {
+        applicable_operators.push_back(node->applicable_operators[i]);
+    }
+    if (var_index == pattern.size()) // all state vars have been checked
+        return;
+    int temp = state_index / n_i[var_index];
+    int val = temp % g_variable_domain[pattern[var_index]];
+    Node *next_node = node->successors[val];
+    if (next_node == 0) // leaf reached
+        return;
+    traverse(next_node, var_index + 1, state_index, applicable_operators);
+}
+
+void MatchTree::get_applicable_operators(size_t state_index,
+                                         vector<const AbstractOperator *> &applicable_operators) const {
+    traverse(root, 0, state_index, applicable_operators);
+}
+
 // PDBHeuristic ---------------------------------------------------------------
 
 /*PDBHeuristic::PDBHeuristic(int max_abstract_states) {
@@ -179,72 +262,6 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
             exit(1);
         }
     }
-}
-
-PDBHeuristic::MatchTree::MatchTree() {
-}
-
-PDBHeuristic::MatchTree::~MatchTree() {
-}
-
-PDBHeuristic::MatchTree::Node::Node(int test_var_) : test_var(test_var_),
-successors(new Node *[g_variable_domain[/*pattern[test_var_]*/0]]), star_successor(0) { // TODO: get this to work with pattern
-}
-
-PDBHeuristic::MatchTree::Node::~Node() {
-    delete[] successors;
-    delete star_successor;
-}
-
-void PDBHeuristic::MatchTree::build_recursively(const AbstractOperator &op, int pre_index, Node *node, Node *parent) {
-    const vector<pair<int, int> > &regression_preconditions = op.get_regression_preconditions();
-    if (pre_index == regression_preconditions.size()) { // all preconditions have been checked, insert op
-        node->applicable_operators.push_back(&op);
-    } else {
-        const pair<int, int> &var_val = regression_preconditions[pre_index];
-        if (node->test_var == var_val.first) { // operator has a precondition on test_var
-            if (node->successors[var_val.second] == 0) { // child with correct value doesn't exist, create
-                Node *new_node = new Node(-1);
-                node->successors[var_val.second] = new_node;
-                build_recursively(op, pre_index + 1, new_node, node);
-            } else { // child already exists
-                build_recursively(op, pre_index + 1, node->successors[var_val.second], node);
-            }
-        } else if (node->test_var == -1) { // node is a leaf
-            node->test_var = var_val.first;
-            Node *new_node = new Node(-1);
-            node->successors[var_val.second] = new_node;
-            build_recursively(op, pre_index + 1, new_node, node);
-        } else if (node->test_var > var_val.first) { // variable has been left out
-            assert(parent != 0); // if node is root and therefore parent 0, we should never get in this if clause
-            assert(parent->successors[regression_preconditions[pre_index - 1].second]->test_var == node->test_var);
-            Node *new_node = new Node(var_val.first); // new node gets the left out variable as test_var
-            parent->successors[regression_preconditions[pre_index - 1].second] = new_node; // parent points to new_node
-            new_node->star_successor = node; // new_node's *-edge points to node
-            Node *new_nodes_child = new Node(-1);
-            new_node->successors[var_val.second] = new_nodes_child; // new_node gets a default child
-            build_recursively(op, pre_index + 1, new_nodes_child, node);
-        } else { // operator doesn't have a precondition on test_var, follow/create *-edge
-            if (node->star_successor == 0) { // *-edge doesn't exist
-                Node *new_node = new Node(-1);
-                node->star_successor = new_node;
-                build_recursively(op, pre_index + 1, new_node, node);
-            } else { // *-edge exists
-                build_recursively(op, pre_index + 1, node->star_successor, node);
-            }
-        }
-    }
-}
-
-void PDBHeuristic::MatchTree::insert(const AbstractOperator &op) {
-    Node *root = new Node(0); // initialize root-node with var0
-    build_recursively(op, 0, root, 0);
-}
-
-void PDBHeuristic::MatchTree::traverse(size_t state_index, vector<AbstractOperator *> &applicable_operators) const {
-    // TODO. dummies:
-    cout << state_index << endl;
-    applicable_operators.clear();
 }
 
 void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > &prev_pairs,
@@ -319,10 +336,10 @@ void PDBHeuristic::create_pdb() {
     // so far still use the multiplied out operators in order to have no more
     // operators with pre = -1. Better: build abstract operators on the fly
     // while creating the op_tree
-    /*MatchTree match_tree;
+    MatchTree match_tree(pattern, n_i);
     for (size_t i = 0; i < operators.size(); ++i) {
         match_tree.insert(operators[i]);
-    }*/
+    }
 
     // old method for comparison reasons
     /*vector<AbstractOperator> operators2;
@@ -505,12 +522,25 @@ size_t PDBHeuristic::hash_index(const AbstractState &abstract_state) const {
 AbstractState PDBHeuristic::inv_hash_index(int index) const {
     vector<int> var_vals;
     var_vals.resize(pattern.size());
+    for (int n = 0; n < pattern.size(); ++n) {
+        int temp = index / n_i[n];
+        var_vals[n] = temp % g_variable_domain[pattern[n]];
+    }
+
+    /*vector<int> var_vals2;
+    var_vals2.resize(pattern.size());
     for (int n = 1; n < pattern.size(); ++n) {
         int d = index % n_i[n];
-        var_vals[n - 1] = d / n_i[n - 1];
+        var_vals2[n - 1] = d / n_i[n - 1];
         index -= d;
     }
-    var_vals[pattern.size() - 1] = index / n_i[pattern.size() - 1];
+    var_vals2[pattern.size() - 1] = index / n_i[pattern.size() - 1];
+    assert(var_vals.size() == var_vals2.size());
+    for (size_t i = 0; i < var_vals.size(); ++i) {
+        //cout << "alt: " << var_vals[i] << " neu: " << var_vals2[i] << endl;
+        assert(var_vals[i] == var_vals2[i]);
+    }*/
+
     return AbstractState(var_vals);
 }
 
