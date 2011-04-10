@@ -136,8 +136,8 @@ MatchTree::MatchTree(const vector<int> &pattern_, const vector<int> &n_i_)
 MatchTree::~MatchTree() {
 }
 
-MatchTree::Node::Node(int test_var_) : test_var(test_var_),
-successors(new Node *[g_variable_domain[/*pattern[test_var_]*/0]]), star_successor(0) {
+MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_),
+    successors(test_var_size == 0 ? 0 : new Node *[test_var_size]), star_successor(0) {
 }
 
 MatchTree::Node::~Node() {
@@ -153,7 +153,7 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, Nod
         const pair<int, int> &var_val = regression_preconditions[pre_index];
         if (node->test_var == var_val.first) { // operator has a precondition on test_var
             if (node->successors[var_val.second] == 0) { // child with correct value doesn't exist, create
-                Node *new_node = new Node(-1);
+                Node *new_node = new Node();
                 node->successors[var_val.second] = new_node;
                 build_recursively(op, pre_index + 1, new_node, node);
             } else { // child already exists
@@ -161,21 +161,22 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, Nod
             }
         } else if (node->test_var == -1) { // node is a leaf
             node->test_var = var_val.first;
-            Node *new_node = new Node(-1);
+            node->successors = new Node *[g_variable_domain[pattern[var_val.first]]];
+            Node *new_node = new Node();
             node->successors[var_val.second] = new_node;
             build_recursively(op, pre_index + 1, new_node, node);
         } else if (node->test_var > var_val.first) { // variable has been left out
             assert(parent != 0); // if node is root and therefore parent 0, we should never get in this if clause
             assert(parent->successors[regression_preconditions[pre_index - 1].second]->test_var == node->test_var);
-            Node *new_node = new Node(var_val.first); // new node gets the left out variable as test_var
+            Node *new_node = new Node(var_val.first, g_variable_domain[pattern[var_val.first]]); // new node gets the left out variable as test_var
             parent->successors[regression_preconditions[pre_index - 1].second] = new_node; // parent points to new_node
             new_node->star_successor = node; // new_node's *-edge points to node
-            Node *new_nodes_child = new Node(-1);
+            Node *new_nodes_child = new Node();
             new_node->successors[var_val.second] = new_nodes_child; // new_node gets a default child
             build_recursively(op, pre_index + 1, new_nodes_child, node);
         } else { // operator doesn't have a precondition on test_var, follow/create *-edge
             if (node->star_successor == 0) { // *-edge doesn't exist
-                Node *new_node = new Node(-1);
+                Node *new_node = new Node();
                 node->star_successor = new_node;
                 build_recursively(op, pre_index + 1, new_node, node);
             } else { // *-edge exists
