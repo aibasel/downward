@@ -53,7 +53,7 @@ public:
 // Implements a Successor Generator for abstract operators
 class MatchTree {
     struct Node {
-        Node(int test_var);
+        Node(int test_var = -1, int test_var_size = 0);
         ~Node();
         std::vector<const AbstractOperator *> applicable_operators;
         int test_var;
