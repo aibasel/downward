@@ -12,7 +12,7 @@
 
 class LandmarkFactory {
 public:
-    LandmarkFactory(LandmarkGraph::Options &options, Exploration *exploration);
+    LandmarkFactory(const Options &opts);
     virtual ~LandmarkFactory() {};
     // compute_lm_graph *must* be called to avoid memory leeks!
     // returns a landmarkgraph created by a factory class.

@@ -3,6 +3,7 @@
 
 #include "open_list.h"
 #include "../evaluator.h"
+#include "../option_parser.h"
 
 #include <deque>
 #include <ext/hash_map>
@@ -58,6 +59,7 @@ protected:
 public:
     ParetoOpenList(const std::vector<ScalarEvaluator *> &evals,
                    bool preferred_only, bool state_uniform_selection_);
+    ParetoOpenList(const Options &opts);
     ~ParetoOpenList();
 
     // open list interface
@@ -72,8 +74,7 @@ public:
     bool dead_end_is_reliable() const;
     void get_involved_heuristics(std::set<Heuristic *> &hset);
 
-    static OpenList<Entry> *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run = false);
+    static OpenList<Entry> *_parse(OptionParser &p);
 };
 
 #include "pareto_open_list.cc"

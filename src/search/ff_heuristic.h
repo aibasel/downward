@@ -26,10 +26,8 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    FFHeuristic(const HeuristicOptions &options);
+    FFHeuristic(const Options &options);
     ~FFHeuristic();
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
 };
 
 #endif

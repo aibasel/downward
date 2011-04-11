@@ -6,7 +6,7 @@
 
 class LandmarkFactoryRpgExhaust : public LandmarkFactory {
 public:
-    LandmarkFactoryRpgExhaust(LandmarkGraph::Options &options, Exploration *exploration);
+    LandmarkFactoryRpgExhaust(const Options &opts);
     virtual ~LandmarkFactoryRpgExhaust() {}
 private:
     void generate_landmarks();

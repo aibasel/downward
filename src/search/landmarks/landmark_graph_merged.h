@@ -10,9 +10,7 @@ class LandmarkGraphMerged : public LandmarkFactory {
     void generate_landmarks();
     LandmarkNode *get_matching_landmark(const LandmarkNode &lm) const;
 public:
-    LandmarkGraphMerged(LandmarkGraph::Options &options,
-                        Exploration *exploration,
-                        const std::vector<LandmarkGraph *> &lm_graphs_);
+    LandmarkGraphMerged(const Options &opts);
     virtual ~LandmarkGraphMerged();
 };
 

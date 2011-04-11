@@ -2,12 +2,11 @@
 
 #include "globals.h"
 #include "heuristic.h"
-#include "open_list_parser.h"
 #include "option_parser.h"
 #include "successor_generator.h"
 #include "g_evaluator.h"
 #include "sum_evaluator.h"
-#include "open_lists/tiebreaking_open_list.h"
+#include "plugin.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -15,19 +14,17 @@
 using namespace std;
 
 EagerSearch::EagerSearch(
-    const SearchEngineOptions &options,
-    OpenList<state_var_t *> *open,
-    bool reopen_closed, bool pathmax_correction,
-    bool use_multi_path_dependence_, ScalarEvaluator *f_eval)
-    : SearchEngine(options),
-      reopen_closed_nodes(reopen_closed),
-      do_pathmax(pathmax_correction),
-      use_multi_path_dependence(use_multi_path_dependence_),
-      open_list(open), f_evaluator(f_eval) {
-}
-
-void EagerSearch::set_pref_operator_heuristics(vector<Heuristic *> &heur) {
-    preferred_operator_heuristics = heur;
+    const Options &opts)
+    : SearchEngine(opts),
+      reopen_closed_nodes(opts.get<bool>("reopen_closed")),
+      do_pathmax(opts.get<bool>("pathmax")),
+      use_multi_path_dependence(opts.get<bool>("mpd")),
+      open_list(opts.get<OpenList<state_var_t *> *>("open")),
+      f_evaluator(opts.get<ScalarEvaluator *>("f_eval")) {
+    if (opts.contains("preferred")) {
+        preferred_operator_heuristics =
+            opts.get_list<Heuristic *>("preferred");
+    }
 }
 
 void EagerSearch::initialize() {
@@ -312,95 +309,51 @@ void EagerSearch::print_heuristic_values(const vector<int> &values) const {
     }
 }
 
-SearchEngine *EagerSearch::create(const vector<string> &config,
-                                  int start, int &end,
-                                  bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
+static SearchEngine *_parse(OptionParser &parser) {
+    //open lists are currently registered with the parser on demand,
+    //because for templated classes the usual method of registering
+    //does not work:
+    Plugin<OpenList<state_var_t *> >::register_open_lists();
 
-    SearchEngineOptions common_options;
-    OpenListParser<state_var_t *> *p = OpenListParser<state_var_t *>::instance();
-    OpenList<state_var_t *> *open = p->parse_open_list(config, start + 2, end,
-                                                       dry_run);
-
-    end++;
-    if (end >= config.size())
-        throw ParseError(end);
-
-    // parse options
-    bool reopen_closed = false;
-    bool pathmax = false;
-    ScalarEvaluator *f_eval = 0;
-    vector<Heuristic *> preferred_list;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-
-        common_options.add_options_to_parser(option_parser);
-        option_parser.add_bool_option("reopen_closed", &reopen_closed,
-                                      "reopen closed nodes");
-        option_parser.add_bool_option("pathmax", &pathmax,
-                                      "use pathmax correction");
-        option_parser.add_scalar_evaluator_option(
-            "progress_evaluator", &f_eval, "set evaluator for jump statistics", true);
-        option_parser.add_heuristic_list_option("preferred",
-                                                &preferred_list, "use preferred operators of these heuristics");
-
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
+    parser.add_option<OpenList<state_var_t *> *>("open");
+    parser.add_option<bool>("reopen_closed", false,
+                            "reopen closed nodes");
+    parser.add_option<bool>("pathmax", false,
+                            "use pathmax correction");
+    parser.add_option<ScalarEvaluator *>("f_eval", 0,
+                                         "set evaluator for jump statistics");
+    parser.add_list_option<Heuristic *>
+        ("preferred", vector<Heuristic *>(),
+        "use preferred operators of these heuristics");
+    SearchEngine::add_options_to_parser(parser);
+    Options opts = parser.parse();
 
     EagerSearch *engine = 0;
-    if (!dry_run) {
-        engine = new EagerSearch(common_options,
-                                 open, reopen_closed, pathmax, false, f_eval);
-        engine->set_pref_operator_heuristics(preferred_list);
+    if (!parser.dry_run()) {
+        opts.set<bool>("mpd", false);
+        engine = new EagerSearch(opts);
     }
 
     return engine;
 }
 
-SearchEngine *EagerSearch::create_astar(
-    const vector<string> &config, int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-
-    SearchEngineOptions common_options;
-    ScalarEvaluator *eval = OptionParser::instance()->parse_scalar_evaluator(
-        config, start + 2, end, dry_run);
-    end++;
-
-    bool pathmax = false;
-    bool mpd = false;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-
-        common_options.add_options_to_parser(option_parser);
-
-        option_parser.add_bool_option("pathmax", &pathmax,
-                                      "use pathmax correction");
-        option_parser.add_bool_option("mpd", &mpd,
-                                      "use multi-path dependence (LM-A*)");
-
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
-
+static SearchEngine *_parse_astar(OptionParser &parser) {
+    parser.add_option<ScalarEvaluator *>("eval");
+    parser.add_option<bool>("pathmax", false,
+                            "use pathmax correction");
+    parser.add_option<bool>("mpd", false,
+                            "use multi-path dependence (LM-A*)");
+    SearchEngine::add_options_to_parser(parser);
+    Options opts = parser.parse();
 
     EagerSearch *engine = 0;
-    if (!dry_run) {
+    if (!parser.dry_run()) {
         GEvaluator *g = new GEvaluator();
         vector<ScalarEvaluator *> sum_evals;
         sum_evals.push_back(g);
+        ScalarEvaluator *eval = opts.get<ScalarEvaluator *>("eval");
         sum_evals.push_back(eval);
-        SumEvaluator *f_eval = new SumEvaluator(sum_evals);
+        ScalarEvaluator *f_eval = new SumEvaluator(sum_evals);
 
         // use eval for tiebreaking
         std::vector<ScalarEvaluator *> evals;
@@ -409,46 +362,31 @@ SearchEngine *EagerSearch::create_astar(
         OpenList<state_var_t *> *open = \
             new TieBreakingOpenList<state_var_t *>(evals, false, false);
 
-        engine = new EagerSearch(common_options, open, true, pathmax, mpd,
-                                 f_eval);
+        opts.set("open", open);
+        opts.set("f_eval", f_eval);
+        opts.set("reopen_closed", true);
+        engine = new EagerSearch(opts);
     }
 
     return engine;
 }
 
-SearchEngine *EagerSearch::create_greedy(
-    const vector<string> &config, int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
+static SearchEngine *_parse_greedy(OptionParser &parser) {
+    parser.add_list_option<ScalarEvaluator *>("evals");
+    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), "use preferred operators of these heuristics");
+    parser.add_option<int>("boost", 0, "boost value for preferred operator open lists");
+    SearchEngine::add_options_to_parser(parser);
 
-    SearchEngineOptions common_options;
-    vector<ScalarEvaluator *> evals;
-    OptionParser::instance()->parse_scalar_evaluator_list(config, start + 2,
-                                                          end, false, evals,
-                                                          dry_run);
-    if (evals.empty())
-        throw ParseError(end);
-    end++;
 
-    vector<Heuristic *> preferred_list;
-    int boost = 0;
-
-    if (config[end] != ")") {
-        end++;
-        NamedOptionParser option_parser;
-        common_options.add_options_to_parser(option_parser);
-        option_parser.add_heuristic_list_option("preferred",
-                                                &preferred_list, "use preferred operators of these heuristics");
-        option_parser.add_int_option("boost", &boost,
-                                     "boost value for successful sub-open-lists");
-        option_parser.parse_options(config, end, end, dry_run);
-        end++;
-    }
-    if (config[end] != ")")
-        throw ParseError(end);
+    Options opts = parser.parse();
+    opts.verify_list_non_empty<ScalarEvaluator *>("evals");
 
     EagerSearch *engine = 0;
-    if (!dry_run) {
+    if (!parser.dry_run()) {
+        vector<ScalarEvaluator *> evals =
+            opts.get_list<ScalarEvaluator *>("evals");
+        vector<Heuristic *> preferred_list =
+            opts.get_list<Heuristic *>("preferred");
         OpenList<state_var_t *> *open;
         if ((evals.size() == 1) && preferred_list.empty()) {
             open = new StandardScalarOpenList<state_var_t *>(evals[0], false);
@@ -463,12 +401,23 @@ SearchEngine *EagerSearch::create_greedy(
                                                                   true));
                 }
             }
-            open = new AlternationOpenList<state_var_t *>(inner_lists, boost);
+            open = new AlternationOpenList<state_var_t *>(
+                inner_lists, opts.get<int>("boost"));
         }
 
-        engine = new EagerSearch(common_options, open,
-                                 false, false, false, NULL);
-        engine->set_pref_operator_heuristics(preferred_list);
+        opts.set("open", open);
+        opts.set("reopen_closed", false);
+        opts.set("pathmax", false);
+        opts.set("mpd", false);
+        ScalarEvaluator *sep = 0;
+        opts.set("f_eval", sep);
+        opts.set("bound", numeric_limits<int>::max());
+        opts.set("preferred", preferred_list);
+        engine = new EagerSearch(opts);
     }
     return engine;
 }
+
+static Plugin<SearchEngine> _plugin("eager", _parse);
+static Plugin<SearchEngine> _plugin_astar("astar", _parse_astar);
+static Plugin<SearchEngine> _plugin_greedy("eager_greedy", _parse_greedy);

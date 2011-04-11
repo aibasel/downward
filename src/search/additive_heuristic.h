@@ -29,11 +29,8 @@ protected:
     // Common part of h^add and h^ff computation.
     int compute_add_and_ff(const State &state);
 public:
-    AdditiveHeuristic(const HeuristicOptions &options);
+    AdditiveHeuristic(const Options &options);
     ~AdditiveHeuristic();
-
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
 };
 
 #endif

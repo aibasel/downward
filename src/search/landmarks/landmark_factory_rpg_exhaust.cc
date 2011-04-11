@@ -5,18 +5,12 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-using namespace std;
-
-static LandmarkGraph *create(const std::vector<std::string> &config, int start,
-                             int &end, bool dry_run);
-static LandmarkGraphPlugin plugin("lm_exhaust", create);
-
 /* Problem: We don't get any orders here. (All we have is the reasonable orders
    that are inferred later.) It's thus best to combine this landmark generation
    method with others, don't use it by itself. */
 
-LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(LandmarkGraph::Options &options, Exploration *exploration)
-    : LandmarkFactory(options, exploration) {
+LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
+    : LandmarkFactory(opts) {
 }
 
 void LandmarkFactoryRpgExhaust::generate_landmarks() {
@@ -46,29 +40,20 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
         }
 }
 
-LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarkGraph::Options common_options;
+static LandmarkGraph *_parse(OptionParser &parser) {
+    LandmarkGraph::add_options_to_parser(parser);
 
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
+    Options opts = parser.parse();
 
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
-
-    if (dry_run) {
+    if (parser.dry_run()) {
         return 0;
     } else {
-        LandmarkFactoryRpgExhaust lm_graph_factory(common_options, new Exploration(common_options.heuristic_options));
+        opts.set<Exploration *>("explor", new Exploration(opts));
+        LandmarkFactoryRpgExhaust lm_graph_factory(opts);
         LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
         return graph;
     }
 }
+
+static Plugin<LandmarkGraph> _plugin(
+    "lm_exhaust", _parse);

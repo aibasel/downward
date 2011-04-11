@@ -2,15 +2,12 @@
 #include "../plugin.h"
 #include "../exact_timer.h"
 
-static LandmarkGraph *create(const std::vector<std::string> &config, int start,
-                             int &end, bool dry_run);
-static LandmarkGraphPlugin plugin("lm_hm", create);
 
 std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }
 
-std::ostream & operator<<(std::ostream &os, const FluentSet &fs) {
+std::ostream &operator<<(std::ostream &os, const FluentSet &fs) {
     FluentSet::const_iterator it;
     os << "[";
     for (it = fs.begin(); it != fs.end(); ++it) {
@@ -21,7 +18,7 @@ std::ostream & operator<<(std::ostream &os, const FluentSet &fs) {
 }
 
 template<typename T>
-std::ostream & operator<<(std::ostream &os, const std::list<T> &alist) {
+std::ostream &operator<<(std::ostream &os, const std::list<T> &alist) {
     typename std::list<T>::const_iterator it;
 
     os << "(";
@@ -586,8 +583,9 @@ bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
     return !inconsistent(make_pair(var1, val1), make_pair(var2, val2));
 }
 
-HMLandmarks::HMLandmarks(LandmarkGraph::Options &options, Exploration *exploration, int m)
-    : LandmarkFactory(options, exploration), m_(m) {
+HMLandmarks::HMLandmarks(const Options &opts)
+    : LandmarkFactory(opts),
+      m_(opts.get<int>("m")) {
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
     // need this to be able to print propositions for debugging
     // already called in global.cc
@@ -675,7 +673,7 @@ void HMLandmarks::calc_achievers() {
                 }
             }
             if (j == lmn.vars.size()) {
-                // not inconsistent with any of the other landmarks fluents
+                // not inconsistent with any of the other landmark fluents
                 lmn.possible_achievers.insert(op);
             }
         }
@@ -1028,33 +1026,23 @@ void HMLandmarks::generate_landmarks() {
     free_unneeded_memory();
 }
 
-LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarkGraph::Options common_options;
+static LandmarkGraph *_parse(OptionParser &parser) {
+    parser.add_option<int>("m", 2, "m (as in h^m)");
+    LandmarkGraph::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (parser.help_mode())
+        return 0;
 
-    int m = 2;
+    opts.set("explor", new Exploration(opts));
 
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
-
-            option_parser.add_int_option("m", &m, "m (as in h^m)");
-
-            option_parser.parse_options(config, end, end, dry_run);
-            ++end;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
-
-    if (dry_run) {
+    if (parser.dry_run()) {
         return 0;
     } else {
-        HMLandmarks lm_graph_factory(common_options, new Exploration(common_options.heuristic_options), m);
+        HMLandmarks lm_graph_factory(opts);
         LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
         return graph;
     }
 }
+
+static Plugin<LandmarkGraph> _plugin(
+    "lm_hm", _parse);
