@@ -41,7 +41,7 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
                                    const vector<pair<int, int> > &eff_pairs, int c,
                                    const vector<int> &n_i)
-                                   : cost(c), regression_preconditions(prev_pairs), regression_effects(pre_pairs) {
+                                   : cost(c), regression_preconditions(prev_pairs) {
     for (size_t i = 0; i < eff_pairs.size(); ++i) {
         regression_preconditions.push_back(eff_pairs[i]);
     }
@@ -67,14 +67,29 @@ void AbstractOperator::dump(const vector<int> &pattern) const {
     cout << "AbstractOperator:" << endl;
     cout << "Conditions:" << endl;
     for (size_t i = 0; i < conditions.size(); ++i) {
-        cout << "Variable: " << conditions[i].first << " (True name: " 
+        cout << "Variable: " << conditions[i].first << " (True name: "
         << g_variable_name[pattern[conditions[i].first]] << ") Value: " << conditions[i].second << endl;
     }
     cout << "Effects:" << endl;
     for (size_t i = 0; i < effects.size(); ++i) {
-        cout << "Variable: " << effects[i].first << " (True name: " 
+        cout << "Variable: " << effects[i].first << " (True name: "
         << g_variable_name[pattern[effects[i].first]] << ") Value: " << effects[i].second << endl;
     }
+}
+
+void AbstractOperator::dump2(const vector<int> &pattern) const {
+    cout << "AbstractOperator:" << endl;
+    cout << "Regression preconditions:" << endl;
+    for (size_t i = 0; i < regression_preconditions.size(); ++i) {
+        cout << "Variable: " << regression_preconditions[i].first << " (True name: "
+        << g_variable_name[pattern[regression_preconditions[i].first]] << ") Value: " << regression_preconditions[i].second << endl;
+    }
+    /*cout << "Regression effects:" << endl;
+    for (size_t i = 0; i < regression_effects.size(); ++i) {
+        cout << "Variable: " << regression_effects[i].first << " (True name: "
+        << g_variable_name[pattern[regression_effects[i].first]] << ") Value: " << regression_effects[i].second << endl;
+    }*/
+    cout << "Hash effect:" << hash_effect << endl;
 }
 
 // AbstractState ----------------------------------------------------------------------------------
@@ -130,14 +145,22 @@ void AbstractState::dump(const vector<int> &pattern) const {
 // MatchTree ------------------------------------------------------------------
 
 MatchTree::MatchTree(const vector<int> &pattern_, const vector<int> &n_i_)
-    : pattern(pattern_), n_i(n_i_) {
+    : pattern(pattern_), n_i(n_i_), root(0) {
 }
 
 MatchTree::~MatchTree() {
 }
 
 MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_),
-    successors(test_var_size == 0 ? 0 : new Node *[test_var_size]), star_successor(0) {
+    /*successors(test_var_size == 0 ? 0 : new Node *[test_var_size]), */star_successor(0) {
+    if (test_var_size == 0) {
+        successors = 0;
+    } else {
+        successors = new Node *[test_var_size];
+        for (int i = 0; i < test_var_size; ++i) {
+            successors[i] = 0;
+        }
+    }
 }
 
 MatchTree::Node::~Node() {
@@ -145,50 +168,74 @@ MatchTree::Node::~Node() {
     delete star_successor;
 }
 
-void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, Node *node, Node *parent) {
+void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int old_index, Node *node, Node *parent) {
+    cout << endl;
+    cout << "test_var = " << node->test_var << endl;
+    cout << "pre_index = " << pre_index << endl;
     const vector<pair<int, int> > &regression_preconditions = op.get_regression_preconditions();
     if (pre_index == regression_preconditions.size()) { // all preconditions have been checked, insert op
+        cout << "inserting operator" << endl;
         node->applicable_operators.push_back(&op);
     } else {
         const pair<int, int> &var_val = regression_preconditions[pre_index];
         if (node->test_var == var_val.first) { // operator has a precondition on test_var
+            cout << "case 1: operator has precondition on actual test_var" << endl;
             if (node->successors[var_val.second] == 0) { // child with correct value doesn't exist, create
+                cout << "child doesn't exist, create" << endl;
                 Node *new_node = new Node();
                 node->successors[var_val.second] = new_node;
-                build_recursively(op, pre_index + 1, new_node, node);
+                build_recursively(op, pre_index + 1, pre_index, new_node, node);
             } else { // child already exists
-                build_recursively(op, pre_index + 1, node->successors[var_val.second], node);
+                cout << "child exists, follow" << endl;
+                Node *test = node->successors[var_val.second];
+                cout << test->test_var << endl;
+                build_recursively(op, pre_index + 1, pre_index, node->successors[var_val.second], node);
             }
         } else if (node->test_var == -1) { // node is a leaf
+            cout << "case 2: leaf node" << endl;
             node->test_var = var_val.first;
             node->successors = new Node *[g_variable_domain[pattern[var_val.first]]];
+            for (int i = 0; i < g_variable_domain[pattern[var_val.first]]; ++i) {
+                node->successors[i] = 0;
+            }
             Node *new_node = new Node();
             node->successors[var_val.second] = new_node;
-            build_recursively(op, pre_index + 1, new_node, node);
+            build_recursively(op, pre_index + 1, pre_index, new_node, node);
         } else if (node->test_var > var_val.first) { // variable has been left out
+            cout << "case 3: variable has been left out" << endl;
             assert(parent != 0); // if node is root and therefore parent 0, we should never get in this if clause
-            assert(parent->successors[regression_preconditions[pre_index - 1].second]->test_var == node->test_var);
             Node *new_node = new Node(var_val.first, g_variable_domain[pattern[var_val.first]]); // new node gets the left out variable as test_var
-            parent->successors[regression_preconditions[pre_index - 1].second] = new_node; // parent points to new_node
+            if (old_index == pre_index) { // method was called from the last case, parent -> node is a *-edge
+                assert(parent->star_successor == node);
+                parent->star_successor = new_node; // parent points to new_node
+            } else { // method was called from any other case, i.e. pre_index == old_index + 1, parent -> node is not a *-edge
+                assert(parent->successors[regression_preconditions[old_index].second] == node);
+                assert(old_index + 1 == pre_index);
+                parent->successors[regression_preconditions[old_index].second] = new_node; // parent points to new_node
+            }
             new_node->star_successor = node; // new_node's *-edge points to node
             Node *new_nodes_child = new Node();
             new_node->successors[var_val.second] = new_nodes_child; // new_node gets a default child
-            build_recursively(op, pre_index + 1, new_nodes_child, node);
+            build_recursively(op, pre_index + 1, pre_index, new_nodes_child, new_node);
         } else { // operator doesn't have a precondition on test_var, follow/create *-edge
+            cout << "case 4: *-edge" << endl;
             if (node->star_successor == 0) { // *-edge doesn't exist
+                cout << "*-edge doesn't exist" << endl;
                 Node *new_node = new Node();
                 node->star_successor = new_node;
-                build_recursively(op, pre_index + 1, new_node, node);
+                build_recursively(op, pre_index, pre_index, new_node, node);
             } else { // *-edge exists
-                build_recursively(op, pre_index + 1, node->star_successor, node);
+                cout << "*-edge exists" << endl;
+                build_recursively(op, pre_index, pre_index, node->star_successor, node);
             }
         }
     }
 }
 
 void MatchTree::insert(const AbstractOperator &op) {
-    root = new Node(0); // initialize root-node with var0
-    build_recursively(op, 0, root, 0);
+    if (root == 0)
+        root = new Node(0, g_variable_domain[pattern[0]]); // initialize root-node with var0
+    build_recursively(op, 0, 0, root, 0);
 }
 
 void MatchTree::traverse(Node *node, int var_index, const size_t state_index,
@@ -204,6 +251,11 @@ void MatchTree::traverse(Node *node, int var_index, const size_t state_index,
     if (next_node == 0) // leaf reached
         return;
     traverse(next_node, var_index + 1, state_index, applicable_operators);
+    next_node = node->star_successor;
+    if (next_node == 0)
+        return;
+    traverse(next_node, var_index + 1, state_index, applicable_operators);
+    delete next_node;
 }
 
 void MatchTree::get_applicable_operators(size_t state_index,
@@ -337,10 +389,12 @@ void PDBHeuristic::create_pdb() {
     // so far still use the multiplied out operators in order to have no more
     // operators with pre = -1. Better: build abstract operators on the fly
     // while creating the op_tree
-    MatchTree match_tree(pattern, n_i);
+    /*MatchTree match_tree(pattern, n_i);
     for (size_t i = 0; i < operators.size(); ++i) {
+        cout << endl;
+        operators[i].dump2(pattern);
         match_tree.insert(operators[i]);
-    }
+    }*/
 
     // old method for comparison reasons
     /*vector<AbstractOperator> operators2;
