@@ -628,8 +628,23 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 
     vector<int> pattern = opts.get_list<int>("pattern");
     if (!pattern.empty()) {
-        // TODO: use this pattern; test that all var numbers
-        // are >= 0 && < num_variables and that they are all unique
+        //cout << "Reading pattern from option." << endl;
+        // TODO: This code is called twice. Why?
+        sort(pattern.begin(), pattern.end());
+        int old_size = pattern.size();
+        vector<int>::const_iterator it = unique(pattern.begin(), pattern.end());
+        pattern.resize(it - pattern.begin());
+        if (pattern.size() != old_size)
+            parser.error("there are duplicates of variables in the pattern");
+        else if (pattern[0] < 0)
+            parser.error("there is a variable < 0");
+        else if (pattern[pattern.size() - 1] > g_variable_domain.size())
+            parser.error("there is a variable > number of variables");
+        /*cout << "Pattern is ";
+        for (size_t i = 0; i < pattern.size(); ++i) {
+            cout << pattern[i] << ", ";
+        }
+        cout << endl;*/
     }
     if (opts.get<int>("max_states") < 1)
         parser.error("abstraction size must be at least 1");
@@ -661,20 +676,24 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 
     pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
 #else
-    VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL, 0.0);
-    int var = vof.next();
-    int num_states = g_variable_domain[var];
-    while (num_states <= opts.get<int>("max_states")) {
-        //cout << "Number of abstract states = " << num_states << endl;
-        //cout << "Including variable: " << var << " (True name:" << g_variable_name[var] << ")" << endl;
-        pattern.push_back(var);
-        if (!vof.done()) {
-            var = vof.next();
-            num_states *= g_variable_domain[var];
+    // if no pattern is specified as option
+    if (pattern.empty()) {
+        VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL, 0.0);
+        int var = vof.next();
+        int num_states = g_variable_domain[var];
+        while (num_states <= opts.get<int>("max_states")) {
+            //cout << "Number of abstract states = " << num_states << endl;
+            //cout << "Including variable: " << var << " (True name:" << g_variable_name[var] << ")" << endl;
+            pattern.push_back(var);
+            if (!vof.done()) {
+                var = vof.next();
+                num_states *= g_variable_domain[var];
+            }
+            else
+                break;
         }
-        else
-            break;
     }
+
 #endif
     return new PDBHeuristic(/*opts, */pattern, true);
 }
