@@ -22,7 +22,8 @@ using namespace std;
 PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
-      num_samples(opts.get<int>("num_samples")) {
+      num_samples(opts.get<int>("num_samples")),
+      min_improvement(opts.get<int>("min_improvement")) {
     hill_climbing();
 }
 
@@ -171,25 +172,21 @@ void PatternGenerationHaslum::hill_climbing() {
     sort(candidate_patterns.begin(), candidate_patterns.end());
     candidate_patterns.erase(unique(candidate_patterns.begin(), candidate_patterns.end()), candidate_patterns.end());
     cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
-    
-    // sample only once
-    vector<State> samples;
-    sample_states(samples, average_operator_costs);
 
     Timer timer;
     // actual hillclimbing loop
-    //map<vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation - TODO: hash_map?
-    vector<PDBHeuristic *> pdb_cache; // cache pdbs to avoid recalculation
-    bool improved = true;
-    while (improved) {
+    map<vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation - TODO: hash_map?
+    //vector<PDBHeuristic *> pdb_cache; // cache pdbs to avoid recalculation
+    int improvement = num_samples;
+    while (improvement >= min_improvement) {
         cout << "current collection size is " << collection_size << endl;
         if (collection_size >= collection_max_size) {
             cout << "stopping hill climbing due to collection max size" << endl;
             break;
         }
-        improved = false;
-        //vector<State> samples;
-        //sample_states(samples, average_operator_costs);
+        improvement = 0;
+        vector<State> samples;
+        sample_states(samples, average_operator_costs);
 
         // TODO: drop PDBHeuristic and use astar instead to compute h values for the sample states only
         // How is the advance of astar if we always have new samples? If we use pdbs and we don't rebuild
@@ -198,19 +195,19 @@ void PatternGenerationHaslum::hill_climbing() {
         int best_pattern_index = 0;
         PDBHeuristic *pdbheuristic;
         for (size_t i = 0; i < candidate_patterns.size(); ++i) {
-            /*map<vector<int>, PDBHeuristic *>::const_iterator it = pattern_to_pdb.find(candidate_patterns[i]);
+            map<vector<int>, PDBHeuristic *>::const_iterator it = pattern_to_pdb.find(candidate_patterns[i]);
             if (it == pattern_to_pdb.end()) {
-                pdbheuristic = new PDBHeuristic(candidate_patterns[i]);
+                pdbheuristic = new PDBHeuristic(candidate_patterns[i], false);
                 pattern_to_pdb.insert(make_pair(candidate_patterns[i], pdbheuristic));
             } else {
                 pdbheuristic = it->second;
-            }*/
-            if (i < pdb_cache.size()) {
+            }
+            /*if (i < pdb_cache.size()) {
                 pdbheuristic = pdb_cache[i];
             } else {
                 pdbheuristic = new PDBHeuristic(candidate_patterns[i], false);
                 pdb_cache.push_back(pdbheuristic);
-            }
+            }*/
             vector<vector<PDBHeuristic *> > max_additive_subsets;
             current_collection->get_max_additive_subsets(candidate_patterns[i], max_additive_subsets);
             int count = 0;
@@ -226,7 +223,7 @@ void PatternGenerationHaslum::hill_climbing() {
             if (count > best_pattern_count) {
                 best_pattern_count = count;
                 best_pattern_index = i;
-                improved = true;
+                improvement = count;
             }
             if (count > 0) {
                 cout << "pattern [";
@@ -236,7 +233,7 @@ void PatternGenerationHaslum::hill_climbing() {
                 cout << " ] improvement: " << count << endl;
             }
         }
-        if (improved) {
+        if (improvement >= min_improvement) {
             cout << "found a better pattern with improvement " << best_pattern_count << endl;
             cout << "pattern [";
             for (size_t i = 0; i < candidate_patterns[best_pattern_index].size(); ++i) {
@@ -258,14 +255,14 @@ void PatternGenerationHaslum::hill_climbing() {
         cout << "Actual time (hill climbing loop): " << timer << endl;
     }
     // delete all created pattern databases in the map
-    /*map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.begin();
+    map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.begin();
     while (it != pattern_to_pdb.end()) {
         delete it->second;
         ++it;
-    }*/
-    for (size_t i = 0; i < pdb_cache.size(); ++i) {
-        delete pdb_cache[i];
     }
+    /*for (size_t i = 0; i < pdb_cache.size(); ++i) {
+        delete pdb_cache[i];
+    }*/
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
@@ -274,6 +271,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("collection_max_size", 20000000,
                            "max number of states for collection");
     parser.add_option<int>("num_samples", 100, "number of samples");
+    parser.add_option<int>("min_improvement", 1,
+                           "minimum improvement while hillclimbing");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
@@ -282,6 +281,10 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         parser.error("size per pdb must be at least 1");
     if (opts.get<int>("collection_max_size") < 1)
         parser.error("total pdb collection size must be at least 1");
+    if (opts.get<int>("min_improvement") < 1)
+        parser.error("minimum improvement must be at least 1");
+    if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
+        parser.error("minimum improvement mustn't be higher than number of samples");
 
     if (parser.dry_run())
         return 0;
