@@ -172,16 +172,11 @@ void PatternGenerationHaslum::hill_climbing() {
     sort(candidate_patterns.begin(), candidate_patterns.end());
     candidate_patterns.erase(unique(candidate_patterns.begin(), candidate_patterns.end()), candidate_patterns.end());
     cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
-    
-    // sample only once
-    //vector<State> samples;
-    //sample_states(samples, average_operator_costs);
 
     Timer timer;
     // actual hillclimbing loop
-    //map<vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation - TODO: hash_map?
-    vector<PDBHeuristic *> pdb_cache; // cache pdbs to avoid recalculation
-    //bool improved = true;
+    map<vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation - TODO: hash_map?
+    //vector<PDBHeuristic *> pdb_cache; // cache pdbs to avoid recalculation
     int improvement = num_samples;
     while (improvement >= min_improvement) {
         cout << "current collection size is " << collection_size << endl;
@@ -189,7 +184,6 @@ void PatternGenerationHaslum::hill_climbing() {
             cout << "stopping hill climbing due to collection max size" << endl;
             break;
         }
-        //improved = false;
         improvement = 0;
         vector<State> samples;
         sample_states(samples, average_operator_costs);
@@ -201,19 +195,19 @@ void PatternGenerationHaslum::hill_climbing() {
         int best_pattern_index = 0;
         PDBHeuristic *pdbheuristic;
         for (size_t i = 0; i < candidate_patterns.size(); ++i) {
-            /*map<vector<int>, PDBHeuristic *>::const_iterator it = pattern_to_pdb.find(candidate_patterns[i]);
+            map<vector<int>, PDBHeuristic *>::const_iterator it = pattern_to_pdb.find(candidate_patterns[i]);
             if (it == pattern_to_pdb.end()) {
-                pdbheuristic = new PDBHeuristic(candidate_patterns[i]);
+                pdbheuristic = new PDBHeuristic(candidate_patterns[i], false);
                 pattern_to_pdb.insert(make_pair(candidate_patterns[i], pdbheuristic));
             } else {
                 pdbheuristic = it->second;
-            }*/
-            if (i < pdb_cache.size()) {
+            }
+            /*if (i < pdb_cache.size()) {
                 pdbheuristic = pdb_cache[i];
             } else {
                 pdbheuristic = new PDBHeuristic(candidate_patterns[i], false);
                 pdb_cache.push_back(pdbheuristic);
-            }
+            }*/
             vector<vector<PDBHeuristic *> > max_additive_subsets;
             current_collection->get_max_additive_subsets(candidate_patterns[i], max_additive_subsets);
             int count = 0;
@@ -230,7 +224,6 @@ void PatternGenerationHaslum::hill_climbing() {
                 best_pattern_count = count;
                 best_pattern_index = i;
                 improvement = count;
-                //improved = true;
             }
             if (count > 0) {
                 cout << "pattern [";
@@ -262,14 +255,14 @@ void PatternGenerationHaslum::hill_climbing() {
         cout << "Actual time (hill climbing loop): " << timer << endl;
     }
     // delete all created pattern databases in the map
-    /*map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.begin();
+    map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.begin();
     while (it != pattern_to_pdb.end()) {
         delete it->second;
         ++it;
-    }*/
-    for (size_t i = 0; i < pdb_cache.size(); ++i) {
-        delete pdb_cache[i];
     }
+    /*for (size_t i = 0; i < pdb_cache.size(); ++i) {
+        delete pdb_cache[i];
+    }*/
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
