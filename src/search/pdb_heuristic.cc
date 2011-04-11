@@ -337,10 +337,10 @@ void PDBHeuristic::create_pdb() {
     // so far still use the multiplied out operators in order to have no more
     // operators with pre = -1. Better: build abstract operators on the fly
     // while creating the op_tree
-    MatchTree match_tree(pattern, n_i);
-    for (size_t i = 0; i < operators.size(); ++i) {
-        match_tree.insert(operators[i]);
-    }
+    //MatchTree match_tree(pattern, n_i);
+    //for (size_t i = 0; i < operators.size(); ++i) {
+    //    match_tree.insert(operators[i]);
+    //}
 
     // old method for comparison reasons
     /*vector<AbstractOperator> operators2;
