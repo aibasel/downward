@@ -174,7 +174,7 @@ void PatternGenerationHaslum::hill_climbing() {
     cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
 
     Timer timer;
-    // actual hillclimbing loop
+    // actual hill climbing loop
     map<vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation - TODO: hash_map?
     //vector<PDBHeuristic *> pdb_cache; // cache pdbs to avoid recalculation
     int improvement = num_samples;
@@ -272,7 +272,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
                            "max number of states for collection");
     parser.add_option<int>("num_samples", 100, "number of samples");
     parser.add_option<int>("min_improvement", 1,
-                           "minimum improvement while hillclimbing");
+                           "minimum improvement while hill climbing");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
