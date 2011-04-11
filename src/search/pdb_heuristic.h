@@ -33,6 +33,7 @@ public:
     int get_hash_effect() const { return hash_effect; }
     int get_cost() const { return cost; }
     void dump(const std::vector<int> &pattern) const;
+    void dump2(const std::vector<int> &pattern) const;
 };
 
 class State;
@@ -63,7 +64,7 @@ class MatchTree {
     std::vector<int> pattern;
     std::vector<int> n_i;
     Node *root;
-    void build_recursively(const AbstractOperator &op, int pre_index, Node *node, Node *parent);
+    void build_recursively(const AbstractOperator &op, int pre_index, int old_index, Node *node, Node *parent);
     void traverse(Node *node, int var_index, const size_t state_index,
                   std::vector<const AbstractOperator *> &applicable_operators) const;
 public:
