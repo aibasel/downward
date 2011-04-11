@@ -22,7 +22,8 @@ using namespace std;
 PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
-      num_samples(opts.get<int>("num_samples")) {
+      num_samples(opts.get<int>("num_samples")),
+      min_improvement(opts.get<int>("min_improvement")) {
     hill_climbing();
 }
 
@@ -180,14 +181,16 @@ void PatternGenerationHaslum::hill_climbing() {
     // actual hillclimbing loop
     //map<vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation - TODO: hash_map?
     vector<PDBHeuristic *> pdb_cache; // cache pdbs to avoid recalculation
-    bool improved = true;
-    while (improved) {
+    //bool improved = true;
+    int improvement = num_samples;
+    while (improvement >= min_improvement) {
         cout << "current collection size is " << collection_size << endl;
         if (collection_size >= collection_max_size) {
             cout << "stopping hill climbing due to collection max size" << endl;
             break;
         }
-        improved = false;
+        //improved = false;
+        improvement = 0;
         vector<State> samples;
         sample_states(samples, average_operator_costs);
 
@@ -226,7 +229,8 @@ void PatternGenerationHaslum::hill_climbing() {
             if (count > best_pattern_count) {
                 best_pattern_count = count;
                 best_pattern_index = i;
-                improved = true;
+                improvement = count;
+                //improved = true;
             }
             if (count > 0) {
                 cout << "pattern [";
@@ -236,7 +240,7 @@ void PatternGenerationHaslum::hill_climbing() {
                 cout << " ] improvement: " << count << endl;
             }
         }
-        if (improved) {
+        if (improvement >= min_improvement) {
             cout << "found a better pattern with improvement " << best_pattern_count << endl;
             cout << "pattern [";
             for (size_t i = 0; i < candidate_patterns[best_pattern_index].size(); ++i) {
@@ -274,6 +278,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("collection_max_size", 20000000,
                            "max number of states for collection");
     parser.add_option<int>("num_samples", 100, "number of samples");
+    parser.add_option<int>("min_improvement", 1,
+                           "minimum improvement while hillclimbing");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
@@ -282,6 +288,10 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         parser.error("size per pdb must be at least 1");
     if (opts.get<int>("collection_max_size") < 1)
         parser.error("total pdb collection size must be at least 1");
+    if (opts.get<int>("min_improvement") < 1)
+        parser.error("minimum improvement must be at least 1");
+    if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
+        parser.error("minimum improvement mustn't be higher than number of samples");
 
     if (parser.dry_run())
         return 0;

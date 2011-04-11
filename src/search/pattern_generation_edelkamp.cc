@@ -182,7 +182,7 @@ void PatternGenerationEdelkamp::mutate(double probability) {
 double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values) {
     double total_sum = 0;
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
-        cout << "evaluate pattern collection " << i << " of " << pattern_collections.size() << endl;
+        cout << "evaluate pattern collection " << i << " of " << (pattern_collections.size() - 1) << endl;
         double fitness = 0;
         vector<bool> variables_used(g_variable_domain.size(), false);
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
@@ -192,16 +192,16 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             // TODO: iteration through bitvector occurs here and in transformation to pattern normal form
             // any way to avoid this?
             /*bool patterns_additive = true;
-            for (size_t i = 0; i < bitvector.size(); ++i) {
-                if (bitvector[i]) {
-                    if (variables_used[i]) {
+            for (size_t k = 0; k < bitvector.size(); ++k) {
+                if (bitvector[k]) {
+                    if (variables_used[k]) {
                         cout << "patterns not additive anymore!" << endl;
                         fitness = 0.001; // HACK: for the cases in which all pattern collections are invalid,
                         // prevent gettin 0 probabilities for all entries
                         patterns_additive = false;
                         break;
                     }
-                    variables_used[i] = true;
+                    variables_used[k] = true;
                 }
             }
             if (!patterns_additive) {
@@ -209,14 +209,18 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             }*/
             // calculate mean h-value for actual pattern collection
             //hash_map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
+            cout << "look into the map" << endl;
             map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
+            cout << "done :)" << endl;
             double mean_h = 0;
             if (it == pattern_to_fitness.end()) {
                 vector<int> pattern;
                 transform_to_pattern_normal_form(bitvector, pattern);
-                //cout << "transformed into normal pattern form" << endl;
+                cout << "transformed into normal pattern form" << endl;
+                if (pattern.size() == 0)
+                    cout << "empty pattern" << endl; 
                 PDBHeuristic pdb_heuristic(pattern, false);
-                //cout << "calculated pdb" << endl;
+                cout << "calculated pdb" << endl;
                 const vector<int> &h_values = pdb_heuristic.get_h_values();
                 double sum = 0;
                 int num_states = h_values.size();
