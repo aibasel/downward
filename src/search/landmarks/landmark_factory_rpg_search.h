@@ -15,9 +15,7 @@ class LandmarkFactoryRpgSearch : public LandmarkFactory {
     int choose_random(vector<int> &evals);
     int relaxed_plan_length_without(LandmarkNode *lm);
 public:
-    LandmarkFactoryRpgSearch(LandmarkGraph::Options &options,
-                            Exploration *exploration,
-                            bool uniform_sampling_, int max_depth_, int num_tries_);
+    LandmarkFactoryRpgSearch(const Options &opts);
     virtual ~LandmarkFactoryRpgSearch();
 };
 

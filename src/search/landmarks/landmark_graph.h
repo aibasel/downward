@@ -122,18 +122,7 @@ typedef __gnu_cxx::hash_set<LandmarkNode *, hash_pointer> LandmarkSet;
 
 class LandmarkGraph {
 public:
-    struct Options {
-        bool reasonable_orders;
-        bool only_causal_landmarks;
-        bool disjunctive_landmarks;
-        bool conjunctive_landmarks;
-        bool no_orders;
-        HeuristicOptions heuristic_options;
-        int lm_cost_type;
-
-        Options();
-        void add_option_to_parser(NamedOptionParser &option_parser);
-    };
+    static void add_options_to_parser(OptionParser &parser);
     
     // ------------------------------------------------------------------------------
     // methods needed only by non-landmarkgraph-factories
@@ -163,7 +152,7 @@ public:
 
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
-    LandmarkGraph(Options &options, Exploration *explor);
+    LandmarkGraph(const Options &opts);
     virtual ~LandmarkGraph() {}
 
     inline LandmarkNode &get_simple_lm_node(const pair<int, int> &a) const {

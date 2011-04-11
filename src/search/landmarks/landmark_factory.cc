@@ -7,8 +7,8 @@
 
 using namespace __gnu_cxx;
 
-LandmarkFactory::LandmarkFactory(LandmarkGraph::Options &options, Exploration *exploration) 
-    : lm_graph(new LandmarkGraph(options, exploration)) {
+LandmarkFactory::LandmarkFactory(const Options &opts) 
+    : lm_graph(new LandmarkGraph(opts)) {
 }
 
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {

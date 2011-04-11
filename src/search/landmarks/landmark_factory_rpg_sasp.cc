@@ -16,13 +16,9 @@
 #include <ext/hash_set>
 
 using namespace __gnu_cxx;
-
-static LandmarkGraph *create(const std::vector<std::string> &config, int start,
-                             int &end, bool dry_run);
-static LandmarkGraphPlugin plugin("lm_rhw", create);
     
-LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(LandmarkGraph::Options &options, Exploration *exploration)
-    : LandmarkFactory(options, exploration)  {
+LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
+    : LandmarkFactory(opts)  {
 }
 
 void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
@@ -470,31 +466,19 @@ void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     }
 }
 
-LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarkGraph::Options common_options;
+static LandmarkGraph *_parse(OptionParser &parser) {
+    LandmarkGraph::add_options_to_parser(parser);
 
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
+    Options opts = parser.parse();
 
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
-
-    if (dry_run) {
+    if (parser.dry_run()) {
         return 0;
     } else {
-        LandmarkFactoryRpgSasp lm_graph_factory(
-            common_options,
-            new Exploration(common_options.heuristic_options));
+        opts.set<Exploration *>("explor", new Exploration(opts));
+        LandmarkFactoryRpgSasp lm_graph_factory(opts);
         LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
         return graph;
     }
 }
+
+static Plugin<LandmarkGraph> _plugin("lm_rhw", _parse);

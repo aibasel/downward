@@ -2,6 +2,7 @@
 #define OPEN_LISTS_STANDARD_SCALAR_OPEN_LIST_H
 
 #include "open_list.h"
+#include "../option_parser.h"
 
 #include <deque>
 #include <map>
@@ -27,6 +28,7 @@ protected:
     ScalarEvaluator *get_evaluator() {return evaluator; }
 
 public:
+    StandardScalarOpenList(const Options &opts);
     StandardScalarOpenList(ScalarEvaluator *eval,
                            bool preferred_only);
     ~StandardScalarOpenList();
@@ -41,8 +43,7 @@ public:
     bool dead_end_is_reliable() const;
     void get_involved_heuristics(std::set<Heuristic *> &hset);
 
-    static OpenList<Entry> *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run = false);
+    static OpenList<Entry> *_parse(OptionParser &parser);
 };
 
 #include "standard_scalar_open_list.cc"

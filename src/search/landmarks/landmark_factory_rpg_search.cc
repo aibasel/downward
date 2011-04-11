@@ -4,22 +4,15 @@
 
 using namespace __gnu_cxx;
 
-static LandmarkGraph *create(const std::vector<std::string> &config, int start,
-                             int &end, bool dry_run);
-static LandmarkGraphPlugin plugin("lm_search", create);
-
-LandmarkFactoryRpgSearch::LandmarkFactoryRpgSearch(
-    LandmarkGraph::Options &options, Exploration *exploration,
-    bool uniform_sampling_, int max_depth_, int num_tries_)
-    : LandmarkFactory(options, exploration),
-      uniform_sampling(uniform_sampling_),
-      max_depth(max_depth_),
-      num_tries(num_tries_) {
+LandmarkFactoryRpgSearch::LandmarkFactoryRpgSearch(const Options &opts)
+    : LandmarkFactory(opts),
+      uniform_sampling(opts.get<bool>("uniform_sampling")),
+      max_depth(opts.get<int>("max_depth")),
+      num_tries(opts.get<int>("num_tries")) {
 }
 
 LandmarkFactoryRpgSearch::~LandmarkFactoryRpgSearch() {
 }
-
 
 void LandmarkFactoryRpgSearch::generate_landmarks() {
     cout << "Generating landmarks by search, verify using RPG method" << endl;
@@ -134,47 +127,22 @@ int LandmarkFactoryRpgSearch::relaxed_plan_length_without(LandmarkNode *exclude)
     return val;
 }
 
-LandmarkGraph *create(const std::vector<string> &config, int start, int &end, bool dry_run) {
-    LandmarkGraph::Options common_options;
+static LandmarkGraph *_parse(OptionParser &parser) {
+    parser.add_option<int>("max_depth", 10, "max depth");
+    parser.add_option<int>("num_tries", 10, "max number of tries");
+    parser.add_option<bool>("uniform_sampling", false, "uniform sampling");
+    LandmarkGraph::add_options_to_parser(parser);
+    Options opts = parser.parse();
 
-    bool uniform_sampling = false;
-    int max_depth = 10;
-    int num_tries = 10;
-
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            common_options.add_option_to_parser(option_parser);
-
-            option_parser.add_int_option("max_depth",
-                                         &max_depth,
-                                         "max depth");
-
-            option_parser.add_int_option("num_tries",
-                                         &num_tries,
-                                         "max number of tries");
-
-            option_parser.add_bool_option("uniform_sampling",
-                                          &uniform_sampling,
-                                          "uniform sampling");
-
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
-    }
-
-    if (dry_run) {
+    if (parser.dry_run()) {
         return 0;
     } else {
-        LandmarkFactoryRpgSearch lm_graph_factory(
-            common_options, new Exploration(common_options.heuristic_options),
-            uniform_sampling, max_depth, num_tries);
+        opts.set<Exploration *>("explor", new Exploration(opts));
+        LandmarkFactoryRpgSearch lm_graph_factory(opts);
         LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
         return graph;
     }
 }
+
+static Plugin<LandmarkGraph> _plugin(
+    "lm_search", _parse);

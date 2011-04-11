@@ -32,7 +32,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
     static bool domain_connectivity(const std::pair<int, int> &landmark,
                                     const __gnu_cxx::hash_set<int> &exclude);
 public:
-    LandmarkFactoryRpgSasp(LandmarkGraph::Options &options, Exploration *exploration);
+    LandmarkFactoryRpgSasp(const Options &opts);
     virtual ~LandmarkFactoryRpgSasp() {}
 };
 

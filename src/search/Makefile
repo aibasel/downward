@@ -21,7 +21,6 @@ HEADERS = \
           operator.h \
           operator_cost.h \
           option_parser.h \
-          plugin.h \
           pref_evaluator.h \
           relaxation_heuristic.h \
           search_engine.h \
@@ -135,7 +134,7 @@ CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DST
 ## The following line is a HACK to cross-compile a 64-bit executable
 ## on a 32-bit Ubuntu machine (it also needs the -m32 to be changed to
 ## -m64, of course.) See http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
-CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu -Iext
 
 LINKOPT  = -g
 LINKOPT += -m32

@@ -68,7 +68,7 @@ public:
     void generate_landmarks();
 
 public:
-    LandmarkFactoryZhuGivan(LandmarkGraph::Options &options, Exploration *exploration);
+    LandmarkFactoryZhuGivan(const Options &opts);
     virtual ~LandmarkFactoryZhuGivan() {}
 };
 

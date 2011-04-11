@@ -71,8 +71,8 @@ typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 // changed anymore at this moment.
 class HMLandmarks : public LandmarkFactory {
 public:
-    HMLandmarks(LandmarkGraph::Options &options, Exploration *exploration, int m);
-    virtual ~HMLandmarks() {};
+    HMLandmarks(const Options &opts);
+    virtual ~HMLandmarks() {}
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
@@ -80,8 +80,8 @@ private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
     typedef __gnu_cxx::hash_map<int, std::set<int> > TriggerSet;
 
-    void generate_landmarks();
-    
+    virtual void generate_landmarks();
+
     void compute_h_m_landmarks();
     void compute_noop_landmarks(int op_index, int noop_index,
                                 std::list<int> const &local_landmarks,
