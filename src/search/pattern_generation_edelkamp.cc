@@ -16,12 +16,11 @@ namespace std { using namespace __gnu_cxx; }
 
 using namespace std;
 
-static ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run);
-static ScalarEvaluatorPlugin plugin("gapdb", create);
-
-PatternGenerationEdelkamp::PatternGenerationEdelkamp(int pdb_size, int num_coll, int num_episodes,
-                                                     double mutation_probability)
-    : pdb_max_size(pdb_size), num_collections(num_coll) {
+PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
+    : pdb_max_size(opts.get<int>("pdb_max_size")),
+      num_collections(opts.get<int>("num_collections")) {
+    int num_episodes = opts.get<int>("num_episodes");
+    double mutation_probability = opts.get<int>("mutation_probability") / 100.0;
     initialize();
     //cout << "initial pattern collections:" << endl;
     //dump();
@@ -298,49 +297,39 @@ PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuris
     return new PDBCollectionHeuristic(pattern_collection);
 }
 
-ScalarEvaluator *create(const vector<string> &config, int start, int &end, bool dry_run) {
-    int pdb_max_size = 100;
-    int num_collections = 5;
-    int num_episodes = 30;
-    int mutation_probability = 1;
-    if (config.size() > start + 2 && config[start + 1] == "(") {
-        end = start + 2;
-        if (config[end] != ")") {
-            NamedOptionParser option_parser;
-            option_parser.add_int_option("pdb_max_size", &pdb_max_size, "max size for pdbs");
-            option_parser.add_int_option("num_collections", &num_collections, "number of pattern collections to maintain");
-            option_parser.add_int_option("num_episodes", &num_episodes, "number of episodes");
-            option_parser.add_int_option("mutation_probability", &mutation_probability, "probability for flipping a bit");
-            option_parser.parse_options(config, end, end, dry_run);
-            end++;
-        }
-        if (config[end] != ")")
-            throw ParseError(end);
-    } else {
-        end = start;
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    // TODO: check if 100 is the correct default value!
+    parser.add_option<int>("pdb_max_size", 100, "max number of states per pdb");
+    parser.add_option<int>("num_collections", 5, "number of pattern collections to maintain");
+    parser.add_option<int>("num_episodes", 30, "number of episodes");
+    parser.add_option<int>("mutation_probability", 1, "probability in per cent for flipping a bit");
+
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+
+    if (opts.get<int>("pdb_max_size") < 1) {
+        //cerr << "error: size per pdb must be at least 1" << endl;
+        //exit(2);
+    }
+    if (opts.get<int>("num_collections") < 1) {
+        //cerr << "error: number of pattern collections must be at least 1" << endl;
+        //exit(2);
+    }
+    if (opts.get<int>("num_episodes") < 1) {
+        //cerr << "error: number of episodes must be at least 1" << endl;
+        //exit(2);
+    }
+    if (opts.get<int>("mutation_probability") < 0 || opts.get<int>("mutation_probability") > 100) {
+        //cerr << "error: mutation probability must be in [0..100]" << endl;
+        //exit(2);
     }
 
-    if (pdb_max_size < 1) {
-        cerr << "error: size per pdb must be at least 1" << endl;
-        exit(2);
-    }
-    if (num_collections < 1) {
-        cerr << "error: number of pattern collections must be at least 1" << endl;
-        exit(2);
-    }
-    if (num_episodes < 1) {
-        cerr << "error: number of episodes must be at least 1" << endl;
-        exit(2);
-    }
-    if (mutation_probability < 0 || mutation_probability > 100) {
-        cerr << "error: mutation probability must be in [0..100]" << endl;
-        exit(2);
-    }
-
-    if (dry_run)
+    if (parser.dry_run())
         return 0;
     Timer timer;
-    PatternGenerationEdelkamp pge(pdb_max_size, num_collections, num_episodes, mutation_probability / 100.0);
+    PatternGenerationEdelkamp pge(opts);
     cout << "Pattern Generation (Edelkamp) time: " << timer << endl;
     return pge.get_pattern_collection_heuristic();
 }
+
+static Plugin<ScalarEvaluator> plugin("gapdb", _parse);
