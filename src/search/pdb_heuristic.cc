@@ -149,10 +149,10 @@ MatchTree::MatchTree(const vector<int> &pattern_, const vector<int> &n_i_)
 }
 
 MatchTree::~MatchTree() {
+    //TODO: delete all Nodes!
 }
 
-MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_),
-    /*successors(test_var_size == 0 ? 0 : new Node *[test_var_size]), */star_successor(0) {
+MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_), star_successor(0) {
     if (test_var_size == 0) {
         successors = 0;
     } else {
@@ -170,7 +170,8 @@ MatchTree::Node::~Node() {
 
 void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int old_index, Node *node, Node *parent) {
     cout << endl;
-    cout << "test_var = " << node->test_var << endl;
+    cout << "node->test_var = " << node->test_var << endl;
+    cout << "node->applicable_operators.size() = " << node->applicable_operators.size() << endl;
     cout << "pre_index = " << pre_index << endl;
     const vector<pair<int, int> > &regression_preconditions = op.get_regression_preconditions();
     if (pre_index == regression_preconditions.size()) { // all preconditions have been checked, insert op
@@ -185,15 +186,14 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int
                 Node *new_node = new Node();
                 node->successors[var_val.second] = new_node;
                 build_recursively(op, pre_index + 1, pre_index, new_node, node);
-            } else { // child already exists
+            } else { // child already exists, follow
                 cout << "child exists, follow" << endl;
-                Node *test = node->successors[var_val.second];
-                cout << test->test_var << endl;
                 build_recursively(op, pre_index + 1, pre_index, node->successors[var_val.second], node);
             }
         } else if (node->test_var == -1) { // node is a leaf
             cout << "case 2: leaf node" << endl;
             node->test_var = var_val.first;
+            cout << "assigning new value of " << var_val.first << " to node->test_var" << endl;
             node->successors = new Node *[g_variable_domain[pattern[var_val.first]]];
             for (int i = 0; i < g_variable_domain[pattern[var_val.first]]; ++i) {
                 node->successors[i] = 0;
@@ -219,13 +219,13 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int
             build_recursively(op, pre_index + 1, pre_index, new_nodes_child, new_node);
         } else { // operator doesn't have a precondition on test_var, follow/create *-edge
             cout << "case 4: *-edge" << endl;
-            if (node->star_successor == 0) { // *-edge doesn't exist
-                cout << "*-edge doesn't exist" << endl;
+            if (node->star_successor == 0) { // *-edge doesn't exist, create
+                cout << "*-edge doesn't exist, create" << endl;
                 Node *new_node = new Node();
                 node->star_successor = new_node;
                 build_recursively(op, pre_index, pre_index, new_node, node);
-            } else { // *-edge exists
-                cout << "*-edge exists" << endl;
+            } else { // *-edge exists, follow
+                cout << "*-edge exists, follow" << endl;
                 build_recursively(op, pre_index, pre_index, node->star_successor, node);
             }
         }
@@ -233,34 +233,80 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int
 }
 
 void MatchTree::insert(const AbstractOperator &op) {
+    cout << "inserting operator into MatchTree:" << endl;
+    op.dump2(pattern);
     if (root == 0)
         root = new Node(0, g_variable_domain[pattern[0]]); // initialize root-node with var0
     build_recursively(op, 0, 0, root, 0);
+    cout << endl;
 }
 
 void MatchTree::traverse(Node *node, int var_index, const size_t state_index,
                          vector<const AbstractOperator *> &applicable_operators) const {
-    for (size_t i = 0; i < node->applicable_operators.size(); ++i) {
-        applicable_operators.push_back(node->applicable_operators[i]);
+    cout << "node->test_var = " << node->test_var << endl;
+    //TODO: handle the case where a variable has been left out in the MatchTree, var_index++ or something
+    if (node->applicable_operators.empty())
+        cout << "no applicable operators at this node" << endl;
+    else {
+        cout << "applicable_operators.size() = " << node->applicable_operators.size() << endl;
+        for (size_t i = 0; i < node->applicable_operators.size(); ++i) {
+            node->applicable_operators[i]->dump2(pattern);
+            applicable_operators.push_back(node->applicable_operators[i]);
+        }
     }
+    cout << "var_index = " << var_index << endl;
     if (var_index == pattern.size()) // all state vars have been checked
         return;
     int temp = state_index / n_i[var_index];
     int val = temp % g_variable_domain[pattern[var_index]];
-    Node *next_node = node->successors[val];
-    if (next_node == 0) // leaf reached
-        return;
-    traverse(next_node, var_index + 1, state_index, applicable_operators);
-    next_node = node->star_successor;
-    if (next_node == 0)
-        return;
-    traverse(next_node, var_index + 1, state_index, applicable_operators);
-    delete next_node;
+    if (node->successors[val] != 0) // no leaf reached
+        traverse(node->successors[val], var_index + 1, state_index, applicable_operators);
+    if (node->star_successor != 0) // always follow the *-edge, if exists
+        traverse(node->star_successor, var_index + 1, state_index, applicable_operators);
 }
 
 void MatchTree::get_applicable_operators(size_t state_index,
                                          vector<const AbstractOperator *> &applicable_operators) const {
+    cout << "getting applicable operators for state_index = " << state_index << endl;
     traverse(root, 0, state_index, applicable_operators);
+    cout << endl;
+}
+
+void MatchTree::dump(Node *node) const {
+    cout << endl;
+    if (node == 0)
+        node = root;
+    cout << "node->test_var = " << node->test_var << endl;
+    if (node->applicable_operators.empty())
+        cout << "no applicable operators at this node" << endl;
+    else {
+        cout << "applicable_operators.size() = " << node->applicable_operators.size() << endl;
+        for (size_t i = 0; i < node->applicable_operators.size(); ++i) {
+            node->applicable_operators[i]->dump2(pattern);
+        }
+    }
+    if (node->test_var == -1) {
+        cout << "leaf node!" << endl;
+        assert(node->successors == 0);
+        assert(node->star_successor == 0);
+    } else {
+        for (int i = 0; i < g_variable_domain[pattern[node->test_var]]; ++i) {
+            if (node->successors[i] == 0)
+                cout << "no child for value " << i << " of test_var" << endl;
+            else {
+                cout << "recursive call for child with value " << i << " of test_var" << endl;
+                dump(node->successors[i]);
+                cout << "back from recursive call (for successors[" << i << "]) to node with test_var = " << node->test_var << endl;
+            }
+        }
+        if (node->star_successor == 0)
+            cout << "no star_successor" << endl;
+        else {
+            cout << "recursive call for star_successor" << endl;
+            dump(node->star_successor);
+            cout << "back from recursive call (for star_successor) to node with test_var = " << node->test_var << endl;
+        }
+    }
 }
 
 // PDBHeuristic ---------------------------------------------------------------
@@ -391,10 +437,9 @@ void PDBHeuristic::create_pdb() {
     // while creating the op_tree
     /*MatchTree match_tree(pattern, n_i);
     for (size_t i = 0; i < operators.size(); ++i) {
-        cout << endl;
-        operators[i].dump2(pattern);
         match_tree.insert(operators[i]);
     }*/
+    //match_tree.dump();
 
     // old method for comparison reasons
     /*vector<AbstractOperator> operators2;
@@ -508,6 +553,15 @@ void PDBHeuristic::create_pdb() {
             }
         }*/
 
+        /*vector<const AbstractOperator *> applicable_operators;
+        match_tree.get_applicable_operators(state_index, applicable_operators);
+        cout << "applicable operators according to match_tree:" << endl;
+        for (size_t i = 0; i < applicable_operators.size(); ++i) {
+            applicable_operators[i]->dump2(pattern);
+            cout << endl;
+        }*/
+
+        //cout << "applicable operators according to old method:" << endl;
         // regress abstract_state
         AbstractState abstract_state = inv_hash_index(state_index);
         for (size_t i = 0; i < operators.size(); ++i) {
@@ -522,6 +576,9 @@ void PDBHeuristic::create_pdb() {
                 }
             }
             if (eff_in_state) {
+                //operators[i].dump2(pattern);
+                //cout << endl;
+
                 /*vector<int> var_vals = abstract_state.get_var_vals();
                 for (size_t j = 0; j < regr_eff.size(); ++j)
                     var_vals[regr_eff[j].first] = regr_eff[j].second;
