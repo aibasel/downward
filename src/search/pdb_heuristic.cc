@@ -636,9 +636,9 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         pattern.resize(it - pattern.begin());
         if (pattern.size() != old_size)
             parser.error("there are duplicates of variables in the pattern");
-        else if (pattern[0] < 0)
+        if (pattern[0] < 0)
             parser.error("there is a variable < 0");
-        else if (pattern[pattern.size() - 1] > g_variable_domain.size())
+        if (pattern[pattern.size() - 1] > g_variable_domain.size())
             parser.error("there is a variable > number of variables");
         /*cout << "Pattern is ";
         for (size_t i = 0; i < pattern.size(); ++i) {
