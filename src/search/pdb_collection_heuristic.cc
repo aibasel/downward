@@ -190,18 +190,11 @@ void PDBCollectionHeuristic::dump(const vector<vector<int> > &cgraph) const {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.add_list_option<vector<int> >("patterns", vector<vector<int> >(), "the pattern collection");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    if (parser.dry_run())
-        return 0;
-
-    vector<vector<int> > pattern_collection;
-    // Simple selection strategy. Take all goal variables as patterns.
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        pattern_collection.push_back(vector<int>(1, g_goal[i].first));
-    }
-    /*cout << "goals are" << endl;
+    vector<vector<int> > pattern_collection = opts.get_list<vector<int> >("patterns");
     for (size_t i = 0; i < pattern_collection.size(); ++i) {
         cout << "[ ";
         for (size_t j = 0; j < pattern_collection[i].size(); ++j) {
@@ -209,7 +202,60 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         }
         cout << "]" << endl;
     }
-    cout << endl;*/
+    cout << endl;
+    if (!pattern_collection.empty()) {
+        // check if there are duplicates of patterns
+        for (size_t i = 0; i < pattern_collection.size(); ++i) {
+            sort(pattern_collection[i].begin(), pattern_collection[i].end());
+            // check if each pattern is valid
+            int pat_old_size = pattern_collection[i].size();
+            if (pat_old_size == 0)
+                parser.error("there is an empty pattern in the pattern collection");
+            vector<int>::const_iterator it = unique(pattern_collection[i].begin(), pattern_collection[i].end());
+            pattern_collection[i].resize(it - pattern_collection[i].begin());
+            if (pattern_collection[i].size() != pat_old_size)
+                parser.error("there are duplicates of variables in a pattern");
+            if (pattern_collection[i][0] < 0)
+                parser.error("there is a variable < 0 in a pattern");
+            if (pattern_collection[i][pattern_collection[i].size() - 1] > g_variable_domain.size())
+                parser.error("there is a variable > number of variables in a pattern");
+        }
+        sort(pattern_collection.begin(), pattern_collection.end());
+        int coll_old_size = pattern_collection.size();
+        vector<vector<int> >::const_iterator it = unique(pattern_collection.begin(), pattern_collection.end());
+        pattern_collection.resize(it - pattern_collection.begin());
+        if (pattern_collection.size() != coll_old_size)
+            parser.error("there are duplicates of patterns in the pattern collection");
+
+        for (size_t i = 0; i < pattern_collection.size(); ++i) {
+            cout << "[ ";
+            for (size_t j = 0; j < pattern_collection[i].size(); ++j) {
+                cout << pattern_collection[i][j] << " ";
+            }
+            cout << "]" << endl;
+        }
+
+    }
+
+    if (parser.dry_run())
+        return 0;
+
+    if (pattern_collection.empty()) {
+        // Simple selection strategy. Take all goal variables as patterns.
+        for (size_t i = 0; i < g_goal.size(); ++i) {
+            pattern_collection.push_back(vector<int>(1, g_goal[i].first));
+        }
+        /*cout << "goals are" << endl;
+        for (size_t i = 0; i < pattern_collection.size(); ++i) {
+            cout << "[ ";
+            for (size_t j = 0; j < pattern_collection[i].size(); ++j) {
+                cout << pattern_collection[i][j] << " ";
+            }
+            cout << "]" << endl;
+        }
+        cout << endl;*/
+    }
+
 
     return new PDBCollectionHeuristic(/*opts, */ pattern_collection);
 }
