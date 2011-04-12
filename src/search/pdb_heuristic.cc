@@ -620,12 +620,10 @@ void PDBHeuristic::dump() const {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("max_states", 1000000,
-                           "maximum abstraction size");
+    parser.add_option<int>("max_states", 1000000, "maximum abstraction size");
     parser.add_list_option<int>("pattern", vector<int>(), "the pattern");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-
     vector<int> pattern = opts.get_list<int>("pattern");
     if (!pattern.empty()) {
         //cout << "Reading pattern from option." << endl;
