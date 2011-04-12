@@ -308,20 +308,16 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     Options opts = parser.parse();
 
     if (opts.get<int>("pdb_max_size") < 1) {
-        //cerr << "error: size per pdb must be at least 1" << endl;
-        //exit(2);
+        parser.error("size per pdb must be at least 1");
     }
     if (opts.get<int>("num_collections") < 1) {
-        //cerr << "error: number of pattern collections must be at least 1" << endl;
-        //exit(2);
+        parser.error("number of pattern collections must be at least 1");
     }
     if (opts.get<int>("num_episodes") < 1) {
-        //cerr << "error: number of episodes must be at least 1" << endl;
-        //exit(2);
+        parser.error("number of episodes must be at least 1");
     }
     if (opts.get<int>("mutation_probability") < 0 || opts.get<int>("mutation_probability") > 100) {
-        //cerr << "error: mutation probability must be in [0..100]" << endl;
-        //exit(2);
+        parser.error("mutation probability must be in [0..100]");
     }
 
     if (parser.dry_run())
