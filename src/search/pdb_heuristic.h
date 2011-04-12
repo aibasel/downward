@@ -73,6 +73,7 @@ public:
     void insert(const AbstractOperator &op);
     void get_applicable_operators(size_t state_index,
                                   std::vector<const AbstractOperator *> &applicable_operators) const;
+    void dump(Node *node = 0) const;
 };
 
 // Implements a single PDB
