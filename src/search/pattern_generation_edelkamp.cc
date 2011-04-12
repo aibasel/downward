@@ -153,6 +153,8 @@ void PatternGenerationEdelkamp::recombine() {
 }*/
 
 void PatternGenerationEdelkamp::mutate(double probability) {
+    // TODO: Should we check the max pdb size here? After mutation new variables can occur in a pattern and
+    // exceed the max_pdb_size!
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
             vector<bool> &pattern = pattern_collections[i][j];
@@ -179,6 +181,7 @@ void PatternGenerationEdelkamp::mutate(double probability) {
 }
 
 double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values) {
+    bool disjoint = true;
     double total_sum = 0;
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         cout << "evaluate pattern collection " << i << " of " << (pattern_collections.size() - 1) << endl;
@@ -190,36 +193,46 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             // test if variables occur in more than one pattern
             // TODO: iteration through bitvector occurs here and in transformation to pattern normal form
             // any way to avoid this?
-            /*bool patterns_additive = true;
-            for (size_t k = 0; k < bitvector.size(); ++k) {
-                if (bitvector[k]) {
-                    if (variables_used[k]) {
-                        cout << "patterns not additive anymore!" << endl;
-                        fitness = 0.001; // HACK: for the cases in which all pattern collections are invalid,
-                        // prevent gettin 0 probabilities for all entries
-                        patterns_additive = false;
-                        break;
+            if (disjoint) {
+                bool patterns_disjoint = true;
+                for (size_t k = 0; k < bitvector.size(); ++k) {
+                    if (bitvector[k]) {
+                        if (variables_used[k]) {
+                            cout << "patterns not disjoint anymore!" << endl;
+                            fitness = 0.001; // HACK: for the cases in which all pattern collections are invalid,
+                                        // prevent getting 0 probabilities for all entries
+                            patterns_disjoint = false;
+                            break;
+                        }
+                        variables_used[k] = true;
                     }
-                    variables_used[k] = true;
+                }
+                if (!patterns_disjoint) {
+                    break;
                 }
             }
-            if (!patterns_additive) {
-                break;
-            }*/
+            /**/
             // calculate mean h-value for actual pattern collection
             //hash_map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
-            cout << "look into the map" << endl;
             map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
-            cout << "done :)" << endl;
             double mean_h = 0;
             if (it == pattern_to_fitness.end()) {
                 vector<int> pattern;
                 transform_to_pattern_normal_form(bitvector, pattern);
                 cout << "transformed into normal pattern form" << endl;
+                cout << "[";
                 if (pattern.size() == 0)
-                    cout << "empty pattern" << endl; 
+                    cout << "empty pattern" << endl;
+                else
+                    cout << "try to build the pdb with the following pattern" << endl;
+                for (int i = 0; i < pattern.size(); ++i) {
+                    cout << pattern[i] << ", ";
+                }
+                cout << "]" << endl;
                 PDBHeuristic pdb_heuristic(pattern, false);
                 cout << "calculated pdb" << endl;
+                if (pattern.size() == 0)
+                    pdb_heuristic.dump();
                 const vector<int> &h_values = pdb_heuristic.get_h_values();
                 double sum = 0;
                 int num_states = h_values.size();
@@ -307,18 +320,14 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    if (opts.get<int>("pdb_max_size") < 1) {
+    if (opts.get<int>("pdb_max_size") < 1)
         parser.error("size per pdb must be at least 1");
-    }
-    if (opts.get<int>("num_collections") < 1) {
+    if (opts.get<int>("num_collections") < 1)
         parser.error("number of pattern collections must be at least 1");
-    }
-    if (opts.get<int>("num_episodes") < 1) {
+    if (opts.get<int>("num_episodes") < 1)
         parser.error("number of episodes must be at least 1");
-    }
-    if (opts.get<int>("mutation_probability") < 0 || opts.get<int>("mutation_probability") > 100) {
+    if (opts.get<int>("mutation_probability") < 0 || opts.get<int>("mutation_probability") > 100)
         parser.error("mutation probability must be in [0..100]");
-    }
 
     if (parser.dry_run())
         return 0;
