@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 
+class Options;
 class PDBCollectionHeuristic;
 // Implementation of the pattern generation algorithm by Edelkamp
 class PatternGenerationEdelkamp {
@@ -29,8 +30,7 @@ class PatternGenerationEdelkamp {
     // vector<int> (needed for PDBHeuristic)
     void transform_to_pattern_normal_form(const std::vector<bool> &bitvector, std::vector<int> &pattern) const;
 public:
-    PatternGenerationEdelkamp(int pdb_max_size, int num_collections, int num_episodes,
-                              double mutation_probability);
+    PatternGenerationEdelkamp(const Options &opts);
     virtual ~PatternGenerationEdelkamp();
     void dump() const;
 
