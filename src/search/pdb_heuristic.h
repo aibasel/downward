@@ -65,7 +65,7 @@ class MatchTree {
     std::vector<int> n_i;
     Node *root;
     void build_recursively(const AbstractOperator &op, int pre_index, int old_index, Node *node, Node *parent);
-    void traverse(Node *node, int var_index, const size_t state_index,
+    void traverse(Node *node, size_t var_index, const size_t state_index,
                   std::vector<const AbstractOperator *> &applicable_operators) const;
 public:
     MatchTree(const std::vector<int> &pattern, const std::vector<int> &n_i);
