@@ -21,11 +21,12 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
       num_collections(opts.get<int>("num_collections")) {
     int num_episodes = opts.get<int>("num_episodes");
     double mutation_probability = opts.get<int>("mutation_probability") / 100.0;
+    bool disjoint = opts.get<bool>("disjoint");
     initialize();
     //cout << "initial pattern collections:" << endl;
     //dump();
     vector<pair<double, int> > initial_fitness_values;
-    evaluate(initial_fitness_values);
+    evaluate(initial_fitness_values, disjoint);
     
     double current_best_h = initial_fitness_values.back().first;
     // TODO: can do this without copying? reference as instance variable does not work (initializing problem)
@@ -35,20 +36,20 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
         cout << endl;
         cout << "--------- episode no " << t << " ---------" << endl;
         mutate(mutation_probability);
-        cout << "mutated" << endl;
+        //cout << "current pattern_collections after mutation" << endl;
         //dump();
         vector<pair<double, int> > fitness_values;
-        double fitness_sum = evaluate(fitness_values);
+        double fitness_sum = evaluate(fitness_values, disjoint);
         cout << "evaluated" << endl;
-        cout << "fitness values:";
+        /*cout << "fitness values:";
         for (size_t i = 0; i < fitness_values.size(); ++i) {
             cout << " " << fitness_values[i].first << " (index: " << fitness_values[i].second << ")";
         }
-        cout << endl;
+        cout << endl;*/
         double new_best_h = fitness_values.back().first;
         select(fitness_values, fitness_sum);
-        //cout << "current pattern collections:" << endl;
-        dump();
+        //cout << "current pattern collections (after selection):" << endl;
+        //dump();
         if (new_best_h > current_best_h) {
             current_best_h = new_best_h;
             best_collection = pattern_collections[fitness_values.back().second];
@@ -180,8 +181,7 @@ void PatternGenerationEdelkamp::mutate(double probability) {
     }
 }
 
-double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values) {
-    bool disjoint = true;
+double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values, bool disjoint) {
     double total_sum = 0;
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         cout << "evaluate pattern collection " << i << " of " << (pattern_collections.size() - 1) << endl;
@@ -189,6 +189,17 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
         vector<bool> variables_used(g_variable_domain.size(), false);
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
             const vector<bool> &bitvector = pattern_collections[i][j];
+            // test if the pattern respect the memory limit
+            int mem = 1;
+            for (size_t k = 0; k < bitvector.size(); ++k) {
+                if (bitvector[k] == 1)
+                    mem *= g_variable_domain[k];
+            }
+            if (mem > pdb_max_size) {
+                cout << "pattern " << j << " exceed the memory limit!" << endl;
+                fitness = 0.001;
+                break;
+            }
 
             // test if variables occur in more than one pattern
             // TODO: iteration through bitvector occurs here and in transformation to pattern normal form
@@ -198,7 +209,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 for (size_t k = 0; k < bitvector.size(); ++k) {
                     if (bitvector[k]) {
                         if (variables_used[k]) {
-                            cout << "patterns not disjoint anymore!" << endl;
+                            cout << "patterns are not disjoint anymore!" << endl;
                             fitness = 0.001; // HACK: for the cases in which all pattern collections are invalid,
                                         // prevent getting 0 probabilities for all entries
                             patterns_disjoint = false;
@@ -211,6 +222,8 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                     break;
                 }
             }
+
+
             /**/
             // calculate mean h-value for actual pattern collection
             //hash_map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
@@ -220,7 +233,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 vector<int> pattern;
                 transform_to_pattern_normal_form(bitvector, pattern);
                 cout << "transformed into normal pattern form" << endl;
-                cout << "[";
+                /*cout << "[";
                 if (pattern.size() == 0)
                     cout << "empty pattern" << endl;
                 else
@@ -228,11 +241,8 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 for (int i = 0; i < pattern.size(); ++i) {
                     cout << pattern[i] << ", ";
                 }
-                cout << "]" << endl;
+                cout << "]" << endl;*/
                 PDBHeuristic pdb_heuristic(pattern, false);
-                cout << "calculated pdb" << endl;
-                if (pattern.size() == 0)
-                    pdb_heuristic.dump();
                 const vector<int> &h_values = pdb_heuristic.get_h_values();
                 double sum = 0;
                 int num_states = h_values.size();
@@ -264,11 +274,11 @@ void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness
         if (i > 0)
             probabilities[i] += probabilities[i-1];
     }
-    cout << "summed probabilities: ";
+    /*cout << "summed probabilities: ";
     for (size_t i = 0; i < probabilities.size(); ++i) {
         cout << probabilities[i] << " ";
     }
-    cout << endl;
+    cout << endl;*/
 
     vector<vector<vector<bool> > > new_pattern_collections;
     for (size_t i = 0; i < num_collections; ++i) {
@@ -277,7 +287,7 @@ void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness
         while (random > probabilities[j]) {
             ++j;
         }
-        cout << "random = " << random << " j = " << j << " index = " << fitness_values[j].second << endl;
+        //cout << "random = " << random << " j = " << j << " index = " << fitness_values[j].second << endl;
         new_pattern_collections.push_back(pattern_collections[fitness_values[j].second]);
     }
     pattern_collections = new_pattern_collections;
@@ -316,6 +326,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("num_collections", 5, "number of pattern collections to maintain");
     parser.add_option<int>("num_episodes", 30, "number of episodes");
     parser.add_option<int>("mutation_probability", 1, "probability in per cent for flipping a bit");
+    parser.add_option<bool>("disjoint", false, "using disjoint variables in the patterns of a collection");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
