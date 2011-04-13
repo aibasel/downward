@@ -444,11 +444,12 @@ void PDBHeuristic::create_pdb() {
     // so far still use the multiplied out operators in order to have no more
     // operators with pre = -1. Better: build abstract operators on the fly
     // while creating the op_tree
+    // TODO: blödsinn? operatoren müssen ja eh einmal gebaut werden, während der Tree-Konstruktion
+    // nicht unbedingt vorteilhaft...
     MatchTree match_tree(pattern, n_i);
     for (size_t i = 0; i < operators.size(); ++i) {
         match_tree.insert(operators[i]);
     }
-    //match_tree.dump();
 
     vector<pair<int, int> > abstracted_goal;
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -486,7 +487,7 @@ void PDBHeuristic::create_pdb() {
             continue;
         }
 
-        // regress abstract_state - old
+        /*// regress abstract_state - old
         //cout << "===========================================================================" << endl;
         vector<AbstractOperator> app_ops_old;
         AbstractState abstract_state = inv_hash_index(state_index);
@@ -508,7 +509,7 @@ void PDBHeuristic::create_pdb() {
                 app_ops_old.push_back(operators[i]);
             }
         }
-        //cout << endl;
+        //cout << endl;*/
 
         // regress abstract_state - new
         vector<const AbstractOperator *> applicable_operators;
@@ -527,7 +528,7 @@ void PDBHeuristic::create_pdb() {
         }
         //cout << endl;
 
-        assert(app_ops_old.size() == applicable_operators.size());
+        /*assert(app_ops_old.size() == applicable_operators.size());
         for (size_t i = 0; i < app_ops_old.size(); ++i) {
             size_t hash_effect_old = app_ops_old[i].get_hash_effect();
             bool found = false;
@@ -538,7 +539,7 @@ void PDBHeuristic::create_pdb() {
                 }
             }
             assert(found);
-        }
+        }*/
     }
 }
 
