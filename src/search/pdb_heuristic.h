@@ -14,25 +14,25 @@ struct Edge {
 class Operator;
 class AbstractOperator {
     int cost;
-    std::vector<std::pair<int, int> > conditions;
-    std::vector<std::pair<int, int> > effects;
+    //std::vector<std::pair<int, int> > conditions;
+    //std::vector<std::pair<int, int> > effects;
     std::vector<std::pair<int, int> > regression_preconditions; // normal effects and prevail combined
-    std::vector<std::pair<int, int> > regression_effects; // normal preconditions
+    //std::vector<std::pair<int, int> > regression_effects; // normal preconditions
     int hash_effect;
 public:
-    AbstractOperator(const Operator &o, const std::vector<int> &variable_to_index);
+    //AbstractOperator(const Operator &o, const std::vector<int> &variable_to_index);
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
                      const std::vector<std::pair<int, int> > &conditions,
                      const std::vector<std::pair<int, int> > &effects, int cost,
                      const std::vector<int> &n_i);
     ~AbstractOperator();
-    const std::vector<std::pair<int, int> > &get_conditions() const { return conditions; }
-    const std::vector<std::pair<int, int> > &get_effects() const { return effects; }
+    //const std::vector<std::pair<int, int> > &get_conditions() const { return conditions; }
+    //const std::vector<std::pair<int, int> > &get_effects() const { return effects; }
     const std::vector<std::pair<int, int> > &get_regression_preconditions() const { return regression_preconditions; }
-    const std::vector<std::pair<int, int> > &get_regression_effects() const { return regression_effects; }
+    //const std::vector<std::pair<int, int> > &get_regression_effects() const { return regression_effects; }
     int get_hash_effect() const { return hash_effect; }
     int get_cost() const { return cost; }
-    void dump(const std::vector<int> &pattern) const;
+    //void dump(const std::vector<int> &pattern) const;
     void dump2(const std::vector<int> &pattern) const;
 };
 
@@ -45,8 +45,8 @@ public:
     ~AbstractState();
     int operator[](int index) const { return variable_values[index]; }
     const std::vector<int> &get_var_vals() const { return variable_values; }
-    bool is_applicable(const AbstractOperator &op) const;
-    void apply_operator(const AbstractOperator &op);
+    //bool is_applicable(const AbstractOperator &op) const;
+    //void apply_operator(const AbstractOperator &op);
     bool is_goal_state(const std::vector<std::pair<int, int> > &abstract_goal) const;
     void dump(const std::vector<int> &pattern) const;
 };
@@ -61,8 +61,10 @@ class MatchTree {
         Node **successors;
         Node *star_successor;
     };
-    std::vector<int> pattern;
-    std::vector<int> n_i;
+    std::vector<int> pattern; // as in PDBHeuristic TODO: idea - get rid of pattern by having a static method
+    // in PDBHeuristic that returns the domain_size for a give variable (as index of PDBHeuristic::pattern)
+    std::vector<int> n_i; // as in PDBHeuristic TODO: idea - get rid of n_i and use a static inv_hash_index method
+    // (e.g. in PDBHeuristic) to get the value of a single variable for a given state index
     Node *root;
     void build_recursively(const AbstractOperator &op, int pre_index, int old_index, Node *node, Node *parent);
     void traverse(Node *node, size_t var_index, const size_t state_index,
@@ -101,7 +103,6 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    //PDBHeuristic(int max_abstract_states);
     PDBHeuristic(/*const Options &opts, */
                  const std::vector<int> &pattern, bool dump);
     virtual ~PDBHeuristic();

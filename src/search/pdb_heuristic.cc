@@ -20,7 +20,7 @@ using namespace std;
 
 // AbstractOperator -------------------------------------------------------------------------------
 
-AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_index) : cost(o.get_cost()) {
+/*AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_index) : cost(o.get_cost()) {
     const vector<Prevail> &prevail = o.get_prevail();
     const vector<PrePost> &pre_post = o.get_pre_post();
     for (size_t j = 0; j < prevail.size(); ++j) {
@@ -35,7 +35,7 @@ AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_
             effects.push_back(make_pair(var_to_index[pre_post[j].var], pre_post[j].post));
         }
     }
-}
+}*/
 
 AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
@@ -46,11 +46,11 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
         regression_preconditions.push_back(eff_pairs[i]);
     }
     sort(regression_preconditions.begin(), regression_preconditions.end()); // for MatchTree construction
-    regression_effects.reserve(pre_pairs.size());
+    //regression_effects.reserve(pre_pairs.size());
     hash_effect = 0;
     assert(pre_pairs.size() == eff_pairs.size());
     for (size_t i = 0; i < pre_pairs.size(); ++i) {
-        regression_effects.push_back(pre_pairs[i]);
+        //regression_effects.push_back(pre_pairs[i]);
         int var = pre_pairs[i].first;
         assert(var == eff_pairs[i].first);
         int old_val = eff_pairs[i].second;
@@ -63,7 +63,7 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
 AbstractOperator::~AbstractOperator() {
 }
 
-void AbstractOperator::dump(const vector<int> &pattern) const {
+/*void AbstractOperator::dump(const vector<int> &pattern) const {
     cout << "AbstractOperator:" << endl;
     cout << "Conditions:" << endl;
     for (size_t i = 0; i < conditions.size(); ++i) {
@@ -75,7 +75,7 @@ void AbstractOperator::dump(const vector<int> &pattern) const {
         cout << "Variable: " << effects[i].first << " (True name: "
         << g_variable_name[pattern[effects[i].first]] << ") Value: " << effects[i].second << endl;
     }
-}
+}*/
 
 void AbstractOperator::dump2(const vector<int> &pattern) const {
     cout << "AbstractOperator:" << endl;
@@ -106,16 +106,16 @@ AbstractState::AbstractState(const State &state, const vector<int> &pattern) {
 AbstractState::~AbstractState() {
 }
 
-bool AbstractState::is_applicable(const AbstractOperator &op) const {
+/*bool AbstractState::is_applicable(const AbstractOperator &op) const {
     const vector<pair<int, int> > &conditions = op.get_conditions();
     for (size_t i = 0; i < conditions.size(); ++i) {
         if (variable_values[conditions[i].first] != conditions[i].second)
             return false;
     }
     return true;
-}
+}*/
 
-void AbstractState::apply_operator(const AbstractOperator &op) {
+/*void AbstractState::apply_operator(const AbstractOperator &op) {
     assert(is_applicable(op));
     const vector<pair<int, int> > &effects = op.get_effects();
     for (size_t i = 0; i < effects.size(); ++i) {
@@ -123,7 +123,7 @@ void AbstractState::apply_operator(const AbstractOperator &op) {
         int val = effects[i].second;
         variable_values[var] = val;
     }
-}
+}*/
 
 bool AbstractState::is_goal_state(const vector<pair<int, int> > &abstract_goal) const {
     for (size_t i = 0; i < abstract_goal.size(); ++i) {
@@ -327,13 +327,6 @@ void MatchTree::dump(Node *node) const {
 
 // PDBHeuristic ---------------------------------------------------------------
 
-/*PDBHeuristic::PDBHeuristic(int max_abstract_states) {
-    verify_no_axioms_no_cond_effects();
-    Timer timer;
-    generate_pattern(max_abstract_states);
-    cout << "PDB construction time: " << timer << endl;
-}*/
-
 PDBHeuristic::PDBHeuristic(const vector<int> &pattern, bool dump)
     : Heuristic(Heuristic::default_options()) {
     /*
@@ -461,6 +454,8 @@ void PDBHeuristic::create_pdb() {
     distances.reserve(num_states);
     AdaptiveQueue<size_t> pq; // (first implicit entry: priority,) second entry: index for an abstract state
 
+    // TODO: get rid of AbstractState and hash_index here
+    // need a way to check for a given state index whether it's a goal state or not
     vector<int> ranges;
     for (size_t i = 0; i < pattern.size(); ++i) {
         ranges.push_back(g_variable_domain[pattern[i]]);
@@ -558,6 +553,7 @@ void PDBHeuristic::set_pattern(const vector<int> &pat) {
     create_pdb();
 }
 
+// TODO: do this for a concrete state directly (after getting rid of AbstractState everywhere)
 size_t PDBHeuristic::hash_index(const AbstractState &abstract_state) const {
     size_t index = 0;
     for (int i = 0; i < pattern.size(); ++i) {
@@ -596,6 +592,7 @@ void PDBHeuristic::initialize() {
     //cout << "Didn't do anything. Done initializing." << endl;
 }
 
+// TODO: hash State directly (with help of pattern)
 int PDBHeuristic::compute_heuristic(const State &state) {
     int h = distances[hash_index(AbstractState(state, pattern))];
     if (h == numeric_limits<int>::max())
