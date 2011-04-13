@@ -21,7 +21,7 @@ class PatternGenerationEdelkamp {
     void mutate(double probability); // flip bits (= variables) with a given probability
 
     // calculate the mean h-value (fitness function) for each pattern collection and returns the sum of them
-    double evaluate(std::vector<std::pair<double, int> > &fitness_values);
+    double evaluate(std::vector<std::pair<double, int> > &fitness_values, bool disjoint);
 
     // select each pattern collection with a probability (obtained by normalizing the fitness function)
     void select(const std::vector<std::pair<double, int> > &fitness_values, double fitness_sum);
