@@ -646,7 +646,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
 #else
     // if no pattern is specified as option
-    if (pattern.empty()) {
+    /*if (pattern.empty()) {
         VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL, 0.0);
         int var = vof.next();
         int num_states = g_variable_domain[var];
@@ -661,7 +661,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
             else
                 break;
         }
-    }
+    }*/
 
 #endif
     return new PDBHeuristic(/*opts, */pattern, true);

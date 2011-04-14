@@ -51,7 +51,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
                 pattern_sizes.insert(make_pair(new_pattern, new_size));
                 assert(pattern_sizes.find(new_pattern) != pattern_sizes.end());
             } else {
-                cout << "ignoring new pattern as candidate becaue it is too large" << endl;
+                cout << "ignoring new pattern as candidate because it is too large" << endl;
             }
         }
     }

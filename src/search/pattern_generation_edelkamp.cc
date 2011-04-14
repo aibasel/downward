@@ -1,4 +1,5 @@
 #include "pattern_generation_edelkamp.h"
+#include "causal_graph.h"
 #include "globals.h"
 #include "pdb_collection_heuristic.h"
 #include "pdb_heuristic.h"
@@ -223,6 +224,44 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 }
             }
 
+            /*
+            vector<bool> modified_bitvector;
+            modified_bitvector.resize(bitvector.size());
+            // try to remove irrelevant variables (temporary)
+            vector<int> vars_to_check;
+            for (size_t k = 0; k < g_goal.size(); ++k) {
+                if (bitvector[g_goal[k].first] == 1) {
+                    vars_to_check.push_back(g_goal[k].first);
+                    modified_bitvector[g_goal[k].first] = 1; // because it's causal relevant
+                }
+            }
+
+            while(!vars_to_check.empty()) {
+                int var = vars_to_check.back();
+                vars_to_check.pop_back();
+                vector<int> rel = g_causal_graph->get_predecessors(var);
+                for (size_t l = 0; l < rel.size(); ++l) {
+                    if (rel[l] != var) {
+                        if (bitvector[rel[l]] == 1) {
+                            if (modified_bitvector[rel[l]] == 0) {
+                                modified_bitvector[rel[l]] = 1; // because it's causal relevant
+                                vars_to_check.push_back(rel[l]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            cout << "bitvector:" << endl;
+            for (size_t k = 0; k < bitvector.size(); ++k) {
+                cout << bitvector[k] << " ";
+            }
+            cout << endl;
+            cout << "modified bitvector:" << endl;
+            for (size_t k = 0; k < modified_bitvector.size(); ++k) {
+                cout << modified_bitvector[k] << " ";
+            }
+            cout << endl;*/
 
             /**/
             // calculate mean h-value for actual pattern collection
