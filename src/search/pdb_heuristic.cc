@@ -149,10 +149,11 @@ MatchTree::MatchTree(const vector<int> &pattern_, const vector<int> &n_i_)
 }
 
 MatchTree::~MatchTree() {
-    //TODO: delete all Nodes!
+    cout << "~MatchTree called" << endl;
+    delete root;
 }
 
-MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_), star_successor(0) {
+MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_), array_size(test_var_size), star_successor(0) {
     if (test_var_size == 0) {
         successors = 0;
     } else {
@@ -164,6 +165,9 @@ MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_), s
 }
 
 MatchTree::Node::~Node() {
+    for (int i = 0; i < array_size; ++i) {
+        delete successors[i];
+    }
     delete[] successors;
     delete star_successor;
 }
@@ -195,6 +199,7 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int
             node->test_var = var_val.first;
             //cout << "assigning new value of " << var_val.first << " to node->test_var" << endl;
             node->successors = new Node *[g_variable_domain[pattern[var_val.first]]];
+            node->array_size = g_variable_domain[pattern[var_val.first]];
             for (int i = 0; i < g_variable_domain[pattern[var_val.first]]; ++i) {
                 node->successors[i] = 0;
             }
@@ -205,6 +210,7 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int
             //cout << "case 3: variable has been left out" << endl;
             assert(parent != 0); // if node is root and therefore parent 0, we should never get in this if clause
             Node *new_node = new Node(var_val.first, g_variable_domain[pattern[var_val.first]]); // new node gets the left out variable as test_var
+            node->array_size = g_variable_domain[pattern[var_val.first]];
             if (old_index == pre_index) { // method was called from the last case, parent -> node is a *-edge
                 assert(parent->star_successor == node);
                 parent->star_successor = new_node; // parent points to new_node
