@@ -5,11 +5,11 @@
 
 #include <vector>
 
-struct Edge {
+/*struct Edge {
     int cost;
     size_t target;
     Edge(int c, size_t t) : cost(c), target(t) {}
-};
+};*/
 
 class Operator;
 class AbstractOperator {
@@ -18,26 +18,26 @@ class AbstractOperator {
     //std::vector<std::pair<int, int> > effects;
     std::vector<std::pair<int, int> > regression_preconditions; // normal effects and prevail combined
     //std::vector<std::pair<int, int> > regression_effects; // normal preconditions
-    int hash_effect;
+    size_t hash_effect;
 public:
     //AbstractOperator(const Operator &o, const std::vector<int> &variable_to_index);
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
                      const std::vector<std::pair<int, int> > &conditions,
                      const std::vector<std::pair<int, int> > &effects, int cost,
-                     const std::vector<int> &n_i);
+                     const std::vector<size_t> &n_i);
     ~AbstractOperator();
     //const std::vector<std::pair<int, int> > &get_conditions() const { return conditions; }
     //const std::vector<std::pair<int, int> > &get_effects() const { return effects; }
     const std::vector<std::pair<int, int> > &get_regression_preconditions() const { return regression_preconditions; }
     //const std::vector<std::pair<int, int> > &get_regression_effects() const { return regression_effects; }
-    int get_hash_effect() const { return hash_effect; }
+    size_t get_hash_effect() const { return hash_effect; }
     int get_cost() const { return cost; }
     //void dump(const std::vector<int> &pattern) const;
     void dump2(const std::vector<int> &pattern) const;
 };
 
 class State;
-class AbstractState {
+/*class AbstractState {
     std::vector<int> variable_values;
 public:
     explicit AbstractState(const std::vector<int> &variable_values); // for construction after applying an operator
@@ -49,7 +49,7 @@ public:
     //void apply_operator(const AbstractOperator &op);
     bool is_goal_state(const std::vector<std::pair<int, int> > &abstract_goal) const;
     void dump(const std::vector<int> &pattern) const;
-};
+};*/
 
 // Implements a Successor Generator for abstract operators
 class MatchTree {
@@ -64,14 +64,14 @@ class MatchTree {
     };
     std::vector<int> pattern; // as in PDBHeuristic TODO: idea - get rid of pattern by having a static method
     // in PDBHeuristic that returns the domain_size for a give variable (as index of PDBHeuristic::pattern)
-    std::vector<int> n_i; // as in PDBHeuristic TODO: idea - get rid of n_i and use a static inv_hash_index method
+    std::vector<size_t> n_i; // as in PDBHeuristic TODO: idea - get rid of n_i and use a static inv_hash_index method
     // (e.g. in PDBHeuristic) to get the value of a single variable for a given state index
     Node *root;
     void build_recursively(const AbstractOperator &op, int pre_index, int old_index, Node *node, Node *parent);
     void traverse(Node *node, size_t var_index, const size_t state_index,
                   std::vector<const AbstractOperator *> &applicable_operators) const;
 public:
-    MatchTree(const std::vector<int> &pattern, const std::vector<int> &n_i);
+    MatchTree(const std::vector<int> &pattern, const std::vector<size_t> &n_i);
     ~MatchTree();
     void insert(const AbstractOperator &op);
     void get_applicable_operators(size_t state_index,
@@ -85,7 +85,7 @@ class PDBHeuristic : public Heuristic {
     size_t num_states;
     std::vector<int> variable_to_index;
     std::vector<int> distances; // final h-values for abstract-states
-    std::vector<int> n_i; // multipliers for perfect hash function
+    std::vector<size_t> n_i; // multipliers for perfect hash function
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
     void set_pattern(const std::vector<int> &pattern);
     void build_recursively(int pos, int cost,  std::vector<std::pair<int, int> > &prev_pairs,
@@ -98,8 +98,9 @@ class PDBHeuristic : public Heuristic {
     // recursive method "build_recursively"
     void build_abstract_operators(const Operator &op, std::vector<AbstractOperator> &operators);
     void create_pdb(); // builds the graph-structure and does a Dijkstra-backward-search
-    size_t hash_index(const AbstractState &state) const; // maps an abstract state to an index
-    AbstractState inv_hash_index(int index) const; // inverts the hash-index-function
+    bool is_goal_state(const size_t state_index, const std::vector<std::pair<int, int> > &abstract_goal) const;
+    size_t hash_index(const State &state) const; // maps a state to an index
+    //AbstractState inv_hash_index(const size_t index) const; // inverts the hash-index-function (returns an abstract state)
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
