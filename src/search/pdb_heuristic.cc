@@ -17,24 +17,7 @@
 
 using namespace std;
 
-// AbstractOperator -------------------------------------------------------------------------------
-
-/*AbstractOperator::AbstractOperator(const Operator &o, const vector<int> &var_to_index) : cost(o.get_cost()) {
-    const vector<Prevail> &prevail = o.get_prevail();
-    const vector<PrePost> &pre_post = o.get_pre_post();
-    for (size_t j = 0; j < prevail.size(); ++j) {
-        if (var_to_index[prevail[j].var] != -1) {
-            conditions.push_back(make_pair(var_to_index[prevail[j].var], prevail[j].prev));
-        }
-    }
-    for (size_t j = 0; j < pre_post.size(); ++j) {
-        if (var_to_index[pre_post[j].var] != -1) {
-            if (pre_post[j].pre != -1)
-                conditions.push_back(make_pair(var_to_index[pre_post[j].var], pre_post[j].pre));
-            effects.push_back(make_pair(var_to_index[pre_post[j].var], pre_post[j].post));
-        }
-    }
-}*/
+// AbstractOperator ------------------------------------------------------------------------------.
 
 AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
@@ -62,26 +45,13 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
 AbstractOperator::~AbstractOperator() {
 }
 
-/*void AbstractOperator::dump(const vector<int> &pattern) const {
-    cout << "AbstractOperator:" << endl;
-    cout << "Conditions:" << endl;
-    for (size_t i = 0; i < conditions.size(); ++i) {
-        cout << "Variable: " << conditions[i].first << " (True name: "
-        << g_variable_name[pattern[conditions[i].first]] << ") Value: " << conditions[i].second << endl;
-    }
-    cout << "Effects:" << endl;
-    for (size_t i = 0; i < effects.size(); ++i) {
-        cout << "Variable: " << effects[i].first << " (True name: "
-        << g_variable_name[pattern[effects[i].first]] << ") Value: " << effects[i].second << endl;
-    }
-}*/
-
-void AbstractOperator::dump2(const vector<int> &pattern) const {
+void AbstractOperator::dump(const vector<int> &pattern) const {
     cout << "AbstractOperator:" << endl;
     cout << "Regression preconditions:" << endl;
     for (size_t i = 0; i < regression_preconditions.size(); ++i) {
         cout << "Variable: " << regression_preconditions[i].first << " (True name: "
-        << g_variable_name[pattern[regression_preconditions[i].first]] << ") Value: " << regression_preconditions[i].second << endl;
+        << g_variable_name[pattern[regression_preconditions[i].first]] << ", Index: "
+        << i << ") Value: " << regression_preconditions[i].second << endl;
     }
     /*cout << "Regression effects:" << endl;
     for (size_t i = 0; i < regression_effects.size(); ++i) {
@@ -141,7 +111,7 @@ void AbstractState::dump(const vector<int> &pattern) const {
     }
 }*/
 
-// MatchTree ------------------------------------------------------------------
+// MatchTree --------------------------------------------------------------------------------------
 
 MatchTree::MatchTree(const vector<int> &pattern_, const vector<size_t> &n_i_)
     : pattern(pattern_), n_i(n_i_), root(0) {
@@ -151,7 +121,7 @@ MatchTree::~MatchTree() {
     delete root;
 }
 
-MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_), array_size(test_var_size), star_successor(0) {
+MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_), var_size(test_var_size), star_successor(0) {
     if (test_var_size == 0) {
         successors = 0;
     } else {
@@ -163,7 +133,7 @@ MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_), a
 }
 
 MatchTree::Node::~Node() {
-    for (int i = 0; i < array_size; ++i) {
+    for (int i = 0; i < var_size; ++i) {
         delete successors[i];
     }
     delete[] successors;
@@ -198,7 +168,7 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int
             //cout << "assigning new value of " << var_val.first << " to node->test_var" << endl;
             int test_var_size = g_variable_domain[pattern[var_val.first]];
             node->successors = new Node *[test_var_size];
-            node->array_size = test_var_size;
+            node->var_size = test_var_size;
             for (int i = 0; i < test_var_size; ++i) {
                 node->successors[i] = 0;
             }
@@ -238,7 +208,7 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int
 
 void MatchTree::insert(const AbstractOperator &op) {
     //cout << "inserting operator into MatchTree:" << endl;
-    //op.dump2(pattern);
+    //op.dump(pattern);
     if (root == 0)
         root = new Node(0, g_variable_domain[pattern[0]]); // initialize root-node with var0
     build_recursively(op, 0, 0, root, 0);
@@ -269,7 +239,7 @@ void MatchTree::traverse(Node *node, size_t var_index, const size_t state_index,
     } else
         return;
     int temp = state_index / n_i[var_index];
-    int val = temp % g_variable_domain[pattern[var_index]];
+    int val = temp % node->var_size;
     //cout << "calculated value for var_index: " << val << endl;
     if (node->successors[val] != 0) { // no leaf reached
         //cout << "recursive call for child with value " << val << " of test_var" << endl;
@@ -298,13 +268,15 @@ void MatchTree::dump(Node *node) const {
     cout << endl;
     if (node == 0)
         node = root;
+    if (node == 0) // root == 0
+        cout << "Empty MatchTree" << endl;
     cout << "node->test_var = " << node->test_var << endl;
     if (node->applicable_operators.empty())
         cout << "no applicable operators at this node" << endl;
     else {
         cout << "applicable_operators.size() = " << node->applicable_operators.size() << endl;
         for (size_t i = 0; i < node->applicable_operators.size(); ++i) {
-            node->applicable_operators[i]->dump2(pattern);
+            node->applicable_operators[i]->dump(pattern);
         }
     }
     if (node->test_var == -1) {
@@ -312,7 +284,7 @@ void MatchTree::dump(Node *node) const {
         assert(node->successors == 0);
         assert(node->star_successor == 0);
     } else {
-        for (int i = 0; i < g_variable_domain[pattern[node->test_var]]; ++i) {
+        for (int i = 0; i < node->var_size; ++i) {
             if (node->successors[i] == 0)
                 cout << "no child for value " << i << " of test_var" << endl;
             else {
@@ -515,7 +487,7 @@ void PDBHeuristic::create_pdb() {
                 }
             }
             if (eff_in_state) {
-                //operators[i].dump2(pattern);
+                //operators[i].dump(pattern);
                 //cout << endl;
                 app_ops_old.push_back(operators[i]);
             }
@@ -527,7 +499,7 @@ void PDBHeuristic::create_pdb() {
         match_tree.get_applicable_operators(state_index, applicable_operators);
         //cout << "applicable operators according to match_tree:" << endl;
         for (size_t i = 0; i < applicable_operators.size(); ++i) {
-            //applicable_operators[i]->dump2(pattern);
+            //applicable_operators[i]->dump(pattern);
             //cout << endl;
             size_t predecessor = state_index + applicable_operators[i]->get_hash_effect();
             int alternative_cost = distances[state_index] + applicable_operators[i]->get_cost();
@@ -635,7 +607,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
             parser.error("there are duplicates of variables in the pattern");
         if (pattern[0] < 0)
             parser.error("there is a variable < 0");
-        if (pattern[pattern.size() - 1] > g_variable_domain.size())
+        if (pattern[pattern.size() - 1] >= g_variable_domain.size())
             parser.error("there is a variable > number of variables");
         /*cout << "Pattern is ";
         for (size_t i = 0; i < pattern.size(); ++i) {
