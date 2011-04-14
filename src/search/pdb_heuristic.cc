@@ -1,5 +1,5 @@
 #include "pdb_heuristic.h"
-#include "abstract_state_iterator.h"
+//#include "abstract_state_iterator.h"
 #include "globals.h"
 #include "operator.h"
 #include "plugin.h"
@@ -12,7 +12,6 @@
 #include <cassert>
 #include <cstdlib>
 #include <limits>
-#include <queue>
 #include <string>
 #include <vector>
 
@@ -40,7 +39,7 @@ using namespace std;
 AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
                                    const vector<pair<int, int> > &eff_pairs, int c,
-                                   const vector<int> &n_i)
+                                   const vector<size_t> &n_i)
                                    : cost(c), regression_preconditions(prev_pairs) {
     for (size_t i = 0; i < eff_pairs.size(); ++i) {
         regression_preconditions.push_back(eff_pairs[i]);
@@ -55,7 +54,7 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
         assert(var == eff_pairs[i].first);
         int old_val = eff_pairs[i].second;
         int new_val = pre_pairs[i].second;
-        int effect = (new_val - old_val) * n_i[var];
+        size_t effect = (new_val - old_val) * n_i[var];
         hash_effect += effect;
     }
 }
@@ -94,7 +93,7 @@ void AbstractOperator::dump2(const vector<int> &pattern) const {
 
 // AbstractState ----------------------------------------------------------------------------------
 
-AbstractState::AbstractState(const vector<int> &var_vals) : variable_values(var_vals) {
+/*AbstractState::AbstractState(const vector<int> &var_vals) : variable_values(var_vals) {
 }
 
 AbstractState::AbstractState(const State &state, const vector<int> &pattern) {
@@ -104,7 +103,7 @@ AbstractState::AbstractState(const State &state, const vector<int> &pattern) {
 }
 
 AbstractState::~AbstractState() {
-}
+}*/
 
 /*bool AbstractState::is_applicable(const AbstractOperator &op) const {
     const vector<pair<int, int> > &conditions = op.get_conditions();
@@ -125,7 +124,7 @@ AbstractState::~AbstractState() {
     }
 }*/
 
-bool AbstractState::is_goal_state(const vector<pair<int, int> > &abstract_goal) const {
+/*bool AbstractState::is_goal_state(const vector<pair<int, int> > &abstract_goal) const {
     for (size_t i = 0; i < abstract_goal.size(); ++i) {
         if (variable_values[abstract_goal[i].first] != abstract_goal[i].second) {
             return false;
@@ -140,16 +139,15 @@ void AbstractState::dump(const vector<int> &pattern) const {
         cout << "Variable: " << pattern[i] << " (True name: " 
         << g_variable_name[pattern[i]] << ") Value: " << variable_values[i] << endl;
     }
-}
+}*/
 
 // MatchTree ------------------------------------------------------------------
 
-MatchTree::MatchTree(const vector<int> &pattern_, const vector<int> &n_i_)
+MatchTree::MatchTree(const vector<int> &pattern_, const vector<size_t> &n_i_)
     : pattern(pattern_), n_i(n_i_), root(0) {
 }
 
 MatchTree::~MatchTree() {
-    cout << "~MatchTree called" << endl;
     delete root;
 }
 
@@ -198,9 +196,10 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int
             //cout << "case 2: leaf node" << endl;
             node->test_var = var_val.first;
             //cout << "assigning new value of " << var_val.first << " to node->test_var" << endl;
-            node->successors = new Node *[g_variable_domain[pattern[var_val.first]]];
-            node->array_size = g_variable_domain[pattern[var_val.first]];
-            for (int i = 0; i < g_variable_domain[pattern[var_val.first]]; ++i) {
+            int test_var_size = g_variable_domain[pattern[var_val.first]];
+            node->successors = new Node *[test_var_size];
+            node->array_size = test_var_size;
+            for (int i = 0; i < test_var_size; ++i) {
                 node->successors[i] = 0;
             }
             Node *new_node = new Node();
@@ -210,7 +209,6 @@ void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int
             //cout << "case 3: variable has been left out" << endl;
             assert(parent != 0); // if node is root and therefore parent 0, we should never get in this if clause
             Node *new_node = new Node(var_val.first, g_variable_domain[pattern[var_val.first]]); // new node gets the left out variable as test_var
-            node->array_size = g_variable_domain[pattern[var_val.first]];
             if (old_index == pre_index) { // method was called from the last case, parent -> node is a *-edge
                 assert(parent->star_successor == node);
                 parent->star_successor = new_node; // parent points to new_node
@@ -439,29 +437,38 @@ void PDBHeuristic::create_pdb() {
     for (size_t i = 0; i < g_operators.size(); ++i) {
         build_abstract_operators(g_operators[i], operators);
     }
-
-    // so far still use the multiplied out operators in order to have no more
-    // operators with pre = -1. Better: build abstract operators on the fly
-    // while creating the op_tree
-    // TODO: blödsinn? operatoren müssen ja eh einmal gebaut werden, während der Tree-Konstruktion
-    // nicht unbedingt vorteilhaft...
+    // TODO: why is there a seg fault when combining those two for loops? (testcases, blocks)
+    // or an error that leads to the initial state being a dead end? (bordercases, blocks)
     MatchTree match_tree(pattern, n_i);
-    for (size_t i = 0; i < operators.size(); ++i) {
-        match_tree.insert(operators[i]);
+    for (size_t j = 0; j < operators.size(); ++j) {
+        match_tree.insert(operators[j]);
     }
 
-    vector<pair<int, int> > abstracted_goal;
+    // compute abstract goal var-val pairs
+    vector<pair<int, int> > abstract_goal;
     for (size_t i = 0; i < g_goal.size(); ++i) {
         if (variable_to_index[g_goal[i].first] != -1) {
-            abstracted_goal.push_back(make_pair(variable_to_index[g_goal[i].first], g_goal[i].second));
+            abstract_goal.push_back(make_pair(variable_to_index[g_goal[i].first], g_goal[i].second));
         }
     }
 
     distances.reserve(num_states);
     AdaptiveQueue<size_t> pq; // (first implicit entry: priority,) second entry: index for an abstract state
 
-    // TODO: get rid of AbstractState and hash_index here
-    // need a way to check for a given state index whether it's a goal state or not
+    // initialize queue - new
+    for (size_t state_index = 0; state_index < num_states; ++state_index) {
+        if (is_goal_state(state_index, abstract_goal)) {
+            pq.push(0, state_index);
+            distances.push_back(0);
+        }
+        else {
+            distances.push_back(numeric_limits<int>::max());
+        }
+    }
+
+    // initialize queue - old
+    /*vector<int> distances2;
+    AdaptiveQueue<size_t> pq2;
     vector<int> ranges;
     for (size_t i = 0; i < pattern.size(); ++i) {
         ranges.push_back(g_variable_domain[pattern[i]]);
@@ -471,15 +478,16 @@ void PDBHeuristic::create_pdb() {
         int counter = it.get_counter();
         assert(hash_index(abstract_state) == counter);
 
-        if (abstract_state.is_goal_state(abstracted_goal)) {
-            pq.push(0, counter);
-            distances.push_back(0);
+        if (abstract_state.is_goal_state(abstract_goal)) {
+            pq2.push(0, counter);
+            distances2.push_back(0);
         }
         else {
-            distances.push_back(numeric_limits<int>::max());
+            distances2.push_back(numeric_limits<int>::max());
         }
-    }
+    }*/
 
+    // Dijkstra loop
     while (!pq.empty()) {
         pair<int, size_t> node = pq.pop();
         int distance = node.first;
@@ -520,7 +528,6 @@ void PDBHeuristic::create_pdb() {
             //applicable_operators[i]->dump2(pattern);
             //cout << endl;
             size_t predecessor = state_index + applicable_operators[i]->get_hash_effect();
-            // Dijkstra
             int alternative_cost = distances[state_index] + applicable_operators[i]->get_cost();
             if (alternative_cost < distances[predecessor]) {
                 distances[predecessor] = alternative_cost;
@@ -559,48 +566,43 @@ void PDBHeuristic::set_pattern(const vector<int> &pat) {
     create_pdb();
 }
 
-// TODO: do this for a concrete state directly (after getting rid of AbstractState everywhere)
-size_t PDBHeuristic::hash_index(const AbstractState &abstract_state) const {
+bool PDBHeuristic::is_goal_state(const size_t state_index, const vector<pair<int, int> > &abstract_goal) const {
+    for (size_t i = 0; i < abstract_goal.size(); ++i) {
+        int var = abstract_goal[i].first;
+        int temp = state_index / n_i[var];
+        int val = temp % g_variable_domain[pattern[var]];
+        if (val != abstract_goal[i].second) {
+            return false;
+        }
+    }
+    return true;
+}
+
+size_t PDBHeuristic::hash_index(const State &state) const {
     size_t index = 0;
-    for (int i = 0; i < pattern.size(); ++i) {
-        index += n_i[i] * abstract_state[variable_to_index[pattern[i]]];
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        index += n_i[i] * state[pattern[i]];
     }
     return index;
 }
 
-AbstractState PDBHeuristic::inv_hash_index(int index) const {
+/*AbstractState PDBHeuristic::inv_hash_index(const size_t index) const {
     vector<int> var_vals;
     var_vals.resize(pattern.size());
-    for (size_t n = 0; n < pattern.size(); ++n) {
-        int temp = index / n_i[n];
-        var_vals[n] = temp % g_variable_domain[pattern[n]];
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        int temp = index / n_i[i];
+        var_vals[i] = temp % g_variable_domain[pattern[i]];
     }
-
-    /*vector<int> var_vals2;
-    var_vals2.resize(pattern.size());
-    for (int n = 1; n < pattern.size(); ++n) {
-        int d = index % n_i[n];
-        var_vals2[n - 1] = d / n_i[n - 1];
-        index -= d;
-    }
-    var_vals2[pattern.size() - 1] = index / n_i[pattern.size() - 1];
-    assert(var_vals.size() == var_vals2.size());
-    for (size_t i = 0; i < var_vals.size(); ++i) {
-        //cout << "alt: " << var_vals[i] << " neu: " << var_vals2[i] << endl;
-        assert(var_vals[i] == var_vals2[i]);
-    }*/
-
     return AbstractState(var_vals);
-}
+}*/
 
 void PDBHeuristic::initialize() {
     //cout << "Initializing pattern database heuristic..." << endl;
     //cout << "Didn't do anything. Done initializing." << endl;
 }
 
-// TODO: hash State directly (with help of pattern)
 int PDBHeuristic::compute_heuristic(const State &state) {
-    int h = distances[hash_index(AbstractState(state, pattern))];
+    int h = distances[hash_index(state)];
     if (h == numeric_limits<int>::max())
         return -1;
     return h;
