@@ -287,6 +287,8 @@ void MatchTree::traverse(Node *node, size_t var_index, const size_t state_index,
 
 void MatchTree::get_applicable_operators(size_t state_index,
                                          vector<const AbstractOperator *> &applicable_operators) const {
+    if (root == 0) // empty MatchTree, i.e. pattern is empty
+        return;
     //cout << "getting applicable operators for state_index = " << state_index << endl;
     traverse(root, 0, state_index, applicable_operators);
     //cout << endl;
