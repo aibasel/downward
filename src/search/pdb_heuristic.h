@@ -59,6 +59,7 @@ class MatchTree {
         std::vector<const AbstractOperator *> applicable_operators;
         int test_var;
         Node **successors;
+        int array_size;
         Node *star_successor;
     };
     std::vector<int> pattern; // as in PDBHeuristic TODO: idea - get rid of pattern by having a static method
