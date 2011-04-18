@@ -224,7 +224,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 }
             }
 
-            /*
+
             vector<bool> modified_bitvector;
             modified_bitvector.resize(bitvector.size());
             // try to remove irrelevant variables (temporary)
@@ -252,7 +252,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 }
             }
 
-            cout << "bitvector:" << endl;
+            /*cout << "bitvector:" << endl;
             for (size_t k = 0; k < bitvector.size(); ++k) {
                 cout << bitvector[k] << " ";
             }
@@ -266,11 +266,11 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             /**/
             // calculate mean h-value for actual pattern collection
             //hash_map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
-            map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
+            map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(modified_bitvector);
             double mean_h = 0;
             if (it == pattern_to_fitness.end()) {
                 vector<int> pattern;
-                transform_to_pattern_normal_form(bitvector, pattern);
+                transform_to_pattern_normal_form(modified_bitvector, pattern);
                 cout << "transformed into normal pattern form" << endl;
                 /*cout << "[";
                 if (pattern.size() == 0)
@@ -293,7 +293,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                     sum += h_values[k];
                 }
                 mean_h = sum / num_states;
-                pattern_to_fitness.insert(make_pair(bitvector, mean_h));
+                pattern_to_fitness.insert(make_pair(modified_bitvector, mean_h));
             } else {
                 mean_h = it->second;
             }
