@@ -18,9 +18,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    PDBCollectionHeuristic(
-        /* const Options &opts, */
-        const std::vector<std::vector<int> > &pattern_collection);
+    PDBCollectionHeuristic(const Options &opts);
     virtual ~PDBCollectionHeuristic();
     void add_new_pattern(const std::vector<int> &pattern);
     // checks for all max cliques if they would be additive to this pattern
