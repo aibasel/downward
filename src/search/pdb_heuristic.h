@@ -23,20 +23,6 @@ public:
     void dump(const std::vector<int> &pattern) const;
 };
 
-/*class AbstractState {
-    std::vector<int> variable_values;
-public:
-    explicit AbstractState(const std::vector<int> &variable_values); // for construction after applying an operator
-    AbstractState(const State &state, const std::vector<int> &pattern); // for construction from a concrete state
-    ~AbstractState();
-    int operator[](int index) const { return variable_values[index]; }
-    const std::vector<int> &get_var_vals() const { return variable_values; }
-    //bool is_applicable(const AbstractOperator &op) const;
-    //void apply_operator(const AbstractOperator &op);
-    bool is_goal_state(const std::vector<std::pair<int, int> > &abstract_goal) const;
-    void dump(const std::vector<int> &pattern) const;
-};*/
-
 // Implements a Successor Generator for abstract operators
 class MatchTree {
     struct Node {

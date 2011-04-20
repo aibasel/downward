@@ -61,56 +61,6 @@ void AbstractOperator::dump(const vector<int> &pattern) const {
     cout << "Hash effect:" << hash_effect << endl;
 }
 
-// AbstractState ----------------------------------------------------------------------------------
-
-/*AbstractState::AbstractState(const vector<int> &var_vals) : variable_values(var_vals) {
-}
-
-AbstractState::AbstractState(const State &state, const vector<int> &pattern) {
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        variable_values.push_back(state[pattern[i]]);
-    }
-}
-
-AbstractState::~AbstractState() {
-}*/
-
-/*bool AbstractState::is_applicable(const AbstractOperator &op) const {
-    const vector<pair<int, int> > &conditions = op.get_conditions();
-    for (size_t i = 0; i < conditions.size(); ++i) {
-        if (variable_values[conditions[i].first] != conditions[i].second)
-            return false;
-    }
-    return true;
-}*/
-
-/*void AbstractState::apply_operator(const AbstractOperator &op) {
-    assert(is_applicable(op));
-    const vector<pair<int, int> > &effects = op.get_effects();
-    for (size_t i = 0; i < effects.size(); ++i) {
-        int var = effects[i].first;
-        int val = effects[i].second;
-        variable_values[var] = val;
-    }
-}*/
-
-/*bool AbstractState::is_goal_state(const vector<pair<int, int> > &abstract_goal) const {
-    for (size_t i = 0; i < abstract_goal.size(); ++i) {
-        if (variable_values[abstract_goal[i].first] != abstract_goal[i].second) {
-            return false;
-        }
-    }
-    return true;
-}
-
-void AbstractState::dump(const vector<int> &pattern) const {
-    cout << "AbstractState: " << endl;
-    for (size_t i = 0; i < variable_values.size(); ++i) {
-        cout << "Variable: " << pattern[i] << " (True name: " 
-        << g_variable_name[pattern[i]] << ") Value: " << variable_values[i] << endl;
-    }
-}*/
-
 // MatchTree --------------------------------------------------------------------------------------
 
 MatchTree::MatchTree(const vector<int> &pattern_, const vector<size_t> &n_i_)
@@ -422,8 +372,7 @@ void PDBHeuristic::create_pdb() {
     for (size_t i = 0; i < g_operators.size(); ++i) {
         build_abstract_operators(i, operators);
     }
-    // TODO: why is there a seg fault when combining those two for loops? (testcases, blocks)
-    // or an error that leads to the initial state being a dead end? (bordercases, blocks)
+
     MatchTree match_tree(pattern, n_i);
     for (size_t j = 0; j < operators.size(); ++j) {
         match_tree.insert(operators[j]);
@@ -440,7 +389,7 @@ void PDBHeuristic::create_pdb() {
     distances.reserve(num_states);
     AdaptiveQueue<size_t> pq; // (first implicit entry: priority,) second entry: index for an abstract state
 
-    // initialize queue - new
+    // initialize queue
     for (size_t state_index = 0; state_index < num_states; ++state_index) {
         if (is_goal_state(state_index, abstract_goal)) {
             pq.push(0, state_index);
@@ -451,27 +400,6 @@ void PDBHeuristic::create_pdb() {
         }
     }
 
-    // initialize queue - old
-    /*vector<int> distances2;
-    AdaptiveQueue<size_t> pq2;
-    vector<int> ranges;
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        ranges.push_back(g_variable_domain[pattern[i]]);
-    }
-    for (AbstractStateIterator it(ranges); !it.is_at_end(); it.next()) {
-        AbstractState abstract_state(it.get_current());
-        int counter = it.get_counter();
-        assert(hash_index(abstract_state) == counter);
-
-        if (abstract_state.is_goal_state(abstract_goal)) {
-            pq2.push(0, counter);
-            distances2.push_back(0);
-        }
-        else {
-            distances2.push_back(numeric_limits<int>::max());
-        }
-    }*/
-
     // Dijkstra loop
     while (!pq.empty()) {
         pair<int, size_t> node = pq.pop();
@@ -481,37 +409,10 @@ void PDBHeuristic::create_pdb() {
             continue;
         }
 
-        /*// regress abstract_state - old
-        //cout << "===========================================================================" << endl;
-        vector<AbstractOperator> app_ops_old;
-        AbstractState abstract_state = inv_hash_index(state_index);
-        //abstract_state.dump(pattern);
-        //cout << "applicable operators according to old method:" << endl;
-        for (size_t i = 0; i < operators.size(); ++i) {
-            const vector<pair<int, int> > &regr_pre = operators[i].get_regression_preconditions();
-            //const vector<pair<int, int> > &regr_eff = operators[i].get_regression_effects();
-            bool eff_in_state = true;
-            for (size_t j = 0; j < regr_pre.size(); ++j) {
-                if (abstract_state[regr_pre[j].first] != regr_pre[j].second) {
-                    eff_in_state = false;
-                    break;
-                }
-            }
-            if (eff_in_state) {
-                //operators[i].dump(pattern);
-                //cout << endl;
-                app_ops_old.push_back(operators[i]);
-            }
-        }
-        //cout << endl;*/
-
-        // regress abstract_state - new
+        // regress abstract_state
         vector<const AbstractOperator *> applicable_operators;
         match_tree.get_applicable_operators(state_index, applicable_operators);
-        //cout << "applicable operators according to match_tree:" << endl;
         for (size_t i = 0; i < applicable_operators.size(); ++i) {
-            //applicable_operators[i]->dump(pattern);
-            //cout << endl;
             size_t predecessor = state_index + applicable_operators[i]->get_hash_effect();
             int alternative_cost = distances[state_index] + applicable_operators[i]->get_cost();
             if (alternative_cost < distances[predecessor]) {
@@ -519,20 +420,6 @@ void PDBHeuristic::create_pdb() {
                 pq.push(alternative_cost, predecessor);
             }
         }
-        //cout << endl;
-
-        /*assert(app_ops_old.size() == applicable_operators.size());
-        for (size_t i = 0; i < app_ops_old.size(); ++i) {
-            size_t hash_effect_old = app_ops_old[i].get_hash_effect();
-            bool found = false;
-            for (size_t j = 0; j < applicable_operators.size(); ++j) {
-                if (applicable_operators[j]->get_hash_effect() == hash_effect_old) {
-                    found = true;
-                    break;
-                }
-            }
-            assert(found);
-        }*/
     }
 }
 
@@ -609,7 +496,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     vector<int> pattern = opts.get_list<int>("pattern");
     if (parser.dry_run() && !pattern.empty()) {
         //cout << "Reading pattern from option." << endl;
-        // TODO: This code is called twice. Why?
         sort(pattern.begin(), pattern.end());
         int old_size = pattern.size();
         vector<int>::const_iterator it = unique(pattern.begin(), pattern.end());

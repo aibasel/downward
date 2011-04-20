@@ -97,8 +97,7 @@ HEADERS += learning/AODE.h \
 
 HEADERS += pdb_heuristic.h \
            planning_utilities.h \
-
-#           pdb_collection_heuristic.h \
+           pdb_collection_heuristic.h \
 #           pattern_generation_haslum.h \
 #           pattern_generation_edelkamp.h
 
