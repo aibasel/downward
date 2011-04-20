@@ -96,11 +96,11 @@ HEADERS += learning/AODE.h \
            learning/state_vars_feature_extractor.h
 
 HEADERS += pdb_heuristic.h \
-           abstract_state_iterator.h \
-           pdb_collection_heuristic.h \
            planning_utilities.h \
-           pattern_generation_haslum.h \
-           pattern_generation_edelkamp.h
+
+#           pdb_collection_heuristic.h \
+#           pattern_generation_haslum.h \
+#           pattern_generation_edelkamp.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward

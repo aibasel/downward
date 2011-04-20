@@ -85,19 +85,21 @@ class PDBHeuristic : public Heuristic {
                            std::vector<std::pair<int, int> > &eff_pairs,
                            const std::vector<std::pair<int, int> > &effects_without_pre,
                            std::vector<AbstractOperator> &operators);
-    void build_abstract_operators(const Operator &op, std::vector<AbstractOperator> &operators);
+    void build_abstract_operators(int op_no, std::vector<AbstractOperator> &operators);
     
     void create_pdb(); // builds the graph-structure and does a Dijkstra-backward-search
     void set_pattern(const std::vector<int> &pattern); // initializes n_i and num_states
     bool is_goal_state(const size_t state_index, const std::vector<std::pair<int, int> > &abstract_goal) const;
     size_t hash_index(const State &state) const; // maps a state to an index
     //AbstractState inv_hash_index(const size_t index) const; // inverts the hash-index-function (returns an abstract state)
+    std::vector<int> operator_costs;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    PDBHeuristic(/*const Options &opts, */
-                 const std::vector<int> &pattern, bool dump);
+    PDBHeuristic(const Options &opts,
+                 const std::vector<int> &op_costs=std::vector<int>(),
+                 bool dump=true);
     virtual ~PDBHeuristic();
     const std::vector<int> &get_pattern() const { return pattern; };
     const std::vector<int> &get_h_values() const { return distances; };

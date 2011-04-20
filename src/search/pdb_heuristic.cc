@@ -305,14 +305,23 @@ void MatchTree::dump(Node *node) const {
 
 // PDBHeuristic ---------------------------------------------------------------
 
-PDBHeuristic::PDBHeuristic(const vector<int> &pattern, bool dump)
-    : Heuristic(Heuristic::default_options()) {
-    /*
-      TODO: support cost options.
-     */
+PDBHeuristic::PDBHeuristic(
+    const Options &opts,
+    const vector<int> &op_costs, bool dump)
+    : Heuristic(opts) {
+
     verify_no_axioms_no_cond_effects();
+
+    if (op_costs.empty()) {
+        operator_costs.reserve(g_operators.size());
+        for (size_t i = 0; i < g_operators.size(); ++i)
+            operator_costs.push_back(get_adjusted_cost(g_operators[i]));
+    } else {
+        operator_costs = op_costs;
+    }
+
     Timer timer;
-    set_pattern(pattern);
+    set_pattern(opts.get_list<int>("pattern"));
     if (dump)
         cout << "PDB construction time: " << timer << endl;
 }
@@ -381,7 +390,9 @@ void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > 
     }
 }
 
-void PDBHeuristic::build_abstract_operators(const Operator &op, vector<AbstractOperator> &operators) {
+void PDBHeuristic::build_abstract_operators(
+    int op_no, vector<AbstractOperator> &operators) {
+    const Operator &op = g_operators[op_no];
     vector<pair<int, int> > prev_pairs;
     vector<pair<int, int> > pre_pairs;
     vector<pair<int, int> > eff_pairs;
@@ -403,13 +414,13 @@ void PDBHeuristic::build_abstract_operators(const Operator &op, vector<AbstractO
             }
         }
     }
-    build_recursively(0, op.get_cost(), prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
+    build_recursively(0, operator_costs[op_no], prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
 }
 
 void PDBHeuristic::create_pdb() {
     vector<AbstractOperator> operators;
     for (size_t i = 0; i < g_operators.size(); ++i) {
-        build_abstract_operators(g_operators[i], operators);
+        build_abstract_operators(i, operators);
     }
     // TODO: why is there a seg fault when combining those two for loops? (testcases, blocks)
     // or an error that leads to the initial state being a dead end? (bordercases, blocks)
@@ -596,7 +607,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     vector<int> pattern = opts.get_list<int>("pattern");
-    if (!pattern.empty()) {
+    if (parser.dry_run() && !pattern.empty()) {
         //cout << "Reading pattern from option." << endl;
         // TODO: This code is called twice. Why?
         sort(pattern.begin(), pattern.end());
@@ -621,30 +632,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
 
-#define DEBUG false
-#if DEBUG
-    // function tests
-    // 1. blocks-7-2 test-pattern
-    //int patt[] = {9, 10, 11, 12, 13, 14};
-    //int patt[] = {13, 14};
-
-    // 2. driverlog-6 test-pattern
-    //int patt[] = {4, 5, 7, 9, 10, 11, 12};
-
-    // 3. logistics00-6-2 test-pattern
-    //int patt[] = {3, 4, 5, 6, 7, 8};
-
-    // 4. blocks-9-0 test-pattern
-    //int patt[] = {0};
-
-    // 5. logistics00-5-1 test-pattern
-    //int patt[] = {0, 1, 2, 3, 4, 5, 6, 7};
-
-    // 6. some other test
-    int patt[] = {9};
-
-    pattern = vector<int>(patt, patt + sizeof(patt) / sizeof(int));
-#else
     // if no pattern is specified as option
     if (pattern.empty()) {
         VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL, 0.0);
@@ -661,10 +648,10 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
             else
                 break;
         }
+        opts.set("pattern", pattern);
     }
 
-#endif
-    return new PDBHeuristic(/*opts, */pattern, true);
+    return new PDBHeuristic(opts);
 }
 
 static Plugin<ScalarEvaluator> _plugin("pdb", _parse);
