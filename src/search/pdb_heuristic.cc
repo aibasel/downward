@@ -271,6 +271,7 @@ PDBHeuristic::PDBHeuristic(
     }
 
     Timer timer;
+    cout << "here we go" << endl;
     set_pattern(opts.get_list<int>("pattern"));
     if (dump)
         cout << "PDB construction time: " << timer << endl;
