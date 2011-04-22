@@ -533,9 +533,9 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     // TODO: better documentation what each parameter does
-    parser.add_option<int>("max_states", -1, "maximum abstraction size");
-    parser.add_option<int>("max_states_before_merge", -1,
-                           "maximum abstraction size for factors of synchronized product");
+  parser.add_option<int>("max_states", "maximum abstraction size", OptionFlags(false));
+    parser.add_option<int>("max_states_before_merge",
+                           "maximum abstraction size for factors of synchronized product", OptionFlags(false));
     parser.add_option<int>("count", 1, "nr of abstractions to build");
     vector<string> merge_strategies;
     merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_LEVEL");
@@ -579,27 +579,30 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return 0;
 
     //read values from opts for processing.
-    int max_states = opts.get<int>("max_states");
-    int max_states_before_merge = opts.get<int>("max_states_before_merge");
     MergeStrategy merge_strategy = MergeStrategy(opts.get_enum("merge_strategy"));
     ShrinkStrategy shrink_strategy = ShrinkStrategy(opts.get_enum("shrink_strategy"));
     double merge_mixing_parameter = opts.get<double>("merge_mixing_parameter");
 
-
-    if (max_states == -1 && max_states_before_merge == -1) {
-        // None of the two options specified: set default limit
-        max_states = 50000;
-    }
-
+   
+    int max_states = -1;
+    int max_states_before_merge = -1;
+    
+    if (opts.contains("max_states") && opts.contains("max_states_before_merge")) {
+        max_states = opts.get<int>("max_states");
+        max_states_before_merge = opts.get<int>("max_states");
+    } else if (opts.contains("max_states")) {
     // If exactly one of the max_states options has been set, set the other
     // so that it imposes no further limits.
-    if (max_states_before_merge == -1) {
         max_states_before_merge = max_states;
-    } else if (max_states == -1) {
+    } else if (opts.contains("max_states_before_merge")) {
         int n = max_states_before_merge;
         max_states = n * n;
         if (max_states < 0 || max_states / n != n)         // overflow
-            max_states = numeric_limits<int>::max();
+	    max_states = numeric_limits<int>::max();
+    } else {
+        // None of the two options specified: set default limit
+        max_states = 50000;
+	max_states_before_merge = max_states;
     }
 
     if (max_states_before_merge > max_states) {
