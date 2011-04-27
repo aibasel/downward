@@ -66,6 +66,7 @@ class Assignment(object):
             if len(constants) >= 2:
                 self.consistent = False
                 self.mapping = None
+                return
             if constants:
                 set_val = constants[0]
             else:
