@@ -57,6 +57,8 @@ class Operator;
 class State;
 class PDBHeuristic : public Heuristic {
     std::vector<int> pattern;
+    std::vector<int> operator_costs;
+    std::vector<bool> used_operators;
     size_t num_states;
     std::vector<int> variable_to_index;
     std::vector<int> distances; // final h-values for abstract-states
@@ -66,7 +68,7 @@ class PDBHeuristic : public Heuristic {
     // build_abstract_operators computes all abstract operators for each normal operator
     // in the case of pre = -1, for each possible value of the concerned variable, an abstract
     // operator is computed. calls the recursive method "build_recursively"
-    void build_recursively(int pos, int cost,  std::vector<std::pair<int, int> > &prev_pairs,
+    void build_recursively(int pos, int op_no, int cost,  std::vector<std::pair<int, int> > &prev_pairs,
                            std::vector<std::pair<int, int> > &pre_pairs,
                            std::vector<std::pair<int, int> > &eff_pairs,
                            const std::vector<std::pair<int, int> > &effects_without_pre,
@@ -78,7 +80,6 @@ class PDBHeuristic : public Heuristic {
     bool is_goal_state(const size_t state_index, const std::vector<std::pair<int, int> > &abstract_goal) const;
     size_t hash_index(const State &state) const; // maps a state to an index
     //AbstractState inv_hash_index(const size_t index) const; // inverts the hash-index-function (returns an abstract state)
-    std::vector<int> operator_costs;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
@@ -90,8 +91,13 @@ public:
                  bool dump=true,
                  const std::vector<int> &op_costs=std::vector<int>());
     virtual ~PDBHeuristic();
-    const std::vector<int> &get_pattern() const { return pattern; };
-    const std::vector<int> &get_h_values() const { return distances; };
+    const std::vector<int> &get_pattern() const { return pattern; }
+    const std::vector<int> &get_h_values() const { return distances; }
+    
+    const std::vector<int> &get_op_costs() const { return operator_costs; } // TODO: get rid of this. needed for edelkamp, because
+    // one can't generate a vector of operator costs when not inheriting "get_adjusted_cost" from Heuristic
+    
+    const std::vector<bool> &get_used_ops() const { return used_operators; }
     void dump() const;
 };
 

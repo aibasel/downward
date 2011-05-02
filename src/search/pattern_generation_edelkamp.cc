@@ -99,7 +99,8 @@ void PatternGenerationEdelkamp::initialize() {
     for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         variables.push_back(i);
     }
-    
+
+    operator_costs.resize(num_collections);
     for (size_t num_pcs = 0; num_pcs < num_collections; ++num_pcs) {
         random_shuffle(variables.begin(), variables.end(), g_rng);
         vector<vector<bool> > pattern_collection;
@@ -188,16 +189,17 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
         cout << "evaluate pattern collection " << i << " of " << (pattern_collections.size() - 1) << endl;
         double fitness = 0;
         vector<bool> variables_used(g_variable_domain.size(), false);
+        vector<int> &op_costs = operator_costs[i]; // operator costs for actual pattern collection
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
             const vector<bool> &bitvector = pattern_collections[i][j];
-            // test if the pattern respect the memory limit
+            // test if the pattern respects the memory limit
             int mem = 1;
             for (size_t k = 0; k < bitvector.size(); ++k) {
                 if (bitvector[k] == 1)
                     mem *= g_variable_domain[k];
             }
             if (mem > pdb_max_size) {
-                cout << "pattern " << j << " exceed the memory limit!" << endl;
+                cout << "pattern " << j << " exceeds the memory limit!" << endl;
                 fitness = 0.001;
                 break;
             }
@@ -281,7 +283,22 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                     cout << pattern[i] << ", ";
                 }
                 cout << "]" << endl;*/
-                PDBHeuristic pdb_heuristic(pattern, false);
+
+                PDBHeuristic pdb_heuristic(pattern, false, op_costs);
+
+                // at the very first time, op_costs is empty and gets initialized in pdb_heuristic
+                // as there is no way to precompute the operator costs in an elegant way as in pdb_heuristic, because
+                // this class doesn't inherit from Heuristic, we just get the operator costs from pdb_heuristic
+                if (op_costs.empty()) 
+                    op_costs = pdb_heuristic.get_op_costs();
+
+                // get used operators and set their cost for further iterations to 0 (action cost partitioning)
+                const vector<bool> &used_ops = pdb_heuristic.get_used_ops();
+                assert(used_ops.size() == op_costs.size());
+                for (size_t k = 0; k < used_ops.size(); ++k) {
+                    if (used_ops[k])
+                        op_costs[k] = 0;
+                }
                 const vector<int> &h_values = pdb_heuristic.get_h_values();
                 double sum = 0;
                 int num_states = h_values.size();
@@ -332,19 +349,8 @@ void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness
     pattern_collections = new_pattern_collections;
 }
 
-PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() {
+PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() const {
     // return the best collection of the last pattern collections (after all episodes)
-    /*vector<double> fitness_values;
-    evaluate(fitness_values);
-    double best_fitness = fitness_values[0];
-    int best_index = 0;
-    for (size_t i = 1; i < fitness_values.size(); ++i) {
-        if (fitness_values[i] > best_fitness) {
-            best_fitness = fitness_values[i];
-            best_index = i;
-        }
-    }
-    const vector<vector<bool> > &best_collection = pattern_collections[best_index];*/
     vector<vector<int> > pattern_collection;
     for (size_t j = 0; j < best_collection.size(); ++j) {
         vector<int> pattern;

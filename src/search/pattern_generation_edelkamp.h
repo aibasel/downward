@@ -11,11 +11,11 @@ class PDBCollectionHeuristic;
 class PatternGenerationEdelkamp {
     int pdb_max_size;
     int num_collections;
-    // TODO: check why it doesn't work with hash_map
     //__gnu_cxx::hash_map<std::vector<bool>, double> pattern_to_fitness;
     std::map<std::vector<bool>, double> pattern_to_fitness; // cache fitness values for already calculated patterns
     std::vector<std::vector<std::vector<bool> > > pattern_collections; // all current pattern collections
     std::vector<std::vector<bool> > best_collection; // remember the best pattern collection over all episodes
+    std::vector<std::vector<int> > operator_costs;
     void initialize(); // bin packing (for variables) to determine initial pattern collections
     //void recombine();
     void mutate(double probability); // flip bits (= variables) with a given probability
@@ -33,9 +33,7 @@ public:
     PatternGenerationEdelkamp(const Options &opts);
     virtual ~PatternGenerationEdelkamp();
     void dump() const;
-
-    // TODO: make const again after getting rid of call to evaluate in this method
-    PDBCollectionHeuristic *get_pattern_collection_heuristic();
+    PDBCollectionHeuristic *get_pattern_collection_heuristic() const;
 };
 
 #endif
