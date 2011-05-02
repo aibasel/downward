@@ -267,8 +267,10 @@ PDBHeuristic::PDBHeuristic(
         for (size_t i = 0; i < g_operators.size(); ++i)
             operator_costs.push_back(get_adjusted_cost(g_operators[i]));
     } else {
+        assert(op_costs.size() == g_operators.size());
         operator_costs = op_costs;
     }
+    used_operators.resize(g_operators.size(), false);
 
     Timer timer;
     set_pattern(opts.get_list<int>("pattern"));
@@ -285,11 +287,14 @@ PDBHeuristic::PDBHeuristic(
 
     if (op_costs.empty()) {
         operator_costs.reserve(g_operators.size());
-        for (size_t i = 0; i < g_operators.size(); ++i)
+        for (size_t i = 0; i < g_operators.size(); ++i) {
             operator_costs.push_back(get_adjusted_cost(g_operators[i]));
+        }
     } else {
+        assert(op_costs.size() == g_operators.size());
         operator_costs = op_costs;
     }
+    used_operators.resize(g_operators.size(), false);
 
     Timer timer;
     set_pattern(pattern);
@@ -330,7 +335,7 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
     }
 }
 
-void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > &prev_pairs,
+void PDBHeuristic::build_recursively(int pos, int op_no, int cost, vector<pair<int, int> > &prev_pairs,
                                      vector<pair<int, int> > &pre_pairs,
                                      vector<pair<int, int> > &eff_pairs,
                                      const vector<pair<int, int> > &effects_without_pre,
@@ -338,6 +343,7 @@ void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > 
     if (pos == effects_without_pre.size()) {
         if (!eff_pairs.empty()) {
             operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, n_i));
+            used_operators[op_no] = true;
         }
     } else {
         int var = effects_without_pre[pos].first;
@@ -349,7 +355,7 @@ void PDBHeuristic::build_recursively(int pos, int cost, vector<pair<int, int> > 
             } else {
                 prev_pairs.push_back(make_pair(var, i));
             }
-            build_recursively(pos+1, cost, prev_pairs, pre_pairs, eff_pairs,
+            build_recursively(pos+1, op_no, cost, prev_pairs, pre_pairs, eff_pairs,
                               effects_without_pre, operators);
             if (i != eff) {
                 pre_pairs.pop_back();
@@ -385,7 +391,7 @@ void PDBHeuristic::build_abstract_operators(
             }
         }
     }
-    build_recursively(0, operator_costs[op_no], prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
+    build_recursively(0, op_no, operator_costs[op_no], prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
 }
 
 void PDBHeuristic::create_pdb() {
