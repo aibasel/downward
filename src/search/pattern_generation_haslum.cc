@@ -294,4 +294,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return pgh.get_pattern_collection_heuristic();
 }
 
-static Plugin<ScalarEvaluator> plugin("ipdb", _parse);
+static Plugin<ScalarEvaluator> _plugin("ipdb", _parse);

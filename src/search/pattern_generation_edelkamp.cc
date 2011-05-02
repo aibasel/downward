@@ -1,6 +1,7 @@
 #include "pattern_generation_edelkamp.h"
 #include "causal_graph.h"
 #include "globals.h"
+#include "operator.h" // for the use of g_operators
 #include "pdb_collection_heuristic.h"
 #include "pdb_heuristic.h"
 #include "plugin.h"
@@ -18,12 +19,13 @@ namespace std { using namespace __gnu_cxx; }
 using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
-    : pdb_max_size(opts.get<int>("pdb_max_size")),
-      num_collections(opts.get<int>("num_collections")) {
+    : Heuristic(opts), pdb_max_size(opts.get<int>("pdb_max_size")),
+    num_collections(opts.get<int>("num_collections")) {
+    Timer timer;
     int num_episodes = opts.get<int>("num_episodes");
     double mutation_probability = opts.get<int>("mutation_probability") / 100.0;
     bool disjoint = opts.get<bool>("disjoint");
-    initialize();
+    initialize2();
     //cout << "initial pattern collections:" << endl;
     //dump();
     vector<pair<double, int> > initial_fitness_values;
@@ -56,6 +58,7 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
             best_collection = pattern_collections[fitness_values.back().second];
         }
     }
+    cout << "Pattern Generation (Edelkamp) time: " << timer << endl;
 }
 
 PatternGenerationEdelkamp::~PatternGenerationEdelkamp() {
@@ -93,15 +96,20 @@ Damit bekäme man kleinere Patterns und vermutlich auch mehr Duplikate,
 d.h. Patterns, wo man schon auf gecachete Kosten zurückgreifen kann.
 */
 
-void PatternGenerationEdelkamp::initialize() {
+void PatternGenerationEdelkamp::initialize2() {
     vector<int> variables;
     variables.reserve(g_variable_domain.size());
     for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         variables.push_back(i);
     }
 
-    operator_costs.resize(num_collections);
+    operator_costs.reserve(num_collections);
+    vector<int> op_costs;
+    op_costs.reserve(g_operators.size());
+    for (size_t i = 0; i < g_operators.size(); ++i)
+        op_costs.push_back(get_adjusted_cost(g_operators[i]));
     for (size_t num_pcs = 0; num_pcs < num_collections; ++num_pcs) {
+        operator_costs.push_back(op_costs);
         random_shuffle(variables.begin(), variables.end(), g_rng);
         vector<vector<bool> > pattern_collection;
         vector<bool> pattern(g_variable_name.size(), false);
@@ -289,8 +297,8 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 // at the very first time, op_costs is empty and gets initialized in pdb_heuristic
                 // as there is no way to precompute the operator costs in an elegant way as in pdb_heuristic, because
                 // this class doesn't inherit from Heuristic, we just get the operator costs from pdb_heuristic
-                if (op_costs.empty()) 
-                    op_costs = pdb_heuristic.get_op_costs();
+                //if (op_costs.empty()) 
+                    //op_costs = pdb_heuristic.get_op_costs();
 
                 // get used operators and set their cost for further iterations to 0 (action cost partitioning)
                 const vector<bool> &used_ops = pdb_heuristic.get_used_ops();
@@ -349,7 +357,7 @@ void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness
     pattern_collections = new_pattern_collections;
 }
 
-PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() const {
+/*PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() const {
     // return the best collection of the last pattern collections (after all episodes)
     vector<vector<int> > pattern_collection;
     for (size_t j = 0; j < best_collection.size(); ++j) {
@@ -363,6 +371,29 @@ PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuris
         pattern_collection.push_back(pattern);
     }
     return new PDBCollectionHeuristic(pattern_collection);
+}*/
+
+void PatternGenerationEdelkamp::initialize() {
+}
+
+int PatternGenerationEdelkamp::compute_heuristic(const State &state) {
+    vector<vector<int> > pattern_collection;
+    int h_val = 0;
+    for (size_t j = 0; j < best_collection.size(); ++j) {
+        vector<int> pattern;
+        for (size_t i = 0; i < best_collection[j].size(); ++i) {
+            if (best_collection[j][i])
+                pattern.push_back(i);
+        }
+        if (pattern.empty())
+            continue;
+        PDBHeuristic pdb_heuristic(pattern, false);
+        pdb_heuristic.evaluate(state);
+        if (pdb_heuristic.is_dead_end())
+            return -1;
+        h_val += pdb_heuristic.get_heuristic();
+    }
+    return h_val;
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
@@ -387,10 +418,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 
     if (parser.dry_run())
         return 0;
-    Timer timer;
-    PatternGenerationEdelkamp pge(opts);
-    cout << "Pattern Generation (Edelkamp) time: " << timer << endl;
-    return pge.get_pattern_collection_heuristic();
+    
+    return new PatternGenerationEdelkamp(opts);
 }
 
-static Plugin<ScalarEvaluator> plugin("gapdb", _parse);
+static Plugin<ScalarEvaluator> _plugin("gapdb", _parse);
