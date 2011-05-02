@@ -93,10 +93,6 @@ public:
     virtual ~PDBHeuristic();
     const std::vector<int> &get_pattern() const { return pattern; }
     const std::vector<int> &get_h_values() const { return distances; }
-    
-    const std::vector<int> &get_op_costs() const { return operator_costs; } // TODO: get rid of this. needed for edelkamp, because
-    // one can't generate a vector of operator costs when not inheriting "get_adjusted_cost" from Heuristic
-    
     const std::vector<bool> &get_used_ops() const { return used_operators; }
     void dump() const;
 };

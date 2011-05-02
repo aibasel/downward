@@ -249,7 +249,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         opts.set("patterns", pattern_collection);
     }
 
-
     return new PDBCollectionHeuristic(opts);
 }
 
