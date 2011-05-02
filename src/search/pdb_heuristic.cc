@@ -256,8 +256,8 @@ void MatchTree::dump(Node *node) const {
 // PDBHeuristic ---------------------------------------------------------------
 
 PDBHeuristic::PDBHeuristic(
-    const Options &opts,
-    const vector<int> &op_costs, bool dump)
+    const Options &opts, bool dump,
+    const vector<int> &op_costs)
     : Heuristic(opts) {
 
     verify_no_axioms_no_cond_effects();
@@ -271,8 +271,28 @@ PDBHeuristic::PDBHeuristic(
     }
 
     Timer timer;
-    cout << "here we go" << endl;
     set_pattern(opts.get_list<int>("pattern"));
+    if (dump)
+        cout << "PDB construction time: " << timer << endl;
+}
+
+PDBHeuristic::PDBHeuristic(
+    const std::vector<int> &pattern, bool dump,
+    const std::vector<int> &op_costs)
+    : Heuristic(Heuristic::default_options()) {
+
+    verify_no_axioms_no_cond_effects();
+
+    if (op_costs.empty()) {
+        operator_costs.reserve(g_operators.size());
+        for (size_t i = 0; i < g_operators.size(); ++i)
+            operator_costs.push_back(get_adjusted_cost(g_operators[i]));
+    } else {
+        operator_costs = op_costs;
+    }
+
+    Timer timer;
+    set_pattern(pattern);
     if (dump)
         cout << "PDB construction time: " << timer << endl;
 }
@@ -470,8 +490,6 @@ size_t PDBHeuristic::hash_index(const State &state) const {
 }*/
 
 void PDBHeuristic::initialize() {
-    //cout << "Initializing pattern database heuristic..." << endl;
-    //cout << "Didn't do anything. Done initializing." << endl;
 }
 
 int PDBHeuristic::compute_heuristic(const State &state) {

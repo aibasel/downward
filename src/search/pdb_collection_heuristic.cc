@@ -20,7 +20,21 @@ PDBCollectionHeuristic::PDBCollectionHeuristic(const Options &opts)
     const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
     Timer timer;
     for (int i = 0; i < pattern_collection.size(); ++i) {
-        pattern_databases.push_back(new PDBHeuristic(opts, vector<int>(), false));
+        pattern_databases.push_back(new PDBHeuristic(pattern_collection[i], false));
+    }
+    cout << pattern_collection.size() << " pdbs constructed." << endl;
+    cout << "Construction time for all pdbs: " << timer << endl;
+    precompute_additive_vars();
+    precompute_max_cliques();
+}
+
+PDBCollectionHeuristic::PDBCollectionHeuristic(
+    const vector<vector<int> > &pattern_collection)
+    : Heuristic(Heuristic::default_options()) {
+    Timer timer;
+    for (int i = 0; i < pattern_collection.size(); ++i) {
+        pattern_databases.push_back(
+        new PDBHeuristic(pattern_collection[i], false));
     }
     cout << pattern_collection.size() << " pdbs constructed." << endl;
     cout << "Construction time for all pdbs: " << timer << endl;
@@ -96,26 +110,6 @@ void PDBCollectionHeuristic::precompute_additive_vars() {
 }
 
 void PDBCollectionHeuristic::initialize() {
-    //cout << "Initializing pattern database heuristic..." << endl;
-    //cout << "Didn't do anything. Done initializing." << endl;
-
-    // testing logistics 6-2
-    /*vector<int> test_pattern;
-    test_pattern.push_back(2);
-    test_pattern.push_back(7);
-    vector<vector<PDBHeuristic *> > max_add_sub;
-    get_max_additive_subsets(test_pattern, max_add_sub);
-    cout << "Maximal additive subsets are { ";
-    for (size_t i = 0; i < max_add_sub.size(); ++i) {
-        cout << "[ ";
-        for (size_t j = 0; j < max_add_sub[i].size(); ++j) {
-            cout << max_add_sub[i][j] << " ";
-        }
-        cout << "] ";
-    }
-    cout << "}" << endl;
-
-    add_new_pattern(new PDBHeuristic(test_pattern));*/
 }
 
 int PDBCollectionHeuristic::compute_heuristic(const State &state) {
@@ -136,9 +130,7 @@ int PDBCollectionHeuristic::compute_heuristic(const State &state) {
 }
 
 void PDBCollectionHeuristic::add_new_pattern(const vector<int> &pattern) {
-    Options opts;
-    opts.set<vector<int> >("pattern", pattern);
-    pattern_databases.push_back(new PDBHeuristic(opts, vector<int>(), false));
+    pattern_databases.push_back(new PDBHeuristic(pattern, false));
     max_cliques.clear();
     precompute_max_cliques();
 }
