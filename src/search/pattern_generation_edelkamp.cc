@@ -411,7 +411,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("pdb_max_size", 100, "max number of states per pdb");
     parser.add_option<int>("num_collections", 5, "number of pattern collections to maintain");
     parser.add_option<int>("num_episodes", 30, "number of episodes");
-    parser.add_option<int>("mutation_probability", 1, "probability in per cent for flipping a bit");
+    parser.add_option<int>("mutation_probability", 1, "probability in percent for flipping a bit");
     parser.add_option<bool>("disjoint", false, "using disjoint variables in the patterns of a collection");
 
     Heuristic::add_options_to_parser(parser);

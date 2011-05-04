@@ -14,7 +14,7 @@ class PDBHeuristic;
 class PatternGenerationEdelkamp : public Heuristic {
     int pdb_max_size;
     int num_collections;
-    bool mutation_probability;
+    double mutation_probability;
     bool disjoint_patterns;
     //__gnu_cxx::hash_map<std::vector<bool>, double> pattern_to_fitness;
     std::map<std::vector<bool>, double> pattern_to_fitness; // cache fitness values for already calculated patterns
