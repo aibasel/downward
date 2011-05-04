@@ -20,54 +20,11 @@ using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
     : Heuristic(opts), pdb_max_size(opts.get<int>("pdb_max_size")),
-    num_collections(opts.get<int>("num_collections")) {
+    num_collections(opts.get<int>("num_collections")),
+    mutation_probability(opts.get<int>("mutation_probability") / 100.0),
+    disjoint_patterns(opts.get<bool>("disjoint")) {
     Timer timer;
-    int num_episodes = opts.get<int>("num_episodes");
-    double mutation_probability = opts.get<int>("mutation_probability") / 100.0;
-    bool disjoint = opts.get<bool>("disjoint");
-    bin_packing();
-    //cout << "initial pattern collections:" << endl;
-    //dump();
-    vector<pair<double, int> > initial_fitness_values;
-    evaluate(initial_fitness_values, disjoint);
-    
-    double current_best_h = initial_fitness_values.back().first;
-    vector<vector<bool> > best_collection = pattern_collections[initial_fitness_values.back().second];
-    
-    for (int t = 0; t < num_episodes; ++t) {
-        cout << endl;
-        cout << "--------- episode no " << t << " ---------" << endl;
-        mutate(mutation_probability);
-        //cout << "current pattern_collections after mutation" << endl;
-        //dump();
-        vector<pair<double, int> > fitness_values;
-        double fitness_sum = evaluate(fitness_values, disjoint);
-        cout << "evaluated" << endl;
-        /*cout << "fitness values:";
-        for (size_t i = 0; i < fitness_values.size(); ++i) {
-            cout << " " << fitness_values[i].first << " (index: " << fitness_values[i].second << ")";
-        }
-        cout << endl;*/
-        double new_best_h = fitness_values.back().first;
-        select(fitness_values, fitness_sum);
-        //cout << "current pattern collections (after selection):" << endl;
-        //dump();
-        if (new_best_h > current_best_h) {
-            current_best_h = new_best_h;
-            best_collection = pattern_collections[fitness_values.back().second];
-        }
-    }
-
-    for (size_t j = 0; j < best_collection.size(); ++j) {
-        vector<int> pattern;
-        for (size_t i = 0; i < best_collection[j].size(); ++i) {
-            if (best_collection[j][i])
-                pattern.push_back(i);
-        }
-        if (pattern.empty())
-            continue;
-        final_pattern_collection.push_back(new PDBHeuristic(pattern, false));
-    }
+    genetic_algorithm(opts.get<int>("num_episodes"));
     cout << "Pattern Generation (Edelkamp) time: " << timer << endl;
 }
 
@@ -111,45 +68,30 @@ Damit bekäme man kleinere Patterns und vermutlich auch mehr Duplikate,
 d.h. Patterns, wo man schon auf gecachete Kosten zurückgreifen kann.
 */
 
-void PatternGenerationEdelkamp::bin_packing() {
-    vector<int> variables;
-    variables.reserve(g_variable_domain.size());
-    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
-        variables.push_back(i);
+void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness_values, double fitness_sum) {
+    vector<double> probabilities;
+    for (size_t i = 0; i < fitness_values.size(); ++i) {
+        probabilities.push_back(fitness_values[i].first / fitness_sum);
+        if (i > 0)
+            probabilities[i] += probabilities[i-1];
     }
-
-    vector<int> op_costs;
-    op_costs.reserve(g_operators.size());
-    for (size_t i = 0; i < g_operators.size(); ++i)
-        op_costs.push_back(get_adjusted_cost(g_operators[i]));
-
-    operator_costs.reserve(num_collections);
-    for (size_t num_pcs = 0; num_pcs < num_collections; ++num_pcs) {
-        operator_costs.push_back(op_costs);
-        random_shuffle(variables.begin(), variables.end(), g_rng);
-        vector<vector<bool> > pattern_collection;
-        vector<bool> pattern(g_variable_name.size(), false);
-        size_t current_size = 1;
-        for (size_t i = 0; i < variables.size(); ++i) {
-            int var = variables[i];
-            int next_var_size = g_variable_domain[var];
-            if (next_var_size <= pdb_max_size) {
-                if (current_size * next_var_size > pdb_max_size) {
-                    if (!pattern.empty()) {
-                        pattern_collection.push_back(pattern);
-                        pattern.clear();
-                        pattern.resize(g_variable_name.size(), false);
-                        current_size = 1;
-                    }
-                }
-                current_size *= next_var_size;
-                pattern[var] = true;
-            }
+    /*cout << "summed probabilities: ";
+    for (size_t i = 0; i < probabilities.size(); ++i) {
+        cout << probabilities[i] << " ";
+}
+cout << endl;*/
+    
+    vector<vector<vector<bool> > > new_pattern_collections;
+    for (size_t i = 0; i < num_collections; ++i) {
+        double random = g_rng(); // [0..1)
+        int j = 0;
+        while (random > probabilities[j]) {
+            ++j;
         }
-        if (!pattern.empty())
-            pattern_collection.push_back(pattern);
-        pattern_collections.push_back(pattern_collection);
+        //cout << "random = " << random << " j = " << j << " index = " << fitness_values[j].second << endl;
+        new_pattern_collections.push_back(pattern_collections[fitness_values[j].second]);
     }
+    pattern_collections = new_pattern_collections;
 }
 
 /*
@@ -179,7 +121,7 @@ void PatternGenerationEdelkamp::recombine() {
     }
 }*/
 
-void PatternGenerationEdelkamp::mutate(double probability) {
+void PatternGenerationEdelkamp::mutate() {
     // TODO: Should we check the max pdb size here? After mutation new variables can occur in a pattern and
     // exceed the max_pdb_size!
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
@@ -192,7 +134,7 @@ void PatternGenerationEdelkamp::mutate(double probability) {
             //cout << endl;
             for (size_t k = 0; k < pattern.size(); ++k) {
                 double random = g_rng(); // [0..1)
-                if (random < probability) {
+                if (random < mutation_probability) {
                     cout << "mutating variable no " << k << " in pattern no " << j
                     << " of pattern collection no " << i << endl;
                     pattern[k] = !pattern[k];
@@ -207,7 +149,7 @@ void PatternGenerationEdelkamp::mutate(double probability) {
     }
 }
 
-double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values, bool disjoint) {
+double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values) {
     double total_sum = 0;
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         cout << "evaluate pattern collection " << i << " of " << (pattern_collections.size() - 1) << endl;
@@ -231,7 +173,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             // test if variables occur in more than one pattern
             // TODO: iteration through bitvector occurs here and in transformation to pattern normal form
             // any way to avoid this?
-            if (disjoint) {
+            if (disjoint_patterns) {
                 bool patterns_disjoint = true;
                 for (size_t k = 0; k < bitvector.size(); ++k) {
                     if (bitvector[k]) {
@@ -346,30 +288,92 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
     return total_sum;
 }
 
-void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness_values, double fitness_sum) {
-    vector<double> probabilities;
-    for (size_t i = 0; i < fitness_values.size(); ++i) {
-        probabilities.push_back(fitness_values[i].first / fitness_sum);
-        if (i > 0)
-            probabilities[i] += probabilities[i-1];
+void PatternGenerationEdelkamp::bin_packing() {
+    vector<int> variables;
+    variables.reserve(g_variable_domain.size());
+    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
+        variables.push_back(i);
     }
-    /*cout << "summed probabilities: ";
-    for (size_t i = 0; i < probabilities.size(); ++i) {
-        cout << probabilities[i] << " ";
-    }
-    cout << endl;*/
 
-    vector<vector<vector<bool> > > new_pattern_collections;
-    for (size_t i = 0; i < num_collections; ++i) {
-        double random = g_rng(); // [0..1)
-        int j = 0;
-        while (random > probabilities[j]) {
-            ++j;
+    vector<int> op_costs;
+    op_costs.reserve(g_operators.size());
+    for (size_t i = 0; i < g_operators.size(); ++i)
+        op_costs.push_back(get_adjusted_cost(g_operators[i]));
+
+    operator_costs.reserve(num_collections);
+    for (size_t num_pcs = 0; num_pcs < num_collections; ++num_pcs) {
+        operator_costs.push_back(op_costs);
+        random_shuffle(variables.begin(), variables.end(), g_rng);
+        vector<vector<bool> > pattern_collection;
+        vector<bool> pattern(g_variable_name.size(), false);
+        size_t current_size = 1;
+        for (size_t i = 0; i < variables.size(); ++i) {
+            int var = variables[i];
+            int next_var_size = g_variable_domain[var];
+            if (next_var_size <= pdb_max_size) {
+                if (current_size * next_var_size > pdb_max_size) {
+                    if (!pattern.empty()) {
+                        pattern_collection.push_back(pattern);
+                        pattern.clear();
+                        pattern.resize(g_variable_name.size(), false);
+                        current_size = 1;
+                    }
+                }
+                current_size *= next_var_size;
+                pattern[var] = true;
+            }
         }
-        //cout << "random = " << random << " j = " << j << " index = " << fitness_values[j].second << endl;
-        new_pattern_collections.push_back(pattern_collections[fitness_values[j].second]);
+        if (!pattern.empty())
+            pattern_collection.push_back(pattern);
+        pattern_collections.push_back(pattern_collection);
     }
-    pattern_collections = new_pattern_collections;
+}
+
+void PatternGenerationEdelkamp::genetic_algorithm(int num_episodes) {
+    bin_packing();
+    //cout << "initial pattern collections:" << endl;
+    //dump();
+    vector<pair<double, int> > initial_fitness_values;
+    evaluate(initial_fitness_values);
+
+    double current_best_h = initial_fitness_values.back().first;
+    vector<vector<bool> > best_collection = pattern_collections[initial_fitness_values.back().second];
+
+    for (int t = 0; t < num_episodes; ++t) {
+        cout << endl;
+        cout << "--------- episode no " << t << " ---------" << endl;
+        mutate();
+        //cout << "current pattern_collections after mutation" << endl;
+        //dump();
+        vector<pair<double, int> > fitness_values;
+        double fitness_sum = evaluate(fitness_values);
+        cout << "evaluated" << endl;
+        /*cout << "fitness values:";
+        for (size_t i = 0; i < fitness_values.size(); ++i) {
+            cout << " " << fitness_values[i].first << " (index: " << fitness_values[i].second << ")";
+        }
+        cout << endl;*/
+        double new_best_h = fitness_values.back().first;
+        select(fitness_values, fitness_sum);
+        //cout << "current pattern collections (after selection):" << endl;
+        //dump();
+        if (new_best_h > current_best_h) {
+            current_best_h = new_best_h;
+            best_collection = pattern_collections[fitness_values.back().second];
+        }
+    }
+
+    // store patterns of the best pattern collection for faster access during search
+    for (size_t j = 0; j < best_collection.size(); ++j) {
+        vector<int> pattern;
+        for (size_t i = 0; i < best_collection[j].size(); ++i) {
+            if (best_collection[j][i])
+                pattern.push_back(i);
+        }
+        if (pattern.empty())
+            continue;
+        final_pattern_collection.push_back(new PDBHeuristic(pattern, false));
+    }
 }
 
 /*PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() const {
