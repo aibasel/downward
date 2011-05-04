@@ -385,13 +385,13 @@ for (size_t j = 0; j < best_collection.size(); ++j) {
     for (size_t i = 0; i < best_collection[j].size(); ++i) {
         if (best_collection[j][i])
             pattern.push_back(i);
-        }
-        if (pattern.empty())
-            continue;
-        pattern_collection.push_back(pattern);
-        }
-        return new PDBCollectionHeuristic(pattern_collection);
-        }*/
+    }
+    if (pattern.empty())
+        continue;
+    pattern_collection.push_back(pattern);
+    }
+    return new PDBCollectionHeuristic(pattern_collection);
+}*/
 
 void PatternGenerationEdelkamp::dump() const {
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
