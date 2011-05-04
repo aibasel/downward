@@ -43,6 +43,10 @@ PDBCollectionHeuristic::PDBCollectionHeuristic(
 }
 
 PDBCollectionHeuristic::~PDBCollectionHeuristic() {
+    // TODO: check correctness - apparently this destructor is never called anyways
+    /*for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        delete pattern_databases[i];
+    }*/
 }
 
 bool PDBCollectionHeuristic::are_pattern_additive(const vector<int> &patt1, const vector<int> &patt2) const {

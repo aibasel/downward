@@ -9,6 +9,7 @@
 
 class Options;
 class State;
+class PDBHeuristic;
 // Implementation of the pattern generation algorithm by Edelkamp
 class PatternGenerationEdelkamp : public Heuristic {
     int pdb_max_size;
@@ -16,9 +17,9 @@ class PatternGenerationEdelkamp : public Heuristic {
     //__gnu_cxx::hash_map<std::vector<bool>, double> pattern_to_fitness;
     std::map<std::vector<bool>, double> pattern_to_fitness; // cache fitness values for already calculated patterns
     std::vector<std::vector<std::vector<bool> > > pattern_collections; // all current pattern collections
-    std::vector<std::vector<bool> > best_collection; // remember the best pattern collection over all episodes
-    std::vector<std::vector<int> > operator_costs;
-    void initialize2(); // bin packing (for variables) to determine initial pattern collections
+    std::vector<PDBHeuristic *> final_pattern_collection;
+    std::vector<std::vector<int> > operator_costs; // stores operator costs to remember which operators have been used
+    void bin_packing(); // bin packing (for variables) to determine initial pattern collections
     //void recombine();
     void mutate(double probability); // flip bits (= variables) with a given probability
 

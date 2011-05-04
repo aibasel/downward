@@ -25,15 +25,14 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
     int num_episodes = opts.get<int>("num_episodes");
     double mutation_probability = opts.get<int>("mutation_probability") / 100.0;
     bool disjoint = opts.get<bool>("disjoint");
-    initialize2();
+    bin_packing();
     //cout << "initial pattern collections:" << endl;
     //dump();
     vector<pair<double, int> > initial_fitness_values;
     evaluate(initial_fitness_values, disjoint);
     
     double current_best_h = initial_fitness_values.back().first;
-    // TODO: can do this without copying? reference as instance variable does not work (initializing problem)
-    best_collection = pattern_collections[initial_fitness_values.back().second];
+    vector<vector<bool> > best_collection = pattern_collections[initial_fitness_values.back().second];
     
     for (int t = 0; t < num_episodes; ++t) {
         cout << endl;
@@ -58,10 +57,26 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
             best_collection = pattern_collections[fitness_values.back().second];
         }
     }
+
+    for (size_t j = 0; j < best_collection.size(); ++j) {
+        vector<int> pattern;
+        for (size_t i = 0; i < best_collection[j].size(); ++i) {
+            if (best_collection[j][i])
+                pattern.push_back(i);
+        }
+        if (pattern.empty())
+            continue;
+        final_pattern_collection.push_back(new PDBHeuristic(pattern, false));
+    }
     cout << "Pattern Generation (Edelkamp) time: " << timer << endl;
 }
 
 PatternGenerationEdelkamp::~PatternGenerationEdelkamp() {
+    // TODO: check correctness - apparently this destructor is never called anyways
+    /*cout << "destructor called" << endl;
+    for (size_t i = 0; i < final_pattern_collection.size(); ++i) {
+        delete final_pattern_collection[i];
+    }*/
 }
 
 void PatternGenerationEdelkamp::dump() const {
@@ -96,18 +111,19 @@ Damit bekäme man kleinere Patterns und vermutlich auch mehr Duplikate,
 d.h. Patterns, wo man schon auf gecachete Kosten zurückgreifen kann.
 */
 
-void PatternGenerationEdelkamp::initialize2() {
+void PatternGenerationEdelkamp::bin_packing() {
     vector<int> variables;
     variables.reserve(g_variable_domain.size());
     for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         variables.push_back(i);
     }
 
-    operator_costs.reserve(num_collections);
     vector<int> op_costs;
     op_costs.reserve(g_operators.size());
     for (size_t i = 0; i < g_operators.size(); ++i)
         op_costs.push_back(get_adjusted_cost(g_operators[i]));
+
+    operator_costs.reserve(num_collections);
     for (size_t num_pcs = 0; num_pcs < num_collections; ++num_pcs) {
         operator_costs.push_back(op_costs);
         random_shuffle(variables.begin(), variables.end(), g_rng);
@@ -273,7 +289,6 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             }
             cout << endl;*/
 
-            /**/
             // calculate mean h-value for actual pattern collection
             //hash_map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(bitvector);
             map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(modified_bitvector);
@@ -281,7 +296,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             if (it == pattern_to_fitness.end()) {
                 vector<int> pattern;
                 transform_to_pattern_normal_form(modified_bitvector, pattern);
-                cout << "transformed into normal pattern form" << endl;
+                //cout << "transformed into normal pattern form" << endl;
                 /*cout << "[";
                 if (pattern.size() == 0)
                     cout << "empty pattern" << endl;
@@ -377,21 +392,12 @@ void PatternGenerationEdelkamp::initialize() {
 }
 
 int PatternGenerationEdelkamp::compute_heuristic(const State &state) {
-    vector<vector<int> > pattern_collection;
     int h_val = 0;
-    for (size_t j = 0; j < best_collection.size(); ++j) {
-        vector<int> pattern;
-        for (size_t i = 0; i < best_collection[j].size(); ++i) {
-            if (best_collection[j][i])
-                pattern.push_back(i);
-        }
-        if (pattern.empty())
-            continue;
-        PDBHeuristic pdb_heuristic(pattern, false);
-        pdb_heuristic.evaluate(state);
-        if (pdb_heuristic.is_dead_end())
+    for (size_t i = 0; i < final_pattern_collection.size(); ++i) {
+        final_pattern_collection[i]->evaluate(state);
+        if (final_pattern_collection[i]->is_dead_end())
             return -1;
-        h_val += pdb_heuristic.get_heuristic();
+        h_val += final_pattern_collection[i]->get_heuristic();
     }
     return h_val;
 }
