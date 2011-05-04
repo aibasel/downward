@@ -24,7 +24,9 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")) {
+    Timer timer;
     hill_climbing();
+    cout << "Pattern Generation (Haslum et al.) time: " << timer << endl;
 }
 
 PatternGenerationHaslum::~PatternGenerationHaslum() {
@@ -147,8 +149,8 @@ void PatternGenerationHaslum::hill_climbing() {
     // to avoid dividing through 0
     if (average_operator_costs == 0)
         average_operator_costs = 1;
-    cout << "Average operator costs of this problem: " << average_operator_costs << endl;
-    
+    cout << "Average operator costs: " << average_operator_costs << endl;
+
     int collection_size = 0;
     // initial collection: a pdb for each goal variable
     vector<vector<int> > initial_pattern_collection;
@@ -161,7 +163,7 @@ void PatternGenerationHaslum::hill_climbing() {
     current_collection->evaluate(*g_initial_state);
     if (current_collection->is_dead_end())
         return;
-    
+
     // initial candidate patterns, computed separately for each pattern from the initial collection
     vector<vector<int> > candidate_patterns;
     for (size_t i = 0; i < current_collection->get_pattern_databases().size(); ++i) {
@@ -173,8 +175,8 @@ void PatternGenerationHaslum::hill_climbing() {
     candidate_patterns.erase(unique(candidate_patterns.begin(), candidate_patterns.end()), candidate_patterns.end());
     cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
 
-    Timer timer;
     // actual hill climbing loop
+    Timer timer;
     map<vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation - TODO: hash_map?
     //vector<PDBHeuristic *> pdb_cache; // cache pdbs to avoid recalculation
     int improvement = num_samples;
@@ -288,9 +290,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 
     if (parser.dry_run())
         return 0;
-    Timer timer;
+
     PatternGenerationHaslum pgh(opts);
-    cout << "Pattern Generation (Haslum et al.) time: " << timer << endl;
     return pgh.get_pattern_collection_heuristic();
 }
 
