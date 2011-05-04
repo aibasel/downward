@@ -22,15 +22,15 @@ class PatternGenerationEdelkamp : public Heuristic {
     std::vector<PDBHeuristic *> final_pattern_collection;
     std::vector<std::vector<int> > operator_costs; // stores operator costs to remember which operators have been used
 
-    // transforms a vector of bools (pattern representation in this algorithm) to the "normal" pattern form
-    // vector<int> (needed for PDBHeuristic)
-    void transform_to_pattern_normal_form(const std::vector<bool> &bitvector, std::vector<int> &pattern) const;
-
     // select each pattern collection with a probability (obtained by normalizing the fitness function)
     void select(const std::vector<std::pair<double, int> > &fitness_values, double fitness_sum);
 
     //void recombine();
     void mutate(); // flip bits (= variables) with a given probability
+
+    // transforms a vector of bools (pattern representation in this algorithm) to the "normal" pattern form
+    // vector<int> (needed for PDBHeuristic)
+    void transform_to_pattern_normal_form(const std::vector<bool> &bitvector, std::vector<int> &pattern) const;
 
     // calculate the mean h-value (fitness function) for each pattern collection and returns the sum of them
     double evaluate(std::vector<std::pair<double, int> > &fitness_values);
@@ -43,8 +43,8 @@ protected:
 public:
     PatternGenerationEdelkamp(const Options &opts);
     virtual ~PatternGenerationEdelkamp();
-    void dump() const;
     //PDBCollectionHeuristic *get_pattern_collection_heuristic() const;
+    void dump() const;
 };
 
 #endif
