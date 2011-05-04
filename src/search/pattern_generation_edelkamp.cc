@@ -36,27 +36,6 @@ PatternGenerationEdelkamp::~PatternGenerationEdelkamp() {
     }*/
 }
 
-void PatternGenerationEdelkamp::dump() const {
-    for (size_t i = 0; i < pattern_collections.size(); ++i) {
-        cout << "pattern collection no " << i << endl;
-        for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
-            cout << "[ ";
-            for (size_t k = 0; k < pattern_collections[i][j].size(); ++k) {
-                cout << pattern_collections[i][j][k] << " ";
-            }
-            cout << "]" << endl;
-        }
-    }
-}
-
-void PatternGenerationEdelkamp::transform_to_pattern_normal_form(const vector<bool> &bitvector,
-                                                                 vector<int> &pattern) const {
-    for (size_t i = 0; i < bitvector.size(); ++i) {
-        if (bitvector[i])
-            pattern.push_back(i);
-    }
-}
-
 /* TODO: Generell alle Variablen aus den
 Patterns entfernen, die nicht "kausal gerechtfertigt" sind, d.h.
 
@@ -148,6 +127,14 @@ void PatternGenerationEdelkamp::mutate() {
         }
     }
 }
+
+void PatternGenerationEdelkamp::transform_to_pattern_normal_form(const vector<bool> &bitvector,
+                                                                 vector<int> &pattern) const {
+                                                                     for (size_t i = 0; i < bitvector.size(); ++i) {
+                                                                         if (bitvector[i])
+                                                                             pattern.push_back(i);
+                                                                     }
+                                                                 }
 
 double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values) {
     double total_sum = 0;
@@ -376,22 +363,6 @@ void PatternGenerationEdelkamp::genetic_algorithm(int num_episodes) {
     }
 }
 
-/*PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() const {
-    // return the best collection of the last pattern collections (after all episodes)
-    vector<vector<int> > pattern_collection;
-    for (size_t j = 0; j < best_collection.size(); ++j) {
-        vector<int> pattern;
-        for (size_t i = 0; i < best_collection[j].size(); ++i) {
-            if (best_collection[j][i])
-                pattern.push_back(i);
-        }
-        if (pattern.empty())
-            continue;
-        pattern_collection.push_back(pattern);
-    }
-    return new PDBCollectionHeuristic(pattern_collection);
-}*/
-
 void PatternGenerationEdelkamp::initialize() {
 }
 
@@ -404,6 +375,35 @@ int PatternGenerationEdelkamp::compute_heuristic(const State &state) {
         h_val += final_pattern_collection[i]->get_heuristic();
     }
     return h_val;
+}
+
+/*PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() const {
+// return the best collection of the last pattern collections (after all episodes)
+vector<vector<int> > pattern_collection;
+for (size_t j = 0; j < best_collection.size(); ++j) {
+    vector<int> pattern;
+    for (size_t i = 0; i < best_collection[j].size(); ++i) {
+        if (best_collection[j][i])
+            pattern.push_back(i);
+        }
+        if (pattern.empty())
+            continue;
+        pattern_collection.push_back(pattern);
+        }
+        return new PDBCollectionHeuristic(pattern_collection);
+        }*/
+
+void PatternGenerationEdelkamp::dump() const {
+    for (size_t i = 0; i < pattern_collections.size(); ++i) {
+        cout << "pattern collection no " << i << endl;
+        for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
+            cout << "[ ";
+            for (size_t k = 0; k < pattern_collections[i][j].size(); ++k) {
+                cout << pattern_collections[i][j][k] << " ";
+            }
+            cout << "]" << endl;
+        }
+    }
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
