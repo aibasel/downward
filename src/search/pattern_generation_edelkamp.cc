@@ -57,8 +57,8 @@ void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness
     /*cout << "summed probabilities: ";
     for (size_t i = 0; i < probabilities.size(); ++i) {
         cout << probabilities[i] << " ";
-}
-cout << endl;*/
+    }
+    cout << endl;*/
     
     vector<vector<vector<bool> > > new_pattern_collections;
     for (size_t i = 0; i < num_collections; ++i) {
@@ -130,11 +130,11 @@ void PatternGenerationEdelkamp::mutate() {
 
 void PatternGenerationEdelkamp::transform_to_pattern_normal_form(const vector<bool> &bitvector,
                                                                  vector<int> &pattern) const {
-                                                                     for (size_t i = 0; i < bitvector.size(); ++i) {
-                                                                         if (bitvector[i])
-                                                                             pattern.push_back(i);
-                                                                     }
-                                                                 }
+    for (size_t i = 0; i < bitvector.size(); ++i) {
+        if (bitvector[i])
+            pattern.push_back(i);
+    }
+}
 
 double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values) {
     double total_sum = 0;
@@ -378,17 +378,17 @@ int PatternGenerationEdelkamp::compute_heuristic(const State &state) {
 }
 
 /*PDBCollectionHeuristic *PatternGenerationEdelkamp::get_pattern_collection_heuristic() const {
-// return the best collection of the last pattern collections (after all episodes)
-vector<vector<int> > pattern_collection;
-for (size_t j = 0; j < best_collection.size(); ++j) {
-    vector<int> pattern;
-    for (size_t i = 0; i < best_collection[j].size(); ++i) {
-        if (best_collection[j][i])
-            pattern.push_back(i);
-    }
-    if (pattern.empty())
-        continue;
-    pattern_collection.push_back(pattern);
+    // return the best collection of the last pattern collections (after all episodes)
+    vector<vector<int> > pattern_collection;
+    for (size_t j = 0; j < best_collection.size(); ++j) {
+        vector<int> pattern;
+        for (size_t i = 0; i < best_collection[j].size(); ++i) {
+            if (best_collection[j][i])
+                pattern.push_back(i);
+        }
+        if (pattern.empty())
+            continue;
+        pattern_collection.push_back(pattern);
     }
     return new PDBCollectionHeuristic(pattern_collection);
 }*/
