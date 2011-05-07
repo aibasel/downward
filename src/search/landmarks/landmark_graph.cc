@@ -234,13 +234,13 @@ LandmarkNode &LandmarkGraph::make_disj_node_simple(pair<int, int> lm) {
 }
 
 void LandmarkGraph::set_landmark_ids() {
-    cout << "setting landmark ids" << endl;
+    //cout << "setting landmark ids" << endl;
     ordered_nodes.resize(landmarks_count);
     int id = 0;
     for (set<LandmarkNode *>::iterator node_it =
         nodes.begin(); node_it != nodes.end(); node_it++) {
         LandmarkNode *lmn = *node_it;
-        dump_node(lmn);
+        //dump_node(lmn);
         lmn->assign_id(id);
         ordered_nodes[id] = lmn;
         id++;
