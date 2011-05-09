@@ -21,10 +21,12 @@ using namespace std;
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
     : Heuristic(opts), pdb_max_size(opts.get<int>("pdb_max_size")),
     num_collections(opts.get<int>("num_collections")),
+    num_episodes(opts.get<int>("num_episodes")),
     mutation_probability(opts.get<int>("mutation_probability") / 100.0),
-    disjoint_patterns(opts.get<bool>("disjoint")) {
+    disjoint_patterns(opts.get<bool>("disjoint")),
+    cost_type(opts.get<int>("cost_type")) {
     Timer timer;
-    genetic_algorithm(opts.get<int>("num_episodes"));
+    genetic_algorithm();
     cout << "Pattern Generation (Edelkamp) time: " << timer << endl;
 }
 
@@ -35,17 +37,6 @@ PatternGenerationEdelkamp::~PatternGenerationEdelkamp() {
         delete final_pattern_collection[i];
     }*/
 }
-
-/* TODO: Generell alle Variablen aus den
-Patterns entfernen, die nicht "kausal gerechtfertigt" sind, d.h.
-
-* Zielvariablen sind, oder
-* in Vorbedingungen von Operatoren auftauchen, die bereits
-kausal gerechtfertigte Variablen in den Effekten haben
-
-Damit bekäme man kleinere Patterns und vermutlich auch mehr Duplikate,
-d.h. Patterns, wo man schon auf gecachete Kosten zurückgreifen kann.
-*/
 
 void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness_values, double fitness_sum) {
     vector<double> probabilities;
@@ -236,7 +227,10 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 }
                 cout << "]" << endl;*/
 
-                PDBHeuristic pdb_heuristic(pattern, false, op_costs);
+                Options opts;
+                opts.set<int>("cost_type", cost_type);
+                opts.set<vector<int> >("pattern", pattern);
+                PDBHeuristic pdb_heuristic(opts, false, op_costs);
 
                 // at the very first time, op_costs is empty and gets initialized in pdb_heuristic
                 // as there is no way to precompute the operator costs in an elegant way as in pdb_heuristic, because
@@ -316,7 +310,7 @@ void PatternGenerationEdelkamp::bin_packing() {
     }
 }
 
-void PatternGenerationEdelkamp::genetic_algorithm(int num_episodes) {
+void PatternGenerationEdelkamp::genetic_algorithm() {
     bin_packing();
     //cout << "initial pattern collections:" << endl;
     //dump();
@@ -351,6 +345,8 @@ void PatternGenerationEdelkamp::genetic_algorithm(int num_episodes) {
     }
 
     // store patterns of the best pattern collection for faster access during search
+    Options opts;
+    opts.set<int>("cost_type", cost_type);
     for (size_t j = 0; j < best_collection.size(); ++j) {
         vector<int> pattern;
         for (size_t i = 0; i < best_collection[j].size(); ++i) {
@@ -359,7 +355,8 @@ void PatternGenerationEdelkamp::genetic_algorithm(int num_episodes) {
         }
         if (pattern.empty())
             continue;
-        final_pattern_collection.push_back(new PDBHeuristic(pattern, false));
+        opts.set<vector<int> >("pattern", pattern);
+        final_pattern_collection.push_back(new PDBHeuristic(opts));
     }
 }
 

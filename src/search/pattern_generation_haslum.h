@@ -14,6 +14,7 @@ class PatternGenerationHaslum {
     int collection_max_size;
     int num_samples;
     int min_improvement;
+    int cost_type;
     PDBCollectionHeuristic *current_collection;
     // TODO: hash map for map?
     std::map<std::vector<int>, int> pattern_sizes; // cache size of a pattern

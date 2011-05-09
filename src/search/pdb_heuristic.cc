@@ -278,30 +278,6 @@ PDBHeuristic::PDBHeuristic(
         cout << "PDB construction time: " << timer << endl;
 }
 
-PDBHeuristic::PDBHeuristic(
-    const std::vector<int> &pattern, bool dump,
-    const std::vector<int> &op_costs)
-    : Heuristic(Heuristic::default_options()) {
-
-    verify_no_axioms_no_cond_effects();
-
-    if (op_costs.empty()) {
-        operator_costs.reserve(g_operators.size());
-        for (size_t i = 0; i < g_operators.size(); ++i) {
-            operator_costs.push_back(get_adjusted_cost(g_operators[i]));
-        }
-    } else {
-        assert(op_costs.size() == g_operators.size());
-        operator_costs = op_costs;
-    }
-    used_operators.resize(g_operators.size(), false);
-
-    Timer timer;
-    set_pattern(pattern);
-    if (dump)
-        cout << "PDB construction time: " << timer << endl;
-}
-
 PDBHeuristic::~PDBHeuristic() {
 }
 
@@ -520,7 +496,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     Options opts = parser.parse();
     vector<int> pattern = opts.get_list<int>("pattern");
     if (parser.dry_run() && !pattern.empty()) {
-        //cout << "Reading pattern from option." << endl;
         sort(pattern.begin(), pattern.end());
         int old_size = pattern.size();
         vector<int>::const_iterator it = unique(pattern.begin(), pattern.end());
@@ -531,11 +506,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
             parser.error("there is a variable < 0");
         if (pattern[pattern.size() - 1] >= g_variable_domain.size())
             parser.error("there is a variable > number of variables");
-        /*cout << "Pattern is ";
-        for (size_t i = 0; i < pattern.size(); ++i) {
-            cout << pattern[i] << ", ";
-        }
-        cout << endl;*/
     }
     if (opts.get<int>("max_states") < 1)
         parser.error("abstraction size must be at least 1");

@@ -14,8 +14,10 @@ class PDBHeuristic;
 class PatternGenerationEdelkamp : public Heuristic {
     int pdb_max_size;
     int num_collections;
+    int num_episodes;
     double mutation_probability;
     bool disjoint_patterns;
+    int cost_type;
     //__gnu_cxx::hash_map<std::vector<bool>, double> pattern_to_fitness;
     std::map<std::vector<bool>, double> pattern_to_fitness; // cache fitness values for already calculated patterns
     std::vector<std::vector<std::vector<bool> > > pattern_collections; // all current pattern collections
@@ -36,7 +38,7 @@ class PatternGenerationEdelkamp : public Heuristic {
     double evaluate(std::vector<std::pair<double, int> > &fitness_values);
 
     void bin_packing(); // bin packing (for variables) to determine initial pattern collections
-    void genetic_algorithm(int num_episodes); // main genectic algorithm loop
+    void genetic_algorithm(); // main genectic algorithm loop
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);

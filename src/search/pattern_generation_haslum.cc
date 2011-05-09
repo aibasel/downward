@@ -23,7 +23,8 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
-      min_improvement(opts.get<int>("min_improvement")) {
+      min_improvement(opts.get<int>("min_improvement")),
+      cost_type(opts.get<int>("cost_type")) {
     Timer timer;
     hill_climbing();
     cout << "Pattern Generation (Haslum et al.) time: " << timer << endl;
@@ -143,6 +144,7 @@ void PatternGenerationHaslum::hill_climbing() {
     // calculate average operator costs
     int average_operator_costs = 0;
     for (size_t i = 0; i < g_operators.size(); ++i) {
+        // TODO: use get_adjusted_cost in a way?
         average_operator_costs += g_operators[i].get_cost();
     }
     average_operator_costs /= g_operators.size();
@@ -159,7 +161,10 @@ void PatternGenerationHaslum::hill_climbing() {
         pattern_sizes.insert(make_pair(initial_pattern_collection[i], g_variable_domain[g_goal[i].first]));
         collection_size += g_variable_domain[g_goal[i].first];
     }
-    current_collection = new PDBCollectionHeuristic(initial_pattern_collection);
+    Options opts;
+    opts.set<int>("cost_type", cost_type);
+    opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
+    current_collection = new PDBCollectionHeuristic(opts);
     current_collection->evaluate(*g_initial_state);
     if (current_collection->is_dead_end())
         return;
@@ -199,7 +204,10 @@ void PatternGenerationHaslum::hill_climbing() {
         for (size_t i = 0; i < candidate_patterns.size(); ++i) {
             map<vector<int>, PDBHeuristic *>::const_iterator it = pattern_to_pdb.find(candidate_patterns[i]);
             if (it == pattern_to_pdb.end()) {
-                pdbheuristic = new PDBHeuristic(candidate_patterns[i], false);
+                Options opts;
+                opts.set<int>("cost_type", cost_type);
+                opts.set<vector<int> >("pattern", candidate_patterns[i]);
+                pdbheuristic = new PDBHeuristic(opts);
                 pattern_to_pdb.insert(make_pair(candidate_patterns[i], pdbheuristic));
             } else {
                 pdbheuristic = it->second;
