@@ -16,25 +16,14 @@
 using namespace std;
 
 PDBCollectionHeuristic::PDBCollectionHeuristic(const Options &opts)
-    : Heuristic(opts) {
+    : Heuristic(opts), cost_type(opts.get<int>("cost_type")) {
     const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
     Timer timer;
     for (int i = 0; i < pattern_collection.size(); ++i) {
-        pattern_databases.push_back(new PDBHeuristic(pattern_collection[i], false));
-    }
-    cout << pattern_collection.size() << " pdbs constructed." << endl;
-    cout << "Construction time for all pdbs: " << timer << endl;
-    precompute_additive_vars();
-    precompute_max_cliques();
-}
-
-PDBCollectionHeuristic::PDBCollectionHeuristic(
-    const vector<vector<int> > &pattern_collection)
-    : Heuristic(Heuristic::default_options()) {
-    Timer timer;
-    for (int i = 0; i < pattern_collection.size(); ++i) {
-        pattern_databases.push_back(
-        new PDBHeuristic(pattern_collection[i], false));
+        Options options;
+        options.set<int>("cost_type", cost_type);
+        options.set<vector<int> >("pattern", pattern_collection[i]);
+        pattern_databases.push_back(new PDBHeuristic(options));
     }
     cout << pattern_collection.size() << " pdbs constructed." << endl;
     cout << "Construction time for all pdbs: " << timer << endl;
@@ -104,13 +93,6 @@ void PDBCollectionHeuristic::precompute_additive_vars() {
             }
         }
     }
-    /*cout << "are additive variables matrix" << endl;
-    for (size_t i = 0; i < are_additive.size(); ++i) {
-        for (size_t j = 0; j < are_additive[i].size(); ++j) {
-            cout << are_additive[i][j] << " ";
-        }
-        cout << endl;
-    }*/
 }
 
 void PDBCollectionHeuristic::initialize() {
@@ -134,7 +116,10 @@ int PDBCollectionHeuristic::compute_heuristic(const State &state) {
 }
 
 void PDBCollectionHeuristic::add_new_pattern(const vector<int> &pattern) {
-    pattern_databases.push_back(new PDBHeuristic(pattern, false));
+    Options opts;
+    opts.set<int>("cost_type", cost_type);
+    opts.set<vector<int> >("pattern", pattern);
+    pattern_databases.push_back(new PDBHeuristic(opts));
     max_cliques.clear();
     precompute_max_cliques();
 }
@@ -241,15 +226,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         for (size_t i = 0; i < g_goal.size(); ++i) {
             pattern_collection.push_back(vector<int>(1, g_goal[i].first));
         }
-        /*cout << "goals are" << endl;
-        for (size_t i = 0; i < pattern_collection.size(); ++i) {
-            cout << "[ ";
-            for (size_t j = 0; j < pattern_collection[i].size(); ++j) {
-                cout << pattern_collection[i][j] << " ";
-            }
-            cout << "]" << endl;
-        }
-        cout << endl;*/
         opts.set("patterns", pattern_collection);
     }
 
