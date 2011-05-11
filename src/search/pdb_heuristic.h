@@ -37,7 +37,7 @@ class MatchTree {
     std::vector<int> pattern; // as in PDBHeuristic
     std::vector<size_t> n_i; // as in PDBHeuristic
     Node *root;
-    void build_recursively(const AbstractOperator &op, int pre_index, int old_index, Node *node, Node *parent);
+    void build_recursively(const AbstractOperator &op, int pre_index, Node **edge_from_parent);
     void traverse(Node *node, size_t var_index, const size_t state_index,
                   std::vector<const AbstractOperator *> &applicable_operators) const;
 public:
