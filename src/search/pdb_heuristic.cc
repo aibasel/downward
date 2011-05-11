@@ -92,6 +92,12 @@ MatchTree::Node::~Node() {
 
 void MatchTree::build_recursively(
     const AbstractOperator &op, int pre_index, Node **edge_from_parent) {
+
+    if (*edge_from_parent == 0) {
+        // We don't exist yet: create a new node.
+        *edge_from_parent = new Node();
+    }
+
     const vector<pair<int, int> > &regression_preconditions = op.get_regression_preconditions();
     Node *node = *edge_from_parent;
     if (pre_index == regression_preconditions.size()) { // all preconditions have been checked, insert op
@@ -108,11 +114,7 @@ void MatchTree::build_recursively(
             for (int i = 0; i < test_var_size; ++i) {
                 node->successors[i] = 0;
             }
-        }
-
-        Node **edge_to_child = 0;
-
-        if (node->test_var > var_val.first) {
+        } else if (node->test_var > var_val.first) {
             // The variable to test has been left out: must insert new node and treat it as the "node".
             Node *new_node = new Node(var_val.first, g_variable_domain[pattern[var_val.first]]);
             // The new node gets the left out variable as test_var.
@@ -121,17 +123,13 @@ void MatchTree::build_recursively(
             node = new_node; // The new node is now the node of interest.
         }
 
+        Node **edge_to_child = 0;
         if (node->test_var == var_val.first) { // operator has a precondition on test_var
             edge_to_child = &node->successors[var_val.second];
             ++pre_index;
         } else { // operator doesn't have a precondition on test_var, follow/create *-edge
             assert(node->test_var < var_val.first);
             edge_to_child = &node->star_successor;
-        }
-
-        if (*edge_to_child == 0) {
-            Node *new_child_node = new Node();
-            *edge_to_child = new_child_node;
         }
 
         build_recursively(op, pre_index, edge_to_child);
@@ -141,8 +139,6 @@ void MatchTree::build_recursively(
 void MatchTree::insert(const AbstractOperator &op) {
     //cout << "inserting operator into MatchTree:" << endl;
     //op.dump(pattern);
-    if (root == 0)
-        root = new Node(0, g_variable_domain[pattern[0]]); // initialize root-node with var0
     build_recursively(op, 0, &root);
     //cout << endl;
 }
