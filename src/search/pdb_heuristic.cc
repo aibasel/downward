@@ -143,52 +143,48 @@ void MatchTree::insert(const AbstractOperator &op) {
     //cout << endl;
 }
 
-void MatchTree::traverse(Node *node, size_t var_index, const size_t state_index,
+void MatchTree::traverse(Node *node, const size_t state_index,
                          vector<const AbstractOperator *> &applicable_operators) const {
+    /*
+      Note: different from the code that builds the match tree, we do
+      the test if node == 0 *before* calling traverse rather than *at
+      the start* of traverse since this turned out to be faster in
+      some informal experiments.
+     */
+
     //cout << "node->test_var = " << node->test_var << endl;
     //cout << "var_index = " << var_index << endl;
-    if (!node->applicable_operators.empty()) {
-        //cout << "applicable_operators.size() = " << node->applicable_operators.size() << endl;
-        for (size_t i = 0; i < node->applicable_operators.size(); ++i) {
-            applicable_operators.push_back(node->applicable_operators[i]);
-        }
-    } //else
-        //cout << "no applicable operators at this node" << endl;
-    if (var_index == pattern.size()) // all state vars have been checked
+    applicable_operators.insert(applicable_operators.end(),
+                                node->applicable_operators.begin(),
+                                node->applicable_operators.end());
+
+    if (node->test_var == -1)
         return;
-    if (node->test_var != -1) { // not a leaf
-        while (var_index != node->test_var) {
-            ++var_index;
-            //cout << "skipping var index, next one is: " << var_index << endl;
-            if (var_index == pattern.size()) { // I think this cannot happen in this if-block
-                assert(false);
-            }
-        }
-    } else
-        return;
+
+    int var_index = node->test_var;
     int temp = state_index / n_i[var_index];
     int val = temp % node->var_size;
+
     //cout << "calculated value for var_index: " << val << endl;
     if (node->successors[val] != 0) { // no leaf reached
         //cout << "recursive call for child with value " << val << " of test_var" << endl;
-        traverse(node->successors[val], var_index + 1, state_index, applicable_operators);
+        traverse(node->successors[val], state_index, applicable_operators);
         //cout << "back from recursive call (for successors[" << val << "]) to node with test_var = " << node->test_var << endl;
     } //else
         //cout << "no child for this value of test_var" << endl;
     if (node->star_successor != 0) { // always follow the *-edge, if exists
         //cout << "recursive call for star_successor" << endl;
-        traverse(node->star_successor, var_index + 1, state_index, applicable_operators);
+        traverse(node->star_successor, state_index, applicable_operators);
         //cout << "back from recursive call (for star_successor) to node with test_var = " << node->test_var << endl;
     } //else
-        //cout << "no star_successor" << endl;
+    //cout << "no star_successor" << endl;
 }
 
 void MatchTree::get_applicable_operators(size_t state_index,
                                          vector<const AbstractOperator *> &applicable_operators) const {
-    if (root == 0) // empty MatchTree, i.e. pattern is empty
-        return;
     //cout << "getting applicable operators for state_index = " << state_index << endl;
-    traverse(root, 0, state_index, applicable_operators);
+    if (root != 0)
+        traverse(root, state_index, applicable_operators);
     //cout << endl;
 }
 
