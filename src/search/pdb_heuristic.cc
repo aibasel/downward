@@ -90,69 +90,51 @@ MatchTree::Node::~Node() {
     delete star_successor;
 }
 
-void MatchTree::build_recursively(const AbstractOperator &op, int pre_index, int old_index, Node *node, Node *parent) {
-    //cout << endl;
-    //cout << "node->test_var = " << node->test_var << endl;
-    //cout << "node->applicable_operators.size() = " << node->applicable_operators.size() << endl;
-    //cout << "pre_index = " << pre_index << endl;
+void MatchTree::build_recursively(
+    const AbstractOperator &op, int pre_index, Node **edge_from_parent) {
     const vector<pair<int, int> > &regression_preconditions = op.get_regression_preconditions();
+    Node *node = *edge_from_parent;
     if (pre_index == regression_preconditions.size()) { // all preconditions have been checked, insert op
         //cout << "inserting operator" << endl;
         node->applicable_operators.push_back(&op);
     } else {
         const pair<int, int> &var_val = regression_preconditions[pre_index];
-        if (node->test_var == var_val.first) { // operator has a precondition on test_var
-            //cout << "case 1: operator has precondition on actual test_var" << endl;
-            if (node->successors[var_val.second] == 0) { // child with correct value doesn't exist, create
-                //cout << "child doesn't exist, create" << endl;
-                Node *new_node = new Node();
-                node->successors[var_val.second] = new_node;
-                build_recursively(op, pre_index + 1, pre_index, new_node, node);
-            } else { // child already exists, follow
-                //cout << "child exists, follow" << endl;
-                build_recursively(op, pre_index + 1, pre_index, node->successors[var_val.second], node);
-            }
-        } else if (node->test_var == -1) { // node is a leaf
-            //cout << "case 2: leaf node" << endl;
+
+        if (node->test_var == -1) { // node is a leaf
             node->test_var = var_val.first;
-            //cout << "assigning new value of " << var_val.first << " to node->test_var" << endl;
             int test_var_size = g_variable_domain[pattern[var_val.first]];
             node->successors = new Node *[test_var_size];
             node->var_size = test_var_size;
             for (int i = 0; i < test_var_size; ++i) {
                 node->successors[i] = 0;
             }
-            Node *new_node = new Node();
-            node->successors[var_val.second] = new_node;
-            build_recursively(op, pre_index + 1, pre_index, new_node, node);
-        } else if (node->test_var > var_val.first) { // variable has been left out
-            //cout << "case 3: variable has been left out" << endl;
-            assert(parent != 0); // if node is root and therefore parent 0, we should never get in this if clause
-            Node *new_node = new Node(var_val.first, g_variable_domain[pattern[var_val.first]]); // new node gets the left out variable as test_var
-            if (old_index == pre_index) { // method was called from the last case, parent -> node is a *-edge
-                assert(parent->star_successor == node);
-                parent->star_successor = new_node; // parent points to new_node
-            } else { // method was called from any other case, i.e. pre_index == old_index + 1, parent -> node is not a *-edge
-                assert(parent->successors[regression_preconditions[old_index].second] == node);
-                assert(old_index + 1 == pre_index);
-                parent->successors[regression_preconditions[old_index].second] = new_node; // parent points to new_node
-            }
-            new_node->star_successor = node; // new_node's *-edge points to node
-            Node *new_nodes_child = new Node();
-            new_node->successors[var_val.second] = new_nodes_child; // new_node gets a default child
-            build_recursively(op, pre_index + 1, pre_index, new_nodes_child, new_node);
-        } else { // operator doesn't have a precondition on test_var, follow/create *-edge
-            //cout << "case 4: *-edge" << endl;
-            if (node->star_successor == 0) { // *-edge doesn't exist, create
-                //cout << "*-edge doesn't exist, create" << endl;
-                Node *new_node = new Node();
-                node->star_successor = new_node;
-                build_recursively(op, pre_index, pre_index, new_node, node);
-            } else { // *-edge exists, follow
-                //cout << "*-edge exists, follow" << endl;
-                build_recursively(op, pre_index, pre_index, node->star_successor, node);
-            }
         }
+
+        Node **edge_to_child = 0;
+
+        if (node->test_var > var_val.first) {
+            // The variable to test has been left out: must insert new node and treat it as the "node".
+            Node *new_node = new Node(var_val.first, g_variable_domain[pattern[var_val.first]]);
+            // The new node gets the left out variable as test_var.
+            *edge_from_parent = new_node;
+            new_node->star_successor = node;
+            node = new_node; // The new node is now the node of interest.
+        }
+
+        if (node->test_var == var_val.first) { // operator has a precondition on test_var
+            edge_to_child = &node->successors[var_val.second];
+            ++pre_index;
+        } else { // operator doesn't have a precondition on test_var, follow/create *-edge
+            assert(node->test_var < var_val.first);
+            edge_to_child = &node->star_successor;
+        }
+
+        if (*edge_to_child == 0) {
+            Node *new_child_node = new Node();
+            *edge_to_child = new_child_node;
+        }
+
+        build_recursively(op, pre_index, edge_to_child);
     }
 }
 
@@ -161,7 +143,7 @@ void MatchTree::insert(const AbstractOperator &op) {
     //op.dump(pattern);
     if (root == 0)
         root = new Node(0, g_variable_domain[pattern[0]]); // initialize root-node with var0
-    build_recursively(op, 0, 0, root, 0);
+    build_recursively(op, 0, &root);
     //cout << endl;
 }
 
