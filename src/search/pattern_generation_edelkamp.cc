@@ -141,7 +141,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             for (size_t k = 0; k < bitvector.size(); ++k) {
                 if (bitvector[k] == 1) {
                     double result = pdb_max_size / g_variable_domain[k];
-                    if (mem > result) {
+                    if (mem <= result) {
                         mem *= g_variable_domain[k];
                     } else {
                         cout << "pattern " << j << " exceeds the memory limit!" << endl;
