@@ -6,18 +6,25 @@
 #include <vector>
 
 class AbstractOperator {
+    /** This class represents an abstract operator how it is needed for the regression search performed during the
+    PDB-construction. As all astract states are represented as a number, abstract operators don't have "usual"
+    effects but "hash effects", i.e. the change (as number) the abstract operator implies on a given abstract state.
+    */
     int cost;
-    std::vector<std::pair<int, int> > regression_preconditions; // normal effects and prevail combined
-    //std::vector<std::pair<int, int> > regression_effects; // normal preconditions
-    size_t hash_effect;
+
+    // preconditions for the regression search, corresponds to normal effects and prevail of concrete operators
+    std::vector<std::pair<int, int> > regression_preconditions;
+
+    size_t hash_effect; // effect of the operator during regression search on a given abstract state number
 public:
+    // AbstractOperators are built from normal operators; the parameters follow the usual name convetion of SAS+
+    // operators, meaning prevail, preconditions and effects are all related to progression search
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
-                     const std::vector<std::pair<int, int> > &conditions,
+                     const std::vector<std::pair<int, int> > &preconditions,
                      const std::vector<std::pair<int, int> > &effects, int cost,
-                     const std::vector<size_t> &n_i);
+                     const std::vector<size_t> &hash_multipliers);
     ~AbstractOperator();
     const std::vector<std::pair<int, int> > &get_regression_preconditions() const { return regression_preconditions; }
-    //const std::vector<std::pair<int, int> > &get_regression_effects() const { return regression_effects; }
     size_t get_hash_effect() const { return hash_effect; }
     int get_cost() const { return cost; }
     void dump(const std::vector<int> &pattern) const;
@@ -35,13 +42,13 @@ class MatchTree {
         Node *star_successor;
     };
     std::vector<int> pattern; // as in PDBHeuristic
-    std::vector<size_t> n_i; // as in PDBHeuristic
+    std::vector<size_t> hash_multipliers; // as in PDBHeuristic
     Node *root;
     void build_recursively(const AbstractOperator &op, int pre_index, Node **edge_from_parent);
     void traverse(Node *node, const size_t state_index,
                   std::vector<const AbstractOperator *> &applicable_operators) const;
 public:
-    MatchTree(const std::vector<int> &pattern, const std::vector<size_t> &n_i);
+    MatchTree(const std::vector<int> &pattern, const std::vector<size_t> &hash_multipliers);
     ~MatchTree();
     void insert(const AbstractOperator &op); // recursively (calls build_recursively) builds/extends the MatchTree
 
@@ -62,7 +69,7 @@ class PDBHeuristic : public Heuristic {
     size_t num_states;
     std::vector<int> variable_to_index;
     std::vector<int> distances; // final h-values for abstract-states
-    std::vector<size_t> n_i; // multipliers for perfect hash function
+    std::vector<size_t> hash_multipliers; // multipliers for each variable for perfect hash function
     void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
 
     // build_abstract_operators computes all abstract operators for each normal operator
@@ -76,7 +83,7 @@ class PDBHeuristic : public Heuristic {
     void build_abstract_operators(int op_no, std::vector<AbstractOperator> &operators);
     
     void create_pdb(); // builds the graph-structure and does a Dijkstra-backward-search
-    void set_pattern(const std::vector<int> &pattern); // initializes n_i and num_states
+    void set_pattern(const std::vector<int> &pattern); // initializes hash_multipliers and num_states
     bool is_goal_state(const size_t state_index, const std::vector<std::pair<int, int> > &abstract_goal) const;
     size_t hash_index(const State &state) const; // maps a state to an index
     //AbstractState inv_hash_index(const size_t index) const; // inverts the hash-index-function (returns an abstract state)
