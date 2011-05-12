@@ -18,7 +18,7 @@ class AbstractOperator {
 
     size_t hash_effect; // effect of the operator during regression search on a given abstract state number
 public:
-    // AbstractOperators are built from normal operators; the parameters follow the usual name convetion of SAS+
+    // abstract operators are built from concrete operators. the parameters follow the usual name convetion of SAS+
     // operators, meaning prevail, preconditions and effects are all related to progression search
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
                      const std::vector<std::pair<int, int> > &preconditions,
@@ -36,40 +36,54 @@ class Operator;
 class State;
 class PDBHeuristic : public Heuristic {
     std::vector<int> pattern;
-    std::vector<int> operator_costs;
-    std::vector<bool> used_operators;
-    size_t num_states;
-    std::vector<int> variable_to_index;
-    std::vector<int> distances; // final h-values for abstract-states
-    std::vector<size_t> hash_multipliers; // multipliers for each variable for perfect hash function
-    void verify_no_axioms_no_cond_effects() const; // SAS+ tasks only
 
-    // build_abstract_operators computes all abstract operators for each normal operator
-    // in the case of pre = -1, for each possible value of the concerned variable, an abstract
-    // operator is computed. calls the recursive method "build_recursively"
-    void build_recursively(int pos, int op_no, int cost,  std::vector<std::pair<int, int> > &prev_pairs,
-                           std::vector<std::pair<int, int> > &pre_pairs,
-                           std::vector<std::pair<int, int> > &eff_pairs,
-                           const std::vector<std::pair<int, int> > &effects_without_pre,
-                           std::vector<AbstractOperator> &operators);
+    // can be specified to be different from the normal operator costs. this is useful for action cost partitioning
+    std::vector<int> operator_costs;
+
+    std::vector<bool> relevant_operators; // stores for all operators wheather they are used in this PDB or not
+    size_t num_states;
+
+    // concrete variable are mapped to abstract variables in the order they appear in pattern
+    std::vector<int> variable_to_index;
+
+    // final h-values for abstract-states. dead-ends are represented by numeric_limits<int>::max()
+    std::vector<int> distances;
+
+    std::vector<size_t> hash_multipliers; // multipliers for each variable for perfect hash function
+    void verify_no_axioms_no_cond_effects() const; // we support SAS+ tasks only
+
+    // recursive method; called by build_abstract_operators
+    void multiply_out(int pos, int op_no, int cost,  std::vector<std::pair<int, int> > &prev_pairs,
+                      std::vector<std::pair<int, int> > &pre_pairs,
+                      std::vector<std::pair<int, int> > &eff_pairs,
+                      const std::vector<std::pair<int, int> > &effects_without_pre,
+                      std::vector<AbstractOperator> &operators);
+
+    // computes all abstract operators for a given concrete operator. in the case of a precondition with value = -1
+    // in the conrete operator, all mutliplied out abstract operators are computed, i.e. for all possible values
+    // of the variable (with precondition = -1), one abstract operator is computed.
     void build_abstract_operators(int op_no, std::vector<AbstractOperator> &operators);
-    
-    void create_pdb(); // builds the graph-structure and does a Dijkstra-backward-search
+
+    // compute all abstract operators, builds the match tree (successor generator) and then does a Dijkstra regression
+    // search to compute all final h-values (stored in distances)
+    void create_pdb();
+
     void set_pattern(const std::vector<int> &pattern); // initializes hash_multipliers and num_states
     bool is_goal_state(const size_t state_index, const std::vector<std::pair<int, int> > &abstract_goal) const;
-    size_t hash_index(const State &state) const; // maps a state to an index
-    //AbstractState inv_hash_index(const size_t index) const; // inverts the hash-index-function (returns an abstract state)
+
+    // maps a state to an index (representing the abstract state). used for table lookup (distances) during search
+    size_t hash_index(const State &state) const;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
     PDBHeuristic(const Options &opts,
-                 bool dump=true,
-                 const std::vector<int> &op_costs=std::vector<int>());
+                 bool dump=true, // prints construction time when set to true
+                 const std::vector<int> &op_costs=std::vector<int>()); // if nothing specified, use default operator costs
     virtual ~PDBHeuristic();
     const std::vector<int> &get_pattern() const { return pattern; }
     const std::vector<int> &get_h_values() const { return distances; }
-    const std::vector<bool> &get_used_ops() const { return used_operators; }
+    const std::vector<bool> &get_relevant_operators() const { return relevant_operators; }
     void dump() const;
 };
 
