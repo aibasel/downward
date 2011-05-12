@@ -141,15 +141,15 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             for (size_t k = 0; k < bitvector.size(); ++k) {
                 if (bitvector[k] == 1) {
                     double result = pdb_max_size / g_variable_domain[k];
-                    if (mem > result) {
+                    if (mem <= result) {
                         mem *= g_variable_domain[k];
                     } else {
                         cout << "pattern " << j << " exceeds the memory limit!" << endl;
                         fitness = 0.001;
-                        break;                        
+                        break;
                     }
                 }
-            }                            
+            }
             //cout << "done pattern memory test." << endl;
             if (fitness == 0.001)
                 break;
@@ -237,12 +237,6 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 opts.set<int>("cost_type", cost_type);
                 opts.set<vector<int> >("pattern", pattern);
                 PDBHeuristic pdb_heuristic(opts, false, op_costs);
-
-                // at the very first time, op_costs is empty and gets initialized in pdb_heuristic
-                // as there is no way to precompute the operator costs in an elegant way as in pdb_heuristic, because
-                // this class doesn't inherit from Heuristic, we just get the operator costs from pdb_heuristic
-                //if (op_costs.empty()) 
-                    //op_costs = pdb_heuristic.get_op_costs();
 
                 // get used operators and set their cost for further iterations to 0 (action cost partitioning)
                 const vector<bool> &used_ops = pdb_heuristic.get_used_ops();
@@ -369,7 +363,7 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
         if (pattern.empty())
             continue;
         opts.set<vector<int> >("pattern", pattern);
-        final_pattern_collection.push_back(new PDBHeuristic(opts));
+        final_pattern_collection.push_back(new PDBHeuristic(opts, false));
     }
 }
 
