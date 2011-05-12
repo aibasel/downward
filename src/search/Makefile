@@ -96,6 +96,7 @@ HEADERS += learning/AODE.h \
            learning/state_vars_feature_extractor.h
 
 HEADERS += pdb_heuristic.h \
+           match_tree.h \
            planning_utilities.h \
            pdb_collection_heuristic.h \
            pattern_generation_haslum.h \
