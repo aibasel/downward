@@ -5,7 +5,7 @@
 #include <cassert>
 
 struct MatchTree::Node {
-    Node(int test_var = -1, int test_var_size = 0); // A default node has no meaningful variable assigned yet
+    Node(int test_var = -1, int test_var_size = 0);
     ~Node();
     std::vector<const AbstractOperator *> applicable_operators;
     int test_var; // variable which this node represents
@@ -15,7 +15,7 @@ struct MatchTree::Node {
 };
 
 MatchTree::Node::Node(int test_var_, int test_var_size) : test_var(test_var_), var_size(test_var_size), star_successor(0) {
-    if (test_var_size == 0) { // construct a default node, successors doesn't get initialized
+    if (test_var_size == 0) { // construct a default node (test_var = -1), successors doesn't get initialized
         successors = 0;
     } else { // a test var has been specified, initialize node accordingly
         successors = new Node *[test_var_size];
@@ -56,6 +56,7 @@ void MatchTree::build_recursively(
     } else {
         const pair<int, int> &var_val = regression_preconditions[pre_index];
 
+        // setup node correctly or insert a new node if necessary
         if (node->test_var == -1) { // node is a leaf
             node->test_var = var_val.first;
             int test_var_size = g_variable_domain[pattern[var_val.first]];
@@ -73,6 +74,7 @@ void MatchTree::build_recursively(
             node = new_node; // The new node is now the node of interest.
         }
 
+        // setup edge to the correct child (for which we want to call this function recursively)
         Node **edge_to_child = 0;
         if (node->test_var == var_val.first) { // operator has a precondition on test_var
             edge_to_child = &node->successors[var_val.second];
@@ -99,12 +101,11 @@ void MatchTree::traverse(Node *node, const size_t state_index,
       some informal experiments.
      */
 
-    //cout << "node->test_var = " << node->test_var << endl;
-    //cout << "var_index = " << var_index << endl;
     applicable_operators.insert(applicable_operators.end(),
                                 node->applicable_operators.begin(),
                                 node->applicable_operators.end());
 
+    // leaf reached, return
     if (node->test_var == -1)
         return;
 
@@ -112,19 +113,12 @@ void MatchTree::traverse(Node *node, const size_t state_index,
     int temp = state_index / hash_multipliers[var_index];
     int val = temp % node->var_size;
 
-    //cout << "calculated value for var_index: " << val << endl;
-    if (node->successors[val] != 0) { // no leaf reached
-        //cout << "recursive call for child with value " << val << " of test_var" << endl;
+    if (node->successors[val] != 0) { // follow the correct successor-edge, if exists
         traverse(node->successors[val], state_index, applicable_operators);
-        //cout << "back from recursive call (for successors[" << val << "]) to node with test_var = " << node->test_var << endl;
-    } //else
-        //cout << "no child for this value of test_var" << endl;
+    }
     if (node->star_successor != 0) { // always follow the *-edge, if exists
-        //cout << "recursive call for star_successor" << endl;
         traverse(node->star_successor, state_index, applicable_operators);
-        //cout << "back from recursive call (for star_successor) to node with test_var = " << node->test_var << endl;
-    } //else
-    //cout << "no star_successor" << endl;
+    }
 }
 
 void MatchTree::get_applicable_operators(size_t state_index,
