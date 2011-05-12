@@ -105,8 +105,8 @@ void PatternGenerationEdelkamp::mutate() {
             for (size_t k = 0; k < pattern.size(); ++k) {
                 double random = g_rng(); // [0..1)
                 if (random < mutation_probability) {
-                    cout << "mutating variable no " << k << " in pattern no " << j
-                    << " of pattern collection no " << i << endl;
+                    /*cout << "mutating variable no " << k << " in pattern no " << j
+                    << " of pattern collection no " << i << endl;*/
                     pattern[k] = !pattern[k];
                 }
             }
@@ -139,14 +139,20 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             // test if the pattern respects the memory limit
             int mem = 1;
             for (size_t k = 0; k < bitvector.size(); ++k) {
-                if (bitvector[k] == 1)
-                    mem *= g_variable_domain[k];
-            }
-            if (mem > pdb_max_size) {
-                cout << "pattern " << j << " exceeds the memory limit!" << endl;
-                fitness = 0.001;
+                if (bitvector[k] == 1) {
+                    double result = pdb_max_size / g_variable_domain[k];
+                    if (mem > result) {
+                        mem *= g_variable_domain[k];
+                    } else {
+                        cout << "pattern " << j << " exceeds the memory limit!" << endl;
+                        fitness = 0.001;
+                        break;                        
+                    }
+                }
+            }                            
+            //cout << "done pattern memory test." << endl;
+            if (fitness == 0.001)
                 break;
-            }
 
             // test if variables occur in more than one pattern
             // TODO: iteration through bitvector occurs here and in transformation to pattern normal form
@@ -312,12 +318,13 @@ void PatternGenerationEdelkamp::bin_packing() {
 
 void PatternGenerationEdelkamp::genetic_algorithm() {
     bin_packing();
-    //cout << "initial pattern collections:" << endl;
+    cout << "initial pattern collections:" << endl;
     //dump();
     vector<pair<double, int> > initial_fitness_values;
     evaluate(initial_fitness_values);
 
     double current_best_h = initial_fitness_values.back().first;
+    cout << "Initial best fitness value is " << current_best_h;
     vector<vector<bool> > best_collection = pattern_collections[initial_fitness_values.back().second];
 
     for (int t = 0; t < num_episodes; ++t) {
@@ -329,15 +336,21 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
         vector<pair<double, int> > fitness_values;
         double fitness_sum = evaluate(fitness_values);
         cout << "evaluated" << endl;
-        /*cout << "fitness values:";
+        cout << "fitness values:";
         for (size_t i = 0; i < fitness_values.size(); ++i) {
             cout << " " << fitness_values[i].first << " (index: " << fitness_values[i].second << ")";
         }
-        cout << endl;*/
+        cout << endl;
         double new_best_h = fitness_values.back().first;
-        select(fitness_values, fitness_sum);
+        /*if (new_best_h == 0.001) {
+            cout << "All pattern collections are invalid. Don't select any of them.";
+        } else {
+            select(fitness_values, fitness_sum);
+        }*/
+        select(fitness_values, fitness_sum); // we allow to select invalid pattern collections
         //cout << "current pattern collections (after selection):" << endl;
         //dump();
+        // the global best pattern collection is stored
         if (new_best_h > current_best_h) {
             current_best_h = new_best_h;
             best_collection = pattern_collections[fitness_values.back().second];
