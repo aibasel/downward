@@ -17,8 +17,6 @@
 
 using namespace std;
 
-// AbstractOperator ------------------------------------------------------------------------------.
-
 AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
                                    const vector<pair<int, int> > &eff_pairs, int c,
@@ -54,8 +52,6 @@ void AbstractOperator::dump(const vector<int> &pattern) const {
     cout << "Hash effect:" << hash_effect << endl;
 }
 
-// PDBHeuristic ---------------------------------------------------------------
-
 PDBHeuristic::PDBHeuristic(
     const Options &opts, bool dump,
     const vector<int> &op_costs)
@@ -71,7 +67,7 @@ PDBHeuristic::PDBHeuristic(
         assert(op_costs.size() == g_operators.size());
         operator_costs = op_costs;
     }
-    used_operators.resize(g_operators.size(), false);
+    relevant_operators.resize(g_operators.size(), false);
 
     Timer timer;
     set_pattern(opts.get_list<int>("pattern"));
@@ -112,7 +108,7 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
     }
 }
 
-void PDBHeuristic::build_recursively(int pos, int op_no, int cost, vector<pair<int, int> > &prev_pairs,
+void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, int> > &prev_pairs,
                                      vector<pair<int, int> > &pre_pairs,
                                      vector<pair<int, int> > &eff_pairs,
                                      const vector<pair<int, int> > &effects_without_pre,
@@ -120,7 +116,7 @@ void PDBHeuristic::build_recursively(int pos, int op_no, int cost, vector<pair<i
     if (pos == effects_without_pre.size()) {
         if (!eff_pairs.empty()) {
             operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, hash_multipliers));
-            used_operators[op_no] = true;
+            relevant_operators[op_no] = true;
         }
     } else {
         int var = effects_without_pre[pos].first;
@@ -132,7 +128,7 @@ void PDBHeuristic::build_recursively(int pos, int op_no, int cost, vector<pair<i
             } else {
                 prev_pairs.push_back(make_pair(var, i));
             }
-            build_recursively(pos+1, op_no, cost, prev_pairs, pre_pairs, eff_pairs,
+            multiply_out(pos+1, op_no, cost, prev_pairs, pre_pairs, eff_pairs,
                               effects_without_pre, operators);
             if (i != eff) {
                 pre_pairs.pop_back();
@@ -168,7 +164,7 @@ void PDBHeuristic::build_abstract_operators(
             }
         }
     }
-    build_recursively(0, op_no, operator_costs[op_no], prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
+    multiply_out(0, op_no, operator_costs[op_no], prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
 }
 
 void PDBHeuristic::create_pdb() {
@@ -263,16 +259,6 @@ size_t PDBHeuristic::hash_index(const State &state) const {
     return index;
 }
 
-/*AbstractState PDBHeuristic::inv_hash_index(const size_t index) const {
-    vector<int> var_vals;
-    var_vals.resize(pattern.size());
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        int temp = index / hash_multipliers[i];
-        var_vals[i] = temp % g_variable_domain[pattern[i]];
-    }
-    return AbstractState(var_vals);
-}*/
-
 void PDBHeuristic::initialize() {
 }
 
@@ -285,8 +271,6 @@ int PDBHeuristic::compute_heuristic(const State &state) {
 
 void PDBHeuristic::dump() const {
     for (size_t i = 0; i < num_states; ++i) {
-        //AbstractState abs_state = inv_hash_index(i);
-        //abs_state.dump();
         cout << "h-value: " << distances[i] << endl;
     }
 }

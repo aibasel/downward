@@ -239,7 +239,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 PDBHeuristic pdb_heuristic(opts, false, op_costs);
 
                 // get used operators and set their cost for further iterations to 0 (action cost partitioning)
-                const vector<bool> &used_ops = pdb_heuristic.get_used_ops();
+                const vector<bool> &used_ops = pdb_heuristic.get_relevant_operators();
                 assert(used_ops.size() == op_costs.size());
                 for (size_t k = 0; k < used_ops.size(); ++k) {
                     if (used_ops[k])
