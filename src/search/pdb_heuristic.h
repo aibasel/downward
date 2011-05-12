@@ -6,7 +6,8 @@
 #include <vector>
 
 class AbstractOperator {
-    /** This class represents an abstract operator how it is needed for the regression search performed during the
+    /*
+    This class represents an abstract operator how it is needed for the regression search performed during the
     PDB-construction. As all astract states are represented as a number, abstract operators don't have "usual"
     effects but "hash effects", i.e. the change (as number) the abstract operator implies on a given abstract state.
     */
@@ -28,35 +29,6 @@ public:
     size_t get_hash_effect() const { return hash_effect; }
     int get_cost() const { return cost; }
     void dump(const std::vector<int> &pattern) const;
-};
-
-// Implements a Successor Generator for abstract operators
-class MatchTree {
-    struct Node {
-        Node(int test_var = -1, int test_var_size = 0);
-        ~Node();
-        std::vector<const AbstractOperator *> applicable_operators;
-        int test_var;
-        int var_size; // introduced for destructor (sizeof somehow didn't work)
-        Node **successors;
-        Node *star_successor;
-    };
-    std::vector<int> pattern; // as in PDBHeuristic
-    std::vector<size_t> hash_multipliers; // as in PDBHeuristic
-    Node *root;
-    void build_recursively(const AbstractOperator &op, int pre_index, Node **edge_from_parent);
-    void traverse(Node *node, const size_t state_index,
-                  std::vector<const AbstractOperator *> &applicable_operators) const;
-public:
-    MatchTree(const std::vector<int> &pattern, const std::vector<size_t> &hash_multipliers);
-    ~MatchTree();
-    void insert(const AbstractOperator &op); // recursively (calls build_recursively) builds/extends the MatchTree
-
-    // recursively (calls traverse) goes through the MatchTree, converts state_index back to variable/values and
-    // returns all applicable abstract operators
-    void get_applicable_operators(size_t state_index,
-                                  std::vector<const AbstractOperator *> &applicable_operators) const;
-    void dump(Node *node = 0) const;
 };
 
 // Implements a single PDB
