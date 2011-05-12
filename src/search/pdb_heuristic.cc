@@ -22,22 +22,20 @@ using namespace std;
 AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
                                    const vector<pair<int, int> > &eff_pairs, int c,
-                                   const vector<size_t> &n_i)
+                                   const vector<size_t> &hash_multipliers)
                                    : cost(c), regression_preconditions(prev_pairs) {
     for (size_t i = 0; i < eff_pairs.size(); ++i) {
         regression_preconditions.push_back(eff_pairs[i]);
     }
     sort(regression_preconditions.begin(), regression_preconditions.end()); // for MatchTree construction
-    //regression_effects.reserve(pre_pairs.size());
     hash_effect = 0;
     assert(pre_pairs.size() == eff_pairs.size());
     for (size_t i = 0; i < pre_pairs.size(); ++i) {
-        //regression_effects.push_back(pre_pairs[i]);
         int var = pre_pairs[i].first;
         assert(var == eff_pairs[i].first);
         int old_val = eff_pairs[i].second;
         int new_val = pre_pairs[i].second;
-        size_t effect = (new_val - old_val) * n_i[var];
+        size_t effect = (new_val - old_val) * hash_multipliers[var];
         hash_effect += effect;
     }
 }
@@ -53,18 +51,13 @@ void AbstractOperator::dump(const vector<int> &pattern) const {
         << g_variable_name[pattern[regression_preconditions[i].first]] << ", Index: "
         << i << ") Value: " << regression_preconditions[i].second << endl;
     }
-    /*cout << "Regression effects:" << endl;
-    for (size_t i = 0; i < regression_effects.size(); ++i) {
-        cout << "Variable: " << regression_effects[i].first << " (True name: "
-        << g_variable_name[pattern[regression_effects[i].first]] << ") Value: " << regression_effects[i].second << endl;
-    }*/
     cout << "Hash effect:" << hash_effect << endl;
 }
 
 // MatchTree --------------------------------------------------------------------------------------
 
-MatchTree::MatchTree(const vector<int> &pattern_, const vector<size_t> &n_i_)
-    : pattern(pattern_), n_i(n_i_), root(0) {
+MatchTree::MatchTree(const vector<int> &pattern_, const vector<size_t> &hash_multipliers_)
+    : pattern(pattern_), hash_multipliers(hash_multipliers_), root(0) {
 }
 
 MatchTree::~MatchTree() {
@@ -162,7 +155,7 @@ void MatchTree::traverse(Node *node, const size_t state_index,
         return;
 
     int var_index = node->test_var;
-    int temp = state_index / n_i[var_index];
+    int temp = state_index / hash_multipliers[var_index];
     int val = temp % node->var_size;
 
     //cout << "calculated value for var_index: " << val << endl;
@@ -292,7 +285,7 @@ void PDBHeuristic::build_recursively(int pos, int op_no, int cost, vector<pair<i
                                      vector<AbstractOperator> &operators) {
     if (pos == effects_without_pre.size()) {
         if (!eff_pairs.empty()) {
-            operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, n_i));
+            operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, hash_multipliers));
             used_operators[op_no] = true;
         }
     } else {
@@ -350,7 +343,7 @@ void PDBHeuristic::create_pdb() {
         build_abstract_operators(i, operators);
     }
 
-    MatchTree match_tree(pattern, n_i);
+    MatchTree match_tree(pattern, hash_multipliers);
     for (size_t j = 0; j < operators.size(); ++j) {
         match_tree.insert(operators[j]);
     }
@@ -403,12 +396,12 @@ void PDBHeuristic::create_pdb() {
 
 void PDBHeuristic::set_pattern(const vector<int> &pat) {
     pattern = pat;
-    n_i.reserve(pattern.size());
+    hash_multipliers.reserve(pattern.size());
     variable_to_index.resize(g_variable_name.size(), -1);
     num_states = 1;
     // int p = 1; ; same as num_states; incrementally computed!
     for (size_t i = 0; i < pattern.size(); ++i) {
-        n_i.push_back(num_states);
+        hash_multipliers.push_back(num_states);
         variable_to_index[pattern[i]] = i;
         num_states *= g_variable_domain[pattern[i]];
         //p *= g_variable_domain[pattern[i]];
@@ -419,7 +412,7 @@ void PDBHeuristic::set_pattern(const vector<int> &pat) {
 bool PDBHeuristic::is_goal_state(const size_t state_index, const vector<pair<int, int> > &abstract_goal) const {
     for (size_t i = 0; i < abstract_goal.size(); ++i) {
         int var = abstract_goal[i].first;
-        int temp = state_index / n_i[var];
+        int temp = state_index / hash_multipliers[var];
         int val = temp % g_variable_domain[pattern[var]];
         if (val != abstract_goal[i].second) {
             return false;
@@ -431,7 +424,7 @@ bool PDBHeuristic::is_goal_state(const size_t state_index, const vector<pair<int
 size_t PDBHeuristic::hash_index(const State &state) const {
     size_t index = 0;
     for (size_t i = 0; i < pattern.size(); ++i) {
-        index += n_i[i] * state[pattern[i]];
+        index += hash_multipliers[i] * state[pattern[i]];
     }
     return index;
 }
@@ -440,7 +433,7 @@ size_t PDBHeuristic::hash_index(const State &state) const {
     vector<int> var_vals;
     var_vals.resize(pattern.size());
     for (size_t i = 0; i < pattern.size(); ++i) {
-        int temp = index / n_i[i];
+        int temp = index / hash_multipliers[i];
         var_vals[i] = temp % g_variable_domain[pattern[i]];
     }
     return AbstractState(var_vals);
