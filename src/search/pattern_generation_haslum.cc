@@ -2,6 +2,7 @@
 #include "causal_graph.h"
 #include "globals.h"
 #include "operator.h"
+#include "operator_cost.h"
 #include "pdb_collection_heuristic.h"
 #include "pdb_heuristic.h"
 #include "plugin.h"
@@ -144,8 +145,8 @@ void PatternGenerationHaslum::hill_climbing() {
     // calculate average operator costs
     int average_operator_costs = 0;
     for (size_t i = 0; i < g_operators.size(); ++i) {
-        // TODO: use get_adjusted_cost in a way?
-        average_operator_costs += g_operators[i].get_cost();
+        // TODO: check if this cast is okay! doesn't compile without it
+        average_operator_costs += get_adjusted_action_cost(g_operators[i], (OperatorCost) cost_type);
     }
     average_operator_costs /= g_operators.size();
     // to avoid dividing through 0
