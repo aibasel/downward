@@ -81,8 +81,14 @@ public:
                  bool dump=true, // prints construction time when set to true
                  const std::vector<int> &op_costs=std::vector<int>()); // if nothing specified, use default operator costs
     virtual ~PDBHeuristic();
+
+    // returns the variables of the PDB
     const std::vector<int> &get_pattern() const { return pattern; }
+
+    // returns h-values (the actual PDB) for all abstract states. dead-ends are represented by numeric_limits<int>::max()
     const std::vector<int> &get_h_values() const { return distances; }
+
+    // returns all operators affecting this PDB
     const std::vector<bool> &get_relevant_operators() const { return relevant_operators; }
     void dump() const;
 };

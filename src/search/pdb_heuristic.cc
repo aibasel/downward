@@ -22,10 +22,11 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &eff_pairs, int c,
                                    const vector<size_t> &hash_multipliers)
                                    : cost(c), regression_preconditions(prev_pairs) {
-    for (size_t i = 0; i < eff_pairs.size(); ++i) {
-        regression_preconditions.push_back(eff_pairs[i]);
-    }
+    regression_preconditions.insert(regression_preconditions.end(), eff_pairs.begin(), eff_pairs.end());
     sort(regression_preconditions.begin(), regression_preconditions.end()); // for MatchTree construction
+    for (size_t i = 1; i < regression_preconditions.size(); ++i) {
+        assert(regression_preconditions[i].first != regression_preconditions[i - 1].first);
+    }
     hash_effect = 0;
     assert(pre_pairs.size() == eff_pairs.size());
     for (size_t i = 0; i < pre_pairs.size(); ++i) {
@@ -33,6 +34,7 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
         assert(var == eff_pairs[i].first);
         int old_val = eff_pairs[i].second;
         int new_val = pre_pairs[i].second;
+        assert(new_val != -1);
         size_t effect = (new_val - old_val) * hash_multipliers[var];
         hash_effect += effect;
     }
@@ -59,7 +61,7 @@ PDBHeuristic::PDBHeuristic(
 
     verify_no_axioms_no_cond_effects();
 
-    if (op_costs.empty()) {
+    if (op_costs.empty()) { // if no operator costs are specified, use default operator costs
         operator_costs.reserve(g_operators.size());
         for (size_t i = 0; i < g_operators.size(); ++i)
             operator_costs.push_back(get_adjusted_cost(g_operators[i]));
@@ -109,16 +111,17 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
 }
 
 void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, int> > &prev_pairs,
-                                     vector<pair<int, int> > &pre_pairs,
-                                     vector<pair<int, int> > &eff_pairs,
-                                     const vector<pair<int, int> > &effects_without_pre,
-                                     vector<AbstractOperator> &operators) {
-    if (pos == effects_without_pre.size()) {
+                                vector<pair<int, int> > &pre_pairs,
+                                vector<pair<int, int> > &eff_pairs,
+                                const vector<pair<int, int> > &effects_without_pre,
+                                vector<AbstractOperator> &operators) {
+    if (pos == effects_without_pre.size()) { // all effects withouth precondition have been checked, insert op
         if (!eff_pairs.empty()) {
             operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, hash_multipliers));
             relevant_operators[op_no] = true;
         }
     } else {
+        // for each possible value for the current variable, build an abstract operator
         int var = effects_without_pre[pos].first;
         int eff = effects_without_pre[pos].second;
         for (size_t i = 0; i < g_variable_domain[pattern[var]]; ++i) {
@@ -143,10 +146,10 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
 void PDBHeuristic::build_abstract_operators(
     int op_no, vector<AbstractOperator> &operators) {
     const Operator &op = g_operators[op_no];
-    vector<pair<int, int> > prev_pairs;
-    vector<pair<int, int> > pre_pairs;
-    vector<pair<int, int> > eff_pairs;
-    vector<pair<int, int> > effects_without_pre;
+    vector<pair<int, int> > prev_pairs; // all variable value pairs that are a prevail condition
+    vector<pair<int, int> > pre_pairs; // all variable value pairs that are a precondition (value != -1)
+    vector<pair<int, int> > eff_pairs; // all variable value pairs that are an effect
+    vector<pair<int, int> > effects_without_pre; // all variable value pairs that are a precondition (value = -1)
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     for (size_t i = 0; i < prevail.size(); ++i) {
@@ -168,14 +171,16 @@ void PDBHeuristic::build_abstract_operators(
 }
 
 void PDBHeuristic::create_pdb() {
+    // compute all abstract operators
     vector<AbstractOperator> operators;
     for (size_t i = 0; i < g_operators.size(); ++i) {
         build_abstract_operators(i, operators);
     }
 
+    // build the match tree
     MatchTree match_tree(pattern, hash_multipliers);
-    for (size_t j = 0; j < operators.size(); ++j) {
-        match_tree.insert(operators[j]);
+    for (size_t i = 0; i < operators.size(); ++i) {
+        match_tree.insert(operators[i]);
     }
 
     // compute abstract goal var-val pairs
@@ -186,7 +191,6 @@ void PDBHeuristic::create_pdb() {
         }
     }
 
-    cout << "num_states = " << num_states << endl;
     distances.reserve(num_states);
     AdaptiveQueue<size_t> pq; // (first implicit entry: priority,) second entry: index for an abstract state
 
@@ -229,12 +233,10 @@ void PDBHeuristic::set_pattern(const vector<int> &pat) {
     hash_multipliers.reserve(pattern.size());
     variable_to_index.resize(g_variable_name.size(), -1);
     num_states = 1;
-    // int p = 1; ; same as num_states; incrementally computed!
     for (size_t i = 0; i < pattern.size(); ++i) {
         hash_multipliers.push_back(num_states);
         variable_to_index[pattern[i]] = i;
         num_states *= g_variable_domain[pattern[i]];
-        //p *= g_variable_domain[pattern[i]];
     }
     create_pdb();
 }
@@ -283,14 +285,12 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     vector<int> pattern = opts.get_list<int>("pattern");
     if (parser.dry_run() && !pattern.empty()) {
         sort(pattern.begin(), pattern.end());
-        int old_size = pattern.size();
         vector<int>::const_iterator it = unique(pattern.begin(), pattern.end());
-        pattern.resize(it - pattern.begin());
-        if (pattern.size() != old_size)
+        if (it != pattern.end())
             parser.error("there are duplicates of variables in the pattern");
-        if (pattern[0] < 0)
+        if (pattern.front() < 0)
             parser.error("there is a variable < 0");
-        if (pattern[pattern.size() - 1] >= g_variable_domain.size())
+        if (pattern.back() >= g_variable_domain.size())
             parser.error("there is a variable > number of variables");
     }
     if (opts.get<int>("max_states") < 1)
@@ -299,21 +299,18 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
 
-    // if no pattern is specified as option
+    // if no pattern is specified as option, use variableorderfinder and include variables as long as
+    // max_states allows
     if (pattern.empty()) {
         VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL, 0.0);
         int var = vof.next();
         int num_states = g_variable_domain[var];
         while (num_states <= opts.get<int>("max_states")) {
-            //cout << "Number of abstract states = " << num_states << endl;
-            //cout << "Including variable: " << var << " (True name:" << g_variable_name[var] << ")" << endl;
             pattern.push_back(var);
-            if (!vof.done()) {
-                var = vof.next();
-                num_states *= g_variable_domain[var];
-            }
-            else
+            if (vof.done())
                 break;
+            var = vof.next();
+            num_states *= g_variable_domain[var];
         }
         opts.set("pattern", pattern);
     }
