@@ -151,8 +151,6 @@ LandmarkNode &LandmarkGraph::landmark_add_simple(const pair<int, int> &lm) {
     vars.push_back(lm.first);
     vals.push_back(lm.second);
     LandmarkNode *new_node_p = new LandmarkNode(vars, vals, false);
-    cout << "adding simple landmark:" << endl;
-    dump_node(new_node_p);
     nodes.insert(new_node_p);
     simple_lms_to_nodes.insert(make_pair(lm, new_node_p));
     landmarks_count++;
@@ -168,8 +166,6 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<pair<int, int> >
         assert(!landmark_exists(*it));
     }
     LandmarkNode *new_node_p = new LandmarkNode(vars, vals, true);
-    cout << "adding disj landmark:" << endl;
-    dump_node(new_node_p);
     nodes.insert(new_node_p);
     for (set<pair<int, int> >::iterator it = lm.begin(); it != lm.end(); ++it) {
         disj_lms_to_nodes.insert(make_pair(*it, new_node_p));
@@ -217,8 +213,6 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
         pair<int, int> lm = make_pair(node->vars[0], node->vals[0]);
         simple_lms_to_nodes.erase(lm);
     }
-    cout << "removing landmark:" << endl;
-    dump_node(node);
     nodes.erase(node);
     landmarks_count--;
     assert(nodes.find(node) == nodes.end());
@@ -234,13 +228,11 @@ LandmarkNode &LandmarkGraph::make_disj_node_simple(pair<int, int> lm) {
 }
 
 void LandmarkGraph::set_landmark_ids() {
-    //cout << "setting landmark ids" << endl;
     ordered_nodes.resize(landmarks_count);
     int id = 0;
     for (set<LandmarkNode *>::iterator node_it =
         nodes.begin(); node_it != nodes.end(); node_it++) {
         LandmarkNode *lmn = *node_it;
-        //dump_node(lmn);
         lmn->assign_id(id);
         ordered_nodes[id] = lmn;
         id++;
