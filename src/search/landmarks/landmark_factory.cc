@@ -14,10 +14,8 @@ LandmarkFactory::LandmarkFactory(const Options &opts)
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {
     ExactTimer lm_generation_timer;
     read_external_inconsistencies();
-    ExactTimer timer;
     generate_landmarks();
-    cout << "generate_landmarks()-time: " << timer << endl;
-    
+
     // the following replaces the old "build_lm_graph"
     generate();
     cout << "Landmarks generation time: " << lm_generation_timer << endl;
@@ -30,9 +28,7 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
         << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
         << lm_graph->number_of_edges() << " edges\n";
     }
-    /*cout << endl;
-    lm_graph->dump();
-    cout << endl;*/
+    //lm_graph->dump();
     return lm_graph;
 }
 
