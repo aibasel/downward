@@ -71,17 +71,27 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
 }
 
 // random walk for state sampling
-void PatternGenerationHaslum::sample_states(vector<State> &samples, int average_operator_costs) {
+void PatternGenerationHaslum::sample_states(vector<State> &samples, double average_operator_costs) {
+    // TODO: average_operator_costs should be the actual average, not
+    // something rounded up to 1. If we want to round up to 1, we
+    // should do it internally here.
+
     current_collection->evaluate(*g_initial_state);
     assert(!current_collection->is_dead_end());
-    double h = current_collection->get_heuristic();
-    h /= average_operator_costs;
-    // TODO: hack! (prevent division by 0)
-    if (h == 0)
-        h = 10;
-    double mean = 2 * h + 1;
-    double n = 4 * h;
-    double p = mean / n;
+
+    int h = current_collection->get_heuristic();
+    int n;
+    if (h == 0) {
+        n = 10;
+    } else {
+        // Convert heuristic value into an approximate number of actions
+        // (does nothing on unit-cost problems).
+        int solution_steps_estimate = int((h / average_operator_cost) + 0.5);
+        n = 4 * solution_steps_estimate;
+    }
+    double p = 0.5;
+    // The expected walk length is np = 2 * estimated number of solution steps.
+    // (We multiply by 2 because the heuristic is underestimating.)
 
     while (samples.size() < num_samples) {
         // calculate length of random walk accoring to a binomial distribution
@@ -97,9 +107,9 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, int average_
         for (int i = 1; i < length; ++i) {
             vector<const Operator *> applicable_ops;
             g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
-            // if there are no applicable operators --> dead end
-            if (applicable_ops.size() == 0) {
-                current_state = *g_initial_state;
+            // if there are no applicable operators --> don't walk further
+            if (applicable_ops.empty()) {
+                break;
             } else {
                 int random = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
                 assert(applicable_ops[random]->is_applicable(current_state));
