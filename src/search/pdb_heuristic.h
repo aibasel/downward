@@ -85,6 +85,9 @@ public:
     // returns the variables of the PDB
     const std::vector<int> &get_pattern() const { return pattern; }
 
+    // returns the size of the PDB
+    size_t get_size() const { return num_states; }
+
     // returns h-values (the actual PDB) for all abstract states. dead-ends are represented by numeric_limits<int>::max()
     const std::vector<int> &get_h_values() const { return distances; }
 
