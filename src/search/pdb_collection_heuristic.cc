@@ -19,11 +19,14 @@ PDBCollectionHeuristic::PDBCollectionHeuristic(const Options &opts)
     : Heuristic(opts), cost_type(opts.get<int>("cost_type")) {
     const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
     Timer timer;
+    size = 0;
+    pattern_databases.reserve(pattern_collection.size());
     for (int i = 0; i < pattern_collection.size(); ++i) {
         Options options;
         options.set<int>("cost_type", cost_type);
         options.set<vector<int> >("pattern", pattern_collection[i]);
-        pattern_databases.push_back(new PDBHeuristic(options));
+        pattern_databases.push_back(new PDBHeuristic(options, false));
+        size += pattern_databases.back()->get_size();
     }
     cout << pattern_collection.size() << " pdbs constructed." << endl;
     cout << "Construction time for all pdbs: " << timer << endl;
@@ -119,7 +122,8 @@ void PDBCollectionHeuristic::add_new_pattern(const vector<int> &pattern) {
     Options opts;
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<int> >("pattern", pattern);
-    pattern_databases.push_back(new PDBHeuristic(opts));
+    pattern_databases.push_back(new PDBHeuristic(opts, false));
+    size += pattern_databases.back()->get_size();
     max_cliques.clear();
     precompute_max_cliques();
 }

@@ -8,6 +8,7 @@
 // Implements the canonical heuristic function.
 class PDBHeuristic;
 class PDBCollectionHeuristic : public Heuristic {
+    int size;
     int cost_type; //needed for add_new_pattern (for haslum)
     std::vector<std::vector<PDBHeuristic *> > max_cliques; // final computed max_cliques
     std::vector<std::vector<bool> > are_additive; // variables which are additive
@@ -27,6 +28,7 @@ public:
     void get_max_additive_subsets(const std::vector<int> &new_pattern,
                                   std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
     const std::vector<PDBHeuristic *> &get_pattern_databases() const { return pattern_databases; }
+    int get_size() const { return size; }
     void dump(const std::vector<std::vector<int> > &cgraph) const;
 };
 
