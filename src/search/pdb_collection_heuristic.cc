@@ -105,20 +105,19 @@ void PDBCollectionHeuristic::initialize() {
 }
 
 int PDBCollectionHeuristic::compute_heuristic(const State &state) {
-    int max_val = -1;
+    int max_h = -1;
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         const vector<PDBHeuristic *> &clique = max_cliques[i];
-        int h_val = 0;
+        int clique_h = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
             clique[j]->evaluate(state);
             if (clique[j]->is_dead_end())
                 return -1;
-            int h = clique[j]->get_heuristic();
-            h_val += h;
+            clique_h += clique[j]->get_heuristic();
         }
-        max_val = max(max_val, h_val);
+        max_h = max(max_h, clique_h);
     }
-    return max_val;
+    return max_h;
 }
 
 void PDBCollectionHeuristic::add_pattern(const vector<int> &pattern) {
@@ -126,8 +125,55 @@ void PDBCollectionHeuristic::add_pattern(const vector<int> &pattern) {
     compute_max_cliques();
 }
 
+
 void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pattern,
                                                       vector<vector<PDBHeuristic *> > &max_additive_subsets) {
+    /*
+      We compute additive pattern sets S with the property that we could
+      add the new pattern P to S and still have an additive pattern set.
+
+      Ideally, we would like to return all *maximal* sets S with this
+      property (w.r.t. set inclusion), but we don't currently
+      guarantee this. (What we guarantee is that all maximal such sets
+      are *included* in the result, but the result could contain
+      duplicates or sets that are subsets of other sets in the
+      result.)
+
+      We currently implement this as follows:
+
+      * Consider all maximal additive subsets of the current collection.
+      * For each additive subset S, take the subset S' that contains
+        those patterns that are additive with the new pattern P.
+      * Include the subset S' in the result.
+
+      As an optimization, we actually only include S' in the result if
+      it is non-empty. However, this is wrong if *all* subsets we get
+      are empty, so we correct for this case at the end.
+
+      This may include dominated elements and duplicates in the result.
+      To avoid this, we could instead use the following algorithm:
+
+      * Let N (= neighbours) be the set of patterns in our current
+        collection that are additive with the new pattern P.
+      * Let G_N be the compatibility graph of the current collection
+        restricted to set N (i.e. drop all non-neighbours and their
+        incident edges.)
+      * Return the maximal cliques of G_N.
+
+      One nice thing about this alternative algorithm is that we could
+      also use it to incrementally compute the new set of maximal additive
+      pattern sets after adding the new pattern P:
+
+      G_N_cliques = max_cliques(G_N)   // as above
+      new_max_cliques = (old_max_cliques \setminus G_N_cliques) \union
+                        { clique \union {P} | clique in G_N_cliques}
+
+      That is, the new set of maximal cliques is exactly the set of
+      those "old" cliques that we cannot extend by P
+      (old_max_cliques \setminus G_N_cliques) and all
+      "new" cliques including P.
+      */
+
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         // take all patterns which are additive to new_pattern
         vector<PDBHeuristic *> subset;
@@ -140,6 +186,11 @@ void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pat
         if (!subset.empty()) {
             max_additive_subsets.push_back(subset);
         }
+    }
+    if (max_additive_subsets.empty()) {
+        // If nothing was additive with the new variable, then
+        // the only additive subset is the empty set.
+        max_additive_subsets.push_back(vector<PDBHeuristic *>());
     }
 }
 
@@ -186,6 +237,9 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         cout << "]" << endl;
     }
     cout << endl;
+    // TODO: Distinguish the case that no collection was specified by
+    // the user from the case that an empty collection was explicitly
+    // specified by the user (see issue236).
     if (parser.dry_run() && !pattern_collection.empty()) {
         // check if there are duplicates of patterns
         for (size_t i = 0; i < pattern_collection.size(); ++i) {
@@ -223,6 +277,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
 
+    // TODO: See above (issue236).
     if (pattern_collection.empty()) {
         // Simple selection strategy. Take all goal variables as patterns.
         for (size_t i = 0; i < g_goal.size(); ++i) {
