@@ -94,7 +94,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
         for (int j = 0; j < length; ++j) {
             vector<const Operator *> applicable_ops;
             g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
-            // if there are no applicable operators --> don't walk further
+            // if there are no applicable operators --> do not walk further
             if (applicable_ops.empty()) {
                 break;
             } else {
@@ -141,42 +141,66 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
 void PatternGenerationHaslum::hill_climbing(int average_operator_costs,
                                             vector<vector<int> > &candidate_patterns) {
     Timer timer;
-    map<vector<int>, PDBHeuristic *> pattern_to_pdb; // cache pdbs to avoid recalculation - TODO: hash_map?
+    map<vector<int>, PDBHeuristic *> pattern_to_pdb; // Cache PDBs to avoid recalculation
     //vector<PDBHeuristic *> pdb_cache; // cache pdbs to avoid recalculation
     while (true) {
         cout << "current collection size is " << current_heuristic->get_size() << endl;
-        if (current_heuristic->get_size() >= collection_max_size) {
-            cout << "stopping hill climbing due to collection max size" << endl;
-            break;
-        }
         vector<State> samples;
         sample_states(samples, average_operator_costs);
 
         // TODO: drop PDBHeuristic and use astar instead to compute h values for the sample states only
-        // How is the advance of astar if we always have new samples? If we use pdbs and we don't rebuild
+        // How is the advance of astar if we always have new samples? If we use pdbs and we do not rebuild
         // them in every loop, there is no problem with new samples.
         int improvement = 0; // best improvement (= hightest count) for a pattern so far
         int best_pattern_index = 0;
         PDBHeuristic *pdb_heuristic;
+        // Iterate over all candidates and search for the best improving pattern
         for (size_t i = 0; i < candidate_patterns.size(); ++i) {
-            map<vector<int>, PDBHeuristic *>::const_iterator it = pattern_to_pdb.find(candidate_patterns[i]);
+            map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.find(candidate_patterns[i]);
             if (it == pattern_to_pdb.end()) {
                 Options opts;
                 opts.set<int>("cost_type", cost_type);
                 opts.set<vector<int> >("pattern", candidate_patterns[i]);
-                pdb_heuristic = new PDBHeuristic(opts);
+                pdb_heuristic = new PDBHeuristic(opts, false);
                 pattern_to_pdb.insert(make_pair(candidate_patterns[i], pdb_heuristic));
+            } else if (it->second == 0) { // candidate pattern is too large
+                continue;
             } else {
                 pdb_heuristic = it->second;
             }
+            // If a candidate's size added to the current collection's size exceed the maximum
+            // collection size, then delete the PDB and let the map's entry point to a null reference
+            if (current_heuristic->get_size() + pdb_heuristic->get_size() > collection_max_size) {
+                delete it->second;
+                it->second = 0;
+                //cout << "Candidate pattern together with the collection is above the"
+                    //"size limit, ignoring from now on" << endl;
+                continue;
+            }
             /*if (i < pdb_cache.size()) {
                 pdb_heuristic = pdb_cache[i];
-            } else {
-                pdb_heuristic = new PDBHeuristic(candidate_patterns[i], false);
+            } if (i >= pdb_cache.size()) {
+                Options opts;
+                opts.set<int>("cost_type", cost_type);
+                opts.set<vector<int> >("pattern", candidate_patterns[i]);
+                pdb_heuristic = new PDBHeuristic(opts, false);
                 pdb_cache.push_back(pdb_heuristic);
+            } else if (pdb_cache[i] == 0) { // candidate pattern is too large
+                continue;
+            } else {
+                pdb_heuristic = pdb_cache[i];
+            }
+            // If a candidate's size added to the current collection's size exceed the maximum
+            // collection size, then delete the PDB and let the vector's entry point to a null reference
+            if (current_heuristic->get_size() + pdb_heuristic->get_size() > collection_max_size) {
+                delete pdb_cache[i];
+                pdb_cache[i] = 0;
+                //cout << "Candidate pattern together with the collection is above the"
+                    //"size limit, ignoring from now on" << endl;
+                continue;
             }*/
 
-            // calculate the "counting approximation" for all sample states: count the number of
+            // Calculate the "counting approximation" for all sample states: count the number of
             // samples for which the current pattern collection heuristic would be improved
             // if the new pattern was included into it.
             // TODO: stop after m/t and use statistical confidence intervall
@@ -217,14 +241,16 @@ void PatternGenerationHaslum::hill_climbing(int average_operator_costs,
         generate_candidate_patterns(best_pattern, candidate_patterns);
         cout << "Actual time (hill climbing iteration): " << timer << endl;
     }
+
     // delete all created PDB-pointer in the map
     map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.begin();
     while (it != pattern_to_pdb.end()) {
         delete it->second;
         ++it;
     }
-    /*for (size_t i = 0; i < pdb_cache.size(); ++i) {
-    delete pdb_cache[i];
+    /*// delete all created PDB-pointer in the vector
+    for (size_t i = 0; i < pdb_cache.size(); ++i) {
+        delete pdb_cache[i];
     }*/
 }
 
@@ -283,7 +309,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     if (opts.get<int>("min_improvement") < 1)
         parser.error("minimum improvement must be at least 1");
     if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
-        parser.error("minimum improvement mustn't be higher than number of samples");
+        parser.error("minimum improvement must not be higher than number of samples");
 
     if (parser.dry_run())
         return 0;
