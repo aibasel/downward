@@ -205,7 +205,7 @@ void PatternGenerationHaslum::hill_climbing(int average_operator_costs,
             cout << " " << candidate_patterns[best_pattern_index][i];
         }
         cout << " ]" << endl;
-        current_heuristic->add_new_pattern(candidate_patterns[best_pattern_index]);
+        current_heuristic->add_pattern(candidate_patterns[best_pattern_index]);
 
         // Do NOT make this a const ref! one really needs to copy this pattern, as passing
         // an object as an argument which is part of a vector (the second argument) may

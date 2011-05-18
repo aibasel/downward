@@ -16,29 +16,31 @@
 using namespace std;
 
 PDBCollectionHeuristic::PDBCollectionHeuristic(const Options &opts)
-    : Heuristic(opts), cost_type(opts.get<int>("cost_type")) {
+    : Heuristic(opts) {
     const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
     Timer timer;
     size = 0;
     pattern_databases.reserve(pattern_collection.size());
-    for (int i = 0; i < pattern_collection.size(); ++i) {
-        Options options;
-        options.set<int>("cost_type", cost_type);
-        options.set<vector<int> >("pattern", pattern_collection[i]);
-        pattern_databases.push_back(new PDBHeuristic(options, false));
-        size += pattern_databases.back()->get_size();
-    }
+    for (int i = 0; i < pattern_collection.size(); ++i)
+        _add_pattern(pattern_collection[i]);
     cout << pattern_collection.size() << " pdbs constructed." << endl;
     cout << "Construction time for all pdbs: " << timer << endl;
-    precompute_additive_vars();
-    precompute_max_cliques();
+    compute_additive_vars();
+    compute_max_cliques();
 }
 
 PDBCollectionHeuristic::~PDBCollectionHeuristic() {
-    // TODO: check correctness - apparently this destructor is never called anyways
-    /*for (size_t i = 0; i < pattern_databases.size(); ++i) {
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
         delete pattern_databases[i];
-    }*/
+    }
+}
+
+void PDBCollectionHeuristic::_add_pattern(const vector<int> &pattern) {
+    Options opts;
+    opts.set<int>("cost_type", cost_type);
+    opts.set<vector<int> >("pattern", pattern);
+    pattern_databases.push_back(new PDBHeuristic(opts, false));
+    size += pattern_databases.back()->get_size();
 }
 
 bool PDBCollectionHeuristic::are_pattern_additive(const vector<int> &patt1, const vector<int> &patt2) const {
@@ -52,11 +54,12 @@ bool PDBCollectionHeuristic::are_pattern_additive(const vector<int> &patt1, cons
     return true;
 }
 
-void PDBCollectionHeuristic::precompute_max_cliques() {
+void PDBCollectionHeuristic::compute_max_cliques() {
     // initialize compatibility graph
+    max_cliques.clear();
     vector<vector<int> > cgraph;
     cgraph.resize(pattern_databases.size());
-    
+
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         for (size_t j = i + 1; j < pattern_databases.size(); ++j) {
             if (are_pattern_additive(pattern_databases[i]->get_pattern(),pattern_databases[j]->get_pattern())) {
@@ -67,11 +70,11 @@ void PDBCollectionHeuristic::precompute_max_cliques() {
         }
     }
     //cout << "built cgraph." << endl;
-    
+
     vector<vector<int> > max_cliques_cgraph;
     max_cliques_cgraph.reserve(pattern_databases.size());
-    compute_max_cliques(cgraph, max_cliques_cgraph);
-    
+    ::compute_max_cliques(cgraph, max_cliques_cgraph);
+
     for (size_t i = 0; i < max_cliques_cgraph.size(); ++i) {
         vector<PDBHeuristic *> clique;
         clique.reserve(max_cliques_cgraph[i].size());
@@ -80,11 +83,11 @@ void PDBCollectionHeuristic::precompute_max_cliques() {
         }
         max_cliques.push_back(clique);
     }
-    
+
     //dump(cgraph);
 }
 
-void PDBCollectionHeuristic::precompute_additive_vars() {
+void PDBCollectionHeuristic::compute_additive_vars() {
     int num_vars = g_variable_domain.size();
     are_additive.resize(num_vars, vector<bool>(num_vars, true));
     for (size_t k = 0; k < g_operators.size(); ++k) {
@@ -118,14 +121,9 @@ int PDBCollectionHeuristic::compute_heuristic(const State &state) {
     return max_val;
 }
 
-void PDBCollectionHeuristic::add_new_pattern(const vector<int> &pattern) {
-    Options opts;
-    opts.set<int>("cost_type", cost_type);
-    opts.set<vector<int> >("pattern", pattern);
-    pattern_databases.push_back(new PDBHeuristic(opts, false));
-    size += pattern_databases.back()->get_size();
-    max_cliques.clear();
-    precompute_max_cliques();
+void PDBCollectionHeuristic::add_pattern(const vector<int> &pattern) {
+    add_pattern(pattern);
+    compute_max_cliques();
 }
 
 void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pattern,
