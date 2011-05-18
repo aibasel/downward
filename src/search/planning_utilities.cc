@@ -14,10 +14,10 @@ static int get_maximizing_vertex(
     // assert that subg and cand are sorted
     // cout << "subg: " << subg << endl;
     // cout << "cand: " << cand << endl;
-    size_t max = 0;
-    int vertex = subg[0];
+    int max = -1;
+    int vertex = -1;
 
-    for (size_t i = 1; i < subg.size(); ++i) {
+    for (size_t i = 0; i < subg.size(); ++i) {
         vector<int> intersection;
         intersection.reserve(subg.size());
         // for vertex u in subg get u's adjacent vertices --> cgraph[subg[i]];
