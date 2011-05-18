@@ -1,14 +1,19 @@
 #include "planning_utilities.h"
 
+#include "utilities.h"
+
 #include <algorithm>
 #include <iostream>
 #include <vector>
 
 using namespace std;
 
-int get_maximizing_vertex(const vector<int> &subg, const vector<int> &cand, const vector<vector<int> > &cgraph) {
+static int get_maximizing_vertex(
+    const vector<int> &subg, const vector<int> &cand,
+    const vector<vector<int> > &cgraph) {
     // assert that subg and cand are sorted
-    //dump(subg, cand);
+    // cout << "subg: " << subg << endl;
+    // cout << "cand: " << cand << endl;
     size_t max = 0;
     int vertex = subg[0];
 
@@ -26,9 +31,11 @@ int get_maximizing_vertex(const vector<int> &subg, const vector<int> &cand, cons
     return vertex;
 }
 
-void expand(vector<int> &subg, vector<int> &cand, vector<int> &q_clique, const vector<vector<int> > &cgraph,
-            vector<vector<int> > &max_cliques) {
-    //dump(subg, cand);
+static void expand(vector<int> &subg, vector<int> &cand,
+                   vector<int> &q_clique, const vector<vector<int> > &cgraph,
+                   vector<vector<int> > &max_cliques) {
+    // cout << "subg: " << subg << endl;
+    // cout << "cand: " << cand << endl;
     if (subg.empty()) {
         //cout << "clique" << endl;
         max_cliques.push_back(q_clique);
@@ -76,17 +83,4 @@ void compute_max_cliques(const vector<vector<int> > &cgraph, vector<vector<int> 
     vector<int> q_clique; // contains actual calculated maximal clique
     q_clique.reserve(cgraph.size());
     expand(vertices_1, vertices_2, q_clique, cgraph, max_cliques);
-}
-
-void dump(const vector<int> &subg, const vector<int> &cand) {
-    cout << "subg" << endl;
-    for (size_t i = 0; i < subg.size(); ++i) {
-        cout << subg[i] << ", ";
-    }
-    cout << endl;
-    cout << "cand" << endl;
-    for (size_t i = 0; i < cand.size(); ++i) {
-        cout << cand[i] << ", ";
-    }
-    cout << endl;
 }
