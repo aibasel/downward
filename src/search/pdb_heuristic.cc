@@ -310,7 +310,13 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
             if (vof.done())
                 break;
             var = vof.next();
-            num_states *= g_variable_domain[var];
+            // test against overflow
+            if (num_states <= numeric_limits<int>::max() / g_variable_domain[var]) {
+                // num_states * g_variable_domain[var] <= numeric_limits<int>::max()
+                num_states *= g_variable_domain[var];
+            } else {
+                break;
+            }
         }
         opts.set("pattern", pattern);
     }
