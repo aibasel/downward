@@ -3,7 +3,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
-#include "planning_utilities.h"
+#include "max_cliques.h"
 #include "plugin.h"
 #include "state.h"
 #include "timer.h"
@@ -21,7 +21,7 @@ PDBCollectionHeuristic::PDBCollectionHeuristic(const Options &opts)
     Timer timer;
     size = 0;
     pattern_databases.reserve(pattern_collection.size());
-    for (int i = 0; i < pattern_collection.size(); ++i)
+    for (size_t i = 0; i < pattern_collection.size(); ++i)
         _add_pattern(pattern_collection[i]);
     cout << pattern_collection.size() << " pdbs constructed." << endl;
     cout << "Construction time for all pdbs: " << timer << endl;
@@ -43,7 +43,8 @@ void PDBCollectionHeuristic::_add_pattern(const vector<int> &pattern) {
     size += pattern_databases.back()->get_size();
 }
 
-bool PDBCollectionHeuristic::are_pattern_additive(const vector<int> &patt1, const vector<int> &patt2) const {
+bool PDBCollectionHeuristic::are_patterns_additive(const vector<int> &patt1,
+                                                  const vector<int> &patt2) const {
     for (size_t i = 0; i < patt1.size(); ++i) {
         for (size_t j = 0; j < patt2.size(); ++j) {
             if (!are_additive[patt1[i]][patt2[j]]) {
@@ -62,7 +63,8 @@ void PDBCollectionHeuristic::compute_max_cliques() {
 
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         for (size_t j = i + 1; j < pattern_databases.size(); ++j) {
-            if (are_pattern_additive(pattern_databases[i]->get_pattern(),pattern_databases[j]->get_pattern())) {
+            if (are_patterns_additive(pattern_databases[i]->get_pattern(),
+                                     pattern_databases[j]->get_pattern())) {
                 // if the two patterns are additive there is an edge in the compatibility graph
                 cgraph[i].push_back(j);
                 cgraph[j].push_back(i);
@@ -71,15 +73,15 @@ void PDBCollectionHeuristic::compute_max_cliques() {
     }
     //cout << "built cgraph." << endl;
 
-    vector<vector<int> > max_cliques_cgraph;
-    max_cliques_cgraph.reserve(pattern_databases.size());
-    ::compute_max_cliques(cgraph, max_cliques_cgraph);
-
-    for (size_t i = 0; i < max_cliques_cgraph.size(); ++i) {
+    vector<vector<int> > cgraph_max_cliques;
+    ::compute_max_cliques(cgraph, cgraph_max_cliques);
+    max_cliques.reserve(cgraph_max_cliques.size());
+    
+    for (size_t i = 0; i < cgraph_max_cliques.size(); ++i) {
         vector<PDBHeuristic *> clique;
-        clique.reserve(max_cliques_cgraph[i].size());
-        for (size_t j = 0; j < max_cliques_cgraph[i].size(); ++j) {
-            clique.push_back(pattern_databases[max_cliques_cgraph[i][j]]);
+        clique.reserve(cgraph_max_cliques[i].size());
+        for (size_t j = 0; j < cgraph_max_cliques[i].size(); ++j) {
+            clique.push_back(pattern_databases[cgraph_max_cliques[i][j]]);
         }
         max_cliques.push_back(clique);
     }
@@ -88,6 +90,7 @@ void PDBCollectionHeuristic::compute_max_cliques() {
 }
 
 void PDBCollectionHeuristic::compute_additive_vars() {
+    assert(are_additive.empty());
     int num_vars = g_variable_domain.size();
     are_additive.resize(num_vars, vector<bool>(num_vars, true));
     for (size_t k = 0; k < g_operators.size(); ++k) {
@@ -105,7 +108,9 @@ void PDBCollectionHeuristic::initialize() {
 }
 
 int PDBCollectionHeuristic::compute_heuristic(const State &state) {
-    int max_h = -1;
+    int max_h = 0;
+    assert(!max_cliques.empty());
+    // if we have an empty collection, then max_cliques = { \emptyset }
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         const vector<PDBHeuristic *> &clique = max_cliques[i];
         int clique_h = 0;
@@ -126,8 +131,8 @@ void PDBCollectionHeuristic::add_pattern(const vector<int> &pattern) {
 }
 
 
-void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pattern,
-                                                      vector<vector<PDBHeuristic *> > &max_additive_subsets) {
+void PDBCollectionHeuristic::get_max_additive_subsets(
+    const vector<int> &new_pattern, vector<vector<PDBHeuristic *> > &max_additive_subsets) {
     /*
       We compute additive pattern sets S with the property that we could
       add the new pattern P to S and still have an additive pattern set.
@@ -179,7 +184,7 @@ void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pat
         vector<PDBHeuristic *> subset;
         subset.reserve(max_cliques[i].size());
         for (size_t j = 0; j < max_cliques[i].size(); ++j) {
-            if (are_pattern_additive(new_pattern, max_cliques[i][j]->get_pattern())) {
+            if (are_patterns_additive(new_pattern, max_cliques[i][j]->get_pattern())) {
                 subset.push_back(max_cliques[i][j]);
             }
         }
@@ -194,7 +199,7 @@ void PDBCollectionHeuristic::get_max_additive_subsets(const vector<int> &new_pat
     }
 }
 
-void PDBCollectionHeuristic::dump(const vector<vector<int> > &cgraph) const {
+void PDBCollectionHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) const {
     // print compatibility graph
     cout << "Compatibility graph" << endl;
     for (size_t i = 0; i < cgraph.size(); ++i) {
@@ -204,8 +209,11 @@ void PDBCollectionHeuristic::dump(const vector<vector<int> > &cgraph) const {
         }
         cout << "]" << endl;
     }
+}
+
+void PDBCollectionHeuristic::dump() const {
     // print maximal cliques
-    assert(max_cliques.size() > 0);
+    assert(!max_cliques.empty());
     cout << max_cliques.size() << " maximal clique(s)" << endl;
     cout << "Maximal cliques are (";
     for (size_t i = 0; i < max_cliques.size(); ++i) {
@@ -229,14 +237,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     Options opts = parser.parse();
 
     vector<vector<int> > pattern_collection = opts.get_list<vector<int> >("patterns");
-    for (size_t i = 0; i < pattern_collection.size(); ++i) {
-        cout << "[ ";
-        for (size_t j = 0; j < pattern_collection[i].size(); ++j) {
-            cout << pattern_collection[i][j] << " ";
-        }
-        cout << "]" << endl;
-    }
-    cout << endl;
     // TODO: Distinguish the case that no collection was specified by
     // the user from the case that an empty collection was explicitly
     // specified by the user (see issue236).
@@ -246,16 +246,16 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
             sort(pattern_collection[i].begin(), pattern_collection[i].end());
             // check if each pattern is valid
             int pat_old_size = pattern_collection[i].size();
-            if (pat_old_size == 0)
-                parser.error("there is an empty pattern in the pattern collection");
             vector<int>::const_iterator it = unique(pattern_collection[i].begin(), pattern_collection[i].end());
             pattern_collection[i].resize(it - pattern_collection[i].begin());
             if (pattern_collection[i].size() != pat_old_size)
                 parser.error("there are duplicates of variables in a pattern");
-            if (pattern_collection[i][0] < 0)
-                parser.error("there is a variable < 0 in a pattern");
-            if (pattern_collection[i][pattern_collection[i].size() - 1] > g_variable_domain.size())
-                parser.error("there is a variable > number of variables in a pattern");
+            if (!pattern_collection[i].empty()) {
+                if (pattern_collection[i].front() < 0)
+                    parser.error("there is a variable < 0 in a pattern");
+                if (pattern_collection[i].back() >= g_variable_domain.size())
+                    parser.error("there is a variable > number of variables in a pattern");
+            }
         }
         sort(pattern_collection.begin(), pattern_collection.end());
         int coll_old_size = pattern_collection.size();
