@@ -3,7 +3,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
-#include "planning_utilities.h"
+#include "max_cliques.h"
 #include "plugin.h"
 #include "state.h"
 #include "timer.h"
