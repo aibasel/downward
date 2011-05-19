@@ -46,8 +46,8 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
         set_difference(rel_vars.begin(), rel_vars.end(), pattern.begin(), pattern.end(), back_inserter(relevant_vars));
         for (size_t j = 0; j < relevant_vars.size(); ++j) {
             // test against overflow and pdb_max_size
-            double result = pdb_max_size / g_variable_domain[relevant_vars[j]];
-            if (current_size <= result) { // current_size * g_variable_domain[relevant_vars[j]] <= pdb_max_size
+            if (current_size <= pdb_max_size / g_variable_domain[relevant_vars[j]]) {
+                // current_size * g_variable_domain[relevant_vars[j]] <= pdb_max_size
                 vector<int> new_pattern(pattern);
                 new_pattern.push_back(relevant_vars[j]);
                 sort(new_pattern.begin(), new_pattern.end());
