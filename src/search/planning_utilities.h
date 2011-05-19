@@ -1,5 +1,5 @@
-#ifndef PLANNING_UTILITIES_H
-#define PLANNING_UTILITIES_H
+#ifndef MAX_CLIQUES_H
+#define MAX_CLIQUES_H
 
 #include <vector>
 
