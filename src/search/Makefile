@@ -162,7 +162,7 @@ CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
 LINKOPT_RELEASE  = -static -static-libgcc
-LINKOPT_DEBUG    = -lrt
+LINKOPT_DEBUG    = 
 LINKOPT_PROFILE  = -pg -lrt
 # LINKOPT_PROFILE += -lc_p
 
