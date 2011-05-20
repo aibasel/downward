@@ -23,11 +23,18 @@ class PatternGenerationEdelkamp : public Heuristic {
     std::vector<PDBHeuristic *> final_pattern_collection; // stores the best pattern collection for fast acces during search
     std::vector<std::vector<int> > operator_costs; // stores operator costs to remember which operators have been used
 
-    // select each pattern collection with a probability (obtained by normalizing the fitness function)
+    /*
+    The fitness values (from evaluta) are normalized into probabilities. Then num_collections many
+    pattern collections are chosen from the vector of all pattern collections according to their
+    probabilities.
+    */
     void select(const std::vector<std::pair<double, int> > &fitness_values, double fitness_sum);
 
-    //void recombine();
-    void mutate(); // flip bits (= variables) with a given probability
+    /*
+    Iterate over all patterns and flip every variable (set 0 if 1 or 1 if 0) with the given probability
+    from options. This method does not check for pdb_max_size or disjoint patterns.
+    */
+    void mutate();
 
     /*
     Transforms a vector of bools (internal pattern representation in this class) to the "normal" pattern form
@@ -36,7 +43,8 @@ class PatternGenerationEdelkamp : public Heuristic {
     void transform_to_pattern_normal_form(const std::vector<bool> &bitvector, std::vector<int> &pattern) const;
 
     /*
-    Calculates the mean h-value (fitness values) for each pattern collection and returns the sum of them.
+    Calculates the mean h-value (fitness value) for each pattern collection (stored as pair together with
+    the index of the pattern collection) and returns the sum of them.
     For each pattern collection, we iterate over all patterns, first checking whether they respect the
     size limit, then modifying them in a way that only causally relevant variables remain in the poatterns.
     Then the mean h-value for each pattern is calculated (dead ends are ignored) and summed up for the

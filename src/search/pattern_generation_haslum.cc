@@ -98,7 +98,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
             if (applicable_ops.empty()) {
                 break;
             } else {
-                int random = g_rng.next(applicable_ops.size()); // [0..applicalbe_os.size())
+                int random = g_rng.next(applicable_ops.size()); // [0..applicable_os.size())
                 assert(applicable_ops[random]->is_applicable(current_state));
                 current_state = State(current_state, *applicable_ops[random]);
                 // if current state is dead-end, then restart with initial state
