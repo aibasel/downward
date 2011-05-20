@@ -29,12 +29,18 @@ class PatternGenerationEdelkamp : public Heuristic {
     //void recombine();
     void mutate(); // flip bits (= variables) with a given probability
 
-    // transforms a vector of bools (pattern representation in this algorithm) to the "normal" pattern form
-    // vector<int> (needed for PDBHeuristic)
+    /*
+    Transforms a vector of bools (internal pattern representation in this class) to the "normal" pattern form
+    vector<int>, which we need for PDBHeuristic.
+    */
     void transform_to_pattern_normal_form(const std::vector<bool> &bitvector, std::vector<int> &pattern) const;
 
     /*
-    Calculates the mean h-value (fitness function) for each pattern collection and returns the sum of them
+    Calculates the mean h-value (fitness values) for each pattern collection and returns the sum of them.
+    For each pattern collection, we iterate over all patterns, first checking whether they respect the
+    size limit, then modifying them in a way that only causally relevant variables remain in the poatterns.
+    Then the mean h-value for each pattern is calculated (dead ends are ignored) and summed up for the
+    entire collection. The total sum of all collections is returned for normalizing purposes in "select".
     */
     double evaluate(std::vector<std::pair<double, int> > &fitness_values);
 

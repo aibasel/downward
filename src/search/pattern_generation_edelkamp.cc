@@ -64,33 +64,6 @@ void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness
     pattern_collections = new_pattern_collections;
 }
 
-/*
-void PatternGenerationEdelkamp::recombine() {
-    size_t vector_size = pattern_collections.size();
-    for (size_t i = 1; i < vector_size; i += 2) {
-        vector<vector<bool> > collection1;
-        vector<vector<bool> > collection2;
-        for (size_t j = 0; j < pattern_collections[i-1].size(); ++j) {
-            if (j < pattern_collections[i-1].size() / 2) {
-                collection1.push_back(pattern_collections[i-1][j]);
-            }
-            else {
-                collection2.push_back(pattern_collections[i-1][j]);
-            }
-        }
-        for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
-            if (j < pattern_collections[i].size() / 2) {
-                collection1.push_back(pattern_collections[i][j]);
-            }
-            else {
-                collection2.push_back(pattern_collections[i][j]);
-            }
-        }
-        pattern_collections.push_back(collection1);
-        pattern_collections.push_back(collection2);
-    }
-}*/
-
 void PatternGenerationEdelkamp::mutate() {
     // TODO: Should we check the max pdb size here? After mutation new variables can occur in a pattern and
     // exceed the max_pdb_size!
@@ -129,7 +102,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             // test if the pattern respects the memory limit
             int mem = 1;
             for (size_t k = 0; k < bitvector.size(); ++k) {
-                if (bitvector[k] == 1) {
+                if (bitvector[k]) {
                     // test against overflow and pdb_max_size
                     if (mem <= pdb_max_size / g_variable_domain[k]) {
                         // mem * g_variable_domain[k] <= pdb_max_size
@@ -143,7 +116,7 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
             }
             if (fitness == 0.001)
                 break;
-
+            // TODO: maybe combine those two loops over bitvector?
             // test if variables occur in more than one pattern
             // TODO: iteration through bitvector occurs here and in transformation to pattern normal form
             // any way to avoid this?
@@ -166,10 +139,9 @@ double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_v
                 }
             }
 
-
+            // try to remove irrelevant variables
             vector<bool> modified_bitvector;
             modified_bitvector.resize(bitvector.size());
-            // try to remove irrelevant variables
             vector<int> vars_to_check;
             for (size_t k = 0; k < g_goal.size(); ++k) {
                 if (bitvector[g_goal[k].first] == 1) {
@@ -325,7 +297,7 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
             cout << " " << fitness_values[i].first << " (index: " << fitness_values[i].second << ")";
         }
         cout << endl;
-        double new_best_h = fitness_values.back().first;
+        double new_best_h = fitness_values.back().first; // fitness_values is sorted
         /*if (new_best_h == 0.001) {
             cout << "All pattern collections are invalid. Don't select any of them.";
         } else {
