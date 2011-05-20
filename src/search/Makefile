@@ -161,12 +161,12 @@ CCOPT_RELEASE  = -O3 -fomit-frame-pointer
 CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
-LINKOPT_RELEASE  = -static -static-libgcc
-LINKOPT_DEBUG    = -lrt
+LINKOPT_RELEASE  = -static-libgcc
+LINKOPT_DEBUG    = 
 LINKOPT_PROFILE  = -pg -lrt
 # LINKOPT_PROFILE += -lc_p
 
-POSTLINKOPT_RELEASE  = -Wl,-Bstatic -lrt
+POSTLINKOPT_RELEASE  = -Wl
 POSTLINKOPT_DEBUG    =
 POSTLINKOPT_PROFILE  =
 

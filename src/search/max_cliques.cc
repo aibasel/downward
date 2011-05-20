@@ -14,11 +14,12 @@ class MaxCliqueComputer {
 
     int get_maximizing_vertex(
         const vector<int> &subg, const vector<int> &cand) {
-        // assert that subg and cand are sorted
+        // assert that subg and cand are sorted - how to do this with an assertion?
         // cout << "subg: " << subg << endl;
         // cout << "cand: " << cand << endl;
-        int max = -1;
-        int vertex = -1;
+        int max = 0; 
+        // TODO If we use -1 the comparation intersection.size() > max is always false.
+        int vertex = subg[0]; // We will take the first vertex if there is no better one.
 
         for (size_t i = 0; i < subg.size(); ++i) {
             vector<int> intersection;
@@ -29,6 +30,7 @@ class MaxCliqueComputer {
             if (intersection.size() > max) {
                 max = intersection.size();
                 vertex = subg[i];
+                //cout << "sucess: there is a maximizing vertex." << endl;
             }
         }
         return vertex;
