@@ -13,9 +13,9 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include <ext/hash_set>
 
-namespace std { using namespace __gnu_cxx; }
-
+using namespace __gnu_cxx;
 using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
@@ -38,36 +38,43 @@ PatternGenerationEdelkamp::~PatternGenerationEdelkamp() {
     }*/
 }
 
-void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness_values, double fitness_sum) {
-    vector<double> probabilities;
+void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness_values) {
+    vector<double> cumulative_fitness;
+    cumulative_fitness.reserve(fitness_values.size());
+    double total_so_far = 0;
     for (size_t i = 0; i < fitness_values.size(); ++i) {
-        probabilities.push_back(fitness_values[i].first / fitness_sum);
-        if (i > 0)
-            probabilities[i] += probabilities[i-1];
+        total_so_far += fitness_values[i].first;
+        cumulative_fitness.push_back(total_so_far);
     }
+    // total_so_far is now sum over all fitness values
 
     vector<vector<vector<bool> > > new_pattern_collections;
+    new_pattern_collections.reserve(num_collections);
     for (size_t i = 0; i < num_collections; ++i) {
-        double random = g_rng(); // [0..1)
-        int j = 0;
-        while (random > probabilities[j]) {
-            ++j;
+        int selected;
+        if (total_so_far == 0) {
+            // All fitness values are 0 => choose uniformly.
+            selected = g_rng(fitness_values.size());
+        } else {
+            double random = g_rng() * total_so_far; // [0..total_so_far)
+            // Find first entry which is strictly greater than random.
+            selected = upper_bound(cumulative_fitness.begin(),
+                                   cumulative_fitness.end(), random) -
+                cumulative_fitness.begin();
         }
-        new_pattern_collections.push_back(pattern_collections[fitness_values[j].second]);
+        new_pattern_collections.push_back(pattern_collections[fitness_values[selected].second]);
     }
-    pattern_collections = new_pattern_collections;
+    pattern_collections.swap(new_pattern_collections);
 }
 
 void PatternGenerationEdelkamp::mutate() {
-    // TODO: Should we check the max pdb size here? After mutation new variables can occur in a pattern and
-    // exceed the max_pdb_size! -> This is done in evaluate so far.
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
             vector<bool> &pattern = pattern_collections[i][j];
             for (size_t k = 0; k < pattern.size(); ++k) {
                 double random = g_rng(); // [0..1)
                 if (random < mutation_probability) {
-                    pattern[k] = !pattern[k];
+                    pattern[k].flip();
                 }
             }
         }
@@ -82,124 +89,124 @@ void PatternGenerationEdelkamp::transform_to_pattern_normal_form(const vector<bo
     }
 }
 
-double PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values) {
-    double total_sum = 0;
+void PatternGenerationEdelkamp::remove_irrelevant_variables(
+    vector<int> &pattern) const {
+    hash_set<int> in_original_pattern(pattern.begin(), pattern.end());
+    hash_set<int> in_pruned_pattern;
+
+    vector<int> vars_to_check;
+    for (size_t i = 0; i < g_goal.size(); ++i) {
+        int var_no = g_goal[i].first;
+        if (in_original_pattern.count(var_no)) {
+            // Goals are causally relevant.
+            vars_to_check.push_back(var_no);
+            in_pruned_pattern.insert(var_no);
+        }
+    }
+
+    while(!vars_to_check.empty()) {
+        int var = vars_to_check.back();
+        vars_to_check.pop_back();
+        const vector<int> &rel = g_causal_graph->get_predecessors(var);
+        for (size_t i = 0; i < rel.size(); ++i) {
+            int var_no = rel[i];
+            if (in_original_pattern.count(var_no) &&
+                !in_pruned_pattern.count(var_no)) {
+                // Parents of relevant variables are causally relevant.
+                vars_to_check.push_back(var_no);
+                in_pruned_pattern.insert(var_no);
+            }
+        }
+    }
+
+    pattern.assign(in_pruned_pattern.begin(), in_pruned_pattern.end());
+}
+
+bool PatternGenerationEdelkamp::is_pattern_too_large(
+    const vector<int> &pattern) const {
+    // test if the pattern respects the memory limit
+    int mem = 1;
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        int domain_size = g_variable_domain[pattern[i]];
+        // test against overflow and pdb_max_size
+        if (mem > pdb_max_size / domain_size)
+            return true;
+        mem *= domain_size;
+    }
+    return false;
+}
+
+bool PatternGenerationEdelkamp::mark_used_variables(
+    const vector<int> &pattern, vector<bool> &variables_used) const {
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        int var_no = pattern[i];
+        if (variables_used[var_no])
+            return true;
+        variables_used[var_no] = true;
+    }
+    return false;
+}
+
+void PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values) {
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         cout << "evaluate pattern collection " << i << " of " << (pattern_collections.size() - 1) << endl;
         double fitness = 0;
         vector<bool> variables_used(g_variable_domain.size(), false);
-        vector<int> &op_costs = operator_costs[i]; // operator costs for actual pattern collection
+        vector<int> op_costs = operator_costs[i]; // operator costs for actual pattern collection (must be copied!)
+
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
             const vector<bool> &bitvector = pattern_collections[i][j];
-            // test if the pattern respects the memory limit
-            int mem = 1;
-            for (size_t k = 0; k < bitvector.size(); ++k) {
-                if (bitvector[k]) {
-                    // test against overflow and pdb_max_size
-                    if (mem <= pdb_max_size / g_variable_domain[k]) {
-                        // mem * g_variable_domain[k] <= pdb_max_size
-                        mem *= g_variable_domain[k];
-                    } else {
-                        cout << "pattern " << j << " exceeds the memory limit!" << endl;
-                        fitness = 0.001;
-                        break;
-                    }
-                }
-            }
-            if (fitness == 0.001)
+            vector<int> pattern;
+            transform_to_pattern_normal_form(bitvector, pattern);
+
+            if (is_pattern_too_large(pattern)) {
+                cout << "pattern " << j << " exceeds the memory limit!" << endl;
+                fitness = 0.001;
                 break;
-            // TODO: maybe combine those two loops over bitvector?
-            // test if variables occur in more than one pattern
-            // TODO: iteration through bitvector occurs here and in transformation to pattern normal form
-            // any way to avoid this?
+            }
+
             if (disjoint_patterns) {
-                bool patterns_disjoint = true;
-                for (size_t k = 0; k < bitvector.size(); ++k) {
-                    if (bitvector[k]) {
-                        if (variables_used[k]) {
-                            cout << "patterns are not disjoint anymore!" << endl;
-                            fitness = 0.001; // HACK: for the cases in which all pattern collections are invalid,
-                                             // prevent getting 0 probabilities for all entries
-                            patterns_disjoint = false;
-                            break;
-                        }
-                        variables_used[k] = true;
-                    }
-                }
-                if (!patterns_disjoint) {
+                if (mark_used_variables(pattern, variables_used)) {
+                    cout << "patterns are not disjoint anymore!" << endl;
+                    fitness = 0.001;
                     break;
                 }
             }
 
-            // remove irrelevant variables
-            vector<bool> modified_bitvector;
-            modified_bitvector.resize(bitvector.size());
-            vector<int> vars_to_check;
-            for (size_t k = 0; k < g_goal.size(); ++k) {
-                if (bitvector[g_goal[k].first] == 1) {
-                    vars_to_check.push_back(g_goal[k].first);
-                    modified_bitvector[g_goal[k].first] = 1; // because it's causal relevant
-                }
-            }
-
-            while(!vars_to_check.empty()) {
-                int var = vars_to_check.back();
-                vars_to_check.pop_back();
-                vector<int> rel = g_causal_graph->get_predecessors(var);
-                for (size_t l = 0; l < rel.size(); ++l) {
-                    if (rel[l] != var) {
-                        if (bitvector[rel[l]] == 1) {
-                            if (modified_bitvector[rel[l]] == 0) {
-                                modified_bitvector[rel[l]] = 1; // because it's causal relevant
-                                vars_to_check.push_back(rel[l]);
-                            }
-                        }
-                    }
-                }
-            }
+            remove_irrelevant_variables(pattern);
 
             // calculate mean h-value for actual pattern collection
-            map<vector<bool>, double>::const_iterator it = pattern_to_fitness.find(modified_bitvector);
             double mean_h = 0;
-            if (it == pattern_to_fitness.end()) {
-                // PDB not cached, build it
-                vector<int> pattern;
-                transform_to_pattern_normal_form(modified_bitvector, pattern);
-                Options opts;
-                opts.set<int>("cost_type", cost_type);
-                opts.set<vector<int> >("pattern", pattern);
-                PDBHeuristic pdb_heuristic(opts, false, op_costs);
 
-                // get used operators and set their cost for further iterations to 0 (action cost partitioning)
-                const vector<bool> &used_ops = pdb_heuristic.get_relevant_operators();
-                assert(used_ops.size() == op_costs.size());
-                for (size_t k = 0; k < used_ops.size(); ++k) {
-                    if (used_ops[k])
-                        op_costs[k] = 0;
-                }
+            Options opts;
+            opts.set<int>("cost_type", cost_type);
+            opts.set<vector<int> >("pattern", pattern);
+            PDBHeuristic pdb_heuristic(opts, false, op_costs);
 
-                const vector<int> &h_values = pdb_heuristic.get_h_values();
-                double sum = 0;
-                int num_states = h_values.size();
-                for (size_t k = 0; k < h_values.size(); ++k) {
-                    if (h_values[k] == numeric_limits<int>::max()) {
-                        --num_states;
-                        continue;
-                    }
-                    sum += h_values[k];
-                }
-                mean_h = sum / num_states;
-                pattern_to_fitness.insert(make_pair(modified_bitvector, mean_h));
-            } else {
-                mean_h = it->second;
+            // get used operators and set their cost for further iterations to 0 (action cost partitioning)
+            const vector<bool> &used_ops = pdb_heuristic.get_relevant_operators();
+            assert(used_ops.size() == op_costs.size());
+            for (size_t k = 0; k < used_ops.size(); ++k) {
+                if (used_ops[k])
+                    op_costs[k] = 0;
             }
+
+            const vector<int> &h_values = pdb_heuristic.get_h_values();
+            double sum = 0;
+            int num_states = h_values.size();
+            for (size_t k = 0; k < h_values.size(); ++k) {
+                if (h_values[k] == numeric_limits<int>::max()) {
+                    --num_states;
+                    continue;
+                }
+                sum += h_values[k];
+            }
+            mean_h = sum / num_states;
             fitness += mean_h;
         }
         fitness_values.push_back(make_pair(fitness, i));
-        total_sum += fitness;
     }
     sort(fitness_values.begin(), fitness_values.end());
-    return total_sum;
 }
 
 void PatternGenerationEdelkamp::bin_packing() {
@@ -266,7 +273,7 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
         //cout << "current pattern_collections after mutation" << endl;
         //dump();
         vector<pair<double, int> > fitness_values;
-        double fitness_sum = evaluate(fitness_values);
+        evaluate(fitness_values);
         cout << "evaluated" << endl;
         /*cout << "fitness values:";
         for (size_t i = 0; i < fitness_values.size(); ++i) {
@@ -274,7 +281,7 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
         }
         cout << endl;*/
         double new_best_h = fitness_values.back().first; // fitness_values is sorted
-        select(fitness_values, fitness_sum); // we allow to select invalid pattern collections
+        select(fitness_values); // we allow to select invalid pattern collections
         //cout << "current pattern collections (after selection):" << endl;
         //dump();
         // the overall best pattern collection of all episodes is stored

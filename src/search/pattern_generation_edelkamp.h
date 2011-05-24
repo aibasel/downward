@@ -3,7 +3,6 @@
 
 #include "heuristic.h"
 
-#include <ext/hash_map>
 #include <map>
 #include <vector>
 
@@ -18,7 +17,6 @@ class PatternGenerationEdelkamp : public Heuristic {
     const double mutation_probability;
     const bool disjoint_patterns; // specifies whether patterns in each pattern collection need to be disjoint or not
     const int cost_type;
-    std::map<std::vector<bool>, double> pattern_to_fitness; // caches fitness values for already calculated patterns
     std::vector<std::vector<std::vector<bool> > > pattern_collections; // all current pattern collections
     std::vector<PDBHeuristic *> final_pattern_collection; // stores the best pattern collection for fast acces during search
     std::vector<std::vector<int> > operator_costs; // stores operator costs to remember which operators have been used
@@ -26,9 +24,9 @@ class PatternGenerationEdelkamp : public Heuristic {
     /*
     The fitness values (from evaluta) are normalized into probabilities. Then num_collections many
     pattern collections are chosen from the vector of all pattern collections according to their
-    probabilities.
+    probabilities. If all fitness values are 0, we select uniformly randomly.
     */
-    void select(const std::vector<std::pair<double, int> > &fitness_values, double fitness_sum);
+    void select(const std::vector<std::pair<double, int> > &fitness_values);
 
     /*
     Iterate over all patterns and flip every variable (set 0 if 1 or 1 if 0) with the given probability
@@ -50,7 +48,15 @@ class PatternGenerationEdelkamp : public Heuristic {
     Then the mean h-value for each pattern is calculated (dead ends are ignored) and summed up for the
     entire collection. The total sum of all collections is returned for normalizing purposes in "select".
     */
-    double evaluate(std::vector<std::pair<double, int> > &fitness_values);
+    void evaluate(std::vector<std::pair<double, int> > &fitness_values);
+
+    bool is_pattern_too_large(const std::vector<int> &pattern) const;
+    /* Mark used variables in variables_used and return true iff
+       anything was already used (in which case we do not mark the
+       remaining variables). */
+    bool mark_used_variables(const std::vector<int> &pattern,
+                             std::vector<bool> &variables_used) const;
+    void remove_irrelevant_variables(std::vector<int> &pattern) const;
 
     /*
     Calculates the initial pattern collections with a next-fit bin packing algorithm.
