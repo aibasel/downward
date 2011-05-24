@@ -2,6 +2,7 @@
 #include "utilities.h"
 
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <vector>
 
@@ -14,7 +15,14 @@ class MaxCliqueComputer {
 
     int get_maximizing_vertex(
         const vector<int> &subg, const vector<int> &cand) {
-        // assert that subg and cand are sorted - how to do this with an assertion?
+        // assert that subg and cand are sorted
+        for (int i = 0; i < subg.size() - 1; ++i) {
+            assert(subg[i] < subg[i + 1]);
+        }
+        for (int i = 0; i < cand.size() - 1; ++i) {
+            assert(cand[i] < cand[i + 1]);
+        }
+        
         // cout << "subg: " << subg << endl;
         // cout << "cand: " << cand << endl;
         int max = 0; 
@@ -67,8 +75,7 @@ class MaxCliqueComputer {
                 expand(subg_q, cand_q);
 
                 // remove q from cand --> cand = cand - q
-                // why? we removed it from ext_u and q is never in subg_q or cand_q--> is it worse to remove it (we don't know
-                // the position) or to leave it and always have a bigger set_intersection vector
+                
 
                 //cout << "back" << endl;
                 q_clique.pop_back();
