@@ -13,7 +13,7 @@ class PDBCollectionHeuristic : public Heuristic {
     std::vector<std::vector<bool> > are_additive; // variables which are additive
     std::vector<PDBHeuristic *> pattern_databases; // final pattern databases
     bool are_patterns_additive(const std::vector<int> &patt1, 
-                              const std::vector<int> &patt2) const;
+                               const std::vector<int> &patt2) const;
     void compute_max_cliques();
     void compute_additive_vars();
 

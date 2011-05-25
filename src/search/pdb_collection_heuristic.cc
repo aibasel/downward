@@ -1,16 +1,15 @@
 #include "pdb_collection_heuristic.h"
-#include "pdb_heuristic.h"
 #include "globals.h"
+#include "max_cliques.h"
 #include "operator.h"
 #include "option_parser.h"
-#include "max_cliques.h"
+#include "pdb_heuristic.h"
 #include "plugin.h"
 #include "state.h"
 #include "timer.h"
 
 #include <cassert>
 #include <cstdlib>
-#include <limits>
 #include <vector>
 
 using namespace std;

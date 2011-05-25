@@ -1,12 +1,12 @@
 #include "pattern_generation_edelkamp.h"
 #include "causal_graph.h"
 #include "globals.h"
-#include "operator.h" // for the use of g_operators
-#include "pdb_collection_heuristic.h"
+#include "operator.h"
 #include "pdb_heuristic.h"
 #include "plugin.h"
 #include "rng.h"
 #include "timer.h"
+#include "zero_one_partitioning_pdb_collection_heuristic.h"
 
 #include <algorithm>
 #include <cassert>
@@ -19,23 +19,18 @@ using namespace __gnu_cxx;
 using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
-    : Heuristic(opts), pdb_max_size(opts.get<int>("pdb_max_size")),
+    : pdb_max_size(opts.get<int>("pdb_max_size")),
     num_collections(opts.get<int>("num_collections")),
     num_episodes(opts.get<int>("num_episodes")),
-    mutation_probability(opts.get<int>("mutation_probability") / 100.0),
+    mutation_probability(opts.get<double>("mutation_probability")),
     disjoint_patterns(opts.get<bool>("disjoint")),
-    cost_type(opts.get<int>("cost_type")) {
+    cost_type(OperatorCost(opts.get<int>("cost_type"))) {
     Timer timer;
     genetic_algorithm();
     cout << "Pattern Generation (Edelkamp) time: " << timer << endl;
 }
 
 PatternGenerationEdelkamp::~PatternGenerationEdelkamp() {
-    // TODO: check correctness - apparently this destructor is never called anyways
-    /*cout << "destructor called" << endl;
-    for (size_t i = 0; i < final_pattern_collection.size(); ++i) {
-        delete final_pattern_collection[i];
-    }*/
 }
 
 void PatternGenerationEdelkamp::select(const vector<pair<double, int> > &fitness_values) {
@@ -149,7 +144,7 @@ bool PatternGenerationEdelkamp::mark_used_variables(
 
 void PatternGenerationEdelkamp::evaluate(vector<pair<double, int> > &fitness_values) {
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
-        cout << "evaluate pattern collection " << i << " of " << (pattern_collections.size() - 1) << endl;
+        cout << "evaluate pattern collection " << (i + 1) << " of " << pattern_collections.size() << endl;
         double fitness = 0;
         vector<bool> variables_used(g_variable_domain.size(), false);
         vector<int> op_costs = operator_costs[i]; // operator costs for actual pattern collection (must be copied!)
@@ -219,7 +214,7 @@ void PatternGenerationEdelkamp::bin_packing() {
     vector<int> op_costs;
     op_costs.reserve(g_operators.size());
     for (size_t i = 0; i < g_operators.size(); ++i)
-        op_costs.push_back(get_adjusted_cost(g_operators[i]));
+        op_costs.push_back(get_adjusted_action_cost(g_operators[i], cost_type));
 
     operator_costs.reserve(num_collections);
     for (size_t i = 0; i < num_collections; ++i) {
@@ -294,33 +289,17 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
     // store patterns of the best pattern collection for faster access during search
     Options opts;
     opts.set<int>("cost_type", cost_type);
+    vector<vector<int> > final_collection;
     for (size_t j = 0; j < best_collection.size(); ++j) {
         vector<int> pattern;
-        for (size_t i = 0; i < best_collection[j].size(); ++i) {
-            if (best_collection[j][i])
-                pattern.push_back(i);
-        }
+        transform_to_pattern_normal_form(best_collection[j], pattern);
         if (pattern.empty())
             continue;
-        opts.set<vector<int> >("pattern", pattern);
-        final_pattern_collection.push_back(new PDBHeuristic(opts, false));
+        final_collection.push_back(pattern);
     }
-}
-
-void PatternGenerationEdelkamp::initialize() {
-}
-
-int PatternGenerationEdelkamp::compute_heuristic(const State &state) {
-    // since we use action cost partitioning, we can simply add up all h-values
-    // from the patterns in the pattern collection
-    int h_val = 0;
-    for (size_t i = 0; i < final_pattern_collection.size(); ++i) {
-        final_pattern_collection[i]->evaluate(state);
-        if (final_pattern_collection[i]->is_dead_end())
-            return -1;
-        h_val += final_pattern_collection[i]->get_heuristic();
-    }
-    return h_val;
+    opts.set<vector<vector<int> > >("patterns", final_collection);
+    // TODO: add cost partitioning here
+    final_heuristic = new ZeroOnePartitioningPdbCollectionHeuristic(opts);
 }
 
 void PatternGenerationEdelkamp::dump() const {
@@ -341,7 +320,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("pdb_max_size", 100, "max number of states per pdb");
     parser.add_option<int>("num_collections", 5, "number of pattern collections to maintain");
     parser.add_option<int>("num_episodes", 30, "number of episodes");
-    parser.add_option<int>("mutation_probability", 1, "probability in percent for flipping a bit");
+    parser.add_option<double>("mutation_probability", 0.01, "probability between 0 and 1 for flipping a bit");
     parser.add_option<bool>("disjoint", false, "using disjoint variables in the patterns of a collection");
 
     Heuristic::add_options_to_parser(parser);
@@ -351,15 +330,15 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         parser.error("size per pdb must be at least 1");
     if (opts.get<int>("num_collections") < 1)
         parser.error("number of pattern collections must be at least 1");
-    if (opts.get<int>("num_episodes") < 1)
-        parser.error("number of episodes must be at least 1");
-    if (opts.get<int>("mutation_probability") < 0 || opts.get<int>("mutation_probability") > 100)
-        parser.error("mutation probability must be in [0..100]");
+    if (opts.get<int>("num_episodes") < 0)
+        parser.error("number of episodes must be a non negative number");
+    if (opts.get<double>("mutation_probability") < 0 || opts.get<double>("mutation_probability") > 1)
+        parser.error("mutation probability must be in [0..1]");
 
     if (parser.dry_run())
         return 0;
-
-    return new PatternGenerationEdelkamp(opts);
+    PatternGenerationEdelkamp pge(opts);
+    return pge.get_pattern_collection_heuristic();
 }
 
 static Plugin<ScalarEvaluator> _plugin("gapdb", _parse);
