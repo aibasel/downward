@@ -7,6 +7,7 @@
 
 class PDBHeuristic;
 class ZeroOnePartitioningPdbCollectionHeuristic : public Heuristic {
+    double fitness; // summed up mean h-values of all PDBs
     std::vector<PDBHeuristic *> pattern_databases; // final pattern databases
 protected:
     virtual void initialize();
@@ -14,6 +15,7 @@ protected:
 public:
     ZeroOnePartitioningPdbCollectionHeuristic(const Options &opts);
     virtual ~ZeroOnePartitioningPdbCollectionHeuristic();
+    double get_fitness() const { return fitness; }
     void dump() const;
 };
 
