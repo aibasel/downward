@@ -13,7 +13,8 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    ZeroOnePartitioningPdbCollectionHeuristic(const Options &opts);
+    ZeroOnePartitioningPdbCollectionHeuristic(const Options &opts,
+                                              const std::vector<int> &op_costs=std::vector<int>());
     virtual ~ZeroOnePartitioningPdbCollectionHeuristic();
     double get_fitness() const { return fitness; }
     void dump() const;
