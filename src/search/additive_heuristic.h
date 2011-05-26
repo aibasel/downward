@@ -5,7 +5,6 @@
 #include "relaxation_heuristic.h"
 #include <cassert>
 
-template <class MyInt>
 class AdditiveHeuristic : public RelaxationHeuristic {
     AdaptiveQueue<Proposition *> queue;
 
@@ -14,7 +13,7 @@ class AdditiveHeuristic : public RelaxationHeuristic {
     void relaxed_exploration();
     void mark_preferred_operators(const State &state, Proposition *goal);
 
-    void enqueue_if_necessary(Proposition *prop, MyInt cost, UnaryOperator *op) {
+    void enqueue_if_necessary(Proposition *prop, int cost, UnaryOperator *op) {
         assert(cost >= 0);
         if (prop->cost == -1 || prop->cost > cost) {
             prop->cost = cost;
@@ -25,7 +24,7 @@ class AdditiveHeuristic : public RelaxationHeuristic {
     }
 protected:
     virtual void initialize();
-    virtual MyInt compute_heuristic(const State &state);
+    virtual int compute_heuristic(const State &state);
 
     // Common part of h^add and h^ff computation.
     int compute_add_and_ff(const State &state);
