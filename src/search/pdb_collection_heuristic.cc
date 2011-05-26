@@ -269,7 +269,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
             }
             cout << "]" << endl;
         }
-
     }
 
     if (parser.dry_run())

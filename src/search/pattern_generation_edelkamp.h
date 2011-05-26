@@ -18,7 +18,11 @@ class PatternGenerationEdelkamp {
     const bool disjoint_patterns; // specifies whether patterns in each pattern collection need to be disjoint or not
     const OperatorCost cost_type;
     std::vector<std::vector<std::vector<bool> > > pattern_collections; // all current pattern collections
-    ZeroOnePartitioningPdbCollectionHeuristic *final_heuristic;
+
+    // store the fitness value of the best pattern collection over all episodes
+    double best_fitness;
+    ZeroOnePartitioningPdbCollectionHeuristic *best_heuristic;
+
     std::vector<int> operator_costs; // stores operator costs to remember which operators have been used
 
     /* The fitness values (from evaluate) are normalized into probabilities. Then num_collections many
@@ -33,11 +37,6 @@ class PatternGenerationEdelkamp {
     /* Transforms a vector of bools (internal pattern representation in this class) to the "normal" pattern form
        vector<int>, which we need for PDBHeuristic. */
     void transform_to_pattern_normal_form(const std::vector<bool> &bitvector, std::vector<int> &pattern) const;
-
-    /* Update the best pattern collection found so far and its fitness value. */
-    void update_best_collection(const std::vector<double> &fitness_values,
-                                double &current_best_h,
-                                std::vector<std::vector<bool> > &current_best_collection) const;
 
     /* Calculates the mean h-value (fitness value) for each pattern collection.
        For each pattern collection, we iterate over all patterns, first checking whether they respect the
@@ -74,7 +73,7 @@ public:
 
     /* Returns the ZeroOnePartitioningPdbCollectionHeuristic created by PatternGenerationEdelkamp.
        Important: caller owns the returned pointer and has to take care of its deletion. */
-    ZeroOnePartitioningPdbCollectionHeuristic *get_pattern_collection_heuristic() const { return final_heuristic; }
+    ZeroOnePartitioningPdbCollectionHeuristic *get_pattern_collection_heuristic() const { return best_heuristic; }
     void dump() const;
 };
 

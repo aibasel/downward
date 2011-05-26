@@ -29,6 +29,7 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
     // Calculate default operator costs once. Avoids recomputation in every new
     // ZeroOnePartitioningPdbCollectionHeuristic.
     operator_costs.reserve(g_operators.size());
+    best_fitness = -1;
     for (size_t i = 0; i < g_operators.size(); ++i)
         operator_costs.push_back(get_adjusted_action_cost(g_operators[i], cost_type));
     genetic_algorithm();
@@ -86,23 +87,6 @@ void PatternGenerationEdelkamp::transform_to_pattern_normal_form(const vector<bo
     for (size_t i = 0; i < bitvector.size(); ++i) {
         if (bitvector[i])
             pattern.push_back(i);
-    }
-}
-
-void PatternGenerationEdelkamp::update_best_collection(const vector<double> &fitness_values,
-                                                       double &current_best_h,
-                                                       vector<vector<bool> > &current_best_collection) const {
-    for (size_t i = 0; i < fitness_values.size(); ++i) {
-        if (fitness_values[i] > current_best_h) {
-            current_best_h = fitness_values[i];
-            current_best_collection = pattern_collections[i];
-            cout << "current_best_h = " << current_best_h << endl;
-            for (size_t i = 0; i < current_best_collection.size(); ++i) {
-                for (size_t j = 0; j < current_best_collection[i].size(); ++j)
-                    cout << current_best_collection[i][j] << " ";
-                cout << endl;
-            }
-        }
     }
 }
 
@@ -199,9 +183,18 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
             Options opts;
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<vector<int> > >("patterns", pattern_collection);
-            opts.set<vector<int> >("op_costs", operator_costs);
-            ZeroOnePartitioningPdbCollectionHeuristic zoppch(opts);
-            fitness = zoppch.get_fitness();
+            ZeroOnePartitioningPdbCollectionHeuristic *zoppch
+                = new ZeroOnePartitioningPdbCollectionHeuristic(opts, operator_costs);
+            fitness = zoppch->get_fitness();
+            // update the best heuristic found so far.
+            /*if (fitness > best_fitness) {
+                best_fitness = fitness;
+                cout << "best_fitness = " << best_fitness << endl;
+                best_heuristic = zoppch;
+                best_heuristic->dump();
+            } else {
+                delete zoppch;
+            }*/
         }
         fitness_values.push_back(fitness);
     }
@@ -244,16 +237,23 @@ void PatternGenerationEdelkamp::bin_packing() {
     }
 }
 
+#include "utilities.h"
+
 void PatternGenerationEdelkamp::genetic_algorithm() {
     bin_packing();
     cout << "initial pattern collections:" << endl;
     dump();
     vector<double> initial_fitness_values;
     evaluate(initial_fitness_values);
-    double current_best_h = 0;
-    vector<vector<bool> > current_best_collection;
-    update_best_collection(initial_fitness_values, current_best_h, current_best_collection);
-
+    vector<vector<bool> > best_collection;
+    for (size_t j = 0; j < initial_fitness_values.size(); ++j) {
+        if (initial_fitness_values[j] > best_fitness) {
+            best_fitness = initial_fitness_values[j];
+            cout << "best_fitness = " << best_fitness << endl;
+            best_collection = pattern_collections[j];
+            cout << best_collection << endl;
+        }
+    }
     for (int i = 0; i < num_episodes; ++i) {
         cout << endl;
         cout << "--------- episode no " << (i + 1) << " ---------" << endl;
@@ -262,34 +262,31 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
         //dump();
         vector<double> fitness_values;
         evaluate(fitness_values);
-        cout << "evaluated" << endl;
-        /*cout << "fitness values:";
-        for (size_t i = 0; i < fitness_values.size(); ++i) {
-            cout << " " << fitness_values[i].first << " (index: " << fitness_values[i].second << ")";
+        for (size_t j = 0; j < fitness_values.size(); ++j) {
+            if (fitness_values[j] > best_fitness) {
+                best_fitness = fitness_values[j];
+                cout << "best_fitness = " << best_fitness << endl;
+                best_collection = pattern_collections[j];
+                cout << best_collection << endl;
+            }
         }
-        cout << endl;*/
         //dump();
-        // the overall best pattern collection of all episodes is stored
-        update_best_collection(fitness_values, current_best_h, current_best_collection);
         select(fitness_values); // we allow to select invalid pattern collections
         //cout << "current pattern collections (after selection):" << endl;
         //dump();
     }
-
-    // store patterns of the best pattern collection for faster access during search
     Options opts;
     opts.set<int>("cost_type", cost_type);
     vector<vector<int> > final_collection;
-    for (size_t j = 0; j < current_best_collection.size(); ++j) {
+    for (size_t j = 0; j < best_collection.size(); ++j) {
         vector<int> pattern;
-        transform_to_pattern_normal_form(current_best_collection[j], pattern);
+        transform_to_pattern_normal_form(best_collection[j], pattern);
         if (pattern.empty())
             continue;
         final_collection.push_back(pattern);
     }
     opts.set<vector<vector<int> > >("patterns", final_collection);
-    opts.set<vector<int> >("op_costs", operator_costs);
-    final_heuristic = new ZeroOnePartitioningPdbCollectionHeuristic(opts);
+    best_heuristic = new ZeroOnePartitioningPdbCollectionHeuristic(opts, operator_costs);
 }
 
 void PatternGenerationEdelkamp::dump() const {
