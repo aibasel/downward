@@ -10,15 +10,23 @@ using namespace std;
 
 ZeroOnePartitioningPdbCollectionHeuristic::ZeroOnePartitioningPdbCollectionHeuristic(const Options &opts)
     : Heuristic(opts) {
-    // TODO: support cost partitioning
     const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
+    vector<int> op_costs = opts.get_list<int>("op_costs");
     Timer timer;
     pattern_databases.reserve(pattern_collection.size());
     for (size_t i = 0; i < pattern_collection.size(); ++i) {
         Options opts;
         opts.set<int>("cost_type", cost_type);
         opts.set<vector<int> >("pattern", pattern_collection[i]);
-        PDBHeuristic *pdb_heuristic = new PDBHeuristic(opts, false);
+        PDBHeuristic *pdb_heuristic = new PDBHeuristic(opts, false, op_costs);
+
+        // get used operators and set their cost for further iterations to 0 (action cost partitioning)
+        const vector<bool> &used_ops = pdb_heuristic->get_relevant_operators();
+        assert(used_ops.size() == op_costs.size());
+        for (size_t k = 0; k < used_ops.size(); ++k) {
+            if (used_ops[k])
+                op_costs[k] = 0;
+        }
         pattern_databases.push_back(pdb_heuristic);
     }
     cout << pattern_collection.size() << " pdbs constructed." << endl;

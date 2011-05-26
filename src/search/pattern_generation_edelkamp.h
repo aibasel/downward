@@ -19,12 +19,12 @@ class PatternGenerationEdelkamp {
     const OperatorCost cost_type;
     std::vector<std::vector<std::vector<bool> > > pattern_collections; // all current pattern collections
     ZeroOnePartitioningPdbCollectionHeuristic *final_heuristic;
-    std::vector<std::vector<int> > operator_costs; // stores operator costs to remember which operators have been used
+    std::vector<int> operator_costs; // stores operator costs to remember which operators have been used
 
-    /* The fitness values (from evaluta) are normalized into probabilities. Then num_collections many
+    /* The fitness values (from evaluate) are normalized into probabilities. Then num_collections many
        pattern collections are chosen from the vector of all pattern collections according to their
        probabilities. If all fitness values are 0, we select uniformly randomly. */
-    void select(const std::vector<std::pair<double, int> > &fitness_values);
+    void select(const std::vector<double> &fitness_values);
 
     /* Iterate over all patterns and flip every variable (set 0 if 1 or 1 if 0) with the given probability
        from options. This method does not check for pdb_max_size or disjoint patterns. */
@@ -34,13 +34,17 @@ class PatternGenerationEdelkamp {
        vector<int>, which we need for PDBHeuristic. */
     void transform_to_pattern_normal_form(const std::vector<bool> &bitvector, std::vector<int> &pattern) const;
 
-    /* Calculates the mean h-value (fitness value) for each pattern collection (stored as pair together with
-       the index of the pattern collection) and returns the sum of them.
+    /* Update the best pattern collection found so far and its fitness value. */
+    void update_best_collection(const std::vector<double> &fitness_values,
+                                double &current_best_h,
+                                std::vector<std::vector<bool> > &current_best_collection) const;
+
+    /* Calculates the mean h-value (fitness value) for each pattern collection.
        For each pattern collection, we iterate over all patterns, first checking whether they respect the
-       size limit, then modifying them in a way that only causally relevant variables remain in the poatterns.
+       size limit, then modifying them in a way that only causally relevant variables remain in the patterns.
        Then the mean h-value for each pattern is calculated (dead ends are ignored) and summed up for the
        entire collection. The total sum of all collections is returned for normalizing purposes in "select". */
-    void evaluate(std::vector<std::pair<double, int> > &fitness_values);
+    void evaluate(std::vector<double> &fitness_values);
     bool is_pattern_too_large(const std::vector<int> &pattern) const;
 
     /* Mark used variables in variables_used and return true iff
