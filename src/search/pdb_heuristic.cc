@@ -271,6 +271,24 @@ int PDBHeuristic::compute_heuristic(const State &state) {
     return h;
 }
 
+double PDBHeuristic::compute_mean_h() const {
+    double sum = 0;
+    int size = num_states;
+    for (size_t i = 0; i < distances.size(); ++i) {
+        if (distances[i] == numeric_limits<int>::max()) {
+            --size;
+            continue;
+        }
+        sum += distances[i];
+    }
+    if (size == 0) {
+        // avoid division by 0 (although also sum = 0 then and the
+        // division would probably succeed, resulting in mean_h = 0)
+        return 0;
+    } else
+        return sum / num_states;
+}
+
 void PDBHeuristic::dump() const {
     for (size_t i = 0; i < num_states; ++i) {
         cout << "h-value: " << distances[i] << endl;

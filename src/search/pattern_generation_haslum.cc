@@ -28,7 +28,7 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       cost_type(OperatorCost(opts.get<int>("cost_type"))) {
     Timer timer;
     initialize();
-    cout << "Pattern Generation (Haslum et al.) time: " << timer << endl;
+    cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
 }
 
 PatternGenerationHaslum::~PatternGenerationHaslum() {
