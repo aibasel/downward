@@ -105,14 +105,14 @@ void AdditiveHeuristic::mark_preferred_operators(
     }
 }
 
-int AdditiveHeuristic::compute_add_and_ff(const State &state) {
+MyInt AdditiveHeuristic::compute_add_and_ff(const State &state) {
     setup_exploration_queue();
     setup_exploration_queue_state(state);
     relaxed_exploration();
 
-    int total_cost = 0;
+    MyInt total_cost = 0;
     for (int i = 0; i < goal_propositions.size(); i++) {
-        int prop_cost = goal_propositions[i]->cost;
+        MyInt prop_cost = goal_propositions[i]->cost;
         if (prop_cost == -1)
             return DEAD_END;
         total_cost += prop_cost;
@@ -120,8 +120,8 @@ int AdditiveHeuristic::compute_add_and_ff(const State &state) {
     return total_cost;
 }
 
-int AdditiveHeuristic::compute_heuristic(const State &state) {
-    int h = compute_add_and_ff(state);
+MyInt AdditiveHeuristic::compute_heuristic(const State &state) {
+    MyInt h = compute_add_and_ff(state);
     if (h != DEAD_END) {
         for (int i = 0; i < goal_propositions.size(); i++)
             mark_preferred_operators(state, goal_propositions[i]);
