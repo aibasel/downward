@@ -13,6 +13,7 @@ ZeroOnePartitioningPdbCollectionHeuristic::ZeroOnePartitioningPdbCollectionHeuri
     const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
     vector<int> op_costs = opts.get_list<int>("op_costs");
     Timer timer;
+    fitness = 0;
     pattern_databases.reserve(pattern_collection.size());
     for (size_t i = 0; i < pattern_collection.size(); ++i) {
         Options opts;
@@ -29,28 +30,9 @@ ZeroOnePartitioningPdbCollectionHeuristic::ZeroOnePartitioningPdbCollectionHeuri
                 op_costs[k] = 0;
         }
 
-        // calculate mean h-value for actual pattern
-        double mean_h = 0;
-        const vector<int> &h_values = pdb_heuristic->get_h_values();
-        double sum = 0;
-        int num_states = h_values.size();
-        for (size_t k = 0; k < h_values.size(); ++k) {
-            if (h_values[k] == numeric_limits<int>::max()) {
-                --num_states;
-                continue;
-            }
-            sum += h_values[k];
-        }
-        if (num_states == 0) {
-            // avoid division by 0 (although also sum = 0 then and the
-            // division would probably succeed, resulting in mean_h = 0)
-            mean_h = 0;
-        } else
-            mean_h = sum / num_states;
-        fitness += mean_h;
+        fitness += pdb_heuristic->compute_mean_h();
     }
-    cout << pattern_collection.size() << " pdbs constructed." << endl;
-    cout << "Construction time for all pdbs: " << timer << endl;
+    cout << "All or nothing PDB collection construction time: " << timer << endl;
 }
 
 ZeroOnePartitioningPdbCollectionHeuristic::~ZeroOnePartitioningPdbCollectionHeuristic() {

@@ -32,7 +32,7 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
     for (size_t i = 0; i < g_operators.size(); ++i)
         operator_costs.push_back(get_adjusted_action_cost(g_operators[i], cost_type));
     genetic_algorithm();
-    cout << "Pattern Generation (Edelkamp) time: " << timer << endl;
+    cout << "Pattern generation (Edelkamp) time: " << timer << endl;
 }
 
 PatternGenerationEdelkamp::~PatternGenerationEdelkamp() {
@@ -193,7 +193,7 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
             remove_irrelevant_variables(pattern);
             pattern_collection.push_back(pattern);
         }
-        if (pattern_collection.size() != pattern_collections[i].size()) {
+        if (pattern_collection.size() == pattern_collections[i].size()) {
             // no break has occured in the for-loop ahead, meaning fitness != 0.001, so we
             // should generate the pattern collection heuristic and get its fitness value.
             Options opts;

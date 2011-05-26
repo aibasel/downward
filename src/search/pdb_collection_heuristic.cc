@@ -22,10 +22,9 @@ PDBCollectionHeuristic::PDBCollectionHeuristic(const Options &opts)
     pattern_databases.reserve(pattern_collection.size());
     for (size_t i = 0; i < pattern_collection.size(); ++i)
         _add_pattern(pattern_collection[i]);
-    cout << pattern_collection.size() << " pdbs constructed." << endl;
-    cout << "Construction time for all pdbs: " << timer << endl;
     compute_additive_vars();
     compute_max_cliques();
+    cout << "PDB collection construction time: " << timer << endl;
 }
 
 PDBCollectionHeuristic::~PDBCollectionHeuristic() {
