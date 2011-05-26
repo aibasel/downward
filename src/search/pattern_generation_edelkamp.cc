@@ -169,9 +169,8 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
         cout << "evaluate pattern collection " << (i + 1) << " of " << pattern_collections.size() << endl;
         double fitness = 0;
         vector<bool> variables_used(g_variable_domain.size(), false);
-        // default operator costs (must be copied!), changed after each PDBHeuristic construction
-        vector<int> op_costs = operator_costs;
-
+        vector<vector<int> > pattern_collection;
+        pattern_collection.reserve(pattern_collections[i].size());
         for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
             const vector<bool> &bitvector = pattern_collections[i][j];
             vector<int> pattern;
@@ -192,40 +191,17 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
             }
 
             remove_irrelevant_variables(pattern);
-
-            // calculate mean h-value for actual pattern collection
-            double mean_h = 0;
-
+            pattern_collection.push_back(pattern);
+        }
+        if (pattern_collection.size() != pattern_collections[i].size()) {
+            // no break has occured in the for-loop ahead, meaning fitness != 0.001, so we
+            // should generate the pattern collection heuristic and get its fitness value.
             Options opts;
             opts.set<int>("cost_type", cost_type);
-            opts.set<vector<int> >("pattern", pattern);
-            PDBHeuristic pdb_heuristic(opts, false, op_costs);
-
-            // get used operators and set their cost for further iterations to 0 (action cost partitioning)
-            const vector<bool> &used_ops = pdb_heuristic.get_relevant_operators();
-            assert(used_ops.size() == op_costs.size());
-            for (size_t k = 0; k < used_ops.size(); ++k) {
-                if (used_ops[k])
-                    op_costs[k] = 0;
-            }
-
-            const vector<int> &h_values = pdb_heuristic.get_h_values();
-            double sum = 0;
-            int num_states = h_values.size();
-            for (size_t k = 0; k < h_values.size(); ++k) {
-                if (h_values[k] == numeric_limits<int>::max()) {
-                    --num_states;
-                    continue;
-                }
-                sum += h_values[k];
-            }
-            if (num_states == 0) {
-                // avoid division by 0 (although also sum = 0 then and the
-                // division would probably succeed, resulting in mean_h = 0)
-                mean_h = 0;
-            } else
-                mean_h = sum / num_states;
-            fitness += mean_h;
+            opts.set<vector<vector<int> > >("patterns", pattern_collection);
+            opts.set<vector<int> >("op_costs", operator_costs);
+            ZeroOnePartitioningPdbCollectionHeuristic zoppch(opts);
+            fitness = zoppch.get_fitness();
         }
         fitness_values.push_back(fitness);
     }
