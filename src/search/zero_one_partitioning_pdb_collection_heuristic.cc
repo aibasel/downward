@@ -75,7 +75,7 @@ void ZeroOnePartitioningPdbCollectionHeuristic::dump() const {
         const vector<int> &pattern = pattern_databases[i]->get_pattern();
         cout << "[ ";
         for (size_t j = 0; j < pattern.size(); ++j) {
-            cout << pattern[j] << ", ";
+            cout << pattern[j] << " ";
         }
         cout << "]" << endl;
     }
