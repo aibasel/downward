@@ -22,27 +22,33 @@ class PatternGenerationEdelkamp {
     // store the fitness value of the best pattern collection over all episodes
     double best_fitness;
     ZeroOnePartitioningPdbCollectionHeuristic *best_heuristic;
+    // pointer to the heuristic in evaluate from the episode before, used to free memory.
+    ZeroOnePartitioningPdbCollectionHeuristic *last_heuristic;
 
     std::vector<int> operator_costs; // stores operator costs to remember which operators have been used
 
-    /* The fitness values (from evaluate) are normalized into probabilities. Then num_collections many
+    /* The fitness values (from evaluate) are used as probabilities. Then num_collections many
        pattern collections are chosen from the vector of all pattern collections according to their
-       probabilities. If all fitness values are 0, we select uniformly randomly. */
+       probabilities. If all fitness values are 0, we select uniformly randomly.
+       Note that the set of pattern collection where we select from is only changed by mutate, NOT
+       by evaluate. All changes there (i.e. transformation and removal of irrelevant variables)
+       are just temporary for improved PDB computation. */
     void select(const std::vector<double> &fitness_values);
 
     /* Iterate over all patterns and flip every variable (set 0 if 1 or 1 if 0) with the given probability
        from options. This method does not check for pdb_max_size or disjoint patterns. */
     void mutate();
 
-    /* Transforms a vector of bools (internal pattern representation in this class) to the "normal" pattern form
-       vector<int>, which we need for PDBHeuristic. */
+    /* Transforms a vector of bools (internal pattern representation in this class, mainly for easy mutation)
+       to the "normal" pattern form vector<int>, which we need for ZeroOnePartitioningPdbCollectionHeuristic. */
     void transform_to_pattern_normal_form(const std::vector<bool> &bitvector, std::vector<int> &pattern) const;
 
     /* Calculates the mean h-value (fitness value) for each pattern collection.
        For each pattern collection, we iterate over all patterns, first checking whether they respect the
        size limit, then modifying them in a way that only causally relevant variables remain in the patterns.
-       Then the mean h-value for each pattern is calculated (dead ends are ignored) and summed up for the
-       entire collection. The total sum of all collections is returned for normalizing purposes in "select". */
+       Then the zero one partitioning pattern collection heuristic is constructed and its fitness ( = summed
+       up mean h-values (dead ends are ignored) of all PDBs in the collection, wher) computed.
+       The overall best heuristic is eventually updated and saved for further episodes. */
     void evaluate(std::vector<double> &fitness_values);
     bool is_pattern_too_large(const std::vector<int> &pattern) const;
 
@@ -63,9 +69,7 @@ class PatternGenerationEdelkamp {
 
     /* Main genetic algorithm loop. All pattern collections are initialized with bin packing. In each iteration
        (or episode), all patterns are first mutated, then evaluated and finally some patterns in each collection
-       are selected to be part of the next episode. Note that we do not do any kind of recombination.
-       The best pattern collection (according to their fitness values from the evaluation step) is saved and
-       updated during all episodes and stored in the end for the search. */
+       are selected to be part of the next episode. Note that we do not do any kind of recombination. */
     void genetic_algorithm();
 public:
     PatternGenerationEdelkamp(const Options &opts);
