@@ -124,7 +124,7 @@ int PDBCollectionHeuristic::compute_heuristic(const State &state) {
 }
 
 void PDBCollectionHeuristic::add_pattern(const vector<int> &pattern) {
-    add_pattern(pattern);
+    _add_pattern(pattern);
     compute_max_cliques();
 }
 
