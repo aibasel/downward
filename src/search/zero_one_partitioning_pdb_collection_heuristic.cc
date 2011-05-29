@@ -25,7 +25,7 @@ ZeroOnePartitioningPdbCollectionHeuristic::ZeroOnePartitioningPdbCollectionHeuri
         operator_costs = op_costs;
     }
     const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
-    Timer timer;
+    //Timer timer;
     fitness = 0;
     pattern_databases.reserve(pattern_collection.size());
     for (size_t i = 0; i < pattern_collection.size(); ++i) {
@@ -45,7 +45,8 @@ ZeroOnePartitioningPdbCollectionHeuristic::ZeroOnePartitioningPdbCollectionHeuri
 
         fitness += pdb_heuristic->compute_mean_h();
     }
-    cout << "All or nothing PDB collection construction time: " << timer << endl;
+    //cout << "All or nothing PDB collection construction time: " << 
+//timer << endl;
 }
 
 ZeroOnePartitioningPdbCollectionHeuristic::~ZeroOnePartitioningPdbCollectionHeuristic() {
