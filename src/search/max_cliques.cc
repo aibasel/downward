@@ -23,8 +23,8 @@ class MaxCliqueComputer {
             assert(cand[i - 1] < cand[i]);
         }
         
-        cout << "subg: " << subg << endl;
-        cout << "cand: " << cand << endl;
+        //cout << "subg: " << subg << endl;
+        //cout << "cand: " << cand << endl;
         int max = 0; 
         // TODO If we use -1 the comparation intersection.size() > max is always false.
         int vertex = subg[0]; // We will take the first vertex if there is no better one.
