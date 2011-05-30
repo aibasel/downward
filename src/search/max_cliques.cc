@@ -16,15 +16,15 @@ class MaxCliqueComputer {
     int get_maximizing_vertex(
         const vector<int> &subg, const vector<int> &cand) {
         // assert that subg and cand are sorted
-        for (int i = 0; i < subg.size() - 1; ++i) {
-            assert(subg[i] < subg[i + 1]);
+        for (int i = 1; i < subg.size(); ++i) {
+            assert(subg[i - 1] < subg[i]);
         }
-        for (int i = 0; i < cand.size() - 1; ++i) {
-            assert(cand[i] < cand[i + 1]);
+        for (int i = 1; i < cand.size(); ++i) {
+            assert(cand[i - 1] < cand[i]);
         }
         
-        // cout << "subg: " << subg << endl;
-        // cout << "cand: " << cand << endl;
+        cout << "subg: " << subg << endl;
+        cout << "cand: " << cand << endl;
         int max = 0; 
         // TODO If we use -1 the comparation intersection.size() > max is always false.
         int vertex = subg[0]; // We will take the first vertex if there is no better one.
