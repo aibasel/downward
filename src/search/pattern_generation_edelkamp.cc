@@ -150,7 +150,7 @@ bool PatternGenerationEdelkamp::mark_used_variables(
 
 void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
-        cout << "evaluate pattern collection " << (i + 1) << " of " << pattern_collections.size() << endl;
+        //cout << "evaluate pattern collection " << (i + 1) << " of " << pattern_collections.size() << endl;
         double fitness = 0;
         vector<bool> variables_used(g_variable_domain.size(), false);
         vector<vector<int> > pattern_collection;
@@ -245,8 +245,8 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
     best_heuristic = 0;
     last_heuristic = 0;
     bin_packing();
-    cout << "initial pattern collections:" << endl;
-    dump();
+    //cout << "initial pattern collections:" << endl;
+    //dump();
     vector<double> initial_fitness_values;
     evaluate(initial_fitness_values);
     /*vector<vector<bool> > best_collection;
