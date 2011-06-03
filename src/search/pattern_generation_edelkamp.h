@@ -3,13 +3,16 @@
 
 #include "operator_cost.h"
 
-#include <map>
 #include <vector>
 
 class Options;
-class PDBHeuristic;
 class ZeroOnePartitioningPdbCollectionHeuristic;
-// Implementation of the pattern generation algorithm by Edelkamp
+
+/* Implementation of the pattern generation algorithm by Edelkamp. See:
+   Stefan Edelkamp, Automated Creation of Pattern Database Search
+   Heuristics. Proceedings of the 4th Workshop on Model Checking and
+   Artificial Intelligence (MoChArt 2006), pp. 35-50, 2007. */
+
 class PatternGenerationEdelkamp {
     const int pdb_max_size; // maximum number of states for each pdb
     const int num_collections;
@@ -23,8 +26,6 @@ class PatternGenerationEdelkamp {
     double best_fitness;
     ZeroOnePartitioningPdbCollectionHeuristic *best_heuristic;
     // pointer to the heuristic in evaluate from the episode before, used to free memory.
-    ZeroOnePartitioningPdbCollectionHeuristic *last_heuristic;
-
     std::vector<int> operator_costs; // stores operator costs to remember which operators have been used
 
     /* The fitness values (from evaluate) are used as probabilities. Then num_collections many
