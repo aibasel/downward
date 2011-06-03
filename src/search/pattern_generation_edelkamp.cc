@@ -6,6 +6,7 @@
 #include "plugin.h"
 #include "rng.h"
 #include "timer.h"
+#include "utilities.h"
 #include "zero_one_partitioning_pdb_collection_heuristic.h"
 
 #include <algorithm>
@@ -191,13 +192,10 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
                 best_fitness = fitness;
                 cout << "best_fitness = " << best_fitness << endl;
                 //best_heuristic->dump();
-                if (best_heuristic != 0)
-                    delete best_heuristic;
+                delete best_heuristic;
                 best_heuristic = zoppch;
             } else {
-                if (last_heuristic != 0)
-                    delete last_heuristic;
-                last_heuristic = zoppch;
+                delete zoppch;
             }
         }
         fitness_values.push_back(fitness);
@@ -234,16 +232,19 @@ void PatternGenerationEdelkamp::bin_packing() {
             pattern[var] = true;
         }
         // the last bin has not bin inserted into pattern_collection, do so now.
-        // note that this pattern cannot be empty as a new bin is only openened when there is still
-        // a variable to be inserted into.
-        pattern_collection.push_back(pattern);
+        // We test current_size against 1 because this is cheaper than
+        // testing if pattern is an all-zero bitvector. current_size
+        // can only be 1 if *all* variables have a domain larger than
+        // pdb_max_size.
+        if (current_size > 1) {
+            pattern_collection.push_back(pattern);
+        }
         pattern_collections.push_back(pattern_collection);
     }
 }
 
 void PatternGenerationEdelkamp::genetic_algorithm() {
     best_heuristic = 0;
-    last_heuristic = 0;
     bin_packing();
     //cout << "initial pattern collections:" << endl;
     //dump();
@@ -290,7 +291,6 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
     opts.set<vector<vector<int> > >("patterns", final_collection);
     best_heuristic = new ZeroOnePartitioningPdbCollectionHeuristic(opts, operator_costs);
     best_heuristic->dump();*/
-    delete last_heuristic;
 }
 
 void PatternGenerationEdelkamp::dump() const {
