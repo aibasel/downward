@@ -75,7 +75,6 @@ class MaxCliqueComputer {
                 expand(subg_q, cand_q);
 
                 // remove q from cand --> cand = cand - q
-                // the deleted element seems to be always the first element in cand
                 cand.erase(lower_bound(cand.begin(), cand.end(), q));
 
                 //cout << "back" << endl;
