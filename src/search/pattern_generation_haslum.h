@@ -7,7 +7,7 @@
 #include <vector>
 
 class Options;
-class PDBCollectionHeuristic;
+class CanonicalPDBsHeuristic;
 class PDBHeuristic;
 class State;
 // Implementation of the pattern generation algorithm by Haslum et al.
@@ -17,7 +17,7 @@ class PatternGenerationHaslum {
     const int num_samples;
     const int min_improvement; // minimal improvement required for hill climbing to continue search
     const OperatorCost cost_type;
-    PDBCollectionHeuristic *current_heuristic;
+    CanonicalPDBsHeuristic *current_heuristic;
 
     /*
     For the given pattern, all possible extensions of the pattern by one relevant variable
@@ -66,10 +66,10 @@ public:
     virtual ~PatternGenerationHaslum();
 
     /*
-    Returns the PDBCollectionHeuristic created by PatternGenerationHaslum
+    Returns the CanonicalPDBsHeuristic created by PatternGenerationHaslum
     Important: caller owns the returned pointer and has to take care of its deletion
     */
-    PDBCollectionHeuristic *get_pattern_collection_heuristic() const { return current_heuristic; }
+    CanonicalPDBsHeuristic *get_pattern_collection_heuristic() const { return current_heuristic; }
 };
 
 #endif
