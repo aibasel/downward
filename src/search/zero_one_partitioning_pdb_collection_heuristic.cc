@@ -5,7 +5,8 @@
 #include "pdb_heuristic.h"
 #include "plugin.h"
 #include "state.h"
-#include "timer.h"
+//#include "timer.h"
+#include "utilities.h"
 
 #include <vector>
 
@@ -26,7 +27,7 @@ ZeroOnePartitioningPdbCollectionHeuristic::ZeroOnePartitioningPdbCollectionHeuri
     }
     const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
     //Timer timer;
-    fitness = 0;
+    approx_mean_finite_h = 0;
     pattern_databases.reserve(pattern_collection.size());
     for (size_t i = 0; i < pattern_collection.size(); ++i) {
         Options opts;
@@ -43,10 +44,10 @@ ZeroOnePartitioningPdbCollectionHeuristic::ZeroOnePartitioningPdbCollectionHeuri
                 operator_costs[k] = 0;
         }
 
-        fitness += pdb_heuristic->compute_mean_h();
+        approx_mean_finite_h += pdb_heuristic->compute_mean_finite_h();
     }
     //cout << "All or nothing PDB collection construction time: " << 
-//timer << endl;
+    //timer << endl;
 }
 
 ZeroOnePartitioningPdbCollectionHeuristic::~ZeroOnePartitioningPdbCollectionHeuristic() {
@@ -73,12 +74,7 @@ int ZeroOnePartitioningPdbCollectionHeuristic::compute_heuristic(const State &st
 
 void ZeroOnePartitioningPdbCollectionHeuristic::dump() const {
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        const vector<int> &pattern = pattern_databases[i]->get_pattern();
-        cout << "[ ";
-        for (size_t j = 0; j < pattern.size(); ++j) {
-            cout << pattern[j] << " ";
-        }
-        cout << "]" << endl;
+        cout << pattern_databases[i]->get_pattern() << endl;
     }
 }
 

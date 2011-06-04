@@ -271,7 +271,7 @@ int PDBHeuristic::compute_heuristic(const State &state) {
     return h;
 }
 
-double PDBHeuristic::compute_mean_h() const {
+double PDBHeuristic::compute_mean_finite_h() const {
     double sum = 0;
     int size = num_states;
     for (size_t i = 0; i < distances.size(); ++i) {
