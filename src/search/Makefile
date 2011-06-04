@@ -101,7 +101,8 @@ HEADERS += pdb_heuristic.h \
            canonical_pdbs_heuristic.h \
            pattern_generation_haslum.h \
            zero_one_pdbs_heuristic.h \
-           pattern_generation_edelkamp.h
+           pattern_generation_edelkamp.h \
+           pdbs_heuristic_utility.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward
