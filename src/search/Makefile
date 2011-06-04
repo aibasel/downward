@@ -98,7 +98,7 @@ HEADERS += learning/AODE.h \
 HEADERS += pdb_heuristic.h \
            match_tree.h \
            max_cliques.h \
-           pdb_collection_heuristic.h \
+           canonical_pdbs_heuristic.h \
            pattern_generation_haslum.h \
            zero_one_pdbs_heuristic.h \
            pattern_generation_edelkamp.h

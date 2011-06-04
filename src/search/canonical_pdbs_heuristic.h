@@ -1,5 +1,5 @@
-#ifndef PDB_COLLECTION_HEURISTIC_H
-#define PDB_COLLECTION_HEURISTIC_H
+#ifndef CANONICAL_PDBS_HEURISTIC_H
+#define CANONICAL_PDBS_HEURISTIC_H
 
 #include "heuristic.h"
 
@@ -7,7 +7,7 @@
 
 // Implements the canonical heuristic function.
 class PDBHeuristic;
-class PDBCollectionHeuristic : public Heuristic {
+class CanonicalPDBsHeuristic : public Heuristic {
     int size; // the sum of all abstract state sizes of all pdbs in the collection
     std::vector<std::vector<PDBHeuristic *> > max_cliques; // final computed max_cliques
     std::vector<std::vector<bool> > are_additive; // variables which are additive
@@ -24,8 +24,8 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    PDBCollectionHeuristic(const Options &opts);
-    virtual ~PDBCollectionHeuristic();
+    CanonicalPDBsHeuristic(const Options &opts);
+    virtual ~CanonicalPDBsHeuristic();
     void add_pattern(const std::vector<int> &pattern);
 
     // checks for all max cliques if they would be additive to this pattern

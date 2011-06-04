@@ -3,7 +3,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
-#include "pdb_collection_heuristic.h"
+#include "canonical_pdbs_heuristic.h"
 #include "pdb_heuristic.h"
 #include "plugin.h"
 #include "rng.h"
@@ -271,7 +271,7 @@ void PatternGenerationHaslum::initialize() {
     Options opts;
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
-    current_heuristic = new PDBCollectionHeuristic(opts);
+    current_heuristic = new CanonicalPDBsHeuristic(opts);
     current_heuristic->evaluate(*g_initial_state);
     if (current_heuristic->is_dead_end())
         return;

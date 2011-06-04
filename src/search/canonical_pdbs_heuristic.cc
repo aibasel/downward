@@ -1,4 +1,4 @@
-#include "pdb_collection_heuristic.h"
+#include "canonical_pdbs_heuristic.h"
 #include "globals.h"
 #include "max_cliques.h"
 #include "operator.h"
@@ -14,7 +14,7 @@
 
 using namespace std;
 
-PDBCollectionHeuristic::PDBCollectionHeuristic(const Options &opts)
+CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
     : Heuristic(opts) {
     const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
     Timer timer;
@@ -27,13 +27,13 @@ PDBCollectionHeuristic::PDBCollectionHeuristic(const Options &opts)
     cout << "PDB collection construction time: " << timer << endl;
 }
 
-PDBCollectionHeuristic::~PDBCollectionHeuristic() {
+CanonicalPDBsHeuristic::~CanonicalPDBsHeuristic() {
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         delete pattern_databases[i];
     }
 }
 
-void PDBCollectionHeuristic::_add_pattern(const vector<int> &pattern) {
+void CanonicalPDBsHeuristic::_add_pattern(const vector<int> &pattern) {
     Options opts;
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<int> >("pattern", pattern);
@@ -41,7 +41,7 @@ void PDBCollectionHeuristic::_add_pattern(const vector<int> &pattern) {
     size += pattern_databases.back()->get_size();
 }
 
-bool PDBCollectionHeuristic::are_patterns_additive(const vector<int> &patt1,
+bool CanonicalPDBsHeuristic::are_patterns_additive(const vector<int> &patt1,
                                                   const vector<int> &patt2) const {
     for (size_t i = 0; i < patt1.size(); ++i) {
         for (size_t j = 0; j < patt2.size(); ++j) {
@@ -53,7 +53,7 @@ bool PDBCollectionHeuristic::are_patterns_additive(const vector<int> &patt1,
     return true;
 }
 
-void PDBCollectionHeuristic::compute_max_cliques() {
+void CanonicalPDBsHeuristic::compute_max_cliques() {
     // initialize compatibility graph
     max_cliques.clear();
     vector<vector<int> > cgraph;
@@ -87,7 +87,7 @@ void PDBCollectionHeuristic::compute_max_cliques() {
     //dump(cgraph);
 }
 
-void PDBCollectionHeuristic::compute_additive_vars() {
+void CanonicalPDBsHeuristic::compute_additive_vars() {
     assert(are_additive.empty());
     int num_vars = g_variable_domain.size();
     are_additive.resize(num_vars, vector<bool>(num_vars, true));
@@ -102,10 +102,10 @@ void PDBCollectionHeuristic::compute_additive_vars() {
     }
 }
 
-void PDBCollectionHeuristic::initialize() {
+void CanonicalPDBsHeuristic::initialize() {
 }
 
-int PDBCollectionHeuristic::compute_heuristic(const State &state) {
+int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
     int max_h = 0;
     assert(!max_cliques.empty());
     // if we have an empty collection, then max_cliques = { \emptyset }
@@ -123,13 +123,13 @@ int PDBCollectionHeuristic::compute_heuristic(const State &state) {
     return max_h;
 }
 
-void PDBCollectionHeuristic::add_pattern(const vector<int> &pattern) {
+void CanonicalPDBsHeuristic::add_pattern(const vector<int> &pattern) {
     _add_pattern(pattern);
     compute_max_cliques();
 }
 
 
-void PDBCollectionHeuristic::get_max_additive_subsets(
+void CanonicalPDBsHeuristic::get_max_additive_subsets(
     const vector<int> &new_pattern, vector<vector<PDBHeuristic *> > &max_additive_subsets) {
     /*
       We compute additive pattern sets S with the property that we could
@@ -197,7 +197,7 @@ void PDBCollectionHeuristic::get_max_additive_subsets(
     }
 }
 
-void PDBCollectionHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) const {
+void CanonicalPDBsHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) const {
     // print compatibility graph
     cout << "Compatibility graph" << endl;
     for (size_t i = 0; i < cgraph.size(); ++i) {
@@ -209,7 +209,7 @@ void PDBCollectionHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) con
     }
 }
 
-void PDBCollectionHeuristic::dump() const {
+void CanonicalPDBsHeuristic::dump() const {
     // print maximal cliques
     assert(!max_cliques.empty());
     cout << max_cliques.size() << " maximal clique(s)" << endl;
@@ -283,7 +283,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         opts.set("patterns", pattern_collection);
     }
 
-    return new PDBCollectionHeuristic(opts);
+    return new CanonicalPDBsHeuristic(opts);
 }
 
 static Plugin<ScalarEvaluator> _plugin("pdbs", _parse);
