@@ -100,7 +100,7 @@ HEADERS += pdb_heuristic.h \
            max_cliques.h \
            pdb_collection_heuristic.h \
            pattern_generation_haslum.h \
-           zero_one_partitioning_pdb_collection_heuristic.h \
+           zero_one_pdbs_heuristic.h \
            pattern_generation_edelkamp.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
