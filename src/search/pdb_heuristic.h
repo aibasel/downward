@@ -125,10 +125,10 @@ public:
     // Returns the size (number of abstrat states) of the PDB
     size_t get_size() const { return num_states; }
 
-    // Returns the average h-value over all states, where dead-ends are ignored (neither increase the sum
-    // of all h-values nor the total number of entries). This is only calculated when called; avoid
-    // repeated calls to this method!
-    double compute_mean_h() const;
+    // Returns the average h-value over all states, where dead-ends are ignored (they neither increase
+    // the sum of all h-values nor the total number of entries for the mean value calculation). This
+    // is only calculated when called; avoid repeated calls to this method!
+    double compute_mean_finite_h() const;
 
     // Returns all operators affecting this PDB
     const std::vector<bool> &get_relevant_operators() const { return relevant_operators; }

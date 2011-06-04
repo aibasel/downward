@@ -24,9 +24,8 @@ class PatternGenerationEdelkamp {
 
     // store the fitness value of the best pattern collection over all episodes
     double best_fitness;
-    ZeroOnePartitioningPdbCollectionHeuristic *best_heuristic;
     // pointer to the heuristic in evaluate from the episode before, used to free memory.
-    std::vector<int> operator_costs; // stores operator costs to remember which operators have been used
+    ZeroOnePartitioningPdbCollectionHeuristic *best_heuristic;
 
     /* The fitness values (from evaluate) are used as probabilities. Then num_collections many
        pattern collections are chosen from the vector of all pattern collections according to their
@@ -48,7 +47,7 @@ class PatternGenerationEdelkamp {
        For each pattern collection, we iterate over all patterns, first checking whether they respect the
        size limit, then modifying them in a way that only causally relevant variables remain in the patterns.
        Then the zero one partitioning pattern collection heuristic is constructed and its fitness ( = summed
-       up mean h-values (dead ends are ignored) of all PDBs in the collection, wher) computed.
+       up mean h-values (dead ends are ignored) of all PDBs in the collection) computed.
        The overall best heuristic is eventually updated and saved for further episodes. */
     void evaluate(std::vector<double> &fitness_values);
     bool is_pattern_too_large(const std::vector<int> &pattern) const;
