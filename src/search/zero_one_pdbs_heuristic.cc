@@ -1,4 +1,4 @@
-#include "zero_one_partitioning_pdb_collection_heuristic.h"
+#include "zero_one_pdbs_heuristic.h"
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
@@ -12,7 +12,7 @@
 
 using namespace std;
 
-ZeroOnePartitioningPdbCollectionHeuristic::ZeroOnePartitioningPdbCollectionHeuristic(
+ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     const Options &opts,
     const vector<int> &op_costs)
     : Heuristic(opts) {
@@ -50,16 +50,16 @@ ZeroOnePartitioningPdbCollectionHeuristic::ZeroOnePartitioningPdbCollectionHeuri
     //timer << endl;
 }
 
-ZeroOnePartitioningPdbCollectionHeuristic::~ZeroOnePartitioningPdbCollectionHeuristic() {
+ZeroOnePDBsHeuristic::~ZeroOnePDBsHeuristic() {
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         delete pattern_databases[i];
     }
 }
 
-void ZeroOnePartitioningPdbCollectionHeuristic::initialize() {
+void ZeroOnePDBsHeuristic::initialize() {
 }
 
-int ZeroOnePartitioningPdbCollectionHeuristic::compute_heuristic(const State &state) {
+int ZeroOnePDBsHeuristic::compute_heuristic(const State &state) {
     // since we use action cost partitioning, we can simply add up all h-values
     // from the patterns in the pattern collection
     int h_val = 0;
@@ -72,7 +72,7 @@ int ZeroOnePartitioningPdbCollectionHeuristic::compute_heuristic(const State &st
     return h_val;
 }
 
-void ZeroOnePartitioningPdbCollectionHeuristic::dump() const {
+void ZeroOnePDBsHeuristic::dump() const {
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         cout << pattern_databases[i]->get_pattern() << endl;
     }
@@ -132,7 +132,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         opts.set("patterns", pattern_collection);
     }
 
-    return new ZeroOnePartitioningPdbCollectionHeuristic(opts);
+    return new ZeroOnePDBsHeuristic(opts);
 }
 
 static Plugin<ScalarEvaluator> _plugin("zoppch", _parse);

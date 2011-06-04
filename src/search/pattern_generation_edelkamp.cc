@@ -6,7 +6,7 @@
 #include "rng.h"
 #include "timer.h"
 #include "utilities.h"
-#include "zero_one_partitioning_pdb_collection_heuristic.h"
+#include "zero_one_pdbs_heuristic.h"
 
 #include <algorithm>
 #include <cassert>
@@ -180,8 +180,8 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
             Options opts;
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<vector<int> > >("patterns", pattern_collection);
-            ZeroOnePartitioningPdbCollectionHeuristic *zoppch
-                = new ZeroOnePartitioningPdbCollectionHeuristic(opts);
+            ZeroOnePDBsHeuristic *zoppch
+                = new ZeroOnePDBsHeuristic(opts);
             fitness = zoppch->get_approx_mean_finite_h();
             // update the best heuristic found so far.
             if (fitness > best_fitness) {

@@ -6,7 +6,7 @@
 #include <vector>
 
 class Options;
-class ZeroOnePartitioningPdbCollectionHeuristic;
+class ZeroOnePDBsHeuristic;
 
 /* Implementation of the pattern generation algorithm by Edelkamp. See:
    Stefan Edelkamp, Automated Creation of Pattern Database Search
@@ -25,7 +25,7 @@ class PatternGenerationEdelkamp {
     // store the fitness value of the best pattern collection over all episodes
     double best_fitness;
     // pointer to the heuristic in evaluate from the episode before, used to free memory.
-    ZeroOnePartitioningPdbCollectionHeuristic *best_heuristic;
+    ZeroOnePDBsHeuristic *best_heuristic;
 
     /* The fitness values (from evaluate) are used as probabilities. Then num_collections many
        pattern collections are chosen from the vector of all pattern collections according to their
@@ -40,7 +40,7 @@ class PatternGenerationEdelkamp {
     void mutate();
 
     /* Transforms a vector of bools (internal pattern representation in this class, mainly for easy mutation)
-       to the "normal" pattern form vector<int>, which we need for ZeroOnePartitioningPdbCollectionHeuristic. */
+       to the "normal" pattern form vector<int>, which we need for ZeroOnePDBsHeuristic. */
     void transform_to_pattern_normal_form(const std::vector<bool> &bitvector, std::vector<int> &pattern) const;
 
     /* Calculates the mean h-value (fitness value) for each pattern collection.
@@ -75,9 +75,9 @@ public:
     PatternGenerationEdelkamp(const Options &opts);
     virtual ~PatternGenerationEdelkamp();
 
-    /* Returns the ZeroOnePartitioningPdbCollectionHeuristic created by PatternGenerationEdelkamp.
+    /* Returns the ZeroOnePDBsHeuristic created by PatternGenerationEdelkamp.
        Important: caller owns the returned pointer and has to take care of its deletion. */
-    ZeroOnePartitioningPdbCollectionHeuristic *get_pattern_collection_heuristic() const { return best_heuristic; }
+    ZeroOnePDBsHeuristic *get_pattern_collection_heuristic() const { return best_heuristic; }
     void dump() const;
 };
 
