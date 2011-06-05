@@ -10,6 +10,7 @@
 #include "state.h"
 #include "successor_generator.h"
 #include "timer.h"
+#include "utilities.h"
 
 #include <algorithm>
 #include <cassert>
@@ -139,71 +140,56 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
 }
 
 void PatternGenerationHaslum::hill_climbing(int average_operator_costs,
-                                            vector<vector<int> > &candidate_patterns) {
+                                            vector<vector<int> > &initial_candidate_patterns) {
     Timer timer;
-    map<vector<int>, PDBHeuristic *> pattern_to_pdb; // Cache PDBs to avoid recalculation
-    //vector<PDBHeuristic *> pdb_cache; // cache pdbs to avoid recalculation
+    // stores all candidate patterns generated so far in order to avoid duplicates
+    set<vector<int> > generated_patterns;
+    // new_candidates is the set of new pattern candidates from the last call to generate_candidate_patterns
+    vector<vector<int> > &new_candidates = initial_candidate_patterns;
+    // all candidate patterns are converted into pdbs once and stored
+    vector<PDBHeuristic *> candidate_pdbs;
     while (true) {
         cout << "current collection size is " << current_heuristic->get_size() << endl;
         vector<State> samples;
         sample_states(samples, average_operator_costs);
 
-        // TODO: drop PDBHeuristic and use astar instead to compute h values for the sample states only
-        // How is the advance of astar if we always have new samples? If we use pdbs and we do not rebuild
-        // them in every loop, there is no problem with new samples.
+        // For the new candidate patterns check whether they already have been candidates before and
+        // thus already a PDB has been created an inserted into candidate_pdbs.
+        for (size_t i = 0; i < new_candidates.size(); ++i) {
+            set<vector<int> >::iterator it = generated_patterns.find(new_candidates[i]);
+            if (it == generated_patterns.end()) {
+                Options opts;
+                opts.set<int>("cost_type", cost_type);
+                opts.set<vector<int> >("pattern", new_candidates[i]);
+                candidate_pdbs.push_back(new PDBHeuristic(opts, false));
+                generated_patterns.insert(new_candidates[i]);
+            }
+        }
+
+        // TODO: The original implementation by Haslum et al. uses astar to compute h values for
+        // the sample states only instead of generating all PDBs.
         int improvement = 0; // best improvement (= hightest count) for a pattern so far
-        int best_pattern_index = 0;
-        PDBHeuristic *pdb_heuristic;
-        // Iterate over all candidates and search for the best improving pattern
-        for (size_t i = 0; i < candidate_patterns.size(); ++i) {
-            map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.find(candidate_patterns[i]);
-            if (it == pattern_to_pdb.end()) {
-                Options opts;
-                opts.set<int>("cost_type", cost_type);
-                opts.set<vector<int> >("pattern", candidate_patterns[i]);
-                pdb_heuristic = new PDBHeuristic(opts, false);
-                pattern_to_pdb.insert(make_pair(candidate_patterns[i], pdb_heuristic));
-            } else if (it->second == 0) { // candidate pattern is too large
+        int best_pdb_index = 0;
+
+        // Iterate over all candidates and search for the best improving pattern/pdb
+        for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
+            PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
+            if (pdb_heuristic == 0) { // candidate pattern is too large
                 continue;
-            } else {
-                pdb_heuristic = it->second;
             }
             // If a candidate's size added to the current collection's size exceed the maximum
-            // collection size, then delete the PDB and let the map's entry point to a null reference
+            // collection size, then delete the PDB and let the set's entry point to a null reference
             if (current_heuristic->get_size() + pdb_heuristic->get_size() > collection_max_size) {
-                delete it->second;
-                it->second = 0;
-                //cout << "Candidate pattern together with the collection is above the"
-                    //"size limit, ignoring from now on" << endl;
+                delete pdb_heuristic;
+                candidate_pdbs[i] = 0;
                 continue;
             }
-            /*if (i < pdb_cache.size()) {
-                pdb_heuristic = pdb_cache[i];
-            } if (i >= pdb_cache.size()) {
-                Options opts;
-                opts.set<int>("cost_type", cost_type);
-                opts.set<vector<int> >("pattern", candidate_patterns[i]);
-                pdb_heuristic = new PDBHeuristic(opts, false);
-                pdb_cache.push_back(pdb_heuristic);
-            } else if (pdb_cache[i] == 0) { // candidate pattern is too large
-                continue;
-            } else {
-                pdb_heuristic = pdb_cache[i];
-            }
-            // If a candidate's size added to the current collection's size exceed the maximum
-            // collection size, then delete the PDB and let the vector's entry point to a null reference
-            if (current_heuristic->get_size() + pdb_heuristic->get_size() > collection_max_size) {
-                delete pdb_cache[i];
-                pdb_cache[i] = 0;
-                //cout << "Candidate pattern together with the collection is above the"
-                    //"size limit, ignoring from now on" << endl;
-                continue;
-            }*/
 
             // Calculate the "counting approximation" for all sample states: count the number of
             // samples for which the current pattern collection heuristic would be improved
             // if the new pattern was included into it.
-            // TODO: stop after m/t and use statistical confidence intervall
+            // TODO: The original implementation by Haslum et al. uses m/t as a statistical
+            // confidence intervall to stop the astar-search (which they use, see above) earlier.
             int count = 0;
             for (size_t j = 0; j < samples.size(); ++j) {
                 if (is_heuristic_improved(pdb_heuristic, samples[j]))
@@ -211,47 +197,32 @@ void PatternGenerationHaslum::hill_climbing(int average_operator_costs,
             }
             if (count > improvement) {
                 improvement = count;
-                best_pattern_index = i;
+                best_pdb_index = i;
             }
             if (count > 0) {
-                cout << "pattern [";
-                for (size_t j = 0; j < candidate_patterns[i].size(); ++j) {
-                    cout << " " << candidate_patterns[i][j];
-                }
-                cout << " ] improvement: " << count << endl;
+                cout << "pattern: " << candidate_pdbs[i]->get_pattern()
+                     << " - improvement: " << count << endl;
             }
         }
-        if (improvement < min_improvement)
+        if (improvement < min_improvement) // end hill climbing algorithm
             break;
-        cout << "found a better pattern with improvement " << improvement << endl;
-        cout << "pattern [";
-        for (size_t i = 0; i < candidate_patterns[best_pattern_index].size(); ++i) {
-            cout << " " << candidate_patterns[best_pattern_index][i];
-        }
-        cout << " ]" << endl;
-        current_heuristic->add_pattern(candidate_patterns[best_pattern_index]);
 
-        // Do NOT make this a const ref! one really needs to copy this pattern, as passing
-        // an object as an argument which is part of a vector (the second argument) may
-        // cause memory leaks, i.e. when the vector needs to be resized after an insert
-        // operation the first argument is an invalid reference
-        vector<int> best_pattern = candidate_patterns[best_pattern_index];
-        // successors for next iteration
-        // TODO: check if there could be duplicates in candidate_patterns after this call
-        generate_candidate_patterns(best_pattern, candidate_patterns);
+        // add the best pattern to the CanonicalPDBsHeuristic
+        const vector<int> &best_pattern = candidate_pdbs[best_pdb_index]->get_pattern();
+        cout << "found a better pattern with improvement " << improvement << endl;
+        cout << "pattern: " << best_pattern << endl;
+        current_heuristic->add_pattern(best_pattern);
+
+        // clear current new_candidates and get successors for next iteration
+        new_candidates.clear();
+        generate_candidate_patterns(best_pattern, new_candidates);
         cout << "Actual time (hill climbing iteration): " << timer << endl;
     }
 
-    // delete all created PDB-pointer in the map
-    map<vector<int>, PDBHeuristic *>::iterator it = pattern_to_pdb.begin();
-    while (it != pattern_to_pdb.end()) {
-        delete it->second;
-        ++it;
+    // delete all created PDB-pointer
+    for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
+        delete candidate_pdbs[i];
     }
-    /*// delete all created PDB-pointer in the vector
-    for (size_t i = 0; i < pdb_cache.size(); ++i) {
-        delete pdb_cache[i];
-    }*/
 }
 
 void PatternGenerationHaslum::initialize() {
@@ -277,17 +248,19 @@ void PatternGenerationHaslum::initialize() {
         return;
 
     // initial candidate patterns, computed separately for each pattern from the initial collection
-    vector<vector<int> > candidate_patterns;
+    vector<vector<int> > initial_candidate_patterns;
     for (size_t i = 0; i < current_heuristic->get_pattern_databases().size(); ++i) {
         const vector<int> &current_pattern = current_heuristic->get_pattern_databases()[i]->get_pattern();
-        generate_candidate_patterns(current_pattern, candidate_patterns);
+        generate_candidate_patterns(current_pattern, initial_candidate_patterns);
     }
     // remove duplicates in the candidate list
-    sort(candidate_patterns.begin(), candidate_patterns.end());
-    candidate_patterns.erase(unique(candidate_patterns.begin(), candidate_patterns.end()), candidate_patterns.end());
+    sort(initial_candidate_patterns.begin(), initial_candidate_patterns.end());
+    initial_candidate_patterns.erase(unique(initial_candidate_patterns.begin(),
+                                            initial_candidate_patterns.end()),
+                                     initial_candidate_patterns.end());
     cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
 
-    hill_climbing(average_operator_costs, candidate_patterns);
+    hill_climbing(average_operator_costs, initial_candidate_patterns);
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {

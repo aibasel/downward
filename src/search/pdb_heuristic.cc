@@ -289,12 +289,6 @@ double PDBHeuristic::compute_mean_finite_h() const {
         return sum / num_states;
 }
 
-void PDBHeuristic::dump() const {
-    for (size_t i = 0; i < num_states; ++i) {
-        cout << "h-value: " << distances[i] << endl;
-    }
-}
-
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states", 1000000, "maximum abstraction size");
     parser.add_list_option<int>("pattern", vector<int>(), "the pattern");

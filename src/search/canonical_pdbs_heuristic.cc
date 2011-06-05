@@ -8,6 +8,7 @@
 #include "plugin.h"
 #include "state.h"
 #include "timer.h"
+#include "utilities.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -85,7 +86,8 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
         max_cliques.push_back(clique);
     }
 
-    //dump(cgraph);
+    //dump_cgraph(cgraph);
+    //dump_cliques();
 }
 
 void CanonicalPDBsHeuristic::compute_additive_vars() {
@@ -202,15 +204,12 @@ void CanonicalPDBsHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) con
     // print compatibility graph
     cout << "Compatibility graph" << endl;
     for (size_t i = 0; i < cgraph.size(); ++i) {
-        cout << i << " adjacent to [ ";
-        for (size_t j = 0; j < cgraph[i].size(); ++j) {
-            cout << cgraph[i][j] << " ";
-        }
-        cout << "]" << endl;
+        cout << i << " adjacent to: ";
+        cout << cgraph[i] << endl;
     }
 }
 
-void CanonicalPDBsHeuristic::dump() const {
+void CanonicalPDBsHeuristic::dump_cliques() const {
     // print maximal cliques
     assert(!max_cliques.empty());
     cout << max_cliques.size() << " maximal clique(s)" << endl;
@@ -219,7 +218,7 @@ void CanonicalPDBsHeuristic::dump() const {
         cout << "[";
         for (size_t j = 0; j < max_cliques[i].size(); ++j) {
             vector<int> pattern = max_cliques[i][j]->get_pattern();
-            cout << "{";
+            cout << "{ ";
             for (size_t k = 0; k < pattern.size(); ++k) {
                 cout << pattern[k] << " ";
             }
@@ -228,6 +227,12 @@ void CanonicalPDBsHeuristic::dump() const {
         cout << "]";
     }
     cout << ")" << endl;
+}
+
+void CanonicalPDBsHeuristic::dump() const {
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        cout << pattern_databases[i]->get_pattern() << endl;
+    }
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {

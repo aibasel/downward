@@ -17,9 +17,11 @@ class CanonicalPDBsHeuristic : public Heuristic {
     void compute_max_cliques();
     void compute_additive_vars();
 
-    void _add_pattern(const std::vector<int> &pattern);
     // does not recompute max_cliques
+    void _add_pattern(const std::vector<int> &pattern);
+
     void dump_cgraph(const std::vector<std::vector<int> > &cgraph) const;
+    void dump_cliques() const;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
