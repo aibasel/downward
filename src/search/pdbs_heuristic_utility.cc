@@ -3,9 +3,15 @@
 #include "option_parser.h"
 #include "utilities.h"
 
+#include <vector>
+
 using namespace std;
 
-void check_parsed_pdbs(OptionParser &parser, vector<vector<int> > &pattern_collection) {
+void parse_patterns(OptionParser &parser, Options &opts) {
+    parser.add_list_option<vector<int> >("patterns", vector<vector<int> >(), "the pattern collection");
+    opts = parser.parse();
+    vector<vector<int> > pattern_collection = opts.get_list<vector<int> >("patterns");
+
     // TODO: Distinguish the case that no collection was specified by
     // the user from the case that an empty collection was explicitly
     // specified by the user (see issue236).
@@ -36,5 +42,14 @@ void check_parsed_pdbs(OptionParser &parser, vector<vector<int> > &pattern_colle
         for (size_t i = 0; i < pattern_collection.size(); ++i) {
             cout << pattern_collection[i] << endl;
         }
+    }
+
+    if (!parser.dry_run() && pattern_collection.empty()) {
+        // TODO: See above (issue236).
+        // Simple selection strategy. Take all goal variables as patterns.
+        for (size_t i = 0; i < g_goal.size(); ++i) {
+            pattern_collection.push_back(vector<int>(1, g_goal[i].first));
+        }
+        opts.set("patterns", pattern_collection);
     }
 }

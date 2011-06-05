@@ -1,10 +1,9 @@
 #ifndef PDBS_HEURISTIC_UTILITY_H
 #define PDBS_HEURISTIC_UTILITY_H
 
-#include <vector>
-
 class OptionParser;
+class Options;
 
-extern void check_parsed_pdbs(OptionParser &parser, std::vector<std::vector<int> > &pattern_collection);
+extern void parse_patterns(OptionParser &parser, Options &opts);
 
 #endif
