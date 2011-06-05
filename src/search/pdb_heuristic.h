@@ -20,10 +20,8 @@ class AbstractOperator {
     // Effect of the operator during regression search on a given abstract state number
     size_t hash_effect;
 public:
-    /*
-    Abstract operators are built from concrete operators. The parameters follow the usual name convetion of SAS+
-    operators, meaning prevail, preconditions and effects are all related to progression search.
-    */
+    /* Abstract operators are built from concrete operators. The parameters follow the usual name convetion of SAS+
+       operators, meaning prevail, preconditions and effects are all related to progression search. */
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
                      const std::vector<std::pair<int, int> > &preconditions,
                      const std::vector<std::pair<int, int> > &effects, int cost,
@@ -62,58 +60,44 @@ class PDBHeuristic : public Heuristic {
     std::vector<size_t> hash_multipliers; // multipliers for each variable for perfect hash function
     void verify_no_axioms_no_cond_effects() const; // we support SAS+ tasks only
 
-    /*
-    Recursive method; called by build_abstract_operators.
-    In the case of a precondition with value = -1 in the conrete operator, all mutliplied out abstract
-    operators are computed, i.e. for all possible values of the variable (with precondition = -1),
-    one abstract operator with a conrete value (!= -1) is computed.
-    */
+    /* Recursive method; called by build_abstract_operators.
+       In the case of a precondition with value = -1 in the conrete operator, all mutliplied out abstract
+       operators are computed, i.e. for all possible values of the variable (with precondition = -1),
+       one abstract operator with a conrete value (!= -1) is computed. */
     void multiply_out(int pos, int op_no, int cost,  std::vector<std::pair<int, int> > &prev_pairs,
                       std::vector<std::pair<int, int> > &pre_pairs,
                       std::vector<std::pair<int, int> > &eff_pairs,
                       const std::vector<std::pair<int, int> > &effects_without_pre,
                       std::vector<AbstractOperator> &operators);
 
-    /*
-    Computes all abstract operators for a given concrete operator (by its global operator number). Initializes
-    datastructures for initial call to recursive method multiyply_out.
-    */
+    /* Computes all abstract operators for a given concrete operator (by its global operator number). Initializes
+       datastructures for initial call to recursive method multiyply_out. */
     void build_abstract_operators(int op_no, std::vector<AbstractOperator> &operators);
 
-    /*
-    Computes all abstract operators, builds the match tree (successor generator) and then does a Dijkstra regression
-    search to compute all final h-values (stored in distances)
-    */
+    /* Computes all abstract operators, builds the match tree (successor generator) and then does a Dijkstra regression
+       search to compute all final h-values (stored in distances). */
     void create_pdb();
 
-    /*
-    Sets thte pattern for the PDB and initializes hash_multipliers and num_states.
-    */
+    // Sets thte pattern for the PDB and initializes hash_multipliers and num_states.
     void set_pattern(const std::vector<int> &pattern);
 
-    /*
-    For a given abstract state (given as index), the according values for each variable in the state are computed
-    and compared with the given pairs of goal variables and values. Returns true iff the state is a goal state.
-    */
+    /* For a given abstract state (given as index), the according values for each variable in the state are computed
+       and compared with the given pairs of goal variables and values. Returns true iff the state is a goal state. */
     bool is_goal_state(const size_t state_index, const std::vector<std::pair<int, int> > &abstract_goal) const;
 
-    /*
-    The given conrete state is used to calculate the index of the according abstract state. This is only used
-    for table lookup (distances) during search.
-    */
+    /* The given conrete state is used to calculate the index of the according abstract state. This is only used
+       for table lookup (distances) during search. */
     size_t hash_index(const State &state) const;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    /*
-    Important: It is assumed that the pattern (passed via Options) is small enough so that the number of
-               abstract states is below numeric_limits<int>::max()
-    Parameters:
-    dump: If set to true, prints the construction time
-    op_costs: Can specify individual operator costs for each operator. This is useful for action cost
-              partitioning. If left empty, default operator costs are used
-    */
+    /* Important: It is assumed that the pattern (passed via Options) is small enough so that the number of
+                  abstract states is below numeric_limits<int>::max()
+       Parameters:
+       dump:     If set to true, prints the construction time.
+       op_costs: Can specify individual operator costs for each operator. This is useful for action cost
+                 partitioning. If left empty, default operator costs are used. */
     PDBHeuristic(const Options &opts,
                  bool dump=true,
                  const std::vector<int> &op_costs=std::vector<int>());
@@ -125,14 +109,13 @@ public:
     // Returns the size (number of abstrat states) of the PDB
     size_t get_size() const { return num_states; }
 
-    // Returns the average h-value over all states, where dead-ends are ignored (they neither increase
-    // the sum of all h-values nor the total number of entries for the mean value calculation). This
-    // is only calculated when called; avoid repeated calls to this method!
+    /* Returns the average h-value over all states, where dead-ends are ignored (they neither increase
+       the sum of all h-values nor the total number of entries for the mean value calculation). This
+       is only calculated when called; avoid repeated calls to this method! */
     double compute_mean_finite_h() const;
 
     // Returns all operators affecting this PDB
     const std::vector<bool> &get_relevant_operators() const { return relevant_operators; }
-    void dump() const;
 };
 
 #endif
