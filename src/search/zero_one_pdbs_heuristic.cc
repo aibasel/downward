@@ -47,7 +47,7 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
 
         approx_mean_finite_h += pdb_heuristic->compute_mean_finite_h();
     }
-    //cout << "All or nothing PDB collection construction time: " << 
+    //cout << "All or nothing PDB collection construction time: " <<
     //timer << endl;
 }
 
@@ -80,24 +80,12 @@ void ZeroOnePDBsHeuristic::dump() const {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_list_option<vector<int> >("patterns", vector<vector<int> >(), "the pattern collection");
     Heuristic::add_options_to_parser(parser);
-    Options opts = parser.parse();
-    vector<vector<int> > pattern_collection = opts.get_list<vector<int> >("patterns");
-
-    check_parsed_pdbs(parser, pattern_collection);
+    Options opts;
+    parse_patterns(parser, opts);
 
     if (parser.dry_run())
         return 0;
-    
-    // TODO: See above (issue236).
-    if (pattern_collection.empty()) {
-        // Simple selection strategy. Take all goal variables as patterns.
-        for (size_t i = 0; i < g_goal.size(); ++i) {
-            pattern_collection.push_back(vector<int>(1, g_goal[i].first));
-        }
-        opts.set("patterns", pattern_collection);
-    }
 
     return new ZeroOnePDBsHeuristic(opts);
 }
