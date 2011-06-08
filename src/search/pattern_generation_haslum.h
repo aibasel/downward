@@ -42,7 +42,11 @@ class PatternGenerationHaslum {
        to the "counting approximation") is smaller than the minimal required improvement, the search is
        stopped. This method uses a vector to store PDBs to avoid recomputation of the same PDBs later.
        This is quite a large time gain, but may use too much memory. Also a set is used to store all
-       patterns in their "normal form" for duplicate detection. */
+       patterns in their "normal form" for duplicate detection.
+       TODO: This mehtod computes all PDBs already for candidate iteration, but for each call of
+       add_pattern for the current CanonicalPDBsHeuristic, only the pattern is passed as an argument
+       and in CanonicalPDBsHeuristic, the PDB is *again* built. One could possibly avoid this by
+       passing the PDB and adapt CanonicalPDBsHeuristic accordingly. */
     void hill_climbing(int average_operator_costs, std::vector<std::vector<int> > &initial_candidate_patterns);
 
     /* Initializes everything for the hill climbing algorithm. Note that the initial pattern collection

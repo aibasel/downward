@@ -1,9 +1,9 @@
 #include "pattern_generation_haslum.h"
+#include "canonical_pdbs_heuristic.h"
 #include "causal_graph.h"
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
-#include "canonical_pdbs_heuristic.h"
 #include "pdb_heuristic.h"
 #include "plugin.h"
 #include "rng.h"
@@ -39,7 +39,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
                                                           vector<vector<int> > &candidate_patterns) {
     int current_size = current_heuristic->get_size();
     for (size_t i = 0; i < pattern.size(); ++i) {
-        // causally relevant variables for current varibale from pattern
+        // causally relevant variables for current variable from pattern
         vector<int> rel_vars = g_causal_graph->get_predecessors(pattern[i]);
         sort(rel_vars.begin(), rel_vars.end());
         vector<int> relevant_vars;
@@ -156,8 +156,7 @@ void PatternGenerationHaslum::hill_climbing(int average_operator_costs,
         // For the new candidate patterns check whether they already have been candidates before and
         // thus already a PDB has been created an inserted into candidate_pdbs.
         for (size_t i = 0; i < new_candidates.size(); ++i) {
-            set<vector<int> >::iterator it = generated_patterns.find(new_candidates[i]);
-            if (it == generated_patterns.end()) {
+            if (generated_patterns.count(new_candidates[i]) == 0) {
                 Options opts;
                 opts.set<int>("cost_type", cost_type);
                 opts.set<vector<int> >("pattern", new_candidates[i]);
@@ -177,8 +176,8 @@ void PatternGenerationHaslum::hill_climbing(int average_operator_costs,
             if (pdb_heuristic == 0) { // candidate pattern is too large
                 continue;
             }
-            // If a candidate's size added to the current collection's size exceed the maximum
-            // collection size, then delete the PDB and let the set's entry point to a null reference
+            // If a candidate's size added to the current collection's size exceeds the maximum
+            // collection size, then delete the PDB and let the PDB's entry point to a null reference
             if (current_heuristic->get_size() + pdb_heuristic->get_size() > collection_max_size) {
                 delete pdb_heuristic;
                 candidate_pdbs[i] = 0;
@@ -216,6 +215,11 @@ void PatternGenerationHaslum::hill_climbing(int average_operator_costs,
         // clear current new_candidates and get successors for next iteration
         new_candidates.clear();
         generate_candidate_patterns(best_pattern, new_candidates);
+
+        // remove from candidate_pdbs the added PDB
+        delete candidate_pdbs[best_pdb_index];
+        candidate_pdbs[best_pdb_index] = 0;
+
         cout << "Actual time (hill climbing iteration): " << timer << endl;
     }
 
@@ -260,6 +264,8 @@ void PatternGenerationHaslum::initialize() {
                                      initial_candidate_patterns.end());
     cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
 
+    // call to this method modifies initial_candidate_patterns (contains the new_candidates
+    // after each call to generate_candidate_patterns)
     hill_climbing(average_operator_costs, initial_candidate_patterns);
 }
 

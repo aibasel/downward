@@ -8,7 +8,7 @@
 class AbstractOperator {
     /*
     This class represents an abstract operator how it is needed for the regression search performed during the
-    PDB-construction. As all astract states are represented as a number, abstract operators don't have "usual"
+    PDB-construction. As all abstract states are represented as a number, abstract operators don't have "usual"
     effects but "hash effects", i.e. the change (as number) the abstract operator implies on a given abstract state.
     */
 
@@ -20,7 +20,7 @@ class AbstractOperator {
     // Effect of the operator during regression search on a given abstract state number
     size_t hash_effect;
 public:
-    /* Abstract operators are built from concrete operators. The parameters follow the usual name convetion of SAS+
+    /* Abstract operators are built from concrete operators. The parameters follow the usual name convention of SAS+
        operators, meaning prevail, preconditions and effects are all related to progression search. */
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
                      const std::vector<std::pair<int, int> > &preconditions,
@@ -28,7 +28,7 @@ public:
                      const std::vector<size_t> &hash_multipliers);
     ~AbstractOperator();
 
-    // Returns variable value pairs which represent the preconditions of the abstract operator in a regresseion search
+    // Returns variable value pairs which represent the preconditions of the abstract operator in a regression search
     const std::vector<std::pair<int, int> > &get_regression_preconditions() const { return regression_preconditions; }
 
     // Returns the effect of the abstract operator in form of a value change (+ or -) to an abstract state index
@@ -48,7 +48,7 @@ class PDBHeuristic : public Heuristic {
     // can be specified to be different from the normal operator costs. this is useful for action cost partitioning
     std::vector<int> operator_costs;
 
-    std::vector<bool> relevant_operators; // stores for all operators wheather they are used in this PDB or not
+    std::vector<bool> relevant_operators; // stores for all operators whether they are relevant to this PDB or not
     size_t num_states; // size of the PDB
 
     // concrete variable are mapped to abstract variables in the order they appear in pattern
@@ -78,14 +78,14 @@ class PDBHeuristic : public Heuristic {
        search to compute all final h-values (stored in distances). */
     void create_pdb();
 
-    // Sets thte pattern for the PDB and initializes hash_multipliers and num_states.
+    // Sets the pattern for the PDB and initializes hash_multipliers and num_states.
     void set_pattern(const std::vector<int> &pattern);
 
     /* For a given abstract state (given as index), the according values for each variable in the state are computed
        and compared with the given pairs of goal variables and values. Returns true iff the state is a goal state. */
     bool is_goal_state(const size_t state_index, const std::vector<std::pair<int, int> > &abstract_goal) const;
 
-    /* The given conrete state is used to calculate the index of the according abstract state. This is only used
+    /* The given concrete state is used to calculate the index of the according abstract state. This is only used
        for table lookup (distances) during search. */
     size_t hash_index(const State &state) const;
 protected:
@@ -110,8 +110,9 @@ public:
     size_t get_size() const { return num_states; }
 
     /* Returns the average h-value over all states, where dead-ends are ignored (they neither increase
-       the sum of all h-values nor the total number of entries for the mean value calculation). This
-       is only calculated when called; avoid repeated calls to this method! */
+       the sum of all h-values nor the total number of entries for the mean value calculation). If pattern
+       is empty or all states are dead-ends, infinity is retuned.
+       Note: This is only calculated when called; avoid repeated calls to this method! */
     double compute_mean_finite_h() const;
 
     // Returns all operators affecting this PDB
