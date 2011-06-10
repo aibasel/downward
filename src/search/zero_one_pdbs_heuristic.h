@@ -7,7 +7,8 @@
 
 class PDBHeuristic;
 class ZeroOnePDBsHeuristic : public Heuristic {
-    double approx_mean_finite_h; // summed up mean h-values of all PDBs
+    // summed up mean finite h-values of all PDBs - this is an approximation only, see get-method
+    double approx_mean_finite_h;
     std::vector<PDBHeuristic *> pattern_databases; // final pattern databases
 protected:
     virtual void initialize();
@@ -16,9 +17,10 @@ public:
     ZeroOnePDBsHeuristic(const Options &opts,
                          const std::vector<int> &op_costs=std::vector<int>());
     virtual ~ZeroOnePDBsHeuristic();
-    /* Returns the sum of all mean finite h-values of every PDB. As in the mean finite h-values
-       of PDBs, dead ends are ignored, this sum is only an approximation of the real mean
-       h-value of the collection (in case where there are dead ends). */
+    /* Returns the sum of all mean finite h-values of every PDB.
+       This is an approximation of the real mean finite h-value of the Heuristic, because dead-ends are ignored for
+       the computation of the mean finite h-values for a PDB. As a consequence, if different PDBs have different states
+       which are dead-end, we do not calculate the real mean h-value for these states. */
     double get_approx_mean_finite_h() const { return approx_mean_finite_h; }
     void dump() const;
 };
