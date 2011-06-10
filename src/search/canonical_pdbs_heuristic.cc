@@ -71,7 +71,6 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
             }
         }
     }
-    //cout << "built cgraph." << endl;
 
     vector<vector<int> > cgraph_max_cliques;
     ::compute_max_cliques(cgraph, cgraph_max_cliques);
@@ -85,9 +84,6 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
         }
         max_cliques.push_back(clique);
     }
-
-    //dump_cgraph(cgraph);
-    //dump_cliques();
 }
 
 void CanonicalPDBsHeuristic::compute_additive_vars() {
