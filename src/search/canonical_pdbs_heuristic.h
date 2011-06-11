@@ -12,9 +12,18 @@ class CanonicalPDBsHeuristic : public Heuristic {
     std::vector<std::vector<PDBHeuristic *> > max_cliques; // final computed max_cliques
     std::vector<std::vector<bool> > are_additive; // pair of variables which are additive
     std::vector<PDBHeuristic *> pattern_databases; // final pattern databases
+    
+ /* Returns true iff the two patterns are additive i.e. there is no operator
+    which affects variables in pattern one as well as in pattern two. */
     bool are_patterns_additive(const std::vector<int> &patt1, 
                                const std::vector<int> &patt2) const;
+ 
+ /* Computation of maximal additive subsets of patterns. A maximal clique represents
+    a maximal additive subset of patterns. */
     void compute_max_cliques();
+    
+ /* Precompution of pairwise additive variables i.e. variables where no operator affects
+    both variables at the same time. */
     void compute_additive_vars();
 
     // does not recompute max_cliques
@@ -28,6 +37,8 @@ protected:
 public:
     CanonicalPDBsHeuristic(const Options &opts);
     virtual ~CanonicalPDBsHeuristic();
+    
+    // add a new pattern to the collection and recomputes maximal cliques
     void add_pattern(const std::vector<int> &pattern);
 
     // checks for all max cliques if they would be additive to this pattern
