@@ -1,7 +1,8 @@
 #ifndef SHRINK_STRATEGY_H
 #define SHRINK_STRATEGY_H
-#include "raz_abstraction.h"
 #include <vector>
+
+class Abstraction;
 
 class ShrinkStrategy {
 public:
