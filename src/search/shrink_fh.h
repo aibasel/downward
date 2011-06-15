@@ -5,6 +5,8 @@
 
 class Options;
 
+typedef vector<AbstractStateRef> Bucket;
+
 //replaces Shrink_{High,Low}_f_{High,Low}_h
 class ShrinkFH : public ShrinkStrategy {
 public:
@@ -12,6 +14,7 @@ public:
     void shrink(Abstraction &abs, bool force, int threshold);
 
 private:
+    void partition_setup(const Abstraction &abs, vector<vector<Bucket > > &states_by_f_and_h, bool all_in_same_bucket);
     bool high_f;
     bool high_h;
 };

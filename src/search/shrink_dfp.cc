@@ -1,9 +1,11 @@
 #include "shrink_dfp.h"
 #include <vector>
 
-void ShrinkDFP::compute_abstraction_dfp_action_cost_support(int target_size,
-                                                              vector<slist<AbstractStateRef> > &collapsed_groups,
-                                                              bool enable_greedy_bisimulation) const {
+using namespace std;
+
+void compute_abstraction_dfp_action_cost_support(int target_size,
+                                                 vector<slist<AbstractStateRef> > &collapsed_groups,
+                                                 bool enable_greedy_bisimulation) const {
 //	cout << "Max h value is: " << max_h << endl;
     //vector<bool> used_h(num_states, false);
     vector<int> h_to_h_group(max_h + 1, -1);
@@ -207,8 +209,5 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(int target_size,
         }
     }
 }
-
-
-using namespace std;
 
 

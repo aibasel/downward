@@ -1,8 +1,7 @@
 #ifndef ABSTRACTION_H
 #define ABSTRACTION_H
 
-#include "mas_heuristic.h" // needed for ShrinkStrategy type;
-// TODO: move that type somewhere else?
+#include "shrink_strategy.h"
 
 #include <ext/slist>
 #include <vector>
@@ -62,6 +61,7 @@ struct AbstractTargetOp {
 };
 
 class Abstraction {
+    friend class ShrinkFH;
     enum {
         QUITE_A_LOT = 1000000000
     };
@@ -143,8 +143,7 @@ public:
     int unique_unlabeled_transitions(const vector<int> &relevant_ops) const;
     bool is_in_varset(int var) const;
 
-    void shrink(int threshold, ShrinkStrategy shrink_strategy, bool force =
-                    false);
+    void shrink(int threshold, bool force = false);
     //    void reduce_operators(int op1, int op2);
     void release_memory();
 

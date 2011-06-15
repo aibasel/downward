@@ -3,7 +3,7 @@
 using namespace std;
 
 
-void ShrinkBisimulation::compute_abstraction_bisimulation_action_cost_support(
+void compute_abstraction_bisimulation_action_cost_support(
     int target_size, vector<slist<AbstractStateRef> > &collapsed_groups,
     bool enable_greedy_bisimulation) const {
     int num_groups;
