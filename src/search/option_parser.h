@@ -45,7 +45,7 @@ class LandmarksGraph;
 template<class Entry>
 class OpenList;
 class SearchEngine;
-
+class ShrinkStrategy;
 
 /*
 The TokenParser<T> wraps functions to parse supported types T.
@@ -109,6 +109,12 @@ template <>
 class TokenParser<ParseTree> {
 public:
     static inline ParseTree parse(OptionParser &p);
+};
+
+template <>
+class TokenParser<ShrinkStrategy *> {
+public:
+    static inline ShrinkStrategy *parse(OptionParser &p);
 };
 
 template <class T>
@@ -349,6 +355,16 @@ SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
     p.error("search engine not found");
     return 0;
 }
+
+ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {
+    ParseTree::iterator pt = p.get_parse_tree()->begin();
+    if (Registry<ShrinkStrategy *>::instance()->contains(pt->value)) {
+        return Registry<ShrinkStrategy *>::instance()->get(pt->value) (p);
+    }
+    p.error("Shrink strategy not found");
+    return 0;
+}
+
 
 Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
