@@ -28,7 +28,8 @@ using namespace __gnu_cxx;
 
 // Construction and destruction
 Exploration::Exploration(const Options &opts)
-    : Heuristic(opts) {
+    : Heuristic(opts),
+      did_write_overflow_warning(false) {
     cout << "Initializing Exploration..." << endl;
 
     // Build propositions.
@@ -67,6 +68,28 @@ Exploration::Exploration(const Options &opts)
 }
 
 Exploration::~Exploration() {
+}
+
+void Exploration::increase_cost(int &cost, int amount) {
+    assert(cost >= 0);
+    assert(amount >= 0);
+    cost += amount;
+    if (cost > MAX_COST_VALUE) {
+        write_overflow_warning();
+        cost = MAX_COST_VALUE;
+    }
+}
+
+void Exploration::write_overflow_warning() {
+    if (!did_write_overflow_warning) {
+        // TODO: Should have a planner-wide warning mechanism to handle
+        // things like this.
+        cout << "WARNING: overflow on LAMA/FF synergy h^add! Costs clamped to "
+             << MAX_COST_VALUE << endl;
+        cout << "WARNING: overflow on LAMA/FF synergy h^add! Costs clamped to "
+             << MAX_COST_VALUE << endl;
+        did_write_overflow_warning = true;
+    }
 }
 
 void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_goals) {
@@ -225,7 +248,7 @@ void Exploration::relaxed_exploration(bool use_h_max = false, bool level_out = f
             if (unary_op->h_add_cost == -2) // operator is not applied
                 continue;
             unary_op->unsatisfied_preconditions--;
-            unary_op->h_add_cost += prop_cost;
+            increase_cost(unary_op->h_add_cost, prop_cost);
             unary_op->h_max_cost = max(prop_cost + unary_op->base_cost,
                                        unary_op->h_max_cost);
             unary_op->depth = max(unary_op->depth, prop->depth);
@@ -273,7 +296,7 @@ int Exploration::compute_hsp_add_heuristic() {
         int prop_cost = goal_propositions[i]->h_add_cost;
         if (prop_cost == -1)
             return DEAD_END;
-        total_cost += prop_cost;
+        increase_cost(total_cost, prop_cost);
     }
     return total_cost;
 }
