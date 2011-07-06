@@ -118,15 +118,6 @@ public:
 };
 
 
-struct HelpElement {
-    HelpElement(std::string k, std::string h, std::string tn);
-    void set_default_value(std::string d_v);
-    std::string kwd;
-    std::string help;
-    std::string type_name;
-    std::string default_value;
-};
-
 
 /*The OptionParser stores a parse tree, and a Options.
 By calling addArgument, the parse tree is partially parsed,
@@ -182,16 +173,19 @@ private:
     ParseTree parse_tree;
     bool dry_run_;
     bool help_mode_;
-    std::vector<HelpElement> helpers;
+
     ParseTree::sibling_iterator next_unparsed_argument;
     std::vector<std::string> valid_keys;
-    std::vector<std::string> helpstrings;
 };
 
 //Definitions of OptionParsers template functions:
 
 template <class T>
 T OptionParser::start_parsing() {
+    if (help_mode_){
+        DocStore::instance()->register_object(parse_tree.begin()->value,
+                                              TypeNamer<T>::name());
+    }
     return TokenParser<T>::parse(*this);
 }
 
@@ -199,13 +193,15 @@ template <class T>
 void OptionParser::add_option(
     std::string k, std::string h) {
     if (help_mode_) {
-        helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
+        ArgumentInfo arg_info = ArgumentInfo(k, h, TypeNamer<T>::name());
         if (opts.contains(k)) {
-            helpers.back().default_value =
+            arg_info.default_value =
                 DefaultValueNamer<T>::toStr(opts.get<T>(k));
         }
+        DocStore::instance()->add_arg(parse_tree.begin()->value,arg_info);
         return;
     }
+
     valid_keys.push_back(k);
 
     ParseTree::sibling_iterator arg = next_unparsed_argument;
