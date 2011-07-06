@@ -382,4 +382,88 @@ private:
     bool help_mode;
 };
 
+
+
+
+struct ArgumentInfo {
+    ArgumentInfo(std::string k, std::string h, std::string t_n)
+    : kwd(k),
+      help(h),
+      type_name(t_n) {
+    }
+    std::string kwd;
+    std::string help;
+    std::string type_name;
+    std::string default_value;
+};
+
+struct ExtraInfo {
+    std::string kwd;
+    std::string help;
+};
+
+//stores documentation for a single type, for use in combination with DocStore
+struct DocStruct {
+    std::string type;
+    std::vector<ArgumentInfo> arg_help;
+    std::vector<ExtraInfo> extra_help;
+};
+
+//stores documentation for types parsed in help mode
+class DocStore {
+public:
+    static DocStore *instance() {
+        if (!instance_) {
+            instance_ = new DocStore();
+        }
+        return instance_;
+    }
+
+    void register_object(std::string k, std::string type) {
+        transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
+        registered[k] = DocStruct();
+        registered[k].type = type;
+    }
+
+    void add_arg(std::string k, const ArgumentInfo arg_info) {
+        registered[k].arg_help.push_back(arg_info);
+    }
+
+    bool contains(std::string k) {
+        return registered.find(k) != registered.end();
+    }
+
+    DocStruct get(std::string k) {
+        return registered[k];
+    }
+
+    std::vector<std::string> get_keys() {
+        std::vector<std::string> keys;
+        for (std::map<std::string, DocStruct>::iterator it =
+                 registered.begin();
+             it != registered.end(); ++it) {
+            keys.push_back(it->first);
+        }
+        return keys;
+    }
+
+    std::vector<std::string> get_types() {
+        std::vector<std::string> types;
+        for (std::map<std::string, DocStruct>::iterator it =
+                 registered.begin();
+             it != registered.end(); ++it) {
+            if(find(types.begin(), types.end(), it->second.type)
+               == types.end()){
+                types.push_back(it->second.type);
+            }   
+        }
+        return types;
+    }
+
+private:
+    DocStore() {}
+    static DocStore *instance_;
+    std::map<std::string, DocStruct> registered;
+};
+
 #endif
