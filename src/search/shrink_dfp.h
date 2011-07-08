@@ -5,8 +5,14 @@
 
 class ShrinkDFP : public ShrinkStrategy {
 public:
-    ShrinkDFP(...);
+    ShrinkDFP();
     void shrink(Abstraction &abs, bool force, int threshold);
+private:
+    void compute_abstraction_dfp_action_cost_support(
+        Abstraction &abs, 
+        int target_size,
+        vector<slist<AbstractStateRef> > &collapsed_groups,
+        bool enable_greedy_bisimulation);
 };
 
 

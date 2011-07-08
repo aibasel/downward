@@ -1,19 +1,25 @@
+#include "abstraction.h"
 #include "shrink_dfp.h"
+#include <cassert>
+#include <ext/slist>
 #include <vector>
 
 using namespace std;
+using namespace __gnu_cxx;
 
-void compute_abstraction_dfp_action_cost_support(int target_size,
-                                                 vector<slist<AbstractStateRef> > &collapsed_groups,
-                                                 bool enable_greedy_bisimulation) const {
-//	cout << "Max h value is: " << max_h << endl;
+void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
+    Abstraction &abs, 
+    int target_size,
+    vector<slist<AbstractStateRef> > &collapsed_groups,
+    bool enable_greedy_bisimulation) {
+//	cout << "Max h value is: " << abs.max_h << endl;
     //vector<bool> used_h(num_states, false);
-    vector<int> h_to_h_group(max_h + 1, -1);
+    vector<int> h_to_h_group(abs.max_h + 1, -1);
     int num_of_used_h = 0;
 
-    for (int state = 0; state < num_states; state++) {
-        int h = goal_distances[state];
-        if (h != QUITE_A_LOT && init_distances[state] != QUITE_A_LOT) {
+    for (int state = 0; state < abs.num_states; state++) {
+        int h = abs.goal_distances[state];
+        if (h != QUITE_A_LOT && abs.init_distances[state] != QUITE_A_LOT) {
             if (h_to_h_group[h] == -1) {
                 h_to_h_group[h] = num_of_used_h;
                 num_of_used_h++;
@@ -22,14 +28,14 @@ void compute_abstraction_dfp_action_cost_support(int target_size,
     }
 //	cout << "Number of used h's: " << num_of_used_h << endl;
 
-    vector<int> state_to_group(num_states);     //vector containing the states' group number.
-    vector<int> group_to_h(num_states, -1);     //vector containing the groups' h-value.
-    for (int state = 0; state < num_states; state++) {
-        int h = goal_distances[state];
-        if (h == QUITE_A_LOT || init_distances[state] == QUITE_A_LOT) {
+    vector<int> state_to_group(abs.num_states);     //vector containing the states' group number.
+    vector<int> group_to_h(abs.num_states, -1);     //vector containing the groups' h-value.
+    for (int state = 0; state < abs.num_states; state++) {
+        int h = abs.goal_distances[state];
+        if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
             state_to_group[state] = -1;
         } else {
-            assert(h >= 0 && h <= max_h);
+            assert(h >= 0 && h <= abs.max_h);
             int group = h_to_h_group[h];
             state_to_group[state] = group;
             group_to_h[group] = group_to_h[group] == -1 ? h : ::min(h, group_to_h[group]);
@@ -38,7 +44,7 @@ void compute_abstraction_dfp_action_cost_support(int target_size,
     int num_groups = num_of_used_h;
     vector<bool> h_group_done(num_of_used_h, false);
     vector<Signature> signatures;
-    signatures.reserve(num_states + 2);
+    signatures.reserve(abs.num_states + 2);
     bool done = false;
 
     while (!done) {
@@ -47,9 +53,9 @@ void compute_abstraction_dfp_action_cost_support(int target_size,
         // Add sentinels to the start and end.
         signatures.clear();
         signatures.push_back(Signature(-1, -1, SuccessorSignature(), -1));
-        for (int state = 0; state < num_states; state++) {
-            int h = goal_distances[state];
-            if (h == QUITE_A_LOT || init_distances[state] == QUITE_A_LOT) {
+        for (int state = 0; state < abs.num_states; state++) {
+            int h = abs.goal_distances[state];
+            if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
                 h = -1;
                 assert(state_to_group[state] == -1);
                 Signature signature(h, state_to_group[state], SuccessorSignature(),
@@ -59,7 +65,7 @@ void compute_abstraction_dfp_action_cost_support(int target_size,
                                 state);
             signatures.push_back(signature);
         }
-        signatures.push_back(Signature(max_h + 1, -1, SuccessorSignature(), -1));
+        signatures.push_back(Signature(abs.max_h + 1, -1, SuccessorSignature(), -1));
         for (int op_no = 0; op_no < transitions_by_op.size(); op_no++) {
             const vector<AbstractTransition> &transitions =
                 transitions_by_op[op_no];
@@ -81,7 +87,7 @@ void compute_abstraction_dfp_action_cost_support(int target_size,
                            succ_sig.end());
         }
 
-        assert(signatures.size() == num_states + 2);
+        assert(signatures.size() == abs.num_states + 2);
         ::sort(signatures.begin(), signatures.end());
         // TODO: More efficient to sort an index set than to shuffle
         //       the whole signatures around?
@@ -89,14 +95,14 @@ void compute_abstraction_dfp_action_cost_support(int target_size,
         int sig_start = 0;
         while (true) {
             int h = signatures[sig_start].h;
-            if (h > max_h) {
+            if (h > abs.max_h) {
                 // We have hit the end sentinel.
-                assert(h == max_h + 1);
+                assert(h == abs.max_h + 1);
                 assert(sig_start + 1 == signatures.size());
                 break;
             }
             assert(h >= -1);
-            assert(h <= max_h);
+            assert(h <= abs.max_h);
 
             if (h == -1 || h_group_done[h_to_h_group[h]]) {
                 while (signatures[sig_start].h == h)
@@ -200,7 +206,7 @@ void compute_abstraction_dfp_action_cost_support(int target_size,
     assert(collapsed_groups.empty());
     collapsed_groups.resize(num_groups);
     // int total_size = 0;
-    for (int state = 0; state < num_states; state++) {
+    for (int state = 0; state < abs.num_states; state++) {
         int group = state_to_group[state];
         if (group != -1) {
             assert(group >= 0 && group < num_groups);
