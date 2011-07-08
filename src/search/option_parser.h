@@ -157,6 +157,11 @@ public:
     void add_list_option(std::string k,
                          std::vector<T> def_val, std::string h = "");
 
+    void document_synopsis(std::string name, std::string note) const;
+    void document_property(std::string property, std::string note) const;
+    void document_language_support(std::string feature, std::string note) const;
+
+
     void error(std::string msg);
     void warning(std::string msg);
 
@@ -193,12 +198,14 @@ template <class T>
 void OptionParser::add_option(
     std::string k, std::string h) {
     if (help_mode_) {
-        ArgumentInfo arg_info = ArgumentInfo(k, h, TypeNamer<T>::name());
+        std::string default_value = "";
         if (opts.contains(k)) {
-            arg_info.default_value =
+            default_value =
                 DefaultValueNamer<T>::toStr(opts.get<T>(k));
         }
-        DocStore::instance()->add_arg(parse_tree.begin()->value,arg_info);
+        DocStore::instance()->add_arg(parse_tree.begin()->value,
+                                      k, h, 
+                                      TypeNamer<T>::name(), default_value);
         return;
     }
 
@@ -300,12 +307,6 @@ Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
         return Predefinitions<Heuristic *>::instance()->get(pt->value);
     } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
         return Registry<Heuristic *>::instance()->get(pt->value) (p);
-        //look if there's a scalar evaluator registered by this name,
-        //and cast (same behaviour as old parser)
-    } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
-        ScalarEvaluator *eval =
-            Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
-        return dynamic_cast<Heuristic *>(eval);
     }
 
     p.error("heuristic " + pt->value + " not found");
@@ -331,6 +332,9 @@ ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
                Predefinitions<Heuristic *>::instance()->get(pt->value);
     } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
         return Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
+    } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
+        return (ScalarEvaluator *)
+            Registry<Heuristic *>::instance()->get(pt->value) (p);
     }
     p.error("scalar evaluator " + pt->value + " not found");
     return 0;

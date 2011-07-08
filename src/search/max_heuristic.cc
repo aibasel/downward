@@ -109,7 +109,7 @@ int HSPMaxHeuristic::compute_heuristic(const State &state) {
     return total_cost;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -120,4 +120,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 
-static Plugin<ScalarEvaluator> _plugin("hmax", _parse);
+static Plugin<Heuristic> _plugin("hmax", _parse);

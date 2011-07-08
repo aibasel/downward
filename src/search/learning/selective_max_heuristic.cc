@@ -556,7 +556,7 @@ void SelectiveMaxHeuristic::print_statistics() const {
     cout << "Total evaluation time: " << eval_time << endl;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>("heuristics");
     parser.add_option<double>("alpha", 1.0, "alpha");
     vector<string> classifier_types;
@@ -608,4 +608,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return heur;
 }
 
-static Plugin<ScalarEvaluator> _plugin("selmax", _parse);
+static Plugin<Heuristic> _plugin("selmax", _parse);

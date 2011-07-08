@@ -531,7 +531,7 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
     return cost;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     // TODO: better documentation what each parameter does
     parser.add_option<int>("max_states", -1, "maximum abstraction size");
     parser.add_option<int>("max_states_before_merge", -1,
@@ -649,4 +649,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     }
 }
 
-static Plugin<ScalarEvaluator> _plugin("mas", _parse);
+static Plugin<Heuristic> _plugin("mas", _parse);

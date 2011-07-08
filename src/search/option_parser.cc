@@ -120,7 +120,8 @@ static void moin_help_output() {
             DocStruct info = ds->get(keys[i]);
             if(info.type.compare(types[n]) != 0)
                 continue;
-            cout << "== " << keys[i] << " ==" << endl
+            cout << "== " << info.full_name << " ==" << endl
+                 << info.synopsis << endl
                  << "{{{" << endl            
                  << keys[i] << "(";
             for(size_t j(0); j != info.arg_help.size(); ++j){
@@ -138,6 +139,24 @@ static void moin_help_output() {
                 cout << " * `" << info.arg_help[j].kwd << "` (" 
                      << info.arg_help[j].type_name << "):"
                      << info.arg_help[j].help << endl;            
+            }
+            //language features:
+            if(!info.support_help.empty()) {
+                cout << "Language features supported: " << endl;
+            }
+            for(size_t j(0); j != info.support_help.size(); ++j) {
+                LanguageSupportInfo ls = info.support_help[j];
+                cout << " * '''" << ls.feature << ":'''"
+                     << ls.description << endl;
+            }
+            //properties:
+            if(!info.property_help.empty()) {
+                cout << "Properties: " << endl;
+            }
+            for(size_t j(0); j != info.property_help.size(); ++j) {
+                PropertyInfo p = info.property_help[j];
+                cout << " * '''" << p.property << ":'''"
+                     << p.description << endl;
             }
             cout << endl;
         }
@@ -420,11 +439,9 @@ void OptionParser::add_enum_option(string k,
         }
         enum_descr += "}";
 
-        ArgumentInfo arg_info = ArgumentInfo(k, h, enum_descr);
-        if (def_val.compare("") != 0) {
-            arg_info.default_value = def_val;
-        }
-        DocStore::instance()->add_arg(parse_tree.begin()->value, arg_info);
+        DocStore::instance()->add_arg(parse_tree.begin()->value,
+                                      k, h,
+                                      enum_descr, def_val);
         return;
     }
 
@@ -489,6 +506,23 @@ Options OptionParser::parse() {
     }
     return opts;
 }
+
+void OptionParser::document_synopsis(string name, string note) const {
+    DocStore::instance()->set_synopsis(parse_tree.begin()->value,
+                                       name, note);
+}
+
+void OptionParser::document_property(string property, string note) const {
+    DocStore::instance()->add_property(parse_tree.begin()->value,
+                                       property, note);
+}
+
+void OptionParser::document_language_support(string feature, 
+                                             string note) const {
+    DocStore::instance()->add_feature(parse_tree.begin()->value,
+                                      feature, note);
+}
+
 
 bool OptionParser::dry_run() const {
     return dry_run_;

@@ -334,7 +334,7 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
     return DEAD_END;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -345,4 +345,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 
-static Plugin<ScalarEvaluator> _plugin("cea", _parse);
+static Plugin<Heuristic> _plugin("cea", _parse);

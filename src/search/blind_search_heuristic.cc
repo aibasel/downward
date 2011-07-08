@@ -32,7 +32,7 @@ int BlindSearchHeuristic::compute_heuristic(const State &state) {
         return min_operator_cost;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
@@ -41,4 +41,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new BlindSearchHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("blind", _parse);
+static Plugin<Heuristic> _plugin("blind", _parse);
