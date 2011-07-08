@@ -4,9 +4,15 @@
 
 class Abstraction;
 
+typedef int AbstractStateRef;
+
 class ShrinkStrategy {
 public:
     virtual void shrink(Abstraction &abs, bool force, int threshold)=0;
+    enum {
+        QUITE_A_LOT = 1000000000
+    };
+
 };
 
 

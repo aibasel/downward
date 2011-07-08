@@ -11,8 +11,6 @@ using namespace __gnu_cxx;
 class State;
 class Operator;
 
-typedef int AbstractStateRef;
-
 struct AbstractTransition {
     AbstractStateRef src;
     AbstractStateRef target;
@@ -62,6 +60,7 @@ struct AbstractTargetOp {
 
 class Abstraction {
     friend class ShrinkFH;
+    friend class ShrinkDFP;
     enum {
         QUITE_A_LOT = 1000000000
     };

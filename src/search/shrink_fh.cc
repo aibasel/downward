@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void compute_abstraction(
+static void compute_abstraction(
     vector<vector<AbstractStateRef> > &buckets, int target_size, vector<
         slist<AbstractStateRef> > &collapsed_groups) {
     typedef slist<AbstractStateRef> Group;
@@ -90,11 +90,6 @@ ShrinkFH::ShrinkFH(const Options& opts)
     :high_f(opts.get<bool>("high_f")),
      high_h(opts.get<bool>("high_h")){   
 }
-
-enum {
-    QUITE_A_LOT = 1000000000
-};
-
 
 void ShrinkFH::partition_setup(const Abstraction &abs, vector<vector<Bucket > > &states_by_f_and_h, bool all_in_same_bucket) {
     states_by_f_and_h.resize(abs.max_f + 1);
