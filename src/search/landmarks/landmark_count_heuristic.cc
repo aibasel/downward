@@ -303,7 +303,7 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 }
 
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<LandmarksGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");
@@ -321,5 +321,5 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new LandmarkCountHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin(
+static Plugin<Heuristic> _plugin(
     "lmcount", _parse);

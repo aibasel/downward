@@ -386,10 +386,12 @@ private:
 
 
 struct ArgumentInfo {
-    ArgumentInfo(std::string k, std::string h, std::string t_n)
-    : kwd(k),
-      help(h),
-      type_name(t_n) {
+    ArgumentInfo(
+        std::string k, std::string h, std::string t_n, std::string def_val)
+       : kwd(k),
+         help(h),
+         type_name(t_n),
+         default_value(def_val) {
     }
     std::string kwd;
     std::string help;
@@ -397,16 +399,32 @@ struct ArgumentInfo {
     std::string default_value;
 };
 
-struct ExtraInfo {
-    std::string kwd;
-    std::string help;
+struct PropertyInfo {
+    PropertyInfo(std::string prop, std::string descr)
+        : property(prop),
+          description(descr) {
+    }
+    std::string property;
+    std::string description;
+};
+
+struct LanguageSupportInfo{
+    LanguageSupportInfo(std::string feat, std::string descr)
+        : feature(feat),
+          description(descr) {
+    }
+    std::string feature;
+    std::string description;
 };
 
 //stores documentation for a single type, for use in combination with DocStore
 struct DocStruct {
     std::string type;
+    std::string full_name;
+    std::string synopsis;
     std::vector<ArgumentInfo> arg_help;
-    std::vector<ExtraInfo> extra_help;
+    std::vector<PropertyInfo> property_help;
+    std::vector<LanguageSupportInfo> support_help;
 };
 
 //stores documentation for types parsed in help mode
@@ -423,11 +441,36 @@ public:
         transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
         registered[k] = DocStruct();
         registered[k].type = type;
+        registered[k].full_name = k;
+        registered[k].synopsis = "";
     }
 
-    void add_arg(std::string k, const ArgumentInfo arg_info) {
-        registered[k].arg_help.push_back(arg_info);
+    void add_arg(std::string k,
+                 std::string arg_name,
+                 std::string help,
+                 std::string type,
+                 std::string default_value) {
+        registered[k].arg_help.push_back(
+            ArgumentInfo(arg_name, help, type, default_value));
     }
+
+    void set_synopsis(std::string k, 
+                      std::string name, std::string description) {
+        registered[k].full_name = name;
+        registered[k].synopsis = description;
+    }
+
+    void add_property(std::string k,
+                      std::string name, std::string description) {
+        registered[k].property_help.push_back(PropertyInfo(name, description));
+    }
+
+    void add_feature(std::string k,
+                     std::string feature, std::string description) {
+        registered[k].support_help.push_back(LanguageSupportInfo(feature,
+                                                                  description));
+    }
+                      
 
     bool contains(std::string k) {
         return registered.find(k) != registered.end();

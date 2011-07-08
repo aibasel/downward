@@ -266,7 +266,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
@@ -276,4 +276,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 
-static Plugin<ScalarEvaluator> _plugin("cg", _parse);
+static Plugin<Heuristic> _plugin("cg", _parse);

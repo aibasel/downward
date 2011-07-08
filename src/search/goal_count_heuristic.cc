@@ -29,7 +29,7 @@ int GoalCountHeuristic::compute_heuristic(const State &state) {
     return unsatisfied_goal_count;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
@@ -39,4 +39,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 
-static Plugin<ScalarEvaluator> _plugin("goalcount", _parse);
+static Plugin<Heuristic> _plugin("goalcount", _parse);
