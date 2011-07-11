@@ -399,23 +399,7 @@ struct ArgumentInfo {
     std::string default_value;
 };
 
-struct PropertyInfo {
-    PropertyInfo(std::string prop, std::string descr)
-        : property(prop),
-          description(descr) {
-    }
-    std::string property;
-    std::string description;
-};
-
-struct LanguageSupportInfo{
-    LanguageSupportInfo(std::string feat, std::string descr)
-        : feature(feat),
-          description(descr) {
-    }
-    std::string feature;
-    std::string description;
-};
+enum ExtendedBoolean {UNDEFINED, NO, YES, SEMI};
 
 //stores documentation for a single type, for use in combination with DocStore
 struct DocStruct {
@@ -423,8 +407,17 @@ struct DocStruct {
     std::string full_name;
     std::string synopsis;
     std::vector<ArgumentInfo> arg_help;
-    std::vector<PropertyInfo> property_help;
-    std::vector<LanguageSupportInfo> support_help;
+
+    //properties of heuristics:
+    ExtendedBoolean admissible;
+    ExtendedBoolean consistent;
+    ExtendedBoolean safe;
+    ExtendedBoolean pref_ops;
+
+    //supported language features:
+    ExtendedBoolean action_costs;
+    ExtendedBoolean axioms;
+    ExtendedBoolean conditional_effects;    
 };
 
 //stores documentation for types parsed in help mode
@@ -459,12 +452,7 @@ public:
         registered[k].full_name = name;
         registered[k].synopsis = description;
     }
-
-    void add_property(std::string k,
-                      std::string name, std::string description) {
-        registered[k].property_help.push_back(PropertyInfo(name, description));
-    }
-
+xslkdfj
     void add_feature(std::string k,
                      std::string feature, std::string description) {
         registered[k].support_help.push_back(LanguageSupportInfo(feature,
