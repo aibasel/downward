@@ -11,7 +11,11 @@ typedef vector<AbstractStateRef> Bucket;
 class ShrinkFH : public ShrinkStrategy {
 public:
     ShrinkFH(const Options &opts);
-    void shrink(Abstraction &abs, bool force, int threshold);
+    void shrink(Abstraction &abs, int threshold, bool force);
+
+    bool is_bisimulation();
+    bool has_memory_limit();
+    bool is_dfp();
 
 private:
     void partition_setup(const Abstraction &abs, vector<vector<Bucket > > &states_by_f_and_h, bool all_in_same_bucket);

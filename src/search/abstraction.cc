@@ -128,7 +128,7 @@ void Abstraction::compute_distances() {
         // The exact strategy doesn't matter much (although it should
         // be efficient) as there is no need to actually shrink.
         //TODO - very important - since no other shrinking strategy supposrt AC yet, I put SHRINK_BISIMULATION_NO_MEMORY_LIMIT...
-        shrink(1, SHRINK_BISIMULATION_NO_MEMORY_LIMIT, true);
+        shrink_strategy->shrink(*this, 1, true);
         //shrink(size(), SHRINK_HIGH_F_LOW_H, true);
     }
 }
@@ -523,35 +523,6 @@ AbstractStateRef CompositeAbstraction::get_abstract_state(const State &state) co
     return lookup_table[state1][state2];
 }
 
-typedef vector<pair<int, int> > SuccessorSignature;
-
-struct Signature {
-    int h;
-    int group;
-    SuccessorSignature succ_signature;
-    int state;
-
-    Signature(int h_, int group_, const SuccessorSignature &succ_signature_,
-              int state_)
-        : h(h_), group(group_), succ_signature(succ_signature_), state(state_) {
-    }
-
-    bool matches(const Signature &other) const {
-        return h == other.h && group == other.group && succ_signature
-               == other.succ_signature;
-    }
-
-    bool operator<(const Signature &other) const {
-        if (h != other.h)
-            return h < other.h;
-        if (group != other.group)
-            return group < other.group;
-        if (succ_signature != other.succ_signature)
-            return succ_signature < other.succ_signature;
-        return state < other.state;
-    }
-};
-
 //Given two successive signatures and the pairs of labels that should be reduced, returns true if the source states are bisimilar (after reducing the labels)
 bool Abstraction::are_bisimilar_wrt_label_reduction(
     const vector<pair<int, int> > &succ_sig1,
@@ -823,7 +794,7 @@ void Abstraction::shrink(int threshold, bool force) {
      Does nothing if threshold >= size() unless force is true (in
      which case it only prunes irrelevant and unreachable states).
      */
-    shrink_strategy.shrink(*this, force, threshold);
+    shrink_strategy->shrink(*this, threshold, force);
 }
 
 bool Abstraction::is_solvable() const {

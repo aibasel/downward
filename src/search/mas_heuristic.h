@@ -27,7 +27,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     int max_abstract_states_before_merge;       //TODO - removed const for raz's double abstraction experiment
     const int abstraction_count;
     MergeStrategy merge_strategy;                       //TODO - removed const for raz's double abstraction experiment
-    ShrinkStrategy shrink_strategy;                     //TODO - removed const for raz's double abstraction experiment
+    ShrinkStrategy *shrink_strategy;                     //TODO - removed const for raz's double abstraction experiment
     const bool use_label_simplification;
     const bool use_expensive_statistics;
     const double merge_mixing_parameter;

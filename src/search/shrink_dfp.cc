@@ -66,9 +66,9 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
             signatures.push_back(signature);
         }
         signatures.push_back(Signature(abs.max_h + 1, -1, SuccessorSignature(), -1));
-        for (int op_no = 0; op_no < transitions_by_op.size(); op_no++) {
+        for (int op_no = 0; op_no < abs.transitions_by_op.size(); op_no++) {
             const vector<AbstractTransition> &transitions =
-                transitions_by_op[op_no];
+                abs.transitions_by_op[op_no];
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &trans = transitions[i];
                 int src_group = state_to_group[trans.src];
@@ -135,7 +135,7 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
                     num_new_groups_greedy_bisimulation++;
                 } else if (prev_sig.succ_signature != curr_sig.succ_signature) {
                     num_new_groups++;
-                    if (enable_greedy_bisimulation && !are_bisimilar(
+                    if (enable_greedy_bisimulation && !abs.are_bisimilar(
                             prev_sig.succ_signature, curr_sig.succ_signature,
                             false, enable_greedy_bisimulation, false, group_to_h, h, curr_sig.h, vector<pair<int,
                                                                                                              int> > ()))
@@ -181,7 +181,7 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
                         new_group_no = curr_sig.group;
                     } else if ((!use_greedy_bisimulation && prev_sig.succ_signature
                                 != curr_sig.succ_signature) || (use_greedy_bisimulation
-                                                                && !are_bisimilar(prev_sig.succ_signature,
+                                                                && !abs.are_bisimilar(prev_sig.succ_signature,
                                                                                   curr_sig.succ_signature, false,
                                                                                   use_greedy_bisimulation,
                                                                                   false, group_to_h, h, curr_sig.h,
@@ -217,3 +217,14 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
 }
 
 
+bool ShrinkDFP::has_memory_limit() {
+    return true;
+}
+
+bool ShrinkDFP::is_bisimulation() {
+    return is_bisim;
+}
+
+bool ShrinkDFP::is_dfp() {
+    return true;
+}

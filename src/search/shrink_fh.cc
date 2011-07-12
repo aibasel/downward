@@ -115,7 +115,7 @@ void ShrinkFH::partition_setup(const Abstraction &abs, vector<vector<Bucket > > 
 }
 
 
-void ShrinkFH::shrink(Abstraction &abs, bool force, int threshold){
+void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
     assert(threshold >= 1);
     assert(abs.is_solvable());
     if (abs.size() > threshold)
@@ -155,6 +155,17 @@ void ShrinkFH::shrink(Abstraction &abs, bool force, int threshold){
 }
 
 
+bool ShrinkFH::has_memory_limit() {
+    return true;
+}
+
+bool ShrinkFH::is_bisimulation() {
+    return false;
+}
+
+bool ShrinkFH::is_dfp() {
+    return false;
+}
 
 static ShrinkStrategy *_parse(OptionParser &parser){
     parser.add_option<bool>("high_f", "start with high f values");

@@ -1,24 +1,31 @@
+#include "abstraction.h"
 #include "shrink_bisimulation.h"
+#include <cassert>
 
 using namespace std;
 
+ShrinkBisimulation::ShrinkBisimulation(bool gr, bool ml)
+    : greedy(gr),
+      has_mem_limit(ml) {
+}
 
-void compute_abstraction_bisimulation_action_cost_support(
+void ShrinkBisimulation::compute_abstraction_action_cost_support(
+    Abstraction &abs,
     int target_size, vector<slist<AbstractStateRef> > &collapsed_groups,
     bool enable_greedy_bisimulation) const {
     int num_groups;
-    vector<int> state_to_group(num_states);
-    vector<int> group_to_h(num_states, -1);
+    vector<int> state_to_group(abs.num_states);
+    vector<int> group_to_h(abs.num_states, -1);
 
     bool exists_goal_state = false;
     bool exists_non_goal_state = false;
-    for (int state = 0; state < num_states; state++) {
-        int h = goal_distances[state];
-        bool isGoalState = goal_states[state];
-        if (h == QUITE_A_LOT || init_distances[state] == QUITE_A_LOT) {
+    for (int state = 0; state < abs.num_states; state++) {
+        int h = abs.goal_distances[state];
+        bool isGoalState = abs.goal_states[state];
+        if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
             state_to_group[state] = -1;
         } else {
-            assert(h >= 0 && h <= max_h);
+            assert(h >= 0 && h <= abs.max_h);
             if (h == 0 && isGoalState) {
                 state_to_group[state] = 0;
                 group_to_h[0] = 0;
@@ -39,10 +46,10 @@ void compute_abstraction_bisimulation_action_cost_support(
 
     //Now all goal states are in group 0 and non-goal states are in 1. Unreachable states are in -1.
 
-    vector<bool> group_done(num_states, false);
+    vector<bool> group_done(abs.num_states, false);
 
     vector<Signature> signatures;
-    signatures.reserve(num_states + 2);
+    signatures.reserve(abs.num_states + 2);
 
     bool done = false;
     while (!done) {
@@ -52,9 +59,9 @@ void compute_abstraction_bisimulation_action_cost_support(
         // Add sentinels to the start and end.
         signatures.clear();
         signatures.push_back(Signature(-1, -1, SuccessorSignature(), -1));
-        for (int state = 0; state < num_states; state++) {
-            int h = goal_distances[state];
-            if (h == QUITE_A_LOT || init_distances[state] == QUITE_A_LOT) {
+        for (int state = 0; state < abs.num_states; state++) {
+            int h = abs.goal_distances[state];
+            if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
                 h = -1;
                 assert(state_to_group[state] == -1);
             }
@@ -62,13 +69,13 @@ void compute_abstraction_bisimulation_action_cost_support(
                                 state);
             signatures.push_back(signature);
         }
-        signatures.push_back(Signature(max_h + 1, -1, SuccessorSignature(), -1));
+        signatures.push_back(Signature(abs.max_h + 1, -1, SuccessorSignature(), -1));
 
         //Adds to the succ_sig of every signature, the pair <op_no, target_group>
         //reachable by the transition op_no on the state of the signature.
-        for (int op_no = 0; op_no < transitions_by_op.size(); op_no++) {
+        for (int op_no = 0; op_no < abs.transitions_by_op.size(); op_no++) {
             const vector<AbstractTransition> &transitions =
-                transitions_by_op[op_no];
+                abs.transitions_by_op[op_no];
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &trans = transitions[i];
                 int src_group = state_to_group[trans.src];
@@ -96,7 +103,7 @@ void compute_abstraction_bisimulation_action_cost_support(
                     : min(signatures[i].h,
                           group_to_h[signatures[i].group]);
         }
-        assert(signatures.size() == num_states + 2);
+        assert(signatures.size() == abs.num_states + 2);
         ::sort(signatures.begin(), signatures.end());
         // TODO: More efficient to sort an index set than to shuffle
         //       the whole signatures around?
@@ -107,14 +114,14 @@ void compute_abstraction_bisimulation_action_cost_support(
             int h = signatures[sig_start].h;
             int group = signatures[sig_start].group;
             // cout << sig_start << " *** " << h << endl;
-            if (h > max_h) {
+            if (h > abs.max_h) {
                 // We have hit the end sentinel.
-                assert(h == max_h + 1);
+                assert(h == abs.max_h + 1);
                 assert(sig_start + 1 == signatures.size());
                 break;
             }
             assert(h >= -1);
-            assert(h <= max_h);
+            assert(h <= abs.max_h);
 
             //this code skips all groups that cannot be further split
             //(due to memory restrictions).
@@ -150,7 +157,7 @@ void compute_abstraction_bisimulation_action_cost_support(
                     num_new_groups_label_reduction_or_greedy_bisimulation++;
                 } else if (prev_sig.succ_signature != curr_sig.succ_signature) {
                     num_new_groups++;
-                    if (enable_greedy_bisimulation && !are_bisimilar(
+                    if (enable_greedy_bisimulation && !abs.are_bisimilar(
                             prev_sig.succ_signature, curr_sig.succ_signature,
                             false, enable_greedy_bisimulation, false,
                             group_to_h, group_to_h[prev_sig.group],
@@ -196,7 +203,7 @@ void compute_abstraction_bisimulation_action_cost_support(
                                 && prev_sig.succ_signature
                                 != curr_sig.succ_signature)
                                || (use_label_reduction_or_greedy_bisimulation
-                                   && !are_bisimilar(prev_sig.succ_signature,
+                                   && !abs.are_bisimilar(prev_sig.succ_signature,
                                                      curr_sig.succ_signature, false,
                                                      enable_greedy_bisimulation, false,
                                                      group_to_h,
@@ -222,7 +229,7 @@ void compute_abstraction_bisimulation_action_cost_support(
     assert(collapsed_groups.empty());
     collapsed_groups.resize(num_groups);
     // int total_size = 0;
-    for (int state = 0; state < num_states; state++) {
+    for (int state = 0; state < abs.num_states; state++) {
         int group = state_to_group[state];
         if (group != -1) {
             assert(group >= 0 && group < num_groups);
@@ -244,3 +251,15 @@ void compute_abstraction_bisimulation_action_cost_support(
 //		cout << "NUM OF GEQ 1 GROUPS: " << geq_one_sized_groups << endl;
 }
 
+
+bool ShrinkBisimulation::has_memory_limit() {
+    return has_mem_limit;
+}
+
+bool ShrinkBisimulation::is_bisimulation() {
+    return true;
+}
+
+bool ShrinkBisimulation::is_dfp() {
+    return false;
+}
