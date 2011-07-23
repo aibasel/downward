@@ -8,6 +8,8 @@ typedef int AbstractStateRef;
 
 class ShrinkStrategy {
 public:
+    ShrinkStrategy();
+    virtual ~ShrinkStrategy();
     virtual void shrink(Abstraction &abs, int threshold, bool force)=0;
     enum {
         QUITE_A_LOT = 1000000000

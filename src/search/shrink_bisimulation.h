@@ -6,6 +6,7 @@
 class ShrinkBisimulation : public ShrinkStrategy {
 public:
     ShrinkBisimulation(bool greedy, bool memory_limit);
+    ~ShrinkBisimulation();
     void shrink(Abstraction &abs, int threshold, bool force);
 
     bool is_bisimulation();
@@ -13,13 +14,12 @@ public:
     bool is_dfp();
 
 private:
-    void compute_abstraction_action_cost_support(
+    void compute_abstraction(
         Abstraction &abs,
-        int target_size, vector<slist<AbstractStateRef> > &collapsed_groups,
-        bool enable_greedy_bisimulation) const;
-    bool has_mem_limit;
+        int target_size, 
+        vector<slist<AbstractStateRef> > &collapsed_groups) const;
     bool greedy;
-
+    bool has_mem_limit;
 };
 
 

@@ -567,7 +567,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     int max_states = opts.get<int>("max_states");
     int max_states_before_merge = opts.get<int>("max_states_before_merge");
     MergeStrategy merge_strategy = MergeStrategy(opts.get_enum("merge_strategy"));
-    ShrinkStrategy shrink_strategy = ShrinkStrategy(opts.get_enum("shrink_strategy"));
     double merge_mixing_parameter = opts.get<double>("merge_mixing_parameter");
 
 
@@ -609,10 +608,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         exit(2);
     }
 
-    if (shrink_strategy < 0 || shrink_strategy >= MAX_SHRINK_STRATEGY) {
-        cerr << "error: unknown shrink strategy: " << shrink_strategy << endl;
-        exit(2);
-    }
     if ((merge_strategy == MERGE_LEVEL_THEN_INVERSE || merge_strategy
          == MERGE_INVERSE_THEN_LEVEL) && (merge_mixing_parameter < 0.0
                                           || merge_mixing_parameter > 1.0)) {

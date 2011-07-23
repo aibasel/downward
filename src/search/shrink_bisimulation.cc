@@ -1,6 +1,7 @@
 #include "abstraction.h"
 #include "shrink_bisimulation.h"
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 
@@ -9,10 +10,28 @@ ShrinkBisimulation::ShrinkBisimulation(bool gr, bool ml)
       has_mem_limit(ml) {
 }
 
-void ShrinkBisimulation::compute_abstraction_action_cost_support(
+ShrinkBisimulation::~ShrinkBisimulation() {
+}
+
+void ShrinkBisimulation::shrink(Abstraction &abs, int threshold, bool force) {
+    assert(threshold >= 1);
+    assert(abs.is_solvable());
+    if (abs.size() > threshold)
+        cout << "shrink by " << (abs.size() - threshold) << " nodes" << " (from "
+             << abs.size() << " to " << threshold << ")" << endl;
+    else if (force)
+        cout << "shrink forced: prune unreachable/irrelevant states" << endl;
+    else
+        return;
+
+    vector<slist<AbstractStateRef> > collapsed_groups;
+
+    compute_abstraction(abs, QUITE_A_LOT, collapsed_groups);
+}
+
+void ShrinkBisimulation::compute_abstraction(
     Abstraction &abs,
-    int target_size, vector<slist<AbstractStateRef> > &collapsed_groups,
-    bool enable_greedy_bisimulation) const {
+    int target_size, vector<slist<AbstractStateRef> > &collapsed_groups) const {
     int num_groups;
     vector<int> state_to_group(abs.num_states);
     vector<int> group_to_h(abs.num_states, -1);
@@ -87,7 +106,7 @@ void ShrinkBisimulation::compute_abstraction_action_cost_support(
                 }
             }
         }
-        if (enable_greedy_bisimulation)
+        if (greedy)
             for (int i = 0; i < group_to_h.size(); i++)             //TODO- this is something I added (update of the group_to_h)
                 group_to_h[i] = -1;
 
@@ -97,7 +116,7 @@ void ShrinkBisimulation::compute_abstraction_action_cost_support(
             succ_sig.erase(::unique(succ_sig.begin(), succ_sig.end()),
                            succ_sig.end());
             //TODO - this is something I added (update of the group_to_h)
-            if (enable_greedy_bisimulation && signatures[i].group > -1)
+            if (greedy && signatures[i].group > -1)
                 group_to_h[signatures[i].group] =
                     group_to_h[signatures[i].group] == -1 ? signatures[i].h
                     : min(signatures[i].h,
@@ -157,9 +176,9 @@ void ShrinkBisimulation::compute_abstraction_action_cost_support(
                     num_new_groups_label_reduction_or_greedy_bisimulation++;
                 } else if (prev_sig.succ_signature != curr_sig.succ_signature) {
                     num_new_groups++;
-                    if (enable_greedy_bisimulation && !abs.are_bisimilar(
+                    if (greedy && !abs.are_bisimilar(
                             prev_sig.succ_signature, curr_sig.succ_signature,
-                            false, enable_greedy_bisimulation, false,
+                            false, greedy, false,
                             group_to_h, group_to_h[prev_sig.group],
                             group_to_h[curr_sig.group],
                             vector<pair<int, int> > ()))                            //TODO - changed h to group_to_h
@@ -169,13 +188,13 @@ void ShrinkBisimulation::compute_abstraction_action_cost_support(
             assert(sig_end > sig_start);
 
             bool use_label_reduction_or_greedy_bisimulation =
-                enable_greedy_bisimulation;
+                greedy;
 
             if (num_groups - num_old_groups + num_new_groups > target_size) {
                 // Can't split the group -- would exceed
                 // bound on abstract state number.
                 group_done[group] = true;
-                if (enable_greedy_bisimulation && num_groups - num_old_groups
+                if (greedy && num_groups - num_old_groups
                     + num_new_groups_label_reduction_or_greedy_bisimulation
                     <= target_size) {
                     use_label_reduction_or_greedy_bisimulation = true;
@@ -205,7 +224,7 @@ void ShrinkBisimulation::compute_abstraction_action_cost_support(
                                || (use_label_reduction_or_greedy_bisimulation
                                    && !abs.are_bisimilar(prev_sig.succ_signature,
                                                      curr_sig.succ_signature, false,
-                                                     enable_greedy_bisimulation, false,
+                                                     greedy, false,
                                                      group_to_h,
                                                      group_to_h[prev_sig.group],
                                                      group_to_h[curr_sig.group], vector<
