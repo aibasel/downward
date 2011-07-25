@@ -11,6 +11,7 @@ using namespace std;
 #include "globals.h"
 #include "operator.h"
 #include "operator_registry.h"
+#include "shrink_bisimulation.h"
 #include "timer.h"
 
 /* Implementation note: Transitions are grouped by their operators,
@@ -128,7 +129,8 @@ void Abstraction::compute_distances() {
         // The exact strategy doesn't matter much (although it should
         // be efficient) as there is no need to actually shrink.
         //TODO - very important - since no other shrinking strategy supposrt AC yet, I put SHRINK_BISIMULATION_NO_MEMORY_LIMIT...
-        shrink_strategy->shrink(*this, 1, true);
+        ShrinkBisimulation nolimit(false, false);
+        nolimit.shrink(*this, 1, true);
         //shrink(size(), SHRINK_HIGH_F_LOW_H, true);
     }
 }
