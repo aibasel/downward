@@ -152,7 +152,6 @@ public:
     void dump_transitions_by_src() const;
 
     void set_shrink_strategy(ShrinkStrategy *s) {
-        delete shrink_strategy;  //is this wise?
         shrink_strategy = s;
     }
 

@@ -248,8 +248,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         int other_new_size = new_sizes.second;
 
 /*        bool
-            is_no_mem_limit_bisimulation_strategy = s
-            (shrink_strategy == SHRINK_BISIMULATION_NO_MEMORY_LIMIT
+          is_no_mem_limit_bisimulation_strategy = s
+             (shrink_strategy == SHRINK_BISIMULATION_NO_MEMORY_LIMIT
              || shrink_strategy
              == SHRINK_GREEDY_BISIMULATION_NO_MEMORY_LIMIT
              || shrink_strategy
@@ -263,15 +263,18 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             cout << "atomic abstraction too big; must shrink" << endl;
             if (!shrink_strategy->has_memory_limit() 
                 || !shrink_strategy->is_bisimulation())
-                other_abstraction->shrink(other_new_size);
-            else
-                other_abstraction->shrink(1000000000);                 //TODO - (changed from SHRINK_DFP)changing this to SHRINK_BISIMULATION_NO_MEM_LIMIT could help...
+                shrink_strategy->shrink(*other_abstraction, other_new_size);
+            else {
+                ShrinkBisimulation nolimit(false, false);
+                nolimit.shrink(*other_abstraction, 1000000000, false);
+            }
         }
         //TODO - always shrink non-atomic abstraction in no memory limit strategies
         if (new_size != abstraction->size()
             || !shrink_strategy->has_memory_limit() 
             || !shrink_strategy->is_bisimulation()) {
-            abstraction->shrink(new_size, shrink_strategy);
+            cout << abstraction << endl;
+            shrink_strategy->shrink(*abstraction, new_size);
             abstraction->statistics(use_expensive_statistics);
         }
         //TODO - use this for finding reducible labels!!!
@@ -536,6 +539,7 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     // TODO: better documentation what each parameter does
+    parser.add_option<ShrinkStrategy *>("shrink_strategy", "shrink strategy");
     parser.add_option<int>("max_states", -1, "maximum abstraction size");
     parser.add_option<int>("max_states_before_merge", -1,
                            "maximum abstraction size for factors of synchronized product");
@@ -553,7 +557,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("merge_strategy", merge_strategies,
                            "MERGE_LINEAR_CG_GOAL_LEVEL",
                            "merge strategy");
-    parser.add_option<ShrinkStrategy *>("shrink_strategy", "shrink strategy");
     parser.add_option<bool>("simplify_labels", true, "enable label simplification");
     parser.add_option<bool>("expensive_statistics", false, "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)");

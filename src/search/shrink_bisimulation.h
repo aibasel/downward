@@ -7,7 +7,7 @@ class ShrinkBisimulation : public ShrinkStrategy {
 public:
     ShrinkBisimulation(bool greedy, bool memory_limit);
     ~ShrinkBisimulation();
-    void shrink(Abstraction &abs, int threshold, bool force);
+    void shrink(Abstraction &abs, int threshold, bool force = false);
 
     bool is_bisimulation();
     bool has_memory_limit();
