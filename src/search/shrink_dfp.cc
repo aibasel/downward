@@ -1,11 +1,40 @@
 #include "abstraction.h"
+#include "option_parser.h"
+#include "plugin.h"
 #include "shrink_dfp.h"
 #include <cassert>
 #include <ext/slist>
+#include <ios>
 #include <vector>
 
 using namespace std;
 using namespace __gnu_cxx;
+
+ShrinkDFP::ShrinkDFP(const Options &opts)
+    : dfp_style(DFPStyle(opts.get_enum("style"))) {
+}
+
+ShrinkDFP::~ShrinkDFP() {
+}
+
+void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) {
+    assert(threshold >= 1);
+    assert(abs.is_solvable());
+
+    if (abs.size() > threshold)
+        cout << "shrink by " << (abs.size() - threshold) 
+             << " nodes" << " (from "
+             << abs.size() << " to " << threshold << ")" << endl;
+    else if (force)
+        cout << "shrink forced: prune unreachable/irrelevant states" << endl;
+    else
+        cout << "shrink due to bisimulation strategy" << endl;
+
+    vector<slist<AbstractStateRef> > collapsed_groups;
+    bool greedy_bisim = (dfp_style == EnableGreedyBisimulation);
+    compute_abstraction_dfp_action_cost_support(
+        abs, threshold, collapsed_groups, greedy_bisim);
+}
 
 void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
     Abstraction &abs, 
@@ -222,9 +251,27 @@ bool ShrinkDFP::has_memory_limit() {
 }
 
 bool ShrinkDFP::is_bisimulation() {
-    return is_bisim;
+    return true;
 }
 
 bool ShrinkDFP::is_dfp() {
     return true;
 }
+
+
+static ShrinkStrategy *_parse(OptionParser &parser) {
+    vector<string> styles;
+    styles.push_back("DEFAULT");
+    styles.push_back("EnableGreedyBisimulation");
+    parser.add_enum_option(
+        "style", styles, "DEFAULT", "what kind of dfp strategy");
+    Options opts = parser.parse();
+
+    if(!parser.dry_run())
+        return new ShrinkDFP(opts);
+    else
+        return 0;
+}
+
+static Plugin<ShrinkStrategy> _plugin("shrink_dfp", _parse);
+

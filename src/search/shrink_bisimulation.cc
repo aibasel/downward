@@ -1,4 +1,6 @@
 #include "abstraction.h"
+#include "option_parser.h"
+#include "plugin.h"
 #include "shrink_bisimulation.h"
 #include <cassert>
 #include <iostream>
@@ -8,6 +10,11 @@ using namespace std;
 ShrinkBisimulation::ShrinkBisimulation(bool gr, bool ml)
     : greedy(gr),
       has_mem_limit(ml) {
+}
+
+ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
+    : greedy(opts.get<bool>("greedy")),
+      has_mem_limit(opts.get<bool>("memory_limit")) {
 }
 
 ShrinkBisimulation::~ShrinkBisimulation() {
@@ -282,3 +289,17 @@ bool ShrinkBisimulation::is_bisimulation() {
 bool ShrinkBisimulation::is_dfp() {
     return false;
 }
+
+
+static ShrinkStrategy *_parse(OptionParser &parser) {
+    parser.add_option<bool>("greedy");
+    parser.add_option<bool>("memory_limit");
+    Options opts = parser.parse();
+
+    if(!parser.dry_run())
+        return new ShrinkBisimulation(opts);
+    else
+        return 0;
+}
+
+static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
