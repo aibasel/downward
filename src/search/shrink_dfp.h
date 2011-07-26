@@ -3,9 +3,14 @@
 #include "shrink_strategy.h"
 #include <vector>
 
+class Options;
+
+enum DFPStyle {DEFAULT, EnableGreedyBisimulation};
+
 class ShrinkDFP : public ShrinkStrategy {
 public:
-    ShrinkDFP();
+    ShrinkDFP(const Options &opts);
+    ~ShrinkDFP();
     void shrink(Abstraction &abs, int threshold, bool force = false);
 
     bool is_bisimulation();
@@ -19,7 +24,7 @@ private:
         vector<slist<AbstractStateRef> > &collapsed_groups,
         bool enable_greedy_bisimulation);
 
-    bool is_bisim;
+    DFPStyle dfp_style;
 };
 
 

@@ -3,8 +3,11 @@
 #include "shrink_strategy.h"
 #include <vector>
 
+class Options;
+
 class ShrinkBisimulation : public ShrinkStrategy {
 public:
+    ShrinkBisimulation(const Options &opts);
     ShrinkBisimulation(bool greedy, bool memory_limit);
     ~ShrinkBisimulation();
     void shrink(Abstraction &abs, int threshold, bool force = false);
