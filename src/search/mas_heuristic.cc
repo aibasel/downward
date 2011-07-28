@@ -6,6 +6,7 @@
 #include "option_parser.h"
 #include "plugin.h"
 #include "shrink_bisimulation.h"
+#include "shrink_fh.h"
 #include "state.h"
 #include "timer.h"
 #include "variable_order_finder.h"
@@ -76,7 +77,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
     default:
         abort();
     }
-    cout << endl << "Shrink strategy: reimplement shrink strategy descriptions";
+    cout << endl << "Shrink strategy: " << shrink_strategy->description();
 /*    switch (shrink_strategy) {
     case SHRINK_HIGH_F_LOW_H:
         cout << "high f/low h (main)";
@@ -538,7 +539,6 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     // TODO: better documentation what each parameter does
-    parser.add_option<ShrinkStrategy *>("shrink_strategy", "shrink strategy");
     parser.add_option<int>("max_states", -1, "maximum abstraction size");
     parser.add_option<int>("max_states_before_merge", -1,
                            "maximum abstraction size for factors of synchronized product");
@@ -556,6 +556,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("merge_strategy", merge_strategies,
                            "MERGE_LINEAR_CG_GOAL_LEVEL",
                            "merge strategy");
+    ShrinkStrategy *def_shrink = new ShrinkFH(HIGH, LOW);
+    parser.add_option<ShrinkStrategy *>("shrink_strategy", def_shrink, "shrink strategy");
     parser.add_option<bool>("simplify_labels", true, "enable label simplification");
     parser.add_option<bool>("expensive_statistics", false, "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)");

@@ -31,7 +31,7 @@ void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) {
         cout << "shrink due to bisimulation strategy" << endl;
 
     vector<slist<AbstractStateRef> > collapsed_groups;
-    bool greedy_bisim = (dfp_style == EnableGreedyBisimulation);
+    bool greedy_bisim = (dfp_style == ENABLE_GREEDY_BISIMULATION);
     compute_abstraction_dfp_action_cost_support(
         abs, threshold, collapsed_groups, greedy_bisim);
 }
@@ -258,11 +258,17 @@ bool ShrinkDFP::is_dfp() {
     return true;
 }
 
+string ShrinkDFP::description() {
+    string descr = "Draeger/Finkbeiner/Podelski";
+    if (dfp_style == ENABLE_GREEDY_BISIMULATION)
+        descr += " - greedy bisimulation enabled";
+    return descr;
+}
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
     vector<string> styles;
     styles.push_back("DEFAULT");
-    styles.push_back("EnableGreedyBisimulation");
+    styles.push_back("ENABLE_GREEDY_BISIMULATION");
     parser.add_enum_option(
         "style", styles, "DEFAULT", "what kind of dfp strategy");
     Options opts = parser.parse();
