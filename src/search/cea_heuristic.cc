@@ -335,6 +335,19 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Context-enhanced additive heuristic", "");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional_effects", "supported");
+    parser.document_language_support(
+        "axioms", 
+        "supported (in the sense that the planner won't complain -- "
+        "handling of axioms might be very stupid " 
+        "and even render the heuristic unsafe)");
+    parser.document_property("admissible", "no");
+    parser.document_property("consistent", "no");
+    parser.document_property("safe", "no");
+    parser.document_property("preferred operators", "yes");
+
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 

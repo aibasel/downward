@@ -532,6 +532,22 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Merge-and-shrink heuristic", 
+        "Note: The numbering of the composition and collapsing options "
+        "has changed in July 2010. Please adapt them when using "
+        "old experiment scripts (reduce old value by 1). ");
+    parser.document_language_support(
+        "action costs", 
+        "supported for SHRINK_DFP, SHRINK_BISIMULATION_NO_MEMORY_LIMIT, "
+        "SHRINK_DFP_ENABLE_GREEDY_BISIMULATION_NO_MEMORY_LIMIT");
+    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("axioms", "not supported");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "yes");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
+
     // TODO: better documentation what each parameter does
     parser.add_option<int>("max_states", -1, "maximum abstraction size");
     parser.add_option<int>("max_states_before_merge", -1,
