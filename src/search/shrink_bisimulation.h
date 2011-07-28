@@ -16,6 +16,7 @@ public:
     bool has_memory_limit();
     bool is_dfp();
 
+    std::string description();
 private:
     void compute_abstraction(
         Abstraction &abs,

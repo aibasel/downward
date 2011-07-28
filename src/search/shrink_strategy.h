@@ -1,5 +1,6 @@
 #ifndef SHRINK_STRATEGY_H
 #define SHRINK_STRATEGY_H
+#include <string>
 #include <vector>
 
 class Abstraction;
@@ -18,6 +19,8 @@ public:
     virtual bool has_memory_limit() = 0;
     virtual bool is_bisimulation() = 0;
     virtual bool is_dfp() = 0;
+
+    virtual std::string description() = 0;
 
 };
 

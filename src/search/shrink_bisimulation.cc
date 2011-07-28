@@ -290,6 +290,12 @@ bool ShrinkBisimulation::is_dfp() {
     return false;
 }
 
+string ShrinkBisimulation::description() {
+    string descr = string(greedy ? "greedy " : "") 
+        + "bisimulation - "
+        + (has_mem_limit ? "using" : "disregarding")+" abstraction size limit"; 
+    return descr;
+}
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
     parser.add_option<bool>("greedy");

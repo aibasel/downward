@@ -1,6 +1,7 @@
 #ifndef OPTION_PARSER_UTIL_H
 #define OPTION_PARSER_UTIL_H
 
+#include "shrink_strategy.h"
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -227,6 +228,13 @@ struct TypeNamer<Synergy *> {
     }
 };
 
+template <>
+struct TypeNamer<ShrinkStrategy *> {
+    static std::string name() {
+        return "shrink strategy";
+    }
+};
+
 template <class Entry>
 struct TypeNamer<OpenList<Entry> *> {
     static std::string name() {
@@ -258,6 +266,13 @@ struct DefaultValueNamer<ParseTree> {
     static std::string toStr(ParseTree val) {
         return "implement default value naming for parse trees!"
                + val.begin()->value;
+    }
+};
+
+template <>
+struct DefaultValueNamer<ShrinkStrategy *> {
+    static std::string toStr(ShrinkStrategy *s) {
+        return s->description();
     }
 };
 

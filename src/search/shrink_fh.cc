@@ -91,6 +91,11 @@ ShrinkFH::ShrinkFH(const Options& opts)
      h_start(HighLow(opts.get_enum("highlow_h"))){   
 }
 
+ShrinkFH::ShrinkFH(HighLow fs, HighLow hs)
+    :f_start(fs),
+     h_start(hs) {
+}
+
 void ShrinkFH::partition_setup(const Abstraction &abs, vector<vector<Bucket > > &states_by_f_and_h, bool all_in_same_bucket) {
     states_by_f_and_h.resize(abs.max_f + 1);
     for (int f = 0; f <= abs.max_f; f++)
@@ -131,12 +136,12 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
     vector<Bucket > buckets;
     vector<vector<Bucket > > states_by_f_and_h;
     partition_setup(abs, states_by_f_and_h, false);
-    int f_init = (f_start == High ? abs.max_f : 0);
-    int f_end = (f_start == Low ? 0 : abs.max_f);
+    int f_init = (f_start == HIGH ? abs.max_f : 0);
+    int f_end = (f_start == LOW ? 0 : abs.max_f);
     int f_incr = (f_init > f_end ? -1 : 1);
     for (int f = f_init; f != f_end; f += f_incr){
-        int h_init = (h_start == High ? states_by_f_and_h[f].size() - 1 : 0);
-        int h_end = (h_start == Low ? 0 : states_by_f_and_h[f].size() - 1);
+        int h_init = (h_start == HIGH ? states_by_f_and_h[f].size() - 1 : 0);
+        int h_end = (h_start == LOW ? 0 : states_by_f_and_h[f].size() - 1);
         int h_incr = (h_init > h_end ? -1 : 1);
         for (int h = h_init; h != h_end; h += h_incr) {
             Bucket &bucket = states_by_f_and_h[f][h];
@@ -167,6 +172,12 @@ bool ShrinkFH::is_bisimulation() {
 
 bool ShrinkFH::is_dfp() {
     return false;
+}
+
+string ShrinkFH::description() {
+    string descr = string(f_start == HIGH ? "high" : "low") + " f/"
+        + (h_start == HIGH ? "high" : "low") + " h";
+    return descr;
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser){

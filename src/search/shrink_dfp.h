@@ -5,7 +5,7 @@
 
 class Options;
 
-enum DFPStyle {DEFAULT, EnableGreedyBisimulation};
+enum DFPStyle {DEFAULT, ENABLE_GREEDY_BISIMULATION};
 
 class ShrinkDFP : public ShrinkStrategy {
 public:
@@ -17,6 +17,7 @@ public:
     bool has_memory_limit();
     bool is_dfp();
 
+    std::string description();
 private:
     void compute_abstraction_dfp_action_cost_support(
         Abstraction &abs, 
