@@ -155,8 +155,8 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
     assert(collapsed_groups.size() <= threshold);
 
     abs.apply_abstraction(collapsed_groups);
-    cout << "size of abstraction after shrink: " << abs.size() << ", Threshold: "
-         << threshold << endl;
+    cout << "size of abstraction after shrink: " << abs.size()
+         << ", Threshold: " << threshold << endl;
     assert(abs.size() <= threshold || threshold == 1);
 
 }

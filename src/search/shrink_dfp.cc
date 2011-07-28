@@ -34,6 +34,12 @@ void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) {
     bool greedy_bisim = (dfp_style == ENABLE_GREEDY_BISIMULATION);
     compute_abstraction_dfp_action_cost_support(
         abs, threshold, collapsed_groups, greedy_bisim);
+
+    abs.apply_abstraction(collapsed_groups);
+    cout << "size of abstraction after shrink: " << abs.size()
+         << ", Threshold: " << threshold << endl;
+    assert(abs.size() <= threshold || threshold == 1);
+
 }
 
 void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
