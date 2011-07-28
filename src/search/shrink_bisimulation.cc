@@ -29,11 +29,17 @@ void ShrinkBisimulation::shrink(Abstraction &abs, int threshold, bool force) {
     else if (force)
         cout << "shrink forced: prune unreachable/irrelevant states" << endl;
     else
-        return;
+        cout << "shrink due to bisimulation strategy" << endl;
 
     vector<slist<AbstractStateRef> > collapsed_groups;
 
     compute_abstraction(abs, QUITE_A_LOT, collapsed_groups);
+
+    abs.apply_abstraction(collapsed_groups);
+    cout << "size of abstraction after shrink: " << abs.size()
+         << ", Threshold: " << threshold << endl;
+    assert(abs.size() <= threshold || threshold == 1);
+
 }
 
 void ShrinkBisimulation::compute_abstraction(
