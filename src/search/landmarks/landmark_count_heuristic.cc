@@ -304,9 +304,38 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.add_option<LandmarksGraph *>("lm_graph");
+    parser.document_synopsis("Landmark count heuristic", 
+                             "See also Lama-FF synergy");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support(
+        "conditional_effects", 
+        "supported if admissible=false");
+    parser.document_language_support(
+        "axioms", 
+        "supported if admissible=false"
+        " (but may behave stupidly and be unsafe)");
+    parser.document_property(
+        "admissible", 
+        "yes if admissible=true and there are neither"
+        "conditional effects nor axioms");
+    parser.document_property("consistent", "no");
+    parser.document_property(
+        "safe", 
+        "yes (except maybe on tasks with axioms"
+        " or when using admissible=true on tasks with conditional effects)");
+    parser.document_property("preferred operators", 
+                             "yes (if enabled; see pref_ops option)");
+
+    parser.add_option<LandmarksGraph *>(
+        "lm_graph",
+        "the set of landmarks to use for this heuristic."
+        "The set of landmarks can be specified here, or predefined.");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
-    parser.add_option<bool>("optimal", false, "optimal cost sharing");
+    parser.add_option<bool>("optimal", false, 
+                            "use optimal cost sharing"
+                            "(only makes sense with admissible=true)."
+                            "You need to build the planner with USE_LP=1"
+                            "to use this.");
     parser.add_option<bool>("pref", false, "identify preferred operators");
     parser.add_option<bool>("alm", true, "use action landmarks");
     Heuristic::add_options_to_parser(parser);

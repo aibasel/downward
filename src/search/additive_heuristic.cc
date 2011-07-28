@@ -144,7 +144,6 @@ int AdditiveHeuristic::compute_heuristic(const State &state) {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-/*
     parser.document_synopsis("Additive heuristic", "");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional_effects", "supported");
@@ -157,20 +156,6 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("consistent", "no");
     parser.document_property("safe", "yes for tasks without axioms");
     parser.document_property("preferred operators", "yes");
-*/
-    parser.document_synopsis("Additive heuristic", "");
-    parser.document_supports_action_costs(YES);
-    parser.document_supports_conditional_effects(YES);
-    parser.document_supports_axioms(
-        SEMI,
-        "the planner won't complain, "
-        "but handling of axioms might be very stupid "
-        "and even render the heuristic unsafe");
-    parser.document_admissible(NO);
-    parser.document_consistent(NO);
-    parser.document_safe(SEMI, "only for tasks without axioms");
-    parser.document_pref_ops(YES);
-    
        
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

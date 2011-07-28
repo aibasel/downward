@@ -137,25 +137,25 @@ static void moin_help_output() {
 
             for(size_t j(0); j != info.arg_help.size(); ++j){
                 cout << " * `" << info.arg_help[j].kwd << "` (" 
-                     << info.arg_help[j].type_name << "):"
+                     << info.arg_help[j].type_name << "): "
                      << info.arg_help[j].help << endl;            
             }
             //language features:
             if(!info.support_help.empty()) {
-                cout << "Language features supported: " << endl;
+                cout << "Language features supported:" << endl;
             }
             for(size_t j(0); j != info.support_help.size(); ++j) {
                 LanguageSupportInfo ls = info.support_help[j];
-                cout << " * '''" << ls.feature << ":'''"
+                cout << " * '''" << ls.feature << ": '''"
                      << ls.description << endl;
             }
             //properties:
             if(!info.property_help.empty()) {
-                cout << "Properties: " << endl;
+                cout << "Properties:" << endl;
             }
             for(size_t j(0); j != info.property_help.size(); ++j) {
                 PropertyInfo p = info.property_help[j];
-                cout << " * '''" << p.property << ":'''"
+                cout << " * '''" << p.property << ": '''"
                      << p.description << endl;
             }
             cout << endl;
