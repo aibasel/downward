@@ -788,6 +788,8 @@ void Abstraction::apply_abstraction(
 //In further label reductions, this should at least be done, and if normalize includes
 //the update of the transition by source database, this should be done so the transition
 //by source database is updated.
+
+//TODO: check if this function is still necessary
 void Abstraction::shrink(int threshold, bool force) {
     /* Shrink the abstraction to size threshold.
 
