@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <limits>
+#include <map>
 #include <vector>
 
 using namespace std;
@@ -111,7 +112,13 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
     vector<slist<AbstractStateRef> > collapsed_groups;
 
     vector<Bucket > buckets;
-    ordered_buckets_use_vector(abs, false, buckets);
+    const int max_vector_size = 50;
+    if(abs.max_h > max_vector_size || abs.max_f > max_vector_size) {
+        ordered_buckets_use_map(abs, false, buckets);
+    } else {
+        ordered_buckets_use_vector(abs, false, buckets);
+    }
+
     compute_abstraction(buckets, threshold, collapsed_groups);
     assert(collapsed_groups.size() <= threshold);
 
@@ -122,6 +129,8 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
 
 }
 
+//TODO: find way to decrease code duplication 
+//in the ordered_buckets_use_* methods
 void ShrinkFH::ordered_buckets_use_map(
     const Abstraction &abs,
     bool all_in_same_bucket,
@@ -140,26 +149,68 @@ void ShrinkFH::ordered_buckets_use_map(
             f = h = 0;
         }
 
-        assert(f >= 0 && f < states_by_f_and_h.size());
-        assert(h >= 0 && h < states_by_f_and_h[f].size());
         states_by_f_and_h[f][h].push_back(state);
     }
 
-    int f_init = (f_start == HIGH ? abs.max_f : 0);
-    int f_end = (f_start == LOW ? 0 : abs.max_f);
-    int f_incr = (f_init > f_end ? -1 : 1);
-    for (int f = f_init; f != f_end; f += f_incr){
-        int h_init = (h_start == HIGH ? states_by_f_and_h[f].size() - 1 : 0);
-        int h_end = (h_start == LOW ? 0 : states_by_f_and_h[f].size() - 1);
-        int h_incr = (h_init > h_end ? -1 : 1);
-        for (int h = h_init; h != h_end; h += h_incr) {
-            Bucket &bucket = states_by_f_and_h[f][h];
-            if (!bucket.empty()) {
-                buckets.push_back(Bucket());
-                buckets.back().swap(bucket);
+    if(f_start == HIGH) {
+        map<int, map<int, Bucket > >::reverse_iterator f_it;
+        for(f_it = states_by_f_and_h.rbegin(); 
+            f_it != states_by_f_and_h.rend();
+            f_it++) {
+            if(h_start == HIGH) {
+                map<int, Bucket>::reverse_iterator h_it;
+                for(h_it = f_it->second.rbegin();
+                    h_it != f_it->second.rend();
+                    h_it++) {
+                    Bucket &bucket = h_it->second;
+                    if (!bucket.empty()) { //should always be true
+                        buckets.push_back(Bucket());
+                        buckets.back().swap(bucket);
+                    }
+                }
+            } else {
+                map<int, Bucket>::iterator h_it;
+                for(h_it = f_it->second.begin();
+                    h_it != f_it->second.end();
+                    h_it++) {
+                    Bucket &bucket = h_it->second;
+                    if (!bucket.empty()) { //should always be true
+                        buckets.push_back(Bucket());
+                        buckets.back().swap(bucket);
+                    }
+                }
             }
         }
-    }
+    } else { //if f_start == LOW
+        map<int, map<int, Bucket > >::iterator f_it;
+        for(f_it = states_by_f_and_h.begin(); 
+            f_it != states_by_f_and_h.end();
+            f_it++) {
+            if(h_start == HIGH) {
+                map<int, Bucket>::reverse_iterator h_it;
+                for(h_it = f_it->second.rbegin();
+                    h_it != f_it->second.rend();
+                    h_it++) {
+                    Bucket &bucket = h_it->second;
+                    if (!bucket.empty()) { //should always be true
+                        buckets.push_back(Bucket());
+                        buckets.back().swap(bucket);
+                    }
+                }
+            } else {
+                map<int, Bucket>::iterator h_it;
+                for(h_it = f_it->second.begin();
+                    h_it != f_it->second.end();
+                    h_it++) {
+                    Bucket &bucket = h_it->second;
+                    if (!bucket.empty()) { //should always be true
+                        buckets.push_back(Bucket());
+                        buckets.back().swap(bucket);
+                    }
+                }
+            }
+        }
+    }                       
 }
 
 void ShrinkFH::ordered_buckets_use_vector(

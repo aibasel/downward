@@ -61,7 +61,7 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
             }
         }
     }
-//	cout << "Number of used h's: " << num_of_used_h << endl;
+	cout << "Number of used h's: " << num_of_used_h << endl;
 
     vector<int> state_to_group(abs.num_states);     //vector containing the states' group number.
     vector<int> group_to_h(abs.num_states, -1);     //vector containing the groups' h-value.
@@ -77,6 +77,7 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
         }
     }
     int num_groups = num_of_used_h;
+    assert(num_groups <= target_size);
     vector<bool> h_group_done(num_of_used_h, false);
     vector<Signature> signatures;
     signatures.reserve(abs.num_states + 2);
@@ -238,6 +239,7 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
             sig_start = sig_end;
         }
     }
+
     assert(collapsed_groups.empty());
     collapsed_groups.resize(num_groups);
     // int total_size = 0;
