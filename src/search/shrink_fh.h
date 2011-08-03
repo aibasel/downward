@@ -27,6 +27,11 @@ private:
         bool all_in_same_bucket,
         vector<Bucket> &result);
 
+    void ordered_buckets_use_map(
+        const Abstraction &abs,
+        bool all_in_same_bucket,
+        vector<Bucket> &buckets);
+
     HighLow f_start;
     HighLow h_start;
 };
