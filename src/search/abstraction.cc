@@ -129,6 +129,7 @@ void Abstraction::compute_distances() {
         // The exact strategy doesn't matter much (although it should
         // be efficient) as there is no need to actually shrink.
         //TODO - very important - since no other shrinking strategy supposrt AC yet, I put SHRINK_BISIMULATION_NO_MEMORY_LIMIT...
+        //NOTE(mg) - is the above TODO still valid?
         ShrinkBisimulation nolimit(false, false);
         nolimit.shrink(*this, 1, true);
         cout << "called from compute_distances, by abstraction " << this << endl;

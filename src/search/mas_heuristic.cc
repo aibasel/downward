@@ -212,7 +212,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         if (new_size != abstraction->size()
             || !shrink_strategy->has_memory_limit() 
             || !shrink_strategy->is_bisimulation()) {
-            shrink(*abstraction, new_size);
+            shrink_strategy->shrink(*abstraction, new_size);
             abstraction->statistics(use_expensive_statistics);
         }
         //TODO - use this for finding reducible labels!!!

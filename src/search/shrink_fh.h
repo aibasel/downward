@@ -22,7 +22,11 @@ public:
 
     std::string description();
 private:
-    void partition_setup(const Abstraction &abs, vector<vector<Bucket > > &states_by_f_and_h, bool all_in_same_bucket);
+    void ordered_buckets_use_vector(
+        const Abstraction &abs,
+        bool all_in_same_bucket,
+        vector<Bucket> &result);
+
     HighLow f_start;
     HighLow h_start;
 };
