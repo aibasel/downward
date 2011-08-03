@@ -599,4 +599,4 @@ if __name__ == "__main__":
     sas_task = pddl_to_sas(task)
     with timers.timing("Writing output"):
         sas_task.output(file("output.sas", "w"))
-    print "Done! %s" % timer
+    print "Translator done! %s" % timer
