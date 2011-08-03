@@ -420,7 +420,7 @@ def unsolvable_sas_task(msg):
 
 def pddl_to_sas(task):
     with timers.timing("Instantiating", block=True):
-        (relaxed_reachable, atoms, actions, axioms, 
+        (relaxed_reachable, atoms, actions, axioms,
          reachable_action_params) = instantiate.explore(task)
 
     if not relaxed_reachable:
@@ -433,10 +433,10 @@ def pddl_to_sas(task):
         goal_list = [task.goal]
     for item in goal_list:
         assert isinstance(item, pddl.Literal)
-    
+
     with timers.timing("Computing fact groups", block=True):
         groups, mutex_groups, translation_key = fact_groups.compute_groups(
-            task, atoms, reachable_action_params, 
+            task, atoms, reachable_action_params,
             partial_encoding=USE_PARTIAL_ENCODING)
 
     with timers.timing("Building STRIPS to SAS dictionary"):
@@ -478,6 +478,13 @@ def pddl_to_sas(task):
         write_translation_key(translation_key)
     with timers.timing("Writing mutex key"):
         write_mutex_key(mutex_key)
+
+    print "Translator facts: %d" % sum(sas_task.variables.ranges)
+    print ("Translator derived variables: %d" %
+           len([layer for layer in sas_task.variables.axiom_layers if layer >= 0]))
+    print ("Translator total invariant groups size: %d" %
+           sum(len(group) for group in mutex_key))
+
     return sas_task
 
 def build_mutex_key(strips_to_sas, groups):
