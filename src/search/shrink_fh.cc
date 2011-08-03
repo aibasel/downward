@@ -1,6 +1,7 @@
 #include "abstraction.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "priority_queue.h"
 #include "shrink_fh.h"
 
 #include <cassert>
@@ -8,6 +9,17 @@
 #include <vector>
 
 using namespace std;
+
+
+ShrinkFH::ShrinkFH(const Options& opts)
+    :f_start(HighLow(opts.get_enum("highlow_f"))),
+     h_start(HighLow(opts.get_enum("highlow_h"))){   
+}
+
+ShrinkFH::ShrinkFH(HighLow fs, HighLow hs)
+    :f_start(fs),
+     h_start(hs) {
+}
 
 static void compute_abstraction(
     vector<vector<AbstractStateRef> > &buckets, int target_size, vector<
@@ -85,18 +97,76 @@ static void compute_abstraction(
 }
 
 
+void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
+    assert(threshold >= 1);
+    assert(abs.is_solvable());
+    if (abs.size() > threshold)
+        cout << "shrink by " << (abs.size() - threshold) << " nodes" << " (from "
+             << abs.size() << " to " << threshold << ")" << endl;
+    else if (force)
+        cout << "shrink forced: prune unreachable/irrelevant states" << endl;
+    else
+        return;
 
-ShrinkFH::ShrinkFH(const Options& opts)
-    :f_start(HighLow(opts.get_enum("highlow_f"))),
-     h_start(HighLow(opts.get_enum("highlow_h"))){   
+    vector<slist<AbstractStateRef> > collapsed_groups;
+
+    vector<Bucket > buckets;
+    ordered_buckets_use_vector(abs, false, buckets);
+    compute_abstraction(buckets, threshold, collapsed_groups);
+    assert(collapsed_groups.size() <= threshold);
+
+    abs.apply_abstraction(collapsed_groups);
+    cout << "size of abstraction after shrink: " << abs.size()
+         << ", Threshold: " << threshold << endl;
+    assert(abs.size() <= threshold || threshold == 1);
+
 }
 
-ShrinkFH::ShrinkFH(HighLow fs, HighLow hs)
-    :f_start(fs),
-     h_start(hs) {
+void ShrinkFH::ordered_buckets_use_map(
+    const Abstraction &abs,
+    bool all_in_same_bucket,
+    vector<Bucket> &buckets) {
+    map<int, map<int, Bucket > > states_by_f_and_h;
+    for (AbstractStateRef state = 0; state < abs.num_states; state++) {
+        int g = abs.init_distances[state];
+        int h = abs.goal_distances[state];
+        if (g == QUITE_A_LOT || h == QUITE_A_LOT)
+            continue;
+
+        int f = g + h;
+
+        if (all_in_same_bucket) {
+            // Put all into the same bucket.
+            f = h = 0;
+        }
+
+        assert(f >= 0 && f < states_by_f_and_h.size());
+        assert(h >= 0 && h < states_by_f_and_h[f].size());
+        states_by_f_and_h[f][h].push_back(state);
+    }
+
+    int f_init = (f_start == HIGH ? abs.max_f : 0);
+    int f_end = (f_start == LOW ? 0 : abs.max_f);
+    int f_incr = (f_init > f_end ? -1 : 1);
+    for (int f = f_init; f != f_end; f += f_incr){
+        int h_init = (h_start == HIGH ? states_by_f_and_h[f].size() - 1 : 0);
+        int h_end = (h_start == LOW ? 0 : states_by_f_and_h[f].size() - 1);
+        int h_incr = (h_init > h_end ? -1 : 1);
+        for (int h = h_init; h != h_end; h += h_incr) {
+            Bucket &bucket = states_by_f_and_h[f][h];
+            if (!bucket.empty()) {
+                buckets.push_back(Bucket());
+                buckets.back().swap(bucket);
+            }
+        }
+    }
 }
 
-void ShrinkFH::partition_setup(const Abstraction &abs, vector<vector<Bucket > > &states_by_f_and_h, bool all_in_same_bucket) {
+void ShrinkFH::ordered_buckets_use_vector(
+    const Abstraction &abs,
+    bool all_in_same_bucket,
+    vector<Bucket> &buckets) {
+    vector<vector<Bucket > > states_by_f_and_h;
     states_by_f_and_h.resize(abs.max_f + 1);
     for (int f = 0; f <= abs.max_f; f++)
         states_by_f_and_h[f].resize(min(f, abs.max_h) + 1);
@@ -117,25 +187,7 @@ void ShrinkFH::partition_setup(const Abstraction &abs, vector<vector<Bucket > > 
         assert(h >= 0 && h < states_by_f_and_h[f].size());
         states_by_f_and_h[f][h].push_back(state);
     }
-}
 
-
-void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
-    assert(threshold >= 1);
-    assert(abs.is_solvable());
-    if (abs.size() > threshold)
-        cout << "shrink by " << (abs.size() - threshold) << " nodes" << " (from "
-             << abs.size() << " to " << threshold << ")" << endl;
-    else if (force)
-        cout << "shrink forced: prune unreachable/irrelevant states" << endl;
-    else
-        return;
-
-    vector<slist<AbstractStateRef> > collapsed_groups;
-
-    vector<Bucket > buckets;
-    vector<vector<Bucket > > states_by_f_and_h;
-    partition_setup(abs, states_by_f_and_h, false);
     int f_init = (f_start == HIGH ? abs.max_f : 0);
     int f_end = (f_start == LOW ? 0 : abs.max_f);
     int f_incr = (f_init > f_end ? -1 : 1);
@@ -151,16 +203,8 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
             }
         }
     }
-    compute_abstraction(buckets, threshold, collapsed_groups);
-    assert(collapsed_groups.size() <= threshold);
-
-    abs.apply_abstraction(collapsed_groups);
-    cout << "size of abstraction after shrink: " << abs.size()
-         << ", Threshold: " << threshold << endl;
-    assert(abs.size() <= threshold || threshold == 1);
 
 }
-
 
 bool ShrinkFH::has_memory_limit() {
     return true;
