@@ -3,6 +3,13 @@ copy-pasted from an email I sent to someone enquiring about this. The
 description assumes that you are already familiar with the output
 format of the translator, described in the file sas-format.txt.
 
+   UPDATE: The sas-format.txt file does not exist any more. Instead,
+   the translator output format is documented on the Fast Downward
+   website. Currently, the exact URL is
+   http://www.fast-downward.org/TranslatorOutputFormat, but this is
+   subject to change.
+
+
 === copy-pasted part begins ============================================
 
 I don't have proper documentation for this, but I can try to give you

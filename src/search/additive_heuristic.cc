@@ -14,10 +14,23 @@ using namespace std;
 
 // construction and destruction
 AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
-    : RelaxationHeuristic(opts) {
+    : RelaxationHeuristic(opts),
+      did_write_overflow_warning(false) {
 }
 
 AdditiveHeuristic::~AdditiveHeuristic() {
+}
+
+void AdditiveHeuristic::write_overflow_warning() {
+    if (!did_write_overflow_warning) {
+        // TODO: Should have a planner-wide warning mechanism to handle
+        // things like this.
+        cout << "WARNING: overflow on h^add! Costs clamped to "
+             << MAX_COST_VALUE << endl;
+        cerr << "WARNING: overflow on h^add! Costs clamped to "
+             << MAX_COST_VALUE << endl;
+        did_write_overflow_warning = true;
+    }
 }
 
 // initialization
@@ -63,6 +76,7 @@ void AdditiveHeuristic::relaxed_exploration() {
         int distance = top_pair.first;
         Proposition *prop = top_pair.second;
         int prop_cost = prop->cost;
+        assert(prop_cost >= 0);
         assert(prop_cost <= distance);
         if (prop_cost < distance)
             continue;
@@ -72,8 +86,8 @@ void AdditiveHeuristic::relaxed_exploration() {
             prop->precondition_of;
         for (int i = 0; i < triggered_operators.size(); i++) {
             UnaryOperator *unary_op = triggered_operators[i];
+            increase_cost(unary_op->cost, prop_cost);
             unary_op->unsatisfied_preconditions--;
-            unary_op->cost += prop_cost;
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0)
                 enqueue_if_necessary(unary_op->effect,
@@ -115,7 +129,7 @@ int AdditiveHeuristic::compute_add_and_ff(const State &state) {
         int prop_cost = goal_propositions[i]->cost;
         if (prop_cost == -1)
             return DEAD_END;
-        total_cost += prop_cost;
+        increase_cost(total_cost, prop_cost);
     }
     return total_cost;
 }

@@ -86,7 +86,8 @@ struct ex_hash_operator_ptr {
 };
 
 class Exploration : public Heuristic {
-private:
+    static const int MAX_COST_VALUE = 100000000; // See additive_heuristic.h.
+
     typedef __gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> RelaxedPlan;
     RelaxedPlan relaxed_plan;
     std::vector<ExUnaryOperator> unary_operators;
@@ -95,6 +96,7 @@ private:
     std::vector<ExProposition *> termination_propositions;
 
     AdaptiveQueue<ExProposition *> prop_queue;
+    bool did_write_overflow_warning;
 
     bool heuristic_recomputation_needed;
 
@@ -123,6 +125,8 @@ private:
 
     void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
                               bool use_h_max);
+    void increase_cost(int &cost, int amount);
+    void write_overflow_warning();
 protected:
     virtual int compute_heuristic(const State &state);
 public:
