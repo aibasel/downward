@@ -142,12 +142,13 @@ public:
                                                                       ex_hash_operator_ptr> &excluded_ops,
                                             bool compute_lvl_ops);
     std::vector<const Operator *> exported_ops; // only needed for landmarks count heuristic ha
-    int plan_for_disj(std::vector<std::pair<int, int> > &disj_goal, const State &state);
+
+    // Returns true iff disj_goal is relaxed reachable. As a side effect, marks preferred operators
+    // via "exported_ops". (This is the real reason why you might want to call this.)
+    bool plan_for_disj(std::vector<std::pair<int, int> > &disj_goal, const State &state);
+
     Exploration(const Options &opts);
     ~Exploration();
-    int compute_ff_heuristic_with_excludes(const State &state,
-                                           const std::vector<std::pair<int, int> > &excluded_props,
-                                           const __gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> &excluded_ops);
 };
 
 #endif

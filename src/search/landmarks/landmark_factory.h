@@ -91,11 +91,6 @@ private:
                                bool level_out,
                                const LandmarkNode *exclude,
                                bool compute_lvl_op = false) const;
-    /*bool relaxed_task_solvable_without_operator(std::vector<std::vector<int> > &lvl_var,
-    std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op,
-                                        bool level_out,
-                                        const Operator *exclude,
-                                        bool compute_lvl_op = false) const;*/
     bool is_causal_landmark(const LandmarkNode &landmark) const;
     virtual void calc_achievers(); // keep this virtual because HMLandmarks overrides it!
 };
