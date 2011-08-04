@@ -29,8 +29,9 @@ class LandmarkCountHeuristic : public Heuristic {
 
     void collect_lm_leaves(bool disjunctive_lms, LandmarkSet &result, vector<
                                pair<int, int> > &leaves);
-    int ff_search_lm_leaves(bool disjunctive_lms, const State &state,
-                            LandmarkSet &result);
+    bool ff_search_lm_leaves(bool disjunctive_lms, const State &state,
+                             LandmarkSet &result);
+    // returns true iff relaxed reachable and marks relaxed operators
 
     bool check_node_orders_disobeyed(LandmarkNode &node,
                                      const LandmarkSet &reached) const;

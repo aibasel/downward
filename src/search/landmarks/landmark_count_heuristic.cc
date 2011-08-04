@@ -148,11 +148,11 @@ int LandmarkCountHeuristic::compute_heuristic(const State &state) {
         || !generate_helpful_actions(state, reached_lms)) {
         assert(exploration != NULL);
         set_exploration_goals(state);
+
         // Use FF to plan to a landmark leaf
-        int dead_end = ff_search_lm_leaves(ff_search_disjunctive_lms, state,
-                                           reached_lms);
-        if (dead_end) {
-            assert(dead_end == DEAD_END);
+        vector<pair<int, int> > leaves;
+        collect_lm_leaves(ff_search_disjunctive_lms, reached_lms, leaves);
+        if (!exploration->plan_for_disj(leaves, state)) {
             exploration->exported_ops.clear();
             return DEAD_END;
         }
@@ -183,16 +183,6 @@ void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
             }
         }
     }
-}
-
-int LandmarkCountHeuristic::ff_search_lm_leaves(bool disjunctive_lms,
-                                                const State &state, LandmarkSet &reached_lms) {
-    vector<pair<int, int> > leaves;
-    collect_lm_leaves(disjunctive_lms, reached_lms, leaves);
-    if (exploration->plan_for_disj(leaves, state) == DEAD_END) {
-        return DEAD_END;
-    } else
-        return 0;
 }
 
 bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
