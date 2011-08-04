@@ -17,7 +17,6 @@ class StandardScalarOpenList : public OpenList<Entry> {
 
     std::map<int, Bucket> buckets;
     int size;
-    mutable int lowest_bucket;
 
     ScalarEvaluator *evaluator;
     int last_evaluated_value;

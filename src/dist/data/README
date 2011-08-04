@@ -86,6 +86,11 @@ available (all in the "doc" directory):
    You will only need this if you want to use planning tasks in
    finite-domain representation (FDR tasks) within your own planner.
 
+   UPDATE: This file does not exist any more. Instead, this file
+   format is documented on the Fast Downward website. Currently, the
+   exact URL is http://www.fast-downward.org/TranslatorOutputFormat,
+   but this is subject to change.
+
 4. "pre-format.txt" is a description of the output format of the
    knowledge compilation component ("preprocess"). You will only need
    this if you want to use the preprocessed FDR task information

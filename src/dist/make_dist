@@ -80,7 +80,6 @@ fi
 
 mkdir $DIST/doc
 cp data/README $DIST/
-cp data/doc/sas-format.txt $DIST/doc/
 cp data/doc/pre-format.txt $DIST/doc/
 cp data/doc/fast-downward.pdf $DIST/doc/
 cp data/doc/translator.pdf $DIST/doc/
