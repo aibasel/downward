@@ -1,24 +1,14 @@
 #include "landmark_count_heuristic.h"
 
-#include "h_m_landmarks.h"
-#include "landmark_factory_rpg_exhaust.h"
-#include "landmark_factory_rpg_sasp.h"
-#include "landmark_factory_rpg_search.h"
-#include "landmark_factory_zhu_givan.h"
-
-#include "../globals.h"
-#include "../operator.h"
-#include "../option_parser.h"
 #include "../plugin.h"
-#include "../search_engine.h"
 #include "../successor_generator.h"
-#include "../timer.h"
 
 #include <cmath>
+#include <ext/hash_map>
 #include <limits>
 
-
 using namespace std;
+using namespace __gnu_cxx;
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     : Heuristic(opts),
