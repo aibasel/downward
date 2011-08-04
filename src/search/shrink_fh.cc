@@ -1,7 +1,6 @@
 #include "abstraction.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "priority_queue.h"
 #include "shrink_fh.h"
 
 #include <cassert>
@@ -23,8 +22,8 @@ ShrinkFH::ShrinkFH(HighLow fs, HighLow hs)
 }
 
 static void compute_abstraction(
-    vector<vector<AbstractStateRef> > &buckets, int target_size, vector<
-        slist<AbstractStateRef> > &collapsed_groups) {
+    vector<vector<AbstractStateRef> > &buckets, int target_size, 
+    vector<slist<AbstractStateRef> > &collapsed_groups) {
     typedef slist<AbstractStateRef> Group;
     bool show_combine_buckets_warning = false;
 
@@ -99,14 +98,7 @@ static void compute_abstraction(
 
 
 void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
-    assert(threshold >= 1);
-    assert(abs.is_solvable());
-    if (abs.size() > threshold)
-        cout << "shrink by " << (abs.size() - threshold) << " nodes" << " (from "
-             << abs.size() << " to " << threshold << ")" << endl;
-    else if (force)
-        cout << "shrink forced: prune unreachable/irrelevant states" << endl;
-    else
+    if(!must_shrink(abs, threshold, force))
         return;
 
     vector<Bucket > buckets;
@@ -119,13 +111,8 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
     
     vector<slist<AbstractStateRef> > collapsed_groups;
     compute_abstraction(buckets, threshold, collapsed_groups);
-    assert(collapsed_groups.size() <= threshold);
 
-    abs.apply_abstraction(collapsed_groups);
-    cout << "size of abstraction after shrink: " << abs.size()
-         << ", Threshold: " << threshold << endl;
-    assert(abs.size() <= threshold || threshold == 1);
-
+    apply(abs, collapsed_groups, threshold);
 }
 
 //TODO: find way to decrease code duplication 
@@ -256,19 +243,19 @@ void ShrinkFH::ordered_buckets_use_vector(
 
 }
 
-bool ShrinkFH::has_memory_limit() {
+bool ShrinkFH::has_memory_limit() const {
     return true;
 }
 
-bool ShrinkFH::is_bisimulation() {
+bool ShrinkFH::is_bisimulation() const {
     return false;
 }
 
-bool ShrinkFH::is_dfp() {
+bool ShrinkFH::is_dfp() const {
     return false;
 }
 
-string ShrinkFH::description() {
+string ShrinkFH::description() const {
     string descr = string(f_start == HIGH ? "high" : "low") + " f/"
         + (h_start == HIGH ? "high" : "low") + " h";
     return descr;

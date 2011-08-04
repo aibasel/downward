@@ -59,6 +59,7 @@ struct AbstractTargetOp {
 };
 
 class Abstraction {
+    friend class ShrinkStrategy;
     friend class ShrinkFH;
     friend class ShrinkDFP;
     friend class ShrinkBisimulation;

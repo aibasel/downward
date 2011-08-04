@@ -12,11 +12,11 @@ public:
     ~ShrinkBisimulation();
     void shrink(Abstraction &abs, int threshold, bool force = false);
 
-    bool is_bisimulation();
-    bool has_memory_limit();
-    bool is_dfp();
+    bool is_bisimulation() const;
+    bool has_memory_limit() const;
+    bool is_dfp() const;
 
-    std::string description();
+    std::string description() const;
 private:
     void compute_abstraction(
         Abstraction &abs,
