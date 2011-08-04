@@ -109,16 +109,18 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
     else
         return;
 
-    vector<slist<AbstractStateRef> > collapsed_groups;
-
     vector<Bucket > buckets;
     const int max_vector_size = 50;
-    if(abs.max_h > max_vector_size || abs.max_f > max_vector_size) {
+    if(abs.max_f > max_vector_size) {
+        cout << "using map" << endl;
         ordered_buckets_use_map(abs, false, buckets);
     } else {
+        cout << "using vector" << endl;
         ordered_buckets_use_vector(abs, false, buckets);
     }
-
+    cout << buckets.size() << endl;
+    
+    vector<slist<AbstractStateRef> > collapsed_groups;
     compute_abstraction(buckets, threshold, collapsed_groups);
     assert(collapsed_groups.size() <= threshold);
 
@@ -240,13 +242,15 @@ void ShrinkFH::ordered_buckets_use_vector(
     }
 
     int f_init = (f_start == HIGH ? abs.max_f : 0);
-    int f_end = (f_start == LOW ? 0 : abs.max_f);
+    int f_end = (f_start == HIGH ? 0 : abs.max_f);
     int f_incr = (f_init > f_end ? -1 : 1);
-    for (int f = f_init; f != f_end; f += f_incr){
+    cout << f_init << ", " << f_end << ", " << f_incr << endl;
+    for (int f = f_init; f != f_end + f_incr; f += f_incr){
         int h_init = (h_start == HIGH ? states_by_f_and_h[f].size() - 1 : 0);
-        int h_end = (h_start == LOW ? 0 : states_by_f_and_h[f].size() - 1);
+        int h_end = (h_start == HIGH ? 0 : states_by_f_and_h[f].size() - 1);
         int h_incr = (h_init > h_end ? -1 : 1);
-        for (int h = h_init; h != h_end; h += h_incr) {
+        cout << h_init << ", " << h_end << ", " << h_incr << endl;
+        for (int h = h_init; h != h_end + h_incr; h += h_incr) {
             Bucket &bucket = states_by_f_and_h[f][h];
             if (!bucket.empty()) {
                 buckets.push_back(Bucket());
