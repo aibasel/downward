@@ -15,31 +15,24 @@ ShrinkBisimulation::ShrinkBisimulation(bool gr, bool ml)
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : greedy(opts.get<bool>("greedy")),
       has_mem_limit(opts.get<bool>("memory_limit")) {
+    if(has_mem_limit) {
+        cout << "memory limited bisimulation not yet supported - exiting"
+             << endl;
+        exit(2);
+    }
 }
 
 ShrinkBisimulation::~ShrinkBisimulation() {
 }
 
 void ShrinkBisimulation::shrink(Abstraction &abs, int threshold, bool force) {
-    assert(threshold >= 1);
-    assert(abs.is_solvable());
-    if (abs.size() > threshold)
-        cout << "shrink by " << (abs.size() - threshold) << " nodes" << " (from "
-             << abs.size() << " to " << threshold << ")" << endl;
-    else if (force)
-        cout << "shrink forced: prune unreachable/irrelevant states" << endl;
-    else
-        cout << "shrink due to bisimulation strategy" << endl;
+    if(!must_shrink(abs, threshold, force))
+        return;
 
     vector<slist<AbstractStateRef> > collapsed_groups;
-
     compute_abstraction(abs, QUITE_A_LOT, collapsed_groups);
-
-    abs.apply_abstraction(collapsed_groups);
-    cout << "size of abstraction after shrink: " << abs.size()
-         << ", Threshold: " << threshold << endl;
-    assert(abs.size() <= threshold || threshold == 1);
-
+    
+    apply(abs, collapsed_groups, QUITE_A_LOT);
 }
 
 void ShrinkBisimulation::compute_abstraction(
@@ -284,19 +277,19 @@ void ShrinkBisimulation::compute_abstraction(
 }
 
 
-bool ShrinkBisimulation::has_memory_limit() {
+bool ShrinkBisimulation::has_memory_limit() const {
     return has_mem_limit;
 }
 
-bool ShrinkBisimulation::is_bisimulation() {
+bool ShrinkBisimulation::is_bisimulation() const {
     return true;
 }
 
-bool ShrinkBisimulation::is_dfp() {
+bool ShrinkBisimulation::is_dfp() const {
     return false;
 }
 
-string ShrinkBisimulation::description() {
+string ShrinkBisimulation::description() const {
     string descr = string(greedy ? "greedy " : "") 
         + "bisimulation - "
         + (has_mem_limit ? "using" : "disregarding")+" abstraction size limit"; 

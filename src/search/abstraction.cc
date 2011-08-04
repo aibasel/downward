@@ -132,7 +132,6 @@ void Abstraction::compute_distances() {
         //NOTE(mg) - is the above TODO still valid?
         ShrinkBisimulation nolimit(false, false);
         nolimit.shrink(*this, 1, true);
-        cout << "called from compute_distances, by abstraction " << this << endl;
         //shrink(size(), SHRINK_HIGH_F_LOW_H, true);
     }
 }
@@ -801,7 +800,6 @@ void Abstraction::shrink(int threshold, bool force) {
      which case it only prunes irrelevant and unreachable states).
      */
     shrink_strategy->shrink(*this, threshold, force);
-    cout << "called from shrink(...), by abstraction " << this << endl;
 }
 
 bool Abstraction::is_solvable() const {

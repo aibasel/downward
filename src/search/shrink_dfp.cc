@@ -18,28 +18,15 @@ ShrinkDFP::~ShrinkDFP() {
 }
 
 void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) {
-    assert(threshold >= 1);
-    assert(abs.is_solvable());
-
-    if (abs.size() > threshold)
-        cout << "shrink by " << (abs.size() - threshold) 
-             << " nodes" << " (from "
-             << abs.size() << " to " << threshold << ")" << endl;
-    else if (force)
-        cout << "shrink forced: prune unreachable/irrelevant states" << endl;
-    else
-        cout << "shrink due to bisimulation strategy" << endl;
+    if(!must_shrink(abs, threshold, force))
+        return;
 
     vector<slist<AbstractStateRef> > collapsed_groups;
     bool greedy_bisim = (dfp_style == ENABLE_GREEDY_BISIMULATION);
     compute_abstraction_dfp_action_cost_support(
         abs, threshold, collapsed_groups, greedy_bisim);
 
-    abs.apply_abstraction(collapsed_groups);
-    cout << "size of abstraction after shrink: " << abs.size()
-         << ", Threshold: " << threshold << endl;
-    assert(abs.size() <= threshold || threshold == 1);
-
+    apply(abs, collapsed_groups, threshold);
 }
 
 void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
@@ -254,19 +241,19 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
 }
 
 
-bool ShrinkDFP::has_memory_limit() {
+bool ShrinkDFP::has_memory_limit() const {
     return true;
 }
 
-bool ShrinkDFP::is_bisimulation() {
+bool ShrinkDFP::is_bisimulation() const {
     return true;
 }
 
-bool ShrinkDFP::is_dfp() {
+bool ShrinkDFP::is_dfp() const {
     return true;
 }
 
-string ShrinkDFP::description() {
+string ShrinkDFP::description() const {
     string descr = "Draeger/Finkbeiner/Podelski";
     if (dfp_style == ENABLE_GREEDY_BISIMULATION)
         descr += " - greedy bisimulation enabled";
