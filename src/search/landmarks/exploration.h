@@ -4,7 +4,7 @@
 #include "../heuristic.h"
 #include "../globals.h"
 #include "../priority_queue.h"
-#include "landmarks_types.h"
+#include "landmark_types.h"
 
 #include <vector>
 #include <ext/hash_set>
@@ -16,7 +16,6 @@ class State;
 
 class ExProposition;
 class ExUnaryOperator;
-
 
 struct ExProposition {
     int var;
@@ -135,7 +134,7 @@ public:
     void set_additional_goals(const std::vector<std::pair<int, int> > &goals);
     void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
     void compute_reachability_with_excludes(std::vector<std::vector<int> > &lvl_var,
-                                            std::vector<__gnu_cxx::hash_map<pair<int, int>, int,
+                                            std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int,
                                                                             hash_int_pair> > &lvl_op,
                                             bool level_out,
                                             const std::vector<std::pair<int, int> > &excluded_props,
@@ -147,7 +146,7 @@ public:
     Exploration(const Options &opts);
     ~Exploration();
     int compute_ff_heuristic_with_excludes(const State &state,
-                                           const vector<pair<int, int> > &excluded_props,
+                                           const std::vector<std::pair<int, int> > &excluded_props,
                                            const __gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> &excluded_ops);
 };
 

@@ -41,7 +41,7 @@ If NT shall be predefinable:
 #include "heuristic.h"
 
 class OptionParser;
-class LandmarksGraph;
+class LandmarkGraph;
 template<class Entry>
 class OpenList;
 class SearchEngine;
@@ -81,9 +81,9 @@ public:
 };
 
 template <>
-class TokenParser<LandmarksGraph *> {
+class TokenParser<LandmarkGraph *> {
 public:
-    static inline LandmarksGraph *parse(OptionParser &p);
+    static inline LandmarkGraph *parse(OptionParser &p);
 };
 
 template <>
@@ -142,7 +142,7 @@ public:
     static std::string usage(std::string progname);
 
     //this function initiates parsing of T (the root node of parse_tree
-    //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarksGraph*
+    //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarkGraph*
     template <class T>
     T start_parsing();
 
@@ -316,15 +316,15 @@ Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
     return 0;
 }
 
-LandmarksGraph *TokenParser<LandmarksGraph *>::parse(OptionParser &p) {
+LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<LandmarksGraph *>::instance()->contains(pt->value)) {
-        return Predefinitions<LandmarksGraph *>::instance()->get(pt->value);
+    if (Predefinitions<LandmarkGraph *>::instance()->contains(pt->value)) {
+        return Predefinitions<LandmarkGraph *>::instance()->get(pt->value);
     }
-    if (Registry<LandmarksGraph *>::instance()->contains(pt->value)) {
-        return Registry<LandmarksGraph *>::instance()->get(pt->value) (p);
+    if (Registry<LandmarkGraph *>::instance()->contains(pt->value)) {
+        return Registry<LandmarkGraph *>::instance()->get(pt->value) (p);
     }
-    p.error("landmarks graph not found");
+    p.error("landmark graph not found");
     return 0;
 }
 

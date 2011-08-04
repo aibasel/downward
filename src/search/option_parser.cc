@@ -57,7 +57,7 @@ static void get_help(string k) {
     get_help_templ<Heuristic *>(pt);
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
-    get_help_templ<LandmarksGraph *>(pt);
+    get_help_templ<LandmarkGraph *>(pt);
     Plugin<OpenList<int> >::register_open_lists();
     get_help_templ<OpenList<int> *>(pt);
 }
@@ -78,7 +78,7 @@ static void get_full_help() {
     get_full_help_templ<Heuristic *>();
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
-    get_full_help_templ<LandmarksGraph *>();
+    get_full_help_templ<LandmarkGraph *>();
     Plugin<OpenList<int> >::register_open_lists();
     get_full_help_templ<OpenList<int> *>();
 }
@@ -108,7 +108,7 @@ static std::vector<std::string> to_list(std::string s) {
 }
 
 //Note: originally the following function was templated (predefine<T>),
-//but there is no Synergy<LandmarksGraph>, so I split it up for now.
+//but there is no Synergy<LandmarkGraph>, so I split it up for now.
 static void predefine_heuristic(std::string s, bool dry_run) {
     //remove newlines so they don't mess anything up:
     s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
@@ -150,8 +150,8 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) {
-        Predefinitions<LandmarksGraph *>::instance()->predefine(
-            definees[0], op.start_parsing<LandmarksGraph *>());
+        Predefinitions<LandmarkGraph *>::instance()->predefine(
+            definees[0], op.start_parsing<LandmarkGraph *>());
     } else {
         op.error("predefinition has invalid left side");
     }
