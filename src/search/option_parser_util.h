@@ -11,7 +11,7 @@
 #include <boost/any.hpp>
 
 
-class LandmarksGraph;
+class LandmarkGraph;
 class Heuristic;
 class ScalarEvaluator;
 class Synergy;
@@ -108,7 +108,7 @@ Registry<T> *Registry<T>::instance_ = 0;
 
 
 //Predefinitions<T> maps strings to pointers to
-//already created Heuristics/LandmarksGraphs
+//already created Heuristics/LandmarkGraphs
 template <class T>
 class Predefinitions {
 public:
@@ -193,7 +193,7 @@ struct TypeNamer<Heuristic *> {
 };
 
 template <>
-struct TypeNamer<LandmarksGraph *> {
+struct TypeNamer<LandmarkGraph *> {
     static std::string name() {
         return "landmarks graph";
     }

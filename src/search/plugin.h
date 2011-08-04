@@ -12,7 +12,7 @@
 #include "open_lists/pareto_open_list.h"
 
 class SearchEngine;
-class LandmarksGraph;
+class LandmarkGraph;
 class ScalarEvaluator;
 class OptionParser;
 class Heuristic;
