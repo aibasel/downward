@@ -67,10 +67,10 @@ HEADERS += max_heuristic.h
 #            operator_registry.h \
 #            variable_order_finder.h
 
-HEADERS += mas_heuristic.h \
-           abstraction.h \
-           operator_registry.h \
-           variable_order_finder.h
+HEADERS += raz_mas_heuristic.h \
+           raz_abstraction.h \
+           raz_operator_registry.h \
+           raz_variable_order_finder.h
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
