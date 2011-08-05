@@ -1,6 +1,6 @@
 #include "globals.h"
 #include "operator.h"
-#include "operator_registry.h"
+#include "raz_operator_registry.h"
 
 #include <cassert>
 #include <ext/hash_map>
