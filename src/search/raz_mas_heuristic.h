@@ -2,6 +2,7 @@
 #define MAS_HEURISTIC_H
 
 #include "heuristic.h"
+#include "shrink_strategy.h"
 
 #include <utility>
 #include <vector>
@@ -21,31 +22,12 @@ enum MergeStrategy {
     MAX_MERGE_STRATEGY
 };
 
-enum ShrinkStrategy {
-    SHRINK_HIGH_F_LOW_H,
-    SHRINK_LOW_F_LOW_H,
-    SHRINK_HIGH_F_HIGH_H,
-    SHRINK_RANDOM,
-    SHRINK_DFP,
-    SHRINK_BISIMULATION,
-    SHRINK_BISIMULATION_NO_MEMORY_LIMIT,
-    SHRINK_DFP_ENABLE_GREEDY_BISIMULATION,
-    SHRINK_DFP_ENABLE_FURTHER_LABEL_REDUCTION,
-    SHRINK_DFP_ENABLE_GREEDY_THEN_LABEL_REDUCTION,
-    SHRINK_DFP_ENABLE_LABEL_REDUCTION_THEN_GREEDY,
-    SHRINK_DFP_ENABLE_LABEL_REDUCTION_AND_GREEDY_CHOOSE_MAX,
-    SHRINK_GREEDY_BISIMULATION_NO_MEMORY_LIMIT,
-    SHRINK_BISIMULATION_REDUCING_ALL_LABELS_NO_MEMORY_LIMIT,
-    SHRINK_GREEDY_BISIMULATION_REDUCING_ALL_LABELS_NO_MEMORY_LIMIT,
-    MAX_SHRINK_STRATEGY
-};
-
 class MergeAndShrinkHeuristic : public Heuristic {
     int max_abstract_states;                                    //TODO - removed const for raz's double abstraction experiment
     int max_abstract_states_before_merge;       //TODO - removed const for raz's double abstraction experiment
     const int abstraction_count;
     MergeStrategy merge_strategy;                       //TODO - removed const for raz's double abstraction experiment
-    ShrinkStrategy shrink_strategy;                     //TODO - removed const for raz's double abstraction experiment
+    ShrinkStrategy *shrink_strategy;                     //TODO - removed const for raz's double abstraction experiment
     const bool use_label_simplification;
     const bool use_expensive_statistics;
     const double merge_mixing_parameter;
