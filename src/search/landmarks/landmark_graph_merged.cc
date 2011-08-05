@@ -21,7 +21,7 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
             return &lm_graph->get_simple_lm_node(lm_fact);
         else
             return 0;
-        
+
         /* old version of the code. TODO: check whether this is correctly changed!
         hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
             lm_graph->simple_lms_to_nodes.find(lm_fact);
@@ -39,7 +39,7 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
             return &lm_graph->get_disj_lm_node(make_pair(lm.vars[0], lm.vals[0]));
         else
             return 0;
-        
+
         /* old version of the code. TODO: check whether this is correctly changed!
         if (lm_graph->exact_same_disj_landmark_exists(lm_facts)) {
             hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =

@@ -149,7 +149,7 @@ public:
     //add option with no default value, optional help
     //call with mandatory = false to specify an optional parameter without default value
     template <class T>
-      void add_option(std::string k, std::string h = "", OptionFlags flags = OptionFlags());
+    void add_option(std::string k, std::string h = "", OptionFlags flags = OptionFlags());
 
     //add option with default value
     template <class T>
@@ -161,7 +161,7 @@ public:
                          std::string def_val = "", std::string h = "", OptionFlags flags = OptionFlags());
 
     template <class T>
-      void add_list_option(std::string k, std::string h = "", OptionFlags flags = OptionFlags());
+    void add_list_option(std::string k, std::string h = "", OptionFlags flags = OptionFlags());
 
     template <class T>
     void add_list_option(std::string k,
@@ -198,7 +198,7 @@ T OptionParser::start_parsing() {
 
 template <class T>
 void OptionParser::add_option(
-        std::string k, std::string h, OptionFlags flags) {
+    std::string k, std::string h, OptionFlags flags) {
     if (help_mode_) {
         helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
         if (opts.contains(k)) {
@@ -258,7 +258,7 @@ void OptionParser::add_option(
 
 template <class T>
 void OptionParser::add_list_option(std::string k, std::string h, OptionFlags flags) {
-  add_option<std::vector<T> >(k, h, flags.mandatory);
+    add_option<std::vector<T> >(k, h, flags.mandatory);
 }
 
 //Definitions of TokenParser<T>:

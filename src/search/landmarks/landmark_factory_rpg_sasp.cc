@@ -16,9 +16,9 @@
 #include <ext/hash_set>
 
 using namespace __gnu_cxx;
-    
+
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
-    : LandmarkFactory(opts)  {
+    : LandmarkFactory(opts) {
 }
 
 void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
@@ -84,7 +84,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
 }
 
 int LandmarkFactoryRpgSasp::min_cost_for_landmark(LandmarkNode *bp, vector<vector<
-                                                                          int> > &lvl_var) {
+                                                                               int> > &lvl_var) {
     int min_cost = numeric_limits<int>::max();
     // For each proposition in bp...
     for (unsigned int k = 0; k < bp->vars.size(); k++) {
@@ -104,7 +104,7 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(LandmarkNode *bp, vector<vecto
 }
 
 void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
-                                                  LandmarkNode &b, edge_type t) {
+                                                       LandmarkNode &b, edge_type t) {
     LandmarkNode *new_lm;
     if (lm_graph->simple_landmark_exists(a)) {
         new_lm = &lm_graph->get_simple_lm_node(a);
@@ -116,7 +116,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
     if (lm_graph->disj_landmark_exists(a_set)) {
         // Simple landmarks are more informative than disjunctive ones,
         // change disj. landmark into simple
-        
+
         // old: call to methode
         LandmarkNode &node = lm_graph->make_disj_node_simple(a);
 
@@ -135,7 +135,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
         LandmarkNode node(node2);
         lm_graph->rm_landmark_node(&node2);
         lm_graph->landmark_add_simple(a);*/
-        
+
         node.vars.clear();
         node.vals.clear();
         node.vars.push_back(a.first);
@@ -163,7 +163,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
 }
 
 void LandmarkFactoryRpgSasp::found_disj_lm_and_order(const set<pair<int, int> > a,
-                                                LandmarkNode &b, edge_type t) {
+                                                     LandmarkNode &b, edge_type t) {
     bool simple_lm_exists = false;
     pair<int, int> lm_prop;
     for (set<pair<int, int> >::iterator it = a.begin(); it != a.end(); ++it) {
@@ -228,8 +228,8 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
 }
 
 void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<int,
-                                                                          int> > > &disjunctive_pre, vector<vector<int> > &lvl_var,
-                                                          LandmarkNode *bp) {
+                                                                               int> > > &disjunctive_pre, vector<vector<int> > &lvl_var,
+                                                               LandmarkNode *bp) {
     /* Compute disjunctive preconditions from all operators than can potentially
      achieve landmark bp, given lvl_var (reachability in relaxed planning graph).
      A disj. precondition is a set of facts which contains one precondition fact
@@ -374,7 +374,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
 }
 
 bool LandmarkFactoryRpgSasp::domain_connectivity(const pair<int, int> &landmark,
-                                            const hash_set<int> &exclude) {
+                                                 const hash_set<int> &exclude) {
     /* Tests whether in the domain transition graph of the LM variable, there is
      a path from the initial state value to the LM value, without passing through
      any value in "exclude". If not, that means that one of the values in "exclude"

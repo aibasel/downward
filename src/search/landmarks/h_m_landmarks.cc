@@ -7,7 +7,7 @@ std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }
 
-std::ostream &operator<<(std::ostream &os, const FluentSet &fs) {
+std::ostream & operator<<(std::ostream &os, const FluentSet &fs) {
     FluentSet::const_iterator it;
     os << "[";
     for (it = fs.begin(); it != fs.end(); ++it) {
@@ -18,7 +18,7 @@ std::ostream &operator<<(std::ostream &os, const FluentSet &fs) {
 }
 
 template<typename T>
-std::ostream &operator<<(std::ostream &os, const std::list<T> &alist) {
+std::ostream & operator<<(std::ostream &os, const std::list<T> &alist) {
     typename std::list<T>::const_iterator it;
 
     os << "(";
@@ -308,7 +308,7 @@ void HMLandmarks::get_m_sets(int m,
 
 void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
     __gnu_cxx::hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator it =
-    pddl_propositions.find(fluent);
+        pddl_propositions.find(fluent);
     if (it != pddl_propositions.end()) {
         cout << it->second.to_string();
     } else {
@@ -635,7 +635,7 @@ void HMLandmarks::calc_achievers() {
         for (int i = 0; i < lmn.vars.size(); i++) {
             const std::vector<int> &ops =
                 lm_graph->get_operators_including_eff(std::make_pair(lmn.vars[i],
-                                                                    lmn.vals[i]));
+                                                                     lmn.vals[i]));
             candidates.insert(ops.begin(), ops.end());
         }
 
@@ -934,7 +934,7 @@ void HMLandmarks::add_lm_node(int set_index, bool goal) {
         }
         node->in_goal = goal;
         node->first_achievers.insert(h_m_table_[set_index].first_achievers.begin(),
-                                    h_m_table_[set_index].first_achievers.end());
+                                     h_m_table_[set_index].first_achievers.end());
         lm_node_table_[set_index] = node;
     }
 }
@@ -1017,7 +1017,7 @@ void HMLandmarks::generate_landmarks() {
             }
             if (lm_graph->use_orders()) {
                 for (std::list<int>::iterator gn_it = h_m_table_[set_index].necessary.begin();
-                    gn_it != h_m_table_[set_index].necessary.end(); ++gn_it) {
+                     gn_it != h_m_table_[set_index].necessary.end(); ++gn_it) {
                     edge_add(*lm_node_table_[*gn_it], *lm_node_table_[set_index], greedy_necessary);
                 }
             }

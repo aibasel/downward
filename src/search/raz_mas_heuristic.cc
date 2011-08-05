@@ -533,7 +533,7 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     // TODO: better documentation what each parameter does
-  parser.add_option<int>("max_states", "maximum abstraction size", OptionFlags(false));
+    parser.add_option<int>("max_states", "maximum abstraction size", OptionFlags(false));
     parser.add_option<int>("max_states_before_merge",
                            "maximum abstraction size for factors of synchronized product", OptionFlags(false));
     parser.add_option<int>("count", 1, "nr of abstractions to build");
@@ -616,7 +616,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         int n = max_states_before_merge;
         max_states = n * n;
         if (max_states / n != n) // Handle overflow.
-	    max_states = numeric_limits<int>::max();
+            max_states = numeric_limits<int>::max();
     }
 
     if (max_states_before_merge > max_states) {
