@@ -324,7 +324,8 @@ string str_to_lower(string s) {
 
 void OptionParser::add_enum_option(string k,
                                    vector<string > enumeration,
-                                   string def_val, string h) {
+                                   string def_val, string h,
+                                   OptionFlags flags) {
     if (help_mode_) {
         string enum_descr = "{";
         for (size_t i(0); i != enumeration.size(); ++i) {
@@ -347,8 +348,11 @@ void OptionParser::add_enum_option(string k,
     if (def_val.compare("") != 0) {
         add_option<string>(k, def_val, h);
     } else {
-        add_option<string>(k, h);
+      add_option<string>(k, h, flags.mandatory);
     }
+
+    if(!flags.mandatory && !opts.contains(k))
+      return;
 
     string name = str_to_lower(opts.get<string>(k));
 

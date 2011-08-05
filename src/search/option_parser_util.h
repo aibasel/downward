@@ -382,4 +382,12 @@ private:
     bool help_mode;
 };
 
+struct OptionFlags {
+  OptionFlags(bool mand = true)
+      :mandatory(mand){
+  }
+  bool mandatory;
+};
+
+
 #endif
