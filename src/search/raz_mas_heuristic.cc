@@ -583,44 +583,53 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     ShrinkStrategy shrink_strategy = ShrinkStrategy(opts.get_enum("shrink_strategy"));
     double merge_mixing_parameter = opts.get<double>("merge_mixing_parameter");
 
-   
     int max_states = -1;
     int max_states_before_merge = -1;
-    
-    if (opts.contains("max_states") && opts.contains("max_states_before_merge")) {
+
+    if (opts.contains("max_states")) {
         max_states = opts.get<int>("max_states");
-        max_states_before_merge = opts.get<int>("max_states");
-    } else if (opts.contains("max_states")) {
-    // If exactly one of the max_states options has been set, set the other
-    // so that it imposes no further limits.
+        if (max_states < 1) {
+            cerr << "error: abstraction size must be at least 1" << endl;
+            exit(2);
+        }
+    }
+
+    if (opts.contains("max_states_before_merge")) {
+        max_states_before_merge = opts.get<int>("max_states_before_merge");
+        if (max_states_before_merge < 1) {
+            cerr << "error: abstraction size before merge must be at least 1"
+                 << endl;
+            exit(2);
+        }
+    }
+
+    if (max_states == -1 && max_states_before_merge == -1) {
+        // Neither option has been explicitly set: use default.
+        max_states = max_states_before_merge = 50000;
+    } else if (max_states_before_merge == -1) {
+        // Set a value that imposes no further limit given
+        // the value of max_states.
         max_states_before_merge = max_states;
-    } else if (opts.contains("max_states_before_merge")) {
+    } else if (max_states == -1) {
+        // Set a value that imposes no further limit given
+        // the value of max_states_before_merge.
         int n = max_states_before_merge;
         max_states = n * n;
-        if (max_states < 0 || max_states / n != n)         // overflow
+        if (max_states / n != n) // Handle overflow.
 	    max_states = numeric_limits<int>::max();
-    } else {
-        // None of the two options specified: set default limit
-        max_states = 50000;
-	max_states_before_merge = max_states;
     }
 
     if (max_states_before_merge > max_states) {
-        cerr << "warning: max_states_before_merge exceeds max_states, "
-             << "correcting." << endl;
+        if (!parser.dry_run()) { // Only print the warning once.
+            cerr << "warning: max_states_before_merge exceeds max_states, "
+                 << "correcting." << endl;
+        }
         max_states_before_merge = max_states;
     }
 
-    if (max_states < 1) {
-        cerr << "error: abstraction size must be at least 1" << endl;
-        exit(2);
-    }
-
-    if (max_states_before_merge < 1) {
-        cerr << "error: abstraction size before merge must be at least 1"
-             << endl;
-        exit(2);
-    }
+    assert(max_states >= 1);
+    assert(max_states_before_merge >= 1);
+    assert(max_states >= max_states_before_merge);
 
     if (merge_strategy < 0 || merge_strategy >= MAX_MERGE_STRATEGY) {
         cerr << "error: unknown merge strategy: " << merge_strategy << endl;
