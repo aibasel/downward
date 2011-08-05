@@ -1,8 +1,7 @@
 #ifndef ABSTRACTION_H
 #define ABSTRACTION_H
 
-#include "raz_mas_heuristic.h" // needed for ShrinkStrategy type;
-// TODO: move that type somewhere else?
+#include "shrink_strategy.h"
 
 #include <ext/slist>
 #include <vector>
@@ -11,8 +10,6 @@ using namespace __gnu_cxx;
 
 class State;
 class Operator;
-
-typedef int AbstractStateRef;
 
 struct AbstractTransition {
     AbstractStateRef src;
@@ -62,11 +59,17 @@ struct AbstractTargetOp {
 };
 
 class Abstraction {
+    friend class ShrinkStrategy;
+    friend class ShrinkFH;
+    friend class ShrinkDFP;
+    friend class ShrinkBisimulation;
     enum {
         QUITE_A_LOT = 1000000000
     };
     friend class AtomicAbstraction;
     friend class CompositeAbstraction;
+
+    ShrinkStrategy *shrink_strategy;
 
     vector<const Operator *> relevant_operators;
     int num_states;
@@ -89,31 +92,6 @@ class Abstraction {
     void compute_init_distances();
     void compute_goal_distances();
 
-    void partition_into_buckets(vector<vector<AbstractStateRef> > &buckets,
-                                ShrinkStrategy shrink_strategy) const;
-    void
-    compute_abstraction(vector<vector<AbstractStateRef> > &buckets,
-                        int target_size,
-                        vector<slist<AbstractStateRef> > &collapsed_groups) const;
-    void compute_abstraction_dfp(int target_size, vector<
-                                     slist<AbstractStateRef> > &collapsed_groups) const;
-    void compute_abstraction_dfp_action_cost_support(int target_size, vector<
-                                                         slist<AbstractStateRef> > &collapsed_groups,
-                                                     bool enable_greedy_bisimulation) const;
-    void compute_abstraction_dfp_with_options(int target_size, vector<slist<
-                                                                          AbstractStateRef> > &collapsed_groups,
-                                              bool enable_greedy_bisimulation,
-                                              bool enable_further_label_reduction,
-                                              bool prefer_greedy_over_label_reduction,
-                                              bool prefer_relaxation_with_more_groups) const;
-    void compute_abstraction_bisimulation(int target_size, vector<slist<
-                                                                      AbstractStateRef> > &collapsed_groups,
-                                          bool enable_greedy_bisimulation,
-                                          bool enable_reduction_of_all_labels,
-                                          bool force_label_reduction_or_greedy_bisimulation) const;
-    void compute_abstraction_bisimulation_action_cost_support(int target_size,
-                                                              vector<slist<AbstractStateRef> > &collapsed_groups,
-                                                              bool enable_greedy_bisimulation) const;
     void apply_abstraction(vector<slist<AbstractStateRef> > &collapsed_groups);
 
     int total_transitions() const;
@@ -166,14 +144,18 @@ public:
     int unique_unlabeled_transitions(const vector<int> &relevant_ops) const;
     bool is_in_varset(int var) const;
 
-    void shrink(int threshold, ShrinkStrategy shrink_strategy, bool force =
-                    false);
+    void shrink(int threshold, bool force = false);
     //    void reduce_operators(int op1, int op2);
     void release_memory();
 
     void dump() const;
 
     void dump_transitions_by_src() const;
+
+    void set_shrink_strategy(ShrinkStrategy *s) {
+        shrink_strategy = s;
+    }
+
 };
 class AtomicAbstraction : public Abstraction {
     int variable;
@@ -199,5 +181,36 @@ public:
     CompositeAbstraction(Abstraction *abs1, Abstraction *abs2,
                          bool simplify_labels, bool normalize_after_composition);
 };
+
+
+typedef vector<pair<int, int> > SuccessorSignature;
+
+struct Signature {
+    int h;
+    int group;
+    SuccessorSignature succ_signature;
+    int state;
+
+    Signature(int h_, int group_, const SuccessorSignature &succ_signature_,
+              int state_)
+        : h(h_), group(group_), succ_signature(succ_signature_), state(state_) {
+    }
+
+    bool matches(const Signature &other) const {
+        return h == other.h && group == other.group && succ_signature
+               == other.succ_signature;
+    }
+
+    bool operator<(const Signature &other) const {
+        if (h != other.h)
+            return h < other.h;
+        if (group != other.group)
+            return group < other.group;
+        if (succ_signature != other.succ_signature)
+            return succ_signature < other.succ_signature;
+        return state < other.state;
+    }
+};
+
 
 #endif

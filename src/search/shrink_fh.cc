@@ -116,7 +116,8 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
 }
 
 //TODO: find way to decrease code duplication 
-//in the ordered_buckets_use_* methods
+//in the ordered_buckets_use_* methods,
+//or use something like AdaptiveQueue
 void ShrinkFH::ordered_buckets_use_map(
     const Abstraction &abs,
     bool all_in_same_bucket,

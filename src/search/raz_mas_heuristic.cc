@@ -1,13 +1,15 @@
-#include "raz_mas_heuristic.h"
+#include "mas_heuristic.h"
 
-#include "raz_abstraction.h"
+#include "abstraction.h"
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "shrink_bisimulation.h"
+#include "shrink_fh.h"
 #include "state.h"
 #include "timer.h"
-#include "raz_variable_order_finder.h"
+#include "variable_order_finder.h"
 
 #include <cassert>
 #include <cmath>
@@ -22,7 +24,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       max_abstract_states_before_merge(opts.get<int>("max_states_before_merge")),
       abstraction_count(opts.get<int>("count")),
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
-      shrink_strategy(ShrinkStrategy(opts.get_enum("shrink_strategy"))),
+      shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_label_simplification(opts.get<bool>("simplify_labels")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")),
       merge_mixing_parameter(opts.get<double>("merge_mixing_parameter")) {
@@ -75,59 +77,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
     default:
         abort();
     }
-    cout << endl << "Shrink strategy: ";
-    switch (shrink_strategy) {
-    case SHRINK_HIGH_F_LOW_H:
-        cout << "high f/low h (main)";
-        break;
-    case SHRINK_LOW_F_LOW_H:
-        cout << "low f/low h";
-        break;
-    case SHRINK_HIGH_F_HIGH_H:
-        cout << "high f/high h";
-        break;
-    case SHRINK_RANDOM:
-        cout << "random states";
-        break;
-    case SHRINK_DFP:
-        cout << "Draeger/Finkbeiner/Podelski";
-        break;
-    case SHRINK_BISIMULATION:
-        cout << "Bisimulation - using abstraction size limit";
-        break;
-    case SHRINK_BISIMULATION_NO_MEMORY_LIMIT:
-        cout << "Bisimulation - disregarding abstraction size limit";
-        break;
-    case SHRINK_DFP_ENABLE_GREEDY_BISIMULATION:
-        cout << "Draeger/Finkbeiner/Podelski - greedy bisimulation enabled";
-        break;
-    case SHRINK_DFP_ENABLE_FURTHER_LABEL_REDUCTION:
-        cout << "Draeger/Finkbeiner/Podelski - further label reduction enabled";
-        break;
-    case SHRINK_DFP_ENABLE_GREEDY_THEN_LABEL_REDUCTION:
-        cout
-        << "Draeger/Finkbeiner/Podelski - greedy bisimulation and further label reduction enabled, greedy preferred";
-        break;
-    case SHRINK_DFP_ENABLE_LABEL_REDUCTION_THEN_GREEDY:
-        cout
-        << "Draeger/Finkbeiner/Podelski - greedy bisimulation and further label reduction enabled, label reduction preferred";
-        break;
-    case SHRINK_DFP_ENABLE_LABEL_REDUCTION_AND_GREEDY_CHOOSE_MAX:
-        cout
-        << "Draeger/Finkbeiner/Podelski - greedy bisimulation and further label reduction enabled, preferring maximal of the two";
-        break;
-    case SHRINK_GREEDY_BISIMULATION_NO_MEMORY_LIMIT:
-        cout << "greedy bisimulation, no memory limit";
-        break;
-    case SHRINK_BISIMULATION_REDUCING_ALL_LABELS_NO_MEMORY_LIMIT:
-        cout << "bisimulation reducing all the labels, no memory limit";
-        break;
-    case SHRINK_GREEDY_BISIMULATION_REDUCING_ALL_LABELS_NO_MEMORY_LIMIT:
-        cout << "greedy bisimulation reducing all the labels, no memory limit";
-        break;
-    default:
-        abort();
-    }
+    cout << endl << "Shrink strategy: " << shrink_strategy->description();
     cout << endl << "Label simplification: "
          << (use_label_simplification ? "enabled" : "disabled") << endl
          << "Expensive statistics: "
@@ -245,29 +195,24 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         int new_size = new_sizes.first;
         int other_new_size = new_sizes.second;
 
-        bool
-            is_no_mem_limit_bisimulation_strategy =
-            (shrink_strategy == SHRINK_BISIMULATION_NO_MEMORY_LIMIT
-             || shrink_strategy
-             == SHRINK_GREEDY_BISIMULATION_NO_MEMORY_LIMIT
-             || shrink_strategy
-             == SHRINK_BISIMULATION_REDUCING_ALL_LABELS_NO_MEMORY_LIMIT
-             || shrink_strategy
-             == SHRINK_GREEDY_BISIMULATION_REDUCING_ALL_LABELS_NO_MEMORY_LIMIT);
 
         //TODO - never shrink atomic abstraction in no memory limit strategies
         if (other_new_size != other_abstraction->size()) {
             //				&& !is_bisimulation_strategy) {
             cout << "atomic abstraction too big; must shrink" << endl;
-            if (!is_no_mem_limit_bisimulation_strategy)
-                other_abstraction->shrink(other_new_size, shrink_strategy);
-            else
-                other_abstraction->shrink(1000000000, SHRINK_BISIMULATION_NO_MEMORY_LIMIT);                 //TODO - (changed from SHRINK_DFP)changing this to SHRINK_BISIMULATION_NO_MEM_LIMIT could help...
+            if (!shrink_strategy->has_memory_limit() 
+                || !shrink_strategy->is_bisimulation())
+                shrink_strategy->shrink(*other_abstraction, other_new_size);
+            else {
+                ShrinkBisimulation nolimit(false, false);
+                nolimit.shrink(*other_abstraction, 1000000000, false);
+            }
         }
         //TODO - always shrink non-atomic abstraction in no memory limit strategies
         if (new_size != abstraction->size()
-            || is_no_mem_limit_bisimulation_strategy) {
-            abstraction->shrink(new_size, shrink_strategy);
+            || !shrink_strategy->has_memory_limit() 
+            || !shrink_strategy->is_bisimulation()) {
+            shrink_strategy->shrink(*abstraction, new_size);
             abstraction->statistics(use_expensive_statistics);
         }
         //TODO - use this for finding reducible labels!!!
@@ -287,12 +232,10 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         //		}
         //		cout << endl;
 
-        //TODO - normalizing after composition in all dfp/bisim strategies.
         bool
             normalize_after_composition =
-            shrink_strategy >= SHRINK_DFP
-            && shrink_strategy
-            <= SHRINK_GREEDY_BISIMULATION_REDUCING_ALL_LABELS_NO_MEMORY_LIMIT
+            (shrink_strategy->is_bisimulation()
+             || shrink_strategy->is_dfp())
             && use_label_simplification;
         Abstraction *new_abstraction = new CompositeAbstraction(abstraction,
                                                                 other_abstraction, use_label_simplification,
@@ -481,10 +424,11 @@ void MergeAndShrinkHeuristic::initialize() {
 
         cout << "Building abstraction nr 2..." << endl;
         merge_strategy = MERGE_LINEAR_LEVEL;
-        shrink_strategy = SHRINK_GREEDY_BISIMULATION_NO_MEMORY_LIMIT;
         max_abstract_states = 1;
         max_abstract_states_before_merge = 1;
         abstraction = build_abstraction(true);
+//        shrink_strategy = SHRINK_GREEDY_BISIMULATION_NO_MEMORY_LIMIT;
+        abstraction->set_shrink_strategy(new ShrinkBisimulation(true, false));
         peak_memory = max(peak_memory, abstraction->get_peak_memory_estimate());
         abstractions.push_back(abstraction);
         //if (!abstractions.back()->is_solvable())
@@ -550,25 +494,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("merge_strategy", merge_strategies,
                            "MERGE_LINEAR_CG_GOAL_LEVEL",
                            "merge strategy");
-    vector<string> shrink_strategies;
-    shrink_strategies.push_back("SHRINK_HIGH_F_LOW_H");
-    shrink_strategies.push_back("SHRINK_LOW_F_LOW_H");
-    shrink_strategies.push_back("SHRINK_HIGH_F_HIGH_H");
-    shrink_strategies.push_back("SHRINK_RANDOM");
-    shrink_strategies.push_back("SHRINK_DFP");
-    shrink_strategies.push_back("SHRINK_BISIMULATION");
-    shrink_strategies.push_back("SHRINK_BISIMULATION_NO_MEMORY_LIMIT");
-    shrink_strategies.push_back("SHRINK_DFP_ENABLE_GREEDY_BISIMULATION");
-    shrink_strategies.push_back("SHRINK_DFP_ENABLE_FURTHER_LABEL_REDUCTION");
-    shrink_strategies.push_back("SHRINK_DFP_ENABLE_GREEDY_THEN_LABEL_REDUCTION");
-    shrink_strategies.push_back("SHRINK_DFP_ENABLE_LABEL_REDUCTION_THEN_GREEDY");
-    shrink_strategies.push_back("SHRINK_DFP_ENABLE_LABEL_REDUCTION_AND_GREEDY_CHOOSE_MAX");
-    shrink_strategies.push_back("SHRINK_GREEDY_BISIMULATION_NO_MEMORY_LIMIT");
-    shrink_strategies.push_back("SHRINK_BISIMULATION_REDUCING_ALL_LABELS_NO_MEMORY_LIMIT");
-    shrink_strategies.push_back("SHRINK_GREEDY_BISIMULATION_REDUCING_ALL_LABELS_NO_MEMORY_LIMIT");
-    parser.add_enum_option("shrink_strategy", shrink_strategies,
-                           "SHRINK_HIGH_F_LOW_H",
-                           "shrink strategy");
+    ShrinkStrategy *def_shrink = new ShrinkFH(HIGH, LOW);
+    parser.add_option<ShrinkStrategy *>("shrink_strategy", def_shrink, "shrink strategy");
     parser.add_option<bool>("simplify_labels", true, "enable label simplification");
     parser.add_option<bool>("expensive_statistics", false, "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)");
@@ -582,7 +509,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     int max_states = opts.get<int>("max_states");
     int max_states_before_merge = opts.get<int>("max_states_before_merge");
     MergeStrategy merge_strategy = MergeStrategy(opts.get_enum("merge_strategy"));
-    ShrinkStrategy shrink_strategy = ShrinkStrategy(opts.get_enum("shrink_strategy"));
     double merge_mixing_parameter = opts.get<double>("merge_mixing_parameter");
 
 
@@ -624,10 +550,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         exit(2);
     }
 
-    if (shrink_strategy < 0 || shrink_strategy >= MAX_SHRINK_STRATEGY) {
-        cerr << "error: unknown shrink strategy: " << shrink_strategy << endl;
-        exit(2);
-    }
     if ((merge_strategy == MERGE_LEVEL_THEN_INVERSE || merge_strategy
          == MERGE_INVERSE_THEN_LEVEL) && (merge_mixing_parameter < 0.0
                                           || merge_mixing_parameter > 1.0)) {
