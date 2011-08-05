@@ -13,7 +13,7 @@
 class LandmarkFactory {
 public:
     LandmarkFactory(const Options &opts);
-    virtual ~LandmarkFactory() {};
+    virtual ~LandmarkFactory() {}
     // compute_lm_graph *must* be called to avoid memory leeks!
     // returns a landmarkgraph created by a factory class.
     // take care to delete the pointer when you don't need it anymore!
@@ -34,9 +34,9 @@ protected:
         if (a.first != b.first || a.second != b.second)
             if (a.first == b.first && a.second != b.second)
                 return true;
-            if (inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
-                return true;
-            return false;
+        if (inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
+            return true;
+        return false;
     }
     inline bool relaxed_task_solvable(bool level_out,
                                       const LandmarkNode *exclude,

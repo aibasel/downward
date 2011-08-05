@@ -100,7 +100,7 @@ void LandmarkGraph::count_costs() {
 
 bool LandmarkGraph::simple_landmark_exists(const pair<int, int> &lm) const {
     hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
-    simple_lms_to_nodes.find(lm);
+        simple_lms_to_nodes.find(lm);
     assert(it == simple_lms_to_nodes.end() || !it->second->disjunctive);
     return it != simple_lms_to_nodes.end();
 }
@@ -118,7 +118,7 @@ bool LandmarkGraph::disj_landmark_exists(const set<pair<int, int> > &lm) const {
     for (set<pair<int, int> >::const_iterator it = lm.begin(); it != lm.end(); ++it) {
         const pair<int, int> &prop = *it;
         hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator
-        it2 = disj_lms_to_nodes.find(prop);
+            it2 = disj_lms_to_nodes.find(prop);
         if (it2 != disj_lms_to_nodes.end())
             return true;
     }
@@ -131,7 +131,7 @@ bool LandmarkGraph::exact_same_disj_landmark_exists(const set<pair<int, int> > &
     for (set<pair<int, int> >::const_iterator it = lm.begin(); it != lm.end(); ++it) {
         const pair<int, int> &prop = *it;
         hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator
-        it2 = disj_lms_to_nodes.find(prop);
+            it2 = disj_lms_to_nodes.find(prop);
         if (it2 == disj_lms_to_nodes.end())
             return false;
         else {
@@ -191,13 +191,13 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<pair<int, int> >
 
 void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
-        node->parents.begin(); it != node->parents.end(); it++) {
+             node->parents.begin(); it != node->parents.end(); it++) {
         LandmarkNode &parent = *(it->first);
         parent.children.erase(node);
         assert(parent.children.find(node) == parent.children.end());
     }
     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
-        node->children.begin(); it != node->children.end(); it++) {
+             node->children.begin(); it != node->children.end(); it++) {
         LandmarkNode &child = *(it->first);
         child.parents.erase(node);
         assert(child.parents.find(node) == child.parents.end());
@@ -231,7 +231,7 @@ void LandmarkGraph::set_landmark_ids() {
     ordered_nodes.resize(landmarks_count);
     int id = 0;
     for (set<LandmarkNode *>::iterator node_it =
-        nodes.begin(); node_it != nodes.end(); node_it++) {
+             nodes.begin(); node_it != nodes.end(); node_it++) {
         LandmarkNode *lmn = *node_it;
         lmn->assign_id(id);
         ordered_nodes[id] = lmn;
@@ -248,18 +248,18 @@ void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
     for (unsigned int i = 0; i < node_p->vars.size(); i++) {
         pair<int, int> node_prop = make_pair(node_p->vars[i], node_p->vals[i]);
         hash_map<pair<int, int>, pair<string, vector<string> >, hash_int_pair>::const_iterator
-        it = var_val_to_predicate_args.find(node_prop);
+            it = var_val_to_predicate_args.find(node_prop);
         if (it != var_val_to_predicate_args.end()) {
             cout << it->second.first << " ";
             for (size_t j = 0; j < it->second.second.size(); ++j) {
                 cout << it->second.second[j] << " ";
             }
             cout << "("
-            << g_variable_name[node_prop.first] << "(" << node_prop.first << ")"
-            << "->" << node_prop.second << ")";
+                 << g_variable_name[node_prop.first] << "(" << node_prop.first << ")"
+                 << "->" << node_prop.second << ")";
         } else {
             cout << g_variable_name[node_prop.first] << " (" << node_prop.first << ") "
-            << "->" << node_prop.second;
+                 << "->" << node_prop.second;
         }
         if (i < node_p->vars.size() - 1)
             cout << ", ";
@@ -277,56 +277,56 @@ void LandmarkGraph::dump() const {
     set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
 
     for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
-        != nodes2.end(); it++) {
+         != nodes2.end(); it++) {
         LandmarkNode *node_p = *it;
         dump_node(node_p);
         for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
-            parent_it = node_p->parents.begin(); parent_it
-            != node_p->parents.end(); parent_it++) {
+             parent_it = node_p->parents.begin(); parent_it
+             != node_p->parents.end(); parent_it++) {
             const edge_type &edge = parent_it->second;
             const LandmarkNode *parent_p = parent_it->first;
             cout << "\t\t<-_";
             switch (edge) {
-                case necessary:
-                    cout << "nec ";
-                    break;
-                case greedy_necessary:
-                    cout << "gn  ";
-                    break;
-                case natural:
-                    cout << "nat ";
-                    break;
-                case reasonable:
-                    cout << "r   ";
-                    break;
-                case obedient_reasonable:
-                    cout << "o_r ";
-                    break;
+            case necessary:
+                cout << "nec ";
+                break;
+            case greedy_necessary:
+                cout << "gn  ";
+                break;
+            case natural:
+                cout << "nat ";
+                break;
+            case reasonable:
+                cout << "r   ";
+                break;
+            case obedient_reasonable:
+                cout << "o_r ";
+                break;
             }
             dump_node(parent_p);
         }
         for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
-            child_it = node_p->children.begin(); child_it
-            != node_p->children.end(); child_it++) {
+             child_it = node_p->children.begin(); child_it
+             != node_p->children.end(); child_it++) {
             const edge_type &edge = child_it->second;
             const LandmarkNode *child_p = child_it->first;
             cout << "\t\t->_";
             switch (edge) {
-                case necessary:
-                    cout << "nec ";
-                    break;
-                case greedy_necessary:
-                    cout << "gn  ";
-                    break;
-                case natural:
-                    cout << "nat ";
-                    break;
-                case reasonable:
-                    cout << "r   ";
-                    break;
-                case obedient_reasonable:
-                    cout << "o_r ";
-                    break;
+            case necessary:
+                cout << "nec ";
+                break;
+            case greedy_necessary:
+                cout << "gn  ";
+                break;
+            case natural:
+                cout << "nat ";
+                break;
+            case reasonable:
+                cout << "r   ";
+                break;
+            case obedient_reasonable:
+                cout << "o_r ";
+                break;
             }
             dump_node(child_p);
         }

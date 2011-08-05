@@ -348,11 +348,11 @@ void OptionParser::add_enum_option(string k,
     if (def_val.compare("") != 0) {
         add_option<string>(k, def_val, h);
     } else {
-      add_option<string>(k, h, flags.mandatory);
+        add_option<string>(k, h, flags.mandatory);
     }
 
-    if(!flags.mandatory && !opts.contains(k))
-      return;
+    if (!flags.mandatory && !opts.contains(k))
+        return;
 
     string name = str_to_lower(opts.get<string>(k));
 

@@ -134,7 +134,7 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
 }
 
 bool LandmarkFactoryZhuGivan::operator_applicable(const Operator &op,
-                                                 const proposition_layer &state) const {
+                                                  const proposition_layer &state) const {
     // test preconditions
     const vector<Prevail> &prevail = op.get_prevail();
     for (unsigned i = 0; i < prevail.size(); i++)
@@ -182,7 +182,7 @@ static lm_set _intersection(const lm_set &a, const lm_set &b) {
 }
 
 lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const Operator &op,
-                                                            const proposition_layer &current) const {
+                                                             const proposition_layer &current) const {
     lm_set result;
 
     const vector<Prevail> &prevail = op.get_prevail();

@@ -294,7 +294,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 
     if (!parser.dry_run() && opts.get<LandmarkGraph *>("lm_graph") == 0)
         parser.error("landmark graph could not be constructed");
-    
+
     if (parser.dry_run())
         return 0;
     else

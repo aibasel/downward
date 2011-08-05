@@ -501,7 +501,7 @@ bool Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
         }
         for (int i = 0; i < goal_propositions.size(); i++) {
             if (goal_propositions[i]->h_add_cost == -1)
-                return false; // dead end
+                return false;  // dead end
             collect_ha(goal_propositions[i], relaxed_plan, state);
         }
     }

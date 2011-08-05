@@ -38,6 +38,7 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
                 }
             }
         }
+
 }
 
 static LandmarkGraph *_parse(OptionParser &parser) {
