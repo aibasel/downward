@@ -1,7 +1,7 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
-#include "abstraction.h"
+#include "raz_abstraction.h"
 #include "shrink_strategy.h"
 
 using namespace std;
