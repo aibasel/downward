@@ -1,8 +1,8 @@
-#include "raz_variable_order_finder.h"
+#include "variable_order_finder.h"
 
 #include "causal_graph.h"
 #include "globals.h"
-#include "raz_mas_heuristic.h" // needed for MergeStrategy type;
+#include "mas_heuristic.h" // needed for MergeStrategy type;
 // TODO: move that type somewhere else?
 
 #include <cassert>
