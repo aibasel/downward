@@ -1,4 +1,4 @@
-#include "abstraction.h"
+#include "raz_abstraction.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "shrink_bisimulation.h"

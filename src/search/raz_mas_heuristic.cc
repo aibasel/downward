@@ -1,6 +1,6 @@
 #include "raz_mas_heuristic.h"
 
-#include "abstraction.h"
+#include "raz_abstraction.h"
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
