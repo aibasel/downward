@@ -21,82 +21,6 @@ ShrinkFH::ShrinkFH(HighLow fs, HighLow hs)
      h_start(hs) {
 }
 
-static void compute_abstraction(
-    vector<vector<AbstractStateRef> > &buckets, int target_size, 
-    vector<slist<AbstractStateRef> > &collapsed_groups) {
-    typedef slist<AbstractStateRef> Group;
-    bool show_combine_buckets_warning = false;
-
-    assert(collapsed_groups.empty());
-    collapsed_groups.reserve(target_size);
-
-    int num_states_to_go = 0;
-    for (int bucket_no = 0; bucket_no < buckets.size(); bucket_no++)
-        num_states_to_go += buckets[bucket_no].size();
-
-    for (int bucket_no = 0; bucket_no < buckets.size(); bucket_no++) {
-        vector<AbstractStateRef> &bucket = buckets[bucket_no];
-        int remaining_state_budget = target_size - collapsed_groups.size();
-        num_states_to_go -= bucket.size();
-        int bucket_budget = remaining_state_budget - num_states_to_go;
-
-        if (bucket_budget >= (int)bucket.size()) {
-            // Each state in bucket can become a singleton group.
-            // cout << "SHRINK NONE: " << bucket_no << endl;
-            for (int i = 0; i < bucket.size(); i++) {
-                Group group;
-                group.push_front(bucket[i]);
-                collapsed_groups.push_back(group);
-            }
-        } else if (bucket_budget <= 1) {
-            // The whole bucket must form one group.
-            // cout << "SHRINK ALL: " << bucket_no << endl;
-            int remaining_buckets = buckets.size() - bucket_no;
-            if (remaining_state_budget >= remaining_buckets) {
-                collapsed_groups.push_back(Group());
-            } else {
-                if (bucket_no == 0)
-                    collapsed_groups.push_back(Group());
-                if (show_combine_buckets_warning) {
-                    show_combine_buckets_warning = false;
-                    cout
-                    << "ARGH! Very small node limit, must combine buckets."
-                    << endl;
-                }
-            }
-            Group &group = collapsed_groups.back();
-            group.insert(group.begin(), bucket.begin(), bucket.end());
-        } else {
-            // Complicated case: must combine until bucket_budget.
-            // cout << "SHRINK SOME: " << bucket_no << endl;
-            // First create singleton groups.
-            vector<Group> groups;
-            groups.resize(bucket.size());
-            for (int i = 0; i < bucket.size(); i++)
-                groups[i].push_front(bucket[i]);
-            // Then combine groups until required size is reached.
-            assert(bucket_budget >= 2 && bucket_budget < groups.size());
-            while (groups.size() > bucket_budget) {
-                int pos1 = ((unsigned int)rand()) % groups.size();
-                int pos2;
-                do {
-                    pos2 = ((unsigned int)rand()) % groups.size();
-                } while (pos1 == pos2);
-                groups[pos1].splice(groups[pos1].begin(), groups[pos2]);
-                swap(groups[pos2], groups.back());
-                assert(groups.back().empty());
-                groups.pop_back();
-            }
-            // Finally add these groups to the result.
-            for (int i = 0; i < groups.size(); i++) {
-                collapsed_groups.push_back(Group());
-                collapsed_groups.back().swap(groups[i]);
-            }
-        }
-    }
-}
-
-
 void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
     if(!must_shrink(abs, threshold, force))
         return;
@@ -104,23 +28,21 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
     vector<Bucket > buckets;
     const int max_vector_size = 50;
     if(abs.max_f > max_vector_size) {
-        ordered_buckets_use_map(abs, false, buckets);
+        ordered_buckets_use_map(abs, buckets);
     } else {
-        ordered_buckets_use_vector(abs, false, buckets);
+        ordered_buckets_use_vector(abs, buckets);
     }
     
     vector<slist<AbstractStateRef> > collapsed_groups;
-    compute_abstraction(buckets, threshold, collapsed_groups);
+    ShrinkBucketBased::compute_abstraction(
+        buckets, threshold, collapsed_groups);
 
     apply(abs, collapsed_groups, threshold);
 }
 
-//TODO: find way to decrease code duplication 
-//in the ordered_buckets_use_* methods,
-//or use something like AdaptiveQueue
+
 void ShrinkFH::ordered_buckets_use_map(
     const Abstraction &abs,
-    bool all_in_same_bucket,
     vector<Bucket> &buckets) {
     map<int, map<int, Bucket > > states_by_f_and_h;
     for (AbstractStateRef state = 0; state < abs.num_states; state++) {
@@ -130,11 +52,6 @@ void ShrinkFH::ordered_buckets_use_map(
             continue;
 
         int f = g + h;
-
-        if (all_in_same_bucket) {
-            // Put all into the same bucket.
-            f = h = 0;
-        }
 
         states_by_f_and_h[f][h].push_back(state);
     }
@@ -150,10 +67,9 @@ void ShrinkFH::ordered_buckets_use_map(
                     h_it != f_it->second.rend();
                     h_it++) {
                     Bucket &bucket = h_it->second;
-                    if (!bucket.empty()) { //should always be true
-                        buckets.push_back(Bucket());
-                        buckets.back().swap(bucket);
-                    }
+                    assert (!bucket.empty());
+                    buckets.push_back(Bucket());
+                    buckets.back().swap(bucket);
                 }
             } else {
                 map<int, Bucket>::iterator h_it;
@@ -161,10 +77,9 @@ void ShrinkFH::ordered_buckets_use_map(
                     h_it != f_it->second.end();
                     h_it++) {
                     Bucket &bucket = h_it->second;
-                    if (!bucket.empty()) { //should always be true
-                        buckets.push_back(Bucket());
-                        buckets.back().swap(bucket);
-                    }
+                    assert (!bucket.empty());
+                    buckets.push_back(Bucket());
+                    buckets.back().swap(bucket);
                 }
             }
         }
@@ -179,10 +94,9 @@ void ShrinkFH::ordered_buckets_use_map(
                     h_it != f_it->second.rend();
                     h_it++) {
                     Bucket &bucket = h_it->second;
-                    if (!bucket.empty()) { //should always be true
-                        buckets.push_back(Bucket());
-                        buckets.back().swap(bucket);
-                    }
+                    assert (!bucket.empty());
+                    buckets.push_back(Bucket());
+                    buckets.back().swap(bucket);
                 }
             } else {
                 map<int, Bucket>::iterator h_it;
@@ -190,10 +104,9 @@ void ShrinkFH::ordered_buckets_use_map(
                     h_it != f_it->second.end();
                     h_it++) {
                     Bucket &bucket = h_it->second;
-                    if (!bucket.empty()) { //should always be true
-                        buckets.push_back(Bucket());
-                        buckets.back().swap(bucket);
-                    }
+                    assert (!bucket.empty());
+                    buckets.push_back(Bucket());
+                    buckets.back().swap(bucket);
                 }
             }
         }
@@ -202,7 +115,6 @@ void ShrinkFH::ordered_buckets_use_map(
 
 void ShrinkFH::ordered_buckets_use_vector(
     const Abstraction &abs,
-    bool all_in_same_bucket,
     vector<Bucket> &buckets) {
     vector<vector<Bucket > > states_by_f_and_h;
     states_by_f_and_h.resize(abs.max_f + 1);
@@ -215,11 +127,6 @@ void ShrinkFH::ordered_buckets_use_vector(
             continue;
 
         int f = g + h;
-
-        if (all_in_same_bucket) {
-            // Put all into the same bucket.
-            f = h = 0;
-        }
 
         assert(f >= 0 && f < states_by_f_and_h.size());
         assert(h >= 0 && h < states_by_f_and_h[f].size());

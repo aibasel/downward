@@ -60,7 +60,9 @@ struct AbstractTargetOp {
 
 class Abstraction {
     friend class ShrinkStrategy;
+    friend class ShrinkBucketBased;
     friend class ShrinkFH;
+    friend class ShrinkRandom;
     friend class ShrinkDFP;
     friend class ShrinkBisimulation;
     enum {

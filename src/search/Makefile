@@ -24,7 +24,9 @@ HEADERS = \
           pref_evaluator.h \
           relaxation_heuristic.h \
 		  shrink_strategy.h \
-		  shrink_fh.h\
+		  shrink_bucket_based.h \
+		  shrink_fh.h \
+	      shrink_random.h \
 	      shrink_dfp.h\
 		  shrink_bisimulation.h\
           search_engine.h \

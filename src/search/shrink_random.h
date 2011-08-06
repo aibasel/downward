@@ -1,12 +1,19 @@
 #ifndef SHRINK_RANDOM_H
 #define SHRINK_RANDOM_H
-#include "shrink_strategy.h"
+#include "shrink_bucket_based.h"
 #include <vector>
 
-class ShrinkRandom : public ShrinkStrategy {
+class ShrinkRandom : public ShrinkBucketBased {
 public:
-    ShrinkRandom(...);
-    void shrink(Abstraction &abs, bool force, int threshold);
+    ShrinkRandom();
+    ~ShrinkRandom();
+    void shrink(Abstraction &abs, int threshold, bool force = false);
+
+    bool is_bisimulation() const;
+    bool has_memory_limit() const;
+    bool is_dfp() const;
+
+    std::string description() const;
 };
 
 
