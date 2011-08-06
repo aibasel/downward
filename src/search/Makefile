@@ -23,12 +23,12 @@ HEADERS = \
           option_parser.h \
           pref_evaluator.h \
           relaxation_heuristic.h \
-		  shrink_strategy.h \
-		  shrink_bucket_based.h \
-		  shrink_fh.h \
-	      shrink_random.h \
-	      shrink_dfp.h\
-		  shrink_bisimulation.h\
+          shrink_strategy.h \
+          shrink_bucket_based.h \
+          shrink_fh.h \
+          shrink_random.h \
+          shrink_dfp.h \
+          shrink_bisimulation.h \
           search_engine.h \
           search_node_info.h \
           search_progress.h \
