@@ -2,9 +2,10 @@
 #include "option_parser.h"
 #include "ext/tree_util.hh"
 #include "plugin.h"
-#include <string>
 #include <algorithm>
 #include <iostream>
+#include <string>
+#include <utility>
 
 using namespace std;
 
@@ -107,8 +108,8 @@ static void plain_help_output() {
     }
 }
 
-
-static void moin_help_output() {
+//TODO: the next method becomes hard to read. Split up.
+static void text2tags_help_output() {
     cout << "Experimental automatically generated documentation." << endl
          << "<<TableOfContents>>" << endl;
     DocStore *ds = DocStore::instance();
@@ -122,23 +123,31 @@ static void moin_help_output() {
                 continue;
             cout << "== " << info.full_name << " ==" << endl
                  << info.synopsis << endl
-                 << "{{{" << endl            
-                 << keys[i] << "(";
+                 << "``` " << keys[i] << "(";
             for(size_t j(0); j != info.arg_help.size(); ++j){
-                cout << info.arg_help[j].kwd;
-                if(info.arg_help[j].default_value.compare("") != 0){
-                    cout << " = " << info.arg_help[j].default_value;
+                ArgumentInfo arg = info.arg_help[j];
+                cout << arg.kwd;
+                if(arg.default_value.compare("") != 0){
+                    cout << " = " << arg.default_value;
                 }
                 if(j != info.arg_help.size() - 1)
                     cout << ", ";
             }
-            cout << ")" << endl
-                 << "}}}" << endl << endl;
+            cout << ")" << endl << endl << endl;
 
             for(size_t j(0); j != info.arg_help.size(); ++j){
-                cout << " * `" << info.arg_help[j].kwd << "` (" 
-                     << info.arg_help[j].type_name << "): "
-                     << info.arg_help[j].help << endl;            
+                ArgumentInfo arg = info.arg_help[j];
+                cout << "- //" << arg.kwd << "// (" 
+                     << arg.type_name << "): "
+                     << arg.help << endl;
+                if(!arg.value_explanations.empty()) {
+                    for(size_t k(0); k != arg.value_explanations.size(); ++k) {
+                        pair<string, string> explanation = 
+                            arg.value_explanations[k];
+                        cout << " - //" << explanation.first << "//: "
+                             << explanation.second << endl;
+                    }
+                }
             }
             //language features:
             if(!info.support_help.empty()) {
@@ -146,7 +155,7 @@ static void moin_help_output() {
             }
             for(size_t j(0); j != info.support_help.size(); ++j) {
                 LanguageSupportInfo ls = info.support_help[j];
-                cout << " * '''" << ls.feature << ": '''"
+                cout << "- //" << ls.feature << ":// "
                      << ls.description << endl;
             }
             //properties:
@@ -155,7 +164,7 @@ static void moin_help_output() {
             }
             for(size_t j(0); j != info.property_help.size(); ++j) {
                 PropertyInfo p = info.property_help[j];
-                cout << " * '''" << p.property << ": '''"
+                cout << "- //" << p.property << ":// "
                      << p.description << endl;
             }
             cout << endl;
@@ -264,20 +273,14 @@ SearchEngine *OptionParser::parse_cmd_line(
             cout << "random seed " << argv[i] << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
-            string format = "plain";
+            bool text2tags = false;
             bool got_help = false;
             if (i + 1 < argc) {
                 for(int j = i+1; j < argc; ++j) {
-                    if (string(argv[j]).compare("--format") == 0) {
-                        if(argc < j+1) {
-                            cout << "Missing format option" << endl;
-                            exit(1);
-                        }
-                        format = argv[j+1];
-                        ++j;
+                    if (string(argv[j]).compare("--text2tags") == 0) {
+                        text2tags = true;
                     } else {
-                        string helpiand = string(argv[i + 1]);
-                        get_help(helpiand);
+                        get_help(string(argv[j]));
                         got_help = true;
                     }
                 }
@@ -285,13 +288,10 @@ SearchEngine *OptionParser::parse_cmd_line(
             if(!got_help){
                 get_full_help();
             }
-            if(format.compare("plain")==0){
+            if(!text2tags){
                 plain_help_output();
-            }else if (format.compare("moinmoin")==0){
-                moin_help_output();
             } else {
-                cout << "unknown help format option" << endl;
-                exit(1);
+                text2tags_help_output();
             }
             cout << "Help output finished." << endl;
             exit(0);
@@ -429,20 +429,27 @@ string str_to_lower(string s) {
 void OptionParser::add_enum_option(string k,
                                    vector<string > enumeration,
                                    string def_val, string h,
+                                   vector<string> enum_docs,
                                    OptionFlags flags) {
     if (help_mode_) {
+        ValueExplanations value_explanations;
         string enum_descr = "{";
         for (size_t i(0); i != enumeration.size(); ++i) {
             enum_descr += enumeration[i];
             if (i != enumeration.size() - 1) {
                 enum_descr += ", ";
             }
+            if (enum_docs.size() > i) {
+                value_explanations.push_back(make_pair(enumeration[i],
+                                                       enum_docs[i]));
+            }
         }
         enum_descr += "}";
 
         DocStore::instance()->add_arg(parse_tree.begin()->value,
-                                      k, h,
-                                      enum_descr, def_val);
+                                           k, h,
+                                           enum_descr, def_val,
+                                           value_explanations);
         return;
     }
 

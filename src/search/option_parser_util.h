@@ -8,6 +8,7 @@
 #include <ios>
 #include <tree.hh>
 #include <tree_util.hh>
+#include <utility>
 #include <boost/any.hpp>
 
 
@@ -389,18 +390,22 @@ struct OptionFlags {
     bool mandatory;
 };
 
+typedef std::vector<std::pair<std::string, std::string> > ValueExplanations;
 struct ArgumentInfo {
     ArgumentInfo(
-        std::string k, std::string h, std::string t_n, std::string def_val)
+        std::string k, std::string h, std::string t_n, std::string def_val,
+        ValueExplanations val_expl)
        : kwd(k),
          help(h),
          type_name(t_n),
-         default_value(def_val) {
+         default_value(def_val),
+         value_explanations(val_expl) {
     }
     std::string kwd;
     std::string help;
     std::string type_name;
     std::string default_value;
+    std::vector<std::pair<std::string, std::string> > value_explanations;
 };
 
 struct PropertyInfo {
@@ -453,9 +458,11 @@ public:
                  std::string arg_name,
                  std::string help,
                  std::string type,
-                 std::string default_value) {
+                 std::string default_value,
+                 ValueExplanations value_explanations = ValueExplanations()) {
         registered[k].arg_help.push_back(
-            ArgumentInfo(arg_name, help, type, default_value));
+            ArgumentInfo(arg_name, help, type, default_value,
+                         value_explanations));
     }
 
     void set_synopsis(std::string k, 

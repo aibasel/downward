@@ -221,14 +221,14 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support("conditional_effects", "ignored");
     parser.document_language_support("axioms", "ignored");
     parser.document_property("admissible", 
-                             "yes for tasks without conditional"
+                             "yes for tasks without conditional "
                              "effects or axioms");
     parser.document_property("consistent",
-                             "yes for tasks without conditional"
+                             "yes for tasks without conditional "
                              "effects or axioms");
 
     parser.document_property("safe",
-                             "yes for tasks without conditional"
+                             "yes for tasks without conditional "
                              "effects or axioms");
     parser.document_property("preferred operators", "no");
 
