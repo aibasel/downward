@@ -273,10 +273,14 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 	    cat Makefile.temp0 >> Makefile.temp; \
 	done
 	rm -f Makefile.temp0 Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.temp0
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.temp0
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.temp0
 	rm -f Makefile.temp
+	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.1.\2@" Makefile.temp0 >> Makefile.depend
+	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.2.\2@" Makefile.temp0 >> Makefile.depend
+	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.4.\2@" Makefile.temp0 >> Makefile.depend
+	rm -f Makefile.temp0
 
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(MAKECMDGOALS),distclean)
