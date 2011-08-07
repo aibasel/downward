@@ -1,13 +1,14 @@
-#ifndef LANDMARKS_LANDMARKS_GRAPH_ZHU_GIVAN_H
-#define LANDMARKS_LANDMARKS_GRAPH_ZHU_GIVAN_H
+#ifndef LANDMARKS_LANDMARK_FACTORY_ZHU_GIVAN_H
+#define LANDMARKS_LANDMARK_FACTORY_ZHU_GIVAN_H
 
+#include "landmark_factory.h"
+#include "landmark_graph.h"
+#include "landmark_types.h"
 #include "../globals.h"
-#include "landmarks_graph.h"
-#include "landmarks_types.h"
 
 using namespace __gnu_cxx;
 
-class LandmarksGraphZhuGivan : public LandmarksGraph {
+class LandmarkFactoryZhuGivan : public LandmarkFactory {
 private:
 
     class plan_graph_node {
@@ -67,11 +68,8 @@ public:
     void generate_landmarks();
 
 public:
-    LandmarksGraphZhuGivan(const Options &opts)
-        : LandmarksGraph(opts) {
-    }
-    ~LandmarksGraphZhuGivan() {
-    }
+    LandmarkFactoryZhuGivan(const Options &opts);
+    virtual ~LandmarkFactoryZhuGivan() {}
 };
 
 #endif

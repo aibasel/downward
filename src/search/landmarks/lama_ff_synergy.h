@@ -81,7 +81,6 @@ public:
     void get_ff_preferred_operators(std::vector<const Operator *> &result);
 public:
     LamaFFSynergy(const Options &opts);
-
     ~LamaFFSynergy() {}
 
     int lama_heuristic_value;

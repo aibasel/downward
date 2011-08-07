@@ -1,7 +1,7 @@
 #include "lama_ff_synergy.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "landmarks_graph_rpg_sasp.h"
+#include "landmark_factory_rpg_sasp.h"
 
 
 LamaFFSynergy::HeuristicProxy::HeuristicProxy(LamaFFSynergy *synergy_)
@@ -75,7 +75,7 @@ bool LamaFFSynergy::lama_reach_state(const State &parent_state,
 
 static Synergy *_parse(OptionParser &parser) {
     Synergy *syn = new Synergy;
-    parser.add_option<LandmarksGraph *>("lm_graph");
+    parser.add_option<LandmarkGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
     parser.add_option<bool>("optimal", false, "optimal cost sharing");
     parser.add_option<bool>("alm", true, "use action landmarks");
