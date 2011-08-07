@@ -149,7 +149,9 @@ public:
 
     void add_enum_option(std::string k,
                          std::vector<std::string > enumeration,
-                         std::string def_val = "", std::string h = "", OptionFlags flags = OptionFlags());
+                         std::string def_val = "", std::string h = "",
+                         std::vector<std::string> enum_doc = std::vector<std::string>(),
+                         OptionFlags flags = OptionFlags());
 
     template <class T>
     void add_list_option(std::string k, std::string h = "", OptionFlags flags = OptionFlags());
