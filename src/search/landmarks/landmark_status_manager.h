@@ -1,20 +1,20 @@
 #ifndef LANDMARKS_LANDMARK_STATUS_MANAGER_H
 #define LANDMARKS_LANDMARK_STATUS_MANAGER_H
 
-#include "landmarks_graph.h"
+#include "landmark_graph.h"
 #include "../state_proxy.h"
 
 class LandmarkStatusManager {
 private:
-    hash_map<StateProxy, vector<bool> > reached_lms;
+    __gnu_cxx::hash_map<StateProxy, vector<bool> > reached_lms;
 
     bool do_intersection;
-    LandmarksGraph &lm_graph;
+    LandmarkGraph &lm_graph;
 
     bool landmark_is_leaf(const LandmarkNode &node, const vector<bool> &reached) const;
     bool check_lost_landmark_children_needed_again(const LandmarkNode &node) const;
 public:
-    LandmarkStatusManager(LandmarksGraph &graph);
+    LandmarkStatusManager(LandmarkGraph &graph);
     virtual ~LandmarkStatusManager();
 
     void clear_reached();

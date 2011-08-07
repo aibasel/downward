@@ -1,6 +1,8 @@
 #include "landmark_status_manager.h"
 
-LandmarkStatusManager::LandmarkStatusManager(LandmarksGraph &graph)
+using namespace __gnu_cxx;
+
+LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : lm_graph(graph) {
     do_intersection = true;
 }
@@ -132,7 +134,6 @@ bool LandmarkStatusManager::update_lm_status(const State &state) {
     for (lit = nodes.begin(); lit != nodes.end(); lit++) {
         LandmarkNode &node = **lit;
         node.status = lm_not_reached;
-        node.effect_of_ununsed_alm = false;
         if (reached[node.get_id()]) {
             node.status = lm_reached;
         }
