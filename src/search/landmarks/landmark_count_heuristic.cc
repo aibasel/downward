@@ -73,10 +73,6 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
     // they do not get counted as reached in that case). However, we
     // must return 0 for a goal state.
 
-    bool goal_reached = test_goal(state);
-    if (goal_reached)
-        return 0;
-
     bool dead_end = lm_status_manager.update_lm_status(state);
 
     if (dead_end) {
@@ -104,7 +100,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
     // For debugging purposes, check whether heuristic is 0 even though
     // goal is not reached. This should never happen unless action costs
     // are used where some actions have cost 0.
-    if (h == 0 && !goal_reached) {
+    if (h == 0 && !test_goal(state)) {
         assert(g_use_metric);
         bool all_costs_are_zero = true;
         //cout << "WARNING! Landmark heuristic is 0, but goal not reached" << endl;
@@ -126,9 +122,14 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
 }
 
 int LandmarkCountHeuristic::compute_heuristic(const State &state) {
+    bool goal_reached = test_goal(state);
+    if (goal_reached)
+        return 0;
+
     int h = get_heuristic_value(state);
 
-    if (!use_preferred_operators || h == 0) { // no (need for) helpful actions, return
+    // no (need for) helpful actions, return
+    if (!use_preferred_operators) {
         return h;
     }
 
@@ -140,11 +141,8 @@ int LandmarkCountHeuristic::compute_heuristic(const State &state) {
     LandmarkSet reached_lms;
     vector<bool> &reached_lms_v = lm_status_manager.get_reached_landmarks(state);
     convert_lms(reached_lms, reached_lms_v);
-    const int reached_lms_cost = lgraph.get_reached_cost();
 
-    // BUG/TODO/FIXME: This first test likely does the wrong thing in
-    // the presence of zero-cost landmarks.
-    if (reached_lms_cost == lgraph.cost_of_landmarks()
+    if (reached_lms.size() == lgraph.number_of_landmarks()
         || !generate_helpful_actions(state, reached_lms)) {
         assert(exploration != NULL);
         set_exploration_goals(state);
