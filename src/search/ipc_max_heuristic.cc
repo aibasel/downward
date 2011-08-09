@@ -51,7 +51,8 @@ bool IPCMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
     return result;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("IPC-Max Heuristic", "");
     parser.add_list_option<Heuristic *>("heuristics");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
@@ -64,4 +65,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new IPCMaxHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> plugin("max", _parse);
+static Plugin<Heuristic> plugin("max", _parse);

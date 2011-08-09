@@ -314,8 +314,10 @@ static SearchEngine *_parse(OptionParser &parser) {
     //because for templated classes the usual method of registering
     //does not work:
     Plugin<OpenList<state_var_t *> >::register_open_lists();
-
-    parser.add_option<OpenList<state_var_t *> *>("open");
+    
+    parser.document_synopsis("Eager best first search", "");
+    
+    parser.add_option<OpenList<state_var_t *> *>("open", "open list");
     parser.add_option<bool>("reopen_closed", false,
                             "reopen closed nodes");
     parser.add_option<bool>("pathmax", false,
@@ -338,7 +340,18 @@ static SearchEngine *_parse(OptionParser &parser) {
 }
 
 static SearchEngine *_parse_astar(OptionParser &parser) {
-    parser.add_option<ScalarEvaluator *>("eval");
+    parser.document_synopsis(
+        "A* search (eager)",
+        "A* is a special case of eager best first search that uses g+h "
+        "as f-function. "
+        "We break ties using the evaluator. Closed nodes are re-opened.");
+    parser.document_note(
+        "mpd option", 
+        "This option is currently only present for the A* algorithm and not "
+        "for the more general eager search, "
+        "because the current implementation of multi-path depedence "
+        "does not support general open lists.");
+    parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
     parser.add_option<bool>("pathmax", false,
                             "use pathmax correction");
     parser.add_option<bool>("mpd", false,
@@ -372,9 +385,27 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
 }
 
 static SearchEngine *_parse_greedy(OptionParser &parser) {
-    parser.add_list_option<ScalarEvaluator *>("evals");
-    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), "use preferred operators of these heuristics");
-    parser.add_option<int>("boost", 0, "boost value for preferred operator open lists");
+    parser.document_synopsis("Greedy search (eager)", "");
+    parser.document_note(
+        "Open list",
+        "In most cases, eager greedy best first search uses "
+        "an alternation open list with one queue for each evaluator. "
+        "If preferred operator heuristics are used, it adds an extra queue "
+        "for each of these evaluators that includes only the nodes that "
+        "are generated with a preferred operator. "
+        "If only one evaluator and no preferred operator heuristic is used, "
+        "the search does not use an alternation open list but a "
+        "standard open list with only one queue.");
+    parser.document_note(
+        "Closed nodes",
+        "Closed node are not re-opened");
+    parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
+    parser.add_list_option<Heuristic *>(
+        "preferred", vector<Heuristic *>(),
+        "use preferred operators of these heuristics");
+    parser.add_option<int>(
+        "boost", 0,
+        "boost value for preferred operator open lists");
     SearchEngine::add_options_to_parser(parser);
 
 

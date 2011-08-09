@@ -306,6 +306,11 @@ void LandmarkFactoryZhuGivan::compute_triggers() {
 }
 
 static LandmarkGraph *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Zhu/Givan Landmarks",
+        "The landmark generation method introduced by "
+        "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
+    parser.document_note("Relevant options", "reasonable_orders, no_orders");
     LandmarkGraph::add_options_to_parser(parser);
     Options opts = parser.parse();
 

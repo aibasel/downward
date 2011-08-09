@@ -109,7 +109,7 @@ static void plain_help_output() {
 }
 
 //TODO: the next method becomes hard to read. Split up.
-static void text2tags_help_output() {
+static void txt2tags_help_output() {
     cout << "Experimental automatically generated documentation." << endl
          << "<<TableOfContents>>" << endl;
     DocStore *ds = DocStore::instance();
@@ -149,13 +149,19 @@ static void text2tags_help_output() {
                     }
                 }
             }
+            //notes:
+            for(size_t j(0); j != info.notes.size(); ++j) {
+                NoteInfo note = info.notes[j];
+                cout << "**" << note.name << ":** "
+                     << note.description << endl;
+            }            
             //language features:
             if(!info.support_help.empty()) {
                 cout << "Language features supported:" << endl;
             }
             for(size_t j(0); j != info.support_help.size(); ++j) {
                 LanguageSupportInfo ls = info.support_help[j];
-                cout << "- //" << ls.feature << ":// "
+                cout << "- **" << ls.feature << ":** "
                      << ls.description << endl;
             }
             //properties:
@@ -164,7 +170,7 @@ static void text2tags_help_output() {
             }
             for(size_t j(0); j != info.property_help.size(); ++j) {
                 PropertyInfo p = info.property_help[j];
-                cout << "- //" << p.property << ":// "
+                cout << "- **" << p.property << ":** "
                      << p.description << endl;
             }
             cout << endl;
@@ -273,12 +279,12 @@ SearchEngine *OptionParser::parse_cmd_line(
             cout << "random seed " << argv[i] << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
-            bool text2tags = false;
+            bool txt2tags = false;
             bool got_help = false;
             if (i + 1 < argc) {
                 for(int j = i+1; j < argc; ++j) {
-                    if (string(argv[j]).compare("--text2tags") == 0) {
-                        text2tags = true;
+                    if (string(argv[j]).compare("--txt2tags") == 0) {
+                        txt2tags = true;
                     } else {
                         get_help(string(argv[j]));
                         got_help = true;
@@ -288,10 +294,10 @@ SearchEngine *OptionParser::parse_cmd_line(
             if(!got_help){
                 get_full_help();
             }
-            if(!text2tags){
-                plain_help_output();
+            if(txt2tags){
+                txt2tags_help_output();
             } else {
-                text2tags_help_output();
+                plain_help_output();
             }
             cout << "Help output finished." << endl;
             exit(0);
@@ -534,6 +540,11 @@ void OptionParser::document_language_support(string feature,
                                       feature, note);
 }
 
+void OptionParser::document_note(string name, 
+                                 string note) const {
+    DocStore::instance()->add_note(parse_tree.begin()->value,
+                                      name, note);
+}
 
 bool OptionParser::dry_run() const {
     return dry_run_;

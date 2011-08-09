@@ -70,14 +70,25 @@ int SearchEngine::get_adjusted_cost(const Operator &op) const {
 
 void SearchEngine::add_options_to_parser(OptionParser &parser) {
     vector<string> cost_types;
+    vector<string> cost_types_doc;
     cost_types.push_back("NORMAL");
+    cost_types_doc.push_back(
+        "all actions are accounted for with their real cost");
     cost_types.push_back("ONE");
+    cost_types_doc.push_back(
+        "all actions are accounted for as unit cost");
     cost_types.push_back("PLUSONE");
+    cost_types_doc.push_back(
+        "all actions are accounted for as their real cost + 1 "
+        "(except if all actions have original cost 1, "
+        "in which case cost 1 is used). "
+        "This doesn't make sense for search engines, but is still supported.");
     parser.add_enum_option("cost_type",
                            cost_types,
                            "NORMAL",
                            "operator cost adjustment type");
-    parser.add_option<int>("bound",
-                           numeric_limits<int>::max(),
-                           "bound on plan cost");
+    parser.add_option<int>(
+        "bound", numeric_limits<int>::max(),
+        "depth bound on g-values. Cutoffs are always performed according to "
+        "the real cost, regardless of the cost_type parameter");
 }

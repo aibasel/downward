@@ -417,6 +417,16 @@ struct PropertyInfo {
     std::string description;
 };
 
+struct NoteInfo {
+    NoteInfo(std::string n, std::string descr)
+        : name(n),
+          description(descr) {
+    }
+    std::string name;
+    std::string description;
+};
+
+
 struct LanguageSupportInfo{
     LanguageSupportInfo(std::string feat, std::string descr)
         : feature(feat),
@@ -434,6 +444,7 @@ struct DocStruct {
     std::vector<ArgumentInfo> arg_help;
     std::vector<PropertyInfo> property_help;
     std::vector<LanguageSupportInfo> support_help;
+    std::vector<NoteInfo> notes;
 };
 
 //stores documentation for types parsed in help mode
@@ -480,6 +491,11 @@ public:
                      std::string feature, std::string description) {
         registered[k].support_help.push_back(LanguageSupportInfo(feature,
                                                                   description));
+    }
+
+    void add_note(std::string k,
+                  std::string name, std::string description) {
+        registered[k].notes.push_back(NoteInfo(name, description));
     }
                       
 

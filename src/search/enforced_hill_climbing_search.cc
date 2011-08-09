@@ -224,11 +224,10 @@ void EnforcedHillClimbingSearch::statistics() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    parser.add_option<Heuristic *>("h");
-
+    parser.document_synopsis("Enforced hill-climbing", "");
+    parser.add_option<Heuristic *>("h","heuristic");
     parser.add_option<bool>("bfs_use_cost", false,
                             "use cost for bfs");
-
     vector<string> preferred_usages;
     preferred_usages.push_back("PRUNE_BY_PREFERRED");
     preferred_usages.push_back("RANK_PREFERRED_FIRST");
@@ -236,8 +235,9 @@ static SearchEngine *_parse(OptionParser &parser) {
                            "PRUNE_BY_PREFERRED",
                            "preferred operator usage");
 
-    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(),
-                                        "use preferred operators of these heuristics");
+    parser.add_list_option<Heuristic *>(
+        "preferred", vector<Heuristic *>(),
+        "use preferred operators of these heuristics");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 

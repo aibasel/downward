@@ -25,6 +25,8 @@ int GEvaluator::get_value() const {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.document_synopsis("g-value evaluator",
+                             "Returns the current g-value of the search.");
     parser.parse();
     if (parser.dry_run())
         return 0;
