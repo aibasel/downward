@@ -7,7 +7,7 @@
 #include "plugin.h"
 
 WeightedEvaluator::WeightedEvaluator(const Options &opts)
-    : evaluator(opts.get_list<ScalarEvaluator *>("evals")[0]),
+    : evaluator(opts.get<ScalarEvaluator *>("eval")),
       w(opts.get<int>("weight")) {
 }
 
@@ -42,8 +42,11 @@ void WeightedEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_list_option<ScalarEvaluator *>("evals");
-    parser.add_option<int>("weight");
+    parser.document_synopsis(
+        "Weighted evaluator",
+        "Multiplies the value of the scalar evaluator with the given weight.");
+    parser.add_option<ScalarEvaluator *>("eval", "scalar evaluator");
+    parser.add_option<int>("weight", "weight");
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;

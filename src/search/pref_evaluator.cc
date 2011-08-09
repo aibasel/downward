@@ -28,7 +28,9 @@ int PrefEvaluator::get_value() const {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.parse(); //to check if no superfluous options were supplied
+    parser.document_synopsis("Preference evaluator",
+                             "Returns 0 if preferred is true and 1 otherwise.");
+    parser.parse();
     if (parser.dry_run())
         return 0;
     else
