@@ -196,7 +196,7 @@ struct TypeNamer<Heuristic *> {
 template <>
 struct TypeNamer<LandmarkGraph *> {
     static std::string name() {
-        return "landmarks graph";
+        return "landmark graph";
     }
 };
 
