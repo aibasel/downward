@@ -116,7 +116,7 @@ static void txt2tags_help_output() {
     vector<string> keys = ds->get_keys();
     vector<string> types = ds->get_types();
     for(size_t n(0); n != types.size(); ++n) {
-        cout << "= " << types[n] << "s" << " =" << endl;
+        cout << ">>>>CATEGORY: " << types[n] << "s" << "<<<<" << endl;
         for(size_t i(0); i != keys.size(); ++i) {
             DocStruct info = ds->get(keys[i]);
             if(info.type.compare(types[n]) != 0)
@@ -153,7 +153,7 @@ static void txt2tags_help_output() {
             for(size_t j(0); j != info.notes.size(); ++j) {
                 NoteInfo note = info.notes[j];
                 cout << "**" << note.name << ":** "
-                     << note.description << endl;
+                     << note.description << endl << endl;
             }            
             //language features:
             if(!info.support_help.empty()) {
@@ -173,8 +173,9 @@ static void txt2tags_help_output() {
                 cout << "- **" << p.property << ":** "
                      << p.description << endl;
             }
-            cout << endl;
         }
+        cout << endl;
+        cout << ">>>>CATEGORYEND<<<<" << endl;
     }        
 }
 
