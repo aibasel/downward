@@ -140,7 +140,7 @@ static SearchEngine *_parse(OptionParser &parser) {
         "Adding heuristic caching is [issue108 http://issues.fast-downward.org/issue108].");
     parser.document_note(
         "Note 2",
-        "Use heuristic predefinition to avoid duplicate preprocessing (e.g. in the merge-and-shrink heuristic) "
+        "Use heuristic predefinition (see ReusingHeuristics) to avoid duplicate preprocessing (e.g. in the merge-and-shrink heuristic) "
         "when using the same heuristic multiple times.");
     parser.document_note(
         "Note 3",
