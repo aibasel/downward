@@ -74,6 +74,16 @@ bool LamaFFSynergy::lama_reach_state(const State &parent_state,
 }
 
 static Synergy *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "LAMA-FF synergy",
+        "If the FF heuristic should be used "
+        "(for its estimates or its preferred operators) "
+        "and we want to use preferred operators of the "
+        "landmark count heuristic, we can exploit synergy effects by "
+        "using the LAMA-FF synergy. "
+        "This synergy can only be used via Predefinition "
+        "(see ReusingHeuristics), for example:\n"
+        "\"hlm,hff=lm_ff_syn(...)\"");
     Synergy *syn = new Synergy;
     parser.add_option<LandmarkGraph *>("lm_graph");
     parser.add_option<bool>("admissible", false, "get admissible estimate");
