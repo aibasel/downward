@@ -26,8 +26,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_label_simplification(opts.get<bool>("simplify_labels")),
-      use_expensive_statistics(opts.get<bool>("expensive_statistics")),
-      merge_mixing_parameter(opts.get<double>("merge_mixing_parameter")) {
+      use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
     assert(max_abstract_states_before_merge > 0);
     assert(max_abstract_states >= max_abstract_states_before_merge);
 }
@@ -63,16 +62,6 @@ void MergeAndShrinkHeuristic::dump_options() const {
         break;
     case MERGE_LINEAR_REVERSE_LEVEL:
         cout << "linear by reverse level";
-        break;
-    case MERGE_LEVEL_THEN_INVERSE:
-        cout
-        << "linear mixing level and inverse level, first by level then inverse, mixing parameter is: "
-        << merge_mixing_parameter;
-        break;
-    case MERGE_INVERSE_THEN_LEVEL:
-        cout
-        << "linear mixing level and inverse level, first inverse then by level, mixing parameter is: "
-        << merge_mixing_parameter;
         break;
     default:
         abort();
@@ -180,14 +169,17 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
     cout << "Merging abstractions..." << endl;
 
-    VariableOrderFinder order(merge_strategy, merge_mixing_parameter, is_first);
+    VariableOrderFinder order(merge_strategy, is_first);
 
-    Abstraction *abstraction = atomic_abstractions[order.next()];
+    int var_no = order.next();
+    cout << "next variable: #" << var_no << endl;
+    Abstraction *abstraction = atomic_abstractions[var_no];
     abstraction->statistics(use_expensive_statistics);
 
     bool first_iteration = true;
     while (!order.done() && abstraction->is_solvable()) {
         int var_no = order.next();
+        cout << "next variable: #" << var_no << endl;
         Abstraction *other_abstraction = atomic_abstractions[var_no];
 
         pair<int, int> new_sizes = compute_shrink_sizes(abstraction->size(),
@@ -466,8 +458,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     merge_strategies.push_back("MERGE_DFP");
     merge_strategies.push_back("MERGE_LINEAR_LEVEL");
     merge_strategies.push_back("MERGE_LINEAR_REVERSE_LEVEL");
-    merge_strategies.push_back("MERGE_LEVEL_THEN_INVERSE");
-    merge_strategies.push_back("MERGE_INVERSE_THEN_LEVEL");
     parser.add_enum_option("merge_strategy", merge_strategies,
                            "MERGE_LINEAR_CG_GOAL_LEVEL",
                            "merge strategy");
@@ -476,7 +466,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("simplify_labels", true, "enable label simplification");
     parser.add_option<bool>("expensive_statistics", false, "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)");
-    parser.add_option<double>("merge_mixing_parameter", -1.0, "merge mixing parameter");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
@@ -486,8 +475,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     int max_states = opts.get<int>("max_states");
     int max_states_before_merge = opts.get<int>("max_states_before_merge");
     MergeStrategy merge_strategy = MergeStrategy(opts.get_enum("merge_strategy"));
-    double merge_mixing_parameter = opts.get<double>("merge_mixing_parameter");
-
 
     if (max_states == -1 && max_states_before_merge == -1) {
         // None of the two options specified: set default limit
@@ -527,18 +514,9 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         exit(2);
     }
 
-    if ((merge_strategy == MERGE_LEVEL_THEN_INVERSE || merge_strategy
-         == MERGE_INVERSE_THEN_LEVEL) && (merge_mixing_parameter < 0.0
-                                          || merge_mixing_parameter > 1.0)) {
-        cerr << "error: mixed merging strategy with invalid mixing parameter: "
-             << merge_mixing_parameter << endl;
-        exit(2);
-    }
-
     //write values back:
     opts.set<int>("max_states", max_states);
     opts.set<int>("max_states_before_merge", max_states_before_merge);
-
 
     if (parser.dry_run()) {
         return 0;
