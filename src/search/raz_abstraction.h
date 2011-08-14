@@ -146,17 +146,12 @@ public:
     int unique_unlabeled_transitions(const vector<int> &relevant_ops) const;
     bool is_in_varset(int var) const;
 
-    void shrink(int threshold, bool force = false);
     //    void reduce_operators(int op1, int op2);
     void release_memory();
 
     void dump() const;
 
     void dump_transitions_by_src() const;
-
-    void set_shrink_strategy(ShrinkStrategy *s) {
-        shrink_strategy = s;
-    }
 
 };
 class AtomicAbstraction : public Abstraction {
@@ -183,36 +178,5 @@ public:
     CompositeAbstraction(Abstraction *abs1, Abstraction *abs2,
                          bool simplify_labels, bool normalize_after_composition);
 };
-
-
-typedef vector<pair<int, int> > SuccessorSignature;
-
-struct Signature {
-    int h;
-    int group;
-    SuccessorSignature succ_signature;
-    int state;
-
-    Signature(int h_, int group_, const SuccessorSignature &succ_signature_,
-              int state_)
-        : h(h_), group(group_), succ_signature(succ_signature_), state(state_) {
-    }
-
-    bool matches(const Signature &other) const {
-        return h == other.h && group == other.group && succ_signature
-               == other.succ_signature;
-    }
-
-    bool operator<(const Signature &other) const {
-        if (h != other.h)
-            return h < other.h;
-        if (group != other.group)
-            return group < other.group;
-        if (succ_signature != other.succ_signature)
-            return succ_signature < other.succ_signature;
-        return state < other.state;
-    }
-};
-
 
 #endif

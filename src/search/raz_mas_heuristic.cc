@@ -196,22 +196,20 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         int other_new_size = new_sizes.second;
 
 
-        //TODO - never shrink atomic abstraction in no memory limit strategies
         if (other_new_size != other_abstraction->size()) {
             //				&& !is_bisimulation_strategy) {
             cout << "atomic abstraction too big; must shrink" << endl;
-            if (!shrink_strategy->has_memory_limit() 
-                || !shrink_strategy->is_bisimulation())
+            if (shrink_strategy->has_memory_limit())
                 shrink_strategy->shrink(*other_abstraction, other_new_size);
-            else {
+            else if (shrink_strategy->is_bisimulation()){
                 ShrinkBisimulation nolimit(false, false);
                 nolimit.shrink(*other_abstraction, 1000000000, false);
             }
         }
         //TODO - always shrink non-atomic abstraction in no memory limit strategies
         if (new_size != abstraction->size()
-            || !shrink_strategy->has_memory_limit() 
-            || !shrink_strategy->is_bisimulation()) {
+            || (!shrink_strategy->has_memory_limit()
+                && shrink_strategy->is_bisimulation())) {
             shrink_strategy->shrink(*abstraction, new_size);
             abstraction->statistics(use_expensive_statistics);
         }
@@ -413,27 +411,6 @@ void MergeAndShrinkHeuristic::initialize() {
     //conf 1 is what is given by the user in the cmd line.
     //conf 2 is the following: 5-12-1-true-none
     int peak_memory = 0;
-
-    if (abstraction_count == -2) {
-        cout << "Building abstraction nr 1..." << endl;
-        Abstraction *abstraction = build_abstraction(true);
-        peak_memory = max(peak_memory, abstraction->get_peak_memory_estimate());
-        abstractions.push_back(abstraction);
-        //if (!abstractions.back()->is_solvable())
-        //	break;
-
-        cout << "Building abstraction nr 2..." << endl;
-        merge_strategy = MERGE_LINEAR_LEVEL;
-        max_abstract_states = 1;
-        max_abstract_states_before_merge = 1;
-        abstraction = build_abstraction(true);
-//        shrink_strategy = SHRINK_GREEDY_BISIMULATION_NO_MEMORY_LIMIT;
-        abstraction->set_shrink_strategy(new ShrinkBisimulation(true, false));
-        peak_memory = max(peak_memory, abstraction->get_peak_memory_estimate());
-        abstractions.push_back(abstraction);
-        //if (!abstractions.back()->is_solvable())
-        //	break;
-    }
 
     for (int i = 0; i < abstraction_count; i++) {
         cout << "Building abstraction nr " << i << "..." << endl;

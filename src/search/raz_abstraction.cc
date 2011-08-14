@@ -128,8 +128,10 @@ void Abstraction::compute_distances() {
         // Call shrink to discard unreachable and irrelevant states.
         // The exact strategy doesn't matter much (although it should
         // be efficient) as there is no need to actually shrink.
-        //TODO - very important - since no other shrinking strategy supposrt AC yet, I put SHRINK_BISIMULATION_NO_MEMORY_LIMIT...
-        //NOTE(mg) - is the above TODO still valid?
+        //TODO - use the simplest/fastest shrink strategy here,
+        // or create a dedicated one from scratch.
+        // The current method is an artifact from when
+        // action costs where not supported by all strategies.
         ShrinkBisimulation nolimit(false, false);
         nolimit.shrink(*this, 1, true);
         //shrink(size(), SHRINK_HIGH_F_LOW_H, true);
@@ -788,19 +790,6 @@ void Abstraction::apply_abstraction(
 //In further label reductions, this should at least be done, and if normalize includes
 //the update of the transition by source database, this should be done so the transition
 //by source database is updated.
-
-//TODO: check if this function is still necessary
-void Abstraction::shrink(int threshold, bool force) {
-    /* Shrink the abstraction to size threshold.
-
-     This also prunes all irrelevant and unreachable states, which
-     may cause the resulting size to be lower than threshold.
-
-     Does nothing if threshold >= size() unless force is true (in
-     which case it only prunes irrelevant and unreachable states).
-     */
-    shrink_strategy->shrink(*this, threshold, force);
-}
 
 bool Abstraction::is_solvable() const {
     return init_state != -1;

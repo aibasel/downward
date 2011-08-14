@@ -208,7 +208,7 @@ void OptionParser::add_option(
         helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
         if (opts.contains(k)) {
             helpers.back().default_value =
-                DefaultValueNamer<T>::toStr(opts.get<T>(k));
+                DefaultValueNamer<T>::to_str(opts.get<T>(k));
         }
         return;
     }

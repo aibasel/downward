@@ -26,8 +26,7 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
         return;
 
     vector<Bucket > buckets;
-    const int max_vector_size = 50;
-    if(abs.max_f > max_vector_size) {
+    if(abs.max_f > abs.num_states) {
         ordered_buckets_use_map(abs, buckets);
     } else {
         ordered_buckets_use_vector(abs, buckets);
