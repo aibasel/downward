@@ -77,7 +77,7 @@ using namespace std;
 
 inline int get_op_index(const Operator *op) {
     /* TODO: The op_index computation is duplicated from
-     OperatorRegistry::get_op_index() and actually belongs neither
+     LabelReducer::get_op_index() and actually belongs neither
      here nor there. There should be some canonical way of getting
      from an Operator pointer to an index, but it's not clear how to
      do this in a way that best fits the overall planner
@@ -224,46 +224,46 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(const vector<
         }
     }
 }
-void Abstraction::normalize(bool simplify_labels) {
-    /* Apply label simplification and remove duplicate transitions.
+void Abstraction::normalize(bool use_label_reduction) {
+    /* Apply label reduction and remove duplicate transitions.
 
-     This is called right before an abstraction is merged with
-     another through a product operation.
+       This is called right before an abstraction is merged with
+       another through a product operation.
 
-     Note that we could also normalize between merging and shrinking
-     (e.g. to make the distance computations cheaper) but don't,
-     because the costs are much higher than the benefits in our
-     experiments.
+       Note that we could also normalize between merging and shrinking
+       (e.g. to make the distance computations cheaper) but don't,
+       because the costs are much higher than the benefits in our
+       experiments.
      */
     // dump();
 
-    OperatorRegistry *op_reg = 0;
-    if (simplify_labels) {
-        op_reg = new OperatorRegistry(relevant_operators, varset);
-        op_reg->statistics();
+    LabelReducer *reducer = 0;
+    if (use_label_reduction) {
+        reducer = new LabelReducer(relevant_operators, varset);
+        reducer->statistics();
     }
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
 
     /* First, partition by target state. Also replace operators by
-     canonical operators and clear away the transitions that have
-     been processed. */
+       their canonical representatives via label reduction and clear
+       away the transitions that have been processed. */
     vector<StateBucket> target_buckets(num_states);
     for (int op_no = 0; op_no < transitions_by_op.size(); op_no++) {
         vector<AbstractTransition> &transitions = transitions_by_op[op_no];
         if (!transitions.empty()) {
-            int canon_op_no;
-            if (op_reg) {
+            int reduced_op_no;
+            if (reducer) {
                 const Operator *op = &g_operators[op_no];
-                const Operator *canon_op = op_reg->get_canonical_operator(op);
-                canon_op_no = get_op_index(canon_op);
+                const Operator *reduced_op = reducer->get_reduced_label(op);
+                reduced_op_no = get_op_index(reduced_op);
             } else {
-                canon_op_no = op_no;
+                reduced_op_no = op_no;
             }
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &t = transitions[i];
                 target_buckets[t.target].push_back(
-                    make_pair(t.src, canon_op_no));
+                    make_pair(t.src, reduced_op_no));
             }
             vector<AbstractTransition> ().swap(transitions);
         }
@@ -288,7 +288,10 @@ void Abstraction::normalize(bool simplify_labels) {
         for (int i = 0; i < bucket.size(); i++) {
             int target = bucket[i].first;
             int op_no = bucket[i].second;
-            int op_cost = g_operators[op_no].get_cost();             //This works w/o reference to op_reg because we only reduce lables with the same cost.
+            int op_cost = g_operators[op_no].get_cost();
+            // This works w/o reference to reducer because we
+            // only reduce labels the same cost.
+
             vector<AbstractTransition> &op_bucket = transitions_by_op[op_no];
             AbstractTransition trans(src, target, op_cost);
             if (op_bucket.empty() || op_bucket.back() != trans)
@@ -296,7 +299,7 @@ void Abstraction::normalize(bool simplify_labels) {
         }
     }
 
-    delete op_reg;
+    delete reducer;
     // dump();
     //	dump_transitions_by_src();
 }
@@ -392,7 +395,7 @@ AtomicAbstraction::AtomicAbstraction(int variable_)
     }
 }
 CompositeAbstraction::CompositeAbstraction(Abstraction *abs1,
-                                           Abstraction *abs2, bool simplify_labels,
+                                           Abstraction *abs2, bool use_label_reduction,
                                            bool normalize_after_compostition) {
     assert(abs1->is_solvable() && abs2->is_solvable());
 
@@ -401,9 +404,9 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1,
 
     ::set_union(abs1->varset.begin(), abs1->varset.end(), abs2->varset.begin(),
                 abs2->varset.end(), back_inserter(varset));
-    if (simplify_labels) {
+    if (use_label_reduction) {
         if (varset.size() != abs1->varset.size() + abs2->varset.size()) {
-            cout << "error: label simplification is only correct "
+            cout << "error: label reduction is only correct "
                  << "for orthogonal compositions" << endl;
             ::exit(1);
         }
@@ -435,9 +438,9 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1,
     // test is just a hack to make it work for linear abstraction
     // strategies. See issue68.
     if (abs1->varset.size() > 1)
-        abs1->normalize(simplify_labels && !normalize_after_compostition);
+        abs1->normalize(use_label_reduction && !normalize_after_compostition);
     else if (abs2->varset.size() > 1)
-        abs2->normalize(simplify_labels && !normalize_after_compostition);
+        abs2->normalize(use_label_reduction && !normalize_after_compostition);
 
     int multiplier = abs2->size();
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {

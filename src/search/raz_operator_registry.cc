@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "raz_operator_registry.h"
+#include "utilities.h"
 
 #include <cassert>
 #include <ext/hash_map>
@@ -14,8 +15,8 @@ typedef pair<int, int> Assignment;
 struct OperatorSignature {
     vector<int> data;
 
-    OperatorSignature(const vector<Assignment> &preconditions, const vector<
-                          Assignment> &effects, const int cost) {
+    OperatorSignature(const vector<Assignment> &preconditions,
+                      const vector<Assignment> &effects, int cost) {
         // We require that preconditions and effects are sorted by
         // variable -- some sort of canonical representation is needed
         // to guarantee that we can properly test for uniqueness.
@@ -41,16 +42,7 @@ struct OperatorSignature {
     }
 
     size_t hash() const {
-        // HACK! This is copied from state.cc and should be factored
-        // out to a common place.
-        size_t hash_value = 0x345678;
-        size_t mult = 1000003;
-        for (int i = data.size() - 1; i >= 0; i--) {
-            hash_value = (hash_value ^ data[i]) * mult;
-            mult += 82520 + i + i;
-        }
-        hash_value += 97531;
-        return hash_value;
+        return ::hash_number_sequence(data, data.size());
     }
 };
 
@@ -64,19 +56,19 @@ struct hash<OperatorSignature> {
 }
 
 
-OperatorRegistry::OperatorRegistry(
+LabelReducer::LabelReducer(
     const vector<const Operator *> &relevant_operators,
     const vector<int> &pruned_vars) {
-    num_vars = pruned_vars.size();
-    num_operators = relevant_operators.size();
-    num_canonical_operators = 0;
+    num_pruned_vars = pruned_vars.size();
+    num_labels = relevant_operators.size();
+    num_reduced_labels = 0;
 
-    vector<int> var_is_used(g_variable_domain.size(), true);
+    vector<bool> var_is_used(g_variable_domain.size(), true);
     for (int i = 0; i < pruned_vars.size(); i++)
         var_is_used[pruned_vars[i]] = false;
 
-    hash_map<OperatorSignature, const Operator *> canonical_op_map;
-    canonical_operators.resize(g_operators.size(), 0);
+    hash_map<OperatorSignature, const Operator *> reduced_label_map;
+    reduced_label_by_index.resize(g_operators.size(), 0);
 
     for (int i = 0; i < relevant_operators.size(); i++) {
         const Operator *op = relevant_operators[i];
@@ -105,24 +97,26 @@ OperatorRegistry::OperatorRegistry(
         ::sort(preconditions.begin(), preconditions.end());
         ::sort(effects.begin(), effects.end());
 
-        OperatorSignature op_sig(preconditions, effects, op_cost);      //(Raz) - only reducing labels with the same cost!
+        OperatorSignature op_sig(preconditions, effects, op_cost);
         int op_index = get_op_index(op);
-        if (!canonical_op_map.count(op_sig)) {
-            canonical_op_map[op_sig] = op;
-            canonical_operators[op_index] = op;
-            num_canonical_operators++;
+        if (!reduced_label_map.count(op_sig)) {
+            reduced_label_map[op_sig] = op;
+            reduced_label_by_index[op_index] = op;
+            ++num_reduced_labels;
         } else {
-            canonical_operators[op_index] = canonical_op_map[op_sig];
+            reduced_label_by_index[op_index] = reduced_label_map[op_sig];
         }
     }
-    assert(canonical_op_map.size() == num_canonical_operators);
+    assert(reduced_label_map.size() == num_reduced_labels);
 }
 
-OperatorRegistry::~OperatorRegistry() {
+LabelReducer::~LabelReducer() {
 }
 
-void OperatorRegistry::statistics() const {
-    cout << "operator registry: " << num_vars << " vars, " << num_operators
-         << " operators, " << num_canonical_operators
-         << " canonical operators" << endl;
+void LabelReducer::statistics() const {
+    cout << "label reduction: "
+         << num_pruned_vars << " pruned vars, "
+         << num_labels << " labels, "
+         << num_reduced_labels << " reduced labels"
+         << endl;
 }
