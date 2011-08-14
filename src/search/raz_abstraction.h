@@ -114,7 +114,7 @@ class Abstraction {
                        bool greedy_bisim, bool further_label_reduction,
                        const vector<int> &group_to_h, int source_h_1, int source_h_2,
                        const vector<pair<int, int> > &pairs_of_labels_to_reduce) const;
-    void normalize(bool simplify_labels);
+    void normalize(bool use_label_reduction);
 protected:
     enum {
         INVALID = -2
@@ -175,8 +175,9 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    CompositeAbstraction(Abstraction *abs1, Abstraction *abs2,
-                         bool simplify_labels, bool normalize_after_composition);
+    CompositeAbstraction(
+        Abstraction *abs1, Abstraction *abs2,
+        bool use_label_reduction, bool normalize_after_composition);
 };
 
 #endif
