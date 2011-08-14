@@ -17,8 +17,6 @@ enum MergeStrategy {
     MERGE_DFP,
     MERGE_LINEAR_LEVEL,
     MERGE_LINEAR_REVERSE_LEVEL,
-    MERGE_LEVEL_THEN_INVERSE,
-    MERGE_INVERSE_THEN_LEVEL,
     MAX_MERGE_STRATEGY
 };
 
@@ -30,7 +28,6 @@ class MergeAndShrinkHeuristic : public Heuristic {
     ShrinkStrategy *shrink_strategy;                     //TODO - removed const for raz's double abstraction experiment
     const bool use_label_simplification;
     const bool use_expensive_statistics;
-    const double merge_mixing_parameter;
 
     std::vector<Abstraction *> abstractions;
     void verify_no_axioms_no_cond_effects() const;
