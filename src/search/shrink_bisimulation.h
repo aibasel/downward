@@ -1,11 +1,12 @@
 #ifndef SHRINK_BISIMULATION_H
 #define SHRINK_BISIMULATION_H
 #include "shrink_strategy.h"
+#include "shrink_bisimulation_base.h"
 #include <vector>
 
 class Options;
 
-class ShrinkBisimulation : public ShrinkStrategy {
+class ShrinkBisimulation : public ShrinkBisimulationBase {
 public:
     ShrinkBisimulation(const Options &opts);
     ShrinkBisimulation(bool greedy, bool memory_limit);
