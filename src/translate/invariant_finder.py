@@ -141,7 +141,9 @@ if __name__ == "__main__":
     print "Parsing..."
     task = pddl.open()
     print "Finding invariants..."
-    for invariant in find_invariants(task):
+    print "NOTE: not passing in reachable_action_params."
+    print "This means fewer invariants might be found."
+    for invariant in find_invariants(task, None):
         print invariant
     print "Finding fact groups..."
     groups = get_groups(task)
