@@ -71,7 +71,7 @@ using namespace std;
  system", "atomic abstraction", "product abstraction", etc.)
  Currently, "abstraction" is used both for the abstract transition
  system and for the abstraction mapping. It should only be used for the
- former; the latter maybe called "TransitionSystem" or whatever.
+ latter; the former maybe called "TransitionSystem" or whatever.
 
  */
 
@@ -90,7 +90,6 @@ inline int get_op_index(const Operator *op) {
 Abstraction::Abstraction()
     : peak_memory(0) {
     transitions_by_op.resize(g_operators.size());
-    //	reduced_to_by_op.resize(g_operators.size());
 }
 
 Abstraction::~Abstraction() {
@@ -301,7 +300,6 @@ void Abstraction::normalize(bool use_label_reduction) {
 
     delete reducer;
     // dump();
-    //	dump_transitions_by_src();
 }
 
 void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result) {
@@ -394,9 +392,13 @@ AtomicAbstraction::AtomicAbstraction(int variable_)
         lookup_table.push_back(value);
     }
 }
+
+AtomicAbstraction::~AtomicAbstraction() {
+}
+
 CompositeAbstraction::CompositeAbstraction(Abstraction *abs1,
                                            Abstraction *abs2, bool use_label_reduction,
-                                           bool normalize_after_compostition) {
+                                           bool normalize_after_composition) {
     assert(abs1->is_solvable() && abs2->is_solvable());
 
     components[0] = abs1;
@@ -437,10 +439,12 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1,
     // HACK! Normalization should be done differently. This size() > 1
     // test is just a hack to make it work for linear abstraction
     // strategies. See issue68.
-    if (abs1->varset.size() > 1)
-        abs1->normalize(use_label_reduction && !normalize_after_compostition);
-    else if (abs2->varset.size() > 1)
-        abs2->normalize(use_label_reduction && !normalize_after_compostition);
+    if (!normalize_after_composition) {
+        if (abs1->varset.size() > 1) 
+            abs1->normalize(use_label_reduction);
+        else if (abs2->varset.size() > 1)
+            abs2->normalize(use_label_reduction);
+    }
 
     int multiplier = abs2->size();
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {
@@ -512,11 +516,13 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1,
     compute_distances();
     // dump();
 
-    //TODO - added this normalization (right before next shrink step).
-    //anyway, normalization should be done from here and not in the shrink method of abstraction.c.
-    if (normalize_after_compostition)
+    if (normalize_after_composition)
         normalize(true);
 }
+
+CompositeAbstraction::~CompositeAbstraction() {
+}
+
 
 AbstractStateRef AtomicAbstraction::get_abstract_state(const State &state) const {
     int value = state[variable];
@@ -748,9 +754,9 @@ void Abstraction::apply_abstraction(
         }
     }
 
-    vector<int> ().swap(init_distances);     // Release memory.
-    vector<int> ().swap(goal_distances);     // Release memory.
-    vector<bool> ().swap(goal_states);     // Release memory.
+    vector<int>().swap(init_distances);     // Release memory.
+    vector<int>().swap(goal_distances);     // Release memory.
+    vector<bool>().swap(goal_states);     // Release memory.
 
     vector<vector<AbstractTransition> > new_transitions_by_op(
         transitions_by_op.size());
@@ -788,11 +794,6 @@ void Abstraction::apply_abstraction(
         compute_distances();
     }
 }
-//TODO - consider performing normalize before actual shrink, on all bisim strategies...
-//At least in gripper it improves performance...
-//In further label reductions, this should at least be done, and if normalize includes
-//the update of the transition by source database, this should be done so the transition
-//by source database is updated.
 
 bool Abstraction::is_solvable() const {
     return init_state != -1;
@@ -930,16 +931,4 @@ void Abstraction::dump() const {
         }
     }
     cout << "}" << endl;
-}
-void Abstraction::dump_transitions_by_src() const {
-    cout << "--------------------------------------------------" << endl;
-    cout << "Transitions by source:" << endl;
-    for (int src = 0; src < transitions_by_source.size(); src++) {
-        for (int target_op = 0; target_op < transitions_by_source[src].size(); target_op++)
-            cout << src << " -> "
-                 << transitions_by_source[src][target_op].target
-                 << " via op no. "
-                 << transitions_by_source[src][target_op].op << endl;
-    }
-    cout << "--------------------------------------------------" << endl;
 }

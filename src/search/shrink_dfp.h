@@ -10,20 +10,20 @@ enum DFPStyle {DEFAULT, ENABLE_GREEDY_BISIMULATION};
 class ShrinkDFP : public ShrinkStrategy {
 public:
     ShrinkDFP(const Options &opts);
-    ~ShrinkDFP();
-    void shrink(Abstraction &abs, int threshold, bool force = false);
+    virtual ~ShrinkDFP();
+    virtual void shrink(Abstraction &abs, int threshold, bool force = false) const;
 
-    bool is_bisimulation() const;
-    bool has_memory_limit() const;
-    bool is_dfp() const;
+    virtual bool is_bisimulation() const;
+    virtual bool has_memory_limit() const;
+    virtual bool is_dfp() const;
 
-    std::string description() const;
+    virtual std::string description() const;
 private:
     void compute_abstraction_dfp_action_cost_support(
         Abstraction &abs, 
         int target_size,
         vector<slist<AbstractStateRef> > &collapsed_groups,
-        bool enable_greedy_bisimulation);
+        bool enable_greedy_bisimulation) const;
 
     DFPStyle dfp_style;
 };

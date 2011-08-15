@@ -17,7 +17,7 @@ ShrinkDFP::ShrinkDFP(const Options &opts)
 ShrinkDFP::~ShrinkDFP() {
 }
 
-void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) {
+void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) const {
     if(!must_shrink(abs, threshold, force))
         return;
 
@@ -33,7 +33,7 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
     Abstraction &abs, 
     int target_size,
     vector<slist<AbstractStateRef> > &collapsed_groups,
-    bool enable_greedy_bisimulation) {
+    bool enable_greedy_bisimulation) const {
 //	cout << "Max h value is: " << abs.max_h << endl;
     //vector<bool> used_h(num_states, false);
     vector<int> h_to_h_group(abs.max_h + 1, -1);

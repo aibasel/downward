@@ -10,7 +10,7 @@ ShrinkRandom::ShrinkRandom() {
 ShrinkRandom::~ShrinkRandom() {
 }
 
-void ShrinkRandom::shrink(Abstraction &abs, int threshold, bool force) {
+void ShrinkRandom::shrink(Abstraction &abs, int threshold, bool force) const {
     if(!must_shrink(abs, threshold, force))
         return;
 

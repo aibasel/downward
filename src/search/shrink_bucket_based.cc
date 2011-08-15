@@ -10,11 +10,9 @@ ShrinkBucketBased::ShrinkBucketBased() {
 ShrinkBucketBased::~ShrinkBucketBased() {
 }
 
-
-
 void ShrinkBucketBased::compute_abstraction(
     vector<vector<AbstractStateRef> > &buckets, int target_size, 
-    vector<slist<AbstractStateRef> > &collapsed_groups) {
+    vector<slist<AbstractStateRef> > &collapsed_groups) const {
     typedef slist<AbstractStateRef> Group;
     bool show_combine_buckets_warning = false;
 

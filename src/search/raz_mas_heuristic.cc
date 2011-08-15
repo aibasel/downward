@@ -66,8 +66,9 @@ void MergeAndShrinkHeuristic::dump_options() const {
     default:
         abort();
     }
-    cout << endl << "Shrink strategy: " << shrink_strategy->description();
-    cout << endl << "Label simplification: "
+    cout << endl
+         << "Shrink strategy: " << shrink_strategy->description() << endl
+         << "Label simplification: " 
          << (use_label_simplification ? "enabled" : "disabled") << endl
          << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
@@ -89,52 +90,13 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-void MergeAndShrinkHeuristic::verify_no_axioms_no_cond_effects() const {
-    if (!g_axioms.empty()) {
-        cerr << "Heuristic does not support axioms!" << endl << "Terminating."
-             << endl;
-        exit(1);
-    }
-    if (g_use_metric) {
-        cerr << "Warning: M&S heuristic does not support action costs!" << endl;
-        if (g_min_action_cost == 0) {
-            cerr
-            << "Alert: 0-cost actions exist. M&S Heuristic is not admissible"
-            << endl;
-        }
-    }
-
-    for (int i = 0; i < g_operators.size(); i++) {
-        const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
-        for (int j = 0; j < pre_post.size(); j++) {
-            const vector<Prevail> &cond = pre_post[j].cond;
-            if (cond.empty())
-                continue;
-            // Accept conditions that are redundant, but nothing else.
-            // In a better world, these would never be included in the
-            // input in the first place.
-            int var = pre_post[j].var;
-            int pre = pre_post[j].pre;
-            int post = pre_post[j].post;
-            if (pre == -1 && cond.size() == 1 && cond[0].var == var
-                && cond[0].prev != post && g_variable_domain[var] == 2)
-                continue;
-
-            cerr << "Heuristic does not support conditional effects "
-                 << "(operator " << g_operators[i].get_name() << ")" << endl
-                 << "Terminating." << endl;
-            exit(1);
-        }
-    }
-}
-
 pair<int, int> MergeAndShrinkHeuristic::compute_shrink_sizes(int size1,
                                                              int size2) const {
     // Bound both sizes by max allowed size before merge.
     int newsize1 = min(size1, max_abstract_states_before_merge);
     int newsize2 = min(size2, max_abstract_states_before_merge);
 
-    // Check if product would exceeds max allowed size.
+    // Check if product would exceed max allowed size.
     // Use division instead of multiplication to avoid overflow.
     if (max_abstract_states / newsize1 < newsize2) {
         int balanced_size = int(sqrt(max_abstract_states));
@@ -157,11 +119,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_abstractions also
     //       allocates memory.
-
-
-    //	cout << "ALL OPERATORS: " << endl;
-    //	for (int i = 0; i < g_operators.size(); i++)
-    //		cout << i << ": " << g_operators[i].get_name() << endl;
 
     cout << "Building atomic abstractions..." << endl;
     vector<Abstraction *> atomic_abstractions;
@@ -205,22 +162,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             shrink_strategy->shrink(*abstraction, new_size);
             abstraction->statistics(use_expensive_statistics);
         }
-        //TODO - use this for finding reducible labels!!!
-        //		int label_reduce_strategy = 3;
-        //
-        //		vector<vector<const Operator *> > operator_groups_to_reduce;
-        //		get_ops_to_reduce(abstraction, other_abstraction,
-        //				operator_groups_to_reduce, label_reduce_strategy);
-
-        //		cout << "Ops to reduce: " << endl;
-        //		for (int group = 0; group < operator_groups_to_reduce.size(); group++) {
-        //			cout << "Group no. " << group << endl;
-        //			for (int op = 0; op < operator_groups_to_reduce[group].size(); ++op) {
-        //				cout << operator_groups_to_reduce[group][op]->get_name()
-        //						<< endl;
-        //			}
-        //		}
-        //		cout << endl;
 
         bool
             normalize_after_composition =
@@ -399,24 +340,25 @@ void MergeAndShrinkHeuristic::initialize() {
     warn_on_unusual_options();
 
     verify_no_axioms_no_cond_effects();
-    //TODO - this is raz's experiment on two configurations:
-    //conf 1 is what is given by the user in the cmd line.
-    //conf 2 is the following: 5-12-1-true-none
     int peak_memory = 0;
 
     for (int i = 0; i < abstraction_count; i++) {
-        cout << "Building abstraction nr " << i << "..." << endl;
+        cout << "Building abstraction #" << (i + 1) << "..." << endl;
         Abstraction *abstraction = build_abstraction(i == 0);
         peak_memory = max(peak_memory, abstraction->get_peak_memory_estimate());
         abstractions.push_back(abstraction);
-        if (!abstractions.back()->is_solvable())
+        if (!abstractions.back()->is_solvable()) {
+            cout << "Abstract problem is unsolvable!" << endl;
+            if (i + 1 < abstraction_count) 
+                cout << "Skipping remaining abstractions." << endl;
             break;
+        }
     }
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl << "initial h value: " << compute_heuristic(
         *g_initial_state) << endl;
-    cout << "Estimated peak memory: " << peak_memory << " bytes" << endl;
+    cout << "Estimated peak memory for abstraction: " << peak_memory << " bytes" << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
@@ -426,20 +368,6 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
         if (abs_cost == -1)
             return DEAD_END;
         cost = max(cost, abs_cost);
-    }
-    if (cost == 0) {
-        /* We don't want to report 0 for non-goal states because the
-         search code doesn't like that. Note that we might report 0
-         for non-goal states if we use tiny abstraction sizes (like
-         1) or random shrinking. */
-        // TODO: Change this once we support action costs!
-        for (int i = 0; i < g_goal.size(); i++) {
-            int var = g_goal[i].first, value = g_goal[i].second;
-            if (state[var] != value) {
-                cost = g_min_action_cost;
-                break;
-            }
-        }
     }
     return cost;
 }
@@ -451,6 +379,10 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
                            "maximum abstraction size for factors of synchronized product");
     parser.add_option<int>("count", 1, "nr of abstractions to build");
     vector<string> merge_strategies;
+    //TODO: it's a bit dangerous that the merge strategies here
+    // have to be specified exactly in the same order
+    // as in the enum definition. Try to find a way around this,
+    // or at least raise an error when the order is wrong.
     merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_LEVEL");
     merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_RANDOM");
     merge_strategies.push_back("MERGE_LINEAR_GOAL_CG_LEVEL");
@@ -461,6 +393,9 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("merge_strategy", merge_strategies,
                            "MERGE_LINEAR_CG_GOAL_LEVEL",
                            "merge strategy");
+    
+    //TODO: Default Shrink-Strategy should only be created
+    // when it's actually used
     ShrinkStrategy *def_shrink = new ShrinkFH(HIGH, LOW);
     parser.add_option<ShrinkStrategy *>("shrink_strategy", def_shrink, "shrink strategy");
     parser.add_option<bool>("simplify_labels", true, "enable label simplification");

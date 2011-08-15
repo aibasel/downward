@@ -21,7 +21,10 @@ ShrinkFH::ShrinkFH(HighLow fs, HighLow hs)
      h_start(hs) {
 }
 
-void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
+ShrinkFH::~ShrinkFH() {
+}
+
+void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) const {
     if(!must_shrink(abs, threshold, force))
         return;
 
@@ -42,7 +45,7 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) {
 
 void ShrinkFH::ordered_buckets_use_map(
     const Abstraction &abs,
-    vector<Bucket> &buckets) {
+    vector<Bucket> &buckets) const {
     map<int, map<int, Bucket > > states_by_f_and_h;
     for (AbstractStateRef state = 0; state < abs.num_states; state++) {
         int g = abs.init_distances[state];
@@ -114,7 +117,7 @@ void ShrinkFH::ordered_buckets_use_map(
 
 void ShrinkFH::ordered_buckets_use_vector(
     const Abstraction &abs,
-    vector<Bucket> &buckets) {
+    vector<Bucket> &buckets) const {
     vector<vector<Bucket > > states_by_f_and_h;
     states_by_f_and_h.resize(abs.max_f + 1);
     for (int f = 0; f <= abs.max_f; f++)

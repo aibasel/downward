@@ -6,14 +6,14 @@
 class ShrinkRandom : public ShrinkBucketBased {
 public:
     ShrinkRandom();
-    ~ShrinkRandom();
-    void shrink(Abstraction &abs, int threshold, bool force = false);
+    virtual ~ShrinkRandom();
+    virtual void shrink(Abstraction &abs, int threshold, bool force = false) const;
 
-    bool is_bisimulation() const;
-    bool has_memory_limit() const;
-    bool is_dfp() const;
+    virtual bool is_bisimulation() const;
+    virtual bool has_memory_limit() const;
+    virtual bool is_dfp() const;
 
-    std::string description() const;
+    virtual std::string description() const;
 };
 
 
