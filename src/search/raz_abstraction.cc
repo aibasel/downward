@@ -11,7 +11,7 @@ using namespace std;
 #include "globals.h"
 #include "operator.h"
 #include "raz_operator_registry.h"
-#include "shrink_bisimulation.h"
+#include "shrink_fh.h"
 #include "timer.h"
 
 /* Implementation note: Transitions are grouped by their operators,
@@ -124,16 +124,17 @@ void Abstraction::compute_distances() {
     if (unreachable_count || irrelevant_count) {
         cout << "unreachable: " << unreachable_count << " nodes, "
              << "irrelevant: " << irrelevant_count << " nodes" << endl;
-        // Call shrink to discard unreachable and irrelevant states.
-        // The exact strategy doesn't matter much (although it should
-        // be efficient) as there is no need to actually shrink.
-        //TODO - use the simplest/fastest shrink strategy here,
-        // or create a dedicated one from scratch.
-        // The current method is an artifact from when
-        // action costs where not supported by all strategies.
-        ShrinkBisimulation nolimit(false, false);
-        nolimit.shrink(*this, 1, true);
-        //shrink(size(), SHRINK_HIGH_F_LOW_H, true);
+        /* Call shrink to discard unreachable and irrelevant states.
+           The strategy must be one that prunes unreachable/irrelevant
+           notes, but beyond that the details don't matter, as there
+           is no need to actually shrink. So faster methods should be
+           preferred. */
+
+        /* TODO: Create a dedicated shrinking strategy from scratch,
+           e.g. a bucket-based one that simply generated one good and
+           one bad bucket? */
+
+        ShrinkFH(HIGH, LOW).shrink(*this, num_states, true);
     }
 }
 
