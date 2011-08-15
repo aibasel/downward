@@ -75,15 +75,6 @@ class Abstraction {
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
 
-    bool are_bisimilar_wrt_label_reduction(
-        const vector<pair<int, int> > &succ_sig1, const vector<pair<int,
-                                                                    int> > &succ_sig2,
-        const vector<pair<int, int> > &pairs_of_labels_to_reduce) const;
-    bool are_bisimilar(const vector<pair<int, int> > &succ_sig1, const vector<
-                           pair<int, int> > &succ_sig2, bool ignore_all_labels,
-                       bool greedy_bisim, bool further_label_reduction,
-                       const vector<int> &group_to_h, int source_h_1, int source_h_2,
-                       const vector<pair<int, int> > &pairs_of_labels_to_reduce) const;
     void normalize(bool use_label_reduction);
 protected:
     enum {

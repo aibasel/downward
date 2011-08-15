@@ -182,7 +182,7 @@ void ShrinkBisimulation::compute_abstraction(
                     num_new_groups_label_reduction_or_greedy_bisimulation++;
                 } else if (prev_sig.succ_signature != curr_sig.succ_signature) {
                     num_new_groups++;
-                    if (greedy && !abs.are_bisimilar(
+                    if (greedy && !ShrinkBisimulationBase::are_bisimilar(
                             prev_sig.succ_signature, curr_sig.succ_signature,
                             false, greedy, false,
                             group_to_h, group_to_h[prev_sig.group],
@@ -228,13 +228,14 @@ void ShrinkBisimulation::compute_abstraction(
                                 && prev_sig.succ_signature
                                 != curr_sig.succ_signature)
                                || (use_label_reduction_or_greedy_bisimulation
-                                   && !abs.are_bisimilar(prev_sig.succ_signature,
-                                                     curr_sig.succ_signature, false,
-                                                     greedy, false,
-                                                     group_to_h,
-                                                     group_to_h[prev_sig.group],
-                                                     group_to_h[curr_sig.group], vector<
-                                                         pair<int, int> > ()))) {                                                //TODO - changed h to group_to_h
+                                   && !ShrinkBisimulationBase::are_bisimilar(
+                                       prev_sig.succ_signature,
+                                       curr_sig.succ_signature, false,
+                                       greedy, false,
+                                       group_to_h,
+                                       group_to_h[prev_sig.group],
+                                       group_to_h[curr_sig.group], vector<
+                                       pair<int, int> > ()))) {                                                //TODO - changed h to group_to_h
                         new_group_no = num_groups++;
                         performed_split = true;
                         assert(num_groups <= target_size);

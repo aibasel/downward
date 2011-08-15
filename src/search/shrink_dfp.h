@@ -1,5 +1,6 @@
 #ifndef SHRINK_DFP_H
 #define SHRINK_DFP_H
+#include "shrink_bisimulation_base.h"
 #include "shrink_strategy.h"
 #include <vector>
 
@@ -7,7 +8,7 @@ class Options;
 
 enum DFPStyle {DEFAULT, ENABLE_GREEDY_BISIMULATION};
 
-class ShrinkDFP : public ShrinkStrategy {
+class ShrinkDFP : public ShrinkBisimulationBase {
 public:
     ShrinkDFP(const Options &opts);
     virtual ~ShrinkDFP();
