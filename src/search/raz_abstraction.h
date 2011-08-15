@@ -75,12 +75,6 @@ class Abstraction {
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
 
-    void add_relevant_reducible_op_pairs(
-        const vector<pair<int, int> > &succ_sig1, const vector<pair<int,
-                                                                    int> > &succ_sig2, vector<pair<int, int> > &pairs) const;
-    //	bool are_greedy_bisimilar(const vector<pair<int, int> > &succ_sig1,
-    //			const vector<pair<int, int> > &succ_sig2,
-    //			const vector<int> &group_to_h, int source_group_h) const;
     bool are_bisimilar_wrt_label_reduction(
         const vector<pair<int, int> > &succ_sig1, const vector<pair<int,
                                                                     int> > &succ_sig2,
@@ -122,7 +116,6 @@ public:
     int unique_unlabeled_transitions(const vector<int> &relevant_ops) const;
     bool is_in_varset(int var) const;
 
-    //    void reduce_operators(int op1, int op2);
     void release_memory();
 
     void dump() const;

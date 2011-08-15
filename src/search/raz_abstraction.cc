@@ -651,59 +651,6 @@ bool Abstraction::are_bisimilar(const vector<pair<int, int> > &succ_sig1,
     return true;
 }
 
-//Given two successive signatures of two different states, this method adds to pairs,
-//all pairs of labels l1,l2, (applicable from s1 and s2 respectively) that have the same target group t,
-//but either (s1,l1,t') or (s2,l2,t') for t' != t.
-//TODO - this is where there is some work to be done on choosing the labels pairs to reduce!
-void Abstraction::add_relevant_reducible_op_pairs(
-    const vector<pair<int, int> > &succ_sig1,
-    const vector<pair<int, int> > &succ_sig2,
-    vector<pair<int, int> > &pairs) const {
-    int num_of_pairs_added = 0;
-
-    for (int trans1 = 0; trans1 < succ_sig1.size(); trans1++) {
-        if (::find(succ_sig2.begin(), succ_sig2.end(), succ_sig1[trans1])
-            == succ_sig2.end()) {
-            for (int trans2 = 0; trans2 < succ_sig2.size(); trans2++) {
-                if (succ_sig1[trans1].second == succ_sig2[trans2].second
-                    && g_operators[succ_sig1[trans1].first].affect_a_common_variable(
-                        &(g_operators[succ_sig2[trans2].first]))
-                    && g_operators[succ_sig1[trans1].first].have_same_op_name(
-                        &(g_operators[succ_sig2[trans2].first]))) {
-                    //						&& g_operators[succ_sig1[trans1].first].get_distance_from_op(&(g_operators[succ_sig2[trans2].first])) < 5) {
-                    pairs.push_back(make_pair(::min(succ_sig1[trans1].first,
-                                                    succ_sig2[trans2].first), ::max(
-                                                  succ_sig1[trans1].first, succ_sig2[trans2].first)));
-                    num_of_pairs_added++;
-                    break;                     //TODO - removed this
-                }
-            }
-        }
-    }
-
-    for (int trans2 = 0; trans2 < succ_sig2.size(); trans2++) {
-        if (::find(succ_sig1.begin(), succ_sig1.end(), succ_sig2[trans2])
-            == succ_sig1.end()) {
-            for (int trans1 = 0; trans1 < succ_sig1.size(); trans1++) {
-                if (succ_sig2[trans2].second == succ_sig1[trans1].second
-                    && g_operators[succ_sig1[trans1].first].affect_a_common_variable(
-                        &(g_operators[succ_sig2[trans2].first]))
-                    && g_operators[succ_sig1[trans1].first].have_same_op_name(
-                        &(g_operators[succ_sig2[trans2].first]))) {
-                    //						&& g_operators[succ_sig1[trans1].first].get_distance_from_op(&(g_operators[succ_sig2[trans2].first])) < 5) {
-                    pairs.push_back(make_pair(::min(succ_sig2[trans2].first,
-                                                    succ_sig1[trans1].first), ::max(
-                                                  succ_sig2[trans2].first, succ_sig1[trans1].first)));
-                    num_of_pairs_added++;
-                    break;                     //TODO - removed this
-                }
-            }
-        }
-    }
-    ::sort(pairs.begin(), pairs.end());
-    pairs.erase(::unique(pairs.begin(), pairs.end()), pairs.end());
-}
-
 void Abstraction::apply_abstraction(
     vector<slist<AbstractStateRef> > &collapsed_groups) {
     typedef slist<AbstractStateRef> Group;
