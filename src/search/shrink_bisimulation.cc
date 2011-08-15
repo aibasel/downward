@@ -25,7 +25,7 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
 ShrinkBisimulation::~ShrinkBisimulation() {
 }
 
-void ShrinkBisimulation::shrink(Abstraction &abs, int threshold, bool force) {
+void ShrinkBisimulation::shrink(Abstraction &abs, int threshold, bool force) const {
     if(!must_shrink(abs, threshold, force))
         return;
 

@@ -21,16 +21,15 @@ enum MergeStrategy {
 };
 
 class MergeAndShrinkHeuristic : public Heuristic {
-    int max_abstract_states;                                    //TODO - removed const for raz's double abstraction experiment
-    int max_abstract_states_before_merge;       //TODO - removed const for raz's double abstraction experiment
+    const int max_abstract_states;
+    const int max_abstract_states_before_merge;
     const int abstraction_count;
-    MergeStrategy merge_strategy;                       //TODO - removed const for raz's double abstraction experiment
-    ShrinkStrategy *shrink_strategy;                     //TODO - removed const for raz's double abstraction experiment
+    const MergeStrategy merge_strategy;
+    const ShrinkStrategy *shrink_strategy;
     const bool use_label_simplification;
     const bool use_expensive_statistics;
 
     std::vector<Abstraction *> abstractions;
-    void verify_no_axioms_no_cond_effects() const;
     std::pair<int, int> compute_shrink_sizes(int size1, int size2) const;
     Abstraction *build_abstraction(bool is_first = true);
 

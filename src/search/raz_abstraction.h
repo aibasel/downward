@@ -36,28 +36,6 @@ struct AbstractTransition {
     }
 };
 
-struct AbstractTargetOp {
-    AbstractStateRef target;
-    int op;
-
-    AbstractTargetOp(AbstractStateRef target_, AbstractStateRef op_)
-        : target(target_), op(op_) {
-    }
-
-    bool operator==(const AbstractTargetOp &other) const {
-        return target == other.target && op == other.op;
-    }
-
-    bool operator!=(const AbstractTargetOp &other) const {
-        return target != other.target || op != other.op;
-    }
-
-    bool operator<(const AbstractTargetOp &other) const {
-        return target < other.target || (target == other.target && op
-                                         < other.op);
-    }
-};
-
 class Abstraction {
     friend class ShrinkStrategy;
     friend class ShrinkBucketBased;
@@ -76,8 +54,6 @@ class Abstraction {
     vector<const Operator *> relevant_operators;
     int num_states;
     vector<vector<AbstractTransition> > transitions_by_op;
-
-    vector<vector<AbstractTargetOp> > transitions_by_source;
 
     vector<int> init_distances;
     vector<int> goal_distances;
@@ -150,10 +126,8 @@ public:
     void release_memory();
 
     void dump() const;
-
-    void dump_transitions_by_src() const;
-
 };
+
 class AtomicAbstraction : public Abstraction {
     int variable;
     vector<AbstractStateRef> lookup_table;
@@ -164,6 +138,7 @@ protected:
     virtual int memory_estimate() const;
 public:
     AtomicAbstraction(int variable_);
+    virtual ~AtomicAbstraction();
 };
 
 class CompositeAbstraction : public Abstraction {
@@ -178,6 +153,7 @@ public:
     CompositeAbstraction(
         Abstraction *abs1, Abstraction *abs2,
         bool use_label_reduction, bool normalize_after_composition);
+    virtual ~CompositeAbstraction();
 };
 
 #endif

@@ -9,14 +9,15 @@ class ShrinkBisimulation : public ShrinkStrategy {
 public:
     ShrinkBisimulation(const Options &opts);
     ShrinkBisimulation(bool greedy, bool memory_limit);
-    ~ShrinkBisimulation();
-    void shrink(Abstraction &abs, int threshold, bool force = false);
+    virtual ~ShrinkBisimulation();
 
-    bool is_bisimulation() const;
-    bool has_memory_limit() const;
-    bool is_dfp() const;
+    virtual void shrink(Abstraction &abs, int threshold, bool force = false) const;
 
-    std::string description() const;
+    virtual bool is_bisimulation() const;
+    virtual bool has_memory_limit() const;
+    virtual bool is_dfp() const;
+
+    virtual std::string description() const;
 private:
     void compute_abstraction(
         Abstraction &abs,
