@@ -479,12 +479,27 @@ def pddl_to_sas(task):
     with timers.timing("Writing mutex key"):
         write_mutex_key(mutex_key)
 
-    print "Translator facts: %d" % sum(sas_task.variables.ranges)
+    # Collect and output some statistics about the task
+    facts = sum(sas_task.variables.ranges)
+
+    def get_operator_size(op):
+        return len(op.prevail) + sum(1 + len(cond)
+                                     for var, pre, post, cond in op.pre_post)
+
+    ops_size = (len(sas_task.operators) +
+                sum(get_operator_size(op) for op in sas_task.operators))
+    axioms_size = (len(sas_task.axioms) +
+                   sum(len(axiom.condition) for axiom in sas_task.axioms))
+    problem_size = (facts + len(sas_task.init.values) +
+                    len(sas_task.goal.pairs) + ops_size + axioms_size)
+
+    print "Translator facts: %d" % facts
     print ("Translator derived variables: %d" %
            len([layer for layer in sas_task.variables.axiom_layers if layer >= 0]))
     print "Translator mutex groups: %d" % len(mutex_key)
     print ("Translator total mutex groups size: %d" %
            sum(len(group) for group in mutex_key))
+    print "Translator problem size: %d" % problem_size
 
     return sas_task
 
