@@ -62,9 +62,12 @@ void Operator::dump() const {
 }
 
 int Operator::get_encoding_size() const {
-    int size = prevail.size();
-    for (int i = 0; i < pre_post.size(); i++)
+    int size = 1 + prevail.size();
+    for (int i = 0; i < pre_post.size(); i++) {
         size += 1 + pre_post[i].effect_conds.size();
+        if (pre_post[i].pre != -1)
+            size += 1;
+    }
     return size;
 }
 

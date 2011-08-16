@@ -82,15 +82,15 @@ int main(int argc, const char **) {
     cout << "Preprocessor derived variables: " << derived_vars << endl;
 
     // Calculate the problem size
-    int size = facts + goals.size() + operators.size() + axioms.size();
+    int task_size = ordering.size() + facts + goals.size();
 
     for (int i = 0; i < operators.size(); i++)
-        size += operators[i].get_encoding_size();
+        task_size += operators[i].get_encoding_size();
 
     for (int i = 0; i < axioms.size(); i++)
-        size += axioms[i].get_encoding_size();
+        task_size += axioms[i].get_encoding_size();
 
-    cout << "Preprocessor problem size: " << size << endl;
+    cout << "Preprocessor task size: " << task_size << endl;
 
     cout << "Writing output..." << endl;
     generate_cpp_input(solveable_in_poly_time, ordering, metric, initial_state,
