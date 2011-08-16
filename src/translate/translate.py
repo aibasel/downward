@@ -490,8 +490,7 @@ def pddl_to_sas(task):
                 sum(get_operator_size(op) for op in sas_task.operators))
     axioms_size = (len(sas_task.axioms) +
                    sum(len(axiom.condition) for axiom in sas_task.axioms))
-    problem_size = (facts + len(sas_task.init.values) +
-                    len(sas_task.goal.pairs) + ops_size + axioms_size)
+    problem_size = (facts + len(sas_task.goal.pairs) + ops_size + axioms_size)
 
     print "Translator facts: %d" % facts
     print ("Translator derived variables: %d" %
