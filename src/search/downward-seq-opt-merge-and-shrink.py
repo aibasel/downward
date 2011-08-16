@@ -5,9 +5,9 @@ import seq_opt_portfolio
 
 CONFIGS = [
     (800, ["--search",
-           "astar(mas(max_states=1,merge_strategy=5,shrink_strategy=12))"]),
+           "astar(mas(max_states=1,merge_strategy=merge_linear_reverse_level,shrink_strategy=shrink_bisimulation(true,false)))"]),
     (1000, ["--search",
-           "astar(mas(max_states=200000,merge_strategy=5,shrink_strategy=7))"]),
+           "astar(mas(max_states=200000,merge_strategy=merge_linear_reverse_level,shrink_strategy=shrink_dfp(enable_greedy_bisimulation)))"]),
      ]
 
 seq_opt_portfolio.run(CONFIGS)
