@@ -482,8 +482,8 @@ def pddl_to_sas(task):
     print "Translator facts: %d" % sum(sas_task.variables.ranges)
     print ("Translator derived variables: %d" %
            len([layer for layer in sas_task.variables.axiom_layers if layer >= 0]))
-    print "Translator invariant groups: %d" % len(mutex_key)
-    print ("Translator total invariant groups size: %d" %
+    print "Translator mutex groups: %d" % len(mutex_key)
+    print ("Translator total mutex groups size: %d" %
            sum(len(group) for group in mutex_key))
 
     return sas_task
