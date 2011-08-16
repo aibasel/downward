@@ -481,15 +481,10 @@ def pddl_to_sas(task):
 
     # Collect and output some statistics about the task
     facts = sum(sas_task.variables.ranges)
-
-    def get_operator_size(op):
-        return len(op.prevail) + sum(1 + len(cond)
-                                     for var, pre, post, cond in op.pre_post)
-
     ops_size = (len(sas_task.operators) +
-                sum(get_operator_size(op) for op in sas_task.operators))
+                sum(op.get_encoding_size() for op in sas_task.operators))
     axioms_size = (len(sas_task.axioms) +
-                   sum(len(axiom.condition) for axiom in sas_task.axioms))
+                   sum(axiom.get_encoding_size() for axiom in sas_task.axioms))
     problem_size = (facts + len(sas_task.goal.pairs) + ops_size + axioms_size)
 
     print "Translator facts: %d" % facts

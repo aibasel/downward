@@ -96,6 +96,9 @@ class SASOperator:
             print >> stream, var, pre, post
         print >> stream, self.cost
         print >> stream, "end_operator"
+    def get_encoding_size(self):
+        return (sum(1 + len(cond) for var, pre, post, cond in self.pre_post) +
+                len(self.prevail))
 
 class SASAxiom:
     def __init__(self, condition, effect):
@@ -120,3 +123,5 @@ class SASAxiom:
         var, val = self.effect
         print >> stream, var, 1 - val, val
         print >> stream, "end_rule"
+    def get_encoding_size(self):
+        return len(self.condition)
