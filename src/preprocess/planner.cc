@@ -70,6 +70,32 @@ int main(int argc, const char **) {
     SuccessorGenerator successor_generator(ordering, operators);
     //successor_generator.dump();
 
+    // Output some task statistics
+    int facts = 0;
+    int derived_vars = 0;
+    for (int i = 0; i < ordering.size(); i++) {
+        facts += ordering[i]->get_range();
+        if (ordering[i]->is_derived())
+            derived_vars++;
+    }
+    cout << "Preprocessor facts: " << facts << endl;
+    cout << "Preprocessor derived variables: " << derived_vars << endl;
+
+    // Calculate the problem size
+    int size = facts + goals.size() + operators.size() + axioms.size();
+    /*
+    for (int i = 0; i < operators.size(); i++) {
+        Operator& op = operators[i];
+        size += op.prevail.size();
+        for (int j = 0; j < op.pre_post.size(); j++)
+            size += 1 + op.pre_post[j].effect_conds.size();
+    }
+    for (int i = 0; i < axioms.size(); i++) {
+        size += axioms[i].conditions.size();
+    }
+    */
+    cout << "Preprocessor problem size: " << size << endl;
+
     cout << "Writing output..." << endl;
     generate_cpp_input(solveable_in_poly_time, ordering, metric, initial_state,
                        goals, operators, axioms, successor_generator,
