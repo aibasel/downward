@@ -50,7 +50,7 @@ void Axiom::dump() const {
 }
 
 int Axiom::get_encoding_size() const {
-    return conditions.size();
+    return 1 + conditions.size();
 }
 
 void Axiom::generate_cpp_input(ofstream &outfile) const {
