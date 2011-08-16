@@ -441,9 +441,9 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1,
     // test is just a hack to make it work for linear abstraction
     // strategies. See issue68.
     if (abs1->varset.size() > 1)
-		abs1->normalize(use_label_reduction && !normalize_after_compostition);
+		abs1->normalize(use_label_reduction && !normalize_after_composition);
 	else if (abs2->varset.size() > 1)
-        abs2->normalize(use_label_reduction && !normalize_after_compostition);
+        abs2->normalize(use_label_reduction && !normalize_after_composition);
 
     int multiplier = abs2->size();
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {
