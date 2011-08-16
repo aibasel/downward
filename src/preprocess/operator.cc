@@ -61,6 +61,13 @@ void Operator::dump() const {
     cout << endl;
 }
 
+int Operator::get_encoding_size() const {
+    int size = prevail.size();
+    for (int i = 0; i < pre_post.size(); i++)
+        size += 1 + pre_post[i].effect_conds.size();
+    return size;
+}
+
 void Operator::strip_unimportant_effects() {
     int new_index = 0;
     for (int i = 0; i < pre_post.size(); i++) {

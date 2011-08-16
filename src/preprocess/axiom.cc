@@ -49,6 +49,10 @@ void Axiom::dump() const {
     cout << endl;
 }
 
+int Axiom::get_encoding_size() const {
+    return conditions.size();
+}
+
 void Axiom::generate_cpp_input(ofstream &outfile) const {
     assert(effect_var->get_level() != -1);
     outfile << "begin_rule" << endl;

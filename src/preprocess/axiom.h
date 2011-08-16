@@ -26,6 +26,7 @@ public:
 
     bool is_redundant() const;
     void dump() const;
+    int get_encoding_size() const;
     void generate_cpp_input(ofstream &outfile) const;
     const vector<Condition> &get_conditions() const {return conditions; }
     Variable *get_effect_var() const {return effect_var; }
