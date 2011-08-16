@@ -83,17 +83,13 @@ int main(int argc, const char **) {
 
     // Calculate the problem size
     int size = facts + goals.size() + operators.size() + axioms.size();
-    /*
-    for (int i = 0; i < operators.size(); i++) {
-        Operator& op = operators[i];
-        size += op.prevail.size();
-        for (int j = 0; j < op.pre_post.size(); j++)
-            size += 1 + op.pre_post[j].effect_conds.size();
-    }
-    for (int i = 0; i < axioms.size(); i++) {
-        size += axioms[i].conditions.size();
-    }
-    */
+
+    for (int i = 0; i < operators.size(); i++)
+        size += operators[i].get_encoding_size();
+
+    for (int i = 0; i < axioms.size(); i++)
+        size += axioms[i].get_encoding_size();
+
     cout << "Preprocessor problem size: " << size << endl;
 
     cout << "Writing output..." << endl;
