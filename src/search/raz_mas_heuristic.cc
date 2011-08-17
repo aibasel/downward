@@ -181,7 +181,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
 void MergeAndShrinkHeuristic::initialize() {
     Timer timer;
-    cout << "Initializing merge-and-shrink heuristic...!!!" << endl;
+    cout << "Initializing merge-and-shrink heuristic..." << endl;
     dump_options();
     warn_on_unusual_options();
 
