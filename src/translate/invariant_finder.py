@@ -130,7 +130,7 @@ def useful_groups(invariants, initial_facts):
         yield [part.instantiate(parameters) for part in invariant.parts]
 
 def get_groups(task, reachable_action_params=None):
-    with timers.timing("Finding invariants"):
+    with timers.timing("Finding invariants", block=True):
         invariants = list(find_invariants(task, reachable_action_params))
     with timers.timing("Checking invariant weight"):
         result = list(useful_groups(invariants, task.init))

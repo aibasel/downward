@@ -19,6 +19,15 @@ class SASTask:
         print >> stream, len(self.axioms)
         for axiom in self.axioms:
             axiom.output(stream)
+    def get_encoding_size(self):
+        task_size = 0
+        task_size += self.variables.get_encoding_size()
+        task_size += self.goal.get_encoding_size()
+        for op in self.operators:
+            task_size += op.get_encoding_size()
+        for axiom in self.axioms:
+            task_size += op.get_encoding_size()
+        return task_size
 
 class SASVariables:
     def __init__(self, ranges, axiom_layers):
@@ -37,6 +46,10 @@ class SASVariables:
         for var, (rang, axiom_layer) in enumerate(zip(self.ranges, self.axiom_layers)):
             print >> stream, "var%d %d %d" % (var, rang, axiom_layer)
         print >> stream, "end_variables"
+    def get_encoding_size(self):
+        # A variable with range k has encoding size k + 1 to also give the
+        # variable itself some weight.
+        return len(self.ranges) + sum(self.ranges)
 
 class SASInit:
     def __init__(self, values):
@@ -63,6 +76,8 @@ class SASGoal:
         for var, val in self.pairs:
             print >> stream, var, val
         print >> stream, "end_goal"
+    def get_encoding_size(self):
+        return len(self.pairs)
 
 class SASOperator:
     def __init__(self, name, prevail, pre_post, cost):
@@ -96,6 +111,13 @@ class SASOperator:
             print >> stream, var, pre, post
         print >> stream, self.cost
         print >> stream, "end_operator"
+    def get_encoding_size(self):
+        size = 1 + len(self.prevail)
+        for var, pre, post, cond in self.pre_post:
+            size += 1 + len(cond)
+            if pre != -1:
+                size += 1
+        return size
 
 class SASAxiom:
     def __init__(self, condition, effect):
@@ -120,3 +142,5 @@ class SASAxiom:
         var, val = self.effect
         print >> stream, var, 1 - val, val
         print >> stream, "end_rule"
+    def get_encoding_size(self):
+        return 1 + len(self.condition)
