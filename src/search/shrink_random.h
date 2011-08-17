@@ -1,20 +1,17 @@
 #ifndef SHRINK_RANDOM_H
 #define SHRINK_RANDOM_H
+
 #include "shrink_bucket_based.h"
-#include <vector>
 
 class ShrinkRandom : public ShrinkBucketBased {
+protected:
+    virtual void partition_into_buckets(
+        const Abstraction &abs, std::vector<Bucket> &buckets) const;
 public:
     ShrinkRandom();
     virtual ~ShrinkRandom();
-    virtual void shrink(Abstraction &abs, int threshold, bool force = false) const;
-
-    virtual bool is_bisimulation() const;
-    virtual bool has_memory_limit() const;
-    virtual bool is_dfp() const;
 
     virtual std::string description() const;
 };
-
 
 #endif
