@@ -5,7 +5,7 @@
 
 /* A base class for shrink strategies that create a bisimulation
    (ShrinkBisimulation and ShrinkDFP). Its main purpose is to provide
-   the are_similar()-method   
+   the are_similar()-method.
 */
 
 class ShrinkBisimulationBase : public ShrinkStrategy {

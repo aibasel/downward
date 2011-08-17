@@ -26,7 +26,7 @@ private:
         vector<slist<AbstractStateRef> > &collapsed_groups,
         bool enable_greedy_bisimulation) const;
 
-    DFPStyle dfp_style;
+    const DFPStyle dfp_style;
 };
 
 
