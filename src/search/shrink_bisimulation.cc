@@ -184,10 +184,9 @@ void ShrinkBisimulation::compute_abstraction(
                     num_new_groups++;
                     if (greedy && !ShrinkBisimulationBase::are_bisimilar(
                             prev_sig.succ_signature, curr_sig.succ_signature,
-                            false, greedy, false,
+                            greedy,
                             group_to_h, group_to_h[prev_sig.group],
-                            group_to_h[curr_sig.group],
-                            vector<pair<int, int> > ()))                            //TODO - changed h to group_to_h
+                            group_to_h[curr_sig.group])) //TODO - changed h to group_to_h
                         num_new_groups_label_reduction_or_greedy_bisimulation++;
                 }
             }
@@ -230,12 +229,11 @@ void ShrinkBisimulation::compute_abstraction(
                                || (use_label_reduction_or_greedy_bisimulation
                                    && !ShrinkBisimulationBase::are_bisimilar(
                                        prev_sig.succ_signature,
-                                       curr_sig.succ_signature, false,
-                                       greedy, false,
+                                       curr_sig.succ_signature,
+                                       greedy,
                                        group_to_h,
                                        group_to_h[prev_sig.group],
-                                       group_to_h[curr_sig.group], vector<
-                                       pair<int, int> > ()))) {                                                //TODO - changed h to group_to_h
+                                       group_to_h[curr_sig.group]))) { //TODO - changed h to group_to_h
                         new_group_no = num_groups++;
                         performed_split = true;
                         assert(num_groups <= target_size);
