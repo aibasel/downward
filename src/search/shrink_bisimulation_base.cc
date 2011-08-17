@@ -10,7 +10,6 @@ ShrinkBisimulationBase::ShrinkBisimulationBase() {
 ShrinkBisimulationBase::~ShrinkBisimulationBase() {
 }
 
-
 bool ShrinkBisimulationBase::are_bisimilar(
     const vector<pair<int, int> > &succ_sig1,
     const vector<pair<int, int> > &succ_sig2,
