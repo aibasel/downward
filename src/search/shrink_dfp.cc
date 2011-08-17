@@ -263,6 +263,7 @@ string ShrinkDFP::description() const {
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
+    // TODO: Call this "greedy in {false, true}" as with ShrinkBisimulation?
     vector<string> styles;
     styles.push_back("DEFAULT");
     styles.push_back("ENABLE_GREEDY_BISIMULATION");
