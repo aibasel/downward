@@ -30,7 +30,7 @@ void ShrinkFH::partition_into_buckets(
     assert(buckets.empty());
     // The following line converts to double to avoid overflow.
     if(static_cast<double>(abs.max_f) * abs.max_f / 2.0 > abs.num_states) {
-        // Use map, because an average bucket in the vector structure
+        // Use map because an average bucket in the vector structure
         // would contain less than 1 element (roughly).
         ordered_buckets_use_map(abs, buckets);
     } else {
@@ -38,6 +38,35 @@ void ShrinkFH::partition_into_buckets(
     }
 }
 
+// Helper function for ordered_buckets_use_map.
+template<class HIterator, class Bucket>
+static void collect_h_buckets(
+    HIterator begin, HIterator end,
+    vector<Bucket> &buckets) {
+    for (HIterator iter = begin; iter != end; ++iter) {
+        Bucket &bucket = iter->second;
+        assert(!bucket.empty());
+        buckets.push_back(Bucket());
+        buckets.back().swap(bucket);
+    }
+}
+
+// Helper function for ordered_buckets_use_map.
+template<class FHIterator, class Bucket>
+static void collect_f_h_buckets(
+    FHIterator begin, FHIterator end,
+    ShrinkFH::HighLow h_start,
+    vector<Bucket> &buckets) {
+    for (FHIterator iter = begin; iter != end; ++iter) {
+        if(h_start == ShrinkFH::HIGH) {
+            collect_h_buckets(iter->second.rbegin(), iter->second.rend(),
+                              buckets);
+        } else {
+            collect_h_buckets(iter->second.begin(), iter->second.end(),
+                              buckets);
+        }
+    }
+}
 
 void ShrinkFH::ordered_buckets_use_map(
     const Abstraction &abs,
@@ -46,68 +75,20 @@ void ShrinkFH::ordered_buckets_use_map(
     for (AbstractStateRef state = 0; state < abs.num_states; ++state) {
         int g = abs.init_distances[state];
         int h = abs.goal_distances[state];
-        if (g == QUITE_A_LOT || h == QUITE_A_LOT)
-            continue;
-
-        int f = g + h;
-
-        states_by_f_and_h[f][h].push_back(state);
+        if (g != QUITE_A_LOT && h != QUITE_A_LOT) {
+            int f = g + h;
+            states_by_f_and_h[f][h].push_back(state);
+        }
     }
 
     if(f_start == HIGH) {
-        map<int, map<int, Bucket > >::reverse_iterator f_it;
-        for(f_it = states_by_f_and_h.rbegin();
-            f_it != states_by_f_and_h.rend();
-            ++f_it) {
-            if(h_start == HIGH) {
-                map<int, Bucket>::reverse_iterator h_it;
-                for(h_it = f_it->second.rbegin();
-                    h_it != f_it->second.rend();
-                    ++h_it) {
-                    Bucket &bucket = h_it->second;
-                    assert(!bucket.empty());
-                    buckets.push_back(Bucket());
-                    buckets.back().swap(bucket);
-                }
-            } else {
-                map<int, Bucket>::iterator h_it;
-                for(h_it = f_it->second.begin();
-                    h_it != f_it->second.end();
-                    ++h_it) {
-                    Bucket &bucket = h_it->second;
-                    assert(!bucket.empty());
-                    buckets.push_back(Bucket());
-                    buckets.back().swap(bucket);
-                }
-            }
-        }
-    } else { // if f_start == LOW
-        map<int, map<int, Bucket > >::iterator f_it;
-        for(f_it = states_by_f_and_h.begin();
-            f_it != states_by_f_and_h.end();
-            ++f_it) {
-            if(h_start == HIGH) {
-                map<int, Bucket>::reverse_iterator h_it;
-                for(h_it = f_it->second.rbegin();
-                    h_it != f_it->second.rend();
-                    ++h_it) {
-                    Bucket &bucket = h_it->second;
-                    assert(!bucket.empty());
-                    buckets.push_back(Bucket());
-                    buckets.back().swap(bucket);
-                }
-            } else {
-                map<int, Bucket>::iterator h_it;
-                for(h_it = f_it->second.begin();
-                    h_it != f_it->second.end();
-                    ++h_it) {
-                    Bucket &bucket = h_it->second;
-                    assert(!bucket.empty());
-                    buckets.push_back(Bucket());
-                    buckets.back().swap(bucket);
-                }
-            }
-        }
+        collect_f_h_buckets(
+            states_by_f_and_h.rbegin(), states_by_f_and_h.rend(),
+            h_start, buckets);
+    } else {
+        collect_f_h_buckets(
+            states_by_f_and_h.begin(), states_by_f_and_h.end(),
+            h_start, buckets);
     }
 }
 
@@ -123,7 +104,6 @@ void ShrinkFH::ordered_buckets_use_vector(
         int h = abs.goal_distances[state];
         if (g != QUITE_A_LOT && h != QUITE_A_LOT) {
             int f = g + h;
-
             assert(f >= 0 && f < states_by_f_and_h.size());
             assert(h >= 0 && h < states_by_f_and_h[f].size());
             states_by_f_and_h[f][h].push_back(state);
@@ -145,7 +125,6 @@ void ShrinkFH::ordered_buckets_use_vector(
             }
         }
     }
-
 }
 
 string ShrinkFH::description() const {
