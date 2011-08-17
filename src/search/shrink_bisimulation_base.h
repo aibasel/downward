@@ -4,21 +4,10 @@
 #include <vector>
 
 /* A base class for shrink strategies that create a bisimulation
-   (ShrinkBisimulation and ShrinkDFP). Its main purpose is to provide
-   the are_bisimilar()-method.
+   (ShrinkBisimulation and ShrinkDFP).
 */
 
 class ShrinkBisimulationBase : public ShrinkStrategy {
-public:
-    ShrinkBisimulationBase();
-    virtual ~ShrinkBisimulationBase();
-    virtual void shrink(Abstraction &abs, int threshold, bool force = false) const = 0;
-
-    virtual bool is_bisimulation() const = 0;
-    virtual bool has_memory_limit() const = 0;
-    virtual bool is_dfp() const = 0;
-
-    virtual std::string description() const = 0;
 protected:
     bool are_bisimilar(
         const vector<pair<int, int> > &succ_sig1,
@@ -26,6 +15,9 @@ protected:
         bool greedy_bisim,
         const vector<int> &group_to_h,
         int source_h_1, int source_h_2) const;
+public:
+    ShrinkBisimulationBase();
+    virtual ~ShrinkBisimulationBase();
 };
 
 // TODO: document purpose of Signatures
