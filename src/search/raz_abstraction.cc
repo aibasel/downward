@@ -437,6 +437,21 @@ CompositeAbstraction::CompositeAbstraction(Abstraction *abs1,
     for (int i = 0; i < abs2->relevant_operators.size(); i++)
         abs2->relevant_operators[i]->marker2 = true;
 
+
+    /* NOTE: deciding when to normalize may have a big impact on performance.
+       For example, the following decision logic lead to significantly worse
+       performance for the configuration 'mas-2' (--search 'astar(mas(max_states=200000,merge_strategy=merge_linear_reverse_level,shrink_strategy=shrink_dfp(enable_greedy_bisimulation)))':
+       
+       if (!normalize_after_composition) {
+           if (abs1->varset.size() > 1)
+               abs1->normalize(use_label_reduction);
+           else if (abs2->varset.size() > 1)
+               abs2->normalize(use_label_reduction);
+        }
+        
+        After replacing the current decision logic with the above,
+        coverage on the ipc08_opt_strips suite dropped from 126 to 110.
+    */
     // HACK! Normalization should be done differently. This size() > 1
     // test is just a hack to make it work for linear abstraction
     // strategies. See issue68.
