@@ -131,7 +131,7 @@ void Abstraction::compute_distances() {
            preferred. */
 
         /* TODO: Create a dedicated shrinking strategy from scratch,
-           e.g. a bucket-based one that simply generated one good and
+           e.g. a bucket-based one that simply generates one good and
            one bad bucket? */
 
         ShrinkFH(HIGH, LOW).shrink(*this, num_states, true);
