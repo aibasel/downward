@@ -30,8 +30,8 @@ private:
         const Abstraction &abs,
         vector<Bucket> &buckets) const;
 
-    HighLow f_start;
-    HighLow h_start;
+    const HighLow f_start;
+    const HighLow h_start;
 };
 
 

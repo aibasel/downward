@@ -24,8 +24,8 @@ private:
         Abstraction &abs,
         int target_size, 
         vector<slist<AbstractStateRef> > &collapsed_groups) const;
-    bool greedy;
-    bool has_mem_limit;
+    const bool greedy;
+    const bool has_mem_limit;
 };
 
 
