@@ -22,7 +22,6 @@ void ShrinkBucketBased::shrink(
 
     vector<Bucket> buckets;
     partition_into_buckets(abs, buckets);
-    assert(!buckets.empty());
 
     EquivalenceRelation equiv_relation;
     compute_abstraction(buckets, threshold, equiv_relation);
