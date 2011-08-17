@@ -162,12 +162,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             shrink_strategy->shrink(*abstraction, new_size);
             abstraction->statistics(use_expensive_statistics);
         }
-
-        bool
-            normalize_after_composition =
-            (shrink_strategy->is_bisimulation()
-             || shrink_strategy->is_dfp())
-            && use_label_simplification;
+        
+        bool normalize_after_composition = 
+            shrink_strategy->is_bisimulation() && use_label_simplification;
         Abstraction *new_abstraction = new CompositeAbstraction(abstraction,
                                                                 other_abstraction, use_label_simplification,
                                                                 normalize_after_composition);

@@ -29,7 +29,9 @@ void ShrinkFH::shrink(Abstraction &abs, int threshold, bool force) const {
         return;
 
     vector<Bucket > buckets;
-    if(abs.max_f > abs.num_states) {
+    if(static_cast<double>(abs.max_f) * abs.max_f / 2.0 > abs.num_states) { //convert to double to avoid overflow 
+        // Use map, because an average bucket in the vector structure
+        // would contain less than 1 element (roughly).
         ordered_buckets_use_map(abs, buckets);
     } else {
         ordered_buckets_use_vector(abs, buckets);
