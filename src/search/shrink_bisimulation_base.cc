@@ -1,7 +1,8 @@
-#include "raz_abstraction.h"
 #include "shrink_bisimulation_base.h"
+
+#include "raz_abstraction.h"
+
 #include <cassert>
-#include <iostream>
 #include <vector>
 
 ShrinkBisimulationBase::ShrinkBisimulationBase() {
@@ -31,21 +32,60 @@ bool ShrinkBisimulationBase::are_bisimilar(
     if (!greedy_bisim)
         return succ_sig1 == succ_sig2;
 
-    if (succ_sig1 != succ_sig2) {
-        for (int trans1 = 0; trans1 < succ_sig1.size(); trans1++) {
-            // TODO: Shouldn't the next "<" be "<="?
-            bool relevant = group_to_h[succ_sig1[trans1].second] < source_h_1;
-            if (relevant && ::find(succ_sig2.begin(), succ_sig2.end(),
-                                   succ_sig1[trans1]) == succ_sig2.end())
+    if (source_h_1 != source_h_2) // TODO: If that is indeed always true, should switch to one h arg.
+        abort();
+    int h = source_h_1;
+
+    SuccessorSignature::const_iterator iter1 = succ_sig1.begin();
+    SuccessorSignature::const_iterator iter2 = succ_sig2.begin();
+    SuccessorSignature::const_iterator end1 = succ_sig1.end();
+    SuccessorSignature::const_iterator end2 = succ_sig2.end();
+
+/*
+  // TODO: This simpler variant somehow did not seem to work, or at least took forever. Why?
+
+    for (;;) {
+        while (iter1 != end1 && group_to_h[iter1->second] < h)
+            ++iter1;
+        while (iter2 != end2 && group_to_h[iter2->second] < h)
+            ++iter2;
+        bool at_end1 = (iter1 == end1);
+        bool at_end2 = (iter2 == end2);
+        if (at_end1 && at_end2)
+            return true;
+        if (at_end1 || at_end2 || *iter1 != *iter2)
+            return false;
+        ++iter1;
+        ++iter2;
+    }
+*/
+    while (iter1 != end1 && iter2 != end2) {
+        if (*iter1 == *iter2) {
+            ++iter1;
+            ++iter2;
+        } else if(*iter1 < *iter2) {
+            if (group_to_h[iter1->second] < h)
                 return false;
+            ++iter1;
+        } else {
+            if (group_to_h[iter2->second] < h)
+                return false;
+            ++iter2;
         }
-        for (int trans2 = 0; trans2 < succ_sig2.size(); trans2++) {
-            // TODO: Shouldn't the next "<" be "<="?
-            bool relevant = group_to_h[succ_sig2[trans2].second] < source_h_2;
-            if (relevant && ::find(succ_sig1.begin(), succ_sig1.end(),
-                                   succ_sig2[trans2]) == succ_sig1.end())
+    }
+    if (iter1 == end1) {
+        while (iter2 != end2) {
+            if (group_to_h[iter2->second] < h)
                 return false;
+            ++iter2;
+        }
+    } else {
+        while (iter1 != end1) {
+            if (group_to_h[iter1->second] < h)
+                return false;
+            ++iter1;
         }
     }
     return true;
 }
+
