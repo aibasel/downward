@@ -134,7 +134,7 @@ void Abstraction::compute_distances() {
            e.g. a bucket-based one that simply generated one good and
            one bad bucket? */
 
-        ShrinkFH(HIGH, LOW).shrink(*this, num_states, true);
+        ShrinkFH(ShrinkFH::HIGH, ShrinkFH::LOW).shrink(*this, num_states, true);
     }
 }
 
@@ -556,8 +556,6 @@ void Abstraction::apply_abstraction(
     typedef slist<AbstractStateRef> Group;
 
     vector<int> abstraction_mapping(num_states, -1);
-
-    cout << "Size of collapsed groups =" << collapsed_groups.size() << endl;
 
     for (int group_no = 0; group_no < collapsed_groups.size(); group_no++) {
         Group &group = collapsed_groups[group_no];

@@ -242,7 +242,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     
     //TODO: Default Shrink-Strategy should only be created
     // when it's actually used
-    ShrinkStrategy *def_shrink = new ShrinkFH(HIGH, LOW);
+    ShrinkStrategy *def_shrink = new ShrinkFH(ShrinkFH::HIGH, ShrinkFH::LOW);
     parser.add_option<ShrinkStrategy *>("shrink_strategy", def_shrink, "shrink strategy");
     parser.add_option<bool>("simplify_labels", true, "enable label simplification");
     parser.add_option<bool>("expensive_statistics", false, "show statistics on \"unique unlabeled edges\" (WARNING: "

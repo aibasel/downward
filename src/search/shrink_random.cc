@@ -1,8 +1,13 @@
+#include "shrink_random.h"
+
 #include "option_parser.h"
 #include "plugin.h"
 #include "raz_abstraction.h"
-#include "shrink_random.h"
+
 #include <cassert>
+
+using namespace std;
+
 
 ShrinkRandom::ShrinkRandom() {
 }
@@ -10,39 +15,15 @@ ShrinkRandom::ShrinkRandom() {
 ShrinkRandom::~ShrinkRandom() {
 }
 
-void ShrinkRandom::shrink(Abstraction &abs, int threshold, bool force) const {
-    if(!must_shrink(abs, threshold, force))
-        return;
-
-    vector<Bucket > buckets;
-    Bucket big_bucket;
-
-    for (AbstractStateRef state = 0; state < abs.num_states; state++) {
+void ShrinkRandom::partition_into_buckets(
+    const Abstraction &abs, vector<Bucket> &buckets) const {
+    assert(buckets.empty());
+    buckets.resize(1);
+    Bucket &big_bucket = buckets.back();
+    big_bucket.reserve(abs.num_states);
+    for (AbstractStateRef state = 0; state < abs.num_states; ++state)
         big_bucket.push_back(state);
-    }
-    assert (!big_bucket.empty());
-    buckets.push_back(Bucket());
-    buckets.back().swap(big_bucket);
-    
-    vector<slist<AbstractStateRef> > collapsed_groups;
-    ShrinkBucketBased::compute_abstraction(
-        buckets, threshold, collapsed_groups);
-
-    apply(abs, collapsed_groups, threshold);
-}
-
-
-
-bool ShrinkRandom::has_memory_limit() const {
-    return true;
-}
-
-bool ShrinkRandom::is_bisimulation() const {
-    return false;
-}
-
-bool ShrinkRandom::is_dfp() const {
-    return false;
+    assert(!big_bucket.empty());
 }
 
 string ShrinkRandom::description() const {

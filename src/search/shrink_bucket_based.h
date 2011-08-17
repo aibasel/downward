@@ -1,33 +1,54 @@
 #ifndef SHRINK_BUCKET_BASED_H
 #define SHRINK_BUCKET_BASED_H
+
 #include "shrink_strategy.h"
+
 #include <vector>
 
-/* A base class for shrink strategies that put the states in an ordered
-   vector of buckets,
-   and compute the new abstraction based on the order of the buckets using
-   compute_abstraction(...).
-   (e.g. ShrinkFH and ShrinkRandom)
-*/
+
+/* A base class for bucket-based shrink strategies.
+
+   A bucket-based strategy partitions the states into an ordered
+   vector of buckets, from low to high priority, and then abstracts
+   them to a given target size according to the following rules:
+
+   Repeat until we respect the target size:
+       If any bucket still contains two states:
+           Combine two random states from the non-singleton bucket
+           with the lowest priority.
+       Otherwise:
+           Combine the two lowest-priority buckets.
+
+   For the (usual) case where the target size is larger than the
+   number of buckets, this works out in such a way that the
+   high-priority buckets are not abstracted at all, the low-priority
+   buckets are abstracted by combining all states in each bucket, and
+   (up to) one bucket "in the middle" is partially abstracted. */
 
 class ShrinkBucketBased : public ShrinkStrategy {
+protected:
+    typedef std::vector<AbstractStateRef> Bucket;
+
+private:
+    void compute_abstraction(
+        const std::vector<Bucket> &buckets,
+        int target_size,
+        EquivalenceRelation &equivalence_relation) const;
+
+protected:
+    virtual void partition_into_buckets(
+        const Abstraction &abs, std::vector<Bucket> &buckets) const = 0;
+
 public:
     ShrinkBucketBased();
     virtual ~ShrinkBucketBased();
-    virtual void shrink(Abstraction &abs, int threshold, bool force = false) const = 0;
 
-    virtual bool is_bisimulation() const = 0;
-    virtual bool has_memory_limit() const = 0;
-    virtual bool is_dfp() const = 0;
+    virtual bool is_bisimulation() const;
+    virtual bool has_memory_limit() const;
+    virtual bool is_dfp() const;
 
-    virtual std::string description() const = 0;
-protected:
-    void compute_abstraction(
-        vector<vector<AbstractStateRef> > &buckets, 
-        int target_size, 
-        vector<slist<AbstractStateRef> > &collapsed_groups) const;
-
+    virtual void shrink(Abstraction &abs, int threshold,
+                        bool force = false) const;
 };
-
 
 #endif
