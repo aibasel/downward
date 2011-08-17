@@ -161,8 +161,7 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
                     if (enable_greedy_bisimulation 
                         && !ShrinkBisimulationBase::are_bisimilar(
                             prev_sig.succ_signature, curr_sig.succ_signature,
-                            false, enable_greedy_bisimulation, false, group_to_h, h, curr_sig.h, vector<pair<int,
-                                                                                                             int> > ()))
+                            enable_greedy_bisimulation, group_to_h, h, curr_sig.h))
                         num_new_groups_greedy_bisimulation++;
                 }
             }
@@ -209,10 +208,9 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
                                || (use_greedy_bisimulation
                                    && !ShrinkBisimulationBase::are_bisimilar(
                                        prev_sig.succ_signature,
-                                       curr_sig.succ_signature, false,
+                                       curr_sig.succ_signature,
                                        use_greedy_bisimulation,
-                                       false, group_to_h, h, curr_sig.h,
-                                       vector<pair<int, int> > ()))) {
+                                       group_to_h, h, curr_sig.h))) {
                         new_group_no = num_groups++;
                         performed_split = true;
                         assert(num_groups <= target_size);
