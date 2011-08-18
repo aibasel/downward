@@ -91,7 +91,13 @@ int ShrinkUnifiedBisimulation::initialize_dfp(const Abstraction &abs) {
             assert(h >= 0 && h <= abs.max_h);
             int group = h_to_h_group[h];
             state_to_group[state] = group;
+            // The following line looks simplifiable: all h values in
+            // a group are the same, so we know group_to_h[group] ==
+            // h, once it's been initialized. We could even initialize
+            // the group_to_h values already while generating
+            // h_to_h_group in the loop above.
             group_to_h[group] = group_to_h[group] == -1 ? h : ::min(h, group_to_h[group]);
+            assert(group_to_h[group] == h);
         }
     }
     int num_groups = num_of_used_h;
