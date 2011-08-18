@@ -36,29 +36,14 @@ bool ShrinkBisimulationBase::are_bisimilar(
         abort();
     int h = source_h_1;
 
+    /* Check that succ_sig1 and succ_sig2 are identical if we ignore
+       arcs that leads to nodes with higher h value. The algorithm is
+       a parallel scan through the two signatures similar to the merge
+       step of merge sort. */
     SuccessorSignature::const_iterator iter1 = succ_sig1.begin();
     SuccessorSignature::const_iterator iter2 = succ_sig2.begin();
     SuccessorSignature::const_iterator end1 = succ_sig1.end();
     SuccessorSignature::const_iterator end2 = succ_sig2.end();
-
-/*
-  // TODO: This simpler variant somehow did not seem to work, or at least took forever. Why?
-
-    for (;;) {
-        while (iter1 != end1 && group_to_h[iter1->second] < h)
-            ++iter1;
-        while (iter2 != end2 && group_to_h[iter2->second] < h)
-            ++iter2;
-        bool at_end1 = (iter1 == end1);
-        bool at_end2 = (iter2 == end2);
-        if (at_end1 && at_end2)
-            return true;
-        if (at_end1 || at_end2 || *iter1 != *iter2)
-            return false;
-        ++iter1;
-        ++iter2;
-    }
-*/
     while (iter1 != end1 && iter2 != end2) {
         if (*iter1 == *iter2) {
             ++iter1;
