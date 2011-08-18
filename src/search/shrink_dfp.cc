@@ -32,13 +32,10 @@ void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) {
 void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
     Abstraction &abs, 
     int target_size,
-    vector<slist<AbstractStateRef> > &collapsed_groups,
+    EquivalenceRelation &equivalence_relation,
     bool enable_greedy_bisimulation) const {
-//	cout << "Max h value is: " << abs.max_h << endl;
-    //vector<bool> used_h(num_states, false);
     vector<int> h_to_h_group(abs.max_h + 1, -1);
     int num_of_used_h = 0;
-
     for (int state = 0; state < abs.num_states; state++) {
         int h = abs.goal_distances[state];
         if (h != QUITE_A_LOT && abs.init_distances[state] != QUITE_A_LOT) {
@@ -48,7 +45,7 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
             }
         }
     }
-	cout << "Number of used h's: " << num_of_used_h << endl;
+    cout << "number of used h values: " << num_of_used_h << endl;
 
     vector<int> state_to_group(abs.num_states);     //vector containing the states' group number.
     vector<int> group_to_h(abs.num_states, -1);     //vector containing the groups' h-value.
@@ -160,7 +157,7 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
                 } else if (prev_sig.succ_signature != curr_sig.succ_signature) {
                     num_new_groups++;
                     if (enable_greedy_bisimulation 
-                        && !ShrinkBisimulationBase::are_bisimilar(
+                        && !are_bisimilar(
                             prev_sig.succ_signature, curr_sig.succ_signature,
                             enable_greedy_bisimulation, group_to_h, h, curr_sig.h))
                         num_new_groups_greedy_bisimulation++;
@@ -183,9 +180,12 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
                 }
             }
 
-            if ((!use_greedy_bisimulation && !h_group_done[h_to_h_group[h]] && num_new_groups
-                 != num_old_groups) || (use_greedy_bisimulation
-                                        && num_new_groups_greedy_bisimulation != num_old_groups)) {
+            if ((use_greedy_bisimulation
+                 && num_new_groups_greedy_bisimulation
+                 != num_old_groups)
+                || (!use_greedy_bisimulation
+                    && !h_group_done[h_to_h_group[h]]
+                    && num_new_groups != num_old_groups)) {
                 // Split the groups.
                 done = false;
                 //this is needed since the checks on further reduction are not always done on the full set of reducible pairs
@@ -194,18 +194,22 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
                 for (int i = sig_start; i < sig_end; i++) {
                     const Signature &prev_sig = signatures[i - 1];
                     const Signature &curr_sig = signatures[i];
+
+                    assert(h == curr_sig.h);
+
                     if (prev_sig.group != curr_sig.group) {
                         // Start first group of a block; keep old group no.
                         new_group_no = curr_sig.group;
-                    } else if ((!use_greedy_bisimulation 
+                    } else if ((!use_greedy_bisimulation
                                 && prev_sig.succ_signature
-                                != curr_sig.succ_signature) 
+                                != curr_sig.succ_signature)
                                || (use_greedy_bisimulation
                                    && !are_bisimilar(
                                        prev_sig.succ_signature,
                                        curr_sig.succ_signature,
                                        use_greedy_bisimulation,
-                                       group_to_h, h, curr_sig.h))) {
+                                       group_to_h,
+                                       h, h))) {
                         new_group_no = num_groups++;
                         performed_split = true;
                         assert(num_groups <= target_size);
@@ -222,15 +226,13 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
         }
     }
 
-    assert(collapsed_groups.empty());
-    collapsed_groups.resize(num_groups);
-    // int total_size = 0;
+    assert(equivalence_relation.empty());
+    equivalence_relation.resize(num_groups);
     for (int state = 0; state < abs.num_states; state++) {
         int group = state_to_group[state];
         if (group != -1) {
             assert(group >= 0 && group < num_groups);
-            collapsed_groups[group].push_front(state);
-            // total_size++;
+            equivalence_relation[group].push_front(state);
         }
     }
 }

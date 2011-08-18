@@ -17,11 +17,6 @@ ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(bool gr, bool ml)
 ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(const Options &opts)
     : greedy(opts.get<bool>("greedy")),
       has_mem_limit(opts.get<bool>("memory_limit")) {
-    if(has_mem_limit) {
-        cout << "memory limited bisimulation not yet supported - exiting"
-             << endl;
-        exit(2);
-    }
 }
 
 ShrinkUnifiedBisimulation::~ShrinkUnifiedBisimulation() {
@@ -31,30 +26,25 @@ void ShrinkUnifiedBisimulation::shrink(
     Abstraction &abs, int threshold, bool force) {
     if(!must_shrink(abs, threshold, force))
         return;
+    if (!has_mem_limit)
+        threshold = QUITE_A_LOT; // HACK: Override threshold.
+    EquivalenceRelation equivalence_relation;
+    compute_abstraction(abs, threshold, equivalence_relation);
 
-    vector<slist<AbstractStateRef> > collapsed_groups;
-    compute_abstraction(abs, QUITE_A_LOT, collapsed_groups);
-
-    apply(abs, collapsed_groups, QUITE_A_LOT);
+    apply(abs, equivalence_relation, threshold);
 }
 
-void ShrinkUnifiedBisimulation::compute_abstraction(
-    Abstraction &abs,
-    int target_size, vector<slist<AbstractStateRef> > &collapsed_groups) const {
-    int num_groups;
-    vector<int> state_to_group(abs.num_states);
-    vector<int> group_to_h(abs.num_states, -1);
-
+int ShrinkUnifiedBisimulation::initialize_bisim(const Abstraction &abs) {
     bool exists_goal_state = false;
     bool exists_non_goal_state = false;
     for (int state = 0; state < abs.num_states; state++) {
         int h = abs.goal_distances[state];
-        bool isGoalState = abs.goal_states[state];
+        bool is_goal_state = abs.goal_states[state];
         if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
             state_to_group[state] = -1;
         } else {
             assert(h >= 0 && h <= abs.max_h);
-            if (h == 0 && isGoalState) {
+            if (h == 0 && is_goal_state) {
                 state_to_group[state] = 0;
                 group_to_h[0] = 0;
                 exists_goal_state = true;
@@ -67,17 +57,72 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
         }
     }
 
+    int num_groups;
     if (exists_goal_state && exists_non_goal_state)
         num_groups = 2;
     else
         num_groups = 1;
 
     //Now all goal states are in group 0 and non-goal states are in 1. Unreachable states are in -1.
+    group_done.resize(abs.num_states, false);
 
-    vector<bool> group_done(abs.num_states, false);
+    return num_groups;
+}
 
-    vector<Signature> signatures;
+int ShrinkUnifiedBisimulation::initialize_dfp(const Abstraction &abs) {
+    h_to_h_group.resize(abs.max_h + 1, -1);
+    int num_of_used_h = 0;
+    for (int state = 0; state < abs.num_states; state++) {
+        int h = abs.goal_distances[state];
+        if (h != QUITE_A_LOT && abs.init_distances[state] != QUITE_A_LOT) {
+            if (h_to_h_group[h] == -1) {
+                h_to_h_group[h] = num_of_used_h;
+                num_of_used_h++;
+            }
+        }
+    }
+    cout << "number of used h values: " << num_of_used_h << endl;
+
+    for (int state = 0; state < abs.num_states; state++) {
+        int h = abs.goal_distances[state];
+        if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
+            state_to_group[state] = -1;
+        } else {
+            assert(h >= 0 && h <= abs.max_h);
+            int group = h_to_h_group[h];
+            state_to_group[state] = group;
+            group_to_h[group] = group_to_h[group] == -1 ? h : ::min(h, group_to_h[group]);
+        }
+    }
+    int num_groups = num_of_used_h;
+
+    h_group_done.resize(num_of_used_h, false);
+    return num_groups;
+}
+
+void ShrinkUnifiedBisimulation::compute_abstraction(
+    Abstraction &abs,
+    int target_size,
+    EquivalenceRelation &equivalence_relation) {
+
+    state_to_group.clear();
+    group_to_h.clear();
+    group_done.clear();
+    signatures.clear();
+    h_to_h_group.clear();
+    h_group_done.clear();
+
+    state_to_group.resize(abs.num_states);
+    group_to_h.resize(abs.num_states, -1);
     signatures.reserve(abs.num_states + 2);
+
+    int num_groups;
+    if (is_dfp())
+        num_groups = initialize_dfp(abs);
+    else
+        num_groups = initialize_bisim(abs);
+
+    // assert(num_groups <= target_size); // TODO: We currently violate this, right?
 
     bool done = false;
     while (!done) {
@@ -152,10 +197,18 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
 
             //this code skips all groups that cannot be further split
             //(due to memory restrictions).
-            if (h == -1 || group_done[group]) {
-                while (signatures[sig_start].group == group)
-                    sig_start++;
-                continue;
+            if (is_dfp()) {
+                if (h == -1 || h_group_done[h_to_h_group[h]]) {
+                    while (signatures[sig_start].h == h)
+                        sig_start++;
+                    continue;
+                }
+            } else {
+                if (h == -1 || group_done[group]) {
+                    while (signatures[sig_start].group == group)
+                        sig_start++;
+                    continue;
+                }
             }
 
             //This next piece of code is for computing the number of blocks after the splitting.
@@ -164,7 +217,14 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
             int num_new_groups = 0;
             int num_new_groups_greedy_bisimulation = 0;
             int sig_end;
-            for (sig_end = sig_start; signatures[sig_end].group == group; sig_end++) {
+            for (sig_end = sig_start; true; sig_end++) {
+                if (is_dfp()) {
+                    if (signatures[sig_end].h != h)
+                        break;
+                } else {
+                    if (signatures[sig_end].group != group)
+                        break;
+                }
                 // cout << "@" << sig_start << "@" << sig_end << flush;
 
                 const Signature &prev_sig = signatures[sig_end - 1];
@@ -184,29 +244,40 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
                     num_new_groups_greedy_bisimulation++;
                 } else if (prev_sig.succ_signature != curr_sig.succ_signature) {
                     num_new_groups++;
+                    assert(group_to_h[prev_sig.group] == h);
+                    assert(group_to_h[curr_sig.group] == h);
                     if (greedy && !are_bisimilar(
                             prev_sig.succ_signature, curr_sig.succ_signature,
                             greedy,
-                            group_to_h, group_to_h[prev_sig.group],
-                            group_to_h[curr_sig.group])) //TODO - changed h to group_to_h
+                            group_to_h,
+                            h, h))
                         num_new_groups_greedy_bisimulation++;
                 }
             }
             assert(sig_end > sig_start);
 
-            bool use_greedy_bisimulation = greedy;
+            bool use_greedy_bisimulation = greedy && !is_dfp();
 
             if (num_groups - num_old_groups + num_new_groups > target_size) {
-                // Can't split the group -- would exceed
+                // Can't split the group (or the set of groups for this h value) -- would exceed
                 // bound on abstract state number.
-                group_done[group] = true;
+                if (is_dfp()) {
+                    h_group_done[h_to_h_group[h]] = true;
+                    if (greedy && num_groups - num_old_groups
+                        + num_new_groups_greedy_bisimulation <= target_size)
+                        use_greedy_bisimulation = true;
+                } else {
+                    group_done[group] = true;
+                }
             }
+
             if ((use_greedy_bisimulation
                  && num_new_groups_greedy_bisimulation
                  != num_old_groups)
                 || (!use_greedy_bisimulation
-                    && !group_done[group] && num_new_groups
-                    != num_old_groups)) {
+                    && (is_dfp() ? !h_group_done[h_to_h_group[h]]
+                                 : !group_done[group])
+                    && num_new_groups != num_old_groups)) {
                 // Split the group into the new groups, where if two states are equivalent
                 //in any bisimulation, they will be in the same group.
                 done = false;
@@ -216,6 +287,9 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
                 for (int i = sig_start; i < sig_end; i++) {
                     const Signature &prev_sig = signatures[i - 1];
                     const Signature &curr_sig = signatures[i];
+
+                    int h = curr_sig.h;
+
                     if (prev_sig.group != curr_sig.group) {
                         // Start first group of a block; keep old group no.
                         new_group_no = curr_sig.group;
@@ -226,10 +300,11 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
                                    && !are_bisimilar(
                                        prev_sig.succ_signature,
                                        curr_sig.succ_signature,
-                                       greedy,
+                                       use_greedy_bisimulation,
                                        group_to_h,
-                                       group_to_h[prev_sig.group],
-                                       group_to_h[curr_sig.group]))) { //TODO - changed h to group_to_h
+                                       h, h))) {
+                        assert(group_to_h[prev_sig.group] == h);
+                        assert(group_to_h[curr_sig.group] == h);
                         new_group_no = num_groups++;
                         performed_split = true;
                         assert(num_groups <= target_size);
@@ -237,24 +312,26 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
 
                     assert(new_group_no != -1);
                     state_to_group[curr_sig.state] = new_group_no;
-                    group_to_h[new_group_no] = curr_sig.h;                     //TODO - changed from just h.
+                    group_to_h[new_group_no] = h;
                 }
-                if (use_greedy_bisimulation && performed_split)
-                    group_done[group] = false;
+                if (use_greedy_bisimulation && performed_split) {
+                    if (is_dfp())
+                        h_group_done[h] = false;
+                    else
+                        group_done[group] = false;
+                }
             }
             sig_start = sig_end;
         }
     }
 
-    assert(collapsed_groups.empty());
-    collapsed_groups.resize(num_groups);
-    // int total_size = 0;
+    assert(equivalence_relation.empty());
+    equivalence_relation.resize(num_groups);
     for (int state = 0; state < abs.num_states; state++) {
         int group = state_to_group[state];
         if (group != -1) {
             assert(group >= 0 && group < num_groups);
-            collapsed_groups[group].push_front(state);
-            // total_size++;
+            equivalence_relation[group].push_front(state);
         }
     }
 }
