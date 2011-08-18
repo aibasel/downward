@@ -15,8 +15,7 @@ ShrinkBucketBased::ShrinkBucketBased() {
 ShrinkBucketBased::~ShrinkBucketBased() {
 }
 
-void ShrinkBucketBased::shrink(
-    Abstraction &abs, int threshold, bool force) const {
+void ShrinkBucketBased::shrink(Abstraction &abs, int threshold, bool force) {
     if (!must_shrink(abs, threshold, force))
         return;
 

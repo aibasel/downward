@@ -27,7 +27,8 @@ ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(const Options &opts)
 ShrinkUnifiedBisimulation::~ShrinkUnifiedBisimulation() {
 }
 
-void ShrinkUnifiedBisimulation::shrink(Abstraction &abs, int threshold, bool force) const {
+void ShrinkUnifiedBisimulation::shrink(
+    Abstraction &abs, int threshold, bool force) {
     if(!must_shrink(abs, threshold, force))
         return;
 
@@ -114,7 +115,7 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
             }
         }
 
-        if (greedy)
+        if (greedy && !is_dfp())
             for (int i = 0; i < group_to_h.size(); i++)
                 group_to_h[i] = -1;
 
@@ -124,7 +125,7 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
             succ_sig.erase(::unique(succ_sig.begin(), succ_sig.end()),
                            succ_sig.end());
 
-            if (greedy && signatures[i].group > -1)
+            if (greedy && !is_dfp() && signatures[i].group > -1)
                 group_to_h[signatures[i].group] =
                     group_to_h[signatures[i].group] == -1 ? signatures[i].h
                     : min(signatures[i].h,

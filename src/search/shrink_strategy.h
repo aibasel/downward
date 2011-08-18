@@ -52,7 +52,7 @@ public:
        states).
     */
     virtual void shrink(Abstraction &abs, int threshold,
-                        bool force = false) const = 0;
+                        bool force = false) = 0;
 
     /* TODO: Would be nice not to need this three methods. This would
        require moving some of the responsibilities around a bit. */

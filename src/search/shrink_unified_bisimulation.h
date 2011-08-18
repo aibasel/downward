@@ -12,7 +12,7 @@ public:
     ShrinkUnifiedBisimulation(bool greedy, bool memory_limit);
     virtual ~ShrinkUnifiedBisimulation();
 
-    virtual void shrink(Abstraction &abs, int threshold, bool force = false) const;
+    virtual void shrink(Abstraction &abs, int threshold, bool force = false);
 
     virtual bool is_bisimulation() const;
     virtual bool has_memory_limit() const;

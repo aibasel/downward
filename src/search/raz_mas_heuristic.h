@@ -25,7 +25,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     const int max_abstract_states_before_merge;
     const int abstraction_count;
     const MergeStrategy merge_strategy;
-    const ShrinkStrategy *shrink_strategy;
+    ShrinkStrategy *const shrink_strategy;
     const bool use_label_simplification;
     const bool use_expensive_statistics;
 
