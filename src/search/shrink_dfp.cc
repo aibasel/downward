@@ -68,8 +68,8 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
     vector<bool> h_group_done(num_of_used_h, false);
     vector<Signature> signatures;
     signatures.reserve(abs.num_states + 2);
-    bool done = false;
 
+    bool done = false;
     while (!done) {
         done = true;
         // Compute state signatures.
@@ -81,14 +81,15 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
             if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
                 h = -1;
                 assert(state_to_group[state] == -1);
-                Signature signature(h, state_to_group[state], SuccessorSignature(),
-                                    state);
             }
             Signature signature(h, state_to_group[state], SuccessorSignature(),
                                 state);
             signatures.push_back(signature);
         }
         signatures.push_back(Signature(abs.max_h + 1, -1, SuccessorSignature(), -1));
+
+        //Adds to the succ_sig of every signature, the pair <op_no, target_group>
+        //reachable by the transition op_no on the state of the signature.
         for (int op_no = 0; op_no < abs.transitions_by_op.size(); op_no++) {
             const vector<AbstractTransition> &transitions =
                 abs.transitions_by_op[op_no];
@@ -179,12 +180,6 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
                 if (enable_greedy_bisimulation && num_groups - num_old_groups
                     + num_new_groups_greedy_bisimulation <= target_size) {
                     use_greedy_bisimulation = true;
-//						cout
-//								<< "CAN SPLIT USING GREEDY.. num of new groups relaxed: "
-//								<< num_new_groups_greedy_bisimulation << endl;
-//						cout << "num of total groups will be: " << num_groups
-//								- num_old_groups + num_new_groups_greedy_bisimulation
-//								<< endl;
                 }
             }
 
@@ -220,10 +215,8 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
                     state_to_group[curr_sig.state] = new_group_no;
                     group_to_h[new_group_no] = h;
                 }
-                if (use_greedy_bisimulation && performed_split) {
+                if (use_greedy_bisimulation && performed_split)
                     h_group_done[h] = false;
-//						cout << "New num of groups is: " << num_groups << endl;
-                }
             }
             sig_start = sig_end;
         }

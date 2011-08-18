@@ -79,7 +79,6 @@ void ShrinkBisimulation::compute_abstraction(
     bool done = false;
     while (!done) {
         done = true;
-        //TODO!!!!!!!- maybe need to update group_to_h vector with new values!!!!
         // Compute state signatures.
         // Add sentinels to the start and end.
         signatures.clear();
@@ -112,8 +111,9 @@ void ShrinkBisimulation::compute_abstraction(
                 }
             }
         }
+
         if (greedy)
-            for (int i = 0; i < group_to_h.size(); i++)             //TODO- this is something I added (update of the group_to_h)
+            for (int i = 0; i < group_to_h.size(); i++)
                 group_to_h[i] = -1;
 
         for (int i = 0; i < signatures.size(); i++) {
@@ -121,24 +121,23 @@ void ShrinkBisimulation::compute_abstraction(
             ::sort(succ_sig.begin(), succ_sig.end());
             succ_sig.erase(::unique(succ_sig.begin(), succ_sig.end()),
                            succ_sig.end());
-            //TODO - this is something I added (update of the group_to_h)
+
             if (greedy && signatures[i].group > -1)
                 group_to_h[signatures[i].group] =
                     group_to_h[signatures[i].group] == -1 ? signatures[i].h
                     : min(signatures[i].h,
                           group_to_h[signatures[i].group]);
         }
+
         assert(signatures.size() == abs.num_states + 2);
         ::sort(signatures.begin(), signatures.end());
         // TODO: More efficient to sort an index set than to shuffle
         //       the whole signatures around?
 
-
         int sig_start = 0;
         while (true) {
             int h = signatures[sig_start].h;
             int group = signatures[sig_start].group;
-            // cout << sig_start << " *** " << h << endl;
             if (h > abs.max_h) {
                 // We have hit the end sentinel.
                 assert(h == abs.max_h + 1);
@@ -160,7 +159,7 @@ void ShrinkBisimulation::compute_abstraction(
             //changed the condition in the for loop to equality of groups and not h values.
             int num_old_groups = 0;
             int num_new_groups = 0;
-            int num_new_groups_label_reduction_or_greedy_bisimulation = 0;
+            int num_new_groups_greedy_bisimulation = 0;
             int sig_end;
             for (sig_end = sig_start; signatures[sig_end].group == group; sig_end++) {
                 // cout << "@" << sig_start << "@" << sig_end << flush;
@@ -179,7 +178,7 @@ void ShrinkBisimulation::compute_abstraction(
                 if (prev_sig.group != curr_sig.group) {
                     num_old_groups++;
                     num_new_groups++;
-                    num_new_groups_label_reduction_or_greedy_bisimulation++;
+                    num_new_groups_greedy_bisimulation++;
                 } else if (prev_sig.succ_signature != curr_sig.succ_signature) {
                     num_new_groups++;
                     if (greedy && !ShrinkBisimulationBase::are_bisimilar(
@@ -187,28 +186,22 @@ void ShrinkBisimulation::compute_abstraction(
                             greedy,
                             group_to_h, group_to_h[prev_sig.group],
                             group_to_h[curr_sig.group])) //TODO - changed h to group_to_h
-                        num_new_groups_label_reduction_or_greedy_bisimulation++;
+                        num_new_groups_greedy_bisimulation++;
                 }
             }
             assert(sig_end > sig_start);
 
-            bool use_label_reduction_or_greedy_bisimulation =
-                greedy;
+            bool use_greedy_bisimulation = greedy;
 
             if (num_groups - num_old_groups + num_new_groups > target_size) {
                 // Can't split the group -- would exceed
                 // bound on abstract state number.
                 group_done[group] = true;
-                if (greedy && num_groups - num_old_groups
-                    + num_new_groups_label_reduction_or_greedy_bisimulation
-                    <= target_size) {
-                    use_label_reduction_or_greedy_bisimulation = true;
-                }
             }
-            if ((use_label_reduction_or_greedy_bisimulation
-                 && num_new_groups_label_reduction_or_greedy_bisimulation
+            if ((use_greedy_bisimulation
+                 && num_new_groups_greedy_bisimulation
                  != num_old_groups)
-                || (!use_label_reduction_or_greedy_bisimulation
+                || (!use_greedy_bisimulation
                     && !group_done[group] && num_new_groups
                     != num_old_groups)) {
                 // Split the group into the new groups, where if two states are equivalent
@@ -223,10 +216,10 @@ void ShrinkBisimulation::compute_abstraction(
                     if (prev_sig.group != curr_sig.group) {
                         // Start first group of a block; keep old group no.
                         new_group_no = curr_sig.group;
-                    } else if ((!use_label_reduction_or_greedy_bisimulation
+                    } else if ((!use_greedy_bisimulation
                                 && prev_sig.succ_signature
                                 != curr_sig.succ_signature)
-                               || (use_label_reduction_or_greedy_bisimulation
+                               || (use_greedy_bisimulation
                                    && !ShrinkBisimulationBase::are_bisimilar(
                                        prev_sig.succ_signature,
                                        curr_sig.succ_signature,
@@ -238,18 +231,18 @@ void ShrinkBisimulation::compute_abstraction(
                         performed_split = true;
                         assert(num_groups <= target_size);
                     }
+
                     assert(new_group_no != -1);
                     state_to_group[curr_sig.state] = new_group_no;
                     group_to_h[new_group_no] = curr_sig.h;                     //TODO - changed from just h.
                 }
-                if (use_label_reduction_or_greedy_bisimulation
-                    && performed_split)
+                if (use_greedy_bisimulation && performed_split)
                     group_done[group] = false;
             }
-
             sig_start = sig_end;
         }
     }
+
     assert(collapsed_groups.empty());
     collapsed_groups.resize(num_groups);
     // int total_size = 0;
@@ -261,18 +254,6 @@ void ShrinkBisimulation::compute_abstraction(
             // total_size++;
         }
     }
-    int zero_sized_groups = 0;
-    int geq_one_sized_groups = 0;
-    for (int i = 0; i < collapsed_groups.size(); i++) {
-        if (collapsed_groups[i].size() == 0)
-            zero_sized_groups++;
-        if (collapsed_groups[i].size() > 1)
-            geq_one_sized_groups++;
-    }
-//	if (zero_sized_groups > 0)
-//		cout << "NUM OF 0 SIZE GROUPS: " << zero_sized_groups << endl;
-//	if (geq_one_sized_groups > 0)
-//		cout << "NUM OF GEQ 1 GROUPS: " << geq_one_sized_groups << endl;
 }
 
 
