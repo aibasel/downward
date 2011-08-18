@@ -43,6 +43,7 @@ class Abstraction {
     friend class ShrinkRandom;
     friend class ShrinkDFP;
     friend class ShrinkBisimulation;
+    friend class ShrinkUnifiedBisimulation;
     enum {
         QUITE_A_LOT = 1000000000
     };
