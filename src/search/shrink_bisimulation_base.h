@@ -10,10 +10,10 @@
 class ShrinkBisimulationBase : public ShrinkStrategy {
 protected:
     bool are_bisimilar(
-        const vector<pair<int, int> > &succ_sig1,
-        const vector<pair<int, int> > &succ_sig2,
+        const std::vector<std::pair<int, int> > &succ_sig1,
+        const std::vector<std::pair<int, int> > &succ_sig2,
         bool greedy_bisim,
-        const vector<int> &group_to_h,
+        const std::vector<int> &group_to_h,
         int source_h_1, int source_h_2) const;
 public:
     ShrinkBisimulationBase();
