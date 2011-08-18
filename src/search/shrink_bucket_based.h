@@ -48,7 +48,7 @@ public:
     virtual bool is_dfp() const;
 
     virtual void shrink(Abstraction &abs, int threshold,
-                        bool force = false) const;
+                        bool force = false);
 };
 
 #endif

@@ -17,7 +17,7 @@ ShrinkDFP::ShrinkDFP(const Options &opts)
 ShrinkDFP::~ShrinkDFP() {
 }
 
-void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) const {
+void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) {
     if(!must_shrink(abs, threshold, force))
         return;
 
@@ -201,7 +201,7 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
                                 && prev_sig.succ_signature
                                 != curr_sig.succ_signature) 
                                || (use_greedy_bisimulation
-                                   && !ShrinkBisimulationBase::are_bisimilar(
+                                   && !are_bisimilar(
                                        prev_sig.succ_signature,
                                        curr_sig.succ_signature,
                                        use_greedy_bisimulation,
