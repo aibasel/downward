@@ -197,13 +197,10 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("merge_strategy", merge_strategies,
                            "MERGE_LINEAR_CG_GOAL_LEVEL",
                            "merge strategy");
-    
-    //TODO: Default Shrink-Strategy should only be created
-    // when it's actually used
-    ShrinkStrategy *def_shrink = 0;
-    // TODO: Changed this because ShrinkFH is no longer so easily generatable.
-    // Was:
-    // ShrinkStrategy *def_shrink = new ShrinkFH(ShrinkFH::HIGH, ShrinkFH::LOW);
+
+    // TODO: Default shrink strategy should only be created
+    // when it's actually used.
+    ShrinkStrategy *def_shrink = ShrinkFH::create_default(50000);
 
     parser.add_option<ShrinkStrategy *>("shrink_strategy", def_shrink, "shrink strategy");
     // TODO: Rename option name to "use_label_reduction" to be

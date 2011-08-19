@@ -149,6 +149,15 @@ void ShrinkFH::ordered_buckets_use_vector(
     assert(buckets.size() == bucket_count);
 }
 
+ShrinkStrategy *ShrinkFH::create_default(int max_states) {
+    Options opts;
+    opts.set("max_states", max_states);
+    opts.set("max_states_before_merge", max_states);
+    opts.set<int>("shrink_f", ShrinkFH::HIGH);
+    opts.set<int>("shrink_h", ShrinkFH::LOW);
+    return new ShrinkFH(opts);
+}
+
 static ShrinkStrategy *_parse(OptionParser &parser){
     ShrinkStrategy::add_options_to_parser(parser);
     vector<string> high_low;

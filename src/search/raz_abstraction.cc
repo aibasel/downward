@@ -153,13 +153,9 @@ void Abstraction::compute_distances() {
         // TODO/HACK: The way this is created is of course unspeakably
         // ugly. We'll leave this as is for now because there will likely
         // be more structural changes soon.
-
-        Options opts;
-        opts.set("max_states", num_states);
-        opts.set("max_states_before_merge", num_states);
-        opts.set<int>("shrink_f", ShrinkFH::HIGH);
-        opts.set<int>("shrink_h", ShrinkFH::LOW);
-        ShrinkFH(opts).shrink(*this, num_states, true);
+        ShrinkStrategy *shrink_temp = ShrinkFH::create_default(num_states);
+        shrink_temp->shrink(*this, num_states, true);
+        delete shrink_temp;
     }
 }
 
