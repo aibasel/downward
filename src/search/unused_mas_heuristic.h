@@ -35,6 +35,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     const ShrinkStrategy shrink_strategy;
     const bool use_label_simplification;
     const bool use_expensive_statistics;
+    const bool is_unit_cost;
 
     std::vector<Abstraction *> abstractions;
     void verify_no_axioms_no_cond_effects() const;
@@ -43,6 +44,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
 
     void dump_options() const;
     void warn_on_unusual_options() const;
+    bool is_unit_cost_problem() const;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);

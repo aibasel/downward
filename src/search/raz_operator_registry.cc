@@ -58,7 +58,8 @@ struct hash<OperatorSignature> {
 
 LabelReducer::LabelReducer(
     const vector<const Operator *> &relevant_operators,
-    const vector<int> &pruned_vars) {
+    const vector<int> &pruned_vars,
+    OperatorCost cost_type) {
     num_pruned_vars = pruned_vars.size();
     num_labels = relevant_operators.size();
     num_reduced_labels = 0;
@@ -74,7 +75,7 @@ LabelReducer::LabelReducer(
         const Operator *op = relevant_operators[i];
         vector<Assignment> preconditions;
         vector<Assignment> effects;
-        int op_cost = op->get_cost();
+        int op_cost = get_adjusted_action_cost(*op, cost_type);
         const vector<Prevail> &prev = op->get_prevail();
         for (int j = 0; j < prev.size(); j++) {
             int var = prev[j].var;

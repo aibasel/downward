@@ -6,6 +6,7 @@
          changes across renames is more difficult. */
 
 #include "globals.h"
+#include "operator_cost.h"
 
 #include <cassert>
 #include <vector>
@@ -22,7 +23,8 @@ class LabelReducer {
 public:
     LabelReducer(
         const std::vector<const Operator *> &relevant_operators,
-        const std::vector<int> &pruned_vars);
+        const std::vector<int> &pruned_vars,
+        OperatorCost cost_type);
     ~LabelReducer();
     inline const Operator *get_reduced_label(const Operator *op) const;
     void statistics() const;

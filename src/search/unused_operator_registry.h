@@ -2,22 +2,30 @@
 #define OPERATOR_REGISTRY_H
 
 #include "globals.h"
+#include "operator_cost.h"
 
 #include <vector>
 
 class Operator;
+class OperatorSignature;
 
 class OperatorRegistry {
+
     std::vector<const Operator *> canonical_operators;
     inline int get_op_index(const Operator *op) const;
 
     int num_vars;
     int num_operators;
     int num_canonical_operators;
+
+    OperatorSignature build_operator_signature(
+        const Operator &op, OperatorCost cost_type,
+        const vector<bool> &var_is_used) const;
 public:
     OperatorRegistry(
         const std::vector<const Operator *> &relevant_operators,
-        const std::vector<int> &pruned_vars);
+        const std::vector<int> &pruned_vars,
+        OperatorCost cost_type);
     ~OperatorRegistry();
     inline const Operator *get_canonical_operator(
         const Operator *) const;

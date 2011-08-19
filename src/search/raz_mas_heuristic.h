@@ -26,7 +26,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     const int abstraction_count;
     const MergeStrategy merge_strategy;
     ShrinkStrategy *const shrink_strategy;
-    const bool use_label_simplification;
+    const bool use_label_reduction;
     const bool use_expensive_statistics;
 
     std::vector<Abstraction *> abstractions;
@@ -35,7 +35,6 @@ class MergeAndShrinkHeuristic : public Heuristic {
 
     void dump_options() const;
     void warn_on_unusual_options() const;
-
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);

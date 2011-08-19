@@ -6,8 +6,14 @@
 
 #include <cassert>
 #include <iostream>
+#include <limits>
 
 using namespace std;
+
+
+static const int infinity = numeric_limits<int>::max();
+static const int VERY_LARGE_BOUND = 1000000000; // TODO: Get rid of this
+
 
 ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(bool gr, bool ml)
     : greedy(gr),
@@ -27,7 +33,7 @@ void ShrinkUnifiedBisimulation::shrink(
     if(!must_shrink(abs, threshold, force))
         return;
     if (!has_mem_limit)
-        threshold = QUITE_A_LOT; // HACK: Override threshold.
+        threshold = VERY_LARGE_BOUND; // HACK: Override threshold.
     EquivalenceRelation equivalence_relation;
     compute_abstraction(abs, threshold, equivalence_relation);
 
@@ -40,7 +46,7 @@ int ShrinkUnifiedBisimulation::initialize_bisim(const Abstraction &abs) {
     for (int state = 0; state < abs.num_states; state++) {
         int h = abs.goal_distances[state];
         bool is_goal_state = abs.goal_states[state];
-        if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
+        if (h == infinity || abs.init_distances[state] == infinity) {
             state_to_group[state] = -1;
         } else {
             assert(h >= 0 && h <= abs.max_h);
@@ -74,7 +80,7 @@ int ShrinkUnifiedBisimulation::initialize_dfp(const Abstraction &abs) {
     int num_of_used_h = 0;
     for (int state = 0; state < abs.num_states; state++) {
         int h = abs.goal_distances[state];
-        if (h != QUITE_A_LOT && abs.init_distances[state] != QUITE_A_LOT) {
+        if (h != infinity && abs.init_distances[state] != infinity) {
             if (h_to_h_group[h] == -1) {
                 h_to_h_group[h] = num_of_used_h;
                 num_of_used_h++;
@@ -85,7 +91,7 @@ int ShrinkUnifiedBisimulation::initialize_dfp(const Abstraction &abs) {
 
     for (int state = 0; state < abs.num_states; state++) {
         int h = abs.goal_distances[state];
-        if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
+        if (h == infinity || abs.init_distances[state] == infinity) {
             state_to_group[state] = -1;
         } else {
             assert(h >= 0 && h <= abs.max_h);
@@ -139,7 +145,7 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
         signatures.push_back(Signature(-1, -1, SuccessorSignature(), -1));
         for (int state = 0; state < abs.num_states; state++) {
             int h = abs.goal_distances[state];
-            if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
+            if (h == infinity || abs.init_distances[state] == infinity) {
                 h = -1;
                 assert(state_to_group[state] == -1);
             }

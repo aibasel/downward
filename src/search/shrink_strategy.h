@@ -23,11 +23,6 @@ protected:
     typedef __gnu_cxx::slist<AbstractStateRef> EquivalenceClass;
     typedef std::vector<EquivalenceClass> EquivalenceRelation;
 
-    // TODO: Get rid of this.
-    enum {
-        QUITE_A_LOT = 1000000000
-    };
-
     bool must_shrink(const Abstraction &abs, int threshold, bool force) const;
     void apply(Abstraction &abs,
                EquivalenceRelation &equivalence_relation,

@@ -12,6 +12,9 @@
 using namespace std;
 
 
+static const int infinity = numeric_limits<int>::max();
+
+
 ShrinkFH::ShrinkFH(const Options &opts)
     : f_start(HighLow(opts.get_enum("highlow_f"))),
       h_start(HighLow(opts.get_enum("highlow_h"))){
@@ -76,7 +79,7 @@ void ShrinkFH::ordered_buckets_use_map(
     for (AbstractStateRef state = 0; state < abs.num_states; ++state) {
         int g = abs.init_distances[state];
         int h = abs.goal_distances[state];
-        if (g != QUITE_A_LOT && h != QUITE_A_LOT) {
+        if (g != infinity && h != infinity) {
             int f = g + h;
             Bucket &bucket = states_by_f_and_h[f][h];
             if (bucket.empty())
@@ -109,7 +112,7 @@ void ShrinkFH::ordered_buckets_use_vector(
     for (AbstractStateRef state = 0; state < abs.num_states; ++state) {
         int g = abs.init_distances[state];
         int h = abs.goal_distances[state];
-        if (g != QUITE_A_LOT && h != QUITE_A_LOT) {
+        if (g != infinity && h != infinity) {
             int f = g + h;
             assert(f >= 0 && f < states_by_f_and_h.size());
             assert(h >= 0 && h < states_by_f_and_h[f].size());
