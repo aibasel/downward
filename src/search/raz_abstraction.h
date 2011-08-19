@@ -1,6 +1,7 @@
 #ifndef ABSTRACTION_H
 #define ABSTRACTION_H
 
+#include "operator_cost.h"
 #include "shrink_strategy.h"
 
 #include <ext/slist>
@@ -44,11 +45,12 @@ class Abstraction {
     friend class ShrinkDFP;
     friend class ShrinkBisimulation;
     friend class ShrinkUnifiedBisimulation;
-    enum {
-        QUITE_A_LOT = 1000000000
-    };
+
     friend class AtomicAbstraction;
     friend class CompositeAbstraction;
+
+    const bool is_unit_cost;
+    const OperatorCost cost_type;
 
     ShrinkStrategy *shrink_strategy;
 
@@ -68,8 +70,10 @@ class Abstraction {
     mutable int peak_memory;
 
     void compute_distances();
-    void compute_init_distances();
-    void compute_goal_distances();
+    void compute_init_distances_unit_cost();
+    void compute_goal_distances_unit_cost();
+    void compute_init_distances_general_cost();
+    void compute_goal_distances_general_cost();
 
     void apply_abstraction(vector<slist<AbstractStateRef> > &collapsed_groups);
 
@@ -89,10 +93,12 @@ protected:
                                                        AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
 public:
-    Abstraction();
+    Abstraction(bool is_unit_cost, OperatorCost cost_type);
     virtual ~Abstraction();
 
-    static void build_atomic_abstractions(vector<Abstraction *> &result);
+    static void build_atomic_abstractions(
+            bool is_unit_cost, OperatorCost cost_type,
+            std::vector<Abstraction *> &result);
     bool is_solvable() const;
 
     int get_cost(const State &state) const;
@@ -122,7 +128,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    AtomicAbstraction(int variable_);
+    AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, int variable);
     virtual ~AtomicAbstraction();
 };
 
@@ -130,12 +136,13 @@ class CompositeAbstraction : public Abstraction {
     Abstraction *components[2];
     vector<vector<AbstractStateRef> > lookup_table;
 protected:
-    virtual void apply_abstraction_to_lookup_table(const vector<
-                                                       AbstractStateRef> &abstraction_mapping);
+    virtual void apply_abstraction_to_lookup_table(
+        const vector<AbstractStateRef> &abstraction_mapping);
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
     CompositeAbstraction(
+        bool is_unit_cost, OperatorCost cost_type,
         Abstraction *abs1, Abstraction *abs2,
         bool use_label_reduction, bool normalize_after_composition);
     virtual ~CompositeAbstraction();

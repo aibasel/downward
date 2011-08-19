@@ -4,8 +4,14 @@
 #include "shrink_bisimulation.h"
 #include <cassert>
 #include <iostream>
+#include <limits>
 
 using namespace std;
+
+
+static const int infinity = numeric_limits<int>::max();
+static const int VERY_LARGE_BOUND = 1000000000; // TODO: Get rid of this
+
 
 ShrinkBisimulation::ShrinkBisimulation(bool gr, bool ml)
     : greedy(gr),
@@ -30,9 +36,9 @@ void ShrinkBisimulation::shrink(Abstraction &abs, int threshold, bool force) {
         return;
 
     vector<slist<AbstractStateRef> > collapsed_groups;
-    compute_abstraction(abs, QUITE_A_LOT, collapsed_groups);
+    compute_abstraction(abs, VERY_LARGE_BOUND, collapsed_groups);
     
-    apply(abs, collapsed_groups, QUITE_A_LOT);
+    apply(abs, collapsed_groups, VERY_LARGE_BOUND);
 }
 
 void ShrinkBisimulation::compute_abstraction(
@@ -47,7 +53,7 @@ void ShrinkBisimulation::compute_abstraction(
     for (int state = 0; state < abs.num_states; state++) {
         int h = abs.goal_distances[state];
         bool isGoalState = abs.goal_states[state];
-        if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
+        if (h == infinity || abs.init_distances[state] == infinity) {
             state_to_group[state] = -1;
         } else {
             assert(h >= 0 && h <= abs.max_h);
@@ -85,7 +91,7 @@ void ShrinkBisimulation::compute_abstraction(
         signatures.push_back(Signature(-1, -1, SuccessorSignature(), -1));
         for (int state = 0; state < abs.num_states; state++) {
             int h = abs.goal_distances[state];
-            if (h == QUITE_A_LOT || abs.init_distances[state] == QUITE_A_LOT) {
+            if (h == infinity || abs.init_distances[state] == infinity) {
                 h = -1;
                 assert(state_to_group[state] == -1);
             }

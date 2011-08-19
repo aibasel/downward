@@ -1,18 +1,20 @@
-#include <algorithm>
-#include <cassert>
-#include <cstdlib>
-#include <deque>
-#include <iostream>
-using namespace std;
-
 #include "raz_abstraction.h"
 #include "raz_mas_heuristic.h" // needed for ShrinkStrategy type;
 // TODO: move that type somewhere else?
 #include "globals.h"
 #include "operator.h"
+#include "priority_queue.h"
 #include "raz_operator_registry.h"
 #include "shrink_fh.h"
 #include "timer.h"
+
+#include <algorithm>
+#include <cassert>
+#include <cstdlib>
+#include <deque>
+#include <iostream>
+#include <limits>
+using namespace std;
 
 /* Implementation note: Transitions are grouped by their operators,
  not by source node or any such thing. Such a grouping is beneficial
@@ -75,6 +77,10 @@ using namespace std;
 
  */
 
+//  TODO: We define infinity in more than a few places right now (=>
+//        grep for it). It should only be defined once.
+static const int infinity = numeric_limits<int>::max();
+
 inline int get_op_index(const Operator *op) {
     /* TODO: The op_index computation is duplicated from
      LabelReducer::get_op_index() and actually belongs neither
@@ -87,8 +93,8 @@ inline int get_op_index(const Operator *op) {
     return op_index;
 }
 
-Abstraction::Abstraction()
-    : peak_memory(0) {
+Abstraction::Abstraction(bool is_unit_cost_, OperatorCost cost_type_)
+    : is_unit_cost(is_unit_cost_), cost_type(cost_type_), peak_memory(0) {
     transitions_by_op.resize(g_operators.size());
 }
 
@@ -100,8 +106,13 @@ int Abstraction::size() const {
 }
 
 void Abstraction::compute_distances() {
-    compute_init_distances();
-    compute_goal_distances();
+    if (is_unit_cost) {
+        compute_init_distances_unit_cost();
+        compute_goal_distances_unit_cost();
+    } else {
+        compute_init_distances_general_cost();
+        compute_goal_distances_general_cost();
+    }
 
     max_f = 0;
     max_g = 0;
@@ -111,9 +122,12 @@ void Abstraction::compute_distances() {
     for (int i = 0; i < num_states; i++) {
         int g = init_distances[i];
         int h = goal_distances[i];
-        if (g == QUITE_A_LOT) {
+        // States that are both unreachable and irrelevant are counted
+        // as unreachable, not irrelevant. (Doesn't really matter, of
+        // course.)
+        if (g == infinity) {
             unreachable_count++;
-        } else if (h == QUITE_A_LOT) {
+        } else if (h == infinity) {
             irrelevant_count++;
         } else {
             max_f = max(max_f, g + h);
@@ -138,32 +152,29 @@ void Abstraction::compute_distances() {
     }
 }
 
-static void breadth_first_search(const vector<vector<int> > &graph,
-                                 const vector<vector<int> > &cost_graph, deque<int> &queue,
-                                 vector<int> &distances) {
+static void breadth_first_search(
+    const vector<vector<int> > &graph, deque<int> &queue,
+    vector<int> &distances) {
     while (!queue.empty()) {
         int state = queue.front();
         queue.pop_front();
         for (int i = 0; i < graph[state].size(); i++) {
             int successor = graph[state][i];
-            int cost = cost_graph[state][i];
-            if (distances[successor] > distances[state] + cost) {
-                distances[successor] = distances[state] + cost;
+            if (distances[successor] > distances[state] + 1) {
+                distances[successor] = distances[state] + 1;
                 queue.push_back(successor);
             }
         }
     }
 }
 
-void Abstraction::compute_init_distances() {
+void Abstraction::compute_init_distances_unit_cost() {
     vector<vector<AbstractStateRef> > forward_graph(num_states);
-    vector<vector<int> > forward_graph_costs(num_states);
     for (int i = 0; i < transitions_by_op.size(); i++) {
         const vector<AbstractTransition> &transitions = transitions_by_op[i];
         for (int j = 0; j < transitions.size(); j++) {
             const AbstractTransition &trans = transitions[j];
             forward_graph[trans.src].push_back(trans.target);
-            forward_graph_costs[trans.src].push_back(trans.cost);
         }
     }
 
@@ -173,36 +184,109 @@ void Abstraction::compute_init_distances() {
             init_distances[state] = 0;
             queue.push_back(state);
         } else {
-            init_distances[state] = QUITE_A_LOT;
+            init_distances[state] = infinity;
         }
     }
-    breadth_first_search(forward_graph, forward_graph_costs, queue,
-                         init_distances);
+    breadth_first_search(forward_graph, queue, init_distances);
 }
 
-void Abstraction::compute_goal_distances() {
+void Abstraction::compute_goal_distances_unit_cost() {
     vector<vector<AbstractStateRef> > backward_graph(num_states);
-    vector<vector<int> > backward_graph_costs(num_states);
     for (int i = 0; i < transitions_by_op.size(); i++) {
         const vector<AbstractTransition> &transitions = transitions_by_op[i];
         for (int j = 0; j < transitions.size(); j++) {
             const AbstractTransition &trans = transitions[j];
             backward_graph[trans.target].push_back(trans.src);
-            backward_graph_costs[trans.target].push_back(trans.cost);
         }
     }
 
     deque<AbstractStateRef> queue;
     for (AbstractStateRef state = 0; state < num_states; state++) {
-        if (goal_states[state] == true) {
+        if (goal_states[state]) {
             goal_distances[state] = 0;
             queue.push_back(state);
         } else {
-            goal_distances[state] = QUITE_A_LOT;
+            goal_distances[state] = infinity;
         }
     }
-    breadth_first_search(backward_graph, backward_graph_costs, queue,
-                         goal_distances);
+    breadth_first_search(backward_graph, queue, goal_distances);
+}
+
+static void dijkstra_search(
+    const vector<vector<pair<int, int> > > &graph,
+    AdaptiveQueue<int> &queue,
+    vector<int> &distances) {
+    while (!queue.empty()) {
+        pair<int, int> top_pair = queue.pop();
+        int distance = top_pair.first;
+        int state = top_pair.second;
+        int state_distance = distances[state];
+        assert(state_distance <= distance);
+        if (state_distance < distance)
+            continue;
+        for (int i = 0; i < graph[state].size(); i++) {
+            const pair<int, int> &transition = graph[state][i];
+            int successor = transition.first;
+            int cost = transition.second;
+            int successor_cost = state_distance + cost;
+            if (distances[successor] > successor_cost) {
+                distances[successor] = successor_cost;
+                queue.push(successor_cost, successor);
+            }
+        }
+    }
+}
+
+void Abstraction::compute_init_distances_general_cost() {
+    vector<vector<pair<int, int> > > forward_graph(num_states);
+    for (int i = 0; i < transitions_by_op.size(); i++) {
+        int op_cost = get_adjusted_action_cost(g_operators[i], cost_type);
+        const vector<AbstractTransition> &transitions = transitions_by_op[i];
+        for (int j = 0; j < transitions.size(); j++) {
+            const AbstractTransition &trans = transitions[j];
+            forward_graph[trans.src].push_back(
+                make_pair(trans.target, op_cost));
+        }
+    }
+
+    // TODO: Reuse the same queue for multiple computations to save speed?
+    //       Also see compute_goal_distances_general_cost.
+    AdaptiveQueue<int> queue;
+    for (AbstractStateRef state = 0; state < num_states; state++) {
+        if (state == init_state) {
+            init_distances[state] = 0;
+            queue.push(0, state);
+        } else {
+            init_distances[state] = infinity;
+        }
+    }
+    dijkstra_search(forward_graph, queue, init_distances);
+}
+
+void Abstraction::compute_goal_distances_general_cost() {
+    vector<vector<pair<int, int> > > backward_graph(num_states);
+    for (int i = 0; i < transitions_by_op.size(); i++) {
+        int op_cost = get_adjusted_action_cost(g_operators[i], cost_type);
+        const vector<AbstractTransition> &transitions = transitions_by_op[i];
+        for (int j = 0; j < transitions.size(); j++) {
+            const AbstractTransition &trans = transitions[j];
+            backward_graph[trans.target].push_back(
+                make_pair(trans.src, op_cost));
+        }
+    }
+
+    // TODO: Reuse the same queue for multiple computations to save speed?
+    //       Also see compute_init_distances_general_cost.
+    AdaptiveQueue<int> queue;
+    for (AbstractStateRef state = 0; state < num_states; state++) {
+        if (goal_states[state]) {
+            goal_distances[state] = 0;
+            queue.push(0, state);
+        } else {
+            goal_distances[state] = infinity;
+        }
+    }
+    dijkstra_search(backward_graph, queue, goal_distances);
 }
 
 void AtomicAbstraction::apply_abstraction_to_lookup_table(const vector<
@@ -239,7 +323,7 @@ void Abstraction::normalize(bool use_label_reduction) {
 
     LabelReducer *reducer = 0;
     if (use_label_reduction) {
-        reducer = new LabelReducer(relevant_operators, varset);
+        reducer = new LabelReducer(relevant_operators, varset, cost_type);
         reducer->statistics();
     }
 
@@ -288,7 +372,8 @@ void Abstraction::normalize(bool use_label_reduction) {
         for (int i = 0; i < bucket.size(); i++) {
             int target = bucket[i].first;
             int op_no = bucket[i].second;
-            int op_cost = g_operators[op_no].get_cost();
+            int op_cost = get_adjusted_action_cost(
+                g_operators[op_no], cost_type);
             // This works w/o reference to reducer because we
             // only reduce labels the same cost.
 
@@ -303,20 +388,23 @@ void Abstraction::normalize(bool use_label_reduction) {
     // dump();
 }
 
-void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result) {
+void Abstraction::build_atomic_abstractions(
+    bool is_unit_cost, OperatorCost cost_type,
+    vector<Abstraction *> &result) {
     assert(result.empty());
     cout << "Building atomic abstractions... " << flush;
     int var_count = g_variable_domain.size();
 
     // Step 1: Create the abstraction objects without transitions.
     for (int var_no = 0; var_no < var_count; var_no++)
-        result.push_back(new AtomicAbstraction(var_no));
+        result.push_back(new AtomicAbstraction(
+                             is_unit_cost, cost_type, var_no));
 
     // Step 2: Add transitions.
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {
         const Operator *op = &g_operators[op_no];
         const vector<Prevail> &prev = op->get_prevail();
-        const int op_cost = op->get_cost();
+        const int op_cost = get_adjusted_action_cost(*op, cost_type);
         for (int i = 0; i < prev.size(); i++) {
             int var = prev[i].var;
             int value = prev[i].prev;
@@ -359,8 +447,9 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result) {
     cout << "done!" << endl;
 }
 
-AtomicAbstraction::AtomicAbstraction(int variable_)
-    : variable(variable_) {
+AtomicAbstraction::AtomicAbstraction(
+    bool is_unit_cost, OperatorCost cost_type, int variable_)
+    : Abstraction(is_unit_cost, cost_type), variable(variable_) {
     varset.push_back(variable);
     /*
      This generates the nodes of the atomic abstraction, but not the
@@ -397,9 +486,11 @@ AtomicAbstraction::AtomicAbstraction(int variable_)
 AtomicAbstraction::~AtomicAbstraction() {
 }
 
-CompositeAbstraction::CompositeAbstraction(Abstraction *abs1,
-                                           Abstraction *abs2, bool use_label_reduction,
-                                           bool normalize_after_composition) {
+CompositeAbstraction::CompositeAbstraction(
+    bool is_unit_cost, OperatorCost cost_type,
+    Abstraction *abs1, Abstraction *abs2,
+    bool use_label_reduction, bool normalize_after_composition)
+    : Abstraction(is_unit_cost, cost_type) {
     assert(abs1->is_solvable() && abs2->is_solvable());
 
     components[0] = abs1;
@@ -649,7 +740,7 @@ int Abstraction::get_cost(const State &state) const {
     if (abs_state == -1)
         return -1;
     int cost = goal_distances[abs_state];
-    assert(cost != INVALID && cost != QUITE_A_LOT);
+    assert(cost != INVALID && cost != infinity);
     return cost;
 }
 

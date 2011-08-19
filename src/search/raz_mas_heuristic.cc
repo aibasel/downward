@@ -25,7 +25,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       abstraction_count(opts.get<int>("count")),
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      use_label_simplification(opts.get<bool>("simplify_labels")),
+      use_label_reduction(opts.get<bool>("simplify_labels")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
     assert(max_abstract_states_before_merge > 0);
     assert(max_abstract_states >= max_abstract_states_before_merge);
@@ -68,8 +68,8 @@ void MergeAndShrinkHeuristic::dump_options() const {
     }
     cout << endl
          << "Shrink strategy: " << shrink_strategy->description() << endl
-         << "Label simplification: " 
-         << (use_label_simplification ? "enabled" : "disabled") << endl
+         << "Label reduction: " 
+         << (use_label_reduction ? "enabled" : "disabled") << endl
          << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
@@ -122,7 +122,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
     cout << "Building atomic abstractions..." << endl;
     vector<Abstraction *> atomic_abstractions;
-    Abstraction::build_atomic_abstractions(atomic_abstractions);
+    Abstraction::build_atomic_abstractions(
+        is_unit_cost_problem(), get_cost_type(), atomic_abstractions);
 
     cout << "Merging abstractions..." << endl;
 
@@ -162,12 +163,13 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             shrink_strategy->shrink(*abstraction, new_size);
             abstraction->statistics(use_expensive_statistics);
         }
-        
+
         bool normalize_after_composition = 
-            shrink_strategy->is_bisimulation() && use_label_simplification;
-        Abstraction *new_abstraction = new CompositeAbstraction(abstraction,
-                                                                other_abstraction, use_label_simplification,
-                                                                normalize_after_composition);
+            shrink_strategy->is_bisimulation() && use_label_reduction;
+        Abstraction *new_abstraction = new CompositeAbstraction(
+            is_unit_cost_problem(), get_cost_type(),
+            abstraction, other_abstraction,
+            use_label_reduction, normalize_after_composition);
 
         if (first_iteration)
             first_iteration = false;
@@ -244,7 +246,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     // when it's actually used
     ShrinkStrategy *def_shrink = new ShrinkFH(ShrinkFH::HIGH, ShrinkFH::LOW);
     parser.add_option<ShrinkStrategy *>("shrink_strategy", def_shrink, "shrink strategy");
-    parser.add_option<bool>("simplify_labels", true, "enable label simplification");
+    parser.add_option<bool>("simplify_labels", true, "enable label reduction");
     parser.add_option<bool>("expensive_statistics", false, "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)");
     Heuristic::add_options_to_parser(parser);
