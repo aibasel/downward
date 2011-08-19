@@ -5,7 +5,6 @@
 
 #include <vector>
 
-
 /* A base class for bucket-based shrink strategies.
 
    A bucket-based strategy partitions the states into an ordered
@@ -25,6 +24,8 @@
    buckets are abstracted by combining all states in each bucket, and
    (up to) one bucket "in the middle" is partially abstracted. */
 
+class Options;
+
 class ShrinkBucketBased : public ShrinkStrategy {
 protected:
     typedef std::vector<AbstractStateRef> Bucket;
@@ -40,7 +41,7 @@ protected:
         const Abstraction &abs, std::vector<Bucket> &buckets) const = 0;
 
 public:
-    ShrinkBucketBased();
+    ShrinkBucketBased(const Options &opts);
     virtual ~ShrinkBucketBased();
 
     virtual bool is_bisimulation() const;

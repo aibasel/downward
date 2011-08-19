@@ -9,10 +9,15 @@
 using namespace std;
 
 
-ShrinkRandom::ShrinkRandom() {
+ShrinkRandom::ShrinkRandom(const Options &opts)
+    : ShrinkBucketBased(opts) {
 }
 
 ShrinkRandom::~ShrinkRandom() {
+}
+
+string ShrinkRandom::name() const {
+    return "random";
 }
 
 void ShrinkRandom::partition_into_buckets(
@@ -26,15 +31,13 @@ void ShrinkRandom::partition_into_buckets(
     assert(!big_bucket.empty());
 }
 
-string ShrinkRandom::description() const {
-    return "random";
-}
-
 static ShrinkStrategy *_parse(OptionParser &parser){
+    ShrinkStrategy::add_options_to_parser(parser);
     Options opts = parser.parse();
+    ShrinkStrategy::handle_option_defaults(opts);
 
     if(!parser.dry_run())
-        return new ShrinkRandom();
+        return new ShrinkRandom(opts);
     else
         return 0;
 }

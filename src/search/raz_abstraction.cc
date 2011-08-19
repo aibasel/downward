@@ -4,6 +4,7 @@
 // TODO: move that type somewhere else?
 #include "globals.h"
 #include "operator.h"
+#include "option_parser.h" // TODO: Should be removable later.
 #include "priority_queue.h"
 #include "raz_operator_registry.h"
 #include "shrink_fh.h"
@@ -149,7 +150,23 @@ void Abstraction::compute_distances() {
            e.g. a bucket-based one that simply generates one good and
            one bad bucket? */
 
-        ShrinkFH(ShrinkFH::HIGH, ShrinkFH::LOW).shrink(*this, num_states, true);
+        // TODO/HACK: The way this is created is of course unspeakably
+        // ugly. We'll leave this as is for now because there will likely
+        // be more structural changes soon.
+
+        Options opts;
+        int old_states = num_states;
+        opts.set("max_states", num_states);
+        opts.set("max_states_before_merge", num_states);
+        opts.set<int>("shrink_f", ShrinkFH::HIGH);
+        opts.set<int>("shrink_h", ShrinkFH::LOW);
+        ShrinkFH(opts).shrink(*this, num_states, true);
+        int new_states = num_states;
+        if (new_states != old_states) {
+            cout << "HOORAY! We actually got rid of something!" << endl
+                 << "old states = " << old_states
+                 << ", new states = " << new_states << endl;
+        }
     }
 }
 
@@ -714,6 +731,10 @@ void Abstraction::apply_abstraction(
     }
     vector<vector<AbstractTransition> > ().swap(transitions_by_op);
 
+    cout << "DEUBG: "
+         << "num_states = " << num_states
+         << ", new_num_states = " << new_num_states
+         << endl;
     num_states = new_num_states;
     transitions_by_op.swap(new_transitions_by_op);
     init_distances.swap(new_init_distances);

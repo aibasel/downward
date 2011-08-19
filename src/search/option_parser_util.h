@@ -272,7 +272,7 @@ struct DefaultValueNamer<ParseTree> {
 template <>
 struct DefaultValueNamer<ShrinkStrategy *> {
     static std::string to_str(ShrinkStrategy *s) {
-        return s->description();
+        return s->name();
     }
 };
 

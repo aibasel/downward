@@ -13,13 +13,9 @@ static const int infinity = numeric_limits<int>::max();
 static const int VERY_LARGE_BOUND = 1000000000; // TODO: Get rid of this
 
 
-ShrinkBisimulation::ShrinkBisimulation(bool gr, bool ml)
-    : greedy(gr),
-      has_mem_limit(ml) {
-}
-
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
-    : greedy(opts.get<bool>("greedy")),
+    : ShrinkBisimulationBase(opts),
+      greedy(opts.get<bool>("greedy")),
       has_mem_limit(opts.get<bool>("memory_limit")) {
     if(has_mem_limit) {
         cout << "memory limited bisimulation not yet supported - exiting"
@@ -31,13 +27,26 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
 ShrinkBisimulation::~ShrinkBisimulation() {
 }
 
+string ShrinkBisimulation::name() const {
+    return "IJCAI-2011-style bisimulation";
+}
+
+void ShrinkBisimulation::dump_strategy_specific_options() const {
+    cout << "Bisimulation type: "
+         << (greedy ? "greedy" : "exact")
+         << endl
+         << "Consider abstraction size limit: "
+         << (has_mem_limit ? "yes" : "no")
+         << endl;
+}
+
 void ShrinkBisimulation::shrink(Abstraction &abs, int threshold, bool force) {
     if(!must_shrink(abs, threshold, force))
         return;
 
     vector<slist<AbstractStateRef> > collapsed_groups;
     compute_abstraction(abs, VERY_LARGE_BOUND, collapsed_groups);
-    
+
     apply(abs, collapsed_groups, VERY_LARGE_BOUND);
 }
 
@@ -275,17 +284,12 @@ bool ShrinkBisimulation::is_dfp() const {
     return false;
 }
 
-string ShrinkBisimulation::description() const {
-    string descr = string(greedy ? "greedy " : "") 
-        + "bisimulation - "
-        + (has_mem_limit ? "using" : "disregarding")+" abstraction size limit"; 
-    return descr;
-}
-
 static ShrinkStrategy *_parse(OptionParser &parser) {
+    ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy");
     parser.add_option<bool>("memory_limit");
     Options opts = parser.parse();
+    ShrinkStrategy::handle_option_defaults(opts);
 
     if(!parser.dry_run())
         return new ShrinkBisimulation(opts);

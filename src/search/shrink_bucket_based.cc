@@ -9,7 +9,8 @@
 using namespace std;
 
 
-ShrinkBucketBased::ShrinkBucketBased() {
+ShrinkBucketBased::ShrinkBucketBased(const Options &opts)
+    : ShrinkStrategy(opts) {
 }
 
 ShrinkBucketBased::~ShrinkBucketBased() {

@@ -11,13 +11,26 @@
 using namespace std;
 using namespace __gnu_cxx;
 
+
 static const int infinity = numeric_limits<int>::max();
 
+
 ShrinkDFP::ShrinkDFP(const Options &opts)
-    : dfp_style(DFPStyle(opts.get_enum("style"))) {
+    : ShrinkBisimulationBase(opts),
+      dfp_style(DFPStyle(opts.get_enum("style"))) {
 }
 
 ShrinkDFP::~ShrinkDFP() {
+}
+
+string ShrinkDFP::name() const {
+    return "Draeger/Finkbeiner/Podelski";
+}
+
+void ShrinkDFP::dump_strategy_specific_options() const {
+    cout << "Enable greedy bisimulation: "
+         << (dfp_style == ENABLE_GREEDY_BISIMULATION ? "yes" : "no")
+         << endl;
 }
 
 void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) {
@@ -253,14 +266,8 @@ bool ShrinkDFP::is_dfp() const {
     return true;
 }
 
-string ShrinkDFP::description() const {
-    string descr = "Draeger/Finkbeiner/Podelski";
-    if (dfp_style == ENABLE_GREEDY_BISIMULATION)
-        descr += " - greedy bisimulation enabled";
-    return descr;
-}
-
 static ShrinkStrategy *_parse(OptionParser &parser) {
+    ShrinkStrategy::add_options_to_parser(parser);
     // TODO: Call this "greedy in {false, true}" as with ShrinkBisimulation?
     vector<string> styles;
     styles.push_back("DEFAULT");
@@ -268,6 +275,7 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     parser.add_enum_option(
         "style", styles, "DEFAULT", "what kind of dfp strategy");
     Options opts = parser.parse();
+    ShrinkStrategy::handle_option_defaults(opts);
 
     if(!parser.dry_run())
         return new ShrinkDFP(opts);
@@ -276,4 +284,3 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
 }
 
 static Plugin<ShrinkStrategy> _plugin("shrink_dfp", _parse);
-

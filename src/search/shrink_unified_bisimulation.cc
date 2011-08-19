@@ -15,18 +15,26 @@ static const int infinity = numeric_limits<int>::max();
 static const int VERY_LARGE_BOUND = 1000000000; // TODO: Get rid of this
 
 
-ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(
-    bool greedy_, bool has_mem_limit_)
-    : greedy(greedy_),
-      has_mem_limit(has_mem_limit_) {
-}
-
 ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(const Options &opts)
-    : greedy(opts.get<bool>("greedy")),
+    : ShrinkBisimulationBase(opts),
+      greedy(opts.get<bool>("greedy")),
       has_mem_limit(opts.get<bool>("memory_limit")) {
 }
 
 ShrinkUnifiedBisimulation::~ShrinkUnifiedBisimulation() {
+}
+
+string ShrinkUnifiedBisimulation::name() const {
+    return "bisimulation";
+}
+
+void ShrinkUnifiedBisimulation::dump_strategy_specific_options() const {
+    cout << "Bisimulation type: "
+         << (greedy ? "greedy" : "exact")
+         << endl
+         << "Consider abstraction size limit: "
+         << (has_mem_limit ? "yes" : "no")
+         << endl;
 }
 
 void ShrinkUnifiedBisimulation::shrink(
@@ -305,23 +313,12 @@ bool ShrinkUnifiedBisimulation::is_dfp() const {
         return false;
 }
 
-string ShrinkUnifiedBisimulation::description() const {
-    string descr = string("unified ");
-    if (greedy)
-        descr += "greedy ";
-    descr += "bisimulation ";
-    if (has_mem_limit)
-        descr += "using ";
-    else
-        descr += "disregarding ";
-    descr += " abstraction size limit";
-    return descr;
-}
-
 static ShrinkStrategy *_parse(OptionParser &parser) {
+    ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy");
     parser.add_option<bool>("memory_limit");
     Options opts = parser.parse();
+    ShrinkStrategy::handle_option_defaults(opts);
 
     if(!parser.dry_run())
         return new ShrinkUnifiedBisimulation(opts);

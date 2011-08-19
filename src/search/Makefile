@@ -48,15 +48,15 @@ HEADERS = \
 ## rebuild after such a change. Deleting the executable and running
 ## "make" to relink is enough; no need to do a complete rebuild.
 
-HEADERS += additive_heuristic.h
-HEADERS += blind_search_heuristic.h
-HEADERS += cea_heuristic.h
-HEADERS += cg_heuristic.h cg_cache.h
-HEADERS += ff_heuristic.h
-HEADERS += goal_count_heuristic.h
-HEADERS += hm_heuristic.h
-HEADERS += lm_cut_heuristic.h
-HEADERS += max_heuristic.h
+# HEADERS += additive_heuristic.h
+# HEADERS += blind_search_heuristic.h
+# HEADERS += cea_heuristic.h
+# HEADERS += cg_heuristic.h cg_cache.h
+# HEADERS += ff_heuristic.h
+# HEADERS += goal_count_heuristic.h
+# HEADERS += hm_heuristic.h
+# HEADERS += lm_cut_heuristic.h
+# HEADERS += max_heuristic.h
 
 # HEADERS += mas_heuristic.h \
 #            abstraction.h \
@@ -73,34 +73,35 @@ HEADERS += raz_mas_heuristic.h \
            shrink_dfp.h \
            shrink_fh.h \
            shrink_random.h \
-           shrink_strategy.h
+           shrink_strategy.h \
+           shrink_unified_bisimulation.h \
 
 
-HEADERS += landmarks/exploration.h \
-           landmarks/h_m_landmarks.h \
-           landmarks/lama_ff_synergy.h \
-           landmarks/landmark_cost_assignment.h \
-           landmarks/landmark_count_heuristic.h \
-           landmarks/landmark_status_manager.h \
-           landmarks/landmarks_graph_merged.h \
-           landmarks/landmarks_graph.h \
-           landmarks/landmarks_graph_rpg_exhaust.h \
-           landmarks/landmarks_graph_rpg_sasp.h \
-           landmarks/landmarks_graph_rpg_search.h \
-           landmarks/landmarks_graph_zhu_givan.h \
-           landmarks/util.h
+# HEADERS += landmarks/exploration.h \
+#            landmarks/h_m_landmarks.h \
+#            landmarks/lama_ff_synergy.h \
+#            landmarks/landmark_cost_assignment.h \
+#            landmarks/landmark_count_heuristic.h \
+#            landmarks/landmark_status_manager.h \
+#            landmarks/landmarks_graph_merged.h \
+#            landmarks/landmarks_graph.h \
+#            landmarks/landmarks_graph_rpg_exhaust.h \
+#            landmarks/landmarks_graph_rpg_sasp.h \
+#            landmarks/landmarks_graph_rpg_search.h \
+#            landmarks/landmarks_graph_zhu_givan.h \
+#            landmarks/util.h
 
-HEADERS += learning/AODE.h \
-           learning/classifier.h \
-           learning/composite_feature_extractor.h \
-           learning/feature_extractor.h \
-           learning/maximum_heuristic.h \
-           learning/naive_bayes_classifier.h \
-           learning/PDB_state_space_sample.h \
-           learning/probe_state_space_sample.h \
-           learning/selective_max_heuristic.h \
-           learning/state_space_sample.h \
-           learning/state_vars_feature_extractor.h
+# HEADERS += learning/AODE.h \
+#            learning/classifier.h \
+#            learning/composite_feature_extractor.h \
+#            learning/feature_extractor.h \
+#            learning/maximum_heuristic.h \
+#            learning/naive_bayes_classifier.h \
+#            learning/PDB_state_space_sample.h \
+#            learning/probe_state_space_sample.h \
+#            learning/selective_max_heuristic.h \
+#            learning/state_space_sample.h \
+#            learning/state_vars_feature_extractor.h
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward

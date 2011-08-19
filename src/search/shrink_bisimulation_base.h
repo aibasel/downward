@@ -7,6 +7,8 @@
    (ShrinkBisimulation and ShrinkDFP).
 */
 
+class Options;
+
 class ShrinkBisimulationBase : public ShrinkStrategy {
 protected:
     bool are_bisimilar(
@@ -16,8 +18,10 @@ protected:
         const std::vector<int> &group_to_h,
         int source_h_1, int source_h_2) const;
 public:
-    ShrinkBisimulationBase();
+    ShrinkBisimulationBase(const Options &opt);
     virtual ~ShrinkBisimulationBase();
+
+    virtual void shrink_atomic(Abstraction &abs);
 };
 
 // TODO: document purpose of Signatures

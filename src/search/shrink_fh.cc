@@ -16,16 +16,23 @@ static const int infinity = numeric_limits<int>::max();
 
 
 ShrinkFH::ShrinkFH(const Options &opts)
-    : f_start(HighLow(opts.get_enum("highlow_f"))),
-      h_start(HighLow(opts.get_enum("highlow_h"))){
-}
-
-ShrinkFH::ShrinkFH(HighLow fs, HighLow hs)
-    : f_start(fs),
-      h_start(hs) {
+    : ShrinkBucketBased(opts),
+      f_start(HighLow(opts.get_enum("shrink_f"))),
+      h_start(HighLow(opts.get_enum("shrink_h"))){
 }
 
 ShrinkFH::~ShrinkFH() {
+}
+
+string ShrinkFH::name() const {
+    return "f-preserving";
+}
+
+void ShrinkFH::dump_strategy_specific_options() const {
+    cout << "Prefer shrinking high or low f states: "
+         << (f_start == HIGH ? "high" : "low") << endl
+         << "Prefer shrinking high or low h states: "
+         << (h_start == HIGH ? "high" : "low") << endl;
 }
 
 void ShrinkFH::partition_into_buckets(
@@ -142,22 +149,19 @@ void ShrinkFH::ordered_buckets_use_vector(
     assert(buckets.size() == bucket_count);
 }
 
-string ShrinkFH::description() const {
-    return string(f_start == HIGH ? "high" : "low") + " f/"
-        + (h_start == HIGH ? "high" : "low") + " h";
-}
-
 static ShrinkStrategy *_parse(OptionParser &parser){
+    ShrinkStrategy::add_options_to_parser(parser);
     vector<string> high_low;
     high_low.push_back("HIGH");
     high_low.push_back("LOW");
     parser.add_enum_option(
-        "highlow_f", high_low,
+        "shrink_f", high_low,
         "HIGH", "prefer shrinking states with high or low f values");
     parser.add_enum_option(
-        "highlow_h", high_low,
+        "shrink_h", high_low,
         "LOW", "prefer shrinking states with high or low h values");
     Options opts = parser.parse();
+    ShrinkStrategy::handle_option_defaults(opts);
 
     if(!parser.dry_run())
         return new ShrinkFH(opts);
