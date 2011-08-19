@@ -25,20 +25,35 @@ ShrinkBisimulationBase::~ShrinkBisimulationBase() {
 void ShrinkBisimulationBase::shrink_atomic(Abstraction &abs) {
     // Perform an exact bisimulation on all atomic abstractions.
 
-    // TODO/HACK: Come up with a better way to do this than generating
+     // TODO/HACK: Come up with a better way to do this than generating
     // a new shrinking class instance in this roundabout fashion. We
     // shouldn't need to generate a new instance at all.
+
     if (is_dfp()) {
-        cout << "DEBUG: I am DFP and I don't shrink atomic abstractions." << endl;
+        // We don't bisimulate here because the old code didn't, also
+        // that was most probably an accident. TODO: Investigate the
+        // effect of bisimulating here. The reason why we didn't just
+        // add this is that it actually hurt performance on one of our
+        // test cases, Sokoban-Opt-#12 with DFP-gop-200K (as well as
+        // other DFP-based strategies). This may well be a random
+        // mishap, but still it's certainly better to be careful here.
+        cout << "DEBUG: I am DFP and I don't pre-bisimulate atomic abstractions." << endl;
         return;
     }
 
+    int old_size = abs.size();
     Options opts;
     opts.set("max_states", infinity);
     opts.set("max_states_before_merge", infinity);
     opts.set("greedy", false);
     opts.set("memory_limit", false);
     ShrinkUnifiedBisimulation(opts).shrink(abs, abs.size(), true);
+    if (abs.size() != old_size) {
+        cout << "Atomic abstraction simplified "
+             << "from " << old_size
+             << " to " << abs.size()
+             << " states." << endl;
+    }
 }
 
 // is_sorted is only needed for debugging purposes.
