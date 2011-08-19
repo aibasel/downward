@@ -8,7 +8,6 @@ class Options;
 
 class ShrinkUnifiedBisimulation : public ShrinkBisimulationBase {
     std::vector<int> state_to_group;
-    std::vector<int> group_to_h;
     std::vector<bool> group_done;
     std::vector<Signature> signatures;
 
@@ -19,7 +18,7 @@ class ShrinkUnifiedBisimulation : public ShrinkBisimulationBase {
     int initialize_bisim(const Abstraction &abs);
 public:
     ShrinkUnifiedBisimulation(const Options &opts);
-    ShrinkUnifiedBisimulation(bool greedy, bool memory_limit);
+    ShrinkUnifiedBisimulation(bool greedy, bool has_mem_limit);
     virtual ~ShrinkUnifiedBisimulation();
 
     virtual void shrink(Abstraction &abs, int threshold, bool force = false);
