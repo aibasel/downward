@@ -12,7 +12,6 @@
 #include "raz_variable_order_finder.h"
 
 #include <cassert>
-#include <cmath>
 #include <limits>
 #include <vector>
 using namespace std;
@@ -20,26 +19,18 @@ using namespace std;
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
-      max_abstract_states(opts.get<int>("max_states")),
-      max_abstract_states_before_merge(opts.get<int>("max_states_before_merge")),
       abstraction_count(opts.get<int>("count")),
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_label_reduction(opts.get<bool>("simplify_labels")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
-    assert(max_abstract_states_before_merge > 0);
-    assert(max_abstract_states >= max_abstract_states_before_merge);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
-    cout << "Abstraction size limit: " << max_abstract_states << endl
-         << "Abstraction size limit right before merge: "
-         << max_abstract_states_before_merge << endl
-         << "Number of abstractions to maximize over: " << abstraction_count
-         << endl << "Merge strategy: ";
+    cout << "Merge strategy: ";
     switch (merge_strategy) {
     case MERGE_LINEAR_CG_GOAL_LEVEL:
         cout << "linear CG/GOAL, tie breaking on level (main)";
@@ -66,9 +57,11 @@ void MergeAndShrinkHeuristic::dump_options() const {
     default:
         abort();
     }
-    cout << endl
-         << "Shrink strategy: " << shrink_strategy->description() << endl
-         << "Label reduction: " 
+    cout << endl;
+    shrink_strategy->dump_options();
+    cout << "Number of abstractions to maximize over: "
+         << abstraction_count << endl;
+    cout << "Label reduction: "
          << (use_label_reduction ? "enabled" : "disabled") << endl
          << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
@@ -90,31 +83,6 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-pair<int, int> MergeAndShrinkHeuristic::compute_shrink_sizes(int size1,
-                                                             int size2) const {
-    // Bound both sizes by max allowed size before merge.
-    int newsize1 = min(size1, max_abstract_states_before_merge);
-    int newsize2 = min(size2, max_abstract_states_before_merge);
-
-    // Check if product would exceed max allowed size.
-    // Use division instead of multiplication to avoid overflow.
-    if (max_abstract_states / newsize1 < newsize2) {
-        int balanced_size = int(sqrt(max_abstract_states));
-
-        // Shrink size2 (which in the linear strategies is the size
-        // for the atomic abstraction) down to balanced_size if larger.
-        newsize2 = min(newsize2, balanced_size);
-
-        // Use whatever is left for size1.
-        newsize1 = min(newsize1, max_abstract_states / newsize2);
-    }
-    assert(newsize1 <= size1 && newsize2 <= size2);
-    assert(newsize1 <= max_abstract_states_before_merge);
-    assert(newsize2 <= max_abstract_states_before_merge);
-    assert(newsize1 * newsize2 <= max_abstract_states);
-    return make_pair(newsize1, newsize2);
-}
-
 Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_abstractions also
@@ -124,6 +92,10 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     vector<Abstraction *> atomic_abstractions;
     Abstraction::build_atomic_abstractions(
         is_unit_cost_problem(), get_cost_type(), atomic_abstractions);
+
+    cout << "Shrinking atomic abstractions..." << endl;
+    for (size_t i = 0; i < atomic_abstractions.size(); ++i)
+        shrink_strategy->shrink_atomic(*atomic_abstractions[i]);
 
     cout << "Merging abstractions..." << endl;
 
@@ -140,31 +112,18 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         cout << "next variable: #" << var_no << endl;
         Abstraction *other_abstraction = atomic_abstractions[var_no];
 
-        pair<int, int> new_sizes = compute_shrink_sizes(abstraction->size(),
-                                                        other_abstraction->size());
-        int new_size = new_sizes.first;
-        int other_new_size = new_sizes.second;
+        shrink_strategy->shrink_before_merge(*abstraction, *other_abstraction);
+        // TODO: Make shrink_before_merge return a pair of bools
+        //       that tells us whether they have actually changed,
+        //       and use that to decide whether to dump statistics?
+        // (The old code would print statistics on abstraction iff it was
+        // shrunk. This is not so easy any more since this method is not
+        // in control, and the shrink strategy doesn't know whether we want
+        // expensive statistics. As a temporary aid, we just print the
+        // statistics always now, whether or not we shrunk.)
+        abstraction->statistics(use_expensive_statistics);
 
-
-        if (other_new_size != other_abstraction->size()) {
-            //				&& !is_bisimulation_strategy) {
-            cout << "atomic abstraction too big; must shrink" << endl;
-            if (shrink_strategy->has_memory_limit())
-                shrink_strategy->shrink(*other_abstraction, other_new_size);
-            else if (shrink_strategy->is_bisimulation()){
-                ShrinkBisimulation nolimit(false, false);
-                nolimit.shrink(*other_abstraction, 1000000000, false);
-            }
-        }
-        //TODO - always shrink non-atomic abstraction in no memory limit strategies
-        if (new_size != abstraction->size()
-            || (!shrink_strategy->has_memory_limit()
-                && shrink_strategy->is_bisimulation())) {
-            shrink_strategy->shrink(*abstraction, new_size);
-            abstraction->statistics(use_expensive_statistics);
-        }
-
-        bool normalize_after_composition = 
+        bool normalize_after_composition =
             shrink_strategy->is_bisimulation() && use_label_reduction;
         Abstraction *new_abstraction = new CompositeAbstraction(
             is_unit_cost_problem(), get_cost_type(),
@@ -222,9 +181,6 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     // TODO: better documentation what each parameter does
-    parser.add_option<int>("max_states", -1, "maximum abstraction size");
-    parser.add_option<int>("max_states_before_merge", -1,
-                           "maximum abstraction size for factors of synchronized product");
     parser.add_option<int>("count", 1, "nr of abstractions to build");
     vector<string> merge_strategies;
     //TODO: it's a bit dangerous that the merge strategies here
@@ -244,7 +200,11 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     
     //TODO: Default Shrink-Strategy should only be created
     // when it's actually used
-    ShrinkStrategy *def_shrink = new ShrinkFH(ShrinkFH::HIGH, ShrinkFH::LOW);
+    ShrinkStrategy *def_shrink = 0;
+    // TODO: Changed this because ShrinkFH is no longer so easily generatable.
+    // Was:
+    // ShrinkStrategy *def_shrink = new ShrinkFH(ShrinkFH::HIGH, ShrinkFH::LOW);
+
     parser.add_option<ShrinkStrategy *>("shrink_strategy", def_shrink, "shrink strategy");
     // TODO: Rename option name to "use_label_reduction" to be
     //       consistent with the papers?
@@ -256,52 +216,12 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     if (parser.help_mode())
         return 0;
 
-    //read values from opts for processing.
-    int max_states = opts.get<int>("max_states");
-    int max_states_before_merge = opts.get<int>("max_states_before_merge");
-    MergeStrategy merge_strategy = MergeStrategy(opts.get_enum("merge_strategy"));
-
-    if (max_states == -1 && max_states_before_merge == -1) {
-        // None of the two options specified: set default limit
-        max_states = 50000;
-    }
-
-    // If exactly one of the max_states options has been set, set the other
-    // so that it imposes no further limits.
-    if (max_states_before_merge == -1) {
-        max_states_before_merge = max_states;
-    } else if (max_states == -1) {
-        int n = max_states_before_merge;
-        max_states = n * n;
-        if (max_states < 0 || max_states / n != n)         // overflow
-            max_states = numeric_limits<int>::max();
-    }
-
-    if (max_states_before_merge > max_states) {
-        cerr << "warning: max_states_before_merge exceeds max_states, "
-             << "correcting." << endl;
-        max_states_before_merge = max_states;
-    }
-
-    if (max_states < 1) {
-        cerr << "error: abstraction size must be at least 1" << endl;
-        exit(2);
-    }
-
-    if (max_states_before_merge < 1) {
-        cerr << "error: abstraction size before merge must be at least 1"
-             << endl;
-        exit(2);
-    }
-
+    MergeStrategy merge_strategy = MergeStrategy(
+        opts.get_enum("merge_strategy"));
     if (merge_strategy < 0 || merge_strategy >= MAX_MERGE_STRATEGY) {
         cerr << "error: unknown merge strategy: " << merge_strategy << endl;
         exit(2);
     }
-
-    //write values back:
-    opts.set<int>("max_states", max_states);
-    opts.set<int>("max_states_before_merge", max_states_before_merge);
 
     if (parser.dry_run()) {
         return 0;

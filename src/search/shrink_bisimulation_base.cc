@@ -1,14 +1,44 @@
 #include "shrink_bisimulation_base.h"
 
+#include "option_parser.h"  // TODO Should be removable later.
 #include "raz_abstraction.h"
+#include "shrink_unified_bisimulation.h"
+// TODO: Get rid of this latter include, which is only needed for
+//       our definition of shrink_atomic below.
 
 #include <cassert>
+#include <limits>
 #include <vector>
+using namespace std;
 
-ShrinkBisimulationBase::ShrinkBisimulationBase() {
+
+static const int infinity = numeric_limits<int>::max();
+
+
+ShrinkBisimulationBase::ShrinkBisimulationBase(const Options &opts)
+    : ShrinkStrategy(opts) {
 }
 
 ShrinkBisimulationBase::~ShrinkBisimulationBase() {
+}
+
+void ShrinkBisimulationBase::shrink_atomic(Abstraction &abs) {
+    // Perform an exact bisimulation on all atomic abstractions.
+
+    // TODO/HACK: Come up with a better way to do this than generating
+    // a new shrinking class instance in this roundabout fashion. We
+    // shouldn't need to generate a new instance at all.
+    if (is_dfp()) {
+        cout << "DEBUG: I am DFP and I don't shrink atomic abstractions." << endl;
+        return;
+    }
+
+    Options opts;
+    opts.set("max_states", infinity);
+    opts.set("max_states_before_merge", infinity);
+    opts.set("greedy", false);
+    opts.set("memory_limit", false);
+    ShrinkUnifiedBisimulation(opts).shrink(abs, abs.size(), true);
 }
 
 // is_sorted is only needed for debugging purposes.

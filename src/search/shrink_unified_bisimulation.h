@@ -18,16 +18,15 @@ class ShrinkUnifiedBisimulation : public ShrinkBisimulationBase {
     int initialize_bisim(const Abstraction &abs);
 public:
     ShrinkUnifiedBisimulation(const Options &opts);
-    ShrinkUnifiedBisimulation(bool greedy, bool has_mem_limit);
     virtual ~ShrinkUnifiedBisimulation();
 
+    virtual std::string name() const;
+    virtual void dump_strategy_specific_options() const;
     virtual void shrink(Abstraction &abs, int threshold, bool force = false);
 
     virtual bool is_bisimulation() const;
     virtual bool has_memory_limit() const;
     virtual bool is_dfp() const;
-
-    virtual std::string description() const;
 private:
     void compute_abstraction(
         Abstraction &abs,

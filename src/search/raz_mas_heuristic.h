@@ -21,8 +21,6 @@ enum MergeStrategy {
 };
 
 class MergeAndShrinkHeuristic : public Heuristic {
-    const int max_abstract_states;
-    const int max_abstract_states_before_merge;
     const int abstraction_count;
     const MergeStrategy merge_strategy;
     ShrinkStrategy *const shrink_strategy;
@@ -30,7 +28,6 @@ class MergeAndShrinkHeuristic : public Heuristic {
     const bool use_expensive_statistics;
 
     std::vector<Abstraction *> abstractions;
-    std::pair<int, int> compute_shrink_sizes(int size1, int size2) const;
     Abstraction *build_abstraction(bool is_first = true);
 
     void dump_options() const;

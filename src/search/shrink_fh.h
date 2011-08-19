@@ -44,15 +44,15 @@ private:
         const Abstraction &abs,
         std::vector<Bucket> &buckets) const;
 protected:
+    virtual std::string name() const;
+    virtual void dump_strategy_specific_options() const;
+
     virtual void partition_into_buckets(
         const Abstraction &abs, std::vector<Bucket> &buckets) const;
 
 public:
     ShrinkFH(const Options &opts);
-    ShrinkFH(HighLow fs, HighLow hs);
     virtual ~ShrinkFH();
-
-    virtual std::string description() const;
 };
 
 #endif
