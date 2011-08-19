@@ -53,6 +53,8 @@ protected:
 public:
     ShrinkFH(const Options &opts);
     virtual ~ShrinkFH();
+
+    static ShrinkStrategy *create_default(int max_states);
 };
 
 #endif
