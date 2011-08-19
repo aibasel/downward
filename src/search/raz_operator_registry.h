@@ -12,6 +12,7 @@
 #include <vector>
 
 class Operator;
+class OperatorSignature;
 
 class LabelReducer {
     std::vector<const Operator *> reduced_label_by_index;
@@ -20,6 +21,10 @@ class LabelReducer {
     int num_pruned_vars;
     int num_labels;
     int num_reduced_labels;
+
+    OperatorSignature build_operator_signature(
+        const Operator &op, OperatorCost cost_type,
+        const vector<bool> &var_is_used) const;
 public:
     LabelReducer(
         const std::vector<const Operator *> &relevant_operators,

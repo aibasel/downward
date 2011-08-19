@@ -1,4 +1,5 @@
 #include "raz_abstraction.h"
+
 #include "raz_mas_heuristic.h" // needed for ShrinkStrategy type;
 // TODO: move that type somewhere else?
 #include "globals.h"
