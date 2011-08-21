@@ -22,15 +22,14 @@ ShrinkStrategy::WhenToNormalize ShrinkBucketBased::when_to_normalize(
 }
 
 void ShrinkBucketBased::shrink(Abstraction &abs, int threshold, bool force) {
-    if (!must_shrink(abs, threshold, force))
-        return;
+    if (must_shrink(abs, threshold, force)) {
+        vector<Bucket> buckets;
+        partition_into_buckets(abs, buckets);
 
-    vector<Bucket> buckets;
-    partition_into_buckets(abs, buckets);
-
-    EquivalenceRelation equiv_relation;
-    compute_abstraction(buckets, threshold, equiv_relation);
-    apply(abs, equiv_relation, threshold);
+        EquivalenceRelation equiv_relation;
+        compute_abstraction(buckets, threshold, equiv_relation);
+        apply(abs, equiv_relation, threshold);
+    }
 }
 
 void ShrinkBucketBased::compute_abstraction(
@@ -106,16 +105,4 @@ void ShrinkBucketBased::compute_abstraction(
             }
         }
     }
-}
-
-bool ShrinkBucketBased::has_memory_limit() const {
-    return true;
-}
-
-bool ShrinkBucketBased::is_bisimulation() const {
-    return false;
-}
-
-bool ShrinkBucketBased::is_dfp() const {
-    return false;
 }

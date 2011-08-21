@@ -34,6 +34,22 @@ void ShrinkStrategy::dump_strategy_specific_options() const {
     // Default implementation does nothing.
 }
 
+bool ShrinkStrategy::must_shrink(
+    const Abstraction &abs, int threshold, bool force) const {
+    assert(threshold >= 1);
+    assert(abs.is_solvable());
+    if (abs.size() > threshold) {
+        cout << "shrink abstraction of size " << abs.size()
+             << " (threshold: " << threshold << ")" << endl;
+        return true;
+    }
+    if (force) {
+        cout << "shrink forced: prune unreachable/irrelevant states" << endl;
+        return true;
+    }
+    return false;
+}
+
 pair<int, int> ShrinkStrategy::compute_shrink_sizes(
     int size1, int size2) const {
     // Bound both sizes by max allowed size before merge.
@@ -72,34 +88,15 @@ void ShrinkStrategy::shrink_before_merge(Abstraction &abs1, Abstraction &abs2) {
     //       strategy. It would be better (and quite possible) to
     //       treat both abstractions exactly the same here by amending
     //       the output a bit.
+
     if (new_size2 != abs2.size()) {
         cout << "atomic abstraction too big; must shrink" << endl;
         shrink(abs2, new_size2);
     }
 
-    // HACK/TODO: Always shrink non-atomic abstraction in no memory
-    // limit strategies. That's a special case that should go away and
-    // be replaced with the threshold/limit logic.
-    if (new_size1 != abs1.size() ||
-        (!has_memory_limit() && is_bisimulation())) {
+    if (new_size1 != abs1.size()) {
         shrink(abs1, new_size1);
     }
-}
-
-bool ShrinkStrategy::must_shrink(
-    const Abstraction &abs, int threshold, bool force) const {
-    assert(threshold >= 1);
-    assert(abs.is_solvable());
-    if (abs.size() > threshold)
-        cout << "shrink by " << (abs.size() - threshold) << " nodes"
-             << " (from " << abs.size() << " to " << threshold << ")" << endl;
-    else if (force)
-        cout << "shrink forced: prune unreachable/irrelevant states" << endl;
-    else if (is_bisimulation())
-        cout << "shrink due to bisimulation strategy" << endl;
-    else
-        return false;
-    return true;
 }
 
 /*
@@ -113,13 +110,12 @@ bool ShrinkStrategy::must_shrink(
 void ShrinkStrategy::apply(
     Abstraction &abs,
     EquivalenceRelation &equivalence_relation,
-    int threshold) const {
-    assert(equivalence_relation.size() <= threshold);
+    int target) const {
+    assert(equivalence_relation.size() <= target);
     abs.apply_abstraction(equivalence_relation);
     cout << "size of abstraction after shrink: " << abs.size()
-         << ", threshold: " << threshold << endl;
-    // TODO: Get rid of special-casing of threshold 1.
-    assert(abs.size() <= threshold || threshold == 1);
+         << ", target: " << target << endl;
+    assert(abs.size() <= target);
 }
 
 void ShrinkStrategy::add_options_to_parser(OptionParser &parser) {

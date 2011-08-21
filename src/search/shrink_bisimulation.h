@@ -14,10 +14,8 @@ public:
     virtual std::string name() const;
     virtual void dump_strategy_specific_options() const;
     virtual void shrink(Abstraction &abs, int threshold, bool force = false);
-
-    virtual bool is_bisimulation() const;
-    virtual bool has_memory_limit() const;
-    virtual bool is_dfp() const;
+    virtual void shrink_atomic(Abstraction &abs);
+    virtual void shrink_before_merge(Abstraction &abs1, Abstraction &abs2);
 private:
     void compute_abstraction(
         Abstraction &abs,

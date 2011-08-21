@@ -34,19 +34,30 @@ void ShrinkDFP::dump_strategy_specific_options() const {
 }
 
 void ShrinkDFP::shrink(Abstraction &abs, int threshold, bool force) {
-    if(!must_shrink(abs, threshold, force))
-        return;
+    if(must_shrink(abs, threshold, force)) {
+        vector<slist<AbstractStateRef> > collapsed_groups;
+        bool greedy_bisim = (dfp_style == ENABLE_GREEDY_BISIMULATION);
+        compute_abstraction_dfp_action_cost_support(
+            abs, threshold, collapsed_groups, greedy_bisim);
 
-    vector<slist<AbstractStateRef> > collapsed_groups;
-    bool greedy_bisim = (dfp_style == ENABLE_GREEDY_BISIMULATION);
-    compute_abstraction_dfp_action_cost_support(
-        abs, threshold, collapsed_groups, greedy_bisim);
+        apply(abs, collapsed_groups, threshold);
+    }
+}
 
-    apply(abs, collapsed_groups, threshold);
+void ShrinkDFP::shrink_atomic(Abstraction &/*abs*/) {
+    // We don't bisimulate here because the old code didn't, also
+    // that was most probably an accident. TODO: Investigate the
+    // effect of bisimulating here. The reason why we didn't just
+    // add this is that it actually hurt performance on one of our
+    // test cases, Sokoban-Opt-#12 with DFP-gop-200K (as well as
+    // other DFP-based strategies). This may well be a random
+    // mishap, but still it's certainly better to be careful here.
+    cout << "DEBUG: I am DFP and I don't pre-bisimulate atomic abstractions."
+         << endl;
 }
 
 void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
-    Abstraction &abs, 
+    Abstraction &abs,
     int target_size,
     EquivalenceRelation &equivalence_relation,
     bool enable_greedy_bisimulation) const {
@@ -251,19 +262,6 @@ void ShrinkDFP::compute_abstraction_dfp_action_cost_support(
             equivalence_relation[group].push_front(state);
         }
     }
-}
-
-
-bool ShrinkDFP::has_memory_limit() const {
-    return true;
-}
-
-bool ShrinkDFP::is_bisimulation() const {
-    return true;
-}
-
-bool ShrinkDFP::is_dfp() const {
-    return true;
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
