@@ -38,16 +38,10 @@ struct AbstractTransition {
 };
 
 class Abstraction {
-    friend class ShrinkStrategy;
-    friend class ShrinkBucketBased;
-    friend class ShrinkFH;
-    friend class ShrinkRandom;
-    friend class ShrinkDFP;
-    friend class ShrinkBisimulation;
-    friend class ShrinkUnifiedBisimulation;
-
     friend class AtomicAbstraction;
     friend class CompositeAbstraction;
+
+    friend class ShrinkStrategy; // for apply() -- TODO: refactor!
 
     const bool is_unit_cost;
     const OperatorCost cost_type;
@@ -117,6 +111,31 @@ public:
     void release_memory();
 
     void dump() const;
+
+    // The following methods exist for the benefit of shrink strategies.
+    int get_max_f() const;
+    int get_max_g() const;
+    int get_max_h() const;
+
+    bool is_goal_state(int state) const {
+        return goal_states[state];
+    }
+
+    int get_init_distance(int state) const {
+        return init_distances[state];
+    }
+
+    int get_goal_distance(int state) const {
+        return goal_distances[state];
+    }
+
+    int get_num_ops() const {
+        return transitions_by_op.size();
+    }
+
+    const std::vector<AbstractTransition> &get_transitions_for_op(int op_no) {
+        return transitions_by_op[op_no];
+    }
 };
 
 class AtomicAbstraction : public Abstraction {

@@ -25,8 +25,8 @@ void ShrinkRandom::partition_into_buckets(
     assert(buckets.empty());
     buckets.resize(1);
     Bucket &big_bucket = buckets.back();
-    big_bucket.reserve(abs.num_states);
-    for (AbstractStateRef state = 0; state < abs.num_states; ++state)
+    big_bucket.reserve(abs.size());
+    for (AbstractStateRef state = 0; state < abs.size(); ++state)
         big_bucket.push_back(state);
     assert(!big_bucket.empty());
 }

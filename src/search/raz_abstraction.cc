@@ -107,6 +107,18 @@ int Abstraction::size() const {
     return num_states;
 }
 
+int Abstraction::get_max_f() const {
+    return max_f;
+}
+
+int Abstraction::get_max_g() const {
+    return max_g;
+}
+
+int Abstraction::get_max_h() const {
+    return max_h;
+}
+
 void Abstraction::compute_distances() {
     if (is_unit_cost) {
         compute_init_distances_unit_cost();
