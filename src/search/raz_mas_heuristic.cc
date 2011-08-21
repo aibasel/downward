@@ -123,12 +123,11 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         // statistics always now, whether or not we shrunk.)
         abstraction->statistics(use_expensive_statistics);
 
-        bool normalize_after_composition =
-            shrink_strategy->is_bisimulation() && use_label_reduction;
         Abstraction *new_abstraction = new CompositeAbstraction(
             is_unit_cost_problem(), get_cost_type(),
             abstraction, other_abstraction,
-            use_label_reduction, normalize_after_composition);
+            use_label_reduction,
+            shrink_strategy->when_to_normalize(use_label_reduction));
 
         if (first_iteration)
             first_iteration = false;

@@ -44,9 +44,20 @@ protected:
     void apply(Abstraction &abs,
                EquivalenceRelation &equivalence_relation,
                int threshold) const;
+
+    /* TODO: Would be nice not to need this three methods. This would
+       require moving some of the responsibilities around a bit. */
+
+    virtual bool has_memory_limit() const = 0;
+    virtual bool is_bisimulation() const = 0;
+    virtual bool is_dfp() const = 0;
 public:
     ShrinkStrategy(const Options &opts);
     virtual ~ShrinkStrategy();
+
+    enum WhenToNormalize {BEFORE_MERGE, AFTER_MERGE};
+    virtual WhenToNormalize when_to_normalize(
+        bool use_label_reduction) const = 0;
 
     void dump_options() const;
 
@@ -74,13 +85,6 @@ public:
                         bool force = false) = 0;
     virtual void shrink_atomic(Abstraction &abs1);
     virtual void shrink_before_merge(Abstraction &abs1, Abstraction &abs2);
-
-    /* TODO: Would be nice not to need this three methods. This would
-       require moving some of the responsibilities around a bit. */
-
-    virtual bool has_memory_limit() const = 0;
-    virtual bool is_bisimulation() const = 0;
-    virtual bool is_dfp() const = 0;
 
     static void add_options_to_parser(OptionParser &parser);
     static void handle_option_defaults(Options &opts);
