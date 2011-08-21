@@ -130,6 +130,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             // abstractions) as much as possible for now to make our
             // life with the experiments easier.
             abstraction->normalize(use_label_reduction);
+            abstraction->statistics(use_expensive_statistics);
         }
 
         Abstraction *new_abstraction = new CompositeAbstraction(
