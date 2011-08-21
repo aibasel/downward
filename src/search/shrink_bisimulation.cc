@@ -88,20 +88,21 @@ void ShrinkBisimulation::shrink_before_merge(
 void ShrinkBisimulation::compute_abstraction(
     Abstraction &abs,
     int target_size, vector<slist<AbstractStateRef> > &collapsed_groups) const {
+    int num_states = abs.size();
     int num_groups;
-    vector<int> state_to_group(abs.num_states);
-    vector<int> group_to_h(abs.num_states, -1);
+    vector<int> state_to_group(num_states);
+    vector<int> group_to_h(num_states, -1);
 
     bool exists_goal_state = false;
     bool exists_non_goal_state = false;
-    for (int state = 0; state < abs.num_states; state++) {
-        int h = abs.goal_distances[state];
-        bool isGoalState = abs.goal_states[state];
-        if (h == infinity || abs.init_distances[state] == infinity) {
+    for (int state = 0; state < num_states; state++) {
+        int h = abs.get_goal_distance(state);
+        bool is_goal_state = abs.is_goal_state(state);
+        if (h == infinity || abs.get_init_distance(state) == infinity) {
             state_to_group[state] = -1;
         } else {
-            assert(h >= 0 && h <= abs.max_h);
-            if (h == 0 && isGoalState) {
+            assert(h >= 0 && h <= abs.get_max_h());
+            if (h == 0 && is_goal_state) {
                 state_to_group[state] = 0;
                 group_to_h[0] = 0;
                 exists_goal_state = true;
@@ -121,10 +122,10 @@ void ShrinkBisimulation::compute_abstraction(
 
     //Now all goal states are in group 0 and non-goal states are in 1. Unreachable states are in -1.
 
-    vector<bool> group_done(abs.num_states, false);
+    vector<bool> group_done(num_states, false);
 
     vector<Signature> signatures;
-    signatures.reserve(abs.num_states + 2);
+    signatures.reserve(num_states + 2);
 
     bool done = false;
     while (!done) {
@@ -133,9 +134,9 @@ void ShrinkBisimulation::compute_abstraction(
         // Add sentinels to the start and end.
         signatures.clear();
         signatures.push_back(Signature(-1, -1, SuccessorSignature(), -1));
-        for (int state = 0; state < abs.num_states; state++) {
-            int h = abs.goal_distances[state];
-            if (h == infinity || abs.init_distances[state] == infinity) {
+        for (int state = 0; state < num_states; state++) {
+            int h = abs.get_goal_distance(state);
+            if (h == infinity || abs.get_init_distance(state) == infinity) {
                 h = -1;
                 assert(state_to_group[state] == -1);
             }
@@ -143,13 +144,14 @@ void ShrinkBisimulation::compute_abstraction(
                                 state);
             signatures.push_back(signature);
         }
-        signatures.push_back(Signature(abs.max_h + 1, -1, SuccessorSignature(), -1));
+        signatures.push_back(Signature(abs.get_max_h() + 1, -1, SuccessorSignature(), -1));
 
         //Adds to the succ_sig of every signature, the pair <op_no, target_group>
         //reachable by the transition op_no on the state of the signature.
-        for (int op_no = 0; op_no < abs.transitions_by_op.size(); op_no++) {
+        int num_ops = abs.get_num_ops();
+        for (int op_no = 0; op_no < num_ops; op_no++) {
             const vector<AbstractTransition> &transitions =
-                abs.transitions_by_op[op_no];
+                abs.get_transitions_for_op(op_no);
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &trans = transitions[i];
                 int src_group = state_to_group[trans.src];
@@ -179,7 +181,7 @@ void ShrinkBisimulation::compute_abstraction(
                           group_to_h[signatures[i].group]);
         }
 
-        assert(signatures.size() == abs.num_states + 2);
+        assert(signatures.size() == num_states + 2);
         ::sort(signatures.begin(), signatures.end());
         // TODO: More efficient to sort an index set than to shuffle
         //       the whole signatures around?
@@ -188,14 +190,14 @@ void ShrinkBisimulation::compute_abstraction(
         while (true) {
             int h = signatures[sig_start].h;
             int group = signatures[sig_start].group;
-            if (h > abs.max_h) {
+            if (h > abs.get_max_h()) {
                 // We have hit the end sentinel.
-                assert(h == abs.max_h + 1);
+                assert(h == abs.get_max_h() + 1);
                 assert(sig_start + 1 == signatures.size());
                 break;
             }
             assert(h >= -1);
-            assert(h <= abs.max_h);
+            assert(h <= abs.get_max_h());
 
             //this code skips all groups that cannot be further split
             //(due to memory restrictions).
@@ -296,7 +298,7 @@ void ShrinkBisimulation::compute_abstraction(
     assert(collapsed_groups.empty());
     collapsed_groups.resize(num_groups);
     // int total_size = 0;
-    for (int state = 0; state < abs.num_states; state++) {
+    for (int state = 0; state < num_states; state++) {
         int group = state_to_group[state];
         if (group != -1) {
             assert(group >= 0 && group < num_groups);

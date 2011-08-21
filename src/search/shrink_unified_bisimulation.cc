@@ -125,13 +125,13 @@ void ShrinkUnifiedBisimulation::shrink_before_merge(
 int ShrinkUnifiedBisimulation::initialize_bisim(const Abstraction &abs) {
     bool exists_goal_state = false;
     bool exists_non_goal_state = false;
-    for (int state = 0; state < abs.num_states; state++) {
-        int h = abs.goal_distances[state];
-        bool is_goal_state = abs.goal_states[state];
-        if (h == infinity || abs.init_distances[state] == infinity) {
+    for (int state = 0; state < abs.size(); state++) {
+        int h = abs.get_goal_distance(state);
+        bool is_goal_state = abs.is_goal_state(state);
+        if (h == infinity || abs.get_init_distance(state) == infinity) {
             state_to_group[state] = -1;
         } else {
-            assert(h >= 0 && h <= abs.max_h);
+            assert(h >= 0 && h <= abs.get_max_h());
             if (is_goal_state) {
                 state_to_group[state] = 0;
                 exists_goal_state = true;
@@ -153,17 +153,17 @@ int ShrinkUnifiedBisimulation::initialize_bisim(const Abstraction &abs) {
 
     // TODO: Check logic. What if one or both of the groups are empty?
 
-    group_done.resize(abs.num_states, false);
+    group_done.resize(abs.size(), false);
 
     return num_groups;
 }
 
 int ShrinkUnifiedBisimulation::initialize_dfp(const Abstraction &abs) {
-    h_to_h_group.resize(abs.max_h + 1, -1);
+    h_to_h_group.resize(abs.get_max_h() + 1, -1);
     int num_of_used_h = 0;
-    for (int state = 0; state < abs.num_states; state++) {
-        int h = abs.goal_distances[state];
-        if (h != infinity && abs.init_distances[state] != infinity) {
+    for (int state = 0; state < abs.size(); state++) {
+        int h = abs.get_goal_distance(state);
+        if (h != infinity && abs.get_init_distance(state) != infinity) {
             if (h_to_h_group[h] == -1) {
                 h_to_h_group[h] = num_of_used_h;
                 num_of_used_h++;
@@ -172,12 +172,12 @@ int ShrinkUnifiedBisimulation::initialize_dfp(const Abstraction &abs) {
     }
     cout << "number of used h values: " << num_of_used_h << endl;
 
-    for (int state = 0; state < abs.num_states; state++) {
-        int h = abs.goal_distances[state];
-        if (h == infinity || abs.init_distances[state] == infinity) {
+    for (int state = 0; state < abs.size(); state++) {
+        int h = abs.get_goal_distance(state);
+        if (h == infinity || abs.get_init_distance(state) == infinity) {
             state_to_group[state] = -1;
         } else {
-            assert(h >= 0 && h <= abs.max_h);
+            assert(h >= 0 && h <= abs.get_max_h());
             int group = h_to_h_group[h];
             state_to_group[state] = group;
         }
@@ -192,6 +192,7 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
     Abstraction &abs,
     int target_size,
     EquivalenceRelation &equivalence_relation) {
+    int num_states = abs.size();
 
     state_to_group.clear();
     group_done.clear();
@@ -199,8 +200,8 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
     h_to_h_group.clear();
     h_group_done.clear();
 
-    state_to_group.resize(abs.num_states);
-    signatures.reserve(abs.num_states + 2);
+    state_to_group.resize(num_states);
+    signatures.reserve(num_states + 2);
 
     int num_groups;
     if (initialize_by_h)
@@ -210,6 +211,8 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
 
     // assert(num_groups <= target_size); // TODO: We currently violate this, right?
 
+    int max_h = abs.get_max_h();
+
     bool done = false;
     while (!done) {
         done = true;
@@ -217,9 +220,9 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
         // Add sentinels to the start and end.
         signatures.clear();
         signatures.push_back(Signature(-1, -1, SuccessorSignature(), -1));
-        for (int state = 0; state < abs.num_states; state++) {
-            int h = abs.goal_distances[state];
-            if (h == infinity || abs.init_distances[state] == infinity) {
+        for (int state = 0; state < num_states; state++) {
+            int h = abs.get_goal_distance(state);
+            if (h == infinity || abs.get_init_distance(state) == infinity) {
                 h = -1;
                 assert(state_to_group[state] == -1);
             }
@@ -227,14 +230,15 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
                                 state);
             signatures.push_back(signature);
         }
-        signatures.push_back(Signature(abs.max_h + 1, -1, SuccessorSignature(), -1));
+        signatures.push_back(Signature(max_h + 1, -1, SuccessorSignature(), -1));
 
         // Initialize the successor signatures, which represent the
         // behaviour of each state in so far as bisimulation cares
         // about it.
-        for (int op_no = 0; op_no < abs.transitions_by_op.size(); op_no++) {
+        int num_ops = abs.get_num_ops();
+        for (int op_no = 0; op_no < num_ops; op_no++) {
             const vector<AbstractTransition> &transitions =
-                abs.transitions_by_op[op_no];
+                abs.get_transitions_for_op(op_no);
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &trans = transitions[i];
                 int src_group = state_to_group[trans.src];
@@ -243,8 +247,8 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
                     assert(signatures[trans.src + 1].state == trans.src);
                     bool skip_transition = false;
                     if (greedy) {
-                        int src_h = abs.goal_distances[trans.src];
-                        int target_h = abs.goal_distances[trans.target];
+                        int src_h = abs.get_goal_distance(trans.src);
+                        int target_h = abs.get_goal_distance(trans.target);
                         skip_transition = (target_h >= src_h);
                     }
                     if (!skip_transition)
@@ -261,7 +265,7 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
                            succ_sig.end());
         }
 
-        assert(signatures.size() == abs.num_states + 2);
+        assert(signatures.size() == num_states + 2);
         ::sort(signatures.begin(), signatures.end());
         // TODO: More efficient to sort an index set than to shuffle
         //       the whole signatures around?
@@ -270,14 +274,14 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
         while (true) {
             int h = signatures[sig_start].h;
             int group = signatures[sig_start].group;
-            if (h > abs.max_h) {
+            if (h > max_h) {
                 // We have hit the end sentinel.
-                assert(h == abs.max_h + 1);
+                assert(h == max_h + 1);
                 assert(sig_start + 1 == signatures.size());
                 break;
             }
             assert(h >= -1);
-            assert(h <= abs.max_h);
+            assert(h <= max_h);
 
             // Skips all groups that cannot be split further (due to
             // memory restrictions).
@@ -362,7 +366,7 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
 
     assert(equivalence_relation.empty());
     equivalence_relation.resize(num_groups);
-    for (int state = 0; state < abs.num_states; state++) {
+    for (int state = 0; state < num_states; state++) {
         int group = state_to_group[state];
         if (group != -1) {
             assert(group >= 0 && group < num_groups);
