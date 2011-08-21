@@ -24,8 +24,21 @@ public:
     virtual WhenToNormalize when_to_normalize(bool use_label_reduction) const;
 };
 
-// TODO: document purpose of Signatures
+/* A successor signature characterizes the behaviour of an abstract
+   state in so far as bisimulation cares about it. States with
+   identical successor signature are not distinguished by
+   bisimulation.
+
+   Each entry in the vector is a pair of (label, equivalence class of
+   successor). The bisimulation algorithm requires that the vector is
+   sorted and uniquified. */
+
 typedef std::vector<std::pair<int, int> > SuccessorSignature;
+
+/* TODO: The following class should probably be renamed. It encodes
+   all we need to know about a state for bisimulation: its h value,
+   which equivalence class ("group") it currently belongs to, its
+   signatures (see above), and what the original state is. */
 
 struct Signature {
     int h;
@@ -36,11 +49,6 @@ struct Signature {
     Signature(int h_, int group_, const SuccessorSignature &succ_signature_,
               int state_)
         : h(h_), group(group_), succ_signature(succ_signature_), state(state_) {
-    }
-
-    bool matches(const Signature &other) const {
-        return h == other.h && group == other.group && succ_signature
-               == other.succ_signature;
     }
 
     bool operator<(const Signature &other) const {

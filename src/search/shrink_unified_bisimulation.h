@@ -1,12 +1,16 @@
 #ifndef SHRINK_UNIFIED_BISIMULATION_H
 #define SHRINK_UNIFIED_BISIMULATION_H
 
+// TODO: Once we know we don't need the old classes any more,
+//       rename this to shrink_bisimulation.h, also renaming the class
+//       and command-line option.
+
 #include "shrink_strategy.h"
-#include "shrink_bisimulation_base.h"
 
 class Options;
+class Signature;
 
-class ShrinkUnifiedBisimulation : public ShrinkBisimulationBase {
+class ShrinkUnifiedBisimulation : public ShrinkStrategy {
     /*
       greedy: Use greedy bisimulation rather than exact bisimulation.
 
@@ -41,6 +45,9 @@ public:
 
     virtual std::string name() const;
     virtual void dump_strategy_specific_options() const;
+
+    virtual WhenToNormalize when_to_normalize(bool use_label_reduction) const;
+
     virtual void shrink(Abstraction &abs, int target, bool force = false);
     virtual void shrink_atomic(Abstraction &abs);
     virtual void shrink_before_merge(Abstraction &abs1, Abstraction &abs2);
