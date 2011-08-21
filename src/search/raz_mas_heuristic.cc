@@ -123,11 +123,18 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         // statistics always now, whether or not we shrunk.)
         abstraction->statistics(use_expensive_statistics);
 
+        if (!first_iteration) {
+            // TODO: Actually, it would be fine to normalize also in
+            // the first iteration. However, we want to stay to the
+            // old behaviour (normalize only composites, never atomic
+            // abstractions) as much as possible for now to make our
+            // life with the experiments easier.
+            abstraction->normalize(use_label_reduction);
+        }
+
         Abstraction *new_abstraction = new CompositeAbstraction(
             is_unit_cost_problem(), get_cost_type(),
-            abstraction, other_abstraction,
-            use_label_reduction,
-            shrink_strategy->when_to_normalize(use_label_reduction));
+            abstraction, other_abstraction);
 
         if (first_iteration)
             first_iteration = false;
@@ -135,6 +142,18 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             abstraction->release_memory();
         abstraction = new_abstraction;
         abstraction->statistics(use_expensive_statistics);
+
+        // TODO: When using nonlinear merge strategies, make sure not
+        // to normalize multiple parts of a composite. See issue68.
+        if (!order.done()) {
+            // We check order.done() to avoid normalizing the final
+            // abstraction unnecessarily.
+            if (shrink_strategy->when_to_normalize(use_label_reduction) ==
+                ShrinkStrategy::AFTER_MERGE) {
+                abstraction->normalize(use_label_reduction);
+            }
+        }
+        abstraction->compute_distances();
     }
     return abstraction;
 }
