@@ -14,8 +14,6 @@ typedef int AbstractStateRef;
 class ShrinkStrategy {
     const int max_states;
     const int max_states_before_merge;
-
-    std::pair<int, int> compute_shrink_sizes(int size1, int size2) const;
 protected:
     /* An equivalence class is a set of abstract states that shall be
        mapped (shrunk) to the same abstract state.
@@ -28,7 +26,6 @@ protected:
 
     typedef __gnu_cxx::slist<AbstractStateRef> EquivalenceClass;
     typedef std::vector<EquivalenceClass> EquivalenceRelation;
-
 public:
     // HACK/TODO: The following method would usually be protected, but
     // the option parser requires it to be public for the
@@ -40,17 +37,11 @@ public:
 protected:
     virtual void dump_strategy_specific_options() const;
 
+    std::pair<int, int> compute_shrink_sizes(int size1, int size2) const;
     bool must_shrink(const Abstraction &abs, int threshold, bool force) const;
     void apply(Abstraction &abs,
                EquivalenceRelation &equivalence_relation,
                int threshold) const;
-
-    /* TODO: Would be nice not to need this three methods. This would
-       require moving some of the responsibilities around a bit. */
-
-    virtual bool has_memory_limit() const = 0;
-    virtual bool is_bisimulation() const = 0;
-    virtual bool is_dfp() const = 0;
 public:
     ShrinkStrategy(const Options &opts);
     virtual ~ShrinkStrategy();

@@ -22,7 +22,6 @@ public:
     virtual ~ShrinkBisimulationBase();
 
     virtual WhenToNormalize when_to_normalize(bool use_label_reduction) const;
-    virtual void shrink_atomic(Abstraction &abs);
 };
 
 // TODO: document purpose of Signatures

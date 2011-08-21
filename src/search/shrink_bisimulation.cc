@@ -1,11 +1,13 @@
+#include "shrink_bisimulation.h"
+
 #include "raz_abstraction.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "shrink_bisimulation.h"
+#include "shrink_unified_bisimulation.h"
+
 #include <cassert>
 #include <iostream>
 #include <limits>
-
 using namespace std;
 
 
@@ -40,14 +42,47 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
          << endl;
 }
 
-void ShrinkBisimulation::shrink(Abstraction &abs, int threshold, bool force) {
-    if(!must_shrink(abs, threshold, force))
-        return;
-
+void ShrinkBisimulation::shrink(
+    Abstraction &abs, int /*threshold*/, bool /*force*/) {
+    cout << "Infinite bisimulation-based strategy always shrinks." << endl;
     vector<slist<AbstractStateRef> > collapsed_groups;
     compute_abstraction(abs, VERY_LARGE_BOUND, collapsed_groups);
-
     apply(abs, collapsed_groups, VERY_LARGE_BOUND);
+}
+
+void ShrinkBisimulation::shrink_atomic(Abstraction &abs) {
+    // Perform an exact bisimulation on all atomic abstractions.
+
+     // TODO/HACK: Come up with a better way to do this than generating
+    // a new shrinking class instance in this roundabout fashion. We
+    // shouldn't need to generate a new instance at all.
+
+    int old_size = abs.size();
+    ShrinkStrategy *strategy = ShrinkUnifiedBisimulation::create_default();
+    strategy->shrink(abs, abs.size(), true);
+    delete strategy;
+
+    if (abs.size() != old_size) {
+        cout << "Atomic abstraction simplified "
+             << "from " << old_size
+             << " to " << abs.size()
+             << " states." << endl;
+    }
+}
+
+void ShrinkBisimulation::shrink_before_merge(
+    Abstraction &abs1, Abstraction &abs2) {
+    pair<int, int> new_sizes = compute_shrink_sizes(abs1.size(), abs2.size());
+    int new_size1 = new_sizes.first;
+    int new_size2 = new_sizes.second;
+
+    if (new_size2 != abs2.size()) {
+        cout << "atomic abstraction too big; must shrink" << endl;
+        shrink(abs2, new_size2);
+    }
+
+    // In bisimulation without memory limit, always shrink abs1.
+    shrink(abs1, new_size1);
 }
 
 void ShrinkBisimulation::compute_abstraction(
@@ -269,19 +304,6 @@ void ShrinkBisimulation::compute_abstraction(
             // total_size++;
         }
     }
-}
-
-
-bool ShrinkBisimulation::has_memory_limit() const {
-    return has_mem_limit;
-}
-
-bool ShrinkBisimulation::is_bisimulation() const {
-    return true;
-}
-
-bool ShrinkBisimulation::is_dfp() const {
-    return false;
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
