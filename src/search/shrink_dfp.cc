@@ -1,7 +1,10 @@
-#include "raz_abstraction.h"
+#include "shrink_dfp.h"
+
 #include "option_parser.h"
 #include "plugin.h"
-#include "shrink_dfp.h"
+#include "raz_abstraction.h"
+#include "shrink_unified_bisimulation.h" // for Signature/SuccessorSignature
+
 #include <cassert>
 #include <ext/slist>
 #include <ios>

@@ -3,7 +3,6 @@
 #include "option_parser.h"
 #include "plugin.h"
 #include "raz_abstraction.h"
-#include "shrink_bisimulation_base.h" // Used for signatures only; TODO: Remove
 
 #include <cassert>
 #include <iostream>

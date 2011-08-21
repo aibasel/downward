@@ -1,5 +1,7 @@
 #include "shrink_bisimulation_base.h"
 
+#include "shrink_unified_bisimulation.h"
+
 #include <cassert>
 #include <vector>
 using namespace std;
@@ -30,8 +32,8 @@ bool is_sorted(const vector<T> &vec) {
 }
 
 bool ShrinkBisimulationBase::are_bisimilar(
-    const vector<pair<int, int> > &succ_sig1,
-    const vector<pair<int, int> > &succ_sig2,
+    const SuccessorSignature &succ_sig1,
+    const SuccessorSignature &succ_sig2,
     bool greedy_bisim,
     const vector<int> &group_to_h, int source_h_1, int source_h_2) const {
 
@@ -82,4 +84,3 @@ bool ShrinkBisimulationBase::are_bisimilar(
     }
     return true;
 }
-
