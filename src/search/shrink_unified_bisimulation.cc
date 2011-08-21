@@ -44,12 +44,8 @@ void ShrinkUnifiedBisimulation::dump_strategy_specific_options() const {
     cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
 }
 
-ShrinkStrategy::WhenToNormalize ShrinkUnifiedBisimulation::when_to_normalize(
-    bool use_label_reduction) const {
-    if (use_label_reduction)
-        return AFTER_MERGE;
-    else
-        return BEFORE_MERGE;
+bool ShrinkUnifiedBisimulation::reduce_labels_before_shrinking() const {
+    return true;
 }
 
 void ShrinkUnifiedBisimulation::shrink(

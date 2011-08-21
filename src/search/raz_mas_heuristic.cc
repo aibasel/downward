@@ -149,10 +149,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         if (!order.done()) {
             // We check order.done() to avoid normalizing the final
             // abstraction unnecessarily.
-            if (shrink_strategy->when_to_normalize(use_label_reduction) ==
-                ShrinkStrategy::AFTER_MERGE) {
+            if (shrink_strategy->reduce_labels_before_shrinking())
                 abstraction->normalize(use_label_reduction);
-            }
         }
         abstraction->compute_distances();
     }

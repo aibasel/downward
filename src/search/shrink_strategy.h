@@ -46,9 +46,17 @@ public:
     ShrinkStrategy(const Options &opts);
     virtual ~ShrinkStrategy();
 
-    enum WhenToNormalize {BEFORE_MERGE, AFTER_MERGE};
-    virtual WhenToNormalize when_to_normalize(
-        bool use_label_reduction) const = 0;
+    /* Set this to true to apply label reduction before shrinking, in
+       addition to the times when it is usually applied. Some shrink
+       strategies may require labels to be reduced (e.g. ones based on
+       bisimulations), and others might prefer reduced labels becaues
+       it makes their computation more efficient.
+
+       Set this to false if the shrink strategy does not benefit (or
+       not much) from label reduction. Label reduction costs quite a
+       bit of time and should not be performed without need.
+    */
+    virtual bool reduce_labels_before_shrinking() const = 0;
 
     void dump_options() const;
 
