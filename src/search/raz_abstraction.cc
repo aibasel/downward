@@ -97,6 +97,7 @@ inline int get_op_index(const Operator *op) {
 
 Abstraction::Abstraction(bool is_unit_cost_, OperatorCost cost_type_)
     : is_unit_cost(is_unit_cost_), cost_type(cost_type_),
+      max_f(UNINITIALIZED), max_g(UNINITIALIZED), max_h(UNINITIALIZED),
       are_labels_reduced(false), peak_memory(0) {
     transitions_by_op.resize(g_operators.size());
 }
@@ -514,9 +515,7 @@ AtomicAbstraction::~AtomicAbstraction() {
 
 CompositeAbstraction::CompositeAbstraction(
     bool is_unit_cost, OperatorCost cost_type,
-    Abstraction *abs1, Abstraction *abs2,
-    bool reduce_labels,
-    ShrinkStrategy::WhenToNormalize when_to_normalize)
+    Abstraction *abs1, Abstraction *abs2)
     : Abstraction(is_unit_cost, cost_type) {
     assert(abs1->is_solvable() && abs2->is_solvable());
 
@@ -525,13 +524,6 @@ CompositeAbstraction::CompositeAbstraction(
 
     ::set_union(abs1->varset.begin(), abs1->varset.end(), abs2->varset.begin(),
                 abs2->varset.end(), back_inserter(varset));
-    if (reduce_labels) {
-        if (varset.size() != abs1->varset.size() + abs2->varset.size()) {
-            cout << "error: label reduction is only correct "
-                 << "for orthogonal compositions" << endl;
-            ::exit(1);
-        }
-    }
 
     num_states = abs1->size() * abs2->size();
     init_distances.resize(num_states, INVALID);
@@ -554,38 +546,6 @@ CompositeAbstraction::CompositeAbstraction(
         abs1->relevant_operators[i]->marker1 = true;
     for (int i = 0; i < abs2->relevant_operators.size(); i++)
         abs2->relevant_operators[i]->marker2 = true;
-
-
-    /* NOTE: deciding when to normalize may have a big impact on performance.
-       For example, the following decision logic lead to significantly worse
-       performance for the configuration 'mas-2' (--search 'astar(mas(max_states=200000,merge_strategy=merge_linear_reverse_level,shrink_strategy=shrink_dfp(enable_greedy_bisimulation)))':
-
-       if (!normalize_after_composition) {
-           if (abs1->varset.size() > 1)
-               abs1->normalize(use_label_reduction);
-           else if (abs2->varset.size() > 1)
-               abs2->normalize(use_label_reduction);
-        }
-
-        After replacing the current decision logic with the above,
-        coverage on the ipc08_opt_strips suite dropped from 126 to 110.
-    */
-    // HACK! Normalization should be done differently. This size() > 1
-    // test is just a hack to make it work for linear abstraction
-    // strategies. See issue68.
-    if (abs1->varset.size() > 1) {
-        if (when_to_normalize == ShrinkStrategy::BEFORE_MERGE) {
-            abs1->normalize(reduce_labels);
-        } else {
-            abs1->normalize(false);
-        }
-    } else if (abs2->varset.size() > 1) {
-        if (when_to_normalize == ShrinkStrategy::BEFORE_MERGE) {
-            abs2->normalize(reduce_labels);
-        } else {
-            abs2->normalize(false);
-        }
-    }
 
     int multiplier = abs2->size();
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {
@@ -652,11 +612,6 @@ CompositeAbstraction::CompositeAbstraction(
         abs1->relevant_operators[i]->marker1 = false;
     for (int i = 0; i < abs2->relevant_operators.size(); i++)
         abs2->relevant_operators[i]->marker2 = false;
-
-    if (when_to_normalize == ShrinkStrategy::AFTER_MERGE)
-        normalize(reduce_labels);
-
-    compute_distances();
 }
 
 CompositeAbstraction::~CompositeAbstraction() {
@@ -855,7 +810,9 @@ void Abstraction::statistics(bool include_expensive_statistics) const {
         cout << "???";
     cout << "/" << total_transitions() << " arcs, " << memory << " bytes"
          << endl << "             ";
-    if (is_solvable()) {
+    if (max_h == UNINITIALIZED) {
+        cout << "distances not computed";
+    } else if (is_solvable()) {
         cout << "init h=" << goal_distances[init_state] << ", max f=" << max_f
              << ", max g=" << max_g << ", max h=" << max_h;
     } else {

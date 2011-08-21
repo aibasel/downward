@@ -43,6 +43,8 @@ class Abstraction {
 
     friend class ShrinkStrategy; // for apply() -- TODO: refactor!
 
+    static const int UNINITIALIZED = -2;
+
     const bool is_unit_cost;
     const OperatorCost cost_type;
 
@@ -65,7 +67,6 @@ class Abstraction {
 
     mutable int peak_memory;
 
-    void compute_distances();
     void compute_init_distances_unit_cost();
     void compute_goal_distances_unit_cost();
     void compute_init_distances_general_cost();
@@ -75,8 +76,6 @@ class Abstraction {
 
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
-
-    void normalize(bool reduce_labels);
 protected:
     enum {
         INVALID = -2
@@ -110,6 +109,8 @@ public:
     int unique_unlabeled_transitions(const vector<int> &relevant_ops) const;
     bool is_in_varset(int var) const;
 
+    void compute_distances();
+    void normalize(bool reduce_labels);
     void release_memory();
 
     void dump() const;
@@ -164,9 +165,7 @@ protected:
 public:
     CompositeAbstraction(
         bool is_unit_cost, OperatorCost cost_type,
-        Abstraction *abs1, Abstraction *abs2,
-        bool reduce_labels,
-        ShrinkStrategy::WhenToNormalize when_to_normalize);
+        Abstraction *abs1, Abstraction *abs2);
     virtual ~CompositeAbstraction();
 };
 
