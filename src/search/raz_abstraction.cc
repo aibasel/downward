@@ -763,8 +763,8 @@ int CompositeAbstraction::memory_estimate() const {
 }
 
 void Abstraction::release_memory() {
-    vector<const Operator *> ().swap(relevant_operators);
-    vector<vector<AbstractTransition> > ().swap(transitions_by_op);
+    vector<const Operator *>().swap(relevant_operators);
+    vector<vector<AbstractTransition> >().swap(transitions_by_op);
 }
 
 int Abstraction::total_transitions() const {
