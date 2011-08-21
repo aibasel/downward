@@ -144,7 +144,8 @@ public:
     CompositeAbstraction(
         bool is_unit_cost, OperatorCost cost_type,
         Abstraction *abs1, Abstraction *abs2,
-        bool use_label_reduction, bool normalize_after_composition);
+        bool use_label_reduction,
+        ShrinkStrategy::WhenToNormalize when_to_normalize);
     virtual ~CompositeAbstraction();
 };
 

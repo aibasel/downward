@@ -16,6 +16,11 @@ ShrinkBucketBased::ShrinkBucketBased(const Options &opts)
 ShrinkBucketBased::~ShrinkBucketBased() {
 }
 
+ShrinkStrategy::WhenToNormalize ShrinkBucketBased::when_to_normalize(
+    bool /*use_label_reduction*/) const {
+    return BEFORE_MERGE;
+}
+
 void ShrinkBucketBased::shrink(Abstraction &abs, int threshold, bool force) {
     if (!must_shrink(abs, threshold, force))
         return;

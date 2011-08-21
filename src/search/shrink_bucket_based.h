@@ -44,6 +44,8 @@ public:
     ShrinkBucketBased(const Options &opts);
     virtual ~ShrinkBucketBased();
 
+    virtual WhenToNormalize when_to_normalize(bool use_label_reduction) const;
+
     virtual bool is_bisimulation() const;
     virtual bool has_memory_limit() const;
     virtual bool is_dfp() const;

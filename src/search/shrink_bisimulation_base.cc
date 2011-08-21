@@ -22,6 +22,13 @@ ShrinkBisimulationBase::ShrinkBisimulationBase(const Options &opts)
 ShrinkBisimulationBase::~ShrinkBisimulationBase() {
 }
 
+ShrinkStrategy::WhenToNormalize ShrinkBisimulationBase::when_to_normalize(
+    bool use_label_reduction) const {
+    if (use_label_reduction)
+        return AFTER_MERGE;
+    else
+        return BEFORE_MERGE;
+}
 void ShrinkBisimulationBase::shrink_atomic(Abstraction &abs) {
     // Perform an exact bisimulation on all atomic abstractions.
 

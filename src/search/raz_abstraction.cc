@@ -496,7 +496,8 @@ AtomicAbstraction::~AtomicAbstraction() {
 CompositeAbstraction::CompositeAbstraction(
     bool is_unit_cost, OperatorCost cost_type,
     Abstraction *abs1, Abstraction *abs2,
-    bool use_label_reduction, bool normalize_after_composition)
+    bool use_label_reduction,
+    ShrinkStrategy::WhenToNormalize when_to_normalize)
     : Abstraction(is_unit_cost, cost_type) {
     assert(abs1->is_solvable() && abs2->is_solvable());
 
@@ -539,24 +540,33 @@ CompositeAbstraction::CompositeAbstraction(
     /* NOTE: deciding when to normalize may have a big impact on performance.
        For example, the following decision logic lead to significantly worse
        performance for the configuration 'mas-2' (--search 'astar(mas(max_states=200000,merge_strategy=merge_linear_reverse_level,shrink_strategy=shrink_dfp(enable_greedy_bisimulation)))':
-       
+
        if (!normalize_after_composition) {
            if (abs1->varset.size() > 1)
                abs1->normalize(use_label_reduction);
            else if (abs2->varset.size() > 1)
                abs2->normalize(use_label_reduction);
         }
-        
+
         After replacing the current decision logic with the above,
         coverage on the ipc08_opt_strips suite dropped from 126 to 110.
     */
     // HACK! Normalization should be done differently. This size() > 1
     // test is just a hack to make it work for linear abstraction
     // strategies. See issue68.
-    if (abs1->varset.size() > 1)
-		abs1->normalize(use_label_reduction && !normalize_after_composition);
-	else if (abs2->varset.size() > 1)
-        abs2->normalize(use_label_reduction && !normalize_after_composition);
+    if (abs1->varset.size() > 1) {
+        if (when_to_normalize == ShrinkStrategy::BEFORE_MERGE) {
+            abs1->normalize(use_label_reduction);
+        } else {
+            abs1->normalize(false);
+        }
+    } else if (abs2->varset.size() > 1) {
+        if (when_to_normalize == ShrinkStrategy::BEFORE_MERGE) {
+            abs2->normalize(use_label_reduction);
+        } else {
+            abs2->normalize(false);
+        }
+    }
 
     int multiplier = abs2->size();
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {
@@ -628,8 +638,8 @@ CompositeAbstraction::CompositeAbstraction(
     compute_distances();
     // dump();
 
-    if (normalize_after_composition)
-        normalize(true);
+    if (when_to_normalize == ShrinkStrategy::AFTER_MERGE)
+        normalize(use_label_reduction);
 }
 
 CompositeAbstraction::~CompositeAbstraction() {
