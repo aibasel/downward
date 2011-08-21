@@ -156,6 +156,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         }
         abstraction->compute_distances();
     }
+    abstraction->release_memory();
     return abstraction;
 }
 
