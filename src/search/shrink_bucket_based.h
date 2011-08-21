@@ -44,7 +44,7 @@ public:
     ShrinkBucketBased(const Options &opts);
     virtual ~ShrinkBucketBased();
 
-    virtual WhenToNormalize when_to_normalize(bool use_label_reduction) const;
+    virtual bool reduce_labels_before_shrinking() const;
 
     virtual void shrink(Abstraction &abs, int threshold,
                         bool force = false);

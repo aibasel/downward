@@ -14,12 +14,8 @@ ShrinkBisimulationBase::ShrinkBisimulationBase(const Options &opts)
 ShrinkBisimulationBase::~ShrinkBisimulationBase() {
 }
 
-ShrinkStrategy::WhenToNormalize ShrinkBisimulationBase::when_to_normalize(
-    bool use_label_reduction) const {
-    if (use_label_reduction)
-        return AFTER_MERGE;
-    else
-        return BEFORE_MERGE;
+bool ShrinkBisimulationBase::reduce_labels_before_shrinking() const {
+    return true;
 }
 
 // is_sorted is only needed for debugging purposes.
