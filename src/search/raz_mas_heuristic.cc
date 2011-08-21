@@ -144,6 +144,21 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         abstraction = new_abstraction;
         abstraction->statistics(use_expensive_statistics);
 
+        // TODO: It might be clearer if the following code were moved
+        // to the top of the loop rather than the bottom, to make
+        // clear that we mainly do these things here because we want
+        // to have this info available for shrinking. That means we
+        // would need an additional (h) distance computation after the
+        // loop, but that would be fine. We should then also move the
+        // distance computation out of build_atomic_abstractions,
+        // which is fine, since we don't have the distance computation
+        // for composites in the CompositeAbstraction constructor any
+        // more either.
+
+        // TODO: Also add more output before the various statistics()
+        // calls saying what we just did (or are going to do) to make
+        // clear what the statistics refer to.
+
         // TODO: When using nonlinear merge strategies, make sure not
         // to normalize multiple parts of a composite. See issue68.
         if (!order.done()) {
