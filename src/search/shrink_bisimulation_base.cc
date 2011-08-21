@@ -1,18 +1,8 @@
 #include "shrink_bisimulation_base.h"
 
-#include "option_parser.h"  // TODO Should be removable later.
-#include "raz_abstraction.h"
-#include "shrink_unified_bisimulation.h"
-// TODO: Get rid of this latter include, which is only needed for
-//       our definition of shrink_atomic below.
-
 #include <cassert>
-#include <limits>
 #include <vector>
 using namespace std;
-
-
-static const int infinity = numeric_limits<int>::max();
 
 
 ShrinkBisimulationBase::ShrinkBisimulationBase(const Options &opts)

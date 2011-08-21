@@ -3,6 +3,7 @@
 #include "option_parser.h"
 #include "plugin.h"
 #include "raz_abstraction.h"
+#include "shrink_bisimulation_base.h" // Used for signatures only; TODO: Remove
 
 #include <cassert>
 #include <iostream>
@@ -15,7 +16,7 @@ static const int infinity = numeric_limits<int>::max();
 
 
 ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(const Options &opts)
-    : ShrinkBisimulationBase(opts),
+    : ShrinkStrategy(opts),
       greedy(opts.get<bool>("greedy")),
       threshold(opts.get<int>("threshold")),
       skip_atomic_bisimulation(opts.get<bool>("skip_atomic_bisimulation")),
@@ -36,11 +37,20 @@ string ShrinkUnifiedBisimulation::name() const {
 }
 
 void ShrinkUnifiedBisimulation::dump_strategy_specific_options() const {
-    cout << "Bisimulation type: "
-         << (greedy ? "greedy" : "exact")
-         << endl
-         << "Bisimulation threshold: " << threshold
-         << endl;
+    cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
+    cout << "Bisimulation threshold: " << threshold << endl;
+    cout << "Skip atomic bisimulation: "
+         << (skip_atomic_bisimulation ? "yes" : "no") << endl;
+    cout << "Initialize by h: " << (initialize_by_h ? "yes" : "no") << endl;
+    cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
+}
+
+ShrinkStrategy::WhenToNormalize ShrinkUnifiedBisimulation::when_to_normalize(
+    bool use_label_reduction) const {
+    if (use_label_reduction)
+        return AFTER_MERGE;
+    else
+        return BEFORE_MERGE;
 }
 
 void ShrinkUnifiedBisimulation::shrink(
