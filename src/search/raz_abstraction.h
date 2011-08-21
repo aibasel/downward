@@ -61,6 +61,8 @@ class Abstraction {
     int max_g;
     int max_h;
 
+    bool are_labels_reduced;
+
     mutable int peak_memory;
 
     void compute_distances();
@@ -74,7 +76,7 @@ class Abstraction {
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
 
-    void normalize(bool use_label_reduction);
+    void normalize(bool reduce_labels);
 protected:
     enum {
         INVALID = -2
@@ -163,7 +165,7 @@ public:
     CompositeAbstraction(
         bool is_unit_cost, OperatorCost cost_type,
         Abstraction *abs1, Abstraction *abs2,
-        bool use_label_reduction,
+        bool reduce_labels,
         ShrinkStrategy::WhenToNormalize when_to_normalize);
     virtual ~CompositeAbstraction();
 };

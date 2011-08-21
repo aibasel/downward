@@ -96,7 +96,8 @@ inline int get_op_index(const Operator *op) {
 }
 
 Abstraction::Abstraction(bool is_unit_cost_, OperatorCost cost_type_)
-    : is_unit_cost(is_unit_cost_), cost_type(cost_type_), peak_memory(0) {
+    : is_unit_cost(is_unit_cost_), cost_type(cost_type_),
+      are_labels_reduced(false), peak_memory(0) {
     transitions_by_op.resize(g_operators.size());
 }
 
@@ -328,7 +329,7 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(const vector<
     }
 }
 
-void Abstraction::normalize(bool use_label_reduction) {
+void Abstraction::normalize(bool reduce_labels) {
     /* Apply label reduction and remove duplicate transitions.
 
        This is called right before an abstraction is merged with
@@ -342,9 +343,14 @@ void Abstraction::normalize(bool use_label_reduction) {
     // dump();
 
     LabelReducer *reducer = 0;
-    if (use_label_reduction) {
-        reducer = new LabelReducer(relevant_operators, varset, cost_type);
-        reducer->statistics();
+    if (reduce_labels) {
+        if (are_labels_reduced) {
+            cout << "labels already reduced; do not reduce again" << endl;
+        } else {
+            reducer = new LabelReducer(relevant_operators, varset, cost_type);
+            reducer->statistics();
+            are_labels_reduced = true;
+        }
     }
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
@@ -509,7 +515,7 @@ AtomicAbstraction::~AtomicAbstraction() {
 CompositeAbstraction::CompositeAbstraction(
     bool is_unit_cost, OperatorCost cost_type,
     Abstraction *abs1, Abstraction *abs2,
-    bool use_label_reduction,
+    bool reduce_labels,
     ShrinkStrategy::WhenToNormalize when_to_normalize)
     : Abstraction(is_unit_cost, cost_type) {
     assert(abs1->is_solvable() && abs2->is_solvable());
@@ -519,7 +525,7 @@ CompositeAbstraction::CompositeAbstraction(
 
     ::set_union(abs1->varset.begin(), abs1->varset.end(), abs2->varset.begin(),
                 abs2->varset.end(), back_inserter(varset));
-    if (use_label_reduction) {
+    if (reduce_labels) {
         if (varset.size() != abs1->varset.size() + abs2->varset.size()) {
             cout << "error: label reduction is only correct "
                  << "for orthogonal compositions" << endl;
@@ -569,13 +575,13 @@ CompositeAbstraction::CompositeAbstraction(
     // strategies. See issue68.
     if (abs1->varset.size() > 1) {
         if (when_to_normalize == ShrinkStrategy::BEFORE_MERGE) {
-            abs1->normalize(use_label_reduction);
+            abs1->normalize(reduce_labels);
         } else {
             abs1->normalize(false);
         }
     } else if (abs2->varset.size() > 1) {
         if (when_to_normalize == ShrinkStrategy::BEFORE_MERGE) {
-            abs2->normalize(use_label_reduction);
+            abs2->normalize(reduce_labels);
         } else {
             abs2->normalize(false);
         }
@@ -648,7 +654,7 @@ CompositeAbstraction::CompositeAbstraction(
         abs2->relevant_operators[i]->marker2 = false;
 
     if (when_to_normalize == ShrinkStrategy::AFTER_MERGE)
-        normalize(use_label_reduction);
+        normalize(reduce_labels);
 
     compute_distances();
 }
