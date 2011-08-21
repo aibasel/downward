@@ -327,6 +327,7 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(const vector<
         }
     }
 }
+
 void Abstraction::normalize(bool use_label_reduction) {
     /* Apply label reduction and remove duplicate transitions.
 
@@ -646,12 +647,10 @@ CompositeAbstraction::CompositeAbstraction(
     for (int i = 0; i < abs2->relevant_operators.size(); i++)
         abs2->relevant_operators[i]->marker2 = false;
 
-    // dump();
-    compute_distances();
-    // dump();
-
     if (when_to_normalize == ShrinkStrategy::AFTER_MERGE)
         normalize(use_label_reduction);
+
+    compute_distances();
 }
 
 CompositeAbstraction::~CompositeAbstraction() {
