@@ -13,13 +13,16 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <iostream>
 #include <limits>
+#include <string>
+#include <sstream>
 using namespace std;
 
 /* Implementation note: Transitions are grouped by their operators,
- not by source node or any such thing. Such a grouping is beneficial
+ not by source state or any such thing. Such a grouping is beneficial
  for fast generation of products because we can iterate operator by
  operator, and it also allows applying abstraction mappings very
  efficiently.
@@ -97,12 +100,26 @@ inline int get_op_index(const Operator *op) {
 
 Abstraction::Abstraction(bool is_unit_cost_, OperatorCost cost_type_)
     : is_unit_cost(is_unit_cost_), cost_type(cost_type_),
-      max_f(UNINITIALIZED), max_g(UNINITIALIZED), max_h(UNINITIALIZED),
       are_labels_reduced(false), peak_memory(0) {
+    clear_distances();
     transitions_by_op.resize(g_operators.size());
 }
 
 Abstraction::~Abstraction() {
+}
+
+string Abstraction::tag() const {
+    string desc(description());
+    desc[0] = toupper(desc[0]);
+    return desc + ": ";
+}
+
+void Abstraction::clear_distances() {
+    max_f = UNINITIALIZED;
+    max_g = UNINITIALIZED;
+    max_h = UNINITIALIZED;
+    init_distances.clear();
+    goal_distances.clear();
 }
 
 int Abstraction::size() const {
@@ -122,10 +139,27 @@ int Abstraction::get_max_h() const {
 }
 
 void Abstraction::compute_distances() {
+    cout << tag() << flush;
+    if (max_h != UNINITIALIZED) {
+        cout << "distances already known" << endl;
+        return;
+    }
+
+    if (init_state == -1) {
+        cout << "init state was pruned, no distances to compute" << endl;
+        // If init_state was pruned, then everything must have been pruned.
+        assert(num_states == 0);
+        assert(init_distances.empty() && goal_distances.empty());
+        max_f = max_g = max_h = infinity;
+        return;
+    }
+
     if (is_unit_cost) {
+        cout << "computing distances using unit-cost algorithm" << endl;
         compute_init_distances_unit_cost();
         compute_goal_distances_unit_cost();
     } else {
+        cout << "computing distances using general-cost algorithm" << endl;
         compute_init_distances_general_cost();
         compute_goal_distances_general_cost();
     }
@@ -152,8 +186,9 @@ void Abstraction::compute_distances() {
         }
     }
     if (unreachable_count || irrelevant_count) {
-        cout << "unreachable: " << unreachable_count << " nodes, "
-             << "irrelevant: " << irrelevant_count << " nodes" << endl;
+        cout << tag()
+             << "unreachable: " << unreachable_count << " states, "
+             << "irrelevant: " << irrelevant_count << " states" << endl;
         /* Call shrink to discard unreachable and irrelevant states.
            The strategy must be one that prunes unreachable/irrelevant
            notes, but beyond that the details don't matter, as there
@@ -312,6 +347,7 @@ void Abstraction::compute_goal_distances_general_cost() {
 
 void AtomicAbstraction::apply_abstraction_to_lookup_table(const vector<
                                                               AbstractStateRef> &abstraction_mapping) {
+    cout << tag() << "applying abstraction to lookup table" << endl;
     for (int i = 0; i < lookup_table.size(); i++) {
         AbstractStateRef old_state = lookup_table[i];
         if (old_state != -1)
@@ -321,6 +357,7 @@ void AtomicAbstraction::apply_abstraction_to_lookup_table(const vector<
 
 void CompositeAbstraction::apply_abstraction_to_lookup_table(const vector<
                                                                  AbstractStateRef> &abstraction_mapping) {
+    cout << tag() << "applying abstraction to lookup table" << endl;
     for (int i = 0; i < components[0]->size(); i++) {
         for (int j = 0; j < components[1]->size(); j++) {
             AbstractStateRef old_state = lookup_table[i][j];
@@ -343,15 +380,20 @@ void Abstraction::normalize(bool reduce_labels) {
      */
     // dump();
 
+    cout << tag() << "normalizing ";
+
     LabelReducer *reducer = 0;
     if (reduce_labels) {
         if (are_labels_reduced) {
-            cout << "labels already reduced; do not reduce again" << endl;
+            cout << "without label reduction (already reduced)" << endl;
         } else {
+            cout << "with label reduction" << endl;
             reducer = new LabelReducer(relevant_operators, varset, cost_type);
             reducer->statistics();
             are_labels_reduced = true;
         }
+    } else {
+        cout << "without label reduction" << endl;
     }
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
@@ -419,7 +461,7 @@ void Abstraction::build_atomic_abstractions(
     bool is_unit_cost, OperatorCost cost_type,
     vector<Abstraction *> &result) {
     assert(result.empty());
-    cout << "Building atomic abstractions... " << flush;
+    cout << "Building atomic abstractions... " << endl;
     int var_count = g_variable_domain.size();
 
     // Step 1: Create the abstraction objects without transitions.
@@ -466,12 +508,6 @@ void Abstraction::build_atomic_abstractions(
                 abs->relevant_operators.push_back(op);
         }
     }
-
-    // Step 3: Compute init and goal distances and remove unreachable parts.
-    for (int var_no = 0; var_no < var_count; var_no++)
-        result[var_no]->compute_distances();
-
-    cout << "done!" << endl;
 }
 
 AtomicAbstraction::AtomicAbstraction(
@@ -479,9 +515,9 @@ AtomicAbstraction::AtomicAbstraction(
     : Abstraction(is_unit_cost, cost_type), variable(variable_) {
     varset.push_back(variable);
     /*
-     This generates the nodes of the atomic abstraction, but not the
-     arcs: It is more efficient to generate all arcs of all atomic
-     abstractions simultaneously.
+      This generates the states of the atomic abstraction, but not the
+      arcs: It is more efficient to generate all arcs of all atomic
+      abstractions simultaneously.
      */
     int range = g_variable_domain[variable];
 
@@ -496,8 +532,8 @@ AtomicAbstraction::AtomicAbstraction(
 
     num_states = range;
     lookup_table.reserve(range);
-    init_distances.resize(num_states, INVALID);
-    goal_distances.resize(num_states, INVALID);
+    init_distances.resize(num_states, UNINITIALIZED);
+    goal_distances.resize(num_states, UNINITIALIZED);
     goal_states.resize(num_states, false);
     for (int value = 0; value < range; value++) {
         if (value == goal_value || goal_value == -1) {
@@ -517,6 +553,9 @@ CompositeAbstraction::CompositeAbstraction(
     bool is_unit_cost, OperatorCost cost_type,
     Abstraction *abs1, Abstraction *abs2)
     : Abstraction(is_unit_cost, cost_type) {
+    cout << "Merging " << abs1->description() << " and "
+         << abs2->description() << endl;
+
     assert(abs1->is_solvable() && abs2->is_solvable());
 
     components[0] = abs1;
@@ -526,8 +565,8 @@ CompositeAbstraction::CompositeAbstraction(
                 abs2->varset.end(), back_inserter(varset));
 
     num_states = abs1->size() * abs2->size();
-    init_distances.resize(num_states, INVALID);
-    goal_distances.resize(num_states, INVALID);
+    init_distances.resize(num_states, UNINITIALIZED);
+    goal_distances.resize(num_states, UNINITIALIZED);
     goal_states.resize(num_states, false);
 
     lookup_table.resize(abs1->size(), vector<AbstractStateRef> (abs2->size()));
@@ -617,6 +656,18 @@ CompositeAbstraction::CompositeAbstraction(
 CompositeAbstraction::~CompositeAbstraction() {
 }
 
+string AtomicAbstraction::description() const {
+    ostringstream s;
+    s << "atomic abstraction #" << variable;
+    return s.str();
+}
+
+string CompositeAbstraction::description() const {
+    ostringstream s;
+    s << "abstraction (" << varset.size() << "/"
+      << g_variable_domain.size() << " vars)";
+    return s.str();
+}
 
 AbstractStateRef AtomicAbstraction::get_abstract_state(const State &state) const {
     int value = state[variable];
@@ -633,6 +684,9 @@ AbstractStateRef CompositeAbstraction::get_abstract_state(const State &state) co
 
 void Abstraction::apply_abstraction(
     vector<slist<AbstractStateRef> > &collapsed_groups) {
+    cout << tag() << "applying abstraction (" << size()
+         << " to " << collapsed_groups.size() << " states)" << endl;
+
     typedef slist<AbstractStateRef> Group;
 
     vector<int> abstraction_mapping(num_states, -1);
@@ -647,11 +701,11 @@ void Abstraction::apply_abstraction(
     }
 
     int new_num_states = collapsed_groups.size();
-    vector<int> new_init_distances(new_num_states, INVALID);
-    vector<int> new_goal_distances(new_num_states, INVALID);
+    vector<int> new_init_distances(new_num_states, UNINITIALIZED);
+    vector<int> new_goal_distances(new_num_states, UNINITIALIZED);
     vector<bool> new_goal_states(new_num_states, false);
 
-    bool must_recompute_distances = false;
+    bool must_clear_distances = false;
     for (AbstractStateRef new_state = 0; new_state < collapsed_groups.size(); new_state++) {
         Group &group = collapsed_groups[new_state];
         assert(!group.empty());
@@ -667,11 +721,11 @@ void Abstraction::apply_abstraction(
         ++pos;
         for (; pos != group.end(); ++pos) {
             if (init_distances[*pos] < new_init_dist) {
-                must_recompute_distances = true;
+                must_clear_distances = true;
                 new_init_dist = init_distances[*pos];
             }
             if (goal_distances[*pos] < new_goal_dist) {
-                must_recompute_distances = true;
+                must_clear_distances = true;
                 new_goal_dist = goal_distances[*pos];
             }
             new_goal_states[new_state] = new_goal_states[new_state]
@@ -679,9 +733,10 @@ void Abstraction::apply_abstraction(
         }
     }
 
-    vector<int>().swap(init_distances);     // Release memory.
-    vector<int>().swap(goal_distances);     // Release memory.
-    vector<bool>().swap(goal_states);     // Release memory.
+    // Release memory.
+    vector<int>().swap(init_distances);
+    vector<int>().swap(goal_distances);
+    vector<bool>().swap(goal_states);
 
     vector<vector<AbstractTransition> > new_transitions_by_op(
         transitions_by_op.size());
@@ -709,14 +764,13 @@ void Abstraction::apply_abstraction(
     goal_states.swap(new_goal_states);
     init_state = abstraction_mapping[init_state];
     if (init_state == -1)
-        cout << "init_state irrelevant; problem unsolvable" << endl;
+        cout << tag() << "initial state irrelevant; task unsolvable" << endl;
 
     apply_abstraction_to_lookup_table(abstraction_mapping);
 
-    if (init_state != -1 && must_recompute_distances) {
-        cout << "Simplification was not f-preserving -- "
-             << "must recompute distances." << endl;
-        compute_distances();
+    if (must_clear_distances) {
+        cout << tag() << "simplification was not f-preserving!" << endl;
+        clear_distances();
     }
 }
 
@@ -729,7 +783,7 @@ int Abstraction::get_cost(const State &state) const {
     if (abs_state == -1)
         return -1;
     int cost = goal_distances[abs_state];
-    assert(cost != INVALID && cost != infinity);
+    assert(cost != UNINITIALIZED && cost != infinity);
     return cost;
 }
 
@@ -802,14 +856,14 @@ int Abstraction::unique_unlabeled_transitions(const vector<int> &relevant_ops) c
 void Abstraction::statistics(bool include_expensive_statistics) const {
     int memory = memory_estimate();
     peak_memory = max(peak_memory, memory);
-    cout << "abstraction: " << varset.size() << "/" << g_variable_domain.size()
-         << " vars, " << size() << " nodes, ";
+    cout << tag() << size() << " states, ";
     if (include_expensive_statistics)
         cout << unique_unlabeled_transitions();
     else
         cout << "???";
     cout << "/" << total_transitions() << " arcs, " << memory << " bytes"
-         << endl << "             ";
+         << endl;
+    cout << tag();
     if (max_h == UNINITIALIZED) {
         cout << "distances not computed";
     } else if (is_solvable()) {

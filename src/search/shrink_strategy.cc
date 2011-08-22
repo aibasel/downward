@@ -39,12 +39,13 @@ bool ShrinkStrategy::must_shrink(
     assert(threshold >= 1);
     assert(abs.is_solvable());
     if (abs.size() > threshold) {
-        cout << "shrink abstraction of size " << abs.size()
+        cout << abs.tag() << "shrink from size " << abs.size()
              << " (threshold: " << threshold << ")" << endl;
         return true;
     }
     if (force) {
-        cout << "shrink forced: prune unreachable/irrelevant states" << endl;
+        cout << abs.tag()
+             << "shrink forced to prune unreachable/irrelevant states" << endl;
         return true;
     }
     return false;
@@ -90,7 +91,7 @@ void ShrinkStrategy::shrink_before_merge(Abstraction &abs1, Abstraction &abs2) {
     //       the output a bit.
 
     if (new_size2 != abs2.size()) {
-        cout << "atomic abstraction too big; must shrink" << endl;
+        cout << abs2.tag() << "atomic abstraction too big; must shrink" << endl;
         shrink(abs2, new_size2);
     }
 
@@ -113,8 +114,8 @@ void ShrinkStrategy::apply(
     int target) const {
     assert(equivalence_relation.size() <= target);
     abs.apply_abstraction(equivalence_relation);
-    cout << "size of abstraction after shrink: " << abs.size()
-         << ", target: " << target << endl;
+    cout << abs.tag() << "size after shrink " << abs.size()
+         << ", target " << target << endl;
     assert(abs.size() <= target);
 }
 
