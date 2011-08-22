@@ -107,20 +107,17 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     Abstraction *abstraction = atomic_abstractions[var_no];
     abstraction->statistics(use_expensive_statistics);
 
-    bool first_iteration = true;
     while (!order.done() && abstraction->is_solvable()) {
-        // TODO: Add more output before the various statistics()
-        // calls saying what we just did (or are going to do) to make
-        // clear what the statistics refer to.
-
         int var_no = order.next();
         cout << "Next variable: #" << var_no << endl;
         Abstraction *other_abstraction = atomic_abstractions[var_no];
 
         // TODO: When using nonlinear merge strategies, make sure not
         // to normalize multiple parts of a composite. See issue68.
-        if (shrink_strategy->reduce_labels_before_shrinking())
+        if (shrink_strategy->reduce_labels_before_shrinking()) {
             abstraction->normalize(use_label_reduction);
+            other_abstraction->normalize(false);
+        }
 
         abstraction->compute_distances();
         other_abstraction->compute_distances();
@@ -136,12 +133,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         abstraction->statistics(use_expensive_statistics);
         other_abstraction->statistics(use_expensive_statistics);
 
-        // TODO: Actually, it would be fine to label-reduce also in
-        // the first iteration. However, we want to stay to the old
-        // behaviour (reduce only composites, never atomic
-        // abstractions) as much as possible for now to make our life
-        // with the experiments easier.
-        abstraction->normalize(use_label_reduction && !first_iteration);
+        abstraction->normalize(use_label_reduction);
         abstraction->statistics(use_expensive_statistics);
 
         // Don't label-reduce the atomic abstraction -- see issue68.
@@ -157,10 +149,14 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
         abstraction = new_abstraction;
         abstraction->statistics(use_expensive_statistics);
-
-        first_iteration = false; // TODO: Get rid of this once we don't use it any more.
     }
+
     abstraction->compute_distances();
+
+    ShrinkStrategy *def_shrink = ShrinkFH::create_default(abstraction->size());
+    def_shrink->shrink(*abstraction, abstraction->size(), true);
+    abstraction->compute_distances();
+
     abstraction->statistics(use_expensive_statistics);
     abstraction->release_memory();
     return abstraction;
@@ -182,7 +178,7 @@ void MergeAndShrinkHeuristic::initialize() {
         abstractions.push_back(abstraction);
         if (!abstractions.back()->is_solvable()) {
             cout << "Abstract problem is unsolvable!" << endl;
-            if (i + 1 < abstraction_count) 
+            if (i + 1 < abstraction_count)
                 cout << "Skipping remaining abstractions." << endl;
             break;
         }
