@@ -411,12 +411,15 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
         // heuristic.
 
         if (opts.get<bool>("memory_limit")) {
-            if (parser.dry_run())
+            if (parser.dry_run()) {
                 cout << "Legacy option support: setting options for DFP-bop."
                      << endl;
+                cout << "Note: skip_atomic_bisimulation is now false also "
+                     << "for DFP-based strategies." << endl;
+            }
 
             opts.set("threshold", opts.get<int>("max_states"));
-            opts.set("skip_atomic_bisimulation", true);
+            opts.set("skip_atomic_bisimulation", false);
             opts.set("initialize_by_h", true);
             opts.set("group_by_h", true);
         } else {
