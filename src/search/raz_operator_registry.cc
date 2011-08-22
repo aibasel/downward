@@ -123,7 +123,7 @@ OperatorSignature LabelReducer::build_operator_signature(
 }
 
 void LabelReducer::statistics() const {
-    cout << "label reduction: "
+    cout << "Label reduction: "
          << num_pruned_vars << " pruned vars, "
          << num_labels << " labels, "
          << num_reduced_labels << " reduced labels"

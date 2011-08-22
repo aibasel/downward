@@ -67,6 +67,7 @@ class Abstraction {
 
     mutable int peak_memory;
 
+    void clear_distances();
     void compute_init_distances_unit_cost();
     void compute_goal_distances_unit_cost();
     void compute_init_distances_general_cost();
@@ -77,10 +78,6 @@ class Abstraction {
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
 protected:
-    enum {
-        INVALID = -2
-    };
-
     vector<int> varset;
 
     virtual AbstractStateRef get_abstract_state(const State &state) const = 0;
@@ -90,6 +87,12 @@ protected:
 public:
     Abstraction(bool is_unit_cost, OperatorCost cost_type);
     virtual ~Abstraction();
+
+    // Two methods to identify the abstraction in output.
+    // tag is a convience method that upper-cases the first letter of
+    // description and appends ": ";
+    virtual std::string description() const = 0;
+    std::string tag() const;
 
     static void build_atomic_abstractions(
             bool is_unit_cost, OperatorCost cost_type,
@@ -145,6 +148,7 @@ class AtomicAbstraction : public Abstraction {
     int variable;
     vector<AbstractStateRef> lookup_table;
 protected:
+    virtual std::string description() const;
     virtual void apply_abstraction_to_lookup_table(const vector<
                                                        AbstractStateRef> &abstraction_mapping);
     virtual AbstractStateRef get_abstract_state(const State &state) const;
@@ -158,6 +162,7 @@ class CompositeAbstraction : public Abstraction {
     Abstraction *components[2];
     vector<vector<AbstractStateRef> > lookup_table;
 protected:
+    virtual std::string description() const;
     virtual void apply_abstraction_to_lookup_table(
         const vector<AbstractStateRef> &abstraction_mapping);
     virtual AbstractStateRef get_abstract_state(const State &state) const;

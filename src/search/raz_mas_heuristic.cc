@@ -88,30 +88,42 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     //       Don't forget that build_atomic_abstractions also
     //       allocates memory.
 
-    cout << "Building atomic abstractions..." << endl;
     vector<Abstraction *> atomic_abstractions;
     Abstraction::build_atomic_abstractions(
         is_unit_cost_problem(), get_cost_type(), atomic_abstractions);
 
     cout << "Shrinking atomic abstractions..." << endl;
-    for (size_t i = 0; i < atomic_abstractions.size(); ++i)
+    for (size_t i = 0; i < atomic_abstractions.size(); ++i) {
+        atomic_abstractions[i]->compute_distances();
         shrink_strategy->shrink_atomic(*atomic_abstractions[i]);
+    }
 
     cout << "Merging abstractions..." << endl;
 
     VariableOrderFinder order(merge_strategy, is_first);
 
     int var_no = order.next();
-    cout << "next variable: #" << var_no << endl;
+    cout << "First variable: #" << var_no << endl;
     Abstraction *abstraction = atomic_abstractions[var_no];
     abstraction->statistics(use_expensive_statistics);
 
     bool first_iteration = true;
     while (!order.done() && abstraction->is_solvable()) {
+        // TODO: Add more output before the various statistics()
+        // calls saying what we just did (or are going to do) to make
+        // clear what the statistics refer to.
+
         int var_no = order.next();
-        cout << "next variable: #" << var_no << endl;
+        cout << "Next variable: #" << var_no << endl;
         Abstraction *other_abstraction = atomic_abstractions[var_no];
 
+        // TODO: When using nonlinear merge strategies, make sure not
+        // to normalize multiple parts of a composite. See issue68.
+        if (shrink_strategy->reduce_labels_before_shrinking())
+            abstraction->normalize(use_label_reduction);
+
+        abstraction->compute_distances();
+        other_abstraction->compute_distances();
         shrink_strategy->shrink_before_merge(*abstraction, *other_abstraction);
         // TODO: Make shrink_before_merge return a pair of bools
         //       that tells us whether they have actually changed,
@@ -122,53 +134,34 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         // expensive statistics. As a temporary aid, we just print the
         // statistics always now, whether or not we shrunk.)
         abstraction->statistics(use_expensive_statistics);
+        other_abstraction->statistics(use_expensive_statistics);
 
-        if (!first_iteration) {
-            // TODO: Actually, it would be fine to normalize also in
-            // the first iteration. However, we want to stay to the
-            // old behaviour (normalize only composites, never atomic
-            // abstractions) as much as possible for now to make our
-            // life with the experiments easier.
-            abstraction->normalize(use_label_reduction);
-            abstraction->statistics(use_expensive_statistics);
-        }
+        // TODO: Actually, it would be fine to label-reduce also in
+        // the first iteration. However, we want to stay to the old
+        // behaviour (reduce only composites, never atomic
+        // abstractions) as much as possible for now to make our life
+        // with the experiments easier.
+        abstraction->normalize(use_label_reduction && !first_iteration);
+        abstraction->statistics(use_expensive_statistics);
+
+        // Don't label-reduce the atomic abstraction -- see issue68.
+        other_abstraction->normalize(false);
+        other_abstraction->statistics(use_expensive_statistics);
 
         Abstraction *new_abstraction = new CompositeAbstraction(
             is_unit_cost_problem(), get_cost_type(),
             abstraction, other_abstraction);
 
-        if (first_iteration)
-            first_iteration = false;
-        else
-            abstraction->release_memory();
+        abstraction->release_memory();
+        other_abstraction->release_memory();
+
         abstraction = new_abstraction;
         abstraction->statistics(use_expensive_statistics);
 
-        // TODO: It might be clearer if the following code were moved
-        // to the top of the loop rather than the bottom, to make
-        // clear that we mainly do these things here because we want
-        // to have this info available for shrinking. That means we
-        // would need an additional (h) distance computation after the
-        // loop, but that would be fine. We should then also move the
-        // distance computation out of build_atomic_abstractions,
-        // which is fine, since we don't have the distance computation
-        // for composites in the CompositeAbstraction constructor any
-        // more either.
-
-        // TODO: Also add more output before the various statistics()
-        // calls saying what we just did (or are going to do) to make
-        // clear what the statistics refer to.
-
-        // TODO: When using nonlinear merge strategies, make sure not
-        // to normalize multiple parts of a composite. See issue68.
-        if (!order.done()) {
-            // We check order.done() to avoid normalizing the final
-            // abstraction unnecessarily.
-            if (shrink_strategy->reduce_labels_before_shrinking())
-                abstraction->normalize(use_label_reduction);
-        }
-        abstraction->compute_distances();
+        first_iteration = false; // TODO: Get rid of this once we don't use it any more.
     }
+    abstraction->compute_distances();
+    abstraction->statistics(use_expensive_statistics);
     abstraction->release_memory();
     return abstraction;
 }
