@@ -115,9 +115,9 @@ string Abstraction::tag() const {
 }
 
 void Abstraction::clear_distances() {
-    max_f = UNINITIALIZED;
-    max_g = UNINITIALIZED;
-    max_h = UNINITIALIZED;
+    max_f = DISTANCE_UNKNOWN;
+    max_g = DISTANCE_UNKNOWN;
+    max_h = DISTANCE_UNKNOWN;
     init_distances.clear();
     goal_distances.clear();
 }
@@ -140,20 +140,23 @@ int Abstraction::get_max_h() const {
 
 void Abstraction::compute_distances() {
     cout << tag() << flush;
-    if (max_h != UNINITIALIZED) {
+    if (max_h != DISTANCE_UNKNOWN) {
         cout << "distances already known" << endl;
         return;
     }
 
-    if (init_state == -1) {
+    assert(init_distances.empty() && goal_distances.empty());
+
+    if (init_state == PRUNED_STATE) {
         cout << "init state was pruned, no distances to compute" << endl;
         // If init_state was pruned, then everything must have been pruned.
         assert(num_states == 0);
-        assert(init_distances.empty() && goal_distances.empty());
         max_f = max_g = max_h = infinity;
         return;
     }
 
+    init_distances.resize(num_states, infinity);
+    goal_distances.resize(num_states, infinity);
     if (is_unit_cost) {
         cout << "computing distances using unit-cost algorithm" << endl;
         compute_init_distances_unit_cost();
@@ -239,8 +242,6 @@ void Abstraction::compute_init_distances_unit_cost() {
         if (state == init_state) {
             init_distances[state] = 0;
             queue.push_back(state);
-        } else {
-            init_distances[state] = infinity;
         }
     }
     breadth_first_search(forward_graph, queue, init_distances);
@@ -261,8 +262,6 @@ void Abstraction::compute_goal_distances_unit_cost() {
         if (goal_states[state]) {
             goal_distances[state] = 0;
             queue.push_back(state);
-        } else {
-            goal_distances[state] = infinity;
         }
     }
     breadth_first_search(backward_graph, queue, goal_distances);
@@ -312,8 +311,6 @@ void Abstraction::compute_init_distances_general_cost() {
         if (state == init_state) {
             init_distances[state] = 0;
             queue.push(0, state);
-        } else {
-            init_distances[state] = infinity;
         }
     }
     dijkstra_search(forward_graph, queue, init_distances);
@@ -338,8 +335,6 @@ void Abstraction::compute_goal_distances_general_cost() {
         if (goal_states[state]) {
             goal_distances[state] = 0;
             queue.push(0, state);
-        } else {
-            goal_distances[state] = infinity;
         }
     }
     dijkstra_search(backward_graph, queue, goal_distances);
@@ -350,7 +345,7 @@ void AtomicAbstraction::apply_abstraction_to_lookup_table(const vector<
     cout << tag() << "applying abstraction to lookup table" << endl;
     for (int i = 0; i < lookup_table.size(); i++) {
         AbstractStateRef old_state = lookup_table[i];
-        if (old_state != -1)
+        if (old_state != PRUNED_STATE)
             lookup_table[i] = abstraction_mapping[old_state];
     }
 }
@@ -361,23 +356,15 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(const vector<
     for (int i = 0; i < components[0]->size(); i++) {
         for (int j = 0; j < components[1]->size(); j++) {
             AbstractStateRef old_state = lookup_table[i][j];
-            if (old_state != -1)
+            if (old_state != PRUNED_STATE)
                 lookup_table[i][j] = abstraction_mapping[old_state];
         }
     }
 }
 
 void Abstraction::normalize(bool reduce_labels) {
-    /* Apply label reduction and remove duplicate transitions.
+    // Apply label reduction and remove duplicate transitions.
 
-       This is called right before an abstraction is merged with
-       another through a product operation.
-
-       Note that we could also normalize between merging and shrinking
-       (e.g. to make the distance computations cheaper) but don't,
-       because the costs are much higher than the benefits in our
-       experiments.
-     */
     // dump();
 
     cout << tag() << "normalizing ";
@@ -532,12 +519,9 @@ AtomicAbstraction::AtomicAbstraction(
 
     num_states = range;
     lookup_table.reserve(range);
-    init_distances.resize(num_states, UNINITIALIZED);
-    goal_distances.resize(num_states, UNINITIALIZED);
     goal_states.resize(num_states, false);
     for (int value = 0; value < range; value++) {
         if (value == goal_value || goal_value == -1) {
-            goal_distances[value] = 0;
             goal_states[value] = true;
         }
         if (value == init_value)
@@ -565,8 +549,6 @@ CompositeAbstraction::CompositeAbstraction(
                 abs2->varset.end(), back_inserter(varset));
 
     num_states = abs1->size() * abs2->size();
-    init_distances.resize(num_states, UNINITIALIZED);
-    goal_distances.resize(num_states, UNINITIALIZED);
     goal_states.resize(num_states, false);
 
     lookup_table.resize(abs1->size(), vector<AbstractStateRef> (abs2->size()));
@@ -677,32 +659,57 @@ AbstractStateRef AtomicAbstraction::get_abstract_state(const State &state) const
 AbstractStateRef CompositeAbstraction::get_abstract_state(const State &state) const {
     AbstractStateRef state1 = components[0]->get_abstract_state(state);
     AbstractStateRef state2 = components[1]->get_abstract_state(state);
-    if (state1 == -1 || state2 == -1)
-        return -1;
+    if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
+        return PRUNED_STATE;
     return lookup_table[state1][state2];
 }
 
 void Abstraction::apply_abstraction(
     vector<slist<AbstractStateRef> > &collapsed_groups) {
+    /* Note on how this method interacts with the distance information
+       (init_distances and goal_distances): if no two states with
+       different g or h values are combined by the abstraction (i.e.,
+       if the abstraction is "f-preserving", then this method makes
+       sure sure that distance information is preserved.
+
+       This is important because one of the (indirect) callers of this
+       method is the distance computation code, which uses it in a
+       somewhat roundabout way to get rid of irrelevant and
+       unreachable states. That caller will always give us an
+       f-preserving abstraction.
+
+       When called with a non-f-preserving abstraction, distance
+       information is cleared as a side effect. In most cases we won't
+       actually need it any more at this point anyway, so it is no
+       great loss.
+
+       Still, it might be good if we could find a way to perform the
+       unreachability and relevance pruning that didn't introduce such
+       tight coupling between the distance computation and abstraction
+       code. It would probably also a good idea to do the
+       unreachability/relevance pruning as early as possible, e.g.
+       right after construction.
+     */
+
     cout << tag() << "applying abstraction (" << size()
          << " to " << collapsed_groups.size() << " states)" << endl;
 
     typedef slist<AbstractStateRef> Group;
 
-    vector<int> abstraction_mapping(num_states, -1);
+    vector<int> abstraction_mapping(num_states, PRUNED_STATE);
 
     for (int group_no = 0; group_no < collapsed_groups.size(); group_no++) {
         Group &group = collapsed_groups[group_no];
         for (Group::iterator pos = group.begin(); pos != group.end(); ++pos) {
             AbstractStateRef state = *pos;
-            assert(abstraction_mapping[state] == -1);
+            assert(abstraction_mapping[state] == PRUNED_STATE);
             abstraction_mapping[state] = group_no;
         }
     }
 
     int new_num_states = collapsed_groups.size();
-    vector<int> new_init_distances(new_num_states, UNINITIALIZED);
-    vector<int> new_goal_distances(new_num_states, UNINITIALIZED);
+    vector<int> new_init_distances(new_num_states, infinity);
+    vector<int> new_goal_distances(new_num_states, infinity);
     vector<bool> new_goal_states(new_num_states, false);
 
     bool must_clear_distances = false;
@@ -728,8 +735,8 @@ void Abstraction::apply_abstraction(
                 must_clear_distances = true;
                 new_goal_dist = goal_distances[*pos];
             }
-            new_goal_states[new_state] = new_goal_states[new_state]
-                                         || goal_states[*pos]; //TODO - this forces all groups containing a goal state, to be a goal state in the new abstraction.
+            if (goal_states[*pos])
+                new_goal_states[new_state] = true;
         }
     }
 
@@ -751,7 +758,7 @@ void Abstraction::apply_abstraction(
             int src = abstraction_mapping[trans.src];
             int target = abstraction_mapping[trans.target];
             int cost = trans.cost;
-            if (src != -1 && target != -1)
+            if (src != PRUNED_STATE && target != PRUNED_STATE)
                 new_transitions.push_back(AbstractTransition(src, target, cost));
         }
     }
@@ -763,8 +770,8 @@ void Abstraction::apply_abstraction(
     goal_distances.swap(new_goal_distances);
     goal_states.swap(new_goal_states);
     init_state = abstraction_mapping[init_state];
-    if (init_state == -1)
-        cout << tag() << "initial state irrelevant; task unsolvable" << endl;
+    if (init_state == PRUNED_STATE)
+        cout << tag() << "initial state pruned; task unsolvable" << endl;
 
     apply_abstraction_to_lookup_table(abstraction_mapping);
 
@@ -775,15 +782,15 @@ void Abstraction::apply_abstraction(
 }
 
 bool Abstraction::is_solvable() const {
-    return init_state != -1;
+    return init_state != PRUNED_STATE;
 }
 
 int Abstraction::get_cost(const State &state) const {
     int abs_state = get_abstract_state(state);
-    if (abs_state == -1)
+    if (abs_state == PRUNED_STATE)
         return -1;
     int cost = goal_distances[abs_state];
-    assert(cost != UNINITIALIZED && cost != infinity);
+    assert(cost != infinity);
     return cost;
 }
 
@@ -864,7 +871,7 @@ void Abstraction::statistics(bool include_expensive_statistics) const {
     cout << "/" << total_transitions() << " arcs, " << memory << " bytes"
          << endl;
     cout << tag();
-    if (max_h == UNINITIALIZED) {
+    if (max_h == DISTANCE_UNKNOWN) {
         cout << "distances not computed";
     } else if (is_solvable()) {
         cout << "init h=" << goal_distances[init_state] << ", max f=" << max_f
@@ -884,17 +891,13 @@ bool Abstraction::is_in_varset(int var) const {
 }
 
 void Abstraction::dump() const {
-    // TODO: dump relevant_operators, init_distances, goal_distances,
-    //       max_f, max_g, max_h, varset?
     cout << "digraph abstract_transition_graph";
     for (int i = 0; i < varset.size(); i++)
         cout << "_" << varset[i];
     cout << " {" << endl;
     cout << "    node [shape = none] start;" << endl;
-    assert(goal_distances.size() == num_states);
     for (int i = 0; i < num_states; i++) {
         bool is_init = (i == init_state);
-        //bool is_goal = (goal_distances[i] == 0);
         bool is_goal = (goal_states[i] == true);
         cout << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
              << "] node" << i << ";" << endl;
