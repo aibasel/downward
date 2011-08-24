@@ -533,9 +533,9 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     // TODO: better documentation what each parameter does
-    parser.add_option<int>("max_states", -1, "maximum abstraction size");
-    parser.add_option<int>("max_states_before_merge", -1,
-                           "maximum abstraction size for factors of synchronized product");
+    parser.add_option<int>("max_states", "maximum abstraction size", OptionFlags(false));
+    parser.add_option<int>("max_states_before_merge",
+                           "maximum abstraction size for factors of synchronized product", OptionFlags(false));
     parser.add_option<int>("count", 1, "nr of abstractions to build");
     vector<string> merge_strategies;
     merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_LEVEL");
@@ -579,45 +579,57 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return 0;
 
     //read values from opts for processing.
-    int max_states = opts.get<int>("max_states");
-    int max_states_before_merge = opts.get<int>("max_states_before_merge");
     MergeStrategy merge_strategy = MergeStrategy(opts.get_enum("merge_strategy"));
     ShrinkStrategy shrink_strategy = ShrinkStrategy(opts.get_enum("shrink_strategy"));
     double merge_mixing_parameter = opts.get<double>("merge_mixing_parameter");
 
+    int max_states = -1;
+    int max_states_before_merge = -1;
 
-    if (max_states == -1 && max_states_before_merge == -1) {
-        // None of the two options specified: set default limit
-        max_states = 50000;
+    if (opts.contains("max_states")) {
+        max_states = opts.get<int>("max_states");
+        if (max_states < 1) {
+            cerr << "error: abstraction size must be at least 1" << endl;
+            exit(2);
+        }
     }
 
-    // If exactly one of the max_states options has been set, set the other
-    // so that it imposes no further limits.
-    if (max_states_before_merge == -1) {
+    if (opts.contains("max_states_before_merge")) {
+        max_states_before_merge = opts.get<int>("max_states_before_merge");
+        if (max_states_before_merge < 1) {
+            cerr << "error: abstraction size before merge must be at least 1"
+                 << endl;
+            exit(2);
+        }
+    }
+
+    if (max_states == -1 && max_states_before_merge == -1) {
+        // Neither option has been explicitly set: use default.
+        max_states = max_states_before_merge = 50000;
+    } else if (max_states_before_merge == -1) {
+        // Set a value that imposes no further limit given
+        // the value of max_states.
         max_states_before_merge = max_states;
     } else if (max_states == -1) {
+        // Set a value that imposes no further limit given
+        // the value of max_states_before_merge.
         int n = max_states_before_merge;
         max_states = n * n;
-        if (max_states < 0 || max_states / n != n)         // overflow
+        if (max_states / n != n) // Handle overflow.
             max_states = numeric_limits<int>::max();
     }
 
     if (max_states_before_merge > max_states) {
-        cerr << "warning: max_states_before_merge exceeds max_states, "
-             << "correcting." << endl;
+        if (!parser.dry_run()) { // Only print the warning once.
+            cerr << "warning: max_states_before_merge exceeds max_states, "
+                 << "correcting." << endl;
+        }
         max_states_before_merge = max_states;
     }
 
-    if (max_states < 1) {
-        cerr << "error: abstraction size must be at least 1" << endl;
-        exit(2);
-    }
-
-    if (max_states_before_merge < 1) {
-        cerr << "error: abstraction size before merge must be at least 1"
-             << endl;
-        exit(2);
-    }
+    assert(max_states >= 1);
+    assert(max_states_before_merge >= 1);
+    assert(max_states >= max_states_before_merge);
 
     if (merge_strategy < 0 || merge_strategy >= MAX_MERGE_STRATEGY) {
         cerr << "error: unknown merge strategy: " << merge_strategy << endl;
