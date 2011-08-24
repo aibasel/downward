@@ -8,13 +8,13 @@
 using namespace std;
 
 void parse_patterns(OptionParser &parser, Options &opts) {
-    parser.add_list_option<vector<int> >("patterns", vector<vector<int> >(), "the pattern collection");
+    parser.add_list_option<vector<int> >("patterns", "the pattern collection", OptionFlags(false));
     opts = parser.parse();
-    vector<vector<int> > pattern_collection = opts.get_list<vector<int> >("patterns");
+    vector<vector<int> > pattern_collection;
+    if (opts.contains("patterns"))
+        pattern_collection = opts.get_list<vector<int> >("patterns");
 
-    // TODO: Distinguish the case that no collection was specified by
-    // the user from the case that an empty collection was explicitly
-    // specified by the user (see issue236).
+    // check for correct patterns specification (only if not empty)
     if (parser.dry_run() && !pattern_collection.empty()) {
         // check if there are duplicates of patterns
         for (size_t i = 0; i < pattern_collection.size(); ++i) {
@@ -43,9 +43,9 @@ void parse_patterns(OptionParser &parser, Options &opts) {
             cout << pattern_collection[i] << endl;
         }
     }
-
-    if (!parser.dry_run() && pattern_collection.empty()) {
-        // TODO: See above (issue236).
+    
+    // if option "patterns" is not specified, use default
+    if (!parser.dry_run() && !opts.contains("patterns")) {
         // Simple selection strategy. Take all goal variables as patterns.
         for (size_t i = 0; i < g_goal.size(); ++i) {
             pattern_collection.push_back(vector<int>(1, g_goal[i].first));

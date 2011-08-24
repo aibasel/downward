@@ -289,10 +289,14 @@ double PDBHeuristic::compute_mean_finite_h() const {
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states", 1000000, "maximum abstraction size");
-    parser.add_list_option<int>("pattern", vector<int>(), "the pattern");
+    parser.add_list_option<int>("pattern", "the pattern", OptionFlags(false));
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    vector<int> pattern = opts.get_list<int>("pattern");
+    vector<int> pattern;
+    if (opts.contains("pattern"))
+        pattern = opts.get_list<int>("pattern");
+
+    // check pattern for correct variable numbers and uniqueness (only if not empty)
     if (parser.dry_run() && !pattern.empty()) {
         sort(pattern.begin(), pattern.end());
         vector<int>::const_iterator it = unique(pattern.begin(), pattern.end());
@@ -311,7 +315,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 
     // if no pattern is specified as option, use variableorderfinder and include variables as long as
     // max_states allows
-    if (pattern.empty()) {
+    if (!opts.contains("pattern")) {
         VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL, 0.0);
         int var = vof.next();
         int num_states = g_variable_domain[var];
