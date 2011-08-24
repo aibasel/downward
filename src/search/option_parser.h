@@ -41,7 +41,7 @@ If NT shall be predefinable:
 #include "heuristic.h"
 
 class OptionParser;
-class LandmarksGraph;
+class LandmarkGraph;
 template<class Entry>
 class OpenList;
 class SearchEngine;
@@ -81,9 +81,9 @@ public:
 };
 
 template <>
-class TokenParser<LandmarksGraph *> {
+class TokenParser<LandmarkGraph *> {
 public:
-    static inline LandmarksGraph *parse(OptionParser &p);
+    static inline LandmarkGraph *parse(OptionParser &p);
 };
 
 template <>
@@ -142,13 +142,14 @@ public:
     static std::string usage(std::string progname);
 
     //this function initiates parsing of T (the root node of parse_tree
-    //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarksGraph*
+    //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarkGraph*
     template <class T>
     T start_parsing();
 
     //add option with no default value, optional help
+    //call with mandatory = false to specify an optional parameter without default value
     template <class T>
-    void add_option(std::string k, std::string h = "");
+    void add_option(std::string k, std::string h = "", OptionFlags flags = OptionFlags());
 
     //add option with default value
     template <class T>
@@ -157,10 +158,10 @@ public:
 
     void add_enum_option(std::string k,
                          std::vector<std::string > enumeration,
-                         std::string def_val = "", std::string h = "");
+                         std::string def_val = "", std::string h = "", OptionFlags flags = OptionFlags());
 
     template <class T>
-    void add_list_option(std::string k, std::string h = "");
+    void add_list_option(std::string k, std::string h = "", OptionFlags flags = OptionFlags());
 
     template <class T>
     void add_list_option(std::string k,
@@ -197,7 +198,7 @@ T OptionParser::start_parsing() {
 
 template <class T>
 void OptionParser::add_option(
-    std::string k, std::string h) {
+    std::string k, std::string h, OptionFlags flags) {
     if (help_mode_) {
         helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
         if (opts.contains(k)) {
@@ -211,10 +212,10 @@ void OptionParser::add_option(
     ParseTree::sibling_iterator arg = next_unparsed_argument;
     //scenario where we have already handled all arguments
     if (arg == parse_tree.end(parse_tree.begin())) {
-        if (!opts.contains(k)) {
+        if (!opts.contains(k) && flags.mandatory) {
             error("missing option: " + k);
         } else {
-            return; //use default value
+            return;
         }
     }
     //handling arguments with explicit keyword:
@@ -225,10 +226,10 @@ void OptionParser::add_option(
                 break;
         }
         if (arg == parse_tree.end(parse_tree.begin())) {
-            if (!opts.contains(k)) {
+            if (!opts.contains(k) && flags.mandatory) {
                 error("missing option: " + k);
             } else {
-                return; //use default value
+                return;
             }
         }
     }
@@ -256,8 +257,8 @@ void OptionParser::add_option(
 }
 
 template <class T>
-void OptionParser::add_list_option(std::string k, std::string h) {
-    add_option<std::vector<T> >(k, h);
+void OptionParser::add_list_option(std::string k, std::string h, OptionFlags flags) {
+    add_option<std::vector<T> >(k, h, flags.mandatory);
 }
 
 //Definitions of TokenParser<T>:
@@ -316,15 +317,15 @@ Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
     return 0;
 }
 
-LandmarksGraph *TokenParser<LandmarksGraph *>::parse(OptionParser &p) {
+LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<LandmarksGraph *>::instance()->contains(pt->value)) {
-        return Predefinitions<LandmarksGraph *>::instance()->get(pt->value);
+    if (Predefinitions<LandmarkGraph *>::instance()->contains(pt->value)) {
+        return Predefinitions<LandmarkGraph *>::instance()->get(pt->value);
     }
-    if (Registry<LandmarksGraph *>::instance()->contains(pt->value)) {
-        return Registry<LandmarksGraph *>::instance()->get(pt->value) (p);
+    if (Registry<LandmarkGraph *>::instance()->contains(pt->value)) {
+        return Registry<LandmarkGraph *>::instance()->get(pt->value) (p);
     }
-    p.error("landmarks graph not found");
+    p.error("landmark graph not found");
     return 0;
 }
 

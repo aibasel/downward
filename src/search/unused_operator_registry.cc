@@ -15,8 +15,10 @@ typedef pair<int, int> Assignment;
 struct OperatorSignature {
     vector<int> data;
 
-    OperatorSignature(const vector<Assignment> &preconditions,
+    OperatorSignature(int cost,
+                      const vector<Assignment> &preconditions,
                       const vector<Assignment> &effects) {
+        data.push_back(cost);
         // We require that preconditions and effects are sorted by
         // variable -- some sort of canonical representation is needed
         // to guarantee that we can properly test for uniqueness.
@@ -65,59 +67,68 @@ struct hash<OperatorSignature> {
 
 OperatorRegistry::OperatorRegistry(
     const vector<const Operator *> &relevant_operators,
-    const vector<int> &pruned_vars) {
+    const vector<int> &pruned_vars,
+    OperatorCost cost_type) {
     num_vars = pruned_vars.size();
     num_operators = relevant_operators.size();
-    num_canonical_operators = 0;
 
-    vector<int> var_is_used(g_variable_domain.size(), true);
+    vector<bool> var_is_used(g_variable_domain.size(), true);
     for (int i = 0; i < pruned_vars.size(); i++)
         var_is_used[pruned_vars[i]] = false;
 
     hash_map<OperatorSignature, const Operator *> canonical_op_map;
+    canonical_op_map.resize(relevant_operators.size() * 3 / 2);
     canonical_operators.resize(g_operators.size(), 0);
 
     for (int i = 0; i < relevant_operators.size(); i++) {
         const Operator *op = relevant_operators[i];
-        vector<Assignment> preconditions;
-        vector<Assignment> effects;
+        OperatorSignature signature = build_operator_signature(
+            *op, cost_type, var_is_used);
 
-        const vector<Prevail> &prev = op->get_prevail();
-        for (int j = 0; j < prev.size(); j++) {
-            int var = prev[j].var;
-            if (var_is_used[var]) {
-                int val = prev[j].prev;
-                preconditions.push_back(make_pair(var, val));
-            }
-        }
-        const vector<PrePost> &pre_post = op->get_pre_post();
-        for (int j = 0; j < pre_post.size(); j++) {
-            int var = pre_post[j].var;
-            if (var_is_used[var]) {
-                int pre = pre_post[j].pre;
-                if (pre != -1)
-                    preconditions.push_back(make_pair(var, pre));
-                int post = pre_post[j].post;
-                effects.push_back(make_pair(var, post));
-            }
-        }
-        ::sort(preconditions.begin(), preconditions.end());
-        ::sort(effects.begin(), effects.end());
-
-        OperatorSignature op_sig(preconditions, effects);
         int op_index = get_op_index(op);
-        if (!canonical_op_map.count(op_sig)) {
-            canonical_op_map[op_sig] = op;
+        if (!canonical_op_map.count(signature)) {
+            canonical_op_map[signature] = op;
             canonical_operators[op_index] = op;
-            num_canonical_operators++;
         } else {
-            canonical_operators[op_index] = canonical_op_map[op_sig];
+            canonical_operators[op_index] = canonical_op_map[signature];
         }
     }
-    assert(canonical_op_map.size() == num_canonical_operators);
+    num_canonical_operators = canonical_op_map.size();
 }
 
 OperatorRegistry::~OperatorRegistry() {
+}
+
+OperatorSignature OperatorRegistry::build_operator_signature(
+    const Operator &op, OperatorCost cost_type,
+    const vector<bool> &var_is_used) const {
+    vector<Assignment> preconditions;
+    vector<Assignment> effects;
+
+    const vector<Prevail> &prev = op.get_prevail();
+    for (int j = 0; j < prev.size(); j++) {
+        int var = prev[j].var;
+        if (var_is_used[var]) {
+            int val = prev[j].prev;
+            preconditions.push_back(make_pair(var, val));
+        }
+    }
+    const vector<PrePost> &pre_post = op.get_pre_post();
+    for (int j = 0; j < pre_post.size(); j++) {
+        int var = pre_post[j].var;
+        if (var_is_used[var]) {
+            int pre = pre_post[j].pre;
+            if (pre != -1)
+                preconditions.push_back(make_pair(var, pre));
+            int post = pre_post[j].post;
+            effects.push_back(make_pair(var, post));
+        }
+    }
+    ::sort(preconditions.begin(), preconditions.end());
+    ::sort(effects.begin(), effects.end());
+    int cost = get_adjusted_action_cost(op, cost_type);
+
+    return OperatorSignature(cost, preconditions, effects);
 }
 
 void OperatorRegistry::statistics() const {

@@ -75,13 +75,13 @@ HEADERS += landmarks/exploration.h \
            landmarks/landmark_cost_assignment.h \
            landmarks/landmark_count_heuristic.h \
            landmarks/landmark_status_manager.h \
-           landmarks/landmarks_graph_merged.h \
-           landmarks/landmarks_graph.h \
-           landmarks/landmarks_graph_rpg_exhaust.h \
-           landmarks/landmarks_graph_rpg_sasp.h \
-           landmarks/landmarks_graph_rpg_search.h \
-           landmarks/landmarks_graph_zhu_givan.h \
-           landmarks/util.h
+           landmarks/landmark_graph_merged.h \
+           landmarks/landmark_graph.h \
+           landmarks/landmark_factory_rpg_exhaust.h \
+           landmarks/landmark_factory_rpg_sasp.h \
+           landmarks/landmark_factory_zhu_givan.h \
+           landmarks/util.h \
+           landmarks/landmark_factory.h
 
 HEADERS += learning/AODE.h \
            learning/classifier.h \
@@ -284,10 +284,14 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 	    cat Makefile.temp0 >> Makefile.temp; \
 	done
 	rm -f Makefile.temp0 Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.temp0
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.temp0
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.temp0
 	rm -f Makefile.temp
+	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.1.\2@" Makefile.temp0 >> Makefile.depend
+	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.2.\2@" Makefile.temp0 >> Makefile.depend
+	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.4.\2@" Makefile.temp0 >> Makefile.depend
+	rm -f Makefile.temp0
 
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(MAKECMDGOALS),distclean)

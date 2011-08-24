@@ -130,7 +130,7 @@ def useful_groups(invariants, initial_facts):
         yield [part.instantiate(parameters) for part in invariant.parts]
 
 def get_groups(task, reachable_action_params=None):
-    with timers.timing("Finding invariants"):
+    with timers.timing("Finding invariants", block=True):
         invariants = list(find_invariants(task, reachable_action_params))
     with timers.timing("Checking invariant weight"):
         result = list(useful_groups(invariants, task.init))
@@ -141,7 +141,9 @@ if __name__ == "__main__":
     print "Parsing..."
     task = pddl.open()
     print "Finding invariants..."
-    for invariant in find_invariants(task):
+    print "NOTE: not passing in reachable_action_params."
+    print "This means fewer invariants might be found."
+    for invariant in find_invariants(task, None):
         print invariant
     print "Finding fact groups..."
     groups = get_groups(task)

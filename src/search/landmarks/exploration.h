@@ -4,7 +4,7 @@
 #include "../heuristic.h"
 #include "../globals.h"
 #include "../priority_queue.h"
-#include "landmarks_types.h"
+#include "landmark_types.h"
 
 #include <vector>
 #include <ext/hash_set>
@@ -16,7 +16,6 @@ class State;
 
 class ExProposition;
 class ExUnaryOperator;
-
 
 struct ExProposition {
     int var;
@@ -87,7 +86,8 @@ struct ex_hash_operator_ptr {
 };
 
 class Exploration : public Heuristic {
-private:
+    static const int MAX_COST_VALUE = 100000000; // See additive_heuristic.h.
+
     typedef __gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> RelaxedPlan;
     RelaxedPlan relaxed_plan;
     std::vector<ExUnaryOperator> unary_operators;
@@ -96,6 +96,7 @@ private:
     std::vector<ExProposition *> termination_propositions;
 
     AdaptiveQueue<ExProposition *> prop_queue;
+    bool did_write_overflow_warning;
 
     bool heuristic_recomputation_needed;
 
@@ -124,6 +125,8 @@ private:
 
     void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
                               bool use_h_max);
+    void increase_cost(int &cost, int amount);
+    void write_overflow_warning();
 protected:
     virtual int compute_heuristic(const State &state);
 public:
@@ -131,7 +134,7 @@ public:
     void set_additional_goals(const std::vector<std::pair<int, int> > &goals);
     void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
     void compute_reachability_with_excludes(std::vector<std::vector<int> > &lvl_var,
-                                            std::vector<__gnu_cxx::hash_map<pair<int, int>, int,
+                                            std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int,
                                                                             hash_int_pair> > &lvl_op,
                                             bool level_out,
                                             const std::vector<std::pair<int, int> > &excluded_props,
@@ -139,12 +142,13 @@ public:
                                                                       ex_hash_operator_ptr> &excluded_ops,
                                             bool compute_lvl_ops);
     std::vector<const Operator *> exported_ops; // only needed for landmarks count heuristic ha
-    int plan_for_disj(std::vector<std::pair<int, int> > &disj_goal, const State &state);
+
+    // Returns true iff disj_goal is relaxed reachable. As a side effect, marks preferred operators
+    // via "exported_ops". (This is the real reason why you might want to call this.)
+    bool plan_for_disj(std::vector<std::pair<int, int> > &disj_goal, const State &state);
+
     Exploration(const Options &opts);
     ~Exploration();
-    int compute_ff_heuristic_with_excludes(const State &state,
-                                           const vector<pair<int, int> > &excluded_props,
-                                           const __gnu_cxx::hash_set<const Operator *, ex_hash_operator_ptr> &excluded_ops);
 };
 
 #endif

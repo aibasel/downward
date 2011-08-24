@@ -3,6 +3,7 @@
 
 #include "mas_heuristic.h" // needed for ShrinkStrategy type;
                            // TODO: move that type somewhere else?
+#include "operator_cost.h"
 
 #include <ext/slist>
 #include <vector>
@@ -37,9 +38,11 @@ struct AbstractTransition {
 };
 
 class Abstraction {
-    enum {QUITE_A_LOT = 1000000000};
     friend class AtomicAbstraction;
     friend class CompositeAbstraction;
+
+    const bool is_unit_cost;
+    const OperatorCost cost_type;
 
     vector<const Operator *> relevant_operators;
     int num_states;
@@ -55,8 +58,10 @@ class Abstraction {
     mutable int peak_memory;
 
     void compute_distances();
-    void compute_init_distances();
-    void compute_goal_distances();
+    void compute_init_distances_unit_cost();
+    void compute_goal_distances_unit_cost();
+    void compute_init_distances_general_cost();
+    void compute_goal_distances_general_cost();
 
     void partition_into_buckets(
         vector<vector<AbstractStateRef> > &buckets,
@@ -84,10 +89,12 @@ protected:
         const vector<AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
 public:
-    Abstraction();
+    Abstraction(bool is_unit_cost, OperatorCost cost_type);
     virtual ~Abstraction();
 
-    static void build_atomic_abstractions(vector<Abstraction *> &result);
+    static void build_atomic_abstractions(
+        bool is_unit_cost, OperatorCost cost_type,
+        vector<Abstraction *> &result);
     bool is_solvable() const;
 
     int get_cost(const State &state) const;
@@ -116,7 +123,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    AtomicAbstraction(int variable_);
+    AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, int variable);
 };
 
 class CompositeAbstraction : public Abstraction {
@@ -128,7 +135,8 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    CompositeAbstraction(Abstraction *abs1, Abstraction *abs2,
+    CompositeAbstraction(bool is_unit_cost, OperatorCost cost_type,
+                         Abstraction *abs1, Abstraction *abs2,
                          bool simplify_labels);
 };
 
