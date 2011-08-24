@@ -43,7 +43,7 @@ extern SuccessorGenerator *g_successor_generator;
 extern std::vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
 extern Timer g_timer;
-extern string g_plan_filename;
+extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
 
 #endif
