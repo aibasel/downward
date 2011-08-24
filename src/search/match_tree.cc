@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+using namespace std;
+
 struct MatchTree::Node {
     Node(int test_var = -1, int test_var_size = 0);
     ~Node();
