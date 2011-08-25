@@ -14,6 +14,12 @@ using namespace std;
 static const int infinity = numeric_limits<int>::max();
 
 
+// TODO: This is a general tool that probably belongs somewhere else.
+template<class T>
+void release_memory(vector<T> &vec) {
+    vector<T>().swap(vec);
+}
+
 ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
       greedy(opts.get<bool>("greedy")),
@@ -360,6 +366,15 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
         }
     }
 
+    // TODO: As we're releasing these anyway, they should probably
+    // not be instance variables but local variables. We previously
+    // did not release them, but that cost us several hundreds of MB
+    // in peak memory, and hence is probably a bad idea.
+    release_memory(group_done);
+    release_memory(signatures);
+    release_memory(h_to_h_group);
+    release_memory(h_group_done);
+
     assert(equivalence_relation.empty());
     equivalence_relation.resize(num_groups);
     for (int state = 0; state < num_states; state++) {
@@ -369,6 +384,8 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
             equivalence_relation[group].push_front(state);
         }
     }
+
+    release_memory(state_to_group);
 }
 
 ShrinkStrategy *ShrinkUnifiedBisimulation::create_default() {
