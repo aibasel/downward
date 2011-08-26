@@ -27,7 +27,7 @@ void State::_copy_buffer_from_state(const State &state) {
         vars[i] = state.vars[i];
 }
 
-State &State::operator=(const State &other) {
+State & State::operator=(const State &other) {
     if (this != &other) {
         if (borrowed_buffer)
             _allocate();

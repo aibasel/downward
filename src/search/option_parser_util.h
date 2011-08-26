@@ -12,7 +12,7 @@
 #include <boost/any.hpp>
 
 
-class LandmarksGraph;
+class LandmarkGraph;
 class Heuristic;
 class ScalarEvaluator;
 class Synergy;
@@ -35,7 +35,7 @@ struct ParseNode {
     std::string value;
     std::string key;
 
-    friend std::ostream &operator<<(std::ostream &out, const ParseNode &pn) {
+    friend std::ostream & operator<<(std::ostream &out, const ParseNode &pn) {
         if (pn.key.compare("") != 0)
             out << pn.key << " = ";
         out << pn.value;
@@ -109,7 +109,7 @@ Registry<T> *Registry<T>::instance_ = 0;
 
 
 //Predefinitions<T> maps strings to pointers to
-//already created Heuristics/LandmarksGraphs
+//already created Heuristics/LandmarkGraphs
 template <class T>
 class Predefinitions {
 public:
@@ -194,7 +194,7 @@ struct TypeNamer<Heuristic *> {
 };
 
 template <>
-struct TypeNamer<LandmarksGraph *> {
+struct TypeNamer<LandmarkGraph *> {
     static std::string name() {
         return "landmarks graph";
     }
@@ -396,5 +396,13 @@ public:
 private:
     bool help_mode;
 };
+
+struct OptionFlags {
+    OptionFlags(bool mand = true)
+        : mandatory(mand) {
+    }
+    bool mandatory;
+};
+
 
 #endif

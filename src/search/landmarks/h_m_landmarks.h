@@ -1,8 +1,9 @@
 #ifndef LANDMARKS_H_M_LANDMARKS_H
 #define LANDMARKS_H_M_LANDMARKS_H
 
+#include "landmark_factory.h"
+#include "landmark_graph.h"
 #include "../globals.h"
-#include "landmarks_graph.h"
 
 typedef std::pair<int, int> Fluent;
 typedef std::vector<Fluent> FluentSet;
@@ -65,20 +66,21 @@ struct HMEntry {
 
 typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
-class HMLandmarks : public LandmarksGraph {
+// TODO: this class doesn't work anymore like the old code. Maybe the mistake is that after
+// the call to generate_landmarks, there are more things calculated, but lm_graph is not
+// changed anymore at this moment.
+class HMLandmarks : public LandmarkFactory {
 public:
     HMLandmarks(const Options &opts);
-    ~HMLandmarks() {
-    }
-
-    virtual void generate_landmarks();
+    virtual ~HMLandmarks() {}
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
-
-protected:
+private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
     typedef __gnu_cxx::hash_map<int, std::set<int> > TriggerSet;
+
+    virtual void generate_landmarks();
 
     void compute_h_m_landmarks();
     void compute_noop_landmarks(int op_index, int noop_index,
@@ -143,6 +145,7 @@ protected:
 
     void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
+    void print_proposition(const pair<int, int> &fluent) const;
 };
 
 #endif
