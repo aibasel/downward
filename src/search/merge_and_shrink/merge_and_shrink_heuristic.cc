@@ -1,15 +1,15 @@
-#include "raz_mas_heuristic.h"
+#include "merge_and_shrink_heuristic.h"
 
-#include "raz_abstraction.h"
-#include "globals.h"
-#include "operator.h"
-#include "option_parser.h"
-#include "plugin.h"
+#include "abstraction.h"
 #include "shrink_fh.h"
-#include "shrink_unified_bisimulation.h"
-#include "state.h"
-#include "timer.h"
-#include "raz_variable_order_finder.h"
+#include "variable_order_finder.h"
+
+#include "../globals.h"
+#include "../operator.h"
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../state.h"
+#include "../timer.h"
 
 #include <cassert>
 #include <limits>
@@ -257,4 +257,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     }
 }
 
-static Plugin<ScalarEvaluator> _plugin("mas", _parse);
+static Plugin<ScalarEvaluator> _plugin("merge_and_shrink", _parse);

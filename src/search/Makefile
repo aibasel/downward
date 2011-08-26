@@ -58,23 +58,15 @@ HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
-# HEADERS += mas_heuristic.h \
-#            abstraction.h \
-#            operator_registry.h \
-#            variable_order_finder.h
-
-HEADERS += raz_mas_heuristic.h \
-           raz_abstraction.h \
-           raz_operator_registry.h \
-           raz_variable_order_finder.h \
-           shrink_bisimulation.h \
-           shrink_bisimulation_base.h \
-           shrink_bucket_based.h \
-           shrink_dfp.h \
-           shrink_fh.h \
-           shrink_random.h \
-           shrink_strategy.h \
-           shrink_unified_bisimulation.h \
+HEADERS += merge_and_shrink/abstraction.h \
+           merge_and_shrink/label_reducer.h \
+           merge_and_shrink/merge_and_shrink_heuristic.h \
+           merge_and_shrink/shrink_bisimulation.h \
+           merge_and_shrink/shrink_bucket_based.h \
+           merge_and_shrink/shrink_fh.h \
+           merge_and_shrink/shrink_random.h \
+           merge_and_shrink/shrink_strategy.h \
+           merge_and_shrink/variable_order_finder.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
