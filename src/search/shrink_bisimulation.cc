@@ -14,13 +14,52 @@ using namespace std;
 static const int infinity = numeric_limits<int>::max();
 
 
+/* A successor signature characterizes the behaviour of an abstract
+   state in so far as bisimulation cares about it. States with
+   identical successor signature are not distinguished by
+   bisimulation.
+
+   Each entry in the vector is a pair of (label, equivalence class of
+   successor). The bisimulation algorithm requires that the vector is
+   sorted and uniquified. */
+
+typedef std::vector<std::pair<int, int> > SuccessorSignature;
+
+/* TODO: The following class should probably be renamed. It encodes
+   all we need to know about a state for bisimulation: its h value,
+   which equivalence class ("group") it currently belongs to, its
+   signatures (see above), and what the original state is. */
+
+struct Signature {
+    int h;
+    int group;
+    SuccessorSignature succ_signature;
+    int state;
+
+    Signature(int h_, int group_, const SuccessorSignature &succ_signature_,
+              int state_)
+        : h(h_), group(group_), succ_signature(succ_signature_), state(state_) {
+    }
+
+    bool operator<(const Signature &other) const {
+        if (h != other.h)
+            return h < other.h;
+        if (group != other.group)
+            return group < other.group;
+        if (succ_signature != other.succ_signature)
+            return succ_signature < other.succ_signature;
+        return state < other.state;
+    }
+};
+
+
 // TODO: This is a general tool that probably belongs somewhere else.
 template<class T>
 void release_memory(vector<T> &vec) {
     vector<T>().swap(vec);
 }
 
-ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(const Options &opts)
+ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
       greedy(opts.get<bool>("greedy")),
       threshold(opts.get<int>("threshold")),
@@ -33,25 +72,25 @@ ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(const Options &opts)
     }
 }
 
-ShrinkUnifiedBisimulation::~ShrinkUnifiedBisimulation() {
+ShrinkBisimulation::~ShrinkBisimulation() {
 }
 
-string ShrinkUnifiedBisimulation::name() const {
+string ShrinkBisimulation::name() const {
     return "bisimulation";
 }
 
-void ShrinkUnifiedBisimulation::dump_strategy_specific_options() const {
+void ShrinkBisimulation::dump_strategy_specific_options() const {
     cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
     cout << "Bisimulation threshold: " << threshold << endl;
     cout << "Initialize by h: " << (initialize_by_h ? "yes" : "no") << endl;
     cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
 }
 
-bool ShrinkUnifiedBisimulation::reduce_labels_before_shrinking() const {
+bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
     return true;
 }
 
-void ShrinkUnifiedBisimulation::shrink(
+void ShrinkBisimulation::shrink(
     Abstraction &abs, int target, bool force) {
     if (abs.size() == 1 && greedy) {
         cout << "Special case: do not greedily bisimulate an atomic abstration."
@@ -72,7 +111,7 @@ void ShrinkUnifiedBisimulation::shrink(
     }
 }
 
-void ShrinkUnifiedBisimulation::shrink_atomic(Abstraction &abs) {
+void ShrinkBisimulation::shrink_atomic(Abstraction &abs) {
     // Perform an exact bisimulation on all atomic abstractions.
 
      // TODO/HACK: Come up with a better way to do this than generating
@@ -91,7 +130,7 @@ void ShrinkUnifiedBisimulation::shrink_atomic(Abstraction &abs) {
     }
 }
 
-void ShrinkUnifiedBisimulation::shrink_before_merge(
+void ShrinkBisimulation::shrink_before_merge(
     Abstraction &abs1, Abstraction &abs2) {
     pair<int, int> new_sizes = compute_shrink_sizes(abs1.size(), abs2.size());
     int new_size1 = new_sizes.first;
@@ -107,7 +146,7 @@ void ShrinkUnifiedBisimulation::shrink_before_merge(
     shrink(abs1, new_size1);
 }
 
-int ShrinkUnifiedBisimulation::initialize_bisim(const Abstraction &abs) {
+int ShrinkBisimulation::initialize_bisim(const Abstraction &abs) {
     bool exists_goal_state = false;
     bool exists_non_goal_state = false;
     for (int state = 0; state < abs.size(); state++) {
@@ -143,7 +182,7 @@ int ShrinkUnifiedBisimulation::initialize_bisim(const Abstraction &abs) {
     return num_groups;
 }
 
-int ShrinkUnifiedBisimulation::initialize_dfp(const Abstraction &abs) {
+int ShrinkBisimulation::initialize_dfp(const Abstraction &abs) {
     h_to_h_group.resize(abs.get_max_h() + 1, -1);
     int num_of_used_h = 0;
     for (int state = 0; state < abs.size(); state++) {
@@ -173,7 +212,7 @@ int ShrinkUnifiedBisimulation::initialize_dfp(const Abstraction &abs) {
     return num_groups;
 }
 
-void ShrinkUnifiedBisimulation::compute_abstraction(
+void ShrinkBisimulation::compute_abstraction(
     Abstraction &abs,
     int target_size,
     EquivalenceRelation &equivalence_relation) {
@@ -371,7 +410,7 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
     release_memory(state_to_group);
 }
 
-ShrinkStrategy *ShrinkUnifiedBisimulation::create_default() {
+ShrinkStrategy *ShrinkBisimulation::create_default() {
     Options opts;
     opts.set("max_states", infinity);
     opts.set("max_states_before_merge", infinity);
@@ -380,7 +419,7 @@ ShrinkStrategy *ShrinkUnifiedBisimulation::create_default() {
     opts.set("initialize_by_h", false);
     opts.set("group_by_h", false);
 
-    return new ShrinkUnifiedBisimulation(opts);
+    return new ShrinkBisimulation(opts);
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
@@ -409,7 +448,7 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     }
 
     if(!parser.dry_run())
-        return new ShrinkUnifiedBisimulation(opts);
+        return new ShrinkBisimulation(opts);
     else
         return 0;
 }
