@@ -1,8 +1,9 @@
 #ifndef ABSTRACTION_H
 #define ABSTRACTION_H
 
-#include "operator_cost.h"
 #include "shrink_strategy.h"
+
+#include "../operator_cost.h"
 
 #include <ext/slist>
 #include <vector>

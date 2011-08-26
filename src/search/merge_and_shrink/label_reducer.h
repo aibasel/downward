@@ -1,9 +1,9 @@
 #ifndef LABEL_REDUCER_H
 #define LABEL_REDUCER_H
 
-#include "globals.h"
-#include "operator.h"
-#include "operator_cost.h"
+#include "../globals.h"
+#include "../operator.h"
+#include "../operator_cost.h"
 
 #include <cassert>
 #include <vector>

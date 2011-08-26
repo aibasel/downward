@@ -1,8 +1,9 @@
 #include "shrink_bisimulation.h"
 
 #include "abstraction.h"
-#include "option_parser.h"
-#include "plugin.h"
+
+#include "../option_parser.h"
+#include "../plugin.h"
 
 #include <cassert>
 #include <iostream>
