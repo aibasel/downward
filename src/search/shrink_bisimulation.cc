@@ -1,4 +1,4 @@
-#include "shrink_unified_bisimulation.h"
+#include "shrink_bisimulation.h"
 
 #include "option_parser.h"
 #include "plugin.h"

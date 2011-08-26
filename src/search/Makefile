@@ -67,11 +67,11 @@ HEADERS += raz_mas_heuristic.h \
            raz_abstraction.h \
            raz_operator_registry.h \
            raz_variable_order_finder.h \
+           shrink_bisimulation.h \
            shrink_bucket_based.h \
            shrink_fh.h \
            shrink_random.h \
            shrink_strategy.h \
-           shrink_unified_bisimulation.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
