@@ -1,14 +1,16 @@
-#include "raz_variable_order_finder.h"
+#include "variable_order_finder.h"
 
-#include "causal_graph.h"
-#include "globals.h"
-#include "raz_mas_heuristic.h" // needed for MergeStrategy type;
+#include "merge_and_shrink_heuristic.h" // needed for MergeStrategy type;
 // TODO: move that type somewhere else?
+
+#include "../causal_graph.h"
+#include "../globals.h"
 
 #include <cassert>
 #include <cstdlib>
 #include <vector>
 using namespace std;
+
 
 VariableOrderFinder::VariableOrderFinder(
     MergeStrategy merge_strategy_, bool is_first)

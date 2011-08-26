@@ -1,7 +1,8 @@
 #ifndef OPTION_PARSER_UTIL_H
 #define OPTION_PARSER_UTIL_H
 
-#include "shrink_strategy.h"
+#include "merge_and_shrink/shrink_strategy.h"
+
 #include <algorithm>
 #include <string>
 #include <vector>

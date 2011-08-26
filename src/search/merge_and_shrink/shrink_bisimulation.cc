@@ -1,8 +1,9 @@
-#include "shrink_unified_bisimulation.h"
+#include "shrink_bisimulation.h"
 
-#include "option_parser.h"
-#include "plugin.h"
-#include "raz_abstraction.h"
+#include "abstraction.h"
+
+#include "../option_parser.h"
+#include "../plugin.h"
 
 #include <cassert>
 #include <iostream>
@@ -14,17 +15,55 @@ using namespace std;
 static const int infinity = numeric_limits<int>::max();
 
 
+/* A successor signature characterizes the behaviour of an abstract
+   state in so far as bisimulation cares about it. States with
+   identical successor signature are not distinguished by
+   bisimulation.
+
+   Each entry in the vector is a pair of (label, equivalence class of
+   successor). The bisimulation algorithm requires that the vector is
+   sorted and uniquified. */
+
+typedef std::vector<std::pair<int, int> > SuccessorSignature;
+
+/* TODO: The following class should probably be renamed. It encodes
+   all we need to know about a state for bisimulation: its h value,
+   which equivalence class ("group") it currently belongs to, its
+   signatures (see above), and what the original state is. */
+
+struct Signature {
+    int h;
+    int group;
+    SuccessorSignature succ_signature;
+    int state;
+
+    Signature(int h_, int group_, const SuccessorSignature &succ_signature_,
+              int state_)
+        : h(h_), group(group_), succ_signature(succ_signature_), state(state_) {
+    }
+
+    bool operator<(const Signature &other) const {
+        if (h != other.h)
+            return h < other.h;
+        if (group != other.group)
+            return group < other.group;
+        if (succ_signature != other.succ_signature)
+            return succ_signature < other.succ_signature;
+        return state < other.state;
+    }
+};
+
+
 // TODO: This is a general tool that probably belongs somewhere else.
 template<class T>
 void release_memory(vector<T> &vec) {
     vector<T>().swap(vec);
 }
 
-ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(const Options &opts)
+ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
       greedy(opts.get<bool>("greedy")),
       threshold(opts.get<int>("threshold")),
-      skip_atomic_bisimulation(opts.get<bool>("skip_atomic_bisimulation")),
       initialize_by_h(opts.get<bool>("initialize_by_h")),
       group_by_h(opts.get<bool>("group_by_h")) {
     if (initialize_by_h != group_by_h) {
@@ -34,27 +73,25 @@ ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(const Options &opts)
     }
 }
 
-ShrinkUnifiedBisimulation::~ShrinkUnifiedBisimulation() {
+ShrinkBisimulation::~ShrinkBisimulation() {
 }
 
-string ShrinkUnifiedBisimulation::name() const {
+string ShrinkBisimulation::name() const {
     return "bisimulation";
 }
 
-void ShrinkUnifiedBisimulation::dump_strategy_specific_options() const {
+void ShrinkBisimulation::dump_strategy_specific_options() const {
     cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
     cout << "Bisimulation threshold: " << threshold << endl;
-    cout << "Skip atomic bisimulation: "
-         << (skip_atomic_bisimulation ? "yes" : "no") << endl;
     cout << "Initialize by h: " << (initialize_by_h ? "yes" : "no") << endl;
     cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
 }
 
-bool ShrinkUnifiedBisimulation::reduce_labels_before_shrinking() const {
+bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
     return true;
 }
 
-void ShrinkUnifiedBisimulation::shrink(
+void ShrinkBisimulation::shrink(
     Abstraction &abs, int target, bool force) {
     if (abs.size() == 1 && greedy) {
         cout << "Special case: do not greedily bisimulate an atomic abstration."
@@ -75,26 +112,12 @@ void ShrinkUnifiedBisimulation::shrink(
     }
 }
 
-void ShrinkUnifiedBisimulation::shrink_atomic(Abstraction &abs) {
+void ShrinkBisimulation::shrink_atomic(Abstraction &abs) {
     // Perform an exact bisimulation on all atomic abstractions.
 
      // TODO/HACK: Come up with a better way to do this than generating
     // a new shrinking class instance in this roundabout fashion. We
     // shouldn't need to generate a new instance at all.
-
-    if (skip_atomic_bisimulation) {
-        // We don't bisimulate here because the old code didn't, also
-        // that was most probably an accident.
-        //
-        // TODO: Investigate the effect of bisimulating here. The
-        // reason why we didn't just add this is that it actually hurt
-        // performance on one of our test cases, Sokoban-Opt-#12 with
-        // DFP-gop-200K (as well as other DFP-based strategies). This
-        // may well be a random mishap, but still it's certainly
-        // better to be careful here.
-        cout << "DEBUG: I was asked to skip the atomic bisimulation." << endl;
-        return;
-    }
 
     int old_size = abs.size();
     ShrinkStrategy *strategy = create_default();
@@ -108,7 +131,7 @@ void ShrinkUnifiedBisimulation::shrink_atomic(Abstraction &abs) {
     }
 }
 
-void ShrinkUnifiedBisimulation::shrink_before_merge(
+void ShrinkBisimulation::shrink_before_merge(
     Abstraction &abs1, Abstraction &abs2) {
     pair<int, int> new_sizes = compute_shrink_sizes(abs1.size(), abs2.size());
     int new_size1 = new_sizes.first;
@@ -124,7 +147,7 @@ void ShrinkUnifiedBisimulation::shrink_before_merge(
     shrink(abs1, new_size1);
 }
 
-int ShrinkUnifiedBisimulation::initialize_bisim(const Abstraction &abs) {
+int ShrinkBisimulation::initialize_bisim(const Abstraction &abs) {
     bool exists_goal_state = false;
     bool exists_non_goal_state = false;
     for (int state = 0; state < abs.size(); state++) {
@@ -160,7 +183,7 @@ int ShrinkUnifiedBisimulation::initialize_bisim(const Abstraction &abs) {
     return num_groups;
 }
 
-int ShrinkUnifiedBisimulation::initialize_dfp(const Abstraction &abs) {
+int ShrinkBisimulation::initialize_dfp(const Abstraction &abs) {
     h_to_h_group.resize(abs.get_max_h() + 1, -1);
     int num_of_used_h = 0;
     for (int state = 0; state < abs.size(); state++) {
@@ -190,7 +213,7 @@ int ShrinkUnifiedBisimulation::initialize_dfp(const Abstraction &abs) {
     return num_groups;
 }
 
-void ShrinkUnifiedBisimulation::compute_abstraction(
+void ShrinkBisimulation::compute_abstraction(
     Abstraction &abs,
     int target_size,
     EquivalenceRelation &equivalence_relation) {
@@ -388,79 +411,33 @@ void ShrinkUnifiedBisimulation::compute_abstraction(
     release_memory(state_to_group);
 }
 
-ShrinkStrategy *ShrinkUnifiedBisimulation::create_default() {
+ShrinkStrategy *ShrinkBisimulation::create_default() {
     Options opts;
     opts.set("max_states", infinity);
     opts.set("max_states_before_merge", infinity);
     opts.set("greedy", false);
-
     opts.set("threshold", 1);
-    opts.set("skip_atomic_bisimulation", false);
     opts.set("initialize_by_h", false);
     opts.set("group_by_h", false);
 
-    return new ShrinkUnifiedBisimulation(opts);
+    return new ShrinkBisimulation(opts);
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy");
-    parser.add_option<int>("threshold", -1);
-    // NOTE: threshold == -1 activates legacy behaviour, in which all
-    //       "modern" boolean options are overridden.
-    parser.add_option<bool>("skip_atomic_bisimulation", false);
+    parser.add_option<int>("threshold", -1); // default: same as max_states
     parser.add_option<bool>("initialize_by_h", true);
     parser.add_option<bool>("group_by_h", false);
-    // TODO: Remove the following legacy option.
-    parser.add_option<bool>("memory_limit");
 
     Options opts = parser.parse();
     ShrinkStrategy::handle_option_defaults(opts);
 
-    // BEGIN legacy option handling block
-    if (opts.get<int>("threshold") == -1) {
-        // TODO: Get rid of this, as well as the "memory_limit" option
-        //       at some point, once we're happy with our code and no
-        //       longer need to experiment with the old-style options.
-
-        // The legacy "memory_limit" option determines whether we want
-        // a ShrinkDFP-style heuristic or a ShrinkBisimulation-style
-        // heuristic.
-
-        if (opts.get<bool>("memory_limit")) {
-            if (parser.dry_run()) {
-                cout << "Legacy option support: setting options for DFP-bop."
-                     << endl;
-                cout << "Note: skip_atomic_bisimulation is now false also "
-                     << "for DFP-based strategies." << endl;
-            }
-
-            opts.set("threshold", opts.get<int>("max_states"));
-            opts.set("skip_atomic_bisimulation", false);
-            opts.set("initialize_by_h", true);
-            opts.set("group_by_h", true);
-        } else {
-            if (parser.dry_run())
-                cout << "Legacy option support: setting options for "
-                     << "M&S-bop/gop." << endl;
-
-            if (opts.get<int>("max_states") != 1) {
-                cerr << "legacy bisimulation wants max_states = 1!" << endl;
-                exit(2);
-            }
-
-            opts.set("max_states", infinity);
-            opts.set("max_states_before_merge", infinity);
-
-            opts.set("threshold", 1);
-            opts.set("skip_atomic_bisimulation", false);
-            opts.set("initialize_by_h", false);
-            opts.set("group_by_h", false);
-        }
-    }
-    // END legacy option handling block
-
     int threshold = opts.get<int>("threshold");
+    if (threshold == -1) {
+        threshold = opts.get<int>("max_states");
+        opts.set("threshold", threshold);
+    }
     if (threshold < 1) {
         cerr << "error: bisimulation threshold must be at least 1" << endl;
         exit(2);
@@ -472,9 +449,9 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     }
 
     if(!parser.dry_run())
-        return new ShrinkUnifiedBisimulation(opts);
+        return new ShrinkBisimulation(opts);
     else
         return 0;
 }
 
-static Plugin<ShrinkStrategy> _plugin("shrink_unified_bisimulation", _parse);
+static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);

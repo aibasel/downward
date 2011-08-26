@@ -1,7 +1,7 @@
 #ifndef VARIABLE_ORDER_FINDER_H
 #define VARIABLE_ORDER_FINDER_H
 
-#include "raz_mas_heuristic.h" // needed for MergeStrategy type;
+#include "merge_and_shrink_heuristic.h" // needed for MergeStrategy type;
 // TODO: move that type somewhere else?
 
 #include <vector>
