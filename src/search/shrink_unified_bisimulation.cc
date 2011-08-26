@@ -24,7 +24,6 @@ ShrinkUnifiedBisimulation::ShrinkUnifiedBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
       greedy(opts.get<bool>("greedy")),
       threshold(opts.get<int>("threshold")),
-      skip_atomic_bisimulation(opts.get<bool>("skip_atomic_bisimulation")),
       initialize_by_h(opts.get<bool>("initialize_by_h")),
       group_by_h(opts.get<bool>("group_by_h")) {
     if (initialize_by_h != group_by_h) {
@@ -44,8 +43,6 @@ string ShrinkUnifiedBisimulation::name() const {
 void ShrinkUnifiedBisimulation::dump_strategy_specific_options() const {
     cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
     cout << "Bisimulation threshold: " << threshold << endl;
-    cout << "Skip atomic bisimulation: "
-         << (skip_atomic_bisimulation ? "yes" : "no") << endl;
     cout << "Initialize by h: " << (initialize_by_h ? "yes" : "no") << endl;
     cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
 }
@@ -81,20 +78,6 @@ void ShrinkUnifiedBisimulation::shrink_atomic(Abstraction &abs) {
      // TODO/HACK: Come up with a better way to do this than generating
     // a new shrinking class instance in this roundabout fashion. We
     // shouldn't need to generate a new instance at all.
-
-    if (skip_atomic_bisimulation) {
-        // We don't bisimulate here because the old code didn't, also
-        // that was most probably an accident.
-        //
-        // TODO: Investigate the effect of bisimulating here. The
-        // reason why we didn't just add this is that it actually hurt
-        // performance on one of our test cases, Sokoban-Opt-#12 with
-        // DFP-gop-200K (as well as other DFP-based strategies). This
-        // may well be a random mishap, but still it's certainly
-        // better to be careful here.
-        cout << "DEBUG: I was asked to skip the atomic bisimulation." << endl;
-        return;
-    }
 
     int old_size = abs.size();
     ShrinkStrategy *strategy = create_default();
@@ -393,9 +376,7 @@ ShrinkStrategy *ShrinkUnifiedBisimulation::create_default() {
     opts.set("max_states", infinity);
     opts.set("max_states_before_merge", infinity);
     opts.set("greedy", false);
-
     opts.set("threshold", 1);
-    opts.set("skip_atomic_bisimulation", false);
     opts.set("initialize_by_h", false);
     opts.set("group_by_h", false);
 
@@ -405,62 +386,18 @@ ShrinkStrategy *ShrinkUnifiedBisimulation::create_default() {
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy");
-    parser.add_option<int>("threshold", -1);
-    // NOTE: threshold == -1 activates legacy behaviour, in which all
-    //       "modern" boolean options are overridden.
-    parser.add_option<bool>("skip_atomic_bisimulation", false);
+    parser.add_option<int>("threshold", -1); // default: same as max_states
     parser.add_option<bool>("initialize_by_h", true);
     parser.add_option<bool>("group_by_h", false);
-    // TODO: Remove the following legacy option.
-    parser.add_option<bool>("memory_limit");
 
     Options opts = parser.parse();
     ShrinkStrategy::handle_option_defaults(opts);
 
-    // BEGIN legacy option handling block
-    if (opts.get<int>("threshold") == -1) {
-        // TODO: Get rid of this, as well as the "memory_limit" option
-        //       at some point, once we're happy with our code and no
-        //       longer need to experiment with the old-style options.
-
-        // The legacy "memory_limit" option determines whether we want
-        // a ShrinkDFP-style heuristic or a ShrinkBisimulation-style
-        // heuristic.
-
-        if (opts.get<bool>("memory_limit")) {
-            if (parser.dry_run()) {
-                cout << "Legacy option support: setting options for DFP-bop."
-                     << endl;
-                cout << "Note: skip_atomic_bisimulation is now false also "
-                     << "for DFP-based strategies." << endl;
-            }
-
-            opts.set("threshold", opts.get<int>("max_states"));
-            opts.set("skip_atomic_bisimulation", false);
-            opts.set("initialize_by_h", true);
-            opts.set("group_by_h", true);
-        } else {
-            if (parser.dry_run())
-                cout << "Legacy option support: setting options for "
-                     << "M&S-bop/gop." << endl;
-
-            if (opts.get<int>("max_states") != 1) {
-                cerr << "legacy bisimulation wants max_states = 1!" << endl;
-                exit(2);
-            }
-
-            opts.set("max_states", infinity);
-            opts.set("max_states_before_merge", infinity);
-
-            opts.set("threshold", 1);
-            opts.set("skip_atomic_bisimulation", false);
-            opts.set("initialize_by_h", false);
-            opts.set("group_by_h", false);
-        }
-    }
-    // END legacy option handling block
-
     int threshold = opts.get<int>("threshold");
+    if (threshold == -1) {
+        threshold = opts.get<int>("max_states");
+        opts.set("threshold", threshold);
+    }
     if (threshold < 1) {
         cerr << "error: bisimulation threshold must be at least 1" << endl;
         exit(2);
@@ -477,4 +414,4 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
         return 0;
 }
 
-static Plugin<ShrinkStrategy> _plugin("shrink_unified_bisimulation", _parse);
+static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);

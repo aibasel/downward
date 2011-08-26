@@ -21,7 +21,6 @@ class ShrinkUnifiedBisimulation : public ShrinkStrategy {
 
     const bool greedy;
     const int threshold;
-    const bool skip_atomic_bisimulation;
     const bool initialize_by_h;
     const bool group_by_h;
 
