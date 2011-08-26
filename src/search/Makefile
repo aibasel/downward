@@ -67,10 +67,7 @@ HEADERS += raz_mas_heuristic.h \
            raz_abstraction.h \
            raz_operator_registry.h \
            raz_variable_order_finder.h \
-           shrink_bisimulation.h \
-           shrink_bisimulation_base.h \
            shrink_bucket_based.h \
-           shrink_dfp.h \
            shrink_fh.h \
            shrink_random.h \
            shrink_strategy.h \
