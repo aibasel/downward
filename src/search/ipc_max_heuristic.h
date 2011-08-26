@@ -1,5 +1,5 @@
-#ifndef REG_MAX_HEURISTIC_H
-#define REG_MAX_HEURISTIC_H
+#ifndef IPC_MAX_HEURISTIC_H
+#define IPC_MAX_HEURISTIC_H
 
 #include "heuristic.h"
 
