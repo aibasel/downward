@@ -6,7 +6,6 @@
 #include "option_parser.h"
 #include "plugin.h"
 #include "shrink_fh.h"
-#include "shrink_unified_bisimulation.h"
 #include "state.h"
 #include "timer.h"
 #include "raz_variable_order_finder.h"

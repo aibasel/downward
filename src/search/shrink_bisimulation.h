@@ -1,5 +1,5 @@
-#ifndef SHRINK_UNIFIED_BISIMULATION_H
-#define SHRINK_UNIFIED_BISIMULATION_H
+#ifndef SHRINK_BISIMULATION_H
+#define SHRINK_BISIMULATION_H
 
 // TODO: Once we know we don't need the old classes any more,
 //       rename this to shrink_bisimulation.h, also renaming the class
