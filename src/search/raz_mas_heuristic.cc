@@ -95,6 +95,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     cout << "Shrinking atomic abstractions..." << endl;
     for (size_t i = 0; i < atomic_abstractions.size(); ++i) {
         atomic_abstractions[i]->compute_distances();
+        if (!atomic_abstractions[i]->is_solvable())
+            return atomic_abstractions[i];
         shrink_strategy->shrink_atomic(*atomic_abstractions[i]);
     }
 
@@ -107,7 +109,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     Abstraction *abstraction = atomic_abstractions[var_no];
     abstraction->statistics(use_expensive_statistics);
 
-    while (!order.done() && abstraction->is_solvable()) {
+    while (!order.done()) {
         int var_no = order.next();
         cout << "Next variable: #" << var_no << endl;
         Abstraction *other_abstraction = atomic_abstractions[var_no];
@@ -120,6 +122,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         }
 
         abstraction->compute_distances();
+        if (!abstraction->is_solvable())
+            return abstraction;
+
         other_abstraction->compute_distances();
         shrink_strategy->shrink_before_merge(*abstraction, *other_abstraction);
         // TODO: Make shrink_before_merge return a pair of bools
@@ -152,6 +157,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
     }
 
     abstraction->compute_distances();
+    if (!abstraction->is_solvable())
+        return abstraction;
 
     ShrinkStrategy *def_shrink = ShrinkFH::create_default(abstraction->size());
     def_shrink->shrink(*abstraction, abstraction->size(), true);
