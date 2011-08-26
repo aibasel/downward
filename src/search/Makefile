@@ -66,7 +66,15 @@ HEADERS += max_heuristic.h
 HEADERS += raz_mas_heuristic.h \
            raz_abstraction.h \
            raz_operator_registry.h \
-           raz_variable_order_finder.h
+           raz_variable_order_finder.h \
+           shrink_bisimulation.h \
+           shrink_bisimulation_base.h \
+           shrink_bucket_based.h \
+           shrink_dfp.h \
+           shrink_fh.h \
+           shrink_random.h \
+           shrink_strategy.h \
+           shrink_unified_bisimulation.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
@@ -76,11 +84,11 @@ HEADERS += landmarks/exploration.h \
            landmarks/landmark_status_manager.h \
            landmarks/landmark_graph_merged.h \
            landmarks/landmark_graph.h \
+           landmarks/landmark_factory.h \
            landmarks/landmark_factory_rpg_exhaust.h \
            landmarks/landmark_factory_rpg_sasp.h \
            landmarks/landmark_factory_zhu_givan.h \
            landmarks/util.h \
-           landmarks/landmark_factory.h
 
 HEADERS += learning/AODE.h \
            learning/classifier.h \

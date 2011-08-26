@@ -22,6 +22,8 @@ int calculate_plan_cost(const std::vector<const Operator *> &plan);
 void read_everything(std::istream &in);
 void dump_everything();
 
+void verify_no_axioms_no_cond_effects();
+
 void check_magic(std::istream &in, std::string magic);
 
 extern bool g_legacy_file_format;
