@@ -1,5 +1,6 @@
 #include "search_progress.h"
 
+using namespace std;
 
 SearchProgress::SearchProgress() {
     expanded_states = 0;
@@ -91,13 +92,17 @@ void SearchProgress::print_line() const {
 }
 
 void SearchProgress::print_statistics() const {
-    cout << "Initial state h value: ";
-    for (int i = 0; i < initial_h_values.size(); i++) {
-        cout << initial_h_values[i];
-        if (i != initial_h_values.size() - 1)
-            cout << "/";
+    if (!initial_h_values.empty()) {
+        // This will be skipped in the cumulative statistics of an
+        // iterated search, which do not have initial h values.
+        cout << "Initial state h value: ";
+        for (int i = 0; i < initial_h_values.size(); i++) {
+            cout << initial_h_values[i];
+            if (i != initial_h_values.size() - 1)
+                cout << "/";
+        }
+        cout << "." << endl;
     }
-    cout << "." << endl;
 
     cout << "Expanded " << expanded_states << " state(s)." << endl;
     cout << "Reopened " << reopened_states << " state(s)." << endl;
