@@ -1,5 +1,5 @@
-#ifndef MAS_HEURISTIC_H
-#define MAS_HEURISTIC_H
+#ifndef MERGE_AND_SHRINK_HEURISTIC_H
+#define MERGE_AND_SHRINK_HEURISTIC_H
 
 #include "heuristic.h"
 #include "shrink_strategy.h"

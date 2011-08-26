@@ -1,6 +1,7 @@
+#include "label_reducer.h"
+
 #include "globals.h"
 #include "operator.h"
-#include "raz_operator_registry.h"
 #include "utilities.h"
 
 #include <cassert>

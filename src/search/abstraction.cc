@@ -1,12 +1,12 @@
-#include "raz_abstraction.h"
+#include "abstraction.h"
 
-#include "raz_mas_heuristic.h" // needed for ShrinkStrategy type;
-// TODO: move that type somewhere else?
 #include "globals.h"
+#include "label_reducer.h"
+#include "merge_and_shrink_heuristic.h" // needed for ShrinkStrategy type;
+// TODO: move that type somewhere else?
 #include "operator.h"
 #include "option_parser.h" // TODO: Should be removable later.
 #include "priority_queue.h"
-#include "raz_operator_registry.h"
 #include "shrink_fh.h"
 #include "timer.h"
 
