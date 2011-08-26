@@ -1,7 +1,8 @@
 #include "shrink_strategy.h"
 
 #include "abstraction.h"
-#include "option_parser.h"
+
+#include "../option_parser.h"
 
 #include <cassert>
 #include <cmath>

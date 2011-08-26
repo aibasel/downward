@@ -1,9 +1,9 @@
 #ifndef SHRINK_RANDOM_H
 #define SHRINK_RANDOM_H
 
-class Options;
-
 #include "shrink_bucket_based.h"
+
+class Options;
 
 class ShrinkRandom : public ShrinkBucketBased {
 protected:

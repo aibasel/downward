@@ -1,8 +1,8 @@
 #include "label_reducer.h"
 
-#include "globals.h"
-#include "operator.h"
-#include "utilities.h"
+#include "../globals.h"
+#include "../operator.h"
+#include "../utilities.h"
 
 #include <cassert>
 #include <ext/hash_map>
