@@ -22,7 +22,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       abstraction_count(opts.get<int>("count")),
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      use_label_reduction(opts.get<bool>("simplify_labels")),
+      use_label_reduction(opts.get<bool>("reduce_labels")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
 }
 
