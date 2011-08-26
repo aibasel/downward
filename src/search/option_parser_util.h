@@ -1,6 +1,7 @@
 #ifndef OPTION_PARSER_UTIL_H
 #define OPTION_PARSER_UTIL_H
 
+#include "shrink_strategy.h"
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -227,6 +228,13 @@ struct TypeNamer<Synergy *> {
     }
 };
 
+template <>
+struct TypeNamer<ShrinkStrategy *> {
+    static std::string name() {
+        return "shrink strategy";
+    }
+};
+
 template <class Entry>
 struct TypeNamer<OpenList<Entry> *> {
     static std::string name() {
@@ -246,7 +254,7 @@ struct TypeNamer<std::vector<T> > {
 
 template <class T>
 struct DefaultValueNamer {
-    static std::string toStr(T val) {
+    static std::string to_str(T val) {
         std::ostringstream strs;
         strs << std::boolalpha << val;
         return strs.str();
@@ -255,18 +263,25 @@ struct DefaultValueNamer {
 
 template <>
 struct DefaultValueNamer<ParseTree> {
-    static std::string toStr(ParseTree val) {
+    static std::string to_str(ParseTree val) {
         return "implement default value naming for parse trees!"
                + val.begin()->value;
     }
 };
 
+template <>
+struct DefaultValueNamer<ShrinkStrategy *> {
+    static std::string to_str(ShrinkStrategy *s) {
+        return s->name();
+    }
+};
+
 template <class T>
 struct DefaultValueNamer<std::vector<T> > {
-    static std::string toStr(std::vector<T> val) {
+    static std::string to_str(std::vector<T> val) {
         std::string s = "[";
         for (size_t i(0); i != val.size(); ++i) {
-            s += DefaultValueNamer<T>::toStr(val[i]);
+            s += DefaultValueNamer<T>::to_str(val[i]);
         }
         s += "]";
         return s;

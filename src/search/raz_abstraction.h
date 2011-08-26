@@ -1,8 +1,8 @@
 #ifndef ABSTRACTION_H
 #define ABSTRACTION_H
 
-#include "raz_mas_heuristic.h" // needed for ShrinkStrategy type;
-// TODO: move that type somewhere else?
+#include "operator_cost.h"
+#include "shrink_strategy.h"
 
 #include <ext/slist>
 #include <vector>
@@ -11,8 +11,6 @@ using namespace __gnu_cxx;
 
 class State;
 class Operator;
-
-typedef int AbstractStateRef;
 
 struct AbstractTransition {
     AbstractStateRef src;
@@ -39,40 +37,23 @@ struct AbstractTransition {
     }
 };
 
-struct AbstractTargetOp {
-    AbstractStateRef target;
-    int op;
-
-    AbstractTargetOp(AbstractStateRef target_, AbstractStateRef op_)
-        : target(target_), op(op_) {
-    }
-
-    bool operator==(const AbstractTargetOp &other) const {
-        return target == other.target && op == other.op;
-    }
-
-    bool operator!=(const AbstractTargetOp &other) const {
-        return target != other.target || op != other.op;
-    }
-
-    bool operator<(const AbstractTargetOp &other) const {
-        return target < other.target || (target == other.target && op
-                                         < other.op);
-    }
-};
-
 class Abstraction {
-    enum {
-        QUITE_A_LOT = 1000000000
-    };
     friend class AtomicAbstraction;
     friend class CompositeAbstraction;
+
+    friend class ShrinkStrategy; // for apply() -- TODO: refactor!
+
+    static const int PRUNED_STATE = -1;
+    static const int DISTANCE_UNKNOWN = -2;
+
+    const bool is_unit_cost;
+    const OperatorCost cost_type;
+
+    ShrinkStrategy *shrink_strategy;
 
     vector<const Operator *> relevant_operators;
     int num_states;
     vector<vector<AbstractTransition> > transitions_by_op;
-
-    vector<vector<AbstractTargetOp> > transitions_by_source;
 
     vector<int> init_distances;
     vector<int> goal_distances;
@@ -83,63 +64,21 @@ class Abstraction {
     int max_g;
     int max_h;
 
+    bool are_labels_reduced;
+
     mutable int peak_memory;
 
-    void compute_distances();
-    void compute_init_distances();
-    void compute_goal_distances();
+    void clear_distances();
+    void compute_init_distances_unit_cost();
+    void compute_goal_distances_unit_cost();
+    void compute_init_distances_general_cost();
+    void compute_goal_distances_general_cost();
 
-    void partition_into_buckets(vector<vector<AbstractStateRef> > &buckets,
-                                ShrinkStrategy shrink_strategy) const;
-    void
-    compute_abstraction(vector<vector<AbstractStateRef> > &buckets,
-                        int target_size,
-                        vector<slist<AbstractStateRef> > &collapsed_groups) const;
-    void compute_abstraction_dfp(int target_size, vector<
-                                     slist<AbstractStateRef> > &collapsed_groups) const;
-    void compute_abstraction_dfp_action_cost_support(int target_size, vector<
-                                                         slist<AbstractStateRef> > &collapsed_groups,
-                                                     bool enable_greedy_bisimulation) const;
-    void compute_abstraction_dfp_with_options(int target_size, vector<slist<
-                                                                          AbstractStateRef> > &collapsed_groups,
-                                              bool enable_greedy_bisimulation,
-                                              bool enable_further_label_reduction,
-                                              bool prefer_greedy_over_label_reduction,
-                                              bool prefer_relaxation_with_more_groups) const;
-    void compute_abstraction_bisimulation(int target_size, vector<slist<
-                                                                      AbstractStateRef> > &collapsed_groups,
-                                          bool enable_greedy_bisimulation,
-                                          bool enable_reduction_of_all_labels,
-                                          bool force_label_reduction_or_greedy_bisimulation) const;
-    void compute_abstraction_bisimulation_action_cost_support(int target_size,
-                                                              vector<slist<AbstractStateRef> > &collapsed_groups,
-                                                              bool enable_greedy_bisimulation) const;
     void apply_abstraction(vector<slist<AbstractStateRef> > &collapsed_groups);
 
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
-
-    void add_relevant_reducible_op_pairs(
-        const vector<pair<int, int> > &succ_sig1, const vector<pair<int,
-                                                                    int> > &succ_sig2, vector<pair<int, int> > &pairs) const;
-    //	bool are_greedy_bisimilar(const vector<pair<int, int> > &succ_sig1,
-    //			const vector<pair<int, int> > &succ_sig2,
-    //			const vector<int> &group_to_h, int source_group_h) const;
-    bool are_bisimilar_wrt_label_reduction(
-        const vector<pair<int, int> > &succ_sig1, const vector<pair<int,
-                                                                    int> > &succ_sig2,
-        const vector<pair<int, int> > &pairs_of_labels_to_reduce) const;
-    bool are_bisimilar(const vector<pair<int, int> > &succ_sig1, const vector<
-                           pair<int, int> > &succ_sig2, bool ignore_all_labels,
-                       bool greedy_bisim, bool further_label_reduction,
-                       const vector<int> &group_to_h, int source_h_1, int source_h_2,
-                       const vector<pair<int, int> > &pairs_of_labels_to_reduce) const;
-    void normalize(bool simplify_labels);
 protected:
-    enum {
-        INVALID = -2
-    };
-
     vector<int> varset;
 
     virtual AbstractStateRef get_abstract_state(const State &state) const = 0;
@@ -147,10 +86,18 @@ protected:
                                                        AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
 public:
-    Abstraction();
+    Abstraction(bool is_unit_cost, OperatorCost cost_type);
     virtual ~Abstraction();
 
-    static void build_atomic_abstractions(vector<Abstraction *> &result);
+    // Two methods to identify the abstraction in output.
+    // tag is a convience method that upper-cases the first letter of
+    // description and appends ": ";
+    virtual std::string description() const = 0;
+    std::string tag() const;
+
+    static void build_atomic_abstractions(
+            bool is_unit_cost, OperatorCost cost_type,
+            std::vector<Abstraction *> &result);
     bool is_solvable() const;
 
     int get_cost(const State &state) const;
@@ -166,38 +113,66 @@ public:
     int unique_unlabeled_transitions(const vector<int> &relevant_ops) const;
     bool is_in_varset(int var) const;
 
-    void shrink(int threshold, ShrinkStrategy shrink_strategy, bool force =
-                    false);
-    //    void reduce_operators(int op1, int op2);
+    void compute_distances();
+    void normalize(bool reduce_labels);
     void release_memory();
 
     void dump() const;
 
-    void dump_transitions_by_src() const;
+    // The following methods exist for the benefit of shrink strategies.
+    int get_max_f() const;
+    int get_max_g() const;
+    int get_max_h() const;
+
+    bool is_goal_state(int state) const {
+        return goal_states[state];
+    }
+
+    int get_init_distance(int state) const {
+        return init_distances[state];
+    }
+
+    int get_goal_distance(int state) const {
+        return goal_distances[state];
+    }
+
+    int get_num_ops() const {
+        return transitions_by_op.size();
+    }
+
+    const std::vector<AbstractTransition> &get_transitions_for_op(int op_no) {
+        return transitions_by_op[op_no];
+    }
 };
+
 class AtomicAbstraction : public Abstraction {
     int variable;
     vector<AbstractStateRef> lookup_table;
 protected:
+    virtual std::string description() const;
     virtual void apply_abstraction_to_lookup_table(const vector<
                                                        AbstractStateRef> &abstraction_mapping);
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    AtomicAbstraction(int variable_);
+    AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, int variable);
+    virtual ~AtomicAbstraction();
 };
 
 class CompositeAbstraction : public Abstraction {
     Abstraction *components[2];
     vector<vector<AbstractStateRef> > lookup_table;
 protected:
-    virtual void apply_abstraction_to_lookup_table(const vector<
-                                                       AbstractStateRef> &abstraction_mapping);
+    virtual std::string description() const;
+    virtual void apply_abstraction_to_lookup_table(
+        const vector<AbstractStateRef> &abstraction_mapping);
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    CompositeAbstraction(Abstraction *abs1, Abstraction *abs2,
-                         bool simplify_labels, bool normalize_after_composition);
+    CompositeAbstraction(
+        bool is_unit_cost, OperatorCost cost_type,
+        Abstraction *abs1, Abstraction *abs2);
+    virtual ~CompositeAbstraction();
 };
 
 #endif

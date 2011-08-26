@@ -202,6 +202,6 @@ void SearchSpace::dump() {
 }
 
 void SearchSpace::statistics() const {
-    cout << "search space hash size: " << nodes->size() << endl;
-    cout << "search space hash bucket count: " << nodes->bucket_count() << endl;
+    cout << "Search space hash size: " << nodes->size() << endl;
+    cout << "Search space hash bucket count: " << nodes->bucket_count() << endl;
 }
