@@ -1,17 +1,13 @@
-#ifndef OPERATOR_REGISTRY_H
-#define OPERATOR_REGISTRY_H
-
-/* TODO: Rename source files to label_reducer.{h,cc}. Only do this
-         after main changes are merged and tested, since reviewing
-         changes across renames is more difficult. */
+#ifndef LABEL_REDUCER_H
+#define LABEL_REDUCER_H
 
 #include "globals.h"
+#include "operator.h"
 #include "operator_cost.h"
 
 #include <cassert>
 #include <vector>
 
-class Operator;
 class OperatorSignature;
 
 class LabelReducer {

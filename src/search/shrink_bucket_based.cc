@@ -1,11 +1,10 @@
 #include "shrink_bucket_based.h"
 
-#include "raz_abstraction.h"
+#include "abstraction.h"
 
 #include <cassert>
 #include <iostream>
 #include <vector>
-
 using namespace std;
 
 

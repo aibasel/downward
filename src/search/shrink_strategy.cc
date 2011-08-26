@@ -1,13 +1,12 @@
 #include "shrink_strategy.h"
 
+#include "abstraction.h"
 #include "option_parser.h"
-#include "raz_abstraction.h"
 
 #include <cassert>
 #include <cmath>
 #include <iostream>
 #include <vector>
-
 using namespace std;
 using namespace __gnu_cxx;
 
