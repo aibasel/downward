@@ -234,7 +234,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<ShrinkStrategy *>("shrink_strategy", def_shrink, "shrink strategy");
     // TODO: Rename option name to "use_label_reduction" to be
     //       consistent with the papers?
-    parser.add_option<bool>("simplify_labels", true, "enable label reduction");
+    parser.add_option<bool>("reduce_labels", true, "enable label reduction");
     parser.add_option<bool>("expensive_statistics", false, "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)");
     Heuristic::add_options_to_parser(parser);
