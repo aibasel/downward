@@ -256,4 +256,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     }
 }
 
-static Plugin<ScalarEvaluator> _plugin("mas", _parse);
+static Plugin<ScalarEvaluator> _plugin("merge_and_shrink", _parse);
