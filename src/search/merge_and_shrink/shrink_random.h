@@ -1,5 +1,5 @@
-#ifndef SHRINK_RANDOM_H
-#define SHRINK_RANDOM_H
+#ifndef MERGE_AND_SHRINK_SHRINK_RANDOM_H
+#define MERGE_AND_SHRINK_SHRINK_RANDOM_H
 
 #include "shrink_bucket_based.h"
 

@@ -1,5 +1,5 @@
-#ifndef ABSTRACTION_H
-#define ABSTRACTION_H
+#ifndef MERGE_AND_SHRINK_ABSTRACTION_H
+#define MERGE_AND_SHRINK_ABSTRACTION_H
 
 #include "shrink_strategy.h"
 

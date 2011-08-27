@@ -1,5 +1,5 @@
-#ifndef LABEL_REDUCER_H
-#define LABEL_REDUCER_H
+#ifndef MERGE_AND_SHRINK_LABEL_REDUCER_H
+#define MERGE_AND_SHRINK_LABEL_REDUCER_H
 
 #include "../globals.h"
 #include "../operator.h"

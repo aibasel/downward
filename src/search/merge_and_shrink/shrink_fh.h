@@ -1,5 +1,5 @@
-#ifndef SHRINK_FH_H
-#define SHRINK_FH_H
+#ifndef MERGE_AND_SHRINK_SHRINK_FH_H
+#define MERGE_AND_SHRINK_SHRINK_FH_H
 
 #include "shrink_bucket_based.h"
 
