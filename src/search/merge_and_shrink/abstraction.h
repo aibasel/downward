@@ -97,8 +97,8 @@ public:
     std::string tag() const;
 
     static void build_atomic_abstractions(
-            bool is_unit_cost, OperatorCost cost_type,
-            std::vector<Abstraction *> &result);
+        bool is_unit_cost, OperatorCost cost_type,
+        std::vector<Abstraction *> &result);
     bool is_solvable() const;
 
     int get_cost(const State &state) const;

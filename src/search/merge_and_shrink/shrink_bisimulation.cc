@@ -115,7 +115,7 @@ void ShrinkBisimulation::shrink(
 void ShrinkBisimulation::shrink_atomic(Abstraction &abs) {
     // Perform an exact bisimulation on all atomic abstractions.
 
-     // TODO/HACK: Come up with a better way to do this than generating
+    // TODO/HACK: Come up with a better way to do this than generating
     // a new shrinking class instance in this roundabout fashion. We
     // shouldn't need to generate a new instance at all.
 
@@ -448,7 +448,7 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
         exit(2);
     }
 
-    if(!parser.dry_run())
+    if (!parser.dry_run())
         return new ShrinkBisimulation(opts);
     else
         return 0;

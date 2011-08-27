@@ -114,7 +114,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
 }
 
 bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
-                                                     const State &sample) {
+                                                    const State &sample) {
     pdb_heuristic->evaluate(sample);
     if (pdb_heuristic->is_dead_end()) {
         return true;
@@ -131,7 +131,7 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
             assert(!max_additive_subsets[k][l]->is_dead_end());
             h_subset += max_additive_subsets[k][l]->get_heuristic();
         }
-        if (h_pattern + h_subset> h_collection) { 
+        if (h_pattern + h_subset > h_collection) {
             // return true if one max additive subest is found for which the condition is met
             return true;
         }

@@ -20,11 +20,11 @@ using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
-    num_collections(opts.get<int>("num_collections")),
-    num_episodes(opts.get<int>("num_episodes")),
-    mutation_probability(opts.get<double>("mutation_probability")),
-    disjoint_patterns(opts.get<bool>("disjoint")),
-    cost_type(OperatorCost(opts.get<int>("cost_type"))) {
+      num_collections(opts.get<int>("num_collections")),
+      num_episodes(opts.get<int>("num_episodes")),
+      mutation_probability(opts.get<double>("mutation_probability")),
+      disjoint_patterns(opts.get<bool>("disjoint")),
+      cost_type(OperatorCost(opts.get<int>("cost_type"))) {
     Timer timer;
     genetic_algorithm();
     cout << "Pattern generation (Edelkamp) time: " << timer << endl;
@@ -55,7 +55,7 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
             // Find first entry which is strictly greater than random.
             selected = upper_bound(cumulative_fitness.begin(),
                                    cumulative_fitness.end(), random) -
-                cumulative_fitness.begin();
+                       cumulative_fitness.begin();
         }
         new_pattern_collections.push_back(pattern_collections[selected]);
     }
@@ -99,7 +99,7 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
         }
     }
 
-    while(!vars_to_check.empty()) {
+    while (!vars_to_check.empty()) {
         int var = vars_to_check.back();
         vars_to_check.pop_back();
         const vector<int> &rel = g_causal_graph->get_predecessors(var);
@@ -180,8 +180,8 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
             Options opts;
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<vector<int> > >("patterns", pattern_collection);
-            ZeroOnePDBsHeuristic *zoppch
-                = new ZeroOnePDBsHeuristic(opts);
+            ZeroOnePDBsHeuristic *zoppch =
+                new ZeroOnePDBsHeuristic(opts);
             fitness = zoppch->get_approx_mean_finite_h();
             // update the best heuristic found so far.
             if (fitness > best_fitness) {

@@ -44,7 +44,7 @@ void CanonicalPDBsHeuristic::_add_pattern(const vector<int> &pattern) {
 }
 
 bool CanonicalPDBsHeuristic::are_patterns_additive(const vector<int> &patt1,
-                                                  const vector<int> &patt2) const {
+                                                   const vector<int> &patt2) const {
     for (size_t i = 0; i < patt1.size(); ++i) {
         for (size_t j = 0; j < patt2.size(); ++j) {
             if (!are_additive[patt1[i]][patt2[j]]) {
@@ -64,7 +64,7 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         for (size_t j = i + 1; j < pattern_databases.size(); ++j) {
             if (are_patterns_additive(pattern_databases[i]->get_pattern(),
-                                     pattern_databases[j]->get_pattern())) {
+                                      pattern_databases[j]->get_pattern())) {
                 // if the two patterns are additive there is an edge in the compatibility graph
                 cgraph[i].push_back(j);
                 cgraph[j].push_back(i);
@@ -75,7 +75,7 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
     vector<vector<int> > cgraph_max_cliques;
     ::compute_max_cliques(cgraph, cgraph_max_cliques);
     max_cliques.reserve(cgraph_max_cliques.size());
-    
+
     for (size_t i = 0; i < cgraph_max_cliques.size(); ++i) {
         vector<PDBHeuristic *> clique;
         clique.reserve(cgraph_max_cliques[i].size());

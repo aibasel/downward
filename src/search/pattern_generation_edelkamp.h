@@ -77,7 +77,7 @@ public:
 
     /* Returns the ZeroOnePDBsHeuristic created by PatternGenerationEdelkamp.
        Important: caller owns the returned pointer and has to take care of its deletion. */
-    ZeroOnePDBsHeuristic *get_pattern_collection_heuristic() const { return best_heuristic; }
+    ZeroOnePDBsHeuristic *get_pattern_collection_heuristic() const {return best_heuristic; }
     void dump() const;
 };
 

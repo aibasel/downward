@@ -32,12 +32,12 @@ void ShrinkRandom::partition_into_buckets(
     assert(!big_bucket.empty());
 }
 
-static ShrinkStrategy *_parse(OptionParser &parser){
+static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     Options opts = parser.parse();
     ShrinkStrategy::handle_option_defaults(opts);
 
-    if(!parser.dry_run())
+    if (!parser.dry_run())
         return new ShrinkRandom(opts);
     else
         return 0;

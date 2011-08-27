@@ -76,7 +76,7 @@ pair<int, int> ShrinkStrategy::compute_shrink_sizes(
     return make_pair(new_size1, new_size2);
 }
 
-void ShrinkStrategy::shrink_atomic(Abstraction &/*abs*/) {
+void ShrinkStrategy::shrink_atomic(Abstraction & /*abs*/) {
     // Default implemention does nothing.
 }
 
