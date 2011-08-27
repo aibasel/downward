@@ -1,6 +1,8 @@
 #include "match_tree.h"
-#include "globals.h"
+
 #include "pdb_heuristic.h"
+
+#include "../globals.h"
 
 #include <cassert>
 

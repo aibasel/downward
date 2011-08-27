@@ -1,5 +1,5 @@
-#ifndef MATCH_TREE_H
-#define MATCH_TREE_H
+#ifndef PDBS_MATCH_TREE_H
+#define PDBS_MATCH_TREE_H
 
 #include <vector>
 

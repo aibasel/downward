@@ -1,7 +1,7 @@
-#ifndef CANONICAL_PDBS_HEURISTIC_H
-#define CANONICAL_PDBS_HEURISTIC_H
+#ifndef PDBS_CANONICAL_PDBS_HEURISTIC_H
+#define PDBS_CANONICAL_PDBS_HEURISTIC_H
 
-#include "heuristic.h"
+#include "../heuristic.h"
 
 #include <vector>
 

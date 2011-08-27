@@ -93,16 +93,16 @@ HEADERS += learning/AODE.h \
            learning/probe_state_space_sample.h \
            learning/selective_max_heuristic.h \
            learning/state_space_sample.h \
-           learning/state_vars_feature_extractor.h
+           learning/state_vars_feature_extractor.h \
 
-HEADERS += canonical_pdbs_heuristic.h \
-           match_tree.h \
-           max_cliques.h \
-           pattern_generation_edelkamp.h \
-           pattern_generation_haslum.h \
-           pdb_heuristic.h \
-           pdbs_heuristic_utility.h \
-           zero_one_pdbs_heuristic.h
+HEADERS += pdbs/canonical_pdbs_heuristic.h \
+           pdbs/match_tree.h \
+           pdbs/max_cliques.h \
+           pdbs/pattern_generation_edelkamp.h \
+           pdbs/pattern_generation_haslum.h \
+           pdbs/pdb_heuristic.h \
+           pdbs/util.h \
+           pdbs/zero_one_pdbs_heuristic.h \
 
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)

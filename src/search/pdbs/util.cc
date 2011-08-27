@@ -1,7 +1,8 @@
-#include "pdbs_heuristic_utility.h"
-#include "globals.h"
-#include "option_parser.h"
-#include "utilities.h"
+#include "util.h"
+
+#include "../globals.h"
+#include "../option_parser.h"
+#include "../utilities.h"
 
 #include <vector>
 

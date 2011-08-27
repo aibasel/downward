@@ -1,7 +1,7 @@
-#ifndef PATTERN_GENERATION_EDELKAMP_H
-#define PATTERN_GENERATION_EDELKAMP_H
+#ifndef PDBS_PATTERN_GENERATION_EDELKAMP_H
+#define PDBS_PATTERN_GENERATION_EDELKAMP_H
 
-#include "operator_cost.h"
+#include "../operator_cost.h"
 
 #include <vector>
 

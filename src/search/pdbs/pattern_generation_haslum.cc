@@ -1,16 +1,18 @@
 #include "pattern_generation_haslum.h"
+
 #include "canonical_pdbs_heuristic.h"
-#include "causal_graph.h"
-#include "globals.h"
-#include "operator.h"
-#include "option_parser.h"
 #include "pdb_heuristic.h"
-#include "plugin.h"
-#include "rng.h"
-#include "state.h"
-#include "successor_generator.h"
-#include "timer.h"
-#include "utilities.h"
+
+#include "../causal_graph.h"
+#include "../globals.h"
+#include "../operator.h"
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../rng.h"
+#include "../state.h"
+#include "../successor_generator.h"
+#include "../timer.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
