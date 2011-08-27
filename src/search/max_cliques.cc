@@ -22,10 +22,10 @@ class MaxCliqueComputer {
         for (int i = 1; i < cand.size(); ++i) {
             assert(cand[i - 1] < cand[i]);
         }
-        
+
         //cout << "subg: " << subg << endl;
         //cout << "cand: " << cand << endl;
-        int max = 0; 
+        int max = 0;
         int vertex = subg[0]; // We will take the first vertex if there is no better one.
 
         for (size_t i = 0; i < subg.size(); ++i) {
@@ -84,7 +84,7 @@ class MaxCliqueComputer {
 
 public:
     MaxCliqueComputer(const vector<vector<int> > &graph_,
-           vector<vector<int> > &max_cliques_)
+                      vector<vector<int> > &max_cliques_)
         : graph(graph_), max_cliques(max_cliques_) {
     }
 

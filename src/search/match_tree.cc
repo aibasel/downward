@@ -45,7 +45,6 @@ MatchTree::~MatchTree() {
 
 void MatchTree::build_recursively(
     const AbstractOperator &op, int pre_index, Node **edge_from_parent) {
-
     if (*edge_from_parent == 0) {
         // We don't exist yet: create a new node.
         *edge_from_parent = new Node();

@@ -48,12 +48,12 @@ struct OperatorSignature {
 };
 
 namespace __gnu_cxx {
-    template<>
-    struct hash<OperatorSignature> {
-        size_t operator()(const OperatorSignature &sig) const {
-            return sig.hash();
-        }
-    };
+template<>
+struct hash<OperatorSignature> {
+    size_t operator()(const OperatorSignature &sig) const {
+        return sig.hash();
+    }
+};
 }
 
 LabelReducer::LabelReducer(

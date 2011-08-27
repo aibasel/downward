@@ -22,7 +22,7 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
                                    const vector<pair<int, int> > &eff_pairs, int c,
                                    const vector<size_t> &hash_multipliers)
-                                   : cost(c), regression_preconditions(prev_pairs) {
+    : cost(c), regression_preconditions(prev_pairs) {
     regression_preconditions.insert(regression_preconditions.end(), eff_pairs.begin(), eff_pairs.end());
     sort(regression_preconditions.begin(), regression_preconditions.end()); // for MatchTree construction
     for (size_t i = 1; i < regression_preconditions.size(); ++i) {
@@ -49,8 +49,8 @@ void AbstractOperator::dump(const vector<int> &pattern) const {
     cout << "Regression preconditions:" << endl;
     for (size_t i = 0; i < regression_preconditions.size(); ++i) {
         cout << "Variable: " << regression_preconditions[i].first << " (True name: "
-        << g_variable_name[pattern[regression_preconditions[i].first]] << ", Index: "
-        << i << ") Value: " << regression_preconditions[i].second << endl;
+             << g_variable_name[pattern[regression_preconditions[i].first]] << ", Index: "
+             << i << ") Value: " << regression_preconditions[i].second << endl;
     }
     cout << "Hash effect:" << hash_effect << endl;
 }
@@ -59,7 +59,6 @@ PDBHeuristic::PDBHeuristic(
     const Options &opts, bool dump,
     const vector<int> &op_costs)
     : Heuristic(opts) {
-
     verify_no_axioms_no_cond_effects();
 
     if (op_costs.empty()) { // if no operator costs are specified, use default operator costs
@@ -102,7 +101,7 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
                 cond[0].var == var && cond[0].prev != post &&
                 g_variable_domain[var] == 2)
                 continue;
-            
+
             cerr << "Heuristic does not support conditional effects "
                  << "(operator " << g_operators[i].get_name() << ")"
                  << endl << "Terminating." << endl;
@@ -132,8 +131,8 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
             } else {
                 prev_pairs.push_back(make_pair(var, i));
             }
-            multiply_out(pos+1, op_no, cost, prev_pairs, pre_pairs, eff_pairs,
-                              effects_without_pre, operators);
+            multiply_out(pos + 1, op_no, cost, prev_pairs, pre_pairs, eff_pairs,
+                         effects_without_pre, operators);
             if (i != eff) {
                 pre_pairs.pop_back();
                 eff_pairs.pop_back();
@@ -200,8 +199,7 @@ void PDBHeuristic::create_pdb() {
         if (is_goal_state(state_index, abstract_goal)) {
             pq.push(0, state_index);
             distances.push_back(0);
-        }
-        else {
+        } else {
             distances.push_back(numeric_limits<int>::max());
         }
     }
@@ -283,7 +281,7 @@ double PDBHeuristic::compute_mean_finite_h() const {
         sum += distances[i];
     }
     if (size == 0) { // empty pattern or all states are dead-end
-         return numeric_limits<double>::infinity();
+        return numeric_limits<double>::infinity();
     } else
         return sum / num_states;
 }

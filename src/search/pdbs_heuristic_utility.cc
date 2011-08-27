@@ -38,12 +38,12 @@ void parse_patterns(OptionParser &parser, Options &opts) {
         pattern_collection.resize(it - pattern_collection.begin());
         if (pattern_collection.size() != coll_old_size)
             parser.error("there are duplicates of patterns in the pattern collection");
-        
+
         for (size_t i = 0; i < pattern_collection.size(); ++i) {
             cout << pattern_collection[i] << endl;
         }
     }
-    
+
     // if option "patterns" is not specified, use default
     if (!parser.dry_run() && !opts.contains("patterns")) {
         // Simple selection strategy. Take all goal variables as patterns.

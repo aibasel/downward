@@ -29,13 +29,13 @@ public:
     ~AbstractOperator();
 
     // Returns variable value pairs which represent the preconditions of the abstract operator in a regression search
-    const std::vector<std::pair<int, int> > &get_regression_preconditions() const { return regression_preconditions; }
+    const std::vector<std::pair<int, int> > &get_regression_preconditions() const {return regression_preconditions; }
 
     // Returns the effect of the abstract operator in form of a value change (+ or -) to an abstract state index
-    size_t get_hash_effect() const { return hash_effect; }
+    size_t get_hash_effect() const {return hash_effect; }
 
     // Returns the cost of the abstract operator (same as the cost of the original concrete operator)
-    int get_cost() const { return cost; }
+    int get_cost() const {return cost; }
     void dump(const std::vector<int> &pattern) const;
 };
 
@@ -64,7 +64,7 @@ class PDBHeuristic : public Heuristic {
        In the case of a precondition with value = -1 in the conrete operator, all mutliplied out abstract
        operators are computed, i.e. for all possible values of the variable (with precondition = -1),
        one abstract operator with a conrete value (!= -1) is computed. */
-    void multiply_out(int pos, int op_no, int cost,  std::vector<std::pair<int, int> > &prev_pairs,
+    void multiply_out(int pos, int op_no, int cost, std::vector<std::pair<int, int> > &prev_pairs,
                       std::vector<std::pair<int, int> > &pre_pairs,
                       std::vector<std::pair<int, int> > &eff_pairs,
                       const std::vector<std::pair<int, int> > &effects_without_pre,
@@ -99,15 +99,15 @@ public:
        op_costs: Can specify individual operator costs for each operator. This is useful for action cost
                  partitioning. If left empty, default operator costs are used. */
     PDBHeuristic(const Options &opts,
-                 bool dump=true,
-                 const std::vector<int> &op_costs=std::vector<int>());
+                 bool dump = true,
+                 const std::vector<int> &op_costs = std::vector<int>());
     virtual ~PDBHeuristic();
 
     // Returns the pattern (i.e. all variables used) of the PDB
-    const std::vector<int> &get_pattern() const { return pattern; }
+    const std::vector<int> &get_pattern() const {return pattern; }
 
     // Returns the size (number of abstrat states) of the PDB
-    size_t get_size() const { return num_states; }
+    size_t get_size() const {return num_states; }
 
     /* Returns the average h-value over all states, where dead-ends are ignored (they neither increase
        the sum of all h-values nor the total number of entries for the mean value calculation). If pattern
@@ -116,7 +116,7 @@ public:
     double compute_mean_finite_h() const;
 
     // Returns all operators affecting this PDB
-    const std::vector<bool> &get_relevant_operators() const { return relevant_operators; }
+    const std::vector<bool> &get_relevant_operators() const {return relevant_operators; }
 };
 
 #endif

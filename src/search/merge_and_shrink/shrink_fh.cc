@@ -19,7 +19,7 @@ static const int infinity = numeric_limits<int>::max();
 ShrinkFH::ShrinkFH(const Options &opts)
     : ShrinkBucketBased(opts),
       f_start(HighLow(opts.get_enum("shrink_f"))),
-      h_start(HighLow(opts.get_enum("shrink_h"))){
+      h_start(HighLow(opts.get_enum("shrink_h"))) {
 }
 
 ShrinkFH::~ShrinkFH() {
@@ -41,7 +41,7 @@ void ShrinkFH::partition_into_buckets(
     assert(buckets.empty());
     // The following line converts to double to avoid overflow.
     int max_f = abs.get_max_f();
-    if(static_cast<double>(max_f) * max_f / 2.0 > abs.size()) {
+    if (static_cast<double>(max_f) * max_f / 2.0 > abs.size()) {
         // Use map because an average bucket in the vector structure
         // would contain less than 1 element (roughly).
         ordered_buckets_use_map(abs, buckets);
@@ -70,7 +70,7 @@ static void collect_f_h_buckets(
     ShrinkFH::HighLow h_start,
     vector<Bucket> &buckets) {
     for (FHIterator iter = begin; iter != end; ++iter) {
-        if(h_start == ShrinkFH::HIGH) {
+        if (h_start == ShrinkFH::HIGH) {
             collect_h_buckets(iter->second.rbegin(), iter->second.rend(),
                               buckets);
         } else {
@@ -98,7 +98,7 @@ void ShrinkFH::ordered_buckets_use_map(
     }
 
     buckets.reserve(bucket_count);
-    if(f_start == HIGH) {
+    if (f_start == HIGH) {
         collect_f_h_buckets(
             states_by_f_and_h.rbegin(), states_by_f_and_h.rend(),
             h_start, buckets);
@@ -136,7 +136,7 @@ void ShrinkFH::ordered_buckets_use_vector(
     int f_init = (f_start == HIGH ? abs.get_max_f() : 0);
     int f_end = (f_start == HIGH ? 0 : abs.get_max_f());
     int f_incr = (f_init > f_end ? -1 : 1);
-    for (int f = f_init; f != f_end + f_incr; f += f_incr){
+    for (int f = f_init; f != f_end + f_incr; f += f_incr) {
         int h_init = (h_start == HIGH ? states_by_f_and_h[f].size() - 1 : 0);
         int h_end = (h_start == HIGH ? 0 : states_by_f_and_h[f].size() - 1);
         int h_incr = (h_init > h_end ? -1 : 1);
@@ -160,7 +160,7 @@ ShrinkStrategy *ShrinkFH::create_default(int max_states) {
     return new ShrinkFH(opts);
 }
 
-static ShrinkStrategy *_parse(OptionParser &parser){
+static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     vector<string> high_low;
     high_low.push_back("HIGH");
@@ -174,7 +174,7 @@ static ShrinkStrategy *_parse(OptionParser &parser){
     Options opts = parser.parse();
     ShrinkStrategy::handle_option_defaults(opts);
 
-    if(!parser.dry_run())
+    if (!parser.dry_run())
         return new ShrinkFH(opts);
     else
         return 0;

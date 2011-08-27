@@ -59,7 +59,7 @@ public:
 
     /* Returns the CanonicalPDBsHeuristic created by PatternGenerationHaslum.
        Important: caller owns the returned pointer and has to take care of its deletion. */
-    CanonicalPDBsHeuristic *get_pattern_collection_heuristic() const { return current_heuristic; }
+    CanonicalPDBsHeuristic *get_pattern_collection_heuristic() const {return current_heuristic; }
 };
 
 #endif
