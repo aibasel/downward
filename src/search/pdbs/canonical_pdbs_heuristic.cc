@@ -1,14 +1,16 @@
 #include "canonical_pdbs_heuristic.h"
-#include "globals.h"
+
 #include "max_cliques.h"
-#include "operator.h"
-#include "option_parser.h"
 #include "pdb_heuristic.h"
-#include "pdbs_heuristic_utility.h"
-#include "plugin.h"
-#include "state.h"
-#include "timer.h"
-#include "utilities.h"
+#include "util.h"
+
+#include "../globals.h"
+#include "../operator.h"
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../state.h"
+#include "../timer.h"
+#include "../utilities.h"
 
 #include <cassert>
 #include <cstdlib>

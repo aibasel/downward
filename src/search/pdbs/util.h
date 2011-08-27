@@ -1,5 +1,5 @@
-#ifndef PDBS_HEURISTIC_UTILITY_H
-#define PDBS_HEURISTIC_UTILITY_H
+#ifndef PDBS_UTIL_H
+#define PDBS_UTIL_H
 
 class OptionParser;
 class Options;

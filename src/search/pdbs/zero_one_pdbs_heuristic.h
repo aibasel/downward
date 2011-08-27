@@ -1,11 +1,12 @@
-#ifndef ZERO_ONE_PDBS_HEURISTIC_H
-#define ZERO_ONE_PDBS_HEURISTIC_H
+#ifndef PDBS_ZERO_ONE_PDBS_HEURISTIC_H
+#define PDBS_ZERO_ONE_PDBS_HEURISTIC_H
 
-#include "heuristic.h"
+#include "../heuristic.h"
 
 #include <vector>
 
 class PDBHeuristic;
+
 class ZeroOnePDBsHeuristic : public Heuristic {
     // summed up mean finite h-values of all PDBs - this is an approximation only, see get-method
     double approx_mean_finite_h;

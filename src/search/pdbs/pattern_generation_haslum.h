@@ -1,7 +1,7 @@
-#ifndef PATTERN_GENERATION_HASLUM_H
-#define PATTERN_GENERATION_HASLUM_H
+#ifndef PDBS_PATTERN_GENERATION_HASLUM_H
+#define PDBS_PATTERN_GENERATION_HASLUM_H
 
-#include "operator_cost.h"
+#include "../operator_cost.h"
 
 #include <map>
 #include <vector>
