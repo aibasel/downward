@@ -1,5 +1,5 @@
-#ifndef SHRINK_STRATEGY_H
-#define SHRINK_STRATEGY_H
+#ifndef MERGE_AND_SHRINK_SHRINK_STRATEGY_H
+#define MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 
 #include <string>
 #include <vector>

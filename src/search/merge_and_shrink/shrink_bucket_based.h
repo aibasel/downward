@@ -1,5 +1,5 @@
-#ifndef SHRINK_BUCKET_BASED_H
-#define SHRINK_BUCKET_BASED_H
+#ifndef MERGE_AND_SHRINK_SHRINK_BUCKET_BASED_H
+#define MERGE_AND_SHRINK_SHRINK_BUCKET_BASED_H
 
 #include "shrink_strategy.h"
 
