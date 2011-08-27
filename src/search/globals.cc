@@ -12,11 +12,12 @@ using namespace std;
 #include "axioms.h"
 #include "causal_graph.h"
 #include "domain_transition_graph.h"
+#include "heuristic.h"
 #include "operator.h"
+#include "rng.h"
 #include "state.h"
 #include "successor_generator.h"
 #include "timer.h"
-#include "heuristic.h"
 
 bool test_goal(const State &state) {
     for (int i = 0; i < g_goal.size(); i++) {
@@ -235,3 +236,4 @@ CausalGraph *g_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";
+RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
