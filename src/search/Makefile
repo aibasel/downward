@@ -23,6 +23,7 @@ HEADERS = \
           option_parser.h \
           pref_evaluator.h \
           relaxation_heuristic.h \
+          rng.h \
           search_engine.h \
           search_node_info.h \
           search_progress.h \
@@ -93,6 +94,16 @@ HEADERS += learning/AODE.h \
            learning/selective_max_heuristic.h \
            learning/state_space_sample.h \
            learning/state_vars_feature_extractor.h
+
+HEADERS += canonical_pdbs_heuristic.h \
+           match_tree.h \
+           max_cliques.h \
+           pattern_generation_edelkamp.h \
+           pattern_generation_haslum.h \
+           pdb_heuristic.h \
+           pdbs_heuristic_utility.h \
+           zero_one_pdbs_heuristic.h
+
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward

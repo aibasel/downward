@@ -2,6 +2,7 @@
 #include "option_parser.h"
 #include "ext/tree_util.hh"
 #include "plugin.h"
+#include "rng.h"
 #include <string>
 #include <algorithm>
 #include <iostream>
@@ -182,6 +183,7 @@ SearchEngine *OptionParser::parse_cmd_line(
         } else if (arg.compare("--random-seed") == 0) {
             ++i;
             srand(atoi(argv[i]));
+            g_rng.seed(atoi(argv[i]));
             cout << "random seed " << argv[i] << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
