@@ -392,10 +392,12 @@ void ShrinkBisimulation::compute_abstraction(
                             new_group_no = curr_sig.group;
                         } else if (prev_sig.succ_signature
                                    != curr_sig.succ_signature) {
-                            new_group_no = num_groups++;
-                            assert(num_groups <= target_size);
-                            if (new_group_no == target_size)
-                                break;
+                            if (num_groups < target_size) {
+                                // Only start a new group if we're within
+                                // budget!
+                                new_group_no = num_groups++;
+                                assert(num_groups <= target_size);
+                            }
                         }
 
                         assert(new_group_no != -1);
