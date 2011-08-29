@@ -72,10 +72,6 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
              << "at the moment" << endl;
         exit(2);
     }
-    if (at_limit != SKIP_AND_KEEP_GOING) {
-        cerr << "alternative at-limit strategies not yet implemented" << endl;
-        exit(2);
-    }
 }
 
 ShrinkBisimulation::~ShrinkBisimulation() {
@@ -183,7 +179,8 @@ int ShrinkBisimulation::initialize_bisim(const Abstraction &abs) {
 
     // TODO: Check logic. What if one or both of the groups are empty?
 
-    group_done.resize(abs.size(), false);
+    if (at_limit == SKIP_AND_KEEP_GOING)
+        group_done.resize(abs.size(), false);
 
     return num_groups;
 }
@@ -214,7 +211,10 @@ int ShrinkBisimulation::initialize_dfp(const Abstraction &abs) {
     }
     int num_groups = num_of_used_h;
 
-    h_group_done.resize(num_of_used_h, false);
+    if (at_limit == SKIP_AND_KEEP_GOING)
+        h_group_done.resize(num_of_used_h, false);
+    else
+        release_memory(h_to_h_group);
     return num_groups;
 }
 
@@ -244,7 +244,8 @@ void ShrinkBisimulation::compute_abstraction(
     int max_h = abs.get_max_h();
 
     bool done = false;
-    while (!done) {
+    bool stop_after_iteration = false;
+    while (!done && !stop_after_iteration) {
         done = true;
         // Compute state signatures.
         // Add sentinels to the start and end.
@@ -316,13 +317,15 @@ void ShrinkBisimulation::compute_abstraction(
             // Skips all groups that cannot be split further (due to
             // memory restrictions).
             if (group_by_h) {
-                if (h == -1 || h_group_done[h_to_h_group[h]]) {
+                if (h == -1 || (at_limit == SKIP_AND_KEEP_GOING &&
+                                h_group_done[h_to_h_group[h]])) {
                     while (signatures[sig_start].h == h)
                         sig_start++;
                     continue;
                 }
             } else {
-                if (h == -1 || group_done[group]) {
+                if (h == -1 || (at_limit == SKIP_AND_KEEP_GOING &&
+                                group_done[group])) {
                     while (signatures[sig_start].group == group)
                         sig_start++;
                     continue;
@@ -361,10 +364,45 @@ void ShrinkBisimulation::compute_abstraction(
                 // Can't split the group (or the set of groups for
                 // this h value) -- would exceed bound on abstract
                 // state number.
-                if (group_by_h) {
-                    h_group_done[h_to_h_group[h]] = true;
+                if (at_limit == SKIP_AND_KEEP_GOING) {
+                    if (group_by_h) {
+                        h_group_done[h_to_h_group[h]] = true;
+                    } else {
+                        group_done[group] = true;
+                    }
+                } else if (at_limit == SKIP_AND_COMPLETE_ITERATION) {
+                    stop_after_iteration = true;
+                } else if (at_limit == RETURN) {
+                    stop_after_iteration = true;
+                    break;
                 } else {
-                    group_done[group] = true;
+                    assert(at_limit == USE_UP);
+
+                    stop_after_iteration = true;
+                    // TODO: Get rid of code duplication between this
+                    // and the following code
+
+                    int new_group_no = -1;
+                    for (int i = sig_start; i < sig_end; i++) {
+                        const Signature &prev_sig = signatures[i - 1];
+                        const Signature &curr_sig = signatures[i];
+
+                        if (prev_sig.group != curr_sig.group) {
+                            // Start first group of a block; keep old group no.
+                            new_group_no = curr_sig.group;
+                        } else if (prev_sig.succ_signature
+                                   != curr_sig.succ_signature) {
+                            new_group_no = num_groups++;
+                            assert(num_groups <= target_size);
+                            if (new_group_no == target_size)
+                                break;
+                        }
+
+                        assert(new_group_no != -1);
+                        state_to_group[curr_sig.state] = new_group_no;
+                    }
+                    assert(num_groups == target_size);
+                    break;
                 }
             } else if (num_new_groups != num_old_groups) {
                 // Split the group into the new groups, where if two
