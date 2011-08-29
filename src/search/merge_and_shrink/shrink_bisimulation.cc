@@ -65,10 +65,15 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
       greedy(opts.get<bool>("greedy")),
       threshold(opts.get<int>("threshold")),
       initialize_by_h(opts.get<bool>("initialize_by_h")),
-      group_by_h(opts.get<bool>("group_by_h")) {
+      group_by_h(opts.get<bool>("group_by_h")),
+      at_limit(AtLimit(opts.get_enum("at_limit"))) {
     if (initialize_by_h != group_by_h) {
         cerr << "initialize_by_h and group_by_h cannot be set independently "
              << "at the moment" << endl;
+        exit(2);
+    }
+    if (at_limit != SKIP_AND_KEEP_GOING) {
+        cerr << "alternative at-limit strategies not yet implemented" << endl;
         exit(2);
     }
 }
@@ -419,6 +424,7 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
     opts.set("threshold", 1);
     opts.set("initialize_by_h", false);
     opts.set("group_by_h", false);
+    opts.set<int>("at_limit", SKIP_AND_KEEP_GOING);
 
     return new ShrinkBisimulation(opts);
 }
@@ -429,6 +435,15 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     parser.add_option<int>("threshold", -1); // default: same as max_states
     parser.add_option<bool>("initialize_by_h", true);
     parser.add_option<bool>("group_by_h", false);
+
+    vector<string> at_limit;
+    at_limit.push_back("RETURN");
+    at_limit.push_back("USE_UP");
+    at_limit.push_back("SKIP_AND_COMPLETE_ITERATION");
+    at_limit.push_back("SKIP_AND_KEEP_GOING");
+    parser.add_enum_option(
+        "at_limit", at_limit, "SKIP_AND_KEEP_GOING",
+        "what to do when the size limit is hit");
 
     Options opts = parser.parse();
     ShrinkStrategy::handle_option_defaults(opts);
