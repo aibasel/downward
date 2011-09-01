@@ -28,6 +28,9 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     void initialize_heap();
     void add_to_heap(LocalProblemNode *node);
 
+    void setup_local_problem(LocalProblem *problem, int base_priority,
+                             int start_value, const State &state);
+
     void expand_node(LocalProblemNode *node);
     void expand_transition(LocalTransition *trans, const State &state);
     void try_to_fire_transition(LocalTransition *trans);
