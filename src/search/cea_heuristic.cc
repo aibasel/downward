@@ -32,11 +32,7 @@ static ContextEnhancedAdditiveHeuristic *g_HACK = 0;
 // TODO: Do transitions really need to know their source?
 // TODO: Fix friend statements and access qualifiers.
 
-class LocalTransition {
-    friend class ContextEnhancedAdditiveHeuristic;
-    friend class LocalProblem;
-    friend class LocalProblemNode;
-
+struct LocalTransition {
     LocalProblemNode *source;
     LocalProblemNode *target;
     const ValueTransitionLabel *label;
@@ -45,15 +41,24 @@ class LocalTransition {
     int target_cost;
     int unreached_conditions;
 
-    LocalTransition(LocalProblemNode *source_, LocalProblemNode *target_,
-                    const ValueTransitionLabel *label_, int action_cost_);
+    LocalTransition(
+        LocalProblemNode *source_, LocalProblemNode *target_,
+        const ValueTransitionLabel *label_, int action_cost_)
+        : source(source_), target(target_),
+          label(label_), action_cost(action_cost_),
+          target_cost(-1), unreached_conditions(-1) {
+        // target_cost and unreached_cost are initialized by
+        // expand_transition.
+    }
+
+    ~LocalTransition() {
+    }
 };
 
 
 class LocalProblemNode {
     friend class ContextEnhancedAdditiveHeuristic;
     friend class LocalProblem;
-    friend class LocalTransition;
 
     // Static attributes (fixed upon initialization).
     LocalProblem *owner;
@@ -93,7 +98,6 @@ class LocalProblemNode {
 class LocalProblem {
     friend class ContextEnhancedAdditiveHeuristic;
     friend class LocalProblemNode;
-    friend class LocalTransition;
 
     int base_priority;
 
@@ -129,20 +133,6 @@ inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
 inline void ContextEnhancedAdditiveHeuristic::add_to_heap(
     LocalProblemNode *node) {
     node_queue.push(node->priority(), node);
-}
-
-LocalTransition::LocalTransition(
-    LocalProblemNode *source_, LocalProblemNode *target_,
-    const ValueTransitionLabel *label_, int action_cost_) {
-    source = source_;
-    target = target_;
-    label = label_;
-    action_cost = action_cost_;
-
-    // Set the following to explicitly invalid values.
-    // They are initialized in on_source_expanded.
-    target_cost = -1;
-    unreached_conditions = -1;
 }
 
 void ContextEnhancedAdditiveHeuristic::try_to_fire_transition(
