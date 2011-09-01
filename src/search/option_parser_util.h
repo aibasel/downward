@@ -487,4 +487,41 @@ private:
     std::map<std::string, DocStruct> registered;
 };
 
+class DocPrinter {
+public:
+    DocPrinter(std::ostream &out);
+    virtual ~DocPrinter();
+
+    virtual void print_all();
+    virtual void print_category(std::string category_name);
+    virtual void print_element(std::string call_name, DocStruct &info) = 0;
+protected:
+    std::ostream &os;
+
+    virtual void print_category_header(std::string category_name) = 0;
+    virtual void print_category_footer() = 0;
+};
+
+class Txt2TagsPrinter : public DocPrinter {
+public:
+    Txt2TagsPrinter(std::ostream &out);
+    virtual ~Txt2TagsPrinter();
+
+    virtual void print_element(std::string call_name, DocStruct &info);
+protected:
+    virtual void print_category_header(std::string category_name);
+    virtual void print_category_footer();
+};
+
+class PlainPrinter : public DocPrinter {
+public:
+    PlainPrinter(std::ostream &out);
+    virtual ~PlainPrinter();
+
+    virtual void print_element(std::string call_name, DocStruct &info);
+protected:
+    virtual void print_category_header(std::string category_name);
+    virtual void print_category_footer();
+};
+
 #endif

@@ -76,109 +76,6 @@ static void get_full_help() {
     get_full_help_templ<OpenList<int> *>();
 }
 
-static void plain_help_output() {
-    DocStore *ds = DocStore::instance();
-    vector<string> keys = ds->get_keys();
-    vector<string> types = ds->get_types();
-    for(size_t n(0); n != types.size(); ++n) {
-        cout << "Help for " << types[n] << "s" << endl << endl;
-        for(size_t i(0); i != keys.size(); ++i) {
-            DocStruct info = ds->get(keys[i]);
-            if(info.type.compare(types[n]) != 0)
-                continue;
-            cout << keys[i] << " is a " << info.type << "." << endl
-                 << "Usage:" << endl
-                 << keys[i] << "(";
-            for(size_t j(0); j != info.arg_help.size(); ++j){
-                cout << info.arg_help[j].kwd;
-                if(info.arg_help[j].default_value.compare("") != 0){
-                    cout << " = " << info.arg_help[j].default_value;
-                }
-                if(j != info.arg_help.size() - 1)
-                    cout << ", ";
-            }
-            cout << ")" << endl;
-            for(size_t j(0); j != info.arg_help.size(); ++j){
-                cout << info.arg_help[j].kwd
-                     << " (" << info.arg_help[j].type_name << "):"
-                     << info.arg_help[j].help << endl;            
-            }
-            cout << endl;
-        }
-    }
-}
-
-//TODO: the next method becomes hard to read. Split up.
-static void txt2tags_help_output() {
-    DocStore *ds = DocStore::instance();
-    vector<string> keys = ds->get_keys();
-    vector<string> types = ds->get_types();
-    for(size_t n(0); n != types.size(); ++n) {
-        cout << ">>>>CATEGORY: " << types[n] << "s" << "<<<<" << endl;
-        for(size_t i(0); i != keys.size(); ++i) {
-            DocStruct info = ds->get(keys[i]);
-            if(info.type.compare(types[n]) != 0)
-                continue;
-            cout << "== " << info.full_name << " ==" << endl
-                 << info.synopsis << endl
-                 << "``` " << keys[i] << "(";
-            for(size_t j(0); j != info.arg_help.size(); ++j){
-                ArgumentInfo arg = info.arg_help[j];
-                cout << arg.kwd;
-                if(arg.default_value.compare("") != 0){
-                    cout << " = " << arg.default_value;
-                }
-                if(j != info.arg_help.size() - 1)
-                    cout << ", ";
-            }
-            cout << ")" << endl << endl << endl;
-
-            for(size_t j(0); j != info.arg_help.size(); ++j){
-                ArgumentInfo arg = info.arg_help[j];
-                cout << "- //" << arg.kwd << "// (" 
-                     << arg.type_name << "): "
-                     << arg.help << endl;
-                if(!arg.value_explanations.empty()) {
-                    for(size_t k(0); k != arg.value_explanations.size(); ++k) {
-                        pair<string, string> explanation = 
-                            arg.value_explanations[k];
-                        cout << " - //" << explanation.first << "//: "
-                             << explanation.second << endl;
-                    }
-                }
-            }
-            //notes:
-            for(size_t j(0); j != info.notes.size(); ++j) {
-                NoteInfo note = info.notes[j];
-                cout << "**" << note.name << ":** "
-                     << note.description << endl << endl;
-            }            
-            //language features:
-            if(!info.support_help.empty()) {
-                cout << "Language features supported:" << endl;
-            }
-            for(size_t j(0); j != info.support_help.size(); ++j) {
-                LanguageSupportInfo ls = info.support_help[j];
-                cout << "- **" << ls.feature << ":** "
-                     << ls.description << endl;
-            }
-            //properties:
-            if(!info.property_help.empty()) {
-                cout << "Properties:" << endl;
-            }
-            for(size_t j(0); j != info.property_help.size(); ++j) {
-                PropertyInfo p = info.property_help[j];
-                cout << "- **" << p.property << ":** "
-                     << p.description << endl;
-            }
-        }
-        cout << endl;
-        cout << ">>>>CATEGORYEND<<<<" << endl;
-    }        
-}
-
-
-
 /*
 Predefining landmarks and heuristics:
 */
@@ -279,25 +176,30 @@ SearchEngine *OptionParser::parse_cmd_line(
         } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
-            bool got_help = false;
+            vector<string> helpiands;
             if (i + 1 < argc) {
                 for(int j = i+1; j < argc; ++j) {
                     if (string(argv[j]).compare("--txt2tags") == 0) {
                         txt2tags = true;
                     } else {
-                        get_help(string(argv[j]));
-                        got_help = true;
+                        helpiands.push_back(string(argv[j]));
                     }
                 }
             }
-            if(!got_help){
+            if(helpiands.empty()){
                 get_full_help();
-            }
-            if(txt2tags){
-                txt2tags_help_output();
             } else {
-                plain_help_output();
+                for(int i(0); i != helpiands.size(); ++i) {
+                    get_help(helpiands[i]);
+                }
             }
+            DocPrinter *dp;
+            if(txt2tags) {
+                dp = new Txt2TagsPrinter(cout);
+            } else {
+                dp = new PlainPrinter(cout);
+            }
+            dp->print_all();
             cout << "Help output finished." << endl;
             exit(0);
         } else if (arg.compare("--plan-file") == 0) {
