@@ -46,8 +46,6 @@ class LocalTransition {
     LocalTransition(LocalProblemNode *source_, LocalProblemNode *target_,
                     const ValueTransitionLabel *label_, int action_cost_);
 
-    void on_source_expanded(const State &state);
-    void on_condition_reached(int cost);
     void try_to_fire();
 };
 
@@ -59,7 +57,7 @@ class LocalProblemNode {
 
     // Static attributes (fixed upon initialization).
     LocalProblem *owner;
-    std::vector<LocalTransition> outgoing_transitions;
+    vector<LocalTransition> outgoing_transitions;
 
     // Dynamic attributes (modified during heuristic computation).
     int cost;
@@ -74,7 +72,7 @@ class LocalProblemNode {
     // needed for the overall computation.
 
     bool expanded;
-    std::vector<short> context;
+    vector<short> context;
 
     LocalTransition *reached_by;
     // Before a node is expanded, reached_by is the "current best"
@@ -85,11 +83,10 @@ class LocalProblemNode {
     // operators. (The two attributes used to be separate, but this
     // was a bit wasteful.)
 
-    std::vector<LocalTransition *> waiting_list;
+    vector<LocalTransition *> waiting_list;
 
     LocalProblemNode(LocalProblem *owner, int context_size);
     void add_to_waiting_list(LocalTransition *transition);
-    void on_expand();
 };
 
 
@@ -100,9 +97,9 @@ class LocalProblem {
 
     int base_priority;
 
-    std::vector<LocalProblemNode> nodes;
+    vector<LocalProblemNode> nodes;
 
-    std::vector<int> *context_variables;
+    vector<int> *context_variables;
 
     void build_nodes_for_variable(int var_no);
     void build_nodes_for_goal();
@@ -157,75 +154,6 @@ inline void LocalTransition::try_to_fire() {
     }
 }
 
-void LocalTransition::on_source_expanded(const State &state) {
-    /* Called when the source of this transition is reached by
-       Dijkstra exploration. Tries to compute cost for the target of
-       the transition from the source cost, action cost, and set-up
-       costs for the conditions on the label. The latter may yet be
-       unknown, in which case we "subscribe" to the waiting list of
-       the node that will tell us the correct value. */
-
-    assert(source->cost >= 0);
-    assert(source->cost < numeric_limits<int>::max());
-
-    target_cost = source->cost + action_cost;
-
-    if (target->cost <= target_cost) {
-        // Transition cannot find a shorter path to target.
-        return;
-    }
-
-    unreached_conditions = 0;
-    const vector<LocalAssignment> &precond = label->precond;
-
-    vector<LocalAssignment>::const_iterator
-        curr_precond = precond.begin(),
-        last_precond = precond.end();
-
-    short *context = &source->context.front();
-    vector<vector<LocalProblem *> > &problem_index = g_HACK->local_problem_index;
-    int *parent_vars = &*source->owner->context_variables->begin();
-
-    for (; curr_precond != last_precond; ++curr_precond) {
-        int local_var = curr_precond->local_var;
-        int current_val = context[local_var];
-        int precond_value = curr_precond->value;
-        int precond_var_no = parent_vars[local_var];
-
-        if (current_val == precond_value)
-            continue;
-
-        LocalProblem * &child_problem = problem_index[precond_var_no][current_val];
-        if (!child_problem) {
-            child_problem = new LocalProblem(precond_var_no);
-            g_HACK->local_problems.push_back(child_problem);
-        }
-
-        if (!child_problem->is_initialized())
-            child_problem->initialize(source->priority(), current_val, state);
-        LocalProblemNode *cond_node = &child_problem->nodes[precond_value];
-        if (cond_node->expanded) {
-            target_cost += cond_node->cost;
-            if (target->cost <= target_cost) {
-                // Transition cannot find a shorter path to target.
-                return;
-            }
-        } else {
-            cond_node->add_to_waiting_list(this);
-            ++unreached_conditions;
-        }
-    }
-    try_to_fire();
-}
-
-void LocalTransition::on_condition_reached(int cost) {
-    assert(unreached_conditions);
-    --unreached_conditions;
-    target_cost += cost;
-
-    try_to_fire();
-}
-
 LocalProblemNode::LocalProblemNode(LocalProblem *owner_,
                                    int context_size) {
     owner = owner_;
@@ -239,44 +167,24 @@ void LocalProblemNode::add_to_waiting_list(LocalTransition *transition) {
     waiting_list.push_back(transition);
 }
 
-void LocalProblemNode::on_expand() {
-    expanded = true;
-    // Set children state unless this was an initial node.
-    if (reached_by) {
-        LocalProblemNode *parent = reached_by->source;
-        context = parent->context;
-        const vector<LocalAssignment> &precond = reached_by->label->precond;
-        for (int i = 0; i < precond.size(); i++)
-            context[precond[i].local_var] = precond[i].value;
-        const vector<LocalAssignment> &effect = reached_by->label->effect;
-        for (int i = 0; i < effect.size(); i++)
-            context[effect[i].local_var] = effect[i].value;
-        if (parent->reached_by)
-            reached_by = parent->reached_by;
-    }
-    for (int i = 0; i < waiting_list.size(); i++)
-        waiting_list[i]->on_condition_reached(cost);
-    waiting_list.clear();
-}
-
 void LocalProblem::build_nodes_for_variable(int var_no) {
     DomainTransitionGraph *dtg = g_transition_graphs[var_no];
 
     context_variables = &dtg->cea_parents;
 
     int num_parents = context_variables->size();
-    for (int value = 0; value < g_variable_domain[var_no]; value++)
+    for (size_t value = 0; value < g_variable_domain[var_no]; ++value)
         nodes.push_back(LocalProblemNode(this, num_parents));
 
     // Compile the DTG arcs into LocalTransition objects.
-    for (int value = 0; value < nodes.size(); value++) {
+    for (size_t value = 0; value < nodes.size(); ++value) {
         LocalProblemNode &node = nodes[value];
         const ValueNode &dtg_node = dtg->nodes[value];
-        for (int i = 0; i < dtg_node.transitions.size(); i++) {
+        for (size_t i = 0; i < dtg_node.transitions.size(); ++i) {
             const ValueTransition &dtg_trans = dtg_node.transitions[i];
             int target_value = dtg_trans.target->value;
             LocalProblemNode &target = nodes[target_value];
-            for (int j = 0; j < dtg_trans.cea_labels.size(); j++) {
+            for (size_t j = 0; j < dtg_trans.cea_labels.size(); ++j) {
                 const ValueTransitionLabel &label = dtg_trans.cea_labels[j];
                 int action_cost = g_HACK->get_adjusted_cost(*label.op);
                 LocalTransition trans(&node, &target, &label, action_cost);
@@ -290,14 +198,14 @@ void LocalProblem::build_nodes_for_goal() {
     // TODO: We have a small memory leak here. Could be fixed by
     // making two LocalProblem classes with a virtual destructor.
     context_variables = new vector<int>;
-    for (int i = 0; i < g_goal.size(); i++)
+    for (size_t i = 0; i < g_goal.size(); ++i)
         context_variables->push_back(g_goal[i].first);
 
-    for (int value = 0; value < 2; value++)
+    for (size_t value = 0; value < 2; ++value)
         nodes.push_back(LocalProblemNode(this, g_goal.size()));
 
     vector<LocalAssignment> goals;
-    for (int goal_no = 0; goal_no < g_goal.size(); goal_no++) {
+    for (size_t goal_no = 0; goal_no < g_goal.size(); ++goal_no) {
         int goal_value = g_goal[goal_no].second;
         goals.push_back(LocalAssignment(goal_no, goal_value));
     }
@@ -320,7 +228,7 @@ void LocalProblem::initialize(int base_priority_, int start_value,
     assert(!is_initialized());
     base_priority = base_priority_;
 
-    for (int to_value = 0; to_value < nodes.size(); to_value++) {
+    for (size_t to_value = 0; to_value < nodes.size(); ++to_value) {
         nodes[to_value].expanded = false;
         nodes[to_value].cost = numeric_limits<int>::max();
         nodes[to_value].waiting_list.clear();
@@ -329,7 +237,7 @@ void LocalProblem::initialize(int base_priority_, int start_value,
 
     LocalProblemNode *start = &nodes[start_value];
     start->cost = 0;
-    for (int i = 0; i < context_variables->size(); i++)
+    for (size_t i = 0; i < context_variables->size(); ++i)
         start->context[i] = state[(*context_variables)[i]];
 
     g_HACK->add_to_heap(start);
@@ -354,7 +262,7 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
             // Recursively compute helpful transitions for precondition variables.
             const vector<LocalAssignment> &precond = first_on_path->label->precond;
             int *context_vars = &*problem->context_variables->begin();
-            for (int i = 0; i < precond.size(); i++) {
+            for (size_t i = 0; i < precond.size(); ++i) {
                 int precond_value = precond[i].value;
                 int local_var = precond[i].local_var;
                 int precond_var_no = context_vars[local_var];
@@ -380,7 +288,7 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
 
 ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
     delete goal_problem;
-    for (int i = 0; i < local_problems.size(); i++)
+    for (size_t i = 0; i < local_problems.size(); ++i)
         delete local_problems[i];
 }
 
@@ -394,7 +302,7 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
     goal_node = &goal_problem->nodes[1];
 
     local_problem_index.resize(num_variables);
-    for (int var_no = 0; var_no < num_variables; var_no++) {
+    for (size_t var_no = 0; var_no < num_variables; ++var_no) {
         int num_values = g_variable_domain[var_no];
         local_problem_index[var_no].resize(num_values, 0);
     }
@@ -403,7 +311,7 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
 int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
     initialize_heap();
     goal_problem->base_priority = -1;
-    for (int i = 0; i < local_problems.size(); i++)
+    for (size_t i = 0; i < local_problems.size(); ++i)
         local_problems[i]->base_priority = -1;
 
     goal_problem->initialize(0, 0, state);
@@ -420,6 +328,97 @@ void ContextEnhancedAdditiveHeuristic::initialize_heap() {
     node_queue.clear();
 }
 
+void ContextEnhancedAdditiveHeuristic::expand_node(LocalProblemNode *node) {
+    node->expanded = true;
+    // Set children state unless this was an initial node.
+    LocalTransition *reached_by = node->reached_by;
+    if (reached_by) {
+        LocalProblemNode *parent = reached_by->source;
+        vector<short> &context = node->context;
+        context = parent->context;
+        const vector<LocalAssignment> &precond = reached_by->label->precond;
+        for (size_t i = 0; i < precond.size(); ++i)
+            context[precond[i].local_var] = precond[i].value;
+        const vector<LocalAssignment> &effect = reached_by->label->effect;
+        for (size_t i = 0; i < effect.size(); ++i)
+            context[effect[i].local_var] = effect[i].value;
+        if (parent->reached_by)
+            node->reached_by = parent->reached_by;
+    }
+    for (size_t i = 0; i < node->waiting_list.size(); ++i) {
+        LocalTransition *trans = node->waiting_list[i];
+        assert(trans->unreached_conditions);
+        --trans->unreached_conditions;
+        trans->target_cost += node->cost;
+        trans->try_to_fire();
+    }
+    node->waiting_list.clear();
+}
+
+void ContextEnhancedAdditiveHeuristic::expand_transition(
+    LocalTransition *trans, const State &state) {
+    /* Called when the source of trans is reached by Dijkstra
+       exploration. Try to compute cost for the target of the
+       transition from the source cost, action cost, and set-up costs
+       for the conditions on the label. The latter may yet be unknown,
+       in which case we "subscribe" to the waiting list of the node
+       that will tell us the correct value. */
+
+    assert(trans->source->cost >= 0);
+    assert(trans->source->cost < numeric_limits<int>::max());
+
+    trans->target_cost = trans->source->cost + trans->action_cost;
+
+    if (trans->target->cost <= trans->target_cost) {
+        // Transition cannot find a shorter path to target.
+        return;
+    }
+
+    trans->unreached_conditions = 0;
+    const vector<LocalAssignment> &precond = trans->label->precond;
+
+    vector<LocalAssignment>::const_iterator
+        curr_precond = precond.begin(),
+        last_precond = precond.end();
+
+    short *context = &trans->source->context.front();
+    // TODO: Shouldn't get_local_problem be used?
+    vector<vector<LocalProblem *> > &problem_index = local_problem_index;
+    int *parent_vars = &*trans->source->owner->context_variables->begin();
+
+    for (; curr_precond != last_precond; ++curr_precond) {
+        int local_var = curr_precond->local_var;
+        int current_val = context[local_var];
+        int precond_value = curr_precond->value;
+        int precond_var_no = parent_vars[local_var];
+
+        if (current_val == precond_value)
+            continue;
+
+        LocalProblem * &child_problem = problem_index[precond_var_no][current_val];
+        if (!child_problem) {
+            child_problem = new LocalProblem(precond_var_no);
+            local_problems.push_back(child_problem);
+        }
+
+        if (!child_problem->is_initialized())
+            child_problem->initialize(
+                trans->source->priority(), current_val, state);
+        LocalProblemNode *cond_node = &child_problem->nodes[precond_value];
+        if (cond_node->expanded) {
+            trans->target_cost += cond_node->cost;
+            if (trans->target->cost <= trans->target_cost) {
+                // Transition cannot find a shorter path to target.
+                return;
+            }
+        } else {
+            cond_node->add_to_waiting_list(trans);
+            ++trans->unreached_conditions;
+        }
+    }
+    trans->try_to_fire();
+}
+
 int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
     while (!node_queue.empty()) {
         pair<int, LocalProblemNode *> top_pair = node_queue.pop();
@@ -433,9 +432,9 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
             return node->cost;
 
         assert(node->priority() == curr_priority);
-        node->on_expand();
-        for (int i = 0; i < node->outgoing_transitions.size(); i++)
-            node->outgoing_transitions[i].on_source_expanded(state);
+        expand_node(node);
+        for (size_t i = 0; i < node->outgoing_transitions.size(); ++i)
+            expand_transition(&node->outgoing_transitions[i], state);
     }
     return DEAD_END;
 }
