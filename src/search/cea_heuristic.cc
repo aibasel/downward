@@ -118,13 +118,12 @@ inline int LocalProblemNode ::priority() const {
 
 inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
     int var_no, int value) {
-    LocalProblem *result = local_problem_index[var_no][value];
-    if (!result) {
-        result = new LocalProblem(var_no);
-        local_problem_index[var_no][value] = result;
-        local_problems.push_back(result);
+    LocalProblem *&table_entry = local_problem_index[var_no][value];
+    if (!table_entry) {
+        table_entry = new LocalProblem(var_no);
+        local_problems.push_back(table_entry);
     }
-    return result;
+    return table_entry;
 }
 
 inline void ContextEnhancedAdditiveHeuristic::add_to_heap(
@@ -330,7 +329,7 @@ void ContextEnhancedAdditiveHeuristic::initialize_heap() {
 
 void ContextEnhancedAdditiveHeuristic::expand_node(LocalProblemNode *node) {
     node->expanded = true;
-    // Set children state unless this was an initial node.
+    // Set context unless this was an initial node.
     LocalTransition *reached_by = node->reached_by;
     if (reached_by) {
         LocalProblemNode *parent = reached_by->source;
@@ -382,8 +381,6 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
         last_precond = precond.end();
 
     short *context = &trans->source->context.front();
-    // TODO: Shouldn't get_local_problem be used?
-    vector<vector<LocalProblem *> > &problem_index = local_problem_index;
     int *parent_vars = &*trans->source->owner->context_variables->begin();
 
     for (; curr_precond != last_precond; ++curr_precond) {
@@ -395,16 +392,13 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
         if (current_val == precond_value)
             continue;
 
-        LocalProblem * &child_problem = problem_index[precond_var_no][current_val];
-        if (!child_problem) {
-            child_problem = new LocalProblem(precond_var_no);
-            local_problems.push_back(child_problem);
-        }
+        LocalProblem *subproblem = get_local_problem(
+            precond_var_no, current_val);
 
-        if (!child_problem->is_initialized())
-            child_problem->initialize(
+        if (!subproblem->is_initialized())
+            subproblem->initialize(
                 trans->source->priority(), current_val, state);
-        LocalProblemNode *cond_node = &child_problem->nodes[precond_value];
+        LocalProblemNode *cond_node = &subproblem->nodes[precond_value];
         if (cond_node->expanded) {
             trans->target_cost += cond_node->cost;
             if (trans->target->cost <= trans->target_cost) {
