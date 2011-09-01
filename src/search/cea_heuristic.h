@@ -10,6 +10,8 @@
 class ValueTransitionLabel;
 class State;
 
+namespace cea_heuristic {
+
 class LocalProblem;
 class LocalProblemNode;
 class ContextEnhancedAdditiveHeuristic;
@@ -145,6 +147,8 @@ inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
         local_problems.push_back(result);
     }
     return result;
+}
+
 }
 
 #endif
