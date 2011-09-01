@@ -56,26 +56,13 @@ struct LocalTransition {
 };
 
 
-class LocalProblemNode {
-    friend class ContextEnhancedAdditiveHeuristic;
-    friend class LocalProblem;
-
-    // Static attributes (fixed upon initialization).
+struct LocalProblemNode {
+    // Attributes fixed during initialization.
     LocalProblem *owner;
     vector<LocalTransition> outgoing_transitions;
 
     // Dynamic attributes (modified during heuristic computation).
     int cost;
-
-    inline int priority() const;
-    // Nodes have both a "cost" and a "priority", which are related.
-    // The cost is an estimate of how expensive it is to reach this
-    // node. The "priority" is the lowest cost value in the overall
-    // cost computation for which this node will be important. It is
-    // essentially the sum of the cost and a local-problem-specific
-    // "base priority", which depends on where this local problem is
-    // needed for the overall computation.
-
     bool expanded;
     vector<short> context;
 
@@ -90,14 +77,21 @@ class LocalProblemNode {
 
     vector<LocalTransition *> waiting_list;
 
-    LocalProblemNode(LocalProblem *owner, int context_size);
-    void add_to_waiting_list(LocalTransition *transition);
+    LocalProblemNode(LocalProblem *owner_, int context_size)
+        : owner(owner_),
+          cost(-1),
+          expanded(false),
+          context(context_size, -1),
+          reached_by(0) {
+    }
+
+    ~LocalProblemNode() {
+    }
 };
 
 
 class LocalProblem {
     friend class ContextEnhancedAdditiveHeuristic;
-    friend class LocalProblemNode;
 
     int base_priority;
 
@@ -116,10 +110,6 @@ public:
     void initialize(int base_priority, int start_value, const State &state);
 };
 
-inline int LocalProblemNode ::priority() const {
-    return cost + owner->base_priority;
-}
-
 inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
     int var_no, int value) {
     LocalProblem *&table_entry = local_problem_index[var_no][value];
@@ -130,9 +120,25 @@ inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
     return table_entry;
 }
 
+inline int ContextEnhancedAdditiveHeuristic::get_priority(
+    LocalProblemNode *node) const {
+    /* Nodes have both a "cost" and a "priority", which are related.
+       The cost is an estimate of how expensive it is to reach this
+       node. The "priority" is the lowest cost value in the overall
+       cost computation for which this node will be important. It is
+       essentially the sum of the cost and a local-problem-specific
+       "base priority", which depends on where this local problem is
+       needed for the overall computation. */
+    return node->owner->base_priority + node->cost;
+}
+
+inline void ContextEnhancedAdditiveHeuristic::initialize_heap() {
+    node_queue.clear();
+}
+
 inline void ContextEnhancedAdditiveHeuristic::add_to_heap(
     LocalProblemNode *node) {
-    node_queue.push(node->priority(), node);
+    node_queue.push(get_priority(node), node);
 }
 
 void ContextEnhancedAdditiveHeuristic::try_to_fire_transition(
@@ -145,19 +151,6 @@ void ContextEnhancedAdditiveHeuristic::try_to_fire_transition(
             add_to_heap(target);
         }
     }
-}
-
-LocalProblemNode::LocalProblemNode(LocalProblem *owner_,
-                                   int context_size) {
-    owner = owner_;
-    cost = -1;
-    expanded = false;
-    reached_by = 0;
-    context.resize(context_size, -1);
-}
-
-void LocalProblemNode::add_to_waiting_list(LocalTransition *transition) {
-    waiting_list.push_back(transition);
 }
 
 void LocalProblem::build_nodes_for_variable(int var_no) {
@@ -317,10 +310,6 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
     return heuristic;
 }
 
-void ContextEnhancedAdditiveHeuristic::initialize_heap() {
-    node_queue.clear();
-}
-
 void ContextEnhancedAdditiveHeuristic::expand_node(LocalProblemNode *node) {
     node->expanded = true;
     // Set context unless this was an initial node.
@@ -391,7 +380,7 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
 
         if (!subproblem->is_initialized())
             subproblem->initialize(
-                trans->source->priority(), current_val, state);
+                get_priority(trans->source), current_val, state);
         LocalProblemNode *cond_node = &subproblem->nodes[precond_value];
         if (cond_node->expanded) {
             trans->target_cost += cond_node->cost;
@@ -400,7 +389,7 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
                 return;
             }
         } else {
-            cond_node->add_to_waiting_list(trans);
+            cond_node->waiting_list.push_back(trans);
             ++trans->unreached_conditions;
         }
     }
@@ -414,12 +403,12 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
         LocalProblemNode *node = top_pair.second;
 
         assert(node->owner->is_initialized());
-        if (node->priority() < curr_priority)
+        if (get_priority(node) < curr_priority)
             continue;
         if (node == goal_node)
             return node->cost;
 
-        assert(node->priority() == curr_priority);
+        assert(get_priority(node) == curr_priority);
         expand_node(node);
         for (size_t i = 0; i < node->outgoing_transitions.size(); ++i)
             expand_transition(&node->outgoing_transitions[i], state);

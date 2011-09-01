@@ -15,8 +15,6 @@ class LocalTransition;
 
 class ContextEnhancedAdditiveHeuristic : public Heuristic {
     friend class LocalProblem;
-    friend class LocalProblemNode;
-    friend class LocalTransition;
 
     std::vector<LocalProblem *> local_problems;
     std::vector<std::vector<LocalProblem *> > local_problem_index;
@@ -25,15 +23,16 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
 
     AdaptiveQueue<LocalProblemNode *> node_queue;
 
-    int compute_costs(const State &state);
+    LocalProblem *get_local_problem(int var_no, int value);
+    int get_priority(LocalProblemNode *node) const;
     void initialize_heap();
     void add_to_heap(LocalProblemNode *node);
-    inline LocalProblem *get_local_problem(int var_no, int value);
 
     void expand_node(LocalProblemNode *node);
     void expand_transition(LocalTransition *trans, const State &state);
     void try_to_fire_transition(LocalTransition *trans);
 
+    int compute_costs(const State &state);
     void mark_helpful_transitions(
         LocalProblem *problem, LocalProblemNode *node, const State &state);
     // Clears "reached_by" of visited nodes as a side effect to avoid
