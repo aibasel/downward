@@ -23,6 +23,7 @@ TODO: The responsibilities between the different classes need to be
       This would also get rid of g_HACK.
  */
 
+namespace cea_heuristic {
 
 static ContextEnhancedAdditiveHeuristic *g_HACK = 0;
 
@@ -344,5 +345,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new ContextEnhancedAdditiveHeuristic(opts);
 }
 
-
 static Plugin<ScalarEvaluator> _plugin("cea", _parse);
+
+}
