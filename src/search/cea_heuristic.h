@@ -32,6 +32,7 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
 
     void expand_node(LocalProblemNode *node);
     void expand_transition(LocalTransition *trans, const State &state);
+    void try_to_fire_transition(LocalTransition *trans);
 
     void mark_helpful_transitions(
         LocalProblem *problem, LocalProblemNode *node, const State &state);

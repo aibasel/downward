@@ -28,6 +28,8 @@ namespace cea_heuristic {
 
 static ContextEnhancedAdditiveHeuristic *g_HACK = 0;
 
+// TODO: Get rid of owner.
+// TODO: Do transitions really need to know their source?
 // TODO: Fix friend statements and access qualifiers.
 
 class LocalTransition {
@@ -45,8 +47,6 @@ class LocalTransition {
 
     LocalTransition(LocalProblemNode *source_, LocalProblemNode *target_,
                     const ValueTransitionLabel *label_, int action_cost_);
-
-    void try_to_fire();
 };
 
 
@@ -145,11 +145,15 @@ LocalTransition::LocalTransition(
     unreached_conditions = -1;
 }
 
-inline void LocalTransition::try_to_fire() {
-    if (!unreached_conditions && target_cost < target->cost) {
-        target->cost = target_cost;
-        target->reached_by = this;
-        g_HACK->add_to_heap(target);
+void ContextEnhancedAdditiveHeuristic::try_to_fire_transition(
+    LocalTransition *trans) {
+    if (!trans->unreached_conditions) {
+        LocalProblemNode *target = trans->target;
+        if (trans->target_cost < target->cost) {
+            target->cost = trans->target_cost;
+            target->reached_by = trans;
+            add_to_heap(target);
+        }
     }
 }
 
@@ -349,7 +353,7 @@ void ContextEnhancedAdditiveHeuristic::expand_node(LocalProblemNode *node) {
         assert(trans->unreached_conditions);
         --trans->unreached_conditions;
         trans->target_cost += node->cost;
-        trans->try_to_fire();
+        try_to_fire_transition(trans);
     }
     node->waiting_list.clear();
 }
@@ -410,7 +414,7 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
             ++trans->unreached_conditions;
         }
     }
-    trans->try_to_fire();
+    try_to_fire_transition(trans);
 }
 
 int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
