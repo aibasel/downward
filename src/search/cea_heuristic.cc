@@ -73,7 +73,7 @@ class LocalProblemNode {
     // needed for the overall computation.
 
     bool expanded;
-    std::vector<short> children_state;
+    std::vector<short> context;
 
     LocalTransition *reached_by;
     // Before a node is expanded, reached_by is the "current best"
@@ -86,7 +86,7 @@ class LocalProblemNode {
 
     std::vector<LocalTransition *> waiting_list;
 
-    LocalProblemNode(LocalProblem *owner, int children_state_size);
+    LocalProblemNode(LocalProblem *owner, int context_size);
     void add_to_waiting_list(LocalTransition *transition);
     void on_expand();
 
@@ -105,7 +105,7 @@ class LocalProblem {
 
     std::vector<LocalProblemNode> nodes;
 
-    std::vector<int> *causal_graph_parents;
+    std::vector<int> *context_variables;
 
     void build_nodes_for_variable(int var_no);
     void build_nodes_for_goal();
@@ -186,13 +186,13 @@ void LocalTransition::on_source_expanded(const State &state) {
         curr_precond = precond.begin(),
         last_precond = precond.end();
 
-    short *children_state = &source->children_state.front();
+    short *context = &source->context.front();
     vector<vector<LocalProblem *> > &problem_index = g_HACK->local_problem_index;
-    int *parent_vars = &*source->owner->causal_graph_parents->begin();
+    int *parent_vars = &*source->owner->context_variables->begin();
 
     for (; curr_precond != last_precond; ++curr_precond) {
         int local_var = curr_precond->local_var;
-        int current_val = children_state[local_var];
+        int current_val = context[local_var];
         int precond_value = curr_precond->value;
         int precond_var_no = parent_vars[local_var];
 
@@ -231,12 +231,12 @@ void LocalTransition::on_condition_reached(int cost) {
 }
 
 LocalProblemNode::LocalProblemNode(LocalProblem *owner_,
-                                   int children_state_size) {
+                                   int context_size) {
     owner = owner_;
     cost = -1;
     expanded = false;
     reached_by = 0;
-    children_state.resize(children_state_size, -1);
+    context.resize(context_size, -1);
 }
 
 void LocalProblemNode::add_to_waiting_list(LocalTransition *transition) {
@@ -248,13 +248,13 @@ void LocalProblemNode::on_expand() {
     // Set children state unless this was an initial node.
     if (reached_by) {
         LocalProblemNode *parent = reached_by->source;
-        children_state = parent->children_state;
+        context = parent->context;
         const vector<LocalAssignment> &precond = reached_by->label->precond;
         for (int i = 0; i < precond.size(); i++)
-            children_state[precond[i].local_var] = precond[i].value;
+            context[precond[i].local_var] = precond[i].value;
         const vector<LocalAssignment> &effect = reached_by->label->effect;
         for (int i = 0; i < effect.size(); i++)
-            children_state[effect[i].local_var] = effect[i].value;
+            context[effect[i].local_var] = effect[i].value;
         if (parent->reached_by)
             reached_by = parent->reached_by;
     }
@@ -266,9 +266,9 @@ void LocalProblemNode::on_expand() {
 void LocalProblem::build_nodes_for_variable(int var_no) {
     DomainTransitionGraph *dtg = g_transition_graphs[var_no];
 
-    causal_graph_parents = &dtg->cea_parents;
+    context_variables = &dtg->cea_parents;
 
-    int num_parents = causal_graph_parents->size();
+    int num_parents = context_variables->size();
     for (int value = 0; value < g_variable_domain[var_no]; value++)
         nodes.push_back(LocalProblemNode(this, num_parents));
 
@@ -293,9 +293,9 @@ void LocalProblem::build_nodes_for_variable(int var_no) {
 void LocalProblem::build_nodes_for_goal() {
     // TODO: We have a small memory leak here. Could be fixed by
     // making two LocalProblem classes with a virtual destructor.
-    causal_graph_parents = new vector<int>;
+    context_variables = new vector<int>;
     for (int i = 0; i < g_goal.size(); i++)
-        causal_graph_parents->push_back(g_goal[i].first);
+        context_variables->push_back(g_goal[i].first);
 
     for (int value = 0; value < 2; value++)
         nodes.push_back(LocalProblemNode(this, g_goal.size()));
@@ -333,8 +333,8 @@ void LocalProblem::initialize(int base_priority_, int start_value,
 
     LocalProblemNode *start = &nodes[start_value];
     start->cost = 0;
-    for (int i = 0; i < causal_graph_parents->size(); i++)
-        start->children_state[i] = state[(*causal_graph_parents)[i]];
+    for (int i = 0; i < context_variables->size(); i++)
+        start->context[i] = state[(*context_variables)[i]];
 
     g_HACK->add_to_heap(start);
 }
@@ -356,7 +356,7 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
         } else {
             // Recursively compute helpful transitions for precondition variables.
             const vector<LocalAssignment> &precond = first_on_path->label->precond;
-            int *parent_vars = &*owner->causal_graph_parents->begin();
+            int *parent_vars = &*owner->context_variables->begin();
             for (int i = 0; i < precond.size(); i++) {
                 int precond_value = precond[i].value;
                 int local_var = precond[i].local_var;
