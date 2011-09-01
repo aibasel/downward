@@ -17,9 +17,11 @@ using namespace std;
 namespace cea_heuristic {
 
 // TODO: Search for other TODOs.
-// TODO: Get rid of owner?
+// TODO: Get rid of owner? (Then we'd probably have to push the
+//       LocalProblem * into the heap along with the LocalProblemNode *).
 // TODO: Do transitions really need to know their source?
-// TODO: Fix friend statements and access qualifiers.
+// TODO: Check ordering of methods, that the methods have proper sizes
+//       and names, etc.
 
 struct LocalTransition {
     LocalProblemNode *source;
