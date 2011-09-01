@@ -21,6 +21,7 @@ HEADERS = \
           operator.h \
           operator_cost.h \
           option_parser.h \
+          option_parser_util.h \
           pref_evaluator.h \
           relaxation_heuristic.h \
           search_engine.h \
