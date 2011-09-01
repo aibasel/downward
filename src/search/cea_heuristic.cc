@@ -107,7 +107,6 @@ class LocalProblem {
     }
 public:
     LocalProblem(int var_no = -1);
-    void initialize(int base_priority, int start_value, const State &state);
 };
 
 inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
@@ -209,11 +208,13 @@ LocalProblem::LocalProblem(int var_no) {
         build_nodes_for_variable(var_no);
 }
 
-void LocalProblem::initialize(int base_priority_, int start_value,
-                              const State &state) {
-    assert(!is_initialized());
-    base_priority = base_priority_;
+void ContextEnhancedAdditiveHeuristic::setup_local_problem(
+    LocalProblem *problem, int base_priority,
+    int start_value, const State &state) {
+    assert(!problem->is_initialized());
+    problem->base_priority = base_priority;
 
+    vector<LocalProblemNode> &nodes = problem->nodes;
     for (size_t to_value = 0; to_value < nodes.size(); ++to_value) {
         nodes[to_value].expanded = false;
         nodes[to_value].cost = numeric_limits<int>::max();
@@ -223,10 +224,10 @@ void LocalProblem::initialize(int base_priority_, int start_value,
 
     LocalProblemNode *start = &nodes[start_value];
     start->cost = 0;
-    for (size_t i = 0; i < context_variables->size(); ++i)
-        start->context[i] = state[(*context_variables)[i]];
+    for (size_t i = 0; i < problem->context_variables->size(); ++i)
+        start->context[i] = state[(*problem->context_variables)[i]];
 
-    g_HACK->add_to_heap(start);
+    add_to_heap(start);
 }
 
 void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
@@ -300,7 +301,7 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
     for (size_t i = 0; i < local_problems.size(); ++i)
         local_problems[i]->base_priority = -1;
 
-    goal_problem->initialize(0, 0, state);
+    setup_local_problem(goal_problem, 0, 0, state);
 
     int heuristic = compute_costs(state);
 
@@ -378,9 +379,11 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
         LocalProblem *subproblem = get_local_problem(
             precond_var_no, current_val);
 
-        if (!subproblem->is_initialized())
-            subproblem->initialize(
-                get_priority(trans->source), current_val, state);
+        if (!subproblem->is_initialized()) {
+            setup_local_problem(
+                subproblem, get_priority(trans->source), current_val, state);
+        }
+
         LocalProblemNode *cond_node = &subproblem->nodes[precond_value];
         if (cond_node->expanded) {
             trans->target_cost += cond_node->cost;
