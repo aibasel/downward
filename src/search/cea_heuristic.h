@@ -9,13 +9,11 @@
 
 namespace cea_heuristic {
 
-class LocalProblem;
-class LocalProblemNode;
-class LocalTransition;
+struct LocalProblem;
+struct LocalProblemNode;
+struct LocalTransition;
 
 class ContextEnhancedAdditiveHeuristic : public Heuristic {
-    friend class LocalProblem;
-
     std::vector<LocalProblem *> local_problems;
     std::vector<std::vector<LocalProblem *> > local_problem_index;
     LocalProblem *goal_problem;
@@ -27,6 +25,9 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     int get_priority(LocalProblemNode *node) const;
     void initialize_heap();
     void add_to_heap(LocalProblemNode *node);
+
+    LocalProblem *build_problem_for_variable(int var_no) const;
+    LocalProblem *build_problem_for_goal() const;
 
     void setup_local_problem(LocalProblem *problem, int base_priority,
                              int start_value, const State &state);

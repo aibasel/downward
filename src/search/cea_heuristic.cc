@@ -14,21 +14,10 @@
 using namespace std;
 
 
-/*
-TODO: The responsibilities between the different classes need to be
-      divided more clearly. For example, the LocalProblem
-      initialization code contains some stuff (related to initial node
-      initialization) that may better fit into the LocalProblemNode
-      class. It's probably best to have all the code in the
-      ContextEnhancedAdditiveHeuristic class and have everything else be PODs.
-      This would also get rid of g_HACK.
- */
-
 namespace cea_heuristic {
 
-static ContextEnhancedAdditiveHeuristic *g_HACK = 0;
-
-// TODO: Get rid of owner.
+// TODO: Search for other TODOs.
+// TODO: Get rid of owner?
 // TODO: Do transitions really need to know their source?
 // TODO: Fix friend statements and access qualifiers.
 
@@ -89,31 +78,29 @@ struct LocalProblemNode {
     }
 };
 
-
-class LocalProblem {
-    friend class ContextEnhancedAdditiveHeuristic;
-
+struct LocalProblem {
     int base_priority;
-
     vector<LocalProblemNode> nodes;
-
     vector<int> *context_variables;
 
-    void build_nodes_for_variable(int var_no);
-    void build_nodes_for_goal();
-
     inline bool is_initialized() const {
+        // TODO: Get rid of this -- last method.
         return base_priority != -1;
     }
 public:
-    LocalProblem(int var_no = -1);
+    LocalProblem()
+        : base_priority(-1) {
+    }
+
+    ~LocalProblem() {
+    }
 };
 
 inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
     int var_no, int value) {
     LocalProblem *&table_entry = local_problem_index[var_no][value];
     if (!table_entry) {
-        table_entry = new LocalProblem(var_no);
+        table_entry = build_problem_for_variable(var_no);
         local_problems.push_back(table_entry);
     }
     return table_entry;
@@ -152,42 +139,50 @@ void ContextEnhancedAdditiveHeuristic::try_to_fire_transition(
     }
 }
 
-void LocalProblem::build_nodes_for_variable(int var_no) {
+LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
+    int var_no) const {
+    LocalProblem *problem = new LocalProblem;
+
     DomainTransitionGraph *dtg = g_transition_graphs[var_no];
 
-    context_variables = &dtg->cea_parents;
+    problem->context_variables = &dtg->cea_parents;
 
-    int num_parents = context_variables->size();
-    for (size_t value = 0; value < g_variable_domain[var_no]; ++value)
-        nodes.push_back(LocalProblemNode(this, num_parents));
+    int num_parents = problem->context_variables->size();
+    size_t num_values = g_variable_domain[var_no];
+    problem->nodes.reserve(num_values);
+    for (size_t value = 0; value < num_values; ++value)
+        problem->nodes.push_back(LocalProblemNode(problem, num_parents));
 
     // Compile the DTG arcs into LocalTransition objects.
-    for (size_t value = 0; value < nodes.size(); ++value) {
-        LocalProblemNode &node = nodes[value];
+    for (size_t value = 0; value < num_values; ++value) {
+        LocalProblemNode &node = problem->nodes[value];
         const ValueNode &dtg_node = dtg->nodes[value];
         for (size_t i = 0; i < dtg_node.transitions.size(); ++i) {
             const ValueTransition &dtg_trans = dtg_node.transitions[i];
             int target_value = dtg_trans.target->value;
-            LocalProblemNode &target = nodes[target_value];
+            LocalProblemNode &target = problem->nodes[target_value];
             for (size_t j = 0; j < dtg_trans.cea_labels.size(); ++j) {
                 const ValueTransitionLabel &label = dtg_trans.cea_labels[j];
-                int action_cost = g_HACK->get_adjusted_cost(*label.op);
+                int action_cost = get_adjusted_cost(*label.op);
                 LocalTransition trans(&node, &target, &label, action_cost);
                 node.outgoing_transitions.push_back(trans);
             }
         }
     }
+    return problem;
 }
 
-void LocalProblem::build_nodes_for_goal() {
-    // TODO: We have a small memory leak here. Could be fixed by
-    // making two LocalProblem classes with a virtual destructor.
-    context_variables = new vector<int>;
+LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_goal() const {
+    // TODO: We have a small memory leak here. The stuff allocated
+    //       here needs to be deleted.
+    LocalProblem *problem = new LocalProblem;
+
+    problem->context_variables = new vector<int>;
     for (size_t i = 0; i < g_goal.size(); ++i)
-        context_variables->push_back(g_goal[i].first);
+        problem->context_variables->push_back(g_goal[i].first);
 
     for (size_t value = 0; value < 2; ++value)
-        nodes.push_back(LocalProblemNode(this, g_goal.size()));
+        problem->nodes.push_back(LocalProblemNode(problem, g_goal.size()));
 
     vector<LocalAssignment> goals;
     for (size_t goal_no = 0; goal_no < g_goal.size(); ++goal_no) {
@@ -196,16 +191,9 @@ void LocalProblem::build_nodes_for_goal() {
     }
     vector<LocalAssignment> no_effects;
     ValueTransitionLabel *label = new ValueTransitionLabel(0, goals, no_effects);
-    LocalTransition trans(&nodes[0], &nodes[1], label, 0);
-    nodes[0].outgoing_transitions.push_back(trans);
-}
-
-LocalProblem::LocalProblem(int var_no) {
-    base_priority = -1;
-    if (var_no == -1)
-        build_nodes_for_goal();
-    else
-        build_nodes_for_variable(var_no);
+    LocalTransition trans(&problem->nodes[0], &problem->nodes[1], label, 0);
+    problem->nodes[0].outgoing_transitions.push_back(trans);
+    return problem;
 }
 
 void ContextEnhancedAdditiveHeuristic::setup_local_problem(
@@ -266,9 +254,6 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     const Options &opts) : Heuristic(opts) {
-    if (g_HACK)
-        abort();
-    g_HACK = this;
     goal_problem = 0;
     goal_node = 0;
 }
@@ -285,7 +270,7 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
 
     int num_variables = g_variable_domain.size();
 
-    goal_problem = new LocalProblem;
+    goal_problem = build_problem_for_goal();
     goal_node = &goal_problem->nodes[1];
 
     local_problem_index.resize(num_variables);
