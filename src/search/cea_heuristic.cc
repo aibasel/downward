@@ -63,6 +63,7 @@ class LocalProblemNode {
 
     // Dynamic attributes (modified during heuristic computation).
     int cost;
+
     inline int priority() const;
     // Nodes have both a "cost" and a "priority", which are related.
     // The cost is an estimate of how expensive it is to reach this
@@ -89,10 +90,6 @@ class LocalProblemNode {
     LocalProblemNode(LocalProblem *owner, int context_size);
     void add_to_waiting_list(LocalTransition *transition);
     void on_expand();
-
-    void mark_helpful_transitions(const State &state);
-    // Clears "reached_by" of visited nodes as a side effect to avoid
-    // recursing to the same node again.
 };
 
 
@@ -109,18 +106,17 @@ class LocalProblem {
 
     void build_nodes_for_variable(int var_no);
     void build_nodes_for_goal();
-    inline bool is_initialized() const;
+
+    inline bool is_initialized() const {
+        return base_priority != -1;
+    }
 public:
     LocalProblem(int var_no = -1);
     void initialize(int base_priority, int start_value, const State &state);
 };
 
-inline int LocalProblemNode::priority() const {
+inline int LocalProblemNode ::priority() const {
     return cost + owner->base_priority;
-}
-
-inline bool LocalProblem::is_initialized() const {
-    return base_priority != -1;
 }
 
 inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
@@ -339,11 +335,12 @@ void LocalProblem::initialize(int base_priority_, int start_value,
     g_HACK->add_to_heap(start);
 }
 
-void LocalProblemNode::mark_helpful_transitions(const State &state) {
-    assert(cost >= 0 && cost < numeric_limits<int>::max());
-    if (reached_by) {
-        LocalTransition *first_on_path = reached_by;
-        reached_by = 0; // Clear to avoid revisiting this node later.
+void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
+    LocalProblem *problem, LocalProblemNode *node, const State &state) {
+    assert(node->cost >= 0 && node->cost < numeric_limits<int>::max());
+    LocalTransition *first_on_path = node->reached_by;
+    if (first_on_path) {
+        node->reached_by = 0; // Clear to avoid revisiting this node later.
         if (first_on_path->target_cost == first_on_path->action_cost) {
             // Transition possibly applicable.
             const Operator *op = first_on_path->label->op;
@@ -351,21 +348,22 @@ void LocalProblemNode::mark_helpful_transitions(const State &state) {
                 // If there are no zero-cost actions, the target_cost/
                 // action_cost test above already guarantees applicability.
                 assert(!op->is_axiom());
-                g_HACK->set_preferred(op);
+                set_preferred(op);
             }
         } else {
             // Recursively compute helpful transitions for precondition variables.
             const vector<LocalAssignment> &precond = first_on_path->label->precond;
-            int *parent_vars = &*owner->context_variables->begin();
+            int *context_vars = &*problem->context_variables->begin();
             for (int i = 0; i < precond.size(); i++) {
                 int precond_value = precond[i].value;
                 int local_var = precond[i].local_var;
-                int precond_var_no = parent_vars[local_var];
+                int precond_var_no = context_vars[local_var];
                 if (state[precond_var_no] == precond_value)
                     continue;
-                LocalProblemNode *child_node = &g_HACK->get_local_problem(
-                    precond_var_no, state[precond_var_no])->nodes[precond_value];
-                child_node->mark_helpful_transitions(state);
+                LocalProblem *subproblem = get_local_problem(
+                    precond_var_no, state[precond_var_no]);
+                LocalProblemNode *subnode = &subproblem->nodes[precond_value];
+                mark_helpful_transitions(subproblem, subnode, state);
             }
         }
     }
@@ -413,7 +411,7 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
     int heuristic = compute_costs(state);
 
     if (heuristic != DEAD_END && heuristic != 0)
-        goal_node->mark_helpful_transitions(state);
+        mark_helpful_transitions(goal_problem, goal_node, state);
 
     return heuristic;
 }

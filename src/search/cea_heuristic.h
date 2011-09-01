@@ -29,6 +29,11 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     void initialize_heap();
     void add_to_heap(LocalProblemNode *node);
     inline LocalProblem *get_local_problem(int var_no, int value);
+
+    void mark_helpful_transitions(
+        LocalProblem *problem, LocalProblemNode *node, const State &state);
+    // Clears "reached_by" of visited nodes as a side effect to avoid
+    // recursing to the same node again.
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
