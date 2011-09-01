@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 #include <ios>
+#include <iostream>
+#include <sstream>
 #include <tree.hh>
 #include <tree_util.hh>
 #include <utility>
@@ -457,78 +459,27 @@ public:
         return instance_;
     }
 
-    void register_object(std::string k, std::string type) {
-        transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
-        registered[k] = DocStruct();
-        registered[k].type = type;
-        registered[k].full_name = k;
-        registered[k].synopsis = "";
-    }
+    void register_object(std::string k, std::string type);
 
     void add_arg(std::string k,
                  std::string arg_name,
                  std::string help,
                  std::string type,
                  std::string default_value,
-                 ValueExplanations value_explanations = ValueExplanations()) {
-        registered[k].arg_help.push_back(
-            ArgumentInfo(arg_name, help, type, default_value,
-                         value_explanations));
-    }
-
+                 ValueExplanations value_explanations = ValueExplanations());
     void set_synopsis(std::string k, 
-                      std::string name, std::string description) {
-        registered[k].full_name = name;
-        registered[k].synopsis = description;
-    }
-
+                      std::string name, std::string description);
     void add_property(std::string k,
-                      std::string name, std::string description) {
-        registered[k].property_help.push_back(PropertyInfo(name, description));
-    }
-
+                      std::string name, std::string description);
     void add_feature(std::string k,
-                     std::string feature, std::string description) {
-        registered[k].support_help.push_back(LanguageSupportInfo(feature,
-                                                                  description));
-    }
-
+                     std::string feature, std::string description);
     void add_note(std::string k,
-                  std::string name, std::string description) {
-        registered[k].notes.push_back(NoteInfo(name, description));
-    }
-                      
+                  std::string name, std::string description);
 
-    bool contains(std::string k) {
-        return registered.find(k) != registered.end();
-    }
-
-    DocStruct get(std::string k) {
-        return registered[k];
-    }
-
-    std::vector<std::string> get_keys() {
-        std::vector<std::string> keys;
-        for (std::map<std::string, DocStruct>::iterator it =
-                 registered.begin();
-             it != registered.end(); ++it) {
-            keys.push_back(it->first);
-        }
-        return keys;
-    }
-
-    std::vector<std::string> get_types() {
-        std::vector<std::string> types;
-        for (std::map<std::string, DocStruct>::iterator it =
-                 registered.begin();
-             it != registered.end(); ++it) {
-            if(find(types.begin(), types.end(), it->second.type)
-               == types.end()){
-                types.push_back(it->second.type);
-            }   
-        }
-        return types;
-    }
+    bool contains(std::string k);
+    DocStruct get(std::string k);
+    std::vector<std::string> get_keys();
+    std::vector<std::string> get_types();
 
 private:
     DocStore() {}

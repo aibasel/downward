@@ -110,8 +110,6 @@ static void plain_help_output() {
 
 //TODO: the next method becomes hard to read. Split up.
 static void txt2tags_help_output() {
-    cout << "Experimental automatically generated documentation." << endl
-         << "<<TableOfContents>>" << endl;
     DocStore *ds = DocStore::instance();
     vector<string> keys = ds->get_keys();
     vector<string> types = ds->get_types();
