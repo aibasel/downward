@@ -84,11 +84,6 @@ struct LocalProblem {
     int base_priority;
     vector<LocalProblemNode> nodes;
     vector<int> *context_variables;
-
-    inline bool is_initialized() const {
-        // TODO: Get rid of this -- last method.
-        return base_priority != -1;
-    }
 public:
     LocalProblem()
         : base_priority(-1) {
@@ -198,10 +193,15 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_goal() const {
     return problem;
 }
 
-void ContextEnhancedAdditiveHeuristic::setup_local_problem(
+bool ContextEnhancedAdditiveHeuristic::is_local_problem_set_up(
+    const LocalProblem *problem) const {
+    return problem->base_priority != -1;
+}
+
+void ContextEnhancedAdditiveHeuristic::set_up_local_problem(
     LocalProblem *problem, int base_priority,
     int start_value, const State &state) {
-    assert(!problem->is_initialized());
+    assert(problem->base_priority == -1);
     problem->base_priority = base_priority;
 
     vector<LocalProblemNode> &nodes = problem->nodes;
@@ -288,7 +288,7 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
     for (size_t i = 0; i < local_problems.size(); ++i)
         local_problems[i]->base_priority = -1;
 
-    setup_local_problem(goal_problem, 0, 0, state);
+    set_up_local_problem(goal_problem, 0, 0, state);
 
     int heuristic = compute_costs(state);
 
@@ -366,8 +366,8 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
         LocalProblem *subproblem = get_local_problem(
             precond_var_no, current_val);
 
-        if (!subproblem->is_initialized()) {
-            setup_local_problem(
+        if (!is_local_problem_set_up(subproblem)) {
+            set_up_local_problem(
                 subproblem, get_priority(trans->source), current_val, state);
         }
 
@@ -392,7 +392,7 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
         int curr_priority = top_pair.first;
         LocalProblemNode *node = top_pair.second;
 
-        assert(node->owner->is_initialized());
+        assert(is_local_problem_set_up(node->owner));
         if (get_priority(node) < curr_priority)
             continue;
         if (node == goal_node)
