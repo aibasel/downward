@@ -177,6 +177,7 @@ int EagerSearch::step() {
                     //cout << "Pathmax correction: " << succ_h << " -> " << node.get_h() - get_adjusted_cost(*op) << endl;
                     succ_h = node.get_h() - get_adjusted_cost(*op);
                     heuristics[0]->set_evaluator_value(succ_h);
+                    open_list->evaluate(node.get_g() + get_adjusted_cost(*op), is_preferred);
                     search_progress.inc_pathmax_corrections();
                 }
             }

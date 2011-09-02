@@ -12,11 +12,12 @@ using namespace std;
 #include "axioms.h"
 #include "causal_graph.h"
 #include "domain_transition_graph.h"
+#include "heuristic.h"
 #include "operator.h"
+#include "rng.h"
 #include "state.h"
 #include "successor_generator.h"
 #include "timer.h"
-#include "heuristic.h"
 
 bool test_goal(const State &state) {
     for (int i = 0; i < g_goal.size(); i++) {
@@ -185,6 +186,37 @@ void dump_everything() {
     */
 }
 
+void verify_no_axioms_no_cond_effects() {
+    if (!g_axioms.empty()) {
+        cerr << "Heuristic does not support axioms!" << endl << "Terminating."
+             << endl;
+        exit(1);
+    }
+
+    for (int i = 0; i < g_operators.size(); i++) {
+        const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
+        for (int j = 0; j < pre_post.size(); j++) {
+            const vector<Prevail> &cond = pre_post[j].cond;
+            if (cond.empty())
+                continue;
+            // Accept conditions that are redundant, but nothing else.
+            // In a better world, these would never be included in the
+            // input in the first place.
+            int var = pre_post[j].var;
+            int pre = pre_post[j].pre;
+            int post = pre_post[j].post;
+            if (pre == -1 && cond.size() == 1 && cond[0].var == var
+                && cond[0].prev != post && g_variable_domain[var] == 2)
+                continue;
+
+            cerr << "Heuristic does not support conditional effects "
+                 << "(operator " << g_operators[i].get_name() << ")" << endl
+                 << "Terminating." << endl;
+            exit(1);
+        }
+    }
+}
+
 bool g_legacy_file_format = false; // TODO: Can rip this out after migration.
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
@@ -204,3 +236,4 @@ CausalGraph *g_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";
+RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.

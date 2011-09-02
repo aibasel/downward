@@ -1,5 +1,5 @@
-#ifndef LANDMARKS_LANDMARK_FACTORY
-#define LANDMARKS_LANDMARK_FACTORY
+#ifndef LANDMARKS_LANDMARK_FACTORY_H
+#define LANDMARKS_LANDMARK_FACTORY_H
 
 #include "landmark_graph.h"
 #include "exploration.h"
