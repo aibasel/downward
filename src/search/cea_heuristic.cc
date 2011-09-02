@@ -14,12 +14,42 @@
 using namespace std;
 
 
+/* Implementation notes:
+
+   The main data structures are:
+   - LocalProblem: a single "copy" of a domain transition graph, which
+     is used to compute the costs of achieving all facts (v=d') for a
+     fixed variable v starting from a fixed value d. So we can have at
+     most |dom(v)| many local problems for any variable v. These are
+     created lazily as needed.
+   - LocalProblemNode: a single vertex in the domain transition graph
+     represented by a LocalProblem. Knows what the successors in the
+     graph are and keeps tracks of costs and helpful transitions for
+     the node.
+   - LocalTransition: a transition between two local problem nodes.
+     Keeps track of how many unachieved preconditions there still are,
+     what the cost of enabling the transition are and things like that.
+
+   The following two design decisions might be worth revisiting:
+   - Each local problem keeps its own copy of the graph itself
+     (what is connected to what via which labels), even though this
+     is not necessary. The "static" graph info and the "dynamic" info
+     could be split, potentially saving quite a bit of memory.
+   - The graph is encoded with reference cycles: each transition knows
+     what its source node is, even though this is in a sense redundant
+     (the source must be the node which holds the transition), and
+     every node knows what its local problem is, which is similarly
+     redundant (the local problem must be the one that holds this node).
+     If we got rid of this, the main queue of the algorithm would need
+     (LocalProblem *, LocalProblemNode *) pairs rather than straight
+     node pointers, and the waiting lists would need to contain
+     (LocalProblemNode *, LocalTransition *) pairs rather than straight
+     transitions. So it's not clear if this would really save much, which
+     is why we do not currently do it.
+ */
+
 namespace cea_heuristic {
 
-// TODO: Search for other TODOs.
-// TODO: Get rid of owner? (Then we'd probably have to push the
-//       LocalProblem * into the heap along with the LocalProblemNode *).
-// TODO: Do transitions really need to know their source?
 // TODO: Check ordering of methods, that the methods have proper sizes
 //       and names, etc.
 
@@ -170,8 +200,6 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
 }
 
 LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_goal() const {
-    // TODO: We have a small memory leak here. The stuff allocated
-    //       here needs to be deleted.
     LocalProblem *problem = new LocalProblem;
 
     problem->context_variables = new vector<int>;
@@ -262,6 +290,9 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
 
 ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
     delete goal_problem;
+    delete goal_problem->context_variables;
+    delete goal_problem->nodes[0].outgoing_transitions[0].label;
+
     for (size_t i = 0; i < local_problems.size(); ++i)
         delete local_problems[i];
 }
