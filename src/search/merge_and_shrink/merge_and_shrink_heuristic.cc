@@ -211,13 +211,11 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merge-and-shrink heuristic", 
-        "Note: The numbering of the composition and collapsing options "
-        "has changed in July 2010. Please adapt them when using "
-        "old experiment scripts (reduce old value by 1). ");
+        "Note: The parameter space and syntax for the merge-and-shrink "
+        "heuristic has changed significantly in August 2011.");
     parser.document_language_support(
         "action costs", 
-        "supported for SHRINK_DFP, SHRINK_BISIMULATION_NO_MEMORY_LIMIT, "
-        "SHRINK_DFP_ENABLE_GREEDY_BISIMULATION_NO_MEMORY_LIMIT");
+        "supported");
     parser.document_language_support("conditional_effects", "not supported");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
@@ -226,7 +224,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators", "no");
 
     // TODO: better documentation what each parameter does
-    parser.add_option<int>("count", 1, "nr of abstractions to build");
+    parser.add_option<int>("count", 1, "number of abstractions to build");
     vector<string> merge_strategies;
     //TODO: it's a bit dangerous that the merge strategies here
     // have to be specified exactly in the same order
