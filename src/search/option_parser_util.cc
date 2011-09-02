@@ -26,6 +26,19 @@ void DocStore::add_arg(string k,
                      value_explanations));
 }
 
+void DocStore::add_value_explanations(string k,
+                                      string arg_name,
+                                      ValueExplanations value_explanations) {
+    vector<ArgumentInfo> &args = registered[k].arg_help;
+    for(int i(0); i != args.size(); ++i) {
+        if (args[i].kwd.compare(arg_name) == 0) {
+            args[i].value_explanations = value_explanations;
+            break;
+        }
+    }
+}
+
+
 void DocStore::set_synopsis(string k, 
                             string name, string description) {
     registered[k].full_name = name;
@@ -140,7 +153,7 @@ void Txt2TagsPrinter::print_element(string call_name, DocStruct &info) {
             for(size_t k(0); k != arg.value_explanations.size(); ++k) {
                 pair<string, string> explanation = 
                     arg.value_explanations[k];
-                os << " - //" << explanation.first << "//: "
+                os << " - ``" << explanation.first << "``: "
                      << explanation.second << endl;
             }
         }
@@ -202,9 +215,18 @@ void PlainPrinter::print_element(string call_name, DocStruct &info) {
     }
     os << ")" << endl;
     for(size_t j(0); j != info.arg_help.size(); ++j){
-        os << info.arg_help[j].kwd
-             << " (" << info.arg_help[j].type_name << "):"
-             << info.arg_help[j].help << endl;            
+        ArgumentInfo arg = info.arg_help[j];
+        os << arg.kwd
+             << " (" << arg.type_name << "):"
+             << arg.help << endl;
+        if(!arg.value_explanations.empty()) {
+            for(size_t k(0); k != arg.value_explanations.size(); ++k) {
+                pair<string, string> explanation = 
+                    arg.value_explanations[k];
+                os << " - " << explanation.first << ": "
+                     << explanation.second << endl;
+            }
+        }
     }
     os << endl;
 }

@@ -245,7 +245,42 @@ static Heuristic *_parse(OptionParser &parser) {
     // when it's actually used.
     ShrinkStrategy *def_shrink = ShrinkFH::create_default(50000);
 
-    parser.add_option<ShrinkStrategy *>("shrink_strategy", def_shrink, "shrink strategy");
+    parser.add_option<ShrinkStrategy *>(
+        "shrink_strategy", def_shrink, 
+        "shrink strategy; these are not fully documented yet;"
+        "try one of the following:");
+    ValueExplanations shrink_value_explanations;
+    shrink_value_explanations.push_back(
+        make_pair("shrink_fh(max_states=N)",
+                  "f-preserving abstractions from the "
+                  "Helmert/Haslum/Hoffmann ICAPS 2007 paper "
+                  "(called HHH in the IJCAI 2011 paper by Nissim, "
+                  "Hoffmann and Helmert). "
+                  "Here, N is a numerical parameter for which sensible values "
+                  "include 1000, 10000, 50000, 100000 and 200000. "
+                  "Combine this with the default merge strategy "
+                  "MERGE_LINEAR_CG_GOAL_LEVEL to match the heuristic "
+                  "in the paper."));
+    shrink_value_explanations.push_back(
+        make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true, initialize_by_h=false, group_by_h=false)",
+                  "Greedy bisimulation without size bound "
+                  "(called M&S-gop in the IJCAI 2011 paper by Nissim, "
+                  "Hoffmann and Helmert). "
+                  "Combine this with the merge strategy "
+                  "MERGE_LINEAR_REVERSE_LEVEL to match "
+                  "the heuristic in the paper. "));
+    shrink_value_explanations.push_back(
+        make_pair("shrink_bisimulation(max_states=N, greedy=false, initialize_by_h=true, group_by_h=true)",
+                  "Exact bisimulation with a size limit "
+                  "(called DFP-bop in the IJCAI 2011 paper by Nissim, "
+                  "Hoffmann and Helmert). "
+                  "where N is a numerical parameter for which sensible values "
+                  "include 1000, 10000, 50000, 100000 and 200000. "
+                  "Combine this with the merge strategy "
+                  "MERGE_LINEAR_REVERSE_LEVEL to match "
+                  "the heuristic in the paper.")); 
+    parser.document_values("shrink_strategy", shrink_value_explanations);
+
     // TODO: Rename option name to "use_label_reduction" to be
     //       consistent with the papers?
     parser.add_option<bool>("reduce_labels", true, "enable label reduction");

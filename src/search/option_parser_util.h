@@ -483,6 +483,9 @@ public:
                  std::string type,
                  std::string default_value,
                  ValueExplanations value_explanations = ValueExplanations());
+    void add_value_explanations(std::string k,
+                                std::string arg_name,
+                                ValueExplanations value_explanations);
     void set_synopsis(std::string k, 
                       std::string name, std::string description);
     void add_property(std::string k,
