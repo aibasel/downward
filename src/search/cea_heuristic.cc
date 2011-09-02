@@ -7,7 +7,6 @@
 #include "plugin.h"
 #include "state.h"
 
-#include <algorithm>
 #include <cassert>
 #include <limits>
 #include <vector>
@@ -49,9 +48,6 @@ using namespace std;
  */
 
 namespace cea_heuristic {
-
-// TODO: Check ordering of methods, that the methods have proper sizes
-//       and names, etc.
 
 struct LocalTransition {
     LocalProblemNode *source;
@@ -123,7 +119,7 @@ public:
     }
 };
 
-inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
+LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
     int var_no, int value) {
     LocalProblem *&table_entry = local_problem_index[var_no][value];
     if (!table_entry) {
@@ -131,39 +127,6 @@ inline LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
         local_problems.push_back(table_entry);
     }
     return table_entry;
-}
-
-inline int ContextEnhancedAdditiveHeuristic::get_priority(
-    LocalProblemNode *node) const {
-    /* Nodes have both a "cost" and a "priority", which are related.
-       The cost is an estimate of how expensive it is to reach this
-       node. The "priority" is the lowest cost value in the overall
-       cost computation for which this node will be important. It is
-       essentially the sum of the cost and a local-problem-specific
-       "base priority", which depends on where this local problem is
-       needed for the overall computation. */
-    return node->owner->base_priority + node->cost;
-}
-
-inline void ContextEnhancedAdditiveHeuristic::initialize_heap() {
-    node_queue.clear();
-}
-
-inline void ContextEnhancedAdditiveHeuristic::add_to_heap(
-    LocalProblemNode *node) {
-    node_queue.push(get_priority(node), node);
-}
-
-void ContextEnhancedAdditiveHeuristic::try_to_fire_transition(
-    LocalTransition *trans) {
-    if (!trans->unreached_conditions) {
-        LocalProblemNode *target = trans->target;
-        if (trans->target_cost < target->cost) {
-            target->cost = trans->target_cost;
-            target->reached_by = trans;
-            add_to_heap(target);
-        }
-    }
 }
 
 LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
@@ -221,6 +184,27 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_goal() const {
     return problem;
 }
 
+int ContextEnhancedAdditiveHeuristic::get_priority(
+    LocalProblemNode *node) const {
+    /* Nodes have both a "cost" and a "priority", which are related.
+       The cost is an estimate of how expensive it is to reach this
+       node. The "priority" is the lowest cost value in the overall
+       cost computation for which this node will be important. It is
+       essentially the sum of the cost and a local-problem-specific
+       "base priority", which depends on where this local problem is
+       needed for the overall computation. */
+    return node->owner->base_priority + node->cost;
+}
+
+inline void ContextEnhancedAdditiveHeuristic::initialize_heap() {
+    node_queue.clear();
+}
+
+inline void ContextEnhancedAdditiveHeuristic::add_to_heap(
+    LocalProblemNode *node) {
+    node_queue.push(get_priority(node), node);
+}
+
 bool ContextEnhancedAdditiveHeuristic::is_local_problem_set_up(
     const LocalProblem *problem) const {
     return problem->base_priority != -1;
@@ -248,91 +232,16 @@ void ContextEnhancedAdditiveHeuristic::set_up_local_problem(
     add_to_heap(start);
 }
 
-void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
-    LocalProblem *problem, LocalProblemNode *node, const State &state) {
-    assert(node->cost >= 0 && node->cost < numeric_limits<int>::max());
-    LocalTransition *first_on_path = node->reached_by;
-    if (first_on_path) {
-        node->reached_by = 0; // Clear to avoid revisiting this node later.
-        if (first_on_path->target_cost == first_on_path->action_cost) {
-            // Transition possibly applicable.
-            const Operator *op = first_on_path->label->op;
-            if (g_min_action_cost != 0 || op->is_applicable(state)) {
-                // If there are no zero-cost actions, the target_cost/
-                // action_cost test above already guarantees applicability.
-                assert(!op->is_axiom());
-                set_preferred(op);
-            }
-        } else {
-            // Recursively compute helpful transitions for precondition variables.
-            const vector<LocalAssignment> &precond = first_on_path->label->precond;
-            int *context_vars = &*problem->context_variables->begin();
-            for (size_t i = 0; i < precond.size(); ++i) {
-                int precond_value = precond[i].value;
-                int local_var = precond[i].local_var;
-                int precond_var_no = context_vars[local_var];
-                if (state[precond_var_no] == precond_value)
-                    continue;
-                LocalProblem *subproblem = get_local_problem(
-                    precond_var_no, state[precond_var_no]);
-                LocalProblemNode *subnode = &subproblem->nodes[precond_value];
-                mark_helpful_transitions(subproblem, subnode, state);
-            }
+void ContextEnhancedAdditiveHeuristic::try_to_fire_transition(
+    LocalTransition *trans) {
+    if (!trans->unreached_conditions) {
+        LocalProblemNode *target = trans->target;
+        if (trans->target_cost < target->cost) {
+            target->cost = trans->target_cost;
+            target->reached_by = trans;
+            add_to_heap(target);
         }
     }
-}
-
-ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    const Options &opts) : Heuristic(opts) {
-    goal_problem = 0;
-    goal_node = 0;
-}
-
-ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
-    if (goal_problem) {
-        delete goal_problem->context_variables;
-        delete goal_problem->nodes[0].outgoing_transitions[0].label;
-    }
-    delete goal_problem;
-
-    for (size_t i = 0; i < local_problems.size(); ++i)
-        delete local_problems[i];
-}
-
-bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
-    return false;
-}
-
-void ContextEnhancedAdditiveHeuristic::initialize() {
-    assert(goal_problem == 0);
-    cout << "Initializing context-enhanced additive heuristic..." << endl;
-
-    int num_variables = g_variable_domain.size();
-
-    goal_problem = build_problem_for_goal();
-    goal_node = &goal_problem->nodes[1];
-
-    local_problem_index.resize(num_variables);
-    for (size_t var_no = 0; var_no < num_variables; ++var_no) {
-        int num_values = g_variable_domain[var_no];
-        local_problem_index[var_no].resize(num_values, 0);
-    }
-}
-
-int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
-    initialize_heap();
-    goal_problem->base_priority = -1;
-    for (size_t i = 0; i < local_problems.size(); ++i)
-        local_problems[i]->base_priority = -1;
-
-    set_up_local_problem(goal_problem, 0, 0, state);
-
-    int heuristic = compute_costs(state);
-
-    if (heuristic != DEAD_END && heuristic != 0)
-        mark_helpful_transitions(goal_problem, goal_node, state);
-
-    return heuristic;
 }
 
 void ContextEnhancedAdditiveHeuristic::expand_node(LocalProblemNode *node) {
@@ -441,6 +350,93 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
             expand_transition(&node->outgoing_transitions[i], state);
     }
     return DEAD_END;
+}
+
+void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
+    LocalProblem *problem, LocalProblemNode *node, const State &state) {
+    assert(node->cost >= 0 && node->cost < numeric_limits<int>::max());
+    LocalTransition *first_on_path = node->reached_by;
+    if (first_on_path) {
+        node->reached_by = 0; // Clear to avoid revisiting this node later.
+        if (first_on_path->target_cost == first_on_path->action_cost) {
+            // Transition possibly applicable.
+            const Operator *op = first_on_path->label->op;
+            if (g_min_action_cost != 0 || op->is_applicable(state)) {
+                // If there are no zero-cost actions, the target_cost/
+                // action_cost test above already guarantees applicability.
+                assert(!op->is_axiom());
+                set_preferred(op);
+            }
+        } else {
+            // Recursively compute helpful transitions for precondition variables.
+            const vector<LocalAssignment> &precond = first_on_path->label->precond;
+            int *context_vars = &*problem->context_variables->begin();
+            for (size_t i = 0; i < precond.size(); ++i) {
+                int precond_value = precond[i].value;
+                int local_var = precond[i].local_var;
+                int precond_var_no = context_vars[local_var];
+                if (state[precond_var_no] == precond_value)
+                    continue;
+                LocalProblem *subproblem = get_local_problem(
+                    precond_var_no, state[precond_var_no]);
+                LocalProblemNode *subnode = &subproblem->nodes[precond_value];
+                mark_helpful_transitions(subproblem, subnode, state);
+            }
+        }
+    }
+}
+
+void ContextEnhancedAdditiveHeuristic::initialize() {
+    assert(goal_problem == 0);
+    cout << "Initializing context-enhanced additive heuristic..." << endl;
+
+    int num_variables = g_variable_domain.size();
+
+    goal_problem = build_problem_for_goal();
+    goal_node = &goal_problem->nodes[1];
+
+    local_problem_index.resize(num_variables);
+    for (size_t var_no = 0; var_no < num_variables; ++var_no) {
+        int num_values = g_variable_domain[var_no];
+        local_problem_index[var_no].resize(num_values, 0);
+    }
+}
+
+int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
+    initialize_heap();
+    goal_problem->base_priority = -1;
+    for (size_t i = 0; i < local_problems.size(); ++i)
+        local_problems[i]->base_priority = -1;
+
+    set_up_local_problem(goal_problem, 0, 0, state);
+
+    int heuristic = compute_costs(state);
+
+    if (heuristic != DEAD_END && heuristic != 0)
+        mark_helpful_transitions(goal_problem, goal_node, state);
+
+    return heuristic;
+}
+
+ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
+    const Options &opts) : Heuristic(opts) {
+    goal_problem = 0;
+    goal_node = 0;
+}
+
+ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
+    if (goal_problem) {
+        delete goal_problem->context_variables;
+        delete goal_problem->nodes[0].outgoing_transitions[0].label;
+    }
+    delete goal_problem;
+
+    for (size_t i = 0; i < local_problems.size(); ++i)
+        delete local_problems[i];
+}
+
+bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
+    return false;
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
