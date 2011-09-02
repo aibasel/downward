@@ -84,13 +84,13 @@ struct LocalProblemNode {
     vector<short> context;
 
     LocalTransition *reached_by;
-    // Before a node is expanded, reached_by is the "current best"
-    // transition leading to this node. After a node is expanded, the
-    // reached_by value of the parent is copied (unless the parent is
-    // the initial node), so that reached_by is the *first* transition
-    // on the optimal path to this node. This is useful for preferred
-    // operators. (The two attributes used to be separate, but this
-    // was a bit wasteful.)
+    /* Before a node is expanded, reached_by is the "current best"
+       transition leading to this node. After a node is expanded, the
+       reached_by value of the parent is copied (unless the parent is
+       the initial node), so that reached_by is the *first* transition
+       on the optimal path to this node. This is useful for preferred
+       operators. (The two attributes used to be separate, but this
+       was a bit wasteful.) */
 
     vector<LocalTransition *> waiting_list;
 
@@ -368,7 +368,7 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
                 set_preferred(op);
             }
         } else {
-            // Recursively compute helpful transitions for precondition variables.
+            // Recursively compute helpful transitions for preconditions.
             const vector<LocalAssignment> &precond = first_on_path->label->precond;
             int *context_vars = &*problem->context_variables->begin();
             for (size_t i = 0; i < precond.size(); ++i) {
