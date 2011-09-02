@@ -289,12 +289,18 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
 }
 
 ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
+    if (goal_problem) {
+        delete goal_problem->context_variables;
+        delete goal_problem->nodes[0].outgoing_transitions[0].label;
+    }
     delete goal_problem;
-    delete goal_problem->context_variables;
-    delete goal_problem->nodes[0].outgoing_transitions[0].label;
 
     for (size_t i = 0; i < local_problems.size(); ++i)
         delete local_problems[i];
+}
+
+bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
+    return false;
 }
 
 void ContextEnhancedAdditiveHeuristic::initialize() {

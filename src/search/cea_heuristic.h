@@ -22,12 +22,12 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     AdaptiveQueue<LocalProblemNode *> node_queue;
 
     LocalProblem *get_local_problem(int var_no, int value);
+    LocalProblem *build_problem_for_variable(int var_no) const;
+    LocalProblem *build_problem_for_goal() const;
+
     int get_priority(LocalProblemNode *node) const;
     void initialize_heap();
     void add_to_heap(LocalProblemNode *node);
-
-    LocalProblem *build_problem_for_variable(int var_no) const;
-    LocalProblem *build_problem_for_goal() const;
 
     bool is_local_problem_set_up(const LocalProblem *problem) const;
     void set_up_local_problem(LocalProblem *problem, int base_priority,
@@ -48,7 +48,7 @@ protected:
 public:
     ContextEnhancedAdditiveHeuristic(const Options &opts);
     ~ContextEnhancedAdditiveHeuristic();
-    virtual bool dead_ends_are_reliable() {return false; }
+    virtual bool dead_ends_are_reliable() const;
 };
 
 }
