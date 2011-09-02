@@ -29,8 +29,9 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     LocalProblem *build_problem_for_variable(int var_no) const;
     LocalProblem *build_problem_for_goal() const;
 
-    void setup_local_problem(LocalProblem *problem, int base_priority,
-                             int start_value, const State &state);
+    bool is_local_problem_set_up(const LocalProblem *problem) const;
+    void set_up_local_problem(LocalProblem *problem, int base_priority,
+                              int start_value, const State &state);
 
     void expand_node(LocalProblemNode *node);
     void expand_transition(LocalTransition *trans, const State &state);
