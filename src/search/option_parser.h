@@ -210,7 +210,7 @@ void OptionParser::add_option(
         std::string default_value = "";
         if (opts.contains(k)) {
             default_value =
-                DefaultValueNamer<T>::toStr(opts.get<T>(k));
+                DefaultValueNamer<T>::to_str(opts.get<T>(k));
         }
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h, 
