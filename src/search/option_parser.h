@@ -166,6 +166,8 @@ public:
     void add_list_option(std::string k,
                          std::vector<T> def_val, std::string h = "");
 
+    void document_values(std::string argument,
+                         ValueExplanations value_explanations) const;
     void document_synopsis(std::string name, std::string note) const;
     void document_property(std::string property, std::string note) const;
     void document_language_support(std::string feature, std::string note) const;

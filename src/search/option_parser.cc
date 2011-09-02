@@ -430,6 +430,13 @@ Options OptionParser::parse() {
     return opts;
 }
 
+void OptionParser::document_values(string argument,
+                                   ValueExplanations value_explanations) const {
+    DocStore::instance()->add_value_explanations(
+        parse_tree.begin()->value,
+        argument, value_explanations);
+}
+
 void OptionParser::document_synopsis(string name, string note) const {
     DocStore::instance()->set_synopsis(parse_tree.begin()->value,
                                        name, note);
