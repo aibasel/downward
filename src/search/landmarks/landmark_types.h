@@ -1,5 +1,5 @@
-#ifndef LANDMARK_LANDMARKS_TYPES_H
-#define LANDMARK_LANDMARKS_TYPES_H
+#ifndef LANDMARKS_LANDMARK_TYPES_H
+#define LANDMARKS_LANDMARK_TYPES_H
 
 #include <utility>
 #include <ext/hash_set>

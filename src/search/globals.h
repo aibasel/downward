@@ -14,6 +14,7 @@ class Axiom;
 class State;
 class SuccessorGenerator;
 class Timer;
+class RandomNumberGenerator;
 
 bool test_goal(const State &state);
 void save_plan(const std::vector<const Operator *> &plan, int iter);
@@ -21,6 +22,8 @@ int calculate_plan_cost(const std::vector<const Operator *> &plan);
 
 void read_everything(std::istream &in);
 void dump_everything();
+
+void verify_no_axioms_no_cond_effects();
 
 void check_magic(std::istream &in, std::string magic);
 
@@ -43,5 +46,6 @@ extern std::vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;
+extern RandomNumberGenerator g_rng;
 
 #endif

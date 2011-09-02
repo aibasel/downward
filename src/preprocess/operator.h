@@ -45,6 +45,7 @@ public:
     bool is_redundant() const;
 
     void dump() const;
+    int get_encoding_size() const;
     void generate_cpp_input(ofstream &outfile) const;
     int get_cost() const {return cost; }
     string get_name() const {return name; }

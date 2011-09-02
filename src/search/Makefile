@@ -24,6 +24,7 @@ HEADERS = \
           option_parser_util.h \
           pref_evaluator.h \
           relaxation_heuristic.h \
+          rng.h \
           search_engine.h \
           search_node_info.h \
           search_progress.h \
@@ -59,15 +60,15 @@ HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
-# HEADERS += mas_heuristic.h \
-#            abstraction.h \
-#            operator_registry.h \
-#            variable_order_finder.h
-
-HEADERS += raz_mas_heuristic.h \
-           raz_abstraction.h \
-           raz_operator_registry.h \
-           raz_variable_order_finder.h
+HEADERS += merge_and_shrink/abstraction.h \
+           merge_and_shrink/label_reducer.h \
+           merge_and_shrink/merge_and_shrink_heuristic.h \
+           merge_and_shrink/shrink_bisimulation.h \
+           merge_and_shrink/shrink_bucket_based.h \
+           merge_and_shrink/shrink_fh.h \
+           merge_and_shrink/shrink_random.h \
+           merge_and_shrink/shrink_strategy.h \
+           merge_and_shrink/variable_order_finder.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
@@ -77,11 +78,11 @@ HEADERS += landmarks/exploration.h \
            landmarks/landmark_status_manager.h \
            landmarks/landmark_graph_merged.h \
            landmarks/landmark_graph.h \
+           landmarks/landmark_factory.h \
            landmarks/landmark_factory_rpg_exhaust.h \
            landmarks/landmark_factory_rpg_sasp.h \
            landmarks/landmark_factory_zhu_givan.h \
            landmarks/util.h \
-           landmarks/landmark_factory.h
 
 HEADERS += learning/AODE.h \
            learning/classifier.h \
@@ -93,7 +94,17 @@ HEADERS += learning/AODE.h \
            learning/probe_state_space_sample.h \
            learning/selective_max_heuristic.h \
            learning/state_space_sample.h \
-           learning/state_vars_feature_extractor.h
+           learning/state_vars_feature_extractor.h \
+
+HEADERS += pdbs/canonical_pdbs_heuristic.h \
+           pdbs/match_tree.h \
+           pdbs/max_cliques.h \
+           pdbs/pattern_generation_edelkamp.h \
+           pdbs/pattern_generation_haslum.h \
+           pdbs/pdb_heuristic.h \
+           pdbs/util.h \
+           pdbs/zero_one_pdbs_heuristic.h \
+
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward
@@ -274,10 +285,14 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 	    cat Makefile.temp0 >> Makefile.temp; \
 	done
 	rm -f Makefile.temp0 Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.temp0
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.temp0
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.temp0
 	rm -f Makefile.temp
+	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.1.\2@" Makefile.temp0 >> Makefile.depend
+	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.2.\2@" Makefile.temp0 >> Makefile.depend
+	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.4.\2@" Makefile.temp0 >> Makefile.depend
+	rm -f Makefile.temp0
 
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(MAKECMDGOALS),distclean)
