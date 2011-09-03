@@ -48,7 +48,6 @@ class SASVariables:
                 axiom_str = ""
             print "v%d in {%s}%s" % (var, range(rang), axiom_str)
     def output(self, stream):
-        print >> stream, "begin_variables"
         print >> stream, len(self.ranges)
         for var, (rang, axiom_layer, values) in enumerate(zip(
                 self.ranges, self.axiom_layers, self.value_names)):
@@ -60,7 +59,6 @@ class SASVariables:
             for value in values:
                 print >> stream, value
             print >> stream, "end_variable"
-        print >> stream, "end_variables"
     def get_encoding_size(self):
         # A variable with range k has encoding size k + 1 to also give the
         # variable itself some weight.
