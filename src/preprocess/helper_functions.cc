@@ -14,12 +14,35 @@ using namespace std;
 #include "successor_generator.h"
 #include "domain_transition_graph.h"
 
+
+static const int SAS_FILE_VERSION = 2;
+static const int PRE_FILE_VERSION = SAS_FILE_VERSION;
+
+
 void check_magic(istream &in, string magic) {
     string word;
     in >> word;
     if (word != magic) {
-        cout << "Failed to match magic word '" << magic << "'." << endl;
-        cout << "Got '" << word << "'." << endl;
+        cerr << "Failed to match magic word '" << magic << "'." << endl;
+        cerr << "Got '" << word << "'." << endl;
+        if (magic == "begin_version") {
+            cerr << "Possible cause: you are running the preprocessor "
+                 << "on a translator file from an " << endl
+                 << "older version." << endl;
+        }
+        exit(1);
+    }
+}
+
+void read_and_verify_version(istream &in) {
+    int version;
+    check_magic(in, "begin_version");
+    in >> version;
+    check_magic(in, "end_version");
+    if (version != SAS_FILE_VERSION) {
+        cerr << "Expected translator file version " << SAS_FILE_VERSION
+             << ", got " << version << "." << endl;
+        cerr << "Exiting." << endl;
         exit(1);
     }
 }
@@ -88,6 +111,7 @@ void read_preprocessed_problem_description(istream &in,
                                            vector<pair<Variable *, int> > &goals,
                                            vector<Operator> &operators,
                                            vector<Axiom> &axioms) {
+    read_and_verify_version(in);
     read_metric(in, metric);
     read_variables(in, internal_variables, variables);
     initial_state = State(in, variables);
