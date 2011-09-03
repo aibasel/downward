@@ -52,14 +52,14 @@ class SASVariables:
         print >> stream, len(self.ranges)
         for var, (rang, axiom_layer, values) in enumerate(zip(
                 self.ranges, self.axiom_layers, self.value_names)):
-            print >> stream, "begin variable"
+            print >> stream, "begin_variable"
             print >> stream, "var%d" % var
             print >> stream, axiom_layer
             print >> stream, rang
             assert rang == len(values), (rang, values)
             for value in values:
                 print >> stream, value
-            print >> stream, "end variable"
+            print >> stream, "end_variable"
         print >> stream, "end_variables"
     def get_encoding_size(self):
         # A variable with range k has encoding size k + 1 to also give the
