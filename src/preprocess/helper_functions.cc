@@ -157,7 +157,6 @@ void generate_cpp_input(bool solveable_in_poly_time,
                         const CausalGraph &cg) {
     ofstream outfile;
     outfile.open("output", ios::out);
-    outfile << solveable_in_poly_time << endl; // 1 if true, else 0
     outfile << "begin_metric" << endl;
     outfile << metric << endl;
     outfile << "end_metric" << endl;
