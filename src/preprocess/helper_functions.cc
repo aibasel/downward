@@ -55,7 +55,6 @@ void read_metric(istream &in, bool &metric) {
 
 void read_variables(istream &in, vector<Variable> &internal_variables,
                     vector<Variable *> &variables) {
-    check_magic(in, "begin_variables");
     int count;
     in >> count;
     internal_variables.reserve(count);
@@ -64,7 +63,6 @@ void read_variables(istream &in, vector<Variable> &internal_variables,
         internal_variables.push_back(Variable(in));
         variables.push_back(&internal_variables.back());
     }
-    check_magic(in, "end_variables");
 }
 
 void read_goal(istream &in, const vector<Variable *> &variables,
