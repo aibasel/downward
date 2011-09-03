@@ -6,6 +6,7 @@
 using namespace std;
 
 Variable::Variable(istream &in) {
+    int range;
     check_magic(in, "begin_variable");
     in >> ws >> name >> layer >> range >> ws;
     values.resize(range);
@@ -31,7 +32,7 @@ void Variable::set_necessary() {
 }
 
 int Variable::get_range() const {
-    return range;
+    return values.size();
 }
 
 string Variable::get_name() const {
@@ -45,10 +46,19 @@ bool Variable::is_necessary() const {
 void Variable::dump() const {
     // TODO: Dump values (and other information that might be missing?)
     //       or get rid of this if it's no longer needed.
-    cout << name << " [range " << range;
+    cout << name << " [range " << get_range();
     if (level != -1)
         cout << "; level " << level;
     if (is_derived())
         cout << "; derived; layer: " << layer;
     cout << "]" << endl;
+}
+
+void Variable::generate_cpp_input(ofstream &outfile) const {
+    outfile << "begin_variable" << endl
+            << layer << endl
+            << values.size() << endl;
+    for (size_t i = 0; i < values.size(); ++i)
+        outfile << values[i] << endl;
+    outfile << "end_variable" << endl;
 }
