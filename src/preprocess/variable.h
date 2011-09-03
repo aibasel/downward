@@ -2,10 +2,12 @@
 #define VARIABLE_H
 
 #include <iostream>
+#include <vector>
 using namespace std;
 
 class Variable {
     int range;
+    vector<string> values;
     string name;
     int layer;
     int level;

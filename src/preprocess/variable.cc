@@ -1,10 +1,17 @@
 #include "variable.h"
 
+#include "helper_functions.h"
+
 #include <cassert>
 using namespace std;
 
 Variable::Variable(istream &in) {
-    in >> name >> range >> layer;
+    check_magic(in, "begin_variable");
+    in >> ws >> name >> layer >> range >> ws;
+    values.resize(range);
+    for (size_t i = 0; i < range; ++i)
+        getline(in, values[i]);
+    check_magic(in, "end_variable");
     level = -1;
     necessary = false;
 }
@@ -36,6 +43,8 @@ bool Variable::is_necessary() const {
 }
 
 void Variable::dump() const {
+    // TODO: Dump values (and other information that might be missing?)
+    //       or get rid of this if it's no longer needed.
     cout << name << " [range " << range;
     if (level != -1)
         cout << "; level " << level;
