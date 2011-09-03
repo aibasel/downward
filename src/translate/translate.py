@@ -408,8 +408,10 @@ def translate_task(strips_to_sas, ranges, mutex_dict, mutex_ranges, init, goals,
 
 def unsolvable_sas_task(msg):
     print "%s! Generating unsolvable task..." % msg
-    write_translation_key([])
-    write_mutex_key([])
+    write_translation_key([["Atom dummy(val1)",
+                            "Atom dummy(val2)"]])
+    write_mutex_key([[(0, 0, "Atom dummy(val1)"),
+                      (0, 1, "Atom dummy(val2)")]])
     variables = sas_tasks.SASVariables([2], [-1])
     init = sas_tasks.SASInit([0])
     goal = sas_tasks.SASGoal([(0, 1)])
