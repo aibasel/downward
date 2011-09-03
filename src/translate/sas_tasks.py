@@ -1,3 +1,6 @@
+SAS_FILE_VERSION = 2
+
+
 class SASTask:
     def __init__(self, variables, init, goal, operators, axioms, metric):
         self.variables = variables
@@ -7,6 +10,9 @@ class SASTask:
         self.axioms = axioms
         self.metric = metric
     def output(self, stream):
+        print >> stream, "begin_version"
+        print >> stream, SAS_FILE_VERSION
+        print >> stream, "end_version"
         print >> stream, "begin_metric"
         print >> stream, int(self.metric)
         print >> stream, "end_metric"
@@ -30,9 +36,10 @@ class SASTask:
         return task_size
 
 class SASVariables:
-    def __init__(self, ranges, axiom_layers):
+    def __init__(self, ranges, axiom_layers, value_names):
         self.ranges = ranges
         self.axiom_layers = axiom_layers
+        self.value_names = value_names
     def dump(self):
         for var, (rang, axiom_layer) in enumerate(zip(self.ranges, self.axiom_layers)):
             if axiom_layer != -1:
@@ -43,8 +50,16 @@ class SASVariables:
     def output(self, stream):
         print >> stream, "begin_variables"
         print >> stream, len(self.ranges)
-        for var, (rang, axiom_layer) in enumerate(zip(self.ranges, self.axiom_layers)):
-            print >> stream, "var%d %d %d" % (var, rang, axiom_layer)
+        for var, (rang, axiom_layer, values) in enumerate(zip(
+                self.ranges, self.axiom_layers, self.value_names)):
+            print >> stream, "begin variable"
+            print >> stream, "var%d" % var
+            print >> stream, axiom_layer
+            print >> stream, rang
+            assert rang == len(values), (rang, values)
+            for value in values:
+                print >> stream, value
+            print >> stream, "end variable"
         print >> stream, "end_variables"
     def get_encoding_size(self):
         # A variable with range k has encoding size k + 1 to also give the
