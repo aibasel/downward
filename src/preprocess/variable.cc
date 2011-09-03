@@ -56,6 +56,7 @@ void Variable::dump() const {
 
 void Variable::generate_cpp_input(ofstream &outfile) const {
     outfile << "begin_variable" << endl
+            << name << endl
             << layer << endl
             << values.size() << endl;
     for (size_t i = 0; i < values.size(); ++i)
