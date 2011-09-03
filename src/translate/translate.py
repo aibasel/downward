@@ -363,7 +363,9 @@ def translate_strips_axioms(axioms, strips_to_sas, ranges, mutex_dict, mutex_ran
         result.extend(sas_axioms)
     return result
 
-def translate_task(strips_to_sas, ranges, mutex_dict, mutex_ranges, init, goals,
+def translate_task(strips_to_sas, ranges, translation_key,
+                   mutex_dict, mutex_ranges, mutex_key,
+                   init, goals,
                    actions, axioms, metric, implied_facts):
     with timers.timing("Processing axioms", block=True):
         axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
@@ -402,17 +404,16 @@ def translate_task(strips_to_sas, ranges, mutex_dict, mutex_ranges, init, goals,
         assert layer >= 0
         [(var, val)] = strips_to_sas[atom]
         axiom_layers[var] = layer
-    variables = sas_tasks.SASVariables(ranges, axiom_layers)
+    variables = sas_tasks.SASVariables(ranges, axiom_layers, translation_key)
 
     return sas_tasks.SASTask(variables, init, goal, operators, axioms, metric)
 
 def unsolvable_sas_task(msg):
     print "%s! Generating unsolvable task..." % msg
-    write_translation_key([["Atom dummy(val1)",
-                            "Atom dummy(val2)"]])
     write_mutex_key([[(0, 0, "Atom dummy(val1)"),
                       (0, 1, "Atom dummy(val2)")]])
-    variables = sas_tasks.SASVariables([2], [-1])
+    variables = sas_tasks.SASVariables(
+        [2], [-1], [["Atom dummy(val1)", "Atom dummy(val2)"]])
     init = sas_tasks.SASInit([0])
     goal = sas_tasks.SASGoal([(0, 1)])
     operators = []
@@ -455,18 +456,19 @@ def pddl_to_sas(task):
     else:
         implied_facts = {}
 
+    with timers.timing("Building mutex information", block=True):
+        mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
+
     with timers.timing("Translating task", block=True):
         sas_task = translate_task(
-            strips_to_sas, ranges, mutex_dict, mutex_ranges,
+            strips_to_sas, ranges, translation_key,
+            mutex_dict, mutex_ranges, mutex_key,
             task.init, goal_list, actions, axioms, task.use_min_cost_metric,
             implied_facts)
 
     print "%d implied effects removed" % removed_implied_effect_counter
     print "%d effect conditions simplified" % simplified_effect_condition_counter
     print "%d implied preconditions added" % added_implied_precondition_counter
-
-    with timers.timing("Building mutex information", block=True):
-        mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
 
     if DETECT_UNREACHABLE:
         with timers.timing("Detecting unreachable propositions", block=True):
@@ -476,8 +478,6 @@ def pddl_to_sas(task):
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
 
-    with timers.timing("Writing translation key"):
-        write_translation_key(translation_key)
     with timers.timing("Writing mutex key"):
         write_mutex_key(mutex_key)
 
@@ -552,14 +552,6 @@ def build_implied_facts(strips_to_sas, groups, mutex_groups):
 
     return implied_facts
 
-
-def write_translation_key(translation_key):
-    groups_file = file("test.groups", "w")
-    for var_no, var_key in enumerate(translation_key):
-        print >> groups_file, "var%d:" % var_no
-        for value, value_name in enumerate(var_key):
-            print >> groups_file, "  %d: %s" % (value, value_name)
-    groups_file.close()
 
 def write_mutex_key(mutex_key):
     invariants_file = file("all.groups", "w")
