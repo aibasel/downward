@@ -27,12 +27,14 @@ void verify_no_axioms_no_cond_effects();
 
 void check_magic(std::istream &in, std::string magic);
 
-extern bool g_legacy_file_format;
 extern bool g_use_metric;
 extern int g_min_action_cost;
 extern int g_max_action_cost;
+
+// TODO: The following five belong into a new Variable class.
 extern std::vector<std::string> g_variable_name;
 extern std::vector<int> g_variable_domain;
+extern std::vector<std::vector<std::string> > g_fact_names;
 extern std::vector<int> g_axiom_layers;
 extern std::vector<int> g_default_axiom_values;
 
