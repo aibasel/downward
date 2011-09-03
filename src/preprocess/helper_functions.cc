@@ -145,7 +145,7 @@ void dump_DTGs(const vector<Variable *> &ordering,
     }
 }
 
-void generate_cpp_input(bool solveable_in_poly_time,
+void generate_cpp_input(bool /*solvable_in_poly_time*/,
                         const vector<Variable *> &ordered_vars,
                         const bool &metric,
                         const State &initial_state,
@@ -155,8 +155,16 @@ void generate_cpp_input(bool solveable_in_poly_time,
                         const SuccessorGenerator &sg,
                         const vector<DomainTransitionGraph> transition_graphs,
                         const CausalGraph &cg) {
+    /* NOTE: solvable_in_poly_time flag is no longer included in output,
+       since the planner doesn't handle it specially any more anyway. */
+
     ofstream outfile;
     outfile.open("output", ios::out);
+
+    outfile << "begin_version" << endl;
+    outfile << PRE_FILE_VERSION << endl;
+    outfile << "end_version" << endl;
+
     outfile << "begin_metric" << endl;
     outfile << metric << endl;
     outfile << "end_metric" << endl;
