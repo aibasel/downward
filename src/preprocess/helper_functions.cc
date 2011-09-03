@@ -161,13 +161,12 @@ void generate_cpp_input(bool solveable_in_poly_time,
     outfile << "begin_metric" << endl;
     outfile << metric << endl;
     outfile << "end_metric" << endl;
+
+    outfile << ordered_vars.size() << endl;
+    for (int i = 0; i < ordered_vars.size(); i++)
+        ordered_vars[i]->generate_cpp_input(outfile);
+
     int var_count = ordered_vars.size();
-    outfile << "begin_variables" << endl;
-    outfile << var_count << endl;
-    for (int i = 0; i < var_count; i++)
-        outfile << ordered_vars[i]->get_name() << " " <<
-        ordered_vars[i]->get_range() << " " << ordered_vars[i]->get_layer() << endl;
-    outfile << "end_variables" << endl;
     outfile << "begin_state" << endl;
     for (int i = 0; i < var_count; i++)
         outfile << initial_state[ordered_vars[i]] << endl;  // for axioms default value

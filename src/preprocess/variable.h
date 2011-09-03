@@ -6,7 +6,6 @@
 using namespace std;
 
 class Variable {
-    int range;
     vector<string> values;
     string name;
     int layer;
@@ -22,6 +21,7 @@ public:
     string get_name() const;
     int get_layer() const {return layer; }
     bool is_derived() const {return layer != -1; }
+    void generate_cpp_input(ofstream &outfile) const;
     void dump() const;
 };
 
