@@ -13,7 +13,7 @@ LandmarkFactory::LandmarkFactory(const Options &opts)
 
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {
     ExactTimer lm_generation_timer;
-    read_external_inconsistencies();
+    build_var_val_to_predicate_args();
     generate_landmarks();
 
     // the following replaces the old "build_lm_graph"
@@ -30,6 +30,18 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
     }
     //lm_graph->dump();
     return lm_graph;
+}
+
+void LandmarkFactory::build_var_val_to_predicate_args() {
+    typedef hash_map<pair<int, int>, PddlProposition, hash_int_pair>
+        PropMap;
+    for (PropMap::const_iterator iter = g_pddl_propositions.begin();
+         iter != g_pddl_propositions.end(); ++iter) {
+        const pair<int, int> &var_val_pair = iter->first;
+        const PddlProposition &prop = iter->second;
+        lm_graph->insert_var_val_to_predicate_args(
+            var_val_pair, make_pair(prop.predicate, prop.arguments));
+    }
 }
 
 void LandmarkFactory::generate() {
@@ -95,87 +107,6 @@ bool LandmarkFactory::is_landmark_precondition(const Operator &o,
         }
     }
     return false;
-}
-
-void LandmarkFactory::read_external_inconsistencies() {
-    /* Read inconsistencies that were found by translator from separate file. Note: this
-     is somewhat cumbersome, but avoids substantial changes to translator and predecessor
-     output structure. Translator finds groups of facts such that exactly one of those facts
-     is true at any point in time. Hence, all facts within a group are mutually exclusive.
-     */
-    cout << "Reading invariants from file..." << endl;
-    ifstream myfile("all.groups");
-    if (myfile.is_open()) {
-        ifstream &in = myfile;
-        check_magic(in, "begin_groups");
-        int no_groups;
-        in >> no_groups;
-        // Number of variables is unknown, as preprocessing may throw out variables,
-        // whereas our input comes directly from the translator. Thus we build an index
-        // that maps for each variable from the number used by the translator (in var name)
-        // to the number used in the preprocessor output for that variable.
-        hash_map<int, int> variable_index;
-        for (int i = 0; i < g_variable_name.size(); i++) {
-            string number = g_variable_name[i].substr(3);
-            int number2 = atoi(number.c_str());
-            variable_index.insert(make_pair(number2, i));
-        }
-        for (int j = 0; j < g_variable_name.size(); j++) {
-            inconsistent_facts.push_back(vector<set<pair<int, int> > > ());
-            for (int k = 0; k < g_variable_domain[j]; k++)
-                inconsistent_facts[j].push_back(set<pair<int, int> > ());
-        }
-        for (int i = 0; i < no_groups; i++) {
-            check_magic(in, "group");
-            int no_facts;
-            in >> no_facts;
-            vector<pair<int, int> > invariant_group;
-            for (int j = 0; j < no_facts; j++) {
-                int var, val, no_args;
-                in >> var >> val;
-                string predicate, endline;
-                in >> predicate >> no_args;
-                vector<string> args;
-                for (int k = 0; k < no_args; k++) {
-                    string arg;
-                    in >> arg;
-                    args.push_back(arg);
-                }
-                getline(in, endline);
-                // Variable may not be in index if it has been discarded by preprocessor
-                if (variable_index.find(var) != variable_index.end()) {
-                    pair<int, int> var_val_pair = make_pair(
-                        variable_index.find(var)->second, val);
-                    invariant_group.push_back(var_val_pair);
-                    // Save fact with predicate name (needed for disj. LMs / 1-step lookahead)
-                    Pddl_proposition prop;
-                    prop.predicate = predicate;
-                    prop.arguments = args;
-                    pddl_propositions.insert(make_pair(var_val_pair, prop));
-                    lm_graph->insert_var_val_to_predicate_args(var_val_pair, make_pair(predicate, args));
-                    if (pddl_proposition_indices.find(predicate)
-                        == pddl_proposition_indices.end()) {
-                        pddl_proposition_indices.insert(make_pair(predicate,
-                                                                  pddl_proposition_indices.size()));
-                    }
-                }
-            }
-            for (int j = 0; j < invariant_group.size(); j++) {
-                for (int k = 0; k < invariant_group.size(); k++) {
-                    if (j == k)
-                        continue;
-                    inconsistent_facts[invariant_group[j].first][invariant_group[j].second].insert(
-                        make_pair(invariant_group[k].first, invariant_group[k].second));
-                }
-            }
-        }
-        check_magic(in, "end_groups");
-        myfile.close();
-        cout << "done" << endl;
-    } else {
-        cout << "Unable to open invariants file!" << endl;
-        exit(1);
-    }
 }
 
 bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
@@ -383,9 +314,9 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                                  const LandmarkNode *node_b) const {
     /* Facts a and b interfere (i.e., achieving b before a would mean having to delete b
      and re-achieve it in order to achieve a) if one of the following condition holds:
-     1. a and b are inconsistent
-     2. All actions that add a also add e, and e and b are inconsistent
-     3. There is a greedy necessary predecessor x of a, and x and b are inconsistent
+     1. a and b are mutex
+     2. All actions that add a also add e, and e and b are mutex
+     3. There is a greedy necessary predecessor x of a, and x and b are mutex
      This is the definition of Hoffmann et al. except that they have one more condition:
      "all actions that add a delete b". However, in our case (SAS+ formalism), this condition
      is the same as 2.
@@ -405,11 +336,11 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                     continue;
             }
 
-            // 1. a, b inconsistent
-            if (inconsistent(a, b))
+            // 1. a, b mutex
+            if (are_mutex(a, b))
                 return true;
 
-            // 2. Shared effect e in all operators reaching a, and e, b inconsistent
+            // 2. Shared effect e in all operators reaching a, and e, b are mutex
             // Skip this for conjunctive nodes a, as they are typically achieved through a
             // sequence of operators successively adding the parts of a
             if (node_a->conjunctive)
@@ -467,7 +398,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             for (hash_map<int, int>::iterator it = shared_eff.begin(); it
                  != shared_eff.end(); it++)
                 if (make_pair(it->first, it->second) != a && make_pair(it->first,
-                                                                       it->second) != b && inconsistent(*it, b))
+                                                                       it->second) != b && are_mutex(*it, b))
                     return true;
         }
 
@@ -480,7 +411,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             for (int i = 0; i < it->first->vars.size(); i++) {
                 pair<int, int> parent_prop = make_pair(it->first->vars[i],
                                                        it->first->vals[i]);
-                if (edge >= greedy_necessary && parent_prop != b && inconsistent(
+                if (edge >= greedy_necessary && parent_prop != b && are_mutex(
                         parent_prop, b))
                     return true;
             }
