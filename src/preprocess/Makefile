@@ -4,6 +4,7 @@ HEADERS = \
           domain_transition_graph.h \
           helper_functions.h \
           max_dag.h \
+          mutex_group.h \
           operator.h \
           scc.h \
           state.h \

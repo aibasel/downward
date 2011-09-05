@@ -8,6 +8,7 @@ using namespace std;
 
 #include "helper_functions.h"
 #include "state.h"
+#include "mutex_group.h"
 #include "operator.h"
 #include "axiom.h"
 #include "variable.h"
@@ -15,7 +16,7 @@ using namespace std;
 #include "domain_transition_graph.h"
 
 
-static const int SAS_FILE_VERSION = 2;
+static const int SAS_FILE_VERSION = 3;
 static const int PRE_FILE_VERSION = SAS_FILE_VERSION;
 
 
@@ -65,6 +66,14 @@ void read_variables(istream &in, vector<Variable> &internal_variables,
     }
 }
 
+void read_mutexes(istream &in, vector<MutexGroup> &mutexes,
+                  const vector<Variable *> &variables) {
+    size_t count;
+    in >> count;
+    for (size_t i = 0; i < count; ++i)
+        mutexes.push_back(MutexGroup(in, variables));
+}
+
 void read_goal(istream &in, const vector<Variable *> &variables,
                vector<pair<Variable *, int> > &goals) {
     check_magic(in, "begin_goal");
@@ -92,6 +101,7 @@ void read_operators(istream &in, const vector<Variable *> &variables,
     for (int i = 0; i < count; i++)
         operators.push_back(Operator(in, variables));
 }
+
 void read_axioms(istream &in, const vector<Variable *> &variables,
                  vector<Axiom> &axioms) {
     int count;
@@ -100,11 +110,11 @@ void read_axioms(istream &in, const vector<Variable *> &variables,
         axioms.push_back(Axiom(in, variables));
 }
 
-
 void read_preprocessed_problem_description(istream &in,
                                            bool &metric,
                                            vector<Variable> &internal_variables,
                                            vector<Variable *> &variables,
+                                           vector<MutexGroup> &mutexes,
                                            State &initial_state,
                                            vector<pair<Variable *, int> > &goals,
                                            vector<Operator> &operators,
@@ -112,6 +122,7 @@ void read_preprocessed_problem_description(istream &in,
     read_and_verify_version(in);
     read_metric(in, metric);
     read_variables(in, internal_variables, variables);
+    read_mutexes(in, mutexes, variables);
     initial_state = State(in, variables);
     read_goal(in, variables, goals);
     read_operators(in, variables, operators);
@@ -148,6 +159,7 @@ void dump_DTGs(const vector<Variable *> &ordering,
 void generate_cpp_input(bool /*solvable_in_poly_time*/,
                         const vector<Variable *> &ordered_vars,
                         const bool &metric,
+                        const vector<MutexGroup> &mutexes,
                         const State &initial_state,
                         const vector<pair<Variable *, int> > &goals,
                         const vector<Operator> &operators,
@@ -172,6 +184,10 @@ void generate_cpp_input(bool /*solvable_in_poly_time*/,
     outfile << ordered_vars.size() << endl;
     for (int i = 0; i < ordered_vars.size(); i++)
         ordered_vars[i]->generate_cpp_input(outfile);
+
+    outfile << mutexes.size() << endl;
+    for (int i = 0; i < mutexes.size(); i++)
+        mutexes[i].generate_cpp_input(outfile);
 
     int var_count = ordered_vars.size();
     outfile << "begin_state" << endl;
