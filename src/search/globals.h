@@ -2,18 +2,10 @@
 #define GLOBALS_H
 
 #include "operator_cost.h"
-// TODO: Get rid of the dependency on utilities.h. This is only needed
-//       for hash_int_pair in g_pddl_propositions below, and the precise
-//       type of that should be hidden away somewhere.
-#include "utilities.h"
 
-#include <iostream>
-#include <map>
-#include <set>
+#include <iosfwd>
 #include <string>
 #include <vector>
-
-#include <ext/hash_map>
 
 class AxiomEvaluator;
 class CausalGraph;
@@ -39,12 +31,6 @@ void check_magic(std::istream &in, std::string magic);
 bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
 
 
-struct PddlProposition {
-    std::string predicate;
-    // std::vector<std::string> arguments;
-};
-
-
 extern bool g_use_metric;
 extern int g_min_action_cost;
 extern int g_max_action_cost;
@@ -58,16 +44,6 @@ extern std::vector<int> g_default_axiom_values;
 
 extern State *g_initial_state;
 extern std::vector<std::pair<int, int> > g_goal;
-// TODO: The following three come out of the landmark code and need to
-//       be cleaned up.
-// TODO: g_inconsistent_facts needs a better name (g_mutexes?) and type
-//       (something sane, or at least an explanation). And it doesn't
-//       actually need to be globally visible, since it is only accessed
-//       via the are_mutex(...) global function.
-//       => Turn this into a Mutexes class with with a mutex() method.
-extern std::vector<std::vector<std::set<std::pair<int, int> > > > g_inconsistent_facts;
-extern __gnu_cxx::hash_map<std::pair<int, int>, PddlProposition, hash_int_pair> g_pddl_propositions;
-extern std::map<std::string, int> g_pddl_proposition_indices; //TODO: make this a hash_map
 
 extern std::vector<Operator> g_operators;
 extern std::vector<Operator> g_axioms;

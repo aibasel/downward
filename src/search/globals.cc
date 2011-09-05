@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <set>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -24,6 +25,14 @@ using namespace __gnu_cxx;
 
 static const int PRE_FILE_VERSION = 3;
 
+
+// TODO: This needs a proper type and should be moved to a separate
+//       mutexes.cc file or similar, accessed via something called
+//       g_mutexes. (Right now, the interface is via global function
+//       are_mutex, which is at least better than exposing the data
+//       structure globally.)
+
+static vector<vector<set<pair<int, int> > > > g_inconsistent_facts;
 
 bool test_goal(const State &state) {
     for (int i = 0; i < g_goal.size(); i++) {
@@ -144,72 +153,31 @@ void read_variables(istream &in) {
 }
 
 void read_mutexes(istream &in) {
-    /* Read mutexes that were found by translator from separate file.
-       Note: this is somewhat cumbersome, but avoids substantial
-       changes to translator and predecessor output structure.
-       Translator finds groups of facts such that exactly one of those
-       facts is true at any point in time. Hence, all facts within a
-       group are mutually exclusive. */
-    int no_groups;
-    in >> no_groups;
-    /*
-    hash_map<int, int> variable_index;
-    for (int i = 0; i < g_variable_name.size(); i++) {
-        string number = g_variable_name[i].substr(3);
-        int number2 = atoi(number.c_str());
-        variable_index.insert(make_pair(number2, i));
-    }
-    */
-    for (int j = 0; j < g_variable_name.size(); j++) {
-        g_inconsistent_facts.push_back(vector<set<pair<int, int> > > ());
-        for (int k = 0; k < g_variable_domain[j]; k++)
-            g_inconsistent_facts[j].push_back(set<pair<int, int> > ());
-    }
-    for (int i = 0; i < no_groups; i++) {
+    g_inconsistent_facts.resize(g_variable_domain.size());
+    for (size_t i = 0; i < g_variable_domain.size(); ++i)
+        g_inconsistent_facts[i].resize(g_variable_domain[i]);
+
+    int num_mutex_groups;
+    in >> num_mutex_groups;
+
+    for (size_t i = 0; i < num_mutex_groups; ++i) {
         check_magic(in, "begin_mutex_group");
-        int no_facts;
-        in >> no_facts;
+        int num_facts;
+        in >> num_facts;
         vector<pair<int, int> > invariant_group;
-        for (int j = 0; j < no_facts; j++) {
+        invariant_group.reserve(num_facts);
+        for (size_t j = 0; j < num_facts; ++j) {
             int var, val;
             in >> var >> val;
             invariant_group.push_back(make_pair(var, val));
-            /*
-            int no_args;
-            string predicate, endline;
-            in >> predicate >> no_args;
-            vector<string> args;
-            for (int k = 0; k < no_args; k++) {
-                string arg;
-                in >> arg;
-                args.push_back(arg);
-            }
-            getline(in, endline);
-            // Variable may not be in index if it has been discarded by preprocessor
-            if (variable_index.find(var) != variable_index.end()) {
-                pair<int, int> var_val_pair = make_pair(
-                    variable_index.find(var)->second, val);
-                invariant_group.push_back(var_val_pair);
-                // Save fact with predicate name (needed for disj. LMs / 1-step lookahead)
-                PddlProposition prop;
-                prop.predicate = predicate;
-                // prop.arguments = args;
-                g_pddl_propositions.insert(make_pair(var_val_pair, prop));
-                if (g_pddl_proposition_indices.find(predicate)
-                    == g_pddl_proposition_indices.end()) {
-                    g_pddl_proposition_indices.insert(make_pair(predicate,
-                                                                g_pddl_proposition_indices.size()));
-                }
-            }
-            */
         }
         check_magic(in, "end_mutex_group");
-        for (int j = 0; j < invariant_group.size(); j++) {
-            for (int k = 0; k < invariant_group.size(); k++) {
+        for (size_t j = 0; j < invariant_group.size(); ++j) {
+            for (size_t k = 0; k < invariant_group.size(); ++k) {
                 if (j == k)
                     continue;
-                g_inconsistent_facts[invariant_group[j].first][invariant_group[j].second].insert(
-                    make_pair(invariant_group[k].first, invariant_group[k].second));
+                g_inconsistent_facts[invariant_group[j].first][
+                    invariant_group[j].second].insert(invariant_group[k]);
             }
         }
     }
@@ -335,9 +303,6 @@ vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
 State *g_initial_state;
 vector<pair<int, int> > g_goal;
-vector<vector<set<pair<int, int> > > > g_inconsistent_facts;
-__gnu_cxx::hash_map<std::pair<int, int>, PddlProposition, hash_int_pair> g_pddl_propositions;
-std::map<std::string, int> g_pddl_proposition_indices;
 vector<Operator> g_operators;
 vector<Operator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
