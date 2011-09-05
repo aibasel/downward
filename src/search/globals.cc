@@ -193,7 +193,7 @@ void read_mutexes(istream &in) {
                 // Save fact with predicate name (needed for disj. LMs / 1-step lookahead)
                 PddlProposition prop;
                 prop.predicate = predicate;
-                prop.arguments = args;
+                // prop.arguments = args;
                 g_pddl_propositions.insert(make_pair(var_val_pair, prop));
                 if (g_pddl_proposition_indices.find(predicate)
                     == g_pddl_proposition_indices.end()) {
