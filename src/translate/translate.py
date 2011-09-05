@@ -405,21 +405,23 @@ def translate_task(strips_to_sas, ranges, translation_key,
         [(var, val)] = strips_to_sas[atom]
         axiom_layers[var] = layer
     variables = sas_tasks.SASVariables(ranges, axiom_layers, translation_key)
-
-    return sas_tasks.SASTask(variables, init, goal, operators, axioms, metric)
+    mutexes = [sas_tasks.SASMutexGroup(group) for group in mutex_key]
+    return sas_tasks.SASTask(variables, mutexes, init, goal,
+                             operators, axioms, metric)
 
 def unsolvable_sas_task(msg):
     print "%s! Generating unsolvable task..." % msg
-    write_mutex_key([[(0, 0, "Atom dummy(val1)"),
-                      (0, 1, "Atom dummy(val2)")]])
     variables = sas_tasks.SASVariables(
         [2], [-1], [["Atom dummy(val1)", "Atom dummy(val2)"]])
+    mutex_group = [(0, 0), (0, 1)]
+    mutexes = [sas_tasks.SASMutexGroup(mutex_group)]
     init = sas_tasks.SASInit([0])
     goal = sas_tasks.SASGoal([(0, 1)])
     operators = []
     axioms = []
     metric = True
-    return sas_tasks.SASTask(variables, init, goal, operators, axioms, metric)
+    return sas_tasks.SASTask(variables, mutexes, init, goal,
+                             operators, axioms, metric)
 
 def pddl_to_sas(task):
     with timers.timing("Instantiating", block=True):
@@ -478,9 +480,6 @@ def pddl_to_sas(task):
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
 
-    with timers.timing("Writing mutex key"):
-        write_mutex_key(mutex_key)
-
     # Print some statistics about the task
     print "Translator variables: %d" % len(sas_task.variables.ranges)
     print ("Translator derived variables: %d" %
@@ -501,7 +500,7 @@ def build_mutex_key(strips_to_sas, groups):
         for fact in group:
             if strips_to_sas.get(fact):
                 for var, val in strips_to_sas[fact]:
-                    group_key.append((var, val, str(fact)))
+                    group_key.append((var, val))
             else:
                 print "not in strips_to_sas, left out:", fact
         group_keys.append(group_key)
@@ -551,37 +550,6 @@ def build_implied_facts(strips_to_sas, groups, mutex_groups):
                             implied_facts[other_fact].append(prop_is_false)
 
     return implied_facts
-
-
-def write_mutex_key(mutex_key):
-    invariants_file = file("all.groups", "w")
-    print >> invariants_file, "begin_groups"
-    print >> invariants_file, len(mutex_key)
-    for group in mutex_key:
-        #print map(str, group)
-        no_facts = len(group)
-        print >> invariants_file, "group"
-        print >> invariants_file, no_facts
-        for var, val, fact in group:
-            #print fact
-            assert str(fact).startswith("Atom ")
-            predicate = str(fact)[5:].split("(")[0]
-            #print predicate
-            rest = str(fact).split("(")[1]
-            rest = rest.strip(")").strip()
-            if not rest == "":
-                #print "there are args" , rest
-                args = rest.split(",")
-            else:
-                args = []
-            print_line = "%d %d %s %d " % (var, val, predicate, len(args))
-            for arg in args:
-                print_line += str(arg).strip() + " "
-            #print fact
-            #print print_line
-            print >> invariants_file, print_line
-    print >> invariants_file, "end_groups"
-    invariants_file.close()
 
 
 if __name__ == "__main__":

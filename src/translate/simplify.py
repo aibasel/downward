@@ -254,11 +254,11 @@ class VarValueRenaming(object):
         new_key = []
         for group in mutex_key:
             new_group = []
-            for var, val, name in group:
+            for var, val in group:
                 new_var_no, new_value = self.translate_pair((var, val))
                 if (new_value is not always_true and
                     new_value is not always_false):
-                    new_group.append((new_var_no, new_value, name))
+                    new_group.append((new_var_no, new_value))
             if len(new_group) > 0:
                 new_key.append(new_group)
         mutex_key[:] = new_key
