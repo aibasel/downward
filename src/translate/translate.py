@@ -482,17 +482,6 @@ def pddl_to_sas(task):
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
 
-    # Print some statistics about the task
-    print "Translator variables: %d" % len(sas_task.variables.ranges)
-    print ("Translator derived variables: %d" %
-           len([layer for layer in sas_task.variables.axiom_layers if layer >= 0]))
-    print "Translator facts: %d" % sum(sas_task.variables.ranges)
-    print "Translator mutex groups: %d" % len(mutex_key)
-    print ("Translator total mutex groups size: %d" %
-           sum(len(group) for group in mutex_key))
-    print "Translator operators: %d" % len(sas_task.operators)
-    print "Translator task size: %d" % sas_task.get_encoding_size()
-
     return sas_task
 
 def build_mutex_key(strips_to_sas, groups):
@@ -554,6 +543,18 @@ def build_implied_facts(strips_to_sas, groups, mutex_groups):
     return implied_facts
 
 
+def dump_statistics(sas_task):
+    print "Translator variables: %d" % len(sas_task.variables.ranges)
+    print ("Translator derived variables: %d" %
+           len([layer for layer in sas_task.variables.axiom_layers if layer >= 0]))
+    print "Translator facts: %d" % sum(sas_task.variables.ranges)
+    print "Translator mutex groups: %d" % len(sas_task.mutexes)
+    print ("Translator total mutex groups size: %d" %
+           sum(mutex.get_encoding_size() for mutex in sas_task.mutexes))
+    print "Translator operators: %d" % len(sas_task.operators)
+    print "Translator task size: %d" % sas_task.get_encoding_size()
+
+
 if __name__ == "__main__":
     import pddl
 
@@ -566,6 +567,8 @@ if __name__ == "__main__":
     # psyco.full()
 
     sas_task = pddl_to_sas(task)
+    dump_statistics(sas_task)
+
     with timers.timing("Writing output"):
         sas_task.output(file("output.sas", "w"))
     print "Done! %s" % timer

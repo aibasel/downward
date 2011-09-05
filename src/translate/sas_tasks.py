@@ -33,6 +33,8 @@ class SASTask:
     def get_encoding_size(self):
         task_size = 0
         task_size += self.variables.get_encoding_size()
+        for mutex in self.mutexes:
+            task_size += mutex.get_encoding_size()
         task_size += self.goal.get_encoding_size()
         for op in self.operators:
             task_size += op.get_encoding_size()
@@ -81,7 +83,7 @@ class SASMutexGroup:
         for var, val in self.facts:
             print >> stream, var, val
         print >> stream, "end_mutex_group"
-    def get_size(self):
+    def get_encoding_size(self):
         return len(self.facts)
 
 class SASInit:
