@@ -475,8 +475,7 @@ def pddl_to_sas(task):
     if DETECT_UNREACHABLE:
         with timers.timing("Detecting unreachable propositions", block=True):
             try:
-                simplify.filter_unreachable_propositions(
-                    sas_task, mutex_key, translation_key)
+                simplify.filter_unreachable_propositions(sas_task)
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
 

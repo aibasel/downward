@@ -111,6 +111,7 @@ class VarValueRenaming(object):
 
     def apply_to_task(self, task):
         self.apply_to_variables(task.variables)
+        self.apply_to_mutexes(task.mutexes)
         self.apply_to_init(task.init)
         self.apply_to_goals(task.goal.pairs)
         self.apply_to_operators(task.operators)
@@ -124,6 +125,37 @@ class VarValueRenaming(object):
                 new_axiom_layers[new_no] = variables.axiom_layers[old_no]
         assert None not in new_axiom_layers
         variables.axiom_layers = new_axiom_layers
+        self._apply_to_value_names(variables.value_names)
+
+    def _apply_to_value_names(self, value_names):
+        new_value_names = [[None] * size for size in self.new_sizes]
+        for var_no, values in enumerate(value_names):
+            for value, value_name in enumerate(values):
+                new_var_no, new_value = self.translate_pair((var_no, value))
+                if new_value is always_true:
+                    if DEBUG:
+                        print "Removed true proposition: %s" % value_name
+                elif new_value is always_false:
+                    if DEBUG:
+                        print "Removed false proposition: %s" % value_name
+                else:
+                    new_value_names[new_var_no][new_value] = value_name
+        assert all((None not in value_names) for value_names in new_value_names)
+        value_names[:] = new_value_names
+
+    def apply_to_mutexes(self, mutexes):
+        new_mutexes = []
+        for mutex in mutexes:
+            new_facts = []
+            for var, val in mutex.facts:
+                new_var_no, new_value = self.translate_pair((var, val))
+                if (new_value is not always_true and
+                    new_value is not always_false):
+                    new_facts.append((new_var_no, new_value))
+            if len(new_facts) >= 2:
+                mutex.facts = new_facts
+                new_mutexes.append(mutex)
+        mutexes[:] = new_mutexes
 
     def apply_to_init(self, init):
         init_pairs = list(enumerate(init.values))
@@ -234,36 +266,6 @@ class VarValueRenaming(object):
                 new_pairs.append((new_var_no, new_value))
         pairs[:] = new_pairs
 
-    def apply_to_translation_key(self, translation_key):
-        new_key = [[None] * size for size in self.new_sizes]
-        for var_no, value_names in enumerate(translation_key):
-            for value, value_name in enumerate(value_names):
-                new_var_no, new_value = self.translate_pair((var_no, value))
-                if new_value is always_true:
-                    if DEBUG:
-                        print "Removed true proposition: %s" % value_name
-                elif new_value is always_false:
-                    if DEBUG:
-                        print "Removed false proposition: %s" % value_name
-                else:
-                    new_key[new_var_no][new_value] = value_name
-        assert all((None not in value_names) for value_names in new_key)
-        translation_key[:] = new_key
-
-    def apply_to_mutex_key(self, mutex_key):
-        new_key = []
-        for group in mutex_key:
-            new_group = []
-            for var, val in group:
-                new_var_no, new_value = self.translate_pair((var, val))
-                if (new_value is not always_true and
-                    new_value is not always_false):
-                    new_group.append((new_var_no, new_value))
-            if len(new_group) > 0:
-                new_key.append(new_group)
-        mutex_key[:] = new_key
-
-
 def build_renaming(dtgs):
     renaming = VarValueRenaming()
     for dtg in dtgs:
@@ -271,13 +273,7 @@ def build_renaming(dtgs):
     return renaming
 
 
-def dump_translation_key(translation_key):
-    for var_no, values in enumerate(translation_key):
-        print "var %d:" % var_no
-        for value_no, value in enumerate(values):
-            print "%2d: %s" % (value_no, value)
-
-def filter_unreachable_propositions(sas_task, mutex_key, translation_key):
+def filter_unreachable_propositions(sas_task):
     # This procedure is a bit of an afterthought, and doesn't fit the
     # overall architecture of the translator too well. We filter away
     # unreachable propositions here, and then prune away variables
@@ -297,12 +293,9 @@ def filter_unreachable_propositions(sas_task, mutex_key, translation_key):
     #   that set them have inconsistent preconditions.
     #   Example: on(crate0, crate0) in depots-01.
 
-    # dump_translation_key(translation_key)
     dtgs = build_dtgs(sas_task)
     renaming = build_renaming(dtgs)
     # apply_to_task may propagate up Impossible if the goal is simplified
     # to False.
     renaming.apply_to_task(sas_task)
-    renaming.apply_to_translation_key(translation_key)
-    renaming.apply_to_mutex_key(mutex_key)
     print "%d propositions removed" % renaming.num_removed_values
