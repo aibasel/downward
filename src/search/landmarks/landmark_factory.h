@@ -44,8 +44,6 @@ protected:
     bool is_landmark_precondition(const Operator &o, const LandmarkNode *lmp) const;
 
 private:
-    void build_var_val_to_predicate_args();
-
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
     bool effect_always_happens(const std::vector<PrePost> &prepost,
                                std::set<std::pair<int, int> > &eff) const;

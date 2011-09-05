@@ -13,7 +13,6 @@ LandmarkFactory::LandmarkFactory(const Options &opts)
 
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {
     ExactTimer lm_generation_timer;
-    build_var_val_to_predicate_args();
     generate_landmarks();
 
     // the following replaces the old "build_lm_graph"
@@ -30,18 +29,6 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
     }
     //lm_graph->dump();
     return lm_graph;
-}
-
-void LandmarkFactory::build_var_val_to_predicate_args() {
-    typedef hash_map<pair<int, int>, PddlProposition, hash_int_pair>
-        PropMap;
-    for (PropMap::const_iterator iter = g_pddl_propositions.begin();
-         iter != g_pddl_propositions.end(); ++iter) {
-        const pair<int, int> &var_val_pair = iter->first;
-        const PddlProposition &prop = iter->second;
-        lm_graph->insert_var_val_to_predicate_args(
-            var_val_pair, make_pair(prop.predicate, prop.arguments));
-    }
 }
 
 void LandmarkFactory::generate() {
