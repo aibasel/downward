@@ -41,15 +41,7 @@ bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
 
 struct PddlProposition {
     std::string predicate;
-    std::vector<std::string> arguments;
-    std::string to_string() const {
-        std::string output = predicate;
-        for (size_t i = 0; i < arguments.size(); ++i) {
-            output += " ";
-            output += arguments[i];
-        }
-        return output;
-    }
+    // std::vector<std::string> arguments;
 };
 
 
