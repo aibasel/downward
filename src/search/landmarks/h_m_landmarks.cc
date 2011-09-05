@@ -307,16 +307,8 @@ void HMLandmarks::get_m_sets(int m,
 }
 
 void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
-    // TODO: This could be simplified a lot now that we have g_fact_names,
-    //       right?
-    __gnu_cxx::hash_map<pair<int, int>, PddlProposition, hash_int_pair>::const_iterator it =
-        g_pddl_propositions.find(fluent);
-    if (it != g_pddl_propositions.end()) {
-        cout << it->second.to_string();
-    } else {
-        cout << "Name unknown";
-    }
-    cout << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
+    cout << g_fact_names[fluent.first][fluent.second]
+         << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
     << "->" << fluent.second << ")";
 }
 
