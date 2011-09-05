@@ -1,9 +1,11 @@
-SAS_FILE_VERSION = 2
+SAS_FILE_VERSION = 3
 
 
 class SASTask:
-    def __init__(self, variables, init, goal, operators, axioms, metric):
+    def __init__(self, variables, mutexes, init, goal,
+                 operators, axioms, metric):
         self.variables = variables
+        self.mutexes = mutexes
         self.init = init
         self.goal = goal
         self.operators = operators
@@ -17,6 +19,9 @@ class SASTask:
         print >> stream, int(self.metric)
         print >> stream, "end_metric"
         self.variables.output(stream)
+        print >> stream, len(self.mutexes)
+        for mutex in self.mutexes:
+            mutex.output(stream)
         self.init.output(stream)
         self.goal.output(stream)
         print >> stream, len(self.operators)
@@ -63,6 +68,21 @@ class SASVariables:
         # A variable with range k has encoding size k + 1 to also give the
         # variable itself some weight.
         return len(self.ranges) + sum(self.ranges)
+
+class SASMutexGroup:
+    def __init__(self, facts):
+        self.facts = facts
+    def dump(self):
+        for var, val in self.facts:
+            print "v%d: %d" % (var, val)
+    def output(self, stream):
+        print >> stream, "begin_mutex_group"
+        print >> stream, len(self.facts)
+        for var, val in self.facts:
+            print >> stream, var, val
+        print >> stream, "end_mutex_group"
+    def get_size(self):
+        return len(self.facts)
 
 class SASInit:
     def __init__(self, values):
