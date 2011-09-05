@@ -413,8 +413,11 @@ def unsolvable_sas_task(msg):
     print "%s! Generating unsolvable task..." % msg
     variables = sas_tasks.SASVariables(
         [2], [-1], [["Atom dummy(val1)", "Atom dummy(val2)"]])
-    mutex_group = [(0, 0), (0, 1)]
-    mutexes = [sas_tasks.SASMutexGroup(mutex_group)]
+    # We create no mutexes: the only possible mutex is between
+    # dummy(val1) and dummy(val2), but the preprocessor would filter
+    # it out anyway since it is trivial (only involves one
+    # finite-domain variable).
+    mutexes = []
     init = sas_tasks.SASInit([0])
     goal = sas_tasks.SASGoal([(0, 1)])
     operators = []
