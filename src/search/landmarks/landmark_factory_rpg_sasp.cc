@@ -231,13 +231,10 @@ static string get_predicate_for_fact(int var_no, int value) {
     const string &fact_name = g_fact_names[var_no][value];
     if (fact_name == "<none of those>")
         return "";
-    if (fact_name.substr(0, 5) != "Atom ") {
-        cerr << "cannot extract predicate from fact: " << fact_name << endl;
-        exit(1);
-    }
     int paren_pos = fact_name.find('(', 5);
-    if (paren_pos == string::npos) {
-        cerr << "cannot extract predicate from fact: " << fact_name << endl;
+    if (fact_name.substr(0, 5) != "Atom " || paren_pos == string::npos) {
+        cerr << "error: cannot extract predicate from fact: "
+             << fact_name << endl;
         exit(1);
     }
     return string(fact_name.begin() + 5, fact_name.begin() + paren_pos);
