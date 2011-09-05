@@ -227,6 +227,69 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
     }
 }
 
+static string get_predicate_for_fact(int var_no, int value) {
+    const string &fact_name = g_fact_names[var_no][value];
+    if (fact_name == "<none of those>")
+        return "";
+    if (fact_name.substr(0, 5) != "Atom ") {
+        cerr << "cannot extract predicate from fact: " << fact_name << endl;
+        exit(1);
+    }
+    int paren_pos = fact_name.find('(', 5);
+    if (paren_pos == string::npos) {
+        cerr << "cannot extract predicate from fact: " << fact_name << endl;
+        exit(1);
+    }
+    return string(fact_name.begin() + 5, fact_name.begin() + paren_pos);
+}
+
+void LandmarkFactoryRpgSasp::build_disjunction_classes() {
+    /* The RHW landmark generation method only allows disjunctive
+       landmarks where all atoms stem from the same PDDL predicate.
+       This functionality is implemented via this method.
+
+       The approach we use is to map each fact (var/value pair) to an
+       equivalence class (representing all facts with the same
+       predicate). The special class "-1" means "cannot be part of any
+       disjunctive landmark". This is used for facts that do not
+       belong to any predicate.
+
+       Similar methods for restricting disjunctive landmarks could be
+       implemented by just changing this function, as long as the
+       restriction could also be implemented as an equivalence class.
+       For example, we might simply use the finite-domain variable
+       number as the equivalence class, which would be a cleaner
+       method than what we currently use since it doesn't care about
+       where the finite-domain representation comes from. (But of
+       course making such a change would require a performance
+       evaluation.)
+    */
+
+    typedef map<string, int> PredicateIndex;
+    PredicateIndex predicate_to_index;
+
+    size_t num_vars = g_variable_domain.size();
+    disjunction_classes.resize(num_vars);
+    for (size_t var_no = 0; var_no < num_vars; ++var_no) {
+        int range = g_variable_domain[var_no];
+        vector<int> classes_for_var;
+        disjunction_classes[var_no].reserve(range);
+        for (size_t value = 0; value < range; ++value) {
+            string predicate = get_predicate_for_fact(var_no, value);
+            int disj_class;
+            if (predicate.empty()) {
+                disj_class = -1;
+            } else {
+                // Insert predicate into hash_map or extract value that
+                // is already there.
+                pair<string, int> entry(predicate, predicate_to_index.size());
+                disj_class = predicate_to_index.insert(entry).first->second;
+            }
+            disjunction_classes[var_no].push_back(disj_class);
+        }
+    }
+}
+
 void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<int,
                                                                                int> > > &disjunctive_pre, vector<vector<int> > &lvl_var,
                                                                LandmarkNode *bp) {
@@ -254,24 +317,18 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
             get_greedy_preconditions_for_lm(bp, op, next_pre);
             for (hash_map<int, int>::iterator it = next_pre.begin(); it
                  != next_pre.end(); it++) {
-                hash_map<pair<int, int>, PddlProposition, hash_int_pair>::const_iterator
-                    it2 = g_pddl_propositions.find(make_pair(it->first,
-                                                           it->second));
-                if (it2 == g_pddl_propositions.end()) // this can happen as translator
-                    //introduces additional vars
+
+                int disj_class = disjunction_classes[it->first][it->second];
+                if (disj_class == -1) {
+                    // This fact may not participate in any disjunctive LMs
+                    // since it has no associated predicate.
                     continue;
-                string pred = it2->second.predicate;
-                int pred_index = g_pddl_proposition_indices.find(pred)->second;
+                }
 
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
-                if (!lm_graph->simple_landmark_exists(make_pair(it->first, it->second))) {
-                    if (preconditions.find(pred_index) == preconditions.end())
-                        preconditions.insert(make_pair(pred_index, vector<pair<
-                                                                              int, int> > ()));
-                    preconditions.find(pred_index)->second.push_back(make_pair(
-                                                                         it->first, it->second));
-                }
+                if (!lm_graph->simple_landmark_exists(*it))
+                    preconditions[disj_class].push_back(*it);
             }
         }
     }
@@ -288,6 +345,8 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
 
 void LandmarkFactoryRpgSasp::generate_landmarks() {
     cout << "Generating landmarks using the RPG/SAS+ approach\n";
+    build_disjunction_classes();
+
     for (unsigned i = 0; i < g_goal.size(); i++) {
         LandmarkNode &lmn = lm_graph->landmark_add_simple(g_goal[i]);
         lmn.in_goal = true;
