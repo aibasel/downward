@@ -160,6 +160,12 @@ void read_mutexes(istream &in) {
     int num_mutex_groups;
     in >> num_mutex_groups;
 
+    /* NOTE: Mutex groups can overlap, in which case the same mutex
+       should not be represented multiple times. The current
+       representation takes care of that automatically by using sets.
+       If we ever change this representation, this is something to be
+       aware of. */
+
     for (size_t i = 0; i < num_mutex_groups; ++i) {
         check_magic(in, "begin_mutex_group");
         int num_facts;
@@ -173,11 +179,24 @@ void read_mutexes(istream &in) {
         }
         check_magic(in, "end_mutex_group");
         for (size_t j = 0; j < invariant_group.size(); ++j) {
+            const pair<int, int> &fact1 = invariant_group[j];
+            int var1 = fact1.first, val1 = fact1.second;
             for (size_t k = 0; k < invariant_group.size(); ++k) {
-                if (j == k)
-                    continue;
-                g_inconsistent_facts[invariant_group[j].first][
-                    invariant_group[j].second].insert(invariant_group[k]);
+                const pair<int, int> &fact2 = invariant_group[k];
+                int var2 = fact2.first;
+                if (var1 != var2) {
+                    /* The "different variable" test makes sure we
+                       don't mark a fact as mutex with itself
+                       (important for correctness) and don't include
+                       redundant mutexes (important to conserve
+                       memory). Note that the preprocessor removes
+                       mutex groups that contain *only* redundant
+                       mutexes, but it can of course generate mutex
+                       groups which lead to *some* redundant mutexes,
+                       where some but not all facts talk about the
+                       same variable. */
+                    g_inconsistent_facts[var1][val1].insert(fact2);
+                }
             }
         }
     }
