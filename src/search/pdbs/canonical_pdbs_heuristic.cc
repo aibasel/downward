@@ -233,7 +233,7 @@ void CanonicalPDBsHeuristic::dump() const {
     }
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts;
     parse_patterns(parser, opts);
@@ -244,4 +244,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return new CanonicalPDBsHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("cpdbs", _parse);
+static Plugin<Heuristic> _plugin("cpdbs", _parse);

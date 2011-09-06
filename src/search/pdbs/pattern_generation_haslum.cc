@@ -271,7 +271,7 @@ void PatternGenerationHaslum::initialize() {
     hill_climbing(average_operator_costs, initial_candidate_patterns);
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("pdb_max_size", 2000000,
                            "max number of states per pdb");
     parser.add_option<int>("collection_max_size", 20000000,
@@ -299,4 +299,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return pgh.get_pattern_collection_heuristic();
 }
 
-static Plugin<ScalarEvaluator> _plugin("ipdb", _parse);
+static Plugin<Heuristic> _plugin("ipdb", _parse);
