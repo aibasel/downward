@@ -272,7 +272,7 @@ void PatternGenerationEdelkamp::dump() const {
     }
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     // TODO: check if 100 is the correct default value!
     parser.add_option<int>("pdb_max_size", 100, "max number of states per pdb");
     parser.add_option<int>("num_collections", 5, "number of pattern collections to maintain");
@@ -298,4 +298,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return pge.get_pattern_collection_heuristic();
 }
 
-static Plugin<ScalarEvaluator> _plugin("gapdb", _parse);
+static Plugin<Heuristic> _plugin("gapdb", _parse);

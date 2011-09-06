@@ -288,7 +288,7 @@ double PDBHeuristic::compute_mean_finite_h() const {
         return sum / num_states;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states", 1000000, "maximum abstraction size");
     parser.add_list_option<int>("pattern", "the pattern", OptionFlags(false));
     Heuristic::add_options_to_parser(parser);
@@ -339,4 +339,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return new PDBHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("pdb", _parse);
+static Plugin<Heuristic> _plugin("pdb", _parse);
