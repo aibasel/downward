@@ -7,6 +7,13 @@ class Options;
 class Signature;
 
 class ShrinkBisimulation : public ShrinkStrategy {
+    enum AtLimit {
+        RETURN,
+        USE_UP,
+        SKIP_AND_COMPLETE_ITERATION,
+        SKIP_AND_KEEP_GOING
+    };
+
     /*
       greedy: Use greedy bisimulation rather than exact bisimulation.
 
@@ -19,6 +26,7 @@ class ShrinkBisimulation : public ShrinkStrategy {
     const int threshold;
     const bool initialize_by_h;
     const bool group_by_h;
+    const AtLimit at_limit;
 
     std::vector<int> state_to_group;
     std::vector<bool> group_done;

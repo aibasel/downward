@@ -1,5 +1,6 @@
 #include "search_progress.h"
 
+#include <iostream>
 using namespace std;
 
 SearchProgress::SearchProgress() {
