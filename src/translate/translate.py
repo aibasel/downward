@@ -363,7 +363,9 @@ def translate_strips_axioms(axioms, strips_to_sas, ranges, mutex_dict, mutex_ran
         result.extend(sas_axioms)
     return result
 
-def translate_task(strips_to_sas, ranges, mutex_dict, mutex_ranges, init, goals,
+def translate_task(strips_to_sas, ranges, translation_key,
+                   mutex_dict, mutex_ranges, mutex_key,
+                   init, goals,
                    actions, axioms, metric, implied_facts):
     with timers.timing("Processing axioms", block=True):
         axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
@@ -402,21 +404,27 @@ def translate_task(strips_to_sas, ranges, mutex_dict, mutex_ranges, init, goals,
         assert layer >= 0
         [(var, val)] = strips_to_sas[atom]
         axiom_layers[var] = layer
-    variables = sas_tasks.SASVariables(ranges, axiom_layers)
-
-    return sas_tasks.SASTask(variables, init, goal, operators, axioms, metric)
+    variables = sas_tasks.SASVariables(ranges, axiom_layers, translation_key)
+    mutexes = [sas_tasks.SASMutexGroup(group) for group in mutex_key]
+    return sas_tasks.SASTask(variables, mutexes, init, goal,
+                             operators, axioms, metric)
 
 def unsolvable_sas_task(msg):
     print "%s! Generating unsolvable task..." % msg
-    write_translation_key([])
-    write_mutex_key([])
-    variables = sas_tasks.SASVariables([2], [-1])
+    variables = sas_tasks.SASVariables(
+        [2], [-1], [["Atom dummy(val1)", "Atom dummy(val2)"]])
+    # We create no mutexes: the only possible mutex is between
+    # dummy(val1) and dummy(val2), but the preprocessor would filter
+    # it out anyway since it is trivial (only involves one
+    # finite-domain variable).
+    mutexes = []
     init = sas_tasks.SASInit([0])
     goal = sas_tasks.SASGoal([(0, 1)])
     operators = []
     axioms = []
     metric = True
-    return sas_tasks.SASTask(variables, init, goal, operators, axioms, metric)
+    return sas_tasks.SASTask(variables, mutexes, init, goal,
+                             operators, axioms, metric)
 
 def pddl_to_sas(task):
     with timers.timing("Instantiating", block=True):
@@ -453,9 +461,13 @@ def pddl_to_sas(task):
     else:
         implied_facts = {}
 
+    with timers.timing("Building mutex information", block=True):
+        mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
+
     with timers.timing("Translating task", block=True):
         sas_task = translate_task(
-            strips_to_sas, ranges, mutex_dict, mutex_ranges,
+            strips_to_sas, ranges, translation_key,
+            mutex_dict, mutex_ranges, mutex_key,
             task.init, goal_list, actions, axioms, task.use_min_cost_metric,
             implied_facts)
 
@@ -463,32 +475,12 @@ def pddl_to_sas(task):
     print "%d effect conditions simplified" % simplified_effect_condition_counter
     print "%d implied preconditions added" % added_implied_precondition_counter
 
-    with timers.timing("Building mutex information", block=True):
-        mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
-
     if DETECT_UNREACHABLE:
         with timers.timing("Detecting unreachable propositions", block=True):
             try:
-                simplify.filter_unreachable_propositions(
-                    sas_task, mutex_key, translation_key)
+                simplify.filter_unreachable_propositions(sas_task)
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
-
-    with timers.timing("Writing translation key"):
-        write_translation_key(translation_key)
-    with timers.timing("Writing mutex key"):
-        write_mutex_key(mutex_key)
-
-    # Print some statistics about the task
-    print "Translator variables: %d" % len(sas_task.variables.ranges)
-    print ("Translator derived variables: %d" %
-           len([layer for layer in sas_task.variables.axiom_layers if layer >= 0]))
-    print "Translator facts: %d" % sum(sas_task.variables.ranges)
-    print "Translator mutex groups: %d" % len(mutex_key)
-    print ("Translator total mutex groups size: %d" %
-           sum(len(group) for group in mutex_key))
-    print "Translator operators: %d" % len(sas_task.operators)
-    print "Translator task size: %d" % sas_task.get_encoding_size()
 
     return sas_task
 
@@ -499,7 +491,7 @@ def build_mutex_key(strips_to_sas, groups):
         for fact in group:
             if strips_to_sas.get(fact):
                 for var, val in strips_to_sas[fact]:
-                    group_key.append((var, val, str(fact)))
+                    group_key.append((var, val))
             else:
                 print "not in strips_to_sas, left out:", fact
         group_keys.append(group_key)
@@ -551,43 +543,16 @@ def build_implied_facts(strips_to_sas, groups, mutex_groups):
     return implied_facts
 
 
-def write_translation_key(translation_key):
-    groups_file = file("test.groups", "w")
-    for var_no, var_key in enumerate(translation_key):
-        print >> groups_file, "var%d:" % var_no
-        for value, value_name in enumerate(var_key):
-            print >> groups_file, "  %d: %s" % (value, value_name)
-    groups_file.close()
-
-def write_mutex_key(mutex_key):
-    invariants_file = file("all.groups", "w")
-    print >> invariants_file, "begin_groups"
-    print >> invariants_file, len(mutex_key)
-    for group in mutex_key:
-        #print map(str, group)
-        no_facts = len(group)
-        print >> invariants_file, "group"
-        print >> invariants_file, no_facts
-        for var, val, fact in group:
-            #print fact
-            assert str(fact).startswith("Atom ")
-            predicate = str(fact)[5:].split("(")[0]
-            #print predicate
-            rest = str(fact).split("(")[1]
-            rest = rest.strip(")").strip()
-            if not rest == "":
-                #print "there are args" , rest
-                args = rest.split(",")
-            else:
-                args = []
-            print_line = "%d %d %s %d " % (var, val, predicate, len(args))
-            for arg in args:
-                print_line += str(arg).strip() + " "
-            #print fact
-            #print print_line
-            print >> invariants_file, print_line
-    print >> invariants_file, "end_groups"
-    invariants_file.close()
+def dump_statistics(sas_task):
+    print "Translator variables: %d" % len(sas_task.variables.ranges)
+    print ("Translator derived variables: %d" %
+           len([layer for layer in sas_task.variables.axiom_layers if layer >= 0]))
+    print "Translator facts: %d" % sum(sas_task.variables.ranges)
+    print "Translator mutex groups: %d" % len(sas_task.mutexes)
+    print ("Translator total mutex groups size: %d" %
+           sum(mutex.get_encoding_size() for mutex in sas_task.mutexes))
+    print "Translator operators: %d" % len(sas_task.operators)
+    print "Translator task size: %d" % sas_task.get_encoding_size()
 
 
 if __name__ == "__main__":
@@ -602,6 +567,8 @@ if __name__ == "__main__":
     # psyco.full()
 
     sas_task = pddl_to_sas(task)
+    dump_statistics(sas_task)
+
     with timers.timing("Writing output"):
         sas_task.output(file("output.sas", "w"))
     print "Done! %s" % timer

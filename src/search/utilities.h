@@ -1,8 +1,9 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#include <vector>
 #include <ostream>
+#include <utility>
+#include <vector>
 
 extern void register_event_handlers();
 
@@ -35,5 +36,11 @@ size_t hash_number_sequence(Sequence data, size_t length) {
     hash_value += 97531;
     return hash_value;
 }
+
+struct hash_int_pair {
+    size_t operator()(const std::pair<int, int> &key) const {
+        return size_t(1337 * key.first + key.second);
+    }
+};
 
 #endif

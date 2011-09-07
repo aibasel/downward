@@ -1,10 +1,11 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include <iostream>
+#include "operator_cost.h"
+
+#include <iosfwd>
 #include <string>
 #include <vector>
-#include "operator_cost.h"
 
 class AxiomEvaluator;
 class CausalGraph;
@@ -27,17 +28,23 @@ void verify_no_axioms_no_cond_effects();
 
 void check_magic(std::istream &in, std::string magic);
 
-extern bool g_legacy_file_format;
+bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
+
+
 extern bool g_use_metric;
 extern int g_min_action_cost;
 extern int g_max_action_cost;
+
+// TODO: The following five belong into a new Variable class.
 extern std::vector<std::string> g_variable_name;
 extern std::vector<int> g_variable_domain;
+extern std::vector<std::vector<std::string> > g_fact_names;
 extern std::vector<int> g_axiom_layers;
 extern std::vector<int> g_default_axiom_values;
 
 extern State *g_initial_state;
 extern std::vector<std::pair<int, int> > g_goal;
+
 extern std::vector<Operator> g_operators;
 extern std::vector<Operator> g_axioms;
 extern AxiomEvaluator *g_axiom_evaluator;

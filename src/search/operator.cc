@@ -32,13 +32,10 @@ Operator::Operator(istream &in, bool axiom) {
         for (int i = 0; i < count; i++)
             pre_post.push_back(PrePost(in));
 
-        if (g_legacy_file_format) {
-            cost = 1;
-        } else {
-            int op_cost;
-            in >> op_cost;
-            cost = g_use_metric ? op_cost : 1;
-        }
+        int op_cost;
+        in >> op_cost;
+        cost = g_use_metric ? op_cost : 1;
+
         g_min_action_cost = min(g_min_action_cost, cost);
         g_max_action_cost = max(g_max_action_cost, cost);
 

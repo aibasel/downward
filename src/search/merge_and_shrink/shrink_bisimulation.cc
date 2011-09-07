@@ -65,7 +65,8 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
       greedy(opts.get<bool>("greedy")),
       threshold(opts.get<int>("threshold")),
       initialize_by_h(opts.get<bool>("initialize_by_h")),
-      group_by_h(opts.get<bool>("group_by_h")) {
+      group_by_h(opts.get<bool>("group_by_h")),
+      at_limit(AtLimit(opts.get_enum("at_limit"))) {
     if (initialize_by_h != group_by_h) {
         cerr << "initialize_by_h and group_by_h cannot be set independently "
              << "at the moment" << endl;
@@ -178,7 +179,8 @@ int ShrinkBisimulation::initialize_bisim(const Abstraction &abs) {
 
     // TODO: Check logic. What if one or both of the groups are empty?
 
-    group_done.resize(abs.size(), false);
+    if (at_limit == SKIP_AND_KEEP_GOING)
+        group_done.resize(abs.size(), false);
 
     return num_groups;
 }
@@ -209,7 +211,10 @@ int ShrinkBisimulation::initialize_dfp(const Abstraction &abs) {
     }
     int num_groups = num_of_used_h;
 
-    h_group_done.resize(num_of_used_h, false);
+    if (at_limit == SKIP_AND_KEEP_GOING)
+        h_group_done.resize(num_of_used_h, false);
+    else
+        release_memory(h_to_h_group);
     return num_groups;
 }
 
@@ -239,7 +244,8 @@ void ShrinkBisimulation::compute_abstraction(
     int max_h = abs.get_max_h();
 
     bool done = false;
-    while (!done) {
+    bool stop_after_iteration = false;
+    while (!done && !stop_after_iteration) {
         done = true;
         // Compute state signatures.
         // Add sentinels to the start and end.
@@ -311,13 +317,15 @@ void ShrinkBisimulation::compute_abstraction(
             // Skips all groups that cannot be split further (due to
             // memory restrictions).
             if (group_by_h) {
-                if (h == -1 || h_group_done[h_to_h_group[h]]) {
+                if (h == -1 || (at_limit == SKIP_AND_KEEP_GOING &&
+                                h_group_done[h_to_h_group[h]])) {
                     while (signatures[sig_start].h == h)
                         sig_start++;
                     continue;
                 }
             } else {
-                if (h == -1 || group_done[group]) {
+                if (h == -1 || (at_limit == SKIP_AND_KEEP_GOING &&
+                                group_done[group])) {
                     while (signatures[sig_start].group == group)
                         sig_start++;
                     continue;
@@ -356,10 +364,47 @@ void ShrinkBisimulation::compute_abstraction(
                 // Can't split the group (or the set of groups for
                 // this h value) -- would exceed bound on abstract
                 // state number.
-                if (group_by_h) {
-                    h_group_done[h_to_h_group[h]] = true;
+                if (at_limit == SKIP_AND_KEEP_GOING) {
+                    if (group_by_h) {
+                        h_group_done[h_to_h_group[h]] = true;
+                    } else {
+                        group_done[group] = true;
+                    }
+                } else if (at_limit == SKIP_AND_COMPLETE_ITERATION) {
+                    stop_after_iteration = true;
+                } else if (at_limit == RETURN) {
+                    stop_after_iteration = true;
+                    break;
                 } else {
-                    group_done[group] = true;
+                    assert(at_limit == USE_UP);
+
+                    stop_after_iteration = true;
+                    // TODO: Get rid of code duplication between this
+                    // and the following code
+
+                    int new_group_no = -1;
+                    for (int i = sig_start; i < sig_end; i++) {
+                        const Signature &prev_sig = signatures[i - 1];
+                        const Signature &curr_sig = signatures[i];
+
+                        if (prev_sig.group != curr_sig.group) {
+                            // Start first group of a block; keep old group no.
+                            new_group_no = curr_sig.group;
+                        } else if (prev_sig.succ_signature
+                                   != curr_sig.succ_signature) {
+                            if (num_groups < target_size) {
+                                // Only start a new group if we're within
+                                // budget!
+                                new_group_no = num_groups++;
+                                assert(num_groups <= target_size);
+                            }
+                        }
+
+                        assert(new_group_no != -1);
+                        state_to_group[curr_sig.state] = new_group_no;
+                    }
+                    assert(num_groups == target_size);
+                    break;
                 }
             } else if (num_new_groups != num_old_groups) {
                 // Split the group into the new groups, where if two
@@ -419,6 +464,7 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
     opts.set("threshold", 1);
     opts.set("initialize_by_h", false);
     opts.set("group_by_h", false);
+    opts.set<int>("at_limit", SKIP_AND_KEEP_GOING);
 
     return new ShrinkBisimulation(opts);
 }
@@ -429,6 +475,15 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     parser.add_option<int>("threshold", -1); // default: same as max_states
     parser.add_option<bool>("initialize_by_h", true);
     parser.add_option<bool>("group_by_h", false);
+
+    vector<string> at_limit;
+    at_limit.push_back("RETURN");
+    at_limit.push_back("USE_UP");
+    at_limit.push_back("SKIP_AND_COMPLETE_ITERATION");
+    at_limit.push_back("SKIP_AND_KEEP_GOING");
+    parser.add_enum_option(
+        "at_limit", at_limit, "SKIP_AND_KEEP_GOING",
+        "what to do when the size limit is hit");
 
     Options opts = parser.parse();
     ShrinkStrategy::handle_option_defaults(opts);
