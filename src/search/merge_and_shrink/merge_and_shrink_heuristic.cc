@@ -224,7 +224,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators", "no");
 
     // TODO: better documentation what each parameter does
-    parser.add_option<int>("count", 1, "number of abstractions to build");
+    parser.add_option<int>("count", "1", "number of abstractions to build");
     vector<string> merge_strategies;
     //TODO: it's a bit dangerous that the merge strategies here
     // have to be specified exactly in the same order
@@ -246,7 +246,8 @@ static Heuristic *_parse(OptionParser &parser) {
     ShrinkStrategy *def_shrink = ShrinkFH::create_default(50000);
 
     parser.add_option<ShrinkStrategy *>(
-        "shrink_strategy", def_shrink, 
+        "shrink_strategy", 
+        "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low", 
         "shrink strategy; these are not fully documented yet;"
         "try one of the following:");
     ValueExplanations shrink_value_explanations;
@@ -283,8 +284,8 @@ static Heuristic *_parse(OptionParser &parser) {
 
     // TODO: Rename option name to "use_label_reduction" to be
     //       consistent with the papers?
-    parser.add_option<bool>("reduce_labels", true, "enable label reduction");
-    parser.add_option<bool>("expensive_statistics", false, "show statistics on \"unique unlabeled edges\" (WARNING: "
+    parser.add_option<bool>("reduce_labels", "true", "enable label reduction");
+    parser.add_option<bool>("expensive_statistics", "false", "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

@@ -338,19 +338,19 @@ void LandmarkGraph::dump() const {
 void LandmarkGraph::add_options_to_parser(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     parser.add_option<bool>("reasonable_orders",
-                            false,
+                            "false",
                             "generate reasonable orders");
     parser.add_option<bool>("only_causal_landmarks",
-                            false,
+                            "false",
                             "keep only causal landmarks");
     parser.add_option<bool>("disjunctive_landmarks",
-                            true,
+                            "true",
                             "keep disjunctive landmarks");
     parser.add_option<bool>("conjunctive_landmarks",
-                            true,
+                            "true",
                             "keep conjunctive landmarks");
     parser.add_option<bool>("no_orders",
-                            false,
+                            "false",
                             "discard all orderings");
     vector<string> cost_types;
     cost_types.push_back("NORMAL");

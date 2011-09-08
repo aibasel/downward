@@ -577,26 +577,26 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators", "no (not yet)");
 
     parser.add_list_option<Heuristic *>("heuristics", "heuristics");
-    parser.add_option<double>("alpha", 1.0, "alpha");
+    parser.add_option<double>("alpha", "1.0", "alpha");
     vector<string> classifier_types;
     classifier_types.push_back("NB");
     classifier_types.push_back("AODE");
     parser.add_enum_option(
         "classifier", classifier_types, "NB", "classifier type");
-    parser.add_option<double>("conf_threshold", 0.6, "confidence threshold");
-    parser.add_option<int>("training_set", 100, "minimum size of training set");
-    parser.add_option<int>("eval_always", 0,
+    parser.add_option<double>("conf_threshold", "0.6", "confidence threshold");
+    parser.add_option<int>("training_set", "100", "minimum size of training set");
+    parser.add_option<int>("eval_always", "0",
                            "number of heuristics that should always be evaluated");
-    parser.add_option<bool>("random_sel", false, "random selection");
-    parser.add_option<bool>("retime", false, "retime heuristics");
+    parser.add_option<bool>("random_sel", "false", "random selection");
+    parser.add_option<bool>("retime", "false", "retime heuristics");
     vector<string>sample_types;
     sample_types.push_back("Probe");
     sample_types.push_back("ProbAStar");
     sample_types.push_back("PDB");
     parser.add_enum_option(
         "sample", sample_types, "Probe", "state space sample type");
-    parser.add_option<bool>("uniform", false, "uniform sampling");
-    parser.add_option<bool>("zero_threshold", false,
+    parser.add_option<bool>("uniform", "false", "uniform sampling");
+    parser.add_option<bool>("zero_threshold", "false",
                             "set threshold constant 0");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

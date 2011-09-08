@@ -33,7 +33,7 @@ OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
         "(Department of Computer Science at Freiburg University, "
         "No. 258, 2010)"); 
     parser.add_list_option<OpenList<Entry> *>("openlists", "sub open lists");
-    parser.add_option<int>("boost", 0,
+    parser.add_option<int>("boost", "0",
                            "boost value for sub-open-lists "
                            "that are restricted to preferred operator nodes");
 

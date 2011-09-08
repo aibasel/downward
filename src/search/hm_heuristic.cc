@@ -232,7 +232,7 @@ static Heuristic *_parse(OptionParser &parser) {
                              "effects or axioms");
     parser.document_property("preferred operators", "no");
 
-    parser.add_option<int>("m", 2, "subset size");
+    parser.add_option<int>("m", "2", "subset size");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

@@ -88,7 +88,7 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
                            "NORMAL",
                            "operator cost adjustment type");
     parser.add_option<int>(
-        "bound", numeric_limits<int>::max(),
+        "bound", "infinity",
         "depth bound on g-values. Cutoffs are always performed according to "
         "the real cost, regardless of the cost_type parameter");
 }
