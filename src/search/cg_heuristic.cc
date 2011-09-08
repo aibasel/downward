@@ -18,8 +18,6 @@ using namespace std;
 #define USE_CACHE true
 
 
-
-
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
       cache(new CGCache), cache_hits(0), cache_misses(0),
@@ -32,6 +30,10 @@ CGHeuristic::CGHeuristic(const Options &opts)
 CGHeuristic::~CGHeuristic() {
     for (int i = 0; i < prio_queues.size(); ++i)
         delete prio_queues[i];
+}
+
+bool CGHeuristic::dead_ends_are_reliable() const {
+    return false;
 }
 
 void CGHeuristic::initialize() {

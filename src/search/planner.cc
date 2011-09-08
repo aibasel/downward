@@ -20,21 +20,8 @@ int main(int argc, const char **argv) {
         exit(1);
     }
 
-    if (string(argv[1]).compare("--help") != 0) {
-        // read prepropressor output first because we need to know the initial
-        // state when we create a general lazy search engine
-        bool poly_time_method = false;
-
-        istream &in = cin;
-
-        in >> poly_time_method;
-        if (poly_time_method) {
-            cout << "Poly-time method not implemented in this branch." << endl;
-            cout << "Starting normal solver." << endl;
-        }
-
-        read_everything(in);
-    }
+    if (string(argv[1]).compare("--help") != 0)
+        read_everything(cin);
 
     SearchEngine *engine = 0;
 

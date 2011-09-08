@@ -201,10 +201,6 @@ public:
     void set_landmark_cost(int cost) {
         landmarks_cost = cost;
     }
-    void insert_var_val_to_predicate_args(const std::pair<int, int> &var_val,
-                                          const std::pair<string, std::vector<string> > &predicates) {
-        var_val_to_predicate_args.insert(std::make_pair(var_val, predicates));
-    }
     void dump_node(const LandmarkNode *node_p) const;
     void dump() const;
 private:
@@ -226,9 +222,6 @@ private:
     std::set<LandmarkNode *> nodes;
     std::vector<LandmarkNode *> ordered_nodes;
     std::vector<std::vector<std::vector<int> > > operators_eff_lookup;
-
-    // something similar to pddl_propositions, but only storing predicate and args needed for "dump node"
-    __gnu_cxx::hash_map<pair<int, int>, pair<string, std::vector<string> >, hash_int_pair> var_val_to_predicate_args;
 };
 
 #endif

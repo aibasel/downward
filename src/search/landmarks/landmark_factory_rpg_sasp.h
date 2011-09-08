@@ -8,6 +8,7 @@
 
 class LandmarkFactoryRpgSasp : public LandmarkFactory {
     list<LandmarkNode *> open_landmarks;
+    std::vector<std::vector<int> > disjunction_classes;
 
     void find_forward_orders(const std::vector<std::vector<int> > &lvl_var,
                              LandmarkNode *lmp);
@@ -31,6 +32,8 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
                                       LandmarkNode *lmp);
     static bool domain_connectivity(const std::pair<int, int> &landmark,
                                     const __gnu_cxx::hash_set<int> &exclude);
+
+    void build_disjunction_classes();
 public:
     LandmarkFactoryRpgSasp(const Options &opts);
     virtual ~LandmarkFactoryRpgSasp() {}
