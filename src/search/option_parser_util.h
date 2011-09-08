@@ -402,7 +402,7 @@ private:
 };
 
 struct OptionFlags {
-    OptionFlags(bool mand = true)
+    explicit OptionFlags(bool mand = true)
         : mandatory(mand) {
     }
     bool mandatory;

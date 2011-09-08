@@ -438,6 +438,7 @@ ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
 bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
     return false;
 }
+
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Context-enhanced additive heuristic", "");
     parser.document_language_support("action costs", "supported");
@@ -461,5 +462,6 @@ static Heuristic *_parse(OptionParser &parser) {
         return new ContextEnhancedAdditiveHeuristic(opts);
 }
 
-
 static Plugin<Heuristic> _plugin("cea", _parse);
+
+}

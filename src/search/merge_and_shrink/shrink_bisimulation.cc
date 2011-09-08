@@ -486,6 +486,9 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
         "what to do when the size limit is hit");
 
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
+
     ShrinkStrategy::handle_option_defaults(opts);
 
     int threshold = opts.get<int>("threshold");

@@ -293,6 +293,8 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_list_option<int>("pattern", "the pattern", OptionFlags(false));
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
     vector<int> pattern;
     if (opts.contains("pattern"))
         pattern = opts.get_list<int>("pattern");

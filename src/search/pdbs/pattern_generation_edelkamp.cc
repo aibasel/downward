@@ -282,6 +282,8 @@ static Heuristic *_parse(OptionParser &parser) {
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
 
     if (opts.get<int>("pdb_max_size") < 1)
         parser.error("size per pdb must be at least 1");

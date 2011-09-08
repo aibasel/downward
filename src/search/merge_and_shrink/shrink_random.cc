@@ -35,6 +35,9 @@ void ShrinkRandom::partition_into_buckets(
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
+
     ShrinkStrategy::handle_option_defaults(opts);
 
     if (!parser.dry_run())
