@@ -30,7 +30,7 @@ protected:
 public:
     CGHeuristic(const Options &opts);
     ~CGHeuristic();
-    virtual bool dead_ends_are_reliable() {return false; }
+    virtual bool dead_ends_are_reliable() const;
 };
 
 #endif

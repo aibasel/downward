@@ -307,14 +307,8 @@ void HMLandmarks::get_m_sets(int m,
 }
 
 void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
-    __gnu_cxx::hash_map<pair<int, int>, Pddl_proposition, hash_int_pair>::const_iterator it =
-        pddl_propositions.find(fluent);
-    if (it != pddl_propositions.end()) {
-        cout << it->second.to_string();
-    } else {
-        cout << "Name unknown";
-    }
-    cout << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
+    cout << g_fact_names[fluent.first][fluent.second]
+         << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
     << "->" << fluent.second << ")";
 }
 
@@ -460,7 +454,7 @@ bool HMLandmarks::possible_noop_set(const FluentSet &fs1, const FluentSet &fs2) 
 
     for (fs1it = fs1.begin(); fs1it != fs1.end(); ++fs1it) {
         for (fs2it = fs2.begin(); fs2it != fs2.end(); ++fs2it) {
-            if (inconsistent(make_pair(fs1it->first, fs1it->second), make_pair(fs2it->first, fs2it->second)))
+            if (are_mutex(make_pair(fs1it->first, fs1it->second), make_pair(fs2it->first, fs2it->second)))
                 return false;
         }
     }
@@ -580,7 +574,7 @@ void HMLandmarks::build_pm_ops() {
 
 bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
     // mutexes can always be safely pruned
-    return !inconsistent(make_pair(var1, val1), make_pair(var2, val2));
+    return !are_mutex(make_pair(var1, val1), make_pair(var2, val2));
 }
 
 HMLandmarks::HMLandmarks(const Options &opts)
@@ -654,7 +648,7 @@ void HMLandmarks::calc_achievers() {
                     continue;
                 int k;
                 for (k = 0; k < eff.size(); k++) {
-                    if (inconsistent(eff[k], lm_val)) {
+                    if (are_mutex(eff[k], lm_val)) {
                         break;
                     }
                 }
@@ -664,7 +658,7 @@ void HMLandmarks::calc_achievers() {
                 for (k = 0; k < pc.size(); k++) {
                     // we know that lm_val is not added by the operator
                     // so if it incompatible with the pc, this can't be an achiever
-                    if (inconsistent(pc[k], lm_val)) {
+                    if (are_mutex(pc[k], lm_val)) {
                         break;
                     }
                 }

@@ -23,21 +23,10 @@ protected:
     LandmarkGraph *lm_graph;
     virtual void generate_landmarks() = 0;
     void generate();
-    void read_external_inconsistencies();
     void discard_noncausal_landmarks();
     void discard_disjunctive_landmarks();
     void discard_conjunctive_landmarks();
     void discard_all_orderings();
-    inline bool inconsistent(const std::pair<int, int> &a, const std::pair<int, int> &b) const {
-        if (a == b)
-            return false;
-        if (a.first != b.first || a.second != b.second)
-            if (a.first == b.first && a.second != b.second)
-                return true;
-        if (inconsistent_facts[a.first][a.second].find(b) != inconsistent_facts[a.first][a.second].end())
-            return true;
-        return false;
-    }
     inline bool relaxed_task_solvable(bool level_out,
                                       const LandmarkNode *exclude,
                                       bool compute_lvl_op = false) const {
@@ -50,29 +39,11 @@ protected:
                                          std::vector<std::vector<int> > &lvl_var,
                                          std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op);
 
-    // protected not private for LandmarkFactoryRpgSasp
-    struct Pddl_proposition {
-        string predicate;
-        std::vector<string> arguments;
-        string to_string() const {
-            string output = predicate;
-            for (unsigned int i = 0; i < arguments.size(); i++) {
-                output += " ";
-                output += arguments[i];
-            }
-            return output;
-        }
-    };
-    __gnu_cxx::hash_map<std::pair<int, int>, Pddl_proposition, hash_int_pair> pddl_propositions;
-    std::map<string, int> pddl_proposition_indices; //TODO: make this a hash_map
-
     // protected not private for LandmarkFactoryRpgSearch
     bool achieves_non_conditional(const Operator &o, const LandmarkNode *lmp) const;
     bool is_landmark_precondition(const Operator &o, const LandmarkNode *lmp) const;
 
 private:
-    std::vector<std::vector<std::set<std::pair<int, int> > > > inconsistent_facts;
-
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
     bool effect_always_happens(const std::vector<PrePost> &prepost,
                                std::set<std::pair<int, int> > &eff) const;
