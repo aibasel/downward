@@ -241,10 +241,6 @@ static Heuristic *_parse(OptionParser &parser) {
                            "MERGE_LINEAR_CG_GOAL_LEVEL",
                            "merge strategy");
 
-    // TODO: Default shrink strategy should only be created
-    // when it's actually used.
-    ShrinkStrategy *def_shrink = ShrinkFH::create_default(50000);
-
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy", 
         "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low", 

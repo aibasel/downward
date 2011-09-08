@@ -11,6 +11,8 @@ using namespace std;
 void parse_patterns(OptionParser &parser, Options &opts) {
     parser.add_list_option<vector<int> >("patterns", "the pattern collection", OptionFlags(false));
     opts = parser.parse();
+    if(parser.help_mode())
+        return;
     vector<vector<int> > pattern_collection;
     if (opts.contains("patterns"))
         pattern_collection = opts.get_list<vector<int> >("patterns");

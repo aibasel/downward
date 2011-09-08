@@ -342,7 +342,7 @@ void OptionParser::add_enum_option(string k,
                                    vector<string > enumeration,
                                    string def_val, string h,
                                    vector<string> enum_docs,
-                                   OptionFlags flags) {
+                                   const OptionFlags &flags) {
     if (help_mode_) {
         ValueExplanations value_explanations;
         string enum_descr = "{";
@@ -367,11 +367,7 @@ void OptionParser::add_enum_option(string k,
 
     //enum arguments can be given by name or by number:
     //first parse the corresponding string like a normal argument...
-    if (def_val.compare("") != 0) {
-        add_option<string>(k, def_val, h);
-    } else {
-        add_option<string>(k, h, flags.mandatory);
-    }
+    add_option<string>(k, def_val, h, flags);
 
     if (!flags.mandatory && !opts.contains(k))
         return;

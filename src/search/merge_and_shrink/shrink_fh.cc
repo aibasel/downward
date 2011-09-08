@@ -172,6 +172,9 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
         "shrink_h", high_low,
         "LOW", "prefer shrinking states with high or low h values");
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
+
     ShrinkStrategy::handle_option_defaults(opts);
 
     if (!parser.dry_run())
