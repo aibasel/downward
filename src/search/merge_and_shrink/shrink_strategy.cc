@@ -122,10 +122,10 @@ void ShrinkStrategy::apply(
 void ShrinkStrategy::add_options_to_parser(OptionParser &parser) {
     // TODO: better documentation what each parameter does
     parser.add_option<int>(
-        "max_states", -1,
+        "max_states", "-1",
         "maximum abstraction size");
     parser.add_option<int>(
-        "max_states_before_merge", -1,
+        "max_states_before_merge", "-1",
         "maximum abstraction size for factors of synchronized product");
 }
 

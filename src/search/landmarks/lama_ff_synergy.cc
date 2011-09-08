@@ -86,9 +86,9 @@ static Synergy *_parse(OptionParser &parser) {
         "\"hlm,hff=lm_ff_syn(...)\"");
     Synergy *syn = new Synergy;
     parser.add_option<LandmarkGraph *>("lm_graph");
-    parser.add_option<bool>("admissible", false, "get admissible estimate");
-    parser.add_option<bool>("optimal", false, "optimal cost sharing");
-    parser.add_option<bool>("alm", true, "use action landmarks");
+    parser.add_option<bool>("admissible", "false", "get admissible estimate");
+    parser.add_option<bool>("optimal", "false", "optimal cost sharing");
+    parser.add_option<bool>("alm", "true", "use action landmarks");
     Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();

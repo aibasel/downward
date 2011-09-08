@@ -151,16 +151,16 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_list_option<ParseTree>("engine_configs",
                                       "list of search engines for each phase");
     parser.add_option<bool>(
-        "pass_bound", true,
+        "pass_bound", "true",
         "use bound from previous search. The bound is the real cost "
         "of the plan found before, regardless of the cost_type parameter." );
-    parser.add_option<bool>("repeat_last", false,
+    parser.add_option<bool>("repeat_last", "false",
                             "repeat last phase of search");
-    parser.add_option<bool>("continue_on_fail", false,
+    parser.add_option<bool>("continue_on_fail", "false",
                             "continue search after no solution found");
-    parser.add_option<bool>("continue_on_solve", true,
+    parser.add_option<bool>("continue_on_solve", "true",
                             "continue search after solution found");
-    parser.add_option<int>("plan_counter", 0,
+    parser.add_option<int>("plan_counter", "0",
                            "start enumerating plans with plan_counter + 1");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();

@@ -289,7 +289,7 @@ double PDBHeuristic::compute_mean_finite_h() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.add_option<int>("max_states", 1000000, "maximum abstraction size");
+    parser.add_option<int>("max_states", "1000000", "maximum abstraction size");
     parser.add_list_option<int>("pattern", "the pattern", OptionFlags(false));
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

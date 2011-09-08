@@ -319,14 +319,14 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Eager best first search", "");
     
     parser.add_option<OpenList<state_var_t *> *>("open", "open list");
-    parser.add_option<bool>("reopen_closed", false,
+    parser.add_option<bool>("reopen_closed", "false",
                             "reopen closed nodes");
-    parser.add_option<bool>("pathmax", false,
+    parser.add_option<bool>("pathmax", "false",
                             "use pathmax correction");
-    parser.add_option<ScalarEvaluator *>("f_eval", 0,
+    parser.add_option<ScalarEvaluator *>("f_eval", "0",
                                          "set evaluator for jump statistics");
     parser.add_list_option<Heuristic *>
-        ("preferred", vector<Heuristic *>(),
+        ("preferred", "[]",
         "use preferred operators of these heuristics");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
@@ -353,9 +353,9 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         "because the current implementation of multi-path depedence "
         "does not support general open lists.");
     parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
-    parser.add_option<bool>("pathmax", false,
+    parser.add_option<bool>("pathmax", "false",
                             "use pathmax correction");
-    parser.add_option<bool>("mpd", false,
+    parser.add_option<bool>("mpd", "false",
                             "use multi-path dependence (LM-A*)");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
@@ -402,10 +402,10 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "Closed node are not re-opened");
     parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
-        "preferred", vector<Heuristic *>(),
+        "preferred", "[]",
         "use preferred operators of these heuristics");
     parser.add_option<int>(
-        "boost", 0,
+        "boost", "0",
         "boost value for preferred operator open lists");
     SearchEngine::add_options_to_parser(parser);
 

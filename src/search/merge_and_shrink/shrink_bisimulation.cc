@@ -426,9 +426,9 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy");
-    parser.add_option<int>("threshold", -1); // default: same as max_states
-    parser.add_option<bool>("initialize_by_h", true);
-    parser.add_option<bool>("group_by_h", false);
+    parser.add_option<int>("threshold", "-1"); // default: same as max_states
+    parser.add_option<bool>("initialize_by_h", "true");
+    parser.add_option<bool>("group_by_h", "false");
 
     Options opts = parser.parse();
     ShrinkStrategy::handle_option_defaults(opts);
