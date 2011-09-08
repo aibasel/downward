@@ -304,10 +304,11 @@ static ParseTree generate_parse_tree(string config) {
             break;
         }
     }
-    if (next != ')')
-        throw ParseError("expected ) at end of configuration after " + buffer, *cur_node);
     if (cur_node->value.compare("pseudoroot") != 0)
         throw ParseError("missing )", *cur_node);
+    if (buffer.size() > 0)
+        tr.append_child(cur_node, ParseNode(buffer, key));
+
 
     //the real parse tree is the first (and only) child of the pseudoroot.
     //pseudoroot is only a placeholder.

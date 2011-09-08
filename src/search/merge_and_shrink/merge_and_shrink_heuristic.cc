@@ -243,7 +243,7 @@ static Heuristic *_parse(OptionParser &parser) {
 
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy", 
-        "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low", 
+        "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low)", 
         "shrink strategy; these are not fully documented yet;"
         "try one of the following:");
     ValueExplanations shrink_value_explanations;
