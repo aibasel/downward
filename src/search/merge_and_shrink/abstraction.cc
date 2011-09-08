@@ -429,13 +429,9 @@ void Abstraction::normalize(bool reduce_labels) {
         for (int i = 0; i < bucket.size(); i++) {
             int target = bucket[i].first;
             int op_no = bucket[i].second;
-            int op_cost = get_adjusted_action_cost(
-                g_operators[op_no], cost_type);
-            // This works w/o reference to reducer because we
-            // only reduce labels the same cost.
 
             vector<AbstractTransition> &op_bucket = transitions_by_op[op_no];
-            AbstractTransition trans(src, target, op_cost);
+            AbstractTransition trans(src, target);
             if (op_bucket.empty() || op_bucket.back() != trans)
                 op_bucket.push_back(trans);
         }
@@ -461,12 +457,11 @@ void Abstraction::build_atomic_abstractions(
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {
         const Operator *op = &g_operators[op_no];
         const vector<Prevail> &prev = op->get_prevail();
-        const int op_cost = get_adjusted_action_cost(*op, cost_type);
         for (int i = 0; i < prev.size(); i++) {
             int var = prev[i].var;
             int value = prev[i].prev;
             Abstraction *abs = result[var];
-            AbstractTransition trans(value, value, op_cost);
+            AbstractTransition trans(value, value);
             abs->transitions_by_op[op_no].push_back(trans);
 
             if (abs->relevant_operators.empty()
@@ -488,7 +483,7 @@ void Abstraction::build_atomic_abstractions(
                 pre_value_max = pre_value + 1;
             }
             for (int value = pre_value_min; value < pre_value_max; value++) {
-                AbstractTransition trans(value, post_value, op_cost);
+                AbstractTransition trans(value, post_value);
                 abs->transitions_by_op[op_no].push_back(trans);
             }
             if (abs->relevant_operators.empty()
@@ -586,16 +581,12 @@ CompositeAbstraction::CompositeAbstraction(
                 for (int i = 0; i < bucket1.size(); i++) {
                     int src1 = bucket1[i].src;
                     int target1 = bucket1[i].target;
-                    int cost1 = bucket1[i].cost;
                     for (int j = 0; j < bucket2.size(); j++) {
                         int src2 = bucket2[j].src;
                         int target2 = bucket2[j].target;
-                        int cost2 = bucket2[j].cost;
                         int src = src1 * multiplier + src2;
                         int target = target1 * multiplier + target2;
-                        int min_cost = ::min(cost1, cost2);
-                        transitions.push_back(AbstractTransition(src, target,
-                                                                 min_cost));
+                        transitions.push_back(AbstractTransition(src, target));
                     }
                 }
             } else if (relevant1) {
@@ -604,12 +595,10 @@ CompositeAbstraction::CompositeAbstraction(
                 for (int i = 0; i < bucket1.size(); i++) {
                     int src1 = bucket1[i].src;
                     int target1 = bucket1[i].target;
-                    int cost1 = bucket1[i].cost;
                     for (int s2 = 0; s2 < abs2->size(); s2++) {
                         int src = src1 * multiplier + s2;
                         int target = target1 * multiplier + s2;
-                        transitions.push_back(AbstractTransition(src, target,
-                                                                 cost1));
+                        transitions.push_back(AbstractTransition(src, target));
                     }
                 }
             } else if (relevant2) {
@@ -618,12 +607,10 @@ CompositeAbstraction::CompositeAbstraction(
                 for (int i = 0; i < bucket2.size(); i++) {
                     int src2 = bucket2[i].src;
                     int target2 = bucket2[i].target;
-                    int cost2 = bucket2[i].cost;
                     for (int s1 = 0; s1 < abs1->size(); s1++) {
                         int src = s1 * multiplier + src2;
                         int target = s1 * multiplier + target2;
-                        transitions.push_back(AbstractTransition(src, target,
-                                                                 cost2));
+                        transitions.push_back(AbstractTransition(src, target));
                     }
                 }
             }
@@ -758,9 +745,8 @@ void Abstraction::apply_abstraction(
             const AbstractTransition &trans = transitions[i];
             int src = abstraction_mapping[trans.src];
             int target = abstraction_mapping[trans.target];
-            int cost = trans.cost;
             if (src != PRUNED_STATE && target != PRUNED_STATE)
-                new_transitions.push_back(AbstractTransition(src, target, cost));
+                new_transitions.push_back(AbstractTransition(src, target));
         }
     }
     vector<vector<AbstractTransition> > ().swap(transitions_by_op);
@@ -840,19 +826,6 @@ int Abstraction::unique_unlabeled_transitions() const {
     vector<AbstractTransition> unique_transitions;
     for (int i = 0; i < transitions_by_op.size(); i++) {
         const vector<AbstractTransition> &trans = transitions_by_op[i];
-        unique_transitions.insert(unique_transitions.end(), trans.begin(),
-                                  trans.end());
-    }
-    ::sort(unique_transitions.begin(), unique_transitions.end());
-    return unique(unique_transitions.begin(), unique_transitions.end())
-           - unique_transitions.begin();
-}
-
-int Abstraction::unique_unlabeled_transitions(const vector<int> &relevant_ops) const {
-    vector<AbstractTransition> unique_transitions;
-    for (int i = 0; i < relevant_ops.size(); i++) {
-        const vector<AbstractTransition> &trans =
-            transitions_by_op[relevant_ops[i]];
         unique_transitions.insert(unique_transitions.end(), trans.begin(),
                                   trans.end());
     }
