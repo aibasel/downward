@@ -208,7 +208,7 @@ private:
 
 template <class T>
 T OptionParser::start_parsing() {
-    if (help_mode_){
+    if (help_mode()){
         DocStore::instance()->register_object(parse_tree.begin()->value,
                                               TypeNamer<T>::name());
     }
@@ -219,7 +219,7 @@ template <class T>
 void OptionParser::add_option(
     std::string k,
     std::string default_value, std::string h, const OptionFlags &flags) {
-    if (help_mode_) {
+    if (help_mode()) {
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h, 
                                       TypeNamer<T>::name(), default_value);
@@ -227,7 +227,6 @@ void OptionParser::add_option(
     }
 
     valid_keys.push_back(k);
-
     bool use_default(false);
     ParseTree::sibling_iterator arg = next_unparsed_argument;
     //scenario where we have already handled all arguments
@@ -239,7 +238,7 @@ void OptionParser::add_option(
         }
     }
     //handling arguments with explicit keyword:
-    if (!arg->key.empty()) {
+    if (!use_default && !arg->key.empty()) {//to check if we reached the params supplied with key
         //try to find a parameter passed with keyword k
         for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
             if (arg->key.compare(k) == 0)
@@ -257,18 +256,16 @@ void OptionParser::add_option(
         OptionParser subparser(default_value, dry_run());
         T result = TokenParser<T>::parse(subparser);
         opts.set<T>(k, result);
-        return;
     } else {
         OptionParser subparser(subtree(parse_tree, arg), dry_run());
         T result = TokenParser<T>::parse(subparser);
         opts.set<T>(k, result);
+        //if we have not reached the keyword parameters yet
+        //and did not use the default value,
+        //increment the argument position pointer
+        if (arg->key.size() == 0)
+            ++next_unparsed_argument;
     }
-
-    //if we have not reached the keyword parameters yet
-    //and did not use the default value,
-    //increment the argument position pointer
-    if (arg->key.size() == 0)
-        ++next_unparsed_argument;
 }
 
 template <class T>
