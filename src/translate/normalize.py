@@ -276,13 +276,38 @@ def substitute_complicated_goal(task):
     new_axiom = task.add_axiom([], goal)
     task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)
 
-# Combine Steps [1], [2], [3], [4]
+# Combine Steps [1], [2], [3], [4] and do some additional verification
+# that the task makes sense.
+
 def normalize(task):
     remove_universal_quantifiers(task)
     substitute_complicated_goal(task)
     build_DNF(task)
     split_disjunctions(task)
     move_existential_quantifiers(task)
+
+    verify_axiom_predicates(task)
+
+def verify_axiom_predicates(task):
+    # Verify that derived predicates are not used in :init or
+    # action effects.
+    axiom_names = set()
+    for axiom in task.axioms:
+        axiom_names.add(axiom.name)
+
+    for fact in task.init:
+        if fact.predicate in axiom_names:
+            raise SystemExit(
+                "error: derived predicate %r appears in :init fact '%s'" %
+                (fact.predicate, fact))
+
+    for action in task.actions:
+        for effect in action.effects:
+            if effect.literal.predicate in axiom_names:
+                raise SystemExit(
+                    "error: derived predicate %r appears in effect of action %r" %
+                    (effect.literal.predicate, action.name))
+
 
 # [5] Build rules for exploration component.
 def build_exploration_rules(task):

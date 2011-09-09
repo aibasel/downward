@@ -32,6 +32,7 @@ class Task(object):
         self.axioms.append(axiom)
         return axiom
 
+    @staticmethod
     def parse(domain_pddl, task_pddl):
         domain_name, requirements, types, constants, predicates, functions, actions, axioms \
                      = parse_domain(domain_pddl)
@@ -40,9 +41,9 @@ class Task(object):
         assert domain_name == task_domain_name
         objects = constants + objects
         init += [conditions.Atom("=", (obj.name, obj.name)) for obj in objects]
+
         return Task(domain_name, task_name, requirements, types, objects,
                     predicates, functions, init, goal, actions, axioms, use_metric)
-    parse = staticmethod(parse)
 
     def dump(self):
         print "Problem %s: %s [%s]" % (self.domain_name, self.task_name,
