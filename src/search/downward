@@ -2,9 +2,23 @@
 BASEDIR="$(dirname "$0")"
 TEMPFILE=downward.tmp.$$
 cat > $TEMPFILE
-STATE_SIZE=$(command time --output=elapsed.time --append --format='%S\n%U\n' "$BASEDIR/dispatch" $TEMPFILE)
+
+# Need to explicitly ask for GNU time (from MacPorts) on Mac OS X.
+if [[ "$(uname)" == "Darwin" ]]; then
+    TIME="gtime"
+    if ! which $TIME >/dev/null; then
+        echo "$TIME must be installed on Mac OSX (from MacPorts, perhaps) for this to work"
+        exit 1
+    fi
+else
+    TIME="command time"
+fi
+
+TIME="$TIME --output=elapsed.time --format=%S\n%U\n"
+
+STATE_SIZE=$($TIME --append "$BASEDIR/dispatch" $TEMPFILE)
 echo Dispatcher selected state size $STATE_SIZE.
-UNIT_COST=$(command time --output=elapsed.time --append --format='%S\n%U\n' "$BASEDIR/unitcost" $TEMPFILE)
+UNIT_COST=$($TIME --append "$BASEDIR/unitcost" $TEMPFILE)
 echo This is a $UNIT_COST task.
 PLANNER="$BASEDIR/downward-$STATE_SIZE"
 if [[ "$1" == "ipc" ]]; then
