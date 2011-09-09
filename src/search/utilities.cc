@@ -63,7 +63,8 @@ int get_peak_memory_in_kb() {
     task_basic_info t_info;
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
 
-    if (task_info(mach_task_self(), TASK_BASIC_INFO, &t_info,
+    if (task_info(mach_task_self(), TASK_BASIC_INFO,
+                  reinterpret_cast<task_info_t>(&t_info),
                   &t_info_count) == KERN_SUCCESS)
         memory_in_kb = t_info.virtual_size / 1024;
 #else
