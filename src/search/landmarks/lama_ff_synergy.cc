@@ -84,7 +84,6 @@ static Synergy *_parse(OptionParser &parser) {
         "This synergy can only be used via Predefinition "
         "(see ReusingHeuristics), for example:\n"
         "\"hlm,hff=lm_ff_syn(...)\"");
-    Synergy *syn = new Synergy;
     parser.add_option<LandmarkGraph *>("lm_graph");
     parser.add_option<bool>("admissible", "false", "get admissible estimate");
     parser.add_option<bool>("optimal", "false", "optimal cost sharing");
@@ -102,7 +101,7 @@ static Synergy *_parse(OptionParser &parser) {
 
     LamaFFSynergy *lama_ff_synergy =
         new LamaFFSynergy(opts);
-
+    Synergy *syn = new Synergy;
     syn->heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
     syn->heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
     return syn;
