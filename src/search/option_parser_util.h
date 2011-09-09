@@ -1,8 +1,6 @@
 #ifndef OPTION_PARSER_UTIL_H
 #define OPTION_PARSER_UTIL_H
 
-#include "merge_and_shrink/shrink_strategy.h"
-
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -16,6 +14,7 @@
 #include <boost/any.hpp>
 
 
+class ShrinkStrategy;
 class LandmarkGraph;
 class Heuristic;
 class ScalarEvaluator;
@@ -252,46 +251,6 @@ struct TypeNamer<std::vector<T> > {
         return "list of " + TypeNamer<T>::name();
     }
 };
-
-//DefaultValueNamer is for printing default values.
-//Maybe a better solution would be to implement "<<" for everything that's needed. Don't know.
-
-template <class T>
-struct DefaultValueNamer {
-    static std::string to_str(T val) {
-        std::ostringstream strs;
-        strs << std::boolalpha << val;
-        return strs.str();
-    }
-};
-
-template <>
-struct DefaultValueNamer<ParseTree> {
-    static std::string to_str(ParseTree val) {
-        return "implement default value naming for parse trees!"
-               + val.begin()->value;
-    }
-};
-
-template <>
-struct DefaultValueNamer<ShrinkStrategy *> {
-    static std::string to_str(ShrinkStrategy *s) {
-        return s->name();
-    }
-};
-
-template <class T>
-struct DefaultValueNamer<std::vector<T> > {
-    static std::string to_str(std::vector<T> val) {
-        std::string s = "[";
-        for (size_t i(0); i != val.size(); ++i) {
-            s += DefaultValueNamer<T>::to_str(val[i]);
-        }
-        s += "]";
-        return s;
-    }
-};
-
 
 //helper functions for the ParseTree (=tree<ParseNode>)
 
