@@ -286,11 +286,11 @@ static Heuristic *_parse(OptionParser &parser) {
                              "See also [LAMAFFSynergy]");
     parser.document_note(
         "Note",
-         "to use optimal=true, you must build the planner with USE_LP=1. "
+         "to use `optimal=true`, you must build the planner with USE_LP=1. "
         "See [LPBuildInstructions].");
     parser.document_note(
         "Optimal search",
-        "when using landmarks for optimal search (admissible=true), "
+        "when using landmarks for optimal search (`admissible=true`), "
         "you probably also want to enable the mpd option of the A* algorithm "
         "to improve heuristic estimates");
     parser.document_note(
@@ -299,21 +299,21 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support("action costs", 
                                      "supported");
     parser.document_language_support("conditional_effects", 
-                                     "supported if admissible=false");
+                                     "supported if `admissible=false`");
     parser.document_language_support(
         "axioms",
-        "supported if admissible=false (but may behave stupidly and unsave");
+        "supported if `admissible=false` (but may behave stupidly and unsave");
     parser.document_property(
         "admissible",
-        "yes if admissible=true and there are neither conditional effects "
+        "yes if `admissible=true` and there are neither conditional effects "
         "nor axioms");
     parser.document_property("consistent", "no");
     parser.document_property(
         "safe",
         "yes (except maybe on tasks with axioms or when "
-        "using admissible=true on tasks with conditional effects)");
+        "using `admissible=true` on tasks with conditional effects)");
     parser.document_property("preferred operators", 
-                             "yes (if enabled; see pref_ops option)");
+                             "yes (if enabled; see `pref_ops` option)");
 
     parser.add_option<LandmarkGraph *>(
         "lm_graph",
@@ -324,7 +324,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>(
         "optimal", "false", 
         "use optimal (LP-based) cost sharing "
-        "(only makes sense with admissible=true)");
+        "(only makes sense with `admissible=true`)");
     parser.add_option<bool>("pref", "false", "identify preferred operators");
     parser.add_option<bool>("alm", "true", "use action landmarks");
     Heuristic::add_options_to_parser(parser);
