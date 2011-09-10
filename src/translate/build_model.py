@@ -154,7 +154,7 @@ class ProductRule(BuildRule):
 
         eff_args = self.prepare_effect(new_atom, cond_index)
 
-        for bindings_list in tools.product(*bindings_factors):
+        for bindings_list in itertools.product(*bindings_factors):
             bindings = itertools.chain(*bindings_list)
             for var_no, obj in bindings:
                 eff_args[var_no] = obj
