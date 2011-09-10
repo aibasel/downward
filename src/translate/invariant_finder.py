@@ -137,7 +137,6 @@ def get_groups(task, reachable_action_params=None):
     return result
 
 if __name__ == "__main__":
-    import pddl
     print "Parsing..."
     task = pddl.open()
     print "Finding invariants..."

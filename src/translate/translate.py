@@ -555,8 +555,6 @@ def dump_statistics(sas_task):
 
 
 if __name__ == "__main__":
-    import pddl
-
     timer = timers.Timer()
     with timers.timing("Parsing"):
         task = pddl.open()

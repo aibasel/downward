@@ -2,7 +2,6 @@
 
 from collections import defaultdict
 from itertools import count
-import sys
 
 DEBUG = False
 

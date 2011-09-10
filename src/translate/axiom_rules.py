@@ -1,7 +1,6 @@
 from __future__ import with_statement
 
 import pddl
-import sas_tasks
 import timers
 
 def handle_axioms(operators, axioms, goals):
