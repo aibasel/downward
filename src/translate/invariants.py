@@ -23,7 +23,7 @@ def invert_list(alist):
 
 
 def instantiate_factored_mapping(pairs):
-    part_mappings = [[zip(preimg, perm_img) for perm_img in tools.permutations(img)]
+    part_mappings = [[zip(preimg, perm_img) for perm_img in itertools.permutations(img)]
                      for (preimg, img) in pairs]
     return tools.cartesian_product(part_mappings)
 
