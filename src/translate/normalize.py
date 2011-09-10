@@ -296,7 +296,9 @@ def verify_axiom_predicates(task):
         axiom_names.add(axiom.name)
 
     for fact in task.init:
-        if fact.predicate in axiom_names:
+        # Note that task.init can contain the assignment to (total-cost)
+        # in addition to regular atoms.
+        if getattr(fact, "predicate", None) in axiom_names:
             raise SystemExit(
                 "error: derived predicate %r appears in :init fact '%s'" %
                 (fact.predicate, fact))
