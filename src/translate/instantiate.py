@@ -79,8 +79,6 @@ def explore(task):
         return instantiate(task, model)
 
 if __name__ == "__main__":
-    import pddl
-
     task = pddl.open()
     relaxed_reachable, atoms, actions, axioms = explore(task)
     print "goal relaxed reachable: %s" % relaxed_reachable
