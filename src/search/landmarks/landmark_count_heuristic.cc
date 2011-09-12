@@ -94,16 +94,10 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
         h = total_cost - reached_cost + needed_cost;
     }
 
+    // Two plausibility tests in debug mode.
     assert(h >= 0);
-
-#ifndef NDEBUG
-    // For debugging purposes, check whether heuristic is 0 even though
-    // goal is not reached. This should never happen unless action costs
-    // are used where some actions have cost 0.
-    if (h == 0 && !test_goal(state)) {
-        assert(g_use_metric);
-    }
-#endif
+    if (h == 0 && g_min_action_cost > 0)
+        assert(test_goal(state));
 
     return h;
 }
