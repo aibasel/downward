@@ -124,7 +124,6 @@ void SearchNode::close() {
 }
 
 void SearchNode::mark_as_dead_end() {
-    assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::DEAD_END;
 }
 
