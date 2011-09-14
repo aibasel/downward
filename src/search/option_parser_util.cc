@@ -61,6 +61,10 @@ void DocStore::add_note(string k,
                         string name, string description) {
     registered[k].notes.push_back(NoteInfo(name, description));
 }
+
+void DocStore::hide(std::string k) {
+    registered[k].hidden = true;
+}
                       
 
 bool DocStore::contains(string k) {
@@ -117,7 +121,8 @@ void DocPrinter::print_category(string category_name) {
     vector<string> keys = ds->get_keys();
     for(size_t i(0); i != keys.size(); ++i) {
         DocStruct info = ds->get(keys[i]);
-        if(info.type.compare(category_name) != 0)
+        if(info.type.compare(category_name) != 0
+            || info.hidden)
             continue;
         print_element(keys[i], info);
     }

@@ -425,6 +425,7 @@ struct DocStruct {
     std::vector<PropertyInfo> property_help;
     std::vector<LanguageSupportInfo> support_help;
     std::vector<NoteInfo> notes;
+    bool hidden;
 };
 
 //stores documentation for types parsed in help mode
@@ -457,6 +458,7 @@ public:
                      std::string feature, std::string description);
     void add_note(std::string k,
                   std::string name, std::string description);
+    void hide(std::string k);
 
     bool contains(std::string k);
     DocStruct get(std::string k);

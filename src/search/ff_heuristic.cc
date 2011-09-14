@@ -80,7 +80,7 @@ int FFHeuristic::compute_heuristic(const State &state) {
 
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("FF heuristic", "See also LAMAFFSynergy.");
+    parser.document_synopsis("FF heuristic", "See also [[DOC/LAMAFFSynergy]].");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional_effects", "supported");
     parser.document_language_support(
