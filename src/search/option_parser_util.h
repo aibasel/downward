@@ -360,6 +360,7 @@ private:
     bool help_mode;
 };
 
+//TODO: get rid of OptionFlags, instead use default_value = "None" ?
 struct OptionFlags {
     explicit OptionFlags(bool mand = true)
         : mandatory(mand) {
@@ -371,17 +372,19 @@ typedef std::vector<std::pair<std::string, std::string> > ValueExplanations;
 struct ArgumentInfo {
     ArgumentInfo(
         std::string k, std::string h, std::string t_n, std::string def_val,
-        ValueExplanations val_expl)
+        bool mand, ValueExplanations val_expl)
        : kwd(k),
          help(h),
          type_name(t_n),
          default_value(def_val),
+         mandatory(mand),
          value_explanations(val_expl) {
     }
     std::string kwd;
     std::string help;
     std::string type_name;
     std::string default_value;
+    bool mandatory;
     std::vector<std::pair<std::string, std::string> > value_explanations;
 };
 
@@ -441,6 +444,7 @@ public:
                  std::string help,
                  std::string type,
                  std::string default_value,
+                 bool mandatory,
                  ValueExplanations value_explanations = ValueExplanations());
     void add_value_explanations(std::string k,
                                 std::string arg_name,

@@ -222,7 +222,8 @@ void OptionParser::add_option(
     if (help_mode()) {
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h, 
-                                      TypeNamer<T>::name(), default_value);
+                                      TypeNamer<T>::name(), default_value,
+                                      flags.mandatory);
         return;
     }
 

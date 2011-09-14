@@ -360,9 +360,9 @@ void OptionParser::add_enum_option(string k,
         enum_descr += "}";
 
         DocStore::instance()->add_arg(parse_tree.begin()->value,
-                                           k, h,
-                                           enum_descr, def_val,
-                                           value_explanations);
+                                      k, h,
+                                      enum_descr, def_val, flags.mandatory,
+                                      value_explanations);
         return;
     }
 
