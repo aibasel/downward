@@ -1,3 +1,5 @@
+import sys
+
 import actions
 import axioms
 import conditions
@@ -95,28 +97,38 @@ def parse_domain(domain_pddl):
 
     ## We allow an arbitrary order of the requirement, types, constants,
     ## predicates and functions specification. The PDDL BNF is more strict on
-    ## this, so we might want to change this in a future refactoring.
+    ## this, so we print a warning if it is violated.
     requirements = Requirements([":strips"])
     the_types = [pddl_types.Type("object")]
-    constants = []
-    the_predicates = []
-    the_functions = []
+    constants, the_predicates, the_functions = [], [], []
+    no_longer_allowed = ()
     for opt in iterator:
+        if opt[0] in no_longer_allowed:
+            msg = "\nWarning: %s specification not allowed here (cf. PDDL BNF)" % opt[0]
+            print >> sys.stderr, msg
         if opt[0] == ":requirements":
+            no_longer_allowed = (":requirements",)
             requirements = Requirements(opt[1:])
         elif opt[0] == ":types":
+            no_longer_allowed = (":requirements", ":types")
             the_types.extend(pddl_types.parse_typed_list(opt[1:],
                         constructor=pddl_types.Type))
         elif opt[0] == ":constants":
+            no_longer_allowed = (":requirements", ":types", ":constants")
             constants = pddl_types.parse_typed_list(opt[1:])
         elif opt[0] == ":predicates":
-            the_predicates = [predicates.Predicate.parse(entry) for entry in opt[1:]]
+            no_longer_allowed = (":requirements", ":types", ":constants",
+                                 ":predicates")
+            the_predicates = [predicates.Predicate.parse(entry) 
+                              for entry in opt[1:]]
             the_predicates += [predicates.Predicate("=",
                                  [pddl_types.TypedObject("?x", "object"),
                                   pddl_types.TypedObject("?y", "object")])]
         elif opt[0] == ":functions":
+            no_longer_allowed = (":requirements", ":types", ":constants",
+                                 ":predicates", ":functions")
             the_functions = pddl_types.parse_typed_list(opt[1:],
-                                                        constructor=functions.Function.parse_typed, functions=True)
+                    constructor=functions.Function.parse_typed, functions=True)
             for function in the_functions:
                 Task.FUNCTION_SYMBOLS[function.name] = function.type
         else:
