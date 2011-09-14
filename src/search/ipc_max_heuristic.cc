@@ -52,6 +52,7 @@ bool IPCMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_hide(); //don't show documentation for this class
     parser.document_synopsis("IPC-Max Heuristic", "");
     parser.add_list_option<Heuristic *>("heuristics");
     Heuristic::add_options_to_parser(parser);

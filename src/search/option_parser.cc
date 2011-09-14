@@ -456,6 +456,10 @@ void OptionParser::document_note(string name,
                                       name, note);
 }
 
+void OptionParser::document_hide() const {
+    DocStore::instance()->hide(parse_tree.begin()->value);
+}
+
 bool OptionParser::dry_run() const {
     return dry_run_;
 }

@@ -283,7 +283,7 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-count heuristic",
-                             "See also [LAMAFFSynergy]");
+                             "See also [DOC/LAMAFFSynergy]");
     parser.document_note(
         "Note",
          "to use `optimal=true`, you must build the planner with USE_LP=1. "
