@@ -79,9 +79,9 @@ class Requirements(object):
             assert req in (
               ":strips", ":adl", ":typing", ":negation", ":equality",
               ":negative-preconditions", ":disjunctive-preconditions",
-              ":universal-preconditions", ":quantified-preconditions",
-              ":conditional-effects", ":derived-predicates", 
-              ":action-costs"), req
+              ":existential-preconditions", ":universal-preconditions",
+              ":quantified-preconditions", ":conditional-effects",
+              ":derived-predicates", ":action-costs"), req
     def __str__(self):
         return ", ".join(self.requirements)
 
