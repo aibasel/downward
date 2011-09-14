@@ -295,14 +295,14 @@ static Heuristic *_parse(OptionParser &parser) {
         "to improve heuristic estimates");
     parser.document_note(
         "cost_type parameter",
-        "only used when admissible=true (see LandmarksDefinition)");
+        "only used when `admissible=true` (see LandmarksDefinition)");
     parser.document_language_support("action costs", 
                                      "supported");
     parser.document_language_support("conditional_effects", 
                                      "supported if `admissible=false`");
     parser.document_language_support(
         "axioms",
-        "supported if `admissible=false` (but may behave stupidly and unsave");
+        "supported if `admissible=false` (but may behave stupidly and unsave)");
     parser.document_property(
         "admissible",
         "yes if `admissible=true` and there are neither conditional effects "

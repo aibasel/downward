@@ -20,9 +20,10 @@ void DocStore::add_arg(string k,
                        string help,
                        string type,
                        string default_value,
+                       bool mandatory,
                        ValueExplanations value_explanations) {
     registered[k].arg_help.push_back(
-        ArgumentInfo(arg_name, help, type, default_value,
+        ArgumentInfo(arg_name, help, type, default_value, mandatory,
                      value_explanations));
 }
 
@@ -137,8 +138,10 @@ void Txt2TagsPrinter::print_element(string call_name, DocStruct &info) {
     for(size_t j(0); j != info.arg_help.size(); ++j){
         ArgumentInfo arg = info.arg_help[j];
         os << arg.kwd;
-        if(arg.default_value.compare("") != 0){
-            os << " = " << arg.default_value;
+        if(!info.arg_help[j].default_value.empty()) {
+            os << " = " << info.arg_help[j].default_value;
+        } else if (!info.arg_help[j].mandatory) {
+            os << " = None";
         }
         if(j != info.arg_help.size() - 1)
             os << ", ";
@@ -207,8 +210,10 @@ void PlainPrinter::print_element(string call_name, DocStruct &info) {
          << call_name << "(";
     for(size_t j(0); j != info.arg_help.size(); ++j){
         os << info.arg_help[j].kwd;
-        if(info.arg_help[j].default_value.compare("") != 0){
+        if(!info.arg_help[j].default_value.empty()) {
             os << " = " << info.arg_help[j].default_value;
+        } else if (!info.arg_help[j].mandatory) {
+            os << " = None";
         }
         if(j != info.arg_help.size() - 1)
             os << ", ";
