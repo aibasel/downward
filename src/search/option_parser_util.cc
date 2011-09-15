@@ -144,9 +144,9 @@ void Txt2TagsPrinter::print_element(string call_name, DocStruct &info) {
         ArgumentInfo arg = info.arg_help[j];
         os << arg.kwd;
         if(!info.arg_help[j].default_value.empty()) {
-            os << " = " << info.arg_help[j].default_value;
+            os << "=" << info.arg_help[j].default_value;
         } else if (!info.arg_help[j].mandatory) {
-            os << " = None";
+            os << "=None";
         }
         if(j != info.arg_help.size() - 1)
             os << ", ";
@@ -193,7 +193,7 @@ void Txt2TagsPrinter::print_element(string call_name, DocStruct &info) {
 }
 
 void Txt2TagsPrinter::print_category_header(string category_name) {
-    os << ">>>>CATEGORY: " << category_name << "s" << "<<<<" << endl;
+    os << ">>>>CATEGORY: " << category_name << "<<<<" << endl;
 }
 
 void Txt2TagsPrinter::print_category_footer() {
@@ -216,9 +216,9 @@ void PlainPrinter::print_element(string call_name, DocStruct &info) {
     for(size_t j(0); j != info.arg_help.size(); ++j){
         os << info.arg_help[j].kwd;
         if(!info.arg_help[j].default_value.empty()) {
-            os << " = " << info.arg_help[j].default_value;
+            os << "=" << info.arg_help[j].default_value;
         } else if (!info.arg_help[j].mandatory) {
-            os << " = None";
+            os << "=None";
         }
         if(j != info.arg_help.size() - 1)
             os << ", ";
@@ -242,7 +242,7 @@ void PlainPrinter::print_element(string call_name, DocStruct &info) {
 }
 
 void PlainPrinter::print_category_header(string category_name) {
-    os << "Help for " << category_name << "s" << endl << endl;
+    os << "Help for " << category_name << endl << endl;
 }
 
 void PlainPrinter::print_category_footer() {

@@ -192,56 +192,56 @@ struct TypeNamer<std::string> {
 template <>
 struct TypeNamer<Heuristic *> {
     static std::string name() {
-        return "heuristic";
+        return "Heuristic";
     }
 };
 
 template <>
 struct TypeNamer<LandmarkGraph *> {
     static std::string name() {
-        return "landmark graph";
+        return "LandmarkGraph";
     }
 };
 
 template <>
 struct TypeNamer<ScalarEvaluator *> {
     static std::string name() {
-        return "scalar evaluator";
+        return "ScalarEvaluator";
     }
 };
 
 template <>
 struct TypeNamer<SearchEngine *> {
     static std::string name() {
-        return "search engine";
+        return "SearchEngine";
     }
 };
 
 template <>
 struct TypeNamer<ParseTree> {
     static std::string name() {
-        return "parse tree (this just means the input is parsed at a later point. The real type is probably a search engine.)";
+        return "ParseTree (this just means the input is parsed at a later point. The real type is probably a search engine.)";
     }
 };
 
 template <>
 struct TypeNamer<Synergy *> {
     static std::string name() {
-        return "synergy";
+        return "Synergy";
     }
 };
 
 template <>
 struct TypeNamer<ShrinkStrategy *> {
     static std::string name() {
-        return "shrink strategy";
+        return "ShrinkStrategy";
     }
 };
 
 template <class Entry>
 struct TypeNamer<OpenList<Entry> *> {
     static std::string name() {
-        return "openlist";
+        return "OpenList";
     }
 };
 
