@@ -283,11 +283,11 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-count heuristic",
-                             "See also [DOC/LAMAFFSynergy]");
+                             "See also LAMAFFSynergy");
     parser.document_note(
         "Note",
          "to use `optimal=true`, you must build the planner with USE_LP=1. "
-        "See [LPBuildInstructions].");
+        "See LPBuildInstructions.");
     parser.document_note(
         "Optimal search",
         "when using landmarks for optimal search (`admissible=true`), "
@@ -295,7 +295,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "to improve heuristic estimates");
     parser.document_note(
         "cost_type parameter",
-        "only used when `admissible=true` (see LandmarksDefinition)");
+        "only used when `admissible=true` (see LandmarkGraph)");
     parser.document_language_support("action costs", 
                                      "supported");
     parser.document_language_support("conditional_effects", 
@@ -319,7 +319,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "lm_graph",
         "the set of landmarks to use for this heuristic. "
         "The set of landmarks can be specified here, "
-        "or predefined (see LandmarksDefinition).");
+        "or predefined (see LandmarkGraph).");
     parser.add_option<bool>("admissible", "false", "get admissible estimate");
     parser.add_option<bool>(
         "optimal", "false", 
