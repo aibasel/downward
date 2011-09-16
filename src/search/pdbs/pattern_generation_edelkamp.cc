@@ -273,6 +273,7 @@ void PatternGenerationEdelkamp::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Genetic Algorithm PDB", "");
     // TODO: check if 100 is the correct default value!
     parser.add_option<int>("pdb_max_size", "100", "max number of states per pdb");
     parser.add_option<int>("num_collections", "5", "number of pattern collections to maintain");

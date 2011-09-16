@@ -470,6 +470,7 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
+    parser.document_synopsis("Bisimulation", "");
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy");
     parser.add_option<int>("threshold", "-1"); // default: same as max_states

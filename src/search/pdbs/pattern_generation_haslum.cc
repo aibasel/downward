@@ -272,6 +272,7 @@ void PatternGenerationHaslum::initialize() {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Improvement(?) PDB", "");
     parser.add_option<int>("pdb_max_size", "2000000",
                            "max number of states per pdb");
     parser.add_option<int>("collection_max_size", "20000000",

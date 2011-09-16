@@ -528,7 +528,7 @@ static LandmarkGraph *_parse(OptionParser &parser) {
         "The landmark generation method introduced by "
         "Richter, Helmert and Westphal (AAAI 2008).");
     parser.document_note(
-        "relevant_options",
+        "Relevant Options",
         "reasonable_orders, only_causal_landmarks, "
         "disjunctive_landmarks, no_orders");
     LandmarkGraph::add_options_to_parser(parser);
