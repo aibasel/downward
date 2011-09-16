@@ -166,6 +166,10 @@ void Txt2TagsPrinter::print_usage(string call_name, const DocStruct &info) {
     os << ")" << endl << endl << endl;
 }
 
+static bool is_call(string s) {
+    return s.find("(") != string::npos;
+}
+
 void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
     for(size_t j(0); j != info.arg_help.size(); ++j){
         ArgumentInfo arg = info.arg_help[j];
@@ -176,8 +180,13 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
             for(size_t k(0); k != arg.value_explanations.size(); ++k) {
                 pair<string, string> explanation = 
                     arg.value_explanations[k];
-                os << " - ``" << explanation.first << "``: "
-                     << explanation.second << endl;
+                if (is_call(explanation.first)) {
+                    os << " {{{" << endl << explanation.first << "}}}" << endl
+                       << " " << explanation.second << endl;
+                } else {
+                    os << " - ``" << explanation.first << "``: "
+                       << explanation.second << endl;
+                }
             }
         }
     }
