@@ -81,6 +81,7 @@ void ZeroOnePDBsHeuristic::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Zero-One PDB", "");
     Heuristic::add_options_to_parser(parser);
     Options opts;
     parse_patterns(parser, opts);

@@ -234,6 +234,7 @@ void CanonicalPDBsHeuristic::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Canonical PDB", "");
     Heuristic::add_options_to_parser(parser);
     Options opts;
     parse_patterns(parser, opts);

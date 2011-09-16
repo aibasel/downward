@@ -161,6 +161,7 @@ ShrinkStrategy *ShrinkFH::create_default(int max_states) {
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
+    parser.document_synopsis("f-Preserving", "");
     ShrinkStrategy::add_options_to_parser(parser);
     vector<string> high_low;
     high_low.push_back("HIGH");
