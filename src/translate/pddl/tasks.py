@@ -101,39 +101,40 @@ def parse_domain(domain_pddl):
     requirements = Requirements([":strips"])
     the_types = [pddl_types.Type("object")]
     constants, the_predicates, the_functions = [], [], []
-    no_longer_allowed = ()
+    correct_order = [":requirements", ":types", ":constants", ":predicates",
+                     ":functions"]
+    seen_fields = []
     for opt in iterator:
-        if opt[0] in no_longer_allowed:
-            msg = "\nWarning: %s specification not allowed here (cf. PDDL BNF)" % opt[0]
+        field = opt[0]
+        if field not in correct_order:
+            first_action = opt
+            break
+        if field in seen_fields:
+            raise SystemExit("Error in domain specification\n" +
+                             "Reason: two '%s' specifications." % field)
+        if (seen_fields and 
+            correct_order.index(seen_fields[-1]) > correct_order.index(field)):
+            msg = "\nWarning: %s specification not allowed here (cf. PDDL BNF)" % field
             print >> sys.stderr, msg
-        if opt[0] == ":requirements":
-            no_longer_allowed = (":requirements",)
+        seen_fields.append(field)
+        if field == ":requirements":
             requirements = Requirements(opt[1:])
-        elif opt[0] == ":types":
-            no_longer_allowed = (":requirements", ":types")
+        elif field == ":types":
             the_types.extend(pddl_types.parse_typed_list(opt[1:],
                         constructor=pddl_types.Type))
-        elif opt[0] == ":constants":
-            no_longer_allowed = (":requirements", ":types", ":constants")
+        elif field == ":constants":
             constants = pddl_types.parse_typed_list(opt[1:])
-        elif opt[0] == ":predicates":
-            no_longer_allowed = (":requirements", ":types", ":constants",
-                                 ":predicates")
+        elif field == ":predicates":
             the_predicates = [predicates.Predicate.parse(entry) 
                               for entry in opt[1:]]
             the_predicates += [predicates.Predicate("=",
                                  [pddl_types.TypedObject("?x", "object"),
                                   pddl_types.TypedObject("?y", "object")])]
-        elif opt[0] == ":functions":
-            no_longer_allowed = (":requirements", ":types", ":constants",
-                                 ":predicates", ":functions")
+        elif field == ":functions":
             the_functions = pddl_types.parse_typed_list(opt[1:],
                     constructor=functions.Function.parse_typed, functions=True)
             for function in the_functions:
                 Task.FUNCTION_SYMBOLS[function.name] = function.type
-        else:
-            first_action = opt
-            break
     pddl_types.set_supertypes(the_types)
     # for type in the_types:
     #   print repr(type), type.supertype_names
