@@ -1,3 +1,5 @@
+import sys
+
 import actions
 import axioms
 import conditions
@@ -80,6 +82,7 @@ class Requirements(object):
             assert req in (
               ":strips", ":adl", ":typing", ":negation", ":equality",
               ":negative-preconditions", ":disjunctive-preconditions",
+              ":existential-preconditions", ":universal-preconditions",
               ":quantified-preconditions", ":conditional-effects",
               ":derived-predicates", ":action-costs"), req
     def __str__(self):
@@ -93,50 +96,55 @@ def parse_domain(domain_pddl):
     assert domain_line[0] == "domain" and len(domain_line) == 2
     yield domain_line[1]
 
-    opt_requirements = iterator.next()
-    if opt_requirements[0] == ":requirements":
-        yield Requirements(opt_requirements[1:])
-        opt_types = iterator.next()
-    else:
-        yield Requirements([":strips"])
-        opt_types = opt_requirements
-
+    ## We allow an arbitrary order of the requirement, types, constants,
+    ## predicates and functions specification. The PDDL BNF is more strict on
+    ## this, so we print a warning if it is violated.
+    requirements = Requirements([":strips"])
     the_types = [pddl_types.Type("object")]
-    if opt_types[0] == ":types":
-        the_types.extend(pddl_types.parse_typed_list(opt_types[1:],
-                                                     constructor=pddl_types.Type))
-        opt_constants = iterator.next()
-    else:
-        opt_constants = opt_types
+    constants, the_predicates, the_functions = [], [], []
+    correct_order = [":requirements", ":types", ":constants", ":predicates",
+                     ":functions"]
+    seen_fields = []
+    for opt in iterator:
+        field = opt[0]
+        if field not in correct_order:
+            first_action = opt
+            break
+        if field in seen_fields:
+            raise SystemExit("Error in domain specification\n" +
+                             "Reason: two '%s' specifications." % field)
+        if (seen_fields and 
+            correct_order.index(seen_fields[-1]) > correct_order.index(field)):
+            msg = "\nWarning: %s specification not allowed here (cf. PDDL BNF)" % field
+            print >> sys.stderr, msg
+        seen_fields.append(field)
+        if field == ":requirements":
+            requirements = Requirements(opt[1:])
+        elif field == ":types":
+            the_types.extend(pddl_types.parse_typed_list(opt[1:],
+                        constructor=pddl_types.Type))
+        elif field == ":constants":
+            constants = pddl_types.parse_typed_list(opt[1:])
+        elif field == ":predicates":
+            the_predicates = [predicates.Predicate.parse(entry) 
+                              for entry in opt[1:]]
+            the_predicates += [predicates.Predicate("=",
+                                 [pddl_types.TypedObject("?x", "object"),
+                                  pddl_types.TypedObject("?y", "object")])]
+        elif field == ":functions":
+            the_functions = pddl_types.parse_typed_list(opt[1:],
+                    constructor=functions.Function.parse_typed, functions=True)
+            for function in the_functions:
+                Task.FUNCTION_SYMBOLS[function.name] = function.type
     pddl_types.set_supertypes(the_types)
     # for type in the_types:
     #   print repr(type), type.supertype_names
+    yield requirements
     yield the_types
-
-    if opt_constants[0] == ":constants":
-        yield pddl_types.parse_typed_list(opt_constants[1:])
-        pred = iterator.next()
-    else:
-        yield []
-        pred = opt_constants
-
-    assert pred[0] == ":predicates"
-    yield ([predicates.Predicate.parse(entry) for entry in pred[1:]] +
-           [predicates.Predicate("=",
-                                 [pddl_types.TypedObject("?x", "object"),
-                                  pddl_types.TypedObject("?y", "object")])])
-
-    opt_functions = iterator.next() #action costs enable restrictive version of fluents
-    if opt_functions[0] == ":functions":
-        the_functions = pddl_types.parse_typed_list(opt_functions[1:],
-                                                    constructor=functions.Function.parse_typed, functions=True)
-        for function in the_functions:
-            Task.FUNCTION_SYMBOLS[function.name] = function.type
-        yield the_functions
-        first_action = iterator.next()
-    else:
-        yield []
-        first_action = opt_functions
+    yield constants
+    yield the_predicates
+    yield the_functions
+    
     entries = [first_action] + [entry for entry in iterator]
     the_axioms = []
     the_actions = []
