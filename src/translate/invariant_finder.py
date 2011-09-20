@@ -56,13 +56,13 @@ class BalanceChecker(object):
                 inequal_params.append((pos1, pos2))
 
         if inequal_params:
-            precond_parts = list(action.precondition.parts)
+            precond_parts = [action.precondition]
             for pos1, pos2 in inequal_params:
                 param1 = action.parameters[pos1].name
                 param2 = action.parameters[pos2].name
                 new_cond = pddl.NegatedAtom("=", (param1, param2))
                 precond_parts.append(new_cond)
-            precond = action.precondition.change_parts(precond_parts)
+            precond = pddl.Conjunction(precond_parts).simplified()
             return pddl.Action(action.name, action.parameters, precond,
                                action.effects, action.cost)
         else:
