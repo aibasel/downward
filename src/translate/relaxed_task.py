@@ -36,7 +36,7 @@ def relaxed_task(actions):
 if __name__ == "__main__":
     import pddl
     task = pddl.open()
-    relaxed_reachable, atoms, actions, axioms = explore_silently(task)
+    relaxed_reachable, atoms, actions, axioms, _ = explore_silently(task)
     if not relaxed_reachable:
         raise SystemExit("goal is not relaxed reachable")
     if axioms:
