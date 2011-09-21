@@ -8,7 +8,7 @@ import instantiate
 
 
 def explore_silently(task):
-    # Call instatiate.explore, swallowing its output.
+    # Call instantiate.explore, swallowing its output.
     real_stdout = sys.stdout
     sys.stdout = StringIO.StringIO()
     result = instantiate.explore(task)
