@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 BASEDIR="$(dirname "$0")"
 
@@ -7,13 +7,24 @@ TRANSLATE="$BASEDIR/translate/translate.py"
 PREPROCESS="$BASEDIR/preprocess/preprocess"
 SEARCH="$BASEDIR/search/downward"
 
+# Need to explicitly ask for GNU time (from MacPorts) on Mac OS X.
+if [[ "$(uname)" == "Darwin" ]]; then
+    TIME="gtime"
+    if ! which $TIME >/dev/null; then
+        echo "$TIME must be installed on Mac OSX (from MacPorts, perhaps) for this to work"
+        exit 1
+    fi
+else
+    TIME="command time"
+fi
+
+TIME="$TIME --output=elapsed.time --format=%S\n%U\n"
+
 run_planner() {
     echo "1. Running translator"
-    command time --output=elapsed.time --format='%S\n%U\n' \
-        "$TRANSLATE" "$1" "$2" || exit 1
+    $TIME "$TRANSLATE" "$1" "$2" || exit 1
     echo "2. Running preprocessor"
-    command time --output=elapsed.time --append --format='%S\n%U\n' \
-        "$PREPROCESS" < output.sas || exit 1
+    $TIME --append "$PREPROCESS" < output.sas || exit 1
     echo "3. Running search"
     "$SEARCH" ipc "$PLANNER" --plan-file "$3" < output
 }
@@ -30,7 +41,7 @@ check_input_files() {
 }
 
 # Make sure we have exactly 3 command line arguments
-if [ $# -ne 4 ]; then
+if [[ $# != 4 ]]; then
     echo "Usage: \"plan-ipc <planner> <domain_file> <problem_file> <result_file>\""
     exit 1
 fi

@@ -94,29 +94,10 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
         h = total_cost - reached_cost + needed_cost;
     }
 
+    // Two plausibility tests in debug mode.
     assert(h >= 0);
-
-#ifndef NDEBUG
-    // For debugging purposes, check whether heuristic is 0 even though
-    // goal is not reached. This should never happen unless action costs
-    // are used where some actions have cost 0.
-    if (h == 0 && !test_goal(state)) {
-        assert(g_use_metric);
-        bool all_costs_are_zero = true;
-        //cout << "WARNING! Landmark heuristic is 0, but goal not reached" << endl;
-        for (int i = 0; i < g_goal.size(); i++) {
-            if (state[g_goal[i].first] != g_goal[i].second) {
-                //cout << "missing goal prop " << g_variable_name[g_goal[i].first] << " : "
-                //<< g_goal[i].second << endl;
-                LandmarkNode *node_p = lgraph.get_landmark(g_goal[i]);
-                assert(node_p != NULL);
-                if (node_p->min_cost != 0)
-                    all_costs_are_zero = false;
-            }
-        }
-        assert(all_costs_are_zero);
-    }
-#endif
+    if (h == 0 && g_min_action_cost > 0)
+        assert(test_goal(state));
 
     return h;
 }
