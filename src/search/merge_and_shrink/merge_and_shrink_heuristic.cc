@@ -244,7 +244,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy", 
         "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low)", 
-        "shrink strategy; these are not fully documented yet;"
+        "shrink strategy; these are not fully documented yet; "
         "try one of the following:");
     ValueExplanations shrink_value_explanations;
     shrink_value_explanations.push_back(
@@ -270,7 +270,7 @@ static Heuristic *_parse(OptionParser &parser) {
         make_pair("shrink_bisimulation(max_states=N, greedy=false, initialize_by_h=true, group_by_h=true)",
                   "Exact bisimulation with a size limit "
                   "(called DFP-bop in the IJCAI 2011 paper by Nissim, "
-                  "Hoffmann and Helmert). "
+                  "Hoffmann and Helmert), "
                   "where N is a numerical parameter for which sensible values "
                   "include 1000, 10000, 50000, 100000 and 200000. "
                   "Combine this with the merge strategy "
