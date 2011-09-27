@@ -16,25 +16,21 @@ class Operator;
 struct AbstractTransition {
     AbstractStateRef src;
     AbstractStateRef target;
-    int cost;
 
-    AbstractTransition(AbstractStateRef src_, AbstractStateRef target_,
-                       int cost_)
-        : src(src_), target(target_), cost(cost_) {
+    AbstractTransition(AbstractStateRef src_, AbstractStateRef target_)
+        : src(src_), target(target_) {
     }
 
     bool operator==(const AbstractTransition &other) const {
-        return src == other.src && target == other.target && cost == other.cost;
+        return src == other.src && target == other.target;
     }
 
     bool operator!=(const AbstractTransition &other) const {
-        return src != other.src || target != other.target || cost != other.cost;
+        return !(*this == other);
     }
 
     bool operator<(const AbstractTransition &other) const {
-        return src < other.src || (src == other.src && target < other.target)
-               || (src == other.src && target == other.target && cost
-                   < other.cost);
+        return src < other.src || (src == other.src && target < other.target);
     }
 };
 
@@ -111,7 +107,6 @@ public:
     // TODO: Find a better way of doing this that doesn't require
     //       a mutable attribute?
 
-    int unique_unlabeled_transitions(const vector<int> &relevant_ops) const;
     bool is_in_varset(int var) const;
 
     void compute_distances();

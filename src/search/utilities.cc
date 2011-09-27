@@ -1,3 +1,5 @@
+#include "utilities.h"
+
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
@@ -6,7 +8,9 @@
 #include <sstream>
 using namespace std;
 
-#include "utilities.h"
+#ifdef __APPLE__
+#include <mach/mach.h>
+#endif
 
 #ifdef __APPLE__
 static void exit_handler();
@@ -52,6 +56,18 @@ void signal_handler(int signal_number) {
 
 int get_peak_memory_in_kb() {
     // On error, produces a warning on cerr and returns -1.
+    int memory_in_kb = -1;
+
+#ifdef __APPLE__
+    // Based on http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+    task_basic_info t_info;
+    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+
+    if (task_info(mach_task_self(), TASK_BASIC_INFO,
+                  reinterpret_cast<task_info_t>(&t_info),
+                  &t_info_count) == KERN_SUCCESS)
+        memory_in_kb = t_info.virtual_size / 1024;
+#else
     ostringstream filename_stream;
     filename_stream << "/proc/" << getpid() << "/status";
     const char *filename = filename_stream.str().c_str();
@@ -61,17 +77,19 @@ int get_peak_memory_in_kb() {
     while (procfile.good()) {
         procfile >> word;
         if (word == "VmPeak:") {
-            int memory_kb;
-            procfile >> memory_kb;
-            if (procfile.fail())
-                break;
-            return memory_kb;
+            procfile >> memory_in_kb;
+            break;
         }
         // Skip to end of line.
         procfile.ignore(numeric_limits<streamsize>::max(), '\n');
     }
-    cerr << "warning: error reading memory from procfile" << endl;
-    return -1;
+    if (procfile.fail())
+        memory_in_kb = -1;
+#endif
+
+    if (memory_in_kb == -1)
+        cerr << "warning: could not determine peak memory" << endl;
+    return memory_in_kb;
 }
 
 void print_peak_memory() {

@@ -82,7 +82,7 @@ if __name__ == "__main__":
     import pddl
 
     task = pddl.open()
-    relaxed_reachable, atoms, actions, axioms = explore(task)
+    relaxed_reachable, atoms, actions, axioms, _ = explore(task)
     print "goal relaxed reachable: %s" % relaxed_reachable
     print "%d atoms:" % len(atoms)
     for atom in atoms:

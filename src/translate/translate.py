@@ -378,7 +378,6 @@ def translate_task(strips_to_sas, ranges, translation_key,
     init_values = [rang - 1 for rang in ranges]
     # Closed World Assumption: Initialize to "range - 1" == Nothing.
     for fact in init:
-        pair = strips_to_sas.get(fact)
         pairs = strips_to_sas.get(fact, [])  # empty for static init facts
         for var, val in pairs:
             assert init_values[var] == ranges[var] - 1, "Inconsistent init facts!"
