@@ -314,40 +314,45 @@ int TokenParser<int>::parse(OptionParser &p) {
     }
 }
 
+//helper functions for the TokenParser-specializations
+template <class T>
+static T *lookup_in_registry(OptionParser &p) {
+    ParseTree::iterator pt = p.get_parse_tree()->begin();
+    if (Registry<T *>::instance()->contains(pt->value)) {
+        return Registry<T *>::instance()->get(pt->value) (p);
+    }
+    p.error(TypeNamer<T>::name() + " " + pt->value + " not found");
+    return 0;
+}
+
+template <class T>
+static T *lookup_in_predefinitions(OptionParser &p) {
+    ParseTree::iterator pt = p.get_parse_tree()->begin();
+    if (Predefinitions<T *>::instance()->contains(pt->value)) {
+        return Predefinitions<T *>::instance()->get(pt->value);
+    }
+    return 0;
+}
+
 
 template <class Entry>
 OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<OpenList<Entry > *>::instance()->contains(pt->value)) {
-        return Registry<OpenList<Entry > *>::instance()->get(pt->value) (p);
-    }
-    p.error("openlist " + pt->value + " not found");
-    return 0;
+    return lookup_in_registry<OpenList<Entry > >(p);
 }
 
 
 Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
-        return Predefinitions<Heuristic *>::instance()->get(pt->value);
-    } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
-        return Registry<Heuristic *>::instance()->get(pt->value) (p);
-    }
-
-    p.error("heuristic " + pt->value + " not found");
-    return 0;
+    Heuristic *result = lookup_in_predefinitions<Heuristic>(p);
+    if(result)
+        return result;
+    return lookup_in_registry<Heuristic>(p);
 }
 
 LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<LandmarkGraph *>::instance()->contains(pt->value)) {
-        return Predefinitions<LandmarkGraph *>::instance()->get(pt->value);
-    }
-    if (Registry<LandmarkGraph *>::instance()->contains(pt->value)) {
-        return Registry<LandmarkGraph *>::instance()->get(pt->value) (p);
-    }
-    p.error("landmark graph not found");
-    return 0;
+    LandmarkGraph *result = lookup_in_predefinitions<LandmarkGraph>(p);
+    if(result)
+        return result;
+    return lookup_in_registry<LandmarkGraph>(p);
 }
 
 ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
@@ -361,37 +366,22 @@ ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
         return (ScalarEvaluator *)
             Registry<Heuristic *>::instance()->get(pt->value) (p);
     }
-    p.error("scalar evaluator " + pt->value + " not found");
+    p.error("ScalarEvaluator " + pt->value + " not found");
     return 0;
 }
 
 
 SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<SearchEngine *>::instance()->contains(pt->value)) {
-        return Registry<SearchEngine *>::instance()->get(pt->value) (p);
-    }
-    p.error("search engine not found");
-    return 0;
+    return lookup_in_registry<SearchEngine>(p);
 }
 
 ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<ShrinkStrategy *>::instance()->contains(pt->value)) {
-        return Registry<ShrinkStrategy *>::instance()->get(pt->value) (p);
-    }
-    p.error("Shrink strategy not found");
-    return 0;
+    return lookup_in_registry<ShrinkStrategy>(p);
 }
 
 
 Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<Synergy *>::instance()->contains(pt->value)) {
-        return Registry<Synergy *>::instance()->get(pt->value) (p);
-    }
-    p.error("synergy not found");
-    return 0;
+    return lookup_in_registry<Synergy>(p);
 }
 
 ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
