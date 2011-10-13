@@ -141,7 +141,7 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
     return false;
 }
 
-void PatternGenerationHaslum::hill_climbing(int average_operator_costs,
+void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
                                             vector<vector<int> > &initial_candidate_patterns) {
     Timer timer;
     // stores all candidate patterns generated so far in order to avoid duplicates
