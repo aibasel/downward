@@ -1,6 +1,7 @@
 #ifndef PDBS_MATCH_TREE_H
 #define PDBS_MATCH_TREE_H
 
+#include <cstddef>
 #include <vector>
 
 // Implements a Successor Generator for abstract operators
