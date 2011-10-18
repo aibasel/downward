@@ -46,8 +46,6 @@ class Abstraction {
     const bool is_unit_cost;
     const OperatorCost cost_type;
 
-    ShrinkStrategy *shrink_strategy;
-
     vector<const Operator *> relevant_operators;
     int num_states;
     vector<vector<AbstractTransition> > transitions_by_op;
