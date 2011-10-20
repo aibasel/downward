@@ -174,6 +174,11 @@ if [[ "$1" == "ipc" ]]; then
         echo "unknown IPC planner name: $CONFIG"
         exit 2
     fi
+elif [[ "$1" == "--portfolio" ]]; then
+    # Portfolio files must reside in the search directory.
+    PORTFOLIO="$2"
+    shift 2
+    "$BASEDIR/$PORTFOLIO" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
 else
     "$PLANNER" "$@" < $TEMPFILE
 fi

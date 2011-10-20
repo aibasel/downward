@@ -11,7 +11,10 @@ DEFAULT_TIMEOUT = 1800
 
 def run(configs, timeout=DEFAULT_TIMEOUT):
     extra_args = sys.argv[1:]
-    assert len(extra_args) == 3, extra_args
+    assert len(extra_args) == 4, extra_args
+    # Accept the unit/nonunit argument for compatibility with the sat portfolio.
+    assert extra_args[0] in ["unit", "nonunit"], extra_args
+    unitcost = extra_args.pop(0)
     assert extra_args[0][-1] in ["1", "2", "4"], extra_args
     planner = extra_args.pop(0)
     assert extra_args[0] == "--plan-file", extra_args
