@@ -263,6 +263,19 @@ def move_existential_quantifiers(task):
         if proxy.condition.has_existential_part():
             proxy.set(recurse(proxy.condition).simplified())
 
+# [5] Eliminiate existential quantifiers from effect conditions
+#
+# For effect conditions, we replace "when exists(x, phi) then e" with
+# "forall(x): when phi then e.
+# All other existential quantifiers are dropped during instantiation.
+def eliminate_existential_quantifiers_from_conditional_effects(task):
+    for action in task.actions:
+        for effect in action.effects:
+            condition = effect.condition
+            if isinstance(condition, pddl.ExistentialCondition):
+                effect.parameters.extend(condition.parameters)
+                effect.condition = condition.parts[0]
+
 def substitute_complicated_goal(task):
     goal = task.goal
     if isinstance(goal, pddl.Literal):
@@ -276,7 +289,7 @@ def substitute_complicated_goal(task):
     new_axiom = task.add_axiom([], goal)
     task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)
 
-# Combine Steps [1], [2], [3], [4] and do some additional verification
+# Combine Steps [1], [2], [3], [4], [5] and do some additional verification
 # that the task makes sense.
 
 def normalize(task):
@@ -285,6 +298,7 @@ def normalize(task):
     build_DNF(task)
     split_disjunctions(task)
     move_existential_quantifiers(task)
+    eliminate_existential_quantifiers_from_conditional_effects(task)
 
     verify_axiom_predicates(task)
 
@@ -311,7 +325,7 @@ def verify_axiom_predicates(task):
                     (effect.literal.predicate, action.name))
 
 
-# [5] Build rules for exploration component.
+# [6] Build rules for exploration component.
 def build_exploration_rules(task):
     result = []
     for proxy in all_conditions(task):
