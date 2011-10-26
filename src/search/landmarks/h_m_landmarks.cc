@@ -1028,8 +1028,8 @@ static LandmarkGraph *_parse(OptionParser &parser) {
     parser.document_note(
         "Relevant options",
         "m, reasonable_orders, conjunctive_landmarks, no_orders");
-    parser.add_option<int>("m", "2",
-                           "subset size (if unsure, use the default of 2)");
+    parser.add_option<int>(
+        "m", "subset size (if unsure, use the default of 2)", "2");
     LandmarkGraph::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())

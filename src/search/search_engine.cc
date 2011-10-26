@@ -85,10 +85,10 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "This doesn't make sense for search engines, but is still supported.");
     parser.add_enum_option("cost_type",
                            cost_types,
-                           "NORMAL",
-                           "operator cost adjustment type");
+                           "operator cost adjustment type", 
+                           "NORMAL");
     parser.add_option<int>(
-        "bound", "infinity",
+        "bound",
         "depth bound on g-values. Cutoffs are always performed according to "
-        "the real cost, regardless of the cost_type parameter");
+        "the real cost, regardless of the cost_type parameter",  "infinity");
 }

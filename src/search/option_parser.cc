@@ -342,7 +342,7 @@ string str_to_lower(string s) {
 
 void OptionParser::add_enum_option(string k,
                                    vector<string > enumeration,
-                                   string def_val, string h,
+                                   string h, string def_val,
                                    vector<string> enum_docs,
                                    const OptionFlags &flags) {
     if (help_mode_) {
@@ -369,7 +369,7 @@ void OptionParser::add_enum_option(string k,
 
     //enum arguments can be given by name or by number:
     //first parse the corresponding string like a normal argument...
-    add_option<string>(k, def_val, h, flags);
+    add_option<string>(k, h, def_val, flags);
 
     if (!flags.mandatory && !opts.contains(k))
         return;

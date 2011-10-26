@@ -9,7 +9,7 @@
 using namespace std;
 
 void parse_patterns(OptionParser &parser, Options &opts) {
-    parser.add_list_option<vector<int> >("patterns", "the pattern collection", OptionFlags(false));
+    parser.add_list_option<vector<int> >("patterns", "the pattern collection", "", OptionFlags(false));
     opts = parser.parse();
     if(parser.help_mode())
         return;

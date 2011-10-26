@@ -301,13 +301,13 @@ static Heuristic *_parse(OptionParser &parser) {
         "the set of landmarks to use for this heuristic. "
         "The set of landmarks can be specified here, "
         "or predefined (see LandmarkGraph).");
-    parser.add_option<bool>("admissible", "false", "get admissible estimate");
+    parser.add_option<bool>("admissible", "get admissible estimate",  "false");
     parser.add_option<bool>(
-        "optimal", "false", 
+        "optimal",
         "use optimal (LP-based) cost sharing "
-        "(only makes sense with `admissible=true`)");
-    parser.add_option<bool>("pref", "false", "identify preferred operators");
-    parser.add_option<bool>("alm", "true", "use action landmarks");
+        "(only makes sense with `admissible=true`)", "false");
+    parser.add_option<bool>("pref", "identify preferred operators",  "false");
+    parser.add_option<bool>("alm", "use action landmarks",  "true");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 

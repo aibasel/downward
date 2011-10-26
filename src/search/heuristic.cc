@@ -137,12 +137,12 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
                              "from the LAMA planner.");
     parser.add_enum_option("cost_type",
                            cost_types,
-                           "NORMAL",
                            "Action cost adjustment type. "
                            "No matter what this setting is, "
                            "axioms will always be considered "
                            "as actions of cost 0 by the heuristics "
                            "that treat axioms as actions.",
+                           "NORMAL",
                            cost_types_doc);
 }
 

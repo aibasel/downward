@@ -224,7 +224,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators", "no");
 
     // TODO: better documentation what each parameter does
-    parser.add_option<int>("count", "1", "number of abstractions to build");
+    parser.add_option<int>("count", "number of abstractions to build",  "1");
     vector<string> merge_strategies;
     //TODO: it's a bit dangerous that the merge strategies here
     // have to be specified exactly in the same order
@@ -238,14 +238,14 @@ static Heuristic *_parse(OptionParser &parser) {
     merge_strategies.push_back("MERGE_LINEAR_LEVEL");
     merge_strategies.push_back("MERGE_LINEAR_REVERSE_LEVEL");
     parser.add_enum_option("merge_strategy", merge_strategies,
-                           "MERGE_LINEAR_CG_GOAL_LEVEL",
-                           "merge strategy");
+                           "merge strategy", 
+                           "MERGE_LINEAR_CG_GOAL_LEVEL");
 
     parser.add_option<ShrinkStrategy *>(
-        "shrink_strategy", 
-        "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low)", 
+        "shrink_strategy",
         "shrink strategy; these are not fully documented yet; "
-        "try one of the following:");
+        "try one of the following:",
+        "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low)");
     ValueExplanations shrink_value_explanations;
     shrink_value_explanations.push_back(
         make_pair("shrink_fh(max_states=N)",
@@ -280,9 +280,9 @@ static Heuristic *_parse(OptionParser &parser) {
 
     // TODO: Rename option name to "use_label_reduction" to be
     //       consistent with the papers?
-    parser.add_option<bool>("reduce_labels", "true", "enable label reduction");
-    parser.add_option<bool>("expensive_statistics", "false", "show statistics on \"unique unlabeled edges\" (WARNING: "
-                            "these are *very* slow -- check the warning in the output)");
+    parser.add_option<bool>("reduce_labels", "enable label reduction",  "true");
+    parser.add_option<bool>("expensive_statistics", "show statistics on \"unique unlabeled edges\" (WARNING: "
+                            "these are *very* slow -- check the warning in the output)", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
