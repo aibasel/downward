@@ -227,14 +227,18 @@ void OptionParser::add_option(
                                       flags.mandatory);
         return;
     }
-
+    std::cout << "adding option " << k << "(" << default_value << "), " << flags.mandatory << std::endl;
     valid_keys.push_back(k);
     bool use_default(false);
     ParseTree::sibling_iterator arg = next_unparsed_argument;
     //scenario where we have already handled all arguments
     if (arg == parse_tree.end(parse_tree.begin())) {
-        if (default_value.empty() && flags.mandatory) {
-            error("missing option: " + k);
+        if (default_value.empty()) {
+            if (flags.mandatory) {
+                error("missing option: " + k);
+            } else {
+                return;
+            }
         } else {
             use_default = true;
         }
@@ -247,8 +251,12 @@ void OptionParser::add_option(
                 break;
         }
         if (arg == parse_tree.end(parse_tree.begin())) {
-            if (default_value.empty() && flags.mandatory) {
-                error("missing option: " + k);
+            if (default_value.empty()) {
+                if(flags.mandatory) {
+                    error("missing option: " + k);
+                } else {
+                    return;
+                }
             } else {
                 use_default = true;
             }
@@ -321,16 +329,18 @@ static T *lookup_in_registry(OptionParser &p) {
     if (Registry<T *>::instance()->contains(pt->value)) {
         return Registry<T *>::instance()->get(pt->value) (p);
     }
-    p.error(TypeNamer<T>::name() + " " + pt->value + " not found");
+    p.error(TypeNamer<T *>::name() + " " + pt->value + " not found");
     return 0;
 }
 
 template <class T>
-static T *lookup_in_predefinitions(OptionParser &p) {
+static T *lookup_in_predefinitions(OptionParser &p, bool &found) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (Predefinitions<T *>::instance()->contains(pt->value)) {
+        found = true;
         return Predefinitions<T *>::instance()->get(pt->value);
     }
+    found = false;
     return 0;
 }
 
@@ -342,19 +352,22 @@ OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
 
 
 Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
-    Heuristic *result = lookup_in_predefinitions<Heuristic>(p);
-    if(result)
+    bool predefined;
+    Heuristic *result = lookup_in_predefinitions<Heuristic>(p, predefined);
+    if(predefined)
         return result;
     return lookup_in_registry<Heuristic>(p);
 }
 
 LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
-    LandmarkGraph *result = lookup_in_predefinitions<LandmarkGraph>(p);
-    if(result)
+    bool predefined;
+    LandmarkGraph *result = lookup_in_predefinitions<LandmarkGraph>(p, predefined);
+    if(predefined)
         return result;
     return lookup_in_registry<LandmarkGraph>(p);
 }
 
+//TODO find a general way to handle parsing of superclasses (see also issue28)
 ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
