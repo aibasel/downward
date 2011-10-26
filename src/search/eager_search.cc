@@ -19,8 +19,12 @@ EagerSearch::EagerSearch(
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       do_pathmax(opts.get<bool>("pathmax")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
-      open_list(opts.get<OpenList<state_var_t *> *>("open")),
-      f_evaluator(opts.get<ScalarEvaluator *>("f_eval")) {
+      open_list(opts.get<OpenList<state_var_t *> *>("open")) {
+    if (opts.contains("f_eval")) {
+        f_evaluator = opts.get<ScalarEvaluator *>("f_eval");
+    } else {
+        f_evaluator = 0;
+    }
     if (opts.contains("preferred")) {
         preferred_operator_heuristics =
             opts.get_list<Heuristic *>("preferred");
@@ -323,8 +327,9 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "reopen closed nodes");
     parser.add_option<bool>("pathmax", "false",
                             "use pathmax correction");
-    parser.add_option<ScalarEvaluator *>("f_eval", "0",
-                                         "set evaluator for jump statistics");
+    parser.add_option<ScalarEvaluator *>("f_eval",
+                                         "set evaluator for jump statistics",
+                                         OptionFlags(false));
     parser.add_list_option<Heuristic *>
         ("preferred", "[]",
         "use preferred operators of these heuristics");
