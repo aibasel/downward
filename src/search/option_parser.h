@@ -147,26 +147,17 @@ public:
     //call with mandatory = false to specify an optional parameter without default value
     template <class T>
     void add_option(
-        std::string k, std::string def_val, std::string h,
+        std::string k, std::string h = "",  std::string def_val = "",
         const OptionFlags &flags = OptionFlags());
-
-    template <class T>
-        void add_option(
-            std::string k, std::string h="",
-            const OptionFlags &flags = OptionFlags());
 
     void add_enum_option(std::string k,
                          std::vector<std::string > enumeration,
-                         std::string def_val = "", std::string h = "",
+                         std::string h = "", std::string def_val = "",
                          std::vector<std::string> enum_doc = std::vector<std::string>(),
                          const OptionFlags &flags = OptionFlags());
     template <class T>
     void add_list_option(std::string k,
-                         std::string def_val, std::string h,
-                         const OptionFlags &flags = OptionFlags());
-
-    template <class T>
-    void add_list_option(std::string k, std::string h = "",
+                         std::string h = "", std::string def_val = "",
                          const OptionFlags &flags = OptionFlags());
 
     void document_values(std::string argument,
@@ -219,7 +210,7 @@ T OptionParser::start_parsing() {
 template <class T>
 void OptionParser::add_option(
     std::string k,
-    std::string default_value, std::string h, const OptionFlags &flags) {
+    std::string h, std::string default_value, const OptionFlags &flags) {
     if (help_mode()) {
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h, 
@@ -242,58 +233,45 @@ void OptionParser::add_option(
         } else {
             use_default = true;
         }
-    }
-    //handling arguments with explicit keyword:
-    if (!use_default && !arg->key.empty()) {//to check if we reached the params supplied with key
-        //try to find a parameter passed with keyword k
-        for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
-            if (arg->key.compare(k) == 0)
-                break;
-        }
-        if (arg == parse_tree.end(parse_tree.begin())) {
-            if (default_value.empty()) {
-                if(flags.mandatory) {
-                    error("missing option: " + k);
+    } else {
+        //handling arguments with explicit keyword:
+        if (!arg->key.empty()) {//to check if we reached the params supplied with key
+            //try to find a parameter passed with keyword k
+            for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
+                if (arg->key.compare(k) == 0)
+                    break;
+            }
+            if (arg == parse_tree.end(parse_tree.begin())) {
+                if (default_value.empty()) {
+                    if(flags.mandatory) {
+                        error("missing option: " + k);
+                    } else {
+                        return;
+                    }
                 } else {
-                    return;
+                    use_default = true;
                 }
-            } else {
-                use_default = true;
             }
         }
     }
-    if(use_default) {
-        OptionParser subparser(default_value, dry_run());
-        T result = TokenParser<T>::parse(subparser);
-        opts.set<T>(k, result);
-    } else {
-        OptionParser subparser(subtree(parse_tree, arg), dry_run());
-        T result = TokenParser<T>::parse(subparser);
-        opts.set<T>(k, result);
-        //if we have not reached the keyword parameters yet
-        //and did not use the default value,
-        //increment the argument position pointer
-        if (arg->key.size() == 0)
-            ++next_unparsed_argument;
+    OptionParser subparser = 
+        (use_default ?
+         OptionParser(default_value,dry_run()) :
+         OptionParser(subtree(parse_tree,arg), dry_run()));
+    T result = TokenParser<T>::parse(subparser);
+    opts.set<T>(k, result);
+    //if we have not reached the keyword parameters yet
+    //and did not use the default value,
+    //increment the argument position pointer
+    if(!use_default && arg->key.empty()) {
+        ++next_unparsed_argument;
     }
 }
 
 template <class T>
 void OptionParser::add_list_option(
-    std::string k, std::string def_val, std::string h, const OptionFlags &flags) {
-    add_option<std::vector<T> >(k, def_val, h, flags);
-}
-
-template <class T>
-void OptionParser::add_option(
-    std::string k, std::string h, const OptionFlags &flags) {
-    add_option<T>(k, "", h, flags);
-}
-
-template <class T>
-void OptionParser::add_list_option(
-    std::string k, std::string h, const OptionFlags &flags) {
-    add_list_option<T>(k, "", h, flags);
+    std::string k, std::string h, std::string def_val, const OptionFlags &flags) {
+    add_option<std::vector<T> >(k, h, def_val, flags);
 }
 
 //Definitions of TokenParser<T>:

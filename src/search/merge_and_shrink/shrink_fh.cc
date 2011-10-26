@@ -168,10 +168,12 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     high_low.push_back("LOW");
     parser.add_enum_option(
         "shrink_f", high_low,
-        "HIGH", "prefer shrinking states with high or low f values");
+        "prefer shrinking states with high or low f values", 
+        "HIGH");
     parser.add_enum_option(
         "shrink_h", high_low,
-        "LOW", "prefer shrinking states with high or low h values");
+        "prefer shrinking states with high or low h values", 
+        "LOW");
     Options opts = parser.parse();
     if(parser.help_mode())
         return 0;

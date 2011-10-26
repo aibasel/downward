@@ -206,11 +206,11 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Lazy best first search", "");
     Plugin<OpenList<OpenListEntryLazy > >::register_open_lists();
     parser.add_option<OpenList<OpenListEntryLazy> *>("open", "open list");
-    parser.add_option<bool>("reopen_closed", "false",
-                            "reopen closed nodes");
+    parser.add_option<bool>("reopen_closed",
+                            "reopen closed nodes",  "false");
     parser.add_list_option<Heuristic *>(
-        "preferred", "[]",
-        "use preferred operators of these heuristics");
+        "preferred",
+        "use preferred operators of these heuristics",  "[]");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -240,14 +240,15 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "but a standard open list with only one queue.");
     parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
-        "preferred", "[]",
-        "use preferred operators of these heuristics");
-    parser.add_option<bool>("reopen_closed", "false",
-                            "reopen closed nodes");
+        "preferred",
+        "use preferred operators of these heuristics",  "[]");
+    parser.add_option<bool>("reopen_closed",
+                            "reopen closed nodes",  "false");
     parser.add_option<int>(
-        "boost", OptionParser::to_str(DEFAULT_LAZY_BOOST),
+        "boost",
         "boost value for alternation queues that are restricted "
-        "to preferred operator nodes");
+        "to preferred operator nodes",
+        OptionParser::to_str(DEFAULT_LAZY_BOOST));
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -299,12 +300,13 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         "is ranked by g + w * h. ");
     parser.add_list_option<ScalarEvaluator *>("evals");
     parser.add_list_option<Heuristic *>(
-        "preferred", "[]",
-        "use preferred operators of these heuristics");
-    parser.add_option<bool>("reopen_closed", "true", "reopen closed nodes");
-    parser.add_option<int>("boost", OptionParser::to_str(DEFAULT_LAZY_BOOST),
-                           "boost value for preferred operator open lists");
-    parser.add_option<int>("w", "1", "heuristic weight");
+        "preferred",
+        "use preferred operators of these heuristics",  "[]");
+    parser.add_option<bool>("reopen_closed", "reopen closed nodes",  "true");
+    parser.add_option<int>("boost",
+                           "boost value for preferred operator open lists",
+                           OptionParser::to_str(DEFAULT_LAZY_BOOST));
+    parser.add_option<int>("w", "heuristic weight",  "1");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 

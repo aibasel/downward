@@ -473,9 +473,9 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     parser.document_synopsis("Bisimulation", "");
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy");
-    parser.add_option<int>("threshold", "-1", "threshold"); // default: same as max_states
-    parser.add_option<bool>("initialize_by_h", "true", "initialize by h");
-    parser.add_option<bool>("group_by_h", "false", "group by h");
+    parser.add_option<int>("threshold", "",  "-1"); // default: same as max_states
+    parser.add_option<bool>("initialize_by_h", "",  "true");
+    parser.add_option<bool>("group_by_h", "",  "false");
 
     vector<string> at_limit;
     at_limit.push_back("RETURN");
@@ -483,8 +483,8 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     at_limit.push_back("SKIP_AND_COMPLETE_ITERATION");
     at_limit.push_back("SKIP_AND_KEEP_GOING");
     parser.add_enum_option(
-        "at_limit", at_limit, "SKIP_AND_KEEP_GOING",
-        "what to do when the size limit is hit");
+        "at_limit", at_limit,
+        "what to do when the size limit is hit",  "SKIP_AND_KEEP_GOING");
 
     Options opts = parser.parse();
     if(parser.help_mode())

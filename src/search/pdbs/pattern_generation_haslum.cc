@@ -273,13 +273,13 @@ void PatternGenerationHaslum::initialize() {
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Improvement(?) PDB", "");
-    parser.add_option<int>("pdb_max_size", "2000000",
-                           "max number of states per pdb");
-    parser.add_option<int>("collection_max_size", "20000000",
-                           "max number of states for collection");
-    parser.add_option<int>("num_samples", "1000", "number of samples");
-    parser.add_option<int>("min_improvement", "10",
-                           "minimum improvement while hill climbing");
+    parser.add_option<int>("pdb_max_size",
+                           "max number of states per pdb",  "2000000");
+    parser.add_option<int>("collection_max_size",
+                           "max number of states for collection",  "20000000");
+    parser.add_option<int>("num_samples", "number of samples",  "1000");
+    parser.add_option<int>("min_improvement",
+                           "minimum improvement while hill climbing",  "10");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
