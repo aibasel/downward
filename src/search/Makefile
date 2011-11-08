@@ -2,6 +2,20 @@
 USE_LP=0
 STATE_VAR_BYTES=1
 
+STATIC_LINK=1
+OS_X=0
+
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), Darwin)
+OS_X=1
+endif
+
+ifeq ($(OS_X), 1)
+STATIC_LINK=0
+endif
+
+
 HEADERS = \
           axioms.h \
           causal_graph.h \
@@ -174,12 +188,28 @@ CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
 CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
-LINKOPT_RELEASE  = -static -static-libgcc
-LINKOPT_DEBUG    = -lrt
-LINKOPT_PROFILE  = -pg -lrt
+LINKOPT_RELEASE = 
+
+ifeq ($(STATIC_LINK),1)
+LINKOPT_RELEASE += -static -static-libgcc
+endif
+
+LINKOPT_DEBUG    =
+LINKOPT_PROFILE  = -pg
+
+ifeq ($(OS_X),0)
+LINKOPT_DEBUG  += -lrt
+LINKOPT_PROFILE += -lrt
+endif
+
 # LINKOPT_PROFILE += -lc_p
 
-POSTLINKOPT_RELEASE  = -Wl,-Bstatic -lrt
+POSTLINKOPT_RELEASE = 
+
+ifeq ($(OS_X),0)
+POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+endif
+
 POSTLINKOPT_DEBUG    =
 POSTLINKOPT_PROFILE  =
 
