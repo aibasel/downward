@@ -1,11 +1,13 @@
-# Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
-# static linking of the executable in release mode.
+## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
+## static linking of the executable in release mode.
+## On OS X, this is unsupported and will be silently disabled.
 LINK_RELEASE_STATICALLY=1
 
-# On a supported operating system, there should be no need to override
-# the OS setting. If the provided code does not work even though your
-# operating system is a supported one, please report this as a bug.
+## On a supported operating system, there should be no need to override
+## the OS setting. If the provided code does not work even though your
+## operating system is a supported one, please report this as a bug.
 OS=auto
+
 
 HEADERS = \
           axiom.h \
@@ -26,7 +28,6 @@ TARGET = preprocess
 ARGS_PROFILE =
 
 
-
 ifeq ($(OS), auto)
 UNAME := $(shell uname)
 ifeq ($(UNAME), Darwin)
@@ -42,7 +43,7 @@ endif
 endif
 
 ifeq ($(OS), osx)
-## Disable static linking for OS X.
+## Disable static linking on OS X.
 LINK_RELEASE_STATICALLY=0
 endif
 
@@ -100,10 +101,10 @@ CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
 CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
+LINKOPT_RELEASE =
 LINKOPT_DEBUG    =
 LINKOPT_PROFILE  = -pg
 # LINKOPT_PROFILE += -lc_p
-LINKOPT_RELEASE =
 
 ifeq ($(LINK_RELEASE_STATICALLY), 1)
 LINKOPT_RELEASE += -static -static-libgcc
