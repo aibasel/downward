@@ -1,15 +1,11 @@
-STATIC_LINK=1
-OS_X=0
+# Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
+# static linking of the executable in release mode.
+LINK_RELEASE_STATICALLY=1
 
-UNAME := $(shell uname)
-
-ifeq ($(UNAME), Darwin)
-OS_X=1
-endif
-
-ifeq ($(OS_X), 1)
-STATIC_LINK=0
-endif
+# On a supported operating system, there should be no need to override
+# the OS setting. If the provided code does not work even though your
+# operating system is a supported one, please report this as a bug.
+OS=auto
 
 HEADERS = \
           axiom.h \
@@ -28,6 +24,27 @@ SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = preprocess
 
 ARGS_PROFILE =
+
+
+
+ifeq ($(OS), auto)
+UNAME := $(shell uname)
+ifeq ($(UNAME), Darwin)
+OS=osx
+endif
+ifeq ($(UNAME), Linux)
+OS=linux
+endif
+ifeq ($(OS), auto)
+$(warning OS detection failed -- setting to Linux and hoping for the best!)
+OS=linux
+endif
+endif
+
+ifeq ($(OS), osx)
+## Disable static linking for OS X.
+LINK_RELEASE_STATICALLY=0
+endif
 
 
 
@@ -83,15 +100,14 @@ CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
 CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
-LINKOPT_RELEASE = 
-
-ifeq ($(STATIC_LINK),1)
-LINKOPT_RELEASE += -static -static-libgcc
-endif
-
 LINKOPT_DEBUG    =
 LINKOPT_PROFILE  = -pg
 # LINKOPT_PROFILE += -lc_p
+LINKOPT_RELEASE =
+
+ifeq ($(LINK_RELEASE_STATICALLY), 1)
+LINKOPT_RELEASE += -static -static-libgcc
+endif
 
 POSTLINKOPT_RELEASE  =
 POSTLINKOPT_DEBUG    =
