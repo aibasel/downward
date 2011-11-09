@@ -263,7 +263,7 @@ def move_existential_quantifiers(task):
         if proxy.condition.has_existential_part():
             proxy.set(recurse(proxy.condition).simplified())
 
-# [5] Eliminiate existential quantifiers from effect conditions
+# [5] Eliminate existential quantifiers from effect conditions
 #
 # For effect conditions, we replace "when exists(x, phi) then e" with
 # "forall(x): when phi then e.
