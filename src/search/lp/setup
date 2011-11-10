@@ -1,12 +1,34 @@
 #! /bin/bash
 
+set -e
+
+UNAME="$(uname)"
+if [[ $UNAME == Darwin ]]; then
+    OS=osx
+else
+    if [[ $UNAME != Linux ]]; then
+        echo "Warning: could not auto-detect OS! Treat as Linux."
+    fi
+    OS=linux
+fi
+
 cd "$(dirname "$0")"
 BASEDIR="$(pwd)"
-tar xvzf Osi-0.103.0.tgz || exit 1
-cd Osi-0.103.0 || exit 1
-./configure --prefix "$BASEDIR/coin" --enable-static=yes --without-lapack || exit 1
-make || exit 1
-make test || exit 1 
-make install || exit 1
+tar xvzf Osi-0.103.0.tgz
+
+cd Osi-0.103.0
+if [[ $OS == osx ]]; then
+    ## Use a patched configure script to work around a problem when compiling
+    ## the code on Mac OS X. See http://issues.fast-downward.org/issue295.
+    cp ../coinutils-configure.patched CoinUtils/configure
+    chmod +x CoinUtils/configure
+    ./configure CC="gcc -arch i386" CXX="g++ -arch i386" \
+        --prefix "$BASEDIR/coin" --without-lapack --enable-static=no
+else
+    ./configure --prefix "$BASEDIR/coin" --without-lapack --enable-static=yes
+fi
+make
+make test
+make install
 cd ..
 rm -r Osi-0.103.0
