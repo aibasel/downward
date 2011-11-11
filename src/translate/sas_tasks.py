@@ -39,7 +39,7 @@ class SASTask:
         for op in self.operators:
             task_size += op.get_encoding_size()
         for axiom in self.axioms:
-            task_size += op.get_encoding_size()
+            task_size += axiom.get_encoding_size()
         return task_size
 
 class SASVariables:
