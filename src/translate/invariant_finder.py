@@ -29,6 +29,7 @@ class BalanceChecker(object):
                     self.predicates_to_add_actions[predicate].add(action)
             if create_heavy_act:
                 heavy_act = pddl.Action(action.name, action.parameters,
+                                        action.num_external_parameters,
                                         action.precondition, too_heavy_effects,
                                         action.cost)
             # heavy_act: duplicated universal effects and assigned unique names
@@ -61,8 +62,9 @@ class BalanceChecker(object):
                 new_cond = pddl.NegatedAtom("=", (param1, param2))
                 precond_parts.append(new_cond)
             precond = pddl.Conjunction(precond_parts).simplified()
-            return pddl.Action(action.name, action.parameters, precond,
-                               action.effects, action.cost)
+            return pddl.Action(
+                action.name, action.parameters, action.num_external_parameters,
+                precond, action.effects, action.cost)
         else:
             return action
 
