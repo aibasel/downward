@@ -46,9 +46,6 @@ def instantiate(task, model):
             parameters = action.parameters
             inst_parameters = atom.args[:len(parameters)]
             reachable_action_parameters[action.name].append(inst_parameters)
-            if isinstance(action.precondition, pddl.ExistentialCondition):
-                parameters = list(parameters)
-                parameters += action.precondition.parameters
             variable_mapping = dict([(par.name, arg)
                                      for par, arg in zip(parameters, atom.args)])
             inst_action = action.instantiate(variable_mapping, init_facts,
@@ -57,12 +54,8 @@ def instantiate(task, model):
                 instantiated_actions.append(inst_action)
         elif isinstance(atom.predicate, pddl.Axiom):
             axiom = atom.predicate
-            parameters = axiom.parameters
-            if isinstance(axiom.condition, pddl.ExistentialCondition):
-                parameters = list(parameters)
-                parameters += axiom.condition.parameters
             variable_mapping = dict([(par.name, arg)
-                                     for par, arg in zip(parameters, atom.args)])
+                                     for par, arg in zip(axiom.parameters, atom.args)])
             inst_axiom = axiom.instantiate(variable_mapping, init_facts, fluent_facts)
             if inst_axiom:
                 instantiated_axioms.append(inst_axiom)
