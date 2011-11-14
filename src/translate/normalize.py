@@ -66,7 +66,8 @@ class AxiomConditionProxy(ConditionProxy):
         app_rule_head = get_axiom_predicate(axiom)
         app_rule_body = list(condition_to_rule_body(axiom.parameters, self.condition))
         rules.append((app_rule_body, app_rule_head))
-        eff_rule_head = pddl.Atom(axiom.name, [par.name for par in axiom.parameters])
+        params = axiom.parameters[:axiom.num_external_parameters]
+        eff_rule_head = pddl.Atom(axiom.name, [par.name for par in params])
         eff_rule_body = [app_rule_head]
         rules.append((eff_rule_body, eff_rule_head))
     def get_type_map(self):
@@ -263,16 +264,50 @@ def move_existential_quantifiers(task):
         if proxy.condition.has_existential_part():
             proxy.set(recurse(proxy.condition).simplified())
 
-# [5] Eliminate existential quantifiers from effect conditions
+
+# [5a] Drop existential quantifiers from axioms, turning them
+#      into parameters.
+
+def eliminate_existential_quantifiers_from_axioms(task):
+    # Note: This is very redundant with the corresponding method for
+    # actions and could easily be merged if axioms and actions were
+    # unified.
+    for axiom in task.axioms:
+        precond = axiom.condition
+        if isinstance(precond, pddl.ExistentialCondition):
+            # Copy parameter list, since it can be shared with
+            # parameter lists of other versions of this axiom (e.g.
+            # created when splitting up disjunctive preconditions).
+            axiom.parameters = list(axiom.parameters)
+            axiom.parameters.extend(precond.parameters)
+            axiom.condition = precond.parts[0]
+
+
+# [5b] Drop existential quantifiers from action preconditions,
+#      turning them into action parameters (that don't form part of the
+#      name of the action).
+
+def eliminate_existential_quantifiers_from_preconditions(task):
+    for action in task.actions:
+        precond = action.precondition
+        if isinstance(precond, pddl.ExistentialCondition):
+            # Copy parameter list, since it can be shared with
+            # parameter lists of other versions of this action (e.g.
+            # created when splitting up disjunctive preconditions).
+            action.parameters = list(action.parameters)
+            action.parameters.extend(precond.parameters)
+            action.precondition = precond.parts[0]
+
+# [5c] Eliminate existential quantifiers from effect conditions
 #
 # For effect conditions, we replace "when exists(x, phi) then e" with
 # "forall(x): when phi then e.
-# All other existential quantifiers are dropped during instantiation.
 def eliminate_existential_quantifiers_from_conditional_effects(task):
     for action in task.actions:
         for effect in action.effects:
             condition = effect.condition
             if isinstance(condition, pddl.ExistentialCondition):
+                effect.parameters = list(effect.parameters)
                 effect.parameters.extend(condition.parameters)
                 effect.condition = condition.parts[0]
 
@@ -298,6 +333,8 @@ def normalize(task):
     build_DNF(task)
     split_disjunctions(task)
     move_existential_quantifiers(task)
+    eliminate_existential_quantifiers_from_axioms(task)
+    eliminate_existential_quantifiers_from_preconditions(task)
     eliminate_existential_quantifiers_from_conditional_effects(task)
 
     verify_axiom_predicates(task)
