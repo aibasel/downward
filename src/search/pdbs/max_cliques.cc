@@ -12,7 +12,7 @@ using namespace std;
 class MaxCliqueComputer {
     const vector<vector<int> > &graph;
     vector<vector<int> > &max_cliques;
-    vector<int> q_clique; // contains actual calculated maximal clique
+    vector<int> q_clique; // contains currently calculated maximal clique
 
     int get_maximizing_vertex(
         const vector<int> &subg, const vector<int> &cand) {

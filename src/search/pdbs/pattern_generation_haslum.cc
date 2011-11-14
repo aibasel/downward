@@ -62,7 +62,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
     }
 }
 
-void PatternGenerationHaslum::sample_states(vector<State> &samples, double average_operator_costs) {
+void PatternGenerationHaslum::sample_states(vector<State> &samples, double average_operator_cost) {
     current_heuristic->evaluate(*g_initial_state);
     assert(!current_heuristic->is_dead_end());
 
@@ -73,9 +73,9 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
     } else {
         // Convert heuristic value into an approximate number of actions
         // (does nothing on unit-cost problems).
-        // average_operator_costs cannot equal 0, as in this case, all operators
+        // average_operator_cost cannot equal 0, as in this case, all operators
         // must have costs of 0 and in this case the if-clause triggers.
-        int solution_steps_estimate = int((h / average_operator_costs) + 0.5);
+        int solution_steps_estimate = int((h / average_operator_cost) + 0.5);
         n = 4 * solution_steps_estimate;
     }
     double p = 0.5;
@@ -141,7 +141,7 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
     return false;
 }
 
-void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
+void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                                             vector<vector<int> > &initial_candidate_patterns) {
     Timer timer;
     // stores all candidate patterns generated so far in order to avoid duplicates
@@ -152,8 +152,17 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
     vector<PDBHeuristic *> candidate_pdbs;
     while (true) {
         cout << "current collection size is " << current_heuristic->get_size() << endl;
+        current_heuristic->evaluate(*g_initial_state);
+        cout << "current initial h value: ";
+        if (current_heuristic->is_dead_end()) {
+            cout << "infinite => stopping hill-climbing" << endl;
+            break;
+        } else {
+            cout << current_heuristic->get_heuristic() << endl;
+        }
+
         vector<State> samples;
-        sample_states(samples, average_operator_costs);
+        sample_states(samples, average_operator_cost);
 
         // For the new candidate patterns check whether they already have been candidates before and
         // thus already a PDB has been created an inserted into candidate_pdbs.
@@ -222,7 +231,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
         delete candidate_pdbs[best_pdb_index];
         candidate_pdbs[best_pdb_index] = 0;
 
-        cout << "Actual time (hill climbing iteration): " << timer << endl;
+        cout << "Hill-climbing time so far: " << timer << endl;
     }
 
     // delete all created PDB-pointer
@@ -233,12 +242,12 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
 
 void PatternGenerationHaslum::initialize() {
     // calculate average operator costs
-    double average_operator_costs = 0;
+    double average_operator_cost = 0;
     for (size_t i = 0; i < g_operators.size(); ++i) {
-        average_operator_costs += get_adjusted_action_cost(g_operators[i], cost_type);
+        average_operator_cost += get_adjusted_action_cost(g_operators[i], cost_type);
     }
-    average_operator_costs /= g_operators.size();
-    cout << "Average operator costs: " << average_operator_costs << endl;
+    average_operator_cost /= g_operators.size();
+    cout << "Average operator cost: " << average_operator_cost << endl;
 
     // initial collection: a pdb for each goal variable
     vector<vector<int> > initial_pattern_collection;
@@ -268,7 +277,7 @@ void PatternGenerationHaslum::initialize() {
 
     // call to this method modifies initial_candidate_patterns (contains the new_candidates
     // after each call to generate_candidate_patterns)
-    hill_climbing(average_operator_costs, initial_candidate_patterns);
+    hill_climbing(average_operator_cost, initial_candidate_patterns);
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
