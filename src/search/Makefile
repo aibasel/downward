@@ -1,5 +1,4 @@
 ## Set USE_LP to 1 to enable linear programming stuff.
-## On OS X, this is unsupported and will be silently disabled.
 USE_LP=0
 
 ## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
@@ -142,9 +141,8 @@ endif
 endif
 
 ifeq ($(OS), osx)
-## Disable static linking and linear programming library on OS X.
+## Disable static linking on OS X.
 LINK_RELEASE_STATICALLY=0
-USE_LP=0
 endif
 
 
@@ -270,20 +268,28 @@ COIN_LIBS = OsiClp Clp CoinUtils Osi
 ## afterwards (unless in release mode with static linking enabled). See
 ## http://ubuntuforums.org/showthread.php?t=491455
 
-COIN_CCOPT = -I $(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
-COIN_LINKOPT = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+COIN_CCOPT = -I$(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
+ifeq ($(OS), osx)
+COIN_LINKOPT = -L$(COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
+else
+COIN_LINKOPT = -L$(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+endif
 
 CCOPT += $(COIN_CCOPT)
 
-ifeq ($(LINK_RELEASE_STATICALLY), 0)
-POSTLINKOPT_RELEASE += $(COIN_LINKOPT) -Wl,-Bdynamic
-else
 POSTLINKOPT_RELEASE += $(COIN_LINKOPT)
-endif
-POSTLINKOPT_DEBUG   += $(COIN_LINKOPT) -Wl,-Bdynamic
-POSTLINKOPT_PROFILE += $(COIN_LINKOPT) -Wl,-Bdynamic
+POSTLINKOPT_DEBUG += $(COIN_LINKOPT)
+POSTLINKOPT_PROFILE += $(COIN_LINKOPT)
 
+ifeq ($(OS), linux)
+ifeq ($(LINK_RELEASE_STATICALLY), 0)
+POSTLINKOPT_RELEASE += -Wl,-Bdynamic
 endif
+POSTLINKOPT_DEBUG   += -Wl,-Bdynamic
+POSTLINKOPT_PROFILE += -Wl,-Bdynamic
+endif
+
+endif # LP code
 
 all: release debug profile
 
