@@ -138,8 +138,11 @@ def get_groups(task, reachable_action_params=None):
 
 if __name__ == "__main__":
     import pddl
+    import normalize
     print "Parsing..."
     task = pddl.open()
+    print "Normalizing..."
+    normalize.normalize(task)
     print "Finding invariants..."
     print "NOTE: not passing in reachable_action_params."
     print "This means fewer invariants might be found."
