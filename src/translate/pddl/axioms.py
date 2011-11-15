@@ -21,7 +21,7 @@ class Axiom(object):
                      len(predicate.arguments), condition)
     parse = staticmethod(parse)
     def dump(self):
-        args = [map(str, self.parameters[:self.num_external_parameters])]
+        args = map(str, self.parameters[:self.num_external_parameters])
         print "Axiom %s(%s)" % (self.name, ", ".join(args))
         self.condition.dump()
     def uniquify_variables(self):
