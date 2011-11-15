@@ -48,7 +48,7 @@ class BalanceChecker(object):
         inequal_params = []
         combs = itertools.combinations(range(len(action.parameters)), 2)
         for pos1, pos2 in combs:
-            for params in reachable_action_params[action.name]:
+            for params in reachable_action_params[action]:
                 if params[pos1] == params[pos2]:
                     break
             else:
