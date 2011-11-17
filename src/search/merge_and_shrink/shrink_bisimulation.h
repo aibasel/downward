@@ -7,6 +7,12 @@ class Options;
 class Signature;
 
 class ShrinkBisimulation : public ShrinkStrategy {
+    enum Greediness {
+        NOT_GREEDY,
+        SOMEWHAT_GREEDY,
+        GREEDY
+    };
+
     enum AtLimit {
         RETURN,
         USE_UP,
@@ -22,7 +28,7 @@ class ShrinkBisimulation : public ShrinkStrategy {
       is the number of states to which the abstraction is shrunk.
     */
 
-    const bool greedy;
+    const Greediness greediness;
     const int threshold;
     const bool initialize_by_h;
     const bool group_by_h;
