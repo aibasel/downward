@@ -29,7 +29,6 @@ class ShrinkBisimulation : public ShrinkStrategy {
 
     const Greediness greediness;
     const int threshold;
-    const bool initialize_by_h;
     const bool group_by_h;
     const AtLimit at_limit;
 
@@ -38,10 +37,12 @@ class ShrinkBisimulation : public ShrinkStrategy {
         int target_size,
         EquivalenceRelation &equivalence_relation);
 
-    int initialize_dfp(const Abstraction &abs,
-                       std::vector<int> &state_to_group);
-    int initialize_bisim(const Abstraction &abs,
-                         std::vector<int> &state_to_group);
+    int initialize_groups(const Abstraction &abs,
+                          std::vector<int> &state_to_group);
+    void compute_signatures(
+        const Abstraction &abs,
+        std::vector<Signature> &signatures,
+        std::vector<int> &state_to_group);
 public:
     ShrinkBisimulation(const Options &opts);
     virtual ~ShrinkBisimulation();
