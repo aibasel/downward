@@ -51,6 +51,21 @@ struct Signature {
             return succ_signature < other.succ_signature;
         return state < other.state;
     }
+
+    void dump() const {
+        cout << "Signature(h = " << h
+             << ", group = " << group
+             << ", state = " << state
+             << ", succ_sig = [";
+        for (int i = 0; i < succ_signature.size(); ++i) {
+            if (i)
+                cout << ", ";
+            cout << "(" << succ_signature[i].first
+                 << "," << succ_signature[i].second
+                 << ")";
+        }
+        cout << "])" << endl;
+    }
 };
 
 
