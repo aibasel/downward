@@ -29,10 +29,10 @@ typedef std::vector<std::pair<int, int> > SuccessorSignature;
 /* TODO: The following class should probably be renamed. It encodes
    all we need to know about a state for bisimulation: its h value,
    which equivalence class ("group") it currently belongs to, its
-   signatures (see above), and what the original state is. */
+   signature (see above), and what the original state is. */
 
 struct Signature {
-    int h;
+    int h; // TODO: Also take into count if it is a goal!
     int group;
     SuccessorSignature succ_signature;
     int state;
@@ -82,11 +82,6 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
       initialize_by_h(opts.get<bool>("initialize_by_h")),
       group_by_h(opts.get<bool>("group_by_h")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
-    if (initialize_by_h != group_by_h) {
-        cerr << "initialize_by_h and group_by_h cannot be set independently "
-             << "at the moment" << endl;
-        exit(2);
-    }
 }
 
 ShrinkBisimulation::~ShrinkBisimulation() {
@@ -115,12 +110,9 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
         cout << "return";
     else if (at_limit == USE_UP)
         cout << "use up limit";
-    else if (at_limit == SKIP_AND_COMPLETE_ITERATION)
-        cout << "skip and complete iteration";
-    else if (at_limit == SKIP_AND_KEEP_GOING)
-        cout << "skip and keep going";
     else
         abort();
+    cout << endl;
 }
 
 bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
@@ -183,80 +175,68 @@ void ShrinkBisimulation::shrink_before_merge(
     shrink(abs1, new_size1);
 }
 
-int ShrinkBisimulation::initialize_bisim(
-    const Abstraction &abs,
-    vector<int> &state_to_group,
-    vector<bool> &group_done) {
-    bool exists_goal_state = false;
-    bool exists_non_goal_state = false;
-    for (int state = 0; state < abs.size(); state++) {
-        int h = abs.get_goal_distance(state);
-        bool is_goal_state = abs.is_goal_state(state);
-        if (h == infinity || abs.get_init_distance(state) == infinity) {
-            state_to_group[state] = -1;
+int ShrinkBisimulation::initialize_bisim(const Abstraction &abs,
+                                         vector<int> &state_to_group) {
+
+    /* Group 0 holds all goal states.
+
+       Group 1 holds all non-goal states if any non-goal states exist.
+
+       Note that some goal state *must* exist because irrelevant und
+       unreachable states are pruned before we shrink and we never
+       perform the shrinking if that pruning shows that the problem is
+       unsolvable.
+    */
+
+    int num_groups = 1;
+
+    for (int state = 0; state < abs.size(); ++state) {
+        assert(abs.get_goal_distance(state) >= 0 &&
+               abs.get_goal_distance(state) <= abs.get_max_h());
+        if (abs.is_goal_state(state)) {
+            state_to_group[state] = 0;
         } else {
-            assert(h >= 0 && h <= abs.get_max_h());
-            if (is_goal_state) {
-                state_to_group[state] = 0;
-                exists_goal_state = true;
-            } else {
-                state_to_group[state] = 1;
-                exists_non_goal_state = true;
-            }
+            state_to_group[state] = 1;
+            num_groups = 2; // There exists a non-goal state.
         }
     }
-
-    int num_groups;
-    if (exists_goal_state && exists_non_goal_state)
-        num_groups = 2;
-    else
-        num_groups = 1;
-
-    // Now all goal states are in group 0 and non-goal states are in
-    // 1. Unreachable states are in -1.
-
-    // TODO: Check logic. What if one or both of the groups are empty?
-
-    if (at_limit == SKIP_AND_KEEP_GOING)
-        group_done.resize(abs.size(), false);
 
     return num_groups;
 }
 
-int ShrinkBisimulation::initialize_dfp(
-    const Abstraction &abs,
-    vector<int> &state_to_group,
-    vector<bool> &h_group_done,
-    vector<int> &h_to_h_group) {
-    h_to_h_group.resize(abs.get_max_h() + 1, -1);
+int ShrinkBisimulation::initialize_dfp(const Abstraction &abs,
+                                       vector<int> &state_to_group) {
+
+    /* Group 0 holds all goal states.
+
+       All other groups hold all states with one particular h value.
+
+       See the comments for initialize_bisim to see why group 0 must
+       be nonempty and we don't need to bother about irrelevant or
+       unreachable states. */
+
+    vector<int> h_to_h_group(abs.get_max_h() + 1, -1);
     int num_of_used_h = 0;
-    for (int state = 0; state < abs.size(); state++) {
+    for (int state = 0; state < abs.size(); ++state) {
         int h = abs.get_goal_distance(state);
-        if (h != infinity && abs.get_init_distance(state) != infinity) {
-            if (h_to_h_group[h] == -1) {
-                h_to_h_group[h] = num_of_used_h;
+        assert(h >= 0 && h != infinity);
+        assert(abs.get_init_distance(state) != infinity);
+
+        if (abs.is_goal_state(state)) {
+            assert(h == 0);
+            state_to_group[state] = 0;
+        } else {
+            int &h_group = h_to_h_group[h];
+            if (h_group == -1) {
+                h_group = num_of_used_h;
                 num_of_used_h++;
             }
+            state_to_group[state] = h_group + 1;
         }
     }
-    cout << "number of used h values: " << num_of_used_h << endl;
 
-    for (int state = 0; state < abs.size(); state++) {
-        int h = abs.get_goal_distance(state);
-        if (h == infinity || abs.get_init_distance(state) == infinity) {
-            state_to_group[state] = -1;
-        } else {
-            assert(h >= 0 && h <= abs.get_max_h());
-            int group = h_to_h_group[h];
-            state_to_group[state] = group;
-        }
-    }
-    int num_groups = num_of_used_h;
-
-    if (at_limit == SKIP_AND_KEEP_GOING)
-        h_group_done.resize(num_of_used_h, false);
-    else
-        release_memory(h_to_h_group);
+    int num_groups = num_of_used_h + 1;
+    cout << "number of initial groups: " << num_groups << endl;
     return num_groups;
 }
 
@@ -267,22 +247,19 @@ void ShrinkBisimulation::compute_abstraction(
     int num_states = abs.size();
 
     vector<int> state_to_group(num_states);
-    vector<bool> group_done;
     vector<Signature> signatures;
-    vector<int> h_to_h_group;
-    vector<bool> h_group_done;
     signatures.reserve(num_states + 2);
 
     int num_groups;
     if (initialize_by_h)
-        num_groups = initialize_dfp(abs, state_to_group, h_group_done,
-                                    h_to_h_group);
+        num_groups = initialize_dfp(abs, state_to_group);
     else
-        num_groups = initialize_bisim(abs, state_to_group, group_done);
+        num_groups = initialize_bisim(abs, state_to_group);
 
     // assert(num_groups <= target_size); // TODO: We currently violate this; see issue250
 
     int max_h = abs.get_max_h();
+    assert(max_h >= 0 && max_h != infinity);
 
     bool done = false;
     bool stop_after_iteration = false;
@@ -347,7 +324,8 @@ void ShrinkBisimulation::compute_abstraction(
         // TODO: More efficient to sort an index set than to shuffle
         //       the whole signatures around?
 
-        int sig_start = 0;
+        assert(signatures[0].h == -1);
+        int sig_start = 1; // Skip over initial sentinel.
         while (true) {
             int h = signatures[sig_start].h;
             int group = signatures[sig_start].group;
@@ -357,26 +335,8 @@ void ShrinkBisimulation::compute_abstraction(
                 assert(sig_start + 1 == signatures.size());
                 break;
             }
-            assert(h >= -1);
+            assert(h >= 0);
             assert(h <= max_h);
-
-            // Skips all groups that cannot be split further (due to
-            // memory restrictions).
-            if (group_by_h) {
-                if (h == -1 || (at_limit == SKIP_AND_KEEP_GOING &&
-                                h_group_done[h_to_h_group[h]])) {
-                    while (signatures[sig_start].h == h)
-                        sig_start++;
-                    continue;
-                }
-            } else {
-                if (h == -1 || (at_limit == SKIP_AND_KEEP_GOING &&
-                                group_done[group])) {
-                    while (signatures[sig_start].group == group)
-                        sig_start++;
-                    continue;
-                }
-            }
 
             // Compute the number of blocks after the splitting.
             int num_old_groups = 0;
@@ -410,15 +370,7 @@ void ShrinkBisimulation::compute_abstraction(
                 // Can't split the group (or the set of groups for
                 // this h value) -- would exceed bound on abstract
                 // state number.
-                if (at_limit == SKIP_AND_KEEP_GOING) {
-                    if (group_by_h) {
-                        h_group_done[h_to_h_group[h]] = true;
-                    } else {
-                        group_done[group] = true;
-                    }
-                } else if (at_limit == SKIP_AND_COMPLETE_ITERATION) {
-                    stop_after_iteration = true;
-                } else if (at_limit == RETURN) {
+                if (at_limit == RETURN) {
                     stop_after_iteration = true;
                     break;
                 } else {
@@ -505,7 +457,7 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
     opts.set("threshold", 1);
     opts.set("initialize_by_h", false);
     opts.set("group_by_h", false);
-    opts.set<int>("at_limit", SKIP_AND_KEEP_GOING);
+    opts.set<int>("at_limit", RETURN);
 
     return new ShrinkBisimulation(opts);
 }
@@ -526,10 +478,8 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     vector<string> at_limit;
     at_limit.push_back("RETURN");
     at_limit.push_back("USE_UP");
-    at_limit.push_back("SKIP_AND_COMPLETE_ITERATION");
-    at_limit.push_back("SKIP_AND_KEEP_GOING");
     parser.add_enum_option(
-        "at_limit", at_limit, "SKIP_AND_KEEP_GOING",
+        "at_limit", at_limit, "RETURN",
         "what to do when the size limit is hit");
 
     Options opts = parser.parse();
