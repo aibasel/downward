@@ -257,7 +257,7 @@ public:
         wrapped_queue->clear();
     }
 
-    virtual void add_virtual_pushes(int num_extra_pushes) {
+    void add_virtual_pushes(int num_extra_pushes) {
         wrapped_queue->add_virtual_pushes(num_extra_pushes);
     }
 };
