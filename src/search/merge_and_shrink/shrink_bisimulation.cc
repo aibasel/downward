@@ -183,7 +183,10 @@ void ShrinkBisimulation::shrink_before_merge(
     shrink(abs1, new_size1);
 }
 
-int ShrinkBisimulation::initialize_bisim(const Abstraction &abs) {
+int ShrinkBisimulation::initialize_bisim(
+    const Abstraction &abs,
+    vector<int> &state_to_group,
+    vector<bool> &group_done) {
     bool exists_goal_state = false;
     bool exists_non_goal_state = false;
     for (int state = 0; state < abs.size(); state++) {
@@ -220,7 +223,11 @@ int ShrinkBisimulation::initialize_bisim(const Abstraction &abs) {
     return num_groups;
 }
 
-int ShrinkBisimulation::initialize_dfp(const Abstraction &abs) {
+int ShrinkBisimulation::initialize_dfp(
+    const Abstraction &abs,
+    vector<int> &state_to_group,
+    vector<bool> &h_group_done,
+    vector<int> &h_to_h_group) {
     h_to_h_group.resize(abs.get_max_h() + 1, -1);
     int num_of_used_h = 0;
     for (int state = 0; state < abs.size(); state++) {
@@ -259,22 +266,21 @@ void ShrinkBisimulation::compute_abstraction(
     EquivalenceRelation &equivalence_relation) {
     int num_states = abs.size();
 
-    state_to_group.clear();
-    group_done.clear();
-    signatures.clear();
-    h_to_h_group.clear();
-    h_group_done.clear();
-
-    state_to_group.resize(num_states);
+    vector<int> state_to_group(num_states);
+    vector<bool> group_done;
+    vector<Signature> signatures;
+    vector<int> h_to_h_group;
+    vector<bool> h_group_done;
     signatures.reserve(num_states + 2);
 
     int num_groups;
     if (initialize_by_h)
-        num_groups = initialize_dfp(abs);
+        num_groups = initialize_dfp(abs, state_to_group, h_group_done,
+                                    h_to_h_group);
     else
-        num_groups = initialize_bisim(abs);
+        num_groups = initialize_bisim(abs, state_to_group, group_done);
 
-    // assert(num_groups <= target_size); // TODO: We currently violate this, right?
+    // assert(num_groups <= target_size); // TODO: We currently violate this; see issue250
 
     int max_h = abs.get_max_h();
 
@@ -474,15 +480,12 @@ void ShrinkBisimulation::compute_abstraction(
         }
     }
 
-    // TODO: As we're releasing these anyway, they should probably
-    // not be instance variables but local variables. We previously
-    // did not release them, but that cost us several hundreds of MB
-    // in peak memory, and hence is probably a bad idea.
-    release_memory(group_done);
+    /* Reduce memory pressure before generating the equivalence
+       relation since this is one of the code parts relevant to peak
+       memory. */
     release_memory(signatures);
-    release_memory(h_to_h_group);
-    release_memory(h_group_done);
 
+    // Generate final result.
     assert(equivalence_relation.empty());
     equivalence_relation.resize(num_groups);
     for (int state = 0; state < num_states; state++) {
@@ -492,8 +495,6 @@ void ShrinkBisimulation::compute_abstraction(
             equivalence_relation[group].push_front(state);
         }
     }
-
-    release_memory(state_to_group);
 }
 
 ShrinkStrategy *ShrinkBisimulation::create_default() {

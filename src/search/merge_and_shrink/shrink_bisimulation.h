@@ -21,7 +21,8 @@ class ShrinkBisimulation : public ShrinkStrategy {
     };
 
     /*
-      greedy: Use greedy bisimulation rather than exact bisimulation.
+      greediness: Select between exact, "somewhat greedy" or "greedy"
+      bisimulation.
 
       threshold: Shrink the abstraction iff it is larger than this
       size. Note that this is set independently from max_states, which
@@ -34,20 +35,20 @@ class ShrinkBisimulation : public ShrinkStrategy {
     const bool group_by_h;
     const AtLimit at_limit;
 
-    std::vector<int> state_to_group;
-    std::vector<bool> group_done;
-    std::vector<Signature> signatures;
-
-    std::vector<int> h_to_h_group;
-    std::vector<bool> h_group_done;
-
     void compute_abstraction(
         Abstraction &abs,
         int target_size,
         EquivalenceRelation &equivalence_relation);
 
-    int initialize_dfp(const Abstraction &abs);
-    int initialize_bisim(const Abstraction &abs);
+    int initialize_dfp(
+        const Abstraction &abs,
+        std::vector<int> &state_to_group,
+        std::vector<bool> &h_group_done,
+        std::vector<int> &h_to_h_group);
+    int initialize_bisim(
+        const Abstraction &abs,
+        std::vector<int> &state_to_group,
+        std::vector<bool> &group_done);
 public:
     ShrinkBisimulation(const Options &opts);
     virtual ~ShrinkBisimulation();
