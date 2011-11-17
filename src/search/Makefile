@@ -1,6 +1,20 @@
 ## Set USE_LP to 1 to enable linear programming stuff.
 USE_LP=0
+
+## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
+## static linking of the executable in release mode.
+## On OS X, this is unsupported and will be silently disabled.
+LINK_RELEASE_STATICALLY=1
+
+## Set STATE_VAR_BYTES to 1, 2 or 4 to control how large a state
+## variable is. There should be no need to tweak this manually.
 STATE_VAR_BYTES=1
+
+## On a supported operating system, there should be no need to override
+## the OS setting. If the provided code does not work even though your
+## operating system is a supported one, please report this as a bug.
+OS=auto
+
 
 HEADERS = \
           axioms.h \
@@ -111,6 +125,27 @@ TARGET  = downward
 
 ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
 
+
+ifeq ($(OS), auto)
+UNAME := $(shell uname)
+ifeq ($(UNAME), Darwin)
+OS=osx
+endif
+ifeq ($(UNAME), Linux)
+OS=linux
+endif
+ifeq ($(OS), auto)
+$(warning OS detection failed -- setting to Linux and hoping for the best!)
+OS=linux
+endif
+endif
+
+ifeq ($(OS), osx)
+## Disable static linking on OS X.
+LINK_RELEASE_STATICALLY=0
+endif
+
+
 OBJECT_SUFFIX_RELEASE = .$(STATE_VAR_BYTES)
 TARGET_SUFFIX_RELEASE = -$(STATE_VAR_BYTES)
 OBJECT_SUFFIX_DEBUG   = .$(STATE_VAR_BYTES).debug
@@ -165,7 +200,7 @@ POSTLINKOPT =
 ## Additional specialized options for the various targets follow.
 ## In release mode, we link statically since this makes it more likely
 ## that local compiles will work on the various grids (gkigrid, Black
-## Forest Grid).
+## Forest Grid, maia).
 ##
 ## NOTE: This precludes some uses of exceptions.
 ##        For details, see man gcc on -static-libgcc.
@@ -174,14 +209,29 @@ CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
 CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
-LINKOPT_RELEASE  = -static -static-libgcc
-LINKOPT_DEBUG    = -lrt
-LINKOPT_PROFILE  = -pg -lrt
-# LINKOPT_PROFILE += -lc_p
+LINKOPT_RELEASE =
+LINKOPT_DEBUG    =
+LINKOPT_PROFILE  = -pg
 
-POSTLINKOPT_RELEASE  = -Wl,-Bstatic -lrt
-POSTLINKOPT_DEBUG    =
-POSTLINKOPT_PROFILE  =
+POSTLINKOPT_RELEASE =
+POSTLINKOPT_DEBUG   =
+POSTLINKOPT_PROFILE =
+
+ifeq ($(LINK_RELEASE_STATICALLY), 1)
+LINKOPT_RELEASE += -static -static-libgcc
+endif
+
+ifeq ($(OS), linux)
+ifeq ($(LINK_RELEASE_STATICALLY), 0)
+LINKOPT_RELEASE += -lrt
+else
+POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+endif
+LINKOPT_DEBUG  += -lrt
+LINKOPT_PROFILE += -lrt
+# LINKOPT_PROFILE += -lc_p
+endif
+
 
 ## Define the default target up here so that the LP stuff below
 ## doesn't define a default target.
@@ -212,22 +262,34 @@ $(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
 
 COIN_LIBS = OsiClp Clp CoinUtils Osi
 
-## We want to link the COIN libraries statically and link other
-## libraries dynamically, unless we are in release mode. We accomplish
-## this by using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
-## afterwards (unless in release mode). See
+## We want to always link the COIN libraries statically, even if static
+## linking is otherwise disabled. We accomplish this by
+## using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
+## afterwards (unless in release mode with static linking enabled). See
 ## http://ubuntuforums.org/showthread.php?t=491455
 
-COIN_CCOPT = -I $(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
-COIN_LINKOPT = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+COIN_CCOPT = -I$(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
+ifeq ($(OS), osx)
+COIN_LINKOPT = -L$(COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
+else
+COIN_LINKOPT = -L$(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+endif
 
 CCOPT += $(COIN_CCOPT)
 
 POSTLINKOPT_RELEASE += $(COIN_LINKOPT)
-POSTLINKOPT_DEBUG   += $(COIN_LINKOPT) -Wl,-Bdynamic
-POSTLINKOPT_PROFILE += $(COIN_LINKOPT) -Wl,-Bdynamic
+POSTLINKOPT_DEBUG += $(COIN_LINKOPT)
+POSTLINKOPT_PROFILE += $(COIN_LINKOPT)
 
+ifeq ($(OS), linux)
+ifeq ($(LINK_RELEASE_STATICALLY), 0)
+POSTLINKOPT_RELEASE += -Wl,-Bdynamic
 endif
+POSTLINKOPT_DEBUG   += -Wl,-Bdynamic
+POSTLINKOPT_PROFILE += -Wl,-Bdynamic
+endif
+
+endif # LP code
 
 all: release debug profile
 

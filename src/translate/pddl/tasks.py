@@ -29,7 +29,7 @@ class Task(object):
     def add_axiom(self, parameters, condition):
         name = "new-axiom@%d" % self.axiom_counter
         self.axiom_counter += 1
-        axiom = axioms.Axiom(name, parameters, condition)
+        axiom = axioms.Axiom(name, parameters, len(parameters), condition)
         self.predicates.append(predicates.Predicate(name, parameters))
         self.axioms.append(axiom)
         return axiom

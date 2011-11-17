@@ -6,6 +6,10 @@ import invariant_finder
 import pddl
 import timers
 
+
+DEBUG = False
+
+
 def expand_group(group, task, reachable_facts):
     result = []
     for fact in group:
@@ -113,4 +117,10 @@ def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
         groups = choose_groups(groups, atoms, partial_encoding=partial_encoding)
     with timers.timing("Building translation key"):
         translation_key = build_translation_key(groups)
+
+    if DEBUG:
+        for group in groups:
+            if len(group) >= 2:
+                print "{%s}" % ", ".join(map(str, group))
+
     return groups, mutex_groups, translation_key

@@ -29,6 +29,7 @@ class BalanceChecker(object):
                     self.predicates_to_add_actions[predicate].add(action)
             if create_heavy_act:
                 heavy_act = pddl.Action(action.name, action.parameters,
+                                        action.num_external_parameters,
                                         action.precondition, too_heavy_effects,
                                         action.cost)
             # heavy_act: duplicated universal effects and assigned unique names
@@ -47,7 +48,7 @@ class BalanceChecker(object):
         inequal_params = []
         combs = itertools.combinations(range(len(action.parameters)), 2)
         for pos1, pos2 in combs:
-            for params in reachable_action_params[action.name]:
+            for params in reachable_action_params[action]:
                 if params[pos1] == params[pos2]:
                     break
             else:
@@ -61,8 +62,9 @@ class BalanceChecker(object):
                 new_cond = pddl.NegatedAtom("=", (param1, param2))
                 precond_parts.append(new_cond)
             precond = pddl.Conjunction(precond_parts).simplified()
-            return pddl.Action(action.name, action.parameters, precond,
-                               action.effects, action.cost)
+            return pddl.Action(
+                action.name, action.parameters, action.num_external_parameters,
+                precond, action.effects, action.cost)
         else:
             return action
 
@@ -136,8 +138,11 @@ def get_groups(task, reachable_action_params=None):
 
 if __name__ == "__main__":
     import pddl
+    import normalize
     print "Parsing..."
     task = pddl.open()
+    print "Normalizing..."
+    normalize.normalize(task)
     print "Finding invariants..."
     print "NOTE: not passing in reachable_action_params."
     print "This means fewer invariants might be found."

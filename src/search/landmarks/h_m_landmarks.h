@@ -66,9 +66,6 @@ struct HMEntry {
 
 typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
-// TODO: this class doesn't work anymore like the old code. Maybe the mistake is that after
-// the call to generate_landmarks, there are more things calculated, but lm_graph is not
-// changed anymore at this moment.
 class HMLandmarks : public LandmarkFactory {
 public:
     HMLandmarks(const Options &opts);
