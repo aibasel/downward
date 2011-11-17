@@ -51,6 +51,21 @@ struct Signature {
             return succ_signature < other.succ_signature;
         return state < other.state;
     }
+
+    void dump() const {
+        cout << "Signature(h = " << h
+             << ", group = " << group
+             << ", state = " << state
+             << ", succ_sig = [";
+        for (int i = 0; i < succ_signature.size(); ++i) {
+            if (i)
+                cout << ", ";
+            cout << "(" << succ_signature[i].first
+                 << "," << succ_signature[i].second
+                 << ")";
+        }
+        cout << "])" << endl;
+    }
 };
 
 
@@ -62,7 +77,7 @@ void release_memory(vector<T> &vec) {
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
-      greedy(opts.get<bool>("greedy")),
+      greediness(Greediness(opts.get_enum("greedy"))),
       threshold(opts.get<int>("threshold")),
       initialize_by_h(opts.get<bool>("initialize_by_h")),
       group_by_h(opts.get<bool>("group_by_h")),
@@ -82,10 +97,30 @@ string ShrinkBisimulation::name() const {
 }
 
 void ShrinkBisimulation::dump_strategy_specific_options() const {
-    cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
+    cout << "Bisimulation type: ";
+    if (greediness == NOT_GREEDY)
+        cout << "exact";
+    else if (greediness == SOMEWHAT_GREEDY)
+        cout << "somewhat greedy";
+    else if (greediness == GREEDY)
+        cout << "greedy";
+    else
+        abort();
+    cout << endl;
     cout << "Bisimulation threshold: " << threshold << endl;
     cout << "Initialize by h: " << (initialize_by_h ? "yes" : "no") << endl;
     cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
+    cout << "At limit: ";
+    if (at_limit == RETURN)
+        cout << "return";
+    else if (at_limit == USE_UP)
+        cout << "use up limit";
+    else if (at_limit == SKIP_AND_COMPLETE_ITERATION)
+        cout << "skip and complete iteration";
+    else if (at_limit == SKIP_AND_KEEP_GOING)
+        cout << "skip and keep going";
+    else
+        abort();
 }
 
 bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
@@ -94,7 +129,7 @@ bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
 
 void ShrinkBisimulation::shrink(
     Abstraction &abs, int target, bool force) {
-    if (abs.size() == 1 && greedy) {
+    if (abs.size() == 1 && greediness != NOT_GREEDY) {
         cout << "Special case: do not greedily bisimulate an atomic abstration."
              << endl;
         return;
@@ -277,10 +312,15 @@ void ShrinkBisimulation::compute_abstraction(
                 if (src_group != -1 && target_group != -1) {
                     assert(signatures[trans.src + 1].state == trans.src);
                     bool skip_transition = false;
-                    if (greedy) {
+                    if (greediness != NOT_GREEDY) {
                         int src_h = abs.get_goal_distance(trans.src);
                         int target_h = abs.get_goal_distance(trans.target);
-                        skip_transition = (target_h >= src_h);
+                        if (greediness == SOMEWHAT_GREEDY)
+                            skip_transition = (target_h > src_h);
+                        else if (greediness == GREEDY)
+                            skip_transition = (target_h >= src_h);
+                        else
+                            abort();
                     }
                     if (!skip_transition)
                         signatures[trans.src + 1].succ_signature.push_back(
@@ -460,7 +500,7 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
     Options opts;
     opts.set("max_states", infinity);
     opts.set("max_states_before_merge", infinity);
-    opts.set("greedy", false);
+    opts.set<int>("greedy", NOT_GREEDY);
     opts.set("threshold", 1);
     opts.set("initialize_by_h", false);
     opts.set("group_by_h", false);
@@ -471,7 +511,13 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
-    parser.add_option<bool>("greedy");
+    vector<string> greediness;
+    greediness.push_back("false");
+    greediness.push_back("somewhat");
+    greediness.push_back("true");
+    parser.add_enum_option(
+        "greedy", greediness, "NOT_GREEDY",
+        "use exact, somewhat greedy or greedy bisimulation");
     parser.add_option<int>("threshold", -1); // default: same as max_states
     parser.add_option<bool>("initialize_by_h", true);
     parser.add_option<bool>("group_by_h", false);
