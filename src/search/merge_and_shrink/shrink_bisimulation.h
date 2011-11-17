@@ -15,9 +15,7 @@ class ShrinkBisimulation : public ShrinkStrategy {
 
     enum AtLimit {
         RETURN,
-        USE_UP,
-        SKIP_AND_COMPLETE_ITERATION,
-        SKIP_AND_KEEP_GOING
+        USE_UP
     };
 
     /*
@@ -40,15 +38,10 @@ class ShrinkBisimulation : public ShrinkStrategy {
         int target_size,
         EquivalenceRelation &equivalence_relation);
 
-    int initialize_dfp(
-        const Abstraction &abs,
-        std::vector<int> &state_to_group,
-        std::vector<bool> &h_group_done,
-        std::vector<int> &h_to_h_group);
-    int initialize_bisim(
-        const Abstraction &abs,
-        std::vector<int> &state_to_group,
-        std::vector<bool> &group_done);
+    int initialize_dfp(const Abstraction &abs,
+                       std::vector<int> &state_to_group);
+    int initialize_bisim(const Abstraction &abs,
+                         std::vector<int> &state_to_group);
 public:
     ShrinkBisimulation(const Options &opts);
     virtual ~ShrinkBisimulation();
