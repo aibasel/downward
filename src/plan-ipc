@@ -1,57 +1,9 @@
 #! /bin/bash
 
-BASEDIR="$(dirname "$0")"
-
-# Paths to planner components
-TRANSLATE="$BASEDIR/translate/translate.py"
-PREPROCESS="$BASEDIR/preprocess/preprocess"
-SEARCH="$BASEDIR/search/downward"
-
-# Need to explicitly ask for GNU time (from MacPorts) on Mac OS X.
-if [[ "$(uname)" == "Darwin" ]]; then
-    TIME="gtime"
-    if ! which $TIME >/dev/null; then
-        echo "$TIME must be installed on Mac OSX (from MacPorts, perhaps) for this to work"
-        exit 1
-    fi
-else
-    TIME="command time"
-fi
-
-TIME="$TIME --output=elapsed.time --format=%S\n%U\n"
-
-run_planner() {
-    echo "1. Running translator"
-    $TIME "$TRANSLATE" "$1" "$2" || exit 1
-    echo "2. Running preprocessor"
-    $TIME --append "$PREPROCESS" < output.sas || exit 1
-    echo "3. Running search"
-    "$SEARCH" ipc "$PLANNER" --plan-file "$3" < output
-}
-
-check_input_files() {
-    if [ ! -e "$1" ]; then
-	echo "Domain file \"$1\" does not exist."
-	exit 1
-    fi
-    if [ ! -e "$2" ]; then
-	echo "Problem file \"$2\" does not exist."
-	exit 1
-    fi
-}
-
-# Make sure we have exactly 3 command line arguments
 if [[ $# != 4 ]]; then
-    echo "Usage: \"plan-ipc <planner> <domain_file> <problem_file> <result_file>\""
+    echo "usage: $(basename "$0") PLANNER_NAME DOMAIN PROBLEM PLAN_FILE" 1>&2
     exit 1
 fi
 
-PLANNER="$1"
-shift
-
-check_input_files "$1" "$2"
-
-# Command line arguments seem to be fine, run planner
-run_planner "$1" "$2" "$3"
-
-# We do not clean up temporary files here (not necessary for the IPC)
+BASEDIR="$(dirname "$0")"
+"$BASEDIR/plan" "$2" "$3" ipc "$1" --plan-file "$4"
