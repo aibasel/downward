@@ -134,7 +134,7 @@ public:
         return transitions_by_op.size();
     }
 
-    const std::vector<AbstractTransition> &get_transitions_for_op(int op_no) {
+    const std::vector<AbstractTransition> &get_transitions_for_op(int op_no) const {
         return transitions_by_op[op_no];
     }
 };
