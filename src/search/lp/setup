@@ -25,7 +25,8 @@ if [[ $OS == osx ]]; then
     ./configure CC="gcc -arch i386" CXX="g++ -arch i386" \
         --prefix "$BASEDIR/coin" --without-lapack --enable-static=no
 else
-    ./configure --prefix "$BASEDIR/coin" --without-lapack --enable-static=yes
+    ./configure CC="gcc -m32" CXX="g++ -m32" \
+        --prefix "$BASEDIR/coin" --without-lapack --enable-static=yes
 fi
 make
 make test
