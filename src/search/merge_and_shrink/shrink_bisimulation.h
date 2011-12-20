@@ -10,7 +10,8 @@ class ShrinkBisimulation : public ShrinkStrategy {
     enum Greediness {
         NOT_GREEDY,
         SOMEWHAT_GREEDY,
-        LEGACY_GREEDY
+        LEGACY_GREEDY,
+        GREEDY
     };
 
     enum AtLimit {

@@ -107,6 +107,8 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
         cout << "somewhat greedy";
     else if (greediness == LEGACY_GREEDY)
         cout << "legacy greedy";
+    else if (greediness == GREEDY)
+        cout << "greedy";
     else
         abort();
     cout << endl;
@@ -242,6 +244,7 @@ void ShrinkBisimulation::compute_signatures(
     for (int op_no = 0; op_no < num_ops; ++op_no) {
         const vector<AbstractTransition> &transitions =
             abs.get_transitions_for_op(op_no);
+        int op_cost = abs.get_cost_for_op(op_no);
         for (size_t i = 0; i < transitions.size(); ++i) {
             const AbstractTransition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
@@ -249,7 +252,10 @@ void ShrinkBisimulation::compute_signatures(
             if (greediness != NOT_GREEDY) {
                 int src_h = abs.get_goal_distance(trans.src);
                 int target_h = abs.get_goal_distance(trans.target);
-                if (greediness == SOMEWHAT_GREEDY)
+                assert(target_h + op_cost >= src_h);
+                if (greediness == GREEDY)
+                    skip_transition = (target_h + op_cost != src_h);
+                else if (greediness == SOMEWHAT_GREEDY)
                     skip_transition = (target_h > src_h);
                 else if (greediness == LEGACY_GREEDY)
                     skip_transition = (target_h >= src_h);
@@ -436,7 +442,7 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     greediness.push_back("false");
     greediness.push_back("somewhat");
     greediness.push_back("legacy");
-    // greediness.push_back("true");
+    greediness.push_back("true");
     parser.add_enum_option(
         "greedy", greediness, "NOT_GREEDY",
         "use exact, somewhat greedy, legacy greedy or greedy bisimulation");
