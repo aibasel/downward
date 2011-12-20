@@ -10,7 +10,7 @@ class ShrinkBisimulation : public ShrinkStrategy {
     enum Greediness {
         NOT_GREEDY,
         SOMEWHAT_GREEDY,
-        GREEDY
+        LEGACY_GREEDY
     };
 
     enum AtLimit {
@@ -19,8 +19,8 @@ class ShrinkBisimulation : public ShrinkStrategy {
     };
 
     /*
-      greediness: Select between exact, "somewhat greedy" or "greedy"
-      bisimulation.
+      greediness: Select between exact, "somewhat greedy", "legacy greedy"
+      or "greedy" bisimulation.
 
       threshold: Shrink the abstraction iff it is larger than this
       size. Note that this is set independently from max_states, which
