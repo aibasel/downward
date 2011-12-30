@@ -437,7 +437,7 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     greediness.push_back("somewhat");
     greediness.push_back("true");
     parser.add_enum_option(
-        "greedy", greediness, "NOT_GREEDY",
+        "greedy", greediness, "false",
         "use exact, somewhat greedy or greedy bisimulation");
     parser.add_option<int>("threshold", -1); // default: same as max_states
     parser.add_option<bool>("group_by_h", false);
