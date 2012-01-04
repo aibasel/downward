@@ -281,8 +281,9 @@ class Literal(Condition):
         return self
     def uniquify_variables(self, type_map, renamings={}):
         return self.rename_variables(renamings)
-    def rename_variables(self, renamings):
-        new_args = [renamings.get(arg, arg) for arg in self.args]
+    def rename_variables(self, renamings, start_pos=0):
+        new_args = self.args[:start_pos] + tuple(
+            renamings.get(arg, arg) for arg in self.args[start_pos:])
         return self.__class__(self.predicate, new_args)
     def free_variables(self):
         return set(arg for arg in self.args if arg[0] == "?")
