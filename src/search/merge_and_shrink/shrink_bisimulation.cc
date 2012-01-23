@@ -86,7 +86,7 @@ void release_memory(vector<T> &vec) {
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
-      greediness(Greediness(opts.get_enum("greedy"))),
+      greedy(opts.get<bool>("greedy")),
       threshold(opts.get<int>("threshold")),
       group_by_h(opts.get<bool>("group_by_h")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
@@ -100,18 +100,7 @@ string ShrinkBisimulation::name() const {
 }
 
 void ShrinkBisimulation::dump_strategy_specific_options() const {
-    cout << "Bisimulation type: ";
-    if (greediness == NOT_GREEDY)
-        cout << "exact";
-    else if (greediness == SOMEWHAT_GREEDY)
-        cout << "somewhat greedy";
-    else if (greediness == LEGACY_GREEDY)
-        cout << "legacy greedy";
-    else if (greediness == GREEDY)
-        cout << "greedy";
-    else
-        abort();
-    cout << endl;
+    cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
     cout << "Bisimulation threshold: " << threshold << endl;
     cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
     cout << "At limit: ";
@@ -130,7 +119,7 @@ bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
 
 void ShrinkBisimulation::shrink(
     Abstraction &abs, int target, bool force) {
-    if (abs.size() == 1 && greediness != NOT_GREEDY) {
+    if (abs.size() == 1 && greedy) {
         cout << "Special case: do not greedily bisimulate an atomic abstration."
              << endl;
         return;
@@ -249,18 +238,11 @@ void ShrinkBisimulation::compute_signatures(
             const AbstractTransition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
             bool skip_transition = false;
-            if (greediness != NOT_GREEDY) {
+            if (greedy) {
                 int src_h = abs.get_goal_distance(trans.src);
                 int target_h = abs.get_goal_distance(trans.target);
                 assert(target_h + op_cost >= src_h);
-                if (greediness == GREEDY)
-                    skip_transition = (target_h + op_cost != src_h);
-                else if (greediness == SOMEWHAT_GREEDY)
-                    skip_transition = (target_h > src_h);
-                else if (greediness == LEGACY_GREEDY)
-                    skip_transition = (target_h >= src_h);
-                else
-                    abort();
+                skip_transition = (target_h + op_cost != src_h);
             }
             if (!skip_transition) {
                 int target_group = state_to_group[trans.target];
@@ -428,7 +410,7 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
     Options opts;
     opts.set("max_states", infinity);
     opts.set("max_states_before_merge", infinity);
-    opts.set<int>("greedy", NOT_GREEDY);
+    opts.set<bool>("greedy", false);
     opts.set("threshold", 1);
     opts.set("group_by_h", false);
     opts.set<int>("at_limit", RETURN);
@@ -438,14 +420,7 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
-    vector<string> greediness;
-    greediness.push_back("false");
-    greediness.push_back("somewhat");
-    greediness.push_back("legacy");
-    greediness.push_back("true");
-    parser.add_enum_option(
-        "greedy", greediness, "NOT_GREEDY",
-        "use exact, somewhat greedy, legacy greedy or greedy bisimulation");
+    parser.add_option<bool>("greedy", false, "use greedy bisimulation");
     parser.add_option<int>("threshold", -1); // default: same as max_states
     parser.add_option<bool>("group_by_h", false);
 
