@@ -212,6 +212,10 @@ void Abstraction::compute_distances() {
     }
 }
 
+int Abstraction::get_cost_for_op(int op_no) const {
+    return get_adjusted_action_cost(g_operators[op_no], cost_type);
+}
+
 static void breadth_first_search(
     const vector<vector<int> > &graph, deque<int> &queue,
     vector<int> &distances) {
@@ -296,7 +300,7 @@ static void dijkstra_search(
 void Abstraction::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(num_states);
     for (int i = 0; i < transitions_by_op.size(); i++) {
-        int op_cost = get_adjusted_action_cost(g_operators[i], cost_type);
+        int op_cost = get_cost_for_op(i);
         const vector<AbstractTransition> &transitions = transitions_by_op[i];
         for (int j = 0; j < transitions.size(); j++) {
             const AbstractTransition &trans = transitions[j];
@@ -320,7 +324,7 @@ void Abstraction::compute_init_distances_general_cost() {
 void Abstraction::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(num_states);
     for (int i = 0; i < transitions_by_op.size(); i++) {
-        int op_cost = get_adjusted_action_cost(g_operators[i], cost_type);
+        int op_cost = get_cost_for_op(i);
         const vector<AbstractTransition> &transitions = transitions_by_op[i];
         for (int j = 0; j < transitions.size(); j++) {
             const AbstractTransition &trans = transitions[j];
