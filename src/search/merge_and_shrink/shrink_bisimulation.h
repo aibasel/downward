@@ -7,28 +7,18 @@ class Options;
 class Signature;
 
 class ShrinkBisimulation : public ShrinkStrategy {
-    enum Greediness {
-        NOT_GREEDY,
-        SOMEWHAT_GREEDY,
-        LEGACY_GREEDY,
-        GREEDY
-    };
-
     enum AtLimit {
         RETURN,
         USE_UP
     };
 
     /*
-      greediness: Select between exact, "somewhat greedy", "legacy greedy"
-      or "greedy" bisimulation.
-
       threshold: Shrink the abstraction iff it is larger than this
       size. Note that this is set independently from max_states, which
       is the number of states to which the abstraction is shrunk.
     */
 
-    const Greediness greediness;
+    const bool greedy;
     const int threshold;
     const bool group_by_h;
     const AtLimit at_limit;
