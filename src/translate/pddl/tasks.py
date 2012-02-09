@@ -42,6 +42,10 @@ class Task(object):
 
         assert domain_name == task_domain_name
         objects = constants + objects
+        check_for_duplicates(
+            [o.name for o in objects],
+            errmsg="error: duplicate object %r",
+            finalmsg="please check :constants and :objects definitions")
         init += [conditions.Atom("=", (obj.name, obj.name)) for obj in objects]
 
         return Task(domain_name, task_name, requirements, types, objects,
@@ -205,3 +209,16 @@ def parse_task(task_pddl):
 
     for entry in iterator:
         assert False, entry
+
+
+def check_for_duplicates(elements, errmsg, finalmsg):
+    seen = set()
+    errors = []
+    for element in elements:
+        if element in seen:
+            errors.append(errmsg % element)
+        else:
+            seen.add(element)
+    if errors:
+        raise SystemExit("\n".join(errors) + "\n" + finalmsg)
+
