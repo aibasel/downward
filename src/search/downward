@@ -159,9 +159,9 @@ if [[ "$1" == "ipc" ]]; then
             --search "astar(hCombinedSelMax,mpd=false,
                             pathmax=true,cost_type=0)" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-fdss-1" ]]; then
-        "$BASEDIR/downward-seq-opt-fdss-1.py" "$PLANNER" "$@" < $TEMPFILE
+        "$BASEDIR/downward-seq-opt-fdss-1.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-fdss-2" ]]; then
-        "$BASEDIR/downward-seq-opt-fdss-2.py" "$PLANNER" "$@" < $TEMPFILE
+        "$BASEDIR/downward-seq-opt-fdss-2.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-selmax" ]]; then
         "$PLANNER" --search "astar(selmax([lmcut(),lmcount(lm_merged([lm_hm(m=1),lm_rhw()]),admissible=true)],training_set=1000),mpd=true)" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-bjolp" ]]; then
@@ -169,7 +169,7 @@ if [[ "$1" == "ipc" ]]; then
     elif [[ "$CONFIG" == "seq-opt-lmcut" ]]; then
         "$PLANNER" --search "astar(lmcut())" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-merge-and-shrink" ]]; then
-        "$BASEDIR/downward-seq-opt-merge-and-shrink.py" "$PLANNER" "$@" < $TEMPFILE
+        "$BASEDIR/downward-seq-opt-merge-and-shrink.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
     else
         echo "unknown IPC planner name: $CONFIG"
         exit 2
