@@ -1,7 +1,3 @@
-# -*- coding: latin-1 -*-
-
-from __future__ import with_statement
-
 import invariant_finder
 import pddl
 import timers

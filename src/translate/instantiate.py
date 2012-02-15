@@ -1,7 +1,5 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
 
-from __future__ import with_statement
 from collections import defaultdict
 
 import build_model
