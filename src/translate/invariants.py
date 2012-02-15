@@ -27,7 +27,7 @@ def instantiate_factored_mapping(pairs):
                      for (preimg, img) in pairs]
     return tools.cartesian_product(part_mappings)
 
-                
+
 def find_unique_variables(action, invariant):
     # find unique names for invariant variables
     params = set([p.name for p in action.parameters])
@@ -54,7 +54,7 @@ def get_literals(condition):
 
 def ensure_conjunction_sat(system, *parts):
     """Modifies the constraint system such that it is only solvable if the
-       conjunction of all parts is satisfiable. 
+       conjunction of all parts is satisfiable.
 
        Each part must be an iterator, generator, or an iterable over
        literals."""
@@ -128,8 +128,8 @@ class InvariantPart:
         return len(self.order)
 
     def get_assignment(self, parameters, literal):
-        equalities = [(arg, literal.args[argpos]) 
-                      for arg, argpos in zip(parameters, self.order)] 
+        equalities = [(arg, literal.args[argpos])
+                      for arg, argpos in zip(parameters, self.order)]
         return constraints.Assignment(equalities)
 
     def get_parameters(self, literal):
@@ -191,13 +191,13 @@ class Invariant:
         self.predicates = set([part.predicate for part in parts])
         self.predicate_to_part = dict([(part.predicate, part) for part in parts])
         assert len(self.parts) == len(self.predicates)
-    
+
     def __eq__(self, other):
         return self.parts == other.parts
-    
+
     def __ne__(self, other):
         return self.parts != other.parts
-    
+
     def __hash__(self):
         return hash(self.parts)
 
@@ -233,14 +233,14 @@ class Invariant:
         return True
 
     def operator_too_heavy(self, h_action):
-        add_effects = [eff for eff in h_action.effects 
+        add_effects = [eff for eff in h_action.effects
                        if not eff.literal.negated and
                           self.predicate_to_part.get(eff.literal.predicate)]
         inv_vars = find_unique_variables(h_action, self)
-      
+
         if len(add_effects) <= 1:
             return False
-            
+
         for eff1, eff2 in itertools.combinations(add_effects, 2):
             system = constraints.ConstraintSystem()
             ensure_inequality(system, eff1.literal, eff2.literal)
@@ -254,10 +254,10 @@ class Invariant:
             if system.is_solvable():
                 return True
         return False
-            
+
     def operator_unbalanced(self, action, enqueue_func):
         inv_vars = find_unique_variables(action, self)
-        relevant_effs = [eff for eff in action.effects 
+        relevant_effs = [eff for eff in action.effects
                          if self.predicate_to_part.get(eff.literal.predicate)]
         add_effects = [eff for eff in relevant_effs
                        if not eff.literal.negated]
@@ -271,7 +271,7 @@ class Invariant:
 
     def minimal_covering_renamings(self, action, add_effect, inv_vars):
         """computes the minimal renamings of the action parameters such
-           that the add effect is covered by the action. 
+           that the add effect is covered by the action.
            Each renaming is an constraint system"""
 
         # add_effect must be covered
@@ -292,13 +292,13 @@ class Invariant:
                         system.add_negative_clause(negative_clause)
             minimal_renamings.append(system)
         return minimal_renamings
-        
-    def add_effect_unbalanced(self, action, add_effect, del_effects, 
+
+    def add_effect_unbalanced(self, action, add_effect, del_effects,
                               inv_vars, enqueue_func):
 
         minimal_renamings = self.minimal_covering_renamings(action, add_effect,
                                                             inv_vars)
-       
+
         lhs_by_pred = defaultdict(list)
         for lit in itertools.chain(get_literals(action.precondition),
                                    get_literals(add_effect.condition),
@@ -310,7 +310,7 @@ class Invariant:
                 inv_vars, lhs_by_pred, minimal_renamings)
             if not minimal_renamings:
                 return False
-        
+
         # Otherwise, the balance check fails => Generate new candidates.
         self.refine_candidate(add_effect, action, enqueue_func)
         return True
@@ -321,7 +321,7 @@ class Invariant:
         part = self.predicate_to_part[add_effect.literal.predicate]
         for del_eff in [eff for eff in action.effects if eff.literal.negated]:
             if del_eff.literal.predicate not in self.predicate_to_part:
-                for match in part.possible_matches(add_effect.literal, 
+                for match in part.possible_matches(add_effect.literal,
                                                    del_eff.literal):
                     enqueue_func(Invariant(self.parts.union((match,))))
 
@@ -332,7 +332,7 @@ class Invariant:
         system = constraints.ConstraintSystem()
         ensure_inequality(system, add_effect.literal, del_effect.literal)
         ensure_cover(system, del_effect.literal, self, inv_vars)
-       
+
         still_unbalanced = []
         for renaming in unbalanced_renamings:
             new_sys = system.combine(renaming)
