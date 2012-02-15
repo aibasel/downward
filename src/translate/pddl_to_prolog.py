@@ -1,7 +1,4 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
-
-from __future__ import with_statement
 
 import itertools
 
