@@ -9,7 +9,6 @@ import functions
 import f_expression
 
 class Task(object):
-    FUNCTION_SYMBOLS = dict()
     def __init__(self, domain_name, task_name, requirements,
                  types, objects, predicates, functions, init, goal, actions, axioms, use_metric):
         self.domain_name = domain_name
@@ -117,7 +116,7 @@ def parse_domain(domain_pddl):
         if field in seen_fields:
             raise SystemExit("Error in domain specification\n" +
                              "Reason: two '%s' specifications." % field)
-        if (seen_fields and 
+        if (seen_fields and
             correct_order.index(seen_fields[-1]) > correct_order.index(field)):
             msg = "\nWarning: %s specification not allowed here (cf. PDDL BNF)" % field
             print >> sys.stderr, msg
@@ -130,16 +129,14 @@ def parse_domain(domain_pddl):
         elif field == ":constants":
             constants = pddl_types.parse_typed_list(opt[1:])
         elif field == ":predicates":
-            the_predicates = [predicates.Predicate.parse(entry) 
+            the_predicates = [predicates.Predicate.parse(entry)
                               for entry in opt[1:]]
             the_predicates += [predicates.Predicate("=",
                                  [pddl_types.TypedObject("?x", "object"),
                                   pddl_types.TypedObject("?y", "object")])]
         elif field == ":functions":
-            the_functions = pddl_types.parse_typed_list(opt[1:],
-                    constructor=functions.Function.parse_typed, functions=True)
-            for function in the_functions:
-                Task.FUNCTION_SYMBOLS[function.name] = function.type
+            the_functions = [functions.Function.parse(entry)
+                             for entry in opt[1:]]
     pddl_types.set_supertypes(the_types)
     # for type in the_types:
     #   print repr(type), type.supertype_names
@@ -148,7 +145,7 @@ def parse_domain(domain_pddl):
     yield constants
     yield the_predicates
     yield the_functions
-    
+
     entries = [first_action] + [entry for entry in iterator]
     the_axioms = []
     the_actions = []

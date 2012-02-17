@@ -1,5 +1,4 @@
 import pddl_types
-import tasks # for Task.FUNCTION_SYMBOLS, needed in parse_term()
 
 def parse_condition(alist):
     condition = parse_condition_aux(alist, False)
@@ -321,58 +320,3 @@ class NegatedAtom(Literal):
     def negate(self):
         return Atom(self.predicate, self.args)
     positive = negate
-
-
-# TODO: move the following functions somewhere else?
-#
-# Note: these classes (Term, FunctionTerm, Variable, ObjectTerm)
-# are only used when parsing and instantiating functional expressions
-# (see f_expression.py). Literals and Atoms as above still use strings
-# as their arguments, where a string starting with "?" is a variable,
-# otherwise it is an object. Since we only use functional expressions
-# for action costs in the limited sense of IPC-2008, this means we
-# can leave the rest of the translator implementation unchanged.
-# Action cost functional expressions do not need to be included in
-# reachability analysis and invariant synthesis.
-
-def parse_term(term):
-    if isinstance(term, list): # when can this happen?
-        return FunctionTerm(term[0],[parse_term(t) for t in term[1:]])
-    elif term.startswith("?"):
-        return Variable(term)
-    elif term in tasks.Task.FUNCTION_SYMBOLS:
-        return FunctionTerm(term,[])
-    else:
-        return ObjectTerm(term)
-
-class Term(object):
-    def __eq__(self, other):
-        return (self.__class__ == other.__class__ and self.name == other.name)
-    def dump(self, indent="  "):
-        print "%s%s %s" % (indent, self._dump(), self.name)
-        for arg in self.args:
-            arg.dump(indent + "  ")
-    def _dump(self):
-        return self.__class__.__name__
-
-class FunctionTerm(Term):
-    def __init__(self, name, args=[]):
-        self.name = name
-        self.args = args
-    def __eq__(self, other):
-        return (self.__class__ == other.__class__ and self.name == other.name
-                and self.args == other.args)
-
-class Variable(Term):
-    args = []
-    def __init__(self, name):
-        self.name = name
-    def __str__(self):
-        return self.name
-
-class ObjectTerm(Term):
-    args = []
-    def __init__(self, name):
-        self.name = name
-    def __str__(self):
-        return self.name
