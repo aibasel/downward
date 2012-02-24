@@ -182,4 +182,6 @@ elif [[ "$1" == "--portfolio" ]]; then
 else
     "$PLANNER" "$@" < $TEMPFILE
 fi
+EXITCODE=$?
 rm -f $TEMPFILE
+exit $EXITCODE
