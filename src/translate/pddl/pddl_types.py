@@ -70,7 +70,9 @@ def parse_typed_list(alist, only_variables=False, constructor=TypedObject,
             _type = alist[separator_position + 1]
             alist = alist[separator_position + 2:]
         for item in items:
-            assert not only_variables or item.startswith("?")
+            assert not only_variables or item.startswith("?"), \
+                   "Expected item to be a variable: %s in (%s)" % (
+                item, " ".join(items))
             entry = constructor(item, _type)
             result.append(entry)
     return result
