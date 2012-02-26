@@ -56,7 +56,9 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
                 sort(new_pattern.begin(), new_pattern.end());
                 candidate_patterns.push_back(new_pattern);
             } else {
-                cout << "ignoring new pattern as candidate because it is too large" << endl;
+                // [commented out the message because it might be too verbose]
+                // cout << "ignoring new pattern as candidate because it is too large" << endl;
+                num_rejected += 1;
             }
         }
     }
@@ -150,7 +152,11 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     vector<vector<int> > &new_candidates = initial_candidate_patterns;
     // all candidate patterns are converted into pdbs once and stored
     vector<PDBHeuristic *> candidate_pdbs;
+    int num_iterations = 0;
+    size_t max_pdb_size = 0;
+    num_rejected = 0;
     while (true) {
+        num_iterations += 1;
         cout << "current collection size is " << current_heuristic->get_size() << endl;
         current_heuristic->evaluate(*g_initial_state);
         cout << "current initial h value: ";
@@ -172,6 +178,8 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                 opts.set<int>("cost_type", cost_type);
                 opts.set<vector<int> >("pattern", new_candidates[i]);
                 candidate_pdbs.push_back(new PDBHeuristic(opts, false));
+                max_pdb_size = max(max_pdb_size,
+                                   candidate_pdbs.back()->get_size());
                 generated_patterns.insert(new_candidates[i]);
             }
         }
@@ -214,8 +222,17 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                      << " - improvement: " << count << endl;
             }
         }
-        if (improvement < min_improvement) // end hill climbing algorithm
+        if (improvement < min_improvement) { // end hill climbing algorithm
+            cout << "iPDB: iterations = " << num_iterations << endl;
+            cout << "iPDB: num_patterns = "
+                 << current_heuristic->get_pattern_databases().size() << endl;
+            cout << "iPDB: size = " << current_heuristic->get_size() << endl;
+            cout << "iPDB: improvement = " << improvement << endl;
+            cout << "iPDB: generated = " << generated_patterns.size() << endl;
+            cout << "iPDB: rejected = " << num_rejected << endl;
+            cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
             break;
+        }
 
         // add the best pattern to the CanonicalPDBsHeuristic
         const vector<int> &best_pattern = candidate_pdbs[best_pdb_index]->get_pattern();
