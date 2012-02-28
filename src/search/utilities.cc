@@ -12,10 +12,12 @@ using namespace std;
 #include <mach/mach.h>
 #endif
 
+#ifndef __CYGWIN32__
 #ifdef __APPLE__
 static void exit_handler();
 #else
 static void exit_handler(int exit_code, void *hint);
+#endif
 #endif
 
 static void signal_handler(int signal_number);
@@ -25,6 +27,8 @@ void register_event_handlers() {
     // print the peak memory usage.
 #ifdef __APPLE__
     atexit(exit_handler);
+#elif defined(__CYGWIN32__)
+    // nothing
 #else
     on_exit(exit_handler, 0);
 #endif
@@ -34,13 +38,15 @@ void register_event_handlers() {
     signal(SIGINT, signal_handler);
 }
 
+#ifndef __CYGWIN32__
 #ifdef __APPLE__
 void exit_handler() {
 #else
 void exit_handler(int, void *) {
 #endif
-    print_peak_memory();
-}
+      print_peak_memory();
+  }
+#endif
 
 void signal_handler(int signal_number) {
     // See glibc manual: "Handlers That Terminate the Process"

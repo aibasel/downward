@@ -8,6 +8,10 @@
 #include <mach/mach_time.h>
 #endif
 
+#ifdef __CYGWIN32__
+#define CLOCK_PROCESS_CPUTIME_ID (clockid_t)2
+#endif
+
 using namespace std;
 
 #ifdef __APPLE__
