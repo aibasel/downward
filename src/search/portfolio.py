@@ -28,6 +28,15 @@ def safe_unlink(filename):
     except EnvironmentError:
         pass
 
+def set_limit(kind, amount):
+    try:
+        resource.setrlimit(kind, (amount, amount))
+    except (OSError, ValueError), err:
+        # This can happen if the limit has already been set externally.
+        sys.stderr.write("Limit for %s could not be set to %s (%s). "
+                         "Previous limit: %s\n" %
+                         (kind, amount, err, resource.getrlimit(kind)))
+
 def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     g_bound = "infinity"
     plan_no = 0
@@ -69,12 +78,10 @@ def run_search(planner, args, plan_file, timeout=None, memory=None):
         os.close(0)
         os.open("output", os.O_RDONLY)
         if timeout:
-            resource.setrlimit(resource.RLIMIT_CPU, (
-                    int(timeout), int(timeout)))
+            set_limit(resource.RLIMIT_CPU, int(timeout))
         if memory:
             # Memory in Bytes
-            mem_bytes = int(memory * 1024 * 1024)
-            resource.setrlimit(resource.RLIMIT_AS, (mem_bytes, mem_bytes))
+            set_limit(resource.RLIMIT_AS, int(memory * 1024 * 1024))
         os.execl(planner, *complete_args)
     os.wait()
 
@@ -138,7 +145,7 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                                           heuristic_cost_type, plan_file)
             run_timeout = determine_timeout(remaining_time_at_start,
                                             configs, pos)
-            run_search(planner, args, curr_plan_file, run_timeout)
+            run_search(planner, args, curr_plan_file, run_timeout, memory)
 
             if os.path.exists(curr_plan_file):
                 # found a plan in last run
@@ -153,7 +160,8 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                                                 heuristic_cost_type, plan_file)
                     run_timeout = determine_timeout(remaining_time_at_start,
                                                     configs, pos)
-                    run_search(planner, args, curr_plan_file, run_timeout)
+                    run_search(planner, args, curr_plan_file, run_timeout,
+                               memory)
                 if final_config_builder:
                     # abort scheduled portfolio and start final config
                     args = list(configs[pos][1])
@@ -166,7 +174,7 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
     # run final config without time limit
     final_config = list(final_config)
     curr_plan_file = adapt_search(final_config, search_cost_type,
-                 heuristic_cost_type, plan_file)
+                                  heuristic_cost_type, plan_file)
     run_search(planner, final_config, curr_plan_file)
 
 def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
@@ -174,7 +182,7 @@ def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
         run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
         # Do not add timeout for last config.
         timeout = run_timeout if pos < len(configs) - 1 else None
-        run_search(planner, args, plan_file, timeout=timeout)
+        run_search(planner, args, plan_file, timeout, memory)
 
         if os.path.exists(plan_file):
             print "Plan found!"
