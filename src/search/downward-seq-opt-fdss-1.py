@@ -1,7 +1,7 @@
 #! /usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 
-import seq_opt_portfolio
+import portfolio
 
 CONFIGS = [
     (175, ["--search",
@@ -14,5 +14,5 @@ CONFIGS = [
            "astar(lmcut())"]),
      ]
 
-seq_opt_portfolio.run(CONFIGS)
+portfolio.run(CONFIGS, optimal=True)
 
