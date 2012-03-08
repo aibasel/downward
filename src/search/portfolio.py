@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import glob
+import optparse
 import os
 import os.path
 import resource
@@ -8,7 +9,16 @@ import sys
 
 
 DEFAULT_TIMEOUT = 1800
+DEFAULT_MEMORY = None
 
+def parse_args():
+    parser = optparse.OptionParser()
+    parser.add_option("-t", "--timeout", default=DEFAULT_TIMEOUT,
+                      help="Timeout for the complete portfolio in seconds "
+                      "(default: %default)")
+    parser.add_option("-m", "--memory", default=DEFAULT_MEMORY,
+                      help="Memory limit in MB (default: %default)")
+    return parser.parse_args()
 
 def safe_unlink(filename):
     try:
@@ -49,7 +59,7 @@ def adapt_search(args, extra_args, search_cost_type, heuristic_cost_type, plan_f
     print "next plan number: %d" % (plan_no + 1)
     return plan_no
 
-def run_search(planner, complete_args, timeout=None):
+def run_search(planner, complete_args, timeout=None, memory=None):
     print "args: %s" % complete_args
     sys.stdout.flush()
     if not os.fork():
@@ -58,6 +68,10 @@ def run_search(planner, complete_args, timeout=None):
         if timeout:
             resource.setrlimit(resource.RLIMIT_CPU, (
                     int(timeout), int(timeout)))
+        if memory:
+            # Memory in Bytes
+            mem_bytes = int(memory * 1024 * 1024)
+            resource.setrlimit(resource.RLIMIT_AS, (mem_bytes, mem_bytes))
         os.execl(planner, *complete_args)
     os.wait()
 
@@ -73,8 +87,14 @@ def determine_timeout(remaining_time_at_start, configs, pos):
     return run_timeout
 
 def run(configs, optimal=True, final_config=None, final_config_builder=None,
-        timeout=DEFAULT_TIMEOUT):
-    extra_args = sys.argv[1:]
+        timeout=None):
+    options, extra_args = parse_args()
+
+    # Use timeout from portfolio file if it is given there, otherwise parse the
+    # commandline.
+    timeout = timeout or options.timeout
+    memory = options.memory
+
     assert len(extra_args) == 4, extra_args
     assert extra_args[0] in ["unit", "nonunit"], extra_args
     unitcost = extra_args.pop(0)
@@ -99,13 +119,14 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     print "remaining time at start: %s" % remaining_time_at_start
 
     if optimal:
-        run_opt(configs, planner, plan_file, extra_args, remaining_time_at_start)
+        run_opt(configs, planner, plan_file, extra_args,
+                remaining_time_at_start, memory)
     else:
         run_sat(configs, unitcost, planner, plan_file, extra_args, final_config,
-                final_config_builder, remaining_time_at_start)
+                final_config_builder, remaining_time_at_start, memory)
 
 def run_sat(configs, unitcost, planner, plan_file, extra_args, final_config,
-            final_config_builder, remaining_time_at_start):
+            final_config_builder, remaining_time_at_start, memory):
     heuristic_cost_type = 1
     search_cost_type = 1
     changed_cost_types = False
@@ -151,7 +172,8 @@ def run_sat(configs, unitcost, planner, plan_file, extra_args, final_config,
     complete_args = [planner] + final_config + extra_args
     run_search(planner, complete_args)
 
-def run_opt(configs, planner, plan_file, extra_args, remaining_time_at_start):
+def run_opt(configs, planner, plan_file, extra_args, remaining_time_at_start,
+            memory):
     for pos, (relative_time, args) in enumerate(configs):
         run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
         complete_args = [planner] + args + extra_args
