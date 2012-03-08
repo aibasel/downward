@@ -28,7 +28,7 @@ def safe_unlink(filename):
     except EnvironmentError:
         pass
 
-def adapt_search(args, extra_args, search_cost_type, heuristic_cost_type, plan_file):
+def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     g_bound = "infinity"
     plan_no = 0
     try:
@@ -46,9 +46,9 @@ def adapt_search(args, extra_args, search_cost_type, heuristic_cost_type, plan_f
         elif arg == "--search":
             search_config = args[index + 1]
             if search_config.startswith("iterated"):
-                extra_args[1] = plan_file
+                curr_plan_file = plan_file
             else:
-                extra_args[1] = "%s.%d" % (plan_file, plan_no + 1)
+                curr_plan_file = "%s.%d" % (plan_file, plan_no + 1)
             search_config = search_config.replace("BOUND", str(g_bound))
             search_config = search_config.replace("PLANCOUNTER", str(plan_no))
             search_config = search_config.replace("H_COST_TYPE",
@@ -59,9 +59,10 @@ def adapt_search(args, extra_args, search_cost_type, heuristic_cost_type, plan_f
             break
     print "g bound: %s" % g_bound
     print "next plan number: %d" % (plan_no + 1)
-    return plan_no
+    return curr_plan_file
 
-def run_search(planner, complete_args, timeout=None, memory=None):
+def run_search(planner, args, plan_file, timeout=None, memory=None):
+    complete_args = [planner] + args + ["--plan-file", plan_file]
     print "args: %s" % complete_args
     sys.stdout.flush()
     if not os.fork():
@@ -120,13 +121,12 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     print "remaining time at start: %s" % remaining_time_at_start
 
     if optimal:
-        run_opt(configs, planner, plan_file, extra_args,
-                remaining_time_at_start, memory)
+        run_opt(configs, planner, plan_file, remaining_time_at_start, memory)
     else:
-        run_sat(configs, unitcost, planner, plan_file, extra_args, final_config,
+        run_sat(configs, unitcost, planner, plan_file, final_config,
                 final_config_builder, remaining_time_at_start, memory)
 
-def run_sat(configs, unitcost, planner, plan_file, extra_args, final_config,
+def run_sat(configs, unitcost, planner, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
     heuristic_cost_type = 1
     search_cost_type = 1
@@ -134,14 +134,12 @@ def run_sat(configs, unitcost, planner, plan_file, extra_args, final_config,
     while True:
         for pos, (relative_time, args) in enumerate(configs):
             args = list(args)
-            plan_no = adapt_search(args, extra_args, search_cost_type,
-                                   heuristic_cost_type, plan_file)
+            curr_plan_file = adapt_search(args, search_cost_type,
+                                          heuristic_cost_type, plan_file)
             run_timeout = determine_timeout(remaining_time_at_start,
                                             configs, pos)
-            complete_args = [planner] + args + extra_args
-            run_search(planner, complete_args, run_timeout)
+            run_search(planner, args, curr_plan_file, run_timeout)
 
-            curr_plan_file = "%s.%d" % (plan_file, plan_no + 1)
             if os.path.exists(curr_plan_file):
                 # found a plan in last run
                 if not changed_cost_types and unitcost != "unit":
@@ -151,12 +149,11 @@ def run_sat(configs, unitcost, planner, plan_file, extra_args, final_config,
                     heuristic_cost_type = 2
                     # TODO: refactor: thou shalt not copy code!
                     args = list(configs[pos][1])
-                    plan_no = adapt_search(args, extra_args, search_cost_type,
-                                           heuristic_cost_type, plan_file)
+                    curr_plan_file = adapt_search(args, search_cost_type,
+                                                heuristic_cost_type, plan_file)
                     run_timeout = determine_timeout(remaining_time_at_start,
                                                     configs, pos)
-                    complete_args = [planner] + args + extra_args
-                    run_search(planner, complete_args, run_timeout)
+                    run_search(planner, args, curr_plan_file, run_timeout)
                 if final_config_builder:
                     # abort scheduled portfolio and start final config
                     args = list(configs[pos][1])
@@ -168,19 +165,16 @@ def run_sat(configs, unitcost, planner, plan_file, extra_args, final_config,
 
     # run final config without time limit
     final_config = list(final_config)
-    adapt_search(final_config, extra_args, search_cost_type,
+    curr_plan_file = adapt_search(final_config, search_cost_type,
                  heuristic_cost_type, plan_file)
-    complete_args = [planner] + final_config + extra_args
-    run_search(planner, complete_args)
+    run_search(planner, final_config, curr_plan_file)
 
-def run_opt(configs, planner, plan_file, extra_args, remaining_time_at_start,
-            memory):
+def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
     for pos, (relative_time, args) in enumerate(configs):
         run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
-        complete_args = [planner] + args + extra_args
         # Do not add timeout for last config.
         timeout = run_timeout if pos < len(configs) - 1 else None
-        run_search(planner, complete_args, timeout=timeout)
+        run_search(planner, args, plan_file, timeout=timeout)
 
         if os.path.exists(plan_file):
             print "Plan found!"
