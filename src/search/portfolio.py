@@ -100,16 +100,14 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     # Time limits are either positive values in seconds or -1 (unlimited).
     soft_time_limit, hard_time_limit = resource.getrlimit(resource.RLIMIT_CPU)
     print 'External time limit:', hard_time_limit
-    if hard_time_limit != -1 and timeout and not timeout == hard_time_limit:
+    if hard_time_limit >= 0 and timeout and not timeout == hard_time_limit:
         sys.stderr.write("The externally set timeout (%d) differs from the one "
                          "in the portfolio file (%d). Is this expected?\n" %
                          (hard_time_limit, timeout))
-    # Limit the time to the minimum of the given timeouts. If none is set,
-    # set the default timeout.
-    if hard_time_limit == -1:
-        hard_time_limit = sys.maxint
-    timeout = min(hard_time_limit, (timeout or sys.maxint))
-    if timeout == sys.maxint:
+    # Prefer limits in the order: externally set, from portfolio file, default.
+    if hard_time_limit >= 0:
+        timeout = hard_time_limit
+    elif not timeout:
         sys.stderr.write("No timeout has been set for the portfolio so we take "
                          "the default of %ds.\n" % DEFAULT_TIMEOUT)
         timeout = DEFAULT_TIMEOUT
