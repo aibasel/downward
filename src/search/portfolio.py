@@ -9,7 +9,8 @@ import sys
 
 
 DEFAULT_TIMEOUT = 1800
-BYTES_FOR_PYTHON = 32 * 1024 * 1024
+# Measurements show that this process uses about 8.5 MB of RSS memory.
+BYTES_FOR_PYTHON = 16 * 1024 * 1024
 
 def parse_args():
     parser = optparse.OptionParser()
