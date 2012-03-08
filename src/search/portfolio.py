@@ -18,6 +18,8 @@ def parse_args():
                       "(default: %default)")
     parser.add_option("-m", "--memory", default=DEFAULT_MEMORY,
                       help="Memory limit in MB (default: %default)")
+    parser.add_option("--plan-file", default="sas_plan",
+                      help="Filename for the found plans (default: %default)")
     return parser.parse_args()
 
 def safe_unlink(filename):
@@ -94,14 +96,13 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     # commandline.
     timeout = timeout or options.timeout
     memory = options.memory
+    plan_file = options.plan_file
 
-    assert len(extra_args) == 4, extra_args
+    assert len(extra_args) == 2, extra_args
     assert extra_args[0] in ["unit", "nonunit"], extra_args
     unitcost = extra_args.pop(0)
     assert extra_args[0][-1] in ["1", "2", "4"], extra_args
     planner = extra_args.pop(0)
-    assert extra_args[0] == "--plan-file", extra_args
-    plan_file = extra_args[1]
 
     safe_unlink(plan_file)
     for filename in glob.glob("%s.*" % plan_file):
