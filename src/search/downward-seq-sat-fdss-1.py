@@ -1,7 +1,7 @@
 #! /usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 
-import seq_sat_portfolio
+import portfolio
 
 # NOTE: when using iterated search included, we must include the option
 #       "plan_counter=PLANCOUNTER"
@@ -16,7 +16,7 @@ CONFIGS = [
           "--search",
           "lazy_greedy(h,preferred=h,cost_type=S_COST_TYPE,bound=BOUND)"]),
     # alt_lazy_cea_cg
-    (27, ["--heuristic", "hcea=cea(cost_type=H_COST_TYPE)", 
+    (27, ["--heuristic", "hcea=cea(cost_type=H_COST_TYPE)",
          "--heuristic", "hcg=cg(cost_type=H_COST_TYPE)", "--search",
          "lazy_greedy(hcea,hcg,preferred=[hcea,hcg],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # lazy_wa3_ff_1
@@ -34,7 +34,7 @@ CONFIGS = [
     # alt_eager_ff_add
     (90, ["--heuristic", "hff=ff(cost_type=H_COST_TYPE)",
          "--heuristic", "hadd=add(cost_type=H_COST_TYPE)", "--search",
-         "eager_greedy(hff,hadd,preferred=[hff,hadd],cost_type=S_COST_TYPE,bound=BOUND)"]), 
+         "eager_greedy(hff,hadd,preferred=[hff,hadd],cost_type=S_COST_TYPE,bound=BOUND)"]),
     # lazy_greedy_cea_1
     (56, ["--heuristic", "h=cea(cost_type=H_COST_TYPE)",
           "--search",
@@ -76,5 +76,5 @@ FINAL_CONFIG = [
     "--search",
     "iterated(eager(single(sum([g(),weight(h,3)])),preferred=h,cost_type=S_COST_TYPE,bound=BOUND),bound=BOUND,repeat_last=true,plan_counter=PLANCOUNTER)"]
 
-seq_sat_portfolio.run(configs=CONFIGS,
-                      final_config=FINAL_CONFIG, timeout=1800) # TODO: set timeout to 1800
+portfolio.run(configs=CONFIGS, optimal=False,
+              final_config=FINAL_CONFIG, timeout=1800) # TODO: set timeout to 1800
