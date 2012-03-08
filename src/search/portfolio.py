@@ -10,14 +10,13 @@ import sys
 
 DEFAULT_TIMEOUT = 1800
 DEFAULT_MEMORY = None
+BYTES_FOR_PYTHON = 32 * 1024 * 1024
 
 def parse_args():
     parser = optparse.OptionParser()
     parser.add_option("-t", "--timeout", default=None,
                       help="Timeout for the complete portfolio in seconds "
                       "(default: %d)" % DEFAULT_TIMEOUT)
-    parser.add_option("-m", "--memory", default=DEFAULT_MEMORY,
-                      help="Memory limit in MB (default: %default)")
     parser.add_option("--plan-file", default="sas_plan",
                       help="Filename for the found plans (default: %default)")
     return parser.parse_args()
@@ -81,7 +80,7 @@ def run_search(planner, args, plan_file, timeout=None, memory=None):
             set_limit(resource.RLIMIT_CPU, int(timeout))
         if memory:
             # Memory in Bytes
-            set_limit(resource.RLIMIT_AS, int(memory * 1024 * 1024))
+            set_limit(resource.RLIMIT_AS, int(memory))
         os.execl(planner, *complete_args)
     os.wait()
 
@@ -105,8 +104,16 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
                          "in the portfolio file. Is this expected?\n")
 
     timeout = options.timeout or timeout or DEFAULT_TIMEOUT
-    memory = options.memory
     plan_file = options.plan_file
+
+    # Memory limits are either positive values in Bytes or -1 (unlimited).
+    soft_mem_limit, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
+    print 'External memory limit:', hard_mem_limit
+    memory = hard_mem_limit - BYTES_FOR_PYTHON
+    # Do not limit memory if the previous limit was very low or unlimited.
+    if memory < 0:
+        memory = None
+    print 'Internal memory limit:', memory
 
     assert len(extra_args) == 2, extra_args
     assert extra_args[0] in ["unit", "nonunit"], extra_args
