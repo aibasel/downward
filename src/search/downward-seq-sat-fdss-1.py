@@ -76,5 +76,4 @@ FINAL_CONFIG = [
     "--search",
     "iterated(eager(single(sum([g(),weight(h,3)])),preferred=h,cost_type=S_COST_TYPE,bound=BOUND),bound=BOUND,repeat_last=true,plan_counter=PLANCOUNTER)"]
 
-portfolio.run(configs=CONFIGS, optimal=False,
-              final_config=FINAL_CONFIG, timeout=1800) # TODO: set timeout to 1800
+portfolio.run(configs=CONFIGS, optimal=False, final_config=FINAL_CONFIG)
