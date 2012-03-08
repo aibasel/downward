@@ -13,9 +13,9 @@ DEFAULT_MEMORY = None
 
 def parse_args():
     parser = optparse.OptionParser()
-    parser.add_option("-t", "--timeout", default=DEFAULT_TIMEOUT,
+    parser.add_option("-t", "--timeout", default=None,
                       help="Timeout for the complete portfolio in seconds "
-                      "(default: %default)")
+                      "(default: %d)" % DEFAULT_TIMEOUT)
     parser.add_option("-m", "--memory", default=DEFAULT_MEMORY,
                       help="Memory limit in MB (default: %default)")
     parser.add_option("--plan-file", default="sas_plan",
@@ -100,9 +100,7 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
         timeout=None):
     options, extra_args = parse_args()
 
-    # Use timeout from portfolio file if it is given there, otherwise parse the
-    # commandline.
-    timeout = timeout or options.timeout
+    timeout = options.timeout or timeout or DEFAULT_TIMEOUT
     memory = options.memory
     plan_file = options.plan_file
 
