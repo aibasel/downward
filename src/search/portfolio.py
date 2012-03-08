@@ -110,6 +110,8 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     # set the default timeout.
     timeout = min(hard_time_limit, timeout)
     if timeout == sys.maxint:
+        sys.stderr.write("No timeout has been set for the portfolio so we take "
+                         "the default of %ds.\n" % DEFAULT_TIMEOUT)
         timeout = DEFAULT_TIMEOUT
     print 'Internal time limit:', timeout
 
