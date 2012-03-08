@@ -100,6 +100,10 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
         timeout=None):
     options, extra_args = parse_args()
 
+    if options.timeout and timeout and not options.timeout == timeout:
+        sys.stderr.write("The timeout on the commandline differs from the one "
+                         "in the portfolio file. Is this expected?\n")
+
     timeout = options.timeout or timeout or DEFAULT_TIMEOUT
     memory = options.memory
     plan_file = options.plan_file
