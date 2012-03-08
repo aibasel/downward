@@ -9,14 +9,10 @@ import sys
 
 
 DEFAULT_TIMEOUT = 1800
-DEFAULT_MEMORY = None
 BYTES_FOR_PYTHON = 32 * 1024 * 1024
 
 def parse_args():
     parser = optparse.OptionParser()
-    parser.add_option("-t", "--timeout", default=None,
-                      help="Timeout for the complete portfolio in seconds "
-                      "(default: %d)" % DEFAULT_TIMEOUT)
     parser.add_option("--plan-file", default="sas_plan",
                       help="Filename for the found plans (default: %default)")
     return parser.parse_args()
@@ -98,13 +94,24 @@ def determine_timeout(remaining_time_at_start, configs, pos):
 def run(configs, optimal=True, final_config=None, final_config_builder=None,
         timeout=None):
     options, extra_args = parse_args()
-
-    if options.timeout and timeout and not options.timeout == timeout:
-        sys.stderr.write("The timeout on the commandline differs from the one "
-                         "in the portfolio file. Is this expected?\n")
-
-    timeout = options.timeout or timeout or DEFAULT_TIMEOUT
     plan_file = options.plan_file
+
+    # Time limits are either positive values in seconds or -1 (unlimited).
+    soft_time_limit, hard_time_limit = resource.getrlimit(resource.RLIMIT_CPU)
+    print 'External time limit:', hard_time_limit
+    if hard_time_limit == -1:
+        hard_time_limit = sys.maxint
+    timeout = timeout or sys.maxint
+    if not timeout == hard_time_limit:
+        sys.stderr.write("The externally set timeout (%d) differs from the one "
+                         "in the portfolio file (%d). Is this expected?\n" %
+                         (hard_time_limit, timeout))
+    # Limit the time to the minimum of the given timeouts. If none is set,
+    # set the default timeout.
+    timeout = min(hard_time_limit, timeout)
+    if timeout == sys.maxint:
+        timeout = DEFAULT_TIMEOUT
+    print 'Internal time limit:', timeout
 
     # Memory limits are either positive values in Bytes or -1 (unlimited).
     soft_mem_limit, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
