@@ -100,14 +100,15 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     # Time limits are either positive values in seconds or -1 (unlimited).
     soft_time_limit, hard_time_limit = resource.getrlimit(resource.RLIMIT_CPU)
     print 'External time limit:', hard_time_limit
-    if hard_time_limit >= 0 and timeout and not timeout == hard_time_limit:
+    if (hard_time_limit >= 0 and timeout is not None and
+        timeout != hard_time_limit):
         sys.stderr.write("The externally set timeout (%d) differs from the one "
                          "in the portfolio file (%d). Is this expected?\n" %
                          (hard_time_limit, timeout))
     # Prefer limits in the order: externally set, from portfolio file, default.
     if hard_time_limit >= 0:
         timeout = hard_time_limit
-    elif not timeout:
+    elif timeout is None:
         sys.stderr.write("No timeout has been set for the portfolio so we take "
                          "the default of %ds.\n" % DEFAULT_TIMEOUT)
         timeout = DEFAULT_TIMEOUT
@@ -195,9 +196,11 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
 
 def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
     for pos, (relative_time, args) in enumerate(configs):
-        run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
-        # Do not add timeout for last config.
-        timeout = run_timeout if pos < len(configs) - 1 else None
+        if pos == len(configs) - 1:
+            # Do not add timeout for last config.
+            timeout = None
+        else:
+            timeout = determine_timeout(remaining_time_at_start, configs, pos)
         run_search(planner, args, plan_file, timeout, memory)
 
         if os.path.exists(plan_file):
