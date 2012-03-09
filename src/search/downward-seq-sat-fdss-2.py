@@ -1,7 +1,7 @@
 #! /usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 
-import seq_sat_portfolio
+import portfolio
 
 # NOTE: when using iterated search included, we must include the option
 #       "plan_counter=PLANCOUNTER"
@@ -62,5 +62,5 @@ def build_final_config(successful_args):
             break
     return new_args
 
-seq_sat_portfolio.run(configs=CONFIGS,
-                      final_config_builder=build_final_config)
+portfolio.run(configs=CONFIGS, optimal=False,
+              final_config_builder=build_final_config)
