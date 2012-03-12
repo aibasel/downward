@@ -51,6 +51,9 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
         elif arg == "--search":
             search_config = args[index + 1]
             if search_config.startswith("iterated"):
+                if not "plan_counter=PLANCOUNTER" in search_config:
+                    raise ValueError("When using iterated search, we must add "
+                                     "the option plan_counter=PLANCOUNTER")
                 curr_plan_file = plan_file
             else:
                 curr_plan_file = "%s.%d" % (plan_file, plan_no + 1)
