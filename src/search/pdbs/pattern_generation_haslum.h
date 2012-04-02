@@ -19,6 +19,8 @@ class PatternGenerationHaslum {
     const OperatorCost cost_type;
     CanonicalPDBsHeuristic *current_heuristic;
 
+    int num_rejected; // for stats only
+
     /* For the given pattern, all possible extensions of the pattern by one relevant variable
        are inserted into candidate_patterns. This may generate duplicated patterns. */
     void generate_candidate_patterns(const std::vector<int> &pattern,
@@ -43,11 +45,11 @@ class PatternGenerationHaslum {
        stopped. This method uses a vector to store PDBs to avoid recomputation of the same PDBs later.
        This is quite a large time gain, but may use too much memory. Also a set is used to store all
        patterns in their "normal form" for duplicate detection.
-       TODO: This mehtod computes all PDBs already for candidate iteration, but for each call of
+       TODO: This method computes all PDBs already for candidate iteration, but for each call of
        add_pattern for the current CanonicalPDBsHeuristic, only the pattern is passed as an argument
        and in CanonicalPDBsHeuristic, the PDB is *again* built. One could possibly avoid this by
        passing the PDB and adapt CanonicalPDBsHeuristic accordingly. */
-    void hill_climbing(int average_operator_costs, std::vector<std::vector<int> > &initial_candidate_patterns);
+    void hill_climbing(double average_operator_costs, std::vector<std::vector<int> > &initial_candidate_patterns);
 
     /* Initializes everything for the hill climbing algorithm. Note that the initial pattern collection
        (consisting of exactly one PDB for each goal variable) may break the maximum collection size limit,

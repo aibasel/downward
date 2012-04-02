@@ -1,7 +1,4 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
-
-from __future__ import with_statement
 
 import itertools
 
@@ -80,6 +77,7 @@ class PrologProgram:
             if rule.rename_duplicate_variables() and not printed_message:
                 print "Duplicate arguments: Adding equality conditions."
                 printed_message = True
+
     def convert_trivial_rules(self):
         """Convert rules with an empty condition into facts.
         This must be called after bounding rule effects, so that rules with an
@@ -123,7 +121,7 @@ class Rule:
             if var_name[0] == "?":
                 if var_name in used_variables:
                     new_var_name = "%s@%d" % (var_name, len(new_conditions))
-                    atom = atom.rename_variables({var_name: new_var_name})
+                    atom = atom.replace_argument(i, new_var_name)
                     new_conditions.append(pddl.Atom("=", [var_name, new_var_name]))
                 else:
                     used_variables.add(var_name)

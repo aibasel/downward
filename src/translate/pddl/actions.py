@@ -1,5 +1,3 @@
-# -*- coding: latin-1 -*-
-
 import copy
 
 import conditions
@@ -7,9 +5,17 @@ import effects
 import pddl_types
 
 class Action(object):
-    def __init__(self, name, parameters, precondition, effects, cost):
+    def __init__(self, name, parameters, num_external_parameters,
+                 precondition, effects, cost):
+        assert 0 <= num_external_parameters <= len(parameters)
         self.name = name
         self.parameters = parameters
+        # num_external_parameters denotes how many of the parameters
+        # are "external", i.e., should be part of the grounded action
+        # name. Usually all parameters are external, but "invisible"
+        # parameters can be created when compiling away existential
+        # quantifiers in conditions.
+        self.num_external_parameters = num_external_parameters
         self.precondition = precondition
         self.effects = effects
         self.cost = cost
@@ -44,7 +50,8 @@ class Action(object):
             raise SystemExit("Error in Action %s\nReason: %s." % (name, e))
         for rest in iterator:
             assert False, rest
-        return Action(name, parameters, precondition, eff, cost)
+        return Action(name, parameters, len(parameters),
+                      precondition, eff, cost)
     parse = staticmethod(parse)
     def dump(self):
         print "%s(%s)" % (self.name, ", ".join(map(str, self.parameters)))
@@ -64,7 +71,6 @@ class Action(object):
         for effect in self.effects:
             effect.uniquify_variables(self.type_map)
     def unary_actions(self):
-        # TODO: An neue Effect-Repräsentation anpassen.
         result = []
         for i, effect in enumerate(self.effects):
             unary_action = copy.copy(self)
@@ -86,7 +92,7 @@ class Action(object):
             relaxed_eff = eff.relaxed()
             if relaxed_eff:
                 new_effects.append(relaxed_eff)
-        return Action(self.name, self.parameters,
+        return Action(self.name, self.parameters, self.num_external_parameters,
                       self.precondition.relaxed().simplified(),
                       new_effects)
     def untyped(self):
@@ -112,7 +118,8 @@ class Action(object):
         Precondition and effect conditions must be normalized for this to work.
         Returns None if var_mapping does not correspond to a valid instantiation
         (because it has impossible preconditions or an empty effect list.)"""
-        arg_list = [var_mapping[par.name] for par in self.parameters]
+        arg_list = [var_mapping[par.name]
+                    for par in self.parameters[:self.num_external_parameters]]
         name = "(%s %s)" % (self.name, " ".join(arg_list))
 
         precondition = []

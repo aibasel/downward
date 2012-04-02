@@ -255,8 +255,7 @@ def pddl_to_sas(task):
                               task.use_min_cost_metric)
 
     try:
-        simplify.filter_unreachable_propositions(
-            sas_task, [], translation_key)
+        simplify.filter_unreachable_propositions(sas_task)
     except simplify.Impossible:
         return unsolvable_sas_task("Simplified to trivially false goal")
 

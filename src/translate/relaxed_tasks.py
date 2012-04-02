@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.5
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import instantiate
@@ -147,7 +147,7 @@ def collect_goal_facts(goal, symtable):
 
 
 def build_relaxed_task(task):
-    relaxed_reachable, fluent_atoms, actions, axioms = instantiate.explore(task)
+    relaxed_reachable, fluent_atoms, actions, axioms, _ = instantiate.explore(task)
     if not relaxed_reachable:
         raise SystemExit("goal is not relaxed reachable")
     if axioms:
