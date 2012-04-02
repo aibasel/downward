@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import with_statement
-
 from collections import defaultdict
 from copy import deepcopy
 
@@ -31,6 +29,8 @@ DETECT_UNREACHABLE = True
 ## Setting the following variable to True can cause a severe
 ## performance penalty due to weaker relevance analysis (see issue7).
 ADD_IMPLIED_PRECONDITIONS = False
+
+DEBUG = False
 
 removed_implied_effect_counter = 0
 simplified_effect_condition_counter = 0
@@ -212,8 +212,12 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
             if other_val != none_of_those:
                 # Look for matching add effect; ignore this del effect if found.
                 for cond in eff_condition:
-                    assert cond in eff_conditions or [] in eff_conditions, \
-                                  "Add effect with uncertain del effect partner?"
+                    if cond not in eff_conditions and [] not in eff_conditions:
+                        print "Condition:"
+                        print cond
+                        print "Operator:"
+                        operator.dump()
+                        assert False, "Add effect with uncertain del effect partner?"
                 if other_val == val:
                     if ALLOW_CONFLICTING_EFFECTS:
                         # Conflicting ADD and DEL effect. This is *only* allowed if
@@ -244,6 +248,8 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
                             # convoluted code, so we just warn and reject the operator.
                             print "Warning: %s rejected. Cross your fingers." % (
                                 operator.name)
+                            if DEBUG:
+                                operator.dump()
                             return None
                             assert False
 
@@ -380,7 +386,9 @@ def translate_task(strips_to_sas, ranges, translation_key,
     for fact in init:
         pairs = strips_to_sas.get(fact, [])  # empty for static init facts
         for var, val in pairs:
-            assert init_values[var] == ranges[var] - 1, "Inconsistent init facts!"
+            curr_val = init_values[var]
+            if curr_val != ranges[var] - 1 and curr_val != val:
+                assert False, "Inconsistent init facts! [fact = %s]" % fact
             init_values[var] = val
     init = sas_tasks.SASInit(init_values)
 

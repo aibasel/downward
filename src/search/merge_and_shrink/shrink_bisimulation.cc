@@ -8,8 +8,10 @@
 #include <cassert>
 #include <iostream>
 #include <limits>
+#include <ext/hash_map>
 
 using namespace std;
+using namespace __gnu_cxx;
 
 
 static const int infinity = numeric_limits<int>::max();
@@ -24,32 +26,54 @@ static const int infinity = numeric_limits<int>::max();
    successor). The bisimulation algorithm requires that the vector is
    sorted and uniquified. */
 
-typedef std::vector<std::pair<int, int> > SuccessorSignature;
+typedef vector<pair<int, int> > SuccessorSignature;
 
 /* TODO: The following class should probably be renamed. It encodes
    all we need to know about a state for bisimulation: its h value,
    which equivalence class ("group") it currently belongs to, its
-   signatures (see above), and what the original state is. */
+   signature (see above), and what the original state is. */
 
 struct Signature {
-    int h;
+    int h_and_goal; // -1 for goal states; h value for non-goal states
     int group;
     SuccessorSignature succ_signature;
     int state;
 
-    Signature(int h_, int group_, const SuccessorSignature &succ_signature_,
+    Signature(int h, bool is_goal, int group_,
+              const SuccessorSignature &succ_signature_,
               int state_)
-        : h(h_), group(group_), succ_signature(succ_signature_), state(state_) {
+        : group(group_), succ_signature(succ_signature_), state(state_) {
+        if (is_goal) {
+            assert(h == 0);
+            h_and_goal = -1;
+        } else {
+            h_and_goal = h;
+        }
     }
 
     bool operator<(const Signature &other) const {
-        if (h != other.h)
-            return h < other.h;
+        if (h_and_goal != other.h_and_goal)
+            return h_and_goal < other.h_and_goal;
         if (group != other.group)
             return group < other.group;
         if (succ_signature != other.succ_signature)
             return succ_signature < other.succ_signature;
         return state < other.state;
+    }
+
+    void dump() const {
+        cout << "Signature(h_and_goal = " << h_and_goal
+             << ", group = " << group
+             << ", state = " << state
+             << ", succ_sig = [";
+        for (size_t i = 0; i < succ_signature.size(); ++i) {
+            if (i)
+                cout << ", ";
+            cout << "(" << succ_signature[i].first
+                 << "," << succ_signature[i].second
+                 << ")";
+        }
+        cout << "])" << endl;
     }
 };
 
@@ -64,14 +88,8 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
       greedy(opts.get<bool>("greedy")),
       threshold(opts.get<int>("threshold")),
-      initialize_by_h(opts.get<bool>("initialize_by_h")),
       group_by_h(opts.get<bool>("group_by_h")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
-    if (initialize_by_h != group_by_h) {
-        cerr << "initialize_by_h and group_by_h cannot be set independently "
-             << "at the moment" << endl;
-        exit(2);
-    }
 }
 
 ShrinkBisimulation::~ShrinkBisimulation() {
@@ -84,8 +102,15 @@ string ShrinkBisimulation::name() const {
 void ShrinkBisimulation::dump_strategy_specific_options() const {
     cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
     cout << "Bisimulation threshold: " << threshold << endl;
-    cout << "Initialize by h: " << (initialize_by_h ? "yes" : "no") << endl;
     cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
+    cout << "At limit: ";
+    if (at_limit == RETURN)
+        cout << "return";
+    else if (at_limit == USE_UP)
+        cout << "use up limit";
+    else
+        abort();
+    cout << endl;
 }
 
 bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
@@ -148,74 +173,111 @@ void ShrinkBisimulation::shrink_before_merge(
     shrink(abs1, new_size1);
 }
 
-int ShrinkBisimulation::initialize_bisim(const Abstraction &abs) {
-    bool exists_goal_state = false;
-    bool exists_non_goal_state = false;
-    for (int state = 0; state < abs.size(); state++) {
+int ShrinkBisimulation::initialize_groups(const Abstraction &abs,
+                                          vector<int> &state_to_group) {
+
+    /* Group 0 holds all goal states.
+
+       Each other group holds all states with one particular h value.
+
+       Note that some goal state *must* exist because irrelevant und
+       unreachable states are pruned before we shrink and we never
+       perform the shrinking if that pruning shows that the problem is
+       unsolvable.
+    */
+
+    typedef hash_map<int, int> GroupMap;
+    GroupMap h_to_group;
+    int num_groups = 1; // Group 0 is for goal states.
+    for (int state = 0; state < abs.size(); ++state) {
         int h = abs.get_goal_distance(state);
-        bool is_goal_state = abs.is_goal_state(state);
-        if (h == infinity || abs.get_init_distance(state) == infinity) {
-            state_to_group[state] = -1;
+        assert(h >= 0 && h != infinity);
+        assert(abs.get_init_distance(state) != infinity);
+
+        if (abs.is_goal_state(state)) {
+            assert(h == 0);
+            state_to_group[state] = 0;
         } else {
-            assert(h >= 0 && h <= abs.get_max_h());
-            if (is_goal_state) {
-                state_to_group[state] = 0;
-                exists_goal_state = true;
-            } else {
-                state_to_group[state] = 1;
-                exists_non_goal_state = true;
+            pair<GroupMap::iterator, bool> result = h_to_group.insert(
+                make_pair(h, num_groups));
+            state_to_group[state] = result.first->second;
+            if (result.second) {
+                // We inserted a new element => a new group was started.
+                ++num_groups;
             }
         }
     }
-
-    int num_groups;
-    if (exists_goal_state && exists_non_goal_state)
-        num_groups = 2;
-    else
-        num_groups = 1;
-
-    // Now all goal states are in group 0 and non-goal states are in
-    // 1. Unreachable states are in -1.
-
-    // TODO: Check logic. What if one or both of the groups are empty?
-
-    if (at_limit == SKIP_AND_KEEP_GOING)
-        group_done.resize(abs.size(), false);
-
     return num_groups;
 }
 
-int ShrinkBisimulation::initialize_dfp(const Abstraction &abs) {
-    h_to_h_group.resize(abs.get_max_h() + 1, -1);
-    int num_of_used_h = 0;
-    for (int state = 0; state < abs.size(); state++) {
+void ShrinkBisimulation::compute_signatures(
+    const Abstraction &abs,
+    vector<Signature> &signatures,
+    vector<int> &state_to_group) {
+    assert(signatures.empty());
+
+    // Step 1: Compute bare state signatures (without transition information).
+    signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
+    for (int state = 0; state < abs.size(); ++state) {
         int h = abs.get_goal_distance(state);
-        if (h != infinity && abs.get_init_distance(state) != infinity) {
-            if (h_to_h_group[h] == -1) {
-                h_to_h_group[h] = num_of_used_h;
-                num_of_used_h++;
+        assert(h >= 0 && h <= abs.get_max_h());
+        Signature signature(h, abs.is_goal_state(state),
+                            state_to_group[state], SuccessorSignature(),
+                            state);
+        signatures.push_back(signature);
+    }
+    signatures.push_back(Signature(infinity, false, -1, SuccessorSignature(), -1));
+
+    // Step 2: Add transition information.
+    int num_ops = abs.get_num_ops();
+    for (int op_no = 0; op_no < num_ops; ++op_no) {
+        const vector<AbstractTransition> &transitions =
+            abs.get_transitions_for_op(op_no);
+        int op_cost = abs.get_cost_for_op(op_no);
+        for (size_t i = 0; i < transitions.size(); ++i) {
+            const AbstractTransition &trans = transitions[i];
+            assert(signatures[trans.src + 1].state == trans.src);
+            bool skip_transition = false;
+            if (greedy) {
+                int src_h = abs.get_goal_distance(trans.src);
+                int target_h = abs.get_goal_distance(trans.target);
+                assert(target_h + op_cost >= src_h);
+                skip_transition = (target_h + op_cost != src_h);
+            }
+            if (!skip_transition) {
+                int target_group = state_to_group[trans.target];
+                signatures[trans.src + 1].succ_signature.push_back(
+                    make_pair(op_no, target_group));
             }
         }
     }
-    cout << "number of used h values: " << num_of_used_h << endl;
 
-    for (int state = 0; state < abs.size(); state++) {
-        int h = abs.get_goal_distance(state);
-        if (h == infinity || abs.get_init_distance(state) == infinity) {
-            state_to_group[state] = -1;
-        } else {
-            assert(h >= 0 && h <= abs.get_max_h());
-            int group = h_to_h_group[h];
-            state_to_group[state] = group;
-        }
+    /* Step 3: Canonicalize the representation. The resulting
+       signatures must satisfy the following properties:
+
+       1. Signature::operator< defines a total order with the correct
+          sentinels at the start and end. The signatures vector is
+          sorted according to that order.
+       2. Goal states come before non-goal states, and low-h states come
+          before high-h states.
+       3. States that currently fall into the same group form contiguous
+          subsequences.
+       4. Two signatures compare equal according to Signature::operator<
+          iff we don't want to distinguish their states in the current
+          bisimulation round.
+     */
+
+    for (size_t i = 0; i < signatures.size(); ++i) {
+        SuccessorSignature &succ_sig = signatures[i].succ_signature;
+        ::sort(succ_sig.begin(), succ_sig.end());
+        succ_sig.erase(::unique(succ_sig.begin(), succ_sig.end()),
+                       succ_sig.end());
     }
-    int num_groups = num_of_used_h;
 
-    if (at_limit == SKIP_AND_KEEP_GOING)
-        h_group_done.resize(num_of_used_h, false);
-    else
-        release_memory(h_to_h_group);
-    return num_groups;
+    ::sort(signatures.begin(), signatures.end());
+    /* TODO: Should we sort an index set rather than shuffle the whole
+       signatures around? But since swapping vectors is fast, we
+       probably don't have to worry about that. */
 }
 
 void ShrinkBisimulation::compute_abstraction(
@@ -224,121 +286,49 @@ void ShrinkBisimulation::compute_abstraction(
     EquivalenceRelation &equivalence_relation) {
     int num_states = abs.size();
 
-    state_to_group.clear();
-    group_done.clear();
-    signatures.clear();
-    h_to_h_group.clear();
-    h_group_done.clear();
-
-    state_to_group.resize(num_states);
+    vector<int> state_to_group(num_states);
+    vector<Signature> signatures;
     signatures.reserve(num_states + 2);
 
-    int num_groups;
-    if (initialize_by_h)
-        num_groups = initialize_dfp(abs);
-    else
-        num_groups = initialize_bisim(abs);
+    int num_groups = initialize_groups(abs, state_to_group);
+    // cout << "number of initial groups: " << num_groups << endl;
 
-    // assert(num_groups <= target_size); // TODO: We currently violate this, right?
+    // assert(num_groups <= target_size); // TODO: We currently violate this; see issue250
 
     int max_h = abs.get_max_h();
+    assert(max_h >= 0 && max_h != infinity);
 
-    bool done = false;
-    bool stop_after_iteration = false;
-    while (!done && !stop_after_iteration) {
-        done = true;
-        // Compute state signatures.
-        // Add sentinels to the start and end.
+    bool stable = false;
+    bool stop_requested = false;
+    while (!stable && !stop_requested && num_groups < target_size) {
+        stable = true;
+
         signatures.clear();
-        signatures.push_back(Signature(-1, -1, SuccessorSignature(), -1));
-        for (int state = 0; state < num_states; state++) {
-            int h = abs.get_goal_distance(state);
-            if (h == infinity || abs.get_init_distance(state) == infinity) {
-                h = -1;
-                assert(state_to_group[state] == -1);
-            }
-            Signature signature(h, state_to_group[state], SuccessorSignature(),
-                                state);
-            signatures.push_back(signature);
-        }
-        signatures.push_back(Signature(max_h + 1, -1, SuccessorSignature(), -1));
+        compute_signatures(abs, signatures, state_to_group);
 
-        // Initialize the successor signatures, which represent the
-        // behaviour of each state in so far as bisimulation cares
-        // about it.
-        int num_ops = abs.get_num_ops();
-        for (int op_no = 0; op_no < num_ops; op_no++) {
-            const vector<AbstractTransition> &transitions =
-                abs.get_transitions_for_op(op_no);
-            for (int i = 0; i < transitions.size(); i++) {
-                const AbstractTransition &trans = transitions[i];
-                int src_group = state_to_group[trans.src];
-                int target_group = state_to_group[trans.target];
-                if (src_group != -1 && target_group != -1) {
-                    assert(signatures[trans.src + 1].state == trans.src);
-                    bool skip_transition = false;
-                    if (greedy) {
-                        int src_h = abs.get_goal_distance(trans.src);
-                        int target_h = abs.get_goal_distance(trans.target);
-                        skip_transition = (target_h >= src_h);
-                    }
-                    if (!skip_transition)
-                        signatures[trans.src + 1].succ_signature.push_back(
-                            make_pair(op_no, target_group));
-                }
-            }
-        }
-
-        for (int i = 0; i < signatures.size(); i++) {
-            SuccessorSignature &succ_sig = signatures[i].succ_signature;
-            ::sort(succ_sig.begin(), succ_sig.end());
-            succ_sig.erase(::unique(succ_sig.begin(), succ_sig.end()),
-                           succ_sig.end());
-        }
-
+        // Verify size of signatures and presence of sentinels.
         assert(signatures.size() == num_states + 2);
-        ::sort(signatures.begin(), signatures.end());
-        // TODO: More efficient to sort an index set than to shuffle
-        //       the whole signatures around?
+        assert(signatures[0].h_and_goal == -2);
+        assert(signatures[num_states + 1].h_and_goal == infinity);
 
-        int sig_start = 0;
+        int sig_start = 1; // Skip over initial sentinel.
         while (true) {
-            int h = signatures[sig_start].h;
+            int h_and_goal = signatures[sig_start].h_and_goal;
             int group = signatures[sig_start].group;
-            if (h > max_h) {
+            if (h_and_goal > max_h) {
                 // We have hit the end sentinel.
-                assert(h == max_h + 1);
+                assert(h_and_goal == infinity);
                 assert(sig_start + 1 == signatures.size());
                 break;
             }
-            assert(h >= -1);
-            assert(h <= max_h);
 
-            // Skips all groups that cannot be split further (due to
-            // memory restrictions).
-            if (group_by_h) {
-                if (h == -1 || (at_limit == SKIP_AND_KEEP_GOING &&
-                                h_group_done[h_to_h_group[h]])) {
-                    while (signatures[sig_start].h == h)
-                        sig_start++;
-                    continue;
-                }
-            } else {
-                if (h == -1 || (at_limit == SKIP_AND_KEEP_GOING &&
-                                group_done[group])) {
-                    while (signatures[sig_start].group == group)
-                        sig_start++;
-                    continue;
-                }
-            }
-
-            // Compute the number of blocks after the splitting.
+            // Compute the number of groups needed after splitting.
             int num_old_groups = 0;
             int num_new_groups = 0;
             int sig_end;
-            for (sig_end = sig_start; true; sig_end++) {
+            for (sig_end = sig_start; true; ++sig_end) {
                 if (group_by_h) {
-                    if (signatures[sig_end].h != h)
+                    if (signatures[sig_end].h_and_goal != h_and_goal)
                         break;
                 } else {
                     if (signatures[sig_end].group != group)
@@ -352,68 +342,28 @@ void ShrinkBisimulation::compute_abstraction(
                     assert(prev_sig.group != curr_sig.group);
 
                 if (prev_sig.group != curr_sig.group) {
-                    num_old_groups++;
-                    num_new_groups++;
+                    ++num_old_groups;
+                    ++num_new_groups;
                 } else if (prev_sig.succ_signature != curr_sig.succ_signature) {
-                    num_new_groups++;
+                    ++num_new_groups;
                 }
             }
             assert(sig_end > sig_start);
 
-            if (num_groups - num_old_groups + num_new_groups > target_size) {
-                // Can't split the group (or the set of groups for
-                // this h value) -- would exceed bound on abstract
-                // state number.
-                if (at_limit == SKIP_AND_KEEP_GOING) {
-                    if (group_by_h) {
-                        h_group_done[h_to_h_group[h]] = true;
-                    } else {
-                        group_done[group] = true;
-                    }
-                } else if (at_limit == SKIP_AND_COMPLETE_ITERATION) {
-                    stop_after_iteration = true;
-                } else if (at_limit == RETURN) {
-                    stop_after_iteration = true;
-                    break;
-                } else {
-                    assert(at_limit == USE_UP);
-
-                    stop_after_iteration = true;
-                    // TODO: Get rid of code duplication between this
-                    // and the following code
-
-                    int new_group_no = -1;
-                    for (int i = sig_start; i < sig_end; i++) {
-                        const Signature &prev_sig = signatures[i - 1];
-                        const Signature &curr_sig = signatures[i];
-
-                        if (prev_sig.group != curr_sig.group) {
-                            // Start first group of a block; keep old group no.
-                            new_group_no = curr_sig.group;
-                        } else if (prev_sig.succ_signature
-                                   != curr_sig.succ_signature) {
-                            if (num_groups < target_size) {
-                                // Only start a new group if we're within
-                                // budget!
-                                new_group_no = num_groups++;
-                                assert(num_groups <= target_size);
-                            }
-                        }
-
-                        assert(new_group_no != -1);
-                        state_to_group[curr_sig.state] = new_group_no;
-                    }
-                    assert(num_groups == target_size);
-                    break;
-                }
+            if (at_limit == RETURN &&
+                num_groups - num_old_groups + num_new_groups > target_size) {
+                /* Can't split the group (or the set of groups for
+                   this h value) -- would exceed bound on abstract
+                   state number.
+                */
+                stop_requested = true;
+                break;
             } else if (num_new_groups != num_old_groups) {
-                // Split the group into the new groups, where if two
-                // states are equivalent in any bisimulation, they will
-                // be in the same group.
-                done = false;
+                // Split into new groups.
+                stable = false;
 
                 int new_group_no = -1;
-                for (int i = sig_start; i < sig_end; i++) {
+                for (size_t i = sig_start; i < sig_end; ++i) {
                     const Signature &prev_sig = signatures[i - 1];
                     const Signature &curr_sig = signatures[i];
 
@@ -428,61 +378,57 @@ void ShrinkBisimulation::compute_abstraction(
 
                     assert(new_group_no != -1);
                     state_to_group[curr_sig.state] = new_group_no;
+
+                    if (num_groups == target_size)
+                        break;
                 }
+                if (num_groups == target_size)
+                    break;
             }
             sig_start = sig_end;
         }
     }
 
-    // TODO: As we're releasing these anyway, they should probably
-    // not be instance variables but local variables. We previously
-    // did not release them, but that cost us several hundreds of MB
-    // in peak memory, and hence is probably a bad idea.
-    release_memory(group_done);
+    /* Reduce memory pressure before generating the equivalence
+       relation since this is one of the code parts relevant to peak
+       memory. */
     release_memory(signatures);
-    release_memory(h_to_h_group);
-    release_memory(h_group_done);
 
+    // Generate final result.
     assert(equivalence_relation.empty());
     equivalence_relation.resize(num_groups);
-    for (int state = 0; state < num_states; state++) {
+    for (int state = 0; state < num_states; ++state) {
         int group = state_to_group[state];
         if (group != -1) {
             assert(group >= 0 && group < num_groups);
             equivalence_relation[group].push_front(state);
         }
     }
-
-    release_memory(state_to_group);
 }
 
 ShrinkStrategy *ShrinkBisimulation::create_default() {
     Options opts;
     opts.set("max_states", infinity);
     opts.set("max_states_before_merge", infinity);
-    opts.set("greedy", false);
+    opts.set<bool>("greedy", false);
     opts.set("threshold", 1);
-    opts.set("initialize_by_h", false);
     opts.set("group_by_h", false);
-    opts.set<int>("at_limit", SKIP_AND_KEEP_GOING);
+    opts.set<int>("at_limit", RETURN);
 
     return new ShrinkBisimulation(opts);
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
-    parser.add_option<bool>("greedy");
+    parser.add_option<bool>("greedy", false, "use greedy bisimulation");
     parser.add_option<int>("threshold", -1); // default: same as max_states
-    parser.add_option<bool>("initialize_by_h", true);
     parser.add_option<bool>("group_by_h", false);
 
     vector<string> at_limit;
     at_limit.push_back("RETURN");
     at_limit.push_back("USE_UP");
-    at_limit.push_back("SKIP_AND_COMPLETE_ITERATION");
-    at_limit.push_back("SKIP_AND_KEEP_GOING");
     parser.add_enum_option(
-        "at_limit", at_limit, "SKIP_AND_KEEP_GOING",
+        "at_limit", at_limit, "RETURN",
         "what to do when the size limit is hit");
 
     Options opts = parser.parse();

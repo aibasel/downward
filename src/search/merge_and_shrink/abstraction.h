@@ -16,25 +16,21 @@ class Operator;
 struct AbstractTransition {
     AbstractStateRef src;
     AbstractStateRef target;
-    int cost;
 
-    AbstractTransition(AbstractStateRef src_, AbstractStateRef target_,
-                       int cost_)
-        : src(src_), target(target_), cost(cost_) {
+    AbstractTransition(AbstractStateRef src_, AbstractStateRef target_)
+        : src(src_), target(target_) {
     }
 
     bool operator==(const AbstractTransition &other) const {
-        return src == other.src && target == other.target && cost == other.cost;
+        return src == other.src && target == other.target;
     }
 
     bool operator!=(const AbstractTransition &other) const {
-        return src != other.src || target != other.target || cost != other.cost;
+        return !(*this == other);
     }
 
     bool operator<(const AbstractTransition &other) const {
-        return src < other.src || (src == other.src && target < other.target)
-               || (src == other.src && target == other.target && cost
-                   < other.cost);
+        return src < other.src || (src == other.src && target < other.target);
     }
 };
 
@@ -49,8 +45,6 @@ class Abstraction {
 
     const bool is_unit_cost;
     const OperatorCost cost_type;
-
-    ShrinkStrategy *shrink_strategy;
 
     vector<const Operator *> relevant_operators;
     int num_states;
@@ -111,7 +105,6 @@ public:
     // TODO: Find a better way of doing this that doesn't require
     //       a mutable attribute?
 
-    int unique_unlabeled_transitions(const vector<int> &relevant_ops) const;
     bool is_in_varset(int var) const;
 
     void compute_distances();
@@ -141,9 +134,11 @@ public:
         return transitions_by_op.size();
     }
 
-    const std::vector<AbstractTransition> &get_transitions_for_op(int op_no) {
+    const std::vector<AbstractTransition> &get_transitions_for_op(int op_no) const {
         return transitions_by_op[op_no];
     }
+
+    int get_cost_for_op(int op_no) const;
 };
 
 class AtomicAbstraction : public Abstraction {

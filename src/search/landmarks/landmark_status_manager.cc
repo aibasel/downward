@@ -124,8 +124,6 @@ bool LandmarkStatusManager::update_reached_lms(
 }
 
 bool LandmarkStatusManager::update_lm_status(const State &state) {
-    StateProxy proxy = StateProxy(&state);
-
     vector<bool> &reached = get_reached_landmarks(state);
 
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
