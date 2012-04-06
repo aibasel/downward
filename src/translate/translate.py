@@ -118,8 +118,10 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
                 condition[var] = vals
 
         def multiply_out(condition): # destroys the input
-            sorted_conds = sorted(list(condition.items()),
-                                  lambda x,y: cmp(len(x[1]),len(y[1])))
+            def length(item):
+                var, vals = item
+                return len(vals)
+            sorted_conds = sorted(condition.items(), key=length)
             flat_conds = [{}]
             for var, vals in sorted_conds:
                 if len(vals) == 1:
@@ -577,5 +579,5 @@ if __name__ == "__main__":
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):
-        sas_task.output(file("output.sas", "w"))
+        sas_task.output(open("output.sas", "w"))
     print("Done! %s" % timer)
