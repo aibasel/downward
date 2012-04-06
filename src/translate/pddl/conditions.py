@@ -151,6 +151,10 @@ class JunctorCondition(Condition):
         return (self.hash == other.hash and
                 self.__class__ is other.__class__ and
                 self.parts == other.parts)
+    def __hash__(self):
+        # Redefined here, because Condition.__hash__ is not correctly
+        # inherited.
+        return self.hash
     def change_parts(self, parts):
         return self.__class__(parts)
 
@@ -261,16 +265,20 @@ class ExistentialCondition(QuantifiedCondition):
 
 class Literal(Condition):
     parts = []
+    def __init__(self, predicate, args):
+        self.predicate = predicate
+        self.args = tuple(args)
+        self.hash = hash((self.__class__, self.predicate, self.args))
     def __eq__(self, other):
         # Compare hash first for speed reasons.
         return (self.hash == other.hash and
                 self.__class__ is other.__class__ and
                 self.predicate == other.predicate and
                 self.args == other.args)
-    def __init__(self, predicate, args):
-        self.predicate = predicate
-        self.args = tuple(args)
-        self.hash = hash((self.__class__, self.predicate, self.args))
+    def __hash__(self):
+        # Redefined here, because Condition.__hash__ is not correctly
+        # inherited.
+        return self.hash
     def __str__(self):
         return "%s %s(%s)" % (self.__class__.__name__, self.predicate,
                               ", ".join(map(str, self.args)))
