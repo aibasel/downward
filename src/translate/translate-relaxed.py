@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 import axiom_rules
 import fact_groups
@@ -20,7 +20,6 @@ import simplify
 
 ALLOW_CONFLICTING_EFFECTS = False
 USE_PARTIAL_ENCODING = True
-WRITE_ALL_MUTEXES = True
 
 def strips_to_sas_dictionary(groups):
     dictionary = {}
@@ -152,7 +151,7 @@ def translate_strips_operator(operator, dictionary, ranges):
             pre_post.append((var, pre, post, eff_condition))
     prevail = condition.items()
 
-    return sas_tasks.SASOperator(operator.name, prevail, pre_post)
+    return sas_tasks.SASOperator(operator.name, prevail, pre_post, operator.cost)
 
 def translate_strips_axiom(axiom, dictionary, ranges):
     condition = translate_strips_conditions(axiom.condition, dictionary, ranges)
@@ -181,7 +180,8 @@ def translate_strips_axioms(axioms, strips_to_sas, ranges):
             result.append(sas_axiom)
     return result
 
-def translate_task(strips_to_sas, ranges, init, goals, actions, axioms):
+def translate_task(strips_to_sas, ranges, translation_key, mutex_key,
+                   init, goals, actions, axioms, metric):
     axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
       actions, axioms, goals)
     init = init + axiom_init
@@ -210,9 +210,10 @@ def translate_task(strips_to_sas, ranges, init, goals, actions, axioms):
         assert layer >= 0
         [(var, val)] = strips_to_sas[atom]
         axiom_layers[var] = layer
-    variables = sas_tasks.SASVariables(ranges, axiom_layers)
-
-    return sas_tasks.SASTask(variables, init, goal, operators, axioms)
+    variables = sas_tasks.SASVariables(ranges, axiom_layers, translation_key)
+    mutexes = [sas_tasks.SASMutexGroup(group) for group in mutex_key]
+    return sas_tasks.SASTask(variables, mutexes, init, goal,
+                             operators, axioms, metric)
 
 def unsolvable_sas_task(msg):
     print "%s! Generating unsolvable task..." % msg
@@ -225,7 +226,7 @@ def unsolvable_sas_task(msg):
 
 def pddl_to_sas(task):
     print "Instantiating..."
-    relaxed_reachable, atoms, actions, axioms = instantiate.explore(task)
+    relaxed_reachable, atoms, actions, axioms, _ = instantiate.explore(task)
 
     if not relaxed_reachable:
         return unsolvable_sas_task("No relaxed solution")
@@ -238,28 +239,28 @@ def pddl_to_sas(task):
     for item in goal_list:
         assert isinstance(item, pddl.Literal)
 
-#    groups, mutex_groups, translation_key = fact_groups.compute_groups(
-#        task, atoms, return_mutex_groups=WRITE_ALL_MUTEXES,
-#        partial_encoding=USE_PARTIAL_ENCODING)
-
     # switched off invariant syntheses -> one group for each fluent fact
     groups = [[fact] for fact in atoms]
+    mutex_groups = []
     translation_key = [[str(fact),str(fact.negate())] for group in groups
                                                       for fact in group]
 
     print "Building STRIPS to SAS dictionary..."
     ranges, strips_to_sas = strips_to_sas_dictionary(groups)
+
+    print "Building mutex information..."
+    mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
+
     print "Translating task..."
-    sas_task = translate_task(strips_to_sas, ranges, task.init, goal_list,
-                              actions, axioms)
+    sas_task = translate_task(strips_to_sas, ranges, translation_key,
+                              mutex_key, task.init, goal_list, actions, axioms,
+                              task.use_min_cost_metric)
 
     try:
-        simplify.filter_unreachable_propositions(
-            sas_task, [], translation_key)
+        simplify.filter_unreachable_propositions(sas_task)
     except simplify.Impossible:
         return unsolvable_sas_task("Simplified to trivially false goal")
 
-    write_translation_key(translation_key)
     return sas_task
 
 def build_mutex_key(strips_to_sas, groups):
@@ -274,45 +275,6 @@ def build_mutex_key(strips_to_sas, groups):
                 print "not in strips_to_sas, left out:", fact
         group_keys.append(group_key)
     return group_keys
-
-def write_translation_key(translation_key):
-    groups_file = file("test.groups", "w")
-    for var_no, var_key in enumerate(translation_key):
-        print >> groups_file, "var%d:" % var_no
-        for value, value_name in enumerate(var_key):
-            print >> groups_file, "  %d: %s" % (value, value_name)
-    groups_file.close()
-
-def write_mutex_key(mutex_key):
-    invariants_file = file("all.groups", "w")
-    print >> invariants_file, "begin_groups"
-    print >> invariants_file, len(mutex_key)
-    for group in mutex_key:
-        #print map(str, group)
-        no_facts = len(group)
-        print >> invariants_file, "group"
-        print >> invariants_file, no_facts
-        for var, val, fact in group:
-            #print fact
-            assert str(fact).startswith("Atom ")
-            predicate = str(fact)[5:].split("(")[0]
-            #print predicate
-            rest = str(fact).split("(")[1]
-            rest = rest.strip(")").strip()
-            if not rest == "":
-                #print "there are args" , rest
-                args = rest.split(",")
-            else:
-                args = []
-            print_line = "%d %d %s %d " % (var, val, predicate, len(args))
-            for arg in args:
-                print_line += str(arg).strip() + " "
-            #print fact
-            #print print_line
-            print >> invariants_file, print_line
-    print >> invariants_file, "end_groups"
-    invariants_file.close()
-
 
 if __name__ == "__main__":
     import pddl
@@ -336,5 +298,3 @@ if __name__ == "__main__":
     print "Writing output..."
     sas_task.output(file("output.sas", "w"))
     print "Done!"
-    print "Creating dummy output:"
-    open("all.groups", "w").write("dummy file expected by our scripts\n")

@@ -2,11 +2,13 @@
 #include "../globals.h"
 #include "../state.h"
 #include "../search_space.h"
+#include "../option_parser.h"
 
 #include <cassert>
 #include <limits>
 
-MaxHeuristic::MaxHeuristic(bool arff) : num_evals(0), arff_out("max.arff") {
+MaxHeuristic::MaxHeuristic(const Options &opts, bool arff)
+    : Heuristic(opts), num_evals(0), arff_out("max.arff") {
     //name = "max";
     dump_arff = arff;
     max_diff = 5;

@@ -7,7 +7,8 @@ class Function(object):
     @classmethod
     def parse(cls, alist):
         name = alist[0]
-        arguments = pddl_types.parse_typed_list(alist[1:], functions=True)
+        arguments = pddl_types.parse_typed_list(alist[1:],
+                                                default_type="number")
         return cls(name, arguments)
     @classmethod
     def parse_typed(cls, alist, _type):

@@ -1,10 +1,10 @@
-# -*- coding: latin-1 -*-
-
-from __future__ import with_statement
-
 import invariant_finder
 import pddl
 import timers
+
+
+DEBUG = False
+
 
 def expand_group(group, task, reachable_facts):
     result = []
@@ -99,8 +99,8 @@ def collect_all_mutex_groups(groups, atoms):
     all_groups += [[fact] for fact in uncovered_facts]
     return all_groups
 
-def compute_groups(task, atoms, partial_encoding=True):
-    groups = invariant_finder.get_groups(task)
+def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
+    groups = invariant_finder.get_groups(task, reachable_action_params)
     with timers.timing("Instantiating groups"):
         groups = instantiate_groups(groups, task, atoms)
 
@@ -113,4 +113,10 @@ def compute_groups(task, atoms, partial_encoding=True):
         groups = choose_groups(groups, atoms, partial_encoding=partial_encoding)
     with timers.timing("Building translation key"):
         translation_key = build_translation_key(groups)
+
+    if DEBUG:
+        for group in groups:
+            if len(group) >= 2:
+                print "{%s}" % ", ".join(map(str, group))
+
     return groups, mutex_groups, translation_key

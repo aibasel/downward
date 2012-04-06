@@ -8,12 +8,10 @@
 #include <set>
 
 
-static ScalarEvaluatorPlugin hm_heuristic_plugin("hm", HMHeuristic::create);
 
-
-HMHeuristic::HMHeuristic(int _m) : m(_m) {
-    MAX_VALUE = 100000;
-    //MAX_VALUE = numeric_limits<int>::max();
+HMHeuristic::HMHeuristic(const Options &opts)
+    : Heuristic(opts),
+      m(opts.get<int>("m")) {
 }
 
 HMHeuristic::~HMHeuristic() {
@@ -40,9 +38,8 @@ int HMHeuristic::compute_heuristic(const State &state) {
 
         int h = eval(g_goal);
 
-        if (h == MAX_VALUE) {
+        if (h == numeric_limits<int>::max())
             return DEAD_END;
-        }
         return h;
     }
 }
@@ -71,13 +68,13 @@ void HMHeuristic::update_hm_table() {
             get_operator_pre(op, pre);
 
             int c1 = eval(pre);
-            if (c1 < MAX_VALUE) {
+            if (c1 != numeric_limits<int>::max()) {
                 tuple eff;
                 vector<tuple> partial_eff;
                 get_operator_eff(op, eff);
                 generate_all_partial_tuple(eff, partial_eff);
                 for (int i = 0; i < partial_eff.size(); i++) {
-                    update_hm_entry(partial_eff[i], c1 + op.get_cost());
+                    update_hm_entry(partial_eff[i], c1 + get_adjusted_cost(op));
 
                     if (partial_eff[i].size() < m) {
                         extend_tuple(partial_eff[i], op);
@@ -130,8 +127,8 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
 
             if (is_valid) {
                 int c2 = eval(pre);
-                if (c2 < MAX_VALUE) {
-                    update_hm_entry(entry, c2 + op.get_cost());
+                if (c2 != numeric_limits<int>::max()) {
+                    update_hm_entry(entry, c2 + get_adjusted_cost(op));
                 }
             }
         }
@@ -212,25 +209,21 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
             }
         }
         if (!found) {
-            return MAX_VALUE;
+            return numeric_limits<int>::max();
         }
     }
     return 0;
 }
 
-ScalarEvaluator *HMHeuristic::create(const std::vector<string> &config,
-                                     int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
-    end = start + 2;
-    OptionParser *parser = OptionParser::instance();
-    int m = parser->parse_int(config, end, end);
-    end++;
-    if (config[end] != ")")
-        throw ParseError(end);
-
-    if (dry_run)
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.add_option<int>("m", 2);
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (parser.dry_run())
         return 0;
     else
-        return new HMHeuristic(m);
+        return new HMHeuristic(opts);
 }
+
+
+static Plugin<ScalarEvaluator> _plugin("hm", _parse);

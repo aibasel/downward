@@ -1,8 +1,0 @@
-The invariant checker does not do proper balance checks. In particular, 
-it can assume that a delete effect balances an add effect even though 
-the delete effect is not guaranteed to cause a change (because its 
-triggering is not implied by the precondition/operator condition).
-
-See comment at the beginning of "can_compensate" in invariant_finder.py,
-and see e-mail by Ulrich Scholz in Fast Downward folder (2007-07-13, 
-10:06).

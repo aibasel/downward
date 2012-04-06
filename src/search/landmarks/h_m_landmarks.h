@@ -1,8 +1,9 @@
 #ifndef LANDMARKS_H_M_LANDMARKS_H
 #define LANDMARKS_H_M_LANDMARKS_H
 
+#include "landmark_factory.h"
+#include "landmark_graph.h"
 #include "../globals.h"
-#include "landmarks_graph.h"
 
 typedef std::pair<int, int> Fluent;
 typedef std::vector<Fluent> FluentSet;
@@ -65,22 +66,18 @@ struct HMEntry {
 
 typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
-class HMLandmarks : public LandmarksGraph {
+class HMLandmarks : public LandmarkFactory {
 public:
-    HMLandmarks(LandmarkGraphOptions &options, Exploration *expl, int m);
-    ~HMLandmarks() {
-    }
-
-    virtual void generate_landmarks();
+    HMLandmarks(const Options &opts);
+    virtual ~HMLandmarks() {}
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
-    static LandmarksGraph *create(const std::vector<std::string> &config, int start,
-                                  int &end, bool dry_run);
-
-protected:
+private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
     typedef __gnu_cxx::hash_map<int, std::set<int> > TriggerSet;
+
+    virtual void generate_landmarks();
 
     void compute_h_m_landmarks();
     void compute_noop_landmarks(int op_index, int noop_index,
@@ -145,6 +142,7 @@ protected:
 
     void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
+    void print_proposition(const pair<int, int> &fluent) const;
 };
 
 #endif
