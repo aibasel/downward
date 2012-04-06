@@ -567,7 +567,7 @@ if __name__ == "__main__":
 
     timer = timers.Timer()
     with timers.timing("Parsing"):
-        task = pddl.open()
+        task = pddl.open_pddl_file()
 
     # EXPERIMENTAL!
     # import psyco
