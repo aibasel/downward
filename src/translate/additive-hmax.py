@@ -87,8 +87,8 @@ def hmax(task, goal_cut_facts=()):
                     if OPTION == 1:
                         # Choose first (in precondition list)
                         # maximizing precondition as supporter.
-                        supporter = (fact for fact in action.preconditions
-                                     if fact.hmax == hmax).next()
+                        supporter = next((fact for fact in action.preconditions
+                                     if fact.hmax == hmax))
                     elif OPTION == 2:
                         # Choose this fact as supporter.
                         supporter = fact
@@ -153,4 +153,4 @@ if __name__ == "__main__":
     relaxed_task.convert_to_canonical_form()
     crossreference_task(relaxed_task)
     # relaxed_task.dump()
-    print additive_hmax(relaxed_task)
+    print(additive_hmax(relaxed_task))

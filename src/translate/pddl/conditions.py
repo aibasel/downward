@@ -1,4 +1,4 @@
-import pddl_types
+from . import pddl_types
 
 def parse_condition(alist):
     condition = parse_condition_aux(alist, False)
@@ -67,7 +67,7 @@ class Condition(object):
     def __ne__(self, other):
         return not self == other
     def dump(self, indent="  "):
-        print "%s%s" % (indent, self._dump())
+        print("%s%s" % (indent, self._dump()))
         for part in self.parts:
             part.dump(indent + "  ")
     def _dump(self):

@@ -40,7 +40,7 @@ class CostMatrix(object):
         del self.joinees[index]
     def find_min_pair(self):
         assert len(self.joinees) >= 2
-        min_cost = (sys.maxint, sys.maxint)
+        min_cost = (sys.maxsize, sys.maxsize)
         for i, row in enumerate(self.cost_matrix):
             for j, entry in enumerate(row):
                 if entry < min_cost:
@@ -63,7 +63,7 @@ class CostMatrix(object):
         return (len(left_vars) - len(common_vars),
                 len(right_vars) - len(common_vars),
                 -len(common_vars))
-    def __nonzero__(self):
+    def __bool__(self):
         return len(self.joinees) >= 2
 
 class ResultList(object):
@@ -75,7 +75,7 @@ class ResultList(object):
         self.result[-1].effect = self.final_effect
         return self.result
     def add_rule(self, type, conditions, effect_vars):
-        effect = pddl.Atom(self.name_generator.next(), effect_vars)
+        effect = pddl.Atom(next(self.name_generator), effect_vars)
         rule = pddl_to_prolog.Rule(conditions, effect)
         rule.type = type
         self.result.append(rule)
