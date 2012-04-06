@@ -44,7 +44,7 @@ class BalanceChecker(object):
         if reachable_action_params is None or len(action.parameters) < 2:
             return action
         inequal_params = []
-        combs = itertools.combinations(range(len(action.parameters)), 2)
+        combs = itertools.combinations(list(range(len(action.parameters))), 2)
         for pos1, pos2 in combs:
             for params in reachable_action_params[action]:
                 if params[pos1] == params[pos2]:
@@ -75,7 +75,7 @@ def get_fluents(task):
 
 def get_initial_invariants(task):
     for predicate in get_fluents(task):
-        all_args = range(len(predicate.arguments))
+        all_args = list(range(len(predicate.arguments)))
         for omitted_arg in [-1] + all_args:
             order = [i for i in all_args if i != omitted_arg]
             part = invariants.InvariantPart(predicate.name, order, omitted_arg)
@@ -87,7 +87,7 @@ MAX_TIME = 300
 
 def find_invariants(task, reachable_action_params):
     candidates = deque(get_initial_invariants(task))
-    print len(candidates), "initial candidates"
+    print(len(candidates), "initial candidates")
     seen_candidates = set(candidates)
 
     balance_checker = BalanceChecker(task, reachable_action_params)
@@ -101,7 +101,7 @@ def find_invariants(task, reachable_action_params):
     while candidates:
         candidate = candidates.popleft()
         if time.clock() - start_time > MAX_TIME:
-            print "Time limit reached, aborting invariant generation"
+            print("Time limit reached, aborting invariant generation")
             return
         if candidate.check_balance(balance_checker, enqueue_func):
             yield candidate
@@ -137,16 +137,16 @@ def get_groups(task, reachable_action_params=None):
 if __name__ == "__main__":
     import pddl
     import normalize
-    print "Parsing..."
+    print("Parsing...")
     task = pddl.open()
-    print "Normalizing..."
+    print("Normalizing...")
     normalize.normalize(task)
-    print "Finding invariants..."
-    print "NOTE: not passing in reachable_action_params."
-    print "This means fewer invariants might be found."
+    print("Finding invariants...")
+    print("NOTE: not passing in reachable_action_params.")
+    print("This means fewer invariants might be found.")
     for invariant in find_invariants(task, None):
-        print invariant
-    print "Finding fact groups..."
+        print(invariant)
+    print("Finding fact groups...")
     groups = get_groups(task)
     for group in groups:
-        print "[%s]" % ", ".join(map(str, group))
+        print("[%s]" % ", ".join(map(str, group)))

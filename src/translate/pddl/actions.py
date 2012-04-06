@@ -1,8 +1,8 @@
 import copy
 
-import conditions
-import effects
-import pddl_types
+from . import conditions
+from . import effects
+from . import pddl_types
 
 class Action(object):
     def __init__(self, name, parameters, num_external_parameters,
@@ -24,29 +24,29 @@ class Action(object):
         return "<Action %r at %#x>" % (self.name, id(self))
     def parse(alist):
         iterator = iter(alist)
-        assert iterator.next() == ":action"
-        name = iterator.next()
-        parameters_tag_opt = iterator.next()
+        assert next(iterator) == ":action"
+        name = next(iterator)
+        parameters_tag_opt = next(iterator)
         if parameters_tag_opt == ":parameters":
-            parameters = pddl_types.parse_typed_list(iterator.next(),
+            parameters = pddl_types.parse_typed_list(next(iterator),
                                                      only_variables=True)
-            precondition_tag_opt = iterator.next()
+            precondition_tag_opt = next(iterator)
         else:
             parameters = []
             precondition_tag_opt = parameters_tag_opt
         if precondition_tag_opt == ":precondition":
-            precondition = conditions.parse_condition(iterator.next())
+            precondition = conditions.parse_condition(next(iterator))
             precondition = precondition.simplified()
-            effect_tag = iterator.next()
+            effect_tag = next(iterator)
         else:
             precondition = conditions.Conjunction([])
             effect_tag = precondition_tag_opt
         assert effect_tag == ":effect"
-        effect_list = iterator.next()
+        effect_list = next(iterator)
         eff = []
         try:
             cost = effects.parse_effects(effect_list, eff)
-        except ValueError, e:
+        except ValueError as e:
             raise SystemExit("Error in Action %s\nReason: %s." % (name, e))
         for rest in iterator:
             assert False, rest
@@ -54,17 +54,17 @@ class Action(object):
                       precondition, eff, cost)
     parse = staticmethod(parse)
     def dump(self):
-        print "%s(%s)" % (self.name, ", ".join(map(str, self.parameters)))
-        print "Precondition:"
+        print("%s(%s)" % (self.name, ", ".join(map(str, self.parameters))))
+        print("Precondition:")
         self.precondition.dump()
-        print "Effects:"
+        print("Effects:")
         for eff in self.effects:
             eff.dump()
-        print "Cost:"
+        print("Cost:")
         if(self.cost):
             self.cost.dump()
         else:
-            print "  None"
+            print("  None")
     def uniquify_variables(self):
         self.type_map = dict([(par.name, par.type) for par in self.parameters])
         self.precondition = self.precondition.uniquify_variables(self.type_map)
@@ -159,11 +159,11 @@ class PropositionalAction:
                 self.del_effects.append((condition, effect.negate()))
         self.cost = cost
     def dump(self):
-        print self.name
+        print(self.name)
         for fact in self.precondition:
-            print "PRE: %s" % fact
+            print("PRE: %s" % fact)
         for cond, fact in self.add_effects:
-            print "ADD: %s -> %s" % (", ".join(map(str, cond)), fact)
+            print("ADD: %s -> %s" % (", ".join(map(str, cond)), fact))
         for cond, fact in self.del_effects:
-            print "DEL: %s -> %s" % (", ".join(map(str, cond)), fact)
-        print "cost:", self.cost
+            print("DEL: %s -> %s" % (", ".join(map(str, cond)), fact))
+        print("cost:", self.cost)

@@ -4,17 +4,17 @@ import sys
 import os.path
 import re
 
-import parser
+from . import parser
 
-import tasks
+from . import tasks
 
 def parse_pddl_file(type, filename):
     try:
         return parser.parse_nested_list(file(filename))
-    except IOError, e:
+    except IOError as e:
         raise SystemExit("Error: Could not read file: %s\nReason: %s." %
                          (e.filename, e))
-    except parser.ParseError, e:
+    except parser.ParseError as e:
         raise SystemExit("Error: Could not parse %s file: %s\n" % (type, filename))
 
 def open(task_filename=None, domain_filename=None):

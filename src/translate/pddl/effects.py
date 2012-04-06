@@ -1,6 +1,6 @@
-import conditions
-import pddl_types
-import f_expression
+from . import conditions
+from . import pddl_types
+from . import f_expression
 
 def cartesian_product(*sequences):
     # TODO: Also exists in tools.py outside the pddl package (defined slightly
@@ -99,14 +99,14 @@ class Effect(object):
     def dump(self):
         indent = "  "
         if self.parameters:
-            print "%sforall %s" % (indent, ", ".join(map(str, self.parameters)))
+            print("%sforall %s" % (indent, ", ".join(map(str, self.parameters))))
             indent += "  "
         if self.condition != conditions.Truth():
-            print "%sif" % indent
+            print("%sif" % indent)
             self.condition.dump(indent + "  ")
-            print "%sthen" % indent
+            print("%sthen" % indent)
             indent += "  "
-        print "%s%s" % (indent, self.literal)
+        print("%s%s" % (indent, self.literal))
     def copy(self):
         return Effect(self.parameters, self.condition, self.literal)
     def uniquify_variables(self, type_map):
@@ -156,9 +156,9 @@ class ConditionalEffect(object):
             self.condition = condition
             self.effect = effect
     def dump(self, indent="  "):
-        print "%sif" % (indent)
+        print("%sif" % (indent))
         self.condition.dump(indent + "  ")
-        print "%sthen" % (indent)
+        print("%sthen" % (indent))
         self.effect.dump(indent + "  ")
     def normalize(self):
         norm_effect = self.effect.normalize()
@@ -186,7 +186,7 @@ class UniversalEffect(object):
             self.parameters = parameters
             self.effect = effect
     def dump(self, indent="  "):
-        print "%sforall %s" % (indent, ", ".join(map(str, self.parameters)))
+        print("%sforall %s" % (indent, ", ".join(map(str, self.parameters))))
         self.effect.dump(indent + "  ")
     def normalize(self):
         norm_effect = self.effect.normalize()
@@ -212,7 +212,7 @@ class ConjunctiveEffect(object):
                 flattened_effects.append(effect)
         self.effects = flattened_effects
     def dump(self, indent="  "):
-        print "%sand" % (indent)
+        print("%sand" % (indent))
         for eff in self.effects:
             eff.dump(indent + "  ")
     def normalize(self):
@@ -234,7 +234,7 @@ class SimpleEffect(object):
     def __init__(self, effect):
         self.effect = effect
     def dump(self, indent="  "):
-        print "%s%s" % (indent, self.effect)
+        print("%s%s" % (indent, self.effect))
     def normalize(self):
         return self
     def extract_cost(self):
@@ -244,7 +244,7 @@ class CostEffect(object):
     def __init__(self, effect):
         self.effect = effect
     def dump(self, indent="  "):
-        print "%s%s" % (indent, self.effect)
+        print("%s%s" % (indent, self.effect))
     def normalize(self):
         return self
     def extract_cost(self):

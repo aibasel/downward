@@ -79,17 +79,17 @@ if __name__ == "__main__":
 
     task = pddl.open()
     relaxed_reachable, atoms, actions, axioms, _ = explore(task)
-    print "goal relaxed reachable: %s" % relaxed_reachable
-    print "%d atoms:" % len(atoms)
+    print("goal relaxed reachable: %s" % relaxed_reachable)
+    print("%d atoms:" % len(atoms))
     for atom in atoms:
-        print " ", atom
-    print
-    print "%d actions:" % len(actions)
+        print(" ", atom)
+    print()
+    print("%d actions:" % len(actions))
     for action in actions:
         action.dump()
-        print
-    print
-    print "%d axioms:" % len(axioms)
+        print()
+    print()
+    print("%d axioms:" % len(axioms))
     for axiom in axioms:
         axiom.dump()
-        print
+        print()
