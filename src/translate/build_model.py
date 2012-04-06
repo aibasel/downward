@@ -286,6 +286,8 @@ class Queue:
         self.num_pushes = len(atoms)
     def __bool__(self):
         return self.queue_pos < len(self.queue)
+    def __nonzero__(self):
+        return self.__bool__()
     def push(self, predicate, args):
         self.num_pushes += 1
         eff_tuple = (predicate,) + tuple(args)
