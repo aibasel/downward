@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import sys
 import itertools
 
@@ -129,11 +131,11 @@ class ProductRule(BuildRule):
         if not atom_list:
             self.empty_atom_list_no -= 1
         atom_list.append(new_atom)
-        
+
     def _get_bindings(self, atom, cond):
         return [(var_no, obj) for var_no, obj in zip(cond.args, atom.args)
                 if isinstance(var_no, int)]
-        
+
     def fire(self, new_atom, cond_index, enqueue_func):
         if self.empty_atom_list_no:
             return
@@ -150,9 +152,9 @@ class ProductRule(BuildRule):
             assert atoms, "if we have no atoms, this should never be called"
             factor = [self._get_bindings(atom, cond) for atom in atoms]
             bindings_factors.append(factor)
-            
+
         eff_args = self.prepare_effect(new_atom, cond_index)
-        
+
         for bindings_list in tools.product(*bindings_factors):
             bindings = itertools.chain(*bindings_list)
             for var_no, obj in bindings:
