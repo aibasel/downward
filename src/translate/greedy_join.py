@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import sys
 
 import pddl
@@ -63,7 +65,7 @@ class CostMatrix(object):
         return (len(left_vars) - len(common_vars),
                 len(right_vars) - len(common_vars),
                 -len(common_vars))
-    def __bool__(self):
+    def can_join(self):
         return len(self.joinees) >= 2
 
 class ResultList(object):
@@ -87,7 +89,7 @@ def greedy_join(rule, name_generator):
     occurrences = OccurrencesTracker(rule)
     result = ResultList(rule, name_generator)
 
-    while cost_matrix:
+    while cost_matrix.can_join():
         joinees = list(cost_matrix.remove_min_pair())
         for joinee in joinees:
             occurrences.update(joinee, -1)
