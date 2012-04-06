@@ -1,4 +1,4 @@
-from .pddl_file import open
+from .pddl_file import open_pddl_file
 
 from .parser import ParseError
 
