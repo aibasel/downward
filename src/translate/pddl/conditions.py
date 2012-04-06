@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from . import pddl_types
 
 def parse_condition(alist):
