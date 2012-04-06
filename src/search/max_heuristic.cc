@@ -1,6 +1,5 @@
 #include "max_heuristic.h"
 
-#include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
@@ -10,60 +9,43 @@
 #include <vector>
 using namespace std;
 
-#include <ext/hash_map>
-using namespace __gnu_cxx;
+
+
 
 /*
- NOTE: This implementation does not support axioms. A complete
- implementation could be similiar to the implementation in
- additive_heuristic.cc. For such an implementation, more experiments
- are needed because this could be very slow.
-*/
-
-
-static ScalarEvaluatorPlugin max_heuristic_plugin(
-    "hmax", HSPMaxHeuristic::create);
-
+  TODO: At the time of this writing, this shares huge amounts of code
+        with h^add, and the two should be refactored so that the
+        common code is only included once, in so far as this is
+        possible without sacrificing run-time. We may want to avoid
+        virtual calls in the inner-most loops; maybe a templated
+        strategy pattern is an option. Right now, the only differences
+        to the h^add code are the use of max() instead of add() and
+        the lack of preferred operator support (but we might actually
+        reintroduce that if it doesn't hurt performance too much).
+ */
 
 // construction and destruction
-HSPMaxHeuristic::HSPMaxHeuristic() {
-    reachable_queue_start = 0;
-    reachable_queue_read_pos = 0;
-    reachable_queue_write_pos = 0;
+HSPMaxHeuristic::HSPMaxHeuristic(const Options &opts)
+    : RelaxationHeuristic(opts) {
 }
 
 HSPMaxHeuristic::~HSPMaxHeuristic() {
-    delete[] reachable_queue_start;
 }
 
 // initialization
 void HSPMaxHeuristic::initialize() {
     cout << "Initializing HSP max heuristic..." << endl;
-
-    if (!g_axioms.empty()) {
-        cerr << "Heuristic does not support axioms!" << endl
-             << "Terminating." << endl;
-        exit(1);
-    }
-
     RelaxationHeuristic::initialize();
-
-    // Allocate reachability queue.
-    int total_proposition_no = 0;
-    for (int i = 0; i < propositions.size(); i++)
-        total_proposition_no += propositions[i].size();
-    reachable_queue_start = new Proposition *[total_proposition_no];
 }
 
 // heuristic computation
 void HSPMaxHeuristic::setup_exploration_queue() {
-    reachable_queue_read_pos = reachable_queue_start;
-    reachable_queue_write_pos = reachable_queue_start;
+    queue.clear();
 
     for (int var = 0; var < propositions.size(); var++) {
         for (int value = 0; value < propositions[var].size(); value++) {
             Proposition &prop = propositions[var][value];
-            prop.h_max_cost = -1;
+            prop.cost = -1;
         }
     }
 
@@ -71,64 +53,42 @@ void HSPMaxHeuristic::setup_exploration_queue() {
     for (int i = 0; i < unary_operators.size(); i++) {
         UnaryOperator &op = unary_operators[i];
         op.unsatisfied_preconditions = op.precondition.size();
-        op.h_max_cost = op.base_cost;
+        op.cost = op.base_cost; // will be increased by precondition costs
 
-        if (op.unsatisfied_preconditions == 0) {
-            int curr_cost = op.effect->h_max_cost;
-            if (curr_cost == -1)
-                *reachable_queue_write_pos++ = op.effect;
-            if (curr_cost == -1 || curr_cost > op.base_cost) {
-                op.effect->h_max_cost = op.base_cost;
-            }
-        }
+        if (op.unsatisfied_preconditions == 0)
+            enqueue_if_necessary(op.effect, op.base_cost);
     }
 }
 
 void HSPMaxHeuristic::setup_exploration_queue_state(const State &state) {
     for (int var = 0; var < propositions.size(); var++) {
         Proposition *init_prop = &propositions[var][state[var]];
-        if (init_prop->h_add_cost == -1)
-            *reachable_queue_write_pos++ = init_prop;
-        init_prop->h_max_cost = 0;
+        enqueue_if_necessary(init_prop, 0);
     }
 }
 
 void HSPMaxHeuristic::relaxed_exploration() {
     int unsolved_goals = goal_propositions.size();
-    while (reachable_queue_read_pos != reachable_queue_write_pos) {
-        Proposition *prop = *reachable_queue_read_pos++;
-        int prop_max_cost = prop->h_max_cost;
+    while (!queue.empty()) {
+        pair<int, Proposition *> top_pair = queue.pop();
+        int distance = top_pair.first;
+        Proposition *prop = top_pair.second;
+        int prop_cost = prop->cost;
+        assert(prop_cost <= distance);
+        if (prop_cost < distance)
+            continue;
         if (prop->is_goal && --unsolved_goals == 0)
-            break;
-        const vector<UnaryOperator *> &triggered_operators = prop->precondition_of;
+            return;
+        const vector<UnaryOperator *> &triggered_operators =
+            prop->precondition_of;
         for (int i = 0; i < triggered_operators.size(); i++) {
             UnaryOperator *unary_op = triggered_operators[i];
             unary_op->unsatisfied_preconditions--;
-            unary_op->h_max_cost = max(unary_op->h_max_cost,
-                                       unary_op->base_cost + prop_max_cost);
+            unary_op->cost = max(unary_op->cost,
+                                 unary_op->base_cost + prop_cost);
             assert(unary_op->unsatisfied_preconditions >= 0);
-            if (unary_op->unsatisfied_preconditions == 0) {
-                Proposition *effect = unary_op->effect;
-                if (effect->h_max_cost == -1) {
-                    // Proposition reached for the first time: put into queue
-                    effect->h_max_cost = unary_op->h_max_cost;
-                    *reachable_queue_write_pos++ = effect;
-                } else {
-                    // Verify that h_max considers operators in order
-                    // of increasing cost -- without some kind of
-                    // priority queue, this is only true if all
-                    // unary_ops have unit cost, i.e., it can easily
-                    // fail for tasks with axioms. We don't have a
-                    // proper working implementation of h_max with
-                    // axioms currently. (We could simply remove the
-                    // assertion, which would give us something that
-                    // works, but doesn't give the accurate h_max
-                    // values in all cases. Rather like the "poor
-                    // man's h_add" referred to in the old FF
-                    // heuristic implementation.)
-                    assert(unary_op->h_max_cost >= effect->h_max_cost);
-                }
-            }
+            if (unary_op->unsatisfied_preconditions == 0)
+                enqueue_if_necessary(unary_op->effect, unary_op->cost);
         }
     }
 }
@@ -138,21 +98,26 @@ int HSPMaxHeuristic::compute_heuristic(const State &state) {
     setup_exploration_queue_state(state);
     relaxed_exploration();
 
-    int max_cost = 0;
+    int total_cost = 0;
     for (int i = 0; i < goal_propositions.size(); i++) {
-        int prop_cost = goal_propositions[i]->h_max_cost;
+        int prop_cost = goal_propositions[i]->cost;
         if (prop_cost == -1)
             return DEAD_END;
-        max_cost = max(max_cost, prop_cost);
+        total_cost = max(total_cost, prop_cost);
     }
-    return max_cost;
+
+    return total_cost;
 }
 
-ScalarEvaluator *HSPMaxHeuristic::create(const std::vector<string> &config,
-                                         int start, int &end, bool dry_run) {
-    OptionParser::instance()->set_end_for_simple_config(config, start, end);
-    if (dry_run)
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+
+    if (parser.dry_run())
         return 0;
     else
-        return new HSPMaxHeuristic;
+        return new HSPMaxHeuristic(opts);
 }
+
+
+static Plugin<ScalarEvaluator> _plugin("hmax", _parse);

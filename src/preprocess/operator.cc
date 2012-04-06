@@ -61,6 +61,16 @@ void Operator::dump() const {
     cout << endl;
 }
 
+int Operator::get_encoding_size() const {
+    int size = 1 + prevail.size();
+    for (int i = 0; i < pre_post.size(); i++) {
+        size += 1 + pre_post[i].effect_conds.size();
+        if (pre_post[i].pre != -1)
+            size += 1;
+    }
+    return size;
+}
+
 void Operator::strip_unimportant_effects() {
     int new_index = 0;
     for (int i = 0; i < pre_post.size(); i++) {
@@ -101,16 +111,13 @@ void Operator::generate_cpp_input(ofstream &outfile) const {
     outfile << pre_post.size() << endl;
     for (int i = 0; i < pre_post.size(); i++) {
         assert(pre_post[i].var->get_level() != -1);
-        if (pre_post[i].is_conditional_effect) {
-            outfile << pre_post[i].effect_conds.size() << endl;
-            for (int j = 0; j < pre_post[i].effect_conds.size(); j++)
-                outfile << pre_post[i].effect_conds[j].var->get_level() << " " <<
-                pre_post[i].effect_conds[j].cond << endl;
-        } else {
-            outfile << "0" << endl;
-        }
-        outfile << pre_post[i].var->get_level() << " " << pre_post[i].pre << " "
-                << pre_post[i].post << endl;
+        outfile << pre_post[i].effect_conds.size();
+        for (int j = 0; j < pre_post[i].effect_conds.size(); j++)
+            outfile << " " << pre_post[i].effect_conds[j].var->get_level()
+                    << " " << pre_post[i].effect_conds[j].cond;
+        outfile << " " << pre_post[i].var->get_level()
+                << " " << pre_post[i].pre
+                << " " << pre_post[i].post << endl;
     }
     outfile << cost << endl;
     outfile << "end_operator" << endl;

@@ -1,5 +1,7 @@
 #include "search_progress.h"
 
+#include <iostream>
+using namespace std;
 
 SearchProgress::SearchProgress() {
     expanded_states = 0;
@@ -7,6 +9,7 @@ SearchProgress::SearchProgress() {
     evaluated_states = 0;
     evaluations = 0;
     generated_states = 0;
+    dead_end_states = 0;
     generated_ops = 0;
     pathmax_corrections = 0;
 
@@ -90,19 +93,24 @@ void SearchProgress::print_line() const {
 }
 
 void SearchProgress::print_statistics() const {
-    cout << "Initial state h value: ";
-    for (int i = 0; i < initial_h_values.size(); i++) {
-        cout << initial_h_values[i];
-        if (i != initial_h_values.size() - 1)
-            cout << "/";
+    if (!initial_h_values.empty()) {
+        // This will be skipped in the cumulative statistics of an
+        // iterated search, which do not have initial h values.
+        cout << "Initial state h value: ";
+        for (int i = 0; i < initial_h_values.size(); i++) {
+            cout << initial_h_values[i];
+            if (i != initial_h_values.size() - 1)
+                cout << "/";
+        }
+        cout << "." << endl;
     }
-    cout << "." << endl;
 
     cout << "Expanded " << expanded_states << " state(s)." << endl;
     cout << "Reopened " << reopened_states << " state(s)." << endl;
     cout << "Evaluated " << evaluated_states << " state(s)." << endl;
     cout << "Evaluations: " << evaluations << endl;
     cout << "Generated " << generated_states << " state(s)." << endl;
+    cout << "Dead ends: " << dead_end_states << " state(s)." << endl;
     if (pathmax_corrections > 0) {
         cout << "Pathmax corrections: " << pathmax_corrections << endl;
     }

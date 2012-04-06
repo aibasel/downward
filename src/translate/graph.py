@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
 
 class Graph:
     def __init__(self, nodes):

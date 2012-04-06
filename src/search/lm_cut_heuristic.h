@@ -2,6 +2,7 @@
 #define LM_CUT_HEURISTIC_H
 
 #include "heuristic.h"
+#include "priority_queue.h"
 
 #include <algorithm>
 #include <cassert>
@@ -15,6 +16,7 @@ class State;
 class RelaxedProposition;
 class RelaxedOperator;
 
+class Options;
 /* TODO: Check the impact of using unary relaxed operators instead of
    multi-effect ones.
 
@@ -63,6 +65,7 @@ struct RelaxedOperator {
 
     int cost;
     int unsatisfied_preconditions;
+    int h_max_supporter_cost; // h_max_cost of h_max_supporter
     RelaxedProposition *h_max_supporter;
     RelaxedOperator(const std::vector<RelaxedProposition *> &pre,
                     const std::vector<RelaxedProposition *> &eff,
@@ -70,7 +73,6 @@ struct RelaxedOperator {
         : op(the_op), precondition(pre), effects(eff), base_cost(base) {
     }
 
-    inline int h_max_cost() const;
     inline void update_h_max_supporter();
 };
 
@@ -84,17 +86,18 @@ struct RelaxedProposition {
        this for tie breaking, and it led to better landmark extraction
        than just using the cost. However, the Python implementation
        used a heap for the priority queue whereas we use a bucket
-       implementation, which automatically gets a lot of tie-breaking
-       by depth anyway (although not complete tie-breaking on depth --
-       if we add a proposition from cost/depth (4, 9) with (+1,+1),
-       we'll process it before one which is added from cost/depth
-       (5,5) with (+0,+1). The disadvantage of using depth is that we
-       would need a more complicated open queue implementation -- however,
-       in the unit action cost case, we might exploit that we never need
-       to keep more than the current and next cost layer in memory, and
-       simply use two bucket vectors (for two costs, and arbitrarily many
-       depths). See if the init h values degrade compared to Python without
-       explicit depth tie-breaking, then decide.
+       implementation [NOTE: no longer true], which automatically gets
+       a lot of tie-breaking by depth anyway (although not complete
+       tie-breaking on depth -- if we add a proposition from
+       cost/depth (4, 9) with (+1,+1), we'll process it before one
+       which is added from cost/depth (5,5) with (+0,+1). The
+       disadvantage of using depth is that we would need a more
+       complicated open queue implementation -- however, in the unit
+       action cost case, we might exploit that we never need to keep
+       more than the current and next cost layer in memory, and simply
+       use two bucket vectors (for two costs, and arbitrarily many
+       depths). See if the init h values degrade compared to Python
+       without explicit depth tie-breaking, then decide.
     */
 
     RelaxedProposition() {
@@ -102,14 +105,12 @@ struct RelaxedProposition {
 };
 
 class LandmarkCutHeuristic : public Heuristic {
-    typedef std::vector<RelaxedProposition *> Bucket;
-
     std::vector<RelaxedOperator> relaxed_operators;
     std::vector<std::vector<RelaxedProposition> > propositions;
     RelaxedProposition artificial_precondition;
     RelaxedProposition artificial_goal;
-    std::vector<Bucket> reachable_queue;
-    int iteration_limit;
+    int num_propositions;
+    AdaptiveQueue<RelaxedProposition *> priority_queue;
 
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
@@ -129,35 +130,23 @@ class LandmarkCutHeuristic : public Heuristic {
         if (prop->status == UNREACHED || prop->h_max_cost > cost) {
             prop->status = REACHED;
             prop->h_max_cost = cost;
-            if (cost >= reachable_queue.size())
-                reachable_queue.resize(cost + 1);
-            reachable_queue[cost].push_back(prop);
+            priority_queue.push(cost, prop);
         }
     }
 
     void mark_goal_plateau(RelaxedProposition *subgoal);
     void validate_h_max() const;
 public:
-    LandmarkCutHeuristic(int _iteration_limit = -1);
+    LandmarkCutHeuristic(const Options &opts);
     virtual ~LandmarkCutHeuristic();
-    static ScalarEvaluator *create(const std::vector<std::string> &config,
-                                   int start, int &end, bool dry_run);
 };
-
-inline int RelaxedOperator::h_max_cost() const {
-    assert(!unsatisfied_preconditions);
-    int result = precondition[0]->h_max_cost;
-    for (int i = 1; i < precondition.size(); i++)
-        result = std::max(result, precondition[i]->h_max_cost);
-    return result;
-}
 
 inline void RelaxedOperator::update_h_max_supporter() {
     assert(!unsatisfied_preconditions);
     for (int i = 0; i < precondition.size(); i++)
         if (precondition[i]->h_max_cost > h_max_supporter->h_max_cost)
             h_max_supporter = precondition[i];
-    assert(h_max_cost() == h_max_supporter->h_max_cost);
+    h_max_supporter_cost = h_max_supporter->h_max_cost;
 }
 
 #endif

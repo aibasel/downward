@@ -8,18 +8,42 @@ using namespace std;
 
 #include "helper_functions.h"
 #include "state.h"
+#include "mutex_group.h"
 #include "operator.h"
 #include "axiom.h"
 #include "variable.h"
 #include "successor_generator.h"
 #include "domain_transition_graph.h"
 
+
+static const int SAS_FILE_VERSION = 3;
+static const int PRE_FILE_VERSION = SAS_FILE_VERSION;
+
+
 void check_magic(istream &in, string magic) {
     string word;
     in >> word;
     if (word != magic) {
-        cout << "Failed to match magic word '" << magic << "'." << endl;
-        cout << "Got '" << word << "'." << endl;
+        cerr << "Failed to match magic word '" << magic << "'." << endl;
+        cerr << "Got '" << word << "'." << endl;
+        if (magic == "begin_version") {
+            cerr << "Possible cause: you are running the preprocessor "
+                 << "on a translator file from an " << endl
+                 << "older version." << endl;
+        }
+        exit(1);
+    }
+}
+
+void read_and_verify_version(istream &in) {
+    int version;
+    check_magic(in, "begin_version");
+    in >> version;
+    check_magic(in, "end_version");
+    if (version != SAS_FILE_VERSION) {
+        cerr << "Expected translator file version " << SAS_FILE_VERSION
+             << ", got " << version << "." << endl;
+        cerr << "Exiting." << endl;
         exit(1);
     }
 }
@@ -32,7 +56,6 @@ void read_metric(istream &in, bool &metric) {
 
 void read_variables(istream &in, vector<Variable> &internal_variables,
                     vector<Variable *> &variables) {
-    check_magic(in, "begin_variables");
     int count;
     in >> count;
     internal_variables.reserve(count);
@@ -41,7 +64,14 @@ void read_variables(istream &in, vector<Variable> &internal_variables,
         internal_variables.push_back(Variable(in));
         variables.push_back(&internal_variables.back());
     }
-    check_magic(in, "end_variables");
+}
+
+void read_mutexes(istream &in, vector<MutexGroup> &mutexes,
+                  const vector<Variable *> &variables) {
+    size_t count;
+    in >> count;
+    for (size_t i = 0; i < count; ++i)
+        mutexes.push_back(MutexGroup(in, variables));
 }
 
 void read_goal(istream &in, const vector<Variable *> &variables,
@@ -71,6 +101,7 @@ void read_operators(istream &in, const vector<Variable *> &variables,
     for (int i = 0; i < count; i++)
         operators.push_back(Operator(in, variables));
 }
+
 void read_axioms(istream &in, const vector<Variable *> &variables,
                  vector<Axiom> &axioms) {
     int count;
@@ -79,17 +110,19 @@ void read_axioms(istream &in, const vector<Variable *> &variables,
         axioms.push_back(Axiom(in, variables));
 }
 
-
 void read_preprocessed_problem_description(istream &in,
                                            bool &metric,
                                            vector<Variable> &internal_variables,
                                            vector<Variable *> &variables,
+                                           vector<MutexGroup> &mutexes,
                                            State &initial_state,
                                            vector<pair<Variable *, int> > &goals,
                                            vector<Operator> &operators,
                                            vector<Axiom> &axioms) {
+    read_and_verify_version(in);
     read_metric(in, metric);
     read_variables(in, internal_variables, variables);
+    read_mutexes(in, mutexes, variables);
     initial_state = State(in, variables);
     read_goal(in, variables, goals);
     read_operators(in, variables, operators);
@@ -123,9 +156,10 @@ void dump_DTGs(const vector<Variable *> &ordering,
     }
 }
 
-void generate_cpp_input(bool solveable_in_poly_time,
+void generate_cpp_input(bool /*solvable_in_poly_time*/,
                         const vector<Variable *> &ordered_vars,
                         const bool &metric,
+                        const vector<MutexGroup> &mutexes,
                         const State &initial_state,
                         const vector<pair<Variable *, int> > &goals,
                         const vector<Operator> &operators,
@@ -133,19 +167,29 @@ void generate_cpp_input(bool solveable_in_poly_time,
                         const SuccessorGenerator &sg,
                         const vector<DomainTransitionGraph> transition_graphs,
                         const CausalGraph &cg) {
+    /* NOTE: solvable_in_poly_time flag is no longer included in output,
+       since the planner doesn't handle it specially any more anyway. */
+
     ofstream outfile;
     outfile.open("output", ios::out);
-    outfile << solveable_in_poly_time << endl; // 1 if true, else 0
+
+    outfile << "begin_version" << endl;
+    outfile << PRE_FILE_VERSION << endl;
+    outfile << "end_version" << endl;
+
     outfile << "begin_metric" << endl;
     outfile << metric << endl;
     outfile << "end_metric" << endl;
+
+    outfile << ordered_vars.size() << endl;
+    for (int i = 0; i < ordered_vars.size(); i++)
+        ordered_vars[i]->generate_cpp_input(outfile);
+
+    outfile << mutexes.size() << endl;
+    for (int i = 0; i < mutexes.size(); i++)
+        mutexes[i].generate_cpp_input(outfile);
+
     int var_count = ordered_vars.size();
-    outfile << "begin_variables" << endl;
-    outfile << var_count << endl;
-    for (int i = 0; i < var_count; i++)
-        outfile << ordered_vars[i]->get_name() << " " <<
-        ordered_vars[i]->get_range() << " " << ordered_vars[i]->get_layer() << endl;
-    outfile << "end_variables" << endl;
     outfile << "begin_state" << endl;
     for (int i = 0; i < var_count; i++)
         outfile << initial_state[ordered_vars[i]] << endl;  // for axioms default value

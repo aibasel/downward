@@ -21,6 +21,14 @@ struct Prevail {
         return state[var] == prev;
     }
 
+    bool operator==(const Prevail &other) const {
+        return var == other.var && prev == other.prev;
+    }
+
+    bool operator!=(const Prevail &other) const {
+        return !(*this == other);
+    }
+
     void dump() const;
 };
 

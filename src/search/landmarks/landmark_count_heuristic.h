@@ -3,18 +3,18 @@
 
 #include "../state.h"
 #include "../heuristic.h"
-#include "landmarks_graph.h"
+#include "landmark_graph.h"
 #include "exploration.h"
 #include "landmark_status_manager.h"
 #include "landmark_cost_assignment.h"
 
-extern LandmarksGraph *g_lgraph; // Make global so graph does not need to be built more than once
+extern LandmarkGraph *g_lgraph; // Make global so graph does not need to be built more than once
 // even when iterating search (TODO: clean up use of g_lgraph vs.
 // lgraph in this class).
 
 class LandmarkCountHeuristic : public Heuristic {
     friend class LamaFFSynergy;
-    LandmarksGraph &lgraph;
+    LandmarkGraph &lgraph;
     Exploration *exploration;
     bool use_preferred_operators;
     int lookahead;
@@ -29,8 +29,9 @@ class LandmarkCountHeuristic : public Heuristic {
 
     void collect_lm_leaves(bool disjunctive_lms, LandmarkSet &result, vector<
                                pair<int, int> > &leaves);
-    int ff_search_lm_leaves(bool disjunctive_lms, const State &state,
-                            LandmarkSet &result);
+    bool ff_search_lm_leaves(bool disjunctive_lms, const State &state,
+                             LandmarkSet &result);
+    // returns true iff relaxed reachable and marks relaxed operators
 
     bool check_node_orders_disobeyed(LandmarkNode &node,
                                      const LandmarkSet &reached) const;
@@ -49,18 +50,15 @@ class LandmarkCountHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const State &state);
 public:
-    LandmarkCountHeuristic(LandmarksGraph &lm_graph,
-                           bool use_preferred_operators, bool admissible,
-                           bool optimal, bool use_action_landmarks);
+    LandmarkCountHeuristic(const Options &opts);
     ~LandmarkCountHeuristic() {
     }
     virtual bool reach_state(const State &parent_state, const Operator &op,
                              const State &state);
-    virtual bool dead_ends_are_reliable() {
+    virtual bool dead_ends_are_reliable() const {
         return true;
     }
-    static ScalarEvaluator *create(const std::vector<string> &config, int start,
-                                   int &end, bool dry_run);
+
     virtual void reset();
 };
 

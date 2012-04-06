@@ -2,7 +2,7 @@
 #define OPEN_LISTS_OPEN_LIST_H
 
 #include "../evaluator.h"
-
+#include <vector>
 
 template<class Entry>
 class OpenList : public Evaluator {

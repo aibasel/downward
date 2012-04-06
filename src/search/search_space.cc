@@ -13,8 +13,8 @@ using namespace __gnu_cxx;
 
 
 
-SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_)
-    : state_buffer(state_buffer_), info(info_) {
+SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_, OperatorCost cost_type_)
+    : state_buffer(state_buffer_), info(info_), cost_type(cost_type_) {
 }
 
 State SearchNode::get_state() const {
@@ -41,6 +41,10 @@ int SearchNode::get_g() const {
     return info.g;
 }
 
+int SearchNode::get_real_g() const {
+    return info.real_g;
+}
+
 int SearchNode::get_h() const {
     return info.h;
 }
@@ -65,6 +69,7 @@ void SearchNode::open_initial(int h) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
     info.g = 0;
+    info.real_g = 0;
     info.h = h;
     info.parent_state = 0;
     info.creating_operator = 0;
@@ -74,7 +79,8 @@ void SearchNode::open(int h, const SearchNode &parent_node,
                       const Operator *parent_op) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
-    info.g = parent_node.info.g + parent_op->get_cost();
+    info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
+    info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.h = h;
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
@@ -88,7 +94,8 @@ void SearchNode::reopen(const SearchNode &parent_node,
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
     info.status = SearchNodeInfo::OPEN;
-    info.g = parent_node.info.g + parent_op->get_cost();
+    info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
+    info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
 }
@@ -100,7 +107,8 @@ void SearchNode::update_parent(const SearchNode &parent_node,
            info.status == SearchNodeInfo::CLOSED);
     // The latter possibility is for inconsistent heuristics, which
     // may require reopening closed nodes.
-    info.g = parent_node.info.g + parent_op->get_cost();
+    info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
+    info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
 }
@@ -116,7 +124,6 @@ void SearchNode::close() {
 }
 
 void SearchNode::mark_as_dead_end() {
-    assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::DEAD_END;
 }
 
@@ -136,7 +143,8 @@ class SearchSpace::HashTable
 };
 
 
-SearchSpace::SearchSpace() {
+SearchSpace::SearchSpace(OperatorCost cost_type_)
+    : cost_type(cost_type_) {
     nodes = new HashTable;
 }
 
@@ -157,7 +165,7 @@ SearchNode SearchSpace::get_node(const State &state) {
         result.first->first.make_permanent();
     }
     HashTable::iterator iter = result.first;
-    return SearchNode(iter->first.state_data, iter->second);
+    return SearchNode(iter->first.state_data, iter->second, cost_type);
 }
 
 void SearchSpace::trace_path(const State &goal_state,
@@ -193,6 +201,6 @@ void SearchSpace::dump() {
 }
 
 void SearchSpace::statistics() const {
-    cout << "search space hash size: " << nodes->size() << endl;
-    cout << "search space hash bucket count: " << nodes->bucket_count() << endl;
+    cout << "Search space hash size: " << nodes->size() << endl;
+    cout << "Search space hash bucket count: " << nodes->bucket_count() << endl;
 }

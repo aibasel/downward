@@ -12,7 +12,8 @@ using namespace std;
 using namespace __gnu_cxx;
 
 // construction and destruction
-RelaxationHeuristic::RelaxationHeuristic() {
+RelaxationHeuristic::RelaxationHeuristic(const Options &opts)
+    : Heuristic(opts) {
 }
 
 RelaxationHeuristic::~RelaxationHeuristic() {
@@ -37,9 +38,9 @@ void RelaxationHeuristic::initialize() {
 
     // Build unary operators for operators and axioms.
     for (int i = 0; i < g_operators.size(); i++)
-        build_unary_operators(g_operators[i]);
+        build_unary_operators(g_operators[i], i);
     for (int i = 0; i < g_axioms.size(); i++)
-        build_unary_operators(g_axioms[i]);
+        build_unary_operators(g_axioms[i], -1);
 
     // Simplify unary operators.
     simplify();
@@ -52,8 +53,8 @@ void RelaxationHeuristic::initialize() {
     }
 }
 
-void RelaxationHeuristic::build_unary_operators(const Operator &op) {
-    int base_cost = op.is_axiom() ? 0 : 1; //op.get_cost();
+void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
+    int base_cost = get_adjusted_cost(op);
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<Proposition *> precondition;
@@ -79,7 +80,7 @@ void RelaxationHeuristic::build_unary_operators(const Operator &op) {
             assert(eff_cond[j].prev >= 0 && eff_cond[j].prev < g_variable_domain[eff_cond[j].var]);
             precondition.push_back(&propositions[eff_cond[j].var][eff_cond[j].prev]);
         }
-        unary_operators.push_back(UnaryOperator(precondition, effect, &op, base_cost));
+        unary_operators.push_back(UnaryOperator(precondition, effect, op_no, base_cost));
         precondition.erase(precondition.end() - eff_cond.size(), precondition.end());
     }
 }
@@ -101,6 +102,12 @@ public:
     }
 };
 
+
+static bool compare_prop_pointer(const Proposition *p1, const Proposition *p2) {
+    return p1->id < p2->id;
+}
+
+
 void RelaxationHeuristic::simplify() {
     // Remove duplicate or dominated unary operators.
 
@@ -112,6 +119,9 @@ void RelaxationHeuristic::simplify() {
       Then go through the hash_map, checking for each element if
       none of the possible dominators are part of the hash_map.
       Put the element into the new operator vector iff this is the case.
+
+      In both loops, be careful to ensure that a higher-cost operator
+      never dominates a lower-cost operator.
     */
 
 
@@ -124,9 +134,21 @@ void RelaxationHeuristic::simplify() {
 
     for (int i = 0; i < unary_operators.size(); i++) {
         UnaryOperator &op = unary_operators[i];
-        sort(op.precondition.begin(), op.precondition.end());
+        sort(op.precondition.begin(), op.precondition.end(), compare_prop_pointer);
         HashKey key(op.precondition, op.effect);
-        unary_operator_index[key] = i;
+        pair<HashMap::iterator, bool> inserted = unary_operator_index.insert(
+            make_pair(key, i));
+        if (!inserted.second) {
+            // We already had an element with this key; check its cost.
+            HashMap::iterator iter = inserted.first;
+            int old_op_no = iter->second;
+            int old_cost = unary_operators[old_op_no].base_cost;
+            int new_cost = unary_operators[i].base_cost;
+            if (new_cost < old_cost)
+                iter->second = i;
+            assert(unary_operators[unary_operator_index[key]].base_cost ==
+                   min(old_cost, new_cost));
+        }
     }
 
     vector<UnaryOperator> old_unary_operators;
@@ -144,9 +166,16 @@ void RelaxationHeuristic::simplify() {
                 for (int i = 0; i < key.first.size(); i++)
                     if (mask & (1 << i))
                         dominating_key.first.push_back(key.first[i]);
-                if (unary_operator_index.count(dominating_key)) {
-                    match = true;
-                    break;
+                HashMap::iterator found = unary_operator_index.find(
+                    dominating_key);
+                if (found != unary_operator_index.end()) {
+                    int my_cost = old_unary_operators[unary_operator_no].base_cost;
+                    int dominator_op_no = found->second;
+                    int dominator_cost = old_unary_operators[dominator_op_no].base_cost;
+                    if (dominator_cost <= my_cost) {
+                        match = true;
+                        break;
+                    }
                 }
             }
         }

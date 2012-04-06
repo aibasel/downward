@@ -1,6 +1,6 @@
 #include "landmark_cost_assignment.h"
 
-#include "landmarks_graph.h"
+#include "landmark_graph.h"
 
 #ifdef USE_LP
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -32,8 +32,9 @@ typedef OsiCpxSolverInterface OsiXxxSolverInterface;
 using namespace std;
 
 
-LandmarkCostAssignment::LandmarkCostAssignment(LandmarksGraph &graph)
-    : lm_graph(graph) {
+LandmarkCostAssignment::LandmarkCostAssignment(
+    LandmarkGraph &graph, OperatorCost cost_type_)
+    : lm_graph(graph), cost_type(cost_type_) {
 }
 
 
@@ -55,8 +56,8 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 /* Uniform cost partioning */
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    LandmarksGraph &graph, bool use_action_landmarks_)
-    : LandmarkCostAssignment(graph), use_action_landmarks(use_action_landmarks_) {
+    LandmarkGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_)
+    : LandmarkCostAssignment(graph, cost_type_), use_action_landmarks(use_action_landmarks_) {
 }
 
 
@@ -77,7 +78,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     // Along the way, mark action landmarks and add their cost to h.
     for (node_it = nodes.begin(); node_it != nodes.end(); ++node_it) {
         LandmarkNode &node = **node_it;
-        int lmn_status = node.get_status(false);
+        int lmn_status = node.get_status();
         if (lmn_status != lm_reached) {
             const set<int> &achievers = get_achievers(lmn_status, node);
             assert(!achievers.empty());
@@ -89,7 +90,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                     action_landmarks[op_id] = true;
                     const Operator &op = lm_graph.get_operator_for_lookup_index(
                         op_id);
-                    h += op.get_cost();
+                    h += get_adjusted_action_cost(op, cost_type);
                 }
             } else {
                 set<int>::const_iterator ach_it;
@@ -110,7 +111,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     // so that no unnecessary cost is assigned to these landmarks.
     for (node_it = nodes.begin(); node_it != nodes.end(); ++node_it) {
         LandmarkNode &node = **node_it;
-        int lmn_status = node.get_status(false);
+        int lmn_status = node.get_status();
         if (lmn_status != lm_reached) {
             const set<int> &achievers = get_achievers(lmn_status, node);
             set<int>::const_iterator ach_it;
@@ -140,7 +141,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     // Third pass: Count shared costs for the remaining landmarks.
     for (int i = 0; i < relevant_lms.size(); i++) {
         LandmarkNode &node = *relevant_lms[i];
-        int lmn_status = node.get_status(false);
+        int lmn_status = node.get_status();
         const set<int> &achievers = get_achievers(lmn_status, node);
         set<int>::const_iterator ach_it;
         double min_cost = numeric_limits<double>::max();
@@ -152,7 +153,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                 op_id);
             int num_achieved = achieved_lms_by_op[op_id];
             assert(num_achieved >= 1);
-            double shared_cost = double(op.get_cost()) / num_achieved;
+            double shared_cost = double(get_adjusted_action_cost(op, cost_type)) / num_achieved;
             min_cost = min(min_cost, shared_cost);
         }
         h += min_cost;
@@ -161,10 +162,9 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     return h;
 }
 
-
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarksGraph &graph)
-    : LandmarkCostAssignment(graph) {
+    LandmarkGraph &graph, OperatorCost cost_type)
+    : LandmarkCostAssignment(graph, cost_type) {
 #ifdef USE_LP
     si = new OsiXxxSolverInterface();
 #else
@@ -208,7 +208,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
 
         for (int lm_id = 0; lm_id < n_cols; ++lm_id) {
             const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
-            bool reached = (lm->get_status(false) == lm_reached);
+            bool reached = (lm->get_status() == lm_reached);
             objective[lm_id] = 1.0;
             col_lb[lm_id] = 0.0;
             col_ub[lm_id] = reached ? 0.0 : si->getInfinity();
@@ -222,7 +222,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         for (int op_id = 0; op_id < g_operators.size(); ++op_id) {
             const Operator &op = g_operators[op_id];
             row_lb[op_id] = 0;
-            row_ub[op_id] = op.get_cost();
+            row_ub[op_id] = get_adjusted_action_cost(op, cost_type);
         }
 
         // Define the constraint matrix. The constraints are of the form
@@ -236,7 +236,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
 
         for (int lm_id = 0; lm_id < n_cols; ++lm_id) {
             const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
-            int lm_status = lm->get_status(false);
+            int lm_status = lm->get_status();
             if (lm_status != lm_reached) {
                 const set<int> &achievers = get_achievers(lm_status, *lm);
                 assert(!achievers.empty());

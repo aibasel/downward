@@ -18,6 +18,8 @@ private:
     int evaluations;      // nr of heuristic evaluations performed
     int generated_states; // nr states created in total (plus those removed since already in close list)
     int reopened_states;  // nr of *closed* states which we reopened
+    int dead_end_states;
+
     int generated_ops;    // nr of operators that were returned as applicable
     int pathmax_corrections; // nr of pathmax corrections;
 
@@ -29,9 +31,9 @@ private:
     int lastjump_generated_states;
 
     // h-statistics
-    vector<int> best_heuristic_values; // best heuristic values so far
-    vector<int> initial_h_values; // h values of the initial state
-    vector<Heuristic *> heuristics;
+    std::vector<int> best_heuristic_values; // best heuristic values so far
+    std::vector<int> initial_h_values; // h values of the initial state
+    std::vector<Heuristic *> heuristics;
 public:
     SearchProgress();
     virtual ~SearchProgress();
@@ -46,6 +48,7 @@ public:
     void inc_generated_ops(int inc = 1) {generated_ops += inc; }
     void inc_pathmax_corrections(int inc = 1) {pathmax_corrections += inc; }
     void inc_evaluations(int inc = 1) {evaluations += inc; }
+    void inc_dead_ends(int inc = 1) {dead_end_states += inc; }
 
     //statistics access
     int get_expanded() const {return expanded_states; }

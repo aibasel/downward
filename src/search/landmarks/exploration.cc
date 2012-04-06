@@ -27,7 +27,9 @@ using namespace __gnu_cxx;
 */
 
 // Construction and destruction
-Exploration::Exploration() {
+Exploration::Exploration(const Options &opts)
+    : Heuristic(opts),
+      did_write_overflow_warning(false) {
     cout << "Initializing Exploration..." << endl;
 
     // Build propositions.
@@ -68,6 +70,28 @@ Exploration::Exploration() {
 Exploration::~Exploration() {
 }
 
+void Exploration::increase_cost(int &cost, int amount) {
+    assert(cost >= 0);
+    assert(amount >= 0);
+    cost += amount;
+    if (cost > MAX_COST_VALUE) {
+        write_overflow_warning();
+        cost = MAX_COST_VALUE;
+    }
+}
+
+void Exploration::write_overflow_warning() {
+    if (!did_write_overflow_warning) {
+        // TODO: Should have a planner-wide warning mechanism to handle
+        // things like this.
+        cout << "WARNING: overflow on LAMA/FF synergy h^add! Costs clamped to "
+             << MAX_COST_VALUE << endl;
+        cout << "WARNING: overflow on LAMA/FF synergy h^add! Costs clamped to "
+             << MAX_COST_VALUE << endl;
+        did_write_overflow_warning = true;
+    }
+}
+
 void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_goals) {
     //Clear previous additional goals.
     for (int i = 0; i < termination_propositions.size(); i++) {
@@ -93,7 +117,7 @@ void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_g
 
 void Exploration::build_unary_operators(const Operator &op) {
     // Note: changed from the original to allow sorting of operator conditions
-    int base_cost = op.get_cost();
+    int base_cost = get_adjusted_cost(op);
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<ExProposition *> precondition;
@@ -156,7 +180,7 @@ void Exploration::setup_exploration_queue(const State &state,
                                           const hash_set<const Operator *,
                                                          ex_hash_operator_ptr> &excluded_ops,
                                           bool use_h_max = false) {
-    reachable_queue.clear();
+    prop_queue.clear();
 
     for (int var = 0; var < propositions.size(); var++) {
         for (int value = 0; value < propositions[var].size(); value++) {
@@ -164,6 +188,7 @@ void Exploration::setup_exploration_queue(const State &state,
             prop.h_add_cost = -1;
             prop.h_max_cost = -1;
             prop.depth = -1;
+            prop.marked = false;
         }
     }
     if (excluded_props.size() > 0) {
@@ -202,46 +227,40 @@ void Exploration::setup_exploration_queue(const State &state,
 
 void Exploration::relaxed_exploration(bool use_h_max = false, bool level_out = false) {
     int unsolved_goals = termination_propositions.size();
-    for (int distance = 0; distance < reachable_queue.size(); distance++) {
-        for (;;) {
-            Bucket &bucket = reachable_queue[distance];
-            // NOTE: Cannot set "bucket" outside the loop because the
-            //       reference can change if reachable_queue is
-            //       resized.
-            if (bucket.empty())
-                break;
-            ExProposition *prop = bucket.back();
-            bucket.pop_back();
-            int prop_cost;
-            if (use_h_max)
-                prop_cost = prop->h_max_cost;
-            else
-                prop_cost = prop->h_add_cost;
-            assert(prop_cost <= distance);
-            if (prop_cost < distance)
+    while (!prop_queue.empty()) {
+        pair<int, ExProposition *> top_pair = prop_queue.pop();
+        int distance = top_pair.first;
+        ExProposition *prop = top_pair.second;
+
+        int prop_cost;
+        if (use_h_max)
+            prop_cost = prop->h_max_cost;
+        else
+            prop_cost = prop->h_add_cost;
+        assert(prop_cost <= distance);
+        if (prop_cost < distance)
+            continue;
+        if (!level_out && prop->is_termination_condition && --unsolved_goals == 0)
+            return;
+        const vector<ExUnaryOperator *> &triggered_operators = prop->precondition_of;
+        for (int i = 0; i < triggered_operators.size(); i++) {
+            ExUnaryOperator *unary_op = triggered_operators[i];
+            if (unary_op->h_add_cost == -2) // operator is not applied
                 continue;
-            if (!level_out && prop->is_termination_condition && --unsolved_goals == 0)
-                return;
-            const vector<ExUnaryOperator *> &triggered_operators = prop->precondition_of;
-            for (int i = 0; i < triggered_operators.size(); i++) {
-                ExUnaryOperator *unary_op = triggered_operators[i];
-                if (unary_op->h_add_cost == -2) // operator is not applied
-                    continue;
-                unary_op->unsatisfied_preconditions--;
-                unary_op->h_add_cost += prop_cost;
-                unary_op->h_max_cost = max(prop_cost + unary_op->base_cost,
-                                           unary_op->h_max_cost);
-                unary_op->depth = max(unary_op->depth, prop->depth);
-                assert(unary_op->unsatisfied_preconditions >= 0);
-                if (unary_op->unsatisfied_preconditions == 0) {
-                    int depth = unary_op->op->is_axiom() ? unary_op->depth : unary_op->depth + 1;
-                    if (use_h_max)
-                        enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
-                                             depth, unary_op, use_h_max);
-                    else
-                        enqueue_if_necessary(unary_op->effect, unary_op->h_add_cost,
-                                             depth, unary_op, use_h_max);
-                }
+            unary_op->unsatisfied_preconditions--;
+            increase_cost(unary_op->h_add_cost, prop_cost);
+            unary_op->h_max_cost = max(prop_cost + unary_op->base_cost,
+                                       unary_op->h_max_cost);
+            unary_op->depth = max(unary_op->depth, prop->depth);
+            assert(unary_op->unsatisfied_preconditions >= 0);
+            if (unary_op->unsatisfied_preconditions == 0) {
+                int depth = unary_op->op->is_axiom() ? unary_op->depth : unary_op->depth + 1;
+                if (use_h_max)
+                    enqueue_if_necessary(unary_op->effect, unary_op->h_max_cost,
+                                         depth, unary_op, use_h_max);
+                else
+                    enqueue_if_necessary(unary_op->effect, unary_op->h_add_cost,
+                                         depth, unary_op, use_h_max);
             }
         }
     }
@@ -255,16 +274,12 @@ void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
         prop->h_max_cost = cost;
         prop->depth = depth;
         prop->reached_by = op;
-        if (cost >= reachable_queue.size())
-            reachable_queue.resize(cost + 1);
-        reachable_queue[cost].push_back(prop);
+        prop_queue.push(cost, prop);
     } else if (!use_h_max && (prop->h_add_cost == -1 || prop->h_add_cost > cost)) {
         prop->h_add_cost = cost;
         prop->depth = depth;
         prop->reached_by = op;
-        if (cost >= reachable_queue.size())
-            reachable_queue.resize(cost + 1);
-        reachable_queue[cost].push_back(prop);
+        prop_queue.push(cost, prop);
     }
     if (use_h_max)
         assert(prop->h_max_cost != -1 &&
@@ -281,7 +296,7 @@ int Exploration::compute_hsp_add_heuristic() {
         int prop_cost = goal_propositions[i]->h_add_cost;
         if (prop_cost == -1)
             return DEAD_END;
-        total_cost += prop_cost;
+        increase_cost(total_cost, prop_cost);
     }
     return total_cost;
 }
@@ -312,62 +327,41 @@ int Exploration::compute_ff_heuristic(const State &state) {
     if (h_add_heuristic == DEAD_END) {
         return DEAD_END;
     } else {
-        RelaxedPlan relaxed_plan;
-        relaxed_plan.resize(2 * h_add_heuristic);
+        relaxed_plan.clear();
         // Collecting the relaxed plan also marks helpful actions as preferred.
         for (int i = 0; i < goal_propositions.size(); i++)
             collect_relaxed_plan(goal_propositions[i], relaxed_plan, state);
         int cost = 0;
         RelaxedPlan::iterator it = relaxed_plan.begin();
         for (; it != relaxed_plan.end(); ++it)
-            cost += (*it)->get_cost();
+            cost += get_adjusted_cost(**it);
         return cost;
     }
 }
 
 void Exploration::collect_relaxed_plan(ExProposition *goal,
                                        RelaxedPlan &relaxed_plan, const State &state) {
-    ExUnaryOperator *unary_op = goal->reached_by;
-    if (unary_op) { // We have not yet chained back to a start node.
-        for (int i = 0; i < unary_op->precondition.size(); i++)
-            collect_relaxed_plan(unary_op->precondition[i], relaxed_plan, state);
-        const Operator *op = unary_op->op;
-        bool added_to_relaxed_plan = false;
-        //if(!op->is_axiom()) // Using axioms in the relaxed plan actually
-        //improves performance in many domains... We need to look into this.
-        added_to_relaxed_plan = relaxed_plan.insert(op).second;
+    if (!goal->marked) { // Only consider each subgoal once.
+        goal->marked = true;
+        ExUnaryOperator *unary_op = goal->reached_by;
+        if (unary_op) { // We have not yet chained back to a start node.
+            for (int i = 0; i < unary_op->precondition.size(); i++)
+                collect_relaxed_plan(unary_op->precondition[i], relaxed_plan, state);
+            const Operator *op = unary_op->op;
+            bool added_to_relaxed_plan = false;
+            //if(!op->is_axiom()) // Using axioms in the relaxed plan actually
+            //improves performance in many domains... We need to look into this.
+            added_to_relaxed_plan = relaxed_plan.insert(op).second;
 
-        assert(unary_op->depth != -1);
-        if (added_to_relaxed_plan
-            && unary_op->h_add_cost == unary_op->base_cost
-            && unary_op->depth == 0
-            && !op->is_axiom()) {
-            set_preferred(op);
-            assert(op->is_applicable(state));
+            assert(unary_op->depth != -1);
+            if (added_to_relaxed_plan
+                && unary_op->h_add_cost == unary_op->base_cost
+                && unary_op->depth == 0
+                && !op->is_axiom()) {
+                set_preferred(op);
+                assert(op->is_applicable(state));
+            }
         }
-    }
-}
-
-int Exploration::compute_ff_heuristic_with_excludes(const State &state,
-                                                    const vector<pair<int, int> > &excluded_props,
-                                                    const hash_set<const Operator *, ex_hash_operator_ptr> &excluded_ops) {
-    bool use_h_max = true;
-    bool level_out = false;
-    setup_exploration_queue(state, excluded_props, excluded_ops, use_h_max);
-    relaxed_exploration(use_h_max, level_out);
-    int h = 0;
-    if (use_h_max)
-        h = compute_hsp_max_heuristic();
-    else
-        h = compute_hsp_add_heuristic();
-    if (h == DEAD_END) {
-        return DEAD_END;
-    } else {
-        RelaxedPlan relaxed_plan;
-        // Collecting the relaxed plan also marks helpful actions as preferred.
-        for (int i = 0; i < goal_propositions.size(); i++)
-            collect_relaxed_plan(goal_propositions[i], relaxed_plan, state);
-        return relaxed_plan.size();
     }
 }
 
@@ -474,9 +468,9 @@ bool is_landmark(vector<pair<int, int> > &landmarks, int var, int val) {
     return false;
 }
 
-int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
-                               const State &state) {
-    RelaxedPlan relaxed_plan;
+bool Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
+                                const State &state) {
+    relaxed_plan.clear();
     // generate plan to reach part of disj. goal OR if no landmarks given, plan to real goal
     if (!landmarks.empty()) {
         // search for quickest achievable landmark leaves
@@ -488,8 +482,8 @@ int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
         for (int i = 0; i < termination_propositions.size(); i++) {
             const int prop_cost = termination_propositions[i]->h_add_cost;
             if (prop_cost == -1 && is_landmark(landmarks, termination_propositions[i]->var,
-                                               termination_propositions[i]->val)) { // DEAD_END
-                return DEAD_END;
+                                               termination_propositions[i]->val)) {
+                return false; // dead end
             }
             if (prop_cost < min_cost && is_landmark(landmarks, termination_propositions[i]->var,
                                                     termination_propositions[i]->val)) {
@@ -498,7 +492,6 @@ int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
             }
         }
         assert(target != NULL);
-        relaxed_plan.resize(2 * min_cost);
         assert(exported_ops.empty());
         collect_ha(target, relaxed_plan, state);
     } else {
@@ -508,9 +501,9 @@ int Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
         }
         for (int i = 0; i < goal_propositions.size(); i++) {
             if (goal_propositions[i]->h_add_cost == -1)
-                return DEAD_END;
+                return false;  // dead end
             collect_ha(goal_propositions[i], relaxed_plan, state);
         }
     }
-    return relaxed_plan.size();
+    return true;
 }

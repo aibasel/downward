@@ -4,40 +4,47 @@
 #include "../scalar_evaluator.h"
 #include "../option_parser.h"
 
-#include <iostream>
 #include <cassert>
-#include <limits>
 
 using namespace std;
-template<class Entry>
-OpenList<Entry> *StandardScalarOpenList<Entry>::create(
-    const std::vector<string> &config, int start, int &end, bool dry_run) {
-    std::vector<ScalarEvaluator *> evaluators;
-    bool only_pref_ = false;
-    NamedOptionParser named_option_parser;
-    named_option_parser.add_bool_option("pref_only", &only_pref_,
-                                        "insert only preferred operators");
-    OptionParser *parser = OptionParser::instance();
-    parser->parse_evals_and_options(config, start, end, evaluators,
-                                    named_option_parser, true, dry_run);
 
-    if (dry_run)
+
+template<class Entry>
+OpenList<Entry> *StandardScalarOpenList<Entry>::_parse(OptionParser &parser) {
+    parser.add_list_option<ScalarEvaluator *>("evaluators");
+    parser.add_option<bool>("pref_only", false,
+                            "insert only preferred operators");
+    Options opts = parser.parse();
+
+    opts.verify_list_non_empty<ScalarEvaluator *>("evaluators");
+    /* NOTE: should size be exactly one? Similar in BucketOpenList.
+       And in that case, why was there a parser call to parse a whole
+       list in the old version? */
+
+    if (parser.dry_run())
         return 0;
     else
-        return new StandardScalarOpenList<Entry>(evaluators[0], only_pref_);
+        return new StandardScalarOpenList<Entry>(opts);
 }
 
 /*
-  Bucket-based implementation of a open list.
-  Nodes with identical heuristic value are expanded in FIFO order.
+  Open list indexed by a single int, using FIFO tie-breaking.
+  Implemented as a map from int to deques.
 */
 
 template<class Entry>
-StandardScalarOpenList<Entry>::StandardScalarOpenList(ScalarEvaluator *eval,
-                                                      bool preferred_only)
-    : OpenList<Entry>(preferred_only), size(0), evaluator(eval) {
-    lowest_bucket = numeric_limits<int>::max();
+StandardScalarOpenList<Entry>::StandardScalarOpenList(const Options &opts)
+    : OpenList<Entry>(opts.get<bool>("pref_only")),
+      size(0),
+      evaluator(opts.get_list<ScalarEvaluator *>("evaluators")[0]) {
 }
+
+template<class Entry>
+StandardScalarOpenList<Entry>::StandardScalarOpenList(
+    ScalarEvaluator *eval, bool preferred_only)
+    : OpenList<Entry>(preferred_only), size(0), evaluator(eval) {
+}
+
 
 template<class Entry>
 StandardScalarOpenList<Entry>::~StandardScalarOpenList() {
@@ -47,12 +54,9 @@ template<class Entry>
 int StandardScalarOpenList<Entry>::insert(const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
         return 0;
-    if (dead_end) {
+    if (dead_end)
         return 0;
-    }
     int key = last_evaluated_value;
-    if (key < lowest_bucket)
-        lowest_bucket = key;
     buckets[key].push_back(entry);
     size++;
     return 1;
@@ -62,19 +66,18 @@ template<class Entry>
 Entry StandardScalarOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
     typename std::map<int, Bucket>::iterator it;
-    it = buckets.find(lowest_bucket);
+    it = buckets.begin();
     assert(it != buckets.end());
-    while (it->second.empty())
-        ++it;
-    assert(it != buckets.end());
-    lowest_bucket = it->first;
-    size--;
     if (key) {
         assert(key->empty());
-        key->push_back(lowest_bucket);
+        key->push_back(it->first);
     }
+    assert(!it->second.empty());
     Entry result = it->second.front();
     it->second.pop_front();
+    if (it->second.empty())
+        buckets.erase(it);
+    --size;
     return result;
 }
 
@@ -87,7 +90,6 @@ bool StandardScalarOpenList<Entry>::empty() const {
 template<class Entry>
 void StandardScalarOpenList<Entry>::clear() {
     buckets.clear();
-    lowest_bucket = numeric_limits<int>::max();
     size = 0;
 }
 
@@ -111,8 +113,8 @@ bool StandardScalarOpenList<Entry>::dead_end_is_reliable() const {
 }
 
 template<class Entry>
-void StandardScalarOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *>
-                                                            &hset) {
+void StandardScalarOpenList<Entry>::get_involved_heuristics(
+    std::set<Heuristic *> &hset) {
     evaluator->get_involved_heuristics(hset);
 }
 #endif
