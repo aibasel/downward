@@ -72,6 +72,10 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
                 return None
             condition[var] = set([val])
 
+    def number_of_values(var_vals_pair):
+        var, vals = var_vals_pair
+        return len(vals)
+
     for fact in conditions:
         if fact.negated:
            ## Note  Here we use a different solution than in Sec. 10.6.4
@@ -114,16 +118,12 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
                 # this atom. So we need to introduce a new condition:
                 # We can select any from new_condition and currently prefer the
                 # smalles one.
-                candidates = sorted(list(new_condition.items()),
-                                    lambda x,y: cmp(len(x[1]),len(y[1])))
+                candidates = sorted(new_condition.items(), key=number_of_values)
                 var, vals = candidates[0]
                 condition[var] = vals
 
         def multiply_out(condition): # destroys the input
-            def length(item):
-                var, vals = item
-                return len(vals)
-            sorted_conds = sorted(condition.items(), key=length)
+            sorted_conds = sorted(condition.items(), key=number_of_values)
             flat_conds = [{}]
             for var, vals in sorted_conds:
                 if len(vals) == 1:
