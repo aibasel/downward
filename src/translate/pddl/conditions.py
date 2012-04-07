@@ -68,6 +68,8 @@ class Condition(object):
         return self.hash
     def __ne__(self, other):
         return not self == other
+    def __lt__(self, other):
+        return self.hash < other.hash
     def dump(self, indent="  "):
         print("%s%s" % (indent, self._dump()))
         for part in self.parts:
