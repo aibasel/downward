@@ -122,6 +122,8 @@ class Condition(object):
         return False
 
 class ConstantCondition(Condition):
+    # Classes defining __eq__ must explicitly define __hash__ as well.
+    __hash__ = Condition.__hash__
     parts = ()
     def __init__(self):
         self.hash = hash(self.__class__)
@@ -148,15 +150,13 @@ class Truth(ConstantCondition):
         return Falsity()
 
 class JunctorCondition(Condition):
+    # Classes defining __eq__ must explicitly define __hash__ as well.
+    __hash__ = Condition.__hash__
     def __eq__(self, other):
         # Compare hash first for speed reasons.
         return (self.hash == other.hash and
                 self.__class__ is other.__class__ and
                 self.parts == other.parts)
-    def __hash__(self):
-        # Redefined here, because Condition.__hash__ is not correctly
-        # inherited.
-        return self.hash
     def change_parts(self, parts):
         return self.__class__(parts)
 
@@ -208,6 +208,8 @@ class Disjunction(JunctorCondition):
         return True
 
 class QuantifiedCondition(Condition):
+    # Classes defining __eq__ must explicitly define __hash__ as well.
+    __hash__ = Condition.__hash__
     def __init__(self, parameters, parts):
         self.parameters = tuple(parameters)
         self.parts = tuple(parts)
@@ -266,6 +268,8 @@ class ExistentialCondition(QuantifiedCondition):
         return True
 
 class Literal(Condition):
+    # Classes defining __eq__ must explicitly define __hash__ as well.
+    __hash__ = Condition.__hash__
     parts = []
     def __init__(self, predicate, args):
         self.predicate = predicate
@@ -277,10 +281,6 @@ class Literal(Condition):
                 self.__class__ is other.__class__ and
                 self.predicate == other.predicate and
                 self.args == other.args)
-    def __hash__(self):
-        # Redefined here, because Condition.__hash__ is not correctly
-        # inherited.
-        return self.hash
     def __str__(self):
         return "%s %s(%s)" % (self.__class__.__name__, self.predicate,
                               ", ".join(map(str, self.args)))
