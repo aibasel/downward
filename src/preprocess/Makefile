@@ -78,10 +78,22 @@ CCOPT += -m32
 CCOPT += -g
 CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 
-## The following line is a HACK to cross-compile a 64-bit executable
-## on a 32-bit Ubuntu machine (it also needs the -m32 to be changed to
-## -m64, of course.) See http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
-CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+## The following lines contain workarounds for bugs when
+## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
+## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
+## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
+## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
+
+HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
+HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
+
+ifdef HAVE_GCC_4_4
+    CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+endif
+
+ifdef HAVE_GCC_4_5
+    CCOPT += -I/usr/include/c++/4.5/i686-linux-gnu
+endif
 
 LINKOPT  =
 LINKOPT += -m32
