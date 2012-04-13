@@ -1,0 +1,13 @@
+#! /bin/bash
+
+set -e
+
+python2.7 test-translator.py
+python3 test-translator.py
+
+rm -f output.sas
+
+echo "TESTS PASSED"
+
+
+
