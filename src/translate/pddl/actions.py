@@ -26,7 +26,8 @@ class Action(object):
         return "<Action %r at %#x>" % (self.name, id(self))
     def parse(alist):
         iterator = iter(alist)
-        assert next(iterator) == ":action"
+        action_tag = next(iterator)
+        assert action_tag == ":action"
         name = next(iterator)
         parameters_tag_opt = next(iterator)
         if parameters_tag_opt == ":parameters":

@@ -168,7 +168,8 @@ def parse_domain(domain_pddl):
 def parse_task(task_pddl):
     iterator = iter(task_pddl)
 
-    assert next(iterator) == "define"
+    define_tag = next(iterator)
+    assert define_tag == "define"
     problem_line = next(iterator)
     assert problem_line[0] == "problem" and len(problem_line) == 2
     yield problem_line[1]
