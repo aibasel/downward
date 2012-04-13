@@ -48,8 +48,7 @@ class GroupCoverQueue:
             self.max_size = 0
     def __bool__(self):
         return self.max_size > 1
-    def __nonzero__(self):
-        return self.__bool__()
+    __nonzero__ = __bool__
     def pop(self):
         result = list(self.top) # Copy; this group will shrink further.
         if self.partial_encoding:

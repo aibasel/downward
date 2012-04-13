@@ -70,6 +70,12 @@ class Condition(object):
         return not self == other
     def __lt__(self, other):
         return self.hash < other.hash
+    def __le__(self, other):
+        return self.hash <= other.hash
+    def __gt__(self, other):
+        return self.hash > other.hash
+    def __ge__(self, other):
+        return self.hash >= other.hash
     def dump(self, indent="  "):
         print("%s%s" % (indent, self._dump()))
         for part in self.parts:

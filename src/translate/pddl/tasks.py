@@ -99,7 +99,8 @@ class Requirements(object):
 def parse_domain(domain_pddl):
     iterator = iter(domain_pddl)
 
-    assert next(iterator) == "define"
+    define_tag = next(iterator)
+    assert define_tag == "define"
     domain_line = next(iterator)
     assert domain_line[0] == "domain" and len(domain_line) == 2
     yield domain_line[1]

@@ -34,7 +34,6 @@ def get_tasks():
         path = os.path.join(BENCHMARKS, domain)
         tasks = [os.path.join(BENCHMARKS, domain, f)
                  for f in sorted(os.listdir(path)) if not 'domain' in f]
-        tasks.sort()
         yield tasks[0]
 
 

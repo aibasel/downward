@@ -46,7 +46,7 @@ class BalanceChecker(object):
         if reachable_action_params is None or len(action.parameters) < 2:
             return action
         inequal_params = []
-        combs = itertools.combinations(list(range(len(action.parameters))), 2)
+        combs = itertools.combinations(range(len(action.parameters)), 2)
         for pos1, pos2 in combs:
             for params in reachable_action_params[action]:
                 if params[pos1] == params[pos2]:
@@ -77,8 +77,8 @@ def get_fluents(task):
 
 def get_initial_invariants(task):
     for predicate in get_fluents(task):
-        all_args = list(range(len(predicate.arguments)))
-        for omitted_arg in [-1] + all_args:
+        all_args = list(range(-1, len(predicate.arguments)))
+        for omitted_arg in all_args:
             order = [i for i in all_args if i != omitted_arg]
             part = invariants.InvariantPart(predicate.name, order, omitted_arg)
             yield invariants.Invariant((part,))
