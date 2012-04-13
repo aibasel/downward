@@ -348,7 +348,7 @@ class Invariant:
 
     def lhs_satisfiable(self, renaming, lhs_by_pred):
         system = renaming.copy()
-        ensure_conjunction_sat(system, *itertools.chain(list(lhs_by_pred.values())))
+        ensure_conjunction_sat(system, *itertools.chain(lhs_by_pred.values()))
         return system.is_solvable()
 
     def imply_del_effect(self, del_effect, lhs_by_pred):

@@ -198,8 +198,7 @@ class Unifier:
         newroot = root._insert(constant_arguments, (rule, cond_index))
         self.predicate_to_rule_generator[condition.predicate] = newroot
     def dump(self):
-        predicates = list(self.predicate_to_rule_generator.keys())
-        predicates.sort()
+        predicates = sorted(self.predicate_to_rule_generator)
         print("Unifier:")
         for pred in predicates:
             print("    %s:" % pred)
@@ -273,7 +272,7 @@ class MatchGenerator:
             print("%sargs[%s] == %s:" % (indent, self.index, key))
             self.match_generator[key].dump(indent + "    ")
         if not self.next.empty():
-            assert isinstance(self.__next__, MatchGenerator)
+            assert isinstance(self.next, MatchGenerator)
             print("%s[*]" % indent)
             self.next.dump(indent + "    ")
 
@@ -286,8 +285,7 @@ class Queue:
         self.num_pushes = len(atoms)
     def __bool__(self):
         return self.queue_pos < len(self.queue)
-    def __nonzero__(self):
-        return self.__bool__()
+    __nonzero__ = __bool__
     def push(self, predicate, args):
         self.num_pushes += 1
         eff_tuple = (predicate,) + tuple(args)
