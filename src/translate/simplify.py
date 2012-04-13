@@ -231,8 +231,8 @@ class VarValueRenaming(object):
             raise DoesNothing
         axiom.effect = new_var, new_value
 
-    def translate_pre_post(self, xxx_todo_changeme):
-        (var_no, pre, post, cond) = xxx_todo_changeme
+    def translate_pre_post(self, pre_post_tuple):
+        (var_no, pre, post, cond) = pre_post_tuple
         new_var_no, new_post = self.translate_pair((var_no, post))
         if pre == -1:
             new_pre = -1
@@ -253,8 +253,8 @@ class VarValueRenaming(object):
             raise DoesNothing
         return new_var_no, new_pre, new_post, cond
 
-    def translate_pair(self, xxx_todo_changeme1):
-        (var_no, value) = xxx_todo_changeme1
+    def translate_pair(self, fact_pair):
+        (var_no, value) = fact_pair
         new_var_no = self.new_var_nos[var_no]
         new_value = self.new_values[var_no][value]
         return new_var_no, new_value

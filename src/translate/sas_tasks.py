@@ -50,7 +50,7 @@ class SASVariables:
         self.axiom_layers = axiom_layers
         self.value_names = value_names
     def dump(self):
-        for var, (rang, axiom_layer) in enumerate(list(zip(self.ranges, self.axiom_layers))):
+        for var, (rang, axiom_layer) in enumerate(zip(self.ranges, self.axiom_layers)):
             if axiom_layer != -1:
                 axiom_str = " [axiom layer %d]" % axiom_layer
             else:
@@ -58,8 +58,8 @@ class SASVariables:
             print("v%d in {%s}%s" % (var, list(range(rang)), axiom_str))
     def output(self, stream):
         print(len(self.ranges), file=stream)
-        for var, (rang, axiom_layer, values) in enumerate(list(zip(
-                self.ranges, self.axiom_layers, self.value_names))):
+        for var, (rang, axiom_layer, values) in enumerate(zip(
+                self.ranges, self.axiom_layers, self.value_names)):
             print("begin_variable", file=stream)
             print("var%d" % var, file=stream)
             print(axiom_layer, file=stream)
