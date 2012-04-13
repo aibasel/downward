@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import io
 import sys
 import os.path
 import re
@@ -10,14 +11,15 @@ from . import tasks
 
 def parse_pddl_file(type, filename):
     try:
-        return parser.parse_nested_list(open(filename))
+        # The builtin open function is shadowed by this module's open function.
+        return parser.parse_nested_list(io.open(filename))
     except IOError as e:
         raise SystemExit("Error: Could not read file: %s\nReason: %s." %
                          (e.filename, e))
     except parser.ParseError as e:
         raise SystemExit("Error: Could not parse %s file: %s\n" % (type, filename))
 
-def open_pddl_file(task_filename=None, domain_filename=None):
+def open(task_filename=None, domain_filename=None):
     if task_filename is None:
         if len(sys.argv) not in (2, 3):
             raise SystemExit("Error: Need exactly one or two command line arguments.\n"

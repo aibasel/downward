@@ -19,7 +19,7 @@ import timers
 def translate_task(task_file):
     timer = timers.Timer()
     with timers.timing("Parsing"):
-        task = pddl.open_pddl_file(task_file)
+        task = pddl.open(task_file)
 
     sas_task = translate.pddl_to_sas(task)
     translate.dump_statistics(sas_task)
