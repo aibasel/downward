@@ -1,6 +1,12 @@
 #! /usr/bin/env python
 
-import io
+try:
+    # Python 3.x
+    import builtins
+except ImportError:
+    # Python 2.x
+    import __builtin__ as builtins
+
 import sys
 import os.path
 import re
@@ -12,7 +18,7 @@ from . import tasks
 def parse_pddl_file(type, filename):
     try:
         # The builtin open function is shadowed by this module's open function.
-        return parser.parse_nested_list(io.open(filename))
+        return parser.parse_nested_list(builtins.open(filename))
     except IOError as e:
         raise SystemExit("Error: Could not read file: %s\nReason: %s." %
                          (e.filename, e))
