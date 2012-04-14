@@ -126,7 +126,7 @@ class Condition(object):
         return False
 
 class ConstantCondition(Condition):
-    # Classes defining __eq__ must explicitly define __hash__ as well.
+    # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
     __hash__ = Condition.__hash__
     parts = ()
     def __init__(self):
@@ -154,7 +154,7 @@ class Truth(ConstantCondition):
         return Falsity()
 
 class JunctorCondition(Condition):
-    # Classes defining __eq__ must explicitly define __hash__ as well.
+    # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
     __hash__ = Condition.__hash__
     def __eq__(self, other):
         # Compare hash first for speed reasons.
@@ -212,7 +212,7 @@ class Disjunction(JunctorCondition):
         return True
 
 class QuantifiedCondition(Condition):
-    # Classes defining __eq__ must explicitly define __hash__ as well.
+    # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
     __hash__ = Condition.__hash__
     def __init__(self, parameters, parts):
         self.parameters = tuple(parameters)
@@ -272,7 +272,7 @@ class ExistentialCondition(QuantifiedCondition):
         return True
 
 class Literal(Condition):
-    # Classes defining __eq__ must explicitly define __hash__ as well.
+    # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
     __hash__ = Condition.__hash__
     parts = []
     def __init__(self, predicate, args):
