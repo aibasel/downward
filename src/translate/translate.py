@@ -581,5 +581,6 @@ if __name__ == "__main__":
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):
-        sas_task.output(open("output.sas", "w"))
+        with open("output.sas", "w") as output_file:
+            sas_task.output(output_file)
     print("Done! %s" % timer)
