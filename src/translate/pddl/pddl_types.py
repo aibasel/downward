@@ -50,6 +50,7 @@ class TypedObject(object):
                 type_map[new_name] = self.type
                 return TypedObject(new_name, self.type)
     def to_untyped_strips(self):
+        # TODO: Try to resolve the cyclic import differently.
         # Avoid cyclic import.
         from . import conditions
         return conditions.Atom(self.type, [self.name])
