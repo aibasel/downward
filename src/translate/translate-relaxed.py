@@ -151,7 +151,7 @@ def translate_strips_operator(operator, dictionary, ranges):
             del condition[var]
         for eff_condition in eff_condition_lists:
             pre_post.append((var, pre, post, eff_condition))
-    prevail = list(condition.items())
+    prevail = condition.items()
 
     return sas_tasks.SASOperator(operator.name, prevail, pre_post, operator.cost)
 
