@@ -5,7 +5,6 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
-#include <sstream>
 using namespace std;
 
 #ifdef __APPLE__
@@ -74,11 +73,7 @@ int get_peak_memory_in_kb() {
                   &t_info_count) == KERN_SUCCESS)
         memory_in_kb = t_info.virtual_size / 1024;
 #else
-    ostringstream filename_stream;
-    filename_stream << "/proc/" << getpid() << "/status";
-    const char *filename = filename_stream.str().c_str();
-
-    ifstream procfile(filename);
+    ifstream procfile("/proc/self/status");
     string word;
     while (procfile.good()) {
         procfile >> word;
