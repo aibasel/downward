@@ -11,13 +11,13 @@ except ImportError: # before Python 2.6
         for sequence in sequences:
             result = [x + (y,) for x in result for y in sequence]
         return result
-        
+
 
 def cartesian_product(sequences):
     # TODO: Rename this. It's not good that we have two functions
     # called "product" and "cartesian_product", of which "product"
     # computes cartesian products, while "cartesian_product" does not.
-    
+
     # This isn't actually a proper cartesian product because we
     # concatenate lists, rather than forming sequences of atomic elements.
     # We could probably also use something like
@@ -30,7 +30,7 @@ def cartesian_product(sequences):
         for item in sequences[0]:
             for sequence in temp:
                 yield item + sequence
-    
+
 
 def permutations(alist):
     # TODO: As of Python 2.6, there is a built-in way of computing
@@ -38,7 +38,7 @@ def permutations(alist):
     # order (lexicographic). We should probably ultimately switch to
     # that, but not without testing performance since it can change
     # the behaviour of invariant synthesis.
-    
+
     # Note: The list is changed in place as the algorithm is performed.
     #       The original value is restored when we are done.
     #       Since this is a generator, the caller must be aware
@@ -68,3 +68,16 @@ def permutations(alist):
                     c[j] = q
                     break
                 d[j] = -d[j]
+
+
+def get_peak_memory_in_kb():
+    try:
+        # This will only work on Linux/Unix systems.
+        with open("/proc/self/status") as status_file:
+            for line in status_file:
+                parts = line.split()
+                if parts[0] == "VmPeak:":
+                    return int(parts[1])
+    except IOError:
+        print "warning: could not determine translator peak memory"
+    return -1
