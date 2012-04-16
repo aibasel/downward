@@ -80,4 +80,4 @@ def get_peak_memory_in_kb():
                     return int(parts[1])
     except IOError:
         pass
-    raise Warning("warning: could not determine translator peak memory")
+    raise Warning("warning: could not determine peak memory")
