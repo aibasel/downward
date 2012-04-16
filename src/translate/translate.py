@@ -568,7 +568,7 @@ def dump_statistics(sas_task):
     try:
         peak_memory = tools.get_peak_memory_in_kb()
     except Warning as warning:
-        print warning
+        print(warning)
     else:
         print("Translator peak memory: %d KB" % peak_memory)
 
