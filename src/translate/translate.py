@@ -11,6 +11,7 @@ import pddl
 import sas_tasks
 import simplify
 import timers
+import tools
 
 # TODO: The translator may generate trivial derived variables which are always true,
 # for example if there ia a derived predicate in the input that only depends on
@@ -560,6 +561,7 @@ def dump_statistics(sas_task):
            sum(mutex.get_encoding_size() for mutex in sas_task.mutexes))
     print "Translator operators: %d" % len(sas_task.operators)
     print "Translator task size: %d" % sas_task.get_encoding_size()
+    print "Translator peak memory: %d KB" % tools.get_peak_memory_in_kb()
 
 
 if __name__ == "__main__":
