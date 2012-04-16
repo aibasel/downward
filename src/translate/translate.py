@@ -561,7 +561,12 @@ def dump_statistics(sas_task):
            sum(mutex.get_encoding_size() for mutex in sas_task.mutexes))
     print "Translator operators: %d" % len(sas_task.operators)
     print "Translator task size: %d" % sas_task.get_encoding_size()
-    print "Translator peak memory: %d KB" % tools.get_peak_memory_in_kb()
+    try:
+        peak_memory = tools.get_peak_memory_in_kb()
+    except Warning as warning:
+        print warning
+    else:
+        print "Translator peak memory: %d KB" % peak_memory
 
 
 if __name__ == "__main__":

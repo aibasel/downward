@@ -72,12 +72,12 @@ def permutations(alist):
 
 def get_peak_memory_in_kb():
     try:
-        # This will only work on Linux/Unix systems.
+        # This will only work on Linux systems.
         with open("/proc/self/status") as status_file:
             for line in status_file:
                 parts = line.split()
                 if parts[0] == "VmPeak:":
                     return int(parts[1])
     except IOError:
-        print "warning: could not determine translator peak memory"
-    return -1
+        pass
+    raise Warning("warning: could not determine translator peak memory")
