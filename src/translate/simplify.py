@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 from collections import defaultdict
 from itertools import count
 import sys
@@ -33,12 +35,12 @@ class DomainTransitionGraph(object):
         return reachable
 
     def dump(self):
-        print "SIZE", self.size
-        print "INIT", self.init
-        print "ARCS:"
+        print("SIZE", self.size)
+        print("INIT", self.init)
+        print("ARCS:")
         for source, destinations in sorted(self.arcs.items()):
             for destination in sorted(destinations):
-                print "  %d => %d" % (source, destination)
+                print("  %d => %d" % (source, destination))
 
 
 def build_dtgs(task):
@@ -97,11 +99,11 @@ class VarValueRenaming(object):
             new_values_for_var = []
             for value in range(old_domain_size):
                 if value in new_domain:
-                    new_values_for_var.append(new_value_counter.next())
+                    new_values_for_var.append(next(new_value_counter))
                 else:
                     self.num_removed_values += 1
                     new_values_for_var.append(always_false)
-            new_size = new_value_counter.next()
+            new_size = next(new_value_counter)
             assert new_size == len(new_domain)
 
             self.new_var_nos.append(self.new_var_count)
@@ -134,10 +136,10 @@ class VarValueRenaming(object):
                 new_var_no, new_value = self.translate_pair((var_no, value))
                 if new_value is always_true:
                     if DEBUG:
-                        print "Removed true proposition: %s" % value_name
+                        print("Removed true proposition: %s" % value_name)
                 elif new_value is always_false:
                     if DEBUG:
-                        print "Removed false proposition: %s" % value_name
+                        print("Removed false proposition: %s" % value_name)
                 else:
                     new_value_names[new_var_no][new_value] = value_name
         assert all((None not in value_names) for value_names in new_value_names)
@@ -183,8 +185,8 @@ class VarValueRenaming(object):
             except (Impossible, DoesNothing):
                 num_removed += 1
                 if DEBUG:
-                    print "Removed operator: %s" % op.name
-        print "%d operators removed" % num_removed
+                    print("Removed operator: %s" % op.name)
+        print("%d operators removed" % num_removed)
         operators[:] = new_operators
 
     def apply_to_axioms(self, axioms):
@@ -195,7 +197,7 @@ class VarValueRenaming(object):
                 new_axioms.append(axiom)
             except (Impossible, DoesNothing):
                 if DEBUG:
-                    print "Removed axiom:"
+                    print("Removed axiom:")
                     axiom.dump()
         axioms[:] = new_axioms
 
@@ -229,7 +231,8 @@ class VarValueRenaming(object):
             raise DoesNothing
         axiom.effect = new_var, new_value
 
-    def translate_pre_post(self, (var_no, pre, post, cond)):
+    def translate_pre_post(self, pre_post_tuple):
+        (var_no, pre, post, cond) = pre_post_tuple
         new_var_no, new_post = self.translate_pair((var_no, post))
         if pre == -1:
             new_pre = -1
@@ -250,7 +253,8 @@ class VarValueRenaming(object):
             raise DoesNothing
         return new_var_no, new_pre, new_post, cond
 
-    def translate_pair(self, (var_no, value)):
+    def translate_pair(self, fact_pair):
+        (var_no, value) = fact_pair
         new_var_no = self.new_var_nos[var_no]
         new_value = self.new_values[var_no][value]
         return new_var_no, new_value
@@ -298,4 +302,4 @@ def filter_unreachable_propositions(sas_task):
     # apply_to_task may propagate up Impossible if the goal is simplified
     # to False.
     renaming.apply_to_task(sas_task)
-    print "%d propositions removed" % renaming.num_removed_values
+    print("%d propositions removed" % renaming.num_removed_values)

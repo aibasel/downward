@@ -56,7 +56,7 @@ def permutations(alist):
         while True:
             yield alist
             s = 0
-            for j in xrange(N - 1, -1, -1):
+            for j in range(N - 1, -1, -1):
                 q = c[j] + d[j]
                 if q == j + 1:
                     if j == 0:
