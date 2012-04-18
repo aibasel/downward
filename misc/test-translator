@@ -1,0 +1,21 @@
+#! /bin/bash
+
+set -e
+
+for PYTHON in python2.6 python2.7 python3; do
+    # Returns 0 if command is found.
+    command -v $PYTHON >/dev/null 2>&1
+    # Only test those python versions that are installed.
+    if [ $? -eq 0 ]; then
+        echo
+        $PYTHON -V
+        $PYTHON test-translator.py
+    fi
+done
+
+rm -f output.sas
+
+echo "TESTS PASSED"
+
+
+
