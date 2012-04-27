@@ -29,9 +29,7 @@ def get_connected_conditions(conditions):
 def project_rule(rule, conditions, name_generator):
     predicate = next(name_generator)
     effect_variables = set(rule.effect.args) & get_variables(conditions)
-    # TODO: Sort effect_variables ?
-    # TODO: remove list call, argument is converted to tuple in constructor
-    effect = pddl.Atom(predicate, list(effect_variables))
+    effect = pddl.Atom(predicate, sorted(effect_variables))
     projected_rule = Rule(conditions, effect)
     return projected_rule
 
