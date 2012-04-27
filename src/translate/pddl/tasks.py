@@ -1,12 +1,14 @@
+from __future__ import print_function
+
 import sys
 
-import actions
-import axioms
-import conditions
-import predicates
-import pddl_types
-import functions
-import f_expression
+from . import actions
+from . import axioms
+from . import conditions
+from . import predicates
+from . import pddl_types
+from . import functions
+from . import f_expression
 
 class Task(object):
     def __init__(self, domain_name, task_name, requirements,
@@ -54,30 +56,30 @@ class Task(object):
                     predicates, functions, init, goal, actions, axioms, use_metric)
 
     def dump(self):
-        print "Problem %s: %s [%s]" % (
-            self.domain_name, self.task_name, self.requirements)
-        print "Types:"
+        print("Problem %s: %s [%s]" % (
+            self.domain_name, self.task_name, self.requirements))
+        print("Types:")
         for type in self.types:
-            print "  %s" % type
-        print "Objects:"
+            print("  %s" % type)
+        print("Objects:")
         for obj in self.objects:
-            print "  %s" % obj
-        print "Predicates:"
+            print("  %s" % obj)
+        print("Predicates:")
         for pred in self.predicates:
-            print "  %s" % pred
-        print "Functions:"
+            print("  %s" % pred)
+        print("Functions:")
         for func in self.functions:
-            print "  %s" % func
-        print "Init:"
+            print("  %s" % func)
+        print("Init:")
         for fact in self.init:
-            print "  %s" % fact
-        print "Goal:"
+            print("  %s" % fact)
+        print("Goal:")
         self.goal.dump()
-        print "Actions:"
+        print("Actions:")
         for action in self.actions:
             action.dump()
         if self.axioms:
-            print "Axioms:"
+            print("Axioms:")
             for axiom in self.axioms:
                 axiom.dump()
 
@@ -97,8 +99,9 @@ class Requirements(object):
 def parse_domain(domain_pddl):
     iterator = iter(domain_pddl)
 
-    assert iterator.next() == "define"
-    domain_line = iterator.next()
+    define_tag = next(iterator)
+    assert define_tag == "define"
+    domain_line = next(iterator)
     assert domain_line[0] == "domain" and len(domain_line) == 2
     yield domain_line[1]
 
@@ -122,7 +125,7 @@ def parse_domain(domain_pddl):
         if (seen_fields and
             correct_order.index(seen_fields[-1]) > correct_order.index(field)):
             msg = "\nWarning: %s specification not allowed here (cf. PDDL BNF)" % field
-            print >> sys.stderr, msg
+            print(msg, file=sys.stderr)
         seen_fields.append(field)
         if field == ":requirements":
             requirements = Requirements(opt[1:])
@@ -165,18 +168,19 @@ def parse_domain(domain_pddl):
 def parse_task(task_pddl):
     iterator = iter(task_pddl)
 
-    assert iterator.next() == "define"
-    problem_line = iterator.next()
+    define_tag = next(iterator)
+    assert define_tag == "define"
+    problem_line = next(iterator)
     assert problem_line[0] == "problem" and len(problem_line) == 2
     yield problem_line[1]
-    domain_line = iterator.next()
+    domain_line = next(iterator)
     assert domain_line[0] == ":domain" and len(domain_line) == 2
     yield domain_line[1]
 
-    requirements_opt = iterator.next()
+    requirements_opt = next(iterator)
     if requirements_opt[0] == ":requirements":
         requirements = requirements_opt[1:]
-        objects_opt = iterator.next()
+        objects_opt = next(iterator)
     else:
         requirements = []
         objects_opt = requirements_opt
@@ -184,7 +188,7 @@ def parse_task(task_pddl):
 
     if objects_opt[0] == ":objects":
         yield pddl_types.parse_typed_list(objects_opt[1:])
-        init = iterator.next()
+        init = next(iterator)
     else:
         yield []
         init = objects_opt
@@ -195,14 +199,14 @@ def parse_task(task_pddl):
         if fact[0] == "=":
             try:
                 initial.append(f_expression.parse_assignment(fact))
-            except ValueError, e:
+            except ValueError as e:
                 raise SystemExit("Error in initial state specification\n" +
                                  "Reason: %s." %  e)
         else:
             initial.append(conditions.Atom(fact[0], fact[1:]))
     yield initial
 
-    goal = iterator.next()
+    goal = next(iterator)
     assert goal[0] == ":goal" and len(goal) == 2
     yield conditions.parse_condition(goal[1])
 

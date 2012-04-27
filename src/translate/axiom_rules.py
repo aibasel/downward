@@ -118,7 +118,7 @@ def simplify_axioms(axioms_by_atom, necessary_literals):
 
 def remove_duplicates(alist):
     next_elem = 1
-    for i in xrange(1, len(alist)):
+    for i in range(1, len(alist)):
         if alist[i] != alist[i - 1]:
             alist[next_elem] = alist[i]
             next_elem += 1
@@ -145,7 +145,7 @@ def simplify(axioms):
         if not axiom.condition: # empty condition: dominates everything
             return [axiom]
         literals = iter(axiom.condition)
-        dominated_axioms = axioms_by_literal[literals.next()]
+        dominated_axioms = axioms_by_literal[next(literals)]
         for literal in literals:
             dominated_axioms &= axioms_by_literal[literal]
         for dominated_axiom in dominated_axioms:
