@@ -127,7 +127,7 @@ def useful_groups(invariants, initial_facts):
                 overcrowded_groups.add(group_key)
     useful_groups = nonempty_groups - overcrowded_groups
     for (invariant, parameters) in useful_groups:
-        yield [part.instantiate(parameters) for part in invariant.parts]
+        yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
 def get_groups(task, reachable_action_params=None):
     with timers.timing("Finding invariants", block=True):
