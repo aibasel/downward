@@ -7,7 +7,6 @@ def handle_axioms(operators, axioms, goals):
 
     axiom_literals = compute_necessary_axiom_literals(axioms_by_atom, operators, goals)
     axiom_init = get_axiom_init(axioms_by_atom, axiom_literals)
-    axiom_literals = sorted(axiom_literals)
     with timers.timing("Simplifying axioms"):
         axioms = simplify_axioms(axioms_by_atom, axiom_literals)
     axioms = compute_negative_axioms(axioms_by_atom, axiom_literals)
@@ -96,7 +95,7 @@ def compute_necessary_axiom_literals(axioms_by_atom, operators, goal):
         axioms = axioms_by_atom[literal.positive()]
         for axiom in axioms:
             register_literals(axiom.condition, literal.negated)
-    return necessary_literals
+    return sorted(necessary_literals)
 
 def get_axiom_init(axioms_by_atom, necessary_literals):
     result = set()
