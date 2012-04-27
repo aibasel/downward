@@ -204,6 +204,12 @@ class Invariant:
     def __ne__(self, other):
         return self.parts != other.parts
 
+    def __lt__(self, other):
+        return self.parts < other.parts
+
+    def __le__(self, other):
+        return self.parts <= other.parts
+
     def __hash__(self):
         return hash(self.parts)
 
