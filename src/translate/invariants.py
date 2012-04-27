@@ -214,7 +214,10 @@ class Invariant:
         return hash(self.parts)
 
     def __str__(self):
-        return "{%s}" % ", ".join(map(str, self.parts))
+        return "{%s}" % ", ".join(str(part) for part in self.parts)
+
+    def __repr__(self):
+        return '<Invariant %s>' % self
 
     def arity(self):
         return next(iter(self.parts)).arity()
