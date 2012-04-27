@@ -22,8 +22,6 @@ def get_connected_conditions(conditions):
     for var, conds in var_to_conditions.items():
         for cond in conds[1:]:
             agraph.connect(conds[0], cond)
-    # TODO: Sort return value before returning it? var_to_conditions and
-    #       graph.Graph.connected_components() are nondeterministic
     return agraph.connected_components()
 
 def project_rule(rule, conditions, name_generator):
