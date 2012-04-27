@@ -138,8 +138,6 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
                             new_cond[var] = val
                             new_conds.append(new_cond)
                     flat_conds = new_conds
-            # The return value is deterministic because each dict in flat_conds
-            # only contains one entry
             return flat_conds
 
     return multiply_out(condition)
