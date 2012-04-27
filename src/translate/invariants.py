@@ -114,6 +114,12 @@ class InvariantPart:
     def __ne__(self, other):
         return self.predicate != other.predicate or self.order != other.order
 
+    def __le__(self, other):
+        return self.predicate <= other.predicate or self.order <= other.order
+
+    def __lt__(self, other):
+        return self.predicate < other.predicate or self.order < other.order
+
     def __hash__(self):
         return hash((self.predicate, tuple(self.order)))
 
