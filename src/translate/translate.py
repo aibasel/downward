@@ -359,7 +359,7 @@ def translate_strips_axiom(axiom, dictionary, ranges, mutex_dict, mutex_ranges):
         [effect] = dictionary[axiom.effect]
     axioms = []
     for condition in conditions:
-        axioms.append(sas_tasks.SASAxiom(list(condition.items()), effect))
+        axioms.append(sas_tasks.SASAxiom(condition.items(), effect))
     return axioms
 
 def translate_strips_operators(actions, strips_to_sas, ranges, mutex_dict, mutex_ranges, implied_facts):
