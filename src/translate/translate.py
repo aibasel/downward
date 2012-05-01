@@ -12,6 +12,7 @@ import instantiate
 import pddl
 import sas_tasks
 import simplify
+import sys
 import timers
 import tools
 
@@ -575,6 +576,18 @@ def dump_statistics(sas_task):
 
 if __name__ == "__main__":
     import pddl
+
+    try:
+        sys.argv.remove("--force-old-python")
+        force_old_python = True
+    except ValueError:
+        force_old_python = False
+
+    if sys.version_info[:2] == (2, 6) and not force_old_python:
+        print("Error: Python 2.6 runs the translator very slowly. You should "
+              "use Python 2.7 or 3.x instead. If you really need to run it "
+              "with Python 2.6, you can pass the --force-old-python flag.")
+        sys.exit(1)
 
     timer = timers.Timer()
     with timers.timing("Parsing"):
