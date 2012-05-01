@@ -590,17 +590,14 @@ def check_python_version(force_old_python):
 def parse_options():
     optparser = optparse.OptionParser(usage="Usage: %prog [options] [<domain.pddl>] <task.pddl>")
     optparser.add_option('--force-old-python', action='store_true',
-                    help='Allow running the translator with slow Python 2.6')
+                         help='Allow running the translator with slow Python 2.6')
     options, args = optparser.parse_args()
     # Remove the parsed options from sys.argv
     sys.argv = [sys.argv[0]] + args
     return options, args
 
 
-
-if __name__ == "__main__":
-    import pddl
-
+def main():
     options, args = parse_options()
 
     check_python_version(options.force_old_python)
@@ -620,3 +617,7 @@ if __name__ == "__main__":
         with open("output.sas", "w") as output_file:
             sas_task.output(output_file)
     print("Done! %s" % timer)
+
+
+if __name__ == "__main__":
+    main()
