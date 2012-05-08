@@ -45,16 +45,9 @@ TASKS = [
 
 
 def translate_task(task_file):
-    timer = timers.Timer()
-    with timers.timing("Parsing"):
-        task = pddl.open(task_file)
-
-    sas_task = translate.pddl_to_sas(task)
-    translate.dump_statistics(sas_task)
-
-    with timers.timing("Writing output"):
-        sas_task.output(open("output.sas", "w"))
-    print("Done! %s" % timer)
+    print('\nTranslating %s:' % task_file)
+    sys.argv = [sys.argv[0], '--force-old-python', task_file]
+    translate.main()
 
 
 def get_first_tasks():
@@ -72,10 +65,9 @@ def get_tasks():
         # Use the first problem of each domain.
         return get_first_tasks()
 
-    if len(sys.argv) > 1:
-        # Use the problems given on the commandline.
-        tasks = sys.argv[1:]
-    else:
+    # Use the problems given on the commandline.
+    tasks = [arg for arg in sys.argv[1:] if not arg.startswith('--')]
+    if not tasks:
         # Use predefined problems.
         tasks = TASKS
 
@@ -85,7 +77,6 @@ def get_tasks():
 
 def main():
     for task in get_tasks():
-        print('\nTranslating %s:' % task)
         translate_task(task)
 
 
