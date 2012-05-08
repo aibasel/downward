@@ -17,17 +17,18 @@ python2.6 test-translator.py gripper:prob01.pddl depot:pfile1
 from __future__ import print_function
 
 import os
+import platform
+import shutil
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRANSLATOR = os.path.abspath(os.path.join(REPO, 'src/translate'))
 BENCHMARKS = os.path.abspath(os.path.join(REPO, 'benchmarks'))
+SAS_FILES = '/tmp/sas-files'
 
 sys.path.insert(0, TRANSLATOR)
 
 import translate
-import pddl
-import timers
 
 
 # Translating those problems covers 84% of the translator code. Translating all
@@ -75,9 +76,20 @@ def get_tasks():
     return [os.path.join(BENCHMARKS, *task.split(':')) for task in tasks]
 
 
+def save_task(task):
+    task_name = '-'.join(task.split('/')[-2:])
+    dest = os.path.join(SAS_FILES, task_name, platform.python_version())
+    try:
+        os.makedirs(os.path.dirname(dest))
+    except OSError:
+        pass
+    shutil.move('output.sas', dest)
+
+
 def main():
     for task in get_tasks():
         translate_task(task)
+        save_task(task)
 
 
 if __name__ == '__main__':
