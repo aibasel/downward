@@ -94,7 +94,9 @@ def save_task(task_dest):
 
 
 class Logger(object):
-    patterns = [r'\[.+s CPU, .+s wall-clock\]', r'\d+ KB', r'at 0x.{7}']
+    patterns = [r'\[.+s CPU, .+s wall-clock\]', r'\d+ KB', r'at 0x.{7}',
+                r'\d+ auxiliary atoms', r'\d+ final queue length',
+                r'\d+ total queue pushes']
 
     def __init__(self, logfile):
         self.logfile = logfile
