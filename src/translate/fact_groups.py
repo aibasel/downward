@@ -80,8 +80,6 @@ def choose_groups(groups, reachable_facts, partial_encoding=True):
         uncovered_facts.difference_update(group)
         result.append(group)
     print(len(uncovered_facts), "uncovered facts")
-    #for fact in uncovered_facts:
-    #  print fact
     result += [[fact] for fact in uncovered_facts]
     return result
 
@@ -132,7 +130,5 @@ def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
         for group in groups:
             if len(group) >= 2:
                 print("{%s}" % ", ".join(map(str, group)))
-
-
 
     return groups, mutex_groups, translation_key
