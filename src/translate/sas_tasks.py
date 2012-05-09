@@ -11,7 +11,7 @@ class SASTask:
         self.init = init
         self.goal = goal
         self.operators = sorted(operators, key=lambda op: op.name)
-        self.axioms = axioms
+        self.axioms = sorted(axioms, key=lambda axiom: (axiom.condition, axiom.effect))
         self.metric = metric
     def output(self, stream):
         print("begin_version", file=stream)
