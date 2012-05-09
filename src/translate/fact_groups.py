@@ -31,6 +31,9 @@ def expand_group(group, task, reachable_facts):
 def instantiate_groups(groups, task, reachable_facts):
     return [expand_group(group, task, reachable_facts) for group in groups]
 
+def sort_by_name(atom):
+    return (atom.predicate, atom.args)
+
 class GroupCoverQueue:
     def __init__(self, groups, partial_encoding):
         self.partial_encoding = partial_encoding
@@ -50,7 +53,7 @@ class GroupCoverQueue:
         return self.max_size > 1
     __nonzero__ = __bool__
     def pop(self):
-        result = list(self.top) # Copy; this group will shrink further.
+        result = sorted(self.top, key=sort_by_name) # Copy; this group will shrink further.
         if self.partial_encoding:
             for fact in result:
                 for group in self.groups_by_fact[fact]:
@@ -79,7 +82,7 @@ def choose_groups(groups, reachable_facts, partial_encoding=True):
     print(len(uncovered_facts), "uncovered facts")
     #for fact in uncovered_facts:
     #  print fact
-    result += [[fact] for fact in uncovered_facts]
+    result += [[fact] for fact in sorted(uncovered_facts, key=sort_by_name)]
     return result
 
 def build_translation_key(groups):
@@ -104,6 +107,7 @@ def collect_all_mutex_groups(groups, atoms):
 
 def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
     groups = invariant_finder.get_groups(task, reachable_action_params)
+
     with timers.timing("Instantiating groups"):
         groups = instantiate_groups(groups, task, atoms)
 
