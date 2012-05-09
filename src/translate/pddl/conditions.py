@@ -285,6 +285,15 @@ class Literal(Condition):
                 self.__class__ is other.__class__ and
                 self.predicate == other.predicate and
                 self.args == other.args)
+    def __ne__(self, other):
+        return not self == other
+    @property
+    def key(self):
+        return (self.predicate, self.args)
+    def __lt__(self, other):
+        return self.key < other.key
+    def __le__(self, other):
+        return self.key <= other.key
     def __str__(self):
         return "%s %s(%s)" % (self.__class__.__name__, self.predicate,
                               ", ".join(map(str, self.args)))
