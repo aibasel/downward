@@ -63,6 +63,8 @@ class BuildRule:
         return effect_args
     def __str__(self):
         return "%s :- %s" % (self.effect, ", ".join(map(str, self.conditions)))
+    def __repr__(self):
+        return "<%s %s>" % (self.__class__.__name__, self)
 
 class JoinRule(BuildRule):
     def __init__(self, effect, conditions):
