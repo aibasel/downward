@@ -18,6 +18,7 @@ from __future__ import print_function
 
 import os
 import platform
+import re
 import shutil
 import sys
 
@@ -76,20 +77,51 @@ def get_tasks():
     return [os.path.join(BENCHMARKS, *task.split(':')) for task in tasks]
 
 
-def save_task(task):
+def get_task_dest(task):
     task_name = '-'.join(task.split('/')[-2:])
     dest = os.path.join(SAS_FILES, task_name, platform.python_version())
     try:
         os.makedirs(os.path.dirname(dest))
     except OSError:
         pass
-    shutil.move('output.sas', dest)
+    return dest
+
+
+def save_task(task_dest):
+    with open('output.sas') as infile:
+        with open(task_dest, 'a') as outfile:
+            outfile.write(infile.read())
+
+
+class Logger(object):
+    patterns = [r'\[.+s CPU, .+s wall-clock\]', r'\d+ KB', r'at 0x.{7}']
+
+    def __init__(self, logfile):
+        self.logfile = logfile
+
+    def __enter__(self):
+        self.log = open(self.logfile, 'w')
+        sys.stdout = self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.log.close()
+        sys.stdout = sys.__stdout__
+
+    def write(self, text):
+        for pattern in self.patterns:
+            text = re.sub(pattern, '', text)
+        self.log.write(text)
+
+    def flush(self):
+        self.log.flush()
 
 
 def main():
     for task in get_tasks():
-        translate_task(task)
-        save_task(task)
+        dest = get_task_dest(task)
+        with Logger(dest):
+            translate_task(task)
+        save_task(dest)
 
 
 if __name__ == '__main__':
