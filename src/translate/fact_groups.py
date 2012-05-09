@@ -53,7 +53,7 @@ class GroupCoverQueue:
         return self.max_size > 1
     __nonzero__ = __bool__
     def pop(self):
-        result = sorted(self.top, key=sort_by_name) # Copy; this group will shrink further.
+        result = list(self.top) # Copy; this group will shrink further.
         if self.partial_encoding:
             for fact in result:
                 for group in self.groups_by_fact[fact]:
@@ -82,7 +82,7 @@ def choose_groups(groups, reachable_facts, partial_encoding=True):
     print(len(uncovered_facts), "uncovered facts")
     #for fact in uncovered_facts:
     #  print fact
-    result += [[fact] for fact in sorted(uncovered_facts, key=sort_by_name)]
+    result += [[fact] for fact in uncovered_facts]
     return result
 
 def build_translation_key(groups):
@@ -105,12 +105,17 @@ def collect_all_mutex_groups(groups, atoms):
     all_groups += [[fact] for fact in uncovered_facts]
     return all_groups
 
+def sort_groups(groups):
+    groups = [sorted(group, key=lambda atom:(atom.predicate, atom.args)) for group in groups]
+    return sorted(groups, key=lambda group: [(atom.predicate, atom.args) for atom in group])
+
 def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
     groups = invariant_finder.get_groups(task, reachable_action_params)
 
     with timers.timing("Instantiating groups"):
         groups = instantiate_groups(groups, task, atoms)
 
+    groups = sort_groups(groups)
     # TODO: I think that collect_all_mutex_groups should do the same thing
     #       as choose_groups with partial_encoding=False, so these two should
     #       be unified.
@@ -118,6 +123,7 @@ def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
         mutex_groups = collect_all_mutex_groups(groups, atoms)
     with timers.timing("Choosing groups", block=True):
         groups = choose_groups(groups, atoms, partial_encoding=partial_encoding)
+        groups = sort_groups(groups)
     with timers.timing("Building translation key"):
         translation_key = build_translation_key(groups)
 
@@ -125,5 +131,7 @@ def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
         for group in groups:
             if len(group) >= 2:
                 print("{%s}" % ", ".join(map(str, group)))
+
+
 
     return groups, mutex_groups, translation_key
