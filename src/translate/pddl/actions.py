@@ -162,7 +162,7 @@ class PropositionalAction:
                 self.del_effects.append((condition, effect.negate()))
         self.cost = cost
     def __repr__(self):
-        return "<Action %r at %#x>" % (self.name, id(self))
+        return "<PropositionalAction %r at %#x>" % (self.name, id(self))
     def dump(self):
         print(self.name)
         for fact in self.precondition:
