@@ -115,6 +115,7 @@ def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
     with timers.timing("Instantiating groups"):
         groups = instantiate_groups(groups, task, atoms)
 
+    # Sort here already to get deterministic mutex groups.
     groups = sort_groups(groups)
     # TODO: I think that collect_all_mutex_groups should do the same thing
     #       as choose_groups with partial_encoding=False, so these two should
