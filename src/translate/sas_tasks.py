@@ -10,7 +10,7 @@ class SASTask:
         self.mutexes = mutexes
         self.init = init
         self.goal = goal
-        self.operators = sorted(operators, key=lambda op: op.name)
+        self.operators = sorted(operators, key=lambda op: (op.name, op.prevail, op.pre_post))
         self.axioms = sorted(axioms, key=lambda axiom: (axiom.condition, axiom.effect))
         self.metric = metric
     def output(self, stream):
