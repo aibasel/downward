@@ -280,7 +280,7 @@ class MatchGenerator:
 
 class Queue:
     def __init__(self, atoms):
-        self.queue = sorted(atoms)
+        self.queue = atoms
         self.queue_pos = 0
         self.enqueued = set([(atom.predicate,) + tuple(atom.args)
                              for atom in self.queue])
@@ -306,7 +306,7 @@ def compute_model(prog):
         rules = convert_rules(prog)
         unifier = Unifier(rules)
         # unifier.dump()
-        fact_atoms = [fact.atom for fact in prog.facts]
+        fact_atoms = sorted(fact.atom for fact in prog.facts)
         queue = Queue(fact_atoms)
 
     print("Generated %d rules." % len(rules))
