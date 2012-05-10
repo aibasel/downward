@@ -22,6 +22,7 @@ class Graph:
             node = next(iter(remaining_nodes))
             result.append([])
             dfs(node)
+            result[-1].sort()
         return sorted(result)
 
 
