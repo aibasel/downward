@@ -290,7 +290,8 @@ class Literal(Condition):
     @property
     def key(self):
         # Use the string representation, because self.predicate can be str or
-        # pddl.Action
+        # Action. However, it seems that only in movie we ever need to
+        # compare the uncomparable types Action and str.
         return str(self)  # (self.predicate, self.args)
     def __lt__(self, other):
         return self.key < other.key
