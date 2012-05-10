@@ -22,6 +22,11 @@ import re
 import shutil
 import sys
 
+
+# If set to True the stdout output will be prepended to the output.sas files
+# for easier debugging.
+DEBUG = False
+
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRANSLATOR = os.path.abspath(os.path.join(REPO, 'src/translate'))
 BENCHMARKS = os.path.abspath(os.path.join(REPO, 'benchmarks'))
@@ -113,6 +118,7 @@ class Logger(object):
         for pattern in self.patterns:
             text = re.sub(pattern, '', text)
         self.log.write(text)
+        self.flush()
 
     def flush(self):
         self.log.flush()
@@ -121,7 +127,10 @@ class Logger(object):
 def main():
     for task in get_tasks():
         dest = get_task_dest(task)
-        with Logger(dest):
+        if DEBUG:
+            with Logger(dest):
+                translate_task(task)
+        else:
             translate_task(task)
         save_task(dest)
 
