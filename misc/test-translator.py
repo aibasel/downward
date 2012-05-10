@@ -25,7 +25,7 @@ import sys
 
 # If set to True the stdout output will be prepended to the output.sas files
 # for easier debugging.
-DEBUG = False
+DEBUG = True
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRANSLATOR = os.path.abspath(os.path.join(REPO, 'src/translate'))
@@ -99,10 +99,8 @@ def save_task(task_dest):
 
 
 class Logger(object):
-    patterns = [r'\[.+s CPU, .+s wall-clock\]', r'\d+ KB', r'at 0x.{7}',
-                r'\d+ auxiliary atoms', r'\d+ final queue length',
-                r'\d+ total queue pushes'
-                ]
+    # Remove non-deterministic timing and memory information from the log.
+    patterns = [r'\[.+s CPU, .+s wall-clock\]', r'\d+ KB']
 
     def __init__(self, logfile):
         self.logfile = logfile
