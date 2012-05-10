@@ -57,4 +57,7 @@ do
     echo
 done
 
+# Remove tmp dir.
+rm -rf $SAS_FILES
+
 echo "TESTS PASSED"
