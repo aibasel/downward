@@ -289,7 +289,9 @@ class Literal(Condition):
         return not self == other
     @property
     def key(self):
-        return (self.predicate, self.args)
+        # Use the string representation, because self.predicate can be str or
+        # pddl.Action
+        return str(self)  # (self.predicate, self.args)
     def __lt__(self, other):
         return self.key < other.key
     def __le__(self, other):
