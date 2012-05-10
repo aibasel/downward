@@ -104,8 +104,7 @@ def collect_all_mutex_groups(groups, atoms):
     return all_groups
 
 def sort_groups(groups):
-    groups = [sorted(group, key=lambda atom:(atom.predicate, atom.args)) for group in groups]
-    return sorted(groups, key=lambda group: [(atom.predicate, atom.args) for atom in group])
+    return sorted(sorted(group) for group in groups)
 
 def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
     groups = invariant_finder.get_groups(task, reachable_action_params)
