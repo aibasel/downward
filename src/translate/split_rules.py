@@ -22,7 +22,7 @@ def get_connected_conditions(conditions):
     for var, conds in var_to_conditions.items():
         for cond in conds[1:]:
             agraph.connect(conds[0], cond)
-    return agraph.connected_components()
+    return sorted(map(sorted, agraph.connected_components()))
 
 def project_rule(rule, conditions, name_generator):
     predicate = next(name_generator)
