@@ -31,9 +31,6 @@ def expand_group(group, task, reachable_facts):
 def instantiate_groups(groups, task, reachable_facts):
     return [expand_group(group, task, reachable_facts) for group in groups]
 
-def sort_by_name(atom):
-    return (atom.predicate, atom.args)
-
 class GroupCoverQueue:
     def __init__(self, groups, partial_encoding):
         self.partial_encoding = partial_encoding
