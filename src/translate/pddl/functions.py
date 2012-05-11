@@ -1,4 +1,4 @@
-import pddl_types
+from . import pddl_types
 
 class Function(object):
     def __init__(self, name, arguments):

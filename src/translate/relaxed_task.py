@@ -1,8 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import sys
-import StringIO
+import io
 
 import instantiate
 
@@ -10,7 +12,7 @@ import instantiate
 def explore_silently(task):
     # Call instantiate.explore, swallowing its output.
     real_stdout = sys.stdout
-    sys.stdout = StringIO.StringIO()
+    sys.stdout = io.StringIO()
     result = instantiate.explore(task)
     sys.stdout = real_stdout
     return result
@@ -45,4 +47,4 @@ if __name__ == "__main__":
     # Generate complete output before printing it, to see if errors occur.
     out = list(relaxed_task(actions))
     for line in out:
-        print line
+        print(line)

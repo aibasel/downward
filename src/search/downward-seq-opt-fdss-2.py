@@ -1,7 +1,7 @@
-#! /usr/bin/env python2.6
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import seq_opt_portfolio
+import portfolio
 
 CONFIGS = [
     (1, ["--search",
@@ -16,4 +16,4 @@ CONFIGS = [
            "astar(blind())"]),
      ]
 
-seq_opt_portfolio.run(CONFIGS)
+portfolio.run(CONFIGS, optimal=True)
