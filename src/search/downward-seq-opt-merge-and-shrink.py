@@ -1,7 +1,7 @@
-#! /usr/bin/env python2.6
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import seq_opt_portfolio
+import portfolio
 
 CONFIGS = [
     (800, ["--search",
@@ -10,4 +10,4 @@ CONFIGS = [
            "astar(merge_and_shrink(merge_strategy=merge_linear_reverse_level,shrink_strategy=shrink_bisimulation(max_states=200000,greedy=false,group_by_h=true)))"]),
      ]
 
-seq_opt_portfolio.run(CONFIGS)
+portfolio.run(CONFIGS, optimal=True)

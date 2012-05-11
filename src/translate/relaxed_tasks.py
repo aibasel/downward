@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import instantiate
 import pddl
 
@@ -27,13 +29,13 @@ class RelaxedAction(object):
         self.cost = cost
 
     def dump(self):
-        print "ACTION %s (cost %d):" % (self.name, self.cost)
-        print "PRE:"
+        print("ACTION %s (cost %d):" % (self.name, self.cost))
+        print("PRE:")
         for fact in self.preconditions:
-            print "    %s" % fact
-        print "EFF:"
+            print("    %s" % fact)
+        print("EFF:")
         for fact in self.effects:
-            print "    %s" % fact
+            print("    %s" % fact)
 
 
 class RelaxedTask(object):
@@ -82,19 +84,19 @@ class RelaxedTask(object):
                 action.preconditions.append(artificial_precondition)
 
     def dump(self):
-        print "ATOMS:"
+        print("ATOMS:")
         for fact in self.atoms:
-            print "    %s" % fact
-        print
-        print "INIT:"
+            print("    %s" % fact)
+        print()
+        print("INIT:")
         for fact in self.init:
-            print "    %s" % fact
-        print
-        print "GOAL:"
+            print("    %s" % fact)
+        print()
+        print("GOAL:")
         for fact in self.goals:
-            print "    %s" % fact
+            print("    %s" % fact)
         for action in self.actions:
-            print
+            print()
             action.dump()
 
 
