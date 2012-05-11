@@ -7,29 +7,28 @@
 #include <limits>
 using namespace std;
 
-#ifdef __APPLE__
+
+#if OPERATING_SYSTEM == LINUX
+static void exit_handler(int exit_code, void *hint);
+#elif OPERATING_SYSTEM == OSX
+static void exit_handler();
 #include <mach/mach.h>
+#elif OPERATING_SYSTEM == CYGWIN
+// nothing
 #endif
 
-#ifndef __CYGWIN32__
-#ifdef __APPLE__
-static void exit_handler();
-#else
-static void exit_handler(int exit_code, void *hint);
-#endif
-#endif
 
 static void signal_handler(int signal_number);
 
 void register_event_handlers() {
     // On exit or when receiving certain signals such as SIGINT (Ctrl-C),
     // print the peak memory usage.
-#ifdef __APPLE__
-    atexit(exit_handler);
-#elif defined(__CYGWIN32__)
-    // nothing
-#else
+#if OPERATING_SYSTEM == LINUX
     on_exit(exit_handler, 0);
+#elif OPERATING_SYSTEM == OSX
+    atexit(exit_handler);
+#elif OPERATING_SYSTEM == CYGWIN
+    // nothing
 #endif
     signal(SIGABRT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -37,11 +36,11 @@ void register_event_handlers() {
     signal(SIGINT, signal_handler);
 }
 
-#ifndef __CYGWIN32__
-#ifdef __APPLE__
-void exit_handler() {
-#else
+#if OPERATING_SYSTEM != CYGWIN
+#if OPERATING_SYSTEM == LINUX
 void exit_handler(int, void *) {
+#elif OPERATING_SYSTEM == OSX
+void exit_handler() {
 #endif
       print_peak_memory();
   }
@@ -63,7 +62,7 @@ int get_peak_memory_in_kb() {
     // On error, produces a warning on cerr and returns -1.
     int memory_in_kb = -1;
 
-#ifdef __APPLE__
+#if OPERATING_SYSTEM == OSX
     // Based on http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
     task_basic_info t_info;
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;

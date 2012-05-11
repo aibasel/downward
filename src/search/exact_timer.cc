@@ -1,20 +1,21 @@
 #include "exact_timer.h"
 
+#include "utilities.h"
+
 #include <ctime>
 #include <ostream>
 #include <unistd.h>
 
-#ifdef __APPLE__
-#include <mach/mach_time.h>
-#endif
 
-#ifdef __CYGWIN32__
+#if OPERATING_SYSTEM == OSX
+#include <mach/mach_time.h>
+#elif OPERATING_SYSTEM == CYGWIN
 #define CLOCK_PROCESS_CPUTIME_ID (clockid_t)2
 #endif
 
 using namespace std;
 
-#ifdef __APPLE__
+#if OPERATING_SYSTEM == OSX
 void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
     uint64_t difference = end - start;
     static mach_timebase_info_data_t info = {
@@ -43,7 +44,7 @@ ExactTimer::~ExactTimer() {
 
 double ExactTimer::current_clock() const {
     timespec tp;
-#ifdef __APPLE__
+#if OPERATING_SYSTEM == OSX
     static uint64_t start = mach_absolute_time();
     uint64_t end = mach_absolute_time();
     mach_absolute_difference(end, start, &tp);
