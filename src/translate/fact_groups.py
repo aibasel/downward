@@ -118,7 +118,7 @@ def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
         mutex_groups = collect_all_mutex_groups(groups, atoms)
     with timers.timing("Choosing groups", block=True):
         groups = choose_groups(groups, atoms, partial_encoding=partial_encoding)
-        groups = sort_groups(groups)
+    groups = sort_groups(groups)
     with timers.timing("Building translation key"):
         translation_key = build_translation_key(groups)
 
