@@ -13,7 +13,7 @@ def handle_axioms(operators, axioms, goals):
     # NOTE: compute_negative_axioms more or less invalidates axioms_by_atom.
     #       Careful with that axe, Eugene!
     axiom_layers = compute_axiom_layers(axioms, axiom_init)
-    return axioms, list(sorted(axiom_init)), axiom_layers
+    return axioms, list(axiom_init), axiom_layers
 
 def get_axioms_by_atom(axioms):
     axioms_by_atom = {}
@@ -95,7 +95,7 @@ def compute_necessary_axiom_literals(axioms_by_atom, operators, goal):
         axioms = axioms_by_atom[literal.positive()]
         for axiom in axioms:
             register_literals(axiom.condition, literal.negated)
-    return sorted(necessary_literals)
+    return necessary_literals
 
 def get_axiom_init(axioms_by_atom, necessary_literals):
     result = set()
@@ -109,7 +109,7 @@ def get_axiom_init(axioms_by_atom, necessary_literals):
 def simplify_axioms(axioms_by_atom, necessary_literals):
     necessary_atoms = set([literal.positive() for literal in necessary_literals])
     new_axioms = []
-    for atom in sorted(necessary_atoms):
+    for atom in necessary_atoms:
         axioms = simplify(axioms_by_atom[atom])
         axioms_by_atom[atom] = axioms
         new_axioms += axioms
