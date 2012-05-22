@@ -292,13 +292,12 @@ class Invariant:
         # add_effect must be covered
         assigs = self.get_covering_assignments(inv_vars, add_effect.literal)
 
+        # renaming of operator parameters must be minimal
         minimal_renamings = []
         params = [p.name for p in action.parameters]
         for assignment in assigs:
             system = constraints.ConstraintSystem()
             system.add_assignment(assignment)
-            # renaming of operator parameters must be minimal
-            minimality_clauses = []
             mapping = assignment.get_mapping()
             if len(params) > 1:
                 for (n1, n2) in itertools.combinations(params, 2):
