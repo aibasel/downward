@@ -114,6 +114,12 @@ class InvariantPart:
     def __ne__(self, other):
         return self.predicate != other.predicate or self.order != other.order
 
+    def __le__(self, other):
+        return self.predicate <= other.predicate or self.order <= other.order
+
+    def __lt__(self, other):
+        return self.predicate < other.predicate or self.order < other.order
+
     def __hash__(self):
         return hash((self.predicate, tuple(self.order)))
 
@@ -198,11 +204,20 @@ class Invariant:
     def __ne__(self, other):
         return self.parts != other.parts
 
+    def __lt__(self, other):
+        return self.parts < other.parts
+
+    def __le__(self, other):
+        return self.parts <= other.parts
+
     def __hash__(self):
         return hash(self.parts)
 
     def __str__(self):
-        return "{%s}" % ", ".join(map(str, self.parts))
+        return "{%s}" % ", ".join(str(part) for part in self.parts)
+
+    def __repr__(self):
+        return '<Invariant %s>' % self
 
     def arity(self):
         return next(iter(self.parts)).arity()

@@ -62,7 +62,7 @@ class PrologProgram:
             if not eff_vars.issubset(cond_vars):
                 must_add_predicate = True
                 eff_vars -= cond_vars
-                for var in eff_vars:
+                for var in sorted(eff_vars):
                     rule.add_condition(pddl.Atom("@object", [var]))
         if must_add_predicate:
             print("Unbound effect variables: Adding @object predicate.")

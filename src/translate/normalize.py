@@ -142,7 +142,7 @@ def remove_universal_quantifiers(task):
         # Uses new_axioms_by_condition and type_map from surrounding scope.
         if isinstance(condition, pddl.UniversalCondition):
             axiom_condition = condition.negate()
-            parameters = axiom_condition.free_variables()
+            parameters = sorted(axiom_condition.free_variables())
             axiom = new_axioms_by_condition.get(axiom_condition)
             if not axiom:
                 typed_parameters = [pddl.TypedObject(v, type_map[v]) for v in parameters]

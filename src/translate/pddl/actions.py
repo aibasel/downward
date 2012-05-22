@@ -161,6 +161,8 @@ class PropositionalAction:
             if effect.negated and (condition, effect.negate()) not in self.add_effects:
                 self.del_effects.append((condition, effect.negate()))
         self.cost = cost
+    def __repr__(self):
+        return "<PropositionalAction %r at %#x>" % (self.name, id(self))
     def dump(self):
         print(self.name)
         for fact in self.precondition:

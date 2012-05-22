@@ -101,8 +101,8 @@ def greedy_join(rule, name_generator):
             joinee_vars = set(joinee.args)
             retained_vars = joinee_vars & (effect_vars | common_vars)
             if retained_vars != joinee_vars:
-                joinees[i] = result.add_rule("project", [joinee], list(retained_vars))
-        joint_condition = result.add_rule("join", joinees, list(effect_vars))
+                joinees[i] = result.add_rule("project", [joinee], sorted(retained_vars))
+        joint_condition = result.add_rule("join", joinees, sorted(effect_vars))
         cost_matrix.add_entry(joint_condition)
         occurrences.update(joint_condition, +1)
 

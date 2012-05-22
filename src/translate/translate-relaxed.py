@@ -164,7 +164,7 @@ def translate_strips_axiom(axiom, dictionary, ranges):
         effect = (var, ranges[var] - 1)
     else:
         [effect] = dictionary[axiom.effect]
-    return sas_tasks.SASAxiom(list(condition.items()), effect)
+    return sas_tasks.SASAxiom(condition.items(), effect)
 
 def translate_strips_operators(actions, strips_to_sas, ranges):
     result = []

@@ -68,7 +68,7 @@ def instantiate(task, model):
             relaxed_reachable = True
 
     return (relaxed_reachable, fluent_facts, instantiated_actions,
-           instantiated_axioms, reachable_action_parameters)
+            sorted(instantiated_axioms), reachable_action_parameters)
 
 def explore(task):
     prog = pddl_to_prolog.translate(task)

@@ -11,8 +11,17 @@ class RelaxedAtom(object):
     def __init__(self, name):
         self.name = name
 
-    def __cmp__(self, other):
-        return cmp(self.name, other.name)
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __ne__(self, other):
+        return self.name != other.name
+
+    def __lt__(self, other):
+        return self.name < other.name
+
+    def __le__(self, other):
+        return self.name <= other.name
 
     def __repr__(self):
         return "<RelaxedAtom %r>" % self.name
