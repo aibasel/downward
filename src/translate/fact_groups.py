@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import invariant_finder
 import pddl
 import timers
@@ -44,8 +46,9 @@ class GroupCoverQueue:
             self._update_top()
         else:
             self.max_size = 0
-    def __nonzero__(self):
+    def __bool__(self):
         return self.max_size > 1
+    __nonzero__ = __bool__
     def pop(self):
         result = list(self.top) # Copy; this group will shrink further.
         if self.partial_encoding:
@@ -73,9 +76,7 @@ def choose_groups(groups, reachable_facts, partial_encoding=True):
         group = queue.pop()
         uncovered_facts.difference_update(group)
         result.append(group)
-    print len(uncovered_facts), "uncovered facts"
-    #for fact in uncovered_facts:
-    #  print fact
+    print(len(uncovered_facts), "uncovered facts")
     result += [[fact] for fact in uncovered_facts]
     return result
 
@@ -99,11 +100,17 @@ def collect_all_mutex_groups(groups, atoms):
     all_groups += [[fact] for fact in uncovered_facts]
     return all_groups
 
+def sort_groups(groups):
+    return sorted(sorted(group) for group in groups)
+
 def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
     groups = invariant_finder.get_groups(task, reachable_action_params)
+
     with timers.timing("Instantiating groups"):
         groups = instantiate_groups(groups, task, atoms)
 
+    # Sort here already to get deterministic mutex groups.
+    groups = sort_groups(groups)
     # TODO: I think that collect_all_mutex_groups should do the same thing
     #       as choose_groups with partial_encoding=False, so these two should
     #       be unified.
@@ -111,12 +118,13 @@ def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
         mutex_groups = collect_all_mutex_groups(groups, atoms)
     with timers.timing("Choosing groups", block=True):
         groups = choose_groups(groups, atoms, partial_encoding=partial_encoding)
+    groups = sort_groups(groups)
     with timers.timing("Building translation key"):
         translation_key = build_translation_key(groups)
 
     if DEBUG:
         for group in groups:
             if len(group) >= 2:
-                print "{%s}" % ", ".join(map(str, group))
+                print("{%s}" % ", ".join(map(str, group)))
 
     return groups, mutex_groups, translation_key

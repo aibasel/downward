@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import sys
 
 import pddl
@@ -40,7 +42,7 @@ class CostMatrix(object):
         del self.joinees[index]
     def find_min_pair(self):
         assert len(self.joinees) >= 2
-        min_cost = (sys.maxint, sys.maxint)
+        min_cost = (sys.maxsize, sys.maxsize)
         for i, row in enumerate(self.cost_matrix):
             for j, entry in enumerate(row):
                 if entry < min_cost:
@@ -63,7 +65,7 @@ class CostMatrix(object):
         return (len(left_vars) - len(common_vars),
                 len(right_vars) - len(common_vars),
                 -len(common_vars))
-    def __nonzero__(self):
+    def can_join(self):
         return len(self.joinees) >= 2
 
 class ResultList(object):
@@ -75,7 +77,7 @@ class ResultList(object):
         self.result[-1].effect = self.final_effect
         return self.result
     def add_rule(self, type, conditions, effect_vars):
-        effect = pddl.Atom(self.name_generator.next(), effect_vars)
+        effect = pddl.Atom(next(self.name_generator), effect_vars)
         rule = pddl_to_prolog.Rule(conditions, effect)
         rule.type = type
         self.result.append(rule)
@@ -87,7 +89,7 @@ def greedy_join(rule, name_generator):
     occurrences = OccurrencesTracker(rule)
     result = ResultList(rule, name_generator)
 
-    while cost_matrix:
+    while cost_matrix.can_join():
         joinees = list(cost_matrix.remove_min_pair())
         for joinee in joinees:
             occurrences.update(joinee, -1)
@@ -99,8 +101,8 @@ def greedy_join(rule, name_generator):
             joinee_vars = set(joinee.args)
             retained_vars = joinee_vars & (effect_vars | common_vars)
             if retained_vars != joinee_vars:
-                joinees[i] = result.add_rule("project", [joinee], list(retained_vars))
-        joint_condition = result.add_rule("join", joinees, list(effect_vars))
+                joinees[i] = result.add_rule("project", [joinee], sorted(retained_vars))
+        joint_condition = result.add_rule("join", joinees, sorted(effect_vars))
         cost_matrix.add_entry(joint_condition)
         occurrences.update(joint_condition, +1)
 

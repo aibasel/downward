@@ -1,5 +1,7 @@
-import conditions
-import predicates
+from __future__ import print_function
+
+from . import conditions
+from . import predicates
 
 class Axiom(object):
     def __init__(self, name, parameters, num_external_parameters, condition):
@@ -22,7 +24,7 @@ class Axiom(object):
     parse = staticmethod(parse)
     def dump(self):
         args = map(str, self.parameters[:self.num_external_parameters])
-        print "Axiom %s(%s)" % (self.name, ", ".join(args))
+        print("Axiom %s(%s)" % (self.name, ", ".join(args)))
         self.condition.dump()
     def uniquify_variables(self):
         self.type_map = dict([(par.name, par.type) for par in self.parameters])
@@ -53,8 +55,19 @@ class PropositionalAxiom:
         return PropositionalAxiom(self.name, list(self.condition), self.effect)
     def dump(self):
         if self.effect.negated:
-            print "not",
-        print self.name
+            print("not", end=' ')
+        print(self.name)
         for fact in self.condition:
-            print "PRE: %s" % fact
-        print "EFF: %s" % self.effect
+            print("PRE: %s" % fact)
+        print("EFF: %s" % self.effect)
+    @property
+    def key(self):
+        return (self.name, self.condition, self.effect)
+    def __lt__(self, other):
+        return self.key < other.key
+    def __le__(self, other):
+        return self.key <= other.key
+    def __eq__(self, other):
+        return self.key == other.key
+    def __repr__(self):
+        return '<PropositionalAxiom %s %s -> %s>' % (self.name, self.condition, self.effect)

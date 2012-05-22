@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
+
 from collections import defaultdict
 
 import build_model
@@ -66,7 +68,7 @@ def instantiate(task, model):
             relaxed_reachable = True
 
     return (relaxed_reachable, fluent_facts, instantiated_actions,
-           instantiated_axioms, reachable_action_parameters)
+            sorted(instantiated_axioms), reachable_action_parameters)
 
 def explore(task):
     prog = pddl_to_prolog.translate(task)
@@ -77,17 +79,17 @@ def explore(task):
 if __name__ == "__main__":
     task = pddl.open()
     relaxed_reachable, atoms, actions, axioms, _ = explore(task)
-    print "goal relaxed reachable: %s" % relaxed_reachable
-    print "%d atoms:" % len(atoms)
+    print("goal relaxed reachable: %s" % relaxed_reachable)
+    print("%d atoms:" % len(atoms))
     for atom in atoms:
-        print " ", atom
-    print
-    print "%d actions:" % len(actions)
+        print(" ", atom)
+    print()
+    print("%d actions:" % len(actions))
     for action in actions:
         action.dump()
-        print
-    print
-    print "%d axioms:" % len(axioms)
+        print()
+    print()
+    print("%d axioms:" % len(axioms))
     for axiom in axioms:
         axiom.dump()
-        print
+        print()

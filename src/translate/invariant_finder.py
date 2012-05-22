@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
+
 from collections import deque, defaultdict
 import itertools
 import time
@@ -75,7 +77,7 @@ def get_fluents(task):
 
 def get_initial_invariants(task):
     for predicate in get_fluents(task):
-        all_args = range(len(predicate.arguments))
+        all_args = list(range(len(predicate.arguments)))
         for omitted_arg in [-1] + all_args:
             order = [i for i in all_args if i != omitted_arg]
             part = invariants.InvariantPart(predicate.name, order, omitted_arg)
@@ -87,7 +89,7 @@ MAX_TIME = 300
 
 def find_invariants(task, reachable_action_params):
     candidates = deque(get_initial_invariants(task))
-    print len(candidates), "initial candidates"
+    print(len(candidates), "initial candidates")
     seen_candidates = set(candidates)
 
     balance_checker = BalanceChecker(task, reachable_action_params)
@@ -101,7 +103,7 @@ def find_invariants(task, reachable_action_params):
     while candidates:
         candidate = candidates.popleft()
         if time.clock() - start_time > MAX_TIME:
-            print "Time limit reached, aborting invariant generation"
+            print("Time limit reached, aborting invariant generation")
             return
         if candidate.check_balance(balance_checker, enqueue_func):
             yield candidate
@@ -125,11 +127,11 @@ def useful_groups(invariants, initial_facts):
                 overcrowded_groups.add(group_key)
     useful_groups = nonempty_groups - overcrowded_groups
     for (invariant, parameters) in useful_groups:
-        yield [part.instantiate(parameters) for part in invariant.parts]
+        yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
 def get_groups(task, reachable_action_params=None):
     with timers.timing("Finding invariants", block=True):
-        invariants = list(find_invariants(task, reachable_action_params))
+        invariants = sorted(find_invariants(task, reachable_action_params))
     with timers.timing("Checking invariant weight"):
         result = list(useful_groups(invariants, task.init))
     return result
@@ -137,16 +139,16 @@ def get_groups(task, reachable_action_params=None):
 if __name__ == "__main__":
     import pddl
     import normalize
-    print "Parsing..."
+    print("Parsing...")
     task = pddl.open()
-    print "Normalizing..."
+    print("Normalizing...")
     normalize.normalize(task)
-    print "Finding invariants..."
-    print "NOTE: not passing in reachable_action_params."
-    print "This means fewer invariants might be found."
+    print("Finding invariants...")
+    print("NOTE: not passing in reachable_action_params.")
+    print("This means fewer invariants might be found.")
     for invariant in find_invariants(task, None):
-        print invariant
-    print "Finding fact groups..."
+        print(invariant)
+    print("Finding fact groups...")
     groups = get_groups(task)
     for group in groups:
-        print "[%s]" % ", ".join(map(str, group))
+        print("[%s]" % ", ".join(map(str, group)))

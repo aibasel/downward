@@ -2,8 +2,6 @@
 # In the future, use explicitly relative imports or absolute
 # imports as a better solution.
 
-import conditions
-
 import graph
 
 import itertools
@@ -41,6 +39,8 @@ class TypedObject(object):
         return not self == other
     def __str__(self):
         return "%s: %s" % (self.name, self.type)
+    def __repr__(self):
+        return "<TypedObject %s: %s>" % (self.name, self.type)
     def uniquify_name(self, type_map, renamings):
         if self.name not in type_map:
             type_map[self.name] = self.type
@@ -52,6 +52,9 @@ class TypedObject(object):
                 type_map[new_name] = self.type
                 return TypedObject(new_name, self.type)
     def to_untyped_strips(self):
+        # TODO: Try to resolve the cyclic import differently.
+        # Avoid cyclic import.
+        from . import conditions
         return conditions.Atom(self.type, [self.name])
 
 
