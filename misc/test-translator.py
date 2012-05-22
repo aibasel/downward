@@ -51,8 +51,12 @@ TASKS = [
     ]
 
 
+def get_task_name(path):
+    return '-'.join(path.split('/')[-2:])
+
+
 def translate_task(task_file):
-    print('\nTranslating %s:' % task_file)
+    print('\nTranslating %s:' % get_task_name(task_file))
     sys.argv = [sys.argv[0], '--force-old-python', task_file]
     translate.main()
 
@@ -83,7 +87,7 @@ def get_tasks():
 
 
 def get_task_dest(task):
-    task_name = '-'.join(task.split('/')[-2:])
+    task_name = get_task_name(task)
     dest = os.path.join(SAS_FILES, task_name, platform.python_version())
     try:
         os.makedirs(os.path.dirname(dest))
