@@ -17,15 +17,15 @@ def get_connected_conditions(conditions):
                 var_to_conditions[var].append(cond)
 
     # Connect conditions with a common variable
-    for var, conds in var_to_conditions.iteritems():
+    for var, conds in var_to_conditions.items():
         for cond in conds[1:]:
             agraph.connect(conds[0], cond)
-    return agraph.connected_components()
+    return sorted(map(sorted, agraph.connected_components()))
 
 def project_rule(rule, conditions, name_generator):
-    predicate = name_generator.next()
+    predicate = next(name_generator)
     effect_variables = set(rule.effect.args) & get_variables(conditions)
-    effect = pddl.Atom(predicate, list(effect_variables))
+    effect = pddl.Atom(predicate, sorted(effect_variables))
     projected_rule = Rule(conditions, effect)
     return projected_rule
 

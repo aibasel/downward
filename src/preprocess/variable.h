@@ -23,7 +23,7 @@ public:
     bool is_derived() const {return layer != -1; }
     void generate_cpp_input(ofstream &outfile) const;
     void dump() const;
-    string get_fact_name(int value) const {return values[value];}
+    string get_fact_name(int value) const {return values[value]; }
 };
 
 #endif

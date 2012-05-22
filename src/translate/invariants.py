@@ -23,7 +23,7 @@ def invert_list(alist):
 
 
 def instantiate_factored_mapping(pairs):
-    part_mappings = [[zip(preimg, perm_img) for perm_img in itertools.permutations(img)]
+    part_mappings = [[list(zip(preimg, perm_img)) for perm_img in itertools.permutations(img)]
                      for (preimg, img) in pairs]
     return tools.cartesian_product(part_mappings)
 
@@ -35,9 +35,9 @@ def find_unique_variables(action, invariant):
         params.update([p.name for p in eff.parameters])
     inv_vars = []
     counter = itertools.count()
-    for _ in xrange(invariant.arity()):
+    for _ in range(invariant.arity()):
         while True:
-            new_name = "?v%i" % counter.next()
+            new_name = "?v%i" % next(counter)
             if new_name not in params:
                 inv_vars.append(new_name)
                 break
@@ -74,11 +74,11 @@ def ensure_conjunction_sat(system, *parts):
             else:
                 pos[literal.predicate].add(literal)
 
-    for pred, posatoms in pos.iteritems():
+    for pred, posatoms in pos.items():
         if pred in neg:
             for posatom in posatoms:
                 for negatom in neg[pred]:
-                    parts = zip(negatom.args, posatom.args)
+                    parts = list(zip(negatom.args, posatom.args))
                     if parts:
                         negative_clause = constraints.NegativeClause(parts)
                         system.add_negative_clause(negative_clause)
@@ -97,7 +97,7 @@ def ensure_inequality(system, literal1, literal2):
        the other is not)"""
     if (literal1.predicate == literal2.predicate and
         literal1.parts):
-        parts = zip(literal1.parts, literal2.parts)
+        parts = list(zip(literal1.parts, literal2.parts))
         system.add_negative_clause(constraints.NegativeClause(parts))
 
 
@@ -113,6 +113,12 @@ class InvariantPart:
 
     def __ne__(self, other):
         return self.predicate != other.predicate or self.order != other.order
+
+    def __le__(self, other):
+        return self.predicate <= other.predicate or self.order <= other.order
+
+    def __lt__(self, other):
+        return self.predicate < other.predicate or self.order < other.order
 
     def __hash__(self):
         return hash((self.predicate, tuple(self.order)))
@@ -150,7 +156,7 @@ class InvariantPart:
         other_arg_to_pos = invert_list(other_literal.args)
         factored_mapping = []
 
-        for key, other_positions in other_arg_to_pos.iteritems():
+        for key, other_positions in other_arg_to_pos.items():
             own_positions = arg_to_ordered_pos.get(key, [])
             len_diff = len(own_positions) - len(other_positions)
             if len_diff >= 1 or len_diff <= -2 or len_diff == -1 and not allowed_omissions:
@@ -198,14 +204,23 @@ class Invariant:
     def __ne__(self, other):
         return self.parts != other.parts
 
+    def __lt__(self, other):
+        return self.parts < other.parts
+
+    def __le__(self, other):
+        return self.parts <= other.parts
+
     def __hash__(self):
         return hash(self.parts)
 
     def __str__(self):
-        return "{%s}" % ", ".join(map(str, self.parts))
+        return "{%s}" % ", ".join(str(part) for part in self.parts)
+
+    def __repr__(self):
+        return '<Invariant %s>' % self
 
     def arity(self):
-        return iter(self.parts).next().arity()
+        return next(iter(self.parts)).arity()
 
     def get_parameters(self, atom):
         return self.predicate_to_part[atom.predicate].get_parameters(atom)
@@ -277,12 +292,13 @@ class Invariant:
         # add_effect must be covered
         assigs = self.get_covering_assignments(inv_vars, add_effect.literal)
 
-        # renaming of operator parameters must be minimal
         minimal_renamings = []
         params = [p.name for p in action.parameters]
         for assignment in assigs:
             system = constraints.ConstraintSystem()
             system.add_assignment(assignment)
+            # renaming of operator parameters must be minimal
+            minimality_clauses = []
             mapping = assignment.get_mapping()
             if len(params) > 1:
                 for (n1, n2) in itertools.combinations(params, 2):
@@ -363,7 +379,7 @@ class Invariant:
                 if match.negated != literal.negated:
                     continue
                 else:
-                    a = constraints.Assignment(zip(literal.args, match.args))
+                    a = constraints.Assignment(list(zip(literal.args, match.args)))
                     poss_assignments.append(a)
             if not poss_assignments:
                 return None
