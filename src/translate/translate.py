@@ -185,7 +185,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
                                                          mutex_ranges)
         if eff_condition_list is None: # Impossible condition for this effect.
             continue
-        eff_condition = [list(eff_cond.items())
+        eff_condition = [sorted(eff_cond.items())
                          for eff_cond in eff_condition_list]
         for var, val in dictionary[fact]:
             if condition.get(var) == val:
@@ -209,7 +209,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
         eff_condition_list = translate_strips_conditions(conditions, dictionary, ranges, mutex_dict, mutex_ranges)
         if eff_condition_list is None:
             continue
-        eff_condition = [list(eff_cond.items())
+        eff_condition = [sorted(eff_cond.items())
                          for eff_cond in eff_condition_list]
         for var, val in dictionary[fact]:
             none_of_those = ranges[var] - 1
@@ -359,7 +359,7 @@ def translate_strips_axiom(axiom, dictionary, ranges, mutex_dict, mutex_ranges):
         [effect] = dictionary[axiom.effect]
     axioms = []
     for condition in conditions:
-        axioms.append(sas_tasks.SASAxiom(list(condition.items()), effect))
+        axioms.append(sas_tasks.SASAxiom(condition.items(), effect))
     return axioms
 
 def translate_strips_operators(actions, strips_to_sas, ranges, mutex_dict, mutex_ranges, implied_facts):

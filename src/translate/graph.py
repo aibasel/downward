@@ -22,7 +22,8 @@ class Graph:
             node = next(iter(remaining_nodes))
             result.append([])
             dfs(node)
-        return result
+            result[-1].sort()
+        return sorted(result)
 
 
 def transitive_closure(pairs):
