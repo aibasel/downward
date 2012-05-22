@@ -73,22 +73,6 @@ class Action(object):
         self.precondition = self.precondition.uniquify_variables(self.type_map)
         for effect in self.effects:
             effect.uniquify_variables(self.type_map)
-    def unary_actions(self):
-        result = []
-        for i, effect in enumerate(self.effects):
-            unary_action = copy.copy(self)
-            unary_action.name += "@%d" % i
-            if isinstance(effect, effects.UniversalEffect):
-                # Careful: Create a new parameter list, the old one might be shared.
-                unary_action.parameters = unary_action.parameters + effect.parameters
-                effect = effect.effect
-            if isinstance(effect, effects.ConditionalEffect):
-                unary_action.precondition = conditions.Conjunction([unary_action.precondition,
-                                                                    effect.condition]).simplified()
-                effect = effect.effect
-            unary_action.effects = [effect]
-            result.append(unary_action)
-        return result
     def relaxed(self):
         new_effects = []
         for eff in self.effects:
@@ -108,10 +92,6 @@ class Action(object):
         result.precondition = conditions.Conjunction(parameter_atoms + [new_precondition])
         result.effects = [eff.untyped() for eff in self.effects]
         return result
-    def untyped_strips_preconditions(self):
-        # Used in instantiator for converting unary actions into prolog rules.
-        return [par.to_untyped_strips() for par in self.parameters] + \
-               self.precondition.to_untyped_strips()
 
     def instantiate(self, var_mapping, init_facts, fluent_facts, objects_by_type):
         """Return a PropositionalAction which corresponds to the instantiation of
