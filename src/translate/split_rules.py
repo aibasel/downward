@@ -2,8 +2,6 @@
 # components" (where to conditions are related if they share a variabe) into
 # several rules, one for each connected component and one high-level rule.
 
-import copy
-
 from pddl_to_prolog import Rule, get_variables
 import graph
 import greedy_join

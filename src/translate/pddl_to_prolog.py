@@ -22,11 +22,11 @@ class PrologProgram:
         self.objects |= set(atom.args)
     def add_rule(self, rule):
         self.rules.append(rule)
-    def dump(self):
+    def dump(self, file=None):
         for fact in self.facts:
-            print(fact)
+            print(fact, file=file)
         for rule in self.rules:
-            print(getattr(rule, "type", "none"), rule)
+            print(getattr(rule, "type", "none"), rule, file=file)
     def normalize(self):
         # Normalized prolog programs have the following properties:
         # 1. Each variable that occurs in the effect of a rule also occurs in its
@@ -168,22 +168,6 @@ def translate(task):
         prog.split_rules()
     return prog
 
-def test_normalization():
-    prog = PrologProgram()
-    prog.add_fact(pddl.Atom("at", ["foo", "bar"]))
-    prog.add_fact(pddl.Atom("truck", ["bollerwagen"]))
-    prog.add_fact(pddl.Atom("truck", ["segway"]))
-    prog.add_rule(Rule([pddl.Atom("truck", ["?X"])], pddl.Atom("at", ["?X", "?Y"])))
-    prog.add_rule(Rule([pddl.Atom("truck", ["X"]), pddl.Atom("location", ["?Y"])],
-                  pddl.Atom("at", ["?X", "?Y"])))
-    prog.add_rule(Rule([pddl.Atom("truck", ["?X"]), pddl.Atom("location", ["?Y"])],
-                  pddl.Atom("at", ["?X", "?X"])))
-    prog.add_rule(Rule([pddl.Atom("p", ["?Y", "?Z", "?Y", "?Z"])],
-                  pddl.Atom("q", ["?Y", "?Y"])))
-    prog.add_rule(Rule([], pddl.Atom("foo", [])))
-    prog.add_rule(Rule([], pddl.Atom("bar", ["X"])))
-    prog.normalize()
-    prog.dump()
 
 if __name__ == "__main__":
     # test_normalization()

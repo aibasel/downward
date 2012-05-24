@@ -4,7 +4,6 @@
 from __future__ import print_function
 
 import axiom_rules
-import fact_groups
 import instantiate
 import pddl
 import sas_tasks
@@ -194,7 +193,6 @@ def translate_task(strips_to_sas, ranges, translation_key, mutex_key,
     init_values = [rang - 1 for rang in ranges]
     # Closed World Assumption: Initialize to "range - 1" == Nothing.
     for fact in init:
-        pair = strips_to_sas.get(fact)
         pairs = strips_to_sas.get(fact, [])  # empty for static init facts
         for var, val in pairs:
             assert init_values[var] == ranges[var] - 1, "Inconsistent init facts!"
@@ -279,7 +277,6 @@ def build_mutex_key(strips_to_sas, groups):
     return group_keys
 
 if __name__ == "__main__":
-    import pddl
     print("Parsing...")
     task = pddl.open()
     if task.domain_name in ["protocol", "rover"]:

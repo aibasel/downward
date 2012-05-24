@@ -1,5 +1,4 @@
 import pddl
-import sas_tasks
 import timers
 
 def handle_axioms(operators, axioms, goals):
