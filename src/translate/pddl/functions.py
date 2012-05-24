@@ -10,11 +10,6 @@ class Function(object):
         arguments = pddl_types.parse_typed_list(alist[1:],
                                                 default_type="number")
         return cls(name, arguments)
-    @classmethod
-    def parse_typed(cls, alist, _type):
-        function = cls.parse(alist)
-        function.type = _type
-        return function
     def __str__(self):
         result = "%s(%s)" % (self.name, ", ".join(map(str, self.arguments)))
         if self.type:

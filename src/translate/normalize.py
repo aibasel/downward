@@ -89,7 +89,6 @@ class GoalConditionProxy(ConditionProxy):
         # (see substitute_complicated_goal)
         assert False, "Disjunctive goals not (yet) implemented."
     def build_rules(self, rules):
-        rule_head_name = "@goal-reachable"
         rule_head = pddl.Atom("@goal-reachable", [])
         rule_body = list(condition_to_rule_body([], self.condition))
         rules.append((rule_body, rule_head))
