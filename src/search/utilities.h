@@ -20,10 +20,6 @@
 #define OPERATING_SYSTEM LINUX
 #endif
 
-#if OPERATING_SYSTEM == OSX
-#error WHAT?
-#endif
-
 extern void register_event_handlers();
 
 extern int get_peak_memory_in_kb();
