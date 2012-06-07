@@ -345,7 +345,6 @@ distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
 
 lint:
-	echo $(TEST_BINARIES)
 	python ../../misc/cpplint.py --filter=-legal/copyright,-build/header_guard,-whitespace/labels cegar/*.h cegar/*.cc
 
 # Install gtest:
@@ -358,8 +357,12 @@ TEST_LIBS = -lgtest -lgtest_main -lpthread
 test: cegar_test
 	./cegar_test
 
+PLANNER_OBJ = .obj/planner.1.o
+OTHER_OBJ = $(filter-out $(PLANNER_OBJ),$(OBJECTS_RELEASE))
+
 cegar_test: $(OBJECTS_RELEASE) cegar/cegar_heuristic_test.cc
-	$(CC) $(CCOPT) $(CCOPT_RELEASE) $(OBJECTS_RELEASE) $(TEST_LIBS) -o cegar_test cegar/cegar_heuristic_test.cc
+	# Apparently the gtest libs have to come last.
+	$(CC) $(CCOPT) $(CCOPT_RELEASE) $(LINKOPT) $(LINKOPT_RELEASE) $(OTHER_OBJ) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o cegar_test cegar/cegar_heuristic_test.cc $(TEST_LIBS)
 
 ## Note: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
