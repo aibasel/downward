@@ -1,16 +1,13 @@
 #include <gtest/gtest.h>
-#include <vector>
-#include <set>
 
 #include "./cegar_heuristic.h"
-
-using namespace std;
-using namespace __gnu_cxx;
+//#include "./../operator.h"
 
 namespace cegar_heuristic {
 
-TEST(CegarTest, aha) {
+TEST(CegarTest, regress) {
     AbstractState a = AbstractState();
+    //Operator op;
     ASSERT_EQ(16, 4*4);
 }
 
