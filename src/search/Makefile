@@ -63,60 +63,60 @@ HEADERS = \
 ## rebuild after such a change. Deleting the executable and running
 ## "make" to relink is enough; no need to do a complete rebuild.
 
-HEADERS += additive_heuristic.h
+#HEADERS += additive_heuristic.h
 HEADERS += blind_search_heuristic.h
-HEADERS += cea_heuristic.h
-HEADERS += cg_heuristic.h cg_cache.h
-HEADERS += ff_heuristic.h
-HEADERS += goal_count_heuristic.h
-HEADERS += hm_heuristic.h
-HEADERS += lm_cut_heuristic.h
-HEADERS += max_heuristic.h
+#HEADERS += cea_heuristic.h
+#HEADERS += cg_heuristic.h cg_cache.h
+#HEADERS += ff_heuristic.h
+#HEADERS += goal_count_heuristic.h
+#HEADERS += hm_heuristic.h
+#HEADERS += lm_cut_heuristic.h
+#HEADERS += max_heuristic.h
 
-HEADERS += merge_and_shrink/abstraction.h \
-           merge_and_shrink/label_reducer.h \
-           merge_and_shrink/merge_and_shrink_heuristic.h \
-           merge_and_shrink/shrink_bisimulation.h \
-           merge_and_shrink/shrink_bucket_based.h \
-           merge_and_shrink/shrink_fh.h \
-           merge_and_shrink/shrink_random.h \
-           merge_and_shrink/shrink_strategy.h \
-           merge_and_shrink/variable_order_finder.h \
+#HEADERS += merge_and_shrink/abstraction.h \
+#           merge_and_shrink/label_reducer.h \
+#           merge_and_shrink/merge_and_shrink_heuristic.h \
+#           merge_and_shrink/shrink_bisimulation.h \
+#           merge_and_shrink/shrink_bucket_based.h \
+#           merge_and_shrink/shrink_fh.h \
+#           merge_and_shrink/shrink_random.h \
+#           merge_and_shrink/shrink_strategy.h \
+#           merge_and_shrink/variable_order_finder.h \
 
-HEADERS += landmarks/exploration.h \
-           landmarks/h_m_landmarks.h \
-           landmarks/lama_ff_synergy.h \
-           landmarks/landmark_cost_assignment.h \
-           landmarks/landmark_count_heuristic.h \
-           landmarks/landmark_status_manager.h \
-           landmarks/landmark_graph_merged.h \
-           landmarks/landmark_graph.h \
-           landmarks/landmark_factory.h \
-           landmarks/landmark_factory_rpg_exhaust.h \
-           landmarks/landmark_factory_rpg_sasp.h \
-           landmarks/landmark_factory_zhu_givan.h \
-           landmarks/util.h \
+#HEADERS += landmarks/exploration.h \
+#           landmarks/h_m_landmarks.h \
+#           landmarks/lama_ff_synergy.h \
+#           landmarks/landmark_cost_assignment.h \
+#           landmarks/landmark_count_heuristic.h \
+#           landmarks/landmark_status_manager.h \
+#           landmarks/landmark_graph_merged.h \
+#           landmarks/landmark_graph.h \
+#           landmarks/landmark_factory.h \
+#           landmarks/landmark_factory_rpg_exhaust.h \
+#           landmarks/landmark_factory_rpg_sasp.h \
+#           landmarks/landmark_factory_zhu_givan.h \
+#           landmarks/util.h \
 
-HEADERS += learning/AODE.h \
-           learning/classifier.h \
-           learning/composite_feature_extractor.h \
-           learning/feature_extractor.h \
-           learning/maximum_heuristic.h \
-           learning/naive_bayes_classifier.h \
-           learning/PDB_state_space_sample.h \
-           learning/probe_state_space_sample.h \
-           learning/selective_max_heuristic.h \
-           learning/state_space_sample.h \
-           learning/state_vars_feature_extractor.h \
+#HEADERS += learning/AODE.h \
+#           learning/classifier.h \
+#           learning/composite_feature_extractor.h \
+#           learning/feature_extractor.h \
+#           learning/maximum_heuristic.h \
+#           learning/naive_bayes_classifier.h \
+#           learning/PDB_state_space_sample.h \
+#           learning/probe_state_space_sample.h \
+#           learning/selective_max_heuristic.h \
+#           learning/state_space_sample.h \
+#           learning/state_vars_feature_extractor.h \
 
-HEADERS += pdbs/canonical_pdbs_heuristic.h \
-           pdbs/match_tree.h \
-           pdbs/max_cliques.h \
-           pdbs/pattern_generation_edelkamp.h \
-           pdbs/pattern_generation_haslum.h \
-           pdbs/pdb_heuristic.h \
-           pdbs/util.h \
-           pdbs/zero_one_pdbs_heuristic.h \
+#HEADERS += pdbs/canonical_pdbs_heuristic.h \
+#           pdbs/match_tree.h \
+#           pdbs/max_cliques.h \
+#           pdbs/pattern_generation_edelkamp.h \
+#           pdbs/pattern_generation_haslum.h \
+#           pdbs/pdb_heuristic.h \
+#           pdbs/util.h \
+#           pdbs/zero_one_pdbs_heuristic.h \
 
 HEADERS += cegar/cegar_heuristic.h \
 
@@ -343,6 +343,23 @@ clean:
 distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
 
+lint:
+	echo $(TEST_BINARIES)
+	python ../../misc/cpplint.py --filter=-legal/copyright,-build/header_guard cegar/*.h cegar/*.cc
+
+# Install gtest:
+#   sudo apt-get install libgtest-dev
+#   cd /usr/src/gtest
+#   sudo cmake .
+#   sudo make
+#   sudo mv libg* /usr/lib/
+TEST_LIBS = -lgtest -lgtest_main -lpthread
+test: cegar_test
+	./cegar_test
+
+cegar_test: $(OBJECTS_RELEASE)
+	$(CC) -o cegar_test cegar/cegar_heuristic_test.cc $(TEST_LIBS)
+
 ## Note: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
 ## the for loop with the sed call.
@@ -371,4 +388,4 @@ ifneq ($(MAKECMDGOALS),distclean)
 endif
 endif
 
-.PHONY: default all release debug profile clean distclean
+.PHONY: default all release debug profile clean distclean lint
