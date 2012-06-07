@@ -4,8 +4,11 @@
 #include <ext/slist>
 #include <vector>
 #include <set>
+#include <iostream>
+#include <sstream>
 
 #include "../heuristic.h"
+#include "../operator.h"
 
 namespace cegar_heuristic {
 
@@ -14,6 +17,10 @@ namespace cegar_heuristic {
 
 int get_eff(Operator op, int var);
 int get_pre(Operator op, int var);
+
+// Create an operator with cost 1.
+Operator create_op(const std::string desc);
+Operator create_op(const std::string name, std::vector<string> prevail, std::vector<string> pre_post);
 
 class AbstractState {
     // Possible values of each variable in this state.
