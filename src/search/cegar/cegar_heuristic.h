@@ -1,15 +1,19 @@
-#ifndef CEGAR_HEURISTIC_H
-#define CEGAR_HEURISTIC_H
+#ifndef CEGAR_CEGAR_HEURISTIC_H
+#define CEGAR_CEGAR_HEURISTIC_H
 
 #include <ext/slist>
 #include <vector>
+#include <set>
 
-#include <../heuristic.h>
+#include "../heuristic.h"
 
 using namespace std;
 using namespace __gnu_cxx;
 
 namespace cegar_heuristic {
+
+// TODO: Use 32-bit masks for variables. This means we can not handle tasks
+// with domain sizes > 32.
 
 /*
 class AbstractTransitionSystem {
@@ -23,14 +27,21 @@ class AbstractTransitionSystem {
     }
 };
 
+*/
+
+int get_eff(Operator op, int var);
+int get_pre(Operator op, int var);
+
 class AbstractState {
     // Possible values of each variable in this state.
-    // values[1] == 2 -> var1 is concretely set here.
+    // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
-    vector<vector<int> > values;
+    vector<set<int> > values;
 
+public:
+    AbstractState regress(Operator op);
 };
-*/
+
 
 class CegarHeuristic : public Heuristic {
     int min_operator_cost;
