@@ -173,7 +173,7 @@ DEPEND = g++ -MM
 
 CCOPT = -Iext
 CCOPT += -g
-CCOPT += -m32
+CCOPT += -m64
 CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
 
 ## The following lines contain workarounds for bugs when
@@ -194,7 +194,7 @@ ifdef HAVE_GCC_4_5
 endif
 
 LINKOPT  = -g
-LINKOPT += -m32
+LINKOPT += -m64
 LINKOPT +=
 
 POSTLINKOPT =
@@ -339,13 +339,14 @@ clean:
 	rm -f *~ *.pyc
 	rm -f Makefile.depend gmon.out PROFILE core
 	rm -f sas_plan
+	rm -f cegar_test
 
 distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
 
 lint:
 	echo $(TEST_BINARIES)
-	python ../../misc/cpplint.py --filter=-legal/copyright,-build/header_guard cegar/*.h cegar/*.cc
+	python ../../misc/cpplint.py --filter=-legal/copyright,-build/header_guard,-whitespace/labels cegar/*.h cegar/*.cc
 
 # Install gtest:
 #   sudo apt-get install libgtest-dev
@@ -357,8 +358,8 @@ TEST_LIBS = -lgtest -lgtest_main -lpthread
 test: cegar_test
 	./cegar_test
 
-cegar_test: $(OBJECTS_RELEASE)
-	$(CC) -o cegar_test cegar/cegar_heuristic_test.cc $(TEST_LIBS)
+cegar_test: $(OBJECTS_RELEASE) cegar/cegar_heuristic_test.cc
+	$(CC) $(CCOPT) $(CCOPT_RELEASE) $(OBJECTS_RELEASE) $(TEST_LIBS) -o cegar_test cegar/cegar_heuristic_test.cc
 
 ## Note: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
