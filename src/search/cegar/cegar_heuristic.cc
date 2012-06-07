@@ -25,13 +25,11 @@ int get_pre(Operator op, int var) {
     for (int i = 0; i < op.get_prevail().size(); ++i) {
         Prevail prevail = op.get_prevail()[i];
         if (prevail.var == var)
-            // if op.pre[v] not in s1_vals:
             return prevail.prev;
     }
     for (int i = 0; i < op.get_pre_post().size(); ++i) {
         PrePost pre_post = op.get_pre_post()[i];
         if (pre_post.var == var)
-            // if op.pre[v] not in s1_vals:
             return pre_post.pre;
     }
     return -2;
