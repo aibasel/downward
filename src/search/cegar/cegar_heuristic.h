@@ -7,27 +7,10 @@
 
 #include "../heuristic.h"
 
-using namespace std;
-using namespace __gnu_cxx;
-
 namespace cegar_heuristic {
 
-// TODO: Use 32-bit masks for variables. This means we can not handle tasks
+// TODO(jendrik): Use 32-bit masks for variables. This means we can not handle tasks
 // with domain sizes > 32.
-
-/*
-class AbstractTransitionSystem {
-    // abs_states[(1, -1, 0)] => Which abstract state has var1=1, var2=?, var3=0?
-    hash_map<vector<int>, AbstractState> abs_states;
-
-    AbstractState get_abstract_state(const State &state) {
-        // Create a vector of values (state->vars) and set all values to -1 if
-        // we haven't refined the variable yet.
-        // Lookup this vector in abs_states and return it.
-    }
-};
-
-*/
 
 int get_eff(Operator op, int var);
 int get_pre(Operator op, int var);
@@ -36,12 +19,21 @@ class AbstractState {
     // Possible values of each variable in this state.
     // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
-    vector<set<int> > values;
+    std::vector<std::set<int> > values;
 
 public:
     AbstractState regress(Operator op);
 };
 
+class AbstractTransitionSystem {
+    // abs_states[(1, -1, 0)] => Which abstract state has var1=1, var2=?, var3=0?
+    std::map<std::vector<int>, AbstractState> abs_states;
+
+    // Create a vector of values (state->vars) and set all values to -1 if
+    // we haven't refined the variable yet.
+    // Lookup this vector in abs_states and return it.
+    AbstractState get_abstract_state(const State &state);
+};
 
 class CegarHeuristic : public Heuristic {
     int min_operator_cost;
