@@ -10,6 +10,8 @@
 #include "../heuristic.h"
 #include "../operator.h"
 
+#include "gtest/gtest_prod.h"
+
 namespace cegar_heuristic {
 
 // TODO(jendrik): Use 32-bit masks for variables. This means we can not handle tasks
@@ -19,17 +21,23 @@ int get_eff(Operator op, int var);
 int get_pre(Operator op, int var);
 
 // Create an operator with cost 1.
+// prevails have the form "var value".
+// pre_posts have the form "0 var pre post" (no conditional effects).
 Operator create_op(const std::string desc);
 Operator create_op(const std::string name, std::vector<string> prevail, std::vector<string> pre_post);
 
 class AbstractState {
+private:
+    FRIEND_TEST(CegarTest, regress);
     // Possible values of each variable in this state.
     // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
     std::vector<std::set<int> > values;
 
 public:
+    AbstractState(string s="");
     AbstractState regress(Operator op);
+    string str();
 };
 
 class AbstractTransitionSystem {
