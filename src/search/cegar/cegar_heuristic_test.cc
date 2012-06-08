@@ -63,4 +63,76 @@ TEST(CegarTest, regress) {
     }
 }
 
+TEST(CegarTest, equal) {
+    init_test();
+
+    AbstractState a = AbstractState("<0={0},1={0}>");
+    AbstractState b = AbstractState("<1={0},0={0}>");
+    AbstractState c = AbstractState("<1={0}>");
+    ASSERT_TRUE(a == b);
+    ASSERT_FALSE(a == c);
+    ASSERT_FALSE(b == c);
+}
+
+TEST(CegarTest, refine) {
+    init_test();
+
+    AbstractState a = AbstractState();
+    a.refine(0, 1);
+}
+
+TEST(CegarTest, applicable) {
+    init_test();
+
+    // Operator: <0=0, 1=0 --> 1=1>
+    vector<string> prevail;
+    prevail.push_back("0 0");
+    vector<string> pre_post;
+    pre_post.push_back("0 1 0 1");
+    Operator op = create_op("op", prevail, pre_post);
+
+    vector<pair<string, bool> > pairs;
+
+    pairs.push_back(pair<string, bool>("<>", true));
+    pairs.push_back(pair<string, bool>("<0={0}>", true));
+    pairs.push_back(pair<string, bool>("<0={0},1={0}>", true));
+    pairs.push_back(pair<string, bool>("<0={1},1={0}>", false));
+    pairs.push_back(pair<string, bool>("<0={1}>", false));
+    pairs.push_back(pair<string, bool>("<1={1}>", false));
+
+    AbstractState a;
+    for (int i = 0; i < pairs.size(); ++i) {
+        a = AbstractState(pairs[i].first);
+        ASSERT_EQ(pairs[i].second, a.applicable(op));
+    }
+}
+
+TEST(CegarTest, apply) {
+    init_test();
+    // Check that this variable doesn't appear in the resulting state.
+    g_variable_domain.push_back(2);
+
+    // Operator: <0=0, 1=0 --> 1=1>
+    vector<string> prevail;
+    prevail.push_back("0 0");
+    vector<string> pre_post;
+    pre_post.push_back("0 1 0 1");
+    Operator op = create_op("op", prevail, pre_post);
+
+    vector<pair<string, string> > pairs;
+
+    pairs.push_back(pair<string, string>("<>", "<0={0},1={1}>"));
+    pairs.push_back(pair<string, string>("<0={0}>", "<0={0},1={1}>"));
+    pairs.push_back(pair<string, string>("<1={0}>", "<0={0},1={1}>"));
+    pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={0},1={1}>"));
+
+    AbstractState a;
+    AbstractState b;
+    for (int i = 0; i < pairs.size(); ++i) {
+        a = AbstractState(pairs[i].first);
+        b = a.apply(op);
+        ASSERT_TRUE(AbstractState(pairs[i].second) == b);
+    }
+}
+
 }

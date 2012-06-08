@@ -14,6 +14,9 @@
 
 namespace cegar_heuristic {
 
+class AbstractState;
+typedef pair<Operator, AbstractState> Arc;
+
 // TODO(jendrik): Use 32-bit masks for variables. This means we can not handle tasks
 // with domain sizes > 32.
 
@@ -34,12 +37,23 @@ private:
     // values[1] == {2, 3} -> var1 has two possible values.
     std::vector<std::set<int> > values;
 
+    std::vector<pair<Operator, AbstractState> > next, prev;
+
 public:
     AbstractState(string s="");
     AbstractState regress(Operator op);
     string str();
     set<int> get_values(int var);
+    void set_value(int var, int value);
+    //void remove_value(int var, value);
     void refine(int var, int value);
+    bool operator==(AbstractState other);
+    bool operator!=(AbstractState other);
+    void add_arc(Operator &op, AbstractState &other);
+    void remove_arc(Operator &op, AbstractState &other);
+    bool check_arc(Operator &op, AbstractState &other);
+    bool applicable(const Operator &op);
+    AbstractState apply(const Operator &op);
 };
 
 class AbstractTransitionSystem {
