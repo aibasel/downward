@@ -176,6 +176,26 @@ AbstractState AbstractState::regress(Operator op) {
     return abs_state;
 }
 
+void AbstractState::refine(int var, int value) {
+    // We can only refine for vars that can have at least two values.
+    assert(get_values(var).size() >= 2);
+    // The desired value has to be in the set of possible values.
+    assert(get_values(var).count(value) == 1);
+
+    AbstractState v1 = AbstractState();
+    AbstractState v2 = AbstractState();
+    v1.values = values;
+    v2.values = values;
+
+    // In v1 var can have all of the previous values except the desired one.
+    v1.values[var] = get_values(var);
+    v1.values[var].erase(value);
+
+    // In v2 var can only have the desired value.
+    v2.values[var].clear();
+    v2.values[var].insert(value);
+}
+
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();
