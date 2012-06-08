@@ -38,6 +38,7 @@ public:
     AbstractState(string s="");
     AbstractState regress(Operator op);
     string str();
+    set<int> get_values(int var);
 };
 
 class AbstractTransitionSystem {
