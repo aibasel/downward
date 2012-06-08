@@ -13,31 +13,33 @@ namespace cegar_heuristic {
 
 //vector<int> g_variable_domain;
 
-TEST(CegarTest, str) {
+void init_test() {
     // We have to construct the variable domains.
     // 0 in {0, 1}, 1 in {0, 1, 2}.
+    g_variable_domain.clear();
     g_variable_domain.push_back(2);
     g_variable_domain.push_back(3);
+    //g_variable_domain.push_back(2);
+}
+
+TEST(CegarTest, str) {
+    init_test();
 
     AbstractState a;
-    string s = "<0={1}>";
-    a = AbstractState(s);
-    ASSERT_EQ(s, a.str());
+    vector<string> states;
+    states.push_back("<0={1}>");
+    states.push_back("<>");
+    states.push_back("<0={0,1},1={0,2}>");
+    states.push_back("<0={0},1={0,1}>");
+    for (int i = 0; i < states.size(); ++i) {
+        a = AbstractState(states[i]);
+        ASSERT_EQ(states[i], a.str());
+    }
 }
 
 
 TEST(CegarTest, regress) {
-    // We have to construct the variable domains.
-    // 0 in {0, 1}, 1 in {0, 1, 2}.
-    g_variable_domain.push_back(2);
-    g_variable_domain.push_back(3);
-
-    AbstractState b = AbstractState();
-    set<int> vals = b.values[0];
-    b.values[0].insert(0);
-    b.values[1].insert(0);
-    b.values[1].insert(1);
-    ASSERT_EQ("<0={0},1={0,1}>", b.str());
+    init_test();
 
     // Operator: <0=0, 1=0 --> 1=1>
     vector<string> prevail;
@@ -46,12 +48,19 @@ TEST(CegarTest, regress) {
     pre_post.push_back("0 1 0 1");
     Operator op = create_op("op", prevail, pre_post);
 
-    AbstractState a = b.regress(op);
-    cout << a.str();
-    ASSERT_EQ("<0={0},1={0}>", a.str());
+    AbstractState a;
+    AbstractState b;
 
-    AbstractState c = AbstractState("<0={1}>");
-    ASSERT_EQ(16, 4*4);
+    vector<pair<string, string> > pairs;
+
+    pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={0},1={0,1}>"));
+    pairs.push_back(pair<string, string>("<0={0},1={0}>", "<>"));
+
+    for (int i = 0; i < pairs.size(); ++i) {
+        b = AbstractState(pairs[i].second);
+        a = b.regress(op);
+        ASSERT_EQ(pairs[i].first, a.str());
+    }
 }
 
 }
