@@ -97,6 +97,7 @@ AbstractState::AbstractState(string s) {
         } else if (next == '}') {
             in_bracket = false;
         } else if ((next >= '0') && (next <= '9')) {
+            // We can use iss.unget(), because next is a single char.
             iss.unget();
             if (in_bracket) {
                 iss >> val;
@@ -123,13 +124,24 @@ string AbstractState::str() {
     return oss.str();
 }
 
+set<int> AbstractState::get_values(int var) {
+    if (values[var].empty()) {
+        set<int> vals;
+        for (int i = 0; i < g_variable_domain[var]; ++i)
+            vals.insert(i);
+        return vals;
+    } else {
+        return values[var];
+    }
+}
+
 AbstractState AbstractState::regress(Operator op) {
     AbstractState abs_state = AbstractState();
 
     for (int v = 0; v < g_variable_domain.size(); ++v) {
         set<int> s1_vals;
         // s2_vals = s2[v]
-        set<int> s2_vals = values[v];
+        set<int> s2_vals = get_values(v);
         // if v occurs in op.eff:
         int eff = get_eff(op, v);
         if (eff != -2) {
