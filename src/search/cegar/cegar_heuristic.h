@@ -41,20 +41,20 @@ private:
 
 public:
     AbstractState(string s="");
-    void regress(const Operator &op, AbstractState *result);
+    void regress(const Operator &op, AbstractState *result) const;
     string str() const;
     set<int> get_values(int var) const;
     void set_value(int var, int value);
     //void remove_value(int var, value);
     void refine(int var, int value, AbstractState *v1, AbstractState *v2);
-    bool operator==(AbstractState other);
-    bool operator!=(AbstractState other);
+    bool operator==(AbstractState &other) const;
+    bool operator!=(AbstractState &other) const;
     void add_arc(Operator &op, AbstractState &other);
     void remove_arc(Operator &op, AbstractState &other);
     bool check_arc(Operator &op, AbstractState &other);
-    bool applicable(const Operator &op);
-    void apply(const Operator &op, AbstractState *result);
-    bool agrees_with(const AbstractState &other);
+    bool applicable(const Operator &op) const;
+    void apply(const Operator &op, AbstractState *result) const;
+    bool agrees_with(const AbstractState &other) const;
 };
 
 class AbstractTransitionSystem {
@@ -64,7 +64,7 @@ class AbstractTransitionSystem {
     // Create a vector of values (state->vars) and set all values to -1 if
     // we haven't refined the variable yet.
     // Lookup this vector in abs_states and return it.
-    AbstractState get_abstract_state(const State &state);
+    AbstractState get_abstract_state(const State &state) const;
 };
 
 class CegarHeuristic : public Heuristic {
