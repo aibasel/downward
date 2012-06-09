@@ -119,6 +119,7 @@ HEADERS += blind_search_heuristic.h
 #           pdbs/zero_one_pdbs_heuristic.h \
 
 HEADERS += cegar/cegar_heuristic.h \
+           cegar/abstract_state.h \
 
 SHELL = /bin/bash
 
