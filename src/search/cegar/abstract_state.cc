@@ -312,4 +312,23 @@ bool AbstractState::agrees_with(const AbstractState &other) const {
     return true;
 }
 
+bool AbstractState::is_abstraction_of(const State &conc_state) const {
+    // Return true if every concrete value is contained in the possible values.
+    for (int i = 0; i < g_variable_domain.size(); ++i) {
+        if (get_values(i).count(conc_state[i]) == 0)
+            return false;
+    }
+    return true;
+}
+
+bool AbstractState::goal_reached() const {
+    assert(g_goal.size() > 0);
+    for (int i = 0; i < g_goal.size(); ++i) {
+        if (get_values(g_goal[i].first).count(g_goal[i].second) == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 }

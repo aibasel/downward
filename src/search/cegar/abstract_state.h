@@ -6,6 +6,7 @@
 #include <set>
 #include <iostream>
 #include <sstream>
+#include <limits>
 
 #include "../heuristic.h"
 #include "../operator.h"
@@ -41,6 +42,10 @@ private:
 
     std::vector<Arc> next, prev;
 
+    // For Dijkstra search.
+    int distance;
+    AbstractState *origin;
+
 public:
     AbstractState(string s="");
     void regress(const Operator &op, AbstractState *result) const;
@@ -57,6 +62,16 @@ public:
     bool applicable(const Operator &op) const;
     void apply(const Operator &op, AbstractState *result) const;
     bool agrees_with(const AbstractState &other) const;
+    bool is_abstraction_of(const State &conc_state) const;
+    bool goal_reached() const;
+
+    void set_distance(int dist) { distance = dist; };
+    int get_distance() { return distance; };
+    void set_origin(AbstractState *orig) { origin = orig; };
+    AbstractState* get_origin() { return origin; };
+
+    std::vector<Arc> get_next() { return next; };
+    //std::vector<Arc> get_prev() { return prev; };
 };
 
 }
