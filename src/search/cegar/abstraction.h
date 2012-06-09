@@ -3,6 +3,7 @@
 
 #include <ext/slist>
 #include <vector>
+#include <deque>
 #include <set>
 #include <iostream>
 #include <sstream>
@@ -16,13 +17,23 @@
 namespace cegar_heuristic {
 
 class Abstraction {
+private:
     // abs_states[(1, -1, 0)] => Which abstract state has var1=1, var2=?, var3=0?
     //std::map<std::vector<int>, AbstractState> abs_states;
 
+    AbstractState init;
+    deque<AbstractState> solution_states;
+    deque<Operator> solution_ops;
+
+public:
+    Abstraction();
     // Create a vector of values (state->vars) and set all values to -1 if
     // we haven't refined the variable yet.
     // Lookup this vector in abs_states and return it.
     AbstractState get_abstract_state(const State &state) const;
+
+    void find_solution();
+    void extract_solution(AbstractState &goal);
 };
 
 }
