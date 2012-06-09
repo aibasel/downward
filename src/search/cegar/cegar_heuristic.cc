@@ -148,9 +148,7 @@ void AbstractState::set_value(int var, int value) {
     values[var].insert(value);
 }
 
-AbstractState AbstractState::regress(Operator op) {
-    AbstractState abs_state = AbstractState();
-
+void AbstractState::regress(const Operator &op, AbstractState *result) {
     for (int v = 0; v < g_variable_domain.size(); ++v) {
         set<int> s1_vals;
         // s2_vals = s2[v]
@@ -161,8 +159,8 @@ AbstractState AbstractState::regress(Operator op) {
             // if op.eff[v] not in s2_vals:
             if (s2_vals.count(eff) == 0) {
                 // return regression_empty
-                // TODO
-                return abs_state;
+                result->values.clear();
+                return;
             }
             // s1_vals = v.all_values_in_domain
             for (int i = 0; i < g_variable_domain[v]; ++i)
@@ -177,16 +175,15 @@ AbstractState AbstractState::regress(Operator op) {
             // if op.pre[v] not in s1_vals:
             if (s1_vals.count(pre) == 0) {
                 // return regression_empty
-                // TODO
-                return abs_state;
+                result->values.clear();
+                return;
             }
             // s1_vals = [op.pre[v]]
             s1_vals.clear();
             s1_vals.insert(pre);
         }
-        abs_state.values[v] = s1_vals;
+        result->values[v] = s1_vals;
     }
-    return abs_state;
 }
 
 void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2) {

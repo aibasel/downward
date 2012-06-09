@@ -48,18 +48,27 @@ TEST(CegarTest, regress) {
     pre_post.push_back("0 1 0 1");
     Operator op = create_op("op", prevail, pre_post);
 
-    AbstractState a;
-    AbstractState b;
-
     vector<pair<string, string> > pairs;
-
     pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={0},1={0,1}>"));
     pairs.push_back(pair<string, string>("<0={0},1={0}>", "<>"));
 
+    AbstractState b;
     for (int i = 0; i < pairs.size(); ++i) {
+        AbstractState a;
         b = AbstractState(pairs[i].second);
-        a = b.regress(op);
+        b.regress(op, &a);
         ASSERT_EQ(pairs[i].first, a.str());
+    }
+
+    vector<string> impossible;
+    impossible.push_back("<0={0},1={0}>");
+    impossible.push_back("<0={1}>");
+
+    for (int i = 0; i < impossible.size(); ++i) {
+        AbstractState a;
+        b = AbstractState(impossible[i]);
+        b.regress(op, &a);
+        ASSERT_TRUE(a.values.empty());
     }
 }
 
