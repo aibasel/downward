@@ -120,6 +120,7 @@ HEADERS += blind_search_heuristic.h
 
 HEADERS += cegar/cegar_heuristic.h \
            cegar/abstract_state.h \
+           cegar/abstraction.h \
 
 SHELL = /bin/bash
 
