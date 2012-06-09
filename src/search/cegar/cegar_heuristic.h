@@ -41,7 +41,7 @@ private:
 
 public:
     AbstractState(string s="");
-    AbstractState regress(Operator op);
+    void regress(const Operator &op, AbstractState *result);
     string str() const;
     set<int> get_values(int var) const;
     void set_value(int var, int value);
