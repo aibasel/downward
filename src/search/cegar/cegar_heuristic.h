@@ -27,7 +27,8 @@ int get_pre(Operator op, int var);
 // prevails have the form "var value".
 // pre_posts have the form "0 var pre post" (no conditional effects).
 Operator create_op(const std::string desc);
-Operator create_op(const std::string name, std::vector<string> prevail, std::vector<string> pre_post);
+Operator create_op(const std::string name, std::vector<string> prevail,
+                   std::vector<string> pre_post);
 
 class AbstractState {
 private:
@@ -35,9 +36,10 @@ private:
     // Possible values of each variable in this state.
     // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
+    // values[1] == {} -> var1 has all possible values.
     std::vector<std::set<int> > values;
 
-    std::vector<pair<Operator, AbstractState> > next, prev;
+    std::vector<Arc> next, prev;
 
 public:
     AbstractState(string s="");
@@ -59,7 +61,7 @@ public:
 
 class AbstractTransitionSystem {
     // abs_states[(1, -1, 0)] => Which abstract state has var1=1, var2=?, var3=0?
-    std::map<std::vector<int>, AbstractState> abs_states;
+    //std::map<std::vector<int>, AbstractState> abs_states;
 
     // Create a vector of values (state->vars) and set all values to -1 if
     // we haven't refined the variable yet.
