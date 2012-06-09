@@ -18,6 +18,9 @@ using namespace std;
 
 namespace cegar_heuristic {
 
+// Gtest prevents us from defining this variable in the header.
+int UNDEFINED = -2;
+
 string int_set_to_string(set<int> myset) {
     ostringstream oss;
     oss << "{";
@@ -59,7 +62,7 @@ int get_eff(Operator op, int var) {
         if (pre_post.var == var)
             return pre_post.post;
     }
-    return -2;
+    return UNDEFINED;
 }
 
 int get_pre(Operator op, int var) {
@@ -73,7 +76,7 @@ int get_pre(Operator op, int var) {
         if (pre_post.var == var)
             return pre_post.pre;
     }
-    return -2;
+    return UNDEFINED;
 }
 
 AbstractState::AbstractState(string s) {
@@ -124,11 +127,11 @@ string AbstractState::str() const {
     return oss.str();
 }
 
-bool AbstractState::operator==(AbstractState other) {
+bool AbstractState::operator==(AbstractState &other) const {
     return values == other.values;
 }
 
-bool AbstractState::operator!=(AbstractState other) {
+bool AbstractState::operator!=(AbstractState &other) const {
     return !(*this == other);
 }
 
@@ -148,14 +151,14 @@ void AbstractState::set_value(int var, int value) {
     values[var].insert(value);
 }
 
-void AbstractState::regress(const Operator &op, AbstractState *result) {
+void AbstractState::regress(const Operator &op, AbstractState *result) const {
     for (int v = 0; v < g_variable_domain.size(); ++v) {
         set<int> s1_vals;
         // s2_vals = s2[v]
         set<int> s2_vals = get_values(v);
         // if v occurs in op.eff:
         int eff = get_eff(op, v);
-        if (eff != -2) {
+        if (eff != UNDEFINED) {
             // if op.eff[v] not in s2_vals:
             if (s2_vals.count(eff) == 0) {
                 // return regression_empty
@@ -171,7 +174,7 @@ void AbstractState::regress(const Operator &op, AbstractState *result) {
         }
         // if v occurs in op.pre:
         int pre = get_pre(op, v);
-        if (pre != -2) {
+        if (pre != UNDEFINED) {
             // if op.pre[v] not in s1_vals:
             if (s1_vals.count(pre) == 0) {
                 // return regression_empty
@@ -262,7 +265,7 @@ bool AbstractState::check_arc(Operator &op, AbstractState &other) {
     return false;
 }
 
-bool AbstractState::applicable(const Operator &op) {
+bool AbstractState::applicable(const Operator &op) const {
     for (int i = 0; i < op.get_prevail().size(); ++i) {
         // Check if prevail value is in the set of possible values.
         if (get_values(op.get_prevail()[i].var).count(op.get_prevail()[i].prev) == 0)
@@ -276,7 +279,7 @@ bool AbstractState::applicable(const Operator &op) {
     return true;
 }
 
-void AbstractState::apply(const Operator &op, AbstractState *result) {
+void AbstractState::apply(const Operator &op, AbstractState *result) const {
     assert(applicable(op));
     result->values = this->values;
     // We don't copy the arcs, because we don't need them.
@@ -292,15 +295,16 @@ void AbstractState::apply(const Operator &op, AbstractState *result) {
     }
 }
 
-bool AbstractState::agrees_with(const AbstractState &other) {
+bool AbstractState::agrees_with(const AbstractState &other) const {
     // Two abstract states agree if for all variables the sets of possible
     // values sets have a non-empty intersection.
     for (int i = 0; i < g_variable_domain.size(); ++i) {
         vector<int> both(g_variable_domain[i]);
         vector<int>::iterator it;
-        set<int> vals1 = get_values(i);
+        set<int> vals1 = this->get_values(i);
         set<int> vals2 = other.get_values(i);
-        it = set_intersection(vals1.begin(), vals1.end(), vals2.begin(), vals2.end(), both.begin());
+        it = set_intersection(vals1.begin(), vals1.end(),
+                              vals2.begin(), vals2.end(), both.begin());
         int elements = int(it - both.begin());
         if (elements == 0)
             return false;
