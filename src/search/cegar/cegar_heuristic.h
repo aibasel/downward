@@ -42,8 +42,8 @@ private:
 public:
     AbstractState(string s="");
     AbstractState regress(Operator op);
-    string str();
-    set<int> get_values(int var);
+    string str() const;
+    set<int> get_values(int var) const;
     void set_value(int var, int value);
     //void remove_value(int var, value);
     void refine(int var, int value);
@@ -54,6 +54,7 @@ public:
     bool check_arc(Operator &op, AbstractState &other);
     bool applicable(const Operator &op);
     void apply(const Operator &op, AbstractState *result);
+    bool agrees_with(const AbstractState &other);
 };
 
 class AbstractTransitionSystem {

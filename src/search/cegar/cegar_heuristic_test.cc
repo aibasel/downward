@@ -135,4 +135,30 @@ TEST(CegarTest, apply) {
     }
 }
 
+TEST(CegarTest, agrees_with) {
+    init_test();
+    // Check that this variable doesn't appear in the resulting state.
+    g_variable_domain.push_back(2);
+
+    vector<pair<string, string> > pairs;
+
+    pairs.push_back(pair<string, string>("<>", "<0={0},1={1}>"));
+    pairs.push_back(pair<string, string>("<0={0}>", "<0={0},1={1}>"));
+    pairs.push_back(pair<string, string>("<1={0}>", "<0={0},1={1}>"));
+    pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={0},1={1}>"));
+    pairs.push_back(pair<string, string>("<0={0,1}>", "<0={0}>"));
+
+    bool agree[] = {true, true, false, false, true};
+    ASSERT_EQ((sizeof(agree) / sizeof(bool)), pairs.size());
+
+    AbstractState a;
+    AbstractState b;
+    for (int i = 0; i < pairs.size(); ++i) {
+        a = AbstractState(pairs[i].first);
+        b = AbstractState(pairs[i].second);
+        ASSERT_EQ(agree[i], a.agrees_with(b));
+        ASSERT_EQ(agree[i], b.agrees_with(a));
+    }
+}
+
 }

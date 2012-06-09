@@ -109,7 +109,7 @@ AbstractState::AbstractState(string s) {
     }
 }
 
-string AbstractState::str() {
+string AbstractState::str() const {
     ostringstream oss;
     string sep = "";
     oss << "<";
@@ -132,7 +132,7 @@ bool AbstractState::operator!=(AbstractState other) {
     return !(*this == other);
 }
 
-set<int> AbstractState::get_values(int var) {
+set<int> AbstractState::get_values(int var) const {
     if (values[var].empty()) {
         set<int> vals;
         for (int i = 0; i < g_variable_domain[var]; ++i)
@@ -258,8 +258,12 @@ void AbstractState::remove_arc(Operator &op, AbstractState &other) {
 bool AbstractState::check_arc(Operator &op, AbstractState &other) {
     if (!applicable(op))
         return false;
-    other.regress(op); // TODO: Remove
-    return true;
+    AbstractState result;
+    apply(op, &result);
+    if (result.agrees_with(other)) {
+        return true;
+    }
+    return false;
 }
 
 bool AbstractState::applicable(const Operator &op) {
@@ -290,6 +294,22 @@ void AbstractState::apply(const Operator &op, AbstractState *result) {
         PrePost prepost = op.get_pre_post()[i];
         result->set_value(prepost.var, prepost.post);
     }
+}
+
+bool AbstractState::agrees_with(const AbstractState &other) {
+    // Two abstract states agree if for all variables the sets of possible
+    // values sets have a non-empty intersection.
+    for (int i = 0; i < g_variable_domain.size(); ++i) {
+        vector<int> both(g_variable_domain[i]);
+        vector<int>::iterator it;
+        set<int> vals1 = get_values(i);
+        set<int> vals2 = other.get_values(i);
+        it = set_intersection(vals1.begin(), vals1.end(), vals2.begin(), vals2.end(), both.begin());
+        int elements = int(it - both.begin());
+        if (elements == 0)
+            return false;
+    }
+    return true;
 }
 
 CegarHeuristic::CegarHeuristic(const Options &opts)
