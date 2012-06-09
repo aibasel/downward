@@ -189,50 +189,48 @@ AbstractState AbstractState::regress(Operator op) {
     return abs_state;
 }
 
-void AbstractState::refine(int var, int value) {
+void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2) {
     // We can only refine for vars that can have at least two values.
     assert(get_values(var).size() >= 2);
     // The desired value has to be in the set of possible values.
     assert(get_values(var).count(value) == 1);
 
-    AbstractState v1 = AbstractState();
-    AbstractState v2 = AbstractState();
-    v1.values = values;
-    v2.values = values;
+    v1->values = values;
+    v2->values = values;
 
     // In v1 var can have all of the previous values except the desired one.
-    v1.values[var] = get_values(var);
-    v1.values[var].erase(value);
+    v1->values[var] = get_values(var);
+    v1->values[var].erase(value);
 
     // In v2 var can only have the desired value.
-    v2.values[var].clear();
-    v2.values[var].insert(value);
+    v2->set_value(var, value);
 
-    /*
-     for op, u in self.prev:
-            if not u == self:
-                u.next.remove((op, self))
-                self.check_arc(u, op, v1)
-                self.check_arc(u, op, v2)
-        for op, w in self.next:
-            if w == self:
-                # Handle former self-loops. The same loops also were in self.prev,
-                # but they only have to be checked once.
-                self.check_arc(v1, op, v2)
-                self.check_arc(v2, op, v1)
-                self.check_arc(v1, op, v1)
-                self.check_arc(v2, op, v2)
-            else:
-                w.prev.remove((op, self))
-                self.check_arc(v1, op, w)
-                self.check_arc(v2, op, w)
-    */
+    // u -> this -> w
+    //  ==>
+    // u -> v1 -> v2 -> w
     for (int i = 0; i < prev.size(); ++i) {
         Operator op = prev[i].first;
         AbstractState u = prev[i].second;
         if (u != *this) {
             u.remove_arc(op, *this);
-
+            u.check_arc(op, *v1);
+            u.check_arc(op, *v2);
+        }
+    }
+    for (int i = 0; i < next.size(); ++i) {
+        Operator op = next[i].first;
+        AbstractState w = next[i].second;
+        if (w != *this) {
+            // Handle former self-loops. The same loops also were in prev,
+            // but they only have to be checked once.
+            v1->check_arc(op, *v2);
+            v2->check_arc(op, *v1);
+            v1->check_arc(op, *v1);
+            v2->check_arc(op, *v2);
+        } else {
+            w.remove_arc(op, *this);
+            v1->check_arc(op, w);
+            v2->check_arc(op, w);
         }
     }
 
@@ -261,6 +259,7 @@ bool AbstractState::check_arc(Operator &op, AbstractState &other) {
     AbstractState result;
     apply(op, &result);
     if (result.agrees_with(other)) {
+        add_arc(op, other);
         return true;
     }
     return false;

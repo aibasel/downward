@@ -46,7 +46,7 @@ public:
     set<int> get_values(int var) const;
     void set_value(int var, int value);
     //void remove_value(int var, value);
-    void refine(int var, int value);
+    void refine(int var, int value, AbstractState *v1, AbstractState *v2);
     bool operator==(AbstractState other);
     bool operator!=(AbstractState other);
     void add_arc(Operator &op, AbstractState &other);

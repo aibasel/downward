@@ -78,7 +78,8 @@ TEST(CegarTest, refine) {
     init_test();
 
     AbstractState a = AbstractState();
-    a.refine(0, 1);
+    AbstractState a1, a2;
+    a.refine(0, 1, &a1, &a2);
 }
 
 TEST(CegarTest, applicable) {
