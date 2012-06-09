@@ -126,12 +126,12 @@ TEST(CegarTest, apply) {
     pairs.push_back(pair<string, string>("<1={0}>", "<0={0},1={1}>"));
     pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={0},1={1}>"));
 
-    AbstractState a;
-    AbstractState b;
+    AbstractState orig;
+    AbstractState result;
     for (int i = 0; i < pairs.size(); ++i) {
-        a = AbstractState(pairs[i].first);
-        b = a.apply(op);
-        ASSERT_TRUE(AbstractState(pairs[i].second) == b);
+        orig = AbstractState(pairs[i].first);
+        orig.apply(op, &result);
+        ASSERT_TRUE(AbstractState(pairs[i].second) == result);
     }
 }
 

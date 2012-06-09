@@ -53,7 +53,7 @@ public:
     void remove_arc(Operator &op, AbstractState &other);
     bool check_arc(Operator &op, AbstractState &other);
     bool applicable(const Operator &op);
-    AbstractState apply(const Operator &op);
+    void apply(const Operator &op, AbstractState *result);
 };
 
 class AbstractTransitionSystem {

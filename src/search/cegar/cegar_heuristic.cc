@@ -276,21 +276,20 @@ bool AbstractState::applicable(const Operator &op) {
     return true;
 }
 
-AbstractState AbstractState::apply(const Operator &op) {
+void AbstractState::apply(const Operator &op, AbstractState *result) {
     assert(applicable(op));
-    AbstractState res;
-    // TODO: Copy *this to res.
+    result->values = this->values;
+    // We don't copy the arcs, because we don't need them.
     for (int i = 0; i < op.get_prevail().size(); ++i) {
         Prevail prevail = op.get_prevail()[i];
         // Check if prevail value is in the set of possible values.
-        res.set_value(prevail.var, prevail.prev);
+        result->set_value(prevail.var, prevail.prev);
     }
     for (int i = 0; i < op.get_pre_post().size(); ++i) {
         // Check if pre value is in the set of possible values.
         PrePost prepost = op.get_pre_post()[i];
-        res.set_value(prepost.var, prepost.post);
+        result->set_value(prepost.var, prepost.post);
     }
-    return res;
 }
 
 CegarHeuristic::CegarHeuristic(const Options &opts)
