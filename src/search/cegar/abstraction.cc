@@ -25,7 +25,7 @@ Abstraction::Abstraction() {
     }
 }
 
-void Abstraction::find_solution() {
+bool Abstraction::find_solution() {
     AdaptiveQueue<AbstractState> queue;
     init.set_distance(0);
     init.set_origin(0);
@@ -41,7 +41,8 @@ void Abstraction::find_solution() {
             continue;
         }
         if (state.goal_reached()) {
-            break;
+            extract_solution(state);
+            return true;
         }
         for (int i = 0; i < state.get_next().size(); i++) {
             const Arc arc = state.get_next()[i];
@@ -51,11 +52,13 @@ void Abstraction::find_solution() {
             int successor_cost = state_distance + cost;
             if (successor.get_distance() > successor_cost) {
                 successor.set_distance(successor_cost);
-                successor.set_origin(&state);
+                Arc origin = Arc(op, state);
+                successor.set_origin(&origin);
                 queue.push(successor_cost, successor);
             }
         }
     }
+    return false;
 }
 
 void Abstraction::extract_solution(AbstractState &goal) {
@@ -63,10 +66,13 @@ void Abstraction::extract_solution(AbstractState &goal) {
     solution_ops.clear();
 
     AbstractState *current = &goal;
-    solution_states.push_back(*current);
+    solution_states.push_front(current);
     while (current->get_origin()) {
-        break;
-
+        Operator op = current->get_origin()->first;
+        AbstractState prev = current->get_origin()->second;
+        solution_states.push_front(&prev);
+        solution_ops.push_front(&op);
+        current = &prev;
     }
 
 }

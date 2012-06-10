@@ -22,8 +22,10 @@ private:
     //std::map<std::vector<int>, AbstractState> abs_states;
 
     AbstractState init;
-    deque<AbstractState> solution_states;
-    deque<Operator> solution_ops;
+    deque<AbstractState*> solution_states;
+    deque<Operator*> solution_ops;
+
+    void extract_solution(AbstractState &goal);
 
 public:
     Abstraction();
@@ -32,8 +34,8 @@ public:
     // Lookup this vector in abs_states and return it.
     AbstractState get_abstract_state(const State &state) const;
 
-    void find_solution();
-    void extract_solution(AbstractState &goal);
+    FRIEND_TEST(CegarTest, find_solution);
+    bool find_solution();
 };
 
 }
