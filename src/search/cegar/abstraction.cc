@@ -27,6 +27,12 @@ Abstraction::Abstraction() {
 
 bool Abstraction::find_solution() {
     AdaptiveQueue<AbstractState> queue;
+
+    for (int i = 0; i < abs_states.size(); ++i) {
+        queue.push(numeric_limits<int>::max(), abs_states[i]); // TODO: Use pointers
+        abs_states[i].set_distance(numeric_limits<int>::max());
+    }
+
     init.set_distance(0);
     init.set_origin(0);
     queue.push(0, init);
@@ -35,12 +41,15 @@ bool Abstraction::find_solution() {
         pair<int, AbstractState> top_pair = queue.pop();
         int distance = top_pair.first;
         AbstractState state = top_pair.second;
+
         int state_distance = state.get_distance();
+        cout << "VISIT: " << state.str() << " " << state_distance << " " << distance << endl;
         assert(state_distance <= distance);
         if (state_distance < distance) {
             continue;
         }
         if (state.goal_reached()) {
+            cout << "GOAL REACHED" << endl;
             extract_solution(state);
             return true;
         }
@@ -48,9 +57,12 @@ bool Abstraction::find_solution() {
             const Arc arc = state.get_next()[i];
             Operator op = arc.first;
             AbstractState successor = arc.second;
+            cout << "NEXT: " << successor.str() << endl;
             int cost = op.get_cost();
             int successor_cost = state_distance + cost;
+            cout << cost << successor_cost << successor.get_distance() << endl;
             if (successor.get_distance() > successor_cost) {
+                cout << "ADD SUCC" << endl;
                 successor.set_distance(successor_cost);
                 Arc origin = Arc(op, state);
                 successor.set_origin(&origin);
