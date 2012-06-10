@@ -20,6 +20,7 @@ class Abstraction {
 private:
     // abs_states[(1, -1, 0)] => Which abstract state has var1=1, var2=?, var3=0?
     //std::map<std::vector<int>, AbstractState> abs_states;
+    std::vector<AbstractState> abs_states;
 
     AbstractState init;
     deque<AbstractState*> solution_states;
