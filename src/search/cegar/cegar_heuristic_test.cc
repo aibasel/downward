@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include "./cegar_heuristic.h"
+#include "./abstract_state.h"
+#include "./abstraction.h"
 #include "./../operator.h"
 
 #include <iostream>
@@ -20,6 +22,16 @@ void init_test() {
     g_variable_domain.push_back(2);
     g_variable_domain.push_back(3);
     //g_variable_domain.push_back(2);
+}
+
+Operator make_op1() {
+    // Operator: <0=0, 1=0 --> 1=1>
+    vector<string> prevail;
+    prevail.push_back("0 0");
+    vector<string> pre_post;
+    pre_post.push_back("0 1 0 1");
+    Operator op = create_op("op", prevail, pre_post);
+    return op;
 }
 
 TEST(CegarTest, str) {
@@ -169,6 +181,31 @@ TEST(CegarTest, agrees_with) {
         ASSERT_EQ(agree[i], a.agrees_with(b));
         ASSERT_EQ(agree[i], b.agrees_with(a));
     }
+}
+
+TEST(CegarTest, find_solution) {
+    init_test();
+    // Check that this variable doesn't appear in the resulting state.
+    g_variable_domain.push_back(2);
+
+    // Operator: <0=0, 1=0 --> 1=1>
+    Operator op1 = make_op1();
+    g_operators.push_back(op1);
+
+    // goal(0) = 1
+    g_goal.push_back(make_pair(0, 1));
+
+    // -> a -> b -> c
+    AbstractState a = AbstractState("<0={0}>");
+    AbstractState b = AbstractState("<0={1}>");
+
+    a.add_arc(op1, b);
+
+    Abstraction abs;
+    abs.init = a;
+    bool success = abs.find_solution();
+    cout << success;
+    ASSERT_EQ(true, success);
 }
 
 }
