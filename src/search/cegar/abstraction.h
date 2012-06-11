@@ -22,7 +22,7 @@ private:
     //std::map<std::vector<int>, AbstractState> abs_states;
     std::vector<AbstractState*> abs_states;
 
-    AbstractState init;
+    AbstractState *init;
     deque<AbstractState*> solution_states;
     deque<Operator*> solution_ops;
 
@@ -30,18 +30,20 @@ private:
 
     // Refinement hierarchy.
     AbstractState single;
+    void collect_states();
     void collect_child_states(AbstractState *parent);
 
 public:
     Abstraction();
-    void collect_states();
+
+    void refine(AbstractState *state, int var, int value);
 
     // Create a vector of values (state->vars) and set all values to -1 if
     // we haven't refined the variable yet.
     // Lookup this vector in abs_states and return it.
     AbstractState get_abstract_state(const State &state) const;
 
-    FRIEND_TEST(CegarTest, find_solution);
+    FRIEND_TEST(CegarTest, find_solution_first_state);
     bool find_solution();
 };
 

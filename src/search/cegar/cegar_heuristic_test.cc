@@ -21,7 +21,9 @@ void init_test() {
     g_variable_domain.clear();
     g_variable_domain.push_back(2);
     g_variable_domain.push_back(3);
-    //g_variable_domain.push_back(2);
+    g_variable_domain.push_back(2);
+
+    g_initial_state = create_state("0 0 0");
 }
 
 Operator make_op1() {
@@ -95,12 +97,69 @@ TEST(CegarTest, equal) {
     ASSERT_FALSE(b == c);
 }
 
-TEST(CegarTest, refine) {
+TEST(CegarTest, refine_var0) {
     init_test();
 
+    // Operator: <0=0, 1=0 --> 1=1>
+    Operator op1 = make_op1();
+
     AbstractState a = AbstractState();
-    AbstractState a1, a2;
-    a.refine(0, 1, &a1, &a2);
+    a.add_arc(op1, a);
+    AbstractState *a1 = new AbstractState();
+    AbstractState *a2 = new AbstractState();
+    a.refine(0, 1, a1, a2);
+
+    string a1s = "<0={0}>";
+    string a2s = "<0={1}>";
+
+    // Check refinement hierarchy.
+    EXPECT_EQ(a1s, a1->str());
+    EXPECT_EQ(a2s, a2->str());
+    EXPECT_EQ(0, a.get_var());
+    AbstractState *left = a.get_left_child();
+    AbstractState *right = a.get_right_child();
+    EXPECT_EQ(left, a1);
+    EXPECT_EQ(right, a2);
+    EXPECT_EQ(a1s, a.get_left_child()->str());
+    EXPECT_EQ(a1s, a.get_child(0)->str());
+    EXPECT_EQ(a2s, a.get_child(1)->str());
+
+    // Check transition system.
+    EXPECT_EQ(2, a1->get_next().size());
+    EXPECT_EQ(0, a2->get_next().size());
+}
+
+TEST(CegarTest, refine_var1) {
+    init_test();
+
+    // Operator: <0=0, 1=0 --> 1=1>
+    Operator op1 = make_op1();
+
+    AbstractState a = AbstractState();
+    a.add_arc(op1, a);
+    AbstractState *a1 = new AbstractState();
+    AbstractState *a2 = new AbstractState();
+    a.refine(1, 1, a1, a2);
+
+    string a1s = "<1={0,2}>";
+    string a2s = "<1={1}>";
+
+    // Check refinement hierarchy.
+    EXPECT_EQ(a1s, a1->str());
+    EXPECT_EQ(a2s, a2->str());
+    EXPECT_EQ(1, a.get_var());
+    AbstractState *left = a.get_left_child();
+    AbstractState *right = a.get_right_child();
+    EXPECT_EQ(left, a1);
+    EXPECT_EQ(right, a2);
+    EXPECT_EQ(a1s, a.get_left_child()->str());
+    EXPECT_EQ(a1s, a.get_child(0)->str());
+    EXPECT_EQ(a2s, a.get_child(1)->str());
+    EXPECT_EQ(a1s, a.get_child(2)->str());
+
+    // Check transition system.
+    EXPECT_EQ(2, a1->get_next().size());
+    EXPECT_EQ(0, a2->get_next().size());
 }
 
 TEST(CegarTest, applicable) {
@@ -183,7 +242,36 @@ TEST(CegarTest, agrees_with) {
     }
 }
 
-TEST(CegarTest, find_solution) {
+TEST(CegarTest, is_abstraction_of_other) {
+    init_test();
+    // Check that this variable doesn't appear in the resulting state.
+    g_variable_domain.push_back(2);
+
+    typedef pair<string, string> test;
+    vector<test> pairs;
+
+    pairs.push_back(test("<>", "<>"));
+    pairs.push_back(test("<0={0,1}>", "<0={0,1}>"));
+
+    pairs.push_back(test("<>", "<0={0}>"));
+    pairs.push_back(test("<0={0,1}>", "<0={0}>"));
+
+    bool agree[] = {true, true, true, true};
+    bool rev_agree[] = {true, true, false, false};
+    ASSERT_EQ((sizeof(agree) / sizeof(bool)), pairs.size());
+    ASSERT_EQ((sizeof(rev_agree) / sizeof(bool)), pairs.size());
+
+    AbstractState a;
+    AbstractState b;
+    for (int i = 0; i < pairs.size(); ++i) {
+        a = AbstractState(pairs[i].first);
+        b = AbstractState(pairs[i].second);
+        EXPECT_EQ(agree[i], a.is_abstraction_of(b));
+        EXPECT_EQ(rev_agree[i], b.is_abstraction_of(a));
+    }
+}
+
+TEST(CegarTest, find_solution_first_state) {
     init_test();
     // Check that this variable doesn't appear in the resulting state.
     g_variable_domain.push_back(2);
@@ -195,21 +283,31 @@ TEST(CegarTest, find_solution) {
     // goal(0) = 1
     g_goal.push_back(make_pair(0, 1));
 
-    // -> a -> b -> c
-    AbstractState a = AbstractState("<0={0}>");
-    AbstractState b = AbstractState("<0={1}>");
+    // -> <>
+    Abstraction abs = Abstraction();
+    // -> 1={0,1} -> 1={2}
+    abs.refine(abs.init, 1, 2);
 
-    a.add_arc(op1, b);
+    string a1s = "<1={0,1}>";
+    string a2s = "<1={2}>";
 
-    Abstraction abs;
-    abs.init = a;
-    abs.abs_states.push_back(a);
-    abs.abs_states.push_back(b);
+    EXPECT_EQ("<>", abs.single.str());
 
-    // No arc between a and b
+    AbstractState *left = abs.single.get_left_child();
+    AbstractState *right = abs.single.get_right_child();
+
+    EXPECT_EQ(a1s, left->str());
+    EXPECT_EQ(a2s, right->str());
+
+    EXPECT_EQ(a1s, abs.single.get_child(0)->str());
+    EXPECT_EQ(a1s, abs.single.get_child(1)->str());
+    EXPECT_EQ(a2s, abs.single.get_child(2)->str());
+
+    EXPECT_EQ(1, left->get_next().size());
+    EXPECT_EQ(0, right->get_next().size());
+
     bool success = abs.find_solution();
-    cout << success << endl;
-    //EXPECT_TRUE(success == 1);
+    EXPECT_TRUE(success);
 }
 
 }

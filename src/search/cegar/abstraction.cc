@@ -19,9 +19,27 @@ namespace cegar_heuristic {
 
 Abstraction::Abstraction() {
     assert(g_operators.size() > 0);
-    init = AbstractState();
+    single = AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
-        init.add_arc(g_operators[i], init);
+        single.add_arc(g_operators[i], single);
+    }
+    init = &single;
+}
+
+void Abstraction::refine(AbstractState *state, int var, int value) {
+    assert(g_operators.size() > 0); // We need operators and the g_initial_state
+    AbstractState *v1 = new AbstractState();
+    AbstractState *v2 = new AbstractState();
+    state->refine(var, value, v1, v2);
+    if (state == init) {
+        if (v1->is_abstraction_of(*g_initial_state)) {
+            init = v1;
+        }
+        else {
+            assert(v2->is_abstraction_of(*g_initial_state));
+            init = v2;
+        }
+        cout << "Using new init state: " << init->str() << endl;
     }
 }
 
@@ -34,9 +52,9 @@ bool Abstraction::find_solution() {
         abs_states[i]->set_distance(numeric_limits<int>::max());
     }
 
-    init.set_distance(0);
-    init.set_origin(0);
-    queue.push(0, &init);
+    init->set_distance(0);
+    init->set_origin(0);
+    queue.push(0, init);
 
     while (!queue.empty()) {
         pair<int, AbstractState*> top_pair = queue.pop();
@@ -87,7 +105,6 @@ void Abstraction::extract_solution(AbstractState &goal) {
         solution_ops.push_front(&op);
         current = &prev;
     }
-
 }
 
 AbstractState Abstraction::get_abstract_state(const State &state) const {
