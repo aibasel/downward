@@ -32,9 +32,10 @@ Operator create_op(const std::string desc);
 Operator create_op(const std::string name, std::vector<string> prevail,
                    std::vector<string> pre_post);
 
+State* create_state(const std::string desc);
+
 class AbstractState {
 private:
-    FRIEND_TEST(CegarTest, regress);
     // Possible values of each variable in this state.
     // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
@@ -56,6 +57,7 @@ private:
 
 public:
     AbstractState(string s="");
+    FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
     string str() const;
     Domain get_values(int var) const;
@@ -71,6 +73,7 @@ public:
     void apply(const Operator &op, AbstractState *result) const;
     bool agrees_with(const AbstractState &other) const;
     bool is_abstraction_of(const State &conc_state) const;
+    bool is_abstraction_of(const AbstractState &abs_state) const;
     bool goal_reached() const;
 
     void set_distance(int dist) { distance = dist; };
@@ -84,7 +87,8 @@ public:
     // We only have a valid abstract state if it was not refined.
     bool valid() const;
     int get_var() const;
-    AbstractState* get_child(int value) const;
+    // TODO: Why can't we make this method const?
+    AbstractState* get_child(int value);
     AbstractState* get_left_child() const;
     AbstractState* get_right_child() const;
 };

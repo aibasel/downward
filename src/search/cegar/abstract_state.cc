@@ -50,10 +50,15 @@ Operator create_op(const string name, vector<string> prevail, vector<string> pre
 
 Operator create_op(const std::string desc) {
     std::string full_op_desc = "begin_operator\n" + desc + "\nend_operator";
-    //cout << full_op_desc << endl;
     istringstream iss(full_op_desc);
     Operator op = Operator(iss, false);
     return op;
+}
+
+State* create_state(const std::string desc) {
+    std::string full_desc = "begin_state\n" + desc + "\nend_state";
+    istringstream iss(full_desc);
+    return new State(iss);
 }
 
 int get_eff(Operator op, int var) {
@@ -240,6 +245,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         children[*it] = v1;
     assert(v2->get_values(var).size() == 1);
     children[value] = v2;
+    left = v1;
+    right = v2;
 }
 
 void AbstractState::add_arc(Operator &op, AbstractState &other) {
@@ -327,6 +334,24 @@ bool AbstractState::is_abstraction_of(const State &conc_state) const {
     return true;
 }
 
+bool AbstractState::is_abstraction_of(const AbstractState &other) const {
+    // Return true if all our possible value sets are supersets of the
+    // other's respective sets.
+    for (int i = 0; i < g_variable_domain.size(); ++i) {
+        vector<int> diff(g_variable_domain[i]);
+        vector<int>::iterator it;
+        set<int> vals1 = this->get_values(i);
+        set<int> vals2 = other.get_values(i);
+        // If |vals2 - vals1| == 0, vals1 is a superset of vals2.
+        it = set_difference(vals2.begin(), vals2.end(),
+                            vals1.begin(), vals1.end(), diff.begin());
+        int elements = int(it - diff.begin());
+        if (elements > 0)
+            return false;
+    }
+    return true;
+}
+
 bool AbstractState::goal_reached() const {
     assert(g_goal.size() > 0);
     for (int i = 0; i < g_goal.size(); ++i) {
@@ -345,10 +370,8 @@ int AbstractState::get_var() const {
     return var;
 }
 
-AbstractState* AbstractState::get_child(int value) const {
-    //return children[value];
-    cout << value << endl;
-    return 0;
+AbstractState* AbstractState::get_child(int value) {
+    return children[value];
 }
 
 AbstractState* AbstractState::get_left_child() const {
