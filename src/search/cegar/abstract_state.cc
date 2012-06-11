@@ -233,7 +233,13 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             v2->check_arc(op, w);
         }
     }
-
+    // Save the refinement hierarchy.
+    this->var = var;
+    Domain values = v1->get_values(var);
+    for (Domain::iterator it = values.begin(); it != values.end(); ++it)
+        children[*it] = v1;
+    assert(v2->get_values(var).size() == 1);
+    children[value] = v2;
 }
 
 void AbstractState::add_arc(Operator &op, AbstractState &other) {
@@ -329,6 +335,28 @@ bool AbstractState::goal_reached() const {
         }
     }
     return true;
+}
+
+bool AbstractState::valid() const {
+    return !children.empty();
+}
+
+int AbstractState::get_var() const {
+    return var;
+}
+
+AbstractState* AbstractState::get_child(int value) const {
+    //return children[value];
+    cout << value << endl;
+    return 0;
+}
+
+AbstractState* AbstractState::get_left_child() const {
+    return left;
+}
+
+AbstractState* AbstractState::get_right_child() const {
+    return right;
 }
 
 }

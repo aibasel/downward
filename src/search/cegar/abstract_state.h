@@ -17,6 +17,7 @@ namespace cegar_heuristic {
 
 class AbstractState;
 typedef pair<Operator, AbstractState> Arc;
+typedef std::set<int> Domain;
 
 // TODO(jendrik): Use 32-bit masks for variables. This means we can not handle tasks
 // with domain sizes > 32.
@@ -38,7 +39,7 @@ private:
     // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
     // values[1] == {} -> var1 has all possible values.
-    std::vector<std::set<int> > values;
+    std::vector<Domain> values;
 
     std::vector<Arc> next, prev;
 
@@ -46,11 +47,18 @@ private:
     int distance;
     Arc *origin;
 
+    // Refinement hierarchy. Save the variable for which this state was refined
+    // and the resulting abstract child states.
+    int var;
+    std::map<int, AbstractState*> children;
+    AbstractState* left;
+    AbstractState* right;
+
 public:
     AbstractState(string s="");
     void regress(const Operator &op, AbstractState *result) const;
     string str() const;
-    set<int> get_values(int var) const;
+    Domain get_values(int var) const;
     void set_value(int var, int value);
     //void remove_value(int var, value);
     void refine(int var, int value, AbstractState *v1, AbstractState *v2);
@@ -72,6 +80,13 @@ public:
 
     std::vector<Arc> get_next() { return next; };
     //std::vector<Arc> get_prev() { return prev; };
+
+    // We only have a valid abstract state if it was not refined.
+    bool valid() const;
+    int get_var() const;
+    AbstractState* get_child(int value) const;
+    AbstractState* get_left_child() const;
+    AbstractState* get_right_child() const;
 };
 
 }
