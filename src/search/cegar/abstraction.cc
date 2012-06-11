@@ -26,35 +26,36 @@ Abstraction::Abstraction() {
 }
 
 bool Abstraction::find_solution() {
-    AdaptiveQueue<AbstractState> queue;
+    AdaptiveQueue<AbstractState*> queue;
 
+    collect_states();
     for (int i = 0; i < abs_states.size(); ++i) {
         queue.push(numeric_limits<int>::max(), abs_states[i]); // TODO: Use pointers
-        abs_states[i].set_distance(numeric_limits<int>::max());
+        abs_states[i]->set_distance(numeric_limits<int>::max());
     }
 
     init.set_distance(0);
     init.set_origin(0);
-    queue.push(0, init);
+    queue.push(0, &init);
 
     while (!queue.empty()) {
-        pair<int, AbstractState> top_pair = queue.pop();
+        pair<int, AbstractState*> top_pair = queue.pop();
         int distance = top_pair.first;
-        AbstractState state = top_pair.second;
+        AbstractState *state = top_pair.second;
 
-        int state_distance = state.get_distance();
-        cout << "VISIT: " << state.str() << " " << state_distance << " " << distance << endl;
+        int state_distance = state->get_distance();
+        cout << "VISIT: " << state->str() << " " << state_distance << " " << distance << endl;
         assert(state_distance <= distance);
         if (state_distance < distance) {
             continue;
         }
-        if (state.goal_reached()) {
+        if (state->goal_reached()) {
             cout << "GOAL REACHED" << endl;
-            extract_solution(state);
+            extract_solution(*state);
             return true;
         }
-        for (int i = 0; i < state.get_next().size(); i++) {
-            const Arc arc = state.get_next()[i];
+        for (int i = 0; i < state->get_next().size(); i++) {
+            const Arc arc = state->get_next()[i];
             Operator op = arc.first;
             AbstractState successor = arc.second;
             cout << "NEXT: " << successor.str() << endl;
@@ -64,9 +65,9 @@ bool Abstraction::find_solution() {
             if (successor.get_distance() > successor_cost) {
                 cout << "ADD SUCC" << endl;
                 successor.set_distance(successor_cost);
-                Arc origin = Arc(op, state);
+                Arc origin = Arc(op, *state);
                 successor.set_origin(&origin);
-                queue.push(successor_cost, successor);
+                queue.push(successor_cost, &successor);
             }
         }
     }
@@ -87,6 +88,31 @@ void Abstraction::extract_solution(AbstractState &goal) {
         current = &prev;
     }
 
+}
+
+AbstractState Abstraction::get_abstract_state(const State &state) const {
+    // TODO: Make current a pointer?
+    AbstractState current = single;
+    while (!current.valid()) {
+        int value = state[current.get_var()];
+        current = *current.get_child(value);
+    }
+    assert(current.valid());
+    return current;
+}
+
+void Abstraction::collect_states() {
+    abs_states.clear();
+    collect_child_states(&single);
+}
+
+void Abstraction::collect_child_states(AbstractState *parent) {
+    if (parent->valid()) {
+        abs_states.push_back(parent);
+    } else {
+        collect_child_states(parent->get_left_child());
+        collect_child_states(parent->get_right_child());
+    }
 }
 
 }
