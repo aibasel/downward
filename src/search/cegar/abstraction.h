@@ -27,7 +27,7 @@ private:
     deque<AbstractState*> solution_states;
     deque<Operator*> solution_ops;
 
-    bool dijkstra_search(HeapQueue<AbstractState*> &queue);
+    bool dijkstra_search(HeapQueue<AbstractState*> &queue, bool forward);
     void extract_solution(AbstractState &goal);
 
     // Refinement hierarchy.
