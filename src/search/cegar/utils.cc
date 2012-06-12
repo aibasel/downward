@@ -103,4 +103,15 @@ void get_unmet_preconditions(const Operator &op, const State &state,
     assert(cond->empty() == op.is_applicable(state));
 }
 
+void get_unmet_goal_conditions(const State &state,
+                               vector<pair<int,int> > *unmet_conditions) {
+    for (int i = 0; i < g_goal.size(); i++) {
+        int var = g_goal[i].first;
+        int value = g_goal[i].second;
+        if (state[var] != value) {
+            unmet_conditions->push_back(pair<int,int>(var, value));
+        }
+    }
+}
+
 }

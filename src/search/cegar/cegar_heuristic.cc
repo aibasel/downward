@@ -37,6 +37,10 @@ void CegarHeuristic::initialize() {
     for (int i = 0; i < REFINEMENTS; ++i) {
         abstraction.find_solution();
         cout << abstraction.get_solution_string() << endl;
+        bool success = abstraction.check_solution();
+        cout << "SUCCESS: " << success << endl;
+        if (success)
+            break;
     }
 }
 
