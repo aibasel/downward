@@ -363,6 +363,7 @@ TEST(CegarTest, find_solution_second_state) {
     EXPECT_EQ("<1={1}>", abs.solution_states[1]->str());
     EXPECT_EQ("op1", abs.solution_ops[0]->get_name());
 
+    cout << "COSTS" << endl;
     abs.calculate_costs();
     EXPECT_EQ(1, left->get_distance());
     EXPECT_EQ(0, right->get_distance());

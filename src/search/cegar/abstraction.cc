@@ -43,7 +43,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     }
 }
 
-bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue) {
+bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue, bool forward) {
     while (!queue.empty()) {
         pair<int, AbstractState*> top_pair = queue.pop();
         int distance = top_pair.first;
@@ -55,13 +55,21 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue) {
         if (state_distance < distance) {
             continue;
         }
-        if (state->goal_reached()) {
-            cout << "GOAL REACHED" << endl;
-            extract_solution(*state);
-            return true;
+        if (forward) {
+            if (state->goal_reached()) {
+                cout << "GOAL REACHED" << endl;
+                extract_solution(*state);
+                return true;
+            }
         }
-        for (int i = 0; i < state->get_next().size(); i++) {
-            const Arc arc = state->get_next()[i];
+        vector<Arc> successors;
+        if (forward) {
+            successors = state->get_next();
+        } else {
+            successors = state->get_prev();
+        }
+        for (int i = 0; i < successors.size(); i++) {
+            const Arc arc = successors[i];
             Operator *op = arc.first;
             AbstractState *successor = arc.second;
             cout << "NEXT: " << successor->str() << endl;
@@ -85,13 +93,11 @@ bool Abstraction::find_solution() {
     collect_states();
     for (int i = 0; i < abs_states.size(); ++i) {
         abs_states[i]->set_distance(numeric_limits<int>::max());
-        cout << abs_states[i]->str() << abs_states[i]->get_distance() << endl;
     }
-
     init->set_distance(0);
     init->set_origin(0);
     queue.push(0, init);
-    return dijkstra_search(queue);
+    return dijkstra_search(queue, true);
 }
 
 void Abstraction::extract_solution(AbstractState &goal) {
@@ -114,14 +120,14 @@ void Abstraction::calculate_costs() {
     HeapQueue<AbstractState*> queue;
     collect_states();
     for (int i = 0; i < abs_states.size(); ++i) {
-        queue.push(numeric_limits<int>::max(), abs_states[i]);
-        abs_states[i]->set_distance(numeric_limits<int>::max());
+        if (abs_states[i]->goal_reached()) {
+            abs_states[i]->set_distance(0);
+        } else {
+            abs_states[i]->set_distance(numeric_limits<int>::max());
+        }
+        queue.push(abs_states[i]->get_distance(), abs_states[i]);
     }
-
-    init->set_distance(0);
-    init->set_origin(0);
-    queue.push(0, init);
-    dijkstra_search(queue);
+    dijkstra_search(queue, false);
 }
 
 AbstractState Abstraction::get_abstract_state(const State &state) const {
