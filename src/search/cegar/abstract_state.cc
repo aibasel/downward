@@ -85,7 +85,7 @@ int get_pre(Operator op, int var) {
 }
 
 AbstractState::AbstractState(string s) {
-    assert(g_variable_domain.size() > 0);
+    assert(!g_variable_domain.empty());
     values.resize(g_variable_domain.size(), set<int>());
 
     // Construct state from string s of the form "<0={0,1}>".
@@ -206,6 +206,29 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
             s1_vals.insert(pre);
         }
         result->values[v] = s1_vals;
+    }
+}
+
+void AbstractState::get_unmet_conditions(AbstractState &desired,
+                                         vector<pair<int,int> > * conditions)
+                                         const {
+    // Get all set intersections of the possible values here minus the possible
+    // values in "desired".
+    for (int i = 0; i < g_variable_domain.size(); ++i) {
+        vector<int> both(g_variable_domain[i]);
+        vector<int>::iterator it;
+        set<int> vals1 = this->get_values(i);
+        set<int> vals2 = desired.get_values(i);
+        it = set_intersection(vals1.begin(), vals1.end(),
+                              vals2.begin(), vals2.end(), both.begin());
+        int elements = int(it - both.begin());
+        assert(elements > 0);
+        if (elements < vals1.size()) {
+            // The variable's value matters for determining the resulting state.
+            for (int j = 0; j < elements; ++j) {
+                conditions->push_back(pair<int,int>(i, both[j]));
+            }
+        }
     }
 }
 
@@ -382,7 +405,7 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
 }
 
 bool AbstractState::goal_reached() const {
-    assert(g_goal.size() > 0);
+    assert(!g_goal.empty());
     for (int i = 0; i < g_goal.size(); ++i) {
         if (get_values(g_goal[i].first).count(g_goal[i].second) == 0) {
             return false;

@@ -18,6 +18,8 @@ using namespace std;
 
 namespace cegar_heuristic {
 
+int REFINEMENTS = 2;
+
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();

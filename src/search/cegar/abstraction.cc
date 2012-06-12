@@ -18,7 +18,7 @@ using namespace std;
 namespace cegar_heuristic {
 
 Abstraction::Abstraction() {
-    assert(g_operators.size() > 0);
+    assert(!g_operators.empty());
     single = AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
         single.add_arc(&g_operators[i], &single);
@@ -27,7 +27,7 @@ Abstraction::Abstraction() {
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
-    assert(g_operators.size() > 0); // We need operators and the g_initial_state
+    assert(!g_operators.empty()); // We need operators and the g_initial_state
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
     state->refine(var, value, v1, v2);
@@ -117,7 +117,7 @@ void Abstraction::extract_solution(AbstractState &goal) {
 }
 
 string Abstraction::get_solution_string() const {
-    assert(solution_states.size() >= 1);
+    assert(!solution_states.empty());
     assert(solution_states.size() == solution_ops.size() + 1);
     string sep = "";
     ostringstream oss;
@@ -125,9 +125,43 @@ string Abstraction::get_solution_string() const {
     for (int i = 1; i < solution_ops.size(); ++i) {
         oss << sep << solution_states[i]->str() << ","
             << solution_ops[i]->get_name();
+        sep = ",";
     }
+    oss << sep << solution_states[solution_states.size() - 1]->str();
     oss << "]";
     return oss.str();
+}
+
+void Abstraction::check_solution() {
+    assert(!solution_states.empty());
+    assert(solution_states.size() == solution_ops.size() + 1);
+    State *conc_state = g_initial_state;
+    for (int i = 1; i < solution_ops.size(); ++i) {
+        assert(i >= 1);
+        AbstractState *abs_state = solution_states[i];
+        if (!abs_state->is_abstraction_of(*conc_state)) {
+            // Get unmet conditions in previous state and refine it.
+            AbstractState *prev_state = solution_states[i-1];
+            AbstractState desired_prev_state;
+            abs_state->regress(*solution_ops[i-1], &desired_prev_state);
+            // TODO: desired_prev_state might be null.
+            vector<pair<int,int> > unmet_conditions;
+            prev_state->get_unmet_conditions(desired_prev_state, &unmet_conditions);
+            int var, value;
+            pick_condition(unmet_conditions, &var, &value);
+            refine(prev_state, var, value);
+            return;
+        } else if (!solution_ops[i]->is_applicable(*conc_state)) {
+            // Get unmet preconditions and refine the current state.
+
+        }
+    }
+}
+
+void Abstraction::pick_condition(vector<pair<int,int> > &conditions, int *var, int *value) const {
+    assert(!conditions.empty());
+    *var = conditions[0].first;
+    *value = conditions[0].second;
 }
 
 void Abstraction::calculate_costs() {

@@ -74,6 +74,7 @@ public:
     bool applicable(const Operator &op) const;
     void apply(const Operator &op, AbstractState *result) const;
     bool agrees_with(const AbstractState &other) const;
+    void get_unmet_conditions(AbstractState &desired, vector<pair<int,int> > * conditions) const;
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
     bool goal_reached() const;

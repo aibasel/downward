@@ -16,8 +16,6 @@
 
 namespace cegar_heuristic {
 
-int REFINEMENTS = 10;
-
 class CegarHeuristic : public Heuristic {
     int min_operator_cost;
     Abstraction abstraction;
