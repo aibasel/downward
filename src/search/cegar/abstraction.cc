@@ -21,7 +21,7 @@ Abstraction::Abstraction() {
     assert(g_operators.size() > 0);
     single = AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
-        single.add_arc(g_operators[i], single);
+        single.add_arc(&g_operators[i], &single);
     }
     init = &single;
 }
@@ -62,18 +62,18 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue) {
         }
         for (int i = 0; i < state->get_next().size(); i++) {
             const Arc arc = state->get_next()[i];
-            Operator op = arc.first;
-            AbstractState successor = arc.second;
-            cout << "NEXT: " << successor.str() << endl;
-            int cost = op.get_cost();
+            Operator *op = arc.first;
+            AbstractState *successor = arc.second;
+            cout << "NEXT: " << successor->str() << endl;
+            int cost = op->get_cost();
             int successor_cost = state_distance + cost;
-            cout << cost << successor_cost << successor.get_distance() << endl;
-            if (successor.get_distance() > successor_cost) {
+            cout << cost << successor_cost << successor->get_distance() << endl;
+            if (successor->get_distance() > successor_cost) {
                 cout << "ADD SUCC" << endl;
-                successor.set_distance(successor_cost);
-                Arc origin = Arc(op, *state);
-                successor.set_origin(&origin);
-                queue.push(successor_cost, &successor);
+                successor->set_distance(successor_cost);
+                Arc origin = Arc(op, state);
+                successor->set_origin(&origin);
+                queue.push(successor_cost, successor);
             }
         }
     }
@@ -102,11 +102,11 @@ void Abstraction::extract_solution(AbstractState &goal) {
     solution_states.push_front(current);
     cout << "ORIGIN: " << current->get_origin() << endl;
     while (current->get_origin()) {
-        Operator op = current->get_origin()->first;
-        AbstractState prev = current->get_origin()->second;
-        solution_states.push_front(&prev);
-        solution_ops.push_front(&op);
-        current = &prev;
+        Operator *op = current->get_origin()->first;
+        AbstractState *prev = current->get_origin()->second;
+        solution_states.push_front(prev);
+        solution_ops.push_front(op);
+        current = prev;
     }
 }
 

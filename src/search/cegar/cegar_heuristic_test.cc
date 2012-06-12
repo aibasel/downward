@@ -111,7 +111,7 @@ TEST(CegarTest, refine_var0) {
     Operator op1 = make_op1();
 
     AbstractState a = AbstractState();
-    a.add_arc(op1, a);
+    a.add_arc(&op1, &a);
     AbstractState *a1 = new AbstractState();
     AbstractState *a2 = new AbstractState();
     a.refine(0, 1, a1, a2);
@@ -143,7 +143,7 @@ TEST(CegarTest, refine_var1) {
     Operator op1 = make_op1();
 
     AbstractState a = AbstractState();
-    a.add_arc(op1, a);
+    a.add_arc(&op1, &a);
     AbstractState *a1 = new AbstractState();
     AbstractState *a2 = new AbstractState();
     a.refine(1, 1, a1, a2);

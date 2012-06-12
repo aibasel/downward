@@ -16,7 +16,7 @@
 namespace cegar_heuristic {
 
 class AbstractState;
-typedef pair<Operator, AbstractState> Arc;
+typedef pair<Operator*, AbstractState*> Arc;
 typedef std::set<int> Domain;
 
 // TODO(jendrik): Use 32-bit masks for variables. This means we can not handle tasks
@@ -43,7 +43,7 @@ private:
     std::vector<Domain> values;
 
     std::vector<Arc> next, prev;
-    void remove_arc(std::vector<Arc> arcs, Operator &op, AbstractState &other);
+    void remove_arc(std::vector<Arc> arcs, Operator *op, AbstractState *other);
 
     // For Dijkstra search.
     int distance;
@@ -67,10 +67,10 @@ public:
     void refine(int var, int value, AbstractState *v1, AbstractState *v2);
     bool operator==(AbstractState &other) const;
     bool operator!=(AbstractState &other) const;
-    void add_arc(Operator &op, AbstractState &other);
-    void remove_next_arc(Operator &op, AbstractState &other);
-    void remove_prev_arc(Operator &op, AbstractState &other);
-    bool check_arc(Operator &op, AbstractState &other);
+    void add_arc(Operator *op, AbstractState *other);
+    void remove_next_arc(Operator *op, AbstractState *other);
+    void remove_prev_arc(Operator *op, AbstractState *other);
+    bool check_arc(Operator *op, AbstractState *other);
     bool applicable(const Operator &op) const;
     void apply(const Operator &op, AbstractState *result) const;
     bool agrees_with(const AbstractState &other) const;
