@@ -31,7 +31,7 @@ private:
     std::vector<Domain> values;
 
     std::vector<Arc> next, prev;
-    void remove_arc(std::vector<Arc> arcs, Operator *op, AbstractState *other);
+    void remove_arc(std::vector<Arc> &arcs, Operator *op, AbstractState *other);
 
     // For Dijkstra search.
     int distance;

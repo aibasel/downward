@@ -5,6 +5,7 @@
 #include "./abstraction.h"
 #include "./utils.h"
 #include "./../operator.h"
+#include "./../axioms.h"
 
 #include <iostream>
 
@@ -24,12 +25,18 @@ Operator make_op1() {
 }
 
 void init_test() {
+    g_axiom_evaluator = new AxiomEvaluator();
     // We have to construct the variable domains.
     // 0 in {0, 1}, 1 in {0, 1, 2}, 2 in {0, 1}.
     g_variable_domain.clear();
     g_variable_domain.push_back(2);
     g_variable_domain.push_back(3);
     g_variable_domain.push_back(2);
+
+    g_variable_name.clear();
+    g_variable_name.push_back("var0");
+    g_variable_name.push_back("var1");
+    g_variable_name.push_back("var2");
 
     g_initial_state = create_state("0 0 0");
 
@@ -364,6 +371,33 @@ TEST(CegarTest, find_solution_second_state) {
     abs.calculate_costs();
     EXPECT_EQ(1, left->get_distance());
     EXPECT_EQ(0, right->get_distance());
+}
+
+TEST(CegarTest, initialize) {
+    // Operator: <0=0, 1=0 --> 1=1>
+    init_test();
+    g_goal.clear();
+    g_goal.push_back(make_pair(1, 1));
+
+    Abstraction abstraction = Abstraction();
+
+    abstraction.find_solution();
+    ASSERT_EQ("[<>]", abstraction.get_solution_string());
+    bool success = abstraction.check_solution();
+    EXPECT_FALSE(success);
+
+    string a1s = "<1={0,2}>";
+    string a2s = "<1={1}>";
+
+    EXPECT_EQ(a1s, abstraction.init->str());
+    EXPECT_EQ("[(op1,<1={1}>)]", abstraction.init->get_next_as_string());
+
+    abstraction.find_solution();
+    ASSERT_EQ(2, abstraction.solution_states.size());
+    ASSERT_EQ(1, abstraction.solution_ops.size());
+    ASSERT_EQ("[<1={0,2}>,op1,<1={1}>]", abstraction.get_solution_string());
+    success = abstraction.check_solution();
+    EXPECT_TRUE(success);
 }
 
 }
