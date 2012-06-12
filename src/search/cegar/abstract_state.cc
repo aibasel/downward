@@ -231,7 +231,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     for (int i = 0; i < prev.size(); ++i) {
         Operator *op = prev[i].first;
         AbstractState *u = prev[i].second;
-        if (*u != *this) { // TODO: Compare pointers.
+        if (u != this) {
+            assert(*u != *this);
             u->remove_next_arc(op, this);
             u->check_arc(op, v1);
             u->check_arc(op, v2);
@@ -240,7 +241,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     for (int i = 0; i < next.size(); ++i) {
         Operator *op = next[i].first;
         AbstractState *w = next[i].second;
-        if (*w == *this) {
+        if (w == this) {
+            assert(*w == *this);
             // Handle former self-loops. The same loops also were in prev,
             // but they only have to be checked once.
             v1->check_arc(op, v2);
@@ -273,8 +275,9 @@ void AbstractState::remove_arc(vector<Arc> arcs, Operator *op, AbstractState *ot
     for (int i = 0; i < arcs.size(); ++i) {
         Operator *current_op = arcs[i].first;
         AbstractState *current_state = arcs[i].second;
-        // TODO(jendrik): op.get_name() may not be unique.
-        if ((current_op->get_name() == op->get_name()) && (*current_state == *other)) { // TODO: Compare pointers
+        if ((current_op == op) && (current_state == other)) {
+            // TODO(jendrik): Remove later, because op.get_name() may not be unique.
+            assert((current_op->get_name() == op->get_name()) && (*current_state == *other));
             arcs.erase(next.begin() + i);
             return;
         }
