@@ -31,6 +31,11 @@ CegarHeuristic::~CegarHeuristic() {
 
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
+    abstraction = Abstraction();
+    for (int i = 0; i < REFINEMENTS; ++i) {
+        abstraction.find_solution();
+        cout << abstraction.get_solution_string() << endl;
+    }
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
