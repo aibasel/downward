@@ -10,6 +10,7 @@
 
 #include "../heuristic.h"
 #include "../operator.h"
+#include "./../priority_queue.h"
 #include "./abstract_state.h"
 
 #include "gtest/gtest_prod.h"
@@ -26,6 +27,7 @@ private:
     deque<AbstractState*> solution_states;
     deque<Operator*> solution_ops;
 
+    bool dijkstra_search(HeapQueue<AbstractState*> &queue);
     void extract_solution(AbstractState &goal);
 
     // Refinement hierarchy.
@@ -44,7 +46,10 @@ public:
     AbstractState get_abstract_state(const State &state) const;
 
     FRIEND_TEST(CegarTest, find_solution_first_state);
+    FRIEND_TEST(CegarTest, find_solution_second_state);
     bool find_solution();
+
+    void calculate_costs();
 };
 
 }

@@ -43,19 +43,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     }
 }
 
-bool Abstraction::find_solution() {
-    AdaptiveQueue<AbstractState*> queue;
-
-    collect_states();
-    for (int i = 0; i < abs_states.size(); ++i) {
-        queue.push(numeric_limits<int>::max(), abs_states[i]); // TODO: Use pointers
-        abs_states[i]->set_distance(numeric_limits<int>::max());
-    }
-
-    init->set_distance(0);
-    init->set_origin(0);
-    queue.push(0, init);
-
+bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue) {
     while (!queue.empty()) {
         pair<int, AbstractState*> top_pair = queue.pop();
         int distance = top_pair.first;
@@ -92,12 +80,27 @@ bool Abstraction::find_solution() {
     return false;
 }
 
+bool Abstraction::find_solution() {
+    HeapQueue<AbstractState*> queue;
+    collect_states();
+    for (int i = 0; i < abs_states.size(); ++i) {
+        abs_states[i]->set_distance(numeric_limits<int>::max());
+        cout << abs_states[i]->str() << abs_states[i]->get_distance() << endl;
+    }
+
+    init->set_distance(0);
+    init->set_origin(0);
+    queue.push(0, init);
+    return dijkstra_search(queue);
+}
+
 void Abstraction::extract_solution(AbstractState &goal) {
     solution_states.clear();
     solution_ops.clear();
 
     AbstractState *current = &goal;
     solution_states.push_front(current);
+    cout << "ORIGIN: " << current->get_origin() << endl;
     while (current->get_origin()) {
         Operator op = current->get_origin()->first;
         AbstractState prev = current->get_origin()->second;
@@ -105,6 +108,20 @@ void Abstraction::extract_solution(AbstractState &goal) {
         solution_ops.push_front(&op);
         current = &prev;
     }
+}
+
+void Abstraction::calculate_costs() {
+    HeapQueue<AbstractState*> queue;
+    collect_states();
+    for (int i = 0; i < abs_states.size(); ++i) {
+        queue.push(numeric_limits<int>::max(), abs_states[i]);
+        abs_states[i]->set_distance(numeric_limits<int>::max());
+    }
+
+    init->set_distance(0);
+    init->set_origin(0);
+    queue.push(0, init);
+    dijkstra_search(queue);
 }
 
 AbstractState Abstraction::get_abstract_state(const State &state) const {
