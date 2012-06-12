@@ -123,12 +123,27 @@ string AbstractState::str() const {
     oss << "<";
     for (int i = 0; i < values.size(); ++i) {
         set<int> vals = values[i];
-        if (!vals.empty()) {
+        if (!vals.empty() && vals.size() < g_variable_domain[i]) {
             oss << sep << i << "=" << int_set_to_string(vals);
             sep = ",";
         }
     }
     oss << ">";
+    return oss.str();
+}
+
+string AbstractState::get_next_as_string() const {
+    // Format: [(op.name,state.str),...]
+    ostringstream oss;
+    string sep = "";
+    oss << "[";
+    for (int i = 0; i < next.size(); ++i) {
+        Operator op = next[i].first;
+        AbstractState abs = next[i].second;
+        oss << sep << "(" << op.get_name() << "," << abs.str() << ")";
+        sep = ",";
+    }
+    oss << "]";
     return oss.str();
 }
 
@@ -217,7 +232,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         Operator op = prev[i].first;
         AbstractState u = prev[i].second;
         if (u != *this) {
-            u.remove_arc(op, *this);
+            u.remove_next_arc(op, *this);
             u.check_arc(op, *v1);
             u.check_arc(op, *v2);
         }
@@ -225,7 +240,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     for (int i = 0; i < next.size(); ++i) {
         Operator op = next[i].first;
         AbstractState w = next[i].second;
-        if (w != *this) {
+        if (w == *this) {
             // Handle former self-loops. The same loops also were in prev,
             // but they only have to be checked once.
             v1->check_arc(op, *v2);
@@ -233,7 +248,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             v1->check_arc(op, *v1);
             v2->check_arc(op, *v2);
         } else {
-            w.remove_arc(op, *this);
+            w.remove_prev_arc(op, *this);
             v1->check_arc(op, w);
             v2->check_arc(op, w);
         }
@@ -251,19 +266,30 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
 
 void AbstractState::add_arc(Operator &op, AbstractState &other) {
     next.push_back(Arc(op, other));
-    other.next.push_back(Arc(op, *this));
+    other.prev.push_back(Arc(op, *this));
 }
 
-void AbstractState::remove_arc(Operator &op, AbstractState &other) {
-    for (int i = 0; i < next.size(); ++i) {
-        Operator current_op = next[i].first;
-        AbstractState current_state = next[i].second;
+void AbstractState::remove_arc(vector<Arc> arcs, Operator &op, AbstractState &other) {
+    for (int i = 0; i < arcs.size(); ++i) {
+        Operator current_op = arcs[i].first;
+        AbstractState current_state = arcs[i].second;
         // TODO(jendrik): op.get_name() may not be unique.
         if ((current_op.get_name() == op.get_name()) && (current_state == other)) {
-            next.erase(next.begin() + i);
+            arcs.erase(next.begin() + i);
             return;
         }
     }
+    // Do not try to remove an operator that is not there.
+    cout << "REMOVE: " << str() << " " << op.get_name() << " " << other.str() << endl;
+    assert(false);
+}
+
+void AbstractState::remove_next_arc(Operator &op, AbstractState &other) {
+    remove_arc(next, op, other);
+}
+
+void AbstractState::remove_prev_arc(Operator &op, AbstractState &other) {
+    remove_arc(prev, op, other);
 }
 
 bool AbstractState::check_arc(Operator &op, AbstractState &other) {

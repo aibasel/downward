@@ -13,27 +13,34 @@ using namespace std;
 
 namespace cegar_heuristic {
 
-//vector<int> g_variable_domain;
-
-void init_test() {
-    // We have to construct the variable domains.
-    // 0 in {0, 1}, 1 in {0, 1, 2}.
-    g_variable_domain.clear();
-    g_variable_domain.push_back(2);
-    g_variable_domain.push_back(3);
-    g_variable_domain.push_back(2);
-
-    g_initial_state = create_state("0 0 0");
-}
-
 Operator make_op1() {
     // Operator: <0=0, 1=0 --> 1=1>
     vector<string> prevail;
     prevail.push_back("0 0");
     vector<string> pre_post;
     pre_post.push_back("0 1 0 1");
-    Operator op = create_op("op", prevail, pre_post);
+    Operator op = create_op("op1", prevail, pre_post);
     return op;
+}
+
+void init_test() {
+    // We have to construct the variable domains.
+    // 0 in {0, 1}, 1 in {0, 1, 2}, 2 in {0, 1}.
+    g_variable_domain.clear();
+    g_variable_domain.push_back(2);
+    g_variable_domain.push_back(3);
+    g_variable_domain.push_back(2);
+
+    g_initial_state = create_state("0 0 0");
+
+    // Operator: <0=0, 1=0 --> 1=1>
+    Operator op1 = make_op1();
+    g_operators.clear();
+    g_operators.push_back(op1);
+
+    // goal(0) = 1
+    g_goal.clear();
+    g_goal.push_back(make_pair(0, 1));
 }
 
 TEST(CegarTest, str) {
@@ -43,7 +50,7 @@ TEST(CegarTest, str) {
     vector<string> states;
     states.push_back("<0={1}>");
     states.push_back("<>");
-    states.push_back("<0={0,1},1={0,2}>");
+    states.push_back("<0={1},1={0,2}>");
     states.push_back("<0={0},1={0,1}>");
     for (int i = 0; i < states.size(); ++i) {
         a = AbstractState(states[i]);
@@ -125,8 +132,8 @@ TEST(CegarTest, refine_var0) {
     EXPECT_EQ(a2s, a.get_child(1)->str());
 
     // Check transition system.
-    EXPECT_EQ(2, a1->get_next().size());
-    EXPECT_EQ(0, a2->get_next().size());
+    EXPECT_EQ("[(op1,<0={0}>)]", a1->get_next_as_string());
+    EXPECT_EQ("[]", a2->get_next_as_string());
 }
 
 TEST(CegarTest, refine_var1) {
@@ -158,8 +165,8 @@ TEST(CegarTest, refine_var1) {
     EXPECT_EQ(a1s, a.get_child(2)->str());
 
     // Check transition system.
-    EXPECT_EQ(2, a1->get_next().size());
-    EXPECT_EQ(0, a2->get_next().size());
+    EXPECT_EQ("[(op1,<1={1}>)]", a1->get_next_as_string());
+    EXPECT_EQ("[]", a2->get_next_as_string());
 }
 
 TEST(CegarTest, applicable) {
@@ -273,18 +280,10 @@ TEST(CegarTest, is_abstraction_of_other) {
 
 TEST(CegarTest, find_solution_first_state) {
     init_test();
-    // Check that this variable doesn't appear in the resulting state.
-    g_variable_domain.push_back(2);
-
-    // Operator: <0=0, 1=0 --> 1=1>
-    Operator op1 = make_op1();
-    g_operators.push_back(op1);
-
-    // goal(0) = 1
-    g_goal.push_back(make_pair(0, 1));
 
     // -> <>
     Abstraction abs = Abstraction();
+    EXPECT_EQ("[(op1,<>)]", abs.init->get_next_as_string());
     // -> 1={0,1} -> 1={2}
     abs.refine(abs.init, 1, 2);
 
@@ -292,6 +291,7 @@ TEST(CegarTest, find_solution_first_state) {
     string a2s = "<1={2}>";
 
     EXPECT_EQ("<>", abs.single.str());
+    EXPECT_EQ(a1s, abs.init->str());
 
     AbstractState *left = abs.single.get_left_child();
     AbstractState *right = abs.single.get_right_child();
@@ -303,6 +303,8 @@ TEST(CegarTest, find_solution_first_state) {
     EXPECT_EQ(a1s, abs.single.get_child(1)->str());
     EXPECT_EQ(a2s, abs.single.get_child(2)->str());
 
+    EXPECT_EQ("[(op1,<1={0,1}>)]", left->get_next_as_string());
+    EXPECT_EQ("[]", right->get_next_as_string());
     EXPECT_EQ(1, left->get_next().size());
     EXPECT_EQ(0, right->get_next().size());
 
