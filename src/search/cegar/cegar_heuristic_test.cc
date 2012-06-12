@@ -11,7 +11,6 @@
 using namespace std;
 
 
-
 namespace cegar_heuristic {
 
 Operator make_op1() {

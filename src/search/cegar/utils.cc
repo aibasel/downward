@@ -83,4 +83,24 @@ int get_pre(Operator op, int var) {
     return UNDEFINED;
 }
 
+void get_unmet_preconditions(const Operator &op, const State &state,
+                             vector<pair<int,int> > *cond) {
+    assert(cond->empty());
+    for (int i = 0; i < op.get_prevail().size(); i++) {
+        const Prevail *prevail = &op.get_prevail()[i];
+        int var = prevail->var;
+        int value = prevail->prev;
+        if (state[var] != value)
+            cond->push_back(pair<int,int>(var, value));
+    }
+    for (int i = 0; i < op.get_pre_post().size(); i++) {
+        const PrePost *pre_post = &op.get_pre_post()[i];
+        int var = pre_post->var;
+        int value = pre_post->pre;
+        if (state[var] != value)
+            cond->push_back(pair<int,int>(var, value));
+    }
+    assert(cond->empty() == op.is_applicable(state));
+}
+
 }

@@ -12,6 +12,7 @@
 #include "../operator.h"
 #include "./../priority_queue.h"
 #include "./abstract_state.h"
+#include "./utils.h"
 
 #include "gtest/gtest_prod.h"
 
