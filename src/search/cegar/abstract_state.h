@@ -43,6 +43,7 @@ private:
     std::vector<Domain> values;
 
     std::vector<Arc> next, prev;
+    void remove_arc(std::vector<Arc> arcs, Operator &op, AbstractState &other);
 
     // For Dijkstra search.
     int distance;
@@ -67,7 +68,8 @@ public:
     bool operator==(AbstractState &other) const;
     bool operator!=(AbstractState &other) const;
     void add_arc(Operator &op, AbstractState &other);
-    void remove_arc(Operator &op, AbstractState &other);
+    void remove_next_arc(Operator &op, AbstractState &other);
+    void remove_prev_arc(Operator &op, AbstractState &other);
     bool check_arc(Operator &op, AbstractState &other);
     bool applicable(const Operator &op) const;
     void apply(const Operator &op, AbstractState *result) const;
@@ -82,6 +84,7 @@ public:
     Arc* get_origin() { return origin; };
 
     std::vector<Arc> get_next() { return next; };
+    std::string get_next_as_string() const;
     //std::vector<Arc> get_prev() { return prev; };
 
     // We only have a valid abstract state if it was not refined.
