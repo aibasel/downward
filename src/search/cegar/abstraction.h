@@ -27,6 +27,8 @@ private:
     deque<AbstractState*> solution_states;
     deque<Operator*> solution_ops;
 
+    void pick_condition(vector<pair<int,int> > &conditions, int *var, int *value) const;
+
     bool dijkstra_search(HeapQueue<AbstractState*> &queue, bool forward);
     void extract_solution(AbstractState &goal);
 
@@ -50,6 +52,7 @@ public:
     bool find_solution();
 
     std::string get_solution_string() const;
+    void check_solution();
 
     void calculate_costs();
 };

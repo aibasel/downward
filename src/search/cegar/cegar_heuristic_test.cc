@@ -63,15 +63,12 @@ TEST(CegarTest, regress) {
     init_test();
 
     // Operator: <0=0, 1=0 --> 1=1>
-    vector<string> prevail;
-    prevail.push_back("0 0");
-    vector<string> pre_post;
-    pre_post.push_back("0 1 0 1");
-    Operator op = create_op("op", prevail, pre_post);
+    Operator op = make_op1();
 
     vector<pair<string, string> > pairs;
     pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={0},1={0,1}>"));
     pairs.push_back(pair<string, string>("<0={0},1={0}>", "<>"));
+    pairs.push_back(pair<string, string>("<0={0},1={0}>", "<1={1}>"));
 
     AbstractState b;
     for (int i = 0; i < pairs.size(); ++i) {
