@@ -135,11 +135,11 @@ string Abstraction::get_solution_string() const {
 void Abstraction::check_solution() {
     assert(!solution_states.empty());
     assert(solution_states.size() == solution_ops.size() + 1);
-    State *conc_state = g_initial_state;
+    State conc_state = *g_initial_state;
     for (int i = 1; i < solution_ops.size(); ++i) {
         assert(i >= 1);
         AbstractState *abs_state = solution_states[i];
-        if (!abs_state->is_abstraction_of(*conc_state)) {
+        if (!abs_state->is_abstraction_of(conc_state)) {
             // Get unmet conditions in previous state and refine it.
             AbstractState *prev_state = solution_states[i-1];
             AbstractState desired_prev_state;
@@ -151,11 +151,18 @@ void Abstraction::check_solution() {
             pick_condition(unmet_conditions, &var, &value);
             refine(prev_state, var, value);
             return;
-        } else if (!solution_ops[i]->is_applicable(*conc_state)) {
+        } else if (!solution_ops[i]->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
-
+            vector<pair<int,int> > unmet;
+            get_unmet_preconditions(*solution_ops[i], conc_state, &unmet);
+            int var, value;
+            pick_condition(unmet, &var, &value);
+            refine(abs_state, var, value);
+        } else {
+            conc_state = State(conc_state, *solution_ops[i]);
         }
     }
+
 }
 
 void Abstraction::pick_condition(vector<pair<int,int> > &conditions, int *var, int *value) const {
