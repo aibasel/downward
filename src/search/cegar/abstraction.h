@@ -50,6 +50,7 @@ public:
 
     FRIEND_TEST(CegarTest, find_solution_first_state);
     FRIEND_TEST(CegarTest, find_solution_second_state);
+    FRIEND_TEST(CegarTest, initialize);
     bool find_solution();
 
     std::string get_solution_string() const;

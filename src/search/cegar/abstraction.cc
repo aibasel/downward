@@ -123,7 +123,7 @@ string Abstraction::get_solution_string() const {
     string sep = "";
     ostringstream oss;
     oss << "[";
-    for (int i = 1; i < solution_ops.size(); ++i) {
+    for (int i = 0; i < solution_ops.size(); ++i) {
         oss << sep << solution_states[i]->str() << ","
             << solution_ops[i]->get_name();
         sep = ",";
@@ -139,6 +139,7 @@ bool Abstraction::check_solution() {
     State conc_state = *g_initial_state;
     for (int i = 0; i < solution_states.size(); ++i) {
         AbstractState *abs_state = solution_states[i];
+        cout << "Checking state " << i << ":" << abs_state->str() << endl;
         // Set next_op to null if there is no next operator.
         Operator *next_op = (i < solution_ops.size()) ? solution_ops[i] : 0;
         vector<pair<int,int> > unmet_cond;
@@ -180,6 +181,11 @@ bool Abstraction::check_solution() {
 
 void Abstraction::pick_condition(vector<pair<int,int> > &conditions, int *var, int *value) const {
     assert(!conditions.empty());
+    cout << "Unmet conditions: ";
+    for (int i = 0; i < conditions.size(); ++i) {
+        cout << conditions[i].first << "=" << conditions[i].second << " ";
+    }
+    cout << endl;
     *var = conditions[0].first;
     *value = conditions[0].second;
 }
