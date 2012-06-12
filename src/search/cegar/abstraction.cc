@@ -28,6 +28,7 @@ Abstraction::Abstraction() {
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
     assert(!g_operators.empty()); // We need operators and the g_initial_state
+    cout << "REFINE " << state->str() << " for " << var << "=" << value << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
     state->refine(var, value, v1, v2);
@@ -132,37 +133,49 @@ string Abstraction::get_solution_string() const {
     return oss.str();
 }
 
-void Abstraction::check_solution() {
+bool Abstraction::check_solution() {
     assert(!solution_states.empty());
     assert(solution_states.size() == solution_ops.size() + 1);
     State conc_state = *g_initial_state;
-    for (int i = 1; i < solution_ops.size(); ++i) {
-        assert(i >= 1);
+    for (int i = 0; i < solution_states.size(); ++i) {
         AbstractState *abs_state = solution_states[i];
+        // Set next_op to null if there is no next operator.
+        Operator *next_op = (i < solution_ops.size()) ? solution_ops[i] : 0;
+        vector<pair<int,int> > unmet_cond;
+        int var, value;
         if (!abs_state->is_abstraction_of(conc_state)) {
             // Get unmet conditions in previous state and refine it.
+            assert(i >= 1);
             AbstractState *prev_state = solution_states[i-1];
             AbstractState desired_prev_state;
             abs_state->regress(*solution_ops[i-1], &desired_prev_state);
             // TODO: desired_prev_state might be null.
-            vector<pair<int,int> > unmet_conditions;
-            prev_state->get_unmet_conditions(desired_prev_state, &unmet_conditions);
-            int var, value;
-            pick_condition(unmet_conditions, &var, &value);
+            prev_state->get_unmet_conditions(desired_prev_state, &unmet_cond);
+            pick_condition(unmet_cond, &var, &value);
             refine(prev_state, var, value);
-            return;
-        } else if (!solution_ops[i]->is_applicable(conc_state)) {
+            return false;
+        } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
-            vector<pair<int,int> > unmet;
-            get_unmet_preconditions(*solution_ops[i], conc_state, &unmet);
-            int var, value;
-            pick_condition(unmet, &var, &value);
+            get_unmet_preconditions(*solution_ops[i], conc_state, &unmet_cond);
+            pick_condition(unmet_cond, &var, &value);
             refine(abs_state, var, value);
+            return false;
+        } else if (next_op) {
+            // Go to the next concrete state.
+            conc_state = State(conc_state, *next_op);
+        } else if (!test_goal(conc_state)) {
+            // Get unmet goals and refine the last state.
+            get_unmet_goal_conditions(conc_state, &unmet_cond);
+            pick_condition(unmet_cond, &var, &value);
+            refine(abs_state, var, value);
+            return false;
         } else {
-            conc_state = State(conc_state, *solution_ops[i]);
+            // We have reached the goal.
+            return true;
         }
     }
-
+    assert(false);
+    return true;
 }
 
 void Abstraction::pick_condition(vector<pair<int,int> > &conditions, int *var, int *value) const {

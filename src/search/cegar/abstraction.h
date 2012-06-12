@@ -53,7 +53,7 @@ public:
     bool find_solution();
 
     std::string get_solution_string() const;
-    void check_solution();
+    bool check_solution();
 
     void calculate_costs();
 };
