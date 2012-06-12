@@ -389,7 +389,7 @@ bool AbstractState::goal_reached() const {
 }
 
 bool AbstractState::valid() const {
-    return !children.empty();
+    return children.empty();
 }
 
 int AbstractState::get_var() const {

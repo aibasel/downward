@@ -279,6 +279,7 @@ TEST(CegarTest, is_abstraction_of_other) {
 }
 
 TEST(CegarTest, find_solution_first_state) {
+    // Operator: <0=0, 1=0 --> 1=1>
     init_test();
 
     // -> <>
@@ -305,11 +306,63 @@ TEST(CegarTest, find_solution_first_state) {
 
     EXPECT_EQ("[(op1,<1={0,1}>)]", left->get_next_as_string());
     EXPECT_EQ("[]", right->get_next_as_string());
-    EXPECT_EQ(1, left->get_next().size());
-    EXPECT_EQ(0, right->get_next().size());
 
     bool success = abs.find_solution();
-    EXPECT_TRUE(success);
+    ASSERT_TRUE(success);
+    EXPECT_EQ(1, abs.solution_states.size());
+    EXPECT_EQ(0, abs.solution_ops.size());
+    EXPECT_EQ("<1={0,1}>", abs.solution_states[0]->str());
+}
+
+TEST(CegarTest, find_solution_second_state) {
+    // Operator: <0=0, 1=0 --> 1=1>
+    init_test();
+    g_goal.push_back(make_pair(1, 1));
+
+    // -> <>
+    Abstraction abs = Abstraction();
+    EXPECT_EQ("[(op1,<>)]", abs.init->get_next_as_string());
+    // -> 1={0,2} -> 1={1}
+    abs.refine(abs.init, 1, 1);
+
+    string a1s = "<1={0,2}>";
+    string a2s = "<1={1}>";
+
+    EXPECT_EQ("<>", abs.single.str());
+    EXPECT_EQ(a1s, abs.init->str());
+
+    AbstractState *left = abs.single.get_left_child();
+    AbstractState *right = abs.single.get_right_child();
+
+    EXPECT_EQ(a1s, left->str());
+    EXPECT_EQ(a2s, right->str());
+
+    EXPECT_FALSE(abs.single.valid());
+    EXPECT_TRUE(left->valid());
+    EXPECT_TRUE(right->valid());
+
+    EXPECT_EQ(a1s, abs.single.get_child(0)->str());
+    EXPECT_EQ(a2s, abs.single.get_child(1)->str());
+    EXPECT_EQ(a1s, abs.single.get_child(2)->str());
+
+    EXPECT_EQ("[(op1,<1={1}>)]", left->get_next_as_string());
+    EXPECT_EQ("[]", right->get_next_as_string());
+
+    abs.collect_states();
+    ASSERT_EQ(2, abs.abs_states.size());
+    EXPECT_EQ(a1s, abs.abs_states[0]->str());
+    EXPECT_EQ(a2s, abs.abs_states[1]->str());
+    EXPECT_EQ(abs.abs_states[0], left);
+    EXPECT_EQ(abs.abs_states[1], right);
+
+    bool success = abs.find_solution();
+    ASSERT_TRUE(success);
+    cout << abs.solution_states[0]->str() << endl;
+    ASSERT_EQ(2, abs.solution_states.size());
+    ASSERT_EQ(1, abs.solution_ops.size());
+    EXPECT_EQ("<1={0,2}>", abs.solution_states[0]->str());
+    EXPECT_EQ("<1={1}>", abs.solution_states[1]->str());
+    EXPECT_EQ("op1", abs.solution_ops[0]->get_name());
 }
 
 }
