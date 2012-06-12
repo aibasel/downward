@@ -138,9 +138,9 @@ string AbstractState::get_next_as_string() const {
     string sep = "";
     oss << "[";
     for (int i = 0; i < next.size(); ++i) {
-        Operator op = next[i].first;
-        AbstractState abs = next[i].second;
-        oss << sep << "(" << op.get_name() << "," << abs.str() << ")";
+        Operator *op = next[i].first;
+        AbstractState *abs = next[i].second;
+        oss << sep << "(" << op->get_name() << "," << abs->str() << ")";
         sep = ",";
     }
     oss << "]";
@@ -229,26 +229,26 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     //  ==>
     // u -> v1 -> v2 -> w
     for (int i = 0; i < prev.size(); ++i) {
-        Operator op = prev[i].first;
-        AbstractState u = prev[i].second;
-        if (u != *this) {
-            u.remove_next_arc(op, *this);
-            u.check_arc(op, *v1);
-            u.check_arc(op, *v2);
+        Operator *op = prev[i].first;
+        AbstractState *u = prev[i].second;
+        if (*u != *this) { // TODO: Compare pointers.
+            u->remove_next_arc(op, this);
+            u->check_arc(op, v1);
+            u->check_arc(op, v2);
         }
     }
     for (int i = 0; i < next.size(); ++i) {
-        Operator op = next[i].first;
-        AbstractState w = next[i].second;
-        if (w == *this) {
+        Operator *op = next[i].first;
+        AbstractState *w = next[i].second;
+        if (*w == *this) {
             // Handle former self-loops. The same loops also were in prev,
             // but they only have to be checked once.
-            v1->check_arc(op, *v2);
-            v2->check_arc(op, *v1);
-            v1->check_arc(op, *v1);
-            v2->check_arc(op, *v2);
+            v1->check_arc(op, v2);
+            v2->check_arc(op, v1);
+            v1->check_arc(op, v1);
+            v2->check_arc(op, v2);
         } else {
-            w.remove_prev_arc(op, *this);
+            w->remove_prev_arc(op, this);
             v1->check_arc(op, w);
             v2->check_arc(op, w);
         }
@@ -264,40 +264,40 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     right = v2;
 }
 
-void AbstractState::add_arc(Operator &op, AbstractState &other) {
+void AbstractState::add_arc(Operator *op, AbstractState *other) {
     next.push_back(Arc(op, other));
-    other.prev.push_back(Arc(op, *this));
+    other->prev.push_back(Arc(op, this));
 }
 
-void AbstractState::remove_arc(vector<Arc> arcs, Operator &op, AbstractState &other) {
+void AbstractState::remove_arc(vector<Arc> arcs, Operator *op, AbstractState *other) {
     for (int i = 0; i < arcs.size(); ++i) {
-        Operator current_op = arcs[i].first;
-        AbstractState current_state = arcs[i].second;
+        Operator *current_op = arcs[i].first;
+        AbstractState *current_state = arcs[i].second;
         // TODO(jendrik): op.get_name() may not be unique.
-        if ((current_op.get_name() == op.get_name()) && (current_state == other)) {
+        if ((current_op->get_name() == op->get_name()) && (*current_state == *other)) { // TODO: Compare pointers
             arcs.erase(next.begin() + i);
             return;
         }
     }
     // Do not try to remove an operator that is not there.
-    cout << "REMOVE: " << str() << " " << op.get_name() << " " << other.str() << endl;
+    cout << "REMOVE: " << str() << " " << op->get_name() << " " << other->str() << endl;
     assert(false);
 }
 
-void AbstractState::remove_next_arc(Operator &op, AbstractState &other) {
+void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
     remove_arc(next, op, other);
 }
 
-void AbstractState::remove_prev_arc(Operator &op, AbstractState &other) {
+void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
     remove_arc(prev, op, other);
 }
 
-bool AbstractState::check_arc(Operator &op, AbstractState &other) {
-    if (!applicable(op))
+bool AbstractState::check_arc(Operator *op, AbstractState *other) {
+    if (!applicable(*op))
         return false;
     AbstractState result;
-    apply(op, &result);
-    if (result.agrees_with(other)) {
+    apply(*op, &result);
+    if (result.agrees_with(*other)) {
         add_arc(op, other);
         return true;
     }
