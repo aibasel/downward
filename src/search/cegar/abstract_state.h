@@ -13,26 +13,14 @@
 
 #include "gtest/gtest_prod.h"
 
+// TODO(jendrik): Use 32-bit masks for variables. This means we can not handle tasks
+// with domain sizes > 32.
+
 namespace cegar_heuristic {
 
 class AbstractState;
 typedef pair<Operator*, AbstractState*> Arc;
 typedef std::set<int> Domain;
-
-// TODO(jendrik): Use 32-bit masks for variables. This means we can not handle tasks
-// with domain sizes > 32.
-
-int get_eff(Operator op, int var);
-int get_pre(Operator op, int var);
-
-// Create an operator with cost 1.
-// prevails have the form "var value".
-// pre_posts have the form "0 var pre post" (no conditional effects).
-Operator create_op(const std::string desc);
-Operator create_op(const std::string name, std::vector<string> prevail,
-                   std::vector<string> pre_post);
-
-State* create_state(const std::string desc);
 
 class AbstractState {
 private:
