@@ -116,6 +116,20 @@ void Abstraction::extract_solution(AbstractState &goal) {
     }
 }
 
+string Abstraction::get_solution_string() const {
+    assert(solution_states.size() >= 1);
+    assert(solution_states.size() == solution_ops.size() + 1);
+    string sep = "";
+    ostringstream oss;
+    oss << "[";
+    for (int i = 1; i < solution_ops.size(); ++i) {
+        oss << sep << solution_states[i]->str() << ","
+            << solution_ops[i]->get_name();
+    }
+    oss << "]";
+    return oss.str();
+}
+
 void Abstraction::calculate_costs() {
     HeapQueue<AbstractState*> queue;
     collect_states();

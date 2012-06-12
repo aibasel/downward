@@ -49,6 +49,8 @@ public:
     FRIEND_TEST(CegarTest, find_solution_second_state);
     bool find_solution();
 
+    std::string get_solution_string() const;
+
     void calculate_costs();
 };
 
