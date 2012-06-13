@@ -17,7 +17,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 int REFINEMENTS = 100;
 
 CegarHeuristic::CegarHeuristic(const Options &opts)
@@ -58,5 +57,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 static Plugin<ScalarEvaluator> _plugin("cegar", _parse);
-
 }

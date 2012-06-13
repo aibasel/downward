@@ -18,7 +18,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 AbstractState::AbstractState(string s) {
     assert(!g_variable_domain.empty());
     values.resize(g_variable_domain.size(), set<int>());
@@ -145,8 +144,8 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
 }
 
 void AbstractState::get_unmet_conditions(AbstractState &desired,
-                                         vector<pair<int,int> > * conditions)
-                                         const {
+                                         vector<pair<int, int> > *conditions)
+const {
     // Get all set intersections of the possible values here minus the possible
     // values in "desired".
     for (int i = 0; i < g_variable_domain.size(); ++i) {
@@ -161,7 +160,7 @@ void AbstractState::get_unmet_conditions(AbstractState &desired,
         if (elements < vals1.size()) {
             // The variable's value matters for determining the resulting state.
             for (int j = 0; j < elements; ++j) {
-                conditions->push_back(pair<int,int>(i, both[j]));
+                conditions->push_back(pair<int, int>(i, both[j]));
             }
         }
     }
@@ -267,7 +266,7 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
 }
 
 bool AbstractState::applicable(const Operator &op) const {
-    vector<pair<int,int> > preconditions;
+    vector<pair<int, int> > preconditions;
     get_prevail_and_preconditions(op, &preconditions);
     for (int i = 0; i < preconditions.size(); ++i) {
         // Check if precondition value is in the set of possible values.
@@ -358,16 +357,15 @@ int AbstractState::get_var() const {
     return var;
 }
 
-AbstractState* AbstractState::get_child(int value) {
+AbstractState *AbstractState::get_child(int value) {
     return children[value];
 }
 
-AbstractState* AbstractState::get_left_child() const {
+AbstractState *AbstractState::get_left_child() const {
     return left;
 }
 
-AbstractState* AbstractState::get_right_child() const {
+AbstractState *AbstractState::get_right_child() const {
     return right;
 }
-
 }
