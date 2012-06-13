@@ -1,15 +1,12 @@
 #ifndef CEGAR_ABSTRACTION_H
 #define CEGAR_ABSTRACTION_H
 
-#include <ext/slist>
 #include <vector>
 #include <deque>
 #include <set>
-#include <iostream>
 #include <sstream>
 
-#include "../heuristic.h"
-#include "../operator.h"
+#include "./../operator.h"
 #include "./../priority_queue.h"
 #include "./abstract_state.h"
 #include "./utils.h"
