@@ -1,7 +1,7 @@
 #ifndef WEIGHTED_EVALUATOR_H
 #define WEIGHTED_EVALUATOR_H
 
-#include "scalar_evaluator.h"
+#include "scallar_evaluator.h"
 
 #include <string>
 #include <vector>
