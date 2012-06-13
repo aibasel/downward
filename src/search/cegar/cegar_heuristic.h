@@ -16,7 +16,7 @@
 
 namespace cegar_heuristic {
 class CegarHeuristic : public Heuristic {
-    int min_operator_cost;
+    int refinements;
     Abstraction abstraction;
 protected:
     virtual void initialize();

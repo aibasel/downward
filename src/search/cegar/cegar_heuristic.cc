@@ -17,10 +17,10 @@
 using namespace std;
 
 namespace cegar_heuristic {
-int REFINEMENTS = 100;
 
 CegarHeuristic::CegarHeuristic(const Options &opts)
-    : Heuristic(opts) {
+    : Heuristic(opts),
+      refinements(opts.get<int>("refinements")) {
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -29,7 +29,7 @@ CegarHeuristic::~CegarHeuristic() {
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     abstraction = Abstraction();
-    for (int i = 0; i < REFINEMENTS; ++i) {
+    for (int i = 0; i < refinements; ++i) {
         bool solution_found = abstraction.find_solution();
         assert(solution_found);
         cout << "SOLUTION: " << abstraction.get_solution_string() << endl;
@@ -48,6 +48,7 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.add_option<int>("refinements", 100, "number of refinements");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
