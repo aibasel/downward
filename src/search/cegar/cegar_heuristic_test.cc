@@ -1,13 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "./cegar_heuristic.h"
 #include "./abstract_state.h"
 #include "./abstraction.h"
 #include "./utils.h"
 #include "./../operator.h"
 #include "./../axioms.h"
-
-#include <iostream>
 
 using namespace std;
 
