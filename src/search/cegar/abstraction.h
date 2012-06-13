@@ -60,6 +60,9 @@ public:
     bool check_solution();
 
     void calculate_costs();
+
+    // Only for testing.
+    AbstractState* get_init() { return init; };
 };
 
 }

@@ -21,8 +21,10 @@ extern int UNDEFINED;
 
 std::string int_set_to_string(std::set<int> myset);
 
-int get_eff(Operator op, int var);
-int get_pre(Operator op, int var);
+void get_prevail_and_preconditions(const Operator &op, vector<pair<int,int> > *cond);
+
+int get_eff(const Operator &op, int var);
+int get_pre(const Operator &op, int var);
 
 void get_unmet_preconditions(const Operator &op, const State &s,
                              std::vector<pair<int,int> > *cond);

@@ -30,7 +30,7 @@ Abstraction::Abstraction() {
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
     assert(!g_operators.empty()); // We need operators and the g_initial_state
-    cout << "REFINE " << state->str() << " for " << var << "=" << value << endl;
+    cout << "REFINE " << state->str() << " for " << var << "=" << value << " (" << g_variable_name[var] << ")" << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
     state->refine(var, value, v1, v2);
@@ -105,7 +105,6 @@ void Abstraction::extract_solution(AbstractState &goal) {
 
     AbstractState *current = &goal;
     solution_states.push_front(current);
-    cout << "ORIGIN: " << current->get_origin() << endl;
     while (current->get_origin()) {
         Operator *op = current->get_origin()->first;
         AbstractState *prev = current->get_origin()->second;
@@ -137,7 +136,7 @@ bool Abstraction::check_solution() {
     State conc_state = *g_initial_state;
     for (int i = 0; i < solution_states.size(); ++i) {
         AbstractState *abs_state = solution_states[i];
-        cout << "Checking state " << i << ":" << abs_state->str() << endl;
+        cout << "Checking state " << i << ": " << abs_state->str() << endl;
         // Set next_op to null if there is no next operator.
         Operator *next_op = (i < solution_ops.size()) ? solution_ops[i] : 0;
         vector<pair<int,int> > unmet_cond;
