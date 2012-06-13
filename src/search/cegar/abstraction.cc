@@ -53,14 +53,17 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue, bool forward
         AbstractState *state = top_pair.second;
 
         int state_distance = state->get_distance();
-        cout << "VISIT: " << state->str() << " " << state_distance << " " << distance << endl;
+        if (DEBUG)
+            cout << "VISIT: " << state->str() << " " << state_distance << " "
+                 << distance << endl;
         assert(state_distance <= distance);
         if (state_distance < distance) {
             continue;
         }
         if (forward) {
             if (state->goal_reached()) {
-                cout << "GOAL REACHED" << endl;
+                if (DEBUG)
+                    cout << "GOAL REACHED" << endl;
                 extract_solution(*state);
                 return true;
             }
@@ -70,17 +73,21 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue, bool forward
             const Arc arc = successors[i];
             Operator *op = arc.first;
             AbstractState *successor = arc.second;
-            cout << "NEXT: " << successor->str() << endl;
+
             int cost = op->get_cost();
             // Prevent overflow.
             int successor_cost = (state_distance == INFINITY) ? INFINITY : state_distance + cost;
-            cout << cost << " " << successor_cost << " " << successor->get_distance() << endl;
+            if (DEBUG)
+                cout << "NEXT: " << successor->str() << " " << cost << " "
+                     << successor_cost << " " << successor->get_distance() << endl;
             if (successor->get_distance() > successor_cost) {
                 successor->set_distance(successor_cost);
                 // TODO: Delete arc later to prevent memory leak.
                 Arc *origin = new Arc(op, state);
                 successor->set_origin(origin);
-                cout << "ORIGIN(" << successor->str() << ") = " << state->str() << " with " << op->get_name() << endl;
+                if (DEBUG)
+                    cout << "ORIGIN(" << successor->str() << ") = "
+                         << state->str() << " with " << op->get_name() << endl;
                 queue.push(successor_cost, successor);
             }
         }

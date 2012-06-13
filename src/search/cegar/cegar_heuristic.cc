@@ -30,14 +30,14 @@ CegarHeuristic::~CegarHeuristic() {
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     abstraction = Abstraction();
-    cout << "NEXT ARCS: " << abstraction.get_init()->get_next_as_string() << endl;
     for (int i = 0; i < REFINEMENTS; ++i) {
         bool solution_found = abstraction.find_solution();
         assert(solution_found);
         cout << "SOLUTION: " << abstraction.get_solution_string() << endl;
         bool success = abstraction.check_solution();
-        cout << "SUCCESS: " << success << endl;
-        cout << "NEXT ARCS: " << abstraction.get_init()->get_next_as_string() << endl;
+        if (DEBUG)
+            cout << "NEXT ARCS: " << abstraction.get_init()->get_next_as_string()
+                 << endl;
         if (success)
             break;
     }
