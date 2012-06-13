@@ -2,6 +2,10 @@ import pddl
 import timers
 
 def handle_axioms(operators, axioms, goals):
+    print "***", len(axioms)
+    for axiom in axioms:
+        axiom.dump()
+
     axioms_by_atom = get_axioms_by_atom(axioms)
 
     axiom_literals = compute_necessary_axiom_literals(axioms_by_atom, operators, goals)
