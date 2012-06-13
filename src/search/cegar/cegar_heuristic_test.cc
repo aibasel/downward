@@ -177,11 +177,7 @@ TEST(CegarTest, applicable) {
     init_test();
 
     // Operator: <0=0, 1=0 --> 1=1>
-    vector<string> prevail;
-    prevail.push_back("0 0");
-    vector<string> pre_post;
-    pre_post.push_back("0 1 0 1");
-    Operator op = create_op("op", prevail, pre_post);
+    Operator op = make_op1();
 
     vector<pair<string, bool> > pairs;
 
@@ -205,11 +201,7 @@ TEST(CegarTest, apply) {
     g_variable_domain.push_back(2);
 
     // Operator: <0=0, 1=0 --> 1=1>
-    vector<string> prevail;
-    prevail.push_back("0 0");
-    vector<string> pre_post;
-    pre_post.push_back("0 1 0 1");
-    Operator op = create_op("op", prevail, pre_post);
+    Operator op = make_op1();
 
     vector<pair<string, string> > pairs;
 
@@ -370,6 +362,55 @@ TEST(CegarTest, find_solution_second_state) {
     cout << "COSTS" << endl;
     abs.calculate_costs();
     EXPECT_EQ(1, left->get_distance());
+    EXPECT_EQ(0, right->get_distance());
+}
+
+TEST(CegarTest, find_solution_loop) {
+    // Operator: <0=0, 1=0 --> 1=1>
+    init_test();
+    g_goal.push_back(make_pair(1, 1));
+
+    // -> <>
+    Abstraction abs = Abstraction();
+    EXPECT_EQ("[(op1,<>)]", abs.init->get_next_as_string());
+    // --> 0={0} --> 0={1}  (left state has self-loop).
+    abs.refine(abs.init, 0, 1);
+
+    string a1s = "<0={0}>";
+    string a2s = "<0={1}>";
+
+    EXPECT_EQ("<>", abs.single->str());
+    EXPECT_EQ(a1s, abs.init->str());
+
+    AbstractState *left = abs.single->get_left_child();
+    AbstractState *right = abs.single->get_right_child();
+
+    EXPECT_EQ(a1s, left->str());
+    EXPECT_EQ(a2s, right->str());
+
+    EXPECT_FALSE(abs.single->valid());
+    EXPECT_TRUE(left->valid());
+    EXPECT_TRUE(right->valid());
+
+    EXPECT_EQ(a1s, abs.single->get_child(0)->str());
+    EXPECT_EQ(a2s, abs.single->get_child(1)->str());
+
+    EXPECT_EQ("[(op1,<0={0}>)]", left->get_next_as_string());
+    EXPECT_EQ("[]", right->get_next_as_string());
+
+    abs.collect_states();
+    ASSERT_EQ(2, abs.abs_states.size());
+    EXPECT_EQ(a1s, abs.abs_states[0]->str());
+    EXPECT_EQ(a2s, abs.abs_states[1]->str());
+    EXPECT_EQ(abs.abs_states[0], left);
+    EXPECT_EQ(abs.abs_states[1], right);
+
+    bool success = abs.find_solution();
+    ASSERT_FALSE(success);
+
+    cout << "COSTS" << endl;
+    abs.calculate_costs();
+    EXPECT_EQ(INFINITY, left->get_distance());
     EXPECT_EQ(0, right->get_distance());
 }
 
