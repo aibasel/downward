@@ -1,4 +1,9 @@
 from mercurial import cmdutil
+try:
+    # Mercurial >= 1.8
+    from mercurial import scmutil
+except ImportError:
+    pass
 from mercurial import util
 
 import errno
@@ -73,8 +78,12 @@ def _get_files(repo, patterns, options):
     Supports options['include'] and options['exclude'] which work like
     the --include and --exclude options of hg status.
     """
-    match = cmdutil.match(repo, patterns, options)
     ctx = repo[None]
+    try:
+        # Mercurial < 1.8
+        match = cmdutil.match(repo, patterns, options)
+    except AttributeError:
+        match = scmutil.match(ctx, patterns, options)
     ctx.status(clean=True, ignored=True, unknown=True)
     files = []
     for file_list in [ctx.clean(), ctx.modified(), ctx.added()]:
