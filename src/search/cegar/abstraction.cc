@@ -16,7 +16,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 int INFINITY = numeric_limits<int>::max();
 
 Abstraction::Abstraction() {
@@ -37,8 +36,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     if (state == init) {
         if (v1->is_abstraction_of(*g_initial_state)) {
             init = v1;
-        }
-        else {
+        } else {
             assert(v2->is_abstraction_of(*g_initial_state));
             init = v2;
         }
@@ -46,9 +44,9 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     }
 }
 
-bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue, bool forward) {
+bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) {
     while (!queue.empty()) {
-        pair<int, AbstractState*> top_pair = queue.pop();
+        pair<int, AbstractState *> top_pair = queue.pop();
         int distance = top_pair.first;
         AbstractState *state = top_pair.second;
 
@@ -96,7 +94,7 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue, bool forward
 }
 
 bool Abstraction::find_solution() {
-    HeapQueue<AbstractState*> queue;
+    HeapQueue<AbstractState *> queue;
     collect_states();
     for (int i = 0; i < abs_states.size(); ++i) {
         abs_states[i]->set_distance(INFINITY);
@@ -148,14 +146,14 @@ bool Abstraction::check_solution() {
         cout << "Checking state " << i << ": " << abs_state->str() << endl;
         // Set next_op to null if there is no next operator.
         Operator *next_op = (i < solution_ops.size()) ? solution_ops[i] : 0;
-        vector<pair<int,int> > unmet_cond;
+        vector<pair<int, int> > unmet_cond;
         int var, value;
         if (!abs_state->is_abstraction_of(conc_state)) {
             // Get unmet conditions in previous state and refine it.
             assert(i >= 1);
-            AbstractState *prev_state = solution_states[i-1];
+            AbstractState *prev_state = solution_states[i - 1];
             AbstractState desired_prev_state;
-            abs_state->regress(*solution_ops[i-1], &desired_prev_state);
+            abs_state->regress(*solution_ops[i - 1], &desired_prev_state);
             // TODO: desired_prev_state might be null.
             prev_state->get_unmet_conditions(desired_prev_state, &unmet_cond);
             pick_condition(unmet_cond, &var, &value);
@@ -185,7 +183,7 @@ bool Abstraction::check_solution() {
     return true;
 }
 
-void Abstraction::pick_condition(vector<pair<int,int> > &conditions, int *var, int *value) const {
+void Abstraction::pick_condition(vector<pair<int, int> > &conditions, int *var, int *value) const {
     assert(!conditions.empty());
     cout << "Unmet conditions: ";
     for (int i = 0; i < conditions.size(); ++i) {
@@ -197,7 +195,7 @@ void Abstraction::pick_condition(vector<pair<int,int> > &conditions, int *var, i
 }
 
 void Abstraction::calculate_costs() {
-    HeapQueue<AbstractState*> queue;
+    HeapQueue<AbstractState *> queue;
     collect_states();
     for (int i = 0; i < abs_states.size(); ++i) {
         if (abs_states[i]->goal_reached()) {
@@ -210,9 +208,9 @@ void Abstraction::calculate_costs() {
     dijkstra_search(queue, false);
 }
 
-AbstractState* Abstraction::get_abstract_state(const State &state) const {
+AbstractState *Abstraction::get_abstract_state(const State &state) const {
     // TODO: Make current a pointer?
-    AbstractState* current = single;
+    AbstractState *current = single;
     while (!current->valid()) {
         int value = state[current->get_var()];
         current = current->get_child(value);
@@ -234,5 +232,4 @@ void Abstraction::collect_child_states(AbstractState *parent) {
         collect_child_states(parent->get_right_child());
     }
 }
-
 }

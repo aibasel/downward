@@ -15,7 +15,6 @@
 #include "gtest/gtest_prod.h"
 
 namespace cegar_heuristic {
-
 class CegarHeuristic : public Heuristic {
     int min_operator_cost;
     Abstraction abstraction;
@@ -26,7 +25,6 @@ public:
     CegarHeuristic(const Options &options);
     ~CegarHeuristic();
 };
-
 }
 
 #endif

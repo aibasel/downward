@@ -17,9 +17,8 @@
 // with domain sizes > 32.
 
 namespace cegar_heuristic {
-
 class AbstractState;
-typedef pair<Operator*, AbstractState*> Arc;
+typedef pair<Operator *, AbstractState *> Arc;
 typedef std::set<int> Domain;
 
 class AbstractState {
@@ -40,12 +39,12 @@ private:
     // Refinement hierarchy. Save the variable for which this state was refined
     // and the resulting abstract child states.
     int var;
-    std::map<int, AbstractState*> children;
-    AbstractState* left;
-    AbstractState* right;
+    std::map<int, AbstractState *> children;
+    AbstractState *left;
+    AbstractState *right;
 
 public:
-    AbstractState(string s="");
+    AbstractState(string s = "");
     FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
     string str() const;
@@ -62,29 +61,28 @@ public:
     bool applicable(const Operator &op) const;
     void apply(const Operator &op, AbstractState *result) const;
     bool agrees_with(const AbstractState &other) const;
-    void get_unmet_conditions(AbstractState &desired, vector<pair<int,int> > * conditions) const;
+    void get_unmet_conditions(AbstractState &desired, vector<pair<int, int> > *conditions) const;
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
     bool goal_reached() const;
 
-    void set_distance(int dist) { distance = dist; };
-    int get_distance() { return distance; };
-    void set_origin(Arc *orig) { origin = orig; };
-    Arc* get_origin() { return origin; };
+    void set_distance(int dist) {distance = dist; }
+    int get_distance() {return distance; }
+    void set_origin(Arc *orig) {origin = orig; }
+    Arc *get_origin() {return origin; }
 
-    std::vector<Arc> get_next() { return next; };
+    std::vector<Arc> get_next() {return next; }
     std::string get_next_as_string() const;
-    std::vector<Arc> get_prev() { return prev; };
+    std::vector<Arc> get_prev() {return prev; }
 
     // We only have a valid abstract state if it was not refined.
     bool valid() const;
     int get_var() const;
     // TODO: Why can't we make this method const?
-    AbstractState* get_child(int value);
-    AbstractState* get_left_child() const;
-    AbstractState* get_right_child() const;
+    AbstractState *get_child(int value);
+    AbstractState *get_left_child() const;
+    AbstractState *get_right_child() const;
 };
-
 }
 
 #endif

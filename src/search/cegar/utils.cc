@@ -17,7 +17,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 bool DEBUG = false;
 int UNDEFINED = -1;
 
@@ -55,7 +54,7 @@ Operator create_op(const std::string desc) {
     return op;
 }
 
-State* create_state(const std::string desc) {
+State *create_state(const std::string desc) {
     std::string full_desc = "begin_state\n" + desc + "\nend_state";
     istringstream iss(full_desc);
     return new State(iss);
@@ -70,19 +69,19 @@ int get_eff(const Operator &op, int var) {
     return UNDEFINED;
 }
 
-void get_prevail_and_preconditions(const Operator &op, vector<pair<int,int> > *cond) {
+void get_prevail_and_preconditions(const Operator &op, vector<pair<int, int> > *cond) {
     for (int i = 0; i < op.get_prevail().size(); i++) {
         const Prevail *prevail = &op.get_prevail()[i];
-        cond->push_back(pair<int,int>(prevail->var, prevail->prev));
+        cond->push_back(pair<int, int>(prevail->var, prevail->prev));
     }
     for (int i = 0; i < op.get_pre_post().size(); i++) {
         const PrePost *pre_post = &op.get_pre_post()[i];
-        cond->push_back(pair<int,int>(pre_post->var, pre_post->pre));
+        cond->push_back(pair<int, int>(pre_post->var, pre_post->pre));
     }
 }
 
 int get_pre(const Operator &op, int var) {
-    vector<pair<int,int> > preconditions;
+    vector<pair<int, int> > preconditions;
     get_prevail_and_preconditions(op, &preconditions);
     for (int i = 0; i < preconditions.size(); ++i) {
         if (preconditions[i].first == var)
@@ -92,28 +91,27 @@ int get_pre(const Operator &op, int var) {
 }
 
 void get_unmet_preconditions(const Operator &op, const State &state,
-                             vector<pair<int,int> > *cond) {
+                             vector<pair<int, int> > *cond) {
     assert(cond->empty());
-    vector<pair<int,int> > preconditions;
+    vector<pair<int, int> > preconditions;
     get_prevail_and_preconditions(op, &preconditions);
     for (int i = 0; i < preconditions.size(); i++) {
         int var = preconditions[i].first;
         int value = preconditions[i].second;
         if (value != -1 && state[var] != value)
-            cond->push_back(pair<int,int>(var, value));
+            cond->push_back(pair<int, int>(var, value));
     }
     assert(cond->empty() == op.is_applicable(state));
 }
 
 void get_unmet_goal_conditions(const State &state,
-                               vector<pair<int,int> > *unmet_conditions) {
+                               vector<pair<int, int> > *unmet_conditions) {
     for (int i = 0; i < g_goal.size(); i++) {
         int var = g_goal[i].first;
         int value = g_goal[i].second;
         if (state[var] != value) {
-            unmet_conditions->push_back(pair<int,int>(var, value));
+            unmet_conditions->push_back(pair<int, int>(var, value));
         }
     }
 }
-
 }

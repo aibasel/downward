@@ -13,7 +13,6 @@ using namespace std;
 
 
 namespace cegar_heuristic {
-
 Operator make_op1() {
     // Operator: <0=0, 1=0 --> 1=1>
     vector<string> prevail;
@@ -232,7 +231,9 @@ TEST(CegarTest, agrees_with) {
     pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={0},1={1}>"));
     pairs.push_back(pair<string, string>("<0={0,1}>", "<0={0}>"));
 
-    bool agree[] = {true, true, false, false, true};
+    bool agree[] = {
+        true, true, false, false, true
+    };
     ASSERT_EQ((sizeof(agree) / sizeof(bool)), pairs.size());
 
     AbstractState a;
@@ -259,8 +260,12 @@ TEST(CegarTest, is_abstraction_of_other) {
     pairs.push_back(test("<>", "<0={0}>"));
     pairs.push_back(test("<0={0,1}>", "<0={0}>"));
 
-    bool agree[] = {true, true, true, true};
-    bool rev_agree[] = {true, true, false, false};
+    bool agree[] = {
+        true, true, true, true
+    };
+    bool rev_agree[] = {
+        true, true, false, false
+    };
     ASSERT_EQ((sizeof(agree) / sizeof(bool)), pairs.size());
     ASSERT_EQ((sizeof(rev_agree) / sizeof(bool)), pairs.size());
 
@@ -450,5 +455,4 @@ TEST(CegarTest, initialize) {
     success = abstraction.check_solution();
     EXPECT_TRUE(success);
 }
-
 }
