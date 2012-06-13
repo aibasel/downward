@@ -76,10 +76,11 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue, bool forward
             int successor_cost = (state_distance == INFINITY) ? INFINITY : state_distance + cost;
             cout << cost << " " << successor_cost << " " << successor->get_distance() << endl;
             if (successor->get_distance() > successor_cost) {
-                cout << "ADD SUCC" << endl;
                 successor->set_distance(successor_cost);
-                Arc origin = Arc(op, state);
-                successor->set_origin(&origin);
+                // TODO: Delete arc later to prevent memory leak.
+                Arc *origin = new Arc(op, state);
+                successor->set_origin(origin);
+                cout << "ORIGIN(" << successor->str() << ") = " << state->str() << " with " << op->get_name() << endl;
                 queue.push(successor_cost, successor);
             }
         }
@@ -110,6 +111,7 @@ void Abstraction::extract_solution(AbstractState &goal) {
         AbstractState *prev = current->get_origin()->second;
         solution_states.push_front(prev);
         solution_ops.push_front(op);
+        assert(prev != current);
         current = prev;
     }
 }

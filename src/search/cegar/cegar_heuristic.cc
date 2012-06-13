@@ -18,7 +18,7 @@ using namespace std;
 
 namespace cegar_heuristic {
 
-int REFINEMENTS = 2;
+int REFINEMENTS = 100;
 
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts) {
