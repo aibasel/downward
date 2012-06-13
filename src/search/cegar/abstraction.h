@@ -34,7 +34,7 @@ private:
     void extract_solution(AbstractState &goal);
 
     // Refinement hierarchy.
-    AbstractState single;
+    AbstractState *single;
     void collect_states();
     void collect_child_states(AbstractState *parent);
 
@@ -46,7 +46,7 @@ public:
     // Create a vector of values (state->vars) and set all values to -1 if
     // we haven't refined the variable yet.
     // Lookup this vector in abs_states and return it.
-    AbstractState get_abstract_state(const State &state) const;
+    AbstractState* get_abstract_state(const State &state) const;
 
     FRIEND_TEST(CegarTest, find_solution_first_state);
     FRIEND_TEST(CegarTest, find_solution_second_state);

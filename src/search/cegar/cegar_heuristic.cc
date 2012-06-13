@@ -22,10 +22,6 @@ int REFINEMENTS = 2;
 
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts) {
-    min_operator_cost = numeric_limits<int>::max();
-    for (int i = 0; i < g_operators.size(); ++i)
-        min_operator_cost = min(min_operator_cost,
-                                get_adjusted_cost(g_operators[i]));
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -36,19 +32,17 @@ void CegarHeuristic::initialize() {
     abstraction = Abstraction();
     for (int i = 0; i < REFINEMENTS; ++i) {
         abstraction.find_solution();
-        cout << abstraction.get_solution_string() << endl;
+        cout << "SOLUTION: " << abstraction.get_solution_string() << endl;
         bool success = abstraction.check_solution();
         cout << "SUCCESS: " << success << endl;
         if (success)
             break;
     }
+    abstraction.calculate_costs();
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
-    if (test_goal(state))
-        return 0;
-    else
-        return min_operator_cost;
+    return abstraction.get_abstract_state(state)->get_distance();
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {

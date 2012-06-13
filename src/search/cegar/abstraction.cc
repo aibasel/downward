@@ -19,11 +19,11 @@ namespace cegar_heuristic {
 
 Abstraction::Abstraction() {
     assert(!g_operators.empty());
-    single = AbstractState();
+    single = new AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
-        single.add_arc(&g_operators[i], &single);
+        single->add_arc(&g_operators[i], single);
     }
-    init = &single;
+    init = single;
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -204,20 +204,20 @@ void Abstraction::calculate_costs() {
     dijkstra_search(queue, false);
 }
 
-AbstractState Abstraction::get_abstract_state(const State &state) const {
+AbstractState* Abstraction::get_abstract_state(const State &state) const {
     // TODO: Make current a pointer?
-    AbstractState current = single;
-    while (!current.valid()) {
-        int value = state[current.get_var()];
-        current = *current.get_child(value);
+    AbstractState* current = single;
+    while (!current->valid()) {
+        int value = state[current->get_var()];
+        current = current->get_child(value);
     }
-    assert(current.valid());
+    assert(current->valid());
     return current;
 }
 
 void Abstraction::collect_states() {
     abs_states.clear();
-    collect_child_states(&single);
+    collect_child_states(single);
 }
 
 void Abstraction::collect_child_states(AbstractState *parent) {
