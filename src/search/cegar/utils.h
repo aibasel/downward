@@ -1,20 +1,16 @@
 #ifndef CEGAR_UTILS_H
 #define CEGAR_UTILS_H
 
-#include <ext/slist>
-#include <vector>
 #include <set>
-#include <iostream>
-#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include "../heuristic.h"
-#include "../operator.h"
-#include "./abstract_state.h"
-#include "./abstraction.h"
-
-#include "gtest/gtest_prod.h"
+#include "./../operator.h"
+#include "./../state.h"
 
 namespace cegar_heuristic {
+
 extern bool DEBUG;
 
 // Gtest prevents us from defining this variable in the header.
