@@ -295,18 +295,18 @@ TEST(CegarTest, find_solution_first_state) {
     string a1s = "<1={0,1}>";
     string a2s = "<1={2}>";
 
-    EXPECT_EQ("<>", abs.single.str());
+    EXPECT_EQ("<>", abs.single->str());
     EXPECT_EQ(a1s, abs.init->str());
 
-    AbstractState *left = abs.single.get_left_child();
-    AbstractState *right = abs.single.get_right_child();
+    AbstractState *left = abs.single->get_left_child();
+    AbstractState *right = abs.single->get_right_child();
 
     EXPECT_EQ(a1s, left->str());
     EXPECT_EQ(a2s, right->str());
 
-    EXPECT_EQ(a1s, abs.single.get_child(0)->str());
-    EXPECT_EQ(a1s, abs.single.get_child(1)->str());
-    EXPECT_EQ(a2s, abs.single.get_child(2)->str());
+    EXPECT_EQ(a1s, abs.single->get_child(0)->str());
+    EXPECT_EQ(a1s, abs.single->get_child(1)->str());
+    EXPECT_EQ(a2s, abs.single->get_child(2)->str());
 
     EXPECT_EQ("[(op1,<1={0,1}>)]", left->get_next_as_string());
     EXPECT_EQ("[]", right->get_next_as_string());
@@ -332,22 +332,22 @@ TEST(CegarTest, find_solution_second_state) {
     string a1s = "<1={0,2}>";
     string a2s = "<1={1}>";
 
-    EXPECT_EQ("<>", abs.single.str());
+    EXPECT_EQ("<>", abs.single->str());
     EXPECT_EQ(a1s, abs.init->str());
 
-    AbstractState *left = abs.single.get_left_child();
-    AbstractState *right = abs.single.get_right_child();
+    AbstractState *left = abs.single->get_left_child();
+    AbstractState *right = abs.single->get_right_child();
 
     EXPECT_EQ(a1s, left->str());
     EXPECT_EQ(a2s, right->str());
 
-    EXPECT_FALSE(abs.single.valid());
+    EXPECT_FALSE(abs.single->valid());
     EXPECT_TRUE(left->valid());
     EXPECT_TRUE(right->valid());
 
-    EXPECT_EQ(a1s, abs.single.get_child(0)->str());
-    EXPECT_EQ(a2s, abs.single.get_child(1)->str());
-    EXPECT_EQ(a1s, abs.single.get_child(2)->str());
+    EXPECT_EQ(a1s, abs.single->get_child(0)->str());
+    EXPECT_EQ(a2s, abs.single->get_child(1)->str());
+    EXPECT_EQ(a1s, abs.single->get_child(2)->str());
 
     EXPECT_EQ("[(op1,<1={1}>)]", left->get_next_as_string());
     EXPECT_EQ("[]", right->get_next_as_string());
@@ -379,10 +379,15 @@ TEST(CegarTest, initialize) {
     g_goal.clear();
     g_goal.push_back(make_pair(1, 1));
 
+    // --> <>
     Abstraction abstraction = Abstraction();
-
     abstraction.find_solution();
+    abstraction.calculate_costs();
+
     ASSERT_EQ("[<>]", abstraction.get_solution_string());
+    EXPECT_EQ(0, abstraction.init->get_distance());
+
+    // --> 1={0,2} --> 1={1}
     bool success = abstraction.check_solution();
     EXPECT_FALSE(success);
 
@@ -391,11 +396,18 @@ TEST(CegarTest, initialize) {
 
     EXPECT_EQ(a1s, abstraction.init->str());
     EXPECT_EQ("[(op1,<1={1}>)]", abstraction.init->get_next_as_string());
+    AbstractState *right = abstraction.init->get_next()[0].second;
+    EXPECT_EQ(a2s, right->str());
 
     abstraction.find_solution();
+    abstraction.calculate_costs();
+
     ASSERT_EQ(2, abstraction.solution_states.size());
     ASSERT_EQ(1, abstraction.solution_ops.size());
     ASSERT_EQ("[<1={0,2}>,op1,<1={1}>]", abstraction.get_solution_string());
+    EXPECT_EQ(1, abstraction.init->get_distance());
+    EXPECT_EQ(0, right->get_distance());
+
     success = abstraction.check_solution();
     EXPECT_TRUE(success);
 }
