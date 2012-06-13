@@ -16,6 +16,8 @@
 
 namespace cegar_heuristic {
 
+extern bool DEBUG;
+
 // Gtest prevents us from defining this variable in the header.
 extern int UNDEFINED;
 
