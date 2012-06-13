@@ -273,7 +273,7 @@ bool AbstractState::applicable(const Operator &op) const {
         // Check if precondition value is in the set of possible values.
         int var = preconditions[i].first;
         int value = preconditions[i].second;
-        cout << var << "=" << value << ":" << get_values(var).count(value) << endl;
+        // Only check value if it isn't -1.
         if ((value != -1) && (get_values(var).count(value) == 0))
             return false;
     }

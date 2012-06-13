@@ -98,7 +98,7 @@ void get_unmet_preconditions(const Operator &op, const State &state,
     for (int i = 0; i < preconditions.size(); i++) {
         int var = preconditions[i].first;
         int value = preconditions[i].second;
-        if (state[var] != value)
+        if (value != -1 && state[var] != value)
             cond->push_back(pair<int,int>(var, value));
     }
     assert(cond->empty() == op.is_applicable(state));
