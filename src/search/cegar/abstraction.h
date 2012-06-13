@@ -4,7 +4,8 @@
 #include <vector>
 #include <deque>
 #include <set>
-#include <sstream>
+#include <string>
+#include <utility>
 
 #include "./../operator.h"
 #include "./../priority_queue.h"

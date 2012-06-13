@@ -1,13 +1,14 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
+#include <map>
 #include <vector>
 #include <set>
-#include <sstream>
-#include <limits>
+#include <string>
+#include <utility>
 
-#include "../heuristic.h"
 #include "../operator.h"
+#include "../state.h"
 
 #include "gtest/gtest_prod.h"
 
