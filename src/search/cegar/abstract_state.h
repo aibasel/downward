@@ -50,7 +50,6 @@ public:
     string str() const;
     Domain get_values(int var) const;
     void set_value(int var, int value);
-    //void remove_value(int var, value);
     void refine(int var, int value, AbstractState *v1, AbstractState *v2);
     bool operator==(AbstractState &other) const;
     bool operator!=(AbstractState &other) const;
