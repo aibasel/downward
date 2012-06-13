@@ -254,6 +254,7 @@ void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
 }
 
 bool AbstractState::check_arc(Operator *op, AbstractState *other) {
+    //cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
     if (!applicable(*op))
         return false;
     AbstractState result;
@@ -266,14 +267,14 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
 }
 
 bool AbstractState::applicable(const Operator &op) const {
-    for (int i = 0; i < op.get_prevail().size(); ++i) {
-        // Check if prevail value is in the set of possible values.
-        if (get_values(op.get_prevail()[i].var).count(op.get_prevail()[i].prev) == 0)
-            return false;
-    }
-    for (int i = 0; i < op.get_pre_post().size(); ++i) {
-        // Check if pre value is in the set of possible values.
-        if (get_values(op.get_pre_post()[i].var).count(op.get_pre_post()[i].pre) == 0)
+    vector<pair<int,int> > preconditions;
+    get_prevail_and_preconditions(op, &preconditions);
+    for (int i = 0; i < preconditions.size(); ++i) {
+        // Check if precondition value is in the set of possible values.
+        int var = preconditions[i].first;
+        int value = preconditions[i].second;
+        cout << var << "=" << value << ":" << get_values(var).count(value) << endl;
+        if ((value != -1) && (get_values(var).count(value) == 0))
             return false;
     }
     return true;
