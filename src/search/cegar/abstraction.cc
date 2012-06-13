@@ -17,6 +17,8 @@ using namespace std;
 
 namespace cegar_heuristic {
 
+int INFINITY = numeric_limits<int>::max();
+
 Abstraction::Abstraction() {
     assert(!g_operators.empty());
     single = new AbstractState();
@@ -63,20 +65,16 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState*> &queue, bool forward
                 return true;
             }
         }
-        vector<Arc> successors;
-        if (forward) {
-            successors = state->get_next();
-        } else {
-            successors = state->get_prev();
-        }
+        vector<Arc> successors = (forward) ? state->get_next() : state->get_prev();
         for (int i = 0; i < successors.size(); i++) {
             const Arc arc = successors[i];
             Operator *op = arc.first;
             AbstractState *successor = arc.second;
             cout << "NEXT: " << successor->str() << endl;
             int cost = op->get_cost();
-            int successor_cost = state_distance + cost;
-            cout << cost << successor_cost << successor->get_distance() << endl;
+            // Prevent overflow.
+            int successor_cost = (state_distance == INFINITY) ? INFINITY : state_distance + cost;
+            cout << cost << " " << successor_cost << " " << successor->get_distance() << endl;
             if (successor->get_distance() > successor_cost) {
                 cout << "ADD SUCC" << endl;
                 successor->set_distance(successor_cost);
@@ -93,7 +91,7 @@ bool Abstraction::find_solution() {
     HeapQueue<AbstractState*> queue;
     collect_states();
     for (int i = 0; i < abs_states.size(); ++i) {
-        abs_states[i]->set_distance(numeric_limits<int>::max());
+        abs_states[i]->set_distance(INFINITY);
     }
     init->set_distance(0);
     init->set_origin(0);
@@ -197,7 +195,7 @@ void Abstraction::calculate_costs() {
         if (abs_states[i]->goal_reached()) {
             abs_states[i]->set_distance(0);
         } else {
-            abs_states[i]->set_distance(numeric_limits<int>::max());
+            abs_states[i]->set_distance(INFINITY);
         }
         queue.push(abs_states[i]->get_distance(), abs_states[i]);
     }
