@@ -1,4 +1,4 @@
-#include "./utils.h"
+#include "utils.h"
 
 #include <assert.h>
 
@@ -6,9 +6,9 @@
 #include <sstream>
 #include <vector>
 
-#include "./../globals.h"
-#include "./../operator.h"
-#include "./../state.h"
+#include "../globals.h"
+#include "../operator.h"
+#include "../state.h"
 
 using namespace std;
 

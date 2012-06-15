@@ -1,4 +1,4 @@
-#include "./abstract_state.h"
+#include "abstract_state.h"
 
 #include <assert.h>
 
@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "./../globals.h"
-#include "./../operator.h"
-#include "./../state.h"
-#include "./utils.h"
+#include "../globals.h"
+#include "../operator.h"
+#include "../state.h"
+#include "utils.h"
 
 using namespace std;
 

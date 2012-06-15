@@ -1,9 +1,9 @@
-#include "./abstraction.h"
+#include "abstraction.h"
 
-#include "./../globals.h"
-#include "./../operator.h"
-#include "./../state.h"
-#include "./../priority_queue.h"
+#include "../globals.h"
+#include "../operator.h"
+#include "../state.h"
+#include "../priority_queue.h"
 
 #include <assert.h>
 
