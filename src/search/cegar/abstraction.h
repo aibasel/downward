@@ -1,21 +1,23 @@
 #ifndef CEGAR_ABSTRACTION_H
 #define CEGAR_ABSTRACTION_H
 
+#include "abstract_state.h"
+#include "utils.h"
+#include "../operator.h"
+#include "../priority_queue.h"
+
 #include <vector>
 #include <deque>
+#include <limits>
 #include <set>
 #include <string>
 #include <utility>
 
-#include "../operator.h"
-#include "../priority_queue.h"
-#include "abstract_state.h"
-#include "utils.h"
-
-#include "gtest/gtest_prod.h"
+#include <gtest/gtest_prod.h>
 
 namespace cegar_heuristic {
-extern int INFINITY;
+
+const int INFINITY = numeric_limits<int>::max();
 
 class Abstraction {
 private:
