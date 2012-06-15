@@ -1,16 +1,16 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
-#include <map>
-#include <vector>
-#include <set>
-#include <string>
-#include <utility>
-
 #include "../operator.h"
 #include "../state.h"
 
-#include "gtest/gtest_prod.h"
+#include <map>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <gtest/gtest_prod.h>
 
 // TODO(jendrik): Use 32-bit masks for variables. This means we can not handle tasks
 // with domain sizes > 32.

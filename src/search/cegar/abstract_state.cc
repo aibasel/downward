@@ -1,17 +1,16 @@
 #include "abstract_state.h"
 
-#include <assert.h>
+#include "utils.h"
+#include "../globals.h"
+#include "../operator.h"
+#include "../state.h"
 
 #include <algorithm>
+#include <cassert>
 #include <set>
 #include <sstream>
 #include <utility>
 #include <vector>
-
-#include "../globals.h"
-#include "../operator.h"
-#include "../state.h"
-#include "utils.h"
 
 using namespace std;
 

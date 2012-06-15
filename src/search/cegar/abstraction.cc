@@ -2,22 +2,20 @@
 
 #include "../globals.h"
 #include "../operator.h"
-#include "../state.h"
 #include "../priority_queue.h"
+#include "../state.h"
 
-#include <assert.h>
-
-#include <limits>
-#include <utility>
-#include <iostream>
 #include <algorithm>
+#include <cassert>
+#include <iostream>
 #include <set>
 #include <sstream>
+#include <utility>
 #include <vector>
+
 using namespace std;
 
 namespace cegar_heuristic {
-int INFINITY = numeric_limits<int>::max();
 
 Abstraction::Abstraction() {
     assert(!g_operators.empty());
