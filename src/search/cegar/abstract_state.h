@@ -14,6 +14,7 @@
 
 // TODO(jendrik): Use 32-bit masks for variables. This means we can not handle tasks
 // with domain sizes > 32.
+// TODO(jendrik): Clear values, next, prev for refined states.
 
 namespace cegar_heuristic {
 class AbstractState;

@@ -1,4 +1,4 @@
-#include "./cegar_heuristic.h"
+#include "cegar_heuristic.h"
 
 #include <assert.h>
 
@@ -6,10 +6,10 @@
 #include <set>
 #include <vector>
 
-#include "./../globals.h"
-#include "./../option_parser.h"
-#include "./../plugin.h"
-#include "./../state.h"
+#include "../globals.h"
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../state.h"
 
 using namespace std;
 

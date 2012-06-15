@@ -6,8 +6,8 @@
 #include <utility>
 #include <vector>
 
-#include "./../operator.h"
-#include "./../state.h"
+#include "../operator.h"
+#include "../state.h"
 
 namespace cegar_heuristic {
 
