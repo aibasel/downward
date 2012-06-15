@@ -302,8 +302,8 @@ bool AbstractState::agrees_with(const AbstractState &other) const {
         set<int> vals2 = other.get_values(i);
         it = set_intersection(vals1.begin(), vals1.end(),
                               vals2.begin(), vals2.end(), both.begin());
-        int elements = int(it - both.begin());
-        if (elements == 0)
+        if (it == both.begin())
+            // Set is empty.
             return false;
     }
     return true;
@@ -329,8 +329,8 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
         // If |vals2 - vals1| == 0, vals1 is a superset of vals2.
         it = set_difference(vals2.begin(), vals2.end(),
                             vals1.begin(), vals1.end(), diff.begin());
-        int elements = int(it - diff.begin());
-        if (elements > 0)
+        if (it != diff.begin())
+            // Set is not empty.
             return false;
     }
     return true;

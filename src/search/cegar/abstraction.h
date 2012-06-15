@@ -24,10 +24,11 @@ private:
     std::vector<AbstractState *> abs_states;
 
     AbstractState *init;
-    deque<AbstractState *> solution_states;
-    deque<Operator *> solution_ops;
+    std::deque<AbstractState *> solution_states;
+    std::deque<Operator *> solution_ops;
 
-    void pick_condition(vector<pair<int, int> > &conditions, int *var, int *value) const;
+    void pick_condition(std::vector<std::pair<int, int> > &conditions,
+                        int *var, int *value) const;
 
     bool dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward);
     void extract_solution(AbstractState &goal);
