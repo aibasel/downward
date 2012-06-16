@@ -11,10 +11,9 @@
 
 namespace cegar_heuristic {
 
-extern bool DEBUG;
+const bool DEBUG = false;
 
-// Gtest prevents us from defining this variable in the header.
-extern int UNDEFINED;
+const int UNDEFINED = -1;
 
 std::string int_set_to_string(std::set<int> myset);
 

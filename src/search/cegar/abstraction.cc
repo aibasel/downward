@@ -28,7 +28,8 @@ Abstraction::Abstraction() {
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
     assert(!g_operators.empty()); // We need operators and the g_initial_state
-    cout << "REFINE " << state->str() << " for " << var << "=" << value << " (" << g_variable_name[var] << ")" << endl;
+    if (DEBUG)
+        cout << "REFINE " << state->str() << " for " << var << "=" << value << " (" << g_variable_name[var] << ")" << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
     state->refine(var, value, v1, v2);
@@ -39,7 +40,8 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
             assert(v2->is_abstraction_of(*g_initial_state));
             init = v2;
         }
-        cout << "Using new init state: " << init->str() << endl;
+        if (DEBUG)
+            cout << "Using new init state: " << init->str() << endl;
     }
 }
 
@@ -142,7 +144,8 @@ bool Abstraction::check_solution() {
     State conc_state = *g_initial_state;
     for (int i = 0; i < solution_states.size(); ++i) {
         AbstractState *abs_state = solution_states[i];
-        cout << "Checking state " << i << ": " << abs_state->str() << endl;
+        if (DEBUG)
+            cout << "Checking state " << i << ": " << abs_state->str() << endl;
         // Set next_op to null if there is no next operator.
         Operator *next_op = (i < solution_ops.size()) ? solution_ops[i] : 0;
         vector<pair<int, int> > unmet_cond;
@@ -184,11 +187,13 @@ bool Abstraction::check_solution() {
 
 void Abstraction::pick_condition(vector<pair<int, int> > &conditions, int *var, int *value) const {
     assert(!conditions.empty());
-    cout << "Unmet conditions: ";
-    for (int i = 0; i < conditions.size(); ++i) {
-        cout << conditions[i].first << "=" << conditions[i].second << " ";
-    }
+    if (DEBUG) {
+        cout << "Unmet conditions: ";
+        for (int i = 0; i < conditions.size(); ++i) {
+            cout << conditions[i].first << "=" << conditions[i].second << " ";
+        }
     cout << endl;
+    }
     *var = conditions[0].first;
     *value = conditions[0].second;
 }
