@@ -1,7 +1,6 @@
 #include "utils.h"
 
-#include <assert.h>
-
+#include <cassert>
 #include <set>
 #include <sstream>
 #include <vector>
