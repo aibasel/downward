@@ -8,7 +8,7 @@
 
 namespace cegar_heuristic {
 class CegarHeuristic : public Heuristic {
-    int refinements;
+    int max_states;
     Abstraction abstraction;
 protected:
     virtual void initialize();

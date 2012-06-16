@@ -17,7 +17,7 @@ namespace cegar_heuristic {
 
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
-      refinements(opts.get<int>("refinements")) {
+      max_states(opts.get<int>("max_states")) {
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -28,9 +28,10 @@ void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     abstraction = Abstraction();
     bool success = false;
-    for (int i = 0; i < refinements; ++i) {
-        if ((i+1) % 100 == 0)
-            cout << "Refinement " << i+1 << "/" << refinements << endl;
+    int num_states;
+    for (num_states = 1; num_states < max_states; ++num_states) {
+        if (num_states % 100 == 0)
+            cout << "Abstract states: " << num_states << "/" << max_states << endl;
         bool solution_found = abstraction.find_solution();
         assert(solution_found);
         if (DEBUG)
@@ -45,7 +46,15 @@ void CegarHeuristic::initialize() {
     cout << "Done refining [t=" << g_timer << "]" << endl;
     cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
+    cout << "Number of abstract states: " << num_states << endl;
+    if (!success)
+        assert(num_states == max_states);
     abstraction.calculate_costs();
+
+    // Unreachable goal.
+    g_goal.clear();
+    g_goal.push_back(make_pair(0, 0));
+    g_goal.push_back(make_pair(0, 1));
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
@@ -53,7 +62,7 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("refinements", 100, "number of refinements");
+    parser.add_option<int>("max_states", 100, "maximum number of abstract states");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
