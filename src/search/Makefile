@@ -176,7 +176,7 @@ DEPEND = g++ -MM
 
 CCOPT = -Iext
 CCOPT += -g
-CCOPT += -m64
+CCOPT += -m32
 CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
 
 ## The following lines contain workarounds for bugs when
@@ -197,7 +197,7 @@ ifdef HAVE_GCC_4_5
 endif
 
 LINKOPT  = -g
-LINKOPT += -m64
+LINKOPT += -m32
 LINKOPT +=
 
 POSTLINKOPT =
@@ -343,7 +343,8 @@ clean:
 	rm -f *~ *.pyc
 	rm -f Makefile.depend gmon.out PROFILE core
 	rm -f sas_plan
-	rm -f cegar_test
+	rm -f cegar_heuristic_test cegar_heuristic_test.o
+	rm -f gtest_main.a gtest-all.o gtest_main.a gtest_main.o
 
 distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
@@ -351,22 +352,51 @@ distclean: clean
 lint:
 	python ../../misc/cpplint.py --filter=-legal/copyright,-build/header_guard,-whitespace/labels cegar/*.h cegar/*.cc
 
-# Install gtest:
-#   sudo apt-get install libgtest-dev
-#   cd /usr/src/gtest
-#   sudo cmake .
-#   sudo make
-#   sudo mv libg* /usr/lib/
-TEST_LIBS = -lgtest -lgtest_main -lpthread
-test: cegar_test
-	./cegar_test
+# The following lines contain build instructions for gtest.
 
+# Points to the root of Google Test.
+GTEST_DIR = ext/gtest
+
+GTEST_OPT = -I$(GTEST_DIR)/include -Wno-variadic-macros -Wno-long-long
+
+# All Google Test headers.  Usually you shouldn't change this
+# definition.
+GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
+                $(GTEST_DIR)/include/gtest/internal/*.h
+
+# Usually you shouldn't tweak such internal variables, indicated by a
+# trailing _.
+GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
+
+# For simplicity and to avoid depending on Google Test's
+# implementation details, the dependencies specified below are
+# conservative and not optimized.  This is fine as Google Test
+# compiles fast and for ordinary users its source rarely changes.
+gtest-all.o : $(GTEST_SRCS_)
+	$(CC) -I$(GTEST_DIR) $(CCOPT) $(GTEST_OPT) -c $(GTEST_DIR)/src/gtest-all.cc
+
+gtest_main.o : $(GTEST_SRCS_)
+	$(CC) -I$(GTEST_DIR) $(CCOPT) $(GTEST_OPT) -c $(GTEST_DIR)/src/gtest_main.cc
+
+gtest_main.a : gtest-all.o gtest_main.o
+	$(AR) $(ARFLAGS) $@ $^
+
+cegar_heuristic_test.o: $(HEADERS) cegar/cegar_heuristic_test.cc
+	# Apparently the gtest libs or pthread has to come last.
+	$(CC) $(CCOPT) $(CCOPT_RELEASE) $(GTEST_OPT) -c cegar/cegar_heuristic_test.cc -o .obj/cegar/$@
+
+# A test should link with either gtest.a or gtest_main.a, depending on whether
+# it defines its own main() function.
 PLANNER_OBJ = .obj/planner.1.o
 OTHER_OBJ = $(filter-out $(PLANNER_OBJ),$(OBJECTS_RELEASE))
+cegar_heuristic_test: $(OTHER_OBJ) cegar_heuristic_test.o gtest_main.a
+	# Apparently pthread has to come last.
+	$(CC) $(CCOPT) $(CCOPT_RELEASE) $(GTEST_OPT) $(LINKOPT) $(LINKOPT_RELEASE) \
+          $(OTHER_OBJ) cegar_heuristic_test.o gtest_main.a \
+          $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o cegar_heuristic_test -lpthread
 
-cegar_test: $(OBJECTS_RELEASE) cegar/cegar_heuristic_test.cc
-	# Apparently the gtest libs have to come last.
-	$(CC) $(CCOPT) $(CCOPT_RELEASE) $(LINKOPT) $(LINKOPT_RELEASE) $(OTHER_OBJ) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o cegar_test cegar/cegar_heuristic_test.cc $(TEST_LIBS)
+test: cegar_heuristic_test
+	./cegar_heuristic_test
 
 ## Note: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
