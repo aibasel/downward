@@ -270,7 +270,8 @@ void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
 }
 
 bool AbstractState::check_arc(Operator *op, AbstractState *other) {
-    //cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
+    if (DEBUG)
+        cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
     if (!applicable(*op))
         return false;
     AbstractState result;
