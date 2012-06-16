@@ -27,7 +27,7 @@ private:
     std::deque<AbstractState *> solution_states;
     std::deque<Operator *> solution_ops;
 
-    void pick_condition(std::vector<std::pair<int, int> > &conditions,
+    void pick_condition(const std::vector<std::pair<int, int> > &conditions,
                         int *var, int *value) const;
 
     bool dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward);

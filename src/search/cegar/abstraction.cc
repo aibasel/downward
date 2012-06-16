@@ -185,7 +185,8 @@ bool Abstraction::check_solution() {
     return false;
 }
 
-void Abstraction::pick_condition(vector<pair<int, int> > &conditions, int *var, int *value) const {
+void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
+                                 int *var, int *value) const {
     assert(!conditions.empty());
     if (DEBUG) {
         cout << "Unmet conditions: ";

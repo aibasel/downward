@@ -231,7 +231,7 @@ TEST(CegarTest, agrees_with) {
     bool agree[] = {
         true, true, false, false, true
     };
-    ASSERT_EQ((sizeof(agree) / sizeof(bool)), pairs.size());
+    ASSERT_EQ((sizeof(agree) / sizeof(agree[0])), pairs.size());
 
     AbstractState a;
     AbstractState b;
@@ -263,8 +263,8 @@ TEST(CegarTest, is_abstraction_of_other) {
     bool rev_agree[] = {
         true, true, false, false
     };
-    ASSERT_EQ((sizeof(agree) / sizeof(bool)), pairs.size());
-    ASSERT_EQ((sizeof(rev_agree) / sizeof(bool)), pairs.size());
+    ASSERT_EQ((sizeof(agree) / sizeof(agree[0])), pairs.size());
+    ASSERT_EQ((sizeof(rev_agree) / sizeof(agree[0])), pairs.size());
 
     AbstractState a;
     AbstractState b;
