@@ -29,8 +29,8 @@ void CegarHeuristic::initialize() {
     abstraction = Abstraction();
     bool success = false;
     for (int i = 0; i < refinements; ++i) {
-        if (i % 100 == 0)
-            cout << "Refinement " << i << "/" << refinements << endl;
+        if ((i+1) % 100 == 0)
+            cout << "Refinement " << i+1 << "/" << refinements << endl;
         bool solution_found = abstraction.find_solution();
         assert(solution_found);
         if (DEBUG)
