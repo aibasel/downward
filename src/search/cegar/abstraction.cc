@@ -81,7 +81,6 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
                      << successor_cost << " " << successor->get_distance() << endl;
             if (successor->get_distance() > successor_cost) {
                 successor->set_distance(successor_cost);
-                // TODO: Delete arc later to prevent memory leak.
                 Arc *origin = new Arc(op, state);
                 successor->set_origin(origin);
                 if (DEBUG)

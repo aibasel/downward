@@ -237,6 +237,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     //prev.resize(0);
 
     this->values.clear();
+    delete this->origin;
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {

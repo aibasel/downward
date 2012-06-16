@@ -68,7 +68,7 @@ public:
 
     void set_distance(int dist) {distance = dist; }
     int get_distance() {return distance; }
-    void set_origin(Arc *orig) {origin = orig; }
+    void set_origin(Arc *orig) { delete origin; origin = orig; }
     Arc *get_origin() {return origin; }
 
     std::vector<Arc> get_next() {return next; }
