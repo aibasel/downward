@@ -181,8 +181,9 @@ bool Abstraction::check_solution() {
             return true;
         }
     }
+    // This only happens if the problem is unsolvable.
     assert(false);
-    return true;
+    return false;
 }
 
 void Abstraction::pick_condition(vector<pair<int, int> > &conditions, int *var, int *value) const {
@@ -213,7 +214,6 @@ void Abstraction::calculate_costs() {
 }
 
 AbstractState *Abstraction::get_abstract_state(const State &state) const {
-    // TODO: Make current a pointer?
     AbstractState *current = single;
     while (!current->valid()) {
         int value = state[current->get_var()];

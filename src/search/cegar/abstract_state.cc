@@ -18,6 +18,7 @@ namespace cegar_heuristic {
 AbstractState::AbstractState(string s) {
     assert(!g_variable_domain.empty());
     values.resize(g_variable_domain.size(), set<int>());
+    origin = 0;
 
     // Construct state from string s of the form "<0={0,1}>".
     istringstream iss(s, istringstream::in);
