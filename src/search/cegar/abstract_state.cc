@@ -79,11 +79,11 @@ string AbstractState::get_next_as_string() const {
     return oss.str();
 }
 
-bool AbstractState::operator==(AbstractState &other) const {
+bool AbstractState::operator==(const AbstractState &other) const {
     return values == other.values;
 }
 
-bool AbstractState::operator!=(AbstractState &other) const {
+bool AbstractState::operator!=(const AbstractState &other) const {
     return !(*this == other);
 }
 
@@ -141,7 +141,7 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
     }
 }
 
-void AbstractState::get_unmet_conditions(AbstractState &desired,
+void AbstractState::get_unmet_conditions(const AbstractState &desired,
                                          vector<pair<int, int> > *conditions)
 const {
     // Get all set intersections of the possible values here minus the possible
@@ -153,7 +153,7 @@ const {
         set<int> vals2 = desired.get_values(i);
         it = set_intersection(vals1.begin(), vals1.end(),
                               vals2.begin(), vals2.end(), both.begin());
-        int elements = int(it - both.begin());
+        int elements = static_cast<int>(it - both.begin());
         assert(elements > 0);
         if (elements < vals1.size()) {
             // The variable's value matters for determining the resulting state.
@@ -245,14 +245,14 @@ void AbstractState::add_arc(Operator *op, AbstractState *other) {
     other->prev.push_back(Arc(op, this));
 }
 
-void AbstractState::remove_arc(vector<Arc> &arcs, Operator *op, AbstractState *other) {
-    for (int i = 0; i < arcs.size(); ++i) {
-        Operator *current_op = arcs[i].first;
-        AbstractState *current_state = arcs[i].second;
+void AbstractState::remove_arc(vector<Arc> *arcs, Operator *op, AbstractState *other) {
+    for (int i = 0; i < arcs->size(); ++i) {
+        Operator *current_op = (*arcs)[i].first;
+        AbstractState *current_state = (*arcs)[i].second;
         if ((current_op == op) && (current_state == other)) {
             // TODO(jendrik): Remove later, because op.get_name() may not be unique.
             assert((current_op->get_name() == op->get_name()) && (*current_state == *other));
-            arcs.erase(arcs.begin() + i);
+            arcs->erase(arcs->begin() + i);
             return;
         }
     }
@@ -262,11 +262,11 @@ void AbstractState::remove_arc(vector<Arc> &arcs, Operator *op, AbstractState *o
 }
 
 void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
-    remove_arc(next, op, other);
+    remove_arc(&next, op, other);
 }
 
 void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
-    remove_arc(prev, op, other);
+    remove_arc(&prev, op, other);
 }
 
 bool AbstractState::check_arc(Operator *op, AbstractState *other) {

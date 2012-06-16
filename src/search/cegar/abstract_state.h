@@ -29,7 +29,7 @@ private:
     std::vector<Domain> values;
 
     std::vector<Arc> next, prev;
-    void remove_arc(std::vector<Arc> &arcs, Operator *op, AbstractState *other);
+    void remove_arc(std::vector<Arc> *arcs, Operator *op, AbstractState *other);
 
     // For Dijkstra search.
     int distance;
@@ -43,15 +43,15 @@ private:
     AbstractState *right;
 
 public:
-    AbstractState(string s = "");
+    explicit AbstractState(string s = "");
     FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
     std::string str() const;
     Domain get_values(int var) const;
     void set_value(int var, int value);
     void refine(int var, int value, AbstractState *v1, AbstractState *v2);
-    bool operator==(AbstractState &other) const;
-    bool operator!=(AbstractState &other) const;
+    bool operator==(const AbstractState &other) const;
+    bool operator!=(const AbstractState &other) const;
     void add_arc(Operator *op, AbstractState *other);
     void remove_next_arc(Operator *op, AbstractState *other);
     void remove_prev_arc(Operator *op, AbstractState *other);
@@ -59,7 +59,7 @@ public:
     bool applicable(const Operator &op) const;
     void apply(const Operator &op, AbstractState *result) const;
     bool agrees_with(const AbstractState &other) const;
-    void get_unmet_conditions(AbstractState &desired, vector<pair<int, int> > *conditions) const;
+    void get_unmet_conditions(const AbstractState &desired, vector<pair<int, int> > *conditions) const;
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
     bool goal_reached() const;

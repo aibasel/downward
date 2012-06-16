@@ -350,7 +350,9 @@ distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
 
 lint:
-	python ../../misc/cpplint.py --filter=-legal/copyright,-build/header_guard,-whitespace/labels cegar/*.h cegar/*.cc
+	python ../../misc/cpplint.py \
+		--filter=-legal/copyright,-build/header_guard,-whitespace/labels,-build/include,-whitespace/line_length,-readability/todo,-build/namespaces \
+		cegar/*.h cegar/*.cc
 
 # The following lines contain build instructions for gtest.
 

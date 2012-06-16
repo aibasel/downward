@@ -14,7 +14,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    CegarHeuristic(const Options &options);
+    explicit CegarHeuristic(const Options &options);
     ~CegarHeuristic();
 };
 }
