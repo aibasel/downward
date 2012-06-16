@@ -4,6 +4,7 @@
 #include "../plugin.h"
 #include "../state.h"
 #include "../timer.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
@@ -23,6 +24,7 @@ CegarHeuristic::~CegarHeuristic() {
 }
 
 void CegarHeuristic::initialize() {
+    cout << "Peak memory before refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Initializing cegar heuristic..." << endl;
     abstraction = Abstraction();
     bool success = false;
@@ -41,6 +43,7 @@ void CegarHeuristic::initialize() {
             break;
     }
     cout << "Done refining [t=" << g_timer << "]" << endl;
+    cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
     abstraction.calculate_costs();
 }

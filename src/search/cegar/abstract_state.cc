@@ -188,10 +188,12 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         if (u != this) {
             assert(*u != *this);
             u->remove_next_arc(op, this);
-            // TODO: If the first check returns false, the second arc has to be
-            // added.
-            u->check_arc(op, v1);
-            u->check_arc(op, v2);
+            // If the first check returns false, the second arc has to be added.
+            if (u->check_arc(op, v1)) {
+                u->check_arc(op, v2);
+            } else {
+                u->add_arc(op, v2);
+            }
         }
     }
     for (int i = 0; i < next.size(); ++i) {
@@ -207,10 +209,12 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             v2->check_arc(op, v2);
         } else {
             w->remove_prev_arc(op, this);
-            // TODO: If the first check returns false, the second arc has to be
-            // added.
-            v1->check_arc(op, w);
-            v2->check_arc(op, w);
+            // If the first check returns false, the second arc has to be added.
+            if (v1->check_arc(op, w)) {
+                v2->check_arc(op, w);
+            } else {
+                v2->add_arc(op, w);
+            }
         }
     }
     // Save the refinement hierarchy.
@@ -222,6 +226,16 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     children[value] = v2;
     left = v1;
     right = v2;
+
+    // Remove obsolete members.
+    // TODO: Correctly remove arcs, this version actually adds 4KB.
+    //cout << next.size() << " " << prev.size() << endl;
+    //next.clear();
+    //prev.clear();
+    //next.resize(0);
+    //prev.resize(0);
+
+    this->values.clear();
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
