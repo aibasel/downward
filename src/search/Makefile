@@ -235,6 +235,7 @@ POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
 endif
 LINKOPT_DEBUG  += -lrt
 LINKOPT_PROFILE += -lrt
+POSTLINKOPT_PROFILE += -lrt
 # LINKOPT_PROFILE += -lc_p
 endif
 
