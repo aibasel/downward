@@ -14,6 +14,7 @@
 
 // TODO(jendrik): Use 32-bit masks for variables. This means we can not handle tasks
 // with domain sizes > 32.
+// TODO: Check out boost dynamic bitset
 // TODO(jendrik): Clear values, next, prev for refined states.
 
 namespace cegar_heuristic {
@@ -47,7 +48,7 @@ public:
     AbstractState(string s = "");
     FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
-    string str() const;
+    std::string str() const;
     Domain get_values(int var) const;
     void set_value(int var, int value);
     void refine(int var, int value, AbstractState *v1, AbstractState *v2);

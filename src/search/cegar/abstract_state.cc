@@ -188,6 +188,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         if (u != this) {
             assert(*u != *this);
             u->remove_next_arc(op, this);
+            // TODO: If the first check returns false, the second arc has to be
+            // added.
             u->check_arc(op, v1);
             u->check_arc(op, v2);
         }
@@ -205,6 +207,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             v2->check_arc(op, v2);
         } else {
             w->remove_prev_arc(op, this);
+            // TODO: If the first check returns false, the second arc has to be
+            // added.
             v1->check_arc(op, w);
             v2->check_arc(op, w);
         }

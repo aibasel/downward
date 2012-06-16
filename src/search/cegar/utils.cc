@@ -13,8 +13,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-bool DEBUG = false;
-int UNDEFINED = -1;
 
 string int_set_to_string(set<int> myset) {
     ostringstream oss;

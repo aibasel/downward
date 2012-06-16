@@ -24,17 +24,20 @@ CegarHeuristic::~CegarHeuristic() {
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     abstraction = Abstraction();
+    bool success = false;
     for (int i = 0; i < refinements; ++i) {
         bool solution_found = abstraction.find_solution();
         assert(solution_found);
-        cout << "SOLUTION: " << abstraction.get_solution_string() << endl;
-        bool success = abstraction.check_solution();
+        if (DEBUG)
+            cout << "SOLUTION: " << abstraction.get_solution_string() << endl;
+        success = abstraction.check_solution();
         if (DEBUG)
             cout << "NEXT ARCS: " << abstraction.get_init()->get_next_as_string()
                  << endl;
         if (success)
             break;
     }
+    cout << "Solution found while refining: " << success << endl;
     abstraction.calculate_costs();
 }
 
