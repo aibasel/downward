@@ -3,6 +3,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state.h"
+#include "../timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -26,6 +27,8 @@ void CegarHeuristic::initialize() {
     abstraction = Abstraction();
     bool success = false;
     for (int i = 0; i < refinements; ++i) {
+        if (i % 100 == 0)
+            cout << "Refinement " << i << "/" << refinements << endl;
         bool solution_found = abstraction.find_solution();
         assert(solution_found);
         if (DEBUG)
@@ -37,6 +40,7 @@ void CegarHeuristic::initialize() {
         if (success)
             break;
     }
+    cout << "Done refining [t=" << g_timer << "]" << endl;
     cout << "Solution found while refining: " << success << endl;
     abstraction.calculate_costs();
 }
