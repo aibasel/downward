@@ -4,13 +4,13 @@
 #include "../operator.h"
 #include "../state.h"
 
+#include "../ext/gtest/include/gtest/gtest_prod.h"
+
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <gtest/gtest_prod.h>
 
 // TODO: Check out boost dynamic bitset
 // TODO(jendrik): Clear values, next, prev for refined states.

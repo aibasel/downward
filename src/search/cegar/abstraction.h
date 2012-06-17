@@ -6,14 +6,14 @@
 #include "../operator.h"
 #include "../priority_queue.h"
 
+#include "../ext/gtest/include/gtest/gtest_prod.h"
+
 #include <vector>
 #include <deque>
 #include <limits>
 #include <set>
 #include <string>
 #include <utility>
-
-#include <gtest/gtest_prod.h>
 
 namespace cegar_heuristic {
 
