@@ -18,6 +18,8 @@ namespace cegar_heuristic {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       max_states(opts.get<int>("max_states")) {
+    if (max_states == -1)
+        max_states = INFINITY;
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -46,7 +48,7 @@ void CegarHeuristic::initialize() {
     cout << "Done refining [t=" << g_timer << "]" << endl;
     cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
-    cout << "Number of abstract states: " << num_states << endl;
+    cout << "Abstract states: " << num_states << endl;
     if (!success)
         assert(num_states == max_states);
     abstraction.calculate_costs();
