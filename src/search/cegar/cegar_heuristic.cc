@@ -17,11 +17,13 @@ using namespace std;
 namespace cegar_heuristic {
 
 CegarHeuristic::CegarHeuristic(const Options &opts)
-    : Heuristic(opts),
-      max_states(opts.get<int>("max_states")),
-      pick_strategy(PickStrategy(opts.get_enum("pick_strategy"))) {
+    : Heuristic(opts) {
+    int max_states = opts.get<int>("max_states");
     if (max_states == -1)
         max_states = INFINITY;
+    this->max_states = max_states;
+
+    abstraction = Abstraction(PickStrategy(opts.get_enum("pick")));
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -30,7 +32,6 @@ CegarHeuristic::~CegarHeuristic() {
 void CegarHeuristic::initialize() {
     cout << "Peak memory before refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Initializing cegar heuristic..." << endl;
-    abstraction = Abstraction();
     bool success = false;
     int num_states;
     for (num_states = 1; num_states < max_states; ++num_states) {
@@ -38,12 +39,9 @@ void CegarHeuristic::initialize() {
             cout << "Abstract states: " << num_states << "/" << max_states << endl;
         bool solution_found = abstraction.find_solution();
         assert(solution_found);
-        if (DEBUG)
-            cout << "SOLUTION: " << abstraction.get_solution_string() << endl;
+        //if (DEBUG)
+        //    cout << "SOLUTION: " << abstraction.get_solution_string() << endl;
         success = abstraction.check_solution();
-        if (DEBUG)
-            cout << "NEXT ARCS: " << abstraction.get_init()->get_next_as_string()
-                 << endl;
         if (success)
             break;
     }
@@ -70,8 +68,9 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     vector<string> pick_strategies;
     pick_strategies.push_back("FIRST");
     pick_strategies.push_back("RANDOM");
-    parser.add_enum_option("pick_strategy", pick_strategies, "FIRST",
-                           "how to pick next unsatisfied condition");
+    pick_strategies.push_back("GOAL");
+    parser.add_enum_option("pick", pick_strategies, "FIRST",
+                           "how to pick the next unsatisfied condition");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

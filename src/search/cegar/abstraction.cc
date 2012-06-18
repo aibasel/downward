@@ -3,6 +3,7 @@
 #include "../globals.h"
 #include "../operator.h"
 #include "../priority_queue.h"
+#include "../rng.h"
 #include "../state.h"
 
 #include <algorithm>
@@ -17,8 +18,9 @@ using namespace std;
 
 namespace cegar_heuristic {
 
-Abstraction::Abstraction() {
+Abstraction::Abstraction(PickStrategy strategy) {
     assert(!g_operators.empty());
+    pick_strategy = strategy;
     single = new AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
         single->add_arc(&g_operators[i], single);
@@ -46,13 +48,14 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
 }
 
 bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) {
+    bool debug = false;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
         int distance = top_pair.first;
         AbstractState *state = top_pair.second;
 
         int state_distance = state->get_distance();
-        if (DEBUG)
+        if (debug)
             cout << "VISIT: " << state->str() << " " << state_distance << " "
                  << distance << endl;
         assert(state_distance <= distance);
@@ -61,7 +64,7 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
         }
         if (forward) {
             if (state->goal_reached()) {
-                if (DEBUG)
+                if (debug)
                     cout << "GOAL REACHED" << endl;
                 extract_solution(*state);
                 return true;
@@ -76,14 +79,14 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
             int cost = op->get_cost();
             // Prevent overflow.
             int successor_cost = (state_distance == INFINITY) ? INFINITY : state_distance + cost;
-            if (DEBUG)
+            if (debug)
                 cout << "NEXT: " << successor->str() << " " << cost << " "
                      << successor_cost << " " << successor->get_distance() << endl;
             if (successor->get_distance() > successor_cost) {
                 successor->set_distance(successor_cost);
                 Arc *origin = new Arc(op, state);
                 successor->set_origin(origin);
-                if (DEBUG)
+                if (debug)
                     cout << "ORIGIN(" << successor->str() << ") = "
                          << state->str() << " with " << op->get_name() << endl;
                 queue.push(successor_cost, successor);
@@ -143,8 +146,8 @@ bool Abstraction::check_solution() {
     State conc_state = *g_initial_state;
     for (int i = 0; i < solution_states.size(); ++i) {
         AbstractState *abs_state = solution_states[i];
-        if (DEBUG)
-            cout << "Checking state " << i << ": " << abs_state->str() << endl;
+        //if (DEBUG)
+        //    cout << "Checking state " << i << ": " << abs_state->str() << endl;
         // Set next_op to null if there is no next operator.
         Operator *next_op = (i < solution_ops.size()) ? solution_ops[i] : 0;
         vector<pair<int, int> > unmet_cond;
@@ -195,8 +198,30 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
         }
     cout << endl;
     }
-    *var = conditions[0].first;
-    *value = conditions[0].second;
+    int cond = -1;
+    switch (pick_strategy) {
+    case FIRST:
+        cond = 0;
+        break;
+    case RANDOM:
+        cond = g_rng.next(conditions.size());
+        break;
+    case GOAL:
+        for (int i = 1; i < conditions.size(); ++i) {
+            if (goal_var(conditions[i].first))
+                cond = i;
+                break;
+        }
+        if (cond == -1)
+            cond = g_rng.next(conditions.size());
+        break;
+    default:
+        cout << "Invalid pick strategy: " << pick_strategy << endl;
+        exit(2);
+    }
+    *var = conditions[cond].first;
+    *value = conditions[cond].second;
+    cout << "Picked: " << *var << "=" << *value << endl;
 }
 
 void Abstraction::calculate_costs() {

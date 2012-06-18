@@ -19,6 +19,12 @@ namespace cegar_heuristic {
 
 const int INFINITY = numeric_limits<int>::max();
 
+enum PickStrategy {
+    FIRST,
+    RANDOM,
+    GOAL
+};
+
 class Abstraction {
 private:
     std::vector<AbstractState *> abs_states;
@@ -27,6 +33,7 @@ private:
     std::deque<AbstractState *> solution_states;
     std::deque<Operator *> solution_ops;
 
+    PickStrategy pick_strategy;
     void pick_condition(const std::vector<std::pair<int, int> > &conditions,
                         int *var, int *value) const;
 
@@ -39,7 +46,7 @@ private:
     void collect_child_states(AbstractState *parent);
 
 public:
-    Abstraction();
+    explicit Abstraction(PickStrategy strategy=FIRST);
 
     void refine(AbstractState *state, int var, int value);
 
