@@ -107,4 +107,13 @@ void get_unmet_goal_conditions(const State &state,
         }
     }
 }
+
+bool goal_var(int var) {
+    for (int i = 0; i < g_goal.size(); i++) {
+        if (var == g_goal[i].first)
+            return true;
+    }
+    return false;
+}
+
 }
