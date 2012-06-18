@@ -230,10 +230,11 @@ void Abstraction::calculate_costs() {
     for (int i = 0; i < abs_states.size(); ++i) {
         if (abs_states[i]->goal_reached()) {
             abs_states[i]->set_distance(0);
+            queue.push(0, abs_states[i]);
+            cout << "GOAL: " << abs_states[i]->str() << endl;
         } else {
             abs_states[i]->set_distance(INFINITY);
         }
-        queue.push(abs_states[i]->get_distance(), abs_states[i]);
     }
     dijkstra_search(queue, false);
 }
