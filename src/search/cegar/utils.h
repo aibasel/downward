@@ -28,6 +28,8 @@ void get_unmet_preconditions(const Operator &op, const State &s,
 void get_unmet_goal_conditions(const State &state,
                                vector<pair<int, int> > *unmet_conditions);
 
+bool goal_var(int var);
+
 // Create an operator with cost 1.
 // prevails have the form "var value".
 // pre_posts have the form "0 var pre post" (no conditional effects).
