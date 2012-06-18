@@ -7,8 +7,15 @@
 #include "../state.h"
 
 namespace cegar_heuristic {
+
+enum PickStrategy {
+    FIRST,
+    RANDOM
+};
+
 class CegarHeuristic : public Heuristic {
     int max_states;
+    const PickStrategy pick_strategy;
     Abstraction abstraction;
 protected:
     virtual void initialize();

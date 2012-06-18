@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cassert>
 #include <set>
+#include <string>
 #include <vector>
 
 using namespace std;
@@ -17,7 +18,8 @@ namespace cegar_heuristic {
 
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
-      max_states(opts.get<int>("max_states")) {
+      max_states(opts.get<int>("max_states")),
+      pick_strategy(PickStrategy(opts.get_enum("pick_strategy"))) {
     if (max_states == -1)
         max_states = INFINITY;
 }
@@ -65,6 +67,11 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states", 100, "maximum number of abstract states");
+    vector<string> pick_strategies;
+    pick_strategies.push_back("FIRST");
+    pick_strategies.push_back("RANDOM");
+    parser.add_enum_option("pick_strategy", pick_strategies, "FIRST",
+                           "how to pick next unsatisfied condition");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
