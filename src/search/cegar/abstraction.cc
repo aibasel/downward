@@ -221,7 +221,8 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
     }
     *var = conditions[cond].first;
     *value = conditions[cond].second;
-    cout << "Picked: " << *var << "=" << *value << endl;
+    if (DEBUG)
+        cout << "Picked: " << *var << "=" << *value << endl;
 }
 
 void Abstraction::calculate_costs() {
