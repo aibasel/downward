@@ -57,11 +57,14 @@ void CegarHeuristic::initialize() {
     g_goal.clear();
     g_goal.push_back(make_pair(0, 0));
     g_goal.push_back(make_pair(0, 1));
+
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
     int dist = abstraction.get_abstract_state(state)->get_distance();
     assert(dist >= 0);
+    if (dist == INFINITY)
+        dist = DEAD_END;
     return dist;
 }
 
