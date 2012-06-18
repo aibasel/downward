@@ -60,7 +60,9 @@ void CegarHeuristic::initialize() {
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
-    return abstraction.get_abstract_state(state)->get_distance();
+    int dist = abstraction.get_abstract_state(state)->get_distance();
+    assert(dist >= 0);
+    return dist;
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
