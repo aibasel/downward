@@ -386,13 +386,13 @@ gtest_main.a : gtest-all.o gtest_main.o
 
 cegar_heuristic_test.o: $(HEADERS) cegar/cegar_heuristic_test.cc
 	# Apparently the gtest libs or pthread has to come last.
-	$(CC) $(CCOPT) $(CCOPT_RELEASE) $(GTEST_OPT) -c cegar/cegar_heuristic_test.cc -o .obj/cegar/$@
+	$(CC) $(CCOPT) $(CCOPT_RELEASE) $(GTEST_OPT) -c cegar/cegar_heuristic_test.cc -o $@
 
 # A test should link with either gtest.a or gtest_main.a, depending on whether
 # it defines its own main() function.
 PLANNER_OBJ = .obj/planner.1.o
 OTHER_OBJ = $(filter-out $(PLANNER_OBJ),$(OBJECTS_RELEASE))
-cegar_heuristic_test: $(OTHER_OBJ) .obj/cegar/cegar_heuristic_test.o gtest_main.a
+cegar_heuristic_test: $(OTHER_OBJ) cegar_heuristic_test.o gtest_main.a
 	# Apparently pthread has to come last.
 	$(CC) $(CCOPT) $(CCOPT_RELEASE) $(GTEST_OPT) $(LINKOPT) $(LINKOPT_RELEASE) $^ \
           $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o cegar_heuristic_test -lpthread
