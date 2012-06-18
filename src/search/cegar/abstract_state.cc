@@ -180,9 +180,9 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     // In v2 var can only have the desired value.
     v2->set_value(var, value);
 
-    // u -> this -> w
+    // Before: u --> this=v --> w
     //  ==>
-    // u -> v1 -> v2 -> w
+    // v is split into v1 and v2
     for (int i = 0; i < prev.size(); ++i) {
         Operator *op = prev[i].first;
         AbstractState *u = prev[i].second;
@@ -190,11 +190,16 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             assert(*u != *this);
             u->remove_next_arc(op, this);
             // If the first check returns false, the second arc has to be added.
+            /*
             if (u->check_arc(op, v1)) {
                 u->check_arc(op, v2);
             } else {
                 u->add_arc(op, v2);
-            }
+            }*/
+            //TODO: Use optimized version again later.
+            bool arc1 = u->check_arc(op, v1);
+            bool arc2 = u->check_arc(op, v2);
+            assert(arc1 || arc2);
         }
     }
     for (int i = 0; i < next.size(); ++i) {
@@ -204,18 +209,23 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             assert(*w == *this);
             // Handle former self-loops. The same loops also were in prev,
             // but they only have to be checked once.
-            v1->check_arc(op, v2);
-            v2->check_arc(op, v1);
-            v1->check_arc(op, v1);
-            v2->check_arc(op, v2);
+            bool arc1 = v1->check_arc(op, v2);
+            bool arc2 = v2->check_arc(op, v1);
+            bool arc3 = v1->check_arc(op, v1);
+            bool arc4 = v2->check_arc(op, v2);
+            assert(arc1 || arc2 || arc3 || arc4);
         } else {
             w->remove_prev_arc(op, this);
             // If the first check returns false, the second arc has to be added.
-            if (v1->check_arc(op, w)) {
+            /*if (v1->check_arc(op, w)) {
                 v2->check_arc(op, w);
             } else {
                 v2->add_arc(op, w);
-            }
+            }*/
+            //TODO: Use optimized version again later.
+            bool arc5 = v1->check_arc(op, w);
+            bool arc6 = v2->check_arc(op, w);
+            assert(arc5 || arc6);
         }
     }
     // Save the refinement hierarchy.
@@ -241,6 +251,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
+    // TODO: Why don't we have to use dynamic memory for the arcs?
     next.push_back(Arc(op, other));
     other->prev.push_back(Arc(op, this));
 }
