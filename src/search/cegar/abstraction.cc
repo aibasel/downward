@@ -157,8 +157,10 @@ bool Abstraction::check_solution() {
             assert(i >= 1);
             AbstractState *prev_state = solution_states[i - 1];
             AbstractState desired_prev_state;
-            abs_state->regress(*solution_ops[i - 1], &desired_prev_state);
-            // TODO: desired_prev_state might be null.
+            AbstractState *desired_prev_state_ptr = &desired_prev_state;
+            abs_state->regress(*solution_ops[i - 1], desired_prev_state_ptr);
+            // Make sure the regression was successful.
+            assert(desired_prev_state_ptr);
             prev_state->get_unmet_conditions(desired_prev_state, &unmet_cond);
             pick_condition(unmet_cond, &var, &value);
             refine(prev_state, var, value);
