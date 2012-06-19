@@ -114,7 +114,7 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
             // if op.eff[v] not in s2_vals:
             if (s2_vals.count(eff) == 0) {
                 // return regression_empty
-                result->values.clear();
+                result = 0;
                 return;
             }
             // s1_vals = v.all_values_in_domain
@@ -130,7 +130,7 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
             // if op.pre[v] not in s1_vals:
             if (s1_vals.count(pre) == 0) {
                 // return regression_empty
-                result->values.clear();
+                result = 0;
                 return;
             }
             // s1_vals = [op.pre[v]]
