@@ -206,7 +206,7 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
         cond = g_rng.next(conditions.size());
         break;
     case GOAL:
-        for (int i = 1; i < conditions.size(); ++i) {
+        for (int i = 0; i < conditions.size(); ++i) {
             if (goal_var(conditions[i].first))
                 cond = i;
                 break;
