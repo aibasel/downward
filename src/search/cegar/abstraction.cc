@@ -8,6 +8,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <set>
 #include <sstream>
@@ -261,5 +263,35 @@ void Abstraction::collect_child_states(AbstractState *parent) {
         collect_child_states(parent->get_left_child());
         collect_child_states(parent->get_right_child());
     }
+}
+
+void Abstraction::write_dot_file(int num) {
+    collect_states();
+    ostringstream oss;
+    oss << "graph-" << setw(3) << setfill('0') << num << ".dot";
+    string filename = oss.str();
+    ofstream dotfile(filename.c_str());
+    if (!dotfile.is_open()) {
+        cout << "File " << filename << " could not be opened" << endl;
+        exit(1);
+    }
+    dotfile << "digraph abstract {" << endl;
+    for (int i = 0; i < abs_states.size(); ++i) {
+        AbstractState *current_state = abs_states[i];
+        for (int j = 0; j < current_state->get_next().size(); ++j) {
+            Arc arc = current_state->get_next()[j];
+            AbstractState *next_state = arc.second;
+            Operator *op = arc.first;
+            dotfile << current_state->str() << " -> " << next_state->str()
+                    << " [label=\"" << op->get_name() << "\"];" << endl;
+        }
+        if (current_state->is_abstraction_of(*g_initial_state)) {
+            dotfile << current_state->str() << " [color=green];" << endl;
+        } else if (current_state->goal_reached()) {
+            dotfile << current_state->str() << " [color=red];" << endl;
+        }
+    }
+    dotfile << "}" << endl;
+    dotfile.close();
 }
 }
