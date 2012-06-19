@@ -65,6 +65,7 @@ public:
 
     // Only for testing.
     AbstractState *get_init() {return init; }
+    std::vector<AbstractState *> *get_abs_states() { return &abs_states; };
 };
 }
 
