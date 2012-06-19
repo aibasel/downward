@@ -167,7 +167,7 @@ SearchNode SearchSpace::get_node(const State &state) {
     if (result.second) {
         // This is a new entry: Must give the state permanent lifetime.
         result.first->first.make_permanent();
-        result.first->second.id = SearchNodeInfo::n_permanent_states++;
+        result.first->second.id = nodes->size() - 1;
     }
     HashTable::iterator iter = result.first;
     return SearchNode(iter->first.state_data, iter->second, cost_type);

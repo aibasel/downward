@@ -38,10 +38,10 @@ public:
     bool operator<(const State &other) const;
     size_t hash() const;
 
-    explicit State(state_var_t *buffer, int id=0) {
+    explicit State(state_var_t *buffer, int _id = 0) {
         vars = buffer;
         borrowed_buffer = true;
-        this->id = id;
+        id = _id;
     }
     const state_var_t *get_buffer() const {
         return vars;

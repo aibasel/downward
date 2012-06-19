@@ -17,15 +17,15 @@ public:
     Entry &operator[](const State &state) {
         assert(state.id >= 0);
         if (entries.size() <= state.id) {
-            entries.resize(state.id +1);
-            empty.resize(state.id +1, true);
+            entries.resize(state.id + 1);
+            empty.resize(state.id + 1, true);
         }
         empty[state.id] = false;
         return entries[state.id];
     }
 
     bool has_entry(const State &state) const {
-        return (state.id >= 0 && state.id < entries.size() && !empty[state.id]);
+        return state.id >= 0 && state.id < entries.size() && !empty[state.id];
     }
 
     void remove_enty(const State &state) {
