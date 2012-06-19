@@ -1,5 +1,15 @@
 from mercurial import cmdutil
 from mercurial import util
+try:
+    # Mercurial >= 1.8
+    # Due to mercurial's lazy importing we need to import the match function
+    # directly to raise an ImportError if the scmutil module is not present.
+    from mercurial.scmutil import match
+    def match_func(repo, ctx, patterns, options):
+        return match(ctx, patterns, options)
+except ImportError:
+    def match_func(repo, ctx, patterns, options):
+        return cmdutil.match(repo, patterns, options)
 
 import errno
 import os
@@ -16,9 +26,7 @@ def _call_subprocesses(cmddesc, *cmd_lists):
         except OSError, e:
             # If command is not found, swallow error and try next command.
             if e.errno != errno.ENOENT:
-                raise util.Abort("error running %s: %s" % (cmd_desc, e))
-
-                _raise_command_not_found("diff or colordiff", e)
+                raise util.Abort("error running %s: %s" % (cmddesc, e))
         else:
             return exitcode
     raise util.Abort("could not find %s -- not installed?" % cmddesc)
@@ -73,8 +81,8 @@ def _get_files(repo, patterns, options):
     Supports options['include'] and options['exclude'] which work like
     the --include and --exclude options of hg status.
     """
-    match = cmdutil.match(repo, patterns, options)
     ctx = repo[None]
+    match = match_func(repo, ctx, patterns, options)
     ctx.status(clean=True, ignored=True, unknown=True)
     files = []
     for file_list in [ctx.clean(), ctx.modified(), ctx.added()]:
