@@ -24,9 +24,7 @@ def _call_subprocesses(cmddesc, *cmd_lists):
         except OSError, e:
             # If command is not found, swallow error and try next command.
             if e.errno != errno.ENOENT:
-                raise util.Abort("error running %s: %s" % (cmd_desc, e))
-
-                _raise_command_not_found("diff or colordiff", e)
+                raise util.Abort("error running %s: %s" % (cmddesc, e))
         else:
             return exitcode
     raise util.Abort("could not find %s -- not installed?" % cmddesc)
