@@ -112,11 +112,7 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
         int eff = get_eff(op, v);
         if (eff != UNDEFINED) {
             // if op.eff[v] not in s2_vals:
-            if (s2_vals.count(eff) == 0) {
-                // return regression_empty
-                result = 0;
-                return;
-            }
+            assert(s2_vals.count(eff) == 1);
             // s1_vals = v.all_values_in_domain
             for (int i = 0; i < g_variable_domain[v]; ++i)
                 s1_vals.insert(i);
@@ -128,11 +124,7 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
         int pre = get_pre(op, v);
         if (pre != UNDEFINED) {
             // if op.pre[v] not in s1_vals:
-            if (s1_vals.count(pre) == 0) {
-                // return regression_empty
-                result = 0;
-                return;
-            }
+            assert(s1_vals.count(pre) == 1);
             // s1_vals = [op.pre[v]]
             s1_vals.clear();
             s1_vals.insert(pre);

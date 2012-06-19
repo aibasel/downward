@@ -78,7 +78,7 @@ TEST(CegarTest, regress) {
         AbstractState a;
         b = AbstractState(pairs[i].second);
         b.regress(op, &a);
-        ASSERT_EQ(pairs[i].first, a.str());
+        EXPECT_EQ(pairs[i].first, a.str());
     }
 
     vector<string> impossible;
@@ -88,8 +88,7 @@ TEST(CegarTest, regress) {
     for (int i = 0; i < impossible.size(); ++i) {
         AbstractState a;
         b = AbstractState(impossible[i]);
-        b.regress(op, &a);
-        ASSERT_TRUE(a.values.empty());
+        EXPECT_DEATH(b.regress(op, &a), ".*Assertion .* failed.");
     }
 }
 
