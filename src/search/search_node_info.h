@@ -10,7 +10,6 @@ class SearchNodeInfo {
     enum NodeStatus {NEW = 0, OPEN = 1, CLOSED = 2, DEAD_END = 3};
 
     int id;
-    static int n_permanent_states;
     unsigned int status : 2;
     int g : 30;
     int h : 31; // TODO:CR - should we get rid of it
