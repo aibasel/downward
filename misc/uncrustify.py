@@ -2,9 +2,11 @@ from mercurial import cmdutil
 from mercurial import util
 try:
     # Mercurial >= 1.8
-    from mercurial import scmutil
+    # Due to mercurial's lazy importing we need to import the match function
+    # directly to raise an ImportError if the scmutil module is not present.
+    from mercurial.scmutil import match
     def match_func(repo, ctx, patterns, options):
-        return scmutil.match(ctx, patterns, options)
+        return match(ctx, patterns, options)
 except ImportError:
     def match_func(repo, ctx, patterns, options):
         return cmdutil.match(repo, patterns, options)
