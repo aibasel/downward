@@ -22,6 +22,11 @@ public:
     State(const State &predecessor, const Operator &op);
     ~State();
     State &operator=(const State &other);
+
+    // unique id (is set after a node lookup because we do not know
+    // if this state is a duplicate before that)
+    int id;
+
     state_var_t &operator[](int index) {
         return vars[index];
     }
@@ -33,10 +38,10 @@ public:
     bool operator<(const State &other) const;
     size_t hash() const;
 
-
-    explicit State(state_var_t *buffer) {
+    explicit State(state_var_t *buffer, int id=0) {
         vars = buffer;
         borrowed_buffer = true;
+        this->id = id;
     }
     const state_var_t *get_buffer() const {
         return vars;

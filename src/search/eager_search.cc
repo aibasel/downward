@@ -65,8 +65,10 @@ void EagerSearch::initialize() {
 
     assert(!heuristics.empty());
 
+    SearchNode node = search_space.get_node(*g_initial_state);
+
     for (size_t i = 0; i < heuristics.size(); i++)
-        heuristics[i]->evaluate(*g_initial_state);
+        heuristics[i]->evaluate(node.get_state());
     open_list->evaluate(0, false);
     search_progress.inc_evaluated_states();
     search_progress.inc_evaluations(heuristics.size());
@@ -80,7 +82,6 @@ void EagerSearch::initialize() {
             search_progress.report_f_value(f_evaluator->get_value());
         }
         search_progress.check_h_progress(0);
-        SearchNode node = search_space.get_node(*g_initial_state);
         node.open_initial(heuristics[0]->get_value());
 
         open_list->insert(node.get_state_buffer());
@@ -152,7 +153,7 @@ int EagerSearch::step() {
             // We have not seen this state before.
             // Evaluate and create a new node.
             for (size_t i = 0; i < heuristics.size(); i++)
-                heuristics[i]->evaluate(succ_state);
+                heuristics[i]->evaluate(succ_node.get_state());
             succ_node.clear_h_dirty();
             search_progress.inc_evaluated_states();
             search_progress.inc_evaluations(heuristics.size());

@@ -29,6 +29,7 @@ void State::_copy_buffer_from_state(const State &state) {
 
 State & State::operator=(const State &other) {
     if (this != &other) {
+        id = other.id;
         if (borrowed_buffer)
             _allocate();
         _copy_buffer_from_state(other);
@@ -36,7 +37,7 @@ State & State::operator=(const State &other) {
     return *this;
 }
 
-State::State(istream &in) {
+State::State(istream &in) : id(-1) {
     _allocate();
     check_magic(in, "begin_state");
     for (int i = 0; i < g_variable_domain.size(); i++) {
@@ -49,12 +50,12 @@ State::State(istream &in) {
     g_default_axiom_values.assign(vars, vars + g_variable_domain.size());
 }
 
-State::State(const State &state) {
+State::State(const State &state) : id(state.id) {
     _allocate();
     _copy_buffer_from_state(state);
 }
 
-State::State(const State &predecessor, const Operator &op) {
+State::State(const State &predecessor, const Operator &op) : id(-1) {
     assert(!op.is_axiom());
     _allocate();
     _copy_buffer_from_state(predecessor);
