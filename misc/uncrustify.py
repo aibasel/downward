@@ -1,10 +1,13 @@
 from mercurial import cmdutil
+from mercurial import util
 try:
     # Mercurial >= 1.8
     from mercurial import scmutil
+    def match_func(repo, ctx, patterns, options):
+        return scmutil.match(ctx, patterns, options)
 except ImportError:
-    pass
-from mercurial import util
+    def match_func(repo, ctx, patterns, options):
+        return cmdutil.match(repo, patterns, options)
 
 import errno
 import os
@@ -79,11 +82,7 @@ def _get_files(repo, patterns, options):
     the --include and --exclude options of hg status.
     """
     ctx = repo[None]
-    try:
-        # Mercurial < 1.8
-        match = cmdutil.match(repo, patterns, options)
-    except AttributeError:
-        match = scmutil.match(ctx, patterns, options)
+    match = match_func(repo, ctx, patterns, options)
     ctx.status(clean=True, ignored=True, unknown=True)
     files = []
     for file_list in [ctx.clean(), ctx.modified(), ctx.added()]:
