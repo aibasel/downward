@@ -18,6 +18,10 @@ namespace cegar_heuristic {
 AbstractState::AbstractState(string s) {
     assert(!g_variable_domain.empty());
     values.resize(g_variable_domain.size(), set<int>());
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        for (int value = 0; value < g_variable_domain[var]; ++value)
+            values[var].insert(value);
+    }
     origin = 0;
 
     // Construct state from string s of the form "<0={0,1}>".
@@ -87,15 +91,8 @@ bool AbstractState::operator!=(const AbstractState &other) const {
     return !(*this == other);
 }
 
-set<int> AbstractState::get_values(int var) const {
-    if (values[var].empty()) {
-        set<int> vals;
-        for (int i = 0; i < g_variable_domain[var]; ++i)
-            vals.insert(i);
-        return vals;
-    } else {
-        return values[var];
-    }
+const Domain &AbstractState::get_values(int var) const {
+    return values[var];
 }
 
 void AbstractState::set_value(int var, int value) {
