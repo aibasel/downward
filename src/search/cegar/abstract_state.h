@@ -47,7 +47,7 @@ public:
     FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
     std::string str() const;
-    Domain get_values(int var) const;
+    const Domain &get_values(int var) const;
     void set_value(int var, int value);
     void refine(int var, int value, AbstractState *v1, AbstractState *v2);
     bool operator==(const AbstractState &other) const;
