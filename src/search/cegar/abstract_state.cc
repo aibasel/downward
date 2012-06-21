@@ -252,7 +252,6 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
-    // TODO: Why don't we have to use dynamic memory for the arcs?
     next.push_back(Arc(op, other));
     other->prev.push_back(Arc(op, this));
 }
