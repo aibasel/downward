@@ -7,7 +7,6 @@
 #include "../state.h"
 
 namespace cegar_heuristic {
-
 class CegarHeuristic : public Heuristic {
     int max_states;
     Abstraction abstraction;

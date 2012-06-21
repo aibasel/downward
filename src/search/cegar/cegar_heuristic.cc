@@ -15,7 +15,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts) {
     int max_states = opts.get<int>("max_states");
@@ -59,7 +58,6 @@ void CegarHeuristic::initialize() {
     g_goal.clear();
     g_goal.push_back(make_pair(0, 0));
     g_goal.push_back(make_pair(0, 1));
-
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {

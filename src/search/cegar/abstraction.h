@@ -16,7 +16,6 @@
 #include <utility>
 
 namespace cegar_heuristic {
-
 const int INFINITY = numeric_limits<int>::max();
 
 enum PickStrategy {
@@ -46,7 +45,7 @@ private:
     void collect_child_states(AbstractState *parent);
 
 public:
-    explicit Abstraction(PickStrategy strategy=FIRST);
+    explicit Abstraction(PickStrategy strategy = FIRST);
 
     void refine(AbstractState *state, int var, int value);
 
@@ -65,7 +64,7 @@ public:
 
     // Only for testing.
     AbstractState *get_init() {return init; }
-    std::vector<AbstractState *> *get_abs_states() { return &abs_states; };
+    std::vector<AbstractState *> *get_abs_states() {return &abs_states; }
     void write_dot_file(int num);
 };
 }

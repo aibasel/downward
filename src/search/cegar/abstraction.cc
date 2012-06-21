@@ -19,7 +19,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 Abstraction::Abstraction(PickStrategy strategy) {
     assert(!g_operators.empty());
     pick_strategy = strategy;
@@ -197,7 +196,7 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
         for (int i = 0; i < conditions.size(); ++i) {
             cout << conditions[i].first << "=" << conditions[i].second << " ";
         }
-    cout << endl;
+        cout << endl;
     }
     int cond = -1;
     switch (pick_strategy) {
@@ -211,7 +210,7 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
         for (int i = 0; i < conditions.size(); ++i) {
             if (goal_var(conditions[i].first))
                 cond = i;
-                break;
+            break;
         }
         if (cond == -1)
             cond = g_rng.next(conditions.size());

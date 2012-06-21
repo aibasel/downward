@@ -12,7 +12,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 string int_set_to_string(set<int> myset) {
     ostringstream oss;
     oss << "{";
@@ -115,5 +114,4 @@ bool goal_var(int var) {
     }
     return false;
 }
-
 }
