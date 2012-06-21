@@ -240,13 +240,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     assert(*this != *v2);
 
     // Remove obsolete members.
-    // TODO: Correctly remove arcs, this version actually adds 4KB.
-    //cout << next.size() << " " << prev.size() << endl;
-    //next.clear();
-    //prev.clear();
-    //next.resize(0);
-    //prev.resize(0);
-
+    vector<Arc>().swap(next);
+    vector<Arc>().swap(prev);
     this->values.clear();
     delete this->origin;
 }
