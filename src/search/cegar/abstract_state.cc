@@ -302,7 +302,8 @@ bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
         if (this->get_values(var).count(value) == 0)
             return false;
         // Check if we land in the desired state.
-        if (other->get_values(var).count(value) == 0)
+        // If this == other we have already done the check above.
+        if ((this != other) && (other->get_values(var).count(value) == 0))
             return false;
         checked[var] = true;
     }
