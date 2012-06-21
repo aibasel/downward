@@ -242,7 +242,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     // Remove obsolete members.
     vector<Arc>().swap(next);
     vector<Arc>().swap(prev);
-    this->values.clear();
+    vector<Domain>().swap(this->values);
     delete this->origin;
 }
 

@@ -13,7 +13,6 @@
 #include <vector>
 
 // TODO: Check out boost dynamic bitset
-// TODO(jendrik): Clear values, next, prev for refined states.
 
 namespace cegar_heuristic {
 class AbstractState;
