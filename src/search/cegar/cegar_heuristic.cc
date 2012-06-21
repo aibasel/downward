@@ -55,9 +55,9 @@ void CegarHeuristic::initialize() {
     assert(num_states == abstraction.get_abs_states()->size());
 
     // Unreachable goal.
-    g_goal.clear();
-    g_goal.push_back(make_pair(0, 0));
-    g_goal.push_back(make_pair(0, 1));
+    //g_goal.clear();
+    //g_goal.push_back(make_pair(0, 0));
+    //g_goal.push_back(make_pair(0, 1));
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
