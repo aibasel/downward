@@ -69,9 +69,9 @@ public:
     void set_origin(Arc *orig) { delete origin; origin = orig; }
     Arc *get_origin() {return origin; }
 
-    std::vector<Arc> get_next() {return next; }
+    std::vector<Arc> &get_next() {return next; }
     std::string get_next_as_string() const;
-    std::vector<Arc> get_prev() {return prev; }
+    std::vector<Arc> &get_prev() {return prev; }
 
     // We only have a valid abstract state if it was not refined.
     bool valid() const;

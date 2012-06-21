@@ -53,7 +53,7 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
     bool debug = false;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
-        int distance = top_pair.first;
+        int &distance = top_pair.first;
         AbstractState *state = top_pair.second;
 
         int state_distance = state->get_distance();
@@ -72,7 +72,7 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
                 return true;
             }
         }
-        vector<Arc> successors = (forward) ? state->get_next() : state->get_prev();
+        vector<Arc> &successors = (forward) ? state->get_next() : state->get_prev();
         for (int i = 0; i < successors.size(); i++) {
             const Arc arc = successors[i];
             Operator *op = arc.first;
