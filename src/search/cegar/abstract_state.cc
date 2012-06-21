@@ -27,6 +27,7 @@ AbstractState::AbstractState(string s, bool init) {
                 values[var].insert(values[var].end(), value);
         }
 
+
     if (s.empty())
         return;
 

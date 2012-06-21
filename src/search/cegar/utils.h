@@ -10,7 +10,6 @@
 #include "../state.h"
 
 namespace cegar_heuristic {
-
 const bool DEBUG = false;
 
 const int UNDEFINED = -1;
