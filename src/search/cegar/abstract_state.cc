@@ -169,7 +169,6 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     v2->values = values;
 
     // In v1 var can have all of the previous values except the desired one.
-    v1->values[var] = get_values(var);
     v1->values[var].erase(value);
 
     // In v2 var can only have the desired value.
@@ -192,8 +191,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
                 u->add_arc(op, v2);
             }*/
             //TODO: Use optimized version again later.
-            bool arc1 = u->check_arc(op, v1);
-            bool arc2 = u->check_arc(op, v2);
+            bool arc1 = u->check_and_add_arc(op, v1);
+            bool arc2 = u->check_and_add_arc(op, v2);
             assert(arc1 || arc2);
         }
     }
@@ -204,10 +203,10 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             assert(*w == *this);
             // Handle former self-loops. The same loops also were in prev,
             // but they only have to be checked once.
-            bool arc1 = v1->check_arc(op, v2);
-            bool arc2 = v2->check_arc(op, v1);
-            bool arc3 = v1->check_arc(op, v1);
-            bool arc4 = v2->check_arc(op, v2);
+            bool arc1 = v1->check_and_add_arc(op, v2);
+            bool arc2 = v2->check_and_add_arc(op, v1);
+            bool arc3 = v1->check_and_add_arc(op, v1);
+            bool arc4 = v2->check_and_add_arc(op, v2);
             assert(arc1 || arc2 || arc3 || arc4);
         } else {
             w->remove_prev_arc(op, this);
@@ -218,8 +217,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
                 v2->add_arc(op, w);
             }*/
             //TODO: Use optimized version again later.
-            bool arc5 = v1->check_arc(op, w);
-            bool arc6 = v2->check_arc(op, w);
+            bool arc5 = v1->check_and_add_arc(op, w);
+            bool arc6 = v2->check_and_add_arc(op, w);
             assert(arc5 || arc6);
         }
     }
@@ -228,6 +227,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     Domain values = v1->get_values(var);
     for (Domain::iterator it = values.begin(); it != values.end(); ++it)
         children[*it] = v1;
+    assert(v1->get_values(var).size() == this->get_values(var).size() - 1);
     assert(v2->get_values(var).size() == 1);
     children[value] = v2;
     left = v1;
@@ -292,7 +292,6 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
 bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
     //if (DEBUG)
     //    cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
-    vector<Domain> new_values(g_variable_domain.size(), Domain());
     vector<bool> checked(g_variable_domain.size(), false);
     for (int i = 0; i < op->get_prevail().size(); ++i) {
         const Prevail &prevail = op->get_prevail()[i];
@@ -322,7 +321,7 @@ bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
             return false;
         checked[var] = true;
     }
-    for (int var = 0; var <= g_variable_domain.size(); ++var) {
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
         if (checked[var])
             continue;
         const Domain &vals1 = this->get_values(var);
