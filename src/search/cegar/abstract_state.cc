@@ -322,7 +322,7 @@ bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
         checked[var] = true;
     }
     for (int var = 0; var < g_variable_domain.size(); ++var) {
-        if (checked[var])
+        if (checked[var] || (this == other))
             continue;
         const Domain &vals1 = this->get_values(var);
         const Domain &vals2 = other->get_values(var);
