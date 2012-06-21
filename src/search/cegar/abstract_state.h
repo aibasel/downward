@@ -43,7 +43,7 @@ private:
     AbstractState *right;
 
 public:
-    explicit AbstractState(string s = "");
+    explicit AbstractState(string s = "", bool init = true);
     FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
     std::string str() const;
