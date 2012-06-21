@@ -289,13 +289,13 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
     return false;
 }
 
-bool AbstractState::check_and_add_arc(const Operator &op, const AbstractState &other) {
+bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
     //if (DEBUG)
     //    cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
     vector<Domain> new_values(g_variable_domain.size(), Domain());
     vector<bool> checked(g_variable_domain.size(), false);
-    for (int i = 0; i < op.get_prevail().size(); ++i) {
-        const Prevail &prevail = op.get_prevail()[i];
+    for (int i = 0; i < op->get_prevail().size(); ++i) {
+        const Prevail &prevail = op->get_prevail()[i];
         const int &var = prevail.var;
         const int &value = prevail.prev;
         // Check if operator is applicable.
@@ -303,13 +303,13 @@ bool AbstractState::check_and_add_arc(const Operator &op, const AbstractState &o
         if (this->get_values(var).count(value) == 0)
             return false;
         // Check if we land in the desired state.
-        if (other.get_values(var).count(value) == 0)
+        if (other->get_values(var).count(value) == 0)
             return false;
         checked[var] = true;
     }
-    for (int i = 0; i < op.get_pre_post().size(); ++i) {
+    for (int i = 0; i < op->get_pre_post().size(); ++i) {
         // Check if pre value is in the set of possible values.
-        const PrePost &prepost = op.get_pre_post()[i];
+        const PrePost &prepost = op->get_pre_post()[i];
         const int &var = prepost.var;
         const int &pre = prepost.pre;
         const int &post = prepost.post;
@@ -318,7 +318,7 @@ bool AbstractState::check_and_add_arc(const Operator &op, const AbstractState &o
         if ((pre != -1) && (get_values(var).count(pre) == 0))
             return false;
         // Check if we land in the desired state.
-        if (other.get_values(var).count(post) == 0)
+        if (other->get_values(var).count(post) == 0)
             return false;
         checked[var] = true;
     }
@@ -326,7 +326,7 @@ bool AbstractState::check_and_add_arc(const Operator &op, const AbstractState &o
         if (checked[var])
             continue;
         const Domain &vals1 = this->get_values(var);
-        const Domain &vals2 = other.get_values(var);
+        const Domain &vals2 = other->get_values(var);
         vector<int> both(min(vals1.size(), vals2.size()));
         vector<int>::iterator it;
         it = set_intersection(vals1.begin(), vals1.end(),
@@ -335,7 +335,7 @@ bool AbstractState::check_and_add_arc(const Operator &op, const AbstractState &o
             // Set is empty.
             return false;
     }
-    //add_arc(&op, &other);
+    add_arc(op, other);
     return true;
 }
 

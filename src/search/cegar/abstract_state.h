@@ -54,7 +54,7 @@ public:
     void add_arc(Operator *op, AbstractState *other);
     void remove_next_arc(Operator *op, AbstractState *other);
     void remove_prev_arc(Operator *op, AbstractState *other);
-    bool check_and_add_arc(const Operator &op, const AbstractState &other);
+    bool check_and_add_arc(Operator *op, AbstractState *other);
     bool check_arc(Operator *op, AbstractState *other);
     bool applicable(const Operator &op) const;
     void apply(const Operator &op, AbstractState *result) const;
