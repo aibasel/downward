@@ -48,6 +48,7 @@ AbstractState::AbstractState(string s) {
                 values[var].insert(val);
             } else {
                 iss >> var;
+                values[var].clear();
             }
         }
     }
@@ -59,7 +60,7 @@ string AbstractState::str() const {
     oss << "<";
     for (int i = 0; i < values.size(); ++i) {
         set<int> vals = values[i];
-        if (!vals.empty() && vals.size() < g_variable_domain[i]) {
+        if (vals.size() != g_variable_domain[i]) {
             oss << sep << i << "=" << int_set_to_string(vals);
             sep = ",";
         }
