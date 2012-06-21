@@ -15,20 +15,23 @@
 using namespace std;
 
 namespace cegar_heuristic {
-AbstractState::AbstractState(string s) {
+AbstractState::AbstractState(string s, bool init) {
     assert(!g_variable_domain.empty());
-    values.resize(g_variable_domain.size(), set<int>());
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
-        for (int value = 0; value < g_variable_domain[var]; ++value)
-            values[var].insert(value);
-    }
     origin = 0;
+
+    values.resize(g_variable_domain.size(), set<int>());
+
+    if (init)
+        for (int var = 0; var < g_variable_domain.size(); ++var) {
+            for (int value = 0; value < g_variable_domain[var]; ++value)
+                values[var].insert(values[var].end(), value);
+        }
 
     if (s.empty())
         return;
 
     // Construct state from string s of the form "<0={0,1}>".
-    istringstream iss(s, istringstream::in);
+    istringstream iss(s);
     char next;
     int var;
     int val;
@@ -282,7 +285,7 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
     //    cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
     if (!applicable(*op))
         return false;
-    AbstractState result;
+    AbstractState result = AbstractState("", false);
     apply(*op, &result);
     if (result.agrees_with(*other)) {
         add_arc(op, other);
@@ -296,8 +299,8 @@ bool AbstractState::applicable(const Operator &op) const {
     get_prevail_and_preconditions(op, &preconditions);
     for (int i = 0; i < preconditions.size(); ++i) {
         // Check if precondition value is in the set of possible values.
-        int var = preconditions[i].first;
-        int value = preconditions[i].second;
+        int &var = preconditions[i].first;
+        int &value = preconditions[i].second;
         // Only check value if it isn't -1.
         if ((value != -1) && (get_values(var).count(value) == 0))
             return false;
@@ -310,13 +313,13 @@ void AbstractState::apply(const Operator &op, AbstractState *result) const {
     result->values = this->values;
     // We don't copy the arcs, because we don't need them.
     for (int i = 0; i < op.get_prevail().size(); ++i) {
-        Prevail prevail = op.get_prevail()[i];
+        const Prevail &prevail = op.get_prevail()[i];
         // Check if prevail value is in the set of possible values.
         result->set_value(prevail.var, prevail.prev);
     }
     for (int i = 0; i < op.get_pre_post().size(); ++i) {
         // Check if pre value is in the set of possible values.
-        PrePost prepost = op.get_pre_post()[i];
+        const PrePost &prepost = op.get_pre_post()[i];
         result->set_value(prepost.var, prepost.post);
     }
 }
@@ -327,8 +330,8 @@ bool AbstractState::agrees_with(const AbstractState &other) const {
     for (int i = 0; i < g_variable_domain.size(); ++i) {
         vector<int> both(g_variable_domain[i]);
         vector<int>::iterator it;
-        set<int> vals1 = this->get_values(i);
-        set<int> vals2 = other.get_values(i);
+        const Domain &vals1 = this->get_values(i);
+        const Domain &vals2 = other.get_values(i);
         it = set_intersection(vals1.begin(), vals1.end(),
                               vals2.begin(), vals2.end(), both.begin());
         if (it == both.begin())
