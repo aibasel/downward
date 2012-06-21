@@ -35,7 +35,7 @@ void CegarHeuristic::initialize() {
     bool success = false;
     int num_states;
     for (num_states = 1; num_states < max_states; ++num_states) {
-        abstraction.write_dot_file(num_states);
+        //abstraction.write_dot_file(num_states);
         if (num_states % 100 == 0)
             cout << "Abstract states: " << num_states << "/" << max_states << endl;
         bool solution_found = abstraction.find_solution();

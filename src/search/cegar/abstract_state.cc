@@ -24,6 +24,9 @@ AbstractState::AbstractState(string s) {
     }
     origin = 0;
 
+    if (s.empty())
+        return;
+
     // Construct state from string s of the form "<0={0,1}>".
     istringstream iss(s, istringstream::in);
     char next;
@@ -365,7 +368,7 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
 bool AbstractState::goal_reached() const {
     assert(!g_goal.empty());
     for (int i = 0; i < g_goal.size(); ++i) {
-        if (get_values(g_goal[i].first).count(g_goal[i].second) == 0) {
+        if (values[g_goal[i].first].count(g_goal[i].second) == 0) {
             return false;
         }
     }
