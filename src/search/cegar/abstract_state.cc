@@ -289,6 +289,56 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
     return false;
 }
 
+bool AbstractState::check_and_add_arc(const Operator &op, const AbstractState &other) {
+    //if (DEBUG)
+    //    cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
+    vector<Domain> new_values(g_variable_domain.size(), Domain());
+    vector<bool> checked(g_variable_domain.size(), false);
+    for (int i = 0; i < op.get_prevail().size(); ++i) {
+        const Prevail &prevail = op.get_prevail()[i];
+        const int &var = prevail.var;
+        const int &value = prevail.prev;
+        // Check if operator is applicable.
+        assert(value != -1);
+        if (this->get_values(var).count(value) == 0)
+            return false;
+        // Check if we land in the desired state.
+        if (other.get_values(var).count(value) == 0)
+            return false;
+        checked[var] = true;
+    }
+    for (int i = 0; i < op.get_pre_post().size(); ++i) {
+        // Check if pre value is in the set of possible values.
+        const PrePost &prepost = op.get_pre_post()[i];
+        const int &var = prepost.var;
+        const int &pre = prepost.pre;
+        const int &post = prepost.post;
+        assert(!checked[var]);
+        // Check if operator is applicable.
+        if ((pre != -1) && (get_values(var).count(pre) == 0))
+            return false;
+        // Check if we land in the desired state.
+        if (other.get_values(var).count(post) == 0)
+            return false;
+        checked[var] = true;
+    }
+    for (int var = 0; var <= g_variable_domain.size(); ++var) {
+        if (checked[var])
+            continue;
+        const Domain &vals1 = this->get_values(var);
+        const Domain &vals2 = other.get_values(var);
+        vector<int> both(min(vals1.size(), vals2.size()));
+        vector<int>::iterator it;
+        it = set_intersection(vals1.begin(), vals1.end(),
+                              vals2.begin(), vals2.end(), both.begin());
+        if (it == both.begin())
+            // Set is empty.
+            return false;
+    }
+    //add_arc(&op, &other);
+    return true;
+}
+
 bool AbstractState::applicable(const Operator &op) const {
     vector<pair<int, int> > preconditions;
     get_prevail_and_preconditions(op, &preconditions);
@@ -306,14 +356,11 @@ bool AbstractState::applicable(const Operator &op) const {
 void AbstractState::apply(const Operator &op, AbstractState *result) const {
     assert(applicable(op));
     result->values = this->values;
-    // We don't copy the arcs, because we don't need them.
     for (int i = 0; i < op.get_prevail().size(); ++i) {
         const Prevail &prevail = op.get_prevail()[i];
-        // Check if prevail value is in the set of possible values.
         result->set_value(prevail.var, prevail.prev);
     }
     for (int i = 0; i < op.get_pre_post().size(); ++i) {
-        // Check if pre value is in the set of possible values.
         const PrePost &prepost = op.get_pre_post()[i];
         result->set_value(prepost.var, prepost.post);
     }
