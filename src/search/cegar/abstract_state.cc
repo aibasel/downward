@@ -184,16 +184,11 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             assert(*u != *this);
             u->remove_next_arc(op, this);
             // If the first check returns false, the second arc has to be added.
-            /*
-            if (u->check_arc(op, v1)) {
-                u->check_arc(op, v2);
+            if (u->check_and_add_arc(op, v1)) {
+                u->check_and_add_arc(op, v2);
             } else {
                 u->add_arc(op, v2);
-            }*/
-            //TODO: Use optimized version again later.
-            bool arc1 = u->check_and_add_arc(op, v1);
-            bool arc2 = u->check_and_add_arc(op, v2);
-            assert(arc1 || arc2);
+            }
         }
     }
     for (int i = 0; i < next.size(); ++i) {
@@ -203,23 +198,18 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             assert(*w == *this);
             // Handle former self-loops. The same loops also were in prev,
             // but they only have to be checked once.
-            bool arc1 = v1->check_and_add_arc(op, v2);
-            bool arc2 = v2->check_and_add_arc(op, v1);
-            bool arc3 = v1->check_and_add_arc(op, v1);
-            bool arc4 = v2->check_and_add_arc(op, v2);
-            assert(arc1 || arc2 || arc3 || arc4);
+            v1->check_and_add_arc(op, v2);
+            v2->check_and_add_arc(op, v1);
+            v1->check_and_add_arc(op, v1);
+            v2->check_and_add_arc(op, v2);
         } else {
             w->remove_prev_arc(op, this);
             // If the first check returns false, the second arc has to be added.
-            /*if (v1->check_arc(op, w)) {
-                v2->check_arc(op, w);
+            if (v1->check_and_add_arc(op, w)) {
+                v2->check_and_add_arc(op, w);
             } else {
                 v2->add_arc(op, w);
-            }*/
-            //TODO: Use optimized version again later.
-            bool arc5 = v1->check_and_add_arc(op, w);
-            bool arc6 = v2->check_and_add_arc(op, w);
-            assert(arc5 || arc6);
+            }
         }
     }
     // Save the refinement hierarchy.
