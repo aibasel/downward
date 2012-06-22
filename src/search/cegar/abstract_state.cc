@@ -327,12 +327,21 @@ bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
             continue;
         const Domain &vals1 = this->get_values(var);
         const Domain &vals2 = other->get_values(var);
-        vector<int> both(min(vals1.size(), vals2.size()));
-        vector<int>::iterator it;
-        it = set_intersection(vals1.begin(), vals1.end(),
-                              vals2.begin(), vals2.end(), both.begin());
-        if (it == both.begin())
-            // Set is empty.
+        // TODO: Move to utils.cc
+        Domain::iterator i = vals1.begin();
+        Domain::iterator j = vals2.begin();
+        bool has_elements = false;
+        while ((i != vals1.end() && j != vals2.end())) {
+            if (*i == *j) {
+                has_elements = true;
+                break;
+            } else if (*i < *j) {
+                ++i;
+            } else {
+                ++j;
+            }
+        }
+        if (!has_elements)
             return false;
     }
     add_arc(op, other);
