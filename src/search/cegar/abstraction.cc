@@ -228,15 +228,17 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
 void Abstraction::calculate_costs() {
     HeapQueue<AbstractState *> queue;
     collect_states();
+    int num_goals = 0;
     for (int i = 0; i < abs_states.size(); ++i) {
         if (abs_states[i]->goal_reached()) {
             abs_states[i]->set_distance(0);
             queue.push(0, abs_states[i]);
-            cout << "GOAL: " << abs_states[i]->str() << endl;
+            ++num_goals;
         } else {
             abs_states[i]->set_distance(INFINITY);
         }
     }
+    assert(num_goals == 1);
     dijkstra_search(queue, false);
 }
 
