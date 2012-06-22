@@ -192,8 +192,6 @@ TEST(CegarTest, applicable) {
 
 TEST(CegarTest, apply) {
     init_test();
-    // Check that this variable doesn't appear in the resulting state.
-    g_variable_domain.push_back(2);
 
     // Operator: <0=0, 1=0 --> 1=1>
     Operator op = make_op1();
