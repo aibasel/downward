@@ -27,6 +27,7 @@ Abstraction::Abstraction(PickStrategy strategy) {
         single->add_arc(&g_operators[i], single);
     }
     init = single;
+    goal = single;
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -46,6 +47,16 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
         if (DEBUG)
             cout << "Using new init state: " << init->str() << endl;
     }
+    if (state == goal) {
+        if (v1->is_abstraction_of_goal()) {
+            goal = v1;
+        } else {
+            assert(v2->is_abstraction_of_goal());
+            goal = v2;
+        }
+        if (DEBUG)
+            cout << "Using new goal state: " << goal->str() << endl;
+    }
 }
 
 bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) {
@@ -63,13 +74,11 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
         if (state_distance < distance) {
             continue;
         }
-        if (forward) {
-            if (state->goal_reached()) {
-                if (debug)
-                    cout << "GOAL REACHED" << endl;
-                extract_solution(*state);
-                return true;
-            }
+        if (forward && (state == goal)) {
+            if (debug)
+                cout << "GOAL REACHED" << endl;
+            extract_solution(*state);
+            return true;
         }
         vector<Arc> &successors = (forward) ? state->get_next() : state->get_prev();
         for (int i = 0; i < successors.size(); i++) {
@@ -230,7 +239,7 @@ void Abstraction::calculate_costs() {
     collect_states();
     int num_goals = 0;
     for (int i = 0; i < abs_states.size(); ++i) {
-        if (abs_states[i]->goal_reached()) {
+        if (abs_states[i] == goal) {
             abs_states[i]->set_distance(0);
             queue.push(0, abs_states[i]);
             ++num_goals;
@@ -288,9 +297,9 @@ void Abstraction::write_dot_file(int num) {
             dotfile << current_state->str() << " -> " << next_state->str()
                     << " [label=\"" << op->get_name() << "\"];" << endl;
         }
-        if (current_state->is_abstraction_of(*g_initial_state)) {
+        if (current_state == init) {
             dotfile << current_state->str() << " [color=green];" << endl;
-        } else if (current_state->goal_reached()) {
+        } else if (current_state == goal) {
             dotfile << current_state->str() << " [color=red];" << endl;
         }
     }

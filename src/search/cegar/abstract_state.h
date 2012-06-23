@@ -63,7 +63,7 @@ public:
     void get_unmet_conditions(const AbstractState &desired, vector<pair<int, int> > *conditions) const;
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
-    bool goal_reached() const;
+    bool is_abstraction_of_goal() const;
 
     void set_distance(int dist) {distance = dist; }
     int get_distance() {return distance; }

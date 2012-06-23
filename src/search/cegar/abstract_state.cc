@@ -409,7 +409,7 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
     return true;
 }
 
-bool AbstractState::goal_reached() const {
+bool AbstractState::is_abstraction_of_goal() const {
     assert(!g_goal.empty());
     for (int i = 0; i < g_goal.size(); ++i) {
         if (values[g_goal[i].first].count(g_goal[i].second) == 0) {
