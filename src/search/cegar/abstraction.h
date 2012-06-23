@@ -29,6 +29,7 @@ private:
     std::vector<AbstractState *> abs_states;
 
     AbstractState *init;
+    AbstractState *goal;
     std::deque<AbstractState *> solution_states;
     std::deque<Operator *> solution_ops;
 
