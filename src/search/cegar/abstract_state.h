@@ -13,7 +13,6 @@
 #include <vector>
 
 // TODO: Check out boost dynamic bitset
-// TODO: Save if abstract state is a goal state to speed up dijkstra.
 
 namespace cegar_heuristic {
 class AbstractState;
