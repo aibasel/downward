@@ -73,11 +73,11 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
         }
         vector<Arc> &successors = (forward) ? state->get_next() : state->get_prev();
         for (int i = 0; i < successors.size(); i++) {
-            const Arc arc = successors[i];
+            const Arc &arc = successors[i];
             Operator *op = arc.first;
             AbstractState *successor = arc.second;
 
-            int cost = op->get_cost();
+            const int &cost = op->get_cost();
             // Prevent overflow.
             int successor_cost = (state_distance == INFINITY) ? INFINITY : state_distance + cost;
             if (debug)
@@ -238,6 +238,8 @@ void Abstraction::calculate_costs() {
             abs_states[i]->set_distance(INFINITY);
         }
     }
+    // There can only be a single goal state, because we only refine the goal
+    // state for vars that appear in it.
     assert(num_goals == 1);
     dijkstra_search(queue, false);
 }
