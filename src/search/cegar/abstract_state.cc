@@ -242,7 +242,16 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         }
     }
     //cout << "ARCS: " << u_v1 << u_v2 << v1_w << v2_w << " " << (u_v1 && v1_w) << (u_v2 && v2_w) << endl;
-    if ((u_v1 && v1_w) || (u_v2 && v2_w)) {
+    AbstractState *bridge_state = 0;
+    if (u_v2 && v2_w) {
+        // Prefer going over v2. // TODO add option?
+        bridge_state = v2;
+    } else if (u_v1 && v1_w) {
+        bridge_state = v1;
+    }
+    if (bridge_state) {
+        //origin->second->set_next_arc(new Arc(op_in, v1))
+        //v1->set_next_arc(new Arc(op_in, w))
         ++same;
     } else {
         ++different;
