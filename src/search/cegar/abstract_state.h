@@ -19,6 +19,9 @@ class AbstractState;
 typedef pair<Operator *, AbstractState *> Arc;
 typedef std::set<int> Domain;
 
+extern int same;
+extern int different;
+
 class AbstractState {
 private:
     // Possible values of each variable in this state.
@@ -32,7 +35,8 @@ private:
 
     // For Dijkstra search.
     int distance;
-    Arc *origin;
+    Arc *origin;  //TODO: Rename to prev_arc
+    Arc *next_arc;
 
     // Refinement hierarchy. Save the variable for which this state was refined
     // and the resulting abstract child states.
@@ -69,6 +73,9 @@ public:
     void set_origin(Arc *orig) {delete origin;
                                 origin = orig; }
     Arc *get_origin() {return origin; }
+    void set_next_arc(Arc *next) {delete next_arc;
+                                  next_arc = next; }
+    Arc *get_next_arc() {return next_arc; }
 
     std::vector<Arc> &get_next() {return next; }
     std::string get_next_as_string() const;

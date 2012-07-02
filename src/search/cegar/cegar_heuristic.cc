@@ -48,6 +48,7 @@ void CegarHeuristic::initialize() {
     cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
     cout << "Abstract states: " << num_states << endl;
+    cout << "SAME: " << same << " DIFFERENT: " << different << endl;
     if (!success)
         assert(num_states == max_states);
     abstraction.calculate_costs();
