@@ -130,6 +130,7 @@ void Abstraction::extract_solution(AbstractState &goal) {
         solution_states.push_front(prev);
         solution_ops.push_front(op);
         assert(prev != current);
+        prev->set_next_arc(new Arc(op, current));
         current = prev;
     }
 }

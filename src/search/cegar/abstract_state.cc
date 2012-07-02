@@ -15,9 +15,13 @@
 using namespace std;
 
 namespace cegar_heuristic {
+int same = 0;
+int different = 0;
+
 AbstractState::AbstractState(string s, bool init) {
     assert(!g_variable_domain.empty());
     origin = 0;
+    next_arc = 0;
 
     values.resize(g_variable_domain.size(), set<int>());
 
@@ -174,9 +178,20 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     // In v2 var can only have the desired value.
     v2->set_value(var, value);
 
+    Operator *op_in = 0;
+    if (origin)
+        op_in = origin->first;
+    Operator *op_out = 0;
+    if (next_arc)
+        op_out = next_arc->first;
+    bool u_v1 = false;
+    bool u_v2 = false;
+    bool v1_w = false;
+    bool v2_w = false;
+
     // Before: u --> this=v --> w
     //  ==>
-    // v is split into v1 and v2
+    // After:  v is split into v1 and v2
     for (int i = 0; i < prev.size(); ++i) {
         Operator *op = prev[i].first;
         AbstractState *u = prev[i].second;
@@ -185,9 +200,16 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             u->remove_next_arc(op, this);
             // If the first check returns false, the second arc has to be added.
             if (u->check_and_add_arc(op, v1)) {
-                u->check_and_add_arc(op, v2);
+                bool added = u->check_and_add_arc(op, v2);
+                if (op == op_in) {
+                    u_v1 = true;
+                    if (added)
+                        u_v2 = true;
+                }
             } else {
                 u->add_arc(op, v2);
+                if (op == op_in)
+                    u_v2 = true;
             }
         }
     }
@@ -206,11 +228,24 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             w->remove_prev_arc(op, this);
             // If the first check returns false, the second arc has to be added.
             if (v1->check_and_add_arc(op, w)) {
-                v2->check_and_add_arc(op, w);
+                bool added = v2->check_and_add_arc(op, w);
+                if (op == op_out) {
+                    v1_w = true;
+                    if (added)
+                        v2_w = true;
+                }
             } else {
                 v2->add_arc(op, w);
+                if (op == op_out)
+                    v2_w = true;
             }
         }
+    }
+    //cout << "ARCS: " << u_v1 << u_v2 << v1_w << v2_w << " " << (u_v1 && v1_w) << (u_v2 && v2_w) << endl;
+    if ((u_v1 && v1_w) || (u_v2 && v2_w)) {
+        ++same;
+    } else {
+        ++different;
     }
     // Save the refinement hierarchy.
     this->var = var;
