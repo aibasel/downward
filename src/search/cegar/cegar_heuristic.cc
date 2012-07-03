@@ -31,14 +31,18 @@ CegarHeuristic::~CegarHeuristic() {
 void CegarHeuristic::initialize() {
     cout << "Peak memory before refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Initializing cegar heuristic..." << endl;
+    int saved_dijkstras = 0;
     bool success = false;
     int num_states = abstraction.get_num_states();
     while (num_states < max_states) {
         //abstraction.write_dot_file(num_states);
         if (num_states % 100 == 0)
             cout << "Abstract states: " << num_states << "/" << max_states << endl;
-        if (!abstraction.can_reuse_last_solution())
+        if (!abstraction.can_reuse_last_solution()) {
             abstraction.find_solution();
+        } else {
+            ++saved_dijkstras;
+        }
         //if (DEBUG)
         //    cout << "SOLUTION: " << abstraction.get_solution_string() << endl;
         success = abstraction.check_solution();
@@ -50,8 +54,8 @@ void CegarHeuristic::initialize() {
     cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
     cout << "Abstract states: " << num_states << endl;
-    cout << "SAME: " << same << " DIFFERENT: " << different << endl;
-    cout << "Dijkstra searches: " << abstraction.dijkstra_searches << endl;
+    cout << "SAME: " << same << " DIFFERENT: " << different << " DOUBLES: " << doubles << endl;
+    cout << "Saved Dijkstra searches: " << saved_dijkstras << endl;
     if (!success)
         assert(num_states == max_states);
     abstraction.calculate_costs();
