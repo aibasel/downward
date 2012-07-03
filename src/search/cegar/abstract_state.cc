@@ -163,7 +163,7 @@ const {
     }
 }
 
-void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2) {
+AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2) {
     // We can only refine for vars that can have at least two values.
     assert(get_values(var).size() >= 2);
     // The desired value has to be in the set of possible values.
@@ -235,21 +235,6 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             }
         }
     }
-    //cout << "ARCS: " << u_v1 << u_v2 << v1_w << v2_w << " " << (u_v1 && v1_w) << (u_v2 && v2_w) << endl;
-    AbstractState *bridge_state = 0;
-    if (u_v2 && v2_w) {
-        // Prefer going over v2. // TODO add option?
-        bridge_state = v2;
-    } else if (u_v1 && v1_w) {
-        bridge_state = v1;
-    }
-    if (bridge_state) {
-        state_in->set_next_arc(new Arc(op_in, bridge_state));
-        bridge_state->set_next_arc(new Arc(op_out, state_out));
-        ++same;
-    } else {
-        ++different;
-    }
     // Save the refinement hierarchy.
     this->var = var;
     Domain values = v1->get_values(var);
@@ -272,6 +257,22 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     vector<Arc>().swap(prev);
     vector<Domain>().swap(this->values);
     delete this->origin;
+
+    AbstractState *bridge_state = 0;
+    if (u_v2 && v2_w) {
+        // Prefer going over v2. // TODO add option?
+        bridge_state = v2;
+    } else if (u_v1 && v1_w) {
+        bridge_state = v1;
+    }
+    if (bridge_state) {
+        state_in->set_next_arc(new Arc(op_in, bridge_state));
+        bridge_state->set_next_arc(new Arc(op_out, state_out));
+        ++same;
+    } else {
+        ++different;
+    }
+    return bridge_state;
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {

@@ -52,7 +52,9 @@ public:
     std::string str() const;
     const Domain &get_values(int var) const;
     void set_value(int var, int value);
-    void refine(int var, int value, AbstractState *v1, AbstractState *v2);
+    // Return a pointer to the state where the next solution check should start.
+    // Return 0 if the search has to be started from the beginning.
+    AbstractState *refine(int var, int value, AbstractState *v1, AbstractState *v2);
     bool operator==(const AbstractState &other) const;
     bool operator!=(const AbstractState &other) const;
     void add_arc(Operator *op, AbstractState *other);
