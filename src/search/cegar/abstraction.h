@@ -64,6 +64,7 @@ public:
     bool find_solution();
 
     std::string get_solution_string() const;
+    bool can_reuse_last_solution() const {return start_solution_check_ptr; }
     bool check_solution();
 
     void calculate_costs();
@@ -74,6 +75,7 @@ public:
     AbstractState *get_init() {return init; }
     std::vector<AbstractState *> *get_abs_states() {return &abs_states; }
     void write_dot_file(int num);
+    int dijkstra_searches;
 };
 }
 

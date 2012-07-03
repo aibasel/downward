@@ -31,6 +31,7 @@ Abstraction::Abstraction(PickStrategy strategy) :
     goal = single;
     num_states = 1;
     start_solution_check_ptr = 0;
+    dijkstra_searches = 0;
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -65,6 +66,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
 
 bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) {
     bool debug = false;
+    ++dijkstra_searches;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
         int &distance = top_pair.first;
