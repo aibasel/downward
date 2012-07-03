@@ -179,11 +179,17 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     v2->set_value(var, value);
 
     Operator *op_in = 0;
-    if (origin)
+    AbstractState *state_in = 0;
+    if (origin) {
         op_in = origin->first;
+        state_in = origin->second;
+    }
     Operator *op_out = 0;
-    if (next_arc)
+    AbstractState *state_out = 0;
+    if (next_arc) {
         op_out = next_arc->first;
+        state_out = next_arc->second;
+    }
     bool u_v1 = false;
     bool u_v2 = false;
     bool v1_w = false;
@@ -201,15 +207,13 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             // If the first check returns false, the second arc has to be added.
             if (u->check_and_add_arc(op, v1)) {
                 bool added = u->check_and_add_arc(op, v2);
-                if (op == op_in) {
+                if (op == op_in && u == state_in) {
                     u_v1 = true;
-                    if (added)
-                        u_v2 = true;
+                    u_v2 |= added;
                 }
             } else {
                 u->add_arc(op, v2);
-                if (op == op_in)
-                    u_v2 = true;
+                u_v2 |= (op == op_in && u == state_in);
             }
         }
     }
@@ -229,15 +233,13 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             // If the first check returns false, the second arc has to be added.
             if (v1->check_and_add_arc(op, w)) {
                 bool added = v2->check_and_add_arc(op, w);
-                if (op == op_out) {
+                if (op == op_out && w == state_out) {
                     v1_w = true;
-                    if (added)
-                        v2_w = true;
+                    v2_w |= added;
                 }
             } else {
                 v2->add_arc(op, w);
-                if (op == op_out)
-                    v2_w = true;
+                v2_w |= (op == op_out && w == state_out);
             }
         }
     }
@@ -250,7 +252,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         bridge_state = v1;
     }
     if (bridge_state) {
-        //origin->second->set_next_arc(new Arc(op_in, v1))
+        //state_in->set_next_arc(new Arc(op_in, bridge_state));
         //v1->set_next_arc(new Arc(op_in, w))
         ++same;
     } else {
