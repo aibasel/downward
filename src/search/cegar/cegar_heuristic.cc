@@ -32,8 +32,8 @@ void CegarHeuristic::initialize() {
     cout << "Peak memory before refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Initializing cegar heuristic..." << endl;
     bool success = false;
-    int num_states;
-    for (num_states = 1; num_states < max_states; ++num_states) {
+    int num_states = abstraction.get_num_states();
+    while (num_states < max_states) {
         //abstraction.write_dot_file(num_states);
         if (num_states % 100 == 0)
             cout << "Abstract states: " << num_states << "/" << max_states << endl;
@@ -41,6 +41,7 @@ void CegarHeuristic::initialize() {
         //if (DEBUG)
         //    cout << "SOLUTION: " << abstraction.get_solution_string() << endl;
         success = abstraction.check_solution();
+        num_states = abstraction.get_num_states();
         if (success)
             break;
     }
