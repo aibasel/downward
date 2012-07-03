@@ -119,6 +119,7 @@ bool Abstraction::find_solution() {
 }
 
 void Abstraction::extract_solution(AbstractState &goal) {
+    // TODO: Remove those lists.
     solution_states.clear();
     solution_ops.clear();
 
