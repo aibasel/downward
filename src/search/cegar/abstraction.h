@@ -32,6 +32,10 @@ private:
     AbstractState *goal;
     std::deque<AbstractState *> solution_states;
     std::deque<Operator *> solution_ops;
+    AbstractState *start_solution_check_ptr;
+    State last_checked_conc_state;
+
+    void set_last_checked_conc_state(const State &state) {last_checked_conc_state = state; }
 
     PickStrategy pick_strategy;
     void pick_condition(const std::vector<std::pair<int, int> > &conditions,
