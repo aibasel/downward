@@ -38,7 +38,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
         cout << "REFINE " << state->str() << " for " << var << "=" << value << " (" << g_variable_name[var] << ")" << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
-    state->refine(var, value, v1, v2);
+    start_solution_check_ptr = state->refine(var, value, v1, v2);
     if (state == init) {
         if (v1->is_abstraction_of(*g_initial_state)) {
             init = v1;
@@ -159,13 +159,17 @@ bool Abstraction::check_solution() {
     assert(solution_states.size() == solution_ops.size() + 1);
     State conc_state = *g_initial_state;
     AbstractState *abs_state = init;
+    cout << "START: " << start_solution_check_ptr << endl;
     if (start_solution_check_ptr) {
         abs_state = start_solution_check_ptr;
         conc_state = last_checked_conc_state;
     }
+    //cout << "ABS: " << abs_state->str() << " CONC: " << endl;
+    //conc_state.dump();
+    assert(abs_state->is_abstraction_of(conc_state));
+
     AbstractState *prev_state = 0;
     Operator *prev_op = 0;
-    State *prev_conc_state = 0;
     while (true) {
         //if (DEBUG)
         //    cout << "Checking state " << i << ": " << abs_state->str() << endl;
@@ -174,37 +178,37 @@ bool Abstraction::check_solution() {
         Operator *next_op = (next_arc) ? next_arc->first : 0;
         vector<pair<int, int> > unmet_cond;
         int var, value;
+        //cout << "ABS: " << abs_state->str() << " CONC: " << endl;
+        //conc_state.dump();
         if (!abs_state->is_abstraction_of(conc_state)) {
             // Get unmet conditions in previous state and refine it.
             assert(prev_state);
-            assert(prev_conc_state);
             assert(prev_op);
             AbstractState desired_prev_state;
             abs_state->regress(*prev_op, &desired_prev_state);
             prev_state->get_unmet_conditions(desired_prev_state, &unmet_cond);
             pick_condition(unmet_cond, &var, &value);
-            set_last_checked_conc_state(*prev_conc_state);
             refine(prev_state, var, value);
+            start_solution_check_ptr = 0;
             return false;
         } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
             pick_condition(unmet_cond, &var, &value);
-            set_last_checked_conc_state(conc_state);
             refine(abs_state, var, value);
             return false;
         } else if (next_op) {
             // Go to the next state.
             prev_state = abs_state;
-            prev_conc_state = &conc_state;
+            last_checked_conc_state = State(conc_state);
             prev_op = next_op;
             conc_state = State(conc_state, *next_op);
             abs_state = next_arc->second;
         } else if (!test_goal(conc_state)) {
             // Get unmet goals and refine the last state.
+            assert(!abs_state->get_next_arc());
             get_unmet_goal_conditions(conc_state, &unmet_cond);
             pick_condition(unmet_cond, &var, &value);
-            set_last_checked_conc_state(conc_state);
             refine(abs_state, var, value);
             return false;
         } else {
