@@ -259,20 +259,24 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     delete this->origin;
 
     AbstractState *bridge_state = 0;
-    if (u_v2 && v2_w) {
+    if ((u_v2 && v2_w) || (u_v2 && !state_out) || (v2_w && !state_in)) {
         // Prefer going over v2. // TODO add option?
         bridge_state = v2;
-    } else if (u_v1 && v1_w) {
+    } else if ((u_v1 && v1_w) || (u_v1 && !state_out) || (v1_w && !state_in)) {
         bridge_state = v1;
     }
     if (bridge_state) {
-        state_in->set_next_arc(new Arc(op_in, bridge_state));
-        bridge_state->set_next_arc(new Arc(op_out, state_out));
+        if (state_in)
+            state_in->set_next_arc(new Arc(op_in, bridge_state));
+        if (state_out)
+            bridge_state->set_next_arc(new Arc(op_out, state_out));
         ++same;
     } else {
         ++different;
     }
-    return bridge_state;
+    if (bridge_state && state_in)
+        return state_in;
+    return 0;
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
