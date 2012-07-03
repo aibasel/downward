@@ -169,6 +169,7 @@ bool Abstraction::check_solution() {
         int var, value;
         if (!abs_state->is_abstraction_of(conc_state)) {
             // Get unmet conditions in previous state and refine it.
+            assert(prev_state);
             assert(prev_op);
             AbstractState desired_prev_state;
             abs_state->regress(*prev_op, &desired_prev_state);
@@ -196,6 +197,7 @@ bool Abstraction::check_solution() {
             return false;
         } else {
             // We have reached the goal.
+            assert(!abs_state->get_next_arc());
             return true;
         }
     }
