@@ -174,6 +174,7 @@ bool Abstraction::check_solution() {
 
     AbstractState *prev_state = 0;
     Operator *prev_op = 0;
+    State prev_last_checked_conc_state = last_checked_conc_state;
     while (true) {
         //if (DEBUG)
         //    cout << "Checking state " << i << ": " << abs_state->str() << endl;
@@ -193,7 +194,17 @@ bool Abstraction::check_solution() {
             prev_state->get_unmet_conditions(desired_prev_state, &unmet_cond);
             pick_condition(unmet_cond, &var, &value);
             refine(prev_state, var, value);
-            start_solution_check_ptr = 0;
+            // Make sure we only reuse the solution if we are far enough from
+            // the initial state to have saved the correct last-checked concrete
+            // state.
+            //start_solution_check_ptr = 0;
+            if (start_solution_check_ptr) {
+                if (!(last_checked_conc_state == prev_last_checked_conc_state)) {
+                    last_checked_conc_state = prev_last_checked_conc_state;
+                } else {
+                    start_solution_check_ptr = 0;
+                }
+            }
             return false;
         } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
@@ -204,6 +215,7 @@ bool Abstraction::check_solution() {
         } else if (next_op) {
             // Go to the next state.
             prev_state = abs_state;
+            prev_last_checked_conc_state = last_checked_conc_state;
             last_checked_conc_state = State(conc_state);
             prev_op = next_op;
             conc_state = State(conc_state, *next_op);

@@ -21,6 +21,7 @@ typedef std::set<int> Domain;
 
 extern int same;
 extern int different;
+extern int doubles;
 
 class AbstractState {
 private:
