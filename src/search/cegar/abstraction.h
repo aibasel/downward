@@ -27,6 +27,7 @@ enum PickStrategy {
 class Abstraction {
 private:
     std::vector<AbstractState *> abs_states;
+    int num_states;
 
     AbstractState *init;
     AbstractState *goal;
