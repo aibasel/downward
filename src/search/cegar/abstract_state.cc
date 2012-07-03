@@ -178,22 +178,14 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     // In v2 var can only have the desired value.
     v2->set_value(var, value);
 
-    Operator *op_in = 0;
-    AbstractState *state_in = 0;
-    if (origin) {
-        op_in = origin->first;
-        state_in = origin->second;
-    }
-    Operator *op_out = 0;
-    AbstractState *state_out = 0;
-    if (next_arc) {
-        op_out = next_arc->first;
-        state_out = next_arc->second;
-    }
-    bool u_v1 = false;
-    bool u_v2 = false;
-    bool v1_w = false;
-    bool v2_w = false;
+    // Results from Dijkstra search. If  u --> v --> w  was on the
+    // shortest path and a new path  u --> v{1,2} --> w is created with the
+    // same arcs, we avoid a dijkstra computation.
+    Operator *op_in = (origin) ? origin->first : 0;
+    AbstractState *state_in = (origin) ? origin->second : 0;
+    Operator *op_out = (next_arc) ? next_arc->first : 0;
+    AbstractState *state_out = (next_arc) ? next_arc->second : 0;
+    bool u_v1 = false, u_v2 = false, v1_w = false, v2_w = false;
 
     // Before: u --> this=v --> w
     //  ==>
@@ -252,8 +244,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         bridge_state = v1;
     }
     if (bridge_state) {
-        //state_in->set_next_arc(new Arc(op_in, bridge_state));
-        //v1->set_next_arc(new Arc(op_in, w))
+        state_in->set_next_arc(new Arc(op_in, bridge_state));
+        bridge_state->set_next_arc(new Arc(op_out, state_out));
         ++same;
     } else {
         ++different;
