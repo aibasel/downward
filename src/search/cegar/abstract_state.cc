@@ -270,12 +270,13 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
             state_in->set_next_arc(new Arc(op_in, bridge_state));
         if (state_out)
             bridge_state->set_next_arc(new Arc(op_out, state_out));
-        ++same;
-    } else {
-        ++different;
+
     }
-    if (bridge_state && state_in)
+    if (bridge_state && state_in) {
+        ++same;
         return state_in;
+    }
+    ++different;
     return 0;
 }
 
