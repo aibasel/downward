@@ -29,6 +29,7 @@ Abstraction::Abstraction(PickStrategy strategy) :
     }
     init = single;
     goal = single;
+    num_states = 1;
     start_solution_check_ptr = 0;
 }
 
@@ -39,6 +40,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
     start_solution_check_ptr = state->refine(var, value, v1, v2);
+    ++num_states;
     if (state == init) {
         if (v1->is_abstraction_of(*g_initial_state)) {
             init = v1;
@@ -159,7 +161,7 @@ bool Abstraction::check_solution() {
     assert(solution_states.size() == solution_ops.size() + 1);
     State conc_state = *g_initial_state;
     AbstractState *abs_state = init;
-    cout << "START: " << start_solution_check_ptr << endl;
+    //cout << "START: " << start_solution_check_ptr << endl;
     if (start_solution_check_ptr) {
         abs_state = start_solution_check_ptr;
         conc_state = last_checked_conc_state;
