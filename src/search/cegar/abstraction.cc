@@ -155,33 +155,38 @@ bool Abstraction::check_solution() {
     assert(!solution_states.empty());
     assert(solution_states.size() == solution_ops.size() + 1);
     State conc_state = *g_initial_state;
-    for (int i = 0; i < solution_states.size(); ++i) {
-        AbstractState *abs_state = solution_states[i];
+    AbstractState *abs_state = init;
+    AbstractState *prev_state = 0;
+    Operator *prev_op = 0;
+    while (true) {
         //if (DEBUG)
         //    cout << "Checking state " << i << ": " << abs_state->str() << endl;
-        // Set next_op to null if there is no next operator.
-        Operator *next_op = (i < solution_ops.size()) ? solution_ops[i] : 0;
+        Arc *next_arc = abs_state->get_next_arc();
+        // Set next_op to 0 if there is no next operator.
+        Operator *next_op = (next_arc) ? next_arc->first : 0;
         vector<pair<int, int> > unmet_cond;
         int var, value;
         if (!abs_state->is_abstraction_of(conc_state)) {
             // Get unmet conditions in previous state and refine it.
-            assert(i >= 1);
-            AbstractState *prev_state = solution_states[i - 1];
+            assert(prev_op);
             AbstractState desired_prev_state;
-            abs_state->regress(*solution_ops[i - 1], &desired_prev_state);
+            abs_state->regress(*prev_op, &desired_prev_state);
             prev_state->get_unmet_conditions(desired_prev_state, &unmet_cond);
             pick_condition(unmet_cond, &var, &value);
             refine(prev_state, var, value);
             return false;
         } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
-            get_unmet_preconditions(*solution_ops[i], conc_state, &unmet_cond);
+            get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
             pick_condition(unmet_cond, &var, &value);
             refine(abs_state, var, value);
             return false;
         } else if (next_op) {
-            // Go to the next concrete state.
+            // Go to the next state.
+            prev_state = abs_state;
+            prev_op = next_op;
             conc_state = State(conc_state, *next_op);
+            abs_state = next_arc->second;
         } else if (!test_goal(conc_state)) {
             // Get unmet goals and refine the last state.
             get_unmet_goal_conditions(conc_state, &unmet_cond);
