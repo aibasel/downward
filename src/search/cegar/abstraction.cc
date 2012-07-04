@@ -93,8 +93,8 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
             Operator *op = arc.first;
             AbstractState *successor = arc.second;
 
-            //if (successor == state)
-            //    continue;
+            if (successor == state)
+                continue;
 
             const int &cost = op->get_cost();
             // Prevent overflow.
