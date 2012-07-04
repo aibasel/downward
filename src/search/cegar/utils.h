@@ -15,6 +15,7 @@ const bool DEBUG = false;
 const int UNDEFINED = -1;
 
 std::string int_set_to_string(std::set<int> myset);
+bool intersection_empty(const std::set<int> &vals1, const std::set<int> &vals2);
 
 void get_prevail_and_preconditions(const Operator &op, vector<pair<int, int> > *cond);
 
