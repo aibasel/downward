@@ -355,6 +355,7 @@ bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
         const int &var = prepost.var;
         const int &pre = prepost.pre;
         const int &post = prepost.post;
+        assert(prepost.cond.empty());
         assert(!checked[var]);
         // Check if operator is applicable.
         if ((pre != -1) && (get_values(var).count(pre) == 0))
