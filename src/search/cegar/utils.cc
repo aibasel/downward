@@ -57,7 +57,6 @@ Operator create_op(const string name, vector<string> prevail, vector<string> pre
 }
 
 Operator create_op(const string desc) {
-    cout << desc << endl;
     istringstream iss("begin_operator\n" + desc + "\nend_operator");
     return Operator(iss, false);
 }
