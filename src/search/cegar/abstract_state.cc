@@ -23,6 +23,7 @@ AbstractState::AbstractState(string s, bool init) {
     assert(!g_variable_domain.empty());
     origin = 0;
     next_arc = 0;
+    min_distance = 0;
 
     values.resize(g_variable_domain.size(), set<int>());
 
@@ -31,7 +32,6 @@ AbstractState::AbstractState(string s, bool init) {
             for (int value = 0; value < g_variable_domain[var]; ++value)
                 values[var].insert(values[var].end(), value);
         }
-
 
     if (s.empty())
         return;

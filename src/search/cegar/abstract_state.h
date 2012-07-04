@@ -36,6 +36,7 @@ private:
 
     // For Dijkstra search.
     int distance;
+    int min_distance;
     Arc *origin;  //TODO: Rename to prev_arc
     Arc *next_arc;
 
@@ -73,6 +74,8 @@ public:
 
     void set_distance(int dist) {distance = dist; }
     int get_distance() {return distance; }
+    void set_min_distance(int dist) {min_distance = dist; }
+    int get_min_distance() {return min_distance; }
     void set_origin(Arc *orig) {delete origin;
                                 origin = orig; }
     Arc *get_origin() {return origin; }

@@ -33,6 +33,7 @@ Abstraction::Abstraction(PickStrategy strategy) :
     num_states = 1;
     start_solution_check_ptr = 0;
     dijkstra_searches = 0;
+    expansions = 0;
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -66,12 +67,13 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
 }
 
 bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) {
-    bool debug = false;
+    bool debug = true;
     ++dijkstra_searches;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
         int &distance = top_pair.first;
         AbstractState *state = top_pair.second;
+        ++expansions;
 
         int state_distance = state->get_distance();
         if (debug)
@@ -113,6 +115,58 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
     return false;
 }
 
+bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
+    bool debug = true;
+    while (!queue.empty()) {
+        pair<int, AbstractState *> top_pair = queue.pop();
+        int &old_f = top_pair.first;
+        AbstractState *state = top_pair.second;
+        ++expansions;
+
+        const int g = state->get_distance();
+        int new_f = g + state->get_min_distance();
+        if (debug)
+            cout << "VISIT: " << state->str() << " g:" << g << " new_f:" << new_f << " old_f:" << old_f << endl;
+        assert(new_f <= old_f);
+        //if (new_f < old_f) {
+        //    continue;
+        //}
+        if (state == goal) {
+            if (debug)
+                cout << "GOAL REACHED" << endl;
+            extract_solution(*state);
+            return true;
+        }
+        vector<Arc> &successors = state->get_next();
+        for (int i = 0; i < successors.size(); i++) {
+            const Arc &arc = successors[i];
+            Operator *op = arc.first;
+            AbstractState *successor = arc.second;
+
+            const int &cost = op->get_cost();
+            // Prevent overflow.
+            int succ_g = (g == INFINITY) ? INFINITY : g + cost;
+            // TODO: Ignore states with h = infinity?
+
+            if (debug)
+                cout << "NEXT: " << successor->str() << " " << cost << " "
+                     << succ_g << " " << successor->get_distance() << endl;
+            if (successor->get_distance() > succ_g) {
+                successor->set_distance(succ_g);
+                const int f = succ_g + successor->get_min_distance();
+                cout << "F: " << f << endl;
+                Arc *origin = new Arc(op, state);
+                successor->set_origin(origin);
+                if (debug)
+                    cout << "ORIGIN(" << successor->str() << ") = "
+                         << state->str() << " with " << op->get_name() << endl;
+                queue.push(f, successor);
+            }
+        }
+    }
+    return false;
+}
+
 bool Abstraction::find_solution() {
     HeapQueue<AbstractState *> queue;
     collect_states();
@@ -121,6 +175,10 @@ bool Abstraction::find_solution() {
     }
     init->set_distance(0);
     init->set_origin(0);
+    if (USE_ASTAR) {
+        queue.push(init->get_min_distance(), init);
+        return astar_search(queue);
+    }
     queue.push(0, init);
     return dijkstra_search(queue, true);
 }
