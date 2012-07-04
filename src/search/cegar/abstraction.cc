@@ -149,6 +149,7 @@ string Abstraction::get_solution_string() const {
         Operator *op = arc->first;
         AbstractState *next_state = arc->second;
         oss << "," << op->get_name() << "," << next_state->str();
+        current = next_state;
     }
     oss << "]";
     return oss.str();
