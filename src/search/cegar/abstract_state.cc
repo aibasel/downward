@@ -260,19 +260,22 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     delete this->origin;
 
     AbstractState *bridge_state = 0;
-    if ((u_v2 && v2_w) || (u_v2 && !state_out)) {
-        // Prefer going over v2. // TODO add option?
-        if (((u_v1 && v1_w) || (u_v1 && !state_out)))
+    // If we refine a goal state, only reuse solution if the path leads to the goal.
+    bool v1_is_bridge = ((u_v1 && v1_w) || (u_v1 && !state_out && v1->is_abstraction_of_goal()));
+    if ((u_v2 && v2_w) || (u_v2 && !state_out && v2->is_abstraction_of_goal())) {
+        // Prefer going over v2. // TODO: add option?
+        if (v1_is_bridge)
             ++doubles;
         bridge_state = v2;
-    } else if ((u_v1 && v1_w) || (u_v1 && !state_out)) {
+    } else if (v1_is_bridge) {
         bridge_state = v1;
     }
     if (bridge_state) {
-        if (state_in)
+        if (state_in) {
             state_in->set_next_arc(new Arc(op_in, bridge_state));
-        if (state_out)
-            bridge_state->set_next_arc(new Arc(op_out, state_out));
+            if (state_out)
+                bridge_state->set_next_arc(new Arc(op_out, state_out));
+        }
 
     }
     if (bridge_state) {
