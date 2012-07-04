@@ -43,7 +43,7 @@ bool intersection_empty(const set<int> &vals1, const set<int> &vals2) {
     return true;
 }
 
-Operator create_op(const string name, vector<string> prevail, vector<string> pre_post) {
+Operator create_op(const string name, vector<string> prevail, vector<string> pre_post, int cost) {
     ostringstream oss;
     // Create operator description.
     oss << name << endl << prevail.size() << endl;
@@ -52,15 +52,14 @@ Operator create_op(const string name, vector<string> prevail, vector<string> pre
     oss << pre_post.size() << endl;
     for (int i = 0; i < pre_post.size(); ++i)
         oss << pre_post[i] << endl;
-    oss << 1;
+    oss << cost;
     return create_op(oss.str());
 }
 
 Operator create_op(const string desc) {
-    string full_op_desc = "begin_operator\n" + desc + "\nend_operator";
-    istringstream iss(full_op_desc);
-    Operator op = Operator(iss, false);
-    return op;
+    cout << desc << endl;
+    istringstream iss("begin_operator\n" + desc + "\nend_operator");
+    return Operator(iss, false);
 }
 
 State *create_state(const string desc) {
