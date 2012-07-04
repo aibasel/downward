@@ -17,6 +17,7 @@
 
 namespace cegar_heuristic {
 const int INFINITY = numeric_limits<int>::max();
+const bool USE_ASTAR = true;
 
 enum PickStrategy {
     FIRST,
@@ -41,6 +42,10 @@ private:
     void pick_condition(const std::vector<std::pair<int, int> > &conditions,
                         int *var, int *value) const;
 
+    int expansions;
+    FRIEND_TEST(CegarTest, astar_search);
+    bool astar_search(HeapQueue<AbstractState *> &queue);
+    FRIEND_TEST(CegarTest, dijkstra_search);
     bool dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward);
     void extract_solution(AbstractState &goal);
 

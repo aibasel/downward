@@ -20,6 +20,14 @@ Operator make_op1() {
     return op;
 }
 
+Operator make_op(int cost) {
+    vector<string> prevail;
+    prevail.push_back("1 1");
+    vector<string> pre_post;
+    Operator op = create_op("op", prevail, pre_post, cost);
+    return op;
+}
+
 void init_test() {
     g_axiom_evaluator = new AxiomEvaluator();
     // We have to construct the variable domains.
@@ -470,5 +478,97 @@ TEST(CegarTest, initialize) {
 
     success = abstraction.check_solution();
     EXPECT_TRUE(success);
+}
+
+/*         3
+ * h=3 A ----> B h=2
+ *      \     /
+ *      4\   /5
+ *        v v
+ *     h=0 C
+ */
+TEST(CegarTest, astar_search) {
+    init_test();
+    g_use_metric = true;
+    g_goal.clear();
+    g_goal.push_back(make_pair(0, 2));
+
+    Operator op1 = make_op(3);
+    Operator op2 = make_op(4);
+    ASSERT_EQ(4, op2.get_cost());
+    Operator op3 = make_op(5);
+
+    Abstraction abs = Abstraction();
+
+    AbstractState a = AbstractState("<0={0}>");
+    AbstractState b = AbstractState("<0={1}>");
+    AbstractState c = AbstractState("<0={2}>");
+
+    a.add_arc(&op2, &c);
+    a.add_arc(&op1, &b);
+    b.add_arc(&op3, &c);
+
+    a.set_min_distance(3);
+    b.set_min_distance(2);
+    c.set_min_distance(0);
+
+    abs.init = &a;
+    abs.goal = &c;
+    HeapQueue<AbstractState *> queue;
+    a.set_distance(0);
+    b.set_distance(INFINITY);
+    c.set_distance(INFINITY);
+    queue.push(3, &a);
+    bool success = abs.astar_search(queue);
+    ASSERT_TRUE(success);
+    // Assert that the solution is a-->b, not a-->b-->c
+    AbstractState *found_goal = abs.init->get_next_arc()->second;
+    EXPECT_EQ("<0={2}>", found_goal->str());
+    EXPECT_FALSE(found_goal->get_next_arc());
+    EXPECT_EQ(2, abs.expansions);
+}
+
+/*     3
+ * A ----> B
+ *  \     /
+ *  4\   /5
+ *    v v
+ *     C
+ */
+TEST(CegarTest, dijkstra_search) {
+    init_test();
+    g_use_metric = true;
+    g_goal.clear();
+    g_goal.push_back(make_pair(0, 2));
+
+    Operator op1 = make_op(3);
+    Operator op2 = make_op(4);
+    ASSERT_EQ(4, op2.get_cost());
+    Operator op3 = make_op(5);
+
+    Abstraction abs = Abstraction();
+
+    AbstractState a = AbstractState("<0={0}>");
+    AbstractState b = AbstractState("<0={1}>");
+    AbstractState c = AbstractState("<0={2}>");
+
+    a.add_arc(&op2, &c);
+    a.add_arc(&op1, &b);
+    b.add_arc(&op3, &c);
+
+    abs.init = &a;
+    abs.goal = &c;
+    HeapQueue<AbstractState *> queue;
+    a.set_distance(0);
+    b.set_distance(INFINITY);
+    c.set_distance(INFINITY);
+    queue.push(0, &a);
+    bool success = abs.dijkstra_search(queue, true);
+    ASSERT_TRUE(success);
+    // Assert that the solution is a-->b, not a-->b-->c
+    AbstractState *found_goal = abs.init->get_next_arc()->second;
+    EXPECT_EQ("<0={2}>", found_goal->str());
+    EXPECT_FALSE(found_goal->get_next_arc());
+    EXPECT_EQ(3, abs.expansions);
 }
 }
