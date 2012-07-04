@@ -25,6 +25,7 @@ Abstraction::Abstraction(PickStrategy strategy) :
     pick_strategy = strategy;
     single = new AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
+        //assert(g_operators[i].get_cost() > 0);
         single->add_arc(&g_operators[i], single);
     }
     init = single;
@@ -91,6 +92,9 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
             const Arc &arc = successors[i];
             Operator *op = arc.first;
             AbstractState *successor = arc.second;
+
+            //if (successor == state)
+            //    continue;
 
             const int &cost = op->get_cost();
             // Prevent overflow.
@@ -159,11 +163,18 @@ string Abstraction::get_solution_string() const {
 }
 
 bool Abstraction::check_solution() {
+    if (DEBUG)
+        cout << "Check solution." << endl;
     assert(!solution_states.empty());
     assert(solution_states.size() == solution_ops.size() + 1);
     State conc_state = *g_initial_state;
     AbstractState *abs_state = init;
-    //cout << "START: " << start_solution_check_ptr << endl;
+    if (DEBUG) {
+        cout << "Start: " << start_solution_check_ptr;
+        if (start_solution_check_ptr)
+            cout << " " << start_solution_check_ptr->str();
+        cout << endl;
+    }
     if (start_solution_check_ptr) {
         abs_state = start_solution_check_ptr;
         conc_state = last_checked_conc_state;
@@ -187,6 +198,8 @@ bool Abstraction::check_solution() {
         //conc_state.dump();
         if (!abs_state->is_abstraction_of(conc_state)) {
             // Get unmet conditions in previous state and refine it.
+            if (DEBUG)
+                cout << "Concrete path deviates from abstract one." << endl;
             assert(prev_state);
             assert(prev_op);
             AbstractState desired_prev_state;
@@ -208,6 +221,8 @@ bool Abstraction::check_solution() {
             return false;
         } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
+            if (DEBUG)
+                cout << "Operator is not applicable." << endl;
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
             pick_condition(unmet_cond, &var, &value);
             refine(abs_state, var, value);
@@ -220,8 +235,12 @@ bool Abstraction::check_solution() {
             prev_op = next_op;
             conc_state = State(conc_state, *next_op);
             abs_state = next_arc->second;
+            if (DEBUG)
+                cout << "Move to state " << abs_state->str() << endl;
         } else if (!test_goal(conc_state)) {
             // Get unmet goals and refine the last state.
+            if (DEBUG)
+                cout << "Goal test failed." << endl;
             assert(!abs_state->get_next_arc());
             get_unmet_goal_conditions(conc_state, &unmet_cond);
             pick_condition(unmet_cond, &var, &value);
