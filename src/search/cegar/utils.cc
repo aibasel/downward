@@ -30,12 +30,14 @@ bool intersection_empty(const set<int> &vals1, const set<int> &vals2) {
     set<int>::iterator i = vals1.begin();
     set<int>::iterator j = vals2.begin();
     while ((i != vals1.end() && j != vals2.end())) {
-        if (*i == *j) {
-            return false;
-        } else if (*i < *j) {
+        while (i != vals1.end() && *i < *j) {
             ++i;
-        } else {
+        }
+        while (j != vals2.end() && *j < *i) {
             ++j;
+        }
+        if (i != vals1.end() && j != vals2.end() && *i == *j) {
+            return false;
         }
     }
     return true;
