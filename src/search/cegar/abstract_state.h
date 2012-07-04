@@ -36,7 +36,7 @@ private:
 
     // For Dijkstra search.
     int distance;
-    int min_distance;
+    int min_distance; // TODO: Rename to min_cost_to_goal
     Arc *origin;  //TODO: Rename to prev_arc
     Arc *next_arc;
 

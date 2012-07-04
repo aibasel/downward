@@ -526,6 +526,9 @@ TEST(CegarTest, astar_search) {
     EXPECT_EQ("<0={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_next_arc());
     EXPECT_EQ(2, abs.expansions);
+    EXPECT_EQ(3, a.get_min_distance());
+    EXPECT_EQ(0, b.get_min_distance());
+    EXPECT_EQ(0, c.get_min_distance());
 }
 
 /*     3

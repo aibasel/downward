@@ -184,11 +184,15 @@ bool Abstraction::find_solution() {
 }
 
 void Abstraction::extract_solution(AbstractState &goal) {
+    int cost_to_goal = 0;
     AbstractState *current = &goal;
+    current->set_min_distance(cost_to_goal);
     while (current->get_origin()) {
         Operator *op = current->get_origin()->first;
         AbstractState *prev = current->get_origin()->second;
         prev->set_next_arc(new Arc(op, current));
+        cost_to_goal += op->get_cost();
+        prev->set_min_distance(cost_to_goal);
         assert(prev != current);
         current = prev;
     }
