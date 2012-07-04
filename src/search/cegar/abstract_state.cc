@@ -258,6 +258,7 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     vector<Arc>().swap(prev);
     vector<Domain>().swap(this->values);
     delete this->origin;
+    delete this->next_arc;
 
     AbstractState *bridge_state = 0;
     // If we refine a goal state, only reuse solution if the path leads to the goal.

@@ -31,8 +31,6 @@ private:
 
     AbstractState *init;
     AbstractState *goal;
-    std::deque<AbstractState *> solution_states;
-    std::deque<Operator *> solution_ops;
     AbstractState *start_solution_check_ptr;
     State last_checked_conc_state;
 
