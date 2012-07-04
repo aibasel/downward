@@ -380,7 +380,7 @@ TEST(CegarTest, find_solution_second_state) {
 
     bool success = abs.find_solution();
     ASSERT_TRUE(success);
-    EXPECT_EQ("<1={0,2}>,op1,<1={1}>]", abs.get_solution_string());
+    EXPECT_EQ("[<1={0,2}>,op1,<1={1}>]", abs.get_solution_string());
 
     abs.calculate_costs();
     EXPECT_EQ(1, left->get_distance());
