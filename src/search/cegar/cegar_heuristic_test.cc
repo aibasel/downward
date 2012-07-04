@@ -61,6 +61,35 @@ TEST(CegarTest, str) {
     }
 }
 
+TEST(CegarTest, intersection_empty) {
+    set<int> a;
+    a.insert(1);
+    set<int> b;
+    b.insert(1);
+    b.insert(2);
+    set<int> c;
+    c.insert(2);
+    set<int> d;
+    d.insert(2);
+    d.insert(4);
+    set<int> e;
+
+    EXPECT_FALSE(intersection_empty(a, b));
+    EXPECT_TRUE(intersection_empty(a, c));
+    EXPECT_TRUE(intersection_empty(a, d));
+    EXPECT_TRUE(intersection_empty(a, e));
+    EXPECT_FALSE(intersection_empty(b, c));
+    EXPECT_FALSE(intersection_empty(b, d));
+    EXPECT_FALSE(intersection_empty(c, d));
+
+    EXPECT_FALSE(intersection_empty(b, a));
+    EXPECT_TRUE(intersection_empty(c, a));
+    EXPECT_TRUE(intersection_empty(d, a));
+    EXPECT_TRUE(intersection_empty(e, a));
+    EXPECT_FALSE(intersection_empty(c, b));
+    EXPECT_FALSE(intersection_empty(d, b));
+    EXPECT_FALSE(intersection_empty(d, c));
+}
 
 TEST(CegarTest, regress) {
     init_test();
@@ -304,9 +333,8 @@ TEST(CegarTest, find_solution_first_state) {
 
     bool success = abs.find_solution();
     ASSERT_TRUE(success);
-    EXPECT_EQ(1, abs.solution_states.size());
-    EXPECT_EQ(0, abs.solution_ops.size());
-    EXPECT_EQ("<1={0,1}>", abs.solution_states[0]->str());
+    EXPECT_FALSE(abs.init->get_next_arc());
+    EXPECT_EQ("[<1={0,1}>]", abs.get_solution_string());
 }
 
 TEST(CegarTest, find_solution_second_state) {
@@ -352,11 +380,7 @@ TEST(CegarTest, find_solution_second_state) {
 
     bool success = abs.find_solution();
     ASSERT_TRUE(success);
-    ASSERT_EQ(2, abs.solution_states.size());
-    ASSERT_EQ(1, abs.solution_ops.size());
-    EXPECT_EQ("<1={0,2}>", abs.solution_states[0]->str());
-    EXPECT_EQ("<1={1}>", abs.solution_states[1]->str());
-    EXPECT_EQ("op1", abs.solution_ops[0]->get_name());
+    EXPECT_EQ("<1={0,2}>,op1,<1={1}>]", abs.get_solution_string());
 
     abs.calculate_costs();
     EXPECT_EQ(1, left->get_distance());
@@ -440,8 +464,6 @@ TEST(CegarTest, initialize) {
     abstraction.find_solution();
     abstraction.calculate_costs();
 
-    ASSERT_EQ(2, abstraction.solution_states.size());
-    ASSERT_EQ(1, abstraction.solution_ops.size());
     ASSERT_EQ("[<1={0,2}>,op1,<1={1}>]", abstraction.get_solution_string());
     EXPECT_EQ(1, abstraction.init->get_distance());
     EXPECT_EQ(0, right->get_distance());

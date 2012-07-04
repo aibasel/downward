@@ -26,6 +26,21 @@ string int_set_to_string(set<int> myset) {
     return oss.str();
 }
 
+bool intersection_empty(const set<int> &vals1, const set<int> &vals2) {
+    set<int>::iterator i = vals1.begin();
+    set<int>::iterator j = vals2.begin();
+    while ((i != vals1.end() && j != vals2.end())) {
+        if (*i == *j) {
+            return false;
+        } else if (*i < *j) {
+            ++i;
+        } else {
+            ++j;
+        }
+    }
+    return true;
+}
+
 Operator create_op(const string name, vector<string> prevail, vector<string> pre_post) {
     ostringstream oss;
     // Create operator description.
@@ -39,15 +54,15 @@ Operator create_op(const string name, vector<string> prevail, vector<string> pre
     return create_op(oss.str());
 }
 
-Operator create_op(const std::string desc) {
-    std::string full_op_desc = "begin_operator\n" + desc + "\nend_operator";
+Operator create_op(const string desc) {
+    string full_op_desc = "begin_operator\n" + desc + "\nend_operator";
     istringstream iss(full_op_desc);
     Operator op = Operator(iss, false);
     return op;
 }
 
-State *create_state(const std::string desc) {
-    std::string full_desc = "begin_state\n" + desc + "\nend_state";
+State *create_state(const string desc) {
+    string full_desc = "begin_state\n" + desc + "\nend_state";
     istringstream iss(full_desc);
     return new State(iss);
 }
