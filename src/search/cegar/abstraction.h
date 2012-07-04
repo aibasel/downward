@@ -36,6 +36,7 @@ private:
     AbstractState *start_solution_check_ptr;
     State last_checked_conc_state;
 
+    // TODO: Remove method.
     void set_last_checked_conc_state(const State &state) {last_checked_conc_state = state; }
 
     PickStrategy pick_strategy;
