@@ -129,35 +129,30 @@ bool Abstraction::find_solution() {
 }
 
 void Abstraction::extract_solution(AbstractState &goal) {
-    // TODO: Remove those lists.
-    solution_states.clear();
-    solution_ops.clear();
-
     AbstractState *current = &goal;
-    solution_states.push_front(current);
     while (current->get_origin()) {
         Operator *op = current->get_origin()->first;
         AbstractState *prev = current->get_origin()->second;
-        solution_states.push_front(prev);
-        solution_ops.push_front(op);
-        assert(prev != current);
         prev->set_next_arc(new Arc(op, current));
+        assert(prev != current);
         current = prev;
     }
 }
 
 string Abstraction::get_solution_string() const {
-    assert(!solution_states.empty());
-    assert(solution_states.size() == solution_ops.size() + 1);
     string sep = "";
     ostringstream oss;
     oss << "[";
-    for (int i = 0; i < solution_ops.size(); ++i) {
-        oss << sep << solution_states[i]->str() << ","
-            << solution_ops[i]->get_name();
-        sep = ",";
+    AbstractState *current = init;
+    oss << init->str();
+    while (true) {
+        Arc *arc = current->get_next_arc();
+        if (!arc)
+            break;
+        Operator *op = arc->first;
+        AbstractState *next_state = arc->second;
+        oss << "," << op->get_name() << "," << next_state->str();
     }
-    oss << sep << solution_states[solution_states.size() - 1]->str();
     oss << "]";
     return oss.str();
 }
@@ -165,8 +160,6 @@ string Abstraction::get_solution_string() const {
 bool Abstraction::check_solution() {
     if (DEBUG)
         cout << "Check solution." << endl;
-    assert(!solution_states.empty());
-    assert(solution_states.size() == solution_ops.size() + 1);
     State conc_state = *g_initial_state;
     AbstractState *abs_state = init;
     if (DEBUG) {
@@ -179,23 +172,17 @@ bool Abstraction::check_solution() {
         abs_state = start_solution_check_ptr;
         conc_state = last_checked_conc_state;
     }
-    //cout << "ABS: " << abs_state->str() << " CONC: " << endl;
-    //conc_state.dump();
     assert(abs_state->is_abstraction_of(conc_state));
 
     AbstractState *prev_state = 0;
     Operator *prev_op = 0;
     State prev_last_checked_conc_state = last_checked_conc_state;
     while (true) {
-        //if (DEBUG)
-        //    cout << "Checking state " << i << ": " << abs_state->str() << endl;
         Arc *next_arc = abs_state->get_next_arc();
         // Set next_op to 0 if there is no next operator.
         Operator *next_op = (next_arc) ? next_arc->first : 0;
         vector<pair<int, int> > unmet_cond;
         int var, value;
-        //cout << "ABS: " << abs_state->str() << " CONC: " << endl;
-        //conc_state.dump();
         if (!abs_state->is_abstraction_of(conc_state)) {
             // Get unmet conditions in previous state and refine it.
             if (DEBUG)
