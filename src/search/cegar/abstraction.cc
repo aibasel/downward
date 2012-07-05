@@ -363,6 +363,19 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
         if (cond == -1)
             cond = random_cond;
         break;
+    case MIN_CONSTRAINED: {
+        int max_remaining_values = -1;
+        for (int i = 0; i < conditions.size(); ++i) {
+            int remaining_values = state.get_values(conditions[i].first).size();
+            assert(remaining_values >= 2);
+            if (remaining_values > max_remaining_values) {
+                cond = i;
+                max_remaining_values = remaining_values;
+            }
+        }
+        assert(cond >= 0);
+        break;
+    }
     case MAX_CONSTRAINED: {
         int min_remaining_values = INFINITY;
         for (int i = 0; i < conditions.size(); ++i) {
