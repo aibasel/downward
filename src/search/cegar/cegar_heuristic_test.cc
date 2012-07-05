@@ -494,9 +494,9 @@ TEST(CegarTest, astar_search) {
     a.add_arc(&op1, &b);
     b.add_arc(&op3, &c);
 
-    a.set_min_distance(0);
-    b.set_min_distance(0);
-    c.set_min_distance(0);
+    a.set_h(0);
+    b.set_h(0);
+    c.set_h(0);
 
     abs.init = &a;
     abs.goal = &c;
@@ -514,15 +514,15 @@ TEST(CegarTest, astar_search) {
     EXPECT_EQ("<0={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_next_arc());
     EXPECT_EQ(3, abs.expansions);
-    EXPECT_EQ(4, a.get_min_distance());
-    EXPECT_EQ(0, b.get_min_distance());
-    EXPECT_EQ(0, c.get_min_distance());
+    EXPECT_EQ(4, a.get_h());
+    EXPECT_EQ(0, b.get_h());
+    EXPECT_EQ(0, c.get_h());
 
     // Run with heuristic information --> only 2 expansions.
     abs.expansions = 0;
-    a.set_min_distance(4);
-    b.set_min_distance(2);
-    c.set_min_distance(0);
+    a.set_h(4);
+    b.set_h(2);
+    c.set_h(0);
     a.set_distance(0);
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
@@ -535,9 +535,9 @@ TEST(CegarTest, astar_search) {
     EXPECT_EQ("<0={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_next_arc());
     EXPECT_EQ(2, abs.expansions);
-    EXPECT_EQ(4, a.get_min_distance());
-    EXPECT_EQ(2, b.get_min_distance());
-    EXPECT_EQ(0, c.get_min_distance());
+    EXPECT_EQ(4, a.get_h());
+    EXPECT_EQ(2, b.get_h());
+    EXPECT_EQ(0, c.get_h());
 }
 
 /*     3

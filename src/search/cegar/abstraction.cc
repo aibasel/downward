@@ -128,10 +128,10 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
         ++expansions;
 
         const int g = state->get_distance();
-        int new_f = g + state->get_min_distance();
+        int new_f = g + state->get_h();
         if (debug)
             cout << "VISIT: " << state->str() << " new_f=" << g << "+"
-                 << state->get_min_distance() << "=" << new_f << " old_f:" << old_f << endl;
+                 << state->get_h() << "=" << new_f << " old_f:" << old_f << endl;
         assert(new_f <= old_f);
         if (new_f < old_f) {
             continue;
@@ -159,7 +159,7 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
                      << succ_g << " " << successor->get_distance() << endl;
             if (successor->get_distance() > succ_g) {
                 successor->set_distance(succ_g);
-                const int f = succ_g + successor->get_min_distance();
+                const int f = succ_g + successor->get_h();
                 if (DEBUG)
                     cout << "F: " << f << endl;
                 Arc *prev_arc = new Arc(op, state);
@@ -184,9 +184,9 @@ bool Abstraction::find_solution() {
     }
     init->set_distance(0);
     init->set_prev_arc(0);
-    queue.push(init->get_min_distance(), init);
+    queue.push(init->get_h(), init);
     bool astar_success = astar_search(queue);
-    int astar_cost = init->get_min_distance();
+    int astar_cost = init->get_h();
 
     // Dijkstra.
     if (TEST_WITH_DIJKSTRA) {
@@ -200,7 +200,7 @@ bool Abstraction::find_solution() {
         queue.push(0, init);
         bool dijkstra_success = dijkstra_search(queue, true);
         assert(astar_success == dijkstra_success);
-        assert(astar_cost == init->get_min_distance());
+        assert(astar_cost == init->get_h());
     }
     return astar_success;
 }
@@ -208,13 +208,13 @@ bool Abstraction::find_solution() {
 void Abstraction::extract_solution(AbstractState &goal) const {
     int cost_to_goal = 0;
     AbstractState *current = &goal;
-    current->set_min_distance(cost_to_goal);
+    current->set_h(cost_to_goal);
     while (current->get_prev_arc()) {
         Operator *op = current->get_prev_arc()->first;
         AbstractState *prev = current->get_prev_arc()->second;
         prev->set_next_arc(new Arc(op, current));
         cost_to_goal += op->get_cost();
-        prev->set_min_distance(cost_to_goal);
+        prev->set_h(cost_to_goal);
         assert(prev != current);
         current = prev;
     }
@@ -386,7 +386,7 @@ void Abstraction::update_costs_to_goal() const {
     calculate_costs();
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
-        (*it)->set_min_distance((*it)->get_distance());
+        (*it)->set_h((*it)->get_distance());
     }
 }
 

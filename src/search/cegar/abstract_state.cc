@@ -23,7 +23,7 @@ AbstractState::AbstractState(string s, bool init) {
     assert(!g_variable_domain.empty());
     prev_arc = 0;
     next_arc = 0;
-    min_distance = 0;
+    h = 0;
 
     values.resize(g_variable_domain.size(), set<int>());
 
@@ -261,8 +261,8 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     delete this->next_arc;
 
     // Pass on the h-value.
-    v1->set_min_distance(min_distance);
-    v2->set_min_distance(min_distance);
+    v1->set_h(h);
+    v2->set_h(h);
 
     AbstractState *bridge_state = 0;
     // If we refine a goal state, only reuse solution if the path leads to the goal.
