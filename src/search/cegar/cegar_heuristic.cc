@@ -93,7 +93,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("FIRST");
     pick_strategies.push_back("RANDOM");
     pick_strategies.push_back("GOAL");
-    pick_strategies.push_back("MAX_LEFT_DOMAIN");
+    pick_strategies.push_back("MAX_CONSTRAINED");
     parser.add_enum_option("pick", pick_strategies, "FIRST",
                            "how to pick the next unsatisfied condition");
     Heuristic::add_options_to_parser(parser);
