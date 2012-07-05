@@ -44,6 +44,7 @@ private:
 
     mutable int expansions;
     mutable int expansions_dijkstra;
+    void reset_distances() const;
     FRIEND_TEST(CegarTest, astar_search);
     bool astar_search(HeapQueue<AbstractState *> &queue);
     FRIEND_TEST(CegarTest, dijkstra_search);
