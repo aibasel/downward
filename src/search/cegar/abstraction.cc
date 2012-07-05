@@ -70,6 +70,13 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     }
 }
 
+void Abstraction::reset_distances() const {
+    set<AbstractState *>::iterator it;
+    for (it = states.begin(); it != states.end(); ++it) {
+        (*it)->set_distance(INFINITY);
+    }
+}
+
 bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) const {
     bool debug = false;
     ++dijkstra_searches;
@@ -179,10 +186,7 @@ bool Abstraction::find_solution() {
     HeapQueue<AbstractState *> queue;
 
     // A*.
-    set<AbstractState *>::iterator it;
-    for (it = states.begin(); it != states.end(); ++it) {
-        (*it)->set_distance(INFINITY);
-    }
+    reset_distances();
     init->set_distance(0);
     init->set_prev_arc(0);
     queue.push(init->get_h(), init);
@@ -193,9 +197,7 @@ bool Abstraction::find_solution() {
     if (TEST_WITH_DIJKSTRA) {
         while (!queue.empty())
             queue.pop();
-        for (it = states.begin(); it != states.end(); ++it) {
-            (*it)->set_distance(INFINITY);
-        }
+        reset_distances();
         init->set_distance(0);
         init->set_prev_arc(0);
         queue.push(0, init);
@@ -365,10 +367,7 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
 }
 
 void Abstraction::calculate_costs() const {
-    set<AbstractState *>::iterator it;
-    for (it = states.begin(); it != states.end(); ++it) {
-        (*it)->set_distance(INFINITY);
-    }
+    reset_distances();
     HeapQueue<AbstractState *> queue;
     queue.push(0, goal);
     goal->set_distance(0);
