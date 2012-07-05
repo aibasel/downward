@@ -379,13 +379,6 @@ TEST(CegarTest, find_solution_second_state) {
     EXPECT_EQ("[(op1,<1={1}>)]", left->get_next_as_string());
     EXPECT_EQ("[]", right->get_next_as_string());
 
-    abs.collect_states();
-    ASSERT_EQ(2, abs.abs_states.size());
-    EXPECT_EQ(a1s, abs.abs_states[0]->str());
-    EXPECT_EQ(a2s, abs.abs_states[1]->str());
-    EXPECT_EQ(abs.abs_states[0], left);
-    EXPECT_EQ(abs.abs_states[1], right);
-
     bool success = abs.find_solution();
     ASSERT_TRUE(success);
     EXPECT_EQ("[<1={0,2}>,op1,<1={1}>]", abs.get_solution_string());
@@ -427,13 +420,6 @@ TEST(CegarTest, find_solution_loop) {
 
     EXPECT_EQ("[(op1,<0={0}>)]", left->get_next_as_string());
     EXPECT_EQ("[]", right->get_next_as_string());
-
-    abs.collect_states();
-    ASSERT_EQ(2, abs.abs_states.size());
-    EXPECT_EQ(a1s, abs.abs_states[0]->str());
-    EXPECT_EQ(a2s, abs.abs_states[1]->str());
-    EXPECT_EQ(abs.abs_states[0], left);
-    EXPECT_EQ(abs.abs_states[1], right);
 
     bool success = abs.find_solution();
     ASSERT_FALSE(success);
