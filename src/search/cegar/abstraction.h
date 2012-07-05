@@ -42,13 +42,13 @@ private:
     void pick_condition(const std::vector<std::pair<int, int> > &conditions,
                         int *var, int *value) const;
 
-    int expansions;
-    int expansions_dijkstra;
+    mutable int expansions;
+    mutable int expansions_dijkstra;
     FRIEND_TEST(CegarTest, astar_search);
     bool astar_search(HeapQueue<AbstractState *> &queue);
     FRIEND_TEST(CegarTest, dijkstra_search);
-    bool dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward);
-    void extract_solution(AbstractState &goal);
+    bool dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) const;
+    void extract_solution(AbstractState &goal) const;
 
     // Refinement hierarchy.
     AbstractState *single;
@@ -73,7 +73,8 @@ public:
     int get_num_expansions() const {return expansions; }
     int get_num_expansions_dijkstra() const {return expansions_dijkstra; }
 
-    void calculate_costs();
+    void calculate_costs() const;
+    void update_costs_to_goal() const;
 
     int get_num_states() const {return states.size(); }
 
@@ -81,7 +82,7 @@ public:
     AbstractState *get_init() {return init; }
     std::vector<AbstractState *> *get_abs_states() {return &abs_states; }
     void write_dot_file(int num);
-    int dijkstra_searches;
+    mutable int dijkstra_searches;
 
 };
 }
