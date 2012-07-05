@@ -56,6 +56,8 @@ void CegarHeuristic::initialize() {
     cout << "Abstract states: " << num_states << endl;
     cout << "SAME: " << same << " DIFFERENT: " << different << " DOUBLES: " << doubles << endl;
     cout << "Saved Dijkstra searches: " << saved_dijkstras << endl;
+    cout << "A* expansions: " << abstraction.get_num_expansions() << endl;
+    cout << "Dijkstra expansions: " << abstraction.get_num_expansions_dijkstra() << endl;
     if (!success)
         assert(num_states == max_states);
     abstraction.calculate_costs();
