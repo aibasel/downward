@@ -50,7 +50,7 @@ void CegarHeuristic::initialize() {
             break;
         // Update costs to goal COST_UPDATES times evenly distributed over time.
         if (num_states % ((max_states / (COST_UPDATES + 1)) + 1) == 0) {
-            abstraction.update_costs_to_goal();
+            abstraction.update_h_values();
             ++updates;
         }
     }
@@ -68,7 +68,7 @@ void CegarHeuristic::initialize() {
     }
     if (!success)
         assert(num_states == max_states);
-    abstraction.calculate_costs();
+    abstraction.update_h_values();
     assert(num_states == abstraction.get_num_states());
     if (num_states == max_states)
         assert(updates == COST_UPDATES);
@@ -80,7 +80,7 @@ void CegarHeuristic::initialize() {
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
-    int dist = abstraction.get_abstract_state(state)->get_distance();
+    int dist = abstraction.get_abstract_state(state)->get_h();
     assert(dist >= 0);
     if (dist == INFINITY)
         dist = DEAD_END;

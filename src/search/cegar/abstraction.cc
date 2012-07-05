@@ -382,7 +382,7 @@ void Abstraction::calculate_costs() const {
     dijkstra_search(queue, false);
 }
 
-void Abstraction::update_costs_to_goal() const {
+void Abstraction::update_h_values() const {
     calculate_costs();
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
