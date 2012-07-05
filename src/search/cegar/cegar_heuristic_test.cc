@@ -481,7 +481,7 @@ TEST(CegarTest, initialize) {
 }
 
 /*         3
- * h=3 A ----> B h=2
+ * h=4 A ----> B h=2
  *      \     /
  *      4\   /5
  *        v v
@@ -508,26 +508,49 @@ TEST(CegarTest, astar_search) {
     a.add_arc(&op1, &b);
     b.add_arc(&op3, &c);
 
-    a.set_min_distance(3);
-    b.set_min_distance(2);
+    a.set_min_distance(0);
+    b.set_min_distance(0);
     c.set_min_distance(0);
 
     abs.init = &a;
     abs.goal = &c;
     HeapQueue<AbstractState *> queue;
+
+    // Run once without heuristic information --> 3 expansions.
     a.set_distance(0);
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
-    queue.push(3, &a);
+    queue.push(4, &a);
     bool success = abs.astar_search(queue);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
     AbstractState *found_goal = abs.init->get_next_arc()->second;
     EXPECT_EQ("<0={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_next_arc());
-    EXPECT_EQ(2, abs.expansions);
-    EXPECT_EQ(3, a.get_min_distance());
+    EXPECT_EQ(3, abs.expansions);
+    EXPECT_EQ(4, a.get_min_distance());
     EXPECT_EQ(0, b.get_min_distance());
+    EXPECT_EQ(0, c.get_min_distance());
+
+    // Run with heuristic information --> only 2 expansions.
+    abs.expansions = 0;
+    a.set_min_distance(4);
+    b.set_min_distance(2);
+    c.set_min_distance(0);
+    a.set_distance(0);
+    b.set_distance(INFINITY);
+    c.set_distance(INFINITY);
+    ASSERT_TRUE(queue.empty());
+    queue.push(4, &a);
+    success = abs.astar_search(queue);
+    ASSERT_TRUE(success);
+    // Assert that the solution is a-->b, not a-->b-->c
+    found_goal = abs.init->get_next_arc()->second;
+    EXPECT_EQ("<0={2}>", found_goal->str());
+    EXPECT_FALSE(found_goal->get_next_arc());
+    EXPECT_EQ(2, abs.expansions);
+    EXPECT_EQ(4, a.get_min_distance());
+    EXPECT_EQ(2, b.get_min_distance());
     EXPECT_EQ(0, c.get_min_distance());
 }
 
