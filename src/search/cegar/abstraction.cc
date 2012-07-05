@@ -189,18 +189,19 @@ bool Abstraction::find_solution() {
     int astar_cost = init->get_min_distance();
 
     // Dijkstra.
-    while (!queue.empty())
-        queue.pop();
-    for (it = states.begin(); it != states.end(); ++it) {
-        (*it)->set_distance(INFINITY);
+    if (TEST_WITH_DIJKSTRA) {
+        while (!queue.empty())
+            queue.pop();
+        for (it = states.begin(); it != states.end(); ++it) {
+            (*it)->set_distance(INFINITY);
+        }
+        init->set_distance(0);
+        init->set_origin(0);
+        queue.push(0, init);
+        bool dijkstra_success = dijkstra_search(queue, true);
+        assert(astar_success == dijkstra_success);
+        assert(astar_cost == init->get_min_distance());
     }
-    init->set_distance(0);
-    init->set_origin(0);
-    queue.push(0, init);
-    bool dijkstra_success = dijkstra_search(queue, true);
-
-    assert(astar_success == dijkstra_success);
-    assert(astar_cost == init->get_min_distance());
     return astar_success;
 }
 

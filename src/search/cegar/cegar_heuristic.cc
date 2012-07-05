@@ -31,7 +31,7 @@ CegarHeuristic::~CegarHeuristic() {
 void CegarHeuristic::initialize() {
     cout << "Peak memory before refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Initializing cegar heuristic..." << endl;
-    int saved_dijkstras = 0;
+    int saved_searches = 0;
     int updates = 0;
     bool success = false;
     int num_states = abstraction.get_num_states();
@@ -42,7 +42,7 @@ void CegarHeuristic::initialize() {
         if (!abstraction.can_reuse_last_solution()) {
             abstraction.find_solution();
         } else {
-            ++saved_dijkstras;
+            ++saved_searches;
         }
         success = abstraction.check_solution();
         num_states = abstraction.get_num_states();
@@ -59,10 +59,13 @@ void CegarHeuristic::initialize() {
     cout << "Solution found while refining: " << success << endl;
     cout << "Abstract states: " << num_states << endl;
     cout << "SAME: " << same << " DIFFERENT: " << different << " DOUBLES: " << doubles << endl;
-    cout << "Saved Dijkstra searches: " << saved_dijkstras << endl;
+    cout << "Saved searches: " << saved_searches << endl;
     cout << "A* expansions: " << abstraction.get_num_expansions() << endl;
-    cout << "Dijkstra expansions: " << abstraction.get_num_expansions_dijkstra() << endl;
-    cout << "Ratio A*/Dijkstra: " << abstraction.get_num_expansions() / float(abstraction.get_num_expansions_dijkstra()) << endl;
+    if (TEST_WITH_DIJKSTRA) {
+        cout << "Dijkstra expansions: " << abstraction.get_num_expansions_dijkstra() << endl;
+        cout << "Ratio A*/Dijkstra: "
+             << abstraction.get_num_expansions() / float(abstraction.get_num_expansions_dijkstra()) << endl;
+    }
     if (!success)
         assert(num_states == max_states);
     abstraction.calculate_costs();
