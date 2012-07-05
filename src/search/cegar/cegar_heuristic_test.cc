@@ -520,7 +520,7 @@ TEST(CegarTest, astar_search) {
     a.set_distance(0);
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
-    queue.push(4, &a);
+    queue.push(0, &a);
     bool success = abs.astar_search(queue);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c

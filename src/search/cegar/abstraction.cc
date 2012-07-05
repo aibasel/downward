@@ -126,11 +126,12 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
         const int g = state->get_distance();
         int new_f = g + state->get_min_distance();
         if (debug)
-            cout << "VISIT: " << state->str() << " g:" << g << " new_f:" << new_f << " old_f:" << old_f << endl;
+            cout << "VISIT: " << state->str() << " new_f=" << g << "+"
+                 << state->get_min_distance() << "=" << new_f << " old_f:" << old_f << endl;
         assert(new_f <= old_f);
-        //if (new_f < old_f) {
-        //    continue;
-        //}
+        if (new_f < old_f) {
+            continue;
+        }
         if (state == goal) {
             if (debug)
                 cout << "GOAL REACHED" << endl;
