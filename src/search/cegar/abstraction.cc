@@ -340,12 +340,13 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
         cout << endl;
     }
     int cond = -1;
+    int random_cond = g_rng.next(conditions.size());
     switch (pick_strategy) {
     case FIRST:
         cond = 0;
         break;
     case RANDOM:
-        cond = g_rng.next(conditions.size());
+        cond = random_cond;
         break;
     case GOAL:
         for (int i = 0; i < conditions.size(); ++i) {
@@ -354,7 +355,7 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
             break;
         }
         if (cond == -1)
-            cond = g_rng.next(conditions.size());
+            cond = random_cond;
         break;
     default:
         cout << "Invalid pick strategy: " << pick_strategy << endl;
