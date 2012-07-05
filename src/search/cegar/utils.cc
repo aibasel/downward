@@ -29,14 +29,16 @@ string int_set_to_string(set<int> myset) {
 bool intersection_empty(const set<int> &vals1, const set<int> &vals2) {
     set<int>::iterator i = vals1.begin();
     set<int>::iterator j = vals2.begin();
-    while ((i != vals1.end() && j != vals2.end())) {
+    while (true) {
         while (i != vals1.end() && *i < *j) {
             ++i;
         }
         while (j != vals2.end() && *j < *i) {
             ++j;
         }
-        if (i != vals1.end() && j != vals2.end() && *i == *j) {
+        if (i == vals1.end() || j == vals2.end()) {
+            return true;
+        } else if (*i == *j) {
             return false;
         }
     }
