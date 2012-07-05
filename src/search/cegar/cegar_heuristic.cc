@@ -43,8 +43,6 @@ void CegarHeuristic::initialize() {
         } else {
             ++saved_dijkstras;
         }
-        //if (DEBUG)
-        //    cout << "SOLUTION: " << abstraction.get_solution_string() << endl;
         success = abstraction.check_solution();
         num_states = abstraction.get_num_states();
         if (success)
@@ -58,6 +56,7 @@ void CegarHeuristic::initialize() {
     cout << "Saved Dijkstra searches: " << saved_dijkstras << endl;
     cout << "A* expansions: " << abstraction.get_num_expansions() << endl;
     cout << "Dijkstra expansions: " << abstraction.get_num_expansions_dijkstra() << endl;
+    cout << "Ratio A*/Dijkstra: " << abstraction.get_num_expansions() / float(abstraction.get_num_expansions_dijkstra()) << endl;
     if (!success)
         assert(num_states == max_states);
     abstraction.calculate_costs();
