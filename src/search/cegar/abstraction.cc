@@ -277,7 +277,7 @@ bool Abstraction::check_solution() {
             AbstractState desired_prev_state;
             abs_state->regress(*prev_op, &desired_prev_state);
             prev_state->get_unmet_conditions(desired_prev_state, &unmet_cond);
-            pick_condition(unmet_cond, &var, &value);
+            pick_condition(*prev_state, unmet_cond, &var, &value);
             refine(prev_state, var, value);
             // Make sure we only reuse the solution if we are far enough from
             // the initial state to have saved the correct last-checked concrete
@@ -296,7 +296,7 @@ bool Abstraction::check_solution() {
             if (DEBUG)
                 cout << "Operator is not applicable." << endl;
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
-            pick_condition(unmet_cond, &var, &value);
+            pick_condition(*abs_state, unmet_cond, &var, &value);
             refine(abs_state, var, value);
             return false;
         } else if (next_op) {
@@ -315,7 +315,7 @@ bool Abstraction::check_solution() {
                 cout << "Goal test failed." << endl;
             assert(!abs_state->get_next_arc());
             get_unmet_goal_conditions(conc_state, &unmet_cond);
-            pick_condition(unmet_cond, &var, &value);
+            pick_condition(*abs_state, unmet_cond, &var, &value);
             refine(abs_state, var, value);
             return false;
         } else {
@@ -329,7 +329,7 @@ bool Abstraction::check_solution() {
     return false;
 }
 
-void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
+void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, int> > &conditions,
                                  int *var, int *value) const {
     assert(!conditions.empty());
     if (DEBUG) {
@@ -338,6 +338,12 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
             cout << conditions[i].first << "=" << conditions[i].second << " ";
         }
         cout << endl;
+    }
+    // Shortcut for condition lists with only one element.
+    if (conditions.size() == 1) {
+        *var = conditions[0].first;
+        *value = conditions[0].second;
+        return;
     }
     int cond = -1;
     int random_cond = g_rng.next(conditions.size());
@@ -363,8 +369,6 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
     }
     *var = conditions[cond].first;
     *value = conditions[cond].second;
-    if (DEBUG)
-        cout << "Picked: " << *var << "=" << *value << endl;
 }
 
 void Abstraction::calculate_costs() const {
