@@ -30,6 +30,7 @@ Abstraction::Abstraction(PickStrategy strategy) :
     }
     init = single;
     goal = single;
+    states.insert(init);
     num_states = 1;
     start_solution_check_ptr = 0;
     dijkstra_searches = 0;
@@ -44,6 +45,9 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
     start_solution_check_ptr = state->refine(var, value, v1, v2);
+    states.erase(state);
+    states.insert(v1);
+    states.insert(v2);
     ++num_states;
     if (state == init) {
         if (v1->is_abstraction_of(*g_initial_state)) {
@@ -173,11 +177,11 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
 
 bool Abstraction::find_solution() {
     HeapQueue<AbstractState *> queue;
-    collect_states();
 
     // A*.
-    for (int i = 0; i < abs_states.size(); ++i) {
-        abs_states[i]->set_distance(INFINITY);
+    set<AbstractState *>::iterator it;
+    for (it = states.begin(); it != states.end(); ++it) {
+        (*it)->set_distance(INFINITY);
     }
     init->set_distance(0);
     init->set_origin(0);
@@ -188,8 +192,8 @@ bool Abstraction::find_solution() {
     // Dijkstra.
     while (!queue.empty())
         queue.pop();
-    for (int i = 0; i < abs_states.size(); ++i) {
-        abs_states[i]->set_distance(INFINITY);
+    for (it = states.begin(); it != states.end(); ++it) {
+        (*it)->set_distance(INFINITY);
     }
     init->set_distance(0);
     init->set_origin(0);
@@ -361,15 +365,15 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
 
 void Abstraction::calculate_costs() {
     HeapQueue<AbstractState *> queue;
-    collect_states();
     int num_goals = 0;
-    for (int i = 0; i < abs_states.size(); ++i) {
-        if (abs_states[i] == goal) {
-            abs_states[i]->set_distance(0);
-            queue.push(0, abs_states[i]);
+    set<AbstractState *>::iterator it;
+    for (it = states.begin(); it != states.end(); ++it) {
+        if (*it == goal) {
+            (*it)->set_distance(0);
+            queue.push(0, *it);
             ++num_goals;
         } else {
-            abs_states[i]->set_distance(INFINITY);
+            (*it)->set_distance(INFINITY);
         }
     }
     // There can only be a single goal state, because we only refine the goal
@@ -388,22 +392,7 @@ AbstractState *Abstraction::get_abstract_state(const State &state) const {
     return current;
 }
 
-void Abstraction::collect_states() {
-    abs_states.clear();
-    collect_child_states(single);
-}
-
-void Abstraction::collect_child_states(AbstractState *parent) {
-    if (parent->valid()) {
-        abs_states.push_back(parent);
-    } else {
-        collect_child_states(parent->get_left_child());
-        collect_child_states(parent->get_right_child());
-    }
-}
-
 void Abstraction::write_dot_file(int num) {
-    collect_states();
     ostringstream oss;
     oss << "graph-" << setw(3) << setfill('0') << num << ".dot";
     string filename = oss.str();
@@ -413,8 +402,9 @@ void Abstraction::write_dot_file(int num) {
         exit(1);
     }
     dotfile << "digraph abstract {" << endl;
-    for (int i = 0; i < abs_states.size(); ++i) {
-        AbstractState *current_state = abs_states[i];
+    set<AbstractState *>::iterator it;
+    for (it = states.begin(); it != states.end(); ++it) {
+        AbstractState *current_state = *it;
         for (int j = 0; j < current_state->get_next().size(); ++j) {
             Arc arc = current_state->get_next()[j];
             AbstractState *next_state = arc.second;

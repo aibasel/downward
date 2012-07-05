@@ -28,6 +28,7 @@ enum PickStrategy {
 class Abstraction {
 private:
     std::vector<AbstractState *> abs_states;
+    std::set<AbstractState *> states;
     int num_states;
 
     AbstractState *init;
@@ -52,8 +53,6 @@ private:
 
     // Refinement hierarchy.
     AbstractState *single;
-    void collect_states();
-    void collect_child_states(AbstractState *parent);
 
 public:
     explicit Abstraction(PickStrategy strategy = FIRST);
@@ -77,7 +76,7 @@ public:
 
     void calculate_costs();
 
-    int get_num_states() const {return num_states; }
+    int get_num_states() const {assert(num_states == states.size()); return num_states; }
 
     // Only for testing.
     AbstractState *get_init() {return init; }
