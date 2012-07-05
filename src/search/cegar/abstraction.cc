@@ -69,7 +69,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     }
 }
 
-bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) {
+bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) const {
     bool debug = false;
     ++dijkstra_searches;
     while (!queue.empty()) {
@@ -203,7 +203,7 @@ bool Abstraction::find_solution() {
     return astar_success;
 }
 
-void Abstraction::extract_solution(AbstractState &goal) {
+void Abstraction::extract_solution(AbstractState &goal) const {
     int cost_to_goal = 0;
     AbstractState *current = &goal;
     current->set_min_distance(cost_to_goal);
@@ -361,7 +361,7 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
         cout << "Picked: " << *var << "=" << *value << endl;
 }
 
-void Abstraction::calculate_costs() {
+void Abstraction::calculate_costs() const {
     HeapQueue<AbstractState *> queue;
     int num_goals = 0;
     set<AbstractState *>::iterator it;
@@ -378,6 +378,14 @@ void Abstraction::calculate_costs() {
     // state for vars that appear in it.
     assert(num_goals == 1);
     dijkstra_search(queue, false);
+}
+
+void Abstraction::update_costs_to_goal() const {
+    calculate_costs();
+    set<AbstractState *>::iterator it;
+    for (it = states.begin(); it != states.end(); ++it) {
+        (*it)->set_min_distance((*it)->get_distance());
+    }
 }
 
 AbstractState *Abstraction::get_abstract_state(const State &state) const {
