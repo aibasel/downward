@@ -31,7 +31,6 @@ Abstraction::Abstraction(PickStrategy strategy) :
     init = single;
     goal = single;
     states.insert(init);
-    num_states = 1;
     start_solution_check_ptr = 0;
     dijkstra_searches = 0;
     expansions = 0;
@@ -48,7 +47,6 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     states.erase(state);
     states.insert(v1);
     states.insert(v2);
-    ++num_states;
     if (state == init) {
         if (v1->is_abstraction_of(*g_initial_state)) {
             init = v1;
