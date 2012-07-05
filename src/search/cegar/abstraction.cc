@@ -34,6 +34,7 @@ Abstraction::Abstraction(PickStrategy strategy) :
     start_solution_check_ptr = 0;
     dijkstra_searches = 0;
     expansions = 0;
+    expansions_dijkstra = 0;
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -67,13 +68,14 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
 }
 
 bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) {
-    bool debug = true;
+    bool debug = false;
     ++dijkstra_searches;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
         int &distance = top_pair.first;
         AbstractState *state = top_pair.second;
-        ++expansions;
+        if (forward)
+            ++expansions_dijkstra;
 
         int state_distance = state->get_distance();
         if (debug)
@@ -116,7 +118,7 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
 }
 
 bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
-    bool debug = true;
+    bool debug = false;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
         int &old_f = top_pair.first;
@@ -155,7 +157,8 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
             if (successor->get_distance() > succ_g) {
                 successor->set_distance(succ_g);
                 const int f = succ_g + successor->get_min_distance();
-                cout << "F: " << f << endl;
+                if (DEBUG)
+                    cout << "F: " << f << endl;
                 Arc *origin = new Arc(op, state);
                 successor->set_origin(origin);
                 if (debug)
@@ -171,17 +174,31 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
 bool Abstraction::find_solution() {
     HeapQueue<AbstractState *> queue;
     collect_states();
+
+    // A*.
     for (int i = 0; i < abs_states.size(); ++i) {
         abs_states[i]->set_distance(INFINITY);
     }
     init->set_distance(0);
     init->set_origin(0);
-    if (USE_ASTAR) {
-        queue.push(init->get_min_distance(), init);
-        return astar_search(queue);
+    queue.push(init->get_min_distance(), init);
+    bool astar_success = astar_search(queue);
+    int astar_cost = init->get_min_distance();
+
+    // Dijkstra.
+    while (!queue.empty())
+        queue.pop();
+    for (int i = 0; i < abs_states.size(); ++i) {
+        abs_states[i]->set_distance(INFINITY);
     }
+    init->set_distance(0);
+    init->set_origin(0);
     queue.push(0, init);
-    return dijkstra_search(queue, true);
+    bool dijkstra_success = dijkstra_search(queue, true);
+
+    assert(astar_success == dijkstra_success);
+    assert(astar_cost == init->get_min_distance());
+    return astar_success;
 }
 
 void Abstraction::extract_solution(AbstractState &goal) {

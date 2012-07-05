@@ -43,6 +43,7 @@ private:
                         int *var, int *value) const;
 
     int expansions;
+    int expansions_dijkstra;
     FRIEND_TEST(CegarTest, astar_search);
     bool astar_search(HeapQueue<AbstractState *> &queue);
     FRIEND_TEST(CegarTest, dijkstra_search);
@@ -71,6 +72,9 @@ public:
     bool can_reuse_last_solution() const {return start_solution_check_ptr; }
     bool check_solution();
 
+    int get_num_expansions() const {return expansions; }
+    int get_num_expansions_dijkstra() const {return expansions_dijkstra; }
+
     void calculate_costs();
 
     int get_num_states() const {return num_states; }
@@ -80,6 +84,7 @@ public:
     std::vector<AbstractState *> *get_abs_states() {return &abs_states; }
     void write_dot_file(int num);
     int dijkstra_searches;
+
 };
 }
 
