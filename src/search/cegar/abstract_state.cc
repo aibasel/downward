@@ -260,6 +260,10 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     delete this->origin;
     delete this->next_arc;
 
+    // Pass on the h-value.
+    v1->set_min_distance(min_distance);
+    v2->set_min_distance(min_distance);
+
     AbstractState *bridge_state = 0;
     // If we refine a goal state, only reuse solution if the path leads to the goal.
     bool v1_is_bridge = ((u_v1 && v1_w) || (u_v1 && !state_out && v1->is_abstraction_of_goal()));
