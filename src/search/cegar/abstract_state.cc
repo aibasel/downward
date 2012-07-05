@@ -21,7 +21,7 @@ int doubles = 0;
 
 AbstractState::AbstractState(string s, bool init) {
     assert(!g_variable_domain.empty());
-    origin = 0;
+    prev_arc = 0;
     next_arc = 0;
     min_distance = 0;
 
@@ -182,8 +182,8 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     // Results from Dijkstra search. If  u --> v --> w  was on the
     // shortest path and a new path  u --> v{1,2} --> w is created with the
     // same arcs, we avoid a dijkstra computation.
-    Operator *op_in = (origin) ? origin->first : 0;
-    AbstractState *state_in = (origin) ? origin->second : 0;
+    Operator *op_in = (prev_arc) ? prev_arc->first : 0;
+    AbstractState *state_in = (prev_arc) ? prev_arc->second : 0;
     Operator *op_out = (next_arc) ? next_arc->first : 0;
     AbstractState *state_out = (next_arc) ? next_arc->second : 0;
     bool u_v1 = false, u_v2 = false, v1_w = false, v2_w = false;
@@ -257,7 +257,7 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     vector<Arc>().swap(next);
     vector<Arc>().swap(prev);
     vector<Domain>().swap(this->values);
-    delete this->origin;
+    delete this->prev_arc;
     delete this->next_arc;
 
     // Pass on the h-value.

@@ -37,7 +37,7 @@ private:
     // For Dijkstra search.
     int distance;
     int min_distance; // TODO: Rename to min_cost_to_goal
-    Arc *origin;  //TODO: Rename to prev_arc
+    Arc *prev_arc;
     Arc *next_arc;
 
     // Refinement hierarchy. Save the variable for which this state was refined
@@ -76,9 +76,9 @@ public:
     int get_distance() {return distance; }
     void set_min_distance(int dist) {min_distance = dist; }
     int get_min_distance() {return min_distance; }
-    void set_origin(Arc *orig) {delete origin;
-                                origin = orig; }
-    Arc *get_origin() {return origin; }
+    void set_prev_arc(Arc *orig) {delete prev_arc;
+                                prev_arc = orig; }
+    Arc *get_prev_arc() {return prev_arc; }
     void set_next_arc(Arc *next) {delete next_arc;
                                   next_arc = next; }
     Arc *get_next_arc() {return next_arc; }
