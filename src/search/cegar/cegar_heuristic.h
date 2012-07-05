@@ -7,7 +7,7 @@
 #include "../state.h"
 
 namespace cegar_heuristic {
-const int COST_UPDATES = 2;
+const int COST_UPDATES = 3;
 
 class CegarHeuristic : public Heuristic {
     int max_states;

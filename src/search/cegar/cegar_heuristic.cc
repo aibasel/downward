@@ -67,7 +67,8 @@ void CegarHeuristic::initialize() {
         assert(num_states == max_states);
     abstraction.calculate_costs();
     assert(num_states == abstraction.get_num_states());
-    assert(updates == COST_UPDATES);
+    if (num_states >= COST_UPDATES * 2)
+        assert(updates == COST_UPDATES);
 
     // Unreachable goal.
     //g_goal.clear();
