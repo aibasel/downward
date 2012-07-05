@@ -302,8 +302,6 @@ void AbstractState::remove_arc(vector<Arc> *arcs, Operator *op, AbstractState *o
         Operator *current_op = (*arcs)[i].first;
         AbstractState *current_state = (*arcs)[i].second;
         if ((current_op == op) && (current_state == other)) {
-            // TODO(jendrik): Remove later, because op.get_name() may not be unique.
-            assert((current_op->get_name() == op->get_name()) && (*current_state == *other));
             arcs->erase(arcs->begin() + i);
             return;
         }
