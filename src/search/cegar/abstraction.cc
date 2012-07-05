@@ -152,6 +152,7 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
             // Prevent overflow.
             int succ_g = (g == INFINITY) ? INFINITY : g + cost;
             // TODO: Ignore states with h = infinity?
+            // TODO: In case of equal f-values, prefer states with higher g?
 
             if (debug)
                 cout << "NEXT: " << successor->str() << " " << cost << " "

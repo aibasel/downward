@@ -32,6 +32,7 @@ void CegarHeuristic::initialize() {
     cout << "Peak memory before refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Initializing cegar heuristic..." << endl;
     int saved_dijkstras = 0;
+    int updates = 0;
     bool success = false;
     int num_states = abstraction.get_num_states();
     while (num_states < max_states) {
@@ -47,6 +48,11 @@ void CegarHeuristic::initialize() {
         num_states = abstraction.get_num_states();
         if (success)
             break;
+        // Update costs to goal COST_UPDATES times evenly distributed over time.
+        if (num_states % ((max_states / (COST_UPDATES + 1)) + 1) == 0) {
+            abstraction.update_costs_to_goal();
+            ++updates;
+        }
     }
     cout << "Done refining [t=" << g_timer << "]" << endl;
     cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
@@ -61,6 +67,7 @@ void CegarHeuristic::initialize() {
         assert(num_states == max_states);
     abstraction.calculate_costs();
     assert(num_states == abstraction.get_num_states());
+    assert(updates == COST_UPDATES);
 
     // Unreachable goal.
     //g_goal.clear();
