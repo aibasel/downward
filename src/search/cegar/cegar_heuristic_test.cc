@@ -595,6 +595,6 @@ TEST(CegarTest, dijkstra_search) {
     AbstractState *found_goal = abs.init->get_next_arc()->second;
     EXPECT_EQ("<0={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_next_arc());
-    EXPECT_EQ(3, abs.expansions);
+    EXPECT_EQ(3, abs.expansions_dijkstra);
 }
 }
