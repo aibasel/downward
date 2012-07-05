@@ -17,7 +17,7 @@
 
 namespace cegar_heuristic {
 const int INFINITY = numeric_limits<int>::max();
-const bool USE_ASTAR = true;
+const bool TEST_WITH_DIJKSTRA = false;
 
 enum PickStrategy {
     FIRST,
