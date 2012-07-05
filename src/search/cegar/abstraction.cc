@@ -59,6 +59,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     }
     if (state == goal) {
         if (v1->is_abstraction_of_goal()) {
+            assert(!v2->is_abstraction_of_goal());
             goal = v1;
         } else {
             assert(v2->is_abstraction_of_goal());
@@ -364,21 +365,13 @@ void Abstraction::pick_condition(const vector<pair<int, int> > &conditions,
 }
 
 void Abstraction::calculate_costs() const {
-    HeapQueue<AbstractState *> queue;
-    int num_goals = 0;
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
-        if (*it == goal) {
-            (*it)->set_distance(0);
-            queue.push(0, *it);
-            ++num_goals;
-        } else {
-            (*it)->set_distance(INFINITY);
-        }
+        (*it)->set_distance(INFINITY);
     }
-    // There can only be a single goal state, because we only refine the goal
-    // state for vars that appear in it.
-    assert(num_goals == 1);
+    HeapQueue<AbstractState *> queue;
+    queue.push(0, goal);
+    goal->set_distance(0);
     dijkstra_search(queue, false);
 }
 
