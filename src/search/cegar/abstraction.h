@@ -22,7 +22,8 @@ const bool TEST_WITH_DIJKSTRA = false;
 enum PickStrategy {
     FIRST,
     RANDOM,
-    GOAL
+    GOAL,
+    MAX_CONSTRAINED
 };
 
 class Abstraction {
