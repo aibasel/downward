@@ -36,6 +36,13 @@ Abstraction::Abstraction(PickStrategy strategy) :
     expansions = 0;
     expansions_dijkstra = 0;
     partial_ordering(*g_causal_graph, &cg_partial_ordering);
+    if (DEBUG) {
+        cout << "Partial CG ordering: ";
+        for (int pos = 0; pos < cg_partial_ordering.size(); ++pos) {
+            cout << cg_partial_ordering[pos] << " ";
+        }
+        cout << endl;
+    }
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -169,7 +176,7 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
             if (successor->get_distance() > succ_g) {
                 successor->set_distance(succ_g);
                 const int f = succ_g + successor->get_h();
-                if (DEBUG)
+                if (debug)
                     cout << "F: " << f << endl;
                 Arc *prev_arc = new Arc(op, state);
                 successor->set_prev_arc(prev_arc);
@@ -399,16 +406,20 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
                 max_refinement = refinement;
             }
         }
-    } else if (pick == MIN_PREDECESSORS) {
+    } else if (pick == MIN_PREDECESSORS || pick == MAX_PREDECESSORS) {
         int min_pos = INFINITY;
-        //int max_pos = -1;
+        int max_pos = -1;
         for (int i = 0; i < conditions.size(); ++i) {
             int var = conditions[i].first;
             for (int pos = 0; pos < cg_partial_ordering.size(); ++pos) {
                 if (var == cg_partial_ordering[pos]) {
-                    if (pos < min_pos) {
+                    if (pick == MIN_PREDECESSORS && pos < min_pos) {
                         cond = i;
                         min_pos = pos;
+                    }
+                    if (pick == MAX_PREDECESSORS && pos > max_pos) {
+                        cond = i;
+                        max_pos = pos;
                     }
                 }
             }
