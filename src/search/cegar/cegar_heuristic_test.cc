@@ -49,9 +49,10 @@ void init_test() {
     g_operators.clear();
     g_operators.push_back(op1);
 
-    // goal(0) = 1
+    // goal(0) = 1, goal(1) = 1
     g_goal.clear();
     g_goal.push_back(make_pair(0, 1));
+    g_goal.push_back(make_pair(1, 1));
 }
 
 TEST(CegarTest, str) {
@@ -348,7 +349,6 @@ TEST(CegarTest, find_solution_first_state) {
 TEST(CegarTest, find_solution_second_state) {
     // Operator: <0=0, 1=0 --> 1=1>
     init_test();
-    g_goal.push_back(make_pair(1, 1));
 
     // -> <>
     Abstraction abs = Abstraction();
