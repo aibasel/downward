@@ -583,4 +583,41 @@ TEST(CegarTest, dijkstra_search) {
     EXPECT_FALSE(found_goal->get_next_arc());
     EXPECT_EQ(3, abs.expansions_dijkstra);
 }
+
+TEST(CegarTest, partial_ordering1) {
+    init_test();
+    istringstream iss("begin_CG\n"
+"2\n"
+"2 4\n"
+"1 4\n"
+"1\n"
+"2 2\n"
+"1\n"
+"1 4\n"
+"end_CG");
+    CausalGraph cg = CausalGraph(iss);
+    vector<int> order;
+    partial_ordering(cg, &order);
+    ASSERT_EQ(3, order.size());
+    EXPECT_EQ(0, order[0]);
+}
+
+TEST(CegarTest, partial_ordering2) {
+    init_test();
+    istringstream iss("begin_CG\n"
+"2\n"
+"2 4\n"
+"1 4\n"
+"1\n"
+"2 2\n"
+"0\n"
+"end_CG");
+    CausalGraph cg = CausalGraph(iss);
+    vector<int> order;
+    partial_ordering(cg, &order);
+    ASSERT_EQ(3, order.size());
+    EXPECT_EQ(0, order[0]);
+    EXPECT_EQ(1, order[1]);
+    EXPECT_EQ(2, order[2]);
+}
 }

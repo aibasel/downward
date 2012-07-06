@@ -45,6 +45,11 @@ bool intersection_empty(const set<int> &vals1, const set<int> &vals2) {
     return true;
 }
 
+Operator create_op(const string desc) {
+    istringstream iss("begin_operator\n" + desc + "\nend_operator");
+    return Operator(iss, false);
+}
+
 Operator create_op(const string name, vector<string> prevail, vector<string> pre_post, int cost) {
     ostringstream oss;
     // Create operator description.
@@ -56,11 +61,6 @@ Operator create_op(const string name, vector<string> prevail, vector<string> pre
         oss << pre_post[i] << endl;
     oss << cost;
     return create_op(oss.str());
-}
-
-Operator create_op(const string desc) {
-    istringstream iss("begin_operator\n" + desc + "\nend_operator");
-    return Operator(iss, false);
 }
 
 State *create_state(const string desc) {
@@ -130,5 +130,41 @@ bool goal_var(int var) {
             return true;
     }
     return false;
+}
+
+void partial_ordering(CausalGraph &causal_graph, vector<int> *order) {
+    assert(order->empty());
+    set<int> vars;
+    set<int>::iterator it;
+    for (int i = 0; i < g_variable_domain.size(); ++i) {
+        vars.insert(vars.end(), i);
+    }
+    vector<set<int> > predecessors;
+    predecessors.resize(g_variable_domain.size());
+    for (int i = 0; i < g_variable_domain.size(); ++i) {
+        const vector<int> &pre = causal_graph.get_predecessors(i);
+        for (int j = 0; j < pre.size(); ++j) {
+            predecessors[i].insert(j);
+        }
+    }
+    while (!vars.empty()) {
+        int min_pre = g_variable_domain.size() + 1;
+        int var = -1;
+        for (it = vars.begin(); it != vars.end(); ++it) {
+            set<int> &pre = predecessors[*it];
+            assert(pre.size() <= g_variable_domain.size());
+            if (pre.size() < min_pre) {
+                var = *it;
+                min_pre = pre.size();
+            }
+        }
+        assert(var >= 0);
+        order->push_back(var);
+        vars.erase(var);
+        for (it = vars.begin(); it != vars.end(); ++it) {
+            predecessors[*it].erase(var);
+        }
+    }
+    assert(order->size() == g_variable_domain.size());
 }
 }
