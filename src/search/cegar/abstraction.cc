@@ -375,8 +375,9 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
                 min_rest = rest;
             }
         }
-    } else if (pick == MIN_REFINED) {
+    } else if (pick == MIN_REFINED || pick == MAX_REFINED) {
         double min_refinement = 1.0;
+        double max_refinement = -0.1;
         for (int i = 0; i < conditions.size(); ++i) {
             int all_values = g_variable_domain[conditions[i].first];
             int rest = state.get_values(conditions[i].first).size();
@@ -386,11 +387,15 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
             // all=4, remaining=2 -> refinement=0.66
             // all=5, remaining=2 -> refinement=0.75
             double refinement = 1.0 - ((rest - 1.0) / (all_values - 1.0));
-            assert(refinement <= 1.0);
+            assert(refinement < 1.0);
             assert(refinement >= 0.0);
-            if (refinement < min_refinement) {
+            if (refinement < min_refinement && pick == MIN_REFINED) {
                 cond = i;
                 min_refinement = refinement;
+            }
+            if (refinement > max_refinement && pick == MAX_REFINED) {
+                cond = i;
+                max_refinement = refinement;
             }
         }
     } else {
