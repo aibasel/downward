@@ -97,6 +97,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_CONSTRAINED");
     pick_strategies.push_back("MIN_REFINED");
     pick_strategies.push_back("MAX_REFINED");
+    pick_strategies.push_back("MIN_PREDECESSORS");
+    pick_strategies.push_back("MAX_PREDECESSORS");
     parser.add_enum_option("pick", pick_strategies, "FIRST",
                            "how to pick the next unsatisfied condition");
     Heuristic::add_options_to_parser(parser);

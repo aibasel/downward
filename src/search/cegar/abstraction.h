@@ -26,7 +26,9 @@ enum PickStrategy {
     MIN_CONSTRAINED,
     MAX_CONSTRAINED,
     MIN_REFINED,
-    MAX_REFINED
+    MAX_REFINED,
+    MIN_PREDECESSORS,
+    MAX_PREDECESSORS
 };
 
 class Abstraction {
@@ -58,6 +60,8 @@ private:
 
     // Refinement hierarchy.
     AbstractState *single;
+
+    vector<int> cg_partial_ordering;
 
 public:
     explicit Abstraction(PickStrategy strategy = FIRST);
