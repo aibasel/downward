@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "../causal_graph.h"
 #include "../operator.h"
 #include "../state.h"
 
@@ -38,6 +39,8 @@ Operator create_op(const std::string name, std::vector<string> prevail,
                    std::vector<string> pre_post, int cost=1);
 
 State *create_state(const std::string desc);
+
+void partial_ordering(CausalGraph &causal_graph, vector<int> *order);
 }
 
 #endif
