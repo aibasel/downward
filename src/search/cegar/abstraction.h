@@ -24,7 +24,9 @@ enum PickStrategy {
     RANDOM,
     GOAL,
     MIN_CONSTRAINED,
-    MAX_CONSTRAINED
+    MAX_CONSTRAINED,
+    MIN_REFINED,
+    MAX_REFINED
 };
 
 class Abstraction {
