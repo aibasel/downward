@@ -345,13 +345,14 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
         *value = conditions[0].second;
         return;
     }
+    const PickStrategy &pick = pick_strategy;
     int cond = -1;
     int random_cond = g_rng.next(conditions.size());
-    if (pick_strategy == FIRST) {
+    if (pick == FIRST) {
         cond = 0;
-    } else if (pick_strategy == RANDOM) {
+    } else if (pick == RANDOM) {
         cond = random_cond;
-    } else if (pick_strategy == GOAL) {
+    } else if (pick == GOAL) {
         for (int i = 0; i < conditions.size(); ++i) {
             if (goal_var(conditions[i].first))
                 cond = i;
@@ -359,37 +360,32 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
         }
         if (cond == -1)
             cond = random_cond;
-    } else if (pick_strategy == MIN_CONSTRAINED) {
-        int max_remaining_values = -1;
+    } else if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
+        int max_rest = -1;
+        int min_rest = INFINITY;
         for (int i = 0; i < conditions.size(); ++i) {
-            int remaining_values = state.get_values(conditions[i].first).size();
-            assert(remaining_values >= 2);
-            if (remaining_values > max_remaining_values) {
+            int rest = state.get_values(conditions[i].first).size();
+            assert(rest >= 2);
+            if (rest > max_rest && pick == MIN_CONSTRAINED) {
                 cond = i;
-                max_remaining_values = remaining_values;
+                max_rest = rest;
+            }
+            if (rest < min_rest && pick == MAX_CONSTRAINED) {
+                cond = i;
+                min_rest = rest;
             }
         }
-    } else if (pick_strategy == MAX_CONSTRAINED) {
-        int min_remaining_values = INFINITY;
-        for (int i = 0; i < conditions.size(); ++i) {
-            int remaining_values = state.get_values(conditions[i].first).size();
-            assert(remaining_values >= 2);
-            if (remaining_values < min_remaining_values) {
-                cond = i;
-                min_remaining_values = remaining_values;
-            }
-        }
-    } else if (pick_strategy == MIN_REFINED) {
+    } else if (pick == MIN_REFINED) {
         double min_refinement = 1.0;
         for (int i = 0; i < conditions.size(); ++i) {
             int all_values = g_variable_domain[conditions[i].first];
-            int remaining_values = state.get_values(conditions[i].first).size();
+            int rest = state.get_values(conditions[i].first).size();
             assert(all_values >= 2);
-            assert(remaining_values >= 2);
-            assert(remaining_values <= all_values);
+            assert(rest >= 2);
+            assert(rest <= all_values);
             // all=4, remaining=2 -> refinement=0.66
             // all=5, remaining=2 -> refinement=0.75
-            double refinement = 1.0 - ((remaining_values - 1.0) / (all_values - 1.0));
+            double refinement = 1.0 - ((rest - 1.0) / (all_values - 1.0));
             assert(refinement <= 1.0);
             assert(refinement >= 0.0);
             if (refinement < min_refinement) {
@@ -398,7 +394,7 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
             }
         }
     } else {
-        cout << "Invalid pick strategy: " << pick_strategy << endl;
+        cout << "Invalid pick strategy: " << pick << endl;
         exit(2);
     }
     assert(cond >= 0);
