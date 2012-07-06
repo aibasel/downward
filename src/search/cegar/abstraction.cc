@@ -35,6 +35,7 @@ Abstraction::Abstraction(PickStrategy strategy) :
     dijkstra_searches = 0;
     expansions = 0;
     expansions_dijkstra = 0;
+    partial_ordering(*g_causal_graph, &cg_partial_ordering);
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -396,6 +397,20 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
             if (refinement > max_refinement && pick == MAX_REFINED) {
                 cond = i;
                 max_refinement = refinement;
+            }
+        }
+    } else if (pick == MIN_PREDECESSORS) {
+        int min_pos = INFINITY;
+        //int max_pos = -1;
+        for (int i = 0; i < conditions.size(); ++i) {
+            int var = conditions[i].first;
+            for (int pos = 0; pos < cg_partial_ordering.size(); ++pos) {
+                if (var == cg_partial_ordering[pos]) {
+                    if (pos < min_pos) {
+                        cond = i;
+                        min_pos = pos;
+                    }
+                }
             }
         }
     } else {
