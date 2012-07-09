@@ -35,6 +35,7 @@ void CegarHeuristic::initialize() {
     int updates = 0;
     bool success = false;
     int num_states = abstraction.get_num_states();
+    write_causal_graph(*g_causal_graph);
     while (num_states < max_states) {
         //abstraction.write_dot_file(num_states);
         if (num_states % 100 == 0)
