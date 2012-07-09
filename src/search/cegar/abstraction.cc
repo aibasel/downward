@@ -35,7 +35,8 @@ Abstraction::Abstraction(PickStrategy strategy) :
     dijkstra_searches = 0;
     expansions = 0;
     expansions_dijkstra = 0;
-    partial_ordering(*g_causal_graph, &cg_partial_ordering);
+    if (g_causal_graph)
+        partial_ordering(*g_causal_graph, &cg_partial_ordering);
     if (DEBUG) {
         cout << "Partial CG ordering: ";
         for (int pos = 0; pos < cg_partial_ordering.size(); ++pos) {
