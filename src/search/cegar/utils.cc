@@ -182,6 +182,10 @@ void write_causal_graph(CausalGraph &causal_graph) {
             dotfile << "  " << var << " -> " << successors[i] << ";" << endl;
         }
     }
+    for (int i = 0; i < g_goal.size(); i++) {
+        int var = g_goal[i].first;
+        dotfile << var << " [color=red];" << endl;
+    }
     dotfile << "}" << endl;
     dotfile.close();
 }
