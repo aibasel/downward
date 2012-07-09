@@ -1,6 +1,7 @@
 #include "utils.h"
 
 #include <cassert>
+#include <fstream>
 #include <set>
 #include <sstream>
 #include <vector>
@@ -166,5 +167,22 @@ void partial_ordering(CausalGraph &causal_graph, vector<int> *order) {
         }
     }
     assert(order->size() == g_variable_domain.size());
+}
+
+void write_causal_graph(CausalGraph &causal_graph) {
+    ofstream dotfile("causal-graph.dot");
+    if (!dotfile.is_open()) {
+        cout << "dot file for causal graph could not be opened" << endl;
+        exit(1);
+    }
+    dotfile << "digraph cg {" << endl;
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        const vector<int> &successors = causal_graph.get_successors(var);
+        for (int i = 0; i < successors.size(); ++i) {
+            dotfile << "  " << var << " -> " << successors[i] << ";" << endl;
+        }
+    }
+    dotfile << "}" << endl;
+    dotfile.close();
 }
 }
