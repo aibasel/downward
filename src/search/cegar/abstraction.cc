@@ -361,11 +361,13 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
         cond = 0;
     } else if (pick == RANDOM) {
         cond = random_cond;
-    } else if (pick == GOAL) {
+    } else if (pick == GOAL or pick == NO_GOAL) {
         for (int i = 0; i < conditions.size(); ++i) {
-            if (goal_var(conditions[i].first))
+            bool is_goal_var = goal_var(conditions[i].first);
+            if ((pick == GOAL && is_goal_var) || (pick == NO_GOAL && !is_goal_var)) {
                 cond = i;
-            break;
+                break;
+            }
         }
         if (cond == -1)
             cond = random_cond;

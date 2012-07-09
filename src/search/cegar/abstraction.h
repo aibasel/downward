@@ -23,6 +23,7 @@ enum PickStrategy {
     FIRST,
     RANDOM,
     GOAL,
+    NO_GOAL,
     MIN_CONSTRAINED,
     MAX_CONSTRAINED,
     MIN_REFINED,
