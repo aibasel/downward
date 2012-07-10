@@ -206,29 +206,7 @@ TEST(CegarTest, refine_var1) {
     EXPECT_EQ("[]", a2->get_next_as_string());
 }
 
-TEST(CegarTest, applicable) {
-    init_test();
-
-    // Operator: <0=0, 1=0 --> 1=1>
-    Operator op = make_op1();
-
-    vector<pair<string, bool> > pairs;
-
-    pairs.push_back(pair<string, bool>("<>", true));
-    pairs.push_back(pair<string, bool>("<0={0}>", true));
-    pairs.push_back(pair<string, bool>("<0={0},1={0}>", true));
-    pairs.push_back(pair<string, bool>("<0={1},1={0}>", false));
-    pairs.push_back(pair<string, bool>("<0={1}>", false));
-    pairs.push_back(pair<string, bool>("<1={1}>", false));
-
-    AbstractState a;
-    for (int i = 0; i < pairs.size(); ++i) {
-        a = AbstractState(pairs[i].first);
-        ASSERT_EQ(pairs[i].second, a.applicable(op));
-    }
-}
-
-TEST(CegarTest, apply) {
+TEST(CegarTest, check_arc) {
     init_test();
 
     // Operator: <0=0, 1=0 --> 1=1>
@@ -240,41 +218,21 @@ TEST(CegarTest, apply) {
     pairs.push_back(pair<string, string>("<0={0}>", "<0={0},1={1}>"));
     pairs.push_back(pair<string, string>("<1={0}>", "<0={0},1={1}>"));
     pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={0},1={1}>"));
-
-    AbstractState orig;
-    AbstractState result;
-    for (int i = 0; i < pairs.size(); ++i) {
-        orig = AbstractState(pairs[i].first);
-        orig.apply(op, &result);
-        ASSERT_TRUE(AbstractState(pairs[i].second) == result);
-    }
-}
-
-TEST(CegarTest, agrees_with) {
-    init_test();
-    // Check that this variable doesn't appear in the resulting state.
-    g_variable_domain.push_back(2);
-
-    vector<pair<string, string> > pairs;
-
-    pairs.push_back(pair<string, string>("<>", "<0={0},1={1}>"));
-    pairs.push_back(pair<string, string>("<0={0}>", "<0={0},1={1}>"));
-    pairs.push_back(pair<string, string>("<1={0}>", "<0={0},1={1}>"));
-    pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={0},1={1}>"));
+    pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={1},1={1}>"));
     pairs.push_back(pair<string, string>("<0={0,1}>", "<0={0}>"));
+    pairs.push_back(pair<string, string>("<0={1}>", "<>"));
 
-    bool agree[] = {
-        true, true, false, false, true
+    bool check[] = {
+        true, true, true, true, false, true, false
     };
-    ASSERT_EQ((sizeof(agree) / sizeof(agree[0])), pairs.size());
+    ASSERT_EQ((sizeof(check) / sizeof(check[0])), pairs.size());
 
     AbstractState a;
     AbstractState b;
     for (int i = 0; i < pairs.size(); ++i) {
         a = AbstractState(pairs[i].first);
         b = AbstractState(pairs[i].second);
-        ASSERT_EQ(agree[i], a.agrees_with(b));
-        ASSERT_EQ(agree[i], b.agrees_with(a));
+        ASSERT_EQ(check[i], a.check_and_add_arc(&op, &b));
     }
 }
 
