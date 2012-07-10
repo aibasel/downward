@@ -87,7 +87,7 @@ void Abstraction::reset_distances() const {
 }
 
 bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) const {
-    bool debug = false;
+    bool debug = DEBUG && false;
     ++dijkstra_searches;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
@@ -137,7 +137,7 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
 }
 
 bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
-    bool debug = false;
+    bool debug = DEBUG && false;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
         int &old_f = top_pair.first;
