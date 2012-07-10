@@ -7,33 +7,59 @@
 #include <assert.h>
 
 template<class Entry>
-class PerStateInformation {
+class PerStateInformationByValue {
 private:
-    std::vector<bool> empty;
+    Entry default_value;
     std::vector<Entry> entries;
 public:
-    PerStateInformation() {}
+    PerStateInformationByValue(Entry _default_value):
+        default_value(_default_value) {
+    }
 
     Entry &operator[](const State &state) {
         assert(state.id >= 0);
         if (entries.size() <= state.id) {
-            entries.resize(state.id + 1);
-            empty.resize(state.id + 1, true);
+            entries.resize(state.id + 1, default_value);
         }
-        empty[state.id] = false;
         return entries[state.id];
+    }
+};
+
+
+template<class Entry>
+class PerStateInformationByReference {
+private:
+    std::vector<Entry *> entries;
+public:
+    PerStateInformationByReference() {}
+
+    void set(const State &state, Entry &entry) {
+        assert(state.id >= 0);
+        if (entries.size() <= state.id) {
+            entries.resize(state.id + 1, 0);
+        }
+        entries[state.id] = new Entry(entry);
+    }
+
+    Entry *get(const State &state) {
+        assert(state.id >= 0);
+        if (has_entry(state)) {
+            return entries[state.id];
+        } else {
+            return 0;
+        }
     }
 
     bool has_entry(const State &state) const {
-        return state.id >= 0 && state.id < entries.size() && !empty[state.id];
+        return state.id >= 0 && state.id < entries.size() && entries[state.id] != 0;
     }
 
     void remove_enty(const State &state) {
         if (!has_entry(state)) {
             return;
         }
-        empty[state.id] = true;
-        entries[state.id] = Entry();
+        delete entries[state.id];
+        entries[state.id] = 0;
     }
 };
 
