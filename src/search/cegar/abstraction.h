@@ -85,6 +85,7 @@ public:
     int get_num_states() const {return states.size(); }
 
     void release_memory();
+    void print_statistics();
 
     // Only for testing.
     void write_dot_file(int num);

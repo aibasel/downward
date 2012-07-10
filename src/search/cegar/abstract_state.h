@@ -20,10 +20,6 @@ class AbstractState;
 typedef pair<Operator *, AbstractState *> Arc;
 typedef std::set<int> Domain;
 
-extern int same;
-extern int different;
-extern int doubles;
-
 class AbstractState {
 private:
     // Possible values of each variable in this state.
