@@ -59,7 +59,6 @@ void CegarHeuristic::initialize() {
     cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
     cout << "Abstract states: " << num_states << endl;
-    cout << "SAME: " << same << " DIFFERENT: " << different << " DOUBLES: " << doubles << endl;
     cout << "Saved searches: " << saved_searches << endl;
     cout << "A* expansions: " << abstraction.get_num_expansions() << endl;
     if (TEST_WITH_DIJKSTRA) {
@@ -73,6 +72,7 @@ void CegarHeuristic::initialize() {
     assert(num_states == abstraction.get_num_states());
     if (num_states == max_states)
         assert(updates == COST_UPDATES);
+    abstraction.print_statistics();
     abstraction.release_memory();
 
     // Unreachable goal.

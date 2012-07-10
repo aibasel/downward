@@ -499,4 +499,22 @@ void Abstraction::release_memory() {
         state->release_memory();
     }
 }
+
+void Abstraction::print_statistics() {
+    set<AbstractState *>::iterator it;
+    int nexts = 0, prevs = 0, loops = 0;
+    for (it = states.begin(); it != states.end(); ++it) {
+        AbstractState *state = *it;
+        vector<Arc> &next = state->get_next();
+        for (int i = 0; i < next.size(); ++i) {
+            if (next[i].second == state)
+                ++loops;
+        }
+        nexts += next.size();
+        prevs += (&state->get_prev())->size();
+    }
+    assert(nexts == prevs);
+    cout << "Arcs: " << nexts << endl;
+    cout << "Self-loops: " << loops << endl;
+}
 }

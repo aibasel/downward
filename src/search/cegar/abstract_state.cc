@@ -15,9 +15,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-int same = 0;
-int different = 0;
-int doubles = 0;
 
 AbstractState::AbstractState(string s, bool init) {
     assert(!g_variable_domain.empty());
@@ -265,8 +262,6 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     bool v1_is_bridge = ((u_v1 && v1_w) || (u_v1 && !state_out && v1->is_abstraction_of_goal()));
     if ((u_v2 && v2_w) || (u_v2 && !state_out && v2->is_abstraction_of_goal())) {
         // Prefer going over v2. // TODO: add option?
-        if (v1_is_bridge)
-            ++doubles;
         bridge_state = v2;
     } else if (v1_is_bridge) {
         bridge_state = v1;
@@ -281,10 +276,8 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     }
     if (bridge_state) {
         assert(state_in);
-        ++same;
         return state_in;
     }
-    ++different;
     return 0;
 }
 
