@@ -84,6 +84,8 @@ public:
 
     int get_num_states() const {return states.size(); }
 
+    void release_memory();
+
     // Only for testing.
     void write_dot_file(int num);
     mutable int dijkstra_searches;

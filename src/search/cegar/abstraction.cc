@@ -490,4 +490,13 @@ void Abstraction::write_dot_file(int num) {
     dotfile << "}" << endl;
     dotfile.close();
 }
+
+void Abstraction::release_memory() {
+    vector<int>().swap(cg_partial_ordering);
+    set<AbstractState *>::iterator it;
+    for (it = states.begin(); it != states.end(); ++it) {
+        AbstractState *state = *it;
+        state->release_memory();
+    }
+}
 }
