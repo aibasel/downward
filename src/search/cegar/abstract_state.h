@@ -14,6 +14,7 @@
 
 // TODO: Check out boost dynamic bitset
 // TODO: Release unneeded memory after initialization
+// TODO: Try using separate list for self-loops
 
 namespace cegar_heuristic {
 class AbstractState;
