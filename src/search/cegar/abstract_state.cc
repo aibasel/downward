@@ -308,20 +308,6 @@ void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
     remove_arc(&prev, op, other);
 }
 
-bool AbstractState::check_arc(Operator *op, AbstractState *other) {
-    //if (DEBUG)
-    //    cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
-    if (!applicable(*op))
-        return false;
-    AbstractState result = AbstractState("", false);
-    apply(*op, &result);
-    if (result.agrees_with(*other)) {
-        add_arc(op, other);
-        return true;
-    }
-    return false;
-}
-
 bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
     //if (DEBUG)
     //    cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
@@ -364,50 +350,6 @@ bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
         }
     }
     add_arc(op, other);
-    return true;
-}
-
-bool AbstractState::applicable(const Operator &op) const {
-    vector<pair<int, int> > preconditions;
-    get_prevail_and_preconditions(op, &preconditions);
-    for (int i = 0; i < preconditions.size(); ++i) {
-        // Check if precondition value is in the set of possible values.
-        int &var = preconditions[i].first;
-        int &value = preconditions[i].second;
-        // Only check value if it isn't -1.
-        if ((value != -1) && (get_values(var).count(value) == 0))
-            return false;
-    }
-    return true;
-}
-
-void AbstractState::apply(const Operator &op, AbstractState *result) const {
-    assert(applicable(op));
-    result->values = this->values;
-    for (int i = 0; i < op.get_prevail().size(); ++i) {
-        const Prevail &prevail = op.get_prevail()[i];
-        result->set_value(prevail.var, prevail.prev);
-    }
-    for (int i = 0; i < op.get_pre_post().size(); ++i) {
-        const PrePost &prepost = op.get_pre_post()[i];
-        result->set_value(prepost.var, prepost.post);
-    }
-}
-
-bool AbstractState::agrees_with(const AbstractState &other) const {
-    // Two abstract states agree if for all variables the sets of possible
-    // values sets have a non-empty intersection.
-    for (int i = 0; i < g_variable_domain.size(); ++i) {
-        vector<int> both(g_variable_domain[i]);
-        vector<int>::iterator it;
-        const Domain &vals1 = this->get_values(i);
-        const Domain &vals2 = other.get_values(i);
-        it = set_intersection(vals1.begin(), vals1.end(),
-                              vals2.begin(), vals2.end(), both.begin());
-        if (it == both.begin())
-            // Set is empty.
-            return false;
-    }
     return true;
 }
 
