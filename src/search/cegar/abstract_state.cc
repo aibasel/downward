@@ -15,7 +15,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 AbstractState::AbstractState(string s) {
     assert(!g_variable_domain.empty());
     prev_arc = 0;
@@ -25,9 +24,9 @@ AbstractState::AbstractState(string s) {
     values.resize(g_variable_domain.size(), set<int>());
 
     for (int var = 0; var < g_variable_domain.size(); ++var) {
-            for (int value = 0; value < g_variable_domain[var]; ++value)
-                values[var].insert(values[var].end(), value);
-        }
+        for (int value = 0; value < g_variable_domain[var]; ++value)
+            values[var].insert(values[var].end(), value);
+    }
 
     if (s.empty())
         return;
@@ -271,7 +270,6 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
             if (state_out)
                 bridge_state->set_next_arc(new Arc(op_out, state_out));
         }
-
     }
     if (bridge_state) {
         assert(state_in);

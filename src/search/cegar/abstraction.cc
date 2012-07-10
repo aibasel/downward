@@ -19,8 +19,8 @@
 using namespace std;
 
 namespace cegar_heuristic {
-Abstraction::Abstraction(PickStrategy strategy) :
-    last_checked_conc_state(*g_initial_state) {
+Abstraction::Abstraction(PickStrategy strategy)
+    : last_checked_conc_state(*g_initial_state) {
     assert(!g_operators.empty());
     pick_strategy = strategy;
     single = new AbstractState();

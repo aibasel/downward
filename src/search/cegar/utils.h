@@ -36,7 +36,7 @@ bool goal_var(int var);
 // pre_posts have the form "0 var pre post" (no conditional effects).
 Operator create_op(const std::string desc);
 Operator create_op(const std::string name, std::vector<string> prevail,
-                   std::vector<string> pre_post, int cost=1);
+                   std::vector<string> pre_post, int cost = 1);
 
 State *create_state(const std::string desc);
 
