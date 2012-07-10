@@ -41,9 +41,6 @@ private:
     AbstractState *start_solution_check_ptr;
     State last_checked_conc_state;
 
-    // TODO: Remove method.
-    void set_last_checked_conc_state(const State &state) {last_checked_conc_state = state; }
-
     PickStrategy pick_strategy;
     void pick_condition(AbstractState &state, const std::vector<std::pair<int, int> > &conditions,
                         int *var, int *value) const;
@@ -88,7 +85,6 @@ public:
     int get_num_states() const {return states.size(); }
 
     // Only for testing.
-    AbstractState *get_init() {return init; }
     void write_dot_file(int num);
     mutable int dijkstra_searches;
 };

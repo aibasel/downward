@@ -291,7 +291,6 @@ bool Abstraction::check_solution() {
             // Make sure we only reuse the solution if we are far enough from
             // the initial state to have saved the correct last-checked concrete
             // state.
-            //start_solution_check_ptr = 0;
             if (start_solution_check_ptr) {
                 if (!(last_checked_conc_state == prev_last_checked_conc_state)) {
                     last_checked_conc_state = prev_last_checked_conc_state;
