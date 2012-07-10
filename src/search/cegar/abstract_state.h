@@ -13,7 +13,6 @@
 #include <vector>
 
 // TODO: Check out boost dynamic bitset
-// TODO: Try using separate list for self-loops
 
 namespace cegar_heuristic {
 class AbstractState;
@@ -45,7 +44,7 @@ private:
     AbstractState *right;
 
 public:
-    explicit AbstractState(string s = "", bool init = true);
+    explicit AbstractState(string s = "");
     FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
     std::string str() const;
