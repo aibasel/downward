@@ -68,11 +68,15 @@ public:
     int get_distance() {return distance; }
     void set_h(int dist) {h = dist; }
     int get_h() {return h; }
-    void set_prev_arc(Arc *orig) {delete prev_arc;
-                                  prev_arc = orig; }
+    void set_prev_arc(Arc *orig) {
+        delete prev_arc;
+        prev_arc = orig;
+    }
     Arc *get_prev_arc() {return prev_arc; }
-    void set_next_arc(Arc *next) {delete next_arc;
-                                  next_arc = next; }
+    void set_next_arc(Arc *next) {
+        delete next_arc;
+        next_arc = next;
+    }
     Arc *get_next_arc() {return next_arc; }
 
     std::vector<Arc> &get_next() {return next; }

@@ -545,14 +545,14 @@ TEST(CegarTest, dijkstra_search) {
 TEST(CegarTest, partial_ordering1) {
     init_test();
     istringstream iss("begin_CG\n"
-"2\n"
-"2 4\n"
-"1 4\n"
-"1\n"
-"2 2\n"
-"1\n"
-"1 4\n"
-"end_CG");
+                      "2\n"
+                      "2 4\n"
+                      "1 4\n"
+                      "1\n"
+                      "2 2\n"
+                      "1\n"
+                      "1 4\n"
+                      "end_CG");
     CausalGraph cg = CausalGraph(iss);
     vector<int> order;
     partial_ordering(cg, &order);
@@ -563,13 +563,13 @@ TEST(CegarTest, partial_ordering1) {
 TEST(CegarTest, partial_ordering2) {
     init_test();
     istringstream iss("begin_CG\n"
-"2\n"
-"2 4\n"
-"1 4\n"
-"1\n"
-"2 2\n"
-"0\n"
-"end_CG");
+                      "2\n"
+                      "2 4\n"
+                      "1 4\n"
+                      "1\n"
+                      "2 2\n"
+                      "0\n"
+                      "end_CG");
     CausalGraph cg = CausalGraph(iss);
     vector<int> order;
     partial_ordering(cg, &order);
