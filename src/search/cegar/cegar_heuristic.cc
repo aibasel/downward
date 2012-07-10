@@ -74,8 +74,6 @@ void CegarHeuristic::initialize() {
     if (num_states == max_states)
         assert(updates == COST_UPDATES);
 
-    exit(0);
-
     // Unreachable goal.
     //g_goal.clear();
     //g_goal.push_back(make_pair(0, 0));
