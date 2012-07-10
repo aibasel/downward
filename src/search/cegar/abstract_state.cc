@@ -356,11 +356,12 @@ bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
             return false;
         checked[var] = true;
     }
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
-        if (checked[var] || (this == other))
-            continue;
-        if (intersection_empty(this->get_values(var), other->get_values(var)))
-            return false;
+    if (this != other) {
+        for (int var = 0; var < g_variable_domain.size(); ++var) {
+            if (!checked[var] && intersection_empty(this->get_values(var),
+                                                    other->get_values(var)))
+                return false;
+        }
     }
     add_arc(op, other);
     return true;
