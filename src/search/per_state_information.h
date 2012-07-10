@@ -12,8 +12,8 @@ private:
     Entry default_value;
     std::vector<Entry> entries;
 public:
-    PerStateInformationByValue(Entry _default_value):
-        default_value(_default_value) {
+    PerStateInformationByValue(Entry _default_value)
+        : default_value(_default_value) {
     }
 
     Entry &operator[](const State &state) {
@@ -30,8 +30,17 @@ template<class Entry>
 class PerStateInformationByReference {
 private:
     std::vector<Entry *> entries;
+    typedef typename std::vector<Entry *>::iterator EntryIterator;
 public:
     PerStateInformationByReference() {}
+    ~PerStateInformationByReference() {
+        for (EntryIterator it = entries.begin(); it != entries.end(); ++it) {
+            Entry *e = *it;
+            if (e) {
+                delete e;
+            }
+        }
+    }
 
     void set(const State &state, Entry &entry) {
         assert(state.id >= 0);
@@ -51,7 +60,7 @@ public:
     }
 
     bool has_entry(const State &state) const {
-        return state.id >= 0 && state.id < entries.size() && entries[state.id] != 0;
+        return state.id >= 0 && state.id < entries.size() && entries[state.id];
     }
 
     void remove_enty(const State &state) {
