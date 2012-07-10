@@ -254,11 +254,7 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     assert(*this != *v2);
 
     // Remove obsolete members.
-    vector<Arc>().swap(next);
-    vector<Arc>().swap(prev);
-    vector<Domain>().swap(this->values);
-    delete this->prev_arc;
-    delete this->next_arc;
+    release_memory();
 
     // Pass on the h-value.
     v1->set_h(h);
@@ -476,5 +472,13 @@ AbstractState *AbstractState::get_left_child() const {
 
 AbstractState *AbstractState::get_right_child() const {
     return right;
+}
+
+void AbstractState::release_memory() {
+    vector<Arc>().swap(next);
+    vector<Arc>().swap(prev);
+    vector<Domain>().swap(values);
+    delete prev_arc;
+    delete next_arc;
 }
 }

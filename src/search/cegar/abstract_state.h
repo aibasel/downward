@@ -13,7 +13,6 @@
 #include <vector>
 
 // TODO: Check out boost dynamic bitset
-// TODO: Release unneeded memory after initialization
 // TODO: Try using separate list for self-loops
 
 namespace cegar_heuristic {
@@ -96,6 +95,8 @@ public:
     AbstractState *get_child(int value);
     AbstractState *get_left_child() const;
     AbstractState *get_right_child() const;
+
+    void release_memory();
 };
 }
 
