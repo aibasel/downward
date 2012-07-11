@@ -40,8 +40,6 @@ private:
     // and the resulting abstract child states.
     int var;
     std::map<int, AbstractState *> children;
-    AbstractState *left;
-    AbstractState *right;
 
 public:
     explicit AbstractState(string s = "");
@@ -88,8 +86,6 @@ public:
     int get_var() const;
     // TODO: Why can't we make this method const?
     AbstractState *get_child(int value);
-    AbstractState *get_left_child() const;
-    AbstractState *get_right_child() const;
 
     void release_memory();
 };

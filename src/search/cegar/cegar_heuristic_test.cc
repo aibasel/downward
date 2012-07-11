@@ -160,11 +160,11 @@ TEST(CegarTest, refine_var0) {
     EXPECT_EQ(a1s, a1->str());
     EXPECT_EQ(a2s, a2->str());
     EXPECT_EQ(0, a.get_var());
-    AbstractState *left = a.get_left_child();
-    AbstractState *right = a.get_right_child();
+    AbstractState *left = a.get_child(0);
+    AbstractState *right = a.get_child(1);
     EXPECT_EQ(left, a1);
     EXPECT_EQ(right, a2);
-    EXPECT_EQ(a1s, a.get_left_child()->str());
+    EXPECT_EQ(a1s, left->str());
     EXPECT_EQ(a1s, a.get_child(0)->str());
     EXPECT_EQ(a2s, a.get_child(1)->str());
 
@@ -192,11 +192,11 @@ TEST(CegarTest, refine_var1) {
     EXPECT_EQ(a1s, a1->str());
     EXPECT_EQ(a2s, a2->str());
     EXPECT_EQ(1, a.get_var());
-    AbstractState *left = a.get_left_child();
-    AbstractState *right = a.get_right_child();
+    AbstractState *left = a.get_child(0);
+    AbstractState *right = a.get_child(1);
     EXPECT_EQ(left, a1);
     EXPECT_EQ(right, a2);
-    EXPECT_EQ(a1s, a.get_left_child()->str());
+    EXPECT_EQ(a1s, a.get_child(0)->str());
     EXPECT_EQ(a1s, a.get_child(0)->str());
     EXPECT_EQ(a2s, a.get_child(1)->str());
     EXPECT_EQ(a1s, a.get_child(2)->str());
@@ -285,8 +285,8 @@ TEST(CegarTest, find_solution_first_state) {
     EXPECT_EQ("<>", abs.single->str());
     EXPECT_EQ(a1s, abs.init->str());
 
-    AbstractState *left = abs.single->get_left_child();
-    AbstractState *right = abs.single->get_right_child();
+    AbstractState *left = abs.single->get_child(0);
+    AbstractState *right = abs.single->get_child(2);
 
     EXPECT_EQ(a1s, left->str());
     EXPECT_EQ(a2s, right->str());
@@ -320,8 +320,8 @@ TEST(CegarTest, find_solution_second_state) {
     EXPECT_EQ("<>", abs.single->str());
     EXPECT_EQ(a1s, abs.init->str());
 
-    AbstractState *left = abs.single->get_left_child();
-    AbstractState *right = abs.single->get_right_child();
+    AbstractState *left = abs.single->get_child(0);
+    AbstractState *right = abs.single->get_child(1);
 
     EXPECT_EQ(a1s, left->str());
     EXPECT_EQ(a2s, right->str());
@@ -363,8 +363,8 @@ TEST(CegarTest, find_solution_loop) {
     EXPECT_EQ("<>", abs.single->str());
     EXPECT_EQ(a1s, abs.init->str());
 
-    AbstractState *left = abs.single->get_left_child();
-    AbstractState *right = abs.single->get_right_child();
+    AbstractState *left = abs.single->get_child(0);
+    AbstractState *right = abs.single->get_child(1);
 
     EXPECT_EQ(a1s, left->str());
     EXPECT_EQ(a2s, right->str());
