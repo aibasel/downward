@@ -17,19 +17,23 @@ class State {
     void _copy_buffer_from_state(const State &state);
 
     // unique id (is set lazily on the first lookup)
-    int id;
+    // mutable to allow lazy assignment
+    mutable int id;
+    enum {UNKOWN_ID = -1};
+
+    // private ctor for use of factory method only
+    State(state_var_t *buffer, bool copy_buffer);
 public:
-    explicit State(istream &in);
-    State(const State &state);
+    // construct State objects for initial state and successors
+    static State *create_initial_state(state_var_t *buffer);
     State(const State &predecessor, const Operator &op);
-    ~State();
+    // copy and assignment ctors maintain the state id
+    State(const State &state);
     State &operator=(const State &other);
+    ~State();
 
-    int get_id();
+    int get_id() const;
 
-    state_var_t &operator[](int index) {
-        return vars[index];
-    }
     int operator[](int index) const {
         return vars[index];
     }
