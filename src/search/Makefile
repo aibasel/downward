@@ -44,6 +44,7 @@ HEADERS = \
           search_progress.h \
           search_space.h \
           state.h \
+          state_manager.h \
           successor_generator.h \
           sum_evaluator.h \
           timer.h \

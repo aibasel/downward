@@ -16,6 +16,8 @@ class State {
     void _deallocate();
     void _copy_buffer_from_state(const State &state);
 
+    // unique id (is set lazily on the first lookup)
+    int id;
 public:
     explicit State(istream &in);
     State(const State &state);
@@ -23,9 +25,7 @@ public:
     ~State();
     State &operator=(const State &other);
 
-    // unique id (is set after a node lookup because we do not know
-    // if this state is a duplicate before that)
-    int id;
+    int get_id();
 
     state_var_t &operator[](int index) {
         return vars[index];
@@ -38,10 +38,9 @@ public:
     bool operator<(const State &other) const;
     size_t hash() const;
 
-    explicit State(state_var_t *buffer, int _id = 0) {
+    explicit State(state_var_t *buffer) {
         vars = buffer;
         borrowed_buffer = true;
-        id = _id;
     }
     const state_var_t *get_buffer() const {
         return vars;

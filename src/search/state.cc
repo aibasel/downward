@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "utilities.h"
+#include "state_manager.h"
 
 #include <algorithm>
 #include <iostream>
@@ -71,6 +72,14 @@ State::State(const State &predecessor, const Operator &op) : id(-1) {
 
 State::~State() {
     _deallocate();
+}
+
+int State::get_id() {
+    if (id == -1) {
+        // we are not sure what the id is yet
+        id = StateManager::get_instance().get_id(*this);
+    }
+    return id;
 }
 
 void State::dump() const {
