@@ -397,6 +397,16 @@ AbstractState *AbstractState::get_child(int value) {
     return children[value];
 }
 
+void AbstractState::set_prev_arc(Arc *prev) {
+    delete prev_arc;
+    prev_arc = prev;
+}
+
+void AbstractState::set_next_arc(Arc *next) {
+    delete next_arc;
+    next_arc = next;
+}
+
 void AbstractState::release_memory() {
     vector<Arc>().swap(next);
     vector<Arc>().swap(prev);
