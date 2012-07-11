@@ -204,8 +204,7 @@ bool Abstraction::find_solution() {
 
     // Dijkstra.
     if (TEST_WITH_DIJKSTRA) {
-        while (!queue.empty())
-            queue.pop();
+        queue.clear();
         reset_distances();
         init->set_distance(0);
         init->set_prev_arc(0);
