@@ -22,7 +22,7 @@ class State {
     enum {UNKOWN_ID = -1};
 
     // private ctor for use of factory method only
-    State(state_var_t *buffer, bool copy_buffer);
+    State(state_var_t *buffer, int _id);
 public:
     // construct State objects for initial state and successors
     static State *create_initial_state(state_var_t *buffer);
