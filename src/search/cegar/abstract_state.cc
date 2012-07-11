@@ -239,8 +239,6 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     assert(v1->get_values(var).size() == this->get_values(var).size() - 1);
     assert(v2->get_values(var).size() == 1);
     children[value] = v2;
-    left = v1;
-    right = v2;
 
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
@@ -397,14 +395,6 @@ int AbstractState::get_var() const {
 
 AbstractState *AbstractState::get_child(int value) {
     return children[value];
-}
-
-AbstractState *AbstractState::get_left_child() const {
-    return left;
-}
-
-AbstractState *AbstractState::get_right_child() const {
-    return right;
 }
 
 void AbstractState::release_memory() {
