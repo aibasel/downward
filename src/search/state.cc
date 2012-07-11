@@ -38,15 +38,10 @@ State & State::operator=(const State &other) {
     return *this;
 }
 
-State::State(state_var_t *buffer, bool copy_buffer) : id(UNKOWN_ID) {
-    if (copy_buffer) {
-        _allocate();
-        for (int i = 0; i < g_variable_domain.size(); i++) {
-            vars[i] = buffer[i];
-        }
-    } else {
-        vars = buffer;
-        borrowed_buffer = true;
+State::State(state_var_t *buffer, int _id) : id(_id) {
+    _allocate();
+    for (int i = 0; i < g_variable_domain.size(); i++) {
+        vars[i] = buffer[i];
     }
 }
 
@@ -69,7 +64,7 @@ State::State(const State &predecessor, const Operator &op) : id(UNKOWN_ID) {
 }
 
 State *State::create_initial_state(state_var_t *buffer) {
-    State *state = new State(buffer, true);
+    State *state = new State(buffer, UNKOWN_ID);
     g_default_axiom_values.assign(state->vars, state->vars + g_variable_domain.size());
     g_axiom_evaluator->evaluate(state->vars);
     return state;
