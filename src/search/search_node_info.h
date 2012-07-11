@@ -9,7 +9,6 @@ class SearchNodeInfo {
 
     enum NodeStatus {NEW = 0, OPEN = 1, CLOSED = 2, DEAD_END = 3};
 
-    int id;
     unsigned int status : 2;
     int g : 30;
     int h : 31; // TODO:CR - should we get rid of it
@@ -19,7 +18,7 @@ class SearchNodeInfo {
     int real_g;
 
     SearchNodeInfo()
-        : id(-1), status(NEW), g(-1), h(-1), h_is_dirty(false),
+        : status(NEW), g(-1), h(-1), h_is_dirty(false),
           parent_state(0), creating_operator(0), real_g(-1) {
     }
 };
