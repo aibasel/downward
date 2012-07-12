@@ -425,7 +425,17 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
                 }
             }
         }
-    } else {
+    } else if (pick == BREAK) {
+        for (int i = 0; i < conditions.size(); ++i) {
+            const int &var = conditions[i].first;
+            const int &value = conditions[i].second;
+            if (state.refinement_breaks_shortest_path(var, value)) {
+                cond = i;
+            }
+        }
+        if (cond == -1)
+            cond = random_cond;
+    }else {
         cout << "Invalid pick strategy: " << pick << endl;
         exit(2);
     }

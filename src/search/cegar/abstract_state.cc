@@ -308,6 +308,10 @@ bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
     bool v2_w = (state_out) ? v2->check_arc(op_out, state_out) : false;
     bool v1_bridge = (u_v1 && v1_w) || (u_v1 && !state_out && v1->is_abstraction_of_goal()) || (v1_w && !state_in && v1->is_abstraction_of(*g_initial_state));
     bool v2_bridge = (u_v2 && v2_w) || (u_v2 && !state_out && v2->is_abstraction_of_goal()) || (v2_w && !state_in && v2->is_abstraction_of(*g_initial_state));
+    delete v1;
+    v1 = 0;
+    delete v2;
+    v2 = 0;
     return !v1_bridge && !v2_bridge;
 }
 

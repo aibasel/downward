@@ -29,7 +29,8 @@ enum PickStrategy {
     MIN_REFINED,
     MAX_REFINED,
     MIN_PREDECESSORS,
-    MAX_PREDECESSORS
+    MAX_PREDECESSORS,
+    BREAK
 };
 
 class Abstraction {
