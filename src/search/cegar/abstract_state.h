@@ -56,6 +56,7 @@ public:
     void add_arc(Operator *op, AbstractState *other);
     void remove_next_arc(Operator *op, AbstractState *other);
     void remove_prev_arc(Operator *op, AbstractState *other);
+    bool check_arc(Operator *op, AbstractState *other);
     bool check_and_add_arc(Operator *op, AbstractState *other);
     void get_unmet_conditions(const AbstractState &desired, vector<pair<int, int> > *conditions) const;
     bool is_abstraction_of(const State &conc_state) const;
