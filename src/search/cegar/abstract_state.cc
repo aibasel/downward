@@ -276,6 +276,41 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     return 0;
 }
 
+bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
+    // We can only refine for vars that can have at least two values.
+    assert(get_values(var).size() >= 2);
+    // The desired value has to be in the set of possible values.
+    assert(get_values(var).count(value) == 1);
+
+    AbstractState *v1 = new AbstractState();
+    AbstractState *v2 = new AbstractState();
+
+    v1->values = values;
+    v2->values = values;
+
+    // In v1 var can have all of the previous values except the desired one.
+    v1->values[var].erase(value);
+
+    // In v2 var can only have the desired value.
+    v2->set_value(var, value);
+
+    // Results from Dijkstra search. If  u --> v --> w  was on the
+    // shortest path and a new path  u --> v{1,2} --> w is created with the
+    // same arcs, we avoid a dijkstra computation.
+    Operator *op_in = (prev_arc) ? prev_arc->first : 0;
+    AbstractState *state_in = (prev_arc) ? prev_arc->second : 0;
+    Operator *op_out = (next_arc) ? next_arc->first : 0;
+    AbstractState *state_out = (next_arc) ? next_arc->second : 0;
+
+    bool u_v1 = (state_in) ? state_in->check_arc(op_in, v1) : false;
+    bool u_v2 = (state_in) ? state_in->check_arc(op_in, v2) : false;
+    bool v1_w = (state_out) ? v1->check_arc(op_out, state_out) : false;
+    bool v2_w = (state_out) ? v2->check_arc(op_out, state_out) : false;
+    bool v1_bridge = (u_v1 && v1_w) || (u_v1 && !state_out && v1->is_abstraction_of_goal()) || (v1_w && !state_in && v1->is_abstraction_of(*g_initial_state));
+    bool v2_bridge = (u_v2 && v2_w) || (u_v2 && !state_out && v2->is_abstraction_of_goal()) || (v2_w && !state_in && v2->is_abstraction_of(*g_initial_state));
+    return !v1_bridge && !v2_bridge;
+}
+
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
     next.push_back(Arc(op, other));
     other->prev.push_back(Arc(op, this));
