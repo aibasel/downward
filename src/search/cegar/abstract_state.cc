@@ -303,7 +303,7 @@ void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
     remove_arc(&prev, op, other);
 }
 
-bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
+bool AbstractState::check_arc(Operator *op, AbstractState *other) {
     //if (DEBUG)
     //    cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
     vector<bool> checked(g_variable_domain.size(), false);
@@ -344,8 +344,15 @@ bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
                 return false;
         }
     }
-    add_arc(op, other);
     return true;
+}
+
+bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
+    if (check_arc(op, other)) {
+        add_arc(op, other);
+        return true;
+    }
+    return false;
 }
 
 bool AbstractState::is_abstraction_of(const State &conc_state) const {
