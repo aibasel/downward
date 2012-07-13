@@ -32,9 +32,11 @@ Abstraction::Abstraction(PickStrategy strategy)
     goal = single;
     states.insert(init);
     start_solution_check_ptr = 0;
-    dijkstra_searches = 0;
     expansions = 0;
     expansions_dijkstra = 0;
+    deviations = 0;
+    unmet_preconditions = 0;
+    unmet_goals = 0;
     if (g_causal_graph)
         partial_ordering(*g_causal_graph, &cg_partial_ordering);
     if (DEBUG) {
@@ -88,7 +90,6 @@ void Abstraction::reset_distances() const {
 
 bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) const {
     bool debug = DEBUG && false;
-    ++dijkstra_searches;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
         int &distance = top_pair.first;
@@ -280,6 +281,7 @@ bool Abstraction::check_solution() {
             // Get unmet conditions in previous state and refine it.
             if (DEBUG)
                 cout << "Concrete path deviates from abstract one." << endl;
+            ++deviations;
             assert(prev_state);
             assert(prev_op);
             AbstractState desired_prev_state;
@@ -302,6 +304,7 @@ bool Abstraction::check_solution() {
             // Get unmet preconditions and refine the current state.
             if (DEBUG)
                 cout << "Operator is not applicable." << endl;
+            ++unmet_preconditions;
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
             pick_condition(*abs_state, unmet_cond, &var, &value);
             refine(abs_state, var, value);
@@ -320,6 +323,7 @@ bool Abstraction::check_solution() {
             // Get unmet goals and refine the last state.
             if (DEBUG)
                 cout << "Goal test failed." << endl;
+            unmet_goals++;
             assert(!abs_state->get_next_arc());
             get_unmet_goal_conditions(conc_state, &unmet_cond);
             pick_condition(*abs_state, unmet_cond, &var, &value);
@@ -525,5 +529,8 @@ void Abstraction::print_statistics() {
     assert(nexts == prevs);
     cout << "Arcs: " << nexts << endl;
     cout << "Self-loops: " << loops << endl;
+    cout << "Deviations: " << deviations << endl;
+    cout << "Unmet preconditions: " << unmet_preconditions << endl;
+    cout << "Unmet goals: " << unmet_goals << endl;
 }
 }
