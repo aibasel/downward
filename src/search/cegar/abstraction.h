@@ -47,8 +47,6 @@ private:
     void pick_condition(AbstractState &state, const std::vector<std::pair<int, int> > &conditions,
                         int *var, int *value) const;
 
-    mutable int expansions;
-    mutable int expansions_dijkstra;
     void reset_distances() const;
     FRIEND_TEST(CegarTest, astar_search);
     bool astar_search(HeapQueue<AbstractState *> &queue);
@@ -61,6 +59,13 @@ private:
     AbstractState *single;
 
     vector<int> cg_partial_ordering;
+
+    // Statistics.
+    mutable int expansions;
+    mutable int expansions_dijkstra;
+    mutable int deviations;
+    mutable int unmet_preconditions;
+    mutable int unmet_goals;
 
 public:
     explicit Abstraction(PickStrategy strategy = FIRST);
@@ -89,9 +94,8 @@ public:
     void release_memory();
     void print_statistics();
 
-    // Only for testing.
+    // Testing.
     void write_dot_file(int num);
-    mutable int dijkstra_searches;
 };
 }
 
