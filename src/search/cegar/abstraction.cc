@@ -425,13 +425,13 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
                 }
             }
         }
-    } else if (pick == BREAK) {
+    } else if (pick == BREAK || pick == KEEP) {
         for (int i = 0; i < conditions.size(); ++i) {
             const int &var = conditions[i].first;
             const int &value = conditions[i].second;
-            if (state.refinement_breaks_shortest_path(var, value)) {
+            bool breaks = state.refinement_breaks_shortest_path(var, value);
+            if ((pick == BREAK && breaks) || (pick == KEEP && !breaks))
                 cond = i;
-            }
         }
         if (cond == -1)
             cond = random_cond;
