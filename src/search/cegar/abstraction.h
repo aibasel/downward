@@ -43,9 +43,11 @@ private:
     AbstractState *start_solution_check_ptr;
     State last_checked_conc_state;
 
-    PickStrategy pick_strategy;
+    PickStrategy pick_deviation;
+    PickStrategy pick_precondition;
+    PickStrategy pick_goal;
     void pick_condition(AbstractState &state, const std::vector<std::pair<int, int> > &conditions,
-                        int *var, int *value) const;
+                        const PickStrategy &pick, int *var, int *value) const;
 
     void reset_distances() const;
     FRIEND_TEST(CegarTest, astar_search);
@@ -68,7 +70,9 @@ private:
     mutable int unmet_goals;
 
 public:
-    explicit Abstraction(PickStrategy strategy = FIRST);
+    explicit Abstraction(PickStrategy pick_deviation = FIRST,
+                         PickStrategy pick_precondition = KEEP,
+                         PickStrategy pick_goal = BREAK);
 
     void refine(AbstractState *state, int var, int value);
 
