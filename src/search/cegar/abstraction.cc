@@ -19,10 +19,16 @@
 using namespace std;
 
 namespace cegar_heuristic {
-Abstraction::Abstraction(PickStrategy strategy)
+Abstraction::Abstraction(PickStrategy pick_deviation,
+                         PickStrategy pick_precondition,
+                         PickStrategy pick_goal)
     : last_checked_conc_state(*g_initial_state) {
     assert(!g_operators.empty());
-    pick_strategy = strategy;
+
+    this->pick_deviation = pick_deviation;
+    this->pick_precondition = pick_precondition;
+    this->pick_goal = pick_goal;
+
     single = new AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
         //assert(g_operators[i].get_cost() > 0);
@@ -287,7 +293,7 @@ bool Abstraction::check_solution() {
             AbstractState desired_prev_state;
             abs_state->regress(*prev_op, &desired_prev_state);
             prev_state->get_unmet_conditions(desired_prev_state, &unmet_cond);
-            pick_condition(*prev_state, unmet_cond, &var, &value);
+            pick_condition(*prev_state, unmet_cond, pick_deviation, &var, &value);
             refine(prev_state, var, value);
             // Make sure we only reuse the solution if we are far enough from
             // the initial state to have saved the correct last-checked concrete
@@ -306,7 +312,7 @@ bool Abstraction::check_solution() {
                 cout << "Operator is not applicable." << endl;
             ++unmet_preconditions;
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
-            pick_condition(*abs_state, unmet_cond, &var, &value);
+            pick_condition(*abs_state, unmet_cond, pick_precondition, &var, &value);
             refine(abs_state, var, value);
             return false;
         } else if (next_op) {
@@ -326,7 +332,7 @@ bool Abstraction::check_solution() {
             unmet_goals++;
             assert(!abs_state->get_next_arc());
             get_unmet_goal_conditions(conc_state, &unmet_cond);
-            pick_condition(*abs_state, unmet_cond, &var, &value);
+            pick_condition(*abs_state, unmet_cond, pick_goal, &var, &value);
             refine(abs_state, var, value);
             return false;
         } else {
@@ -341,7 +347,7 @@ bool Abstraction::check_solution() {
 }
 
 void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, int> > &conditions,
-                                 int *var, int *value) const {
+                                 const PickStrategy &pick, int *var, int *value) const {
     assert(!conditions.empty());
     if (DEBUG) {
         cout << "Unmet conditions: ";
@@ -356,7 +362,6 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
         *value = conditions[0].second;
         return;
     }
-    const PickStrategy &pick = pick_strategy;
     int cond = -1;
     int random_cond = g_rng.next(conditions.size());
     if (pick == FIRST) {
