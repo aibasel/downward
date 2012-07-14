@@ -87,6 +87,17 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     }
 }
 
+void Abstraction::refine(vector<pair<int, int> > &conditions, AbstractState *state) {
+    assert(!g_operators.empty()); // We need operators and the g_initial_state
+    for (int cond = 0; cond < conditions.size(); ++cond) {
+        int &var = conditions[cond].first;
+        int &value = conditions[cond].second;
+        refine(state, var, value);
+        state = state->get_child(value);
+        assert(state);
+    }
+}
+
 void Abstraction::reset_distances() const {
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
@@ -293,8 +304,13 @@ bool Abstraction::check_solution() {
             AbstractState desired_prev_state;
             abs_state->regress(*prev_op, &desired_prev_state);
             prev_state->get_unmet_conditions(desired_prev_state, &unmet_cond);
-            pick_condition(*prev_state, unmet_cond, pick_deviation, &var, &value);
-            refine(prev_state, var, value);
+            if (pick_deviation == ALL) {
+                pick_condition_for_each_var(&unmet_cond);
+                refine(unmet_cond, prev_state);
+            } else {
+                pick_condition(*prev_state, unmet_cond, pick_deviation, &var, &value);
+                refine(prev_state, var, value);
+            }
             // Make sure we only reuse the solution if we are far enough from
             // the initial state to have saved the correct last-checked concrete
             // state.
@@ -312,8 +328,12 @@ bool Abstraction::check_solution() {
                 cout << "Operator is not applicable." << endl;
             ++unmet_preconditions;
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
-            pick_condition(*abs_state, unmet_cond, pick_precondition, &var, &value);
-            refine(abs_state, var, value);
+            if (pick_precondition == ALL) {
+                refine(unmet_cond, abs_state);
+            } else {
+                pick_condition(*abs_state, unmet_cond, pick_precondition, &var, &value);
+                refine(abs_state, var, value);
+            }
             return false;
         } else if (next_op) {
             // Go to the next state.
@@ -332,8 +352,12 @@ bool Abstraction::check_solution() {
             unmet_goals++;
             assert(!abs_state->get_next_arc());
             get_unmet_goal_conditions(conc_state, &unmet_cond);
-            pick_condition(*abs_state, unmet_cond, pick_goal, &var, &value);
-            refine(abs_state, var, value);
+            if (pick_goal == ALL) {
+                refine(unmet_cond, abs_state);
+            } else {
+                pick_condition(*abs_state, unmet_cond, pick_goal, &var, &value);
+                refine(abs_state, var, value);
+            }
             return false;
         } else {
             // We have reached the goal.

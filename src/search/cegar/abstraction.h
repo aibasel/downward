@@ -31,7 +31,8 @@ enum PickStrategy {
     MIN_PREDECESSORS,
     MAX_PREDECESSORS,
     BREAK,
-    KEEP
+    KEEP,
+    ALL
 };
 
 class Abstraction {
@@ -75,6 +76,7 @@ public:
                          PickStrategy pick_goal = BREAK);
 
     void refine(AbstractState *state, int var, int value);
+    void refine(vector<pair<int, int> > &conditions, AbstractState *state);
 
     AbstractState *get_abstract_state(const State &state) const;
 

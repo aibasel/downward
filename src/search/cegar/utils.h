@@ -15,6 +15,8 @@ const bool DEBUG = false;
 
 const int UNDEFINED = -1;
 
+typedef std::pair<int, int> Condition;
+
 std::string int_set_to_string(std::set<int> myset);
 bool intersection_empty(const std::set<int> &vals1, const std::set<int> &vals2);
 
@@ -43,6 +45,8 @@ State *create_state(const std::string desc);
 void partial_ordering(CausalGraph &causal_graph, vector<int> *order);
 
 void write_causal_graph(CausalGraph &causal_graph);
+
+void pick_condition_for_each_var(vector<pair<int, int> > *conditions);
 }
 
 #endif
