@@ -189,4 +189,18 @@ void write_causal_graph(CausalGraph &causal_graph) {
     dotfile << "}" << endl;
     dotfile.close();
 }
+
+void pick_condition_for_each_var(vector<pair<int, int> > *conditions) {
+    set<int> used_vars;
+    vector<Condition> picked_conditions;
+    for (int cond = 0; cond < conditions->size(); ++cond) {
+        int &var = (*conditions)[cond].first;
+        int &value = (*conditions)[cond].second;
+        if (used_vars.count(var) == 0) {
+            picked_conditions.push_back(Condition(var, value));
+            used_vars.insert(var);
+        }
+    }
+    conditions->swap(picked_conditions);
+}
 }
