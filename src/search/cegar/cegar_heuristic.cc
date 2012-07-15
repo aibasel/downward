@@ -35,13 +35,18 @@ void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int saved_searches = 0;
     int updates = 0;
+    const int update_step = (max_states / (COST_UPDATES + 1)) + 1;
     bool success = false;
     int num_states = abstraction.get_num_states();
+    int logged_states = 0;
+    const int states_log_step = 100;
     write_causal_graph(*g_causal_graph);
     while (num_states < max_states) {
         //abstraction.write_dot_file(num_states);
-        if (num_states % 100 == 0)
+        if (num_states - logged_states >= states_log_step) {
             cout << "Abstract states: " << num_states << "/" << max_states << endl;
+            logged_states += states_log_step;
+        }
         if (!abstraction.can_reuse_last_solution()) {
             abstraction.find_solution();
         } else {
@@ -52,7 +57,7 @@ void CegarHeuristic::initialize() {
         if (success)
             break;
         // Update costs to goal COST_UPDATES times evenly distributed over time.
-        if (num_states % ((max_states / (COST_UPDATES + 1)) + 1) == 0) {
+        if (num_states >= (updates + 1) * update_step) {
             abstraction.update_h_values();
             ++updates;
         }
@@ -61,6 +66,7 @@ void CegarHeuristic::initialize() {
     cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
     cout << "Abstract states: " << num_states << endl;
+    cout << "Cost updates: " << updates << endl;
     cout << "Saved searches: " << saved_searches << endl;
     cout << "A* expansions: " << abstraction.get_num_expansions() << endl;
     if (TEST_WITH_DIJKSTRA) {
@@ -69,11 +75,9 @@ void CegarHeuristic::initialize() {
              << abstraction.get_num_expansions() / float(abstraction.get_num_expansions_dijkstra()) << endl;
     }
     if (!success)
-        assert(num_states == max_states);
+        assert(num_states >= max_states);
     abstraction.update_h_values();
     assert(num_states == abstraction.get_num_states());
-    if (num_states == max_states)
-        assert(updates == COST_UPDATES);
     abstraction.print_statistics();
     abstraction.release_memory();
 
