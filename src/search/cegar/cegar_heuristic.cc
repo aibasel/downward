@@ -21,6 +21,8 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     if (max_states == -1)
         max_states = INFINITY;
     this->max_states = max_states;
+    h_updates = opts.get<int>("h_updates");
+
 
     abstraction = Abstraction(PickStrategy(opts.get_enum("pick_deviation")),
                               PickStrategy(opts.get_enum("pick_precondition")),
@@ -35,7 +37,7 @@ void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int saved_searches = 0;
     int updates = 0;
-    const int update_step = (max_states / (COST_UPDATES + 1)) + 1;
+    const int update_step = (max_states / (h_updates + 1)) + 1;
     bool success = false;
     int num_states = abstraction.get_num_states();
     int logged_states = 0;
@@ -66,7 +68,7 @@ void CegarHeuristic::initialize() {
     cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
     cout << "Abstract states: " << num_states << endl;
-    cout << "Cost updates: " << updates << endl;
+    cout << "Cost updates: " << updates << "/" << h_updates << endl;
     cout << "Saved searches: " << saved_searches << endl;
     cout << "A* expansions: " << abstraction.get_num_expansions() << endl;
     if (TEST_WITH_DIJKSTRA) {
@@ -117,6 +119,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
                            "how to pick the next unsatisfied precondition");
     parser.add_enum_option("pick_goal", pick_strategies, "FIRST",
                            "how to pick the next unsatisfied goal");
+    parser.add_option<int>("h_updates", 3, "how often to update the abstract h-values");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
