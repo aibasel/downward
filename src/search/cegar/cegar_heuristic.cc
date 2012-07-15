@@ -18,12 +18,9 @@ namespace cegar_heuristic {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
     h_updates(opts.get<int>("h_updates")) {
-    int max_states = opts.get<int>("max_states");
+    max_states = opts.get<int>("max_states");
     if (max_states == -1)
         max_states = INFINITY;
-    this->max_states = max_states;
-
-
 
     abstraction = Abstraction(PickStrategy(opts.get_enum("pick_deviation")),
                               PickStrategy(opts.get_enum("pick_precondition")),
