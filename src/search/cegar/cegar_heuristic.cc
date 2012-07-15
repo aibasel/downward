@@ -56,7 +56,7 @@ void CegarHeuristic::initialize() {
         num_states = abstraction.get_num_states();
         if (success)
             break;
-        // Update costs to goal COST_UPDATES times evenly distributed over time.
+        // Update costs to goal evenly distributed over time.
         if (num_states >= (updates + 1) * update_step) {
             abstraction.update_h_values();
             ++updates;
