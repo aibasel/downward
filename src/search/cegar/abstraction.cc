@@ -140,15 +140,10 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue, bool forward,
             Operator *op = arc.first;
             AbstractState *successor = arc.second;
 
-            const int &cost = op->get_cost();
             // Prevent overflow.
-            int succ_g = (g == INFINITY) ? INFINITY : g + cost;
+            int succ_g = (g == INFINITY) ? INFINITY : g + op->get_cost();
             // TODO: Ignore states with h = infinity?
             // TODO: In case of equal f-values, prefer states with higher g?
-
-            if (debug)
-                cout << "NEXT: " << successor->str() << " " << cost << " "
-                     << succ_g << " " << successor->get_distance() << endl;
             if (successor->get_distance() > succ_g) {
                 successor->set_distance(succ_g);
                 int f = succ_g;
@@ -156,9 +151,6 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue, bool forward,
                     f += successor->get_h();
                 Arc *prev_arc = new Arc(op, state);
                 successor->set_prev_arc(prev_arc);
-                if (debug)
-                    cout << "f: " << f << " origin(" << successor->str() << ") = "
-                         << state->str() << " with " << op->get_name() << endl;
                 queue.push(f, successor);
             }
         }
