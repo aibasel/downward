@@ -274,7 +274,7 @@ TEST(CegarTest, find_solution_first_state) {
     init_test();
 
     // -> <>
-    Abstraction abs = Abstraction();
+    Abstraction abs;
     EXPECT_EQ("[(op1,<>)]", abs.init->get_next_as_string());
     // -> 1={0,1} -> 1={2}
     abs.refine(abs.init, 1, 2);
@@ -309,7 +309,7 @@ TEST(CegarTest, find_solution_second_state) {
     init_test();
 
     // -> <>
-    Abstraction abs = Abstraction();
+    Abstraction abs;
     EXPECT_EQ("[(op1,<>)]", abs.init->get_next_as_string());
     // -> 1={0,2} -> 1={1}
     abs.refine(abs.init, 1, 1);
@@ -352,7 +352,7 @@ TEST(CegarTest, find_solution_loop) {
     g_goal.push_back(make_pair(1, 1));
 
     // -> <>
-    Abstraction abs = Abstraction();
+    Abstraction abs;
     EXPECT_EQ("[(op1,<>)]", abs.init->get_next_as_string());
     // --> 0={0} --> 0={1}  (left state has self-loop).
     abs.refine(abs.init, 0, 1);
@@ -394,7 +394,7 @@ TEST(CegarTest, initialize) {
     g_goal.push_back(make_pair(1, 1));
 
     // --> <>
-    Abstraction abstraction = Abstraction();
+    Abstraction abstraction;
     abstraction.find_solution();
     abstraction.calculate_costs();
 
@@ -442,7 +442,7 @@ TEST(CegarTest, astar_search) {
     ASSERT_EQ(4, op2.get_cost());
     Operator op3 = make_op(5);
 
-    Abstraction abs = Abstraction();
+    Abstraction abs;
 
     AbstractState a = AbstractState("<0={0}>");
     AbstractState b = AbstractState("<0={1}>");
@@ -458,14 +458,13 @@ TEST(CegarTest, astar_search) {
 
     abs.init = &a;
     abs.goal = &c;
-    AdaptiveQueue<AbstractState *> queue;
 
     // Run once without heuristic information --> 3 expansions.
     a.set_distance(0);
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
-    queue.push(0, &a);
-    bool success = abs.astar_search(queue, true, true);
+    abs.queue.push(0, &a);
+    bool success = abs.astar_search(true, true);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
     AbstractState *found_goal = abs.init->get_state_out();
@@ -484,9 +483,9 @@ TEST(CegarTest, astar_search) {
     a.set_distance(0);
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
-    ASSERT_TRUE(queue.empty());
-    queue.push(4, &a);
-    success = abs.astar_search(queue, true, true);
+    ASSERT_TRUE(abs.queue.empty());
+    abs.queue.push(4, &a);
+    success = abs.astar_search(true, true);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
     found_goal = abs.init->get_state_out();
@@ -516,7 +515,7 @@ TEST(CegarTest, dijkstra_search) {
     ASSERT_EQ(4, op2.get_cost());
     Operator op3 = make_op(5);
 
-    Abstraction abs = Abstraction();
+    Abstraction abs;
 
     AbstractState a = AbstractState("<0={0}>");
     AbstractState b = AbstractState("<0={1}>");
@@ -528,12 +527,11 @@ TEST(CegarTest, dijkstra_search) {
 
     abs.init = &a;
     abs.goal = &c;
-    AdaptiveQueue<AbstractState *> queue;
     a.set_distance(0);
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
-    queue.push(0, &a);
-    bool success = abs.astar_search(queue, true, false);
+    abs.queue.push(0, &a);
+    bool success = abs.astar_search(true, false);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
     AbstractState *found_goal = abs.init->get_state_out();
