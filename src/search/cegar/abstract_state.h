@@ -33,8 +33,10 @@ private:
     // For Dijkstra search.
     int distance;
     int h;
-    Arc *prev_arc;
-    Arc *next_arc;
+    Operator *op_in;
+    AbstractState *state_in;
+    Operator *op_out;
+    AbstractState *state_out;
 
     // Refinement hierarchy. Save the variable for which this state was refined
     // and the resulting abstract child states.
@@ -64,14 +66,18 @@ public:
     bool is_abstraction_of(const AbstractState &abs_state) const;
     bool is_abstraction_of_goal() const;
 
+    // A* search.
     void set_distance(int dist) {distance = dist; }
     int get_distance() {return distance; }
     void set_h(int dist) {h = dist; }
     int get_h() {return h; }
-    void set_prev_arc(Arc *prev);
-    Arc *get_prev_arc() {return prev_arc; }
-    void set_next_arc(Arc *next);
-    Arc *get_next_arc() {return next_arc; }
+    void set_predecessor(Operator *op, AbstractState *other);
+    Operator *get_op_in() const {return op_in; }
+    AbstractState *get_state_in() const {return state_in; }
+    void set_successor(Operator *op, AbstractState *other);
+    Operator *get_op_out() const {return op_out; }
+    AbstractState *get_state_out() const {return state_out; }
+    void reset_neighbours();
 
     std::vector<Arc> &get_next() {return next; }
     std::string get_next_as_string() const;
