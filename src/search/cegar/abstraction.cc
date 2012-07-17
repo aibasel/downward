@@ -101,7 +101,8 @@ void Abstraction::refine(vector<pair<int, int> > &conditions, AbstractState *sta
 void Abstraction::reset_distances() const {
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
-        (*it)->set_distance(INFINITY);
+        AbstractState *state = (*it);
+        state->set_distance(INFINITY);
     }
 }
 
@@ -149,8 +150,7 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue, bool forward,
                 int f = succ_g;
                 if (use_h)
                     f += successor->get_h();
-                Arc *prev_arc = new Arc(op, state);
-                successor->set_prev_arc(prev_arc);
+                successor->set_predecessor(op, state);
                 queue.push(f, successor);
             }
         }
@@ -167,8 +167,8 @@ bool Abstraction::find_solution() {
     if (TEST_WITH_DIJKSTRA) {
         queue.clear();
         reset_distances();
+        init->reset_neighbours();
         init->set_distance(0);
-        init->set_prev_arc(0);
         queue.push(0, init);
         dijkstra_success = astar_search(queue, true, false);
         dijkstra_cost = init->get_h();
@@ -176,8 +176,8 @@ bool Abstraction::find_solution() {
     // A*.
     queue.clear();
     reset_distances();
+    init->reset_neighbours();
     init->set_distance(0);
-    init->set_prev_arc(0);
     queue.push(init->get_h(), init);
     bool astar_success = astar_search(queue, true, true);
     int astar_cost = init->get_h();
@@ -193,15 +193,17 @@ void Abstraction::extract_solution(AbstractState &goal) const {
     int cost_to_goal = 0;
     AbstractState *current = &goal;
     current->set_h(cost_to_goal);
-    while (current->get_prev_arc()) {
-        Operator *op = current->get_prev_arc()->first;
-        AbstractState *prev = current->get_prev_arc()->second;
-        prev->set_next_arc(new Arc(op, current));
+    while (current->get_state_in()) {
+        Operator *op = current->get_op_in();
+        assert(op);
+        AbstractState *prev = current->get_state_in();
+        prev->set_successor(op, current);
         cost_to_goal += op->get_cost();
         prev->set_h(cost_to_goal);
         assert(prev != current);
         current = prev;
     }
+    assert(current == init);
 }
 
 string Abstraction::get_solution_string() const {
@@ -211,11 +213,11 @@ string Abstraction::get_solution_string() const {
     AbstractState *current = init;
     oss << init->str();
     while (true) {
-        Arc *arc = current->get_next_arc();
-        if (!arc)
+        AbstractState *next_state = current->get_state_out();
+        if (!next_state)
             break;
-        Operator *op = arc->first;
-        AbstractState *next_state = arc->second;
+        Operator *op = current->get_op_out();
+        assert(op);
         oss << "," << op->get_name() << "," << next_state->str();
         current = next_state;
     }
@@ -237,6 +239,7 @@ bool Abstraction::check_solution() {
     if (start_solution_check_ptr) {
         abs_state = start_solution_check_ptr;
         conc_state = last_checked_conc_state;
+        //assert(abs_state->get_op_out());
     }
     assert(abs_state->is_abstraction_of(conc_state));
 
@@ -244,9 +247,9 @@ bool Abstraction::check_solution() {
     Operator *prev_op = 0;
     State prev_last_checked_conc_state = last_checked_conc_state;
     while (true) {
-        Arc *next_arc = abs_state->get_next_arc();
-        // Set next_op to 0 if there is no next operator.
-        Operator *next_op = (next_arc) ? next_arc->first : 0;
+        // next_op is 0 if there is no next operator.
+        Operator *next_op = abs_state->get_op_out();
+        AbstractState *next_state = abs_state->get_state_out();
         vector<pair<int, int> > unmet_cond;
         int var, value;
         if (!abs_state->is_abstraction_of(conc_state)) {
@@ -297,7 +300,8 @@ bool Abstraction::check_solution() {
             last_checked_conc_state = State(conc_state);
             prev_op = next_op;
             conc_state = State(conc_state, *next_op);
-            abs_state = next_arc->second;
+            assert(next_state);
+            abs_state = next_state;
             if (DEBUG)
                 cout << "Move to state " << abs_state->str() << endl;
         } else if (!test_goal(conc_state)) {
@@ -305,7 +309,7 @@ bool Abstraction::check_solution() {
             if (DEBUG)
                 cout << "Goal test failed." << endl;
             unmet_goals++;
-            assert(!abs_state->get_next_arc());
+            assert(!next_state);
             get_unmet_goal_conditions(conc_state, &unmet_cond);
             if (pick_goal == ALL) {
                 refine(unmet_cond, abs_state);
@@ -316,7 +320,7 @@ bool Abstraction::check_solution() {
             return false;
         } else {
             // We have reached the goal.
-            assert(!abs_state->get_next_arc());
+            assert(!next_state);
             return true;
         }
     }

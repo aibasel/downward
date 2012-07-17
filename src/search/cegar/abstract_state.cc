@@ -17,9 +17,8 @@ using namespace std;
 namespace cegar_heuristic {
 AbstractState::AbstractState(string s) {
     assert(!g_variable_domain.empty());
-    prev_arc = 0;
-    next_arc = 0;
     h = 0;
+    reset_neighbours();
 
     values.resize(g_variable_domain.size(), set<int>());
 
@@ -177,10 +176,6 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     // Results from Dijkstra search. If  u --> v --> w  was on the
     // shortest path and a new path  u --> v{1,2} --> w is created with the
     // same arcs, we avoid a dijkstra computation.
-    Operator *op_in = (prev_arc) ? prev_arc->first : 0;
-    AbstractState *state_in = (prev_arc) ? prev_arc->second : 0;
-    Operator *op_out = (next_arc) ? next_arc->first : 0;
-    AbstractState *state_out = (next_arc) ? next_arc->second : 0;
     bool u_v1 = false, u_v2 = false, v1_w = false, v2_w = false;
 
     // Before: u --> this=v --> w
@@ -255,22 +250,22 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
 
     AbstractState *bridge_state = 0;
     // If we refine a goal state, only reuse solution if the path leads to the goal.
-    bool v1_is_bridge = ((u_v1 && v1_w) || (u_v1 && !state_out && v1->is_abstraction_of_goal()));
-    if ((u_v2 && v2_w) || (u_v2 && !state_out && v2->is_abstraction_of_goal())) {
+    bool v1_is_bridge = (u_v1 && v1_w) || (u_v1 && !state_out && v1->is_abstraction_of_goal());
+    bool v2_is_bridge = (u_v2 && v2_w) || (u_v2 && !state_out && v2->is_abstraction_of_goal());
+    if (v2_is_bridge) {
         // Prefer going over v2. // TODO: add option?
         bridge_state = v2;
     } else if (v1_is_bridge) {
         bridge_state = v1;
     }
     if (bridge_state) {
-        if (state_in) {
-            state_in->set_next_arc(new Arc(op_in, bridge_state));
-            if (state_out)
-                bridge_state->set_next_arc(new Arc(op_out, state_out));
-        }
-    }
-    if (bridge_state) {
         assert(state_in);
+        assert(op_in);
+        state_in->set_successor(op_in, bridge_state);
+        if (state_out) {
+            assert(op_out);
+            bridge_state->set_successor(op_out, state_out);
+        }
         return state_in;
     }
     return 0;
@@ -293,12 +288,6 @@ bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
 
     // In v2 var can only have the desired value.
     v2.set_value(var, value);
-
-    // Results from Dijkstra search.
-    Operator *op_in = (prev_arc) ? prev_arc->first : 0;
-    AbstractState *state_in = (prev_arc) ? prev_arc->second : 0;
-    Operator *op_out = (next_arc) ? next_arc->first : 0;
-    AbstractState *state_out = (next_arc) ? next_arc->second : 0;
 
     bool u_v1 = (state_in) ? state_in->check_arc(op_in, &v1) : false;
     bool u_v2 = (state_in) ? state_in->check_arc(op_in, &v2) : false;
@@ -438,21 +427,23 @@ AbstractState *AbstractState::get_child(int value) {
     return children[value];
 }
 
-void AbstractState::set_prev_arc(Arc *prev) {
-    delete prev_arc;
-    prev_arc = prev;
+void AbstractState::set_predecessor(Operator *op, AbstractState *other) {
+    op_in = op;
+    state_in = other;
 }
 
-void AbstractState::set_next_arc(Arc *next) {
-    delete next_arc;
-    next_arc = next;
+void AbstractState::set_successor(Operator *op, AbstractState *other) {
+    op_out = op;
+    state_out = other;
+}
+
+void AbstractState::reset_neighbours() {
+    op_in = 0, state_in = 0, op_out = 0, state_out = 0;
 }
 
 void AbstractState::release_memory() {
     vector<Arc>().swap(next);
     vector<Arc>().swap(prev);
     vector<Domain>().swap(values);
-    delete prev_arc;
-    delete next_arc;
 }
 }
