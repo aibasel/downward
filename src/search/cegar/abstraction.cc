@@ -444,6 +444,7 @@ void Abstraction::calculate_costs() const {
 
 void Abstraction::update_h_values() const {
     calculate_costs();
+    int unreachable_states = 0;
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
@@ -452,8 +453,10 @@ void Abstraction::update_h_values() const {
             state->set_h(dist);
         } else {
             state->set_h(0);
+            ++unreachable_states;
         }
     }
+    cout << "Unreachable states: " << unreachable_states << endl;
 }
 
 AbstractState *Abstraction::get_abstract_state(const State &state) const {
