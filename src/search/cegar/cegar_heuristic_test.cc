@@ -458,7 +458,7 @@ TEST(CegarTest, astar_search) {
 
     abs.init = &a;
     abs.goal = &c;
-    HeapQueue<AbstractState *> queue;
+    AdaptiveQueue<AbstractState *> queue;
 
     // Run once without heuristic information --> 3 expansions.
     a.set_distance(0);
@@ -528,7 +528,7 @@ TEST(CegarTest, dijkstra_search) {
 
     abs.init = &a;
     abs.goal = &c;
-    HeapQueue<AbstractState *> queue;
+    AdaptiveQueue<AbstractState *> queue;
     a.set_distance(0);
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
