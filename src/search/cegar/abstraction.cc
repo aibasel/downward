@@ -105,55 +105,6 @@ void Abstraction::reset_distances() const {
     }
 }
 
-bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forward) const {
-    bool debug = DEBUG && false;
-    while (!queue.empty()) {
-        pair<int, AbstractState *> top_pair = queue.pop();
-        int &distance = top_pair.first;
-        AbstractState *state = top_pair.second;
-        if (forward)
-            ++expansions_dijkstra;
-
-        int state_distance = state->get_distance();
-        if (debug)
-            cout << "VISIT: " << state->str() << " " << state_distance << " "
-                 << distance << endl;
-        assert(state_distance <= distance);
-        if (state_distance < distance) {
-            continue;
-        }
-        if (forward && (state == goal)) {
-            if (debug)
-                cout << "GOAL REACHED" << endl;
-            extract_solution(*state);
-            return true;
-        }
-        vector<Arc> &successors = (forward) ? state->get_next() : state->get_prev();
-        for (int i = 0; i < successors.size(); i++) {
-            const Arc &arc = successors[i];
-            Operator *op = arc.first;
-            AbstractState *successor = arc.second;
-
-            const int &cost = op->get_cost();
-            // Prevent overflow.
-            int successor_cost = (state_distance == INFINITY) ? INFINITY : state_distance + cost;
-            if (debug)
-                cout << "NEXT: " << successor->str() << " " << cost << " "
-                     << successor_cost << " " << successor->get_distance() << endl;
-            if (successor->get_distance() > successor_cost) {
-                successor->set_distance(successor_cost);
-                Arc *prev_arc = new Arc(op, state);
-                successor->set_prev_arc(prev_arc);
-                if (debug)
-                    cout << "ORIGIN(" << successor->str() << ") = "
-                         << state->str() << " with " << op->get_name() << endl;
-                queue.push(successor_cost, successor);
-            }
-        }
-    }
-    return false;
-}
-
 bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue, bool forward,
                                bool use_h) const {
     bool debug = DEBUG && false;
@@ -161,7 +112,10 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue, bool forward,
         pair<int, AbstractState *> top_pair = queue.pop();
         int &old_f = top_pair.first;
         AbstractState *state = top_pair.second;
-        ++expansions;
+        if (use_h)
+            ++expansions;
+        else
+            ++expansions_dijkstra;;
 
         const int g = state->get_distance();
         int new_f = g;
@@ -174,7 +128,7 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue, bool forward,
         if (new_f < old_f) {
             continue;
         }
-        if (state == goal) {
+        if (forward && state == goal) {
             if (debug)
                 cout << "GOAL REACHED" << endl;
             extract_solution(*state);
@@ -224,7 +178,7 @@ bool Abstraction::find_solution() {
         init->set_distance(0);
         init->set_prev_arc(0);
         queue.push(0, init);
-        dijkstra_success = dijkstra_search(queue, true);
+        dijkstra_success = astar_search(queue, true, false);
         dijkstra_cost = init->get_h();
     }
     // A*.
@@ -491,7 +445,7 @@ void Abstraction::calculate_costs() const {
     HeapQueue<AbstractState *> queue;
     queue.push(0, goal);
     goal->set_distance(0);
-    dijkstra_search(queue, false);
+    astar_search(queue, false, false);
 }
 
 void Abstraction::update_h_values() const {
