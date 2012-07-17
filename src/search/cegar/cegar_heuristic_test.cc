@@ -300,7 +300,7 @@ TEST(CegarTest, find_solution_first_state) {
 
     bool success = abs.find_solution();
     ASSERT_TRUE(success);
-    EXPECT_FALSE(abs.init->get_next_arc());
+    EXPECT_FALSE(abs.init->get_state_out());
     EXPECT_EQ("[<1={0,1}>]", abs.get_solution_string());
 }
 
@@ -468,9 +468,9 @@ TEST(CegarTest, astar_search) {
     bool success = abs.astar_search(queue, true, true);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
-    AbstractState *found_goal = abs.init->get_next_arc()->second;
+    AbstractState *found_goal = abs.init->get_state_out();
     EXPECT_EQ("<0={2}>", found_goal->str());
-    EXPECT_FALSE(found_goal->get_next_arc());
+    EXPECT_FALSE(found_goal->get_state_out());
     EXPECT_EQ(3, abs.expansions);
     EXPECT_EQ(4, a.get_h());
     EXPECT_EQ(0, b.get_h());
@@ -489,9 +489,9 @@ TEST(CegarTest, astar_search) {
     success = abs.astar_search(queue, true, true);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
-    found_goal = abs.init->get_next_arc()->second;
+    found_goal = abs.init->get_state_out();
     EXPECT_EQ("<0={2}>", found_goal->str());
-    EXPECT_FALSE(found_goal->get_next_arc());
+    EXPECT_FALSE(found_goal->get_state_out());
     EXPECT_EQ(2, abs.expansions);
     EXPECT_EQ(4, a.get_h());
     EXPECT_EQ(2, b.get_h());
@@ -536,9 +536,9 @@ TEST(CegarTest, dijkstra_search) {
     bool success = abs.astar_search(queue, true, false);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
-    AbstractState *found_goal = abs.init->get_next_arc()->second;
+    AbstractState *found_goal = abs.init->get_state_out();
     EXPECT_EQ("<0={2}>", found_goal->str());
-    EXPECT_FALSE(found_goal->get_next_arc());
+    EXPECT_FALSE(found_goal->get_state_out());
     EXPECT_EQ(3, abs.expansions_dijkstra);
 }
 
