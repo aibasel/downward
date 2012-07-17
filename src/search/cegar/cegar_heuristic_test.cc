@@ -465,7 +465,7 @@ TEST(CegarTest, astar_search) {
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
     queue.push(0, &a);
-    bool success = abs.astar_search(queue);
+    bool success = abs.astar_search(queue, true, true);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
     AbstractState *found_goal = abs.init->get_next_arc()->second;
@@ -486,7 +486,7 @@ TEST(CegarTest, astar_search) {
     c.set_distance(INFINITY);
     ASSERT_TRUE(queue.empty());
     queue.push(4, &a);
-    success = abs.astar_search(queue);
+    success = abs.astar_search(queue, true, true);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
     found_goal = abs.init->get_next_arc()->second;
@@ -533,7 +533,7 @@ TEST(CegarTest, dijkstra_search) {
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
     queue.push(0, &a);
-    bool success = abs.dijkstra_search(queue, true);
+    bool success = abs.astar_search(queue, true, false);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
     AbstractState *found_goal = abs.init->get_next_arc()->second;

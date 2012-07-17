@@ -294,9 +294,7 @@ bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
     // In v2 var can only have the desired value.
     v2.set_value(var, value);
 
-    // Results from Dijkstra search. If  u --> v --> w  was on the
-    // shortest path and a new path  u --> v{1,2} --> w is created with the
-    // same arcs, we avoid a dijkstra computation.
+    // Results from Dijkstra search.
     Operator *op_in = (prev_arc) ? prev_arc->first : 0;
     AbstractState *state_in = (prev_arc) ? prev_arc->second : 0;
     Operator *op_out = (next_arc) ? next_arc->first : 0;
