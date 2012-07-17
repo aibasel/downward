@@ -154,7 +154,8 @@ bool Abstraction::dijkstra_search(HeapQueue<AbstractState *> &queue, bool forwar
     return false;
 }
 
-bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
+bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue, bool forward,
+                               bool use_h) const {
     bool debug = DEBUG && false;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
@@ -163,7 +164,9 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
         ++expansions;
 
         const int g = state->get_distance();
-        int new_f = g + state->get_h();
+        int new_f = g;
+        if (use_h)
+            new_f += state->get_h();
         if (debug)
             cout << "VISIT: " << state->str() << " new_f=" << g << "+"
                  << state->get_h() << "=" << new_f << " old_f:" << old_f << endl;
@@ -177,7 +180,7 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
             extract_solution(*state);
             return true;
         }
-        vector<Arc> &successors = state->get_next();
+        vector<Arc> &successors = (forward) ? state->get_next() : state->get_prev();
         for (int i = 0; i < successors.size(); i++) {
             const Arc &arc = successors[i];
             Operator *op = arc.first;
@@ -194,13 +197,13 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
                      << succ_g << " " << successor->get_distance() << endl;
             if (successor->get_distance() > succ_g) {
                 successor->set_distance(succ_g);
-                const int f = succ_g + successor->get_h();
-                if (debug)
-                    cout << "F: " << f << endl;
+                int f = succ_g;
+                if (use_h)
+                    f += successor->get_h();
                 Arc *prev_arc = new Arc(op, state);
                 successor->set_prev_arc(prev_arc);
                 if (debug)
-                    cout << "ORIGIN(" << successor->str() << ") = "
+                    cout << "f: " << f << " origin(" << successor->str() << ") = "
                          << state->str() << " with " << op->get_name() << endl;
                 queue.push(f, successor);
             }
@@ -212,24 +215,30 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue) {
 bool Abstraction::find_solution() {
     HeapQueue<AbstractState *> queue;
 
-    // A*.
-    reset_distances();
-    init->set_distance(0);
-    init->set_prev_arc(0);
-    queue.push(init->get_h(), init);
-    bool astar_success = astar_search(queue);
-    int astar_cost = init->get_h();
-
     // Dijkstra.
+    bool dijkstra_success = false;
+    int dijkstra_cost = -1;
     if (TEST_WITH_DIJKSTRA) {
         queue.clear();
         reset_distances();
         init->set_distance(0);
         init->set_prev_arc(0);
         queue.push(0, init);
-        bool dijkstra_success = dijkstra_search(queue, true);
+        dijkstra_success = dijkstra_search(queue, true);
+        dijkstra_cost = init->get_h();
+    }
+    // A*.
+    queue.clear();
+    reset_distances();
+    init->set_distance(0);
+    init->set_prev_arc(0);
+    queue.push(init->get_h(), init);
+    bool astar_success = astar_search(queue, true, true);
+    int astar_cost = init->get_h();
+
+    if (TEST_WITH_DIJKSTRA) {
         assert(astar_success == dijkstra_success);
-        assert(astar_cost == init->get_h());
+        assert(astar_cost == dijkstra_cost);
     }
     return astar_success;
 }
