@@ -106,8 +106,7 @@ void Abstraction::reset_distances() const {
     }
 }
 
-bool Abstraction::astar_search(AdaptiveQueue<AbstractState *> &queue, bool forward,
-                               bool use_h) const {
+bool Abstraction::astar_search(bool forward, bool use_h) const {
     bool debug = DEBUG && false;
     while (!queue.empty()) {
         pair<int, AbstractState *> top_pair = queue.pop();
@@ -159,8 +158,6 @@ bool Abstraction::astar_search(AdaptiveQueue<AbstractState *> &queue, bool forwa
 }
 
 bool Abstraction::find_solution() {
-    AdaptiveQueue<AbstractState *> queue;
-
     // Dijkstra.
     bool dijkstra_success = false;
     int dijkstra_cost = -1;
@@ -170,7 +167,7 @@ bool Abstraction::find_solution() {
         init->reset_neighbours();
         init->set_distance(0);
         queue.push(0, init);
-        dijkstra_success = astar_search(queue, true, false);
+        dijkstra_success = astar_search(true, false);
         dijkstra_cost = init->get_h();
     }
     // A*.
@@ -179,7 +176,7 @@ bool Abstraction::find_solution() {
     init->reset_neighbours();
     init->set_distance(0);
     queue.push(init->get_h(), init);
-    bool astar_success = astar_search(queue, true, true);
+    bool astar_success = astar_search(true, true);
     int astar_cost = init->get_h();
 
     if (TEST_WITH_DIJKSTRA) {
@@ -438,10 +435,10 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
 
 void Abstraction::calculate_costs() const {
     reset_distances();
-    AdaptiveQueue<AbstractState *> queue;
+    queue.clear();
     queue.push(0, goal);
     goal->set_distance(0);
-    astar_search(queue, false, false);
+    astar_search(false, false);
 }
 
 void Abstraction::update_h_values() const {

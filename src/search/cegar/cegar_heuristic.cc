@@ -17,14 +17,13 @@ using namespace std;
 namespace cegar_heuristic {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
-    h_updates(opts.get<int>("h_updates")) {
+    h_updates(opts.get<int>("h_updates")),
+    abstraction(PickStrategy(opts.get_enum("pick_deviation")),
+                PickStrategy(opts.get_enum("pick_precondition")),
+                PickStrategy(opts.get_enum("pick_goal"))) {
     max_states = opts.get<int>("max_states");
     if (max_states == -1)
         max_states = INFINITY;
-
-    abstraction = Abstraction(PickStrategy(opts.get_enum("pick_deviation")),
-                              PickStrategy(opts.get_enum("pick_precondition")),
-                              PickStrategy(opts.get_enum("pick_goal")));
 }
 
 CegarHeuristic::~CegarHeuristic() {
