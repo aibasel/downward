@@ -118,6 +118,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             ++expansions_dijkstra;;
 
         const int g = state->get_distance();
+        assert(g < INFINITY);
         int new_f = g;
         if (use_h)
             new_f += state->get_h();
@@ -140,8 +141,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             Operator *op = arc.first;
             AbstractState *successor = arc.second;
 
-            // Prevent overflow.
-            int succ_g = (g == INFINITY) ? INFINITY : g + op->get_cost();
+            const int succ_g = g + op->get_cost();
             // TODO: Ignore states with h = infinity?
             // TODO: In case of equal f-values, prefer states with higher g?
             if (successor->get_distance() > succ_g) {
@@ -150,6 +150,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                 if (use_h)
                     f += successor->get_h();
                 successor->set_predecessor(op, state);
+                assert(f >= 0);
                 queue.push(f, successor);
             }
         }
@@ -445,7 +446,13 @@ void Abstraction::update_h_values() const {
     calculate_costs();
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
-        (*it)->set_h((*it)->get_distance());
+        AbstractState *state = *it;
+        const int dist = state->get_distance();
+        if (dist < INFINITY) {
+            state->set_h(dist);
+        } else {
+            state->set_h(0);
+        }
     }
 }
 
