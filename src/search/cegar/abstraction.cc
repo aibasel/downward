@@ -106,7 +106,7 @@ void Abstraction::reset_distances() const {
     }
 }
 
-bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue, bool forward,
+bool Abstraction::astar_search(AdaptiveQueue<AbstractState *> &queue, bool forward,
                                bool use_h) const {
     bool debug = DEBUG && false;
     while (!queue.empty()) {
@@ -159,7 +159,7 @@ bool Abstraction::astar_search(HeapQueue<AbstractState *> &queue, bool forward,
 }
 
 bool Abstraction::find_solution() {
-    HeapQueue<AbstractState *> queue;
+    AdaptiveQueue<AbstractState *> queue;
 
     // Dijkstra.
     bool dijkstra_success = false;
@@ -438,7 +438,7 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
 
 void Abstraction::calculate_costs() const {
     reset_distances();
-    HeapQueue<AbstractState *> queue;
+    AdaptiveQueue<AbstractState *> queue;
     queue.push(0, goal);
     goal->set_distance(0);
     astar_search(queue, false, false);

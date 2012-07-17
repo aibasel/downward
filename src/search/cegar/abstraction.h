@@ -53,7 +53,7 @@ private:
     void reset_distances() const;
     FRIEND_TEST(CegarTest, astar_search);
     FRIEND_TEST(CegarTest, dijkstra_search);
-    bool astar_search(HeapQueue<AbstractState *> &queue, bool forward, bool use_h) const;
+    bool astar_search(AdaptiveQueue<AbstractState *> &queue, bool forward, bool use_h) const;
     void extract_solution(AbstractState &goal) const;
     void calculate_costs() const;
 
