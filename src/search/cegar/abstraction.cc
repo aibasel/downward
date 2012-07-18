@@ -115,7 +115,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         if (use_h)
             ++expansions;
         else
-            ++expansions_dijkstra;;
+            ++expansions_dijkstra;
 
         const int g = state->get_distance();
         assert(g < INFINITY);
@@ -136,8 +136,8 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             return true;
         }
         vector<Arc> &successors = (forward) ? state->get_next() : state->get_prev();
-        for (int i = 0; i < successors.size(); i++) {
-            const Arc &arc = successors[i];
+        for (vector<Arc>::iterator it = successors.begin(); it != successors.end(); ++it) {
+            Arc &arc = *it;
             Operator *op = arc.first;
             AbstractState *successor = arc.second;
 
