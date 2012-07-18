@@ -425,7 +425,7 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
         }
         if (cond == -1)
             cond = random_cond;
-    }else {
+    } else {
         cout << "Invalid pick strategy: " << pick << endl;
         exit(2);
     }
