@@ -18,6 +18,7 @@ namespace cegar_heuristic {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       h_updates(opts.get<int>("h_updates")),
+      search(opts.get<bool>("search")),
       abstraction(PickStrategy(opts.get_enum("pick_deviation")),
                   PickStrategy(opts.get_enum("pick_precondition")),
                   PickStrategy(opts.get_enum("pick_goal"))) {
@@ -80,6 +81,9 @@ void CegarHeuristic::initialize() {
     abstraction.print_statistics();
     abstraction.release_memory();
 
+    if (!search)
+        exit(0);
+
     // Unreachable goal.
     //g_goal.clear();
     //g_goal.push_back(make_pair(0, 0));
@@ -117,6 +121,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("pick_goal", pick_strategies, "FIRST",
                            "how to pick the next unsatisfied goal");
     parser.add_option<int>("h_updates", 3, "how often to update the abstract h-values");
+    parser.add_option<bool>("search", true, "if set to false, abort after refining");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

@@ -10,6 +10,7 @@ namespace cegar_heuristic {
 class CegarHeuristic : public Heuristic {
     int max_states;
     const int h_updates;
+    const bool search;
     Abstraction abstraction;
 protected:
     virtual void initialize();
