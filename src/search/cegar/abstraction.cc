@@ -142,13 +142,17 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             AbstractState *successor = arc.second;
 
             const int succ_g = g + op->get_cost();
-            // TODO: Ignore states with h = infinity?
             // TODO: In case of equal f-values, prefer states with higher g?
             if (successor->get_distance() > succ_g) {
                 successor->set_distance(succ_g);
                 int f = succ_g;
-                if (use_h)
-                    f += successor->get_h();
+                int h = successor->get_h();
+                if (use_h) {
+                    // Ignore dead-end states.
+                    if (h == INFINITY)
+                        continue;
+                    f += h;
+                }
                 successor->set_predecessor(op, state);
                 assert(f >= 0);
                 queue.push(f, successor);
@@ -449,12 +453,9 @@ void Abstraction::update_h_values() const {
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         const int dist = state->get_distance();
-        if (dist < INFINITY) {
-            state->set_h(dist);
-        } else {
-            state->set_h(0);
+        state->set_h(dist);
+        if (dist == INFINITY)
             ++unreachable_states;
-        }
     }
     cout << "Unreachable states: " << unreachable_states << endl;
 }
