@@ -285,7 +285,7 @@ bool Abstraction::check_solution() {
         } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
             if (DEBUG)
-                cout << "Operator is not applicable." << endl;
+                cout << "Operator is not applicable: " << next_op->get_name() << endl;
             ++unmet_preconditions;
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
             if (pick_precondition == ALL) {
@@ -305,7 +305,8 @@ bool Abstraction::check_solution() {
             assert(next_state);
             abs_state = next_state;
             if (DEBUG)
-                cout << "Move to state " << abs_state->str() << endl;
+                cout << "Move to state " << abs_state->str() << " with "
+                     << next_op->get_name() << endl;
         } else if (!test_goal(conc_state)) {
             // Get unmet goals and refine the last state.
             if (DEBUG)
