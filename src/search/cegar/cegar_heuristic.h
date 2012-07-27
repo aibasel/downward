@@ -7,6 +7,8 @@
 #include "../state.h"
 
 namespace cegar_heuristic {
+const bool WRITE_DOT_FILES = false;
+
 class CegarHeuristic : public Heuristic {
     int max_states;
     const int h_updates;
