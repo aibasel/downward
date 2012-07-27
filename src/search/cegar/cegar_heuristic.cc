@@ -40,9 +40,11 @@ void CegarHeuristic::initialize() {
     int num_states = abstraction.get_num_states();
     int logged_states = 0;
     const int states_log_step = 100;
-    write_causal_graph(*g_causal_graph);
+    if (WRITE_DOT_FILES)
+        write_causal_graph(*g_causal_graph);
     while (num_states < max_states) {
-        //abstraction.write_dot_file(num_states);
+        if (WRITE_DOT_FILES)
+            abstraction.write_dot_file(num_states);
         if (num_states - logged_states >= states_log_step) {
             cout << "Abstract states: " << num_states << "/" << max_states << endl;
             logged_states += states_log_step;
@@ -62,6 +64,8 @@ void CegarHeuristic::initialize() {
             ++updates;
         }
     }
+    if (WRITE_DOT_FILES)
+        abstraction.write_dot_file(num_states);
     cout << "Done refining [t=" << g_timer << "]" << endl;
     cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
