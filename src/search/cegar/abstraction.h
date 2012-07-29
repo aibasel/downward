@@ -72,9 +72,9 @@ private:
     mutable int unmet_goals;
 
 public:
-    explicit Abstraction(PickStrategy pick_deviation = FIRST,
-                         PickStrategy pick_precondition = KEEP,
-                         PickStrategy pick_goal = BREAK);
+    explicit Abstraction(PickStrategy deviation_strategy = FIRST,
+                         PickStrategy precondition_strategy = KEEP,
+                         PickStrategy goal_strategy = BREAK);
 
     void refine(AbstractState *state, int var, int value);
     void refine(vector<pair<int, int> > &conditions, AbstractState *state);

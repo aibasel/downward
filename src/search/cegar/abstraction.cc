@@ -19,15 +19,22 @@
 using namespace std;
 
 namespace cegar_heuristic {
-Abstraction::Abstraction(PickStrategy pick_deviation,
-                         PickStrategy pick_precondition,
-                         PickStrategy pick_goal)
-    : last_checked_conc_state(*g_initial_state) {
+Abstraction::Abstraction(PickStrategy deviation_strategy,
+                         PickStrategy precondition_strategy,
+                         PickStrategy goal_strategy)
+    : start_solution_check_ptr(0),
+      last_checked_conc_state(*g_initial_state),
+      pick_deviation(deviation_strategy),
+      pick_precondition(precondition_strategy),
+      pick_goal(goal_strategy),
+      expansions(0),
+      expansions_dijkstra(0),
+      deviations(0),
+      unmet_preconditions(0),
+      unmet_goals(0) {
     assert(!g_operators.empty());
 
-    this->pick_deviation = pick_deviation;
-    this->pick_precondition = pick_precondition;
-    this->pick_goal = pick_goal;
+
 
     single = new AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
@@ -37,12 +44,6 @@ Abstraction::Abstraction(PickStrategy pick_deviation,
     init = single;
     goal = single;
     states.insert(init);
-    start_solution_check_ptr = 0;
-    expansions = 0;
-    expansions_dijkstra = 0;
-    deviations = 0;
-    unmet_preconditions = 0;
-    unmet_goals = 0;
     if (g_causal_graph)
         partial_ordering(*g_causal_graph, &cg_partial_ordering);
     if (DEBUG) {

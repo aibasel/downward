@@ -24,15 +24,17 @@ private:
     // Possible values of each variable in this state.
     // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
-    // values[1] == {} -> var1 has all possible values.
     std::vector<Domain> values;
 
     std::vector<Arc> next, prev;
     void remove_arc(std::vector<Arc> *arcs, Operator *op, AbstractState *other);
 
-    // For Dijkstra search.
+    // Incumbent distance to first expanded node in backwards and forward search.
     int distance;
+    // Estimated cost to goal node.
     int h;
+
+    // Record the neighbours on a solution path.
     Operator *op_in;
     AbstractState *state_in;
     Operator *op_out;

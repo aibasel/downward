@@ -15,11 +15,13 @@
 using namespace std;
 
 namespace cegar_heuristic {
-AbstractState::AbstractState(string s) {
+AbstractState::AbstractState(string s)
+    : distance(UNDEFINED),
+      h(0),
+      var(UNDEFINED) {
     assert(!g_variable_domain.empty());
-    h = 0;
-    reset_neighbours();
 
+    reset_neighbours();
     values.resize(g_variable_domain.size(), set<int>());
 
     for (int var = 0; var < g_variable_domain.size(); ++var) {
@@ -33,8 +35,8 @@ AbstractState::AbstractState(string s) {
     // Construct state from string s of the form "<0={0,1}>".
     istringstream iss(s);
     char next;
-    int var;
-    int val;
+    int current_var = UNDEFINED;
+    int current_val = UNDEFINED;
     bool in_bracket = false;
     while (!iss.eof()) {
         // iss.peek() and iss.get() return strange chars at beginning and end
@@ -50,11 +52,11 @@ AbstractState::AbstractState(string s) {
             // We can use iss.unget(), because next is a single char.
             iss.unget();
             if (in_bracket) {
-                iss >> val;
-                values[var].insert(val);
+                iss >> current_val;
+                values[current_var].insert(current_val);
             } else {
-                iss >> var;
-                values[var].clear();
+                iss >> current_var;
+                values[current_var].clear();
             }
         }
     }
