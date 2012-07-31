@@ -43,6 +43,7 @@ public:
     size_t hash() const;
 
     explicit State(state_var_t *buffer) {
+        id = UNKOWN_ID;
         vars = buffer;
         borrowed_buffer = true;
     }
