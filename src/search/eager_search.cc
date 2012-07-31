@@ -143,7 +143,7 @@ int EagerSearch::step() {
             bool h_is_dirty = false;
             for (size_t i = 0; i < heuristics.size(); i++)
                 h_is_dirty = h_is_dirty || heuristics[i]->reach_state(
-                    s, *op, succ_node.get_state());
+                    s, *op, succ_state);
             if (h_is_dirty && use_multi_path_dependence)
                 succ_node.set_h_dirty();
         }
