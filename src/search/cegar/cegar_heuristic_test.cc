@@ -58,14 +58,13 @@ void init_test() {
 TEST(CegarTest, str) {
     init_test();
 
-    AbstractState a;
     vector<string> states;
     states.push_back("<0={1}>");
     states.push_back("<>");
     states.push_back("<0={1},1={0,2}>");
     states.push_back("<0={0},1={0,1}>");
     for (int i = 0; i < states.size(); ++i) {
-        a = AbstractState(states[i]);
+        AbstractState a(states[i]);
         ASSERT_EQ(states[i], a.str());
     }
 }
@@ -111,10 +110,9 @@ TEST(CegarTest, regress) {
     pairs.push_back(pair<string, string>("<0={0},1={0}>", "<>"));
     pairs.push_back(pair<string, string>("<0={0},1={0}>", "<1={1}>"));
 
-    AbstractState b;
     for (int i = 0; i < pairs.size(); ++i) {
         AbstractState a;
-        b = AbstractState(pairs[i].second);
+        AbstractState b(pairs[i].second);
         b.regress(op, &a);
         EXPECT_EQ(pairs[i].first, a.str());
     }
@@ -125,7 +123,7 @@ TEST(CegarTest, regress) {
 
     for (int i = 0; i < impossible.size(); ++i) {
         AbstractState a;
-        b = AbstractState(impossible[i]);
+        AbstractState b(impossible[i]);
         EXPECT_DEATH(b.regress(op, &a), ".*Assertion .* failed.");
     }
 }
@@ -133,9 +131,9 @@ TEST(CegarTest, regress) {
 TEST(CegarTest, equal) {
     init_test();
 
-    AbstractState a = AbstractState("<0={0},1={0}>");
-    AbstractState b = AbstractState("<1={0},0={0}>");
-    AbstractState c = AbstractState("<1={0}>");
+    AbstractState a("<0={0},1={0}>");
+    AbstractState b("<1={0},0={0}>");
+    AbstractState c("<1={0}>");
     ASSERT_TRUE(a == b);
     ASSERT_FALSE(a == c);
     ASSERT_FALSE(b == c);
@@ -147,7 +145,7 @@ TEST(CegarTest, refine_var0) {
     // Operator: <0=0, 1=0 --> 1=1>
     Operator op1 = make_op1();
 
-    AbstractState a = AbstractState();
+    AbstractState a;
     a.add_arc(&op1, &a);
     AbstractState *a1 = new AbstractState();
     AbstractState *a2 = new AbstractState();
@@ -179,7 +177,7 @@ TEST(CegarTest, refine_var1) {
     // Operator: <0=0, 1=0 --> 1=1>
     Operator op1 = make_op1();
 
-    AbstractState a = AbstractState();
+    AbstractState a;
     a.add_arc(&op1, &a);
     AbstractState *a1 = new AbstractState();
     AbstractState *a2 = new AbstractState();
@@ -227,11 +225,9 @@ TEST(CegarTest, check_arc) {
     };
     ASSERT_EQ((sizeof(check) / sizeof(check[0])), pairs.size());
 
-    AbstractState a;
-    AbstractState b;
     for (int i = 0; i < pairs.size(); ++i) {
-        a = AbstractState(pairs[i].first);
-        b = AbstractState(pairs[i].second);
+        AbstractState a(pairs[i].first);
+        AbstractState b(pairs[i].second);
         ASSERT_EQ(check[i], a.check_and_add_arc(&op, &b));
     }
 }
@@ -259,11 +255,9 @@ TEST(CegarTest, is_abstraction_of_other) {
     ASSERT_EQ((sizeof(agree) / sizeof(agree[0])), pairs.size());
     ASSERT_EQ((sizeof(rev_agree) / sizeof(agree[0])), pairs.size());
 
-    AbstractState a;
-    AbstractState b;
     for (int i = 0; i < pairs.size(); ++i) {
-        a = AbstractState(pairs[i].first);
-        b = AbstractState(pairs[i].second);
+        AbstractState a(pairs[i].first);
+        AbstractState b(pairs[i].second);
         EXPECT_EQ(agree[i], a.is_abstraction_of(b));
         EXPECT_EQ(rev_agree[i], b.is_abstraction_of(a));
     }
@@ -444,9 +438,9 @@ TEST(CegarTest, astar_search) {
 
     Abstraction abs;
 
-    AbstractState a = AbstractState("<0={0}>");
-    AbstractState b = AbstractState("<0={1}>");
-    AbstractState c = AbstractState("<0={2}>");
+    AbstractState a("<0={0}>");
+    AbstractState b("<0={1}>");
+    AbstractState c("<0={2}>");
 
     a.add_arc(&op2, &c);
     a.add_arc(&op1, &b);
@@ -517,9 +511,9 @@ TEST(CegarTest, dijkstra_search) {
 
     Abstraction abs;
 
-    AbstractState a = AbstractState("<0={0}>");
-    AbstractState b = AbstractState("<0={1}>");
-    AbstractState c = AbstractState("<0={2}>");
+    AbstractState a("<0={0}>");
+    AbstractState b("<0={1}>");
+    AbstractState c("<0={2}>");
 
     a.add_arc(&op2, &c);
     a.add_arc(&op1, &b);
