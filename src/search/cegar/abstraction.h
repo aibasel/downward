@@ -43,6 +43,10 @@ enum PickStrategy {
 
 class Abstraction {
 private:
+    // Forbid copy constructor and copy assignment operator.
+    Abstraction(const Abstraction&);
+    Abstraction& operator=(const Abstraction&);
+
     std::set<AbstractState *> states;
 
     AbstractState *init;
