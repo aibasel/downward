@@ -13,18 +13,30 @@ private:
     std::vector<Entry> entries;
 public:
     PerStateInformation()
-        : PerStateInformation(Entry()) {
+        : default_value(Entry()) {
     }
     PerStateInformation(Entry _default_value)
         : default_value(_default_value) {
     }
 
-    Entry &operator[](const State &state) {
-        assert(state.id >= 0);
-        if (entries.size() <= state.id) {
-            entries.resize(state.id + 1, default_value);
+    Entry &operator[](int state_id) {
+        return this->at(state_id);
+    }
+
+    Entry &at(int state_id) {
+        assert(state_id >= 0);
+        if (entries.size() <= state_id) {
+            entries.resize(state_id + 1, default_value);
         }
-        return entries[state.id];
+        return entries[state_id];
+    }
+
+    Entry &operator[](const State &state) {
+        return this->at(state.get_id());
+    }
+
+    int size() {
+        return entries.size();
     }
 };
 
