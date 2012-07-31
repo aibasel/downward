@@ -24,14 +24,20 @@ enum PickStrategy {
     RANDOM,
     GOAL,
     NO_GOAL,
+    // Number of remaining values for each variable.
     MIN_CONSTRAINED,
     MAX_CONSTRAINED,
+    // Refinement: |remaining_values| / |domain|
     MIN_REFINED,
     MAX_REFINED,
+    // Number of predecessors in causal graph.
     MIN_PREDECESSORS,
     MAX_PREDECESSORS,
+    // Try to keep or break the current solution with the refinement.
     BREAK,
     KEEP,
+    // Refine this state with the first condition, the desired resulting state
+    // with the second condition.
     ALL
 };
 
