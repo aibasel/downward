@@ -22,8 +22,8 @@ typedef std::set<int> Domain;
 class AbstractState {
 private:
     // Forbid copy constructor and copy assignment operator.
-    AbstractState(const AbstractState&);
-    AbstractState& operator=(const AbstractState&);
+    AbstractState(const AbstractState &);
+    AbstractState &operator=(const AbstractState &);
 
     // Possible values of each variable in this state.
     // values[1] == {2} -> var1 is concretely set here.
