@@ -42,9 +42,9 @@ Operator create_op(const std::string name, std::vector<string> prevail,
 
 State *create_state(const std::string desc);
 
-void partial_ordering(CausalGraph &causal_graph, vector<int> *order);
+void partial_ordering(const CausalGraph &causal_graph, vector<int> *order);
 
-void write_causal_graph(CausalGraph &causal_graph);
+void write_causal_graph(const CausalGraph &causal_graph);
 
 void pick_condition_for_each_var(vector<pair<int, int> > *conditions);
 }

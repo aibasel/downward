@@ -38,7 +38,6 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
 
     single = new AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
-        //assert(g_operators[i].get_cost() > 0);
         single->add_arc(&g_operators[i], single);
     }
     init = single;
@@ -56,7 +55,7 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
-    assert(!g_operators.empty()); // We need operators and the g_initial_state
+    assert(!g_operators.empty());  // We need operators and the g_initial_state.
     if (DEBUG)
         cout << "REFINE " << state->str() << " for " << var << "=" << value << " (" << g_variable_name[var] << ")" << endl;
     AbstractState *v1 = new AbstractState();
@@ -88,11 +87,11 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     }
 }
 
-void Abstraction::refine(vector<pair<int, int> > &conditions, AbstractState *state) {
-    assert(!g_operators.empty()); // We need operators and the g_initial_state
+void Abstraction::refine(const vector<pair<int, int> > &conditions, AbstractState *state) {
+    assert(!g_operators.empty());  // We need operators and the g_initial_state.
     for (int cond = 0; cond < conditions.size(); ++cond) {
-        int &var = conditions[cond].first;
-        int &value = conditions[cond].second;
+        const int &var = conditions[cond].first;
+        const int &value = conditions[cond].second;
         refine(state, var, value);
         state = state->get_child(value);
         assert(state);
@@ -133,7 +132,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         if (forward && state == goal) {
             if (debug)
                 cout << "GOAL REACHED" << endl;
-            extract_solution(*state);
+            extract_solution(state);
             return true;
         }
         vector<Arc> &successors = (forward) ? state->get_next() : state->get_prev();
@@ -192,9 +191,9 @@ bool Abstraction::find_solution() {
     return astar_success;
 }
 
-void Abstraction::extract_solution(AbstractState &goal) const {
+void Abstraction::extract_solution(AbstractState *goal) const {
     int cost_to_goal = 0;
-    AbstractState *current = &goal;
+    AbstractState *current = goal;
     current->set_h(cost_to_goal);
     while (current->get_state_in()) {
         Operator *op = current->get_op_in();
@@ -242,7 +241,6 @@ bool Abstraction::check_solution() {
     if (start_solution_check_ptr) {
         abs_state = start_solution_check_ptr;
         conc_state = last_checked_conc_state;
-        //assert(abs_state->get_op_out());
     }
     assert(abs_state->is_abstraction_of(conc_state));
 

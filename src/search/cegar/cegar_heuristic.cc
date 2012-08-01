@@ -81,7 +81,7 @@ void CegarHeuristic::initialize() {
              << abstraction.get_num_expansions_dijkstra() << endl;
         cout << "Ratio A*/Dijkstra: "
              << abstraction.get_num_expansions() /
-        float(abstraction.get_num_expansions_dijkstra()) << endl;
+        static_cast<float>(abstraction.get_num_expansions_dijkstra()) << endl;
     }
     if (!success)
         assert(num_states >= max_states);
@@ -92,11 +92,6 @@ void CegarHeuristic::initialize() {
 
     if (!search)
         exit(0);
-
-    // Unreachable goal.
-    //g_goal.clear();
-    //g_goal.push_back(make_pair(0, 0));
-    //g_goal.push_back(make_pair(0, 1));
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {

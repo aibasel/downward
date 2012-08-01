@@ -66,7 +66,7 @@ private:
     FRIEND_TEST(CegarTest, astar_search);
     FRIEND_TEST(CegarTest, dijkstra_search);
     bool astar_search(bool forward, bool use_h) const;
-    void extract_solution(AbstractState &goal) const;
+    void extract_solution(AbstractState *goal) const;
     void calculate_costs() const;
 
     // Refinement hierarchy.
@@ -87,7 +87,7 @@ public:
                          PickStrategy goal_strategy = BREAK);
 
     void refine(AbstractState *state, int var, int value);
-    void refine(vector<pair<int, int> > &conditions, AbstractState *state);
+    void refine(const vector<Condition> &conditions, AbstractState *state);
 
     AbstractState *get_abstract_state(const State &state) const;
 
