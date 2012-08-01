@@ -329,8 +329,6 @@ void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
 }
 
 bool AbstractState::check_arc(Operator *op, AbstractState *other) {
-    //if (DEBUG)
-    //    cout << "CHECK ARC: " << str() << " " << op->get_name() << " " << other->str() << endl;
     vector<bool> checked(g_variable_domain.size(), false);
     for (int i = 0; i < op->get_prevail().size(); ++i) {
         const Prevail &prevail = op->get_prevail()[i];

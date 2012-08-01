@@ -133,7 +133,7 @@ bool goal_var(int var) {
     return false;
 }
 
-void partial_ordering(CausalGraph &causal_graph, vector<int> *order) {
+void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
     assert(order->empty());
     set<int> vars;
     set<int>::iterator it;
@@ -169,7 +169,7 @@ void partial_ordering(CausalGraph &causal_graph, vector<int> *order) {
     assert(order->size() == g_variable_domain.size());
 }
 
-void write_causal_graph(CausalGraph &causal_graph) {
+void write_causal_graph(const CausalGraph &causal_graph) {
     ofstream dotfile("causal-graph.dot");
     if (!dotfile.is_open()) {
         cout << "dot file for causal graph could not be opened" << endl;
