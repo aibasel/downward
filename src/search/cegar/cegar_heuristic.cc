@@ -81,7 +81,7 @@ void CegarHeuristic::initialize() {
              << abstraction.get_num_expansions_dijkstra() << endl;
         cout << "Ratio A*/Dijkstra: "
              << abstraction.get_num_expansions() /
-                float(abstraction.get_num_expansions_dijkstra()) << endl;
+        float(abstraction.get_num_expansions_dijkstra()) << endl;
     }
     if (!success)
         assert(num_states >= max_states);
