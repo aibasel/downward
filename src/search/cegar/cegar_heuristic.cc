@@ -31,7 +31,8 @@ CegarHeuristic::~CegarHeuristic() {
 }
 
 void CegarHeuristic::initialize() {
-    cout << "Peak memory before refining: " << get_peak_memory_in_kb() << " KB" << endl;
+    cout << "Peak memory before building abstraction: "
+         << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Initializing cegar heuristic..." << endl;
     int saved_searches = 0;
     int updates = 0;
@@ -46,7 +47,8 @@ void CegarHeuristic::initialize() {
         if (WRITE_DOT_FILES)
             abstraction.write_dot_file(num_states);
         if (num_states - logged_states >= states_log_step) {
-            cout << "Abstract states: " << num_states << "/" << max_states << endl;
+            cout << "Abstract states: "
+                 << num_states << "/" << max_states << endl;
             logged_states += states_log_step;
         }
         if (!abstraction.can_reuse_last_solution()) {
@@ -66,17 +68,20 @@ void CegarHeuristic::initialize() {
     }
     if (WRITE_DOT_FILES)
         abstraction.write_dot_file(num_states);
-    cout << "Done refining [t=" << g_timer << "]" << endl;
-    cout << "Peak memory after refining: " << get_peak_memory_in_kb() << " KB" << endl;
+    cout << "Done building abstraction [t=" << g_timer << "]" << endl;
+    cout << "Peak memory after building abstraction: "
+         << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
     cout << "Abstract states: " << num_states << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     cout << "Saved searches: " << saved_searches << endl;
     cout << "A* expansions: " << abstraction.get_num_expansions() << endl;
     if (TEST_WITH_DIJKSTRA) {
-        cout << "Dijkstra expansions: " << abstraction.get_num_expansions_dijkstra() << endl;
+        cout << "Dijkstra expansions: "
+             << abstraction.get_num_expansions_dijkstra() << endl;
         cout << "Ratio A*/Dijkstra: "
-             << abstraction.get_num_expansions() / float(abstraction.get_num_expansions_dijkstra()) << endl;
+             << abstraction.get_num_expansions() /
+                float(abstraction.get_num_expansions_dijkstra()) << endl;
     }
     if (!success)
         assert(num_states >= max_states);
