@@ -143,7 +143,7 @@ int EagerSearch::step() {
             bool h_is_dirty = false;
             for (size_t i = 0; i < heuristics.size(); i++)
                 h_is_dirty = h_is_dirty || heuristics[i]->reach_state(
-                    s, *op, succ_state);
+                    s, *op, succ_node.get_state());
             if (h_is_dirty && use_multi_path_dependence)
                 succ_node.set_h_dirty();
         }
@@ -152,7 +152,7 @@ int EagerSearch::step() {
             // We have not seen this state before.
             // Evaluate and create a new node.
             for (size_t i = 0; i < heuristics.size(); i++)
-                heuristics[i]->evaluate(succ_state);
+                heuristics[i]->evaluate(succ_node.get_state());
             succ_node.clear_h_dirty();
             search_progress.inc_evaluated_states();
             search_progress.inc_evaluations(heuristics.size());
