@@ -9,13 +9,13 @@
 template<class Entry>
 class PerStateInformation {
 private:
-    Entry default_value;
+    const Entry default_value;
     std::vector<Entry> entries;
 public:
     PerStateInformation()
-        : default_value(Entry()) {
+        : default_value() {
     }
-    PerStateInformation(Entry _default_value)
+    PerStateInformation(const Entry &_default_value)
         : default_value(_default_value) {
     }
 
