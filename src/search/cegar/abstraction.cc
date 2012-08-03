@@ -34,8 +34,6 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       unmet_goals(0) {
     assert(!g_operators.empty());
 
-
-
     single = new AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
         single->add_arc(&g_operators[i], single);
