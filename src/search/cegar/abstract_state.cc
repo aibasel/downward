@@ -73,7 +73,7 @@ string AbstractState::str() const {
     oss << "<";
     for (int i = 0; i < values.size(); ++i) {
         const Domain &vals = values[i];
-        if (vals.size() != g_variable_domain[i]) {
+        if (vals.count() != g_variable_domain[i]) {
             oss << sep << i << "=" << domain_to_string(vals);
             sep = ",";
         }
@@ -360,8 +360,8 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
     }
     if (this != other) {
         for (int var = 0; var < g_variable_domain.size(); ++var) {
-            if (!checked[var] && (get_values(var) & other->get_values(var)).none())
-                // Intersection is empty.
+            if (!checked[var] && intersection_empty(get_values(var),
+                                                    other->get_values(var)))
                 return false;
         }
     }
