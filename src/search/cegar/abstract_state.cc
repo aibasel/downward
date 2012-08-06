@@ -119,7 +119,7 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
     for (int v = 0; v < g_variable_domain.size(); ++v) {
         Domain s1_vals(g_variable_domain[v]);
         // s2_vals = s2[v]
-        Domain s2_vals = get_values(v);
+        Domain s2_vals = values[v];
         // if v occurs in op.eff:
         int eff = get_eff(op, v);
         if (eff != UNDEFINED) {
@@ -148,8 +148,8 @@ const {
     // Get all set intersections of the possible values here with the possible
     // values in "desired".
     for (int i = 0; i < g_variable_domain.size(); ++i) {
-        Domain intersection = get_values(i) & desired.get_values(i);
-        if (intersection.count() < get_values(i).count()) {
+        Domain intersection = values[i] & desired.values[i];
+        if (intersection.count() < values[i].count()) {
             // The variable's value matters for determining the resulting state.
             int next_value = intersection.find_first();
             while (next_value != Domain::npos) {
@@ -162,9 +162,9 @@ const {
 
 AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2) {
     // We can only refine for vars that can have at least two values.
-    assert(get_values(var).count() >= 2);
+    assert(values[var].count() >= 2);
     // The desired value has to be in the set of possible values.
-    assert(get_values(var)[value]);
+    assert(values[var][value]);
 
     v1->values = values;
     v2->values = values;
@@ -233,8 +233,8 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     refined_value = value;
     left_child = v1;
     right_child = v2;
-    assert(v1->get_values(var).count() == this->get_values(var).count() - 1);
-    assert(v2->get_values(var).count() == 1);
+    assert(v1->values[var].count() == values[var].count() - 1);
+    assert(v2->values[var].count() == 1);
 
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
@@ -272,9 +272,9 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
 
 bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
     // We can only refine for vars that can have at least two values.
-    assert(get_values(var).count() >= 2);
+    assert(values[var].count() >= 2);
     // The desired value has to be in the set of possible values.
-    assert(get_values(var)[value]);
+    assert(values[var][value]);
 
     AbstractState v1 = AbstractState();
     AbstractState v2 = AbstractState();
@@ -334,11 +334,11 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
         const int &value = prevail.prev;
         // Check if operator is applicable.
         assert(value != -1);
-        if (!get_values(var)[value])
+        if (!values[var][value])
             return false;
         // Check if we land in the desired state.
         // If this == other we have already done the check above.
-        if ((this != other) && (!other->get_values(var)[value]))
+        if ((this != other) && (!other->values[var][value]))
             return false;
         checked[var] = true;
     }
@@ -351,16 +351,16 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
         assert(prepost.cond.empty());
         assert(!checked[var]);
         // Check if operator is applicable.
-        if ((pre != -1) && (!get_values(var)[pre]))
+        if ((pre != -1) && (!values[var][pre]))
             return false;
         // Check if we land in the desired state.
-        if (!other->get_values(var)[post])
+        if (!other->values[var][post])
             return false;
         checked[var] = true;
     }
     if (this != other) {
         for (int var = 0; var < g_variable_domain.size(); ++var) {
-            if (!checked[var] && !get_values(var).intersects(other->get_values(var)))
+            if (!checked[var] && !values[var].intersects(other->values[var]))
                 return false;
         }
     }
@@ -378,7 +378,7 @@ bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
 bool AbstractState::is_abstraction_of(const State &conc_state) const {
     // Return true if every concrete value is contained in the possible values.
     for (int i = 0; i < g_variable_domain.size(); ++i) {
-        if (!get_values(i)[conc_state[i]])
+        if (!values[i][conc_state[i]])
             return false;
     }
     return true;
@@ -388,7 +388,7 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
     // Return true if all our possible value sets are supersets of the
     // other's respective sets.
     for (int i = 0; i < g_variable_domain.size(); ++i) {
-        if (!other.get_values(i).is_subset_of(this->get_values(i)))
+        if (!other.values[i].is_subset_of(values[i]))
             return false;
     }
     return true;
