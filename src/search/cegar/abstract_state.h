@@ -46,8 +46,10 @@ private:
 
     // Refinement hierarchy. Save the variable for which this state was refined
     // and the resulting abstract child states.
-    int var;
-    std::map<int, AbstractState *> children;
+    int refined_var;
+    int refined_value;
+    AbstractState *left_child;
+    AbstractState *right_child;
 
 public:
     explicit AbstractState(string s = "");
@@ -91,7 +93,7 @@ public:
 
     // We only have a valid abstract state if it was not refined.
     bool valid() const;
-    int get_var() const;
+    int get_refined_var() const;
     AbstractState *get_child(int value);
 
     void release_memory();

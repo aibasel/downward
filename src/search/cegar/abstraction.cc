@@ -471,7 +471,7 @@ void Abstraction::update_h_values() const {
 AbstractState *Abstraction::get_abstract_state(const State &state) const {
     AbstractState *current = single;
     while (!current->valid()) {
-        int value = state[current->get_var()];
+        int value = state[current->get_refined_var()];
         current = current->get_child(value);
     }
     assert(current->valid());
@@ -536,12 +536,5 @@ void Abstraction::print_statistics() {
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
-
-    int children_size = 0;
-    for (int i = 0; i < old_states.size(); ++i) {
-        AbstractState *state = old_states[i];
-        children_size += sizeof(state->children) + state->children.size() * 2 * sizeof(int);
-    }
-    cout << "Children size: " << children_size / 1024 << " KB" << endl;
 }
 }
