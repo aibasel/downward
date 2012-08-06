@@ -157,7 +157,7 @@ TEST(CegarTest, refine_var0) {
     // Check refinement hierarchy.
     EXPECT_EQ(a1s, a1->str());
     EXPECT_EQ(a2s, a2->str());
-    EXPECT_EQ(0, a.get_var());
+    EXPECT_EQ(0, a.get_refined_var());
     AbstractState *left = a.get_child(0);
     AbstractState *right = a.get_child(1);
     EXPECT_EQ(left, a1);
@@ -189,7 +189,7 @@ TEST(CegarTest, refine_var1) {
     // Check refinement hierarchy.
     EXPECT_EQ(a1s, a1->str());
     EXPECT_EQ(a2s, a2->str());
-    EXPECT_EQ(1, a.get_var());
+    EXPECT_EQ(1, a.get_refined_var());
     AbstractState *left = a.get_child(0);
     AbstractState *right = a.get_child(1);
     EXPECT_EQ(left, a1);
