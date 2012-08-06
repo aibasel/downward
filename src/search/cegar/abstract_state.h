@@ -1,6 +1,7 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
+#include "utils.h"
 #include "../operator.h"
 #include "../state.h"
 
@@ -12,12 +13,9 @@
 #include <utility>
 #include <vector>
 
-// TODO: Check out boost dynamic bitset
-
 namespace cegar_heuristic {
 class AbstractState;
 typedef pair<Operator *, AbstractState *> Arc;
-typedef std::set<int> Domain;
 
 class AbstractState {
 private:

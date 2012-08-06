@@ -1,6 +1,5 @@
 #include "abstract_state.h"
 
-#include "utils.h"
 #include "../globals.h"
 #include "../operator.h"
 #include "../state.h"
@@ -25,11 +24,14 @@ AbstractState::AbstractState(string s)
     assert(!g_variable_domain.empty());
 
     reset_neighbours();
-    values.resize(g_variable_domain.size(), set<int>());
+    //values.resize(g_variable_domain.size());
 
     for (int var = 0; var < g_variable_domain.size(); ++var) {
-        for (int value = 0; value < g_variable_domain[var]; ++value)
-            values[var].insert(values[var].end(), value);
+        int num_values = g_variable_domain[var];
+        // TODO: set bitset during initialization.
+        Domain domain(num_values);
+        domain.set();
+        values.push_back(domain);
     }
 
     if (s.empty())
@@ -56,10 +58,10 @@ AbstractState::AbstractState(string s)
             iss.unget();
             if (in_bracket) {
                 iss >> current_val;
-                values[current_var].insert(current_val);
+                values[current_var].set(current_val);
             } else {
                 iss >> current_var;
-                values[current_var].clear();
+                values[current_var].reset();
             }
         }
     }
@@ -70,9 +72,9 @@ string AbstractState::str() const {
     string sep = "";
     oss << "<";
     for (int i = 0; i < values.size(); ++i) {
-        set<int> vals = values[i];
+        const Domain &vals = values[i];
         if (vals.size() != g_variable_domain[i]) {
-            oss << sep << i << "=" << int_set_to_string(vals);
+            oss << sep << i << "=" << domain_to_string(vals);
             sep = ",";
         }
     }
@@ -103,27 +105,27 @@ bool AbstractState::operator!=(const AbstractState &other) const {
     return !(*this == other);
 }
 
+
 const Domain &AbstractState::get_values(int var) const {
     return values[var];
 }
 
 void AbstractState::set_value(int var, int value) {
-    values[var].clear();
-    values[var].insert(value);
+    values[var].reset();
+    values[var].set(value);
 }
 
 void AbstractState::regress(const Operator &op, AbstractState *result) const {
     for (int v = 0; v < g_variable_domain.size(); ++v) {
-        set<int> s1_vals;
+        Domain s1_vals(g_variable_domain[v]);
         // s2_vals = s2[v]
-        set<int> s2_vals = get_values(v);
+        Domain s2_vals = get_values(v);
         // if v occurs in op.eff:
         int eff = get_eff(op, v);
         if (eff != UNDEFINED) {
-            assert(s2_vals.count(eff) == 1);
+            assert(s2_vals[eff]);
             // s1_vals = v.all_values_in_domain
-            for (int i = 0; i < g_variable_domain[v]; ++i)
-                s1_vals.insert(i);
+            s1_vals.set();
         } else {
             // s1_vals = s2_vals
             s1_vals = s2_vals;
@@ -131,10 +133,10 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
         // if v occurs in op.pre:
         int pre = get_pre(op, v);
         if (pre != UNDEFINED) {
-            assert(s1_vals.count(pre) == 1);
+            assert(s1_vals[pre]);
             // s1_vals = [op.pre[v]]
-            s1_vals.clear();
-            s1_vals.insert(pre);
+            s1_vals.reset();
+            s1_vals.set(pre);
         }
         result->values[v] = s1_vals;
     }
@@ -143,21 +145,16 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
 void AbstractState::get_unmet_conditions(const AbstractState &desired,
                                          vector<pair<int, int> > *conditions)
 const {
-    // Get all set intersections of the possible values here minus the possible
+    // Get all set intersections of the possible values here with the possible
     // values in "desired".
     for (int i = 0; i < g_variable_domain.size(); ++i) {
-        vector<int> both(g_variable_domain[i]);
-        vector<int>::iterator it;
-        set<int> vals1 = this->get_values(i);
-        set<int> vals2 = desired.get_values(i);
-        it = set_intersection(vals1.begin(), vals1.end(),
-                              vals2.begin(), vals2.end(), both.begin());
-        int elements = static_cast<int>(it - both.begin());
-        assert(elements > 0);
-        if (elements < vals1.size()) {
+        Domain intersection = get_values(i) & desired.get_values(i);
+        if (intersection.count() < get_values(i).count()) {
             // The variable's value matters for determining the resulting state.
-            for (int j = 0; j < elements; ++j) {
-                conditions->push_back(pair<int, int>(i, both[j]));
+            int next_value = intersection.find_first();
+            while (next_value != Domain::npos) {
+                conditions->push_back(pair<int, int>(i, next_value));
+                next_value = intersection.find_next(next_value);
             }
         }
     }
@@ -165,15 +162,15 @@ const {
 
 AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2) {
     // We can only refine for vars that can have at least two values.
-    assert(get_values(var).size() >= 2);
+    assert(get_values(var).count() >= 2);
     // The desired value has to be in the set of possible values.
-    assert(get_values(var).count(value) == 1);
+    assert(get_values(var)[value]);
 
     v1->values = values;
     v2->values = values;
 
     // In v1 var can have all of the previous values except the desired one.
-    v1->values[var].erase(value);
+    v1->values[var].reset(value);
 
     // In v2 var can only have the desired value.
     v2->set_value(var, value);
@@ -209,7 +206,6 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
         Operator *op = next[i].first;
         AbstractState *w = next[i].second;
         if (w == this) {
-            assert(*w == *this);
             // Handle former self-loops. The same loops also were in prev,
             // but they only have to be checked once.
             v1->check_and_add_arc(op, v2);
@@ -217,6 +213,7 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
             v1->check_and_add_arc(op, v1);
             v2->check_and_add_arc(op, v2);
         } else {
+            assert(*w != *this);
             w->remove_prev_arc(op, this);
             // If the first check returns false, the second arc has to be added.
             if (v1->check_and_add_arc(op, w)) {
@@ -236,14 +233,12 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     refined_value = value;
     left_child = v1;
     right_child = v2;
-    assert(v1->get_values(var).size() == this->get_values(var).size() - 1);
-    assert(v2->get_values(var).size() == 1);
+    assert(v1->get_values(var).count() == this->get_values(var).count() - 1);
+    assert(v2->get_values(var).count() == 1);
 
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
     assert(this->is_abstraction_of(*v2));
-    assert(*this != *v1);
-    assert(*this != *v2);
 
     // Remove obsolete members.
     release_memory();
@@ -277,9 +272,9 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
 
 bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
     // We can only refine for vars that can have at least two values.
-    assert(get_values(var).size() >= 2);
+    assert(get_values(var).count() >= 2);
     // The desired value has to be in the set of possible values.
-    assert(get_values(var).count(value) == 1);
+    assert(get_values(var)[value]);
 
     AbstractState v1 = AbstractState();
     AbstractState v2 = AbstractState();
@@ -288,7 +283,7 @@ bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
     v2.values = values;
 
     // In v1 var can have all of the previous values except the desired one.
-    v1.values[var].erase(value);
+    v1.values[var].reset(value);
 
     // In v2 var can only have the desired value.
     v2.set_value(var, value);
@@ -331,6 +326,7 @@ void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
 }
 
 bool AbstractState::check_arc(Operator *op, AbstractState *other) {
+    // TODO: Use bitset.
     vector<bool> checked(g_variable_domain.size(), false);
     for (int i = 0; i < op->get_prevail().size(); ++i) {
         const Prevail &prevail = op->get_prevail()[i];
@@ -338,11 +334,11 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
         const int &value = prevail.prev;
         // Check if operator is applicable.
         assert(value != -1);
-        if (this->get_values(var).count(value) == 0)
+        if (!get_values(var)[value])
             return false;
         // Check if we land in the desired state.
         // If this == other we have already done the check above.
-        if ((this != other) && (other->get_values(var).count(value) == 0))
+        if ((this != other) && (!other->get_values(var)[value]))
             return false;
         checked[var] = true;
     }
@@ -355,17 +351,17 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
         assert(prepost.cond.empty());
         assert(!checked[var]);
         // Check if operator is applicable.
-        if ((pre != -1) && (get_values(var).count(pre) == 0))
+        if ((pre != -1) && (!get_values(var)[pre]))
             return false;
         // Check if we land in the desired state.
-        if (other->get_values(var).count(post) == 0)
+        if (!other->get_values(var)[post])
             return false;
         checked[var] = true;
     }
     if (this != other) {
         for (int var = 0; var < g_variable_domain.size(); ++var) {
-            if (!checked[var] && intersection_empty(this->get_values(var),
-                                                    other->get_values(var)))
+            if (!checked[var] && (get_values(var) & other->get_values(var)).none())
+                // Intersection is empty.
                 return false;
         }
     }
@@ -383,7 +379,7 @@ bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
 bool AbstractState::is_abstraction_of(const State &conc_state) const {
     // Return true if every concrete value is contained in the possible values.
     for (int i = 0; i < g_variable_domain.size(); ++i) {
-        if (get_values(i).count(conc_state[i]) == 0)
+        if (!get_values(i)[conc_state[i]])
             return false;
     }
     return true;
@@ -393,15 +389,7 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
     // Return true if all our possible value sets are supersets of the
     // other's respective sets.
     for (int i = 0; i < g_variable_domain.size(); ++i) {
-        vector<int> diff(g_variable_domain[i]);
-        vector<int>::iterator it;
-        set<int> vals1 = this->get_values(i);
-        set<int> vals2 = other.get_values(i);
-        // If |vals2 - vals1| == 0, vals1 is a superset of vals2.
-        it = set_difference(vals2.begin(), vals2.end(),
-                            vals1.begin(), vals1.end(), diff.begin());
-        if (it != diff.begin())
-            // Set is not empty.
+        if (!other.get_values(i).is_subset_of(this->get_values(i)))
             return false;
     }
     return true;
@@ -410,7 +398,7 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
 bool AbstractState::is_abstraction_of_goal() const {
     assert(!g_goal.empty());
     for (int i = 0; i < g_goal.size(); ++i) {
-        if (values[g_goal[i].first].count(g_goal[i].second) == 0) {
+        if (!values[g_goal[i].first][g_goal[i].second]) {
             return false;
         }
     }

@@ -13,14 +13,14 @@
 using namespace std;
 
 namespace cegar_heuristic {
-string int_set_to_string(set<int> myset) {
+string domain_to_string(Domain domain) {
     ostringstream oss;
     oss << "{";
-    int j = 0;
-    for (set<int>::iterator iter = myset.begin(); iter != myset.end(); ++iter) {
-        oss << *iter;
-        ++j;
-        if (j < myset.size())
+    int j = domain.find_first();
+    while (j != Domain::npos) {
+        oss << j;
+        j = domain.find_next(j);
+        if (j != Domain::npos)
             oss << ",";
     }
     oss << "}";

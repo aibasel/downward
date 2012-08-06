@@ -10,14 +10,17 @@
 #include "../operator.h"
 #include "../state.h"
 
+#include <boost/dynamic_bitset.hpp>
+
 namespace cegar_heuristic {
 const bool DEBUG = false;
 
 const int UNDEFINED = -1;
 
 typedef std::pair<int, int> Condition;
+typedef boost::dynamic_bitset<> Domain;
 
-std::string int_set_to_string(std::set<int> myset);
+std::string domain_to_string(Domain domain);
 bool intersection_empty(const std::set<int> &vals1, const std::set<int> &vals2);
 
 void get_prevail_and_preconditions(const Operator &op, vector<pair<int, int> > *cond);
