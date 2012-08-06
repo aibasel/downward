@@ -21,7 +21,6 @@ typedef std::pair<int, int> Condition;
 typedef boost::dynamic_bitset<> Domain;
 
 std::string domain_to_string(const Domain &domain);
-bool intersection_empty(const Domain &vals1, const Domain &vals2);
 
 void get_prevail_and_preconditions(const Operator &op, vector<pair<int, int> > *cond);
 
