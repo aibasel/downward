@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -24,13 +25,11 @@ AbstractState::AbstractState(string s)
     assert(!g_variable_domain.empty());
 
     reset_neighbours();
-    //values.resize(g_variable_domain.size());
 
     for (int var = 0; var < g_variable_domain.size(); ++var) {
-        int num_values = g_variable_domain[var];
-        // TODO: set bitset during initialization.
-        Domain domain(num_values);
-        domain.set();
+        const int num_values = g_variable_domain[var];
+        // Set all bits during initialization.
+        Domain domain(num_values, pow(2, num_values) - 1);
         values.push_back(domain);
     }
 
