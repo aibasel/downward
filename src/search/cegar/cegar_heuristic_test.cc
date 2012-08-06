@@ -64,35 +64,16 @@ TEST(CegarTest, str) {
     states.push_back("<0={1},1={0,2}>");
     states.push_back("<0={0},1={0,1}>");
     for (int i = 0; i < states.size(); ++i) {
-        AbstractState a(states[i]);
-        ASSERT_EQ(states[i], a.str());
+        AbstractState abs(states[i]);
+        ASSERT_EQ(states[i], abs.str());
     }
-}
 
-TEST(CegarTest, intersection_empty) {
-    int L = 4;
-
-    Domain a(L, 1);     // 0001
-    Domain b(L, 3);     // 0011
-    Domain c(L, 2);     // 0010
-    Domain d(L, 10);    // 1010
-    Domain e(L);        // 0000
-
-    EXPECT_FALSE(intersection_empty(a, b));
-    EXPECT_TRUE(intersection_empty(a, c));
-    EXPECT_TRUE(intersection_empty(a, d));
-    EXPECT_TRUE(intersection_empty(a, e));
-    EXPECT_FALSE(intersection_empty(b, c));
-    EXPECT_FALSE(intersection_empty(b, d));
-    EXPECT_FALSE(intersection_empty(c, d));
-
-    EXPECT_FALSE(intersection_empty(b, a));
-    EXPECT_TRUE(intersection_empty(c, a));
-    EXPECT_TRUE(intersection_empty(d, a));
-    EXPECT_TRUE(intersection_empty(e, a));
-    EXPECT_FALSE(intersection_empty(c, b));
-    EXPECT_FALSE(intersection_empty(d, b));
-    EXPECT_FALSE(intersection_empty(d, c));
+    AbstractState a("<0={0},1={0}>");
+    AbstractState b("<1={0},0={0}>");
+    AbstractState c("<1={0}>");
+    ASSERT_TRUE(a.str() == b.str());
+    ASSERT_FALSE(a.str() == c.str());
+    ASSERT_FALSE(b.str() == c.str());
 }
 
 TEST(CegarTest, regress) {
@@ -122,17 +103,6 @@ TEST(CegarTest, regress) {
         AbstractState b(impossible[i]);
         EXPECT_DEATH(b.regress(op, &a), ".*Assertion .* failed.");
     }
-}
-
-TEST(CegarTest, equal) {
-    init_test();
-
-    AbstractState a("<0={0},1={0}>");
-    AbstractState b("<1={0},0={0}>");
-    AbstractState c("<1={0}>");
-    ASSERT_TRUE(a == b);
-    ASSERT_FALSE(a == c);
-    ASSERT_FALSE(b == c);
 }
 
 TEST(CegarTest, refine_var0) {
@@ -434,9 +404,9 @@ TEST(CegarTest, astar_search) {
 
     Abstraction abs;
 
-    AbstractState a("<0={0}>");
-    AbstractState b("<0={1}>");
-    AbstractState c("<0={2}>");
+    AbstractState a("<1={0}>");
+    AbstractState b("<1={1}>");
+    AbstractState c("<1={2}>");
 
     a.add_arc(&op2, &c);
     a.add_arc(&op1, &b);
@@ -458,7 +428,7 @@ TEST(CegarTest, astar_search) {
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
     AbstractState *found_goal = abs.init->get_state_out();
-    EXPECT_EQ("<0={2}>", found_goal->str());
+    EXPECT_EQ("<1={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_state_out());
     EXPECT_EQ(3, abs.expansions);
     EXPECT_EQ(4, a.get_h());
@@ -479,7 +449,7 @@ TEST(CegarTest, astar_search) {
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
     found_goal = abs.init->get_state_out();
-    EXPECT_EQ("<0={2}>", found_goal->str());
+    EXPECT_EQ("<1={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_state_out());
     EXPECT_EQ(2, abs.expansions);
     EXPECT_EQ(4, a.get_h());
@@ -507,9 +477,9 @@ TEST(CegarTest, dijkstra_search) {
 
     Abstraction abs;
 
-    AbstractState a("<0={0}>");
-    AbstractState b("<0={1}>");
-    AbstractState c("<0={2}>");
+    AbstractState a("<1={0}>");
+    AbstractState b("<1={1}>");
+    AbstractState c("<1={2}>");
 
     a.add_arc(&op2, &c);
     a.add_arc(&op1, &b);
@@ -525,7 +495,7 @@ TEST(CegarTest, dijkstra_search) {
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
     AbstractState *found_goal = abs.init->get_state_out();
-    EXPECT_EQ("<0={2}>", found_goal->str());
+    EXPECT_EQ("<1={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_state_out());
     EXPECT_EQ(3, abs.expansions_dijkstra);
 }
