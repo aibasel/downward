@@ -18,7 +18,10 @@ namespace cegar_heuristic {
 AbstractState::AbstractState(string s)
     : distance(UNDEFINED),
       h(0),
-      var(UNDEFINED) {
+      refined_var(UNDEFINED),
+      refined_value(UNDEFINED),
+      left_child(0),
+      right_child(0) {
     assert(!g_variable_domain.empty());
 
     reset_neighbours();
@@ -229,13 +232,12 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
         }
     }
     // Save the refinement hierarchy.
-    this->var = var;
-    Domain values = v1->get_values(var);
-    for (Domain::iterator it = values.begin(); it != values.end(); ++it)
-        children[*it] = v1;
+    refined_var = var;
+    refined_value = value;
+    left_child = v1;
+    right_child = v2;
     assert(v1->get_values(var).size() == this->get_values(var).size() - 1);
     assert(v2->get_values(var).size() == 1);
-    children[value] = v2;
 
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
@@ -416,15 +418,17 @@ bool AbstractState::is_abstraction_of_goal() const {
 }
 
 bool AbstractState::valid() const {
-    return children.empty();
+    return refined_var == UNDEFINED;
 }
 
-int AbstractState::get_var() const {
-    return var;
+int AbstractState::get_refined_var() const {
+    return refined_var;
 }
 
 AbstractState *AbstractState::get_child(int value) {
-    return children[value];
+    if (value == refined_value)
+        return right_child;
+    return left_child;
 }
 
 void AbstractState::set_predecessor(Operator *op, AbstractState *other) {
