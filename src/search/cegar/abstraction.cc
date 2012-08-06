@@ -365,7 +365,7 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
         int max_rest = -1;
         int min_rest = INFINITY;
         for (int i = 0; i < conditions.size(); ++i) {
-            int rest = state.get_values(conditions[i].first).size();
+            int rest = state.get_values(conditions[i].first).count();
             assert(rest >= 2);
             if (rest > max_rest && pick == MIN_CONSTRAINED) {
                 cond = i;
@@ -381,7 +381,7 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
         double max_refinement = -0.1;
         for (int i = 0; i < conditions.size(); ++i) {
             int all_values = g_variable_domain[conditions[i].first];
-            int rest = state.get_values(conditions[i].first).size();
+            int rest = state.get_values(conditions[i].first).count();
             assert(all_values >= 2);
             assert(rest >= 2);
             assert(rest <= all_values);
