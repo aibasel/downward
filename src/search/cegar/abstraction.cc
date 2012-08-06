@@ -447,7 +447,6 @@ void Abstraction::calculate_costs() const {
 void Abstraction::update_h_values() const {
     calculate_costs();
     int unreachable_states = 0;
-    int value_size = 0;
     int arc_size = 0;
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
@@ -456,15 +455,9 @@ void Abstraction::update_h_values() const {
         state->set_h(dist);
         if (dist == INFINITY)
             ++unreachable_states;
-        int items = 0;
-        for (int i = 0; i < g_variable_domain.size(); ++i) {
-            items += state->get_values(i).size();
-        }
-        value_size += (sizeof(int) * items);
         arc_size += 2 * (sizeof(state->get_next()) + sizeof(Arc) * sizeof(state->get_next().capacity()));
     }
     cout << "Unreachable states: " << unreachable_states << endl;
-    cout << "Value size: " << (value_size / 1024) << " KB" << endl;
     cout << "Arc size: " << (arc_size / 1024) << " KB" << endl;
 }
 
