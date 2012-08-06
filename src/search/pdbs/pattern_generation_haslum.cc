@@ -32,6 +32,8 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
     Timer timer;
     initialize();
     cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
+    cout << "Peak memory after building abstraction: "
+         << get_peak_memory_in_kb() << " KB" << endl;
 }
 
 PatternGenerationHaslum::~PatternGenerationHaslum() {
