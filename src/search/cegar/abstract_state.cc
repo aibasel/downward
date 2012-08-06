@@ -360,8 +360,7 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
     }
     if (this != other) {
         for (int var = 0; var < g_variable_domain.size(); ++var) {
-            if (!checked[var] && intersection_empty(get_values(var),
-                                                    other->get_values(var)))
+            if (!checked[var] && !get_values(var).intersects(other->get_values(var)))
                 return false;
         }
     }

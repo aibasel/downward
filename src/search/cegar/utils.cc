@@ -27,25 +27,6 @@ string domain_to_string(const Domain &domain) {
     return oss.str();
 }
 
-bool intersection_empty(const Domain &vals1, const Domain &vals2) {
-    int i = vals1.find_first();
-    int j = vals2.find_first();
-    while (true) {
-        while (i != Domain::npos && i < j) {
-            i = vals1.find_next(i);
-        }
-        while (j != Domain::npos && j < i) {
-            j = vals2.find_next(j);
-        }
-        if (i == Domain::npos || j == Domain::npos) {
-            return true;
-        } else if (i == j) {
-            return false;
-        }
-    }
-    return true;
-}
-
 Operator create_op(const string desc) {
     istringstream iss("begin_operator\n" + desc + "\nend_operator");
     return Operator(iss, false);
