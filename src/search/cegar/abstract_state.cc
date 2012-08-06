@@ -117,18 +117,14 @@ void AbstractState::set_value(int var, int value) {
 
 void AbstractState::regress(const Operator &op, AbstractState *result) const {
     for (int v = 0; v < g_variable_domain.size(); ++v) {
-        Domain s1_vals(g_variable_domain[v]);
-        // s2_vals = s2[v]
-        Domain s2_vals = values[v];
+        // s1_vals = s2_vals if v does NOT occur in op.pre and NOT in op.eff
+        Domain s1_vals(values[v]);
         // if v occurs in op.eff:
         int eff = get_eff(op, v);
         if (eff != UNDEFINED) {
-            assert(s2_vals[eff]);
+            assert(values[v][eff]);
             // s1_vals = v.all_values_in_domain
             s1_vals.set();
-        } else {
-            // s1_vals = s2_vals
-            s1_vals = s2_vals;
         }
         // if v occurs in op.pre:
         int pre = get_pre(op, v);
