@@ -70,17 +70,13 @@ TEST(CegarTest, str) {
 }
 
 TEST(CegarTest, intersection_empty) {
-    set<int> a;
-    a.insert(1);
-    set<int> b;
-    b.insert(1);
-    b.insert(2);
-    set<int> c;
-    c.insert(2);
-    set<int> d;
-    d.insert(2);
-    d.insert(4);
-    set<int> e;
+    int L = 4;
+
+    Domain a(L, 1);     // 0001
+    Domain b(L, 3);     // 0011
+    Domain c(L, 2);     // 0010
+    Domain d(L, 10);    // 1010
+    Domain e(L);        // 0000
 
     EXPECT_FALSE(intersection_empty(a, b));
     EXPECT_TRUE(intersection_empty(a, c));

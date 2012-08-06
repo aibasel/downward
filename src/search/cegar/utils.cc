@@ -13,7 +13,7 @@
 using namespace std;
 
 namespace cegar_heuristic {
-string domain_to_string(Domain domain) {
+string domain_to_string(const Domain &domain) {
     ostringstream oss;
     oss << "{";
     int j = domain.find_first();
@@ -27,19 +27,19 @@ string domain_to_string(Domain domain) {
     return oss.str();
 }
 
-bool intersection_empty(const set<int> &vals1, const set<int> &vals2) {
-    set<int>::iterator i = vals1.begin();
-    set<int>::iterator j = vals2.begin();
+bool intersection_empty(const Domain &vals1, const Domain &vals2) {
+    int i = vals1.find_first();
+    int j = vals2.find_first();
     while (true) {
-        while (i != vals1.end() && *i < *j) {
-            ++i;
+        while (i != Domain::npos && i < j) {
+            i = vals1.find_next(i);
         }
-        while (j != vals2.end() && *j < *i) {
-            ++j;
+        while (j != Domain::npos && j < i) {
+            j = vals2.find_next(j);
         }
-        if (i == vals1.end() || j == vals2.end()) {
+        if (i == Domain::npos || j == Domain::npos) {
             return true;
-        } else if (*i == *j) {
+        } else if (i == j) {
             return false;
         }
     }
