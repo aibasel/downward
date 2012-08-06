@@ -60,8 +60,6 @@ public:
     // Return 0 if the search has to be started from the beginning.
     AbstractState *refine(int var, int value, AbstractState *v1, AbstractState *v2);
     bool refinement_breaks_shortest_path(int var, int value) const;
-    bool operator==(const AbstractState &other) const;
-    bool operator!=(const AbstractState &other) const;
     void add_arc(Operator *op, AbstractState *other);
     void remove_next_arc(Operator *op, AbstractState *other);
     void remove_prev_arc(Operator *op, AbstractState *other);

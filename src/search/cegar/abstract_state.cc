@@ -96,15 +96,6 @@ string AbstractState::get_next_as_string() const {
     return oss.str();
 }
 
-bool AbstractState::operator==(const AbstractState &other) const {
-    return values == other.values;
-}
-
-bool AbstractState::operator!=(const AbstractState &other) const {
-    return !(*this == other);
-}
-
-
 const Domain &AbstractState::get_values(int var) const {
     return values[var];
 }
@@ -182,7 +173,6 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
         Operator *op = prev[i].first;
         AbstractState *u = prev[i].second;
         if (u != this) {
-            assert(*u != *this);
             u->remove_next_arc(op, this);
             // If the first check returns false, the second arc has to be added.
             if (u->check_and_add_arc(op, v1)) {
@@ -208,7 +198,6 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
             v1->check_and_add_arc(op, v1);
             v2->check_and_add_arc(op, v2);
         } else {
-            assert(*w != *this);
             w->remove_prev_arc(op, this);
             // If the first check returns false, the second arc has to be added.
             if (v1->check_and_add_arc(op, w)) {
@@ -321,7 +310,6 @@ void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
 }
 
 bool AbstractState::check_arc(Operator *op, AbstractState *other) {
-    // TODO: Use bitset.
     vector<bool> checked(g_variable_domain.size(), false);
     for (int i = 0; i < op->get_prevail().size(); ++i) {
         const Prevail &prevail = op->get_prevail()[i];
