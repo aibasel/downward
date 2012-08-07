@@ -19,6 +19,7 @@ using namespace __gnu_cxx;
 #include "operator.h"
 #include "rng.h"
 #include "state.h"
+#include "state_registry.h"
 #include "successor_generator.h"
 #include "timer.h"
 
@@ -344,3 +345,5 @@ CausalGraph *g_causal_graph;
 Timer g_timer;
 string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
+StateRegistry g_state_registry;
+
