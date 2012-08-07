@@ -4,7 +4,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "utilities.h"
-#include "state_manager.h"
+#include "state_registry.h"
 
 #include <algorithm>
 #include <iostream>
@@ -78,7 +78,7 @@ State::~State() {
 int State::get_id() const {
     if (id == UNKOWN_ID) {
         // we are not sure what the id is yet
-        id = StateManager::get_instance().get_id(*this);
+        id = g_state_registry.get_id(*this);
     }
     return id;
 }
