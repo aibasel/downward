@@ -31,6 +31,7 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       cost_type(OperatorCost(opts.get<int>("cost_type"))) {
     Timer timer;
     initialize();
+    cout << "Final PDB size: " << current_heuristic->get_size() << endl;
     cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
     cout << "Peak memory after building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
