@@ -11,50 +11,19 @@
 #include <cassert>
 using namespace std;
 
-void State::_allocate() {
-    borrowed_buffer = false;
-    vars = new state_var_t[g_variable_domain.size()];
-}
-
-void State::_deallocate() {
-    if (!borrowed_buffer)
-        delete[] vars;
-}
-
-void State::_copy_buffer_from_state(const State &state) {
+state_var_t *State::copy_buffer_from(const state_var_t *buffer) {
+    state_var_t *copy = new state_var_t[g_variable_domain.size()];
+    // Update values affected by operator.
     // TODO: Profile if memcpy could speed this up significantly,
     //       e.g. if we do blind A* search.
     for (int i = 0; i < g_variable_domain.size(); i++)
-        vars[i] = state.vars[i];
+        copy[i] = buffer[i];
+    return copy;
 }
 
-State & State::operator=(const State &other) {
-    if (this != &other) {
-        id = other.id;
-        if (borrowed_buffer)
-            _allocate();
-        _copy_buffer_from_state(other);
-    }
-    return *this;
-}
-
-State::State(state_var_t *buffer, int _id) : id(_id) {
-    _allocate();
-    for (int i = 0; i < g_variable_domain.size(); i++) {
-        vars[i] = buffer[i];
-    }
-}
-
-State::State(const State &state) : id(state.id) {
-    _allocate();
-    _copy_buffer_from_state(state);
-}
-
-State::State(const State &predecessor, const Operator &op) : id(UNKOWN_ID) {
+State::State(const State &predecessor, const Operator &op) {
     assert(!op.is_axiom());
-    _allocate();
-    _copy_buffer_from_state(predecessor);
-    // Update values affected by operator.
+    vars = copy_buffer_from(predecessor.get_buffer());
     for (int i = 0; i < op.get_pre_post().size(); i++) {
         const PrePost &pre_post = op.get_pre_post()[i];
         if (pre_post.does_fire(predecessor))
@@ -63,24 +32,51 @@ State::State(const State &predecessor, const Operator &op) : id(UNKOWN_ID) {
     g_axiom_evaluator->evaluate(vars);
 }
 
-State *State::create_initial_state(state_var_t *buffer) {
-    State *state = new State(buffer, UNKOWN_ID);
-    g_default_axiom_values.assign(state->vars, state->vars + g_variable_domain.size());
-    g_axiom_evaluator->evaluate(state->vars);
-    return state;
+State::State(const StateHandle &_handle) : handle(_handle) {
+    if (handle.is_valid()) {
+        // We can  treat the buffer as const because it is never changed in a
+        // state object (only assignment can change it, but it changes the whole
+        // state)
+        // TODO think about the use of const here and in StateHandle
+
+        // This assignment will later be changed into something like
+        // vars = handle.unpack_state_data();
+        vars = const_cast<state_var_t *>(handle.get_buffer());
+    } else {
+        vars = 0;
+    }
 }
 
+State *State::create_initial_state(state_var_t *initial_state_vars) {
+    state_var_t *copy = copy_buffer_from(initial_state_vars);
+    g_axiom_evaluator->evaluate(copy);
+    return new State(copy);
+}
+
+State::State(const State &other) : vars(other.vars), handle(other.handle) {
+    // only states should be copied that are valid, otherwise the state buffer
+    // can get invalid
+    assert(handle.is_valid());
+}
+
+State &State::operator=(const State &other) {
+    // only states should be copied that are valid, otherwise the state buffer
+    // can get invalid
+    assert(handle.is_valid());
+    vars = other.vars;
+    handle = other.handle;
+    return *this;
+}
 
 State::~State() {
-    _deallocate();
+    // TODO this is the wrong condition
+    if (!handle.is_valid()) {
+        delete vars;
+    }
 }
 
 int State::get_id() const {
-    if (id == UNKOWN_ID) {
-        // we are not sure what the id is yet
-        id = g_state_registry.get_id(*this);
-    }
-    return id;
+    return handle.get_id();
 }
 
 void State::dump() const {
@@ -92,8 +88,12 @@ void State::dump() const {
 }
 
 bool State::operator==(const State &other) const {
-    int size = g_variable_domain.size();
-    return ::equal(vars, vars + size, other.vars);
+    if (handle.is_valid()) {
+        return handle == other.handle;
+    } else {
+        int size = g_variable_domain.size();
+        return ::equal(vars, vars + size, other.vars);
+    }
 }
 
 bool State::operator<(const State &other) const {
