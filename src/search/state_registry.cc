@@ -1,33 +1,20 @@
 #include "state_registry.h"
 
-using namespace std;
-using namespace __gnu_cxx;
+#include "state_var_t.h"
 
-class StateRegistry::HashTable
-    : public __gnu_cxx::hash_map<StateProxy, int> {
-    // This is more like a typedef really, but we need a proper class
-    // so that we can hide the information in the header file by using
-    // a forward declaration. This is also the reason why the hash
-    // table is allocated dynamically in the constructor.
-};
+using namespace std;
 
 StateRegistry::StateRegistry(): next_id(0) {
-    states = new HashTable;
 }
 
-
-StateRegistry::~StateRegistry() {
-    delete states;
-}
-
-int StateRegistry::get_id(const State &state) {
-    StateProxy proxy(&state);
-    HashTable::iterator it = states->find(proxy);
-    if (it != states->end()) {
-        return it->second;
-    } else {
-        int id = next_id++;
-        states->insert(make_pair(proxy, id));
-        return id;
+State StateRegistry::get_registered_state(const State &state) {
+    // create a preliminary handle with a borrowed buffer and an invalid id
+    StateHandle handle(state.get_buffer());
+    pair<HandleSet::iterator, bool> result = registered_states.insert(handle);
+    HandleSet::iterator it = result.first;
+    bool new_entry = result.second;
+    if (new_entry) {
+        it->make_permanent(next_id++);
     }
+    return State(*it);
 }
