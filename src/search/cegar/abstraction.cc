@@ -455,7 +455,8 @@ void Abstraction::update_h_values() const {
         state->set_h(dist);
         if (dist == INFINITY)
             ++unreachable_states;
-        arc_size += 2 * (sizeof(state->get_next()) + sizeof(Arc) * sizeof(state->get_next().capacity()));
+        const vector<Arc> &next_arcs = state->get_next();
+        arc_size += 2 * (sizeof(next_arcs) + sizeof(Arc) * sizeof(next_arcs.capacity()));
     }
     cout << "Unreachable states: " << unreachable_states << endl;
     cout << "Arc size: " << (arc_size / 1024) << " KB" << endl;
