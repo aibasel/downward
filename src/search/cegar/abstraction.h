@@ -80,6 +80,7 @@ private:
     mutable int deviations;
     mutable int unmet_preconditions;
     mutable int unmet_goals;
+    mutable int num_states_offline;
 
 public:
     explicit Abstraction(PickStrategy deviation_strategy = FIRST,
@@ -107,6 +108,8 @@ public:
     void update_h_values() const;
 
     int get_num_states() const {return states.size(); }
+    void remember_num_states_offline() const {num_states_offline = states.size(); }
+    int get_num_states_online() const;
 
     void release_memory();
     void print_statistics();

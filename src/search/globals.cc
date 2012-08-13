@@ -21,6 +21,7 @@ using namespace __gnu_cxx;
 #include "state.h"
 #include "successor_generator.h"
 #include "timer.h"
+#include "cegar/abstraction.h"
 
 
 static const int PRE_FILE_VERSION = 3;
@@ -252,6 +253,7 @@ void read_everything(istream &in) {
     check_magic(in, "end_SG");
     DomainTransitionGraph::read_all(in);
     g_causal_graph = new CausalGraph(in);
+    g_cegar_abstraction = 0;
 }
 
 void dump_everything() {
@@ -332,3 +334,6 @@ CausalGraph *g_causal_graph;
 Timer g_timer;
 string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
+
+cegar_heuristic::Abstraction *g_cegar_abstraction;
+int g_cegar_abstraction_max_states_online = -1;

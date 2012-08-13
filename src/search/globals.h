@@ -17,6 +17,11 @@ class SuccessorGenerator;
 class Timer;
 class RandomNumberGenerator;
 
+namespace cegar_heuristic {
+class Abstraction;
+}
+
+
 bool test_goal(const State &state);
 void save_plan(const std::vector<const Operator *> &plan, int iter);
 int calculate_plan_cost(const std::vector<const Operator *> &plan);
@@ -54,5 +59,8 @@ extern CausalGraph *g_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
+
+extern cegar_heuristic::Abstraction *g_cegar_abstraction;
+extern int g_cegar_abstraction_max_states_online;
 
 #endif
