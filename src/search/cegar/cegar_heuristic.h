@@ -10,10 +10,10 @@ namespace cegar_heuristic {
 const bool WRITE_DOT_FILES = false;
 
 class CegarHeuristic : public Heuristic {
-    int max_states;
+    int max_states_offline;
     const int h_updates;
     const bool search;
-    Abstraction abstraction;
+    Abstraction *abstraction;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);

@@ -31,7 +31,8 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       expansions_dijkstra(0),
       deviations(0),
       unmet_preconditions(0),
-      unmet_goals(0) {
+      unmet_goals(0),
+      num_states_offline(-1) {
     assert(!g_operators.empty());
 
     single = new AbstractState();
@@ -500,6 +501,11 @@ void Abstraction::write_dot_file(int num) {
     }
     dotfile << "}" << endl;
     dotfile.close();
+}
+
+int Abstraction::get_num_states_online() const {
+    assert(num_states_offline >= 0);
+    return states.size() - num_states_offline;
 }
 
 void Abstraction::release_memory() {

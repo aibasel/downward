@@ -17,14 +17,17 @@ using namespace std;
 namespace cegar_heuristic {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
-      max_states(opts.get<int>("max_states")),
+      max_states_offline(opts.get<int>("max_states_offline")),
       h_updates(opts.get<int>("h_updates")),
-      search(opts.get<bool>("search")),
-      abstraction(PickStrategy(opts.get_enum("pick_deviation")),
+      search(opts.get<bool>("search")) {
+    if (max_states_offline == -1)
+        max_states_offline = INFINITY;
+
+    abstraction = new Abstraction(PickStrategy(opts.get_enum("pick_deviation")),
                   PickStrategy(opts.get_enum("pick_precondition")),
-                  PickStrategy(opts.get_enum("pick_goal"))) {
-    if (max_states == -1)
-        max_states = INFINITY;
+                  PickStrategy(opts.get_enum("pick_goal")));
+    g_cegar_abstraction = abstraction;
+    g_cegar_abstraction_max_states_online = opts.get<int>("max_states_online");
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -36,38 +39,39 @@ void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int saved_searches = 0;
     int updates = 0;
-    const int update_step = (max_states / (h_updates + 1)) + 1;
+    const int update_step = (max_states_offline / (h_updates + 1)) + 1;
     bool success = false;
-    int num_states = abstraction.get_num_states();
+    int num_states = abstraction->get_num_states();
     int logged_states = 0;
     const int states_log_step = 100;
     if (WRITE_DOT_FILES)
         write_causal_graph(*g_causal_graph);
-    while (num_states < max_states) {
+    while (num_states < max_states_offline) {
         if (WRITE_DOT_FILES)
-            abstraction.write_dot_file(num_states);
+            abstraction->write_dot_file(num_states);
         if (num_states - logged_states >= states_log_step) {
             cout << "Abstract states: "
-                 << num_states << "/" << max_states << endl;
+                 << num_states << "/" << max_states_offline << endl;
             logged_states += states_log_step;
         }
-        if (!abstraction.can_reuse_last_solution()) {
-            abstraction.find_solution();
+        if (!abstraction->can_reuse_last_solution()) {
+            abstraction->find_solution();
         } else {
             ++saved_searches;
         }
-        success = abstraction.check_solution();
-        num_states = abstraction.get_num_states();
+        success = abstraction->check_solution();
+        num_states = abstraction->get_num_states();
         if (success)
             break;
         // Update costs to goal evenly distributed over time.
         if (num_states >= (updates + 1) * update_step) {
-            abstraction.update_h_values();
+            abstraction->update_h_values();
             ++updates;
         }
     }
+    abstraction->remember_num_states_offline();
     if (WRITE_DOT_FILES)
-        abstraction.write_dot_file(num_states);
+        abstraction->write_dot_file(num_states);
     cout << "Done building abstraction [t=" << g_timer << "]" << endl;
     cout << "Peak memory after building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
@@ -75,27 +79,28 @@ void CegarHeuristic::initialize() {
     cout << "Abstract states: " << num_states << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     cout << "Saved searches: " << saved_searches << endl;
-    cout << "A* expansions: " << abstraction.get_num_expansions() << endl;
+    cout << "A* expansions: " << abstraction->get_num_expansions() << endl;
     if (TEST_WITH_DIJKSTRA) {
         cout << "Dijkstra expansions: "
-             << abstraction.get_num_expansions_dijkstra() << endl;
+             << abstraction->get_num_expansions_dijkstra() << endl;
         cout << "Ratio A*/Dijkstra: "
-             << abstraction.get_num_expansions() /
-        static_cast<float>(abstraction.get_num_expansions_dijkstra()) << endl;
+             << abstraction->get_num_expansions() /
+        static_cast<float>(abstraction->get_num_expansions_dijkstra()) << endl;
     }
     if (!success)
-        assert(num_states >= max_states);
-    abstraction.update_h_values();
-    assert(num_states == abstraction.get_num_states());
-    abstraction.print_statistics();
-    abstraction.release_memory();
+        assert(num_states >= max_states_offline);
+    abstraction->update_h_values();
+    assert(num_states == abstraction->get_num_states());
+    abstraction->print_statistics();
+    if (g_cegar_abstraction_max_states_online <= 0)
+        abstraction->release_memory();
 
     if (!search)
         exit(0);
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
-    int dist = abstraction.get_abstract_state(state)->get_h();
+    int dist = abstraction->get_abstract_state(state)->get_h();
     assert(dist >= 0);
     if (dist == INFINITY)
         dist = DEAD_END;
@@ -103,7 +108,8 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("max_states", 100, "maximum number of abstract states");
+    parser.add_option<int>("max_states_offline", 100, "maximum number of abstract states created offline");
+    parser.add_option<int>("max_states_online", 100, "maximum number of abstract states created online");
     vector<string> pick_strategies;
     pick_strategies.push_back("FIRST");
     pick_strategies.push_back("RANDOM");
