@@ -19,7 +19,7 @@ private:
     struct StateRepresentation;
     StateRepresentation* representation;
     // Private low level ctor and make_permanent only for use of state registry.
-    StateHandle(const state_var_t *data);
+    explicit StateHandle(const state_var_t *data);
     void make_permanent(int id) const;
     // Buffer should not be accessed directly, but only through the State ctor
     const state_var_t *get_buffer() const;

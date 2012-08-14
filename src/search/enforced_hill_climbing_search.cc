@@ -141,7 +141,7 @@ int EnforcedHillClimbingSearch::step() {
 
     for (int i = 0; i < ops.size(); i++) {
         int d = get_adjusted_cost(*ops[i]);
-        OpenListEntryEHC entry = make_pair(current_node.get_state_buffer(), make_pair(d, ops[i]));
+        OpenListEntryEHC entry = make_pair(current_node.get_state_handle(), make_pair(d, ops[i]));
         open_list->evaluate(d, ops[i]->is_marked());
         open_list->insert(entry);
         ops[i]->unmark();
@@ -198,7 +198,7 @@ int EnforcedHillClimbingSearch::ehc() {
                 node.close();
                 for (int i = 0; i < ops.size(); i++) {
                     int new_d = d + get_adjusted_cost(*ops[i]);
-                    OpenListEntryEHC entry = make_pair(node.get_state_buffer(), make_pair(new_d, ops[i]));
+                    OpenListEntryEHC entry = make_pair(node.get_state_handle(), make_pair(new_d, ops[i]));
                     open_list->evaluate(new_d, ops[i]->is_marked());
                     open_list->insert(entry);
                     ops[i]->unmark();

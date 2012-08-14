@@ -11,19 +11,22 @@
 #include <cassert>
 using namespace std;
 
-state_var_t *State::copy_buffer_from(const state_var_t *buffer) {
-    state_var_t *copy = new state_var_t[g_variable_domain.size()];
+void State::copy_buffer_from(const state_var_t *buffer) {
+    vars = new state_var_t[g_variable_domain.size()];
     // Update values affected by operator.
     // TODO: Profile if memcpy could speed this up significantly,
     //       e.g. if we do blind A* search.
     for (int i = 0; i < g_variable_domain.size(); i++)
-        copy[i] = buffer[i];
-    return copy;
+        vars[i] = buffer[i];
+    borrowed_buffer = false;
+}
+
+State::State(state_var_t *buffer) : borrowed_buffer(true), vars(buffer) {
 }
 
 State::State(const State &predecessor, const Operator &op) {
     assert(!op.is_axiom());
-    vars = copy_buffer_from(predecessor.get_buffer());
+    copy_buffer_from(predecessor.get_buffer());
     for (int i = 0; i < op.get_pre_post().size(); i++) {
         const PrePost &pre_post = op.get_pre_post()[i];
         if (pre_post.does_fire(predecessor))
@@ -32,7 +35,7 @@ State::State(const State &predecessor, const Operator &op) {
     g_axiom_evaluator->evaluate(vars);
 }
 
-State::State(const StateHandle &_handle) : handle(_handle) {
+State::State(const StateHandle &_handle) : borrowed_buffer(true), handle(_handle) {
     if (handle.is_valid()) {
         // We can  treat the buffer as const because it is never changed in a
         // state object (only assignment can change it, but it changes the whole
@@ -48,35 +51,53 @@ State::State(const StateHandle &_handle) : handle(_handle) {
 }
 
 State *State::create_initial_state(state_var_t *initial_state_vars) {
-    state_var_t *copy = copy_buffer_from(initial_state_vars);
-    g_axiom_evaluator->evaluate(copy);
-    return new State(copy);
+    g_axiom_evaluator->evaluate(initial_state_vars);
+    State unregistered_state = State(initial_state_vars);
+    const State &registered_state = g_state_registry.get_registered_state(unregistered_state);
+    // make a copy on the heap
+    return new State(registered_state);
 }
 
-State::State(const State &other) : vars(other.vars), handle(other.handle) {
+State::State(const State &other) :  borrowed_buffer(true), vars(other.vars), handle(other.handle) {
     // only states should be copied that are valid, otherwise the state buffer
     // can get invalid
     assert(handle.is_valid());
+    // If a state without a borrowed buffer is copied, the buffer would have to
+    // be copied as well, which we try to avoid.
+    assert(other.borrowed_buffer);
 }
 
 State &State::operator=(const State &other) {
-    // only states should be copied that are valid, otherwise the state buffer
-    // can get invalid
-    assert(handle.is_valid());
-    vars = other.vars;
-    handle = other.handle;
+    if (this != &other) {
+        // clean up the old value to avoid a memory leak
+        if (!borrowed_buffer) {
+            delete vars;
+        }
+        // only states should be copied that are valid, otherwise the state buffer
+        // can get invalid
+        assert(other.handle.is_valid());
+        // If a state without a borrowed buffer is copied, the buffer would have to
+        // be copied as well, which we try to avoid.
+        assert(other.borrowed_buffer);
+        borrowed_buffer = true;
+        vars = other.vars;
+        handle = other.handle;
+    }
     return *this;
 }
 
 State::~State() {
-    // TODO this is the wrong condition
-    if (!handle.is_valid()) {
+    if (!borrowed_buffer) {
         delete vars;
     }
 }
 
 int State::get_id() const {
     return handle.get_id();
+}
+
+const StateHandle State::get_handle() const {
+    return handle;
 }
 
 void State::dump() const {

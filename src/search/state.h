@@ -11,13 +11,14 @@ class Operator;
 #include "state_handle.h"
 
 class State {
+    bool borrowed_buffer;
     // Values for vars. will later be converted to UnpackedStateData.
     state_var_t *vars;
     StateHandle handle;
-    static state_var_t *copy_buffer_from(const state_var_t *buffer);
+    void copy_buffer_from(const state_var_t *buffer);
+    // Only used for creating the initial state.
+    explicit State(state_var_t *buffer);
 public:
-    explicit State(state_var_t *buffer) : vars(buffer) {
-    }
     explicit State(const State &predecessor, const Operator &op);
     explicit State(const StateHandle &handle);
 
@@ -28,6 +29,7 @@ public:
     ~State();
 
     int get_id() const;
+    const StateHandle get_handle() const;
 
     int operator[](int index) const {
         return vars[index];

@@ -9,7 +9,7 @@ using namespace std;
 
 struct StateHandle::StateRepresentation {
     StateRepresentation();
-    StateRepresentation(const state_var_t *_data);
+    explicit StateRepresentation(const state_var_t *_data);
     // Fields are mutable so they can be changed after the handle is inserted
     // into a hash_set, i.e. the state registry
     mutable int id;
