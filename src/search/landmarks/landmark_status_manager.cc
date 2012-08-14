@@ -16,10 +16,7 @@ void LandmarkStatusManager::clear_reached() {
 }
 
 vector<bool> &LandmarkStatusManager::get_reached_landmarks(const State &state) {
-    StateProxy proxy = StateProxy(&state);
-
-    //assert(reached_lms.find(proxy) != reached_lms.end());
-    return reached_lms[proxy];
+    return reached_lms[state];
 }
 
 

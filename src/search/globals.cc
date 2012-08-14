@@ -262,7 +262,6 @@ void read_everything(istream &in) {
     read_axioms(in);
     // After the axioms are known, we can create the initial state (see above)
     g_initial_state = State::create_initial_state(initial_state_vars);
-    delete[] initial_state_vars;
     check_magic(in, "begin_SG");
     g_successor_generator = read_successor_generator(in);
     check_magic(in, "end_SG");

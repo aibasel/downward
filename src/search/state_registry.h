@@ -11,6 +11,8 @@ private:
     HandleSet registered_states;
     int next_id;
 public:
+    typedef HandleSet::const_iterator const_iterator;
+
     StateRegistry();
     // Lookup of state. If the same state was previously looked up, a state with
     // a valid handle to the registered data is returned. Otherwise the state is
@@ -20,6 +22,17 @@ public:
     // In short: after calling this function the returned state is registered
     // and has a valid handle
     State get_registered_state(const State &state);
+
+    int size() const {
+        return registered_states.size();
+    }
+
+    const_iterator begin() const {
+        return registered_states.begin();
+    }
+    const_iterator end() const {
+        return registered_states.end();
+    }
 };
 
 #endif
