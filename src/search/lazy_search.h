@@ -15,7 +15,7 @@ class Heuristic;
 class Operator;
 class Options;
 
-typedef pair<state_var_t *, const Operator *> OpenListEntryLazy;
+typedef pair<StateHandle, const Operator *> OpenListEntryLazy;
 
 class LazySearch : public SearchEngine {
 protected:
@@ -30,7 +30,7 @@ protected:
     vector<Heuristic *> estimate_heuristics;
 
     State current_state;
-    state_var_t *current_predecessor_buffer;
+    StateHandle current_predecessor_handle;
     const Operator *current_operator;
     int current_g;
     int current_real_g;
