@@ -109,7 +109,7 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states_offline", 100, "maximum number of abstract states created offline");
-    parser.add_option<int>("max_states_online", 100, "maximum number of abstract states created online");
+    parser.add_option<int>("max_states_online", 0, "maximum number of abstract states created online");
     vector<string> pick_strategies;
     pick_strategies.push_back("FIRST");
     pick_strategies.push_back("RANDOM");
