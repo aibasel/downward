@@ -4,7 +4,6 @@
 
 #include <cassert>
 #include <ext/hash_map>
-#include "state_proxy.h"
 #include "search_node_info.h"
 
 using namespace std;
