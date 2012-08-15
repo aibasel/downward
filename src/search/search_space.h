@@ -5,7 +5,6 @@
 #include <vector>
 #include <ext/hash_map>
 #include "state.h"
-#include "state_proxy.h"
 #include "search_node_info.h"
 #include "operator_cost.h"
 #include "per_state_information.h"

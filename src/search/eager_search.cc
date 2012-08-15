@@ -128,8 +128,8 @@ int EagerSearch::step() {
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
-        State succ_state(s, *op);
-        succ_state = g_state_registry.get_registered_state(succ_state);
+        State unregistered_state(s, *op);
+        State succ_state = g_state_registry.get_registered_state(unregistered_state);
         search_progress.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
@@ -144,7 +144,7 @@ int EagerSearch::step() {
             bool h_is_dirty = false;
             for (size_t i = 0; i < heuristics.size(); i++)
                 h_is_dirty = h_is_dirty || heuristics[i]->reach_state(
-                    s, *op, succ_node.get_state());
+                    s, *op, succ_state);
             if (h_is_dirty && use_multi_path_dependence)
                 succ_node.set_h_dirty();
         }
@@ -153,7 +153,7 @@ int EagerSearch::step() {
             // We have not seen this state before.
             // Evaluate and create a new node.
             for (size_t i = 0; i < heuristics.size(); i++)
-                heuristics[i]->evaluate(succ_node.get_state());
+                heuristics[i]->evaluate(succ_state);
             succ_node.clear_h_dirty();
             search_progress.inc_evaluated_states();
             search_progress.inc_evaluations(heuristics.size());
@@ -184,7 +184,7 @@ int EagerSearch::step() {
             }
             succ_node.open(succ_h, node, op);
 
-            open_list->insert(succ_node.get_state_handle());
+            open_list->insert(succ_state.get_handle());
             if (search_progress.check_h_progress(succ_node.get_g())) {
                 reward_progress();
             }
@@ -209,7 +209,7 @@ int EagerSearch::step() {
                 // involved? Is this still feasible in the current version?
                 open_list->evaluate(succ_node.get_g(), is_preferred);
 
-                open_list->insert(succ_node.get_state_handle());
+                open_list->insert(succ_state.get_handle());
             } else {
                 // if we do not reopen closed nodes, we just update the parent pointers
                 // Note that this could cause an incompatibility between
