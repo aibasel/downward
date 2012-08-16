@@ -159,8 +159,7 @@ int EnforcedHillClimbingSearch::ehc() {
         if (search_space.get_node(last_parent).get_real_g() + last_op->get_cost() >= bound)
             continue;
 
-        State unregistered_state(last_parent, *last_op);
-        State s = g_state_registry.get_registered_state(unregistered_state);
+        State s = State::create_registered_successor(last_parent, *last_op);
         search_progress.inc_generated();
 
         SearchNode node = search_space.get_node(s);

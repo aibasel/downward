@@ -128,8 +128,7 @@ int EagerSearch::step() {
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
-        State unregistered_state(s, *op);
-        State succ_state = g_state_registry.get_registered_state(unregistered_state);
+        State succ_state = State::create_registered_successor(s, *op);
         search_progress.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 

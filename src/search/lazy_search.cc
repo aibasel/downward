@@ -121,8 +121,7 @@ int LazySearch::fetch_next_state() {
     current_operator = next.second;
     State current_predecessor(current_predecessor_handle);
     assert(current_operator->is_applicable(current_predecessor));
-    State unregistered_state = State(current_predecessor, *current_operator);
-    current_state = g_state_registry.get_registered_state(unregistered_state);
+    current_state = State::create_registered_successor(current_predecessor, *current_operator);
 
     SearchNode pred_node = search_space.get_node(current_predecessor);
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
