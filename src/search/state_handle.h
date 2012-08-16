@@ -15,7 +15,7 @@ class StateHandle {
     // Could be reduced to only allow the ctor, but this creates cyclic depencies
     // friend State::State(const StateHandle&);
 private:
-    enum { INVALID_HANLDE = -1 };
+    enum { INVALID_HANDLE = -1 };
     struct StateRepresentation;
     StateRepresentation* representation;
     // Private low level ctor and make_permanent only for use of state registry.

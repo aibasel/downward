@@ -74,7 +74,7 @@ int StateHandle::get_id() const {
 }
 
 bool StateHandle::is_valid() const {
-    return representation->id != INVALID_HANLDE;
+    return representation->id != INVALID_HANDLE;
 }
 
 const state_var_t *StateHandle::get_buffer() const {
