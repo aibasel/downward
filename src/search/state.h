@@ -18,15 +18,17 @@ class State {
     void copy_buffer_from(const state_var_t *buffer);
     // Only used for creating the initial state.
     explicit State(state_var_t *buffer);
-public:
     explicit State(const State &predecessor, const Operator &op);
+public:
     explicit State(const StateHandle &handle);
-
-    static State *create_initial_state(state_var_t *initial_state_vars);
-
     State(const State &state);
     State &operator=(const State &other);
     ~State();
+
+    // TODO why is g_initial_state a pointer?
+    static State *create_initial_state(state_var_t *initial_state_vars);
+    static State create_registered_successor(const State &predecessor, const Operator &op);
+    static State create_unregistered_successor(const State &predecessor, const Operator &op);
 
     int get_id() const;
     const StateHandle get_handle() const;

@@ -58,6 +58,17 @@ State *State::create_initial_state(state_var_t *initial_state_vars) {
     return new State(registered_state);
 }
 
+State State::create_registered_successor(const State &predecessor, const Operator &op) {
+    // TODO avoid extra copy of state here
+    State unregistered_copy(predecessor, op);
+    return g_state_registry.get_registered_state(unregistered_copy);
+}
+
+State State::create_unregistered_successor(const State &predecessor, const Operator &op) {
+    return State(predecessor, op);
+}
+
+
 State::State(const State &other) :  borrowed_buffer(true), vars(other.vars), handle(other.handle) {
     // only states should be copied that are valid, otherwise the state buffer
     // can get invalid

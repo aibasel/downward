@@ -75,7 +75,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
         for (int op_num = 0; op_num < applicable_ops.size(); op_num++) {
             // generate and add to training set all successors
             const Operator *op = applicable_ops[op_num];
-            State succ(s, *op);
+            State succ = State::create_unregistered_successor(s, *op);
 
             succ_it = temporary_samp->find(succ);
             if (succ_it == temporary_samp->end()) {
@@ -115,7 +115,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 
         //cout << op->get_name() << endl;
 
-        State succ(s, *op);
+        State succ = State::create_unregistered_successor(s, *op);
 
         if (test_goal(succ)) {
             //if (succ_node.is_goal()) {
