@@ -1,4 +1,3 @@
-## This is a test of the new repo server and web interface.
 ## Set USE_LP to 1 to enable linear programming stuff.
 USE_LP=0
 
