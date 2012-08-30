@@ -54,12 +54,13 @@ void CegarHeuristic::initialize() {
                  << num_states << "/" << max_states_offline << endl;
             logged_states += states_log_step;
         }
-        if (!abstraction->can_reuse_last_solution()) {
-            abstraction->find_solution();
-        } else {
+        if (abstraction->can_reuse_last_solution()) {
             ++saved_searches;
+            success = abstraction->recheck_last_solution();
+        } else {
+            abstraction->find_solution();
+            success = abstraction->check_solution(*g_initial_state);
         }
-        success = abstraction->check_solution(*g_initial_state);
         num_states = abstraction->get_num_states();
         if (success)
             break;
