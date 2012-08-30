@@ -96,11 +96,11 @@ public:
     FRIEND_TEST(CegarTest, find_solution_second_state);
     FRIEND_TEST(CegarTest, find_solution_loop);
     FRIEND_TEST(CegarTest, initialize);
-    bool find_solution();
+    bool find_solution(AbstractState *start = 0);
 
     std::string get_solution_string() const;
     bool can_reuse_last_solution() const {return start_solution_check_ptr; }
-    bool check_solution();
+    bool check_solution(State conc_state, AbstractState *abs_state = 0);
 
     int get_num_expansions() const {return expansions; }
     int get_num_expansions_dijkstra() const {return expansions_dijkstra; }

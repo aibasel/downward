@@ -59,7 +59,7 @@ void CegarHeuristic::initialize() {
         } else {
             ++saved_searches;
         }
-        success = abstraction->check_solution();
+        success = abstraction->check_solution(*g_initial_state);
         num_states = abstraction->get_num_states();
         if (success)
             break;
