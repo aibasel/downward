@@ -12,9 +12,7 @@ LandmarkStatusManager::~LandmarkStatusManager() {
 
 
 void LandmarkStatusManager::clear_reached() {
-    for (int i = 0; i <= g_state_registry.size(); ++i) {
-        reached_lms[i].clear();
-    }
+    reached_lms.clear();
 }
 
 vector<bool> &LandmarkStatusManager::get_reached_landmarks(const State &state) {

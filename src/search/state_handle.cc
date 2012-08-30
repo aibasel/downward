@@ -10,21 +10,25 @@ using namespace std;
 struct StateHandle::StateRepresentation {
     StateRepresentation();
     explicit StateRepresentation(const state_var_t *_data);
+    ~StateRepresentation();
     // Fields are mutable so they can be changed after the handle is inserted
-    // into a hash_set, i.e. the state registry
+    // into a hash_set, i.e. the state registry.
     mutable int id;
-    // This will later be replaced by packed state data
+    // This will later be replaced by packed state data.
     mutable state_var_t *data;
     void make_permanent(int _id) const;
 };
 
-StateHandle::StateRepresentation::StateRepresentation() :
-    id(INVALID_HANLDE), data(0) {
+StateHandle::StateRepresentation::StateRepresentation()
+    : id(INVALID_HANDLE), data(0) {
 }
 
-StateHandle::StateRepresentation::StateRepresentation(const state_var_t *_data) :
-    id(INVALID_HANLDE) {
+StateHandle::StateRepresentation::StateRepresentation(const state_var_t *_data)
+    : id(INVALID_HANDLE) {
     data = const_cast<state_var_t *>(_data);
+}
+
+StateHandle::StateRepresentation::~StateRepresentation() {
 }
 
 void StateHandle::StateRepresentation::make_permanent(int _id) const {
@@ -35,28 +39,27 @@ void StateHandle::StateRepresentation::make_permanent(int _id) const {
     // Update values affected by operator.
     // TODO: Profile if memcpy could speed this up significantly,
     //       e.g. if we do blind A* search.
-    for (int i = 0; i < g_variable_domain.size(); i++)
+    for (size_t i = 0; i < g_variable_domain.size(); ++i)
         copy[i] = data[i];
     data = copy;
     id = _id;
 }
 
 StateHandle::StateHandle()
-    : representation(new StateRepresentation()) {
-    // do nothing
+    : representation(new StateRepresentation) {
 }
 
 StateHandle::StateHandle(const state_var_t *data)
     : representation(new StateRepresentation(data)) {
-    // do nothing
 }
 
 StateHandle::StateHandle(const StateHandle& other)
     : representation(new StateRepresentation(*(other.representation))) {
-    // do nothing
 }
 
 const StateHandle& StateHandle::operator=(StateHandle other) {
+    // The parameter other is given by value, so we can swap to ensure correct
+    // destruction of any previous content in this object.
     std::swap(this->representation, other.representation);
     return* this;
 }
@@ -79,7 +82,7 @@ bool StateHandle::is_valid() const {
 
 const state_var_t *StateHandle::get_buffer() const {
     // This will later be replaced by a method unpacking the packed state
-    // contained in representation
+    // contained in representation.
     return representation->data;
 }
 

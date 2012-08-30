@@ -123,7 +123,7 @@ int LazySearch::fetch_next_state() {
     assert(current_operator->is_applicable(current_predecessor));
     current_state = State::create_registered_successor(current_predecessor, *current_operator);
 
-    SearchNode pred_node = search_space.get_node(current_predecessor);
+    SearchNode pred_node = search_space.get_node(current_predecessor_handle);
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
@@ -139,7 +139,7 @@ int LazySearch::step() {
     // - current_g is the g value of the current state (using real costs)
 
 
-    SearchNode node = search_space.get_node(current_state);
+    SearchNode node = search_space.get_node(current_state.get_handle());
     bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end() && !node.is_new();
 
     if (node.is_new() || reopen) {
