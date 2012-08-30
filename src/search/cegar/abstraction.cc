@@ -470,6 +470,8 @@ AbstractState *Abstraction::get_abstract_state(const State &state) const {
         current = current->get_child(value);
     }
     assert(current->valid());
+    // We cannot assert that current is an abstraction of state, because its
+    // members have been cleared to save memory.
     return current;
 }
 
