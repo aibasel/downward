@@ -459,8 +459,10 @@ void Abstraction::update_h_values() const {
         const vector<Arc> &next_arcs = state->get_next();
         arc_size += 2 * (sizeof(next_arcs) + sizeof(Arc) * sizeof(next_arcs.capacity()));
     }
-    cout << "Unreachable states: " << unreachable_states << endl;
-    cout << "Arc size: " << (arc_size / 1024) << " KB" << endl;
+    if (DEBUG) {
+        cout << "Unreachable states: " << unreachable_states << endl;
+        cout << "Arc size: " << (arc_size / 1024) << " KB" << endl;
+    }
 }
 
 AbstractState *Abstraction::get_abstract_state(const State &state) const {
