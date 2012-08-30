@@ -107,7 +107,8 @@ int EagerSearch::step() {
     State s = node.get_state();
 
     if (check_goal_and_set_plan(s)) {
-        cout << "Abstract states online: " << g_cegar_abstraction->get_num_states_online() << endl;
+        if (g_cegar_abstraction)
+            cout << "Abstract states online: " << g_cegar_abstraction->get_num_states_online() << endl;
         return SOLVED;
     }
 
@@ -129,10 +130,14 @@ int EagerSearch::step() {
     }
     search_progress.inc_evaluations(preferred_operator_heuristics.size());
 
-    bool keep_refining = g_cegar_abstraction->get_num_states_online() <
-                         g_cegar_abstraction_max_states_online;
+    bool keep_refining = false;
+    if (g_cegar_abstraction && g_cegar_abstraction->get_num_states_online() <
+                               g_cegar_abstraction_max_states_online)
+        keep_refining = true;
 
-    cout << "h(node): " << node.get_h() << endl;
+    if (cegar_heuristic::DEBUG)
+        cout << "h(node): " << node.get_h() << endl;
+    int old_h = node.get_h();
     int better_h = cegar_heuristic::INFINITY;
     // Successor with lowest f-value. Initialize with arbitrary state.
     State best_succ_state(*g_initial_state);
@@ -188,6 +193,10 @@ int EagerSearch::step() {
 
             //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
             int succ_h = heuristics[0]->get_heuristic();
+            int abs_h = g_cegar_abstraction->get_abstract_state(succ_state)->get_h();
+            cout << "succ_h: " << succ_h << " h: " << abs_h << endl;
+            assert(succ_h == abs_h);
+
             if (do_pathmax) {
                 if ((node.get_h() - get_adjusted_cost(*op)) > succ_h) {
                     //cout << "Pathmax correction: " << succ_h << " -> " << node.get_h() - get_adjusted_cost(*op) << endl;
@@ -233,7 +242,8 @@ int EagerSearch::step() {
             }
         }
         // Find the minimum value for h(succ) + cost(op) for all successor states.
-        cout << "h(succ): " << succ_node.get_h() << " cost(op): " << op->get_cost() << endl;
+        if (cegar_heuristic::DEBUG)
+            cout << "h(succ): " << succ_node.get_h() << " cost(op): " << op->get_cost() << endl;
         int costs_over_succ_node = succ_node.get_h() + op->get_cost();
         if (costs_over_succ_node < better_h) {
             better_h = costs_over_succ_node;
@@ -243,10 +253,16 @@ int EagerSearch::step() {
     }
     // The heuristic can be improved if the found minimum is greater than the
     // old h-value.
-    if (keep_refining && better_h > node.get_h() && best_op) {
-        cout << "Found better h value: " << better_h << endl;
+    if (better_h > old_h && best_op) {
+        cout << "Old h: " << old_h << ", better: " << better_h << ", op: " << best_op->get_name() << " (" << best_op->get_cost() << ")" << endl;
+        node.increase_h(better_h);
+        node.set_h_dirty();
+        if (!keep_refining)
+            return IN_PROGRESS;
+
         cegar_heuristic::AbstractState *abs_state = g_cegar_abstraction->get_abstract_state(node.get_state());
         cegar_heuristic::AbstractState *abs_succ_state = g_cegar_abstraction->get_abstract_state(best_succ_state);
+        assert(abs_state->get_h() >= old_h);
         if (abs_state == abs_succ_state) {
             cout << "Same states" << endl;
 
@@ -283,7 +299,26 @@ int EagerSearch::step() {
                 int value = pre_post[index].post;
                 g_cegar_abstraction->refine(abs_state, var, value);
                 g_cegar_abstraction->update_h_values();
-                node.increase_h(abs_state->get_h());
+                abs_state = g_cegar_abstraction->get_abstract_state(node.get_state());
+                State conc_state = node.get_state();
+                assert(abs_state->is_abstraction_of(conc_state));
+                int new_h = abs_state->get_h();
+                int round = 1;
+                while (new_h == old_h &&
+                       g_cegar_abstraction->get_num_states_online() <
+                       g_cegar_abstraction_max_states_online) {
+                    cout << "No improvement -> Refine (Round " << round++ << ")" << endl;
+                    if (!g_cegar_abstraction->can_reuse_last_solution())
+                        g_cegar_abstraction->find_solution();
+                    g_cegar_abstraction->check_solution();
+                    g_cegar_abstraction->update_h_values();
+                    abs_state = g_cegar_abstraction->get_abstract_state(node.get_state());
+                    assert(abs_state->is_abstraction_of(conc_state));
+                    new_h = abs_state->get_h();
+                }
+                cout << "Increase h: " << old_h << " -> " << new_h << endl;
+                assert(new_h >= old_h);
+                //node.increase_h(new_h);  // Seems to have no effect.
             } else {
                 cout << "Could not refine." << endl;
             }
