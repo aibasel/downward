@@ -232,17 +232,6 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
         cout << "Check solution." << endl;
     if (!abs_state)
         abs_state = get_abstract_state(conc_state);
-    if (DEBUG) {
-        cout << "Start: " << start_solution_check_ptr;
-        if (start_solution_check_ptr)
-            cout << " " << start_solution_check_ptr->str();
-        cout << endl;
-    }
-    // TODO: Use shortcuts only in separate find_and_check_solution method
-    if (false && start_solution_check_ptr) {
-        abs_state = start_solution_check_ptr;
-        conc_state = last_checked_conc_state;
-    }
     assert(abs_state->is_abstraction_of(conc_state));
 
     AbstractState *prev_state = 0;
@@ -330,6 +319,14 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
     // This only happens if the problem is unsolvable.
     assert(false);
     return false;
+}
+
+bool Abstraction::recheck_last_solution() {
+    assert(start_solution_check_ptr);
+    if (DEBUG)
+        cout << "Start: " << start_solution_check_ptr << " "
+             << start_solution_check_ptr->str() << endl;
+    return check_solution(last_checked_conc_state, start_solution_check_ptr);
 }
 
 void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, int> > &conditions,

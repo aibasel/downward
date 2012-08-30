@@ -144,7 +144,6 @@ void refine(cegar_heuristic::AbstractState *abs_state, const State &state, const
            g_cegar_abstraction->get_num_states_online() <
            g_cegar_abstraction_max_states_online) {
         cout << "refine (round " << ++round << ")" << endl;
-        //if (!g_cegar_abstraction->can_reuse_last_solution())
         bool conc_solution_found = true;
         if (start_at_init) {
             g_cegar_abstraction->find_solution();
