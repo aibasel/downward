@@ -98,7 +98,7 @@ void EagerSearch::statistics() const {
 }
 
 void refine(cegar_heuristic::AbstractState *abs_state, const State &state, const State &succ_state, const Operator &op) {
-    bool start_at_init = true;
+    bool start_at_init = false;
     // This method will only be called when abs_state == abs_succ_state.
     cegar_heuristic::AbstractState *abs_succ_state = abs_state;
     // Search for the fact for which we want to refine the state abs for op.
@@ -144,16 +144,20 @@ void refine(cegar_heuristic::AbstractState *abs_state, const State &state, const
            g_cegar_abstraction->get_num_states_online() <
            g_cegar_abstraction_max_states_online) {
         cout << "refine (round " << ++round << ")" << endl;
-        bool conc_solution_found = true;
+        bool solution_valid = false;
         if (start_at_init) {
             g_cegar_abstraction->find_solution();
-            conc_solution_found = g_cegar_abstraction->check_solution(*g_initial_state);
+            solution_valid = g_cegar_abstraction->check_solution(*g_initial_state);
         } else {
             assert(abs_state->is_abstraction_of(state));
-            g_cegar_abstraction->find_solution(abs_state);
-            conc_solution_found = g_cegar_abstraction->check_solution(state, abs_state);
+            bool solution_found = g_cegar_abstraction->find_solution(abs_state);
+            if (!solution_found) {
+                cout << "No solution found" << endl;
+                break;
+            }
+            solution_valid = g_cegar_abstraction->check_solution(state, abs_state);
         }
-        if (conc_solution_found) {
+        if (solution_valid) {
             cout << "Concrete solution found" << endl;
             break;
         }
@@ -273,7 +277,7 @@ int EagerSearch::step() {
                 cout << "True" << endl;
                 assert(abs_state->get_h() >= state_h);
                 // TODO: Only refine if abs_state == abs_succ_state?
-                if (keep_refining) {
+                if (keep_refining && abs_state == abs_succ_state) {
                     refine(abs_state, s, succ_state, *op);
                     // TODO: Avoid recomputation of succ_state
                     // Update child node.
