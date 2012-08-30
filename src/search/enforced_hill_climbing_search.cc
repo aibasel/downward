@@ -63,7 +63,7 @@ void EnforcedHillClimbingSearch::initialize() {
     }
     cout << "(real) g-bound = " << bound << endl;
 
-    SearchNode node = search_space.get_node(current_state);
+    SearchNode node = search_space.get_node(current_state.get_handle());
     evaluate(current_state, NULL, current_state);
     search_progress.get_initial_h_values();
 
@@ -136,7 +136,7 @@ int EnforcedHillClimbingSearch::step() {
     vector<const Operator *> ops;
     get_successors(current_state, ops);
 
-    SearchNode current_node = search_space.get_node(current_state);
+    SearchNode current_node = search_space.get_node(current_state.get_handle());
     current_node.close();
 
     for (int i = 0; i < ops.size(); i++) {
@@ -152,17 +152,18 @@ int EnforcedHillClimbingSearch::step() {
 int EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
         OpenListEntryEHC next = open_list->remove_min();
-        State last_parent = State(next.first);
+        StateHandle last_parent_handle = next.first;
+        State last_parent = State(last_parent_handle);
         int d = next.second.first;
         const Operator *last_op = next.second.second;
 
-        if (search_space.get_node(last_parent).get_real_g() + last_op->get_cost() >= bound)
+        if (search_space.get_node(last_parent_handle).get_real_g() + last_op->get_cost() >= bound)
             continue;
 
         State s = State::create_registered_successor(last_parent, *last_op);
         search_progress.inc_generated();
 
-        SearchNode node = search_space.get_node(s);
+        SearchNode node = search_space.get_node(s.get_handle());
 
         if (node.is_new()) {
             evaluate(last_parent, last_op, s);
@@ -174,7 +175,7 @@ int EnforcedHillClimbingSearch::ehc() {
             }
 
             int h = heuristic->get_heuristic();
-            node.open(h, search_space.get_node(last_parent), last_op);
+            node.open(h, search_space.get_node(last_parent_handle), last_op);
 
             if (h < current_h) {
                 current_g = node.get_g();

@@ -139,10 +139,6 @@ SearchSpace::SearchSpace(OperatorCost cost_type_)
     : search_node_infos(0), cost_type(cost_type_){
 }
 
-SearchNode SearchSpace::get_node(const State &state) {
-    return get_node(state.get_handle());
-}
-
 SearchNode SearchSpace::get_node(const StateHandle &handle) {
     assert(handle.is_valid());
     if (!search_node_infos[handle]) {

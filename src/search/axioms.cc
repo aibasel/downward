@@ -49,6 +49,7 @@ AxiomEvaluator::AxiomEvaluator() {
 }
 
 void AxiomEvaluator::evaluate(state_var_t *state_buffer) {
+    // TODO rethink the way this is called: see issue 348.
     // cout << "Evaluating axioms..." << endl;
     deque<AxiomLiteral *> queue;
     for (int i = 0; i < g_axiom_layers.size(); i++) {

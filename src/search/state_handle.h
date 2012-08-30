@@ -30,6 +30,9 @@ public:
     ~StateHandle();
 
     int get_id() const;
+    // TODO get rid of this if/when we split the State class into RegisteredState
+    // and UnregisteredState. In this case UnregisteredState would not have a
+    // handle and RegisteredState would always have a valid handle.
     bool is_valid() const;
 
     bool operator==(const StateHandle &other) const;

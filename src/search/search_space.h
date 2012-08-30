@@ -57,13 +57,14 @@ public:
 class SearchSpace {
     // We have to save pointers here instead of the objects themselves.
     // otherwise references to the actual SearchNodeInfo objects might become
-    // invalid during reallocation of the vector
+    // invalid during reallocation of the vector.
+    // TODO After benchmarking the patch we could try to get back some memory
+    // here by changing this to a value type.
     PerStateInformation<SearchNodeInfo *> search_node_infos;
 
     OperatorCost cost_type;
 public:
     SearchSpace(OperatorCost cost_type_);
-    SearchNode get_node(const State &state);
     SearchNode get_node(const StateHandle &handle);
     void trace_path(const State &goal_state,
                     std::vector<const Operator *> &path) const;

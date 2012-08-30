@@ -25,13 +25,13 @@ public:
     State &operator=(const State &other);
     ~State();
 
-    // TODO why is g_initial_state a pointer?
     static State *create_initial_state(state_var_t *initial_state_vars);
     static State create_registered_successor(const State &predecessor, const Operator &op);
     static State create_unregistered_successor(const State &predecessor, const Operator &op);
 
-    int get_id() const;
-    const StateHandle get_handle() const;
+    StateHandle get_handle() const {
+        return handle;
+    }
 
     int operator[](int index) const {
         return vars[index];

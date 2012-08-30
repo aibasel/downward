@@ -4,9 +4,6 @@
 
 using namespace std;
 
-StateRegistry::StateRegistry(): next_id(0) {
-}
-
 State StateRegistry::get_registered_state(const State &state) {
     // create a preliminary handle with a borrowed buffer and an invalid id
     StateHandle handle(state.get_buffer());
@@ -14,7 +11,7 @@ State StateRegistry::get_registered_state(const State &state) {
     HandleSet::iterator it = result.first;
     bool new_entry = result.second;
     if (new_entry) {
-        it->make_permanent(next_id++);
+        it->make_permanent(registered_states.size() - 1);
     }
     return State(*it);
 }
