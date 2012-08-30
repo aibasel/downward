@@ -84,8 +84,8 @@ private:
 
 public:
     explicit Abstraction(PickStrategy deviation_strategy = FIRST,
-                         PickStrategy precondition_strategy = KEEP,
-                         PickStrategy goal_strategy = BREAK);
+                         PickStrategy precondition_strategy = FIRST,
+                         PickStrategy goal_strategy = FIRST);
 
     void refine(AbstractState *state, int var, int value);
     void refine(const vector<Condition> &conditions, AbstractState *state);
