@@ -92,8 +92,10 @@ void CegarHeuristic::initialize() {
     abstraction->update_h_values();
     assert(num_states == abstraction->get_num_states());
     abstraction->print_statistics();
-    if (g_cegar_abstraction_max_states_online <= 0)
+    if (g_cegar_abstraction_max_states_online <= 0) {
+        cout << "Release memory" << endl;
         abstraction->release_memory();
+    }
 
     if (!search)
         exit(0);
