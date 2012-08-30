@@ -98,6 +98,7 @@ void EagerSearch::statistics() const {
 }
 
 void refine(cegar_heuristic::AbstractState *abs_state, const State &state, const State &succ_state, const Operator &op) {
+    bool start_at_init = true;
     // This method will only be called when abs_state == abs_succ_state.
     cegar_heuristic::AbstractState *abs_succ_state = abs_state;
     // Search for the fact for which we want to refine the state abs for op.
@@ -138,14 +139,21 @@ void refine(cegar_heuristic::AbstractState *abs_state, const State &state, const
         abs_succ_state = g_cegar_abstraction->get_abstract_state(succ_state);
         assert(abs_state != abs_succ_state);
     }
-    int round = 1;
+    int round = 0;
     while (abs_state->get_h() == abs_succ_state->get_h() &&
            g_cegar_abstraction->get_num_states_online() <
            g_cegar_abstraction_max_states_online) {
-        cout << "refine (round " << round++ << ")" << endl;
-        if (!g_cegar_abstraction->can_reuse_last_solution())
+        cout << "refine (round " << ++round << ")" << endl;
+        //if (!g_cegar_abstraction->can_reuse_last_solution())
+        bool conc_solution_found = true;
+        if (start_at_init) {
             g_cegar_abstraction->find_solution();
-        bool conc_solution_found = g_cegar_abstraction->check_solution();
+            conc_solution_found = g_cegar_abstraction->check_solution(*g_initial_state);
+        } else {
+            assert(abs_state->is_abstraction_of(state));
+            g_cegar_abstraction->find_solution(abs_state);
+            conc_solution_found = g_cegar_abstraction->check_solution(state, abs_state);
+        }
         if (conc_solution_found) {
             cout << "Concrete solution found" << endl;
             break;

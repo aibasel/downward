@@ -131,7 +131,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         if (forward && state == goal) {
             if (debug)
                 cout << "GOAL REACHED" << endl;
-            extract_solution(state);
+            extract_solution(goal);
             return true;
         }
         vector<Arc> &successors = (forward) ? state->get_next() : state->get_prev();
@@ -161,27 +161,29 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
     return false;
 }
 
-bool Abstraction::find_solution() {
+bool Abstraction::find_solution(AbstractState *start) {
+    if (!start)
+        start = init;
     // Dijkstra.
     bool dijkstra_success = false;
     int dijkstra_cost = -1;
     if (TEST_WITH_DIJKSTRA) {
         queue.clear();
         reset_distances();
-        init->reset_neighbours();
-        init->set_distance(0);
-        queue.push(0, init);
+        start->reset_neighbours();
+        start->set_distance(0);
+        queue.push(0, start);
         dijkstra_success = astar_search(true, false);
-        dijkstra_cost = init->get_h();
+        dijkstra_cost = start->get_h();
     }
     // A*.
     queue.clear();
     reset_distances();
-    init->reset_neighbours();
-    init->set_distance(0);
-    queue.push(init->get_h(), init);
+    start->reset_neighbours();
+    start->set_distance(0);
+    queue.push(start->get_h(), start);
     bool astar_success = astar_search(true, true);
-    int astar_cost = init->get_h();
+    int astar_cost = start->get_h();
 
     if (TEST_WITH_DIJKSTRA) {
         assert(astar_success == dijkstra_success);
@@ -204,7 +206,6 @@ void Abstraction::extract_solution(AbstractState *goal) const {
         assert(prev != current);
         current = prev;
     }
-    assert(current == init);
 }
 
 string Abstraction::get_solution_string() const {
@@ -226,18 +227,19 @@ string Abstraction::get_solution_string() const {
     return oss.str();
 }
 
-bool Abstraction::check_solution() {
+bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
     if (DEBUG)
         cout << "Check solution." << endl;
-    State conc_state = *g_initial_state;
-    AbstractState *abs_state = init;
+    if (!abs_state)
+        abs_state = get_abstract_state(conc_state);
     if (DEBUG) {
         cout << "Start: " << start_solution_check_ptr;
         if (start_solution_check_ptr)
             cout << " " << start_solution_check_ptr->str();
         cout << endl;
     }
-    if (start_solution_check_ptr) {
+    // TODO: Use shortcuts only in separate find_and_check_solution method
+    if (false && start_solution_check_ptr) {
         abs_state = start_solution_check_ptr;
         conc_state = last_checked_conc_state;
     }
