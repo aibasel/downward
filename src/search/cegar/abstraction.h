@@ -75,7 +75,6 @@ private:
     vector<int> cg_partial_ordering;
 
     // Settings.
-    bool start_at_init;
     bool refine_same_states_only;
 
     // Statistics.
@@ -125,7 +124,6 @@ public:
     void print_statistics();
 
     // Settings.
-    void set_start_at_init(bool at_init) {start_at_init = at_init; }
     void set_refine_same_states_only(bool same_only) {refine_same_states_only = same_only; }
     bool get_refine_same_states_only() const {return refine_same_states_only; }
 
