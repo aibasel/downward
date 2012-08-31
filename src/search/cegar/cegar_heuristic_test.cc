@@ -362,7 +362,7 @@ TEST(CegarTest, initialize) {
     EXPECT_EQ(0, abstraction.init->get_distance());
 
     // --> 1={0,2} --> 1={1}
-    bool success = abstraction.check_solution();
+    bool success = abstraction.check_solution(*g_initial_state);
     EXPECT_FALSE(success);
 
     string a1s = "<1={0,2}>";
@@ -380,7 +380,7 @@ TEST(CegarTest, initialize) {
     EXPECT_EQ(1, abstraction.init->get_distance());
     EXPECT_EQ(0, right->get_distance());
 
-    success = abstraction.check_solution();
+    success = abstraction.check_solution(*g_initial_state);
     EXPECT_TRUE(success);
 }
 
