@@ -13,29 +13,28 @@ template<class Entry>
 class PerStateInformation {
 private:
     const Entry default_value;
-    // This is mutabale so it can automatically grow to hold one element for each
-    // registered state.
-    mutable std::vector<Entry> entries;
+    std::vector<Entry> entries;
 
-    void ensure_virtual_size() const {
+    Entry &at(int state_id) {
         size_t virtual_size = g_state_registry.size();
+        assert(state_id >= 0 && state_id < virtual_size);
         while (entries.size() <= virtual_size) {
             // resize() and insert() do not guarantee amortized constant time.
             // In a lot of cases this will be called once for each state, so we
             // have to avoid copying the vector every time.
             entries.push_back(default_value);
         }
-    }
-
-    Entry &at(int state_id) {
-        ensure_virtual_size();
-        assert(state_id >= 0 && state_id < entries.size());
         return entries[state_id];
     }
 
-    const Entry &at(int state_id) const {
-        ensure_virtual_size();
-        assert(state_id >= 0 && state_id < entries.size());
+    const Entry at(int state_id) const {
+        // We do not change the size here to avoid having to make entries
+        // mutable. Instead, we return the default value by value if the index
+        // is out of bounds.
+        assert(state_id >= 0 && state_id < g_state_registry.size());
+        if (state_id >= entries.size()) {
+            return default_value;
+        }
         return entries[state_id];
     }
 
@@ -47,21 +46,11 @@ public:
         : default_value(default_value_) {
     }
 
-    // TODO get rid of this access style in favor of using StateHandle.
-    Entry &operator[](const State &state) {
-        return at(state.get_handle().get_id());
-    }
-
-    // TODO get rid of this access style in favor of using StateHandle.
-    const Entry &operator[](const State &state) const {
-        return at(state.get_handle().get_id());
-    }
-
     Entry &operator[](const StateHandle &state_handle) {
         return at(state_handle.get_id());
     }
 
-    const Entry &operator[](const StateHandle &state_handle) const {
+    const Entry operator[](const StateHandle &state_handle) const {
         return at(state_handle.get_id());
     }
 
@@ -71,7 +60,7 @@ public:
     }
 
     // TODO get rid of this access style in favor of using StateHandle.
-    const Entry &operator[](int state_id) const {
+    const Entry operator[](int state_id) const {
         return at(state_id);
     }
 

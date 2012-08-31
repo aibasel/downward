@@ -68,7 +68,7 @@ void SearchNode::open_initial(int h) {
     info.g = 0;
     info.real_g = 0;
     info.h = h;
-    info.parent_state_handle = StateHandle();
+    info.parent_state_handle = StateHandle(StateHandle::invalid);
     info.creating_operator = 0;
 }
 

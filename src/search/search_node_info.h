@@ -21,7 +21,8 @@ class SearchNodeInfo {
 
     SearchNodeInfo()
         : status(NEW), g(-1), h(-1), h_is_dirty(false),
-          parent_state_handle(), creating_operator(0), real_g(-1) {
+          parent_state_handle(StateHandle::invalid), creating_operator(0),
+          real_g(-1) {
     }
 };
 

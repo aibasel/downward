@@ -11,8 +11,8 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       heuristic(opts.get<Heuristic *>("h")),
       use_preferred(false),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
-      current_state(*g_initial_state),
       num_ehc_phases(0) {
+    current_state = g_state_registry.get_registered_state(*g_initial_state);
     if (opts.contains("preferred")) {
         preferred_heuristics = opts.get_list<Heuristic *>("preferred");
         if (preferred_heuristics.empty()) {
@@ -160,7 +160,7 @@ int EnforcedHillClimbingSearch::ehc() {
         if (search_space.get_node(last_parent_handle).get_real_g() + last_op->get_cost() >= bound)
             continue;
 
-        State s = State::create_registered_successor(last_parent, *last_op);
+        State s = State::construct_registered_successor(last_parent, *last_op);
         search_progress.inc_generated();
 
         SearchNode node = search_space.get_node(s.get_handle());
