@@ -65,8 +65,10 @@ void EagerSearch::initialize() {
 
     assert(!heuristics.empty());
 
+    State registered_initial_state =
+            g_state_registry.get_registered_state(*g_initial_state);
     for (size_t i = 0; i < heuristics.size(); i++)
-        heuristics[i]->evaluate(*g_initial_state);
+        heuristics[i]->evaluate(registered_initial_state);
     open_list->evaluate(0, false);
     search_progress.inc_evaluated_states();
     search_progress.inc_evaluations(heuristics.size());
@@ -80,7 +82,7 @@ void EagerSearch::initialize() {
             search_progress.report_f_value(f_evaluator->get_value());
         }
         search_progress.check_h_progress(0);
-        SearchNode node = search_space.get_node(g_initial_state->get_handle());
+        SearchNode node = search_space.get_node(registered_initial_state.get_handle());
         node.open_initial(heuristics[0]->get_value());
 
         open_list->insert(node.get_state_handle());
@@ -128,7 +130,7 @@ int EagerSearch::step() {
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
-        State succ_state = State::create_registered_successor(s, *op);
+        State succ_state = State::construct_registered_successor(s, *op);
         search_progress.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
@@ -233,7 +235,11 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
     while (true) {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
-            return make_pair(search_space.get_node(g_initial_state->get_handle()), false);
+            // HACK! HACK! we do this because SearchNode has no default/copy constructor
+            State registered_initial_state =
+                    g_state_registry.get_registered_state(*g_initial_state);
+            SearchNode dummy_node = search_space.get_node(registered_initial_state.get_handle());
+            return make_pair(dummy_node, false);
         }
         vector<int> last_key_removed;
         StateHandle handle = open_list->remove_min(

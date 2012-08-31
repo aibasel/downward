@@ -22,12 +22,12 @@ void State::copy_buffer_from(const state_var_t *buffer) {
 }
 
 State::State(state_var_t *buffer)
-    : borrowed_buffer(true), vars(buffer), handle() {
+    : borrowed_buffer(true), vars(buffer), handle(StateHandle::invalid) {
     assert(vars);
 }
 
 State::State(const State &predecessor, const Operator &op)
-    : handle() {
+    : handle(StateHandle::invalid) {
     assert(!op.is_axiom());
     copy_buffer_from(predecessor.get_buffer());
     for (size_t i = 0; i < op.get_pre_post().size(); ++i) {
@@ -58,21 +58,16 @@ State::State(const StateHandle &handle_)
 State *State::create_initial_state(state_var_t *initial_state_vars) {
     assert(g_axiom_evaluator);
     g_axiom_evaluator->evaluate(initial_state_vars);
-    State unregistered_state = State(initial_state_vars);
-    // TODO The search enine/heuristic should be responsible for registering the state
-    // see discussion in rietveld issue.
-    const State &registered_state = g_state_registry.get_registered_state(unregistered_state);
-    // Make a copy on the heap.
-    return new State(registered_state);
+    return new State(initial_state_vars);
 }
 
-State State::create_registered_successor(const State &predecessor, const Operator &op) {
+State State::construct_registered_successor(const State &predecessor, const Operator &op) {
     // TODO avoid extra copy of state here.
     State unregistered_copy(predecessor, op);
     return g_state_registry.get_registered_state(unregistered_copy);
 }
 
-State State::create_unregistered_successor(const State &predecessor, const Operator &op) {
+State State::construct_unregistered_successor(const State &predecessor, const Operator &op) {
     return State(predecessor, op);
 }
 

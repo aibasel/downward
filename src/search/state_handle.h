@@ -24,10 +24,11 @@ private:
     // Buffer should not be accessed directly, but only through the State ctor
     const state_var_t *get_buffer() const;
 public:
-    StateHandle();
     StateHandle(const StateHandle&);
     const StateHandle& operator=(StateHandle);
     ~StateHandle();
+
+    static StateHandle invalid;
 
     int get_id() const;
     // TODO get rid of this if/when we split the State class into RegisteredState

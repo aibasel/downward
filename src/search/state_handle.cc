@@ -45,10 +45,6 @@ void StateHandle::StateRepresentation::make_permanent(int _id) const {
     id = _id;
 }
 
-StateHandle::StateHandle()
-    : representation(new StateRepresentation) {
-}
-
 StateHandle::StateHandle(const state_var_t *data)
     : representation(new StateRepresentation(data)) {
 }
@@ -67,6 +63,8 @@ const StateHandle& StateHandle::operator=(StateHandle other) {
 StateHandle::~StateHandle() {
     delete representation;
 }
+
+StateHandle StateHandle::invalid = StateHandle(0);
 
 void StateHandle::make_permanent(int id) const {
     representation->make_permanent(id);
