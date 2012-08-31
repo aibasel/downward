@@ -65,10 +65,9 @@ void EagerSearch::initialize() {
 
     assert(!heuristics.empty());
 
-    State registered_initial_state =
-            g_state_registry.get_registered_state(*g_initial_state);
+    StateHandle initial_state_handle = g_state_registry.get_handle(*g_initial_state);
     for (size_t i = 0; i < heuristics.size(); i++)
-        heuristics[i]->evaluate(registered_initial_state);
+        heuristics[i]->evaluate(State(initial_state_handle));
     open_list->evaluate(0, false);
     search_progress.inc_evaluated_states();
     search_progress.inc_evaluations(heuristics.size());
@@ -82,7 +81,7 @@ void EagerSearch::initialize() {
             search_progress.report_f_value(f_evaluator->get_value());
         }
         search_progress.check_h_progress(0);
-        SearchNode node = search_space.get_node(registered_initial_state.get_handle());
+        SearchNode node = search_space.get_node(initial_state_handle);
         node.open_initial(heuristics[0]->get_value());
 
         open_list->insert(node.get_state_handle());
@@ -236,9 +235,8 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
             // HACK! HACK! we do this because SearchNode has no default/copy constructor
-            State registered_initial_state =
-                    g_state_registry.get_registered_state(*g_initial_state);
-            SearchNode dummy_node = search_space.get_node(registered_initial_state.get_handle());
+            StateHandle dummy_handle = g_state_registry.get_handle(*g_initial_state);
+            SearchNode dummy_node = search_space.get_node(dummy_handle);
             return make_pair(dummy_node, false);
         }
         vector<int> last_key_removed;
