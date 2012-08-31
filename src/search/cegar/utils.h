@@ -13,7 +13,7 @@
 #include <boost/dynamic_bitset.hpp>
 
 namespace cegar_heuristic {
-const bool DEBUG = false;
+extern bool DEBUG;
 
 const int UNDEFINED = -1;
 

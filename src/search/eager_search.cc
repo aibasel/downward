@@ -138,6 +138,8 @@ int EagerSearch::step() {
     cegar_heuristic::AbstractState *abs_state = g_cegar_abstraction->get_abstract_state(s);
     int state_h = node.get_h();
     assert(abs_state->get_h() >= state_h);
+    if (cegar_heuristic::DEBUG)
+        cout << "Expand node with h=" << state_h << endl;
 
     for (int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
@@ -192,16 +194,21 @@ int EagerSearch::step() {
 
             // Check if the heuristic makes a mistake, i.e. state_h is too low.
             cegar_heuristic::AbstractState *abs_succ_state = g_cegar_abstraction->get_abstract_state(succ_state);
-            assert(succ_h == abs_succ_state->get_h());
-            bool h_too_low = state_h < succ_h + get_adjusted_cost(*op);
+            assert(abs_succ_state->get_h() == succ_h);
+            // The heuristic may be more informed now then when s was added to
+            // the open-list, so we can increase the h(s).
+            assert(abs_state->get_h() >= state_h);
+            state_h = abs_state->get_h();
+            bool h_too_low = state_h == succ_h && get_adjusted_cost(*op) > 0;
             if (cegar_heuristic::DEBUG)
-                cout << "Old state_h: " << state_h << ", succ_h: " << succ_h
+                cout << "Old. abs_h: " << abs_state->get_h() << ", abs_succ_h: " << abs_succ_state->get_h()
+                     << ", state_h: " << state_h << ", succ_h: " << succ_h
                      << ", op_cost: " << get_adjusted_cost(*op) << " "
                      << op->get_name() << ", error: " << h_too_low << endl;
             if (h_too_low) {
-                assert(abs_state->get_h() >= state_h);
                 // TODO: Only refine if abs_state == abs_succ_state?
-                if (keep_refining && abs_state == abs_succ_state) {
+                if (keep_refining && (!g_cegar_abstraction->get_refine_same_states_only() ||
+                                      abs_state == abs_succ_state)) {
                     g_cegar_abstraction->refine(abs_state, abs_succ_state, s, succ_state, *op);
                     // TODO: Avoid recomputation of succ_state
                     // Update child node.
@@ -214,7 +221,7 @@ int EagerSearch::step() {
                     node.increase_h(state_h);
                     node.set_h_dirty();
                     if (cegar_heuristic::DEBUG)
-                        cout << "New state_h: " << state_h << ", succ_h: " << succ_h << endl;
+                        cout << "New. state_h: " << state_h << ", succ_h: " << succ_h << endl;
                 }
             }
 

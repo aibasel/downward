@@ -13,6 +13,8 @@
 using namespace std;
 
 namespace cegar_heuristic {
+bool DEBUG = false;
+
 string domain_to_string(const Domain &domain) {
     ostringstream oss;
     oss << "{";

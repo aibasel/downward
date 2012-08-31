@@ -27,6 +27,8 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       pick_deviation(deviation_strategy),
       pick_precondition(precondition_strategy),
       pick_goal(goal_strategy),
+      start_at_init(false),
+      refine_same_states_only(false),
       expansions(0),
       expansions_dijkstra(0),
       deviations(0),
@@ -99,7 +101,10 @@ void Abstraction::refine(const vector<pair<int, int> > &conditions, AbstractStat
 
 void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state,
                          const State &state, const State &succ_state, const Operator &op) {
-    bool start_at_init = false;
+    if (refine_same_states_only)
+        assert(abs_state == abs_succ_state);
+    assert(abs_state->is_abstraction_of(state));
+    assert(abs_succ_state->is_abstraction_of(succ_state));
     // Search for the fact for which we want to refine the state abs for op.
     // We try to accomplish that the resulting states abs1 and abs2 are
     // connected by op and that op is not applicable in abs1 anymore.
@@ -133,12 +138,9 @@ void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state
         int value = pre_post[index].post;
         refine(abs_state, var, value);
         update_h_values();
-        abs_state = get_abstract_state(state);
-        assert(abs_state->is_abstraction_of(state));
-        abs_succ_state = get_abstract_state(succ_state);
-        assert(abs_state != abs_succ_state);
     }
     int round = 0;
+    assert(abs_state->get_h() == abs_succ_state->get_h());
     while (abs_state->get_h() == abs_succ_state->get_h() &&
            get_num_states_online() < g_cegar_abstraction_max_states_online) {
         bool solution_valid = false;
@@ -150,21 +152,24 @@ void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state
             bool solution_found = find_solution(abs_state);
             if (!solution_found) {
                 cout << "No solution found" << endl;
-                break;
+                return;
             }
             solution_valid = check_solution(state, abs_state);
         }
         if (solution_valid) {
             cout << "Concrete solution found" << endl;
-            break;
+            return;
         }
         update_h_values();
         abs_state = get_abstract_state(state);
-        assert(abs_state->is_abstraction_of(state));
         abs_succ_state = get_abstract_state(succ_state);
-        assert(abs_succ_state->is_abstraction_of(succ_state));
         ++round;
     }
+    abs_state = get_abstract_state(state);
+    abs_succ_state = get_abstract_state(succ_state);
+    assert(abs_state->is_abstraction_of(state));
+    assert(abs_succ_state->is_abstraction_of(succ_state));
+    assert(abs_state != abs_succ_state);
     cout << "Refinement rounds: " << round << endl;
 }
 
