@@ -81,7 +81,7 @@ void CegarHeuristic::initialize() {
     cout << "Peak memory after building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << success << endl;
-    cout << "Abstract states: " << num_states << endl;
+    cout << "Abstract states offline: " << num_states << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     cout << "Saved searches: " << saved_searches << endl;
     cout << "A* expansions: " << abstraction->get_num_expansions() << endl;
