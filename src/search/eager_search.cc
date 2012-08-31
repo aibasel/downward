@@ -97,77 +97,6 @@ void EagerSearch::statistics() const {
     search_space.statistics();
 }
 
-void refine(cegar_heuristic::AbstractState *abs_state, const State &state, const State &succ_state, const Operator &op) {
-    bool start_at_init = false;
-    // This method will only be called when abs_state == abs_succ_state.
-    cegar_heuristic::AbstractState *abs_succ_state = abs_state;
-    // Search for the fact for which we want to refine the state abs for op.
-    // We try to accomplish that the resulting states abs1 and abs2 are
-    // connected by op and that op is not applicable in abs1 anymore.
-    // This yields the following procedure:
-    // - Round 1: Look for effects v=x that appear as v=y in the precondition (x != y)
-    // - Round 2: Look for any effect v=x
-    // - However, if abs is the abstract goal state, we can only refine variables
-    //   that appear in the goal description, because otherwise we would
-    //   have two abstract goal states. This is not supported in the current
-    //   implementation.
-    const vector<PrePost> pre_post = op.get_pre_post();
-    assert(!pre_post.empty());
-    int index = -1;
-    bool is_goal_state = abs_state->is_abstraction_of_goal();
-    for (int round = 1; round <= 2; ++round) {
-        // Break out of outer loop as well if a fact has been found.
-        if (index != -1)
-            break;
-        for (int i = 0; i < pre_post.size(); ++i) {
-            bool is_goal_var = cegar_heuristic::goal_var(pre_post[i].var);
-            if (is_goal_state && !is_goal_var)
-                continue;
-            if (pre_post[i].pre != -1 || round == 2) {
-                index = i;
-                break;
-            }
-        }
-    }
-    if (false && index != -1) {
-        int var = pre_post[index].var;
-        int value = pre_post[index].post;
-        g_cegar_abstraction->refine(abs_state, var, value);
-        g_cegar_abstraction->update_h_values();
-        abs_state = g_cegar_abstraction->get_abstract_state(state);
-        assert(abs_state->is_abstraction_of(state));
-        abs_succ_state = g_cegar_abstraction->get_abstract_state(succ_state);
-        assert(abs_state != abs_succ_state);
-    }
-    int round = 0;
-    while (abs_state->get_h() == abs_succ_state->get_h() &&
-           g_cegar_abstraction->get_num_states_online() <
-           g_cegar_abstraction_max_states_online) {
-        cout << "refine (round " << ++round << ")" << endl;
-        bool solution_valid = false;
-        if (start_at_init) {
-            g_cegar_abstraction->find_solution();
-            solution_valid = g_cegar_abstraction->check_solution(*g_initial_state);
-        } else {
-            assert(abs_state->is_abstraction_of(state));
-            bool solution_found = g_cegar_abstraction->find_solution(abs_state);
-            if (!solution_found) {
-                cout << "No solution found" << endl;
-                break;
-            }
-            solution_valid = g_cegar_abstraction->check_solution(state, abs_state);
-        }
-        if (solution_valid) {
-            cout << "Concrete solution found" << endl;
-            break;
-        }
-        g_cegar_abstraction->update_h_values();
-        abs_state = g_cegar_abstraction->get_abstract_state(state);
-        assert(abs_state->is_abstraction_of(state));
-        abs_succ_state = g_cegar_abstraction->get_abstract_state(succ_state);
-        assert(abs_succ_state->is_abstraction_of(succ_state));
-    }
-}
 
 int EagerSearch::step() {
     pair<SearchNode, bool> n = fetch_next_node();
@@ -202,20 +131,13 @@ int EagerSearch::step() {
     }
     search_progress.inc_evaluations(preferred_operator_heuristics.size());
 
-    bool keep_refining = false;
-    if (g_cegar_abstraction && g_cegar_abstraction->get_num_states_online() <
-                               g_cegar_abstraction_max_states_online)
-        keep_refining = true;
+    bool keep_refining = g_cegar_abstraction &&
+            g_cegar_abstraction->get_num_states_online() <
+            g_cegar_abstraction_max_states_online;
 
-    if (cegar_heuristic::DEBUG)
-        cout << "h(node): " << node.get_h() << endl;
     cegar_heuristic::AbstractState *abs_state = g_cegar_abstraction->get_abstract_state(s);
     int state_h = node.get_h();
     assert(abs_state->get_h() >= state_h);
-    int better_h = cegar_heuristic::INFINITY;
-    // Successor with lowest f-value. Initialize with arbitrary state.
-    State best_succ_state(*g_initial_state);
-    const Operator *best_op = 0;
 
     for (int i = 0; i < applicable_ops.size(); i++) {
         const Operator *op = applicable_ops[i];
@@ -268,17 +190,19 @@ int EagerSearch::step() {
             //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
             int succ_h = heuristics[0]->get_heuristic();
 
+            // Check if the heuristic makes a mistake, i.e. state_h is too low.
             cegar_heuristic::AbstractState *abs_succ_state = g_cegar_abstraction->get_abstract_state(succ_state);
             assert(succ_h == abs_succ_state->get_h());
-
-            // Check if the heuristic makes a mistake, i.e. state_h is too low.
-            cout << "state_h: " << state_h << ", succ_h: " << succ_h << ", op_cost: " << get_adjusted_cost(*op) << " " << op->get_name() << ", error: ";
-            if (state_h < succ_h + get_adjusted_cost(*op)) {
-                cout << "True" << endl;
+            bool h_too_low = state_h < succ_h + get_adjusted_cost(*op);
+            if (cegar_heuristic::DEBUG)
+                cout << "Old state_h: " << state_h << ", succ_h: " << succ_h
+                     << ", op_cost: " << get_adjusted_cost(*op) << " "
+                     << op->get_name() << ", error: " << h_too_low << endl;
+            if (h_too_low) {
                 assert(abs_state->get_h() >= state_h);
                 // TODO: Only refine if abs_state == abs_succ_state?
                 if (keep_refining && abs_state == abs_succ_state) {
-                    refine(abs_state, s, succ_state, *op);
+                    g_cegar_abstraction->refine(abs_state, abs_succ_state, s, succ_state, *op);
                     // TODO: Avoid recomputation of succ_state
                     // Update child node.
                     succ_h = g_cegar_abstraction->get_abstract_state(succ_state)->get_h();
@@ -289,10 +213,9 @@ int EagerSearch::step() {
                     state_h = g_cegar_abstraction->get_abstract_state(s)->get_h();
                     node.increase_h(state_h);
                     node.set_h_dirty();
-                    cout << "state_h: " << state_h << ", succ_h: " << succ_h << endl;
+                    if (cegar_heuristic::DEBUG)
+                        cout << "New state_h: " << state_h << ", succ_h: " << succ_h << endl;
                 }
-            } else {
-                cout << "False" << endl;
             }
 
             if (do_pathmax) {
@@ -339,20 +262,6 @@ int EagerSearch::step() {
                 succ_node.update_parent(node, op);
             }
         }
-        // Find the minimum value for h(succ) + cost(op) for all successor states.
-        if (cegar_heuristic::DEBUG)
-            cout << "h(succ): " << succ_node.get_h() << " cost(op): " << op->get_cost() << endl;
-        int costs_over_succ_node = succ_node.get_h() + op->get_cost();
-        if (costs_over_succ_node < better_h) {
-            better_h = costs_over_succ_node;
-            best_succ_state = succ_node.get_state();
-            best_op = op;
-        }
-    }
-    // The heuristic can be improved if the found minimum is greater than the
-    // old h-value.
-    if (better_h > state_h && best_op) {
-        cout << "Old h: " << state_h << ", better: " << better_h << ", op: " << best_op->get_name() << " (" << best_op->get_cost() << ")" << endl;
     }
 
     return IN_PROGRESS;
