@@ -27,7 +27,6 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       pick_deviation(deviation_strategy),
       pick_precondition(precondition_strategy),
       pick_goal(goal_strategy),
-      start_at_init(false),
       refine_same_states_only(false),
       expansions(0),
       expansions_dijkstra(0),
@@ -154,19 +153,13 @@ void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state
     assert(abs_state->get_h() == abs_succ_state->get_h());
     while (abs_state->get_h() == abs_succ_state->get_h() &&
            get_num_states_online() < g_cegar_abstraction_max_states_online) {
-        bool solution_valid = false;
-        if (start_at_init) {
-            find_solution();
-            solution_valid = check_solution(*g_initial_state);
-        } else {
-            assert(abs_state->is_abstraction_of(state));
-            bool solution_found = find_solution(abs_state);
-            if (!solution_found) {
-                cout << "No solution found" << endl;
-                return;
-            }
-            solution_valid = check_solution(state, abs_state);
+        assert(abs_state->is_abstraction_of(state));
+        bool solution_found = find_solution(abs_state);
+        if (!solution_found) {
+            cout << "No solution found" << endl;
+            return;
         }
+        bool solution_valid = check_solution(state, abs_state);
         if (solution_valid) {
             cout << "Concrete solution found" << endl;
             return;
