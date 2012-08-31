@@ -89,6 +89,8 @@ public:
 
     void refine(AbstractState *state, int var, int value);
     void refine(const vector<Condition> &conditions, AbstractState *state);
+    void refine(AbstractState *abs_state, AbstractState *abs_succ_state,
+                const State &state, const State &succ_state, const Operator &op);
 
     AbstractState *get_abstract_state(const State &state) const;
 

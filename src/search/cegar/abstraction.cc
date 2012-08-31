@@ -97,6 +97,77 @@ void Abstraction::refine(const vector<pair<int, int> > &conditions, AbstractStat
     }
 }
 
+void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state,
+                         const State &state, const State &succ_state, const Operator &op) {
+    bool start_at_init = false;
+    // Search for the fact for which we want to refine the state abs for op.
+    // We try to accomplish that the resulting states abs1 and abs2 are
+    // connected by op and that op is not applicable in abs1 anymore.
+    // This yields the following procedure:
+    // - Round 1: Look for effects v=x that appear as v=y in the precondition (x != y)
+    // - Round 2: Look for any effect v=x
+    // - However, if abs is the abstract goal state, we can only refine variables
+    //   that appear in the goal description, because otherwise we would
+    //   have two abstract goal states. This is not supported in the current
+    //   implementation.
+    const vector<PrePost> pre_post = op.get_pre_post();
+    assert(!pre_post.empty());
+    int index = -1;
+    bool is_goal_state = abs_state->is_abstraction_of_goal();
+    for (int round = 1; round <= 2; ++round) {
+        // Break out of outer loop as well if a fact has been found.
+        if (index != -1)
+            break;
+        for (int i = 0; i < pre_post.size(); ++i) {
+            bool is_goal_var = cegar_heuristic::goal_var(pre_post[i].var);
+            if (is_goal_state && !is_goal_var)
+                continue;
+            if (pre_post[i].pre != -1 || round == 2) {
+                index = i;
+                break;
+            }
+        }
+    }
+    if (false && index != -1) {
+        int var = pre_post[index].var;
+        int value = pre_post[index].post;
+        refine(abs_state, var, value);
+        update_h_values();
+        abs_state = get_abstract_state(state);
+        assert(abs_state->is_abstraction_of(state));
+        abs_succ_state = get_abstract_state(succ_state);
+        assert(abs_state != abs_succ_state);
+    }
+    int round = 0;
+    while (abs_state->get_h() == abs_succ_state->get_h() &&
+           get_num_states_online() < g_cegar_abstraction_max_states_online) {
+        bool solution_valid = false;
+        if (start_at_init) {
+            find_solution();
+            solution_valid = check_solution(*g_initial_state);
+        } else {
+            assert(abs_state->is_abstraction_of(state));
+            bool solution_found = find_solution(abs_state);
+            if (!solution_found) {
+                cout << "No solution found" << endl;
+                break;
+            }
+            solution_valid = check_solution(state, abs_state);
+        }
+        if (solution_valid) {
+            cout << "Concrete solution found" << endl;
+            break;
+        }
+        update_h_values();
+        abs_state = get_abstract_state(state);
+        assert(abs_state->is_abstraction_of(state));
+        abs_succ_state = get_abstract_state(succ_state);
+        assert(abs_succ_state->is_abstraction_of(succ_state));
+        ++round;
+    }
+    cout << "Refinement rounds: " << round << endl;
+}
+
 void Abstraction::reset_distances() const {
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
