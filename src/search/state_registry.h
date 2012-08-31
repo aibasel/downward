@@ -2,16 +2,36 @@
 #define STATE_REGISTRY_H
 
 #include <hash_set>
+#include "globals.h"
 #include "state.h"
 #include "state_handle.h"
+#include "utilities.h"
 
 class StateRegistry {
 private:
-    typedef __gnu_cxx::hash_set<StateHandle> HandleSet;
-    HandleSet registered_states;
-public:
-    typedef HandleSet::const_iterator const_iterator;
+    typedef StateHandle::StateRepresentation StateRepresentation;
 
+    struct StateRepresentationSemanticHash {
+      size_t operator() (StateRepresentation *representation) const {
+          if (!representation) {
+              return 0;
+          }
+          return ::hash_number_sequence(representation->data, g_variable_domain.size());
+      }
+    };
+
+    struct StateRepresentationSemanticEqual {
+      size_t operator() (StateRepresentation *x, StateRepresentation *y) const {
+          int size = g_variable_domain.size();
+          return ::equal(x->data, x->data + size, y->data);
+      }
+    };
+
+    typedef __gnu_cxx::hash_set<StateRepresentation *,
+                                StateRepresentationSemanticHash,
+                                StateRepresentationSemanticEqual> StateRepresentationSet;
+    StateRepresentationSet registered_states;
+public:
     /* After calling this function the returned state is registered and has a
        valid handle.
        Performes a lookup of state. If the same state was previously looked up,
@@ -20,21 +40,26 @@ public:
        later lookups). After this registration a state with a valid handle to
        the state just registered is returned.
     */
-    // TODO maybe clearer to return StateHandle instead. In this case call it
-    // "get_state_handle" or "get_handle". Alternatively wait for the split in
-    // RegieredState and UnregisteredState.
-    State get_registered_state(const State &state);
+    // TODO If State is split in RegieredState and UnregisteredState, change the
+    // signature of this to
+    // RegieredState get_registered_state(const UnregisteredState& unregistered_state);
+    StateHandle get_handle(const State &state);
 
     size_t size() const {
         return registered_states.size();
     }
 
-    const_iterator begin() const {
-        return registered_states.begin();
-    }
-
-    const_iterator end() const {
-        return registered_states.end();
+    /* An iterator would be nicer but we do not want to expose StateRepresentation.
+       Since this method is only used by debugging output right now (i.e. in
+       SearchSpace::dump()), the effort of writing a custom iterator that returns
+       StateHandles instead of StateRepresentation* is not worth it. */
+    std::vector<StateHandle> get_all_registered_handles() const {
+        std::vector<StateHandle> handles;
+        for (StateRepresentationSet::const_iterator it = registered_states.begin();
+             it != registered_states.end(); ++it) {
+            handles.push_back(StateHandle(*it));
+        }
+        return handles;
     }
 };
 

@@ -51,6 +51,7 @@ State::State(const StateHandle &handle_)
 
     // This assignment will later be changed into something like this:
     // vars = handle.unpack_state_data();
+    // The buffer will no longer be shared then
     vars = const_cast<state_var_t *>(handle.get_buffer());
     assert(vars);
 }
@@ -62,25 +63,26 @@ State *State::create_initial_state(state_var_t *initial_state_vars) {
 }
 
 State State::construct_registered_successor(const State &predecessor, const Operator &op) {
-    // TODO avoid extra copy of state here.
     State unregistered_copy(predecessor, op);
-    return g_state_registry.get_registered_state(unregistered_copy);
+    return State(g_state_registry.get_handle(unregistered_copy));
 }
 
 State State::construct_unregistered_successor(const State &predecessor, const Operator &op) {
     return State(predecessor, op);
 }
 
-
 State::State(const State &other)
     : borrowed_buffer(true), vars(other.vars), handle(other.handle) {
     // If a state without a borrowed buffer is copied, the buffer would have to
     // be copied as well, which we try to avoid.
+    // TODO this assert doesn't hold for unregistered states. Those should be
+    // deep copied.
     assert(other.borrowed_buffer);
     // Every State needs valid state variables.
     assert(vars);
     // Only states should be copied that are valid, otherwise the state buffer
     // can get invalid.
+    // TODO same as above: doesn't hold for unregistered states.
     assert(handle.is_valid());
 }
 
@@ -92,9 +94,11 @@ State &State::operator=(const State &other) {
         }
         // Only states should be copied that are valid, otherwise the state buffer
         // can get invalid.
+        // TODO Not valid: see above.
         assert(other.handle.is_valid());
         // If a state without a borrowed buffer is copied, the buffer would have to
         // be copied as well, which we try to avoid.
+        // TODO Not valid: see above.
         assert(other.borrowed_buffer);
         borrowed_buffer = true;
         vars = other.vars;
@@ -120,6 +124,9 @@ void State::dump() const {
 bool State::operator==(const State &other) const {
     if (handle.is_valid()) {
         return handle == other.handle;
+    } else if (vars == other.vars) {
+        // borrowed from same buffer
+        return true;
     } else {
         int size = g_variable_domain.size();
         return ::equal(vars, vars + size, other.vars);

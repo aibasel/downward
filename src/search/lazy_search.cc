@@ -17,11 +17,11 @@ LazySearch::LazySearch(const Options &opts)
       open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       succ_mode(pref_first),
+      current_state(g_state_registry.get_handle(*g_initial_state)),
       current_predecessor_handle(StateHandle::invalid),
       current_operator(NULL),
       current_g(0),
       current_real_g(0) {
-    current_state = g_state_registry.get_registered_state(*g_initial_state);
 }
 
 LazySearch::~LazySearch() {
@@ -146,9 +146,7 @@ int LazySearch::step() {
         StateHandle dummy_handle = current_predecessor_handle;
         // HACK! HACK! we do this because SearchNode has no default/copy constructor
         if (!dummy_handle.is_valid()) {
-            State registered_initial_state =
-                    g_state_registry.get_registered_state(*g_initial_state);
-            dummy_handle = registered_initial_state.get_handle();
+            dummy_handle = g_state_registry.get_handle(*g_initial_state);
         }
 
         SearchNode parent_node = search_space.get_node(dummy_handle);
