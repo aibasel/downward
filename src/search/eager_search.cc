@@ -209,7 +209,8 @@ int EagerSearch::step() {
                 // TODO: Only refine if abs_state == abs_succ_state?
                 if (keep_refining && (!g_cegar_abstraction->get_refine_same_states_only() ||
                                       abs_state == abs_succ_state)) {
-                    g_cegar_abstraction->refine(abs_state, abs_succ_state, s, succ_state, *op);
+                    // TODO: Try refining for operator?
+                    g_cegar_abstraction->refine(abs_state, abs_succ_state, s, succ_state);
                     // TODO: Avoid recomputation of succ_state
                     // Update child node.
                     succ_h = g_cegar_abstraction->get_abstract_state(succ_state)->get_h();

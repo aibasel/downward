@@ -133,12 +133,23 @@ void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state
             }
         }
     }
-    if (false && index != -1) {
+    if (index != -1) {
         int var = pre_post[index].var;
         int value = pre_post[index].post;
         refine(abs_state, var, value);
         update_h_values();
     }
+    abs_state = get_abstract_state(state);
+    abs_succ_state = get_abstract_state(succ_state);
+    assert(abs_state != abs_succ_state);
+}
+
+void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state,
+                         const State &state, const State &succ_state) {
+    if (refine_same_states_only)
+        assert(abs_state == abs_succ_state);
+    assert(abs_state->is_abstraction_of(state));
+    assert(abs_succ_state->is_abstraction_of(succ_state));
     int round = 0;
     assert(abs_state->get_h() == abs_succ_state->get_h());
     while (abs_state->get_h() == abs_succ_state->get_h() &&
