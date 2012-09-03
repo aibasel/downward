@@ -62,9 +62,11 @@ State *State::create_initial_state(state_var_t *initial_state_vars) {
     return new State(initial_state_vars);
 }
 
-State State::construct_registered_successor(const State &predecessor, const Operator &op) {
+State State::construct_registered_successor(const State &predecessor,
+                                            const Operator &op,
+                                            StateRegistry &state_registry) {
     State unregistered_copy(predecessor, op);
-    return State(g_state_registry.get_handle(unregistered_copy));
+    return State(state_registry.get_handle(unregistered_copy));
 }
 
 State State::construct_unregistered_successor(const State &predecessor, const Operator &op) {
@@ -72,18 +74,18 @@ State State::construct_unregistered_successor(const State &predecessor, const Op
 }
 
 State::State(const State &other)
-    : borrowed_buffer(true), vars(other.vars), handle(other.handle) {
-    // If a state without a borrowed buffer is copied, the buffer would have to
-    // be copied as well, which we try to avoid.
-    // TODO this assert doesn't hold for unregistered states. Those should be
-    // deep copied.
-    assert(other.borrowed_buffer);
+    : borrowed_buffer(other.borrowed_buffer),
+      vars(other.vars),
+      handle(other.handle) {
     // Every State needs valid state variables.
     assert(vars);
-    // Only states should be copied that are valid, otherwise the state buffer
-    // can get invalid.
-    // TODO same as above: doesn't hold for unregistered states.
-    assert(handle.is_valid());
+    // A registered state should always have a borrowed buffer.
+    assert(!handle.is_valid() || borrowed_buffer);
+
+    if (!borrowed_buffer) {
+        // Deep copy for unregistered states.
+        copy_buffer_from(other.vars);
+    }
 }
 
 State &State::operator=(const State &other) {
@@ -92,17 +94,20 @@ State &State::operator=(const State &other) {
         if (!borrowed_buffer) {
             delete vars;
         }
-        // Only states should be copied that are valid, otherwise the state buffer
-        // can get invalid.
-        // TODO Not valid: see above.
-        assert(other.handle.is_valid());
-        // If a state without a borrowed buffer is copied, the buffer would have to
-        // be copied as well, which we try to avoid.
-        // TODO Not valid: see above.
-        assert(other.borrowed_buffer);
-        borrowed_buffer = true;
+
+        borrowed_buffer = other.borrowed_buffer;
         vars = other.vars;
         handle = other.handle;
+
+        // Every State needs valid state variables.
+        assert(vars);
+        // A registered state should always have a borrowed buffer.
+        assert(!handle.is_valid() || borrowed_buffer);
+
+        if (!borrowed_buffer) {
+            // Deep copy for unregistered states.
+            copy_buffer_from(other.vars);
+        }
     }
     return *this;
 }
