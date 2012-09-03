@@ -9,6 +9,7 @@ class Operator;
 
 #include "state_var_t.h"
 #include "state_handle.h"
+#include "globals.h"
 
 class State {
     bool borrowed_buffer;
@@ -28,7 +29,8 @@ public:
     // Creates an unregistered State object for the initial state on the heap.
     static State *create_initial_state(state_var_t *initial_state_vars);
     // Named constructor for registered States
-    static State construct_registered_successor(const State &predecessor, const Operator &op);
+    static State construct_registered_successor(const State &predecessor,
+        const Operator &op, StateRegistry &state_registry = g_state_registry);
     // Named constructor for unregistered States
     static State construct_unregistered_successor(const State &predecessor, const Operator &op);
 

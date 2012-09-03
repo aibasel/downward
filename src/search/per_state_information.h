@@ -12,11 +12,12 @@
 template<class Entry>
 class PerStateInformation {
 private:
+    StateRegistry &state_registry;
     const Entry default_value;
     std::vector<Entry> entries;
 
     Entry &at(int state_id) {
-        size_t virtual_size = g_state_registry.size();
+        size_t virtual_size = state_registry.size();
         assert(state_id >= 0 && state_id < virtual_size);
         while (entries.size() <= virtual_size) {
             // resize() and insert() do not guarantee amortized constant time.
@@ -31,7 +32,7 @@ private:
         // We do not change the size here to avoid having to make entries
         // mutable. Instead, we return the default value by value if the index
         // is out of bounds.
-        assert(state_id >= 0 && state_id < g_state_registry.size());
+        assert(state_id >= 0 && state_id < state_registry.size());
         if (state_id >= entries.size()) {
             return default_value;
         }
@@ -40,10 +41,18 @@ private:
 
 public:
     PerStateInformation()
-        : default_value() {
+        : state_registry(g_state_registry),
+          default_value() {
     }
+
     PerStateInformation(const Entry &default_value_)
-        : default_value(default_value_) {
+        : state_registry(g_state_registry),
+          default_value(default_value_) {
+    }
+
+    PerStateInformation(const Entry &default_value_, StateRegistry &state_registry_)
+        : state_registry(state_registry_),
+          default_value(default_value_) {
     }
 
     Entry &operator[](const StateHandle &state_handle) {
@@ -66,7 +75,7 @@ public:
 
     void clear() {
         entries.clear();
-        entries.resize(g_state_registry.size(), default_value);
+        entries.resize(state_registry.size(), default_value);
     }
 };
 
