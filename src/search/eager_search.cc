@@ -334,6 +334,9 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                 g_cegar_abstraction->get_num_states_online() <
                 g_cegar_abstraction_max_states_online;
 
+        if (g_cegar_abstraction && !keep_refining && !g_cegar_abstraction->has_released_memory())
+            g_cegar_abstraction->release_memory();
+
         // TODO: Try checking for error when expanding and mark corresponding abstract states
         // as faulty. Then refine the faulty abstract states here. This would save us from
         // having to generate the states multiple times.

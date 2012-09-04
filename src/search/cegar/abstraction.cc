@@ -33,7 +33,8 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
-      num_states_offline(-1) {
+      num_states_offline(-1),
+      memory_released(false) {
     assert(!g_operators.empty());
 
     single = new AbstractState();
@@ -583,12 +584,14 @@ int Abstraction::get_num_states_online() const {
 }
 
 void Abstraction::release_memory() {
+    assert(!memory_released);
     vector<int>().swap(cg_partial_ordering);
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         state->release_memory();
     }
+    memory_released = true;
 }
 
 void Abstraction::print_statistics() {
