@@ -17,6 +17,13 @@ SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_, Operat
     : state_buffer(state_buffer_), info(info_), cost_type(cost_type_) {
 }
 
+SearchNode& SearchNode::operator=(const SearchNode &other) {
+    state_buffer = other.state_buffer;
+    info = other.info;
+    cost_type = other.cost_type;
+    return *this;
+}
+
 State SearchNode::get_state() const {
     return State(state_buffer);
 }
