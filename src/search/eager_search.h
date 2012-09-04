@@ -25,6 +25,13 @@ class EagerSearch : public SearchEngine {
     OpenList<state_var_t *> *open_list;
     ScalarEvaluator *f_evaluator;
 
+    // Statistics.
+    int num_pushed_h_lower;
+    int num_h_too_low;
+
+private:
+    void evaluate_and_push_node(SearchNode &node);
+
 protected:
     int step();
     pair<SearchNode, bool> fetch_next_node();
