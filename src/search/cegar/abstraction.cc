@@ -143,38 +143,29 @@ void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state
     assert(abs_state != abs_succ_state);
 }
 
-void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state,
-                         const State &state, const State &succ_state) {
-    if (refine_same_states_only)
-        assert(abs_state == abs_succ_state);
-    assert(abs_state->is_abstraction_of(state));
-    assert(abs_succ_state->is_abstraction_of(succ_state));
-    int round = 0;
-    assert(abs_state->get_h() == abs_succ_state->get_h());
-    while (abs_state->get_h() == abs_succ_state->get_h() &&
-           get_num_states_online() < g_cegar_abstraction_max_states_online) {
-        assert(abs_state->is_abstraction_of(state));
+void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
+    int rounds = 0;
+    const int old_h = abs_state->get_h();
+    while (abs_state->get_h() == old_h) {
+        // Loop until the heuristic value increases.
         bool solution_found = find_solution(abs_state);
         if (!solution_found) {
             cout << "No solution found" << endl;
-            return;
+            break;
         }
         bool solution_valid = check_solution(state, abs_state);
         if (solution_valid) {
             cout << "Concrete solution found" << endl;
-            return;
+            break;
         }
+        // TODO: Use A* for finding the shortest path from abs_state to goal.
         update_h_values();
         abs_state = get_abstract_state(state);
-        abs_succ_state = get_abstract_state(succ_state);
-        ++round;
+        ++rounds;
     }
-    abs_state = get_abstract_state(state);
-    abs_succ_state = get_abstract_state(succ_state);
-    assert(abs_state->is_abstraction_of(state));
-    assert(abs_succ_state->is_abstraction_of(succ_state));
-    assert(abs_state != abs_succ_state);
-    cout << "Refinement rounds: " << round << endl;
+    assert(abs_state->get_h() >= old_h);
+    if (DEBUG)
+        cout << "Refinement rounds: " << rounds << endl;
 }
 
 void Abstraction::reset_distances() const {
@@ -538,7 +529,7 @@ void Abstraction::update_h_values() const {
         const vector<Arc> &next_arcs = state->get_next();
         arc_size += 2 * (sizeof(next_arcs) + sizeof(Arc) * sizeof(next_arcs.capacity()));
     }
-    if (DEBUG) {
+    if (false and DEBUG) {
         cout << "Unreachable states: " << unreachable_states << endl;
         cout << "Arc size: " << (arc_size / 1024) << " KB" << endl;
     }
