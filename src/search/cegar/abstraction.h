@@ -85,6 +85,8 @@ private:
     mutable int unmet_goals;
     mutable int num_states_offline;
 
+    bool memory_released;
+
 public:
     explicit Abstraction(PickStrategy deviation_strategy = FIRST,
                          PickStrategy precondition_strategy = FIRST,
@@ -119,6 +121,7 @@ public:
     void remember_num_states_offline() const {num_states_offline = states.size(); }
     int get_num_states_online() const;
 
+    bool has_released_memory() const {return memory_released; }
     void release_memory();
     void print_statistics();
 
