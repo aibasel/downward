@@ -26,7 +26,8 @@ EagerSearch::EagerSearch(
       open_list(opts.get<OpenList<state_var_t *> *>("open")),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval")),
       num_pushed_h_lower(0),
-      num_h_too_low(0) {
+      num_h_too_low(0),
+      num_h_improved(0) {
     if (opts.contains("preferred")) {
         preferred_operator_heuristics =
             opts.get_list<Heuristic *>("preferred");
@@ -130,8 +131,9 @@ int EagerSearch::step() {
     if (check_goal_and_set_plan(s)) {
         if (g_cegar_abstraction)
             cout << "Abstract states online: " << g_cegar_abstraction->get_num_states_online() << endl;
-            cout << "Pushed h was lower: " << num_pushed_h_lower << endl;
-            cout << "h too low: " << num_h_too_low << endl;
+        cout << "Pushed h was lower: " << num_pushed_h_lower << endl;
+        cout << "h too low: " << num_h_too_low << endl;
+        cout << "h improved: " << num_h_improved << endl;
         return SOLVED;
     }
 
@@ -363,6 +365,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             }
 
             if (h_too_low(abs_state, node, successors)) {
+                ++num_h_too_low;
                 const int old_h = abs_state->get_h();
                 g_cegar_abstraction->improve_h(state, abs_state);
                 // TODO: Avoid recalculation of abs_state.
@@ -373,10 +376,11 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                 // If the heuristic value could be improved, do not expand the state now,
                 // but readd it to the open-list.
                 if (new_h > old_h) {
-                    ++num_h_too_low;
+                    ++num_h_improved;
                     evaluate_and_push_node(node);
                     continue;
                 }
+                // TODO: If h(s) wasn't improved, treat s with higher h-value nonetheless (set_evaluator_value)?
             }
         }
 

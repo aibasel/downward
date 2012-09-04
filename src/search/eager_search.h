@@ -28,6 +28,7 @@ class EagerSearch : public SearchEngine {
     // Statistics.
     int num_pushed_h_lower;
     int num_h_too_low;
+    int num_h_improved;
 
 private:
     void evaluate_and_push_node(SearchNode &node);
