@@ -311,25 +311,22 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             }
         }
 
-        cegar_heuristic::AbstractState *abs_state = g_cegar_abstraction->get_abstract_state(state);
+        cegar_heuristic::AbstractState *abs_state = 0;
+        if (g_cegar_abstraction) {
+            abs_state = g_cegar_abstraction->get_abstract_state(state);
 
-        // If h(s) is higher now than when s was pushed, we don't expand s, but
-        // push it into the open-queue again.
-        assert(last_key_removed.size() == 2);
-        const int pushed_h = last_key_removed[1];
-        assert(abs_state->get_h() >= pushed_h);
-        if (abs_state->get_h() > pushed_h) {
-            ++num_pushed_h_lower;
-            evaluate_and_push_node(node);
-            continue;
+            // If h(s) is higher now than when s was pushed, we don't expand s, but
+            // push it into the open-queue again.
+            assert(last_key_removed.size() == 2);
+            const int pushed_h = last_key_removed[1];
+            assert(abs_state->get_h() >= pushed_h);
+            if (abs_state->get_h() > pushed_h) {
+                ++num_pushed_h_lower;
+                evaluate_and_push_node(node);
+                continue;
+            }
+            assert(abs_state->get_h() == node.get_h());
         }
-        assert(abs_state->get_h() == node.get_h());
-
-        // If we can see that h(s) is too low by looking at its successors, we
-        // refine abs_state(s) until h(s) is higher. Then we push s into the
-        // open-list again.
-        vector<const Operator *> applicable_ops;
-        g_successor_generator->generate_applicable_ops(state, applicable_ops);
 
         bool keep_refining = g_cegar_abstraction &&
                 g_cegar_abstraction->get_num_states_online() <
@@ -339,38 +336,47 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         // as faulty. Then refine the faulty abstract states here. This would save us from
         // having to generate the states multiple times.
 
-        // Generate a list of successor states with their respective operators.
-        vector<pair<const Operator *, SearchNode> > successors;
-        for (int i = 0; i < applicable_ops.size(); i++) {
-            const Operator *op = applicable_ops[i];
+        if (keep_refining) {
+            // If we can see that h(s) is too low by looking at its successors, we
+            // refine abs_state(s) until h(s) is higher. Then we push s into the
+            // open-list again.
+            vector<const Operator *> applicable_ops;
+            g_successor_generator->generate_applicable_ops(state, applicable_ops);
 
-            if ((node.get_real_g() + op->get_cost()) >= bound)
-                continue;
+            // Generate a list of successor states with their respective operators.
+            vector<pair<const Operator *, SearchNode> > successors;
+            for (int i = 0; i < applicable_ops.size(); i++) {
+                const Operator *op = applicable_ops[i];
 
-            State succ_state(state, *op);
-            search_progress.inc_generated();
-            SearchNode succ_node = search_space.get_node(succ_state);
+                if ((node.get_real_g() + op->get_cost()) >= bound)
+                    continue;
 
-            // Previously encountered dead end. Don't re-evaluate.
-            if (succ_node.is_dead_end())
-                continue;
+                State succ_state(state, *op);
+                search_progress.inc_generated();
+                SearchNode succ_node = search_space.get_node(succ_state);
 
-            successors.push_back(pair<const Operator *, SearchNode>(op, succ_node));
-        }
-        if (keep_refining && h_too_low(abs_state, node, successors)) {
-            const int old_h = abs_state->get_h();
-            g_cegar_abstraction->improve_h(state, abs_state);
-            // TODO: Avoid recalculation of abs_state.
-            abs_state = g_cegar_abstraction->get_abstract_state(state);
-            const int new_h = abs_state->get_h();
-            if (cegar_heuristic::DEBUG)
-                cout << "Improve " << old_h << " -> " << new_h << endl;
-            // If the heuristic value could be improved, do not expand the state now,
-            // but readd it to the open-list.
-            if (new_h > old_h) {
-                ++num_h_too_low;
-                evaluate_and_push_node(node);
-                continue;
+                // Previously encountered dead end. Don't re-evaluate.
+                if (succ_node.is_dead_end())
+                    continue;
+
+                successors.push_back(pair<const Operator *, SearchNode>(op, succ_node));
+            }
+
+            if (h_too_low(abs_state, node, successors)) {
+                const int old_h = abs_state->get_h();
+                g_cegar_abstraction->improve_h(state, abs_state);
+                // TODO: Avoid recalculation of abs_state.
+                abs_state = g_cegar_abstraction->get_abstract_state(state);
+                const int new_h = abs_state->get_h();
+                if (cegar_heuristic::DEBUG)
+                    cout << "Improve " << old_h << " -> " << new_h << endl;
+                // If the heuristic value could be improved, do not expand the state now,
+                // but readd it to the open-list.
+                if (new_h > old_h) {
+                    ++num_h_too_low;
+                    evaluate_and_push_node(node);
+                    continue;
+                }
             }
         }
 
