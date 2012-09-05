@@ -147,7 +147,7 @@ void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state
 void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
     int rounds = 0;
     const int old_h = abs_state->get_h();
-    while (abs_state->get_h() == old_h) {
+    while (abs_state->get_h() == old_h && may_keep_refining_online()) {
         // Loop until the heuristic value increases.
         bool solution_found = find_solution(abs_state);
         if (!solution_found) {
@@ -581,6 +581,10 @@ void Abstraction::write_dot_file(int num) {
 int Abstraction::get_num_states_online() const {
     assert(num_states_offline >= 0);
     return states.size() - num_states_offline;
+}
+
+bool Abstraction::may_keep_refining_online() const {
+    return get_num_states_online() < g_cegar_abstraction_max_states_online;
 }
 
 void Abstraction::release_memory() {

@@ -312,9 +312,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             assert(abs_state->get_h() == node.get_h());
         }
 
-        bool keep_refining = g_cegar_abstraction &&
-                g_cegar_abstraction->get_num_states_online() <
-                g_cegar_abstraction_max_states_online;
+        bool keep_refining = g_cegar_abstraction && g_cegar_abstraction->may_keep_refining_online();
 
         if (g_cegar_abstraction && !keep_refining && !g_cegar_abstraction->has_released_memory())
             g_cegar_abstraction->release_memory();
@@ -368,6 +366,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                     cout << "Improve " << old_h << " -> " << new_h << endl;
                 // If the heuristic value could be improved, do not expand the state now,
                 // but readd it to the open-list.
+                assert(new_h == 0 || new_h > old_h || !g_cegar_abstraction->may_keep_refining_online());
                 if (new_h > old_h) {
                     ++num_h_improved;
                     evaluate_and_push_node(node);

@@ -120,6 +120,7 @@ public:
     int get_num_states() const {return states.size(); }
     void remember_num_states_offline() const {num_states_offline = states.size(); }
     int get_num_states_online() const;
+    bool may_keep_refining_online() const;
 
     bool has_released_memory() const {return memory_released; }
     void release_memory();
