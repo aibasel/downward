@@ -1,5 +1,8 @@
 #include "search_progress.h"
 
+#include "utilities.h"
+#include "cegar/abstraction.h"
+
 #include <iostream>
 using namespace std;
 
@@ -89,6 +92,10 @@ void SearchProgress::print_line() const {
     if (reopened_states > 0) {
         cout << reopened_states << " reopened, ";
     }
+    if (g_cegar_abstraction) {
+        cout << g_cegar_abstraction->get_num_states() << " abstract states, ";
+    }
+    cout << get_peak_memory_in_kb() << " KB, ";
     cout << "t=" << g_timer;
 }
 
