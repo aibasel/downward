@@ -101,24 +101,6 @@ void EagerSearch::statistics() const {
 }
 
 
-bool h_too_low(cegar_heuristic::AbstractState *abs_state, const SearchNode &node,
-                         const vector<pair<const Operator *, SearchNode> > &successors) {
-    State state(node.get_state());
-    assert(abs_state->is_abstraction_of(state));
-    const int state_h = abs_state->get_h();
-    for (int i = 0; i < successors.size(); ++i) {
-        const Operator *op = successors[i].first;
-        const SearchNode &succ = successors[i].second;
-        const int succ_h = g_cegar_abstraction->get_abstract_state(succ.get_state())->get_h();
-        if (state_h >= succ_h + op->get_cost())
-            // We cannot prove that the heuristic makes an error here.
-            return false;
-    }
-    // If we land here, we know that h(state) is too low.
-    return true;
-}
-
-
 int EagerSearch::step() {
     pair<SearchNode, bool> n = fetch_next_node();
     if (!n.second) {
@@ -348,8 +330,11 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             vector<const Operator *> applicable_ops;
             g_successor_generator->generate_applicable_ops(state, applicable_ops);
 
-            // Generate a list of successor states with their respective operators.
-            vector<pair<const Operator *, SearchNode> > successors;
+            assert(abs_state->is_abstraction_of(state));
+            const int state_h = abs_state->get_h();
+
+            // Check if we can show that h(s) is too low by looking at all successors.
+            bool h_too_low = true;
             for (int i = 0; i < applicable_ops.size(); i++) {
                 const Operator *op = applicable_ops[i];
 
@@ -364,10 +349,15 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                 if (succ_node.is_dead_end())
                     continue;
 
-                successors.push_back(pair<const Operator *, SearchNode>(op, succ_node));
+                const int succ_h = g_cegar_abstraction->get_abstract_state(succ_state)->get_h();
+                if (state_h >= succ_h + op->get_cost()) {
+                    // We cannot prove that the heuristic makes an error here.
+                    h_too_low = false;
+                    break;
+                }
             }
 
-            if (h_too_low(abs_state, node, successors)) {
+            if (h_too_low) {
                 ++num_h_too_low;
                 const int old_h = abs_state->get_h();
                 g_cegar_abstraction->improve_h(state, abs_state);
