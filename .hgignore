@@ -19,3 +19,10 @@
 ^new-scripts/reports/
 ^new-scripts/preprocessed-tasks/
 ^new-scripts/exp-.*/
+^src/search/causal-graphs/
+src/search/cegar_heuristic_test
+src/search/cegar_heuristic_test.o
+src/search/gtest-all.o
+src/search/gtest_main.a
+src/search/gtest_main.o
+
