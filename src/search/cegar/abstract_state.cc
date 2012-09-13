@@ -413,6 +413,22 @@ void AbstractState::reset_neighbours() {
     op_in = 0, state_in = 0, op_out = 0, state_out = 0;
 }
 
+double AbstractState::get_rel_conc_states() const {
+    // Example domains: 0={0,1,2}, 1={0,1}
+    // Abstract state: 0={0,1}, 1={0,1} -> 2/3
+    // Abstract state: 0={0,1}, 1={1} -> 1/3
+    // Abstract state: 0={0,1,2}, 1={0,1} -> 1
+    double fraction = 1.0;
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        const int domain_size = values[var].count();
+        assert(domain_size >= 1);
+        fraction *= double(domain_size) / g_variable_domain[var];
+    }
+    assert(fraction <= 1.0);
+    assert(fraction > 0.0);
+    return fraction;
+}
+
 void AbstractState::release_memory() {
     vector<Arc>().swap(next);
     vector<Arc>().swap(prev);

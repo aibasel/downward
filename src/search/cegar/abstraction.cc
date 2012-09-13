@@ -86,6 +86,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
         if (DEBUG)
             cout << "Using new goal state: " << goal->str() << endl;
     }
+    cout << "Avg h: " << get_avg_h() << endl;
 }
 
 void Abstraction::refine(const vector<pair<int, int> > &conditions, AbstractState *state) {
@@ -518,22 +519,29 @@ void Abstraction::calculate_costs() const {
 
 void Abstraction::update_h_values() const {
     calculate_costs();
-    int unreachable_states = 0;
-    int arc_size = 0;
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
-        const int dist = state->get_distance();
-        state->set_h(dist);
-        if (dist == INFINITY)
-            ++unreachable_states;
-        const vector<Arc> &next_arcs = state->get_next();
-        arc_size += 2 * (sizeof(next_arcs) + sizeof(Arc) * sizeof(next_arcs.capacity()));
+        state->set_h(state->get_distance());
     }
-    if (false and DEBUG) {
-        cout << "Unreachable states: " << unreachable_states << endl;
-        cout << "Arc size: " << (arc_size / 1024) << " KB" << endl;
+}
+
+double Abstraction::get_avg_h() const {
+    // 2 states with h=8, 3 states with h=6   -> avg_h = 28/5
+    // 2 states with h=8, 3 states with h=inf -> avg_h = 28/5
+    update_h_values();
+    double avg_h = 0.;
+    set<AbstractState *>::iterator it;
+    for (it = states.begin(); it != states.end(); ++it) {
+        AbstractState *state = *it;
+        const int h = state->get_h();
+        assert(h >= 0);
+        if (h != INFINITY) {
+            avg_h += h * state->get_rel_conc_states();
+        }
     }
+    assert(avg_h >= 0.);
+    return avg_h;
 }
 
 AbstractState *Abstraction::get_abstract_state(const State &state) const {
@@ -599,23 +607,44 @@ void Abstraction::release_memory() {
 }
 
 void Abstraction::print_statistics() {
-    set<AbstractState *>::iterator it;
     int nexts = 0, prevs = 0, loops = 0;
+    int unreachable_states = 0;
+    int arc_size = 0;
+    set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         vector<Arc> &next = state->get_next();
+        vector<Arc> &prev = state->get_prev();
         for (int i = 0; i < next.size(); ++i) {
             if (next[i].second == state)
                 ++loops;
         }
         nexts += next.size();
-        prevs += (&state->get_prev())->size();
+        prevs += prev.size();
+
+        if (state->get_h() == INFINITY)
+            ++unreachable_states;
+        arc_size += sizeof(next) + sizeof(Arc) * next.capacity() + 8;
+        arc_size += sizeof(prev) + sizeof(Arc) * prev.capacity() + 8;
     }
     assert(nexts == prevs);
+    // Each bitset takes about 32 B, a vector has overhead at least 12 B.
+    int bitset_bytes = get_num_states() * ((g_variable_domain.size() * 32) + 12);
+
+    int facts = 0;
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        facts += g_variable_domain[var];
+    }
+    int bitset_bytes_single = get_num_states() * ((facts / 8) + 32);
+
     cout << "Arcs: " << nexts << endl;
     cout << "Self-loops: " << loops << endl;
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
+    cout << "Unreachable states: " << unreachable_states << endl;
+    cout << "Bitset size: " << bitset_bytes / 1024 << " KB" << endl;
+    cout << "Bitset size single: " << bitset_bytes_single / 1024 << " KB" << endl;
+    cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
 }
 }
