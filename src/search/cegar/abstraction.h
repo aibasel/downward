@@ -125,6 +125,7 @@ public:
     bool has_released_memory() const {return memory_released; }
     void release_memory();
     void print_statistics();
+    double get_avg_h() const;
 
     // Settings.
     void set_refine_same_states_only(bool same_only) {refine_same_states_only = same_only; }
