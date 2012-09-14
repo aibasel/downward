@@ -84,6 +84,7 @@ private:
     mutable int unmet_preconditions;
     mutable int unmet_goals;
     mutable int num_states_offline;
+    mutable double last_avg_h;
 
     bool memory_released;
 

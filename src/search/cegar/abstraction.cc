@@ -34,6 +34,7 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       unmet_preconditions(0),
       unmet_goals(0),
       num_states_offline(-1),
+      last_avg_h(0),
       memory_released(false) {
     assert(!g_operators.empty());
 
@@ -86,7 +87,13 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
         if (DEBUG)
             cout << "Using new goal state: " << goal->str() << endl;
     }
-    cout << "Avg h: " << get_avg_h() << endl;
+    double avg_h = get_avg_h();
+    //cout << avg_h << " " << last_avg_h << endl;
+    assert(avg_h >= last_avg_h - EPSILON);
+    if (avg_h > last_avg_h + PRECISION) {
+        cout << "States: " << get_num_states() << ", avg-h: " << avg_h << endl;
+        last_avg_h = avg_h;
+    }
 }
 
 void Abstraction::refine(const vector<pair<int, int> > &conditions, AbstractState *state) {
