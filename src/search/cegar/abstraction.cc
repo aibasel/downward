@@ -607,25 +607,32 @@ void Abstraction::release_memory() {
 }
 
 void Abstraction::print_statistics() {
-    int nexts = 0, prevs = 0, loops = 0;
+    int nexts = 0, prevs = 0, total_loops = 0;
     int unreachable_states = 0;
     int arc_size = 0;
+    int arc_size_redux = 0;
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         vector<Arc> &next = state->get_next();
         vector<Arc> &prev = state->get_prev();
+        int loops = 0;
         for (int i = 0; i < next.size(); ++i) {
             if (next[i].second == state)
                 ++loops;
         }
         nexts += next.size();
         prevs += prev.size();
+        total_loops += loops;
 
         if (state->get_h() == INFINITY)
             ++unreachable_states;
-        arc_size += sizeof(next) + sizeof(Arc) * next.capacity() + 8;
-        arc_size += sizeof(prev) + sizeof(Arc) * prev.capacity() + 8;
+        arc_size += sizeof(next) + sizeof(Arc) * next.size();
+        arc_size += sizeof(prev) + sizeof(Arc) * prev.size();
+        arc_size_redux += sizeof(next) + sizeof(Arc) * (next.size() - loops);
+        arc_size_redux += sizeof(prev) + sizeof(Arc) * (prev.size() - loops);
+        // sizeof(vector) = 12, sizeof(Operator*) = 4
+        arc_size_redux += 12 + 4 * loops;
     }
     assert(nexts == prevs);
     // Each bitset takes about 32 B, a vector has overhead at least 12 B.
@@ -638,7 +645,7 @@ void Abstraction::print_statistics() {
     int bitset_bytes_single = get_num_states() * ((facts / 8) + 32);
 
     cout << "Arcs: " << nexts << endl;
-    cout << "Self-loops: " << loops << endl;
+    cout << "Self-loops: " << total_loops << endl;
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
@@ -646,5 +653,6 @@ void Abstraction::print_statistics() {
     cout << "Bitset size: " << bitset_bytes / 1024 << " KB" << endl;
     cout << "Bitset size single: " << bitset_bytes_single / 1024 << " KB" << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
+    cout << "Arc size redux: " << arc_size_redux / 1024 << " KB" << endl;
 }
 }
