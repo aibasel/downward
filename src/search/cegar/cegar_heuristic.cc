@@ -19,7 +19,8 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       max_states_offline(opts.get<int>("max_states_offline")),
       h_updates(opts.get<int>("h_updates")),
-      search(opts.get<bool>("search")) {
+      search(opts.get<bool>("search")),
+      reuse_solutions(opts.get<bool>("reuse_solutions")) {
     if (max_states_offline == -1)
         max_states_offline = INFINITY;
 
@@ -30,6 +31,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
                   PickStrategy(opts.get_enum("pick_goal")));
     g_cegar_abstraction = abstraction;
     g_cegar_abstraction_max_states_online = opts.get<int>("max_states_online");
+    abstraction->set_use_astar(opts.get<bool>("use_astar"));
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -56,7 +58,7 @@ void CegarHeuristic::initialize() {
                  << num_states << "/" << max_states_offline << endl;
             logged_states += states_log_step;
         }
-        if (abstraction->can_reuse_last_solution()) {
+        if (reuse_solutions && abstraction->can_reuse_last_solution()) {
             ++saved_searches;
             success = abstraction->recheck_last_solution();
         } else {
@@ -83,13 +85,6 @@ void CegarHeuristic::initialize() {
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     cout << "Saved searches: " << saved_searches << endl;
     cout << "A* expansions: " << abstraction->get_num_expansions() << endl;
-    if (TEST_WITH_DIJKSTRA) {
-        cout << "Dijkstra expansions: "
-             << abstraction->get_num_expansions_dijkstra() << endl;
-        cout << "Ratio A*/Dijkstra: "
-             << abstraction->get_num_expansions() /
-        static_cast<float>(abstraction->get_num_expansions_dijkstra()) << endl;
-    }
     if (!success)
         assert(num_states >= max_states_offline);
     abstraction->update_h_values();
@@ -138,6 +133,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("h_updates", 3, "how often to update the abstract h-values");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
     parser.add_option<bool>("debug", false, "print debugging output");
+    parser.add_option<bool>("use_astar", true, "find abstract solution with A* or Dijkstra");
+    parser.add_option<bool>("reuse_solutions", true, "if last solution still works, do not search for a new one");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

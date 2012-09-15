@@ -28,12 +28,12 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       pick_precondition(precondition_strategy),
       pick_goal(goal_strategy),
       expansions(0),
-      expansions_dijkstra(0),
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
       num_states_offline(-1),
       last_avg_h(0),
+      use_astar(true),
       memory_released(false) {
     assert(!g_operators.empty());
 
@@ -113,6 +113,7 @@ void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
     const int old_h = abs_state->get_h();
     while (abs_state->get_h() == old_h && may_keep_refining_online()) {
         // Loop until the heuristic value increases.
+        // TODO: Reuse last solution if still valid.
         bool solution_found = find_solution(abs_state);
         if (!solution_found) {
             cout << "No solution found" << endl;
@@ -147,10 +148,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         pair<int, AbstractState *> top_pair = queue.pop();
         int &old_f = top_pair.first;
         AbstractState *state = top_pair.second;
-        if (use_h)
-            ++expansions;
-        else
-            ++expansions_dijkstra;
+        ++expansions;
 
         const int g = state->get_distance();
         assert(g < INFINITY);
@@ -200,32 +198,23 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
 bool Abstraction::find_solution(AbstractState *start) {
     if (!start)
         start = init;
-    // Dijkstra.
-    bool dijkstra_success = false;
-    int dijkstra_cost = -1;
-    if (TEST_WITH_DIJKSTRA) {
-        queue.clear();
-        reset_distances();
-        start->reset_neighbours();
-        start->set_distance(0);
-        queue.push(0, start);
-        dijkstra_success = astar_search(true, false);
-        dijkstra_cost = start->get_h();
-    }
-    // A*.
+
+    bool success = false;
     queue.clear();
     reset_distances();
     start->reset_neighbours();
     start->set_distance(0);
-    queue.push(start->get_h(), start);
-    bool astar_success = astar_search(true, true);
-    int astar_cost = start->get_h();
 
-    if (TEST_WITH_DIJKSTRA) {
-        assert(astar_success == dijkstra_success);
-        assert(astar_cost == dijkstra_cost);
+    if (use_astar) {
+        // A*.
+        queue.push(start->get_h(), start);
+        success = astar_search(true, true);
+    } else {
+        // Dijkstra.
+        queue.push(0, start);
+        success = astar_search(true, false);
     }
-    return astar_success;
+    return success;
 }
 
 void Abstraction::extract_solution(AbstractState *goal) const {
