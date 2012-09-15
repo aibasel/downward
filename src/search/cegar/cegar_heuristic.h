@@ -13,6 +13,7 @@ class CegarHeuristic : public Heuristic {
     int max_states_offline;
     const int h_updates;
     const bool search;
+    const bool reuse_solutions;
     Abstraction *abstraction;
 protected:
     virtual void initialize();

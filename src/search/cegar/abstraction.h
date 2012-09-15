@@ -17,7 +17,6 @@
 
 namespace cegar_heuristic {
 const int INFINITY = numeric_limits<int>::max();
-const bool TEST_WITH_DIJKSTRA = false;
 
 enum PickStrategy {
     FIRST,
@@ -76,12 +75,13 @@ private:
 
     // Statistics.
     mutable int expansions;
-    mutable int expansions_dijkstra;
     mutable int deviations;
     mutable int unmet_preconditions;
     mutable int unmet_goals;
     mutable int num_states_offline;
     mutable double last_avg_h;
+
+    bool use_astar;
 
     bool memory_released;
 
@@ -108,7 +108,6 @@ public:
     bool recheck_last_solution();
 
     int get_num_expansions() const {return expansions; }
-    int get_num_expansions_dijkstra() const {return expansions_dijkstra; }
 
     void update_h_values() const;
 
@@ -121,6 +120,8 @@ public:
     void release_memory();
     void print_statistics();
     double get_avg_h() const;
+
+    void set_use_astar(bool astar) {use_astar = astar; }
 
     // Testing.
     void write_dot_file(int num);
