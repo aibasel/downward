@@ -92,9 +92,6 @@ public:
 
     void refine(AbstractState *state, int var, int value);
     void refine(const vector<Condition> &conditions, AbstractState *state);
-    // Refine for a specific operator.
-    void refine(AbstractState *abs_state, AbstractState *abs_succ_state,
-                const State &state, const State &succ_state, const Operator &op);
     void improve_h(const State &state, AbstractState *abs_state);
 
     AbstractState *get_abstract_state(const State &state) const;
