@@ -87,10 +87,10 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
             cout << "Using new goal state: " << goal->str() << endl;
     }
     double avg_h = get_avg_h();
-    //cout << avg_h << " " << last_avg_h << endl;
     assert(avg_h >= last_avg_h - EPSILON);
     if (avg_h > last_avg_h + PRECISION) {
-        cout << "States: " << get_num_states() << ", avg-h: " << avg_h << endl;
+        cout << "States: " << get_num_states() << ", avg-h: " << avg_h
+             << ", init-h: " << init->get_h() << endl;
         last_avg_h = avg_h;
     }
 }
@@ -615,5 +615,6 @@ void Abstraction::print_statistics() {
     cout << "Bitset size single: " << bitset_bytes_single / 1024 << " KB" << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
     cout << "Arc size redux: " << arc_size_redux / 1024 << " KB" << endl;
+    cout << "Init h: " << init->get_h() << endl;
 }
 }
