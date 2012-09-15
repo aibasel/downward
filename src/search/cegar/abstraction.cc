@@ -87,7 +87,9 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
             cout << "Using new goal state: " << goal->str() << endl;
     }
     double avg_h = get_avg_h();
-    assert(avg_h >= last_avg_h - EPSILON);
+    // We cannot assert(avg_h >= last_avg_h), because due to dead-end states,
+    // which we don't count for the average h-value, the average h-value may
+    // have decreased.
     if (avg_h > last_avg_h + PRECISION) {
         cout << "States: " << get_num_states() << ", avg-h: " << avg_h
              << ", init-h: " << init->get_h() << endl;
