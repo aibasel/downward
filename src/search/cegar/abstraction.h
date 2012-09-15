@@ -86,9 +86,9 @@ private:
     bool memory_released;
 
 public:
-    explicit Abstraction(PickStrategy deviation_strategy = FIRST,
-                         PickStrategy precondition_strategy = FIRST,
-                         PickStrategy goal_strategy = FIRST);
+    explicit Abstraction(PickStrategy deviation_strategy = RANDOM,
+                         PickStrategy precondition_strategy = RANDOM,
+                         PickStrategy goal_strategy = RANDOM);
 
     void refine(AbstractState *state, int var, int value);
     void refine(const vector<Condition> &conditions, AbstractState *state);

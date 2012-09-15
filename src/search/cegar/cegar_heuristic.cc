@@ -129,11 +129,11 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("BREAK");
     pick_strategies.push_back("KEEP");
     pick_strategies.push_back("ALL");
-    parser.add_enum_option("pick_deviation", pick_strategies, "FIRST",
+    parser.add_enum_option("pick_deviation", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied deviation precondition");
-    parser.add_enum_option("pick_precondition", pick_strategies, "FIRST",
+    parser.add_enum_option("pick_precondition", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied precondition");
-    parser.add_enum_option("pick_goal", pick_strategies, "FIRST",
+    parser.add_enum_option("pick_goal", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied goal");
     parser.add_option<int>("h_updates", 3, "how often to update the abstract h-values");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
