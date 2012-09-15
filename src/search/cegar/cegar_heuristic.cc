@@ -30,7 +30,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
                   PickStrategy(opts.get_enum("pick_goal")));
     g_cegar_abstraction = abstraction;
     g_cegar_abstraction_max_states_online = opts.get<int>("max_states_online");
-    abstraction->set_refine_same_states_only(opts.get<bool>("same_only"));
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -138,9 +137,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
                            "how to pick the next unsatisfied goal");
     parser.add_option<int>("h_updates", 3, "how often to update the abstract h-values");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
-    parser.add_option<bool>("same_only", true,
-            "online refinement: if the heuristic errs between two concrete states, "
-            "only refine if both belong to the same abstract state");
     parser.add_option<bool>("debug", false, "print debugging output");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

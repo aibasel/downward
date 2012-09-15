@@ -27,7 +27,6 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       pick_deviation(deviation_strategy),
       pick_precondition(precondition_strategy),
       pick_goal(goal_strategy),
-      refine_same_states_only(true),
       expansions(0),
       expansions_dijkstra(0),
       deviations(0),
@@ -109,8 +108,6 @@ void Abstraction::refine(const vector<pair<int, int> > &conditions, AbstractStat
 
 void Abstraction::refine(AbstractState *abs_state, AbstractState *abs_succ_state,
                          const State &state, const State &succ_state, const Operator &op) {
-    if (refine_same_states_only)
-        assert(abs_state == abs_succ_state);
     assert(abs_state->is_abstraction_of(state));
     assert(abs_succ_state->is_abstraction_of(succ_state));
     // Search for the fact for which we want to refine the state abs for op.
