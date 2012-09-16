@@ -29,7 +29,8 @@ private:
     std::vector<Domain> values;
 
     std::vector<Arc> next, prev;
-    void remove_arc(std::vector<Arc> *arcs, Operator *op, AbstractState *other);
+    std::vector<Operator *> loops;
+    void remove_arc(std::vector<Arc> &arcs, Operator *op, AbstractState *other);
 
     // Incumbent distance to first expanded node in backwards and forward search.
     int distance;
@@ -61,10 +62,12 @@ public:
     AbstractState *refine(int var, int value, AbstractState *v1, AbstractState *v2);
     bool refinement_breaks_shortest_path(int var, int value) const;
     void add_arc(Operator *op, AbstractState *other);
+    void add_loop(Operator *op);
     void remove_next_arc(Operator *op, AbstractState *other);
     void remove_prev_arc(Operator *op, AbstractState *other);
     bool check_arc(Operator *op, AbstractState *other);
     bool check_and_add_arc(Operator *op, AbstractState *other);
+    bool check_and_add_loop(Operator *op);
     void get_unmet_conditions(const AbstractState &desired, vector<pair<int, int> > *conditions) const;
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
@@ -87,6 +90,7 @@ public:
     std::vector<Arc> &get_next() {return next; }
     std::string get_next_as_string() const;
     std::vector<Arc> &get_prev() {return prev; }
+    std::vector<Operator *> &get_loops() {return loops; }
 
     // We only have a valid abstract state if it was not refined.
     bool valid() const;

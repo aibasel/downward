@@ -170,46 +170,45 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     for (int i = 0; i < prev.size(); ++i) {
         Operator *op = prev[i].first;
         AbstractState *u = prev[i].second;
-        if (u != this) {
-            u->remove_next_arc(op, this);
-            // If the first check returns false, the second arc has to be added.
-            if (u->check_and_add_arc(op, v1)) {
-                bool added = u->check_and_add_arc(op, v2);
-                if (op == op_in && u == state_in) {
-                    u_v1 = true;
-                    u_v2 |= added;
-                }
-            } else {
-                u->add_arc(op, v2);
-                u_v2 |= (op == op_in && u == state_in);
+        assert(u != this);
+        u->remove_next_arc(op, this);
+        // If the first check returns false, the second arc has to be added.
+        if (u->check_and_add_arc(op, v1)) {
+            bool added = u->check_and_add_arc(op, v2);
+            if (op == op_in && u == state_in) {
+                u_v1 = true;
+                u_v2 |= added;
             }
+        } else {
+            u->add_arc(op, v2);
+            u_v2 |= (op == op_in && u == state_in);
         }
     }
     for (int i = 0; i < next.size(); ++i) {
         Operator *op = next[i].first;
         AbstractState *w = next[i].second;
-        if (w == this) {
-            // Handle former self-loops. The same loops also were in prev,
-            // but they only have to be checked once.
-            v1->check_and_add_arc(op, v2);
-            v2->check_and_add_arc(op, v1);
-            v1->check_and_add_arc(op, v1);
-            v2->check_and_add_arc(op, v2);
-        } else {
-            w->remove_prev_arc(op, this);
-            // If the first check returns false, the second arc has to be added.
-            if (v1->check_and_add_arc(op, w)) {
-                bool added = v2->check_and_add_arc(op, w);
-                if (op == op_out && w == state_out) {
-                    v1_w = true;
-                    v2_w |= added;
-                }
-            } else {
-                v2->add_arc(op, w);
-                v2_w |= (op == op_out && w == state_out);
+        assert(w != this);
+        w->remove_prev_arc(op, this);
+        // If the first check returns false, the second arc has to be added.
+        if (v1->check_and_add_arc(op, w)) {
+            bool added = v2->check_and_add_arc(op, w);
+            if (op == op_out && w == state_out) {
+                v1_w = true;
+                v2_w |= added;
             }
+        } else {
+            v2->add_arc(op, w);
+            v2_w |= (op == op_out && w == state_out);
         }
     }
+    for (int i = 0; i < loops.size(); ++i) {
+        Operator *op = loops[i];
+        v1->check_and_add_arc(op, v2);
+        v2->check_and_add_arc(op, v1);
+        v1->check_and_add_loop(op);
+        v2->check_and_add_loop(op);
+    }
+
     // Save the refinement hierarchy.
     refined_var = var;
     refined_value = value;
@@ -281,30 +280,34 @@ bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
+    assert(other != this);
     next.push_back(Arc(op, other));
     other->prev.push_back(Arc(op, this));
 }
 
-void AbstractState::remove_arc(vector<Arc> *arcs, Operator *op, AbstractState *other) {
-    for (int i = 0; i < arcs->size(); ++i) {
-        Operator *current_op = (*arcs)[i].first;
-        AbstractState *current_state = (*arcs)[i].second;
+void AbstractState::add_loop(Operator *op) {
+    loops.push_back(op);
+}
+
+void AbstractState::remove_arc(vector<Arc> &arcs, Operator *op, AbstractState *other) {
+    for (int i = 0; i < arcs.size(); ++i) {
+        Operator *current_op = arcs[i].first;
+        AbstractState *current_state = arcs[i].second;
         if ((current_op == op) && (current_state == other)) {
-            arcs->erase(arcs->begin() + i);
+            arcs.erase(arcs.begin() + i);
             return;
         }
     }
-    // Do not try to remove an operator that is not there.
     cout << "REMOVE: " << str() << " " << op->get_name() << " " << other->str() << endl;
-    assert(false);
+    assert(!"Trying to remove an arc that is not there.");
 }
 
 void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
-    remove_arc(&next, op, other);
+    remove_arc(next, op, other);
 }
 
 void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
-    remove_arc(&prev, op, other);
+    remove_arc(prev, op, other);
 }
 
 bool AbstractState::check_arc(Operator *op, AbstractState *other) {
@@ -351,6 +354,14 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
 bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
     if (check_arc(op, other)) {
         add_arc(op, other);
+        return true;
+    }
+    return false;
+}
+
+bool AbstractState::check_and_add_loop(Operator *op) {
+    if (check_arc(op, this)) {
+        add_loop(op);
         return true;
     }
     return false;
@@ -432,6 +443,7 @@ double AbstractState::get_rel_conc_states() const {
 void AbstractState::release_memory() {
     vector<Arc>().swap(next);
     vector<Arc>().swap(prev);
+    vector<Operator *>().swap(loops);
     vector<Domain>().swap(values);
 }
 }
