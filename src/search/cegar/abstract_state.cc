@@ -79,14 +79,14 @@ string AbstractState::str() const {
     return oss.str();
 }
 
-string AbstractState::get_next_as_string() const {
+string AbstractState::get_next_as_string() {
     // Format: [(op.name,state.str),...]
     ostringstream oss;
     string sep = "";
     oss << "[";
-    for (int i = 0; i < next.size(); ++i) {
-        Operator *op = next[i].first;
-        AbstractState *abs = next[i].second;
+    for (Arcs::iterator it = next.begin(); it != next.end(); ++it) {
+        Operator *op = it->first;
+        AbstractState *abs = it->second;
         oss << sep << "(" << op->get_name() << "," << abs->str() << ")";
         sep = ",";
     }
@@ -167,9 +167,10 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     // Before: u --> this=v --> w
     //  ==>
     // After:  v is split into v1 and v2
-    for (int i = 0; i < prev.size(); ++i) {
-        Operator *op = prev[i].first;
-        AbstractState *u = prev[i].second;
+    Arcs::iterator it;
+    for (it = prev.begin(); it != prev.end(); ++it) {
+        Operator *op = it->first;
+        AbstractState *u = it->second;
         assert(u != this);
         u->remove_next_arc(op, this);
         // If the first check returns false, the second arc has to be added.
@@ -184,9 +185,9 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
             u_v2 |= (op == op_in && u == state_in);
         }
     }
-    for (int i = 0; i < next.size(); ++i) {
-        Operator *op = next[i].first;
-        AbstractState *w = next[i].second;
+    for (it = next.begin(); it != next.end(); ++it) {
+        Operator *op = it->first;
+        AbstractState *w = it->second;
         assert(w != this);
         w->remove_prev_arc(op, this);
         // If the first check returns false, the second arc has to be added.
@@ -281,25 +282,17 @@ bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
     assert(other != this);
-    next.push_back(Arc(op, other));
-    other->prev.push_back(Arc(op, this));
+    next.insert(Arc(op, other));
+    other->prev.insert(Arc(op, this));
 }
 
 void AbstractState::add_loop(Operator *op) {
     loops.push_back(op);
 }
 
-void AbstractState::remove_arc(vector<Arc> &arcs, Operator *op, AbstractState *other) {
-    for (int i = 0; i < arcs.size(); ++i) {
-        Operator *current_op = arcs[i].first;
-        AbstractState *current_state = arcs[i].second;
-        if ((current_op == op) && (current_state == other)) {
-            arcs.erase(arcs.begin() + i);
-            return;
-        }
-    }
-    cout << "REMOVE: " << str() << " " << op->get_name() << " " << other->str() << endl;
-    assert(!"Trying to remove an arc that is not there.");
+void AbstractState::remove_arc(Arcs &arcs, Operator *op, AbstractState *other) {
+    int num_removed = arcs.erase(Arc(op, other));
+    assert(num_removed == 1);
 }
 
 void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
@@ -441,8 +434,8 @@ double AbstractState::get_rel_conc_states() const {
 }
 
 void AbstractState::release_memory() {
-    vector<Arc>().swap(next);
-    vector<Arc>().swap(prev);
+    Arcs().swap(next);
+    Arcs().swap(prev);
     vector<Operator *>().swap(loops);
     vector<Domain>().swap(values);
 }
