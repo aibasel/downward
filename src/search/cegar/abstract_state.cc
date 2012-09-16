@@ -282,8 +282,8 @@ bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
     assert(other != this);
-    next.insert(Arc(op, other));
-    other->prev.insert(Arc(op, this));
+    next.push_back(Arc(op, other));
+    other->prev.push_back(Arc(op, this));
 }
 
 void AbstractState::add_loop(Operator *op) {
@@ -291,8 +291,8 @@ void AbstractState::add_loop(Operator *op) {
 }
 
 void AbstractState::remove_arc(Arcs &arcs, Operator *op, AbstractState *other) {
-    int num_removed = arcs.erase(Arc(op, other));
-    assert(num_removed == 1);
+    // This will print an error if we try to remove an arc that is not there.
+    arcs.erase(find(arcs.begin(), arcs.end(), Arc(op, other)));
 }
 
 void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
