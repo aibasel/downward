@@ -168,11 +168,10 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             extract_solution(goal);
             return true;
         }
-        vector<Arc> &successors = (forward) ? state->get_next() : state->get_prev();
-        for (vector<Arc>::iterator it = successors.begin(); it != successors.end(); ++it) {
-            Arc &arc = *it;
-            Operator *op = arc.first;
-            AbstractState *successor = arc.second;
+        Arcs &successors = (forward) ? state->get_next() : state->get_prev();
+        for (Arcs::iterator it = successors.begin(); it != successors.end(); ++it) {
+            Operator *op = it->first;
+            AbstractState *successor = it->second;
 
             const int succ_g = g + op->get_cost();
             // TODO: In case of equal f-values, prefer states with higher g?
@@ -521,10 +520,10 @@ void Abstraction::write_dot_file(int num) {
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *current_state = *it;
-        for (int j = 0; j < current_state->get_next().size(); ++j) {
-            Arc arc = current_state->get_next()[j];
-            AbstractState *next_state = arc.second;
-            Operator *op = arc.first;
+        Arcs &next = current_state->get_next();
+        for (Arcs::iterator it = next.begin(); it != next.end(); ++it) {
+            Operator *op = it->first;
+            AbstractState *next_state = it->second;
             dotfile << current_state->str() << " -> " << next_state->str()
                     << " [label=\"" << op->get_name() << "\"];" << endl;
         }
@@ -572,25 +571,16 @@ void Abstraction::print_statistics() {
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
-        vector<Arc> &next = state->get_next();
-        vector<Arc> &prev = state->get_prev();
-        int loops = 0;
-        for (int i = 0; i < next.size(); ++i) {
-            if (next[i].second == state)
-                ++loops;
-        }
-        nexts += next.size();
-        prevs += prev.size();
-        total_loops += loops;
-
         if (state->get_h() == INFINITY)
             ++unreachable_states;
+        Arcs &next = state->get_next();
+        Arcs &prev = state->get_prev();
+        Loops &loops = state->get_loops();
+        nexts += next.size();
+        prevs += prev.size();
         arc_size += sizeof(next) + sizeof(Arc) * next.size();
         arc_size += sizeof(prev) + sizeof(Arc) * prev.size();
-        arc_size_redux += sizeof(next) + sizeof(Arc) * (next.size() - loops);
-        arc_size_redux += sizeof(prev) + sizeof(Arc) * (prev.size() - loops);
-        // sizeof(vector) = 12, sizeof(Operator*) = 4
-        arc_size_redux += 12 + 4 * loops;
+        arc_size += sizeof(loops) + sizeof(Operator*) * loops.size();
     }
     assert(nexts == prevs);
     // Each bitset takes about 32 B, a vector has overhead at least 12 B.

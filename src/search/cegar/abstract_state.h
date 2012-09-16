@@ -16,6 +16,8 @@
 namespace cegar_heuristic {
 class AbstractState;
 typedef pair<Operator *, AbstractState *> Arc;
+typedef std::set<Arc> Arcs;
+typedef std::vector<Operator *> Loops;
 
 class AbstractState {
 private:
@@ -28,9 +30,9 @@ private:
     // values[1] == {2, 3} -> var1 has two possible values.
     std::vector<Domain> values;
 
-    std::vector<Arc> next, prev;
+    Arcs next, prev;
     std::vector<Operator *> loops;
-    void remove_arc(std::vector<Arc> &arcs, Operator *op, AbstractState *other);
+    void remove_arc(Arcs &arcs, Operator *op, AbstractState *other);
 
     // Incumbent distance to first expanded node in backwards and forward search.
     int distance;
@@ -87,9 +89,9 @@ public:
     AbstractState *get_state_out() const {return state_out; }
     void reset_neighbours();
 
-    std::vector<Arc> &get_next() {return next; }
-    std::string get_next_as_string() const;
-    std::vector<Arc> &get_prev() {return prev; }
+    Arcs &get_next() {return next; }
+    std::string get_next_as_string();
+    Arcs &get_prev() {return prev; }
     std::vector<Operator *> &get_loops() {return loops; }
 
     // We only have a valid abstract state if it was not refined.
