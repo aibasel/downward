@@ -16,7 +16,7 @@
 namespace cegar_heuristic {
 class AbstractState;
 typedef pair<Operator *, AbstractState *> Arc;
-typedef std::set<Arc> Arcs;
+typedef std::vector<Arc> Arcs;
 typedef std::vector<Operator *> Loops;
 
 class AbstractState {
