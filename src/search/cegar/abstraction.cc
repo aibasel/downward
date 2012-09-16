@@ -39,7 +39,7 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
 
     single = new AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
-        single->add_arc(&g_operators[i], single);
+        single->add_loop(&g_operators[i]);
     }
     init = single;
     goal = single;
@@ -526,6 +526,12 @@ void Abstraction::write_dot_file(int num) {
             AbstractState *next_state = arc.second;
             Operator *op = arc.first;
             dotfile << current_state->str() << " -> " << next_state->str()
+                    << " [label=\"" << op->get_name() << "\"];" << endl;
+        }
+        vector<Operator *> &loops = current_state->get_loops();
+        for (vector<Operator *>::iterator it = loops.begin(); it != loops.end(); ++it) {
+            Operator *op = *it;
+            dotfile << current_state->str() << " -> " << current_state->str()
                     << " [label=\"" << op->get_name() << "\"];" << endl;
         }
         if (current_state == init) {
