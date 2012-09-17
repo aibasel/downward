@@ -112,7 +112,7 @@ TEST(CegarTest, refine_var0) {
     Operator op1 = make_op1();
 
     AbstractState a;
-    a.add_arc(&op1, &a);
+    a.add_loop(&op1);
     AbstractState *a1 = new AbstractState();
     AbstractState *a2 = new AbstractState();
     a.refine(0, 1, a1, a2);
@@ -144,7 +144,7 @@ TEST(CegarTest, refine_var1) {
     Operator op1 = make_op1();
 
     AbstractState a;
-    a.add_arc(&op1, &a);
+    a.add_loop(&op1);
     AbstractState *a1 = new AbstractState();
     AbstractState *a2 = new AbstractState();
     a.refine(1, 1, a1, a2);
@@ -497,7 +497,7 @@ TEST(CegarTest, dijkstra_search) {
     AbstractState *found_goal = abs.init->get_state_out();
     EXPECT_EQ("<1={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_state_out());
-    EXPECT_EQ(3, abs.expansions_dijkstra);
+    EXPECT_EQ(3, abs.expansions);
 }
 
 TEST(CegarTest, partial_ordering1) {
