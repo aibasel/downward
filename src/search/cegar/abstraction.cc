@@ -567,7 +567,6 @@ void Abstraction::print_statistics() {
     int nexts = 0, prevs = 0, total_loops = 0;
     int unreachable_states = 0;
     int arc_size = 0;
-    int arc_size_redux = 0;
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
@@ -601,7 +600,6 @@ void Abstraction::print_statistics() {
     cout << "Bitset size: " << bitset_bytes / 1024 << " KB" << endl;
     cout << "Bitset size single: " << bitset_bytes_single / 1024 << " KB" << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
-    cout << "Arc size redux: " << arc_size_redux / 1024 << " KB" << endl;
     cout << "Init h: " << init->get_h() << endl;
 }
 }
