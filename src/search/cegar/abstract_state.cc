@@ -79,21 +79,6 @@ string AbstractState::str() const {
     return oss.str();
 }
 
-string AbstractState::get_next_as_string() {
-    // Format: [(op.name,state.str),...]
-    ostringstream oss;
-    string sep = "";
-    oss << "[";
-    for (Arcs::iterator it = next.begin(); it != next.end(); ++it) {
-        Operator *op = it->first;
-        AbstractState *abs = it->second;
-        oss << sep << "(" << op->get_name() << "," << abs->str() << ")";
-        sep = ",";
-    }
-    oss << "]";
-    return oss.str();
-}
-
 const Domain &AbstractState::get_values(int var) const {
     return values[var];
 }
