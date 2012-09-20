@@ -577,9 +577,10 @@ void Abstraction::print_statistics() {
         Loops &loops = state->get_loops();
         nexts += next.size();
         prevs += prev.size();
-        arc_size += sizeof(next) + sizeof(Arc) * next.size();
-        arc_size += sizeof(prev) + sizeof(Arc) * prev.size();
-        arc_size += sizeof(loops) + sizeof(Operator*) * loops.size();
+        total_loops += loops.size();
+        arc_size += sizeof(next) + sizeof(Arc) * next.capacity() +
+                    sizeof(prev) + sizeof(Arc) * prev.capacity() +
+                    sizeof(loops) + sizeof(Operator*) * loops.capacity();
     }
     assert(nexts == prevs);
     // Each bitset takes about 32 B, a vector has overhead at least 12 B.
