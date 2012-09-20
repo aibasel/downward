@@ -90,7 +90,6 @@ public:
     void reset_neighbours();
 
     Arcs &get_next() {return next; }
-    std::string get_next_as_string();
     Arcs &get_prev() {return prev; }
     Loops &get_loops() {return loops; }
 
