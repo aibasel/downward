@@ -442,7 +442,7 @@ double AbstractState::get_rel_conc_states() const {
 void AbstractState::release_memory() {
     Arcs().swap(next);
     Arcs().swap(prev);
-    vector<Operator *>().swap(loops);
+    Loops().swap(loops);
     vector<Domain>().swap(values);
 }
 }

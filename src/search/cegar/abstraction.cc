@@ -527,8 +527,8 @@ void Abstraction::write_dot_file(int num) {
             dotfile << current_state->str() << " -> " << next_state->str()
                     << " [label=\"" << op->get_name() << "\"];" << endl;
         }
-        vector<Operator *> &loops = current_state->get_loops();
-        for (vector<Operator *>::iterator it = loops.begin(); it != loops.end(); ++it) {
+        Loops &loops = current_state->get_loops();
+        for (Loops::iterator it = loops.begin(); it != loops.end(); ++it) {
             Operator *op = *it;
             dotfile << current_state->str() << " -> " << current_state->str()
                     << " [label=\"" << op->get_name() << "\"];" << endl;

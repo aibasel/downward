@@ -31,7 +31,7 @@ private:
     std::vector<Domain> values;
 
     Arcs next, prev;
-    std::vector<Operator *> loops;
+    Loops loops;
     void remove_arc(Arcs &arcs, Operator *op, AbstractState *other);
 
     // Incumbent distance to first expanded node in backwards and forward search.
@@ -92,7 +92,7 @@ public:
     Arcs &get_next() {return next; }
     std::string get_next_as_string();
     Arcs &get_prev() {return prev; }
-    std::vector<Operator *> &get_loops() {return loops; }
+    Loops &get_loops() {return loops; }
 
     // We only have a valid abstract state if it was not refined.
     bool valid() const;
