@@ -266,14 +266,13 @@ bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
+    // Experiments showed that keeping the arcs sorted for faster removal
+    // increases the overall processing time. In 30 domains it made no
+    // difference for 10 domains, 17 domains preferred unsorted arcs and in
+    // 3 domains performance was better with sorted arcs.
     assert(other != this);
-    Arc next_arc(op, other);
-    Arc prev_arc(op, this);
-    Arcs::iterator it;
-    it = upper_bound(next.begin(), next.end(), next_arc);
-    next.insert(it, next_arc);
-    it = upper_bound(other->prev.begin(), other->prev.end(), prev_arc);
-    other->prev.insert(it, prev_arc);
+    next.push_back(Arc(op, other));
+    other->prev.push_back(Arc(op, this));
 }
 
 void AbstractState::add_loop(Operator *op) {
@@ -282,7 +281,7 @@ void AbstractState::add_loop(Operator *op) {
 
 void AbstractState::remove_arc(Arcs &arcs, Operator *op, AbstractState *other) {
     // This will print an error if we try to remove an arc that is not there.
-    arcs.erase(lower_bound(arcs.begin(), arcs.end(), Arc(op, other)));
+    arcs.erase(find(arcs.begin(), arcs.end(), Arc(op, other)));
 }
 
 void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
