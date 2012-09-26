@@ -22,7 +22,9 @@ set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 # Target-agnostic build flags, taken from the legacy downward Makefile.
 
-set(CMAKE_CXX_FLAGS "-m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror")
+set(STATE_VAR_BYTES 1)
+
+set(CMAKE_CXX_FLAGS "-Iext -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=${STATE_VAR_BYTES}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -m32")
 
 # Default to Release build, unless specified otherwise
@@ -53,19 +55,19 @@ endif(LOWER_CASE_BUILD_TYPE STREQUAL "release" OR LOWER_CASE_BUILD_TYPE STREQUAL
 
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-    
+
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -fomit-frame-pointer")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O3")
-    
+
     if(STATIC_BUILD)
         #message("-- Building statically linked executable")
         set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -static -static-libgcc")
     endif(STATIC_BUILD)
-    
+
 else(CMAKE_COMPILER_IS_GNUCXX)
-    
+
     # Sensible defaults for other compilers
-    
+
     message(WARNING "Not using GNU compiler - currently untested")
 
     set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 -DNDEBUG -fomit-frame-pointer")
@@ -75,7 +77,7 @@ else(CMAKE_COMPILER_IS_GNUCXX)
         #message("-- Building statically linked executable")
         set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -static")
     endif(STATIC_BUILD)
-    
+
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
 # Set the desired level of debugging for the Debug build, and to link in the rt library
@@ -103,44 +105,44 @@ option(USE_LP "Whether to enable code that requires an LP solver" FALSE)
 option(USE_LP_INTERNAL "Whether to compile, at cmake time, the Osi installation shipped with the sources, and use this rather than the system libraries.  If setting this to false, make sure you have static versions of the libraries available if you intend to use the resulting binaries in a scenario where that matters." TRUE)
 
 if(USE_LP)
-    
+
     if(USE_LP_INTERNAL)
-        
+
         # If we get this far, then the LP stuff has been enabled AND we need to compile the shipped version of Osi
         # This is handled by a makefile sitting in the lp sub-directory, which calls the setup script if
         # lp/coin doesn't exist (the path into which the compiled Osi release is installed)
-    
+
         exec_program(make "${CMAKE_CURRENT_SOURCE_DIR}/lp")
-    
+
         # The cmake modules for finding the Osi components look in LP_PREFIX_PATH before the system
         # defaults.  Putting this here means the same modules can be used, irrespective of whether
         # the system or supplied version of Osi is used.
-        
+
         set(LP_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lp/coin")
 
         mark_as_advanced(LP_PREFIX_PATH)
-        
+
         # Each of these is defined as a file called FindFoo.cmake
-    
+
         find_package(OSI REQUIRED)
         find_package(Clp REQUIRED)
         find_package(CoinUtils REQUIRED)
 
     else(USE_LP_INTERNAL)
-        
+
         find_package(OSI REQUIRED)
         find_package(Clp REQUIRED)
         find_package(CoinUtils REQUIRED)
-        
+
     endif(USE_LP_INTERNAL)
-        
-    
+
+
 
     # We define here that the appropriate include paths are used.  Note, however, that we do not need
     # to define library paths as e.g. ${CLP_LIBRARIES} contains an absolute path to a CLP library.
-    
+
     include_directories(${OSI_INCLUDES}/coin ${CLP_INCLUDES}/coin ${COINUTILS_INCLUDES}/coin)
-    
+
 endif(USE_LP)
 
 
@@ -150,39 +152,42 @@ endif(USE_LP)
 ## it to the following list
 
 set(search_main_SRCS
-          axioms.cc 
-          best_first_search.cc 
-          causal_graph.cc 
-          closed_list.cc 
-          domain_transition_graph.cc 
-          enforced_hill_climbing_search.cc 
-          exact_timer.cc 
-          g_evaluator.cc 
-          general_eager_best_first_search.cc 
-          general_lazy_best_first_search.cc 
-          globals.cc 
-          heuristic.cc 
-          iterated_search.cc 
-          operator.cc 
-          option_parser.cc 
-          plugin.cc 
-          pref_evaluator.cc 
-          relaxation_heuristic.cc 
-          search_engine.cc 
-          search_node_info.cc 
-          search_progress.cc 
-          search_space.cc 
-          state.cc 
-          successor_generator.cc 
-          sum_evaluator.cc 
-          timer.cc 
-          utilities.cc 
-          weighted_evaluator.cc           
-          open_lists/alternation_open_list.cc 
-          open_lists/open_list_buckets.cc 
-          open_lists/pareto_open_list.cc 
-          open_lists/standard_scalar_open_list.cc 
-          open_lists/tiebreaking_open_list.cc          
+          axioms.cc
+          causal_graph.cc
+          closed_list.cc
+          combining_evaluator.cc
+          domain_transition_graph.cc
+          eager_search.cc
+          enforced_hill_climbing_search.cc
+          exact_timer.cc
+          g_evaluator.cc
+          globals.cc
+          heuristic.cc
+          ipc_max_heuristic.cc
+          iterated_search.cc
+          lazy_search.cc
+          max_evaluator.cc
+          operator.cc
+          operator_cost.cc
+          option_parser.cc
+          pref_evaluator.cc
+          relaxation_heuristic.cc
+          rng.cc
+          search_engine.cc
+          search_node_info.cc
+          search_progress.cc
+          search_space.cc
+          state.cc
+          successor_generator.cc
+          sum_evaluator.cc
+          timer.cc
+          utilities.cc
+          weighted_evaluator.cc
+          open_lists/alternation_open_list.cc
+          open_lists/open_list_buckets.cc
+          open_lists/pareto_open_list.cc
+          open_lists/standard_scalar_open_list.cc
+          open_lists/tiebreaking_open_list.cc
 )
 
 
@@ -255,15 +260,20 @@ endif(PLUGIN_MAX_HEURISTIC)
 
 option(PLUGIN_MAS_HEURISTIC "The Merge-and-Shrink heuristic" TRUE)
 if(PLUGIN_MAS_HEURISTIC)
-    
+
     set(search_plugin_SRCS
         ${search_plugin_SRCS}
-        mas_heuristic.cc
-        abstraction.cc
-        operator_registry.cc
-        variable_order_finder.cc
+        merge_and_shrink/abstraction.cc
+        merge_and_shrink/label_reducer.cc
+        merge_and_shrink/merge_and_shrink_heuristic.cc
+        merge_and_shrink/shrink_bisimulation.cc
+        merge_and_shrink/shrink_bucket_based.cc
+        merge_and_shrink/shrink_fh.cc
+        merge_and_shrink/shrink_random.cc
+        merge_and_shrink/shrink_strategy.cc
+        merge_and_shrink/variable_order_finder.cc
     )
-    
+
 endif(PLUGIN_MAS_HEURISTIC)
 
 
@@ -273,15 +283,17 @@ if(PLUGIN_LANDMARKS)
     set(search_plugin_SRCS
         ${search_plugin_SRCS}
         landmarks/exploration.cc
+        landmarks/h_m_landmarks.cc
         landmarks/lama_ff_synergy.cc
         landmarks/landmark_cost_assignment.cc
         landmarks/landmark_count_heuristic.cc
         landmarks/landmark_status_manager.cc
-        landmarks/landmarks_graph.cc
-        landmarks/landmarks_graph_rpg_exhaust.cc
-        landmarks/landmarks_graph_rpg_sasp.cc
-        landmarks/landmarks_graph_rpg_search.cc
-        landmarks/landmarks_graph_zhu_givan.cc
+        landmarks/landmark_graph_merged.cc
+        landmarks/landmark_graph.cc
+        landmarks/landmark_factory.cc
+        landmarks/landmark_factory_rpg_exhaust.cc
+        landmarks/landmark_factory_rpg_sasp.cc
+        landmarks/landmark_factory_zhu_givan.cc
         landmarks/util.cc
     )
 
@@ -309,6 +321,24 @@ if(PLUGIN_LEARNING)
 endif(PLUGIN_LEARNING)
 
 
+option(PLUGIN_PDBS "Plugin containing the code for PDBs" TRUE)
+if(PLUGIN_PDBS)
+
+    set(search_plugin_SRCS
+        ${search_plugin_SRCS}
+        pdbs/canonical_pdbs_heuristic.cc
+        pdbs/match_tree.cc
+        pdbs/max_cliques.cc
+        pdbs/pattern_generation_edelkamp.cc
+        pdbs/pattern_generation_haslum.cc
+        pdbs/pdb_heuristic.cc
+        pdbs/util.cc
+        pdbs/zero_one_pdbs_heuristic.cc
+    )
+
+endif(PLUGIN_PDBS)
+
+
 ## == Defining the executable target ==
 
 ## After having defined the variables containing the names of the source files, this bit is remarkably non-eventful
@@ -323,15 +353,15 @@ add_executable(search
 ## ... until we consider the additional definitions and libraries needed in the LP case
 
 if(NOT USE_LP)
-    target_link_libraries(search        
+    target_link_libraries(search
         ${RT_LIBRARY}
     )
 
 else(NOT USE_LP)
 
     set_target_properties(search PROPERTIES COMPILE_FLAGS "-D USE_LP -D COIN_USE_CLP")
-    
-    target_link_libraries(search        
+
+    target_link_libraries(search
         ${RT_LIBRARY}
         ${OSICLP_LIBRARIES} ${CLP_LIBRARIES}  ${COINUTILS_LIBRARIES} ${OSI_LIBRARIES}
     )
@@ -339,6 +369,6 @@ else(NOT USE_LP)
     ## WARNING: In the original Makefile, there were lines manipulating the linker flags by adding -Wl,-Bstatic and suchlike.
     ##          These have gone, replaced by passing --enable-shared=no to the Osi build to make sure only static libraries
     ##          exist in the first place.
-    
-        
+
+
 endif(NOT USE_LP)
