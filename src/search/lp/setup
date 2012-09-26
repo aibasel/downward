@@ -1,12 +1,14 @@
 #! /bin/bash
 
+set -e
+
 cd "$(dirname "$0")"
 BASEDIR="$(pwd)"
-tar xvzf Osi-0.103.0.tgz || exit 1
-cd Osi-0.103.0 || exit 1
-./configure --prefix "$BASEDIR/coin" --enable-static=yes --enable-shared=no --without-lapack || exit 1
-make || exit 1
-make test || exit 1 
-make install || exit 1
+tar xvzf Osi-0.103.0.tgz
+cd Osi-0.103.0
+./configure --prefix "$BASEDIR/coin" --enable-static=yes --enable-shared=no --without-lapack
+make
+make test
+make install
 cd ..
 rm -r Osi-0.103.0
