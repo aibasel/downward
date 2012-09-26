@@ -22,7 +22,12 @@ set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 # Target-agnostic build flags, taken from the legacy downward Makefile.
 
-set(STATE_VAR_BYTES 1)
+if(NOT STATE_VAR_BYTES)
+    message("** Defaulting to STATE_VAR_BYTES=1 **")
+    set(STATE_VAR_BYTES 1)
+endif()
+
+set(TARGET "downward-${STATE_VAR_BYTES}")
 
 set(CMAKE_CXX_FLAGS "-Iext -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=${STATE_VAR_BYTES}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -m32")
@@ -343,7 +348,7 @@ endif(PLUGIN_PDBS)
 
 ## After having defined the variables containing the names of the source files, this bit is remarkably non-eventful
 
-add_executable(search
+add_executable(${TARGET}
     planner.cc
     ${search_main_SRCS}
     ${search_plugin_SRCS}
@@ -353,15 +358,15 @@ add_executable(search
 ## ... until we consider the additional definitions and libraries needed in the LP case
 
 if(NOT USE_LP)
-    target_link_libraries(search
+    target_link_libraries(${TARGET}
         ${RT_LIBRARY}
     )
 
 else(NOT USE_LP)
 
-    set_target_properties(search PROPERTIES COMPILE_FLAGS "-D USE_LP -D COIN_USE_CLP")
+    set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS "-D USE_LP -D COIN_USE_CLP")
 
-    target_link_libraries(search
+    target_link_libraries(${TARGET}
         ${RT_LIBRARY}
         ${OSICLP_LIBRARIES} ${CLP_LIBRARIES}  ${COINUTILS_LIBRARIES} ${OSI_LIBRARIES}
     )
