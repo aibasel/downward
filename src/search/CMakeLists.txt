@@ -380,19 +380,16 @@ endif(PLUGIN_PDBS)
 function(make_target BYTES)
 
     set(BYTES_TARGET "${TARGET}-${BYTES}")
+    set(BYTES_FLAGS "-DSTATE_VAR_BYTES=${BYTES}")
     add_executable(${BYTES_TARGET}
         planner.cc
         ${search_main_SRCS}
         ${search_plugin_SRCS}
     )
-    set_target_properties(${BYTES_TARGET} PROPERTIES COMPILE_FLAGS "-DSTATE_VAR_BYTES=${BYTES}")
 
-    if(NOT USE_LP)
-        target_link_libraries(${BYTES_TARGET} ${RT_LIBRARY})
+    if(USE_LP)
 
-    else(NOT USE_LP)
-
-        set_target_properties(${BYTES_TARGET} PROPERTIES COMPILE_FLAGS "-D USE_LP -D COIN_USE_CLP")
+        set(BYTES_FLAGS "${BYTES_FLAGS} -D USE_LP -D COIN_USE_CLP")
 
         target_link_libraries(${BYTES_TARGET}
             ${RT_LIBRARY}
@@ -403,7 +400,13 @@ function(make_target BYTES)
         ##          These have gone, replaced by passing --enable-shared=no to the Osi build to make sure only static libraries
         ##          exist in the first place.
 
-    endif(NOT USE_LP)
+    else(USE_LP)
+
+        target_link_libraries(${BYTES_TARGET} ${RT_LIBRARY})
+
+    endif(USE_LP)
+
+    set_target_properties(${BYTES_TARGET} PROPERTIES COMPILE_FLAGS ${BYTES_FLAGS})
 
 endfunction(make_target)
 
