@@ -14,10 +14,10 @@ set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 ## You probably won't need to change this system, unless you want to tweak it for a specific
 ## platform.  By default, four build targets are defined:
 ##
-## * -DCMAKE_BUILD_TYPE=Debug         - no optimisation, full debugging information
-## * -DCMAKE_BUILD_TYPE=Release       - -O3 optimisation, static binary, no debugging information
-## * -DCMAKE_BUILD_TYPE=RelWithDeInfo - -O3 optimisation, static binary, but with debugging information
-## * -DCMAKE_BUILD_TYPE=Profile       - -O3 optimisation, profile information linked in
+## * -DCMAKE_BUILD_TYPE=Debug          - no optimisation, full debugging information
+## * -DCMAKE_BUILD_TYPE=Release        - -O3 optimisation, static binary, no debugging information
+## * -DCMAKE_BUILD_TYPE=RelWithDebInfo - -O3 optimisation, static binary, but with debugging information
+## * -DCMAKE_BUILD_TYPE=Profile        - -O3 optimisation, profile information linked in
 ##
 
 # Target-agnostic build flags, taken from the legacy downward Makefile.
@@ -57,6 +57,12 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CASE_BUILD_TYPE)
 if(LOWER_CASE_BUILD_TYPE STREQUAL "release" OR LOWER_CASE_BUILD_TYPE STREQUAL "relwithdebinfo")
    set(STATIC_BUILD TRUE)
 endif(LOWER_CASE_BUILD_TYPE STREQUAL "release" OR LOWER_CASE_BUILD_TYPE STREQUAL "relwithdebinfo")
+
+# Use distinct names for the different targets
+
+if(NOT LOWER_CASE_BUILD_TYPE STREQUAL "release")
+   set(TARGET "${TARGET}-${LOWER_CASE_BUILD_TYPE}")
+endif(NOT LOWER_CASE_BUILD_TYPE STREQUAL "release")
 
 
 if(CMAKE_COMPILER_IS_GNUCXX)
