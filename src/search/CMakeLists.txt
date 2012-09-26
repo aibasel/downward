@@ -32,8 +32,28 @@ set(TARGET "downward-${STATE_VAR_BYTES}")
 set(CMAKE_CXX_FLAGS "-Iext -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=${STATE_VAR_BYTES}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -m32")
 
-# Default to Release build, unless specified otherwise
+## The following lines contain workarounds for bugs when
+## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
+## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
+## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
+## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
+if(CMAKE_COMPILER_IS_GNUCXX)
 
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
+                    OUTPUT_VARIABLE GCC_VERSION)
+    string(REGEX MATCHALL "[0-9]+" GCC_VERSION_COMPONENTS ${GCC_VERSION})
+    if (GCC_VERSION VERSION_LESS 4.6)
+        list(GET GCC_VERSION_COMPONENTS 0 GCC_MAJOR)
+        list(GET GCC_VERSION_COMPONENTS 1 GCC_MINOR)
+        message(STATUS "Version ${GCC_MAJOR}.${GCC_MINOR} < 4.6")
+        # If the original list wasn't part of the string the result will be two list items.
+        set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include/c++/${GCC_MAJOR}.${GCC_MINOR}/i686-linux-gnu")
+    endif(GCC_VERSION VERSION_LESS 4.6)
+
+endif(CMAKE_COMPILER_IS_GNUCXX)
+
+
+# Default to Release build, unless specified otherwise
 if(NOT CMAKE_BUILD_TYPE)
     #message("** Defaulting to Release build **")
     set(CMAKE_BUILD_TYPE "RELEASE")
@@ -49,17 +69,19 @@ endif()
 
 
 # First, make a lower-case version of the build type
-
 string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CASE_BUILD_TYPE)
 
 # Note that we should use static-linkage for the two sorts of release build
-
 if(LOWER_CASE_BUILD_TYPE STREQUAL "release" OR LOWER_CASE_BUILD_TYPE STREQUAL "relwithdebinfo")
    set(STATIC_BUILD TRUE)
 endif(LOWER_CASE_BUILD_TYPE STREQUAL "release" OR LOWER_CASE_BUILD_TYPE STREQUAL "relwithdebinfo")
 
-# Use distinct names for the different targets
+# Disable static linking on OS X.
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(STATIC_BUILD FALSE)
+endif()
 
+# Use distinct names for the different targets
 if(NOT LOWER_CASE_BUILD_TYPE STREQUAL "release")
    set(TARGET "${TARGET}-${LOWER_CASE_BUILD_TYPE}")
 endif(NOT LOWER_CASE_BUILD_TYPE STREQUAL "release")
