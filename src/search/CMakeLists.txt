@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.4)
 
-project(search)
+if(NOT STATE_VAR_BYTES)
+    message("** Defaulting to STATE_VAR_BYTES=1 **")
+    set(STATE_VAR_BYTES 1)
+endif()
+
+set(TARGET "downward-${STATE_VAR_BYTES}")
+
+project(${TARGET})
 
 ### Fast Downward CMake build file
 ### Unless someone adopts it, queries/comments to Andrew.Coles@cis.strath.ac.uk
@@ -21,13 +28,6 @@ set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 ##
 
 # Target-agnostic build flags, taken from the legacy downward Makefile.
-
-if(NOT STATE_VAR_BYTES)
-    message("** Defaulting to STATE_VAR_BYTES=1 **")
-    set(STATE_VAR_BYTES 1)
-endif()
-
-set(TARGET "downward-${STATE_VAR_BYTES}")
 
 set(CMAKE_CXX_FLAGS "-Iext -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=${STATE_VAR_BYTES}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -m32")
