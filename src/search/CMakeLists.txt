@@ -1,11 +1,7 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 2.6)
 
-if(NOT STATE_VAR_BYTES)
-    message("** Defaulting to STATE_VAR_BYTES=1 **")
-    set(STATE_VAR_BYTES 1)
-endif()
-
-set(TARGET "downward-${STATE_VAR_BYTES}")
+set(TARGET "downward")
+set(SIZES 1 2 4)
 
 project(${TARGET})
 
@@ -29,7 +25,7 @@ set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 # Target-agnostic build flags, taken from the legacy downward Makefile.
 
-set(CMAKE_CXX_FLAGS "-Iext -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=${STATE_VAR_BYTES}")
+set(CMAKE_CXX_FLAGS "-Iext -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -m32")
 
 ## The following lines contain workarounds for bugs when
@@ -80,6 +76,7 @@ endif(LOWER_CASE_BUILD_TYPE STREQUAL "release" OR LOWER_CASE_BUILD_TYPE STREQUAL
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(STATIC_BUILD FALSE)
 endif()
+
 
 # Use distinct names for the different targets
 if(NOT LOWER_CASE_BUILD_TYPE STREQUAL "release")
@@ -372,36 +369,39 @@ if(PLUGIN_PDBS)
 endif(PLUGIN_PDBS)
 
 
-## == Defining the executable target ==
+## == Defining the executable targets ==
 
-## After having defined the variables containing the names of the source files, this bit is remarkably non-eventful
+function(make_target BYTES)
 
-add_executable(${TARGET}
-    planner.cc
-    ${search_main_SRCS}
-    ${search_plugin_SRCS}
-)
-
-
-## ... until we consider the additional definitions and libraries needed in the LP case
-
-if(NOT USE_LP)
-    target_link_libraries(${TARGET}
-        ${RT_LIBRARY}
+    set(BYTES_TARGET "${TARGET}-${BYTES}")
+    add_executable(${BYTES_TARGET}
+        planner.cc
+        ${search_main_SRCS}
+        ${search_plugin_SRCS}
     )
+    set_target_properties(${BYTES_TARGET} PROPERTIES COMPILE_FLAGS "-DSTATE_VAR_BYTES=${BYTES}")
 
-else(NOT USE_LP)
+    if(NOT USE_LP)
+        target_link_libraries(${BYTES_TARGET} ${RT_LIBRARY})
 
-    set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS "-D USE_LP -D COIN_USE_CLP")
+    else(NOT USE_LP)
 
-    target_link_libraries(${TARGET}
-        ${RT_LIBRARY}
-        ${OSICLP_LIBRARIES} ${CLP_LIBRARIES}  ${COINUTILS_LIBRARIES} ${OSI_LIBRARIES}
-    )
+        set_target_properties(${BYTES_TARGET} PROPERTIES COMPILE_FLAGS "-D USE_LP -D COIN_USE_CLP")
 
-    ## WARNING: In the original Makefile, there were lines manipulating the linker flags by adding -Wl,-Bstatic and suchlike.
-    ##          These have gone, replaced by passing --enable-shared=no to the Osi build to make sure only static libraries
-    ##          exist in the first place.
+        target_link_libraries(${BYTES_TARGET}
+            ${RT_LIBRARY}
+            ${OSICLP_LIBRARIES} ${CLP_LIBRARIES}  ${COINUTILS_LIBRARIES} ${OSI_LIBRARIES}
+        )
+
+        ## WARNING: In the original Makefile, there were lines manipulating the linker flags by adding -Wl,-Bstatic and suchlike.
+        ##          These have gone, replaced by passing --enable-shared=no to the Osi build to make sure only static libraries
+        ##          exist in the first place.
+
+    endif(NOT USE_LP)
+
+endfunction(make_target)
 
 
-endif(NOT USE_LP)
+foreach(BYTES ${SIZES})
+    make_target(${BYTES})
+endforeach(BYTES)
