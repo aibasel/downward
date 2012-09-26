@@ -1,3 +1,4 @@
+# Version 2.6 introduces functions.
 cmake_minimum_required(VERSION 2.6)
 
 set(TARGET "downward")
@@ -7,9 +8,13 @@ project(${TARGET})
 
 ### Fast Downward CMake build file
 ### Unless someone adopts it, queries/comments to Andrew.Coles@cis.strath.ac.uk
+###
+###   * Usage: cmake . ; make [-j2]
+###   * The first command creates and stores options in the file CMakeCache.txt.
+###     Changing the default values for the options here has no effect, you need
+###     to change them in CMakeCache.txt or pass -DMY_OPTION to cmake.
 
 ## == Path containing some helper CMake modules ==
-
 set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 ## == Definition of build flags ==
@@ -24,7 +29,6 @@ set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 ##
 
 # Target-agnostic build flags, taken from the legacy downward Makefile.
-
 set(CMAKE_CXX_FLAGS "-Iext -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -m32")
 
@@ -132,7 +136,11 @@ find_library(RT_LIBRARY rt)
 ## lower down - this just handles finding the necessary files.
 
 option(USE_LP "Whether to enable code that requires an LP solver" FALSE)
-option(USE_LP_INTERNAL "Whether to compile, at cmake time, the Osi installation shipped with the sources, and use this rather than the system libraries.  If setting this to false, make sure you have static versions of the libraries available if you intend to use the resulting binaries in a scenario where that matters." TRUE)
+# If setting this to false, make sure you have static versions of the libraries available
+# if you intend to use the resulting binaries in a scenario where that matters.
+option(USE_LP_INTERNAL
+       "Whether to compile, at cmake time, the Osi installation shipped with the sources, and use this rather than the system libraries."
+       TRUE)
 
 if(USE_LP)
 
@@ -165,8 +173,6 @@ if(USE_LP)
         find_package(CoinUtils REQUIRED)
 
     endif(USE_LP_INTERNAL)
-
-
 
     # We define here that the appropriate include paths are used.  Note, however, that we do not need
     # to define library paths as e.g. ${CLP_LIBRARIES} contains an absolute path to a CLP library.
