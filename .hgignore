@@ -5,8 +5,10 @@
 ^src/preprocess/preprocess$
 ^src/preprocess/preprocess-debug$
 ^src/preprocess/preprocess-profile$
-^src/search/\.obj/
-^src/search/Makefile\.depend$
+^src/search/Makefile$
+^src/search/CMakeCache.txt$
+^src/search/cmake_install.cmake$
+^src/search/CMakeFiles/
 ^src/search/downward-[124]$
 ^src/search/downward-[124]-debug$
 ^src/search/downward-[124]-profile$
@@ -19,3 +21,4 @@
 ^new-scripts/reports/
 ^new-scripts/preprocessed-tasks/
 ^new-scripts/exp-.*/
+
