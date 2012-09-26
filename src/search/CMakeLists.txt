@@ -134,6 +134,7 @@ find_library(RT_LIBRARY rt)
 
 ## Note that adding the libraries as dependencies of the search executable target is done
 ## lower down - this just handles finding the necessary files.
+## Currently linking with the LP libs only works on 32-bit systems due to the -m32 option above.
 
 option(USE_LP "Whether to enable code that requires an LP solver" FALSE)
 # If setting this to false, make sure you have static versions of the libraries available
