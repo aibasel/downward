@@ -10,6 +10,7 @@
 ^src/search/cmake_install.cmake$
 ^src/search/CMakeFiles/
 ^src/search/downward-[124]$
+^src/search/downward-[124]-relwithdebinfo$
 ^src/search/downward-[124]-debug$
 ^src/search/downward-[124]-profile$
 ^src/search/lp/coin/
