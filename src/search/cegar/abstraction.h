@@ -80,6 +80,7 @@ private:
     mutable int unmet_goals;
     mutable int num_states_offline;
     mutable double last_avg_h;
+    mutable int last_init_h;
 
     bool use_astar;
 
