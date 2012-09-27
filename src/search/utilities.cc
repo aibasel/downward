@@ -6,6 +6,7 @@
 #include <fstream>
 #include <limits>
 #include <sstream>
+#include <unistd.h>
 using namespace std;
 
 #ifdef __APPLE__
