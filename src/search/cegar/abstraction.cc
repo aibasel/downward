@@ -33,6 +33,7 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       unmet_goals(0),
       num_states_offline(-1),
       last_avg_h(0),
+      last_init_h(0),
       use_astar(true),
       memory_released(false) {
     assert(!g_operators.empty());
@@ -86,14 +87,17 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
         if (DEBUG)
             cout << "Using new goal state: " << goal->str() << endl;
     }
-    double avg_h = 0;  // TODO: Unused for now: get_avg_h();
+    //double avg_h = get_avg_h();
+    int init_h = init->get_h();
     // We cannot assert(avg_h >= last_avg_h), because due to dead-end states,
     // which we don't count for the average h-value, the average h-value may
     // have decreased.
-    if (avg_h > last_avg_h + PRECISION) {
-        cout << "States: " << get_num_states() << ", avg-h: " << avg_h
-             << ", init-h: " << init->get_h() << endl;
-        last_avg_h = avg_h;
+    if (//(avg_h > last_avg_h + PRECISION) ||
+        (init_h > last_init_h)) {
+        cout << "States: " << get_num_states() << ", avg-h: " << get_avg_h()
+             << ", init-h: " << init_h << endl;
+        //last_avg_h = avg_h;
+        last_init_h = init_h;
     }
 }
 

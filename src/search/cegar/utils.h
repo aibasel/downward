@@ -17,7 +17,7 @@ extern bool DEBUG;
 
 const int UNDEFINED = -1;
 
-const double PRECISION = 0.01;
+const double PRECISION = 0.1;
 
 typedef std::pair<int, int> Condition;
 typedef boost::dynamic_bitset<> Domain;
