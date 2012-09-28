@@ -51,6 +51,9 @@ void partial_ordering(const CausalGraph &causal_graph, vector<int> *order);
 void write_causal_graph(const CausalGraph &causal_graph);
 
 void pick_condition_for_each_var(vector<pair<int, int> > *conditions);
+
+// Debugging.
+void print_conditions(const vector<pair<int, int> > &conditions);
 }
 
 #endif
