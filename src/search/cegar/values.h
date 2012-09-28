@@ -21,14 +21,13 @@ private:
     std::vector<Domain> values;
 
 public:
-    void set_value(int var, int value, bool val = false);
-    void set_var(int var);
-    void reset_var(int var);
+    void add(int var, int value);
+    void remove(int var, int value);
+    void add_all(int var);
+    void clear(int var);
     bool test(int var, int value) const;
     int count(int var) const;
-    void clear(int var);
-
-    int get_var(int pos) const;
+    //int get_var(int pos) const;
     bool intersects(int var, const Values &other) const;
 };
 }
