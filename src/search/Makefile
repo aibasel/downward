@@ -120,6 +120,7 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
 
 HEADERS += cegar/cegar_heuristic.h \
            cegar/abstract_state.h \
+           cegar/values.h \
            cegar/abstraction.h \
            cegar/utils.h \
 
