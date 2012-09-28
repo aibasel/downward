@@ -186,4 +186,15 @@ void pick_condition_for_each_var(vector<pair<int, int> > *conditions) {
     }
     conditions->swap(picked_conditions);
 }
+
+void print_conditions(const vector<pair<int, int> > &conditions) {
+    string separator = "";
+    for (int cond = 0; cond < conditions.size(); ++cond) {
+        int var = conditions[cond].first;
+        int value = conditions[cond].second;
+        cout << separator << var << "=" << value;
+        separator = ", ";
+    }
+    cout << endl;
+}
 }
