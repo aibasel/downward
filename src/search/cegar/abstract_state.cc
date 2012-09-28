@@ -112,7 +112,7 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
 }
 
 void AbstractState::get_unmet_conditions(const AbstractState &desired,
-                                         const State &prev_conc_state,
+                                         //const State &prev_conc_state,
                                          vector<pair<int, int> > *conditions)
 const {
     // Get all set intersections of the possible values here with the possible
