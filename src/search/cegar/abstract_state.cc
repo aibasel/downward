@@ -112,6 +112,7 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
 }
 
 void AbstractState::get_unmet_conditions(const AbstractState &desired,
+                                         const State &prev_conc_state,
                                          vector<pair<int, int> > *conditions)
 const {
     // Get all set intersections of the possible values here with the possible
@@ -119,14 +120,32 @@ const {
     for (int i = 0; i < g_variable_domain.size(); ++i) {
         Domain intersection = values[i] & desired.values[i];
         if (intersection.count() < values[i].count()) {
-            // The variable's value matters for determining the resulting state.
             int next_value = intersection.find_first();
             while (next_value != Domain::npos) {
+                // The variable's value matters for determining the resulting state.
                 conditions->push_back(pair<int, int>(i, next_value));
                 next_value = intersection.find_next(next_value);
             }
         }
     }
+    /*
+    vector<pair<int, int> > new_conditions;
+    for (int i = 0; i < g_variable_domain.size(); ++i) {
+        Domain intersection = values[i] & desired.values[i];
+        int next_value = intersection.find_first();
+        while (next_value != Domain::npos) {
+            if (prev_conc_state[i] != next_value) {
+                // The variable's value matters for determining the resulting state.
+                new_conditions.push_back(pair<int, int>(i, next_value));
+            }
+            next_value = intersection.find_next(next_value);
+        }
+    }
+    cout << "New: ";
+    print_conditions(new_conditions);
+    cout << "Old: ";
+    print_conditions(*conditions);
+    */
 }
 
 AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2) {
