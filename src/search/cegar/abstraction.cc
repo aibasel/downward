@@ -59,7 +59,9 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
 void Abstraction::refine(AbstractState *state, int var, int value) {
     assert(!g_operators.empty());  // We need operators and the g_initial_state.
     if (DEBUG)
-        cout << "REFINE " << state->str() << " for " << var << "=" << value << " (" << g_variable_name[var] << ")" << endl;
+        cout << "Refine " << state->str() << " for " << var << "=" << value
+             << " (" << g_variable_name[var] << "=" << g_fact_names[var][value]
+             << ")" << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
     start_solution_check_ptr = state->refine(var, value, v1, v2);
@@ -280,7 +282,8 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
             assert(prev_op);
             AbstractState desired_prev_state;
             abs_state->regress(*prev_op, &desired_prev_state);
-            prev_state->get_unmet_conditions(desired_prev_state, &unmet_cond);
+            prev_state->get_unmet_conditions(desired_prev_state, last_checked_conc_state,
+                                             &unmet_cond);
             if (pick_deviation == ALL) {
                 pick_condition_for_each_var(&unmet_cond);
                 refine(unmet_cond, prev_state);
@@ -512,6 +515,7 @@ AbstractState *Abstraction::get_abstract_state(const State &state) const {
 }
 
 void Abstraction::write_dot_file(int num) {
+    bool draw_loops = false;
     ostringstream oss;
     oss << "graph-" << setw(3) << setfill('0') << num << ".dot";
     string filename = oss.str();
@@ -531,11 +535,13 @@ void Abstraction::write_dot_file(int num) {
             dotfile << current_state->str() << " -> " << next_state->str()
                     << " [label=\"" << op->get_name() << "\"];" << endl;
         }
-        Loops &loops = current_state->get_loops();
-        for (Loops::iterator it = loops.begin(); it != loops.end(); ++it) {
-            Operator *op = *it;
-            dotfile << current_state->str() << " -> " << current_state->str()
-                    << " [label=\"" << op->get_name() << "\"];" << endl;
+        if (draw_loops) {
+            Loops &loops = current_state->get_loops();
+            for (Loops::iterator it = loops.begin(); it != loops.end(); ++it) {
+                Operator *op = *it;
+                dotfile << current_state->str() << " -> " << current_state->str()
+                        << " [label=\"" << op->get_name() << "\"];" << endl;
+            }
         }
         if (current_state == init) {
             dotfile << current_state->str() << " [color=green];" << endl;
