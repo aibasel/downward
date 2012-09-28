@@ -7,16 +7,20 @@ using namespace std;
 namespace cegar_heuristic {
 
 
-void Values::set_value(int var, int value, bool val) {
-    values[var].set(value, val);
+void Values::add(int var, int value) {
+    values[var].set(value);
 }
 
-void Values::set_var(int var) {
+void Values::remove(int var, int value) {
+    values[var].reset(value);
+}
+
+void Values::add_all(int var) {
     values[var].set();
 }
 
-void Values::reset_var(int var) {
-    values[var].reset();
+void Values::clear(int var) {
+    values[var].clear();
 }
 
 bool Values::test(int var, int value) const {
@@ -25,10 +29,6 @@ bool Values::test(int var, int value) const {
 
 int Values::count(int var) const {
     return values[var].count();
-}
-
-void Values::clear(int var) {
-    values[var].clear();
 }
 
 //int Values::get_var(int pos) const {
