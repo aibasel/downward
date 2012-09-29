@@ -611,6 +611,7 @@ void Abstraction::print_statistics() {
     cout << "Bitset size: " << bitset_bytes / 1024 << " KB" << endl;
     cout << "Bitset size single: " << bitset_bytes_single / 1024 << " KB" << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
+    cout << "Arc size diff 2byte ops: " << (nexts + prevs + total_loops) * 2 / 1024 << " KB" << endl;
     cout << "Init h: " << init->get_h() << endl;
     cout << "Average h: " << get_avg_h() << endl;
 }
