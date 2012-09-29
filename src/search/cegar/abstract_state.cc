@@ -243,6 +243,12 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     } else if (v1_is_bridge) {
         bridge_state = v1;
     }
+    if (u_v1 && u_v2) {
+        assert(bridge_state);
+        assert(v1_w || v2_w);
+        assert(state_in->get_values(var)[value]);
+        assert(state_in->get_values(var).count() >= 2);
+    }
     if (bridge_state) {
         assert(state_in);
         assert(op_in);
