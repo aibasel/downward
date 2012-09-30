@@ -11,10 +11,6 @@ namespace cegar_heuristic {
 
 class Values {
 private:
-    // Forbid copy constructor and copy assignment operator.
-    //Values(const Values &);
-    //Values &operator=(const Values &);
-
     // Possible values of each variable in this state.
     // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
@@ -29,8 +25,8 @@ public:
     void remove_all(int var);
     bool test(int var, int value) const;
     int count(int var) const;
-    //int get_var(int pos) const;
     bool intersects(int var, const Values &other) const;
+    bool all_vars_intersect(const Values &other, const std::vector<bool> &checked) const;
     string str() const;
     //Domain& operator[](int var) {return values[var]; }
     //const Domain& operator[](int var) const {return values[var]; }
