@@ -44,12 +44,16 @@ int Values::count(int var) const {
     return values[var].count();
 }
 
-//int Values::get_var(int pos) const {
-//
-//}
-
 bool Values::intersects(int var, const Values &other) const {
     return values[var].intersects(other.values[var]);
+}
+
+bool Values::all_vars_intersect(const Values &other, const vector<bool> &checked) const {
+    for (int var = 0; var < values.size(); ++var) {
+        if (!checked[var] && !values[var].intersects(other.values[var]))
+            return false;
+    }
+    return true;
 }
 
 bool Values::abstracts(const Values &other) const {
@@ -74,24 +78,6 @@ void Values::get_unmet_conditions(const Values &other, Conditions *conditions) c
             }
         }
     }
-    /*
-    vector<pair<int, int> > new_conditions;
-    for (int i = 0; i < g_variable_domain.size(); ++i) {
-        Domain intersection = values[i] & desired.values[i];
-        int next_value = intersection.find_first();
-        while (next_value != Domain::npos) {
-            if (prev_conc_state[i] != next_value) {
-                // The variable's value matters for determining the resulting state.
-                new_conditions.push_back(pair<int, int>(i, next_value));
-            }
-            next_value = intersection.find_next(next_value);
-        }
-    }
-    cout << "New: ";
-    print_conditions(new_conditions);
-    cout << "Old: ";
-    print_conditions(*conditions);
-    */
 }
 
 string Values::str() const {

@@ -292,10 +292,7 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
         checked[var] = true;
     }
     if (this != other) {
-        for (int var = 0; var < g_variable_domain.size(); ++var) {
-            if (!checked[var] && !values.intersects(var, other->values))
-                return false;
-        }
+        return values.all_vars_intersect(other->values, checked);
     }
     return true;
 }
