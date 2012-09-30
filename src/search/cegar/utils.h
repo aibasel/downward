@@ -21,6 +21,8 @@ const double PRECISION = 0.1;
 
 typedef std::pair<int, int> Condition;
 typedef boost::dynamic_bitset<> Domain;
+typedef pair<int, int> Condition;
+typedef vector<Condition> Conditions;
 
 std::string domain_to_string(const Domain &domain);
 
