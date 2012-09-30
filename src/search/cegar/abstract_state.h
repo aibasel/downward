@@ -2,6 +2,7 @@
 #define CEGAR_ABSTRACT_STATE_H
 
 #include "utils.h"
+#include "values.h"
 #include "../operator.h"
 #include "../state.h"
 
@@ -28,7 +29,7 @@ private:
     // Possible values of each variable in this state.
     // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
-    std::vector<Domain> values;
+    Values values;
 
     Arcs next, prev;
     Loops loops;
@@ -57,8 +58,9 @@ public:
     FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
     std::string str() const;
-    const Domain &get_values(int var) const;
     void set_value(int var, int value);
+    bool can_refine(int var, int value) const {return values.test(var, value) && values.count(var) >= 2; }
+    int count(int var) const {return values.count(var); }
     // Return a pointer to the state where the next solution check should start.
     // Return 0 if the search has to be started from the beginning.
     AbstractState *refine(int var, int value, AbstractState *v1, AbstractState *v2);

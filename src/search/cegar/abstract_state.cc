@@ -25,12 +25,6 @@ AbstractState::AbstractState(string s)
 
     reset_neighbours();
 
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
-        Domain domain(g_variable_domain[var]);
-        domain.set();
-        values.push_back(domain);
-    }
-
     if (s.empty())
         return;
 
@@ -55,10 +49,10 @@ AbstractState::AbstractState(string s)
             iss.unget();
             if (in_bracket) {
                 iss >> current_val;
-                values[current_var].set(current_val);
+                values.add(current_var, current_val);
             } else {
                 iss >> current_var;
-                values[current_var].reset();
+                values.remove_all(current_var);
             }
         }
     }
@@ -66,102 +60,51 @@ AbstractState::AbstractState(string s)
 
 string AbstractState::str() const {
     ostringstream oss;
-    string sep = "";
-    oss << "<";
-    for (int i = 0; i < values.size(); ++i) {
-        const Domain &vals = values[i];
-        if (vals.count() != g_variable_domain[i]) {
-            oss << sep << i << "=" << domain_to_string(vals);
-            sep = ",";
-        }
-    }
-    oss << ">";
+    oss << "<" << values.str() << ">";
     return oss.str();
 }
 
-const Domain &AbstractState::get_values(int var) const {
-    return values[var];
-}
-
 void AbstractState::set_value(int var, int value) {
-    values[var].reset();
-    values[var].set(value);
+    values.set(var, value);
 }
 
 void AbstractState::regress(const Operator &op, AbstractState *result) const {
+    // If v does NOT occur in op.pre and NOT in op.eff we use the values from
+    // this state.
+    Values reg_vals = values;
     for (int v = 0; v < g_variable_domain.size(); ++v) {
-        // s1_vals = s2_vals if v does NOT occur in op.pre and NOT in op.eff
-        Domain s1_vals(values[v]);
-        // if v occurs in op.eff:
-        int eff = get_eff(op, v);
-        if (eff != UNDEFINED) {
-            assert(values[v][eff]);
-            // s1_vals = v.all_values_in_domain
-            s1_vals.set();
-        }
-        // if v occurs in op.pre:
         int pre = get_pre(op, v);
+        int eff = get_eff(op, v);
         if (pre != UNDEFINED) {
-            assert(s1_vals[pre]);
-            // s1_vals = [op.pre[v]]
-            s1_vals.reset();
-            s1_vals.set(pre);
+            reg_vals.set(v, pre);
+        } else if (eff != UNDEFINED) {
+            assert(values.test(v, eff));
+            reg_vals.add_all(v);
         }
-        result->values[v] = s1_vals;
     }
+    result->values = reg_vals;
 }
 
 void AbstractState::get_unmet_conditions(const AbstractState &desired,
                                          //const State &prev_conc_state,
                                          vector<pair<int, int> > *conditions)
 const {
-    // Get all set intersections of the possible values here with the possible
-    // values in "desired".
-    for (int i = 0; i < g_variable_domain.size(); ++i) {
-        Domain intersection = values[i] & desired.values[i];
-        if (intersection.count() < values[i].count()) {
-            int next_value = intersection.find_first();
-            while (next_value != Domain::npos) {
-                // The variable's value matters for determining the resulting state.
-                conditions->push_back(pair<int, int>(i, next_value));
-                next_value = intersection.find_next(next_value);
-            }
-        }
-    }
-    /*
-    vector<pair<int, int> > new_conditions;
-    for (int i = 0; i < g_variable_domain.size(); ++i) {
-        Domain intersection = values[i] & desired.values[i];
-        int next_value = intersection.find_first();
-        while (next_value != Domain::npos) {
-            if (prev_conc_state[i] != next_value) {
-                // The variable's value matters for determining the resulting state.
-                new_conditions.push_back(pair<int, int>(i, next_value));
-            }
-            next_value = intersection.find_next(next_value);
-        }
-    }
-    cout << "New: ";
-    print_conditions(new_conditions);
-    cout << "Old: ";
-    print_conditions(*conditions);
-    */
+    values.get_unmet_conditions(desired.values, conditions);
 }
 
 AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2) {
     // We can only refine for vars that can have at least two values.
-    assert(values[var].count() >= 2);
     // The desired value has to be in the set of possible values.
-    assert(values[var][value]);
+    assert(can_refine(var, value));
 
     v1->values = values;
     v2->values = values;
 
     // In v1 var can have all of the previous values except the desired one.
-    v1->values[var].reset(value);
+    v1->values.remove(var, value);
 
     // In v2 var can only have the desired value.
-    v2->set_value(var, value);
+    v2->values.set(var, value);
 
     // Results from Dijkstra search. If  u --> v --> w  was on the
     // shortest path and a new path  u --> v{1,2} --> w is created with the
@@ -219,8 +162,8 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     refined_value = value;
     left_child = v1;
     right_child = v2;
-    assert(v1->values[var].count() == values[var].count() - 1);
-    assert(v2->values[var].count() == 1);
+    assert(v1->values.count(var) == values.count(var) - 1);
+    assert(v2->values.count(var) == 1);
 
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
@@ -246,8 +189,7 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     if (u_v1 && u_v2) {
         assert(bridge_state);
         assert(v1_w || v2_w);
-        assert(state_in->get_values(var)[value]);
-        assert(state_in->get_values(var).count() >= 2);
+        assert(state_in->can_refine(var, value));
     }
     if (bridge_state) {
         assert(state_in);
@@ -263,10 +205,7 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
 }
 
 bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
-    // We can only refine for vars that can have at least two values.
-    assert(values[var].count() >= 2);
-    // The desired value has to be in the set of possible values.
-    assert(values[var][value]);
+    assert(can_refine(var, value));
 
     AbstractState v1 = AbstractState();
     AbstractState v2 = AbstractState();
@@ -275,10 +214,10 @@ bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
     v2.values = values;
 
     // In v1 var can have all of the previous values except the desired one.
-    v1.values[var].reset(value);
+    v1.values.remove(var, value);
 
     // In v2 var can only have the desired value.
-    v2.set_value(var, value);
+    v2.values.set(var, value);
 
     bool u_v1 = (state_in) ? state_in->check_arc(op_in, &v1) : false;
     bool u_v2 = (state_in) ? state_in->check_arc(op_in, &v2) : false;
@@ -328,11 +267,11 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
         const int &value = prevail.prev;
         // Check if operator is applicable.
         assert(value != -1);
-        if (!values[var][value])
+        if (!values.test(var, value))
             return false;
         // Check if we land in the desired state.
         // If this == other we have already done the check above.
-        if ((this != other) && (!other->values[var][value]))
+        if ((this != other) && (!other->values.test(var, value)))
             return false;
         checked[var] = true;
     }
@@ -345,16 +284,16 @@ bool AbstractState::check_arc(Operator *op, AbstractState *other) {
         assert(prepost.cond.empty());
         assert(!checked[var]);
         // Check if operator is applicable.
-        if ((pre != -1) && (!values[var][pre]))
+        if ((pre != -1) && !values.test(var, pre))
             return false;
         // Check if we land in the desired state.
-        if (!other->values[var][post])
+        if (!other->values.test(var, post))
             return false;
         checked[var] = true;
     }
     if (this != other) {
         for (int var = 0; var < g_variable_domain.size(); ++var) {
-            if (!checked[var] && !values[var].intersects(other->values[var]))
+            if (!checked[var] && !values.intersects(var, other->values))
                 return false;
         }
     }
@@ -380,7 +319,7 @@ bool AbstractState::check_and_add_loop(Operator *op) {
 bool AbstractState::is_abstraction_of(const State &conc_state) const {
     // Return true if every concrete value is contained in the possible values.
     for (int i = 0; i < g_variable_domain.size(); ++i) {
-        if (!values[i][conc_state[i]])
+        if (!values.test(i, conc_state[i]))
             return false;
     }
     return true;
@@ -389,19 +328,14 @@ bool AbstractState::is_abstraction_of(const State &conc_state) const {
 bool AbstractState::is_abstraction_of(const AbstractState &other) const {
     // Return true if all our possible value sets are supersets of the
     // other's respective sets.
-    for (int i = 0; i < g_variable_domain.size(); ++i) {
-        if (!other.values[i].is_subset_of(values[i]))
-            return false;
-    }
-    return true;
+    return values.abstracts(other.values);
 }
 
 bool AbstractState::is_abstraction_of_goal() const {
     assert(!g_goal.empty());
     for (int i = 0; i < g_goal.size(); ++i) {
-        if (!values[g_goal[i].first][g_goal[i].second]) {
+        if (!values.test(g_goal[i].first, g_goal[i].second))
             return false;
-        }
     }
     return true;
 }
@@ -441,7 +375,7 @@ double AbstractState::get_rel_conc_states() const {
     // Abstract state: 0={0,1,2}, 1={0,1} -> 1
     double fraction = 1.0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
-        const int domain_size = values[var].count();
+        const int domain_size = values.count(var);
         assert(domain_size >= 1);
         fraction *= double(domain_size) / g_variable_domain[var];
     }
@@ -454,6 +388,6 @@ void AbstractState::release_memory() {
     Arcs().swap(next);
     Arcs().swap(prev);
     Loops().swap(loops);
-    vector<Domain>().swap(values);
+    values.release_memory();
 }
 }
