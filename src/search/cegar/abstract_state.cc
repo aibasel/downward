@@ -324,6 +324,7 @@ void AbstractState::add_arc(Operator *op, AbstractState *other) {
     // increases the overall processing time. In 30 domains it made no
     // difference for 10 domains, 17 domains preferred unsorted arcs and in
     // 3 domains performance was better with sorted arcs.
+    // Inlining this method has no effect either.
     assert(other != this);
     next.push_back(Arc(op, other));
     other->prev.push_back(Arc(op, this));
