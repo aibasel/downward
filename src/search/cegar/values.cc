@@ -66,13 +66,13 @@ int Values::count(int var) const {
 }
 
 bool Values::all_vars_intersect(const Values &other, const vector<bool> &checked) const {
-    // TODO: Intersect first and only check intersection.
+    Bitset intersection = values & other.values;
     for (int var = 0; var < borders.size(); ++var) {
         if (checked[var])
             continue;
         bool var_intersects = false;
         for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
-            if (values.test(pos) && other.values.test(pos)) {
+            if (intersection.test(pos)) {
                 var_intersects = true;
                 break;
             }
@@ -100,7 +100,7 @@ void Values::get_unmet_conditions(const Values &other, Conditions *conditions) c
             facts.push_back(pos - borders[var]);
             pos = intersection.find_next(pos);
         }
-        // TODO: Test if facts is empty.
+        assert(!facts.empty());
         if (facts.size() < count(var)) {
             for (int i = 0; i < facts.size(); ++i)
                 conditions->push_back(pair<int, int>(var, facts[i]));
