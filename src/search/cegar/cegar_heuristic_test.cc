@@ -93,16 +93,6 @@ TEST(CegarTest, regress) {
         b.regress(op, &a);
         EXPECT_EQ(pairs[i].first, a.str());
     }
-
-    vector<string> impossible;
-    impossible.push_back("<0={0},1={0}>");
-    impossible.push_back("<0={1}>");
-
-    for (int i = 0; i < impossible.size(); ++i) {
-        AbstractState a;
-        AbstractState b(impossible[i]);
-        EXPECT_DEATH(b.regress(op, &a), ".*Assertion .* failed.");
-    }
 }
 
 TEST(CegarTest, refine_var0) {
@@ -195,6 +185,7 @@ TEST(CegarTest, check_arc) {
     for (int i = 0; i < pairs.size(); ++i) {
         AbstractState a(pairs[i].first);
         AbstractState b(pairs[i].second);
+        cout << a.str() << " " << b.str() << endl;
         ASSERT_EQ(check[i], a.check_and_add_arc(&op, &b));
     }
 }

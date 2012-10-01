@@ -20,7 +20,8 @@ const int UNDEFINED = -1;
 const double PRECISION = 0.1;
 
 typedef std::pair<int, int> Condition;
-typedef boost::dynamic_bitset<> Domain;
+typedef boost::dynamic_bitset<> Bitset;
+typedef Bitset Domain;
 typedef pair<int, int> Condition;
 typedef vector<Condition> Conditions;
 
