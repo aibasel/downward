@@ -594,13 +594,12 @@ void Abstraction::print_statistics() {
                     sizeof(loops) + sizeof(Operator*) * loops.capacity();
     }
     assert(nexts == prevs);
-    // Each bitset takes about 32 B, a vector has overhead at least 12 B.
-    int bitset_bytes = get_num_states() * ((g_variable_domain.size() * 32) + 12);
 
     int facts = 0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         facts += g_variable_domain[var];
     }
+    // Each bitset takes about 32 B.
     int bitset_bytes_single = get_num_states() * ((facts / 8) + 32);
 
     cout << "Arcs: " << nexts << endl;
@@ -609,7 +608,6 @@ void Abstraction::print_statistics() {
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
     cout << "Unreachable states: " << unreachable_states << endl;
-    cout << "Bitset size: " << bitset_bytes / 1024 << " KB" << endl;
     cout << "Bitset size single: " << bitset_bytes_single / 1024 << " KB" << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
     cout << "Arc size diff 2byte ops: " << (nexts + prevs + total_loops) * 2 / 1024 << " KB" << endl;

@@ -226,10 +226,49 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     }
     for (int i = 0; i < loops.size(); ++i) {
         Operator *op = loops[i];
-        v1->check_and_add_arc(op, v2);
-        v2->check_and_add_arc(op, v1);
-        v1->check_and_add_loop(op);
-        v2->check_and_add_loop(op);
+        if (use_new_arc_check) {
+            int pre = get_pre(*op, var);
+            int eff = get_eff(*op, var);
+            if (pre == UNDEFINED) {
+                if (eff == UNDEFINED) {
+                    if (v1->domains_intersect(v2, var)) {
+                        v1->add_arc(op, v2);
+                        v2->add_arc(op, v1);
+                    }
+                    v1->add_loop(op);
+                    v2->add_loop(op);
+                } else if (eff == value) {
+                    v1->add_arc(op, v2);
+                    v2->add_loop(op);
+                } else if (v1->values.test(var, eff)) {
+                    v2->add_arc(op, v1);
+                    v1->add_loop(op);
+                }
+            } else if (pre == value) {
+                if (eff == UNDEFINED) {
+                    v2->add_arc(op, v1);
+                    v2->add_loop(op);
+                } else if (eff == value) {
+                    v2->add_loop(op);
+                } else if (v1->values.test(var, eff)) {
+                    v2->add_arc(op, v1);
+                }
+            } else {
+                if (eff == UNDEFINED) {
+                    v1->add_arc(op, v2);
+                    v1->add_loop(op);
+                } else if (eff == value) {
+                    v1->add_arc(op, v2);
+                } else if (v1->values.test(var, eff)) {
+                    v1->add_loop(op);
+                }
+            }
+        } else {
+            v1->check_and_add_arc(op, v2);
+            v2->check_and_add_arc(op, v1);
+            v1->check_and_add_loop(op);
+            v2->check_and_add_loop(op);
+        }
     }
 
     // Save the refinement hierarchy.
@@ -263,8 +302,8 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     }
     if (u_v1 && u_v2) {
         assert(bridge_state);
-        assert(v1_w || v2_w);
-        assert(state_in->can_refine(var, value));
+        //assert(v1_w || v2_w);
+        //assert(state_in->can_refine(var, value));
     }
     if (bridge_state) {
         assert(state_in);
@@ -310,12 +349,17 @@ void AbstractState::add_arc(Operator *op, AbstractState *other) {
     // difference for 10 domains, 17 domains preferred unsorted arcs and in
     // 3 domains performance was better with sorted arcs.
     assert(other != this);
+    if (!check_arc(op, other)) {
+        cout << str() << " -> " << other->str() << " with " << endl;
+        op->dump();
+    }
     assert(check_arc(op, other));
     next.push_back(Arc(op, other));
     other->prev.push_back(Arc(op, this));
 }
 
 void AbstractState::add_loop(Operator *op) {
+    assert(check_arc(op, this));
     loops.push_back(op);
 }
 
