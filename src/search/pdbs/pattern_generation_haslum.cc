@@ -223,7 +223,8 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             }
         }
         if (improvement < min_improvement) { // end hill climbing algorithm
-            /// TODO could do this earlier if memory is sparse and continue hillclimbing
+            /// TODO could additionally do this earlier if memory is sparse
+            /// and continue hillclimbing with the pruned heuristic.
             current_heuristic->dominance_pruning();
             cout << "iPDB: iterations = " << num_iterations << endl;
             cout << "iPDB: num_patterns = "
