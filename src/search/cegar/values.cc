@@ -29,9 +29,10 @@ void Values::initialize_static_members() {
         facts += g_variable_domain[var];
     }
     for (int var = 0; var < g_variable_domain.size(); ++var) {
-        // ---0000 -> 1110000
+        // -----0000 -> --1110000 --> 001110000
         Bitset mask(borders[var]);
         mask.resize(borders[var] + g_variable_domain[var], true);
+        mask.resize(facts, false);
         masks.push_back(mask);
     }
 }
@@ -50,13 +51,11 @@ void Values::set(int var, int value) {
 }
 
 void Values::add_all(int var) {
-    for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos)
-        values.set(pos);
+    values |= masks[var];
 }
 
 void Values::remove_all(int var) {
-    for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos)
-        values.reset(pos);
+    values &= ~masks[var];
 }
 
 bool Values::test(int var, int value) const {
@@ -64,6 +63,8 @@ bool Values::test(int var, int value) const {
 }
 
 int Values::count(int var) const {
+    //Bitset temp(values & masks[var]);
+    //return temp.count();
     int num_values = 0;
     for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
         if (values.test(pos))
@@ -73,7 +74,7 @@ int Values::count(int var) const {
 }
 
 bool Values::all_vars_intersect(const Values &other, const vector<bool> &checked) const {
-    Bitset intersection = values & other.values;
+    Bitset intersection(values & other.values);
     for (int var = 0; var < borders.size(); ++var) {
         if (checked[var])
             continue;
@@ -97,7 +98,7 @@ bool Values::abstracts(const Values &other) const {
 void Values::get_unmet_conditions(const Values &other, Conditions *conditions) const {
     // Get all set intersections of the possible values here with the possible
     // values in "desired".
-    Bitset intersection = values & other.values;
+    Bitset intersection(values & other.values);
     for (int var = 0; var < borders.size(); ++var) {
         int next_border = borders[var] + g_variable_domain[var];
         vector<int> facts;
