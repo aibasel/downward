@@ -12,21 +12,28 @@ vector<int> Values::borders;
 vector<Bitset> Values::masks;
 
 Values::Values() {
-    if (facts == -1) {
-        assert(masks.empty());
-        assert(borders.empty());
-        facts = 0;
-        for (int var = 0; var < g_variable_domain.size(); ++var) {
-            borders.push_back(facts);
-            facts += g_variable_domain[var];
-        }
-        for (int var = 0; var < g_variable_domain.size(); ++var) {
-            //Bitset mask(borders[var]);
-        }
-    }
-    // TODO: Move to initializer list.
+    if (facts == -1)
+        initialize_static_members();
+
+    assert(facts >= 0);
     values = Bitset(facts);
     values.set();
+}
+
+void Values::initialize_static_members() {
+    assert(masks.empty());
+    assert(borders.empty());
+    facts = 0;
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        borders.push_back(facts);
+        facts += g_variable_domain[var];
+    }
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        // ---0000 -> 1110000
+        Bitset mask(borders[var]);
+        mask.resize(borders[var] + g_variable_domain[var], true);
+        masks.push_back(mask);
+    }
 }
 
 void Values::add(int var, int value) {

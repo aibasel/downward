@@ -16,10 +16,14 @@ private:
     // 11 10 001 -> var0 = {0}, var1 = {1}, var2 = {0,1}
     Bitset values;
 
+    // Total number of facts and size of the values bitset.
     static int facts;
+    // The first bit for var is at borders[var].
     static vector<int> borders;
+    // masks[var][pos] == true iff pos belongs to var.
     static vector<Bitset> masks;
 
+    void initialize_static_members();
     int pos(int var, int value) const {return borders[var] + value; }
 public:
     Values();
