@@ -35,6 +35,7 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       last_avg_h(0),
       last_init_h(0),
       use_astar(true),
+      use_new_arc_check(true),
       memory_released(false) {
     assert(!g_operators.empty());
 
@@ -64,7 +65,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
              << ")" << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
-    start_solution_check_ptr = state->refine(var, value, v1, v2);
+    start_solution_check_ptr = state->refine(var, value, v1, v2, use_new_arc_check);
     states.erase(state);
     states.insert(v1);
     states.insert(v2);

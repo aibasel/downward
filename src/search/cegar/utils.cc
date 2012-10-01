@@ -55,9 +55,14 @@ State *create_state(const string desc) {
 
 int get_eff(const Operator &op, int var) {
     for (int i = 0; i < op.get_pre_post().size(); ++i) {
-        PrePost pre_post = op.get_pre_post()[i];
+        const PrePost &pre_post = op.get_pre_post()[i];
         if (pre_post.var == var)
             return pre_post.post;
+    }
+    for (int i = 0; i < op.get_prevail().size(); ++i) {
+        const Prevail &prevail = op.get_prevail()[i];
+        if (prevail.var == var)
+            return prevail.prev;
     }
     return UNDEFINED;
 }
