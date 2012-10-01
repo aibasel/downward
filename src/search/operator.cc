@@ -52,11 +52,11 @@ Operator::Operator(istream &in, bool axiom) {
 }
 
 void Prevail::dump() const {
-    cout << g_variable_name[var] << ": " << prev;
+    cout << var << "=" << g_variable_name[var] << ": " << prev;
 }
 
 void PrePost::dump() const {
-    cout << g_variable_name[var] << ": " << pre << " => " << post;
+    cout << var << "=" << g_variable_name[var] << ": " << pre << " => " << post;
     if (!cond.empty()) {
         cout << " if";
         for (int i = 0; i < cond.size(); i++) {
