@@ -105,6 +105,7 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
 }
 
 void CanonicalPDBsHeuristic::dominance_pruning() {
+    Timer timer;
     int num_patterns = pattern_databases.size();
     int num_cliques = max_cliques.size();
 
@@ -224,6 +225,8 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
             " of " << num_cliques << " cliques" << endl;
     cout << "Pruned " << num_patterns - num_useful_patterns <<
             " of " << num_patterns << " PDBs" << endl;
+
+    cout << "Dominance Pruning took " << timer << endl;
 }
 
 void CanonicalPDBsHeuristic::initialize() {
