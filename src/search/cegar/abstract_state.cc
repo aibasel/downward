@@ -92,7 +92,8 @@ const {
     values.get_unmet_conditions(desired.values, conditions);
 }
 
-AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2) {
+AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2,
+                                     bool use_new_arc_check) {
     // We can only refine for vars that can have at least two values.
     // The desired value has to be in the set of possible values.
     assert(can_refine(var, value));
@@ -120,16 +121,45 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
         AbstractState *u = it->second;
         assert(u != this);
         u->remove_next_arc(op, this);
+        bool is_solution_arc = (op == op_in && u == state_in);
         // If the first check returns false, the second arc has to be added.
-        if (u->check_and_add_arc(op, v1)) {
-            bool added = u->check_and_add_arc(op, v2);
-            if (op == op_in && u == state_in) {
-                u_v1 = true;
-                u_v2 |= added;
+        if (use_new_arc_check) {
+            int eff = get_eff(*op, var);
+            /*op->dump();
+            cout << "u : " << u->str() << endl;
+            cout << "v : " << str() << endl;
+            cout << "v2: " << v2->str() << endl;*/
+            if (eff == UNDEFINED) {
+                if (u->domains_intersect(v1, var)) {
+                    u->add_arc(op, v1);
+                    u_v1 |= is_solution_arc;
+                } else {
+                    assert(!u->check_arc(op, v1));
+                }
+                if (u->domains_intersect(v2, var)) {
+                    u->add_arc(op, v2);
+                    u_v2 |= is_solution_arc;
+                } else {
+                    assert(!u->check_arc(op, v2));
+                }
+            } else if (eff == value) {
+                u->add_arc(op, v2);
+                u_v2 |= is_solution_arc;
+            } else {
+                u->add_arc(op, v1);
+                u_v1 |= is_solution_arc;
             }
         } else {
-            u->add_arc(op, v2);
-            u_v2 |= (op == op_in && u == state_in);
+            if (u->check_and_add_arc(op, v1)) {
+                bool added = u->check_and_add_arc(op, v2);
+                if (op == op_in && u == state_in) {
+                    u_v1 = true;
+                    u_v2 |= added;
+                }
+            } else {
+                u->add_arc(op, v2);
+                u_v2 |= (op == op_in && u == state_in);
+            }
         }
     }
     for (it = next.begin(); it != next.end(); ++it) {
@@ -137,16 +167,17 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
         AbstractState *w = it->second;
         assert(w != this);
         w->remove_prev_arc(op, this);
+        bool is_solution_arc = (op == op_out && w == state_out);
         // If the first check returns false, the second arc has to be added.
         if (v1->check_and_add_arc(op, w)) {
             bool added = v2->check_and_add_arc(op, w);
-            if (op == op_out && w == state_out) {
+            if (is_solution_arc) {
                 v1_w = true;
                 v2_w |= added;
             }
         } else {
             v2->add_arc(op, w);
-            v2_w |= (op == op_out && w == state_out);
+            v2_w |= (is_solution_arc);
         }
     }
     for (int i = 0; i < loops.size(); ++i) {
@@ -235,6 +266,7 @@ void AbstractState::add_arc(Operator *op, AbstractState *other) {
     // difference for 10 domains, 17 domains preferred unsorted arcs and in
     // 3 domains performance was better with sorted arcs.
     assert(other != this);
+    assert(check_arc(op, other));
     next.push_back(Arc(op, other));
     other->prev.push_back(Arc(op, this));
 }

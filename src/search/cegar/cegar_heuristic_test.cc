@@ -103,6 +103,17 @@ TEST(CegarTest, values) {
     EXPECT_EQ(1, v1.count(2));
 }
 
+TEST(CegarTest, domains_intersect) {
+    init_test();
+
+    AbstractState a("<0={1},1={0,1}>");
+    AbstractState b("<0={0,1},1={2},2={1}>");
+
+    EXPECT_TRUE(a.domains_intersect(&b, 0));
+    EXPECT_FALSE(a.domains_intersect(&b, 1));
+    EXPECT_TRUE(a.domains_intersect(&b, 2));
+}
+
 TEST(CegarTest, regress) {
     init_test();
 
@@ -212,7 +223,6 @@ TEST(CegarTest, check_arc) {
     for (int i = 0; i < pairs.size(); ++i) {
         AbstractState a(pairs[i].first);
         AbstractState b(pairs[i].second);
-        cout << a.str() << " " << b.str() << endl;
         ASSERT_EQ(check[i], a.check_and_add_arc(&op, &b));
     }
 }

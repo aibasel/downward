@@ -32,6 +32,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     g_cegar_abstraction = abstraction;
     g_cegar_abstraction_max_states_online = opts.get<int>("max_states_online");
     abstraction->set_use_astar(opts.get<bool>("use_astar"));
+    abstraction->set_use_new_arc_check(opts.get<bool>("new_arc_check"));
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -135,6 +136,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("debug", false, "print debugging output");
     parser.add_option<bool>("use_astar", true, "find abstract solution with A* or Dijkstra");
     parser.add_option<bool>("reuse_solutions", true, "if last solution still works, do not search for a new one");
+    parser.add_option<bool>("new_arc_check", true, "use faster check for adding arcs");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

@@ -83,6 +83,7 @@ private:
     mutable int last_init_h;
 
     bool use_astar;
+    bool use_new_arc_check;
 
     bool memory_released;
 
@@ -123,6 +124,7 @@ public:
     double get_avg_h() const;
 
     void set_use_astar(bool astar) {use_astar = astar; }
+    void set_use_new_arc_check(bool new_check) {use_new_arc_check = new_check; }
 
     // Testing.
     void write_dot_file(int num);

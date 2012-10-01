@@ -22,6 +22,8 @@ private:
     static vector<int> borders;
     // masks[var][pos] == true iff pos belongs to var.
     static vector<Bitset> masks;
+    // Bitset with all bits set to true.
+    static Bitset true_mask;
 
     void initialize_static_members();
     int pos(int var, int value) const {return borders[var] + value; }
@@ -34,6 +36,7 @@ public:
     void remove_all(int var);
     bool test(int var, int value) const;
     int count(int var) const;
+    bool domains_intersect(const Values &other, int var);
     bool all_vars_intersect(const Values &other, const std::vector<bool> &checked) const;
     string str() const;
     //Domain& operator[](int var) {return values[var]; }

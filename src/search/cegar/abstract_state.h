@@ -61,9 +61,11 @@ public:
     void set_value(int var, int value);
     bool can_refine(int var, int value) const {return values.test(var, value) && values.count(var) >= 2; }
     int count(int var) const {return values.count(var); }
+    bool domains_intersect(AbstractState *other, int var) {return values.domains_intersect(other->values, var); }
     // Return a pointer to the state where the next solution check should start.
     // Return 0 if the search has to be started from the beginning.
-    AbstractState *refine(int var, int value, AbstractState *v1, AbstractState *v2);
+    AbstractState *refine(int var, int value, AbstractState *v1, AbstractState *v2,
+                          bool use_new_arc_check = true);
     bool refinement_breaks_shortest_path(int var, int value) const;
     void add_arc(Operator *op, AbstractState *other);
     void add_loop(Operator *op);
