@@ -9,6 +9,7 @@
 class PDBHeuristic;
 class CanonicalPDBsHeuristic : public Heuristic {
     int size; // the sum of all abstract state sizes of all pdbs in the collection
+    std::vector<std::vector<int> > max_clique_indeces; // indeces of final computed max_cliques
     std::vector<std::vector<PDBHeuristic *> > max_cliques; // final computed max_cliques
     std::vector<std::vector<bool> > are_additive; // pair of variables which are additive
     std::vector<PDBHeuristic *> pattern_databases; // final pattern databases
@@ -26,10 +27,6 @@ class CanonicalPDBsHeuristic : public Heuristic {
        both variables at the same time. */
     void compute_additive_vars();
 
-    /* Pruning of all cliques where all patterns are dominated by a pattern in
-       another clique. */
-    void dominance_pruning(std::vector<std::vector<int> > &clique_indices);
-
     // does not recompute max_cliques
     void _add_pattern(const std::vector<int> &pattern);
 
@@ -44,6 +41,10 @@ public:
 
     // add a new pattern to the collection and recomputes maximal cliques
     void add_pattern(const std::vector<int> &pattern);
+
+    /* Pruning of all cliques where all patterns are dominated by a pattern in
+       another clique. */
+    void dominance_pruning();
 
     // checks for all max cliques if they would be additive to this pattern
     void get_max_additive_subsets(const std::vector<int> &new_pattern,
