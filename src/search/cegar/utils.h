@@ -27,10 +27,8 @@ typedef vector<Condition> Conditions;
 
 std::string domain_to_string(const Domain &domain);
 
-void get_prevail_and_preconditions(const Operator &op, vector<pair<int, int> > *cond);
-
-int get_eff(const Operator &op, int var);
 int get_pre(const Operator &op, int var);
+int get_eff(const Operator &op, int var);
 
 void get_unmet_preconditions(const Operator &op, const State &s,
                              std::vector<pair<int, int> > *cond);
