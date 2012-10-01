@@ -26,6 +26,10 @@ class CanonicalPDBsHeuristic : public Heuristic {
        both variables at the same time. */
     void compute_additive_vars();
 
+    /* Pruning of all cliques where all patterns are dominated by a pattern in
+       another clique. */
+    void dominance_pruning(std::vector<std::vector<int> > &clique_indices);
+
     // does not recompute max_cliques
     void _add_pattern(const std::vector<int> &pattern);
 
