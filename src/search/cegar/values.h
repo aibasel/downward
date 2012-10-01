@@ -42,6 +42,7 @@ public:
     void get_unmet_conditions(const Values &other, Conditions *conditions) const;
     // TODO: Release memory.
     void release_memory() { }
+    FRIEND_TEST(CegarTest, values);
 };
 }
 
