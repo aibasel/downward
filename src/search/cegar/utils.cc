@@ -53,37 +53,30 @@ State *create_state(const string desc) {
     return new State(iss);
 }
 
-int get_eff(const Operator &op, int var) {
-    for (int i = 0; i < op.get_pre_post().size(); ++i) {
+int get_pre(const Operator &op, int var) {
+    for (int i = 0; i < op.get_prevail().size(); i++) {
+        const Prevail &prevail = op.get_prevail()[i];
+        if (prevail.var == var)
+            return prevail.prev;
+    }
+    for (int i = 0; i < op.get_pre_post().size(); i++) {
         const PrePost &pre_post = op.get_pre_post()[i];
         if (pre_post.var == var)
-            return pre_post.post;
+            return pre_post.pre;
     }
+    return UNDEFINED;
+}
+
+int get_eff(const Operator &op, int var) {
     for (int i = 0; i < op.get_prevail().size(); ++i) {
         const Prevail &prevail = op.get_prevail()[i];
         if (prevail.var == var)
             return prevail.prev;
     }
-    return UNDEFINED;
-}
-
-void get_prevail_and_preconditions(const Operator &op, vector<pair<int, int> > *cond) {
-    for (int i = 0; i < op.get_prevail().size(); i++) {
-        const Prevail *prevail = &op.get_prevail()[i];
-        cond->push_back(pair<int, int>(prevail->var, prevail->prev));
-    }
-    for (int i = 0; i < op.get_pre_post().size(); i++) {
-        const PrePost *pre_post = &op.get_pre_post()[i];
-        cond->push_back(pair<int, int>(pre_post->var, pre_post->pre));
-    }
-}
-
-int get_pre(const Operator &op, int var) {
-    vector<pair<int, int> > preconditions;
-    get_prevail_and_preconditions(op, &preconditions);
-    for (int i = 0; i < preconditions.size(); ++i) {
-        if (preconditions[i].first == var)
-            return preconditions[i].second;
+    for (int i = 0; i < op.get_pre_post().size(); ++i) {
+        const PrePost &pre_post = op.get_pre_post()[i];
+        if (pre_post.var == var)
+            return pre_post.post;
     }
     return UNDEFINED;
 }
@@ -91,13 +84,15 @@ int get_pre(const Operator &op, int var) {
 void get_unmet_preconditions(const Operator &op, const State &state,
                              vector<pair<int, int> > *cond) {
     assert(cond->empty());
-    vector<pair<int, int> > preconditions;
-    get_prevail_and_preconditions(op, &preconditions);
-    for (int i = 0; i < preconditions.size(); i++) {
-        int var = preconditions[i].first;
-        int value = preconditions[i].second;
-        if (value != -1 && state[var] != value)
-            cond->push_back(pair<int, int>(var, value));
+    for (int i = 0; i < op.get_prevail().size(); ++i) {
+        const Prevail &prevail = op.get_prevail()[i];
+        if (state[prevail.var] != prevail.prev)
+            cond->push_back(pair<int,int>(prevail.var, prevail.prev));
+    }
+    for (int i = 0; i < op.get_pre_post().size(); ++i) {
+        const PrePost &pre_post = op.get_pre_post()[i];
+        if ((pre_post.pre != -1) && (state[pre_post.var] != pre_post.pre))
+            cond->push_back(pair<int,int>(pre_post.var, pre_post.pre));
     }
     assert(cond->empty() == op.is_applicable(state));
 }
