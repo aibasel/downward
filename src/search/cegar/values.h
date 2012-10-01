@@ -12,10 +12,15 @@ namespace cegar_heuristic {
 class Values {
 private:
     // Possible values of each variable in this state.
-    // values[1] == {2} -> var1 is concretely set here.
-    // values[1] == {2, 3} -> var1 has two possible values.
-    std::vector<Domain> values;
+    // Values are represented from right to left (least- to most-significant).
+    // 11 10 001 -> var0 = {0}, var1 = {1}, var2 = {0,1}
+    Bitset values;
 
+    static int facts;
+    static vector<int> borders;
+    static vector<Bitset> masks;
+
+    int pos(int var, int value) const {return borders[var] + value; }
 public:
     Values();
     void add(int var, int value);
@@ -25,14 +30,14 @@ public:
     void remove_all(int var);
     bool test(int var, int value) const;
     int count(int var) const;
-    bool intersects(int var, const Values &other) const;
     bool all_vars_intersect(const Values &other, const std::vector<bool> &checked) const;
     string str() const;
     //Domain& operator[](int var) {return values[var]; }
     //const Domain& operator[](int var) const {return values[var]; }
     bool abstracts(const Values &other) const;
     void get_unmet_conditions(const Values &other, Conditions *conditions) const;
-    void release_memory() {std::vector<Domain>().swap(values); }
+    // TODO: Release memory.
+    void release_memory() { }
 };
 }
 

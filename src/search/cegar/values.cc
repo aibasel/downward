@@ -7,20 +7,34 @@ using namespace std;
 
 namespace cegar_heuristic {
 
+int Values::facts = -1;
+vector<int> Values::borders;
+vector<Bitset> Values::masks;
+
 Values::Values() {
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
-        Domain domain(g_variable_domain[var]);
-        domain.set();
-        values.push_back(domain);
+    if (facts == -1) {
+        assert(masks.empty());
+        assert(borders.empty());
+        facts = 0;
+        for (int var = 0; var < g_variable_domain.size(); ++var) {
+            borders.push_back(facts);
+            facts += g_variable_domain[var];
+        }
+        for (int var = 0; var < g_variable_domain.size(); ++var) {
+            //Bitset mask(borders[var]);
+        }
     }
+    // TODO: Move to initializer list.
+    values = Bitset(facts);
+    values.set();
 }
 
 void Values::add(int var, int value) {
-    values[var].set(value);
+    values.set(pos(var, value));
 }
 
 void Values::remove(int var, int value) {
-    values[var].reset(value);
+    values.reset(pos(var, value));
 }
 
 void Values::set(int var, int value) {
@@ -29,53 +43,67 @@ void Values::set(int var, int value) {
 }
 
 void Values::add_all(int var) {
-    values[var].set();
+    for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos)
+        values.set(pos);
 }
 
 void Values::remove_all(int var) {
-    values[var].reset();
+    for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos)
+        values.reset(pos);
 }
 
 bool Values::test(int var, int value) const {
-    return values[var].test(value);
+    return values.test(pos(var, value));
 }
 
 int Values::count(int var) const {
-    return values[var].count();
-}
-
-bool Values::intersects(int var, const Values &other) const {
-    return values[var].intersects(other.values[var]);
+    int num_values = 0;
+    for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
+        if (values.test(pos))
+            ++num_values;
+    }
+    return num_values;
 }
 
 bool Values::all_vars_intersect(const Values &other, const vector<bool> &checked) const {
-    for (int var = 0; var < values.size(); ++var) {
-        if (!checked[var] && !values[var].intersects(other.values[var]))
+    // TODO: Intersect first and only check intersection.
+    for (int var = 0; var < borders.size(); ++var) {
+        if (checked[var])
+            continue;
+        bool var_intersects = false;
+        for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
+            if (values.test(pos) && other.values.test(pos)) {
+                var_intersects = true;
+                break;
+            }
+        }
+        if (!var_intersects)
             return false;
     }
     return true;
 }
 
 bool Values::abstracts(const Values &other) const {
-    for (int i = 0; i < values.size(); ++i) {
-        if (!other.values[i].is_subset_of(values[i]))
-            return false;
-    }
-    return true;
+    return other.values.is_subset_of(values);
 }
 
 void Values::get_unmet_conditions(const Values &other, Conditions *conditions) const {
     // Get all set intersections of the possible values here with the possible
     // values in "desired".
-    for (int i = 0; i < g_variable_domain.size(); ++i) {
-        Domain intersection = values[i] & other.values[i];
-        if (intersection.count() < values[i].count()) {
-            int next_value = intersection.find_first();
-            while (next_value != Domain::npos) {
-                // The variable's value matters for determining the resulting state.
-                conditions->push_back(pair<int, int>(i, next_value));
-                next_value = intersection.find_next(next_value);
-            }
+    Bitset intersection = values & other.values;
+    for (int var = 0; var < borders.size(); ++var) {
+        int next_border = borders[var] + g_variable_domain[var];
+        vector<int> facts;
+        int pos = (var == 0) ? intersection.find_first() : intersection.find_next(borders[var] - 1);
+        while (pos != Bitset::npos && pos < next_border) {
+            // The variable's value matters for determining the resulting state.
+            facts.push_back(pos - borders[var]);
+            pos = intersection.find_next(pos);
+        }
+        // TODO: Test if facts is empty.
+        if (facts.size() < count(var)) {
+            for (int i = 0; i < facts.size(); ++i)
+                conditions->push_back(pair<int, int>(var, facts[i]));
         }
     }
 }
@@ -83,11 +111,25 @@ void Values::get_unmet_conditions(const Values &other, Conditions *conditions) c
 string Values::str() const {
     ostringstream oss;
     string sep = "";
-    for (int i = 0; i < values.size(); ++i) {
-        const Domain &vals = values[i];
-        if (vals.count() != g_variable_domain[i]) {
-            oss << sep << i << "=" << domain_to_string(vals);
+    for (int var = 0; var < borders.size(); ++var) {
+        int next_border = borders[var] + g_variable_domain[var];
+        vector<int> facts;
+        int pos = (var == 0) ? values.find_first() : values.find_next(borders[var] - 1);
+        while (pos != Bitset::npos && pos < next_border) {
+            // The variable's value matters for determining the resulting state.
+            facts.push_back(pos - borders[var]);
+            pos = values.find_next(pos);
+        }
+        assert(!facts.empty());
+        if (facts.size() < g_variable_domain[var]) {
+            oss << sep << var << "={";
             sep = ",";
+            string value_sep = "";
+            for (int i = 0; i < facts.size(); ++i) {
+                oss << value_sep << facts[i];
+                value_sep = ",";
+            }
+            oss << "}";
         }
     }
     return oss.str();

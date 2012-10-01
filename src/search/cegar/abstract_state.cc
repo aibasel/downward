@@ -315,8 +315,8 @@ bool AbstractState::check_and_add_loop(Operator *op) {
 
 bool AbstractState::is_abstraction_of(const State &conc_state) const {
     // Return true if every concrete value is contained in the possible values.
-    for (int i = 0; i < g_variable_domain.size(); ++i) {
-        if (!values.test(i, conc_state[i]))
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        if (!values.test(var, conc_state[var]))
             return false;
     }
     return true;
