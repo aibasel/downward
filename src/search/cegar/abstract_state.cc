@@ -129,23 +129,17 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
                 if (u->domains_intersect(v1, var)) {
                     u->add_arc(op, v1);
                     u_v1 |= is_solution_arc;
-                } else {
-                    assert(!u->check_arc(op, v1));
                 }
                 if (u->domains_intersect(v2, var)) {
                     u->add_arc(op, v2);
                     u_v2 |= is_solution_arc;
-                } else {
-                    assert(!u->check_arc(op, v2));
                 }
             } else if (eff == value) {
                 u->add_arc(op, v2);
                 u_v2 |= is_solution_arc;
-                assert(!u->check_arc(op, v1));
             } else {
                 u->add_arc(op, v1);
                 u_v1 |= is_solution_arc;
-                assert(!u->check_arc(op, v2));
             }
         } else {
             if (u->check_and_add_arc(op, v1)) {
@@ -174,41 +168,23 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
                     if (v1->domains_intersect(w, var)) {
                         v1->add_arc(op, w);
                         v1_w |= is_solution_arc;
-                    } else {
-                        assert(!v1->check_arc(op, w));
                     }
                     if (v2->domains_intersect(w, var)) {
                         v2->add_arc(op, w);
                         v2_w |= is_solution_arc;
-                    } else {
-                        if (v2->check_arc(op, w)) {
-                            op->dump();
-                            cout << "w : " << w->str() << endl;
-                            cout << "v : " << str() << endl;
-                            cout << "v1: " << v1->str() << endl;
-                            cout << "v2: " << v2->str() << endl;
-                        }
-                        assert(!v2->check_arc(op, w));
                     }
-                } else {
-                    if (w->values.test(var, eff)) {
-                        v1->add_arc(op, w);
-                        v2->add_arc(op, w);
-                        v1_w |= is_solution_arc;
-                        v2_w |= is_solution_arc;
-                    } else {
-                        assert(!v1->check_arc(op, w));
-                        assert(!v2->check_arc(op, w));
-                    }
+                } else if (w->values.test(var, eff)) {
+                    v1->add_arc(op, w);
+                    v2->add_arc(op, w);
+                    v1_w |= is_solution_arc;
+                    v2_w |= is_solution_arc;
                 }
             } else if (pre == value) {
                 v2->add_arc(op, w);
                 v2_w |= is_solution_arc;
-                assert(!v1->check_arc(op, w));
             } else {
                 v1->add_arc(op, w);
                 v1_w |= is_solution_arc;
-                assert(!v2->check_arc(op, w));
             }
         } else {
             // If the first check returns false, the second arc has to be added.
@@ -349,17 +325,11 @@ void AbstractState::add_arc(Operator *op, AbstractState *other) {
     // difference for 10 domains, 17 domains preferred unsorted arcs and in
     // 3 domains performance was better with sorted arcs.
     assert(other != this);
-    if (!check_arc(op, other)) {
-        cout << str() << " -> " << other->str() << " with " << endl;
-        op->dump();
-    }
-    assert(check_arc(op, other));
     next.push_back(Arc(op, other));
     other->prev.push_back(Arc(op, this));
 }
 
 void AbstractState::add_loop(Operator *op) {
-    assert(check_arc(op, this));
     loops.push_back(op);
 }
 
