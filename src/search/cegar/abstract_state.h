@@ -29,6 +29,7 @@ private:
     // Possible values of each variable in this state.
     // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
+    // TODO: Turn into pointer.
     Values values;
 
     Arcs next, prev;

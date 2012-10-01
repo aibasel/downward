@@ -43,8 +43,7 @@ public:
     //const Domain& operator[](int var) const {return values[var]; }
     bool abstracts(const Values &other) const;
     void get_unmet_conditions(const Values &other, Conditions *conditions) const;
-    // TODO: Release memory.
-    void release_memory() { }
+    void release_memory() {Bitset().swap(values); }
     FRIEND_TEST(CegarTest, values);
 };
 }
