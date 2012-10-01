@@ -76,6 +76,8 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
 
     vector<vector<int> > cgraph_max_cliques;
     ::compute_max_cliques(cgraph, cgraph_max_cliques);
+    dominance_pruning(cgraph_max_cliques);
+
     max_cliques.reserve(cgraph_max_cliques.size());
 
     for (size_t i = 0; i < cgraph_max_cliques.size(); ++i) {
@@ -101,6 +103,121 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
             }
         }
     }
+}
+
+void CanonicalPDBsHeuristic::dominance_pruning(vector<vector<int> > &clique_indices) {
+    // Precompute superset relation of patterns.
+    int num_patterns = pattern_databases.size();
+    // Patters are copied and sorted for the superset test to avoid changing the
+    // order in the original pattern.
+    vector<vector<int> > sorted_patterns(num_patterns);
+    for (size_t i = 0; i < num_patterns; ++i) {
+        sorted_patterns[i] = pattern_databases[i]->get_pattern();
+        std::sort(sorted_patterns[i].begin(), sorted_patterns[i].end());
+    }
+    vector<vector<bool> > is_superset(num_patterns, vector<bool>(num_patterns, false));
+    for (size_t i = 0; i < num_patterns; ++i) {
+        for (size_t j = 0; j < num_patterns; ++j) {
+            if (std::includes(sorted_patterns[i].begin(),
+                              sorted_patterns[i].end(),
+                              sorted_patterns[j].begin(),
+                              sorted_patterns[j].end())) {
+                is_superset[i][j] = true;
+            }
+        }
+    }
+
+    // Check all pairs of cliques for dominance.
+    vector<bool> clique_useful(clique_indices.size(), false);
+    int num_useful_cliques = 0;
+    vector<bool> pattern_useful(num_patterns, false);
+    int num_useful_patterns = 0;
+    for (size_t c1_id = 0; c1_id < clique_indices.size(); ++c1_id) {
+        vector<int> &c1 = clique_indices[c1_id];
+        // Clique c1 is useful if it is not dominated by any clique c2.
+        // Assume that it is useful and set it to false if any dominating
+        // clique is found.
+        bool c1_is_useful = true;
+        for (size_t c2_id = 0; c2_id < clique_indices.size(); ++c2_id) {
+            if (c1_id == c2_id) {
+                continue;
+            }
+            vector<int> &c2 = clique_indices[c2_id];
+            // c2 dominates c1 iff for every pattern p1 in c1 there is a pattern
+            // p2 in c2 where p2 is a superset of p1.
+            // Assume dominance until we fund a pattern p1 that is not dominated.
+            bool c2_dominates_c1 = true;
+            for (size_t pdb1_id = 0; pdb1_id < c1.size(); ++pdb1_id) {
+                // Assume there is no superset until we found one.
+                bool p1_has_superset = false;
+                for (size_t pdb2_id = 0; pdb2_id < c2.size(); ++pdb2_id) {
+                    if (is_superset[c2[pdb2_id]][c1[pdb1_id]]) {
+                        p1_has_superset = true;
+                        break;
+                    }
+                }
+                if (!p1_has_superset) {
+                    c2_dominates_c1 = false;
+                    break;
+                }
+            }
+            if (c2_dominates_c1) {
+                c1_is_useful = false;
+                break;
+            }
+        }
+        if (c1_is_useful) {
+            clique_useful[c1_id] = true;
+            num_useful_cliques++;
+            for (size_t p_id = 0; p_id < c1.size(); ++p_id) {
+                if (!pattern_useful[c1[p_id]]) {
+                    num_useful_patterns++;
+                }
+                pattern_useful[c1[p_id]] = true;
+            }
+        }
+    }
+
+    // Prune PDBHeuristics (note that the indices might change).
+    vector<PDBHeuristic *> remaining_heuristics;
+    remaining_heuristics.reserve(num_useful_patterns);
+    vector<int> index_translation(num_patterns, -1);
+    for (size_t i = 0; i < num_patterns; ++i) {
+        if (pattern_useful[i]) {
+            remaining_heuristics.push_back(pattern_databases[i]);
+            index_translation[i] = remaining_heuristics.size() - 1;
+        } else {
+            size -= pattern_databases[i]->get_size();
+        }
+    }
+    cout << "Pruned " << pattern_databases.size() - remaining_heuristics.size() <<
+            " of " << pattern_databases.size() << " PDBs" << endl;
+    pattern_databases.swap(remaining_heuristics);
+
+    // Prune cliques and use the new indices of the PDBHeuristics.
+    vector<vector<int> > remaining_clique_indices(num_useful_cliques);
+    int new_c_id = 0;
+    for (size_t c_id = 0; c_id < clique_indices.size(); ++c_id) {
+        vector<int> &clique = clique_indices[c_id];
+        if (!clique_useful[c_id]) {
+            continue;
+        }
+        // We can use swap here because clique_indices will be destroyed
+        // after this loop. So we first translate the pattern indices to
+        // new indices in place.
+        for (size_t p_id = 0; p_id < clique.size(); ++p_id) {
+            // All patterns in useful cliques are marked as useful and should
+            // thus have an index translation.
+            assert(index_translation[clique[p_id]] != -1);
+            clique[p_id] = index_translation[clique[p_id]];
+        }
+        remaining_clique_indices[new_c_id].swap(clique);
+        new_c_id++;
+    }
+    assert(new_c_id == num_useful_cliques);
+    cout << "Pruned " << clique_indices.size() - remaining_clique_indices.size() <<
+            " of " << clique_indices.size() << " cliques" << endl;
+    clique_indices.swap(remaining_clique_indices);
 }
 
 void CanonicalPDBsHeuristic::initialize() {
