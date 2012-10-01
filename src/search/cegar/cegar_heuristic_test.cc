@@ -3,6 +3,7 @@
 #include "abstract_state.h"
 #include "abstraction.h"
 #include "utils.h"
+#include "values.h"
 #include "../operator.h"
 #include "../axioms.h"
 
@@ -74,6 +75,32 @@ TEST(CegarTest, str) {
     ASSERT_TRUE(a.str() == b.str());
     ASSERT_FALSE(a.str() == c.str());
     ASSERT_FALSE(b.str() == c.str());
+}
+
+TEST(CegarTest, values) {
+    init_test();
+
+    Values v1;
+
+    string buffer;
+    vector<string> masks;
+    masks.push_back("0000011");
+    masks.push_back("0011100");
+    masks.push_back("1100000");
+    for (int i = 0; i < masks.size(); ++i) {
+        to_string(Values::masks[i], buffer);
+        ASSERT_EQ(masks[i], buffer);
+    }
+    EXPECT_EQ("", v1.str());
+    v1.set(2, 1);
+    EXPECT_EQ("2={1}", v1.str());
+    v1.set(1, 1);
+    EXPECT_EQ("1={1},2={1}", v1.str());
+    v1.add(1, 2);
+    EXPECT_EQ("1={1,2},2={1}", v1.str());
+    EXPECT_EQ(2, v1.count(0));
+    EXPECT_EQ(2, v1.count(1));
+    EXPECT_EQ(1, v1.count(2));
 }
 
 TEST(CegarTest, regress) {
