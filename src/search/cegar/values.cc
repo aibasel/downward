@@ -10,7 +10,6 @@ namespace cegar_heuristic {
 int Values::facts = -1;
 vector<int> Values::borders;
 vector<Bitset> Values::masks;
-Bitset Values::true_mask;
 
 Values::Values() {
     if (facts == -1)
@@ -36,8 +35,6 @@ void Values::initialize_static_members() {
         mask.resize(facts, false);
         masks.push_back(mask);
     }
-    true_mask = Bitset(facts);
-    true_mask.set();
 }
 
 void Values::add(int var, int value) {
@@ -77,8 +74,7 @@ int Values::count(int var) const {
 }
 
 bool Values::domains_intersect(const Values &other, int var) {
-    Bitset intersection(values & other.values & masks[var]);
-    return intersection.intersects(true_mask);
+    return (values & other.values & masks[var]).any();
 }
 
 bool Values::all_vars_intersect(const Values &other, const vector<bool> &checked) const {
