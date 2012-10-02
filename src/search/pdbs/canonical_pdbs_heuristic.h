@@ -9,7 +9,6 @@
 class PDBHeuristic;
 class CanonicalPDBsHeuristic : public Heuristic {
     int size; // the sum of all abstract state sizes of all pdbs in the collection
-    std::vector<std::vector<int> > max_clique_indeces; // indeces of final computed max_cliques
     std::vector<std::vector<PDBHeuristic *> > max_cliques; // final computed max_cliques
     std::vector<std::vector<bool> > are_additive; // pair of variables which are additive
     std::vector<PDBHeuristic *> pattern_databases; // final pattern databases
