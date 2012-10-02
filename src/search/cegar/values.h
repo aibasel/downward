@@ -22,8 +22,6 @@ private:
     static vector<int> borders;
     // masks[var][pos] == true iff pos belongs to var.
     static vector<Bitset> masks;
-    // Bitset with all bits set to true.
-    static Bitset true_mask;
 
     void initialize_static_members();
     int pos(int var, int value) const {return borders[var] + value; }
