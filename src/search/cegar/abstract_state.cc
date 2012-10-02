@@ -130,7 +130,7 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
                     u->add_arc(op, v1);
                     u_v1 |= is_solution_arc;
                 }
-                if (u->domains_intersect(v2, var)) {
+                if (u->values.test(var, value)) {
                     u->add_arc(op, v2);
                     u_v2 |= is_solution_arc;
                 }
@@ -169,7 +169,7 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
                         v1->add_arc(op, w);
                         v1_w |= is_solution_arc;
                     }
-                    if (v2->domains_intersect(w, var)) {
+                    if (w->values.test(var, value)) {
                         v2->add_arc(op, w);
                         v2_w |= is_solution_arc;
                     }
@@ -207,7 +207,7 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
             int eff = get_eff(*op, var);
             if (pre == UNDEFINED) {
                 if (eff == UNDEFINED) {
-                    if (v1->domains_intersect(v2, var)) {
+                    if (v1->values.test(var, value)) {
                         v1->add_arc(op, v2);
                         v2->add_arc(op, v1);
                     }
