@@ -207,37 +207,29 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
             int eff = get_eff(*op, var);
             if (pre == UNDEFINED) {
                 if (eff == UNDEFINED) {
-                    if (v1->values.test(var, value)) {
-                        v1->add_arc(op, v2);
-                        v2->add_arc(op, v1);
-                    }
                     v1->add_loop(op);
                     v2->add_loop(op);
                 } else if (eff == value) {
                     v1->add_arc(op, v2);
                     v2->add_loop(op);
-                } else if (v1->values.test(var, eff)) {
-                    v2->add_arc(op, v1);
+                } else {
+                    //assert(v1->values.test(var, eff));
                     v1->add_loop(op);
+                    v2->add_arc(op, v1);
                 }
             } else if (pre == value) {
-                if (eff == UNDEFINED) {
-                    v2->add_arc(op, v1);
+                //assert(eff != UNDEFINED);
+                if (eff == value) {
                     v2->add_loop(op);
-                } else if (eff == value) {
-                    v2->add_loop(op);
-                } else if (v1->values.test(var, eff)) {
+                } else {
+                    //assert(v1->values.test(var, eff));
                     v2->add_arc(op, v1);
                 }
+            } else if (eff == value) {
+                v1->add_arc(op, v2);
             } else {
-                if (eff == UNDEFINED) {
-                    v1->add_arc(op, v2);
-                    v1->add_loop(op);
-                } else if (eff == value) {
-                    v1->add_arc(op, v2);
-                } else if (v1->values.test(var, eff)) {
-                    v1->add_loop(op);
-                }
+                //assert(v1->values.test(var, eff));
+                v1->add_loop(op);
             }
         } else {
             v1->check_and_add_arc(op, v2);
