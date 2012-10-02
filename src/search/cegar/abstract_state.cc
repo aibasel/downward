@@ -335,10 +335,12 @@ void AbstractState::add_loop(Operator *op) {
 }
 
 void AbstractState::remove_arc(Arcs &arcs, Operator *op, AbstractState *other) {
-    // Swapping arcs.back() and pos to speed things up is already done under the
-    // covers of erase().
-    // This will print an error if we try to remove an arc that is not there.
-    arcs.erase(find(arcs.begin(), arcs.end(), Arc(op, other)));
+    // Move arcs.back() to pos to speed things up.
+    Arcs::iterator pos = find(arcs.begin(), arcs.end(), Arc(op, other));
+    assert(pos != arcs.end());
+    // For PODs assignment is faster than swapping.
+    *pos = arcs.back();
+    arcs.pop_back();
 }
 
 void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
