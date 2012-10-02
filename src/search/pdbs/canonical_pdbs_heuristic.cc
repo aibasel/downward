@@ -15,7 +15,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <ext/hash_set>
-#include <tr1/functional>
+#include <boost/functional/hash.hpp>
 #include <vector>
 
 using namespace std;
@@ -110,8 +110,31 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
     Timer timer;
     int num_patterns = pattern_databases.size();
     int num_cliques = max_cliques.size();
+
+    // Precompute superset relation of patterns.
+    // Patters are copied and sorted for the superset test to avoid changing the
+    // order in the original pattern.
+    vector<vector<int> > sorted_patterns(num_patterns);
+    for (size_t i = 0; i < num_patterns; ++i) {
+        sorted_patterns[i] = pattern_databases[i]->get_pattern();
+        std::sort(sorted_patterns[i].begin(), sorted_patterns[i].end());
+    }
+    typedef __gnu_cxx::hash_set<pair<PDBHeuristic *, PDBHeuristic *>,
+                    boost::hash<pair<PDBHeuristic *, PDBHeuristic *> > > PDBRelation;
+    PDBRelation superset_relation;
+    for (size_t i = 0; i < num_patterns; ++i) {
+        for (size_t j = 0; j < num_patterns; ++j) {
+            if (std::includes(sorted_patterns[i].begin(), sorted_patterns[i].end(),
+                              sorted_patterns[j].begin(), sorted_patterns[j].end())) {
+                superset_relation.insert(make_pair(pattern_databases[i],
+                                                   pattern_databases[j]));
+            }
+        }
+    }
+
     vector<vector<PDBHeuristic *> > remaining_cliques;
-    __gnu_cxx::hash_set<PDBHeuristic *, std::tr1::hash<const void *> > remaining_heuristics;
+    __gnu_cxx::hash_set<PDBHeuristic *,
+            boost::hash<PDBHeuristic *> > remaining_heuristics;
     // Check all pairs of cliques for dominance.
     for (size_t c1_id = 0; c1_id < num_cliques; ++c1_id) {
         vector<PDBHeuristic *> &c1 = max_cliques[c1_id];
@@ -129,19 +152,12 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
             // Assume dominance until we fund a pattern p1 that is not dominated.
             bool c2_dominates_c1 = true;
             for (size_t pdb1_id = 0; pdb1_id < c1.size(); ++pdb1_id) {
-                // Patters are copied and sorted for the superset test to avoid changing the
-                // order in the original pattern.
-                vector<int> sorted_pattern1 = c1[pdb1_id]->get_pattern();
-                std::sort(sorted_pattern1.begin(), sorted_pattern1.end());
                 // Assume there is no superset until we found one.
                 bool p1_has_superset = false;
                 for (size_t pdb2_id = 0; pdb2_id < c2.size(); ++pdb2_id) {
-                    vector<int> sorted_pattern2 = c2[pdb2_id]->get_pattern();
-                    std::sort(sorted_pattern2.begin(), sorted_pattern2.end());
-                    if (std::includes(sorted_pattern2.begin(),
-                                      sorted_pattern2.end(),
-                                      sorted_pattern1.begin(),
-                                      sorted_pattern1.end())) {
+                    PDBRelation::iterator it = superset_relation.find(
+                                make_pair(c2[pdb2_id], c1[pdb1_id]));
+                    if (it != superset_relation.end()) {
                         p1_has_superset = true;
                         break;
                     }
