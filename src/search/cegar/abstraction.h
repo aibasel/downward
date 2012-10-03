@@ -53,6 +53,8 @@ private:
     AbstractState *start_solution_check_ptr;
     State last_checked_conc_state;
 
+    void refine(AbstractState *state, int var, int value);
+
     PickStrategy pick_deviation;
     PickStrategy pick_precondition;
     PickStrategy pick_goal;
@@ -92,7 +94,7 @@ public:
                          PickStrategy precondition_strategy = RANDOM,
                          PickStrategy goal_strategy = RANDOM);
 
-    void refine(AbstractState *state, int var, int value);
+    void break_solution(AbstractState *state, int var, int value);
     void refine(const vector<Condition> &conditions, AbstractState *state);
     void improve_h(const State &state, AbstractState *abs_state);
 
