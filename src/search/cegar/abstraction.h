@@ -31,10 +31,7 @@ enum PickStrategy {
     MAX_REFINED,
     // Number of predecessors in causal graph.
     MIN_PREDECESSORS,
-    MAX_PREDECESSORS,
-    // Try to keep or break the current solution with the refinement.
-    BREAK,
-    KEEP
+    MAX_PREDECESSORS
 };
 
 class Abstraction {

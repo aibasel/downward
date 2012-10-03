@@ -67,7 +67,6 @@ public:
     // Return 0 if the search has to be started from the beginning.
     void refine(int var, int value, AbstractState *v1, AbstractState *v2,
                 bool use_new_arc_check = true);
-    bool refinement_breaks_shortest_path(int var, int value) const;
     void add_arc(Operator *op, AbstractState *other);
     void add_loop(Operator *op);
     void remove_next_arc(Operator *op, AbstractState *other);

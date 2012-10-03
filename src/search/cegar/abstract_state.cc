@@ -269,31 +269,6 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     }
 }
 
-bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
-    assert(can_refine(var, value));
-
-    AbstractState v1 = AbstractState();
-    AbstractState v2 = AbstractState();
-
-    v1.values = values;
-    v2.values = values;
-
-    // In v1 var can have all of the previous values except the desired one.
-    v1.values.remove(var, value);
-
-    // In v2 var can only have the desired value.
-    v2.values.set(var, value);
-
-    bool u_v1 = (state_in) ? state_in->check_arc(op_in, &v1) : false;
-    bool u_v2 = (state_in) ? state_in->check_arc(op_in, &v2) : false;
-    bool v1_w = (state_out) ? v1.check_arc(op_out, state_out) : false;
-    bool v2_w = (state_out) ? v2.check_arc(op_out, state_out) : false;
-    return !(u_v1 && v1_w) && !(u_v1 && !state_out && v1.is_abstraction_of_goal()) &&
-           !(v1_w && !state_in && v1.is_abstraction_of(*g_initial_state)) &&
-           !(u_v2 && v2_w) && !(u_v2 && !state_out && v2.is_abstraction_of_goal()) &&
-           !(v2_w && !state_in && v2.is_abstraction_of(*g_initial_state));
-}
-
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
     // Experiments showed that keeping the arcs sorted for faster removal
     // increases the overall processing time. In 30 domains it made no
