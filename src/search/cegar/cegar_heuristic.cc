@@ -124,8 +124,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_REFINED");
     pick_strategies.push_back("MIN_PREDECESSORS");
     pick_strategies.push_back("MAX_PREDECESSORS");
-    pick_strategies.push_back("BREAK");
-    pick_strategies.push_back("KEEP");
     parser.add_enum_option("pick_deviation", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied deviation precondition");
     parser.add_enum_option("pick_precondition", pick_strategies, "RANDOM",
