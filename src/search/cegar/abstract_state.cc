@@ -86,10 +86,10 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
 }
 
 void AbstractState::get_unmet_conditions(const AbstractState &desired,
-                                         //const State &prev_conc_state,
+                                         const State &prev_conc_state,
                                          vector<pair<int, int> > *conditions)
 const {
-    values.get_unmet_conditions(desired.values, conditions);
+    values.get_unmet_conditions(desired.values, prev_conc_state, conditions);
 }
 
 AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2,

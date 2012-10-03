@@ -40,7 +40,7 @@ public:
     //Domain& operator[](int var) {return values[var]; }
     //const Domain& operator[](int var) const {return values[var]; }
     bool abstracts(const Values &other) const;
-    void get_unmet_conditions(const Values &other, Conditions *conditions) const;
+    void get_unmet_conditions(const Values &other, const State conc_state, Conditions *conditions) const;
     void release_memory() {Bitset().swap(values); }
     FRIEND_TEST(CegarTest, values);
 };

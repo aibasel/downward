@@ -99,25 +99,21 @@ bool Values::abstracts(const Values &other) const {
     return other.values.is_subset_of(values);
 }
 
-void Values::get_unmet_conditions(const Values &other, Conditions *conditions) const {
-    // Get all set intersections of the possible values here with the possible
-    // values in "desired".
+void Values::get_unmet_conditions(const Values &other, const State conc_state,
+                                  Conditions *conditions) const {
+    // Intersect the domains with the domains of the other state. If
+    // conc_state[var] is not contained in the intersection, add all valid values
+    // for this variable from the intersection to the returned vector.
     Bitset intersection(values & other.values);
     for (int var = 0; var < borders.size(); ++var) {
-        int next_border = borders[var] + g_variable_domain[var];
-        vector<int> facts;
-        int pos = (var == 0) ? intersection.find_first() : intersection.find_next(borders[var] - 1);
-        while (pos != Bitset::npos && pos < next_border) {
-            // The variable's value matters for determining the resulting state.
-            facts.push_back(pos - borders[var]);
-            pos = intersection.find_next(pos);
-        }
-        assert(!facts.empty());
-        if (facts.size() < count(var)) {
-            for (int i = 0; i < facts.size(); ++i)
-                conditions->push_back(pair<int, int>(var, facts[i]));
+        if (!intersection.test(pos(var, conc_state[var]))) {
+            for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
+                if (intersection.test(pos))
+                    conditions->push_back(make_pair(var, pos - borders[var]));
+            }
         }
     }
+    assert(!conditions->empty());
 }
 
 string Values::str() const {
