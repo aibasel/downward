@@ -15,20 +15,6 @@ using namespace std;
 namespace cegar_heuristic {
 bool DEBUG = false;
 
-string domain_to_string(const Domain &domain) {
-    ostringstream oss;
-    oss << "{";
-    int j = domain.find_first();
-    while (j != Domain::npos) {
-        oss << j;
-        j = domain.find_next(j);
-        if (j != Domain::npos)
-            oss << ",";
-    }
-    oss << "}";
-    return oss.str();
-}
-
 Operator create_op(const string desc) {
     istringstream iss("begin_operator\n" + desc + "\nend_operator");
     return Operator(iss, false);

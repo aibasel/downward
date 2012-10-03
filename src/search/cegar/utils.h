@@ -25,8 +25,6 @@ typedef Bitset Domain;
 typedef pair<int, int> Condition;
 typedef vector<Condition> Conditions;
 
-std::string domain_to_string(const Domain &domain);
-
 int get_pre(const Operator &op, int var);
 int get_eff(const Operator &op, int var);
 

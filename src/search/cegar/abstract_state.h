@@ -75,7 +75,7 @@ public:
     bool check_arc(Operator *op, AbstractState *other);
     bool check_and_add_arc(Operator *op, AbstractState *other);
     bool check_and_add_loop(Operator *op);
-    void get_unmet_conditions(const AbstractState &desired, //const State &prev_conc_state,
+    void get_unmet_conditions(const AbstractState &desired, const State &prev_conc_state,
                               vector<pair<int, int> > *conditions) const;
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;

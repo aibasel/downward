@@ -283,7 +283,7 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
             assert(prev_op);
             AbstractState desired_prev_state;
             abs_state->regress(*prev_op, &desired_prev_state);
-            prev_state->get_unmet_conditions(desired_prev_state, //last_checked_conc_state,
+            prev_state->get_unmet_conditions(desired_prev_state, last_checked_conc_state,
                                              &unmet_cond);
             if (pick_deviation == ALL) {
                 pick_condition_for_each_var(&unmet_cond);
