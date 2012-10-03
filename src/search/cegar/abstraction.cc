@@ -62,7 +62,9 @@ void Abstraction::break_solution(AbstractState *state, int var, int value) {
         refine(state, var, value);
         AbstractState *v1 = state->get_left_child();
         AbstractState *v2 = state->get_right_child();
-        if ((v1->get_op_in() == v2->get_op_in()) && (v1->get_state_in() == v2->get_state_in())) {
+        if (v1->get_state_in() && v2->get_state_in()) {
+            assert(v1->get_op_in() == v2->get_op_in());
+            assert(v1->get_state_in() == v2->get_state_in());
             state = v1->get_state_in();
         } else {
             break;
@@ -288,7 +290,7 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
             prev_state->get_unmet_conditions(desired_prev_state, last_checked_conc_state,
                                              &unmet_cond);
             pick_condition(*prev_state, unmet_cond, pick_deviation, &var, &value);
-            refine(prev_state, var, value);
+            break_solution(prev_state, var, value);
             // Make sure we only reuse the solution if we are far enough from
             // the initial state to have saved the correct last-checked concrete
             // state.
@@ -307,7 +309,7 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
             ++unmet_preconditions;
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
             pick_condition(*abs_state, unmet_cond, pick_precondition, &var, &value);
-            refine(abs_state, var, value);
+            break_solution(abs_state, var, value);
             return false;
         } else if (next_op) {
             // Go to the next state.
@@ -329,7 +331,7 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
             assert(!next_state);
             get_unmet_goal_conditions(conc_state, &unmet_cond);
             pick_condition(*abs_state, unmet_cond, pick_goal, &var, &value);
-            refine(abs_state, var, value);
+            break_solution(abs_state, var, value);
             return false;
         } else {
             // We have reached the goal.
