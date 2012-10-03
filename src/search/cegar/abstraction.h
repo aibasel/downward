@@ -34,10 +34,7 @@ enum PickStrategy {
     MAX_PREDECESSORS,
     // Try to keep or break the current solution with the refinement.
     BREAK,
-    KEEP,
-    // Refine this state with the first condition, the desired resulting state
-    // with the second condition.
-    ALL
+    KEEP
 };
 
 class Abstraction {
@@ -95,7 +92,6 @@ public:
                          PickStrategy goal_strategy = RANDOM);
 
     void break_solution(AbstractState *state, int var, int value);
-    void refine(const vector<Condition> &conditions, AbstractState *state);
     void improve_h(const State &state, AbstractState *abs_state);
 
     AbstractState *get_abstract_state(const State &state) const;
