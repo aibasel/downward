@@ -57,6 +57,19 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
     }
 }
 
+void Abstraction::break_solution(AbstractState *state, int var, int value) {
+    while (true) {
+        refine(state, var, value);
+        AbstractState *v1 = state->get_left_child();
+        AbstractState *v2 = state->get_right_child();
+        if ((v1->get_op_in() == v2->get_op_in()) && (v1->get_state_in() == v2->get_state_in())) {
+            state = v1->get_state_in();
+        } else {
+            break;
+        }
+    }
+}
+
 void Abstraction::refine(AbstractState *state, int var, int value) {
     assert(!g_operators.empty());  // We need operators and the g_initial_state.
     if (DEBUG)
@@ -65,7 +78,7 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
              << ")" << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
-    start_solution_check_ptr = state->refine(var, value, v1, v2, use_new_arc_check);
+    state->refine(var, value, v1, v2, use_new_arc_check);
     states.erase(state);
     states.insert(v1);
     states.insert(v2);

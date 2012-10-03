@@ -92,8 +92,8 @@ const {
     values.get_unmet_conditions(desired.values, prev_conc_state, conditions);
 }
 
-AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2,
-                                     bool use_new_arc_check) {
+void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState *v2,
+                           bool use_new_arc_check) {
     // We can only refine for vars that can have at least two values.
     // The desired value has to be in the set of possible values.
     assert(can_refine(var, value));
@@ -251,39 +251,22 @@ AbstractState *AbstractState::refine(int var, int value, AbstractState *v1, Abst
     assert(this->is_abstraction_of(*v1));
     assert(this->is_abstraction_of(*v2));
 
-    // Remove obsolete members.
-    release_memory();
-
     // Pass on the h-value.
     v1->set_h(h);
     v2->set_h(h);
 
-    AbstractState *bridge_state = 0;
-    // If we refine a goal state, only reuse solution if the path leads to the goal.
-    bool v1_is_bridge = (u_v1 && v1_w) || (u_v1 && !state_out && v1->is_abstraction_of_goal());
-    bool v2_is_bridge = (u_v2 && v2_w) || (u_v2 && !state_out && v2->is_abstraction_of_goal());
-    if (v2_is_bridge) {
-        // Prefer going over v2. // TODO: add option?
-        bridge_state = v2;
-    } else if (v1_is_bridge) {
-        bridge_state = v1;
-    }
+    if (u_v1)
+        v1->op_in = v2->op_in = op_in;
+    if (u_v2)
+        v1->state_in = v2->state_in = state_in;
+
+    // Remove obsolete members.
+    release_memory();
+
     if (u_v1 && u_v2) {
-        assert(bridge_state);
-        //assert(v1_w || v2_w);
-        //assert(state_in->can_refine(var, value));
+        assert(state_in->can_refine(var, value));
+        assert(v1->state_in == state_in && v2->state_in == state_in);
     }
-    if (bridge_state) {
-        assert(state_in);
-        assert(op_in);
-        state_in->set_successor(op_in, bridge_state);
-        if (state_out) {
-            assert(op_out);
-            bridge_state->set_successor(op_out, state_out);
-        }
-        return state_in;
-    }
-    return 0;
 }
 
 bool AbstractState::refinement_breaks_shortest_path(int var, int value) const {
