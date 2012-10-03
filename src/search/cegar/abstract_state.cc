@@ -255,18 +255,14 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     v1->set_h(h);
     v2->set_h(h);
 
-    if (u_v1)
+    if (u_v1 && u_v2) {
+        assert(state_in->can_refine(var, value));
         v1->op_in = v2->op_in = op_in;
-    if (u_v2)
         v1->state_in = v2->state_in = state_in;
+    }
 
     // Remove obsolete members.
     release_memory();
-
-    if (u_v1 && u_v2) {
-        assert(state_in->can_refine(var, value));
-        assert(v1->state_in == state_in && v2->state_in == state_in);
-    }
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
