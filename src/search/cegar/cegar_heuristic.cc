@@ -52,7 +52,7 @@ void CegarHeuristic::initialize() {
     bool success = false;
     int num_states = abstraction->get_num_states();
     int logged_states = 0;
-    const int states_log_step = 100;
+    const int states_log_step = 1000;
     if (WRITE_DOT_FILES) {
         write_causal_graph(*g_causal_graph);
         abstraction->write_dot_file(num_states);
