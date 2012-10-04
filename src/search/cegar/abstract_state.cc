@@ -255,10 +255,31 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     v1->set_h(h);
     v2->set_h(h);
 
-    if (u_v1 && u_v2) {
+    if (u_v1 && u_v2)
         assert(state_in->can_refine(var, value));
-        v1->op_in = v2->op_in = op_in;
-        v1->state_in = v2->state_in = state_in;
+
+    // Update the solution path. There may now be two paths (over v1 and v2).
+    if (u_v1) v1->set_predecessor(op_in, state_in);
+    if (u_v2) v2->set_predecessor(op_in, state_in);
+    if (v1_w) v1->set_successor(op_out, state_out);
+    if (v2_w) v2->set_successor(op_out, state_out);
+
+    // Update the path from u to one of the new states. If both paths are valid,
+    // we can take either. Only if one state abstracts the goal, we should
+    // choose it. The operator obviously doesn't have to be changed.
+    if (u_v1 && (!u_v2 || v1->is_abstraction_of_goal())) {
+        state_in->state_out = v1;
+    } else if (u_v2) {
+        state_in->state_out = v2;
+    }
+
+    // Update the path from v1 and v2 to w. If both paths are valid, we can take
+    // either. Only if one state abstracts the initial state, we should choose
+    // it. The operator obviously doesn't have to be changed.
+    if (v1_w && (!v2_w || v1->is_abstraction_of(*g_initial_state))) {
+        state_out->state_in = v1;
+    } else if (v2_w) {
+        state_out->state_in = v2;
     }
 
     // Remove obsolete members.

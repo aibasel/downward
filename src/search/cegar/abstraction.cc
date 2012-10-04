@@ -63,6 +63,8 @@ void Abstraction::break_solution(AbstractState *state, int var, int value) {
         AbstractState *v1 = state->get_left_child();
         AbstractState *v2 = state->get_right_child();
         if (v1->get_state_in() && v2->get_state_in()) {
+            // The arc on the solution u->v is now ambiguous (u->v1 and u->v2 exist).
+            assert(v1->get_op_in() && v2->get_op_in());
             assert(v1->get_op_in() == v2->get_op_in());
             assert(v1->get_state_in() == v2->get_state_in());
             state = v1->get_state_in();
@@ -185,7 +187,6 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             AbstractState *successor = it->second;
 
             const int succ_g = g + op->get_cost();
-            // TODO: In case of equal f-values, prefer states with higher g?
             if (successor->get_distance() > succ_g) {
                 successor->set_distance(succ_g);
                 int f = succ_g;
