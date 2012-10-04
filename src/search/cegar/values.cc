@@ -62,14 +62,7 @@ bool Values::test(int var, int value) const {
 }
 
 int Values::count(int var) const {
-    //Bitset temp(values & masks[var]);
-    //return temp.count();
-    int num_values = 0;
-    for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
-        if (values.test(pos))
-            ++num_values;
-    }
-    return num_values;
+    return (values & masks[var]).count();
 }
 
 bool Values::domains_intersect(const Values &other, int var) {
