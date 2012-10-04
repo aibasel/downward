@@ -1,13 +1,15 @@
 #ifndef CEGAR_CEGAR_HEURISTIC_H
 #define CEGAR_CEGAR_HEURISTIC_H
 
-#include "abstraction.h"
 #include "../heuristic.h"
 #include "../option_parser.h"
-#include "../state.h"
+
+class State;
 
 namespace cegar_heuristic {
 const bool WRITE_DOT_FILES = false;
+
+class Abstraction;
 
 class CegarHeuristic : public Heuristic {
     int max_states_offline;

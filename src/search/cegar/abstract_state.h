@@ -1,10 +1,7 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
-#include "utils.h"
 #include "values.h"
-#include "../operator.h"
-#include "../state.h"
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
 

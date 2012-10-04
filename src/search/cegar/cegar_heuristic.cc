@@ -1,5 +1,7 @@
 #include "cegar_heuristic.h"
 
+#include "abstraction.h"
+#include "abstract_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state.h"
