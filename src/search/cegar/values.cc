@@ -74,6 +74,8 @@ int Values::count(int var) const {
 }
 
 bool Values::domains_intersect(const Values &other, int var) {
+    // Adding a special case for boolean variables and using test() directly
+    // doesn't make execution much faster even for problems with many boolean vars.
     return (values & other.values & masks[var]).any();
 }
 
