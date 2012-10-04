@@ -1,10 +1,10 @@
 #include "abstraction.h"
 
+#include "abstract_state.h"
 #include "../globals.h"
 #include "../operator.h"
 #include "../priority_queue.h"
 #include "../rng.h"
-#include "../state.h"
 
 #include <algorithm>
 #include <cassert>

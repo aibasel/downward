@@ -1,22 +1,22 @@
 #ifndef CEGAR_ABSTRACTION_H
 #define CEGAR_ABSTRACTION_H
 
-#include "abstract_state.h"
-#include "utils.h"
-#include "../operator.h"
 #include "../priority_queue.h"
+#include "../state.h"
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
 
-#include <vector>
 #include <deque>
 #include <limits>
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace cegar_heuristic {
-const int INFINITY = numeric_limits<int>::max();
+const int INFINITY = std::numeric_limits<int>::max();
+
+class AbstractState;
 
 enum PickStrategy {
     FIRST,
@@ -67,7 +67,7 @@ private:
     // Refinement hierarchy.
     AbstractState *single;
 
-    vector<int> cg_partial_ordering;
+    std::vector<int> cg_partial_ordering;
 
     // Statistics.
     mutable int expansions;

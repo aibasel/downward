@@ -1,7 +1,6 @@
 #ifndef CEGAR_UTILS_H
 #define CEGAR_UTILS_H
 
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
