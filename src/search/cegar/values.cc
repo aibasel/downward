@@ -62,7 +62,14 @@ bool Values::test(int var, int value) const {
 }
 
 int Values::count(int var) const {
-    return (values & masks[var]).count();
+    // Profiling showed that an explicit loop is faster (~3 times) than
+    // doing: return (values & masks[var]).count();
+    int num_values = 0;
+    for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
+        if (values.test(pos))
+            ++num_values;
+    }
+    return num_values;
 }
 
 bool Values::domains_intersect(const Values &other, int var) {

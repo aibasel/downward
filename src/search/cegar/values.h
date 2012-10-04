@@ -37,8 +37,6 @@ public:
     bool domains_intersect(const Values &other, int var);
     bool all_vars_intersect(const Values &other, const std::vector<bool> &checked) const;
     string str() const;
-    //Domain& operator[](int var) {return values[var]; }
-    //const Domain& operator[](int var) const {return values[var]; }
     bool abstracts(const Values &other) const;
     void get_unmet_conditions(const Values &other, const State conc_state, Conditions *conditions) const;
     void release_memory() {Bitset().swap(values); }
