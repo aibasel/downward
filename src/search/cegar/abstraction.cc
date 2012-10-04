@@ -580,7 +580,8 @@ void Abstraction::print_statistics() {
                     sizeof(prev) + sizeof(Arc) * prev.capacity() +
                     sizeof(loops) + sizeof(Operator*) * loops.capacity();
     }
-    assert(nexts == prevs);
+    // Since we don't remove arcs to refined states anymore we cannot make the
+    // following assumption: assert(nexts == prevs);
 
     int facts = 0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {

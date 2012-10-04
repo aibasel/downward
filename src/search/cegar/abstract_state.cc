@@ -119,10 +119,10 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     for (it = prev.begin(); it != prev.end(); ++it) {
         Operator *op = it->first;
         AbstractState *u = it->second;
+        // We don't remove arcs to refined states, but check states lazily.
         if (!u->valid())
             continue;
         assert(u != this);
-        u->remove_next_arc(op, this);
         bool is_solution_arc = ((op == op_in) && (u == state_in));
         // If the first check returns false, the second arc has to be added.
         if (use_new_arc_check) {
@@ -159,10 +159,10 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     for (it = next.begin(); it != next.end(); ++it) {
         Operator *op = it->first;
         AbstractState *w = it->second;
+        // We don't remove arcs to refined states, but check states lazily.
         if (!w->valid())
             continue;
         assert(w != this);
-        w->remove_prev_arc(op, this);
         bool is_solution_arc = ((op == op_out) && (w == state_out));
         if (use_new_arc_check) {
             int pre = get_pre(*op, var);
