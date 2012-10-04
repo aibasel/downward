@@ -268,6 +268,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     if (v1_w) v1->set_successor(op_out, state_out);
     if (v2_w) v2->set_successor(op_out, state_out);
 
+    /*
     // Update the path from u to one of the new states. If both paths are valid,
     // we can take either. Only if one state abstracts the goal, we should
     // choose it. The operator obviously doesn't have to be changed.
@@ -285,6 +286,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     } else if (v2_w) {
         state_out->state_in = v2;
     }
+    */
 
     // Remove obsolete members.
     release_memory();
