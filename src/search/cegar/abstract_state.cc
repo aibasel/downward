@@ -119,6 +119,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     for (it = prev.begin(); it != prev.end(); ++it) {
         Operator *op = it->first;
         AbstractState *u = it->second;
+        if (!u->valid())
+            continue;
         assert(u != this);
         u->remove_next_arc(op, this);
         bool is_solution_arc = ((op == op_in) && (u == state_in));
@@ -157,6 +159,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     for (it = next.begin(); it != next.end(); ++it) {
         Operator *op = it->first;
         AbstractState *w = it->second;
+        if (!w->valid())
+            continue;
         assert(w != this);
         w->remove_prev_arc(op, this);
         bool is_solution_arc = ((op == op_out) && (w == state_out));
@@ -395,14 +399,6 @@ bool AbstractState::is_abstraction_of_goal() const {
             return false;
     }
     return true;
-}
-
-bool AbstractState::valid() const {
-    return refined_var == UNDEFINED;
-}
-
-int AbstractState::get_refined_var() const {
-    return refined_var;
 }
 
 AbstractState *AbstractState::get_child(int value) {

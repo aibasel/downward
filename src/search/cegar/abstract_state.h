@@ -99,8 +99,8 @@ public:
     Loops &get_loops() {return loops; }
 
     // We only have a valid abstract state if it was not refined.
-    bool valid() const;
-    int get_refined_var() const;
+    bool valid() const {return refined_var == UNDEFINED; }
+    int get_refined_var() const {return refined_var; }
     AbstractState *get_child(int value);
     AbstractState *get_left_child() const {return left_child; }
     AbstractState *get_right_child() const {return right_child; }
