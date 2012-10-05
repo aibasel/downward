@@ -76,18 +76,7 @@ void Abstraction::break_solution(AbstractState *state, int var, int value) {
     // We cannot calculate the avg_h value after each refinement, because the
     // solution pointers are reset in update_h_values() called by get_avg_h().
     // Instead we calculate it after a solution has been broken.
-    //double avg_h = get_avg_h();
-    int init_h = log_h ? init->get_h() : 0;
-    // We cannot assert(avg_h >= last_avg_h), because due to dead-end states,
-    // which we don't count for the average h-value, the average h-value may
-    // have decreased.
-    if (//(avg_h > last_avg_h + PRECISION) ||
-        (init_h > last_init_h)) {
-        cout << "States: " << get_num_states() << ", avg-h: " << get_avg_h()
-             << ", init-h: " << init_h << endl;
-        //last_avg_h = avg_h;
-        last_init_h = init_h;
-    }
+    log_h_values();
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -490,6 +479,21 @@ double Abstraction::get_avg_h() const {
     }
     assert(avg_h >= 0.);
     return avg_h;
+}
+
+void Abstraction::log_h_values() const {
+    //double avg_h = get_avg_h();
+    int init_h = log_h ? init->get_h() : 0;
+    // We cannot assert(avg_h >= last_avg_h), because due to dead-end states,
+    // which we don't count for the average h-value, the average h-value may
+    // have decreased.
+    if (//(avg_h > last_avg_h + PRECISION) ||
+        (init_h > last_init_h)) {
+        cout << "States: " << get_num_states() << ", avg-h: " << get_avg_h()
+             << ", init-h: " << init_h << endl;
+        //last_avg_h = avg_h;
+        last_init_h = init_h;
+    }
 }
 
 AbstractState *Abstraction::get_abstract_state(const State &state) const {
