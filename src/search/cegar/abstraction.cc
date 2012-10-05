@@ -115,9 +115,8 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
 void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
     int rounds = 0;
     const int old_h = abs_state->get_h();
+    // Loop until the heuristic value increases.
     while (abs_state->get_h() == old_h && may_keep_refining_online()) {
-        // Loop until the heuristic value increases.
-        // TODO: Reuse last solution if still valid.
         bool solution_found = find_solution(abs_state);
         if (!solution_found) {
             cout << "No solution found" << endl;
@@ -129,6 +128,7 @@ void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
             break;
         }
         // TODO: Use A* for finding the shortest path from abs_state to goal.
+        // TODO: Don't update_h_values in each round.
         update_h_values();
         abs_state = get_abstract_state(state);
         ++rounds;
