@@ -22,9 +22,7 @@ namespace cegar_heuristic {
 Abstraction::Abstraction(PickStrategy deviation_strategy,
                          PickStrategy precondition_strategy,
                          PickStrategy goal_strategy)
-    : start_solution_check_ptr(0),
-      last_checked_conc_state(*g_initial_state),
-      pick_deviation(deviation_strategy),
+    : pick_deviation(deviation_strategy),
       pick_precondition(precondition_strategy),
       pick_goal(goal_strategy),
       expansions(0),
@@ -268,7 +266,10 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
 
     AbstractState *prev_state = 0;
     Operator *prev_op = 0;
-    State prev_last_checked_conc_state = last_checked_conc_state;
+
+    // Initialize with arbitrary states.
+    State prev_conc_state(*g_initial_state);
+
     while (true) {
         // next_op is 0 if there is no next operator.
         Operator *next_op = abs_state->get_op_out();
@@ -284,20 +285,10 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
             assert(prev_op);
             AbstractState desired_prev_state;
             abs_state->regress(*prev_op, &desired_prev_state);
-            prev_state->get_unmet_conditions(desired_prev_state, last_checked_conc_state,
+            prev_state->get_unmet_conditions(desired_prev_state, prev_conc_state,
                                              &unmet_cond);
             pick_condition(*prev_state, unmet_cond, pick_deviation, &var, &value);
             break_solution(prev_state, var, value);
-            // Make sure we only reuse the solution if we are far enough from
-            // the initial state to have saved the correct last-checked concrete
-            // state.
-            if (start_solution_check_ptr) {
-                if (!(last_checked_conc_state == prev_last_checked_conc_state)) {
-                    last_checked_conc_state = prev_last_checked_conc_state;
-                } else {
-                    start_solution_check_ptr = 0;
-                }
-            }
             return false;
         } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
@@ -311,8 +302,7 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
         } else if (next_op) {
             // Go to the next state.
             prev_state = abs_state;
-            prev_last_checked_conc_state = last_checked_conc_state;
-            last_checked_conc_state = State(conc_state);
+            prev_conc_state = State(conc_state);
             prev_op = next_op;
             conc_state = State(conc_state, *next_op);
             assert(next_state);
@@ -339,14 +329,6 @@ bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
     // This only happens if the problem is unsolvable.
     assert(false);
     return false;
-}
-
-bool Abstraction::recheck_last_solution() {
-    assert(start_solution_check_ptr);
-    if (DEBUG)
-        cout << "Start: " << start_solution_check_ptr << " "
-             << start_solution_check_ptr->str() << endl;
-    return check_solution(last_checked_conc_state, start_solution_check_ptr);
 }
 
 void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, int> > &conditions,
