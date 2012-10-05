@@ -37,6 +37,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     bool use_new_arc_check = opts.get<bool>("new_arc_check");
     abstraction->set_use_new_arc_check(use_new_arc_check);
     cout << "Using new arc check: " << use_new_arc_check << endl;
+    abstraction->set_log_h(opts.get<bool>("log_h"));
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -138,6 +139,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("use_astar", true, "find abstract solution with A* or Dijkstra");
     parser.add_option<bool>("reuse_solutions", true, "if last solution still works, do not search for a new one");
     parser.add_option<bool>("new_arc_check", true, "use faster check for adding arcs");
+    parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

@@ -80,6 +80,7 @@ private:
 
     bool use_astar;
     bool use_new_arc_check;
+    bool log_h;
 
     bool memory_released;
 
@@ -120,6 +121,7 @@ public:
 
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_use_new_arc_check(bool new_check) {use_new_arc_check = new_check; }
+    void set_log_h(bool log) {log_h = log; }
 
     // Testing.
     void write_dot_file(int num);

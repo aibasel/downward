@@ -36,6 +36,7 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       last_init_h(0),
       use_astar(true),
       use_new_arc_check(true),
+      log_h(false),
       memory_released(false) {
     assert(!g_operators.empty());
 
@@ -72,6 +73,21 @@ void Abstraction::break_solution(AbstractState *state, int var, int value) {
             break;
         }
     }
+    // We cannot calculate the avg_h value after each refinement, because the
+    // solution pointers are reset in update_h_values() called by get_avg_h().
+    // Instead we calculate it after a solution has been broken.
+    //double avg_h = get_avg_h();
+    int init_h = log_h ? init->get_h() : 0;
+    // We cannot assert(avg_h >= last_avg_h), because due to dead-end states,
+    // which we don't count for the average h-value, the average h-value may
+    // have decreased.
+    if (//(avg_h > last_avg_h + PRECISION) ||
+        (init_h > last_init_h)) {
+        cout << "States: " << get_num_states() << ", avg-h: " << get_avg_h()
+             << ", init-h: " << init_h << endl;
+        //last_avg_h = avg_h;
+        last_init_h = init_h;
+    }
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -106,18 +122,6 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
         }
         if (DEBUG)
             cout << "Using new goal state: " << goal->str() << endl;
-    }
-    //double avg_h = get_avg_h();
-    int init_h = 0; //init->get_h();
-    // We cannot assert(avg_h >= last_avg_h), because due to dead-end states,
-    // which we don't count for the average h-value, the average h-value may
-    // have decreased.
-    if (//(avg_h > last_avg_h + PRECISION) ||
-        (init_h > last_init_h)) {
-        cout << "States: " << get_num_states() << ", avg-h: " << get_avg_h()
-             << ", init-h: " << init_h << endl;
-        //last_avg_h = avg_h;
-        last_init_h = init_h;
     }
 }
 
