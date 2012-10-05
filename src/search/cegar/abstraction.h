@@ -79,6 +79,7 @@ private:
     bool use_astar;
     bool use_new_arc_check;
     bool log_h;
+    bool random_source;
 
     bool memory_released;
 
@@ -110,6 +111,7 @@ public:
     void remember_num_states_offline() const {num_states_offline = states.size(); }
     int get_num_states_online() const;
     bool may_keep_refining_online() const;
+    AbstractState *get_random_state() const;
 
     bool has_released_memory() const {return memory_released; }
     void release_memory();
