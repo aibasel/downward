@@ -82,6 +82,7 @@ void CegarHeuristic::initialize() {
             ++updates;
         }
     }
+    abstraction->log_h_values();
     abstraction->remember_num_states_offline();
     cout << "Done building abstraction [t=" << g_timer << "]" << endl;
     cout << "Peak memory after building abstraction: "

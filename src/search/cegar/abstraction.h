@@ -108,6 +108,7 @@ public:
     int get_num_expansions() const {return expansions; }
 
     void update_h_values() const;
+    void log_h_values() const;
 
     int get_num_states() const {return states.size(); }
     void remember_num_states_offline() const {num_states_offline = states.size(); }
