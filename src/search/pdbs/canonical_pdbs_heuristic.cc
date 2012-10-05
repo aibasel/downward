@@ -1,5 +1,6 @@
 #include "canonical_pdbs_heuristic.h"
 
+#include "dominance_pruner.h"
 #include "max_cliques.h"
 #include "pdb_heuristic.h"
 #include "util.h"
@@ -14,8 +15,6 @@
 
 #include <cassert>
 #include <cstdlib>
-#include <ext/hash_set>
-#include <boost/functional/hash.hpp>
 #include <vector>
 
 using namespace std;
@@ -78,7 +77,6 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
 
     vector<vector<int> > cgraph_max_cliques;
     ::compute_max_cliques(cgraph, cgraph_max_cliques);
-
     max_cliques.reserve(cgraph_max_cliques.size());
 
     for (size_t i = 0; i < cgraph_max_cliques.size(); ++i) {
@@ -111,90 +109,20 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
     int num_patterns = pattern_databases.size();
     int num_cliques = max_cliques.size();
 
-    // Precompute superset relation of patterns.
-    // Patters are copied and sorted for the superset test to avoid changing the
-    // order in the original pattern.
-    vector<vector<int> > sorted_patterns(num_patterns);
-    for (size_t i = 0; i < num_patterns; ++i) {
-        sorted_patterns[i] = pattern_databases[i]->get_pattern();
-        std::sort(sorted_patterns[i].begin(), sorted_patterns[i].end());
-    }
-    typedef __gnu_cxx::hash_set<pair<PDBHeuristic *, PDBHeuristic *>,
-                    boost::hash<pair<PDBHeuristic *, PDBHeuristic *> > > PDBRelation;
-    PDBRelation superset_relation;
-    for (size_t i = 0; i < num_patterns; ++i) {
-        for (size_t j = 0; j < num_patterns; ++j) {
-            if (std::includes(sorted_patterns[i].begin(), sorted_patterns[i].end(),
-                              sorted_patterns[j].begin(), sorted_patterns[j].end())) {
-                superset_relation.insert(make_pair(pattern_databases[i],
-                                                   pattern_databases[j]));
-            }
-        }
-    }
+    DominancePruner(pattern_databases, max_cliques).prune();
 
-    vector<vector<PDBHeuristic *> > remaining_cliques;
-    __gnu_cxx::hash_set<PDBHeuristic *,
-            boost::hash<PDBHeuristic *> > remaining_heuristics;
-    // Check all pairs of cliques for dominance.
-    for (size_t c1_id = 0; c1_id < num_cliques; ++c1_id) {
-        vector<PDBHeuristic *> &c1 = max_cliques[c1_id];
-        // Clique c1 is useful if it is not dominated by any clique c2.
-        // Assume that it is useful and set it to false if any dominating
-        // clique is found.
-        bool c1_is_useful = true;
-        for (size_t c2_id = 0; c2_id < num_cliques; ++c2_id) {
-            if (c1_id == c2_id) {
-                continue;
-            }
-            vector<PDBHeuristic *> &c2 = max_cliques[c2_id];
-            // c2 dominates c1 iff for every pattern p1 in c1 there is a pattern
-            // p2 in c2 where p2 is a superset of p1.
-            // Assume dominance until we fund a pattern p1 that is not dominated.
-            bool c2_dominates_c1 = true;
-            for (size_t pdb1_id = 0; pdb1_id < c1.size(); ++pdb1_id) {
-                // Assume there is no superset until we found one.
-                bool p1_has_superset = false;
-                for (size_t pdb2_id = 0; pdb2_id < c2.size(); ++pdb2_id) {
-                    PDBRelation::iterator it = superset_relation.find(
-                                make_pair(c2[pdb2_id], c1[pdb1_id]));
-                    if (it != superset_relation.end()) {
-                        p1_has_superset = true;
-                        break;
-                    }
-                }
-                if (!p1_has_superset) {
-                    c2_dominates_c1 = false;
-                    break;
-                }
-            }
-            if (c2_dominates_c1) {
-                c1_is_useful = false;
-                break;
-            }
-        }
-        if (c1_is_useful) {
-            remaining_cliques.push_back(c1);
-            for (size_t p_id = 0; p_id < c1.size(); ++p_id) {
-                PDBHeuristic* pdb_heuristic = c1[p_id];
-                remaining_heuristics.insert(pdb_heuristic);
-            }
-        }
-    }
     // Adjust size.
+    size = 0;
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        if (remaining_heuristics.find(pattern_databases[i]) == remaining_heuristics.end()) {
-            size -= pattern_databases[i]->get_size();
-        }
+        size += pattern_databases[i]->get_size();
     }
-    pattern_databases = vector<PDBHeuristic *>(remaining_heuristics.begin(), remaining_heuristics.end());
-    max_cliques.swap(remaining_cliques);
 
     cout << "Pruned " << num_cliques - max_cliques.size() <<
             " of " << num_cliques << " cliques" << endl;
     cout << "Pruned " << num_patterns - pattern_databases.size() <<
             " of " << num_patterns << " PDBs" << endl;
 
-    cout << "Dominance Pruning took " << timer << endl;
+    cout << "Dominance pruning took " << timer << endl;
 }
 
 void CanonicalPDBsHeuristic::initialize() {

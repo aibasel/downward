@@ -1,14 +1,17 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+#include <cassert>
 #include <ostream>
 #include <utility>
 #include <vector>
+#include <tr1/functional>
 
 extern void register_event_handlers();
 
 extern int get_peak_memory_in_kb();
 extern void print_peak_memory();
+extern void assert_sorted_unique(const std::vector<int>& values);
 
 namespace std {
 template<class T>
@@ -40,6 +43,21 @@ size_t hash_number_sequence(Sequence data, size_t length) {
 struct hash_int_pair {
     size_t operator()(const std::pair<int, int> &key) const {
         return size_t(1337 * key.first + key.second);
+    }
+};
+
+struct hash_pointer_pair {
+    size_t operator()(const std::pair<void *, void *> &key) const {
+        return size_t(1337 * size_t(key.first) + size_t(key.second));
+    }
+};
+
+class hash_pointer {
+public:
+    size_t operator()(const void *p) const {
+        //return size_t(reinterpret_cast<int>(p));
+        std::tr1::hash<const void *> my_hash_class;
+        return my_hash_class(p);
     }
 };
 
