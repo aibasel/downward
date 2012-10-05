@@ -44,8 +44,6 @@ private:
 
     AbstractState *init;
     AbstractState *goal;
-    AbstractState *start_solution_check_ptr;
-    State last_checked_conc_state;
 
     void refine(AbstractState *state, int var, int value);
 
@@ -101,9 +99,7 @@ public:
     bool find_solution(AbstractState *start = 0);
 
     std::string get_solution_string() const;
-    bool can_reuse_last_solution() const {return start_solution_check_ptr; }
     bool check_solution(State conc_state, AbstractState *abs_state = 0);
-    bool recheck_last_solution();
 
     int get_num_expansions() const {return expansions; }
 
