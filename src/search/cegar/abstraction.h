@@ -99,7 +99,7 @@ public:
     bool find_solution(AbstractState *start = 0);
 
     std::string get_solution_string() const;
-    bool check_solution(State conc_state, AbstractState *abs_state = 0);
+    bool check_and_break_solution(State conc_state, AbstractState *abs_state = 0);
 
     int get_num_expansions() const {return expansions; }
 
