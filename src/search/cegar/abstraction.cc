@@ -266,16 +266,15 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
 
     AbstractState *prev_state = 0;
     Operator *prev_op = 0;
+    Operator *next_op = abs_state->get_op_out();;
 
     // Initialize with arbitrary states.
     State prev_conc_state(*g_initial_state);
 
+    vector<pair<int, int> > unmet_cond;
+    int var, value;
+
     while (true) {
-        // next_op is 0 if there is no next operator.
-        Operator *next_op = abs_state->get_op_out();
-        AbstractState *next_state = abs_state->get_state_out();
-        vector<pair<int, int> > unmet_cond;
-        int var, value;
         if (!abs_state->is_abstraction_of(conc_state)) {
             // Get unmet conditions in previous state and refine it.
             if (DEBUG)
@@ -301,33 +300,36 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             return false;
         } else if (next_op) {
             // Go to the next state.
+            assert(abs_state->get_state_out());
+            if (DEBUG)
+                cout << "Move to state " << abs_state->get_state_out()->str()
+                     << " with " << next_op->get_name() << endl;
             prev_state = abs_state;
             prev_conc_state = State(conc_state);
             prev_op = next_op;
             conc_state = State(conc_state, *next_op);
-            assert(next_state);
-            abs_state = next_state;
-            if (DEBUG)
-                cout << "Move to state " << abs_state->str() << " with "
-                     << next_op->get_name() << endl;
-        } else if (!test_goal(conc_state)) {
-            // Get unmet goals and refine the last state.
-            if (DEBUG)
-                cout << "Goal test failed." << endl;
-            unmet_goals++;
-            assert(!next_state);
-            get_unmet_goal_conditions(conc_state, &unmet_cond);
-            pick_condition(*abs_state, unmet_cond, pick_goal, &var, &value);
-            break_solution(abs_state, var, value);
-            return false;
+            abs_state = abs_state->get_state_out();
+            next_op = abs_state->get_op_out();
         } else {
-            // We have reached the goal.
-            assert(!next_state);
-            return true;
+            break;
         }
     }
-    // This only happens if the problem is unsolvable.
-    assert(false);
+    assert(abs_state == goal);
+    assert(!abs_state->get_op_out());
+    assert(!abs_state->get_state_out());
+
+    if (test_goal(conc_state)) {
+        // We have reached the goal.
+        return true;
+    }
+
+    // Get unmet goals and refine the last state.
+    if (DEBUG)
+        cout << "Goal test failed." << endl;
+    unmet_goals++;
+    get_unmet_goal_conditions(conc_state, &unmet_cond);
+    pick_condition(*abs_state, unmet_cond, pick_goal, &var, &value);
+    break_solution(abs_state, var, value);
     return false;
 }
 
