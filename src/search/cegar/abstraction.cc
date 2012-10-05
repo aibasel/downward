@@ -123,7 +123,7 @@ void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
             cout << "No solution found" << endl;
             break;
         }
-        bool solution_valid = check_solution(state, abs_state);
+        bool solution_valid = check_and_break_solution(state, abs_state);
         if (solution_valid) {
             cout << "Concrete solution found" << endl;
             break;
@@ -257,7 +257,7 @@ string Abstraction::get_solution_string() const {
     return oss.str();
 }
 
-bool Abstraction::check_solution(State conc_state, AbstractState *abs_state) {
+bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
     if (DEBUG)
         cout << "Check solution." << endl;
     if (!abs_state)

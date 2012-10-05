@@ -63,7 +63,7 @@ void CegarHeuristic::initialize() {
             logged_states += states_log_step;
         }
         abstraction->find_solution();
-        success = abstraction->check_solution(*g_initial_state);
+        success = abstraction->check_and_break_solution(*g_initial_state);
         num_states = abstraction->get_num_states();
         if (success)
             break;
