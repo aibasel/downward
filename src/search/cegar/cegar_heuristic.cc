@@ -21,7 +21,8 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       max_states_offline(opts.get<int>("max_states_offline")),
       h_updates(opts.get<int>("h_updates")),
-      search(opts.get<bool>("search")) {
+      search(opts.get<bool>("search")),
+      random_source(opts.get<bool>("random_source")) {
     if (max_states_offline == -1)
         max_states_offline = INFINITY;
 
@@ -56,14 +57,17 @@ void CegarHeuristic::initialize() {
         write_causal_graph(*g_causal_graph);
         abstraction->write_dot_file(num_states);
     }
+    AbstractState *source = 0;
     while (num_states < max_states_offline) {
         if (num_states - logged_states >= states_log_step) {
             cout << "Abstract states: "
                  << num_states << "/" << max_states_offline << endl;
             logged_states += states_log_step;
         }
-        abstraction->find_solution();
-        success = abstraction->check_and_break_solution(*g_initial_state);
+        if (random_source)
+            source = abstraction->get_random_state();
+        abstraction->find_solution(source);
+        success = abstraction->check_and_break_solution(*g_initial_state, source);
         num_states = abstraction->get_num_states();
         if (success)
             break;
@@ -132,6 +136,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("use_astar", true, "find abstract solution with A* or Dijkstra");
     parser.add_option<bool>("new_arc_check", true, "use faster check for adding arcs");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");
+    parser.add_option<bool>("random_source", false, "start solution search at random state");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

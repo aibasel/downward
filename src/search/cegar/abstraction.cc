@@ -490,6 +490,12 @@ AbstractState *Abstraction::get_abstract_state(const State &state) const {
     return current;
 }
 
+AbstractState *Abstraction::get_random_state() const {
+    set<AbstractState *>::iterator it = states.begin();
+    advance(it, g_rng.next(states.size()));
+    return *it;
+}
+
 void Abstraction::write_dot_file(int num) {
     bool draw_loops = false;
     ostringstream oss;
