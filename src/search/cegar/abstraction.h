@@ -117,7 +117,6 @@ public:
     int get_num_states_online() const;
     bool may_keep_refining_online() const;
     void remember_conc_state(const State &conc_state);
-    const State &get_random_conc_state() const;
 
     bool has_released_memory() const {return memory_released; }
     void release_memory();
