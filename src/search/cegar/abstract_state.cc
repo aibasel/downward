@@ -217,22 +217,22 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
                     v1->add_arc(op, v2);
                     v2->add_loop(op);
                 } else {
-                    //assert(v1->values.test(var, eff));
+                    assert(v1->values.test(var, eff));
                     v1->add_loop(op);
                     v2->add_arc(op, v1);
                 }
             } else if (pre == value) {
-                //assert(eff != UNDEFINED);
+                assert(eff != UNDEFINED);
                 if (eff == value) {
                     v2->add_loop(op);
                 } else {
-                    //assert(v1->values.test(var, eff));
+                    assert(v1->values.test(var, eff));
                     v2->add_arc(op, v1);
                 }
             } else if (eff == value) {
                 v1->add_arc(op, v2);
             } else {
-                //assert(v1->values.test(var, eff));
+                assert(v1->values.test(var, eff));
                 v1->add_loop(op);
             }
         } else {
