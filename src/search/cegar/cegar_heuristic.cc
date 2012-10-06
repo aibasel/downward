@@ -44,8 +44,6 @@ CegarHeuristic::~CegarHeuristic() {
 }
 
 void CegarHeuristic::initialize() {
-    cout << "Peak memory before building abstraction: "
-         << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Initializing cegar heuristic..." << endl;
     int updates = 0;
     const int update_step = (max_states_offline / (h_updates + 1)) + 1;
