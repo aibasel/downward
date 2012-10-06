@@ -32,9 +32,12 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       num_states_offline(-1),
       last_avg_h(0),
       last_init_h(0),
+      searches_from_init(0),
+      searches_from_random_state(0),
       use_astar(true),
       use_new_arc_check(true),
       log_h(false),
+      num_seen_conc_states(0),
       memory_released(false) {
     assert(!g_operators.empty());
 
@@ -112,7 +115,7 @@ void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
     while (abs_state->get_h() == old_h && may_keep_refining_online()) {
         bool solution_found = find_solution(abs_state);
         if (!solution_found) {
-            cout << "No solution found" << endl;
+            cout << "No abstract solution found" << endl;
             break;
         }
         bool solution_valid = check_and_break_solution(state, abs_state);
@@ -250,12 +253,54 @@ string Abstraction::get_solution_string() const {
     return oss.str();
 }
 
+bool Abstraction::find_and_break_complete_solution() {
+    // Start with initial state.
+    bool solution_found = find_solution(init);
+    // Suppress compiler warning about unused variable.
+    (void) solution_found;
+    assert(solution_found && "There must always be an abstract solution from init");
+    return check_and_break_solution(*g_initial_state, init);
+}
+
+bool Abstraction::find_and_break_solution() {
+    // Return true iff we found a *complete* concrete solution.
+    if (num_seen_conc_states <= 0 or seen_conc_states.empty()) {
+        // Start with initial state.
+        return find_and_break_complete_solution();
+    } else {
+        // Start at random state.
+        State conc_start = get_random_conc_state();
+        AbstractState *abs_start = get_abstract_state(conc_start);
+        bool solution_found = find_solution(abs_start);
+        if (solution_found) {
+            bool valid_partial_solution = check_and_break_solution(conc_start, abs_start);
+            if (valid_partial_solution) {
+                // If we started at init, this is a complete solution.
+                if (abs_start == init)
+                    return true;
+                // Otherwise, check if the refinement of the partial solution
+                // yielded a valid complete solution.
+                return find_and_break_complete_solution();
+            }
+        }
+        // If no solution has been found, make sure that we keep refining by
+        // searching for a complete solution in between.
+        return find_and_break_complete_solution();
+    }
+}
+
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
     if (DEBUG)
         cout << "Check solution." << endl;
     if (!abs_state)
         abs_state = get_abstract_state(conc_state);
     assert(abs_state->is_abstraction_of(conc_state));
+
+    if (abs_state == init) {
+        ++searches_from_init;
+    } else {
+        ++searches_from_random_state;
+    }
 
     AbstractState *prev_state = 0;
     Operator *prev_op = 0;
@@ -281,6 +326,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                                              &unmet_cond);
             pick_condition(*prev_state, unmet_cond, pick_deviation, &var, &value);
             break_solution(prev_state, var, value);
+            remember_conc_state(prev_conc_state);
             return false;
         } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
@@ -290,6 +336,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
             pick_condition(*abs_state, unmet_cond, pick_precondition, &var, &value);
             break_solution(abs_state, var, value);
+            remember_conc_state(conc_state);
             return false;
         } else if (next_op) {
             // Go to the next state.
@@ -323,6 +370,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     get_unmet_goal_conditions(conc_state, &unmet_cond);
     pick_condition(*abs_state, unmet_cond, pick_goal, &var, &value);
     break_solution(abs_state, var, value);
+    remember_conc_state(conc_state);
     return false;
 }
 
@@ -485,10 +533,17 @@ AbstractState *Abstraction::get_abstract_state(const State &state) const {
     return current;
 }
 
-AbstractState *Abstraction::get_random_state() const {
-    set<AbstractState *>::iterator it = states.begin();
-    advance(it, g_rng.next(states.size()));
-    return *it;
+const State &Abstraction::get_random_conc_state() const {
+    assert(!seen_conc_states.empty());
+    return seen_conc_states[g_rng.next(seen_conc_states.size())];
+}
+
+void Abstraction::remember_conc_state(const State &conc_state) {
+    if (num_seen_conc_states <= 0)
+        return;
+    if (seen_conc_states.size() == num_seen_conc_states)
+        seen_conc_states.pop_front();
+    seen_conc_states.push_back(conc_state);
 }
 
 void Abstraction::write_dot_file(int num) {
@@ -544,6 +599,7 @@ bool Abstraction::may_keep_refining_online() const {
 void Abstraction::release_memory() {
     assert(!memory_released);
     vector<int>().swap(cg_partial_ordering);
+    deque<State>().swap(seen_conc_states);
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
@@ -590,6 +646,8 @@ void Abstraction::print_statistics() {
     cout << "Bitset size single: " << bitset_bytes_single / 1024 << " KB" << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
     cout << "Arc size diff 2byte ops: " << (nexts + prevs + total_loops) * 2 / 1024 << " KB" << endl;
+    cout << "Searches from init state: " << searches_from_init << endl;
+    cout << "Searches from random state: " << searches_from_random_state << endl;
     cout << "Init h: " << init->get_h() << endl;
     cout << "Average h: " << get_avg_h() << endl;
 }
