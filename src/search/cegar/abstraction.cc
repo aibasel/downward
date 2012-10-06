@@ -269,7 +269,8 @@ bool Abstraction::find_and_break_solution() {
         return find_and_break_complete_solution();
     } else {
         // Start at random state.
-        State conc_start = get_random_conc_state();
+        int conc_start_index = g_rng.next(seen_conc_states.size());
+        const State &conc_start = seen_conc_states[conc_start_index];
         AbstractState *abs_start = get_abstract_state(conc_start);
         bool solution_found = find_solution(abs_start);
         if (solution_found) {
@@ -283,6 +284,9 @@ bool Abstraction::find_and_break_solution() {
                 return find_and_break_complete_solution();
             }
         }
+        // If we couldn't find a solution from conc_start this time, we also
+        // won't find any in a more refined system, so we remove it.
+        seen_conc_states.erase(seen_conc_states.begin() + conc_start_index);
         // If no solution has been found, make sure that we keep refining by
         // searching for a complete solution in between.
         return find_and_break_complete_solution();
@@ -290,11 +294,13 @@ bool Abstraction::find_and_break_solution() {
 }
 
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
-    if (DEBUG)
-        cout << "Check solution." << endl;
     if (!abs_state)
         abs_state = get_abstract_state(conc_state);
     assert(abs_state->is_abstraction_of(conc_state));
+
+    if (DEBUG)
+        cout << "Check solution." << endl << "Start at      " << abs_state->str()
+             << " (is init: " << (abs_state == init) << ")" << endl;
 
     if (abs_state == init) {
         ++searches_from_init;
@@ -531,11 +537,6 @@ AbstractState *Abstraction::get_abstract_state(const State &state) const {
     // We cannot assert that current is an abstraction of state, because its
     // members have been cleared to save memory.
     return current;
-}
-
-const State &Abstraction::get_random_conc_state() const {
-    assert(!seen_conc_states.empty());
-    return seen_conc_states[g_rng.next(seen_conc_states.size())];
 }
 
 void Abstraction::remember_conc_state(const State &conc_state) {
