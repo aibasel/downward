@@ -41,6 +41,7 @@ private:
     Abstraction &operator=(const Abstraction &);
 
     std::set<AbstractState *> states;
+    std::deque<State> seen_conc_states;
 
     AbstractState *init;
     AbstractState *goal;
@@ -75,11 +76,13 @@ private:
     mutable int num_states_offline;
     mutable double last_avg_h;
     mutable int last_init_h;
+    mutable int searches_from_init;
+    mutable int searches_from_random_state;
 
     bool use_astar;
     bool use_new_arc_check;
     bool log_h;
-    bool random_source;
+    int num_seen_conc_states;
 
     bool memory_released;
 
@@ -101,6 +104,8 @@ public:
 
     std::string get_solution_string() const;
     bool check_and_break_solution(State conc_state, AbstractState *abs_state = 0);
+    bool find_and_break_complete_solution();
+    bool find_and_break_solution();
 
     int get_num_expansions() const {return expansions; }
 
@@ -111,7 +116,8 @@ public:
     void remember_num_states_offline() const {num_states_offline = states.size(); }
     int get_num_states_online() const;
     bool may_keep_refining_online() const;
-    AbstractState *get_random_state() const;
+    void remember_conc_state(const State &conc_state);
+    const State &get_random_conc_state() const;
 
     bool has_released_memory() const {return memory_released; }
     void release_memory();
@@ -121,6 +127,7 @@ public:
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_use_new_arc_check(bool new_check) {use_new_arc_check = new_check; }
     void set_log_h(bool log) {log_h = log; }
+    void set_num_seen_conc_states(int num) {num_seen_conc_states = num; }
 
     // Testing.
     void write_dot_file(int num);

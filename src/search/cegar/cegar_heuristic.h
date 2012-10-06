@@ -15,7 +15,6 @@ class CegarHeuristic : public Heuristic {
     int max_states_offline;
     const int h_updates;
     const bool search;
-    const bool random_source;
     Abstraction *abstraction;
 protected:
     virtual void initialize();

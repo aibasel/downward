@@ -21,8 +21,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       max_states_offline(opts.get<int>("max_states_offline")),
       h_updates(opts.get<int>("h_updates")),
-      search(opts.get<bool>("search")),
-      random_source(opts.get<bool>("random_source")) {
+      search(opts.get<bool>("search")) {
     if (max_states_offline == -1)
         max_states_offline = INFINITY;
 
@@ -38,6 +37,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     abstraction->set_use_new_arc_check(use_new_arc_check);
     cout << "Using new arc check: " << use_new_arc_check << endl;
     abstraction->set_log_h(opts.get<bool>("log_h"));
+    abstraction->set_num_seen_conc_states(opts.get<int>("num_seen_conc_states"));
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -49,7 +49,7 @@ void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int updates = 0;
     const int update_step = (max_states_offline / (h_updates + 1)) + 1;
-    bool success = false;
+    bool valid_complete_conc_solution = false;
     int num_states = abstraction->get_num_states();
     int logged_states = 0;
     const int states_log_step = 1000;
@@ -57,19 +57,15 @@ void CegarHeuristic::initialize() {
         write_causal_graph(*g_causal_graph);
         abstraction->write_dot_file(num_states);
     }
-    AbstractState *source = 0;
     while (num_states < max_states_offline) {
         if (num_states - logged_states >= states_log_step) {
             cout << "Abstract states: "
                  << num_states << "/" << max_states_offline << endl;
             logged_states += states_log_step;
         }
-        if (random_source)
-            source = abstraction->get_random_state();
-        abstraction->find_solution(source);
-        success = abstraction->check_and_break_solution(*g_initial_state, source);
+        valid_complete_conc_solution = abstraction->find_and_break_solution();
         num_states = abstraction->get_num_states();
-        if (success)
+        if (valid_complete_conc_solution)
             break;
         if (WRITE_DOT_FILES)
             abstraction->write_dot_file(num_states);
@@ -84,11 +80,11 @@ void CegarHeuristic::initialize() {
     cout << "Done building abstraction [t=" << g_timer << "]" << endl;
     cout << "Peak memory after building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
-    cout << "Solution found while refining: " << success << endl;
+    cout << "Solution found while refining: " << valid_complete_conc_solution << endl;
     cout << "Abstract states offline: " << num_states << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     cout << "A* expansions: " << abstraction->get_num_expansions() << endl;
-    if (!success)
+    if (!valid_complete_conc_solution)
         assert(num_states >= max_states_offline);
     abstraction->update_h_values();
     assert(num_states == abstraction->get_num_states());
@@ -136,7 +132,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("use_astar", true, "find abstract solution with A* or Dijkstra");
     parser.add_option<bool>("new_arc_check", true, "use faster check for adding arcs");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");
-    parser.add_option<bool>("random_source", false, "start solution search at random state");
+    parser.add_option<int>("num_seen_conc_states", 0, "how many last seen conc states to choose from");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
