@@ -21,6 +21,7 @@ using namespace __gnu_cxx;
 #include "state.h"
 #include "successor_generator.h"
 #include "timer.h"
+#include "utilities.h"
 #include "cegar/abstraction.h"
 
 
@@ -254,6 +255,8 @@ void read_everything(istream &in) {
     DomainTransitionGraph::read_all(in);
     g_causal_graph = new CausalGraph(in);
     g_cegar_abstraction = 0;
+    cout << "Peak memory before building abstraction: "
+         << get_peak_memory_in_kb() << " KB" << endl;
 }
 
 void dump_everything() {
