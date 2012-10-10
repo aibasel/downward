@@ -27,11 +27,10 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 
     DEBUG = opts.get<bool>("debug");
 
-    abstraction = new Abstraction(PickStrategy(opts.get_enum("pick_deviation")),
-                  PickStrategy(opts.get_enum("pick_precondition")),
-                  PickStrategy(opts.get_enum("pick_goal")));
+    abstraction = new Abstraction();
     g_cegar_abstraction = abstraction;
     g_cegar_abstraction_max_states_online = opts.get<int>("max_states_online");
+    abstraction->set_pick_strategy(PickStrategy(opts.get_enum("pick")));
     abstraction->set_use_astar(opts.get<bool>("use_astar"));
     bool use_new_arc_check = opts.get<bool>("new_arc_check");
     abstraction->set_use_new_arc_check(use_new_arc_check);
@@ -118,12 +117,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_REFINED");
     pick_strategies.push_back("MIN_PREDECESSORS");
     pick_strategies.push_back("MAX_PREDECESSORS");
-    parser.add_enum_option("pick_deviation", pick_strategies, "RANDOM",
-                           "how to pick the next unsatisfied deviation precondition");
-    parser.add_enum_option("pick_precondition", pick_strategies, "RANDOM",
-                           "how to pick the next unsatisfied precondition");
-    parser.add_enum_option("pick_goal", pick_strategies, "RANDOM",
-                           "how to pick the next unsatisfied goal");
+    parser.add_enum_option("pick", pick_strategies, "RANDOM",
+                           "how to pick the next unsatisfied condition");
     parser.add_option<int>("h_updates", 3, "how often to update the abstract h-values");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
     parser.add_option<bool>("debug", false, "print debugging output");
