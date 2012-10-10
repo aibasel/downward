@@ -104,35 +104,65 @@ bool goal_var(int var) {
 
 void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
     assert(order->empty());
+    // Set of variables that still have to be ordered.
     set<int> vars;
     set<int>::iterator it;
     for (int i = 0; i < g_variable_domain.size(); ++i) {
         vars.insert(vars.end(), i);
     }
+    // For each variable, maintain sets of predecessor and successor variables
+    // that haven't been ordered yet.
     vector<set<int> > predecessors;
+    vector<set<int> > successors;
     predecessors.resize(g_variable_domain.size());
-    for (int i = 0; i < g_variable_domain.size(); ++i) {
-        const vector<int> &pre = causal_graph.get_predecessors(i);
-        for (int j = 0; j < pre.size(); ++j) {
-            predecessors[i].insert(j);
+    successors.resize(g_variable_domain.size());
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        const vector<int> &pre = causal_graph.get_predecessors(var);
+        for (int i = 0; i < pre.size(); ++i) {
+            predecessors[var].insert(pre[i]);
+        }
+        const vector<int> &succ = causal_graph.get_successors(var);
+        for (int i = 0; i < succ.size(); ++i) {
+            successors[var].insert(succ[i]);
         }
     }
     while (!vars.empty()) {
         int min_pre = g_variable_domain.size() + 1;
+        int max_succ = -1;
         int var = -1;
         for (it = vars.begin(); it != vars.end(); ++it) {
             set<int> &pre = predecessors[*it];
+            set<int> &succ = successors[*it];
             assert(pre.size() <= g_variable_domain.size());
-            if (pre.size() < min_pre) {
+            assert(succ.size() <= g_variable_domain.size());
+            if (DEBUG) {
+                cout << "pre(" << *it << "): ";
+                for (set<int>::iterator p = pre.begin(); p != pre.end(); ++p)
+                    cout << *p << " ";
+                cout << "(" << succ.size() << " succ)" << endl;
+            }
+            if ((pre.size() < min_pre) || ((pre.size() == min_pre) && (succ.size() > max_succ))) {
                 var = *it;
                 min_pre = pre.size();
+                max_succ = succ.size();
             }
         }
         assert(var >= 0);
+        if (DEBUG)
+            cout << "Choose " << var << endl << endl;
         order->push_back(var);
         vars.erase(var);
+        // For all unsorted variables, delete var from their predecessor and
+        // successor lists.
         for (it = vars.begin(); it != vars.end(); ++it) {
-            predecessors[*it].erase(var);
+            set<int> &pre = predecessors[*it];
+            set<int>::iterator pos = find(pre.begin(), pre.end(), var);
+            if (pos != pre.end())
+                pre.erase(pos);
+            set<int> &succ = successors[*it];
+            pos = find(succ.begin(), succ.end(), var);
+            if (pos != succ.end())
+                succ.erase(pos);
         }
     }
     assert(order->size() == g_variable_domain.size());
