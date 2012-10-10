@@ -5,6 +5,7 @@
 #include "../operator.h"
 #include "../priority_queue.h"
 #include "../rng.h"
+#include "../successor_generator.h"
 
 #include <algorithm>
 #include <cassert>
@@ -38,7 +39,8 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
       use_new_arc_check(true),
       log_h(false),
       num_seen_conc_states(0),
-      memory_released(false) {
+      memory_released(false),
+      average_operator_cost(get_average_operator_cost()) {
     assert(!g_operators.empty());
 
     single = new AbstractState();
@@ -57,6 +59,17 @@ Abstraction::Abstraction(PickStrategy deviation_strategy,
         }
         cout << endl;
     }
+}
+
+double Abstraction::get_average_operator_cost() const {
+    // Calculate average operator costs.
+    double avg_cost = 0;
+    for (size_t i = 0; i < g_operators.size(); ++i) {
+        avg_cost += g_operators[i].get_cost();
+    }
+    avg_cost /= g_operators.size();
+    cout << "Average operator cost: " << avg_cost << endl;
+    return avg_cost;
 }
 
 void Abstraction::break_solution(AbstractState *state, int var, int value) {
@@ -258,6 +271,51 @@ string Abstraction::get_solution_string() const {
     }
     oss << "]";
     return oss.str();
+}
+
+void Abstraction::sample_state(State &current_state) const {
+    int h = get_abstract_state(current_state)->get_h();
+    assert(h != INFINITY);
+    int n;
+    if (h == 0) {
+        n = 10;
+    } else {
+        // Convert heuristic value into an approximate number of actions
+        // (does nothing on unit-cost problems).
+        // average_operator_cost cannot equal 0, as in this case, all operators
+        // must have costs of 0 and in this case the if-clause triggers.
+        int solution_steps_estimate = int((h / average_operator_cost) + 0.5);
+        n = 4 * solution_steps_estimate;
+    }
+    double p = 0.5;
+    // The expected walk length is np = 2 * estimated number of solution steps.
+    // (We multiply by 2 because the heuristic is underestimating.)
+
+    // calculate length of random walk accoring to a binomial distribution
+    int length = 0;
+    for (int j = 0; j < n; ++j) {
+        double random = g_rng(); // [0..1)
+        if (random < p)
+            ++length;
+    }
+
+    // Random walk of length length. Last state of the random walk is used as sample.
+    for (int j = 0; j < length; ++j) {
+        vector<const Operator *> applicable_ops;
+        g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
+        // if there are no applicable operators --> do not walk further
+        if (applicable_ops.empty()) {
+            break;
+        } else {
+            int random = g_rng.next(applicable_ops.size()); // [0..applicable_os.size())
+            assert(applicable_ops[random]->is_applicable(current_state));
+            current_state = State(current_state, *applicable_ops[random]);
+            // if current state is dead-end, then restart with initial state
+            h = get_abstract_state(current_state)->get_h();
+            if (h == INFINITY)
+                current_state = *g_initial_state;
+        }
+    }
 }
 
 bool Abstraction::find_and_break_complete_solution() {

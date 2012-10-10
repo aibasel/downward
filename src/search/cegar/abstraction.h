@@ -46,6 +46,8 @@ private:
     AbstractState *init;
     AbstractState *goal;
 
+    double get_average_operator_cost() const;
+
     void refine(AbstractState *state, int var, int value);
 
     PickStrategy pick_deviation;
@@ -79,18 +81,21 @@ private:
     mutable int searches_from_init;
     mutable int searches_from_random_state;
 
+    // Settings.
     bool use_astar;
     bool use_new_arc_check;
     bool log_h;
     int num_seen_conc_states;
 
     bool memory_released;
+    double average_operator_cost;
 
 public:
     explicit Abstraction(PickStrategy deviation_strategy = RANDOM,
                          PickStrategy precondition_strategy = RANDOM,
                          PickStrategy goal_strategy = RANDOM);
 
+    void sample_state(State &current_state) const;
     void break_solution(AbstractState *state, int var, int value);
     void improve_h(const State &state, AbstractState *abs_state);
 
