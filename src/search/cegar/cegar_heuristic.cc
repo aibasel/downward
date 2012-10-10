@@ -97,11 +97,11 @@ void CegarHeuristic::initialize() {
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
-    int dist = abstraction->get_abstract_state(state)->get_h();
-    assert(dist >= 0);
-    if (dist == INFINITY)
-        dist = DEAD_END;
-    return dist;
+    int h = abstraction->get_abstract_state(state)->get_h();
+    assert(h >= 0);
+    if (h == INFINITY)
+        h = DEAD_END;
+    return h;
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
