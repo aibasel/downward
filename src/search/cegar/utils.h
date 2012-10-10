@@ -44,6 +44,9 @@ Operator create_op(const std::string name, std::vector<string> prevail,
 
 State *create_state(const std::string desc);
 
+// Create a "partial order" from the causal graph. Since the CG is not a DAG,
+// we use the following approximation: Order vars with the least incoming edges
+// first. In case of ties, prefer vars with the most outgoing edges.
 void partial_ordering(const CausalGraph &causal_graph, vector<int> *order);
 
 void write_causal_graph(const CausalGraph &causal_graph);
