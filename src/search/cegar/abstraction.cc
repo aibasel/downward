@@ -54,6 +54,11 @@ Abstraction::Abstraction()
             cout << cg_partial_ordering[pos] << " ";
         }
         cout << endl;
+        cout << "Variable domain sizes: ";
+        for (int var = 0; var < g_variable_domain.size(); ++var) {
+            cout << var << ":" << g_variable_domain[var] << " ";
+        }
+        cout << endl;
     }
 }
 
