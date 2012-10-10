@@ -50,11 +50,9 @@ private:
 
     void refine(AbstractState *state, int var, int value);
 
-    PickStrategy pick_deviation;
-    PickStrategy pick_precondition;
-    PickStrategy pick_goal;
+    PickStrategy pick;
     void pick_condition(AbstractState &state, const std::vector<std::pair<int, int> > &conditions,
-                        const PickStrategy &pick, int *var, int *value) const;
+                        int *var, int *value) const;
 
     // A* search.
     mutable AdaptiveQueue<AbstractState *> queue;
@@ -91,9 +89,7 @@ private:
     double average_operator_cost;
 
 public:
-    explicit Abstraction(PickStrategy deviation_strategy = RANDOM,
-                         PickStrategy precondition_strategy = RANDOM,
-                         PickStrategy goal_strategy = RANDOM);
+    Abstraction();
 
     void sample_state(State &current_state) const;
     void break_solution(AbstractState *state, int var, int value);
@@ -132,6 +128,7 @@ public:
     void set_use_new_arc_check(bool new_check) {use_new_arc_check = new_check; }
     void set_log_h(bool log) {log_h = log; }
     void set_num_seen_conc_states(int num) {num_seen_conc_states = num; }
+    void set_pick_strategy(PickStrategy strategy) {pick = strategy; }
 
     // Testing.
     void write_dot_file(int num);

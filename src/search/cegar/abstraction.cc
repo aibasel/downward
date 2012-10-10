@@ -20,12 +20,8 @@
 using namespace std;
 
 namespace cegar_heuristic {
-Abstraction::Abstraction(PickStrategy deviation_strategy,
-                         PickStrategy precondition_strategy,
-                         PickStrategy goal_strategy)
-    : pick_deviation(deviation_strategy),
-      pick_precondition(precondition_strategy),
-      pick_goal(goal_strategy),
+Abstraction::Abstraction()
+    : pick(RANDOM),
       expansions(0),
       deviations(0),
       unmet_preconditions(0),
@@ -395,7 +391,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             abs_state->regress(*prev_op, &desired_prev_state);
             prev_state->get_unmet_conditions(desired_prev_state, prev_conc_state,
                                              &unmet_cond);
-            pick_condition(*prev_state, unmet_cond, pick_deviation, &var, &value);
+            pick_condition(*prev_state, unmet_cond, &var, &value);
             break_solution(prev_state, var, value);
             remember_conc_state(prev_conc_state);
             return false;
@@ -405,7 +401,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 cout << "Operator is not applicable: " << next_op->get_name() << endl;
             ++unmet_preconditions;
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
-            pick_condition(*abs_state, unmet_cond, pick_precondition, &var, &value);
+            pick_condition(*abs_state, unmet_cond, &var, &value);
             break_solution(abs_state, var, value);
             remember_conc_state(conc_state);
             return false;
@@ -439,14 +435,14 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         cout << "Goal test failed." << endl;
     unmet_goals++;
     get_unmet_goal_conditions(conc_state, &unmet_cond);
-    pick_condition(*abs_state, unmet_cond, pick_goal, &var, &value);
+    pick_condition(*abs_state, unmet_cond, &var, &value);
     break_solution(abs_state, var, value);
     remember_conc_state(conc_state);
     return false;
 }
 
 void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, int> > &conditions,
-                                 const PickStrategy &pick, int *var, int *value) const {
+                                 int *var, int *value) const {
     assert(!conditions.empty());
     if (DEBUG) {
         cout << "Unmet conditions: ";
