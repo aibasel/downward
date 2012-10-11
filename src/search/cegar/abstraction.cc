@@ -34,7 +34,7 @@ Abstraction::Abstraction()
       use_astar(true),
       use_new_arc_check(true),
       log_h(false),
-      num_seen_conc_states(0),
+      probability_for_random_start(0),
       memory_released(false),
       average_operator_cost(get_average_operator_cost()) {
     assert(!g_operators.empty());
@@ -330,13 +330,13 @@ bool Abstraction::find_and_break_complete_solution() {
 
 bool Abstraction::find_and_break_solution() {
     // Return true iff we found a *complete* concrete solution.
-    if (num_seen_conc_states <= 0 or seen_conc_states.empty()) {
+    if (probability_for_random_start == 0 || g_rng() >= probability_for_random_start) {
         // Start with initial state.
         return find_and_break_complete_solution();
     } else {
         // Start at random state.
-        int conc_start_index = g_rng.next(seen_conc_states.size());
-        const State &conc_start = seen_conc_states[conc_start_index];
+        State conc_start = *g_initial_state;
+        sample_state(conc_start);
         AbstractState *abs_start = get_abstract_state(conc_start);
         bool solution_found = find_solution(abs_start);
         if (solution_found) {
@@ -350,9 +350,6 @@ bool Abstraction::find_and_break_solution() {
                 return find_and_break_complete_solution();
             }
         }
-        // If we couldn't find a solution from conc_start this time, we also
-        // won't find any in a more refined system, so we remove it.
-        seen_conc_states.erase(seen_conc_states.begin() + conc_start_index);
         // If no solution has been found, make sure that we keep refining by
         // searching for a complete solution in between.
         return find_and_break_complete_solution();
@@ -398,7 +395,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                                              &unmet_cond);
             pick_condition(*prev_state, unmet_cond, &var, &value);
             break_solution(prev_state, var, value);
-            remember_conc_state(prev_conc_state);
             return false;
         } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
@@ -408,7 +404,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
             pick_condition(*abs_state, unmet_cond, &var, &value);
             break_solution(abs_state, var, value);
-            remember_conc_state(conc_state);
             return false;
         } else if (next_op) {
             // Go to the next state.
@@ -442,7 +437,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     get_unmet_goal_conditions(conc_state, &unmet_cond);
     pick_condition(*abs_state, unmet_cond, &var, &value);
     break_solution(abs_state, var, value);
-    remember_conc_state(conc_state);
     return false;
 }
 
@@ -603,14 +597,6 @@ AbstractState *Abstraction::get_abstract_state(const State &state) const {
     // We cannot assert that current is an abstraction of state, because its
     // members have been cleared to save memory.
     return current;
-}
-
-void Abstraction::remember_conc_state(const State &conc_state) {
-    if (num_seen_conc_states <= 0)
-        return;
-    if (seen_conc_states.size() == num_seen_conc_states)
-        seen_conc_states.pop_front();
-    seen_conc_states.push_back(conc_state);
 }
 
 void Abstraction::write_dot_file(int num) {

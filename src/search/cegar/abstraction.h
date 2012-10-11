@@ -83,7 +83,7 @@ private:
     bool use_astar;
     bool use_new_arc_check;
     bool log_h;
-    int num_seen_conc_states;
+    double probability_for_random_start;
 
     bool memory_released;
     double average_operator_cost;
@@ -117,7 +117,6 @@ public:
     void remember_num_states_offline() const {num_states_offline = states.size(); }
     int get_num_states_online() const;
     bool may_keep_refining_online() const;
-    void remember_conc_state(const State &conc_state);
 
     bool has_released_memory() const {return memory_released; }
     void release_memory();
@@ -127,7 +126,7 @@ public:
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_use_new_arc_check(bool new_check) {use_new_arc_check = new_check; }
     void set_log_h(bool log) {log_h = log; }
-    void set_num_seen_conc_states(int num) {num_seen_conc_states = num; }
+    void set_probability_for_random_start(double prob) {probability_for_random_start = prob; }
     void set_pick_strategy(PickStrategy strategy) {pick = strategy; }
 
     // Testing.
