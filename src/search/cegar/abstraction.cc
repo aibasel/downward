@@ -127,6 +127,8 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
         if (DEBUG)
             cout << "Using new goal state: " << goal->str() << endl;
     }
+    if (WRITE_DOT_FILES)
+        write_dot_file(get_num_states());
 }
 
 void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
