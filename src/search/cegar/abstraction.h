@@ -53,8 +53,8 @@ private:
     void refine(AbstractState *state, std::vector<pair<int, int> > conditions);
 
     PickStrategy pick;
-    void pick_condition(AbstractState &state, const std::vector<std::pair<int, int> > &conditions,
-                        int *var, int *value) const;
+    int pick_condition(AbstractState &state,
+                       const std::vector<std::pair<int, int> > &conditions) const;
 
     // A* search.
     mutable AdaptiveQueue<AbstractState *> queue;
