@@ -73,7 +73,10 @@ double Abstraction::get_average_operator_cost() const {
     return avg_cost;
 }
 
-void Abstraction::break_solution(AbstractState *state, int var, int value) {
+void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &conditions) {
+    int var = -1;
+    int value = -1;
+    pick_condition(*state, conditions, &var, &value);
     while (true) {
         refine(state, var, value);
         AbstractState *v1 = state->get_left_child();
@@ -129,6 +132,22 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     }
     if (WRITE_DOT_FILES)
         write_dot_file(get_num_states());
+}
+
+void Abstraction::refine(AbstractState *state, std::vector<pair<int, int> > conditions) {
+    // Call by value deliberately to receive a separate copy of the vector.
+    assert(!conditions.empty());
+    pair<int, int> condition = conditions.back();
+    conditions.pop_back();
+    int var = condition.first;
+    int value = condition.second;
+    refine(state, var, value);
+    if (conditions.empty())
+        return;
+    AbstractState *v1 = state->get_left_child();
+    AbstractState *v2 = state->get_right_child();
+    refine(v1, conditions);
+    refine(v2, conditions);
 }
 
 void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
@@ -381,7 +400,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     State prev_conc_state(*g_initial_state);
 
     vector<pair<int, int> > unmet_cond;
-    int var, value;
 
     while (true) {
         if (!abs_state->is_abstraction_of(conc_state)) {
@@ -395,8 +413,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             abs_state->regress(*prev_op, &desired_prev_state);
             prev_state->get_unmet_conditions(desired_prev_state, prev_conc_state,
                                              &unmet_cond);
-            pick_condition(*prev_state, unmet_cond, &var, &value);
-            break_solution(prev_state, var, value);
+            break_solution(prev_state, unmet_cond);
             return false;
         } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
@@ -404,8 +421,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 cout << "Operator is not applicable: " << next_op->get_name() << endl;
             ++unmet_preconditions;
             get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
-            pick_condition(*abs_state, unmet_cond, &var, &value);
-            break_solution(abs_state, var, value);
+            break_solution(abs_state, unmet_cond);
             return false;
         } else if (next_op) {
             // Go to the next state.
@@ -437,8 +453,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         cout << "Goal test failed." << endl;
     unmet_goals++;
     get_unmet_goal_conditions(conc_state, &unmet_cond);
-    pick_condition(*abs_state, unmet_cond, &var, &value);
-    break_solution(abs_state, var, value);
+    break_solution(abs_state, unmet_cond);
     return false;
 }
 

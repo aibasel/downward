@@ -31,7 +31,8 @@ enum PickStrategy {
     MAX_REFINED,
     // Number of predecessors in causal graph.
     MIN_PREDECESSORS,
-    MAX_PREDECESSORS
+    MAX_PREDECESSORS,
+    ALL
 };
 
 class Abstraction {
@@ -49,6 +50,7 @@ private:
     double get_average_operator_cost() const;
 
     void refine(AbstractState *state, int var, int value);
+    void refine(AbstractState *state, std::vector<pair<int, int> > conditions);
 
     PickStrategy pick;
     void pick_condition(AbstractState &state, const std::vector<std::pair<int, int> > &conditions,
@@ -92,7 +94,7 @@ public:
     Abstraction();
 
     void sample_state(State &current_state) const;
-    void break_solution(AbstractState *state, int var, int value);
+    void break_solution(AbstractState *state, std::vector<pair<int, int> > &conditions);
     void improve_h(const State &state, AbstractState *abs_state);
 
     AbstractState *get_abstract_state(const State &state) const;
