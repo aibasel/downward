@@ -74,9 +74,10 @@ double Abstraction::get_average_operator_cost() const {
 }
 
 void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &conditions) {
-    int var = -1;
-    int value = -1;
-    pick_condition(*state, conditions, &var, &value);
+    int cond = pick_condition(*state, conditions);
+    assert(cond >= 0 && cond < conditions.size());
+    int var = conditions[cond].first;
+    int value = conditions[cond].second;
     while (true) {
         refine(state, var, value);
         AbstractState *v1 = state->get_left_child();
@@ -457,8 +458,8 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     return false;
 }
 
-void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, int> > &conditions,
-                                 int *var, int *value) const {
+int Abstraction::pick_condition(AbstractState &state,
+                                 const vector<pair<int, int> > &conditions) const {
     assert(!conditions.empty());
     if (DEBUG) {
         cout << "Unmet conditions: ";
@@ -469,9 +470,7 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
     }
     // Shortcut for condition lists with only one element.
     if (conditions.size() == 1) {
-        *var = conditions[0].first;
-        *value = conditions[0].second;
-        return;
+        return 0;
     }
     int cond = -1;
     int random_cond = g_rng.next(conditions.size());
@@ -550,8 +549,7 @@ void Abstraction::pick_condition(AbstractState &state, const vector<pair<int, in
         exit(2);
     }
     assert(cond >= 0);
-    *var = conditions[cond].first;
-    *value = conditions[cond].second;
+    return cond;
 }
 
 void Abstraction::calculate_costs() const {
