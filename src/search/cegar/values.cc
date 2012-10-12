@@ -103,14 +103,16 @@ bool Values::abstracts(const Values &other) const {
 void Values::get_unmet_conditions(const Values &other, const State conc_state,
                                   Conditions *conditions) const {
     // Intersect the domains with the domains of the other state. If
-    // conc_state[var] is not contained in the intersection, add all valid values
-    // for this variable from the intersection to the returned vector.
+    // conc_state[var] is not contained in the intersection, add the first valid
+    // value for this variable from the intersection to the returned vector.
     Bitset intersection(values & other.values);
     for (int var = 0; var < borders.size(); ++var) {
         if (!intersection.test(pos(var, conc_state[var]))) {
             for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
-                if (intersection.test(pos))
+                if (intersection.test(pos)) {
                     conditions->push_back(make_pair(var, pos - borders[var]));
+                    break;
+                }
             }
         }
     }
