@@ -32,6 +32,7 @@ enum PickStrategy {
     // Number of predecessors in causal graph.
     MIN_PREDECESSORS,
     MAX_PREDECESSORS,
+    // Refine the state for the first fact, its children for the second, etc.
     ALL
 };
 
