@@ -74,27 +74,35 @@ double Abstraction::get_average_operator_cost() const {
 }
 
 void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &conditions) {
-    int cond = pick_condition(*state, conditions);
-    assert(cond >= 0 && cond < conditions.size());
-    int var = conditions[cond].first;
-    int value = conditions[cond].second;
-    while (true) {
-        refine(state, var, value);
-        AbstractState *v1 = state->get_left_child();
-        AbstractState *v2 = state->get_right_child();
-        if (v1->get_state_in() && v2->get_state_in()) {
-            // The arc on the solution u->v is now ambiguous (u->v1 and u->v2 exist).
-            assert(v1->get_op_in() && v2->get_op_in());
-            assert(v1->get_op_in() == v2->get_op_in());
-            assert(v1->get_state_in() == v2->get_state_in());
-            state = v1->get_state_in();
-        } else {
-            break;
+    if (DEBUG) {
+        cout << "Unmet conditions: ";
+        for (int i = 0; i < conditions.size(); ++i) {
+            cout << conditions[i].first << "=" << conditions[i].second << " ";
+        }
+        cout << endl;
+    }
+    if (pick == ALL && conditions.size() >= 2) {
+        refine(state, conditions);
+    } else {
+        int cond = pick_condition(*state, conditions);
+        assert(cond >= 0 && cond < conditions.size());
+        int var = conditions[cond].first;
+        int value = conditions[cond].second;
+        while (true) {
+            refine(state, var, value);
+            AbstractState *v1 = state->get_left_child();
+            AbstractState *v2 = state->get_right_child();
+            if (v1->get_state_in() && v2->get_state_in()) {
+                // The arc on the solution u->v is now ambiguous (u->v1 and u->v2 exist).
+                assert(v1->get_op_in() && v2->get_op_in());
+                assert(v1->get_op_in() == v2->get_op_in());
+                assert(v1->get_state_in() == v2->get_state_in());
+                state = v1->get_state_in();
+            } else {
+                break;
+            }
         }
     }
-    // We cannot calculate the avg_h value after each refinement, because the
-    // solution pointers are reset in update_h_values() called by get_avg_h().
-    // Instead we calculate it after a solution has been broken.
     log_h_values();
 }
 
@@ -461,13 +469,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
 int Abstraction::pick_condition(AbstractState &state,
                                  const vector<pair<int, int> > &conditions) const {
     assert(!conditions.empty());
-    if (DEBUG) {
-        cout << "Unmet conditions: ";
-        for (int i = 0; i < conditions.size(); ++i) {
-            cout << conditions[i].first << "=" << conditions[i].second << " ";
-        }
-        cout << endl;
-    }
     // Shortcut for condition lists with only one element.
     if (conditions.size() == 1) {
         return 0;
