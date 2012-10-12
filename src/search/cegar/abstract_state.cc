@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include <boost/unordered_map.hpp>
+
 using namespace std;
 
 namespace cegar_heuristic {
@@ -115,8 +117,9 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     // Before: u --> this=v --> w
     //  ==>
     // After:  v is split into v1 and v2
-    map<AbstractState *, bool> intersects_with;
-    map<AbstractState *, bool>::iterator lb;
+    typedef boost::unordered_map<AbstractState *, bool> map_type;
+    map_type intersects_with;
+    map_type::iterator intersect_iter;
     Arcs::iterator it;
     for (it = prev.begin(); it != prev.end(); ++it) {
         Operator *op = it->first;
@@ -131,15 +134,15 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
             int eff = get_eff(*op, var);
             if (eff == UNDEFINED) {
                 bool intersects = false;
-                lb = intersects_with.lower_bound(u);
-                if((lb != intersects_with.end()) && (u == lb->first)) {
+                intersect_iter = intersects_with.find(u);
+                if (intersect_iter != intersects_with.end()) {
                     // Value for u already exists.
-                    intersects = lb->second;
+                    intersects = intersect_iter->second;
                 } else {
                     // There's no value for u in the map. Use lb as a hint to
                     // insert so we can avoid another lookup.
                     intersects = u->domains_intersect(v1, var);
-                    intersects_with.insert(lb, make_pair(u, intersects));
+                    intersects_with.insert(make_pair(u, intersects));
                 }
                 if (intersects) {
                     u->add_arc(op, v1);
@@ -183,15 +186,14 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
                 int eff = get_eff(*op, var);
                 if (eff == UNDEFINED) {
                     bool intersects = false;
-                    lb = intersects_with.lower_bound(w);
-                    if((lb != intersects_with.end()) && (w == lb->first)) {
+                    intersect_iter = intersects_with.find(w);
+                    if (intersect_iter != intersects_with.end()) {
                         // Value for w already exists.
-                        intersects = lb->second;
+                        intersects = intersect_iter->second;
                     } else {
-                        // There's no value for w in the map. Use lb as a hint
-                        // to insert so we can avoid another lookup.
+                        // There's no value for w in the map.
                         intersects = v1->domains_intersect(w, var);
-                        intersects_with.insert(lb, make_pair(w, intersects));
+                        intersects_with.insert(make_pair(w, intersects));
                     }
                     if (intersects) {
                         v1->add_arc(op, w);
