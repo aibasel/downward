@@ -2,7 +2,7 @@
 
 set -e
 
-for FILE in `ls graph*.dot`; do
+for FILE in `ls *.dot`; do
     echo $FILE
     dot -Tpng $FILE -o $FILE.png
 done
