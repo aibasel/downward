@@ -13,6 +13,7 @@
 
 namespace cegar_heuristic {
 extern bool DEBUG;
+const bool WRITE_DOT_FILES = true;
 
 const int UNDEFINED = -1;
 

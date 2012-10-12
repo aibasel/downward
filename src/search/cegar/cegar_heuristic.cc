@@ -64,8 +64,6 @@ void CegarHeuristic::initialize() {
         num_states = abstraction->get_num_states();
         if (valid_complete_conc_solution)
             break;
-        if (WRITE_DOT_FILES)
-            abstraction->write_dot_file(num_states);
         // Update costs to goal evenly distributed over time.
         if (num_states >= (updates + 1) * update_step) {
             abstraction->update_h_values();

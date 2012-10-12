@@ -7,7 +7,6 @@
 class State;
 
 namespace cegar_heuristic {
-const bool WRITE_DOT_FILES = false;
 
 class Abstraction;
 
