@@ -167,6 +167,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     int num_iterations = 0;
     size_t max_pdb_size = 0;
     num_rejected = 0;
+    num_removed = 0;
     while (true) {
         num_iterations += 1;
         cout << "current collection size is " << current_heuristic->get_size() << endl;
@@ -212,6 +213,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             if (current_heuristic->get_size() + pdb_heuristic->get_size() > collection_max_size) {
                 delete pdb_heuristic;
                 candidate_pdbs[i] = 0;
+                ++num_removed;
                 continue;
             }
 
@@ -242,6 +244,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             cout << "iPDB: improvement = " << improvement << endl;
             cout << "iPDB: generated = " << generated_patterns.size() << endl;
             cout << "iPDB: rejected = " << num_rejected << endl;
+            cout << "iPDB: removed = " << num_removed << endl;
             cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
             break;
         }
