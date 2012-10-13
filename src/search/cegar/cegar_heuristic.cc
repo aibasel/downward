@@ -5,8 +5,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state.h"
-#include "../timer.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
@@ -19,22 +17,24 @@ using namespace std;
 namespace cegar_heuristic {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
-      max_states_offline(opts.get<int>("max_states_offline")),
       h_updates(opts.get<int>("h_updates")),
       search(opts.get<bool>("search")) {
+    int max_states_offline = opts.get<int>("max_states_offline");
     if (max_states_offline == -1)
         max_states_offline = INFINITY;
+    int max_states_online = opts.get<int>("max_states_online");
+    if (max_states_online == -1)
+        max_states_online = INFINITY;
 
     DEBUG = opts.get<bool>("debug");
 
     abstraction = new Abstraction();
     g_cegar_abstraction = abstraction;
-    g_cegar_abstraction_max_states_online = opts.get<int>("max_states_online");
+    abstraction->set_max_states_offline(max_states_offline);
+    abstraction->set_max_states_online(max_states_online);
     abstraction->set_pick_strategy(PickStrategy(opts.get_enum("pick")));
     abstraction->set_use_astar(opts.get<bool>("use_astar"));
-    bool use_new_arc_check = opts.get<bool>("new_arc_check");
-    abstraction->set_use_new_arc_check(use_new_arc_check);
-    cout << "Using new arc check: " << use_new_arc_check << endl;
+    abstraction->set_use_new_arc_check(opts.get<bool>("new_arc_check"));
     abstraction->set_log_h(opts.get<bool>("log_h"));
     abstraction->set_probability_for_random_start(opts.get<double>("random"));
 }
@@ -44,50 +44,7 @@ CegarHeuristic::~CegarHeuristic() {
 
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
-    int updates = 0;
-    const int update_step = (max_states_offline / (h_updates + 1)) + 1;
-    bool valid_complete_conc_solution = false;
-    int num_states = abstraction->get_num_states();
-    int logged_states = 0;
-    const int states_log_step = 1000;
-    if (WRITE_DOT_FILES) {
-        write_causal_graph(*g_causal_graph);
-        abstraction->write_dot_file(num_states);
-    }
-    while (num_states < max_states_offline) {
-        if (num_states - logged_states >= states_log_step) {
-            cout << "Abstract states: "
-                 << num_states << "/" << max_states_offline << endl;
-            logged_states += states_log_step;
-        }
-        valid_complete_conc_solution = abstraction->find_and_break_solution();
-        num_states = abstraction->get_num_states();
-        if (valid_complete_conc_solution)
-            break;
-        // Update costs to goal evenly distributed over time.
-        if (num_states >= (updates + 1) * update_step) {
-            abstraction->update_h_values();
-            ++updates;
-        }
-    }
-    abstraction->log_h_values();
-    abstraction->remember_num_states_offline();
-    cout << "Done building abstraction [t=" << g_timer << "]" << endl;
-    cout << "Peak memory after building abstraction: "
-         << get_peak_memory_in_kb() << " KB" << endl;
-    cout << "Solution found while refining: " << valid_complete_conc_solution << endl;
-    cout << "Abstract states offline: " << num_states << endl;
-    cout << "Cost updates: " << updates << "/" << h_updates << endl;
-    cout << "A* expansions: " << abstraction->get_num_expansions() << endl;
-    if (!valid_complete_conc_solution)
-        assert(num_states >= max_states_offline);
-    abstraction->update_h_values();
-    assert(num_states == abstraction->get_num_states());
-    abstraction->print_statistics();
-    if (g_cegar_abstraction_max_states_online <= 0) {
-        cout << "Release memory" << endl;
-        abstraction->release_memory();
-    }
+    abstraction->build(h_updates);
 
     if (!search)
         exit(0);

@@ -339,4 +339,3 @@ string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 
 cegar_heuristic::Abstraction *g_cegar_abstraction;
-int g_cegar_abstraction_max_states_online = -1;

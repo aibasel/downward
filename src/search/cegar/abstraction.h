@@ -15,6 +15,7 @@
 
 namespace cegar_heuristic {
 const int INFINITY = std::numeric_limits<int>::max();
+const int STATES_LOG_STEP = 1000;
 
 class AbstractState;
 
@@ -83,6 +84,8 @@ private:
     mutable int searches_from_random_state;
 
     // Settings.
+    int max_states_offline;
+    int max_states_online;
     bool use_astar;
     bool use_new_arc_check;
     bool log_h;
@@ -93,6 +96,8 @@ private:
 
 public:
     Abstraction();
+
+    void build(int h_updates);
 
     void sample_state(State &current_state) const;
     void break_solution(AbstractState *state, std::vector<pair<int, int> > &conditions);
@@ -119,13 +124,16 @@ public:
     int get_num_states() const {return states.size(); }
     void remember_num_states_offline() const {num_states_offline = states.size(); }
     int get_num_states_online() const;
-    bool may_keep_refining_online() const;
+    bool is_online() const {return num_states_offline != -1; }
+    bool max_states_used() const;
 
     bool has_released_memory() const {return memory_released; }
     void release_memory();
     void print_statistics();
     double get_avg_h() const;
 
+    void set_max_states_offline(int states) {max_states_offline = states; }
+    void set_max_states_online(int states) {max_states_online = states; }
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_use_new_arc_check(bool new_check) {use_new_arc_check = new_check; }
     void set_log_h(bool log) {log_h = log; }

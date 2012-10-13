@@ -61,6 +61,5 @@ extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
 
 extern cegar_heuristic::Abstraction *g_cegar_abstraction;
-extern int g_cegar_abstraction_max_states_online;
 
 #endif

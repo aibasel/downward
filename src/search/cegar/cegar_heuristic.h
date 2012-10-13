@@ -11,7 +11,6 @@ namespace cegar_heuristic {
 class Abstraction;
 
 class CegarHeuristic : public Heuristic {
-    int max_states_offline;
     const int h_updates;
     const bool search;
     Abstraction *abstraction;
