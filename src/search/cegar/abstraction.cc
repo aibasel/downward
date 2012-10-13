@@ -142,8 +142,8 @@ void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &
                 break;
             }
         }
+        log_h_values();
     }
-    log_h_values();
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -203,6 +203,7 @@ void Abstraction::refine(AbstractState *state, std::vector<pair<int, int> > cond
         refine(v1, conditions);
     if (!max_states_used())
         refine(v2, conditions);
+    log_h_values();
 }
 
 void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
