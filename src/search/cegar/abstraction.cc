@@ -6,6 +6,8 @@
 #include "../priority_queue.h"
 #include "../rng.h"
 #include "../successor_generator.h"
+#include "../timer.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
@@ -31,6 +33,8 @@ Abstraction::Abstraction()
       last_init_h(0),
       searches_from_init(0),
       searches_from_random_state(0),
+      max_states_offline(1),
+      max_states_online(0),
       use_astar(true),
       use_new_arc_check(true),
       log_h(false),
@@ -62,6 +66,42 @@ Abstraction::Abstraction()
     }
 }
 
+void Abstraction::build(int h_updates) {
+    int updates = 0;
+    const int update_step = (max_states_offline / (h_updates + 1)) + 1;
+    bool valid_complete_conc_solution = false;
+    if (WRITE_DOT_FILES) {
+        write_causal_graph(*g_causal_graph);
+        assert(get_num_states() == 1);
+        write_dot_file(get_num_states());
+    }
+    while (get_num_states() < max_states_offline) {
+        valid_complete_conc_solution = find_and_break_solution();
+        if (valid_complete_conc_solution)
+            break;
+        // Update costs to goal evenly distributed over time.
+        if (get_num_states() >= (updates + 1) * update_step) {
+            update_h_values();
+            ++updates;
+        }
+    }
+    log_h_values();
+    remember_num_states_offline();
+    cout << "Done building abstraction [t=" << g_timer << "]" << endl;
+    cout << "Peak memory after building abstraction: "
+         << get_peak_memory_in_kb() << " KB" << endl;
+    cout << "Solution found while refining: " << valid_complete_conc_solution << endl;
+    cout << "Abstract states offline: " << get_num_states() << endl;
+    cout << "Cost updates: " << updates << "/" << h_updates << endl;
+    cout << "A* expansions: " << get_num_expansions() << endl;
+    if (!valid_complete_conc_solution)
+        assert(get_num_states() >= max_states_offline);
+    update_h_values();
+    print_statistics();
+    if (max_states_online <= 0)
+        release_memory();
+}
+
 double Abstraction::get_average_operator_cost() const {
     // Calculate average operator costs.
     double avg_cost = 0;
@@ -88,7 +128,7 @@ void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &
         assert(cond >= 0 && cond < conditions.size());
         int var = conditions[cond].first;
         int value = conditions[cond].second;
-        while (true) {
+        while (!max_states_used()) {
             refine(state, var, value);
             AbstractState *v1 = state->get_left_child();
             AbstractState *v2 = state->get_right_child();
@@ -108,6 +148,7 @@ void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
     assert(!g_operators.empty());  // We need operators and the g_initial_state.
+    assert(!max_states_used());
     if (DEBUG)
         cout << "Refine " << state->str() << " for " << var << "=" << value
              << " (" << g_variable_name[var] << "=" << g_fact_names[var][value]
@@ -139,8 +180,11 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
         if (DEBUG)
             cout << "Using new goal state: " << goal->str() << endl;
     }
+    int num_states = get_num_states();
+    if (num_states % STATES_LOG_STEP == 0)
+        cout << "Abstract states: " << num_states << "/" << max_states_offline << endl;
     if (WRITE_DOT_FILES)
-        write_dot_file(get_num_states());
+        write_dot_file(num_states);
 }
 
 void Abstraction::refine(AbstractState *state, std::vector<pair<int, int> > conditions) {
@@ -155,15 +199,17 @@ void Abstraction::refine(AbstractState *state, std::vector<pair<int, int> > cond
         return;
     AbstractState *v1 = state->get_left_child();
     AbstractState *v2 = state->get_right_child();
-    refine(v1, conditions);
-    refine(v2, conditions);
+    if (!max_states_used())
+        refine(v1, conditions);
+    if (!max_states_used())
+        refine(v2, conditions);
 }
 
 void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
     int rounds = 0;
     const int old_h = abs_state->get_h();
     // Loop until the heuristic value increases.
-    while (abs_state->get_h() == old_h && may_keep_refining_online()) {
+    while (abs_state->get_h() == old_h && !max_states_used()) {
         bool solution_found = find_solution(abs_state);
         if (!solution_found) {
             cout << "No abstract solution found" << endl;
@@ -661,11 +707,13 @@ int Abstraction::get_num_states_online() const {
     return states.size() - num_states_offline;
 }
 
-bool Abstraction::may_keep_refining_online() const {
-    return get_num_states_online() < g_cegar_abstraction_max_states_online;
+bool Abstraction::max_states_used() const {
+    return (!is_online() && get_num_states() >= max_states_offline) ||
+           (is_online() && get_num_states_online() >= max_states_online);
 }
 
 void Abstraction::release_memory() {
+    cout << "Release memory" << endl;
     assert(!memory_released);
     vector<int>().swap(cg_partial_ordering);
     deque<State>().swap(seen_conc_states);
