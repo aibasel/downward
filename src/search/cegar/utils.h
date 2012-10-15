@@ -56,6 +56,8 @@ void pick_condition_for_each_var(vector<pair<int, int> > *conditions);
 
 // Debugging.
 void print_conditions(const vector<pair<int, int> > &conditions);
+
+extern int get_memory_in_kb(const string& type);
 }
 
 #endif
