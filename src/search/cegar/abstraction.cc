@@ -101,7 +101,7 @@ void Abstraction::build(int h_updates) {
     if (max_states_online <= 0)
         release_memory();
     cout << "Current memory after building abstraction: "
-         << get_memory_in_kb("VmSize") << " KB" << endl;
+         << get_memory_in_kb("VmRSS") << " KB" << endl;
 }
 
 double Abstraction::get_average_operator_cost() const {
@@ -719,7 +719,6 @@ void Abstraction::release_memory() {
     cout << "Release memory" << endl;
     assert(!memory_released);
     vector<int>().swap(cg_partial_ordering);
-    deque<State>().swap(seen_conc_states);
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
