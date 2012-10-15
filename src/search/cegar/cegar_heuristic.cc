@@ -26,6 +26,11 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     if (max_states_online == -1)
         max_states_online = INFINITY;
 
+    if (h_updates <= 0) {
+        cout << "You must explicitly set the h_updates parameter" << endl;
+        exit(2);
+    }
+
     DEBUG = opts.get<bool>("debug");
 
     abstraction = new Abstraction();
@@ -75,7 +80,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("ALL");
     parser.add_enum_option("pick", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied condition");
-    parser.add_option<int>("h_updates", 3, "how often to update the abstract h-values");
+    parser.add_option<int>("h_updates", -1, "how often to update the abstract h-values");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
     parser.add_option<bool>("debug", false, "print debugging output");
     parser.add_option<bool>("use_astar", true, "find abstract solution with A* or Dijkstra");
