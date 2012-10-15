@@ -1,7 +1,7 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
-#include "values.h"
+#include "utils.h"
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
 
@@ -13,6 +13,7 @@
 
 namespace cegar_heuristic {
 class AbstractState;
+class Values;
 typedef pair<Operator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
 typedef std::vector<Operator *> Loops;
@@ -26,8 +27,7 @@ private:
     // Possible values of each variable in this state.
     // values[1] == {2} -> var1 is concretely set here.
     // values[1] == {2, 3} -> var1 has two possible values.
-    // TODO: Turn into pointer.
-    Values values;
+    Values *values;
 
     Arcs next, prev;
     Loops loops;
@@ -57,9 +57,8 @@ public:
     void regress(const Operator &op, AbstractState *result) const;
     std::string str() const;
     void set_value(int var, int value);
-    bool can_refine(int var, int value) const {return values.test(var, value) && values.count(var) >= 2; }
-    int count(int var) const {return values.count(var); }
-    bool domains_intersect(AbstractState *other, int var) {return values.domains_intersect(other->values, var); }
+    bool can_refine(int var, int value) const;
+    int count(int var) const;
     // Return a pointer to the state where the next solution check should start.
     // Return 0 if the search has to be started from the beginning.
     void refine(int var, int value, AbstractState *v1, AbstractState *v2,
