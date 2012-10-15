@@ -1,13 +1,13 @@
 #include "abstraction.h"
 
 #include "abstract_state.h"
+#include "utils.h"
 #include "../globals.h"
 #include "../operator.h"
 #include "../priority_queue.h"
 #include "../rng.h"
 #include "../successor_generator.h"
 #include "../timer.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
@@ -89,7 +89,7 @@ void Abstraction::build(int h_updates) {
     remember_num_states_offline();
     cout << "Done building abstraction [t=" << g_timer << "]" << endl;
     cout << "Peak memory after building abstraction: "
-         << get_peak_memory_in_kb() << " KB" << endl;
+         << get_memory_in_kb("VmPeak") << " KB" << endl;
     cout << "Solution found while refining: " << valid_complete_conc_solution << endl;
     cout << "Abstract states offline: " << get_num_states() << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
@@ -100,6 +100,8 @@ void Abstraction::build(int h_updates) {
     print_statistics();
     if (max_states_online <= 0)
         release_memory();
+    cout << "Current memory after building abstraction: "
+         << get_memory_in_kb("VmSize") << " KB" << endl;
 }
 
 double Abstraction::get_average_operator_cost() const {
