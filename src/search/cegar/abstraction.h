@@ -6,7 +6,6 @@
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
 
-#include <deque>
 #include <limits>
 #include <set>
 #include <string>
@@ -44,7 +43,6 @@ private:
     Abstraction &operator=(const Abstraction &);
 
     std::set<AbstractState *> states;
-    std::deque<State> seen_conc_states;
 
     AbstractState *init;
     AbstractState *goal;
