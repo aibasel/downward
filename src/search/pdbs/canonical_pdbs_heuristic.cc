@@ -110,13 +110,16 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
     int max_h = 0;
     assert(!max_cliques.empty());
     // if we have an empty collection, then max_cliques = { \emptyset }
+
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        pattern_databases[i]->evaluate(state);
+        if (pattern_databases[i]->is_dead_end())
+            return -1;
+    }
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         const vector<PDBHeuristic *> &clique = max_cliques[i];
         int clique_h = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
-            clique[j]->evaluate(state);
-            if (clique[j]->is_dead_end())
-                return -1;
             clique_h += clique[j]->get_heuristic();
         }
         max_h = max(max_h, clique_h);
