@@ -17,8 +17,6 @@ const bool WRITE_DOT_FILES = false;
 
 const int UNDEFINED = -1;
 
-const double PRECISION = 0.1;
-
 typedef std::pair<int, int> Condition;
 typedef boost::dynamic_bitset<> Bitset;
 typedef Bitset Domain;

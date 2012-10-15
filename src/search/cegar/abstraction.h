@@ -17,16 +17,20 @@ const int INFINITY = std::numeric_limits<int>::max();
 const int STATES_LOG_STEP = 1000;
 
 class AbstractState;
+//template<typename Value> class AdaptiveQueue;
 
+// In case there are multiple unment conditions, how do we choose the next one?
 enum PickStrategy {
     FIRST,
     RANDOM,
+    // Does the variable occur in the goal?
     GOAL,
     NO_GOAL,
     // Number of remaining values for each variable.
+    // "Constrainment" is bigger if there are less remaining possible values.
     MIN_CONSTRAINED,
     MAX_CONSTRAINED,
-    // Refinement: |remaining_values| / |domain|
+    // Refinement: - (remaining_values / original_domain_size)
     MIN_REFINED,
     MAX_REFINED,
     // Number of predecessors in causal graph.
@@ -42,30 +46,57 @@ private:
     Abstraction(const Abstraction &);
     Abstraction &operator=(const Abstraction &);
 
+    // Set of all valid states, i.e. states that have not been refined.
     std::set<AbstractState *> states;
 
+    // Abstract init and goal state. There will always be only one goal state.
     AbstractState *init;
     AbstractState *goal;
 
     double get_average_operator_cost() const;
 
+    // Split state into two child states.
     void refine(AbstractState *state, int var, int value);
+    // Refine state for the first fact, the resulting children for the second, etc.
     void refine(AbstractState *state, std::vector<pair<int, int> > conditions);
 
+    // How to pick the next fact to refine for in there are multiple facts.
     PickStrategy pick;
     int pick_condition(AbstractState &state,
                        const std::vector<std::pair<int, int> > &conditions) const;
 
     // A* search.
-    mutable AdaptiveQueue<AbstractState *> queue;
+    mutable AdaptiveQueue<AbstractState *> *queue;
     void reset_distances() const;
     FRIEND_TEST(CegarTest, astar_search);
     FRIEND_TEST(CegarTest, dijkstra_search);
     bool astar_search(bool forward, bool use_h) const;
+    // Set the incoming and outgoing solution arcs for the states on the solution path.
     void extract_solution(AbstractState *goal) const;
+    // Dijsktra search calculating all goal distances, but not setting any h-values.
     void calculate_costs() const;
 
-    // Refinement hierarchy.
+    void sample_state(State &current_state) const;
+    // Refine states between state and init until the solution is broken.
+    void break_solution(AbstractState *state, std::vector<pair<int, int> > &conditions);
+
+    bool check_and_break_solution(State conc_state, AbstractState *abs_state = 0);
+    bool find_and_break_complete_solution();
+    bool find_and_break_solution();
+
+    FRIEND_TEST(CegarTest, find_solution_first_state);
+    FRIEND_TEST(CegarTest, find_solution_second_state);
+    FRIEND_TEST(CegarTest, find_solution_loop);
+    FRIEND_TEST(CegarTest, initialize);
+    bool find_solution(AbstractState *start = 0);
+
+    void update_h_values() const;
+    void log_h_values() const;
+
+    void print_statistics();
+    double get_avg_h() const;
+
+    // Start of the refinement hierarchy.
     AbstractState *single;
 
     std::vector<int> cg_partial_ordering;
@@ -95,41 +126,23 @@ private:
 public:
     Abstraction();
 
+    // Build abstraction offline.
     void build(int h_updates);
 
-    void sample_state(State &current_state) const;
-    void break_solution(AbstractState *state, std::vector<pair<int, int> > &conditions);
+    // Refine until the h-value for state improves.
     void improve_h(const State &state, AbstractState *abs_state);
 
     AbstractState *get_abstract_state(const State &state) const;
 
-    FRIEND_TEST(CegarTest, find_solution_first_state);
-    FRIEND_TEST(CegarTest, find_solution_second_state);
-    FRIEND_TEST(CegarTest, find_solution_loop);
-    FRIEND_TEST(CegarTest, initialize);
-    bool find_solution(AbstractState *start = 0);
-
-    std::string get_solution_string() const;
-    bool check_and_break_solution(State conc_state, AbstractState *abs_state = 0);
-    bool find_and_break_complete_solution();
-    bool find_and_break_solution();
-
-    int get_num_expansions() const {return expansions; }
-
-    void update_h_values() const;
-    void log_h_values() const;
-
     int get_num_states() const {return states.size(); }
-    void remember_num_states_offline() const {num_states_offline = states.size(); }
     int get_num_states_online() const;
     bool is_online() const {return num_states_offline != -1; }
     bool max_states_used() const;
 
-    bool has_released_memory() const {return memory_released; }
     void release_memory();
-    void print_statistics();
-    double get_avg_h() const;
+    bool has_released_memory() const {return memory_released; }
 
+    // Settings.
     void set_max_states_offline(int states) {max_states_offline = states; }
     void set_max_states_online(int states) {max_states_online = states; }
     void set_use_astar(bool astar) {use_astar = astar; }
@@ -138,7 +151,11 @@ public:
     void set_probability_for_random_start(double prob) {probability_for_random_start = prob; }
     void set_pick_strategy(PickStrategy strategy) {pick = strategy; }
 
+    // Statistics.
+    int get_num_expansions() const {return expansions; }
+
     // Testing.
+    std::string get_solution_string() const;
     void write_dot_file(int num);
 };
 }
