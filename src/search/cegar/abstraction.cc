@@ -4,7 +4,6 @@
 #include "utils.h"
 #include "../globals.h"
 #include "../operator.h"
-#include "../priority_queue.h"
 #include "../rng.h"
 #include "../successor_generator.h"
 #include "../timer.h"
@@ -24,6 +23,7 @@ using namespace std;
 namespace cegar_heuristic {
 Abstraction::Abstraction()
     : pick(RANDOM),
+      queue(new AdaptiveQueue<AbstractState *>()),
       expansions(0),
       deviations(0),
       unmet_preconditions(0),
@@ -86,7 +86,8 @@ void Abstraction::build(int h_updates) {
         }
     }
     log_h_values();
-    remember_num_states_offline();
+    // Remember how many states where refined offline.
+    num_states_offline = states.size();
     cout << "Done building abstraction [t=" << g_timer << "]" << endl;
     cout << "Peak memory after building abstraction: "
          << get_memory_in_kb("VmPeak") << " KB" << endl;
@@ -98,6 +99,8 @@ void Abstraction::build(int h_updates) {
         assert(get_num_states() >= max_states_offline);
     update_h_values();
     print_statistics();
+    cout << "Current memory before releasing memory: "
+         << get_memory_in_kb("VmRSS") << " KB" << endl;
     if (max_states_online <= 0)
         release_memory();
     cout << "Current memory after building abstraction: "
@@ -244,8 +247,8 @@ void Abstraction::reset_distances() const {
 
 bool Abstraction::astar_search(bool forward, bool use_h) const {
     bool debug = DEBUG && false;
-    while (!queue.empty()) {
-        pair<int, AbstractState *> top_pair = queue.pop();
+    while (!queue->empty()) {
+        pair<int, AbstractState *> top_pair = queue->pop();
         int &old_f = top_pair.first;
         AbstractState *state = top_pair.second;
         ++expansions;
@@ -289,7 +292,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                 }
                 successor->set_predecessor(op, state);
                 assert(f >= 0);
-                queue.push(f, successor);
+                queue->push(f, successor);
             }
         }
     }
@@ -301,18 +304,18 @@ bool Abstraction::find_solution(AbstractState *start) {
         start = init;
 
     bool success = false;
-    queue.clear();
+    queue->clear();
     reset_distances();
     start->reset_neighbours();
     start->set_distance(0);
 
     if (use_astar) {
         // A*.
-        queue.push(start->get_h(), start);
+        queue->push(start->get_h(), start);
         success = astar_search(true, true);
     } else {
         // Dijkstra.
-        queue.push(0, start);
+        queue->push(0, start);
         success = astar_search(true, false);
     }
     return success;
@@ -403,7 +406,7 @@ bool Abstraction::find_and_break_complete_solution() {
     bool solution_found = find_solution(init);
     // Suppress compiler warning about unused variable.
     (void) solution_found;
-    assert(solution_found && "There must always be an abstract solution from init");
+    assert(solution_found && "Solvable tasks must always have an abstract solution from init");
     return check_and_break_solution(*g_initial_state, init);
 }
 
@@ -604,8 +607,8 @@ int Abstraction::pick_condition(AbstractState &state,
 
 void Abstraction::calculate_costs() const {
     reset_distances();
-    queue.clear();
-    queue.push(0, goal);
+    queue->clear();
+    queue->push(0, goal);
     goal->set_distance(0);
     astar_search(false, false);
 }
@@ -638,16 +641,13 @@ double Abstraction::get_avg_h() const {
 }
 
 void Abstraction::log_h_values() const {
-    //double avg_h = get_avg_h();
     int init_h = log_h ? init->get_h() : 0;
     // We cannot assert(avg_h >= last_avg_h), because due to dead-end states,
     // which we don't count for the average h-value, the average h-value may
     // have decreased.
-    if (//(avg_h > last_avg_h + PRECISION) ||
-        (init_h > last_init_h)) {
+    if (init_h > last_init_h) {
         cout << "States: " << get_num_states() << ", avg-h: " << get_avg_h()
              << ", init-h: " << init_h << endl;
-        //last_avg_h = avg_h;
         last_init_h = init_h;
     }
 }
@@ -719,6 +719,8 @@ void Abstraction::release_memory() {
     cout << "Release memory" << endl;
     assert(!memory_released);
     vector<int>().swap(cg_partial_ordering);
+    delete queue;
+    queue = 0;
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
