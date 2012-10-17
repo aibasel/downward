@@ -1,5 +1,6 @@
 #include "canonical_pdbs_heuristic.h"
 
+#include "dominance_pruner.h"
 #include "max_cliques.h"
 #include "pdb_heuristic.h"
 #include "util.h"
@@ -101,6 +102,27 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
             }
         }
     }
+}
+
+void CanonicalPDBsHeuristic::dominance_pruning() {
+    Timer timer;
+    int num_patterns = pattern_databases.size();
+    int num_cliques = max_cliques.size();
+
+    DominancePruner(pattern_databases, max_cliques).prune();
+
+    // Adjust size.
+    size = 0;
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        size += pattern_databases[i]->get_size();
+    }
+
+    cout << "Pruned " << num_cliques - max_cliques.size() <<
+            " of " << num_cliques << " cliques" << endl;
+    cout << "Pruned " << num_patterns - pattern_databases.size() <<
+            " of " << num_patterns << " PDBs" << endl;
+
+    cout << "Dominance pruning took " << timer << endl;
 }
 
 void CanonicalPDBsHeuristic::initialize() {

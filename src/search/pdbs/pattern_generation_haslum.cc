@@ -223,6 +223,11 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             }
         }
         if (improvement < min_improvement) { // end hill climbing algorithm
+            // Note that using dominance pruning during hill-climbing could lead to
+            // fewer discovered patterns and pattern collections.
+            // A dominated pattern (collection) might no longer be dominated
+            // after more patterns are added.
+            current_heuristic->dominance_pruning();
             cout << "iPDB: iterations = " << num_iterations << endl;
             cout << "iPDB: num_patterns = "
                  << current_heuristic->get_pattern_databases().size() << endl;

@@ -16,13 +16,8 @@ class MaxCliqueComputer {
 
     int get_maximizing_vertex(
         const vector<int> &subg, const vector<int> &cand) {
-        // assert that subg and cand are sorted
-        for (int i = 1; i < subg.size(); ++i) {
-            assert(subg[i - 1] < subg[i]);
-        }
-        for (int i = 1; i < cand.size(); ++i) {
-            assert(cand[i - 1] < cand[i]);
-        }
+        assert_sorted_unique(subg);
+        assert_sorted_unique(cand);
 
         //cout << "subg: " << subg << endl;
         //cout << "cand: " << cand << endl;
