@@ -31,7 +31,6 @@ private:
 
     Arcs next, prev;
     Loops loops;
-    void remove_arc(Arcs &arcs, Operator *op, AbstractState *other);
 
     // Incumbent distance to first expanded node in backwards and forward search.
     int distance;
@@ -65,8 +64,6 @@ public:
                 bool use_new_arc_check = true);
     void add_arc(Operator *op, AbstractState *other);
     void add_loop(Operator *op);
-    void remove_next_arc(Operator *op, AbstractState *other);
-    void remove_prev_arc(Operator *op, AbstractState *other);
     bool check_arc(Operator *op, AbstractState *other);
     bool check_and_add_arc(Operator *op, AbstractState *other);
     bool check_and_add_loop(Operator *op);

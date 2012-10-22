@@ -343,23 +343,6 @@ void AbstractState::add_loop(Operator *op) {
     loops.push_back(op);
 }
 
-void AbstractState::remove_arc(Arcs &arcs, Operator *op, AbstractState *other) {
-    // Move arcs.back() to pos to speed things up.
-    Arcs::iterator pos = find(arcs.begin(), arcs.end(), Arc(op, other));
-    assert(pos != arcs.end());
-    // For PODs assignment is faster than swapping.
-    *pos = arcs.back();
-    arcs.pop_back();
-}
-
-void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
-    remove_arc(next, op, other);
-}
-
-void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
-    remove_arc(prev, op, other);
-}
-
 bool AbstractState::check_arc(Operator *op, AbstractState *other) {
     // Using a vector<bool> here is faster than using a bitset.
     vector<bool> checked(g_variable_domain.size(), false);
