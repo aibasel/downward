@@ -251,4 +251,13 @@ int get_memory_in_kb(const string& type) {
         cerr << "warning: could not determine peak memory" << endl;
     return memory_in_kb;
 }
+
+#include <sstream>
+
+string to_string(int i) {
+    stringstream out;
+    out << i;
+    return out.str();
+}
+
 }
