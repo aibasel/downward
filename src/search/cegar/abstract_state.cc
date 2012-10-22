@@ -458,6 +458,13 @@ double AbstractState::get_rel_conc_states() const {
     return fraction;
 }
 
+long AbstractState::get_size() const {
+    // All three lists consist occupy the same size when they're empty (12 bit
+    // for 32bit compilations.
+    return 2 * sizeof(Arcs) + sizeof(Arc) * (next.capacity() + prev.capacity()) +
+           sizeof(Loops) + sizeof(Operator*) * loops.capacity();
+}
+
 void AbstractState::release_memory() {
     Arcs().swap(next);
     Arcs().swap(prev);

@@ -35,6 +35,7 @@ Abstraction::Abstraction()
       searches_from_random_state(0),
       max_states_offline(1),
       max_states_online(0),
+      max_size(numeric_limits<long>::max()),
       use_astar(true),
       use_new_arc_check(true),
       log_h(false),
@@ -75,7 +76,7 @@ void Abstraction::build(int h_updates) {
         assert(get_num_states() == 1);
         write_dot_file(get_num_states());
     }
-    while (get_num_states() < max_states_offline) {
+    while (may_keep_refining()) {
         valid_complete_conc_solution = find_and_break_solution();
         if (valid_complete_conc_solution)
             break;
@@ -95,8 +96,6 @@ void Abstraction::build(int h_updates) {
     cout << "Abstract states offline: " << get_num_states() << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     cout << "A* expansions: " << get_num_expansions() << endl;
-    if (!valid_complete_conc_solution)
-        assert(get_num_states() >= max_states_offline);
     update_h_values();
     print_statistics();
     cout << "Current memory before releasing memory: "
@@ -134,7 +133,7 @@ void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &
         assert(cond >= 0 && cond < conditions.size());
         int var = conditions[cond].first;
         int value = conditions[cond].second;
-        while (!max_states_used()) {
+        while (may_keep_refining()) {
             refine(state, var, value);
             AbstractState *v1 = state->get_left_child();
             AbstractState *v2 = state->get_right_child();
@@ -154,7 +153,7 @@ void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
     assert(!g_operators.empty());  // We need operators and the g_initial_state.
-    assert(!max_states_used());
+    assert(may_keep_refining());
     if (DEBUG)
         cout << "Refine " << state->str() << " for " << var << "=" << value
              << " (" << g_variable_name[var] << "=" << g_fact_names[var][value]
@@ -205,9 +204,9 @@ void Abstraction::refine(AbstractState *state, std::vector<pair<int, int> > cond
         return;
     AbstractState *v1 = state->get_left_child();
     AbstractState *v2 = state->get_right_child();
-    if (!max_states_used())
+    if (may_keep_refining())
         refine(v1, conditions);
-    if (!max_states_used())
+    if (may_keep_refining())
         refine(v2, conditions);
     log_h_values();
 }
@@ -216,7 +215,7 @@ void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
     int rounds = 0;
     const int old_h = abs_state->get_h();
     // Loop until the heuristic value increases.
-    while (abs_state->get_h() == old_h && !max_states_used()) {
+    while (abs_state->get_h() == old_h && may_keep_refining()) {
         bool solution_found = find_solution(abs_state);
         if (!solution_found) {
             cout << "No abstract solution found" << endl;
@@ -711,9 +710,10 @@ int Abstraction::get_num_states_online() const {
     return states.size() - num_states_offline;
 }
 
-bool Abstraction::max_states_used() const {
-    return (!is_online() && get_num_states() >= max_states_offline) ||
-           (is_online() && get_num_states_online() >= max_states_online);
+bool Abstraction::may_keep_refining() const {
+    return ((is_online() || get_num_states() < max_states_offline) &&
+            (!is_online() || get_num_states_online() < max_states_online) &&
+            (get_size() < max_size));
 }
 
 void Abstraction::release_memory() {
@@ -728,6 +728,16 @@ void Abstraction::release_memory() {
         state->release_memory();
     }
     memory_released = true;
+}
+
+long Abstraction::get_size() const {
+    int size_in_bytes = 0;
+    set<AbstractState *>::iterator it;
+    for (it = states.begin(); it != states.end(); ++it) {
+        AbstractState *state = *it;
+        size_in_bytes += state->get_size();
+    }
+    return size_in_bytes;
 }
 
 void Abstraction::print_statistics() {
@@ -749,8 +759,8 @@ void Abstraction::print_statistics() {
                     sizeof(prev) + sizeof(Arc) * prev.capacity() +
                     sizeof(loops) + sizeof(Operator*) * loops.capacity();
     }
-    // Since we don't remove arcs to refined states anymore we cannot make the
-    // following assumption: assert(nexts == prevs);
+    // Note: Since we don't remove arcs to refined states anymore we cannot make
+    // the following assumption: assert(nexts == prevs);
 
     int facts = 0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
@@ -759,8 +769,11 @@ void Abstraction::print_statistics() {
     // Each bitset takes about 32 B.
     int bitset_bytes_single = get_num_states() * ((facts / 8) + 32);
 
-    cout << "Arcs: " << nexts << endl;
+    cout << "Next-arcs: " << nexts << endl;
+    cout << "Prev-arcs: " << prevs << endl;
     cout << "Self-loops: " << total_loops << endl;
+    cout << "Arcs total: " << nexts + prevs + total_loops << endl;
+    cout << "Size: " << get_size() / 1024 << " KB" << endl;
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
