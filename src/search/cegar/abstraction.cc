@@ -114,7 +114,8 @@ double Abstraction::get_average_operator_cost() const {
         avg_cost += g_operators[i].get_cost();
     }
     avg_cost /= g_operators.size();
-    cout << "Average operator cost: " << avg_cost << endl;
+    if (DEBUG)
+        cout << "Average operator cost: " << avg_cost << endl;
     return avg_cost;
 }
 
