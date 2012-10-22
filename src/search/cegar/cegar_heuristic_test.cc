@@ -43,6 +43,14 @@ void init_test() {
     g_variable_name.push_back("var1");
     g_variable_name.push_back("var2");
 
+    g_fact_names.clear();
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        vector<string> value_names;
+        for (int value = 0; value < g_variable_domain[var]; ++value)
+            value_names.push_back(to_string(value));
+        g_fact_names.push_back(value_names);
+    }
+
     g_initial_state = create_state("0 0 0");
 
     // Operator: <0=0, 1=0 --> 1=1>
@@ -106,12 +114,18 @@ TEST(CegarTest, values) {
 TEST(CegarTest, domains_intersect) {
     init_test();
 
-    AbstractState a("<0={1},1={0,1}>");
-    AbstractState b("<0={0,1},1={2},2={1}>");
+    // v1: <0={1},1={0,1}>
+    // v2: <0={0,1},1={2},2={1}>
+    Values v1, v2;
+    v1.set(0, 1);
+    v1.remove(1, 2);
+    v2.remove(0, 2);
+    v2.set(1, 2);
+    v2.set(2, 1);
 
-    EXPECT_TRUE(a.domains_intersect(&b, 0));
-    EXPECT_FALSE(a.domains_intersect(&b, 1));
-    EXPECT_TRUE(a.domains_intersect(&b, 2));
+    EXPECT_TRUE(v1.domains_intersect(v2, 0));
+    EXPECT_FALSE(v1.domains_intersect(v2, 1));
+    EXPECT_TRUE(v1.domains_intersect(v2, 2));
 }
 
 TEST(CegarTest, regress) {
@@ -264,17 +278,18 @@ TEST(CegarTest, find_solution_first_state) {
 
     // -> <>
     Abstraction abs;
+    abs.set_max_states_offline(2);
     EXPECT_EQ(0, abs.init->get_next().size());
     EXPECT_EQ(0, abs.init->get_prev().size());
     ASSERT_EQ(1, abs.init->get_loops().size());
     EXPECT_EQ("op1", abs.init->get_loops()[0]->get_name());
     // -> 1={0,1} -> 1={2}
+
     abs.refine(abs.init, 1, 2);
 
     string a1s = "<1={0,1}>";
     string a2s = "<1={2}>";
 
-    EXPECT_EQ("<>", abs.single->str());
     EXPECT_EQ(a1s, abs.init->str());
 
     AbstractState *left = abs.single->get_child(0);
@@ -307,13 +322,13 @@ TEST(CegarTest, find_solution_second_state) {
 
     // -> <>
     Abstraction abs;
+    abs.set_max_states_offline(2);
     // -> 1={0,2} -> 1={1}
     abs.refine(abs.init, 1, 1);
 
     string a1s = "<1={0,2}>";
     string a2s = "<1={1}>";
 
-    EXPECT_EQ("<>", abs.single->str());
     EXPECT_EQ(a1s, abs.init->str());
 
     AbstractState *left = abs.single->get_child(0);
@@ -346,13 +361,13 @@ TEST(CegarTest, find_solution_loop) {
 
     // -> <>
     Abstraction abs;
+    abs.set_max_states_offline(2);
     // --> 0={0} --> 0={1}  (left state has self-loop).
     abs.refine(abs.init, 0, 1);
 
     string a1s = "<0={0}>";
     string a2s = "<0={1}>";
 
-    EXPECT_EQ("<>", abs.single->str());
     EXPECT_EQ(a1s, abs.init->str());
 
     AbstractState *left = abs.single->get_child(0);
@@ -384,6 +399,7 @@ TEST(CegarTest, initialize) {
 
     // --> <>
     Abstraction abstraction;
+    abstraction.set_max_states_offline(2);
     abstraction.find_solution();
     abstraction.calculate_costs();
 
@@ -391,7 +407,7 @@ TEST(CegarTest, initialize) {
     EXPECT_EQ(0, abstraction.init->get_distance());
 
     // --> 1={0,2} --> 1={1}
-    bool success = abstraction.check_and_break_solution(*g_initial_state);
+    bool success = abstraction.find_and_break_solution();
     EXPECT_FALSE(success);
 
     string a1s = "<1={0,2}>";
@@ -454,7 +470,7 @@ TEST(CegarTest, astar_search) {
     a.set_distance(0);
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
-    abs.queue.push(0, &a);
+    abs.queue->push(0, &a);
     bool success = abs.astar_search(true, true);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
@@ -474,8 +490,8 @@ TEST(CegarTest, astar_search) {
     a.set_distance(0);
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
-    ASSERT_TRUE(abs.queue.empty());
-    abs.queue.push(4, &a);
+    ASSERT_TRUE(abs.queue->empty());
+    abs.queue->push(4, &a);
     success = abs.astar_search(true, true);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
@@ -521,7 +537,7 @@ TEST(CegarTest, dijkstra_search) {
     a.set_distance(0);
     b.set_distance(INFINITY);
     c.set_distance(INFINITY);
-    abs.queue.push(0, &a);
+    abs.queue->push(0, &a);
     bool success = abs.astar_search(true, false);
     ASSERT_TRUE(success);
     // Assert that the solution is a-->b, not a-->b-->c
