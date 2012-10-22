@@ -26,8 +26,11 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     if (max_states_online == -1)
         max_states_online = INFINITY;
     int max_size = opts.get<int>("max_size");
-    if (max_size == -1)
+    if (max_size == -1) {
         max_size = numeric_limits<long>::max();
+    } else {
+        max_size *= 1024 * 1024;
+    }
 
     if (h_updates <= 0) {
         cout << "You must explicitly set the h_updates parameter" << endl;
@@ -40,7 +43,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     g_cegar_abstraction = abstraction;
     abstraction->set_max_states_offline(max_states_offline);
     abstraction->set_max_states_online(max_states_online);
-    abstraction->set_max_size(max_size * 1024 * 1024);
+    abstraction->set_max_size(max_size);
     abstraction->set_pick_strategy(PickStrategy(opts.get_enum("pick")));
     abstraction->set_use_astar(opts.get<bool>("use_astar"));
     abstraction->set_use_new_arc_check(opts.get<bool>("new_arc_check"));

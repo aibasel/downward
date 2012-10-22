@@ -713,7 +713,7 @@ int Abstraction::get_num_states_online() const {
 bool Abstraction::may_keep_refining() const {
     return ((is_online() || get_num_states() < max_states_offline) &&
             (!is_online() || get_num_states_online() < max_states_online) &&
-            (get_size() < max_size));
+            (max_size == INFINITY || get_size() < max_size));
 }
 
 void Abstraction::release_memory() {
