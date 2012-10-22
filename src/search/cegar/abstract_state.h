@@ -91,6 +91,8 @@ public:
     Arcs &get_prev() {return prev; }
     Loops &get_loops() {return loops; }
 
+    long get_size() const;
+
     // We only have a valid abstract state if it was not refined.
     bool valid() const {return refined_var == UNDEFINED; }
     int get_refined_var() const {return refined_var; }

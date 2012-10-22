@@ -115,6 +115,8 @@ private:
     // Settings.
     int max_states_offline;
     int max_states_online;
+    // Maximum size of the abstraction in bytes.
+    long max_size;
     bool use_astar;
     bool use_new_arc_check;
     bool log_h;
@@ -136,8 +138,10 @@ public:
 
     int get_num_states() const {return states.size(); }
     int get_num_states_online() const;
+    // Get size estimate in bytes.
+    long get_size() const;
     bool is_online() const {return num_states_offline != -1; }
-    bool max_states_used() const;
+    bool may_keep_refining() const;
 
     void release_memory();
     bool has_released_memory() const {return memory_released; }
@@ -145,6 +149,7 @@ public:
     // Settings.
     void set_max_states_offline(int states) {max_states_offline = states; }
     void set_max_states_online(int states) {max_states_online = states; }
+    void set_max_size(long size) {max_size = size; }
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_use_new_arc_check(bool new_check) {use_new_arc_check = new_check; }
     void set_log_h(bool log) {log_h = log; }
