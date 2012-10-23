@@ -115,6 +115,8 @@ private:
     // Settings.
     int max_states_offline;
     int max_states_online;
+    // Maximum time for building the abstraction.
+    int max_time;
     // Maximum size of the abstraction in bytes.
     long max_size;
     bool use_astar;
@@ -149,6 +151,7 @@ public:
     // Settings.
     void set_max_states_offline(int states) {max_states_offline = states; }
     void set_max_states_online(int states) {max_states_online = states; }
+    void set_max_time(int time) {max_time = time; }
     void set_max_size(long size) {max_size = size; }
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_use_new_arc_check(bool new_check) {use_new_arc_check = new_check; }

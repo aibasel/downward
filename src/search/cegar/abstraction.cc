@@ -35,6 +35,7 @@ Abstraction::Abstraction()
       searches_from_random_state(0),
       max_states_offline(1),
       max_states_online(0),
+      max_time(INFINITY),
       max_size(numeric_limits<long>::max()),
       use_astar(true),
       use_new_arc_check(true),
@@ -713,7 +714,8 @@ int Abstraction::get_num_states_online() const {
 bool Abstraction::may_keep_refining() const {
     return ((is_online() || get_num_states() < max_states_offline) &&
             (!is_online() || get_num_states_online() < max_states_online) &&
-            (max_size == INFINITY || get_size() < max_size));
+            (max_size == numeric_limits<long>::max() || get_size() < max_size) &&
+            (max_time == INFINITY || is_online() || g_timer() < max_time));
 }
 
 void Abstraction::release_memory() {
