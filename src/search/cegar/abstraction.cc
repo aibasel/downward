@@ -13,6 +13,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <new>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -21,6 +22,12 @@
 using namespace std;
 
 namespace cegar_heuristic {
+
+void no_memory () {
+  cout << "Failed to allocate memory!" << endl;
+  g_cegar_abstraction->handle_out_of_memory();
+}
+
 Abstraction::Abstraction()
     : pick(RANDOM),
       queue(new AdaptiveQueue<AbstractState *>()),
@@ -36,14 +43,16 @@ Abstraction::Abstraction()
       max_states_offline(1),
       max_states_online(0),
       max_time(INFINITY),
-      max_size(numeric_limits<long>::max()),
       use_astar(true),
       use_new_arc_check(true),
       log_h(false),
       probability_for_random_start(0),
       memory_released(false),
-      average_operator_cost(get_average_operator_cost()) {
+      average_operator_cost(get_average_operator_cost()),
+      memory_buffer(new char [10 * 1024 * 1024]) {
     assert(!g_operators.empty());
+
+    set_new_handler(no_memory);
 
     single = new AbstractState();
     for (int i = 0; i < g_operators.size(); ++i) {
@@ -712,9 +721,9 @@ int Abstraction::get_num_states_online() const {
 }
 
 bool Abstraction::may_keep_refining() const {
-    return ((is_online() || get_num_states() < max_states_offline) &&
+    return (memory_buffer &&
+            (is_online() || get_num_states() < max_states_offline) &&
             (!is_online() || get_num_states_online() < max_states_online) &&
-            (max_size == numeric_limits<long>::max() || get_size() < max_size) &&
             (max_time == INFINITY || is_online() || g_timer() < max_time));
 }
 
@@ -730,6 +739,12 @@ void Abstraction::release_memory() {
         state->release_memory();
     }
     memory_released = true;
+}
+
+void Abstraction::handle_out_of_memory() {
+    cout << "Delete memory buffer" << endl;
+    delete[] memory_buffer;
+    memory_buffer = 0;
 }
 
 long Abstraction::get_size() const {

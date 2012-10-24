@@ -28,12 +28,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     int max_time = opts.get<int>("max_time");
     if (max_time == -1)
         max_time = INFINITY;
-    int max_size = opts.get<int>("max_size");
-    if (max_size == -1) {
-        max_size = numeric_limits<long>::max();
-    } else {
-        max_size *= 1024 * 1024;
-    }
 
     if (h_updates <= 0) {
         cout << "You must explicitly set the h_updates parameter" << endl;
@@ -47,7 +41,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     abstraction->set_max_states_offline(max_states_offline);
     abstraction->set_max_states_online(max_states_online);
     abstraction->set_max_time(max_time);
-    abstraction->set_max_size(max_size);
     abstraction->set_pick_strategy(PickStrategy(opts.get_enum("pick")));
     abstraction->set_use_astar(opts.get<bool>("use_astar"));
     abstraction->set_use_new_arc_check(opts.get<bool>("new_arc_check"));
@@ -78,7 +71,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states_offline", 100, "maximum number of abstract states created offline");
     parser.add_option<int>("max_states_online", 0, "maximum number of abstract states created online");
     parser.add_option<int>("max_time", -1, "maximum time in seconds for building the abstraction");
-    parser.add_option<int>("max_size", -1, "maximum space in MB for the abstraction");
     vector<string> pick_strategies;
     pick_strategies.push_back("FIRST");
     pick_strategies.push_back("RANDOM");
