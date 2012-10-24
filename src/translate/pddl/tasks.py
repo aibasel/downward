@@ -1,15 +1,16 @@
+from __future__ import print_function
+
 import sys
 
-import actions
-import axioms
-import conditions
-import predicates
-import pddl_types
-import functions
-import f_expression
+from . import actions
+from . import axioms
+from . import conditions
+from . import predicates
+from . import pddl_types
+from . import functions
+from . import f_expression
 
 class Task(object):
-    FUNCTION_SYMBOLS = dict()
     def __init__(self, domain_name, task_name, requirements,
                  types, objects, predicates, functions, init, goal, actions, axioms, use_metric):
         self.domain_name = domain_name
@@ -29,49 +30,56 @@ class Task(object):
     def add_axiom(self, parameters, condition):
         name = "new-axiom@%d" % self.axiom_counter
         self.axiom_counter += 1
-        axiom = axioms.Axiom(name, parameters, condition)
+        axiom = axioms.Axiom(name, parameters, len(parameters), condition)
         self.predicates.append(predicates.Predicate(name, parameters))
         self.axioms.append(axiom)
         return axiom
 
     @staticmethod
     def parse(domain_pddl, task_pddl):
-        domain_name, requirements, types, constants, predicates, functions, actions, axioms \
+        domain_name, domain_requirements, types, constants, predicates, functions, actions, axioms \
                      = parse_domain(domain_pddl)
-        task_name, task_domain_name, objects, init, goal, use_metric = parse_task(task_pddl)
+        task_name, task_domain_name, task_requirements, objects, init, goal, use_metric = parse_task(task_pddl)
 
         assert domain_name == task_domain_name
+        requirements = Requirements(sorted(set(
+                    domain_requirements.requirements +
+                    task_requirements.requirements)))
         objects = constants + objects
+        check_for_duplicates(
+            [o.name for o in objects],
+            errmsg="error: duplicate object %r",
+            finalmsg="please check :constants and :objects definitions")
         init += [conditions.Atom("=", (obj.name, obj.name)) for obj in objects]
 
         return Task(domain_name, task_name, requirements, types, objects,
                     predicates, functions, init, goal, actions, axioms, use_metric)
 
     def dump(self):
-        print "Problem %s: %s [%s]" % (self.domain_name, self.task_name,
-                                       self.requirements)
-        print "Types:"
+        print("Problem %s: %s [%s]" % (
+            self.domain_name, self.task_name, self.requirements))
+        print("Types:")
         for type in self.types:
-            print "  %s" % type
-        print "Objects:"
+            print("  %s" % type)
+        print("Objects:")
         for obj in self.objects:
-            print "  %s" % obj
-        print "Predicates:"
+            print("  %s" % obj)
+        print("Predicates:")
         for pred in self.predicates:
-            print "  %s" % pred
-        print "Functions:"
+            print("  %s" % pred)
+        print("Functions:")
         for func in self.functions:
-            print "  %s" % func
-        print "Init:"
+            print("  %s" % func)
+        print("Init:")
         for fact in self.init:
-            print "  %s" % fact
-        print "Goal:"
+            print("  %s" % fact)
+        print("Goal:")
         self.goal.dump()
-        print "Actions:"
+        print("Actions:")
         for action in self.actions:
             action.dump()
         if self.axioms:
-            print "Axioms:"
+            print("Axioms:")
             for axiom in self.axioms:
                 axiom.dump()
 
@@ -91,8 +99,9 @@ class Requirements(object):
 def parse_domain(domain_pddl):
     iterator = iter(domain_pddl)
 
-    assert iterator.next() == "define"
-    domain_line = iterator.next()
+    define_tag = next(iterator)
+    assert define_tag == "define"
+    domain_line = next(iterator)
     assert domain_line[0] == "domain" and len(domain_line) == 2
     yield domain_line[1]
 
@@ -113,10 +122,10 @@ def parse_domain(domain_pddl):
         if field in seen_fields:
             raise SystemExit("Error in domain specification\n" +
                              "Reason: two '%s' specifications." % field)
-        if (seen_fields and 
+        if (seen_fields and
             correct_order.index(seen_fields[-1]) > correct_order.index(field)):
             msg = "\nWarning: %s specification not allowed here (cf. PDDL BNF)" % field
-            print >> sys.stderr, msg
+            print(msg, file=sys.stderr)
         seen_fields.append(field)
         if field == ":requirements":
             requirements = Requirements(opt[1:])
@@ -126,16 +135,14 @@ def parse_domain(domain_pddl):
         elif field == ":constants":
             constants = pddl_types.parse_typed_list(opt[1:])
         elif field == ":predicates":
-            the_predicates = [predicates.Predicate.parse(entry) 
+            the_predicates = [predicates.Predicate.parse(entry)
                               for entry in opt[1:]]
             the_predicates += [predicates.Predicate("=",
                                  [pddl_types.TypedObject("?x", "object"),
                                   pddl_types.TypedObject("?y", "object")])]
         elif field == ":functions":
-            the_functions = pddl_types.parse_typed_list(opt[1:],
-                    constructor=functions.Function.parse_typed, functions=True)
-            for function in the_functions:
-                Task.FUNCTION_SYMBOLS[function.name] = function.type
+            the_functions = [functions.Function.parse(entry)
+                             for entry in opt[1:]]
     pddl_types.set_supertypes(the_types)
     # for type in the_types:
     #   print repr(type), type.supertype_names
@@ -144,7 +151,7 @@ def parse_domain(domain_pddl):
     yield constants
     yield the_predicates
     yield the_functions
-    
+
     entries = [first_action] + [entry for entry in iterator]
     the_axioms = []
     the_actions = []
@@ -161,18 +168,27 @@ def parse_domain(domain_pddl):
 def parse_task(task_pddl):
     iterator = iter(task_pddl)
 
-    assert iterator.next() == "define"
-    problem_line = iterator.next()
+    define_tag = next(iterator)
+    assert define_tag == "define"
+    problem_line = next(iterator)
     assert problem_line[0] == "problem" and len(problem_line) == 2
     yield problem_line[1]
-    domain_line = iterator.next()
+    domain_line = next(iterator)
     assert domain_line[0] == ":domain" and len(domain_line) == 2
     yield domain_line[1]
 
-    objects_opt = iterator.next()
+    requirements_opt = next(iterator)
+    if requirements_opt[0] == ":requirements":
+        requirements = requirements_opt[1:]
+        objects_opt = next(iterator)
+    else:
+        requirements = []
+        objects_opt = requirements_opt
+    yield Requirements(requirements)
+
     if objects_opt[0] == ":objects":
         yield pddl_types.parse_typed_list(objects_opt[1:])
-        init = iterator.next()
+        init = next(iterator)
     else:
         yield []
         init = objects_opt
@@ -183,14 +199,14 @@ def parse_task(task_pddl):
         if fact[0] == "=":
             try:
                 initial.append(f_expression.parse_assignment(fact))
-            except ValueError, e:
+            except ValueError as e:
                 raise SystemExit("Error in initial state specification\n" +
                                  "Reason: %s." %  e)
         else:
             initial.append(conditions.Atom(fact[0], fact[1:]))
     yield initial
 
-    goal = iterator.next()
+    goal = next(iterator)
     assert goal[0] == ":goal" and len(goal) == 2
     yield conditions.parse_condition(goal[1])
 
@@ -205,3 +221,16 @@ def parse_task(task_pddl):
 
     for entry in iterator:
         assert False, entry
+
+
+def check_for_duplicates(elements, errmsg, finalmsg):
+    seen = set()
+    errors = []
+    for element in elements:
+        if element in seen:
+            errors.append(errmsg % element)
+        else:
+            seen.add(element)
+    if errors:
+        raise SystemExit("\n".join(errors) + "\n" + finalmsg)
+

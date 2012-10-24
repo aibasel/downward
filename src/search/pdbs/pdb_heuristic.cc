@@ -1,6 +1,7 @@
 #include "pdb_heuristic.h"
 
 #include "match_tree.h"
+#include "util.h"
 
 #include "../globals.h"
 #include "../operator.h"
@@ -8,6 +9,7 @@
 #include "../priority_queue.h"
 #include "../state.h"
 #include "../timer.h"
+#include "../utilities.h"
 
 #include "../merge_and_shrink/variable_order_finder.h"
 
@@ -230,6 +232,7 @@ void PDBHeuristic::create_pdb() {
 }
 
 void PDBHeuristic::set_pattern(const vector<int> &pat) {
+    assert_sorted_unique(pat);
     pattern = pat;
     hash_multipliers.reserve(pattern.size());
     variable_to_index.resize(g_variable_name.size(), -1);
@@ -288,58 +291,15 @@ double PDBHeuristic::compute_mean_finite_h() const {
         return sum / num_states;
 }
 
-static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("PDB", "Pattern database heuristic");
-    parser.add_option<int>("max_states", "maximum abstraction size",  "1000000");
-    parser.add_list_option<int>("pattern", "the pattern", "", OptionFlags(false));
+static ScalarEvaluator *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
-    Options opts = parser.parse();
-    if(parser.help_mode())
-        return 0;
-    vector<int> pattern;
-    if (opts.contains("pattern"))
-        pattern = opts.get_list<int>("pattern");
-
-    // check pattern for correct variable numbers and uniqueness (only if not empty)
-    if (parser.dry_run() && !pattern.empty()) {
-        sort(pattern.begin(), pattern.end());
-        vector<int>::const_iterator it = unique(pattern.begin(), pattern.end());
-        if (it != pattern.end())
-            parser.error("there are duplicates of variables in the pattern");
-        if (pattern.front() < 0)
-            parser.error("there is a variable < 0");
-        if (pattern.back() >= g_variable_domain.size())
-            parser.error("there is a variable > number of variables");
-    }
-    if (opts.get<int>("max_states") < 1)
-        parser.error("abstraction size must be at least 1");
+    Options opts;
+    parse_pattern(parser, opts);
 
     if (parser.dry_run())
         return 0;
 
-    // if no pattern is specified as option, use variableorderfinder and include variables as long as
-    // max_states allows
-    if (!opts.contains("pattern")) {
-        VariableOrderFinder vof(MERGE_LINEAR_GOAL_CG_LEVEL, 0.0);
-        int var = vof.next();
-        int num_states = g_variable_domain[var];
-        while (num_states <= opts.get<int>("max_states")) {
-            pattern.push_back(var);
-            if (vof.done())
-                break;
-            var = vof.next();
-            // test against overflow
-            if (num_states <= numeric_limits<int>::max() / g_variable_domain[var]) {
-                // num_states * g_variable_domain[var] <= numeric_limits<int>::max()
-                num_states *= g_variable_domain[var];
-            } else {
-                break;
-            }
-        }
-        opts.set("pattern", pattern);
-    }
-
     return new PDBHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("pdb", _parse);
+static Plugin<ScalarEvaluator> _plugin("pdb", _parse);

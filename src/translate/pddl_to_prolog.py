@@ -1,7 +1,6 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
 
-from __future__ import with_statement
+from __future__ import print_function
 
 import itertools
 
@@ -23,11 +22,11 @@ class PrologProgram:
         self.objects |= set(atom.args)
     def add_rule(self, rule):
         self.rules.append(rule)
-    def dump(self):
+    def dump(self, file=None):
         for fact in self.facts:
-            print fact
+            print(fact, file=file)
         for rule in self.rules:
-            print getattr(rule, "type", "none"), rule
+            print(getattr(rule, "type", "none"), rule, file=file)
     def normalize(self):
         # Normalized prolog programs have the following properties:
         # 1. Each variable that occurs in the effect of a rule also occurs in its
@@ -63,10 +62,10 @@ class PrologProgram:
             if not eff_vars.issubset(cond_vars):
                 must_add_predicate = True
                 eff_vars -= cond_vars
-                for var in eff_vars:
+                for var in sorted(eff_vars):
                     rule.add_condition(pddl.Atom("@object", [var]))
         if must_add_predicate:
-            print "Unbound effect variables: Adding @object predicate."
+            print("Unbound effect variables: Adding @object predicate.")
             self.facts += [Fact(pddl.Atom("@object", [obj])) for obj in self.objects]
     def split_duplicate_arguments(self):
         """Make sure that no variable occurs twice within the same symbolic fact,
@@ -78,8 +77,9 @@ class PrologProgram:
         printed_message = False
         for rule in self.rules:
             if rule.rename_duplicate_variables() and not printed_message:
-                print "Duplicate arguments: Adding equality conditions."
+                print("Duplicate arguments: Adding equality conditions.")
                 printed_message = True
+
     def convert_trivial_rules(self):
         """Convert rules with an empty condition into facts.
         This must be called after bounding rule effects, so that rules with an
@@ -93,7 +93,7 @@ class PrologProgram:
                 self.add_fact(pddl.Atom(rule.effect.predicate, rule.effect.args))
                 must_delete_rules.append(i)
         if must_delete_rules:
-            print "Trivial rules: Converted to facts."
+            print("Trivial rules: Converted to facts.")
             for rule_no in must_delete_rules[::-1]:
                 del self.rules[rule_no]
 
@@ -123,7 +123,7 @@ class Rule:
             if var_name[0] == "?":
                 if var_name in used_variables:
                     new_var_name = "%s@%d" % (var_name, len(new_conditions))
-                    atom = atom.rename_variables({var_name: new_var_name})
+                    atom = atom.replace_argument(i, new_var_name)
                     new_conditions.append(pddl.Atom("=", [var_name, new_var_name]))
                 else:
                     used_variables.add(var_name)
@@ -168,22 +168,6 @@ def translate(task):
         prog.split_rules()
     return prog
 
-def test_normalization():
-    prog = PrologProgram()
-    prog.add_fact(pddl.Atom("at", ["foo", "bar"]))
-    prog.add_fact(pddl.Atom("truck", ["bollerwagen"]))
-    prog.add_fact(pddl.Atom("truck", ["segway"]))
-    prog.add_rule(Rule([pddl.Atom("truck", ["?X"])], pddl.Atom("at", ["?X", "?Y"])))
-    prog.add_rule(Rule([pddl.Atom("truck", ["X"]), pddl.Atom("location", ["?Y"])],
-                  pddl.Atom("at", ["?X", "?Y"])))
-    prog.add_rule(Rule([pddl.Atom("truck", ["?X"]), pddl.Atom("location", ["?Y"])],
-                  pddl.Atom("at", ["?X", "?X"])))
-    prog.add_rule(Rule([pddl.Atom("p", ["?Y", "?Z", "?Y", "?Z"])],
-                  pddl.Atom("q", ["?Y", "?Y"])))
-    prog.add_rule(Rule([], pddl.Atom("foo", [])))
-    prog.add_rule(Rule([], pddl.Atom("bar", ["X"])))
-    prog.normalize()
-    prog.dump()
 
 if __name__ == "__main__":
     # test_normalization()
