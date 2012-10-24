@@ -22,7 +22,6 @@ using namespace __gnu_cxx;
 #include "successor_generator.h"
 #include "timer.h"
 #include "utilities.h"
-#include "cegar/abstraction.h"
 
 
 static const int PRE_FILE_VERSION = 3;
