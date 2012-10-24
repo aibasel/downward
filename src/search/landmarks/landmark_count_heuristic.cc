@@ -277,13 +277,13 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_note(
         "cost_type parameter",
         "only used when `admissible=true` (see LandmarkGraph)");
-    parser.document_language_support("action costs", 
+    parser.document_language_support("action costs",
                                      "supported");
-    parser.document_language_support("conditional_effects", 
+    parser.document_language_support("conditional_effects",
                                      "supported if `admissible=false`");
     parser.document_language_support(
         "axioms",
-        "supported if `admissible=false` (but may behave stupidly and unsave)");
+        "supported if `admissible=false` (but may behave stupidly and lead to an unsafe heuristic)");
     parser.document_property(
         "admissible",
         "yes if `admissible=true` and there are neither conditional effects "
@@ -293,7 +293,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "safe",
         "yes (except maybe on tasks with axioms or when "
         "using `admissible=true` on tasks with conditional effects)");
-    parser.document_property("preferred operators", 
+    parser.document_property("preferred operators",
                              "yes (if enabled; see `pref_ops` option)");
 
     parser.add_option<LandmarkGraph *>(

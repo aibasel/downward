@@ -10,17 +10,17 @@ using namespace std;
 
 template<class Entry>
 OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
-    parser.document_synopsis("Alternation open list", 
+    parser.document_synopsis("Alternation open list",
                         "alternates between several open lists.");
     parser.document_note(
         "Preferred operators",
-        "Preferred operators are only taken from sub-open-lists " 
+        "Preferred operators are only taken from sub-open-lists "
         "that do not consider the evaluated state a dead end.");
     parser.document_note(
-        "Dead ends", 
+        "Dead ends",
         "A state is considered a dead end if "
         "either all alternated open lists agree that it is a dead end "
-        "or at least one reliable open list considers is a dead end. "
+        "or at least one reliable open list considers it a dead end. "
         "A state is never inserted into a sub-open-list "
         "that considers it a dead end.");
     parser.document_note(
@@ -31,7 +31,7 @@ OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
         "\"The More, the Merrier: Combining Heuristic Estimators "
         "for Satisficing Planning (Extended Version)\" "
         "(Department of Computer Science at Freiburg University, "
-        "No. 258, 2010)"); 
+        "No. 258, 2010)");
     parser.add_list_option<OpenList<Entry> *>("sublists", "sub open lists");
     parser.add_option<int>("boost",
                            "boost value for sub-open-lists "
