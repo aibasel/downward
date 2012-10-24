@@ -303,7 +303,10 @@ void PatternGenerationHaslum::initialize() {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Improvement(?) PDB", "");
+    parser.document_synopsis(
+        "iPDB",
+        "the pattern selection procedure by Haslum et al. (AAAI 2007); "
+        "see also Sievers et al. (SoCS 2012) for implementation notes");
     parser.add_option<int>("pdb_max_size",
                            "max number of states per pdb",  "2000000");
     parser.add_option<int>("collection_max_size",

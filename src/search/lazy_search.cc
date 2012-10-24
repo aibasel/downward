@@ -298,7 +298,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         "In the special case with only one evaluator and no preferred "
         "operator heuristics, it uses a single queue that "
         "is ranked by g + w * h. ");
-    parser.add_list_option<ScalarEvaluator *>("evals");
+    parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics",  "[]");

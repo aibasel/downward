@@ -327,26 +327,34 @@ void LandmarkGraph::dump() const {
 void LandmarkGraph::add_options_to_parser(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     parser.add_option<bool>("reasonable_orders",
-                            "generate reasonable orders", 
+                            "generate reasonable orders",
                             "false");
     parser.add_option<bool>("only_causal_landmarks",
-                            "keep only causal landmarks", 
+                            "keep only causal landmarks",
                             "false");
     parser.add_option<bool>("disjunctive_landmarks",
-                            "keep disjunctive landmarks", 
+                            "keep disjunctive landmarks",
                             "true");
     parser.add_option<bool>("conjunctive_landmarks",
-                            "keep conjunctive landmarks", 
+                            "keep conjunctive landmarks",
                             "true");
     parser.add_option<bool>("no_orders",
-                            "discard all orderings", 
+                            "discard all orderings",
                             "false");
+
+    /* TODO: The following lines overlap strongly with
+       ::add_cost_type_option_to_parser, but the option name is
+       different, so the method cannot be used directly. We could make
+       the option name in ::add_cost_type_option_to_parser settable by
+       the caller, but this doesn't seem worth it since this option
+       should go away anyway once the landmark code is properly
+       cleaned up. */
     vector<string> cost_types;
     cost_types.push_back("NORMAL");
     cost_types.push_back("ONE");
     cost_types.push_back("PLUSONE");
     parser.add_enum_option("lm_cost_type",
                            cost_types,
-                           "landmark action cost adjustment", 
+                           "landmark action cost adjustment",
                            "NORMAL");
 }

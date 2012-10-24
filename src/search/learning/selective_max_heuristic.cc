@@ -590,12 +590,16 @@ static Heuristic *_parse(OptionParser &parser) {
         "number of heuristics that should always be evaluated",  "0");
     parser.add_option<bool>("random_sel", "random selection",  "false");
     parser.add_option<bool>("retime", "retime heuristics",  "false");
-    vector<string>sample_types;
+    vector<string> sample_types;
+    vector<string> sample_types_doc;
     sample_types.push_back("Probe");
+    sample_types_doc.push_back("stochastic hill-climbing probes of Karpas & Domshlak, IJCAI 2009");
     sample_types.push_back("ProbAStar");
+    sample_types_doc.push_back("probabilistic A* sampling");
     sample_types.push_back("PDB");
+    sample_types_doc.push_back("sampling method of Haslum et al., AAAI 2007");
     parser.add_enum_option(
-        "sample", sample_types, "state space sample type",  "Probe");
+        "sample", sample_types, "state space sample type", "Probe", sample_types_doc);
     parser.add_option<bool>("uniform", "uniform sampling",  "false");
     parser.add_option<bool>("zero_threshold",
                             "set threshold constant 0",  "false");

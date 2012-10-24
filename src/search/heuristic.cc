@@ -121,29 +121,7 @@ int Heuristic::get_adjusted_cost(const Operator &op) const {
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
-    vector<string> cost_types;
-    vector<string> cost_types_doc;
-    cost_types.push_back("NORMAL");
-    cost_types_doc.push_back(
-        "all actions are accounted for with their real cost");
-    cost_types.push_back("ONE");
-    cost_types_doc.push_back(
-        "all actions are accounted for as unit cost");
-    cost_types.push_back("PLUSONE");
-    cost_types_doc.push_back("all actions are accounted for as their real cost"
-                             " +1 (except if all actions have original cost"
-                             " 1, in which case cost 1 is used). "
-                             "This is the behaviour known "
-                             "from the LAMA planner.");
-    parser.add_enum_option("cost_type",
-                           cost_types,
-                           "Action cost adjustment type. "
-                           "No matter what this setting is, "
-                           "axioms will always be considered "
-                           "as actions of cost 0 by the heuristics "
-                           "that treat axioms as actions.",
-                           "NORMAL",
-                           cost_types_doc);
+    ::add_cost_type_option_to_parser(parser);
 }
 
 //this solution to get default values seems not optimal:
