@@ -29,8 +29,8 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     if (max_time == -1)
         max_time = INFINITY;
 
-    if (h_updates <= 0) {
-        cout << "You must explicitly set the h_updates parameter" << endl;
+    if ((h_updates > 0) && (max_states_offline == INFINITY)) {
+        cout << "If h_updates > 0, max_states_offline must be finite" << endl;
         exit(2);
     }
 
