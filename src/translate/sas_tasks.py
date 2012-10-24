@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 SAS_FILE_VERSION = 3
 
 
@@ -8,26 +10,26 @@ class SASTask:
         self.mutexes = mutexes
         self.init = init
         self.goal = goal
-        self.operators = operators
-        self.axioms = axioms
+        self.operators = sorted(operators, key=lambda op: (op.name, op.prevail, op.pre_post))
+        self.axioms = sorted(axioms, key=lambda axiom: (axiom.condition, axiom.effect))
         self.metric = metric
     def output(self, stream):
-        print >> stream, "begin_version"
-        print >> stream, SAS_FILE_VERSION
-        print >> stream, "end_version"
-        print >> stream, "begin_metric"
-        print >> stream, int(self.metric)
-        print >> stream, "end_metric"
+        print("begin_version", file=stream)
+        print(SAS_FILE_VERSION, file=stream)
+        print("end_version", file=stream)
+        print("begin_metric", file=stream)
+        print(int(self.metric), file=stream)
+        print("end_metric", file=stream)
         self.variables.output(stream)
-        print >> stream, len(self.mutexes)
+        print(len(self.mutexes), file=stream)
         for mutex in self.mutexes:
             mutex.output(stream)
         self.init.output(stream)
         self.goal.output(stream)
-        print >> stream, len(self.operators)
+        print(len(self.operators), file=stream)
         for op in self.operators:
             op.output(stream)
-        print >> stream, len(self.axioms)
+        print(len(self.axioms), file=stream)
         for axiom in self.axioms:
             axiom.output(stream)
     def get_encoding_size(self):
@@ -39,7 +41,7 @@ class SASTask:
         for op in self.operators:
             task_size += op.get_encoding_size()
         for axiom in self.axioms:
-            task_size += op.get_encoding_size()
+            task_size += axiom.get_encoding_size()
         return task_size
 
 class SASVariables:
@@ -53,19 +55,19 @@ class SASVariables:
                 axiom_str = " [axiom layer %d]" % axiom_layer
             else:
                 axiom_str = ""
-            print "v%d in {%s}%s" % (var, range(rang), axiom_str)
+            print("v%d in {%s}%s" % (var, list(range(rang)), axiom_str))
     def output(self, stream):
-        print >> stream, len(self.ranges)
+        print(len(self.ranges), file=stream)
         for var, (rang, axiom_layer, values) in enumerate(zip(
                 self.ranges, self.axiom_layers, self.value_names)):
-            print >> stream, "begin_variable"
-            print >> stream, "var%d" % var
-            print >> stream, axiom_layer
-            print >> stream, rang
+            print("begin_variable", file=stream)
+            print("var%d" % var, file=stream)
+            print(axiom_layer, file=stream)
+            print(rang, file=stream)
             assert rang == len(values), (rang, values)
             for value in values:
-                print >> stream, value
-            print >> stream, "end_variable"
+                print(value, file=stream)
+            print("end_variable", file=stream)
     def get_encoding_size(self):
         # A variable with range k has encoding size k + 1 to also give the
         # variable itself some weight.
@@ -76,13 +78,13 @@ class SASMutexGroup:
         self.facts = facts
     def dump(self):
         for var, val in self.facts:
-            print "v%d: %d" % (var, val)
+            print("v%d: %d" % (var, val))
     def output(self, stream):
-        print >> stream, "begin_mutex_group"
-        print >> stream, len(self.facts)
+        print("begin_mutex_group", file=stream)
+        print(len(self.facts), file=stream)
         for var, val in self.facts:
-            print >> stream, var, val
-        print >> stream, "end_mutex_group"
+            print(var, val, file=stream)
+        print("end_mutex_group", file=stream)
     def get_encoding_size(self):
         return len(self.facts)
 
@@ -92,25 +94,25 @@ class SASInit:
     def dump(self):
         for var, val in enumerate(self.values):
             if val != -1:
-                print "v%d: %d" % (var, val)
+                print("v%d: %d" % (var, val))
     def output(self, stream):
-        print >> stream, "begin_state"
+        print("begin_state", file=stream)
         for val in self.values:
-            print >> stream, val
-        print >> stream, "end_state"
+            print(val, file=stream)
+        print("end_state", file=stream)
 
 class SASGoal:
     def __init__(self, pairs):
         self.pairs = sorted(pairs)
     def dump(self):
         for var, val in self.pairs:
-            print "v%d: %d" % (var, val)
+            print("v%d: %d" % (var, val))
     def output(self, stream):
-        print >> stream, "begin_goal"
-        print >> stream, len(self.pairs)
+        print("begin_goal", file=stream)
+        print(len(self.pairs), file=stream)
         for var, val in self.pairs:
-            print >> stream, var, val
-        print >> stream, "end_goal"
+            print(var, val, file=stream)
+        print("end_goal", file=stream)
     def get_encoding_size(self):
         return len(self.pairs)
 
@@ -121,31 +123,31 @@ class SASOperator:
         self.pre_post = sorted(pre_post)
         self.cost = cost
     def dump(self):
-        print self.name
-        print "Prevail:"
+        print(self.name)
+        print("Prevail:")
         for var, val in self.prevail:
-            print "  v%d: %d" % (var, val)
-        print "Pre/Post:"
+            print("  v%d: %d" % (var, val))
+        print("Pre/Post:")
         for var, pre, post, cond in self.pre_post:
             if cond:
                 cond_str = " [%s]" % ", ".join(["%d: %d" % tuple(c) for c in cond])
             else:
                 cond_str = ""
-            print "  v%d: %d -> %d%s" % (var, pre, post, cond_str)
+            print("  v%d: %d -> %d%s" % (var, pre, post, cond_str))
     def output(self, stream):
-        print >> stream, "begin_operator"
-        print >> stream, self.name[1:-1]
-        print >> stream, len(self.prevail)
+        print("begin_operator", file=stream)
+        print(self.name[1:-1], file=stream)
+        print(len(self.prevail), file=stream)
         for var, val in self.prevail:
-            print >> stream, var, val
-        print >> stream, len(self.pre_post)
+            print(var, val, file=stream)
+        print(len(self.pre_post), file=stream)
         for var, pre, post, cond in self.pre_post:
-            print >> stream, len(cond),
+            print(len(cond), end=' ', file=stream)
             for cvar, cval in cond:
-                print >> stream, cvar, cval,
-            print >> stream, var, pre, post
-        print >> stream, self.cost
-        print >> stream, "end_operator"
+                print(cvar, cval, end=' ', file=stream)
+            print(var, pre, post, file=stream)
+        print(self.cost, file=stream)
+        print("end_operator", file=stream)
     def get_encoding_size(self):
         size = 1 + len(self.prevail)
         for var, pre, post, cond in self.pre_post:
@@ -156,26 +158,26 @@ class SASOperator:
 
 class SASAxiom:
     def __init__(self, condition, effect):
-        self.condition = condition
+        self.condition = sorted(condition)
         self.effect = effect
         assert self.effect[1] in (0, 1)
 
         for _, val in condition:
             assert val >= 0, condition
     def dump(self):
-        print "Condition:"
+        print("Condition:")
         for var, val in self.condition:
-            print "  v%d: %d" % (var, val)
-        print "Effect:"
+            print("  v%d: %d" % (var, val))
+        print("Effect:")
         var, val = self.effect
-        print "  v%d: %d" % (var, val)
+        print("  v%d: %d" % (var, val))
     def output(self, stream):
-        print >> stream, "begin_rule"
-        print >> stream, len(self.condition)
+        print("begin_rule", file=stream)
+        print(len(self.condition), file=stream)
         for var, val in self.condition:
-            print >> stream, var, val
+            print(var, val, file=stream)
         var, val = self.effect
-        print >> stream, var, 1 - val, val
-        print >> stream, "end_rule"
+        print(var, 1 - val, val, file=stream)
+        print("end_rule", file=stream)
     def get_encoding_size(self):
         return 1 + len(self.condition)

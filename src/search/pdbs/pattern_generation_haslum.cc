@@ -56,13 +56,15 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
                 sort(new_pattern.begin(), new_pattern.end());
                 candidate_patterns.push_back(new_pattern);
             } else {
-                cout << "ignoring new pattern as candidate because it is too large" << endl;
+                // [commented out the message because it might be too verbose]
+                // cout << "ignoring new pattern as candidate because it is too large" << endl;
+                num_rejected += 1;
             }
         }
     }
 }
 
-void PatternGenerationHaslum::sample_states(vector<State> &samples, double average_operator_costs) {
+void PatternGenerationHaslum::sample_states(vector<State> &samples, double average_operator_cost) {
     current_heuristic->evaluate(*g_initial_state);
     assert(!current_heuristic->is_dead_end());
 
@@ -73,9 +75,9 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
     } else {
         // Convert heuristic value into an approximate number of actions
         // (does nothing on unit-cost problems).
-        // average_operator_costs cannot equal 0, as in this case, all operators
+        // average_operator_cost cannot equal 0, as in this case, all operators
         // must have costs of 0 and in this case the if-clause triggers.
-        int solution_steps_estimate = int((h / average_operator_costs) + 0.5);
+        int solution_steps_estimate = int((h / average_operator_cost) + 0.5);
         n = 4 * solution_steps_estimate;
     }
     double p = 0.5;
@@ -141,7 +143,7 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
     return false;
 }
 
-void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
+void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                                             vector<vector<int> > &initial_candidate_patterns) {
     Timer timer;
     // stores all candidate patterns generated so far in order to avoid duplicates
@@ -150,10 +152,23 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
     vector<vector<int> > &new_candidates = initial_candidate_patterns;
     // all candidate patterns are converted into pdbs once and stored
     vector<PDBHeuristic *> candidate_pdbs;
+    int num_iterations = 0;
+    size_t max_pdb_size = 0;
+    num_rejected = 0;
     while (true) {
+        num_iterations += 1;
         cout << "current collection size is " << current_heuristic->get_size() << endl;
+        current_heuristic->evaluate(*g_initial_state);
+        cout << "current initial h value: ";
+        if (current_heuristic->is_dead_end()) {
+            cout << "infinite => stopping hill-climbing" << endl;
+            break;
+        } else {
+            cout << current_heuristic->get_heuristic() << endl;
+        }
+
         vector<State> samples;
-        sample_states(samples, average_operator_costs);
+        sample_states(samples, average_operator_cost);
 
         // For the new candidate patterns check whether they already have been candidates before and
         // thus already a PDB has been created an inserted into candidate_pdbs.
@@ -163,6 +178,8 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
                 opts.set<int>("cost_type", cost_type);
                 opts.set<vector<int> >("pattern", new_candidates[i]);
                 candidate_pdbs.push_back(new PDBHeuristic(opts, false));
+                max_pdb_size = max(max_pdb_size,
+                                   candidate_pdbs.back()->get_size());
                 generated_patterns.insert(new_candidates[i]);
             }
         }
@@ -205,8 +222,22 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
                      << " - improvement: " << count << endl;
             }
         }
-        if (improvement < min_improvement) // end hill climbing algorithm
+        if (improvement < min_improvement) { // end hill climbing algorithm
+            // Note that using dominance pruning during hill-climbing could lead to
+            // fewer discovered patterns and pattern collections.
+            // A dominated pattern (collection) might no longer be dominated
+            // after more patterns are added.
+            current_heuristic->dominance_pruning();
+            cout << "iPDB: iterations = " << num_iterations << endl;
+            cout << "iPDB: num_patterns = "
+                 << current_heuristic->get_pattern_databases().size() << endl;
+            cout << "iPDB: size = " << current_heuristic->get_size() << endl;
+            cout << "iPDB: improvement = " << improvement << endl;
+            cout << "iPDB: generated = " << generated_patterns.size() << endl;
+            cout << "iPDB: rejected = " << num_rejected << endl;
+            cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
             break;
+        }
 
         // add the best pattern to the CanonicalPDBsHeuristic
         const vector<int> &best_pattern = candidate_pdbs[best_pdb_index]->get_pattern();
@@ -222,7 +253,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
         delete candidate_pdbs[best_pdb_index];
         candidate_pdbs[best_pdb_index] = 0;
 
-        cout << "Actual time (hill climbing iteration): " << timer << endl;
+        cout << "Hill-climbing time so far: " << timer << endl;
     }
 
     // delete all created PDB-pointer
@@ -233,12 +264,12 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_costs,
 
 void PatternGenerationHaslum::initialize() {
     // calculate average operator costs
-    double average_operator_costs = 0;
+    double average_operator_cost = 0;
     for (size_t i = 0; i < g_operators.size(); ++i) {
-        average_operator_costs += get_adjusted_action_cost(g_operators[i], cost_type);
+        average_operator_cost += get_adjusted_action_cost(g_operators[i], cost_type);
     }
-    average_operator_costs /= g_operators.size();
-    cout << "Average operator costs: " << average_operator_costs << endl;
+    average_operator_cost /= g_operators.size();
+    cout << "Average operator cost: " << average_operator_cost << endl;
 
     // initial collection: a pdb for each goal variable
     vector<vector<int> > initial_pattern_collection;
@@ -268,7 +299,7 @@ void PatternGenerationHaslum::initialize() {
 
     // call to this method modifies initial_candidate_patterns (contains the new_candidates
     // after each call to generate_candidate_patterns)
-    hill_climbing(average_operator_costs, initial_candidate_patterns);
+    hill_climbing(average_operator_cost, initial_candidate_patterns);
 }
 
 static Heuristic *_parse(OptionParser &parser) {

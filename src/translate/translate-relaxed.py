@@ -1,8 +1,9 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import axiom_rules
-import fact_groups
 import instantiate
 import pddl
 import sas_tasks
@@ -28,7 +29,7 @@ def strips_to_sas_dictionary(groups):
             dictionary.setdefault(atom, []).append((var_no, val_no))
     if USE_PARTIAL_ENCODING:
         assert all(len(sas_pairs) == 1
-                   for sas_pairs in dictionary.itervalues())
+                   for sas_pairs in dictionary.values())
     return [len(group) + 1 for group in groups], dictionary
 
 def translate_strips_conditions(conditions, dictionary, ranges):
@@ -65,7 +66,7 @@ def translate_strips_operator(operator, dictionary, ranges):
         eff_condition = translate_strips_conditions(conditions, dictionary, ranges)
         if eff_condition is None: # Impossible condition for this effect.
             continue
-        eff_condition = eff_condition.items()
+        eff_condition = list(eff_condition.items())
         for var, val in dictionary[fact]:
             effect_pair = effect.get(var)
             if not effect_pair:
@@ -82,7 +83,7 @@ def translate_strips_operator(operator, dictionary, ranges):
         eff_condition_dict = translate_strips_conditions(conditions, dictionary, ranges)
         if eff_condition_dict is None:
             continue
-        eff_condition = eff_condition_dict.items()
+        eff_condition = list(eff_condition_dict.items())
         for var, val in dictionary[fact]:
             none_of_those = ranges[var] - 1
 
@@ -120,8 +121,8 @@ def translate_strips_operator(operator, dictionary, ranges):
                             # decent check that the precondition is indeed inconsistent
                             # (using *all* mutexes), but that seems tough with this
                             # convoluted code, so we just warn and reject the operator.
-                            print "Warning: %s rejected. Cross your fingers." % (
-                                operator.name)
+                            print("Warning: %s rejected. Cross your fingers." % (
+                                operator.name))
                             return None
                             assert False
 
@@ -138,12 +139,12 @@ def translate_strips_operator(operator, dictionary, ranges):
 #                eff_conditions.append(eff_condition)
 
     if possible_add_conflict:
-        print operator.name
+        print(operator.name)
 
     assert not possible_add_conflict, "Conflicting add effects?"
 
     pre_post = []
-    for var, (post, eff_condition_lists) in effect.iteritems():
+    for var, (post, eff_condition_lists) in effect.items():
         pre = condition.get(var, -1)
         if pre != -1:
             del condition[var]
@@ -192,21 +193,20 @@ def translate_task(strips_to_sas, ranges, translation_key, mutex_key,
     init_values = [rang - 1 for rang in ranges]
     # Closed World Assumption: Initialize to "range - 1" == Nothing.
     for fact in init:
-        pair = strips_to_sas.get(fact)
         pairs = strips_to_sas.get(fact, [])  # empty for static init facts
         for var, val in pairs:
             assert init_values[var] == ranges[var] - 1, "Inconsistent init facts!"
             init_values[var] = val
     init = sas_tasks.SASInit(init_values)
 
-    goal_pairs = translate_strips_conditions(goals, strips_to_sas, ranges).items()
+    goal_pairs = list(translate_strips_conditions(goals, strips_to_sas, ranges).items())
     goal = sas_tasks.SASGoal(goal_pairs)
 
     operators = translate_strips_operators(actions, strips_to_sas, ranges)
     axioms = translate_strips_axioms(axioms, strips_to_sas, ranges)
 
     axiom_layers = [-1] * len(ranges)
-    for atom, layer in axiom_layer_dict.iteritems():
+    for atom, layer in axiom_layer_dict.items():
         assert layer >= 0
         [(var, val)] = strips_to_sas[atom]
         axiom_layers[var] = layer
@@ -216,7 +216,7 @@ def translate_task(strips_to_sas, ranges, translation_key, mutex_key,
                              operators, axioms, metric)
 
 def unsolvable_sas_task(msg):
-    print "%s! Generating unsolvable task..." % msg
+    print("%s! Generating unsolvable task..." % msg)
     variables = sas_tasks.SASVariables([2], [-1])
     init = sas_tasks.SASInit([0])
     goal = sas_tasks.SASGoal([(0, 1)])
@@ -225,7 +225,7 @@ def unsolvable_sas_task(msg):
     return sas_tasks.SASTask(variables, init, goal, operators, axioms)
 
 def pddl_to_sas(task):
-    print "Instantiating..."
+    print("Instantiating...")
     relaxed_reachable, atoms, actions, axioms, _ = instantiate.explore(task)
 
     if not relaxed_reachable:
@@ -245,13 +245,13 @@ def pddl_to_sas(task):
     translation_key = [[str(fact),str(fact.negate())] for group in groups
                                                       for fact in group]
 
-    print "Building STRIPS to SAS dictionary..."
+    print("Building STRIPS to SAS dictionary...")
     ranges, strips_to_sas = strips_to_sas_dictionary(groups)
 
-    print "Building mutex information..."
+    print("Building mutex information...")
     mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
 
-    print "Translating task..."
+    print("Translating task...")
     sas_task = translate_task(strips_to_sas, ranges, translation_key,
                               mutex_key, task.init, goal_list, actions, axioms,
                               task.use_min_cost_metric)
@@ -272,13 +272,12 @@ def build_mutex_key(strips_to_sas, groups):
                 for var, val in strips_to_sas[fact]:
                     group_key.append((var, val, str(fact)))
             else:
-                print "not in strips_to_sas, left out:", fact
+                print("not in strips_to_sas, left out:", fact)
         group_keys.append(group_key)
     return group_keys
 
 if __name__ == "__main__":
-    import pddl
-    print "Parsing..."
+    print("Parsing...")
     task = pddl.open()
     if task.domain_name in ["protocol", "rover"]:
         # This is, of course, a HACK HACK HACK!
@@ -295,6 +294,6 @@ if __name__ == "__main__":
     # psyco.full()
 
     sas_task = pddl_to_sas(task)
-    print "Writing output..."
+    print("Writing output...")
     sas_task.output(file("output.sas", "w"))
-    print "Done!"
+    print("Done!")

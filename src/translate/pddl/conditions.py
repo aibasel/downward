@@ -1,5 +1,6 @@
-import pddl_types
-import tasks # for Task.FUNCTION_SYMBOLS, needed in parse_term()
+from __future__ import print_function
+
+from . import pddl_types
 
 def parse_condition(alist):
     condition = parse_condition_aux(alist, False)
@@ -67,8 +68,12 @@ class Condition(object):
         return self.hash
     def __ne__(self, other):
         return not self == other
+    def __lt__(self, other):
+        return self.hash < other.hash
+    def __le__(self, other):
+        return self.hash <= other.hash
     def dump(self, indent="  "):
-        print "%s%s" % (indent, self._dump())
+        print("%s%s" % (indent, self._dump()))
         for part in self.parts:
             part.dump(indent + "  ")
     def _dump(self):
@@ -121,6 +126,8 @@ class Condition(object):
         return False
 
 class ConstantCondition(Condition):
+    # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
+    __hash__ = Condition.__hash__
     parts = ()
     def __init__(self):
         self.hash = hash(self.__class__)
@@ -147,6 +154,8 @@ class Truth(ConstantCondition):
         return Falsity()
 
 class JunctorCondition(Condition):
+    # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
+    __hash__ = Condition.__hash__
     def __eq__(self, other):
         # Compare hash first for speed reasons.
         return (self.hash == other.hash and
@@ -203,6 +212,8 @@ class Disjunction(JunctorCondition):
         return True
 
 class QuantifiedCondition(Condition):
+    # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
+    __hash__ = Condition.__hash__
     def __init__(self, parameters, parts):
         self.parameters = tuple(parameters)
         self.parts = tuple(parts)
@@ -261,20 +272,33 @@ class ExistentialCondition(QuantifiedCondition):
         return True
 
 class Literal(Condition):
+    # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
+    __hash__ = Condition.__hash__
     parts = []
+    def __init__(self, predicate, args):
+        self.predicate = predicate
+        self.args = tuple(args)
+        self.hash = hash((self.__class__, self.predicate, self.args))
     def __eq__(self, other):
         # Compare hash first for speed reasons.
         return (self.hash == other.hash and
                 self.__class__ is other.__class__ and
                 self.predicate == other.predicate and
                 self.args == other.args)
-    def __init__(self, predicate, args):
-        self.predicate = predicate
-        self.args = tuple(args)
-        self.hash = hash((self.__class__, self.predicate, self.args))
+    def __ne__(self, other):
+        return not self == other
+    @property
+    def key(self):
+        return str(self.predicate), self.args
+    def __lt__(self, other):
+        return self.key < other.key
+    def __le__(self, other):
+        return self.key <= other.key
     def __str__(self):
         return "%s %s(%s)" % (self.__class__.__name__, self.predicate,
                               ", ".join(map(str, self.args)))
+    def __repr__(self):
+        return '<%s>' % self
     def _dump(self):
         return str(self)
     def change_parts(self, parts):
@@ -282,7 +306,11 @@ class Literal(Condition):
     def uniquify_variables(self, type_map, renamings={}):
         return self.rename_variables(renamings)
     def rename_variables(self, renamings):
-        new_args = [renamings.get(arg, arg) for arg in self.args]
+        new_args = tuple(renamings.get(arg, arg) for arg in self.args)
+        return self.__class__(self.predicate, new_args)
+    def replace_argument(self, position, new_arg):
+        new_args = list(self.args)
+        new_args[position] = new_arg
         return self.__class__(self.predicate, new_args)
     def free_variables(self):
         return set(arg for arg in self.args if arg[0] == "?")
@@ -317,58 +345,3 @@ class NegatedAtom(Literal):
     def negate(self):
         return Atom(self.predicate, self.args)
     positive = negate
-
-
-# TODO: move the following functions somewhere else?
-#
-# Note: these classes (Term, FunctionTerm, Variable, ObjectTerm)
-# are only used when parsing and instantiating functional expressions
-# (see f_expression.py). Literals and Atoms as above still use strings
-# as their arguments, where a string starting with "?" is a variable,
-# otherwise it is an object. Since we only use functional expressions
-# for action costs in the limited sense of IPC-2008, this means we
-# can leave the rest of the translator implementation unchanged.
-# Action cost functional expressions do not need to be included in
-# reachability analysis and invariant synthesis.
-
-def parse_term(term):
-    if isinstance(term, list): # when can this happen?
-        return FunctionTerm(term[0],[parse_term(t) for t in term[1:]])
-    elif term.startswith("?"):
-        return Variable(term)
-    elif term in tasks.Task.FUNCTION_SYMBOLS:
-        return FunctionTerm(term,[])
-    else:
-        return ObjectTerm(term)
-
-class Term(object):
-    def __eq__(self, other):
-        return (self.__class__ == other.__class__ and self.name == other.name)
-    def dump(self, indent="  "):
-        print "%s%s %s" % (indent, self._dump(), self.name)
-        for arg in self.args:
-            arg.dump(indent + "  ")
-    def _dump(self):
-        return self.__class__.__name__
-
-class FunctionTerm(Term):
-    def __init__(self, name, args=[]):
-        self.name = name
-        self.args = args
-    def __eq__(self, other):
-        return (self.__class__ == other.__class__ and self.name == other.name
-                and self.args == other.args)
-
-class Variable(Term):
-    args = []
-    def __init__(self, name):
-        self.name = name
-    def __str__(self):
-        return self.name
-
-class ObjectTerm(Term):
-    args = []
-    def __init__(self, name):
-        self.name = name
-    def __str__(self):
-        return self.name

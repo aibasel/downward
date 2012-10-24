@@ -28,6 +28,8 @@ LandmarkCutHeuristic::~LandmarkCutHeuristic() {
 void LandmarkCutHeuristic::initialize() {
     cout << "Initializing landmark cut heuristic..." << endl;
 
+    ::verify_no_axioms_no_cond_effects();
+
     // Build propositions.
     assert(num_propositions == 2);
     propositions.resize(g_variable_domain.size());
@@ -40,11 +42,6 @@ void LandmarkCutHeuristic::initialize() {
     // Build relaxed operators for operators and axioms.
     for (int i = 0; i < g_operators.size(); i++)
         build_relaxed_operator(g_operators[i]);
-    if (!g_axioms.empty()) {
-        cerr << "error: LM-cut heuristic implementation does not "
-             << "support axioms" << endl;
-        ::exit(1);
-    }
 
     // Simplify relaxed operators.
     // simplify();
@@ -80,22 +77,6 @@ void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
     for (int i = 0; i < prevail.size(); i++)
         precondition.push_back(&propositions[prevail[i].var][prevail[i].prev]);
     for (int i = 0; i < pre_post.size(); i++) {
-        const vector<Prevail> &cond = pre_post[i].cond;
-        if (!cond.empty()) {
-            // Accept conditions that are redundant, but nothing else.
-            // In a better world, these would never be included in the
-            // input in the first place.
-            int var = pre_post[i].var;
-            int post = pre_post[i].post;
-            if (cond.size() != 1 || cond[0].var != var ||
-                g_variable_domain[var] != 2 || cond[0].prev == post) {
-                cerr << "Heuristic does not support conditional effects "
-                     << "(operator " << g_operators[i].get_name() << ")"
-                     << endl << "Terminating." << endl;
-                exit(1);
-            }
-        }
-
         if (pre_post[i].pre != -1)
             precondition.push_back(&propositions[pre_post[i].var][
                                        pre_post[i].pre]);

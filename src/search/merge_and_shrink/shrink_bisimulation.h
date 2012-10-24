@@ -9,14 +9,10 @@ class Signature;
 class ShrinkBisimulation : public ShrinkStrategy {
     enum AtLimit {
         RETURN,
-        USE_UP,
-        SKIP_AND_COMPLETE_ITERATION,
-        SKIP_AND_KEEP_GOING
+        USE_UP
     };
 
     /*
-      greedy: Use greedy bisimulation rather than exact bisimulation.
-
       threshold: Shrink the abstraction iff it is larger than this
       size. Note that this is set independently from max_states, which
       is the number of states to which the abstraction is shrunk.
@@ -24,24 +20,20 @@ class ShrinkBisimulation : public ShrinkStrategy {
 
     const bool greedy;
     const int threshold;
-    const bool initialize_by_h;
     const bool group_by_h;
     const AtLimit at_limit;
-
-    std::vector<int> state_to_group;
-    std::vector<bool> group_done;
-    std::vector<Signature> signatures;
-
-    std::vector<int> h_to_h_group;
-    std::vector<bool> h_group_done;
 
     void compute_abstraction(
         Abstraction &abs,
         int target_size,
         EquivalenceRelation &equivalence_relation);
 
-    int initialize_dfp(const Abstraction &abs);
-    int initialize_bisim(const Abstraction &abs);
+    int initialize_groups(const Abstraction &abs,
+                          std::vector<int> &state_to_group);
+    void compute_signatures(
+        const Abstraction &abs,
+        std::vector<Signature> &signatures,
+        std::vector<int> &state_to_group);
 public:
     ShrinkBisimulation(const Options &opts);
     virtual ~ShrinkBisimulation();
