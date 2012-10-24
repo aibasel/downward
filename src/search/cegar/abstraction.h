@@ -117,8 +117,6 @@ private:
     int max_states_online;
     // Maximum time for building the abstraction.
     int max_time;
-    // Maximum size of the abstraction in bytes.
-    long max_size;
     bool use_astar;
     bool use_new_arc_check;
     bool log_h;
@@ -126,6 +124,8 @@ private:
 
     bool memory_released;
     double average_operator_cost;
+    // Reserve some space that can be released when no memory is left.
+    char *memory_buffer;
 
 public:
     Abstraction();
@@ -147,12 +147,13 @@ public:
 
     void release_memory();
     bool has_released_memory() const {return memory_released; }
+    // Release the memory_buffer and set is_out_of_memory flag.
+    void handle_out_of_memory();
 
     // Settings.
     void set_max_states_offline(int states) {max_states_offline = states; }
     void set_max_states_online(int states) {max_states_online = states; }
     void set_max_time(int time) {max_time = time; }
-    void set_max_size(long size) {max_size = size; }
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_use_new_arc_check(bool new_check) {use_new_arc_check = new_check; }
     void set_log_h(bool log) {log_h = log; }
