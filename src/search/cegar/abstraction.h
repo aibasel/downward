@@ -148,8 +148,9 @@ public:
 
     void release_memory();
     bool has_released_memory() const {return memory_released; }
-    // Release the memory_buffer and set is_out_of_memory flag.
-    void handle_out_of_memory();
+    // If memory_buffer is still present, delete it otherwise halt.
+    void handle_no_memory();
+    void delete_memory_buffer();
 
     // Settings.
     void set_max_states_offline(int states) {max_states_offline = states; }
