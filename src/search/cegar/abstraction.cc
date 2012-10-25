@@ -24,8 +24,8 @@ using namespace std;
 namespace cegar_heuristic {
 
 void no_memory () {
-  cout << "Failed to allocate memory!" << endl;
-  g_cegar_abstraction->handle_out_of_memory();
+    cout << "Failed to allocate memory!" << endl;
+    g_cegar_abstraction->handle_no_memory();
 }
 
 Abstraction::Abstraction()
@@ -735,6 +735,8 @@ void Abstraction::release_memory() {
     vector<int>().swap(cg_partial_ordering);
     delete queue;
     queue = 0;
+    if (memory_buffer)
+        delete_memory_buffer();
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
@@ -743,10 +745,20 @@ void Abstraction::release_memory() {
     memory_released = true;
 }
 
-void Abstraction::handle_out_of_memory() {
+void Abstraction::delete_memory_buffer() {
+    assert(memory_buffer);
     cout << "Delete memory buffer" << endl;
     delete[] memory_buffer;
     memory_buffer = 0;
+}
+
+void Abstraction::handle_no_memory() {
+    if (memory_buffer) {
+        delete_memory_buffer();
+    } else {
+        cout << "Memory buffer already released -> Exiting" << endl;
+        exit(1);
+    }
 }
 
 long Abstraction::get_size() const {
