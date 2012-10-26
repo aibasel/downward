@@ -80,8 +80,11 @@ Abstraction::Abstraction()
 void Abstraction::build(int h_updates) {
     int updates = 0;
     int update_step = DEFAULT_H_UPDATE_STEP;
-    if (h_updates >= 0)
+    if (h_updates >= 0) {
         update_step = (max_states_offline / (h_updates + 1)) + 1;
+    } else if (max_states_offline >= 0) {
+        h_updates = max_states_offline / update_step;
+    }
     bool valid_complete_conc_solution = false;
     if (WRITE_DOT_FILES) {
         write_causal_graph(*g_causal_graph);
