@@ -296,7 +296,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         }
 
         cegar_heuristic::AbstractState *abs_state = 0;
-        if (g_cegar_abstraction) {
+        if (g_cegar_abstraction && g_cegar_abstraction->get_max_states_online() > 0) {
             abs_state = g_cegar_abstraction->get_abstract_state(state);
 
             // If h(s) is higher now than when s was pushed, we don't expand s, but
