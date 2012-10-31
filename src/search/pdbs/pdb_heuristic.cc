@@ -9,6 +9,7 @@
 #include "../priority_queue.h"
 #include "../state.h"
 #include "../timer.h"
+#include "../utilities.h"
 
 #include "../merge_and_shrink/variable_order_finder.h"
 
@@ -76,8 +77,11 @@ PDBHeuristic::PDBHeuristic(
 
     Timer timer;
     set_pattern(opts.get_list<int>("pattern"));
-    if (dump)
+    if (dump) {
         cout << "PDB construction time: " << timer << endl;
+        cout << "Peak memory after building abstraction: "
+             << get_peak_memory_in_kb() << " KB" << endl;
+    }
 }
 
 PDBHeuristic::~PDBHeuristic() {
