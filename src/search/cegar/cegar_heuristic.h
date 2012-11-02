@@ -11,6 +11,7 @@ namespace cegar_heuristic {
 class Abstraction;
 
 class CegarHeuristic : public Heuristic {
+    const Options options;
     // How many times should the goal distances be updated? A higher number
     // makes for a better heuristic during the A* searches, but adds additional
     // runtime.

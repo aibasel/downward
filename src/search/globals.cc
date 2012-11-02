@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <new>
 #include <set>
 #include <string>
 #include <vector>
@@ -254,6 +255,8 @@ void read_everything(istream &in) {
     DomainTransitionGraph::read_all(in);
     g_causal_graph = new CausalGraph(in);
     g_cegar_abstraction = 0;
+    g_memory_buffer = 0;
+    set_new_handler(no_memory);
     cout << "Peak memory before building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
 }
@@ -315,6 +318,18 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
     return bool(g_inconsistent_facts[a.first][a.second].count(b));
 }
 
+void no_memory () {
+    cout << "Failed to allocate memory!" << endl;
+    if (g_memory_buffer) {
+        cout << "Releasing memory buffer" << endl;
+        delete[] g_memory_buffer;
+        g_memory_buffer = 0;
+    } else {
+        cout << "Memory buffer already released --> Exiting" << endl;
+        exit(1);
+    }
+}
+
 
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
@@ -338,3 +353,5 @@ string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 
 cegar_heuristic::Abstraction *g_cegar_abstraction;
+
+char *g_memory_buffer;

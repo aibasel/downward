@@ -17,15 +17,27 @@ using namespace std;
 namespace cegar_heuristic {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
+      options(opts),
       h_updates(opts.get<int>("h_updates")),
       search(opts.get<bool>("search")) {
-    int max_states_offline = opts.get<int>("max_states_offline");
+    DEBUG = opts.get<bool>("debug");
+}
+
+CegarHeuristic::~CegarHeuristic() {
+}
+
+void CegarHeuristic::initialize() {
+    cout << "Initializing cegar heuristic..." << endl;
+    abstraction = new Abstraction();
+    g_cegar_abstraction = abstraction;
+
+    int max_states_offline = options.get<int>("max_states_offline");
     if (max_states_offline == -1)
         max_states_offline = INFINITY;
-    int max_states_online = opts.get<int>("max_states_online");
+    int max_states_online = options.get<int>("max_states_online");
     if (max_states_online == -1)
         max_states_online = INFINITY;
-    int max_time = opts.get<int>("max_time");
+    int max_time = options.get<int>("max_time");
     if (max_time == -1)
         max_time = INFINITY;
 
@@ -34,25 +46,15 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
         exit(2);
     }
 
-    DEBUG = opts.get<bool>("debug");
-
-    abstraction = new Abstraction();
-    g_cegar_abstraction = abstraction;
     abstraction->set_max_states_offline(max_states_offline);
     abstraction->set_max_states_online(max_states_online);
     abstraction->set_max_time(max_time);
-    abstraction->set_pick_strategy(PickStrategy(opts.get_enum("pick")));
-    abstraction->set_use_astar(opts.get<bool>("use_astar"));
-    abstraction->set_use_new_arc_check(opts.get<bool>("new_arc_check"));
-    abstraction->set_log_h(opts.get<bool>("log_h"));
-    abstraction->set_probability_for_random_start(opts.get<double>("random"));
-}
+    abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
+    abstraction->set_use_astar(options.get<bool>("use_astar"));
+    abstraction->set_use_new_arc_check(options.get<bool>("new_arc_check"));
+    abstraction->set_log_h(options.get<bool>("log_h"));
+    abstraction->set_probability_for_random_start(options.get<double>("random"));
 
-CegarHeuristic::~CegarHeuristic() {
-}
-
-void CegarHeuristic::initialize() {
-    cout << "Initializing cegar heuristic..." << endl;
     abstraction->build(h_updates);
 
     if (!search)
@@ -68,7 +70,7 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("max_states_offline", 100, "maximum number of abstract states created offline");
+    parser.add_option<int>("max_states_offline", 10000, "maximum number of abstract states created offline");
     parser.add_option<int>("max_states_online", 0, "maximum number of abstract states created online");
     parser.add_option<int>("max_time", -1, "maximum time in seconds for building the abstraction");
     vector<string> pick_strategies;
