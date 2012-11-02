@@ -35,6 +35,9 @@ void check_magic(std::istream &in, std::string magic);
 
 bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
 
+// If g_memory_buffer is still present, delete it otherwise halt.
+void no_memory();
+
 
 extern bool g_use_metric;
 extern int g_min_action_cost;
@@ -61,5 +64,8 @@ extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
 
 extern cegar_heuristic::Abstraction *g_cegar_abstraction;
+
+// Reserve some space that can be released when no memory is left.
+extern char *g_memory_buffer;
 
 #endif

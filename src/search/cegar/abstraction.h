@@ -125,8 +125,6 @@ private:
 
     bool memory_released;
     double average_operator_cost;
-    // Reserve some space that can be released when no memory is left.
-    char *memory_buffer;
 
 public:
     Abstraction();
@@ -149,9 +147,6 @@ public:
 
     void release_memory();
     bool has_released_memory() const {return memory_released; }
-    // If memory_buffer is still present, delete it otherwise halt.
-    void handle_no_memory();
-    void delete_memory_buffer();
 
     // Settings.
     void set_max_states_offline(int states) {max_states_offline = states; }
