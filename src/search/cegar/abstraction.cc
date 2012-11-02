@@ -24,6 +24,7 @@ namespace cegar_heuristic {
 
 Abstraction::Abstraction()
     : pick(RANDOM),
+      rng(2012),
       queue(new AdaptiveQueue<AbstractState *>()),
       expansions(0),
       deviations(0),
@@ -386,7 +387,7 @@ void Abstraction::sample_state(State &current_state) const {
     // calculate length of random walk accoring to a binomial distribution
     int length = 0;
     for (int j = 0; j < n; ++j) {
-        double random = g_rng(); // [0..1)
+        double random = rng(); // [0..1)
         if (random < p)
             ++length;
     }
@@ -399,7 +400,7 @@ void Abstraction::sample_state(State &current_state) const {
         if (applicable_ops.empty()) {
             break;
         } else {
-            int random = g_rng.next(applicable_ops.size()); // [0..applicable_os.size())
+            int random = rng.next(applicable_ops.size()); // [0..applicable_os.size())
             assert(applicable_ops[random]->is_applicable(current_state));
             current_state = State(current_state, *applicable_ops[random]);
             // if current state is dead-end, then restart with initial state
@@ -421,7 +422,7 @@ bool Abstraction::find_and_break_complete_solution() {
 
 bool Abstraction::find_and_break_solution() {
     // Return true iff we found a *complete* concrete solution.
-    if (probability_for_random_start == 0 || g_rng() >= probability_for_random_start) {
+    if (probability_for_random_start == 0 || rng() >= probability_for_random_start) {
         // Start with initial state.
         return find_and_break_complete_solution();
     } else {
@@ -535,7 +536,7 @@ int Abstraction::pick_condition(AbstractState &state,
         return 0;
     }
     int cond = -1;
-    int random_cond = g_rng.next(conditions.size());
+    int random_cond = rng.next(conditions.size());
     if (pick == FIRST) {
         cond = 0;
     } else if (pick == RANDOM) {

@@ -2,6 +2,7 @@
 #define CEGAR_ABSTRACTION_H
 
 #include "../priority_queue.h"
+#include "../rng.h"
 #include "../state.h"
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
@@ -63,6 +64,7 @@ private:
 
     // How to pick the next fact to refine for in there are multiple facts.
     PickStrategy pick;
+    mutable RandomNumberGenerator rng;
     int pick_condition(AbstractState &state,
                        const std::vector<std::pair<int, int> > &conditions) const;
 
