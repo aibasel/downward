@@ -244,7 +244,6 @@ void PDBHeuristic::set_pattern(const vector<int> &pat) {
         variable_to_index[pattern[i]] = i;
         num_states *= g_variable_domain[pattern[i]];
     }
-    cout << "PDB states: " << num_states << endl;
     create_pdb();
 }
 
