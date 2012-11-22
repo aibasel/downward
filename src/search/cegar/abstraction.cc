@@ -44,7 +44,7 @@ Abstraction::Abstraction()
       probability_for_random_start(0),
       memory_released(false),
       average_operator_cost(get_average_operator_cost()) {
-    assert(!g_operators.empty());
+    //assert(!g_operators.empty() && "Without operators the task is unsolvable");
 
     assert(!g_memory_buffer);
     g_memory_buffer = new char [10 * 1024 * 1024];
@@ -162,7 +162,6 @@ void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
-    assert(!g_operators.empty());  // We need operators and the g_initial_state.
     assert(may_keep_refining());
     if (DEBUG)
         cout << "Refine " << state->str() << " for " << var << "=" << value
@@ -415,8 +414,10 @@ bool Abstraction::find_and_break_complete_solution() {
     // Start with initial state.
     bool solution_found = find_solution(init);
     // Suppress compiler warning about unused variable.
-    (void) solution_found;
-    assert(solution_found && "Solvable tasks must always have an abstract solution from init");
+    if (!solution_found) {
+        cout << "Abstract problem is unsolvable!" << endl;
+        exit(0);
+    }
     return check_and_break_solution(*g_initial_state, init);
 }
 
