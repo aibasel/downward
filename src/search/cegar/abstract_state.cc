@@ -149,8 +149,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
                     // Value for u already exists.
                     intersects = intersect_iter->second;
                 } else {
-                    // There's no value for u in the map. Use lb as a hint to
-                    // insert so we can avoid another lookup.
+                    // There's no value for u in the map.
                     intersects = u->values->domains_intersect(*(v1->values), var);
                     intersects_with.insert(make_pair(u, intersects));
                 }
@@ -172,13 +171,13 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         } else {
             if (u->check_and_add_arc(op, v1)) {
                 bool added = u->check_and_add_arc(op, v2);
-                if (op == op_in && u == state_in) {
+                if (is_solution_arc) {
                     u_v1 = true;
                     u_v2 |= added;
                 }
             } else {
                 u->add_arc(op, v2);
-                u_v2 |= (op == op_in && u == state_in);
+                u_v2 |= is_solution_arc;
             }
         }
     }
@@ -236,7 +235,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
                 }
             } else {
                 v2->add_arc(op, w);
-                v2_w |= (is_solution_arc);
+                v2_w |= is_solution_arc;
             }
         }
     }
