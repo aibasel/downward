@@ -28,9 +28,6 @@ CegarHeuristic::~CegarHeuristic() {
 
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
-    abstraction = new Abstraction();
-    g_cegar_abstraction = abstraction;
-
     int max_states_offline = options.get<int>("max_states_offline");
     if (max_states_offline == -1)
         max_states_offline = INFINITY;
@@ -45,6 +42,10 @@ void CegarHeuristic::initialize() {
         cout << "If h_updates > 0, max_states_offline must be finite" << endl;
         exit(2);
     }
+
+    abstraction = new Abstraction();
+    if (max_states_online > 0)
+        g_cegar_abstraction = abstraction;
 
     abstraction->set_max_states_offline(max_states_offline);
     abstraction->set_max_states_online(max_states_online);
