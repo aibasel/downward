@@ -111,8 +111,8 @@ int EagerSearch::step() {
     State s = node.get_state();
 
     if (check_goal_and_set_plan(s)) {
-        if (g_cegar_abstraction)
-            cout << "Abstract states online: " << g_cegar_abstraction->get_num_states_online() << endl;
+        cout << "Abstract states online: " << (g_cegar_abstraction ?
+            g_cegar_abstraction->get_num_states_online() : 0) << endl;
         cout << "Pushed h was lower: " << num_pushed_h_lower << endl;
         cout << "h too low: " << num_h_too_low << endl;
         cout << "h improved: " << num_h_improved << endl;
