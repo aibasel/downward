@@ -235,10 +235,19 @@ AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_sta
             cout << "Concrete solution found" << endl;
             break;
         }
-        // TODO: Use A* for finding the shortest path from abs_state to goal.
-        // TODO: Don't update_h_values in each round, but after 1000 refinements.
-        update_h_values();
         abs_state = get_abstract_state(state);
+        if (get_num_states() % DEFAULT_H_UPDATE_STEP == 0) {
+            // Don't update_h_values in each round.
+            update_h_values();
+        } else {
+            // Normally, we use A* for finding the shortest path from abs_state
+            // to the goal since that's much faster than update_h_values().
+            // If a solution is found, the h-values of all states on the path
+            // are updated by the extract_solution function.
+            solution_found = find_solution(abs_state);
+            if (!solution_found)
+                abs_state->set_h(INFINITY);
+        }
         ++rounds;
     }
     assert(abs_state->get_h() >= old_h);
