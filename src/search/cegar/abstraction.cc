@@ -220,7 +220,7 @@ void Abstraction::refine(AbstractState *state, std::vector<pair<int, int> > cond
     log_h_values();
 }
 
-void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
+AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_state) {
     int rounds = 0;
     const int old_h = abs_state->get_h();
     // Loop until the heuristic value increases.
@@ -236,7 +236,7 @@ void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
             break;
         }
         // TODO: Use A* for finding the shortest path from abs_state to goal.
-        // TODO: Don't update_h_values in each round.
+        // TODO: Don't update_h_values in each round, but after 1000 refinements.
         update_h_values();
         abs_state = get_abstract_state(state);
         ++rounds;
@@ -244,6 +244,7 @@ void Abstraction::improve_h(const State &state, AbstractState *abs_state) {
     assert(abs_state->get_h() >= old_h);
     if (DEBUG)
         cout << "Refinement rounds: " << rounds << endl;
+    return abs_state;
 }
 
 void Abstraction::reset_distances() const {

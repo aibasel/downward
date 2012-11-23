@@ -358,9 +358,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             if (h_too_low) {
                 ++num_h_too_low;
                 const int old_h = abs_state->get_h();
-                g_cegar_abstraction->improve_h(state, abs_state);
-                // TODO: Avoid recalculation of abs_state.
-                abs_state = g_cegar_abstraction->get_abstract_state(state);
+                abs_state = g_cegar_abstraction->improve_h(state, abs_state);
                 const int new_h = abs_state->get_h();
                 if (cegar_heuristic::DEBUG)
                     cout << "Improve " << old_h << " -> " << new_h << endl;
