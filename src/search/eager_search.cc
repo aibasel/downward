@@ -317,10 +317,6 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         if (g_cegar_abstraction && !keep_refining && !g_cegar_abstraction->has_released_memory())
             g_cegar_abstraction->release_memory();
 
-        // TODO: Try checking for error when expanding and mark corresponding abstract states
-        // as faulty. Then refine the faulty abstract states here. This would save us from
-        // having to generate the states multiple times.
-
         if (keep_refining) {
             // If we can see that h(s) is too low by looking at its successors, we
             // refine abs_state(s) until h(s) is higher. Then we push s into the
@@ -348,6 +344,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                     continue;
 
                 const int succ_h = g_cegar_abstraction->get_abstract_state(succ_state)->get_h();
+                search_progress.inc_evaluated_states();
                 if (state_h >= succ_h + op->get_cost()) {
                     // We cannot prove that the heuristic makes an error here.
                     h_too_low = false;
