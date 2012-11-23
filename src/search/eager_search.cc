@@ -367,7 +367,9 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                     evaluate_and_push_node(node);
                     continue;
                 }
-                // TODO: If h(s) wasn't improved, treat s with higher h-value nonetheless (set_evaluator_value)?
+                // Note: If h(s) wasn't improved, we could treat s with a higher
+                // h-value nonetheless (set_evaluator_value), but this probably
+                // doesn't make any difference.
             }
         }
 
