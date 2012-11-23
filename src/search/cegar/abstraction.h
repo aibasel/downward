@@ -135,7 +135,7 @@ public:
     void build(int h_updates);
 
     // Refine until the h-value for state improves.
-    void improve_h(const State &state, AbstractState *abs_state);
+    AbstractState *improve_h(const State &state, AbstractState *abs_state);
 
     AbstractState *get_abstract_state(const State &state) const;
 
