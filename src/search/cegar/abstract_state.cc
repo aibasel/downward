@@ -442,10 +442,6 @@ void AbstractState::reset_neighbours() {
 }
 
 double AbstractState::get_rel_conc_states() const {
-    // Example domains: 0={0,1,2}, 1={0,1}
-    // Abstract state: 0={0,1}, 1={0,1} -> 2/3
-    // Abstract state: 0={0,1}, 1={1} -> 1/3
-    // Abstract state: 0={0,1,2}, 1={0,1} -> 1
     double fraction = 1.0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         const int domain_size = values->count(var);

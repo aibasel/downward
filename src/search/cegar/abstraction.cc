@@ -649,8 +649,6 @@ void Abstraction::update_h_values() const {
 }
 
 double Abstraction::get_avg_h() const {
-    // 2 states with h=8, 3 states with h=6   -> avg_h = 28/5
-    // 2 states with h=8, 3 states with h=inf -> avg_h = 28/5
     update_h_values();
     double avg_h = 0.;
     set<AbstractState *>::iterator it;
