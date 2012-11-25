@@ -72,6 +72,11 @@ Abstraction::Abstraction()
     }
 }
 
+Abstraction::~Abstraction() {
+    if (!memory_released)
+        release_memory();
+}
+
 void Abstraction::build(int h_updates) {
     int updates = 0;
     int update_step = DEFAULT_H_UPDATE_STEP;
