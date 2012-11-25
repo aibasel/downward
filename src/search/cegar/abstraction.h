@@ -130,6 +130,7 @@ private:
 
 public:
     Abstraction();
+    ~Abstraction();
 
     // Build abstraction offline.
     void build(int h_updates);
