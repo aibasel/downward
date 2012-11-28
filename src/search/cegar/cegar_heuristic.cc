@@ -43,6 +43,10 @@ void CegarHeuristic::initialize() {
         exit(2);
     }
 
+    // Do not restrict the number of states if a limit has been set.
+    if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INFINITY)
+        max_states_offline = INFINITY;
+
     abstraction = new Abstraction();
     if (max_states_online > 0)
         g_cegar_abstraction = abstraction;
@@ -71,7 +75,8 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("max_states_offline", 10000, "maximum number of abstract states created offline");
+    parser.add_option<int>("max_states_offline", DEFAULT_STATES_OFFLINE,
+                           "maximum number of abstract states created offline");
     parser.add_option<int>("max_states_online", 0, "maximum number of abstract states created online");
     parser.add_option<int>("max_time", -1, "maximum time in seconds for building the abstraction");
     vector<string> pick_strategies;
