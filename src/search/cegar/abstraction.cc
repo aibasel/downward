@@ -738,7 +738,7 @@ bool Abstraction::may_keep_refining() const {
     return (g_memory_buffer &&
             (is_online() || get_num_states() < max_states_offline) &&
             (!is_online() || get_num_states_online() < max_states_online) &&
-            (max_time == INFINITY || is_online() || g_timer() < max_time));
+            (max_time == INFINITY || is_online() || timer() < max_time));
 }
 
 void Abstraction::release_memory() {
