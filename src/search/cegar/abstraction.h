@@ -4,6 +4,7 @@
 #include "../priority_queue.h"
 #include "../rng.h"
 #include "../state.h"
+#include "../timer.h"
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
 
@@ -127,6 +128,7 @@ private:
 
     bool memory_released;
     double average_operator_cost;
+    Timer timer;
 
 public:
     Abstraction();
