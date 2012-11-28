@@ -19,7 +19,6 @@ OS=auto
 HEADERS = \
           axioms.h \
           causal_graph.h \
-          closed_list.h \
           combining_evaluator.h \
           domain_transition_graph.h \
           eager_search.h \
