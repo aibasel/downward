@@ -53,7 +53,7 @@ int get_pre(const Operator &op, int var) {
     return UNDEFINED;
 }
 
-int get_eff(const Operator &op, int var) {
+int get_post(const Operator &op, int var) {
     for (int i = 0; i < op.get_prevail().size(); ++i) {
         const Prevail &prevail = op.get_prevail()[i];
         if (prevail.var == var)

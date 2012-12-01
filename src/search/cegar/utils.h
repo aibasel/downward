@@ -24,7 +24,7 @@ typedef pair<int, int> Condition;
 typedef vector<Condition> Conditions;
 
 int get_pre(const Operator &op, int var);
-int get_eff(const Operator &op, int var);
+int get_post(const Operator &op, int var);
 
 void get_unmet_preconditions(const Operator &op, const State &s,
                              std::vector<pair<int, int> > *cond);
