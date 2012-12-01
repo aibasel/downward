@@ -74,16 +74,16 @@ void AbstractState::set_value(int var, int value) {
 }
 
 void AbstractState::regress(const Operator &op, AbstractState *result) const {
-    // If v does NOT occur in op.pre and NOT in op.eff we use the values from
+    // If v does NOT occur in op.pre and NOT in op.post we use the values from
     // this state.
     *result->values = *values;
     for (int v = 0; v < g_variable_domain.size(); ++v) {
         int pre = get_pre(op, v);
-        int eff = get_eff(op, v);
+        int post = get_post(op, v);
         if (pre != UNDEFINED) {
             result->values->set(v, pre);
-        } else if (eff != UNDEFINED) {
-            assert(values->test(v, eff));
+        } else if (post != UNDEFINED) {
+            assert(values->test(v, post));
             result->values->add_all(v);
         }
     }
@@ -141,8 +141,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         bool is_solution_arc = ((op == op_in) && (u == state_in));
         // If the first check returns false, the second arc has to be added.
         if (use_new_arc_check) {
-            int eff = get_eff(*op, var);
-            if (eff == UNDEFINED) {
+            int post = get_post(*op, var);
+            if (post == UNDEFINED) {
                 bool intersects = false;
                 intersect_iter = intersects_with.find(u);
                 if (intersect_iter != intersects_with.end()) {
@@ -161,7 +161,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
                     u->add_arc(op, v2);
                     u_v2 |= is_solution_arc;
                 }
-            } else if (eff == value) {
+            } else if (post == value) {
                 u->add_arc(op, v2);
                 u_v2 |= is_solution_arc;
             } else {
@@ -192,8 +192,8 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         if (use_new_arc_check) {
             int pre = get_pre(*op, var);
             if (pre == UNDEFINED) {
-                int eff = get_eff(*op, var);
-                if (eff == UNDEFINED) {
+                int post = get_post(*op, var);
+                if (post == UNDEFINED) {
                     bool intersects = false;
                     intersect_iter = intersects_with.find(w);
                     if (intersect_iter != intersects_with.end()) {
@@ -212,7 +212,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
                         v2->add_arc(op, w);
                         v2_w |= is_solution_arc;
                     }
-                } else if (w->values->test(var, eff)) {
+                } else if (w->values->test(var, post)) {
                     v1->add_arc(op, w);
                     v2->add_arc(op, w);
                     v1_w |= is_solution_arc;
@@ -243,31 +243,31 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         Operator *op = loops[i];
         if (use_new_arc_check) {
             int pre = get_pre(*op, var);
-            int eff = get_eff(*op, var);
+            int post = get_post(*op, var);
             if (pre == UNDEFINED) {
-                if (eff == UNDEFINED) {
+                if (post == UNDEFINED) {
                     v1->add_loop(op);
                     v2->add_loop(op);
-                } else if (eff == value) {
+                } else if (post == value) {
                     v1->add_arc(op, v2);
                     v2->add_loop(op);
                 } else {
-                    assert(v1->values->test(var, eff));
+                    assert(v1->values->test(var, post));
                     v1->add_loop(op);
                     v2->add_arc(op, v1);
                 }
             } else if (pre == value) {
-                assert(eff != UNDEFINED);
-                if (eff == value) {
+                assert(post != UNDEFINED);
+                if (post == value) {
                     v2->add_loop(op);
                 } else {
-                    assert(v1->values->test(var, eff));
+                    assert(v1->values->test(var, post));
                     v2->add_arc(op, v1);
                 }
-            } else if (eff == value) {
+            } else if (post == value) {
                 v1->add_arc(op, v2);
             } else {
-                assert(v1->values->test(var, eff));
+                assert(v1->values->test(var, post));
                 v1->add_loop(op);
             }
         } else {
