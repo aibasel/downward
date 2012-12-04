@@ -175,7 +175,6 @@ void ShrinkBisimulation::shrink_before_merge(
 
 int ShrinkBisimulation::initialize_groups(const Abstraction &abs,
                                           vector<int> &state_to_group) {
-
     /* Group 0 holds all goal states.
 
        Each other group holds all states with one particular h value.

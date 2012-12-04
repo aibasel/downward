@@ -8,7 +8,6 @@
 
 
 namespace cea_heuristic {
-
 struct LocalProblem;
 struct LocalProblemNode;
 struct LocalTransition;
@@ -50,7 +49,6 @@ public:
     ~ContextEnhancedAdditiveHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };
-
 }
 
 #endif
