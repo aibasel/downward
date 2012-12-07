@@ -191,33 +191,31 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         bool is_solution_arc = ((op == op_out) && (w == state_out));
         if (use_new_arc_check) {
             int pre = get_pre(*op, var);
-            if (pre == UNDEFINED) {
-                int post = get_post(*op, var);
-                if (post == UNDEFINED) {
-                    bool intersects = false;
-                    intersect_iter = intersects_with.find(w);
-                    if (intersect_iter != intersects_with.end()) {
-                        // Value for w already exists.
-                        intersects = intersect_iter->second;
-                    } else {
-                        // There's no value for w in the map.
-                        intersects = v1->values->domains_intersect(*w->values, var);
-                        intersects_with.insert(make_pair(w, intersects));
-                    }
-                    if (intersects) {
-                        v1->add_arc(op, w);
-                        v1_w |= is_solution_arc;
-                    }
-                    if (w->values->test(var, value)) {
-                        v2->add_arc(op, w);
-                        v2_w |= is_solution_arc;
-                    }
-                } else if (w->values->test(var, post)) {
+            int post = get_post(*op, var);
+            if (post == UNDEFINED) {
+                bool intersects = false;
+                intersect_iter = intersects_with.find(w);
+                if (intersect_iter != intersects_with.end()) {
+                    // Value for w already exists.
+                    intersects = intersect_iter->second;
+                } else {
+                    // There's no value for w in the map.
+                    intersects = v1->values->domains_intersect(*w->values, var);
+                    intersects_with.insert(make_pair(w, intersects));
+                }
+                if (intersects) {
                     v1->add_arc(op, w);
-                    v2->add_arc(op, w);
                     v1_w |= is_solution_arc;
+                }
+                if (w->values->test(var, value)) {
+                    v2->add_arc(op, w);
                     v2_w |= is_solution_arc;
                 }
+            } else if (pre == UNDEFINED) {
+                v1->add_arc(op, w);
+                v2->add_arc(op, w);
+                v1_w |= is_solution_arc;
+                v2_w |= is_solution_arc;
             } else if (pre == value) {
                 v2->add_arc(op, w);
                 v2_w |= is_solution_arc;
