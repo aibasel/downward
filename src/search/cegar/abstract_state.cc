@@ -22,10 +22,7 @@ AbstractState::AbstractState(string s)
     : values(new Values()),
       distance(UNDEFINED),
       h(0),
-      refined_var(UNDEFINED),
-      refined_value(UNDEFINED),
-      left_child(0),
-      right_child(0) {
+      node(0) {
     assert(!g_variable_domain.empty());
 
     reset_neighbours();
@@ -276,11 +273,6 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         }
     }
 
-    // Save the refinement hierarchy.
-    refined_var = var;
-    refined_value = value;
-    left_child = v1;
-    right_child = v2;
     assert(v1->values->count(var) == values->count(var) - 1);
     assert(v2->values->count(var) == 1);
 
@@ -420,9 +412,23 @@ bool AbstractState::is_abstraction_of_goal() const {
 }
 
 AbstractState *AbstractState::get_child(int value) {
-    if (value == refined_value)
-        return right_child;
-    return left_child;
+    assert(node);
+    return node->get_child(value)->get_abs_state();
+}
+
+AbstractState *AbstractState::get_left_child() const {
+    Node *child = node->get_left_child();
+    assert(child);
+    // Jump helper nodes.
+    while (!child->get_abs_state()) {
+        child = child->get_left_child();
+    }
+    assert(child->get_abs_state());
+    return child->get_abs_state();
+}
+
+AbstractState *AbstractState::get_right_child() const {
+    return node->get_right_child()->get_abs_state();
 }
 
 void AbstractState::set_predecessor(Operator *op, AbstractState *other) {

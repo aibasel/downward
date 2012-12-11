@@ -1,6 +1,7 @@
 #ifndef CEGAR_ABSTRACTION_H
 #define CEGAR_ABSTRACTION_H
 
+#include "split_tree.h"
 #include "../priority_queue.h"
 #include "../rng.h"
 #include "../state.h"
@@ -129,6 +130,7 @@ private:
     bool memory_released;
     double average_operator_cost;
     Timer timer;
+    SplitTree split_tree;
 
 public:
     Abstraction();
