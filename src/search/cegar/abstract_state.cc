@@ -66,6 +66,7 @@ AbstractState::~AbstractState() {
 }
 
 string AbstractState::str() const {
+    assert(values);
     ostringstream oss;
     oss << "<" << values->str() << ">";
     return oss.str();
@@ -429,21 +430,6 @@ bool AbstractState::is_abstraction_of_goal() const {
 AbstractState *AbstractState::get_child(int value) {
     assert(node);
     return node->get_child(value)->get_abs_state();
-}
-
-AbstractState *AbstractState::get_left_child() const {
-    Node *child = node->get_left_child();
-    assert(child);
-    // Jump helper nodes.
-    while (!child->get_abs_state()) {
-        child = child->get_left_child();
-    }
-    assert(child->get_abs_state());
-    return child->get_abs_state();
-}
-
-AbstractState *AbstractState::get_right_child() const {
-    return node->get_right_child()->get_abs_state();
 }
 
 void AbstractState::set_predecessor(Operator *op, AbstractState *other) {

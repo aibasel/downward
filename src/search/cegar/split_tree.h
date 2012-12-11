@@ -30,8 +30,8 @@ public:
     bool is_split() const {return var != UNDEFINED; }
     int get_var() const {return var; }
     Node *get_child(int value) const;
-    Node *get_left_child() const {return left_child; }
-    Node *get_right_child() const {return right_child; }
+    AbstractState *get_left_child_state() const;
+    AbstractState *get_right_child_state() const;
     AbstractState *get_abs_state() const {return abs_state; }
 };
 

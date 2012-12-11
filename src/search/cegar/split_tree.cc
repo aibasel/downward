@@ -44,6 +44,21 @@ Node *Node::get_child(int value) const {
     return left_child;
 }
 
+AbstractState *Node::get_left_child_state() const {
+    Node *child = left_child;
+    assert(child);
+    // Jump helper nodes.
+    while (!child->get_abs_state()) {
+        child = child->left_child;
+    }
+    assert(child->get_abs_state());
+    return child->get_abs_state();
+}
+
+AbstractState *Node::get_right_child_state() const {
+    return right_child->get_abs_state();
+}
+
 void SplitTree::set_root(AbstractState *single) {
     root = new Node(single);
 }

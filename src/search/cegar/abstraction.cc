@@ -150,9 +150,10 @@ void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &
         int var = conditions[cond].first;
         int value = conditions[cond].second;
         while (may_keep_refining()) {
+            Node *node = state->get_node();
             refine(state, var, value);
-            AbstractState *v1 = state->get_left_child();
-            AbstractState *v2 = state->get_right_child();
+            AbstractState *v1 = node->get_left_child_state();
+            AbstractState *v2 = node->get_right_child_state();
             if (v1->get_state_in() && v2->get_state_in()) {
                 // The arc on the solution u->v is now ambiguous (u->v1 and u->v2 exist).
                 assert(v1->get_op_in() && v2->get_op_in());
@@ -223,11 +224,12 @@ void Abstraction::refine(AbstractState *state, std::vector<pair<int, int> > cond
     conditions.pop_back();
     int var = condition.first;
     int value = condition.second;
+    Node *node = state->get_node();
     refine(state, var, value);
     if (conditions.empty())
         return;
-    AbstractState *v1 = state->get_left_child();
-    AbstractState *v2 = state->get_right_child();
+    AbstractState *v1 = node->get_left_child_state();
+    AbstractState *v2 = node->get_right_child_state();
     if (may_keep_refining())
         refine(v1, conditions);
     if (may_keep_refining())
