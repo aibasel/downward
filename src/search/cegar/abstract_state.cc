@@ -131,9 +131,6 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     for (it = prev.begin(); it != prev.end(); ++it) {
         Operator *op = it->first;
         AbstractState *u = it->second;
-        // We don't remove arcs to refined states, but check states lazily.
-        if (!u->valid())
-            continue;
         assert(u != this);
         bool is_solution_arc = ((op == op_in) && (u == state_in));
         // If the first check returns false, the second arc has to be added.
@@ -177,13 +174,11 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
                 u_v2 |= is_solution_arc;
             }
         }
+        u->remove_next_arc(op, this);
     }
     for (it = next.begin(); it != next.end(); ++it) {
         Operator *op = it->first;
         AbstractState *w = it->second;
-        // We don't remove arcs to refined states, but check states lazily.
-        if (!w->valid())
-            continue;
         assert(w != this);
         bool is_solution_arc = ((op == op_out) && (w == state_out));
         if (use_new_arc_check) {
@@ -233,6 +228,7 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
                 v2_w |= is_solution_arc;
             }
         }
+        w->remove_prev_arc(op, this);
     }
     for (int i = 0; i < loops.size(); ++i) {
         Operator *op = loops[i];
@@ -330,6 +326,23 @@ void AbstractState::add_arc(Operator *op, AbstractState *other) {
 
 void AbstractState::add_loop(Operator *op) {
     loops.push_back(op);
+}
+
+void AbstractState::remove_arc(Arcs &arcs, Operator *op, AbstractState *other) {
+    // Move arcs.back() to pos to speed things up.
+    Arcs::iterator pos = find(arcs.begin(), arcs.end(), Arc(op, other));
+    assert(pos != arcs.end());
+    // For PODs assignment is faster than swapping.
+    *pos = arcs.back();
+    arcs.pop_back();
+}
+
+void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
+    remove_arc(next, op, other);
+}
+
+void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
+    remove_arc(prev, op, other);
 }
 
 bool AbstractState::check_arc(Operator *op, AbstractState *other) {

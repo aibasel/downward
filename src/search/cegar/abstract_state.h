@@ -47,6 +47,8 @@ private:
     // This state's node in the refinement hierarchy.
     Node *node;
 
+    void remove_arc(Arcs &arcs, Operator *op, AbstractState *other);
+
 public:
     explicit AbstractState(string s = "");
     FRIEND_TEST(CegarTest, regress);
@@ -60,6 +62,8 @@ public:
     void refine(int var, int value, AbstractState *v1, AbstractState *v2,
                 bool use_new_arc_check = true);
     void add_arc(Operator *op, AbstractState *other);
+    void remove_next_arc(Operator *op, AbstractState *other);
+    void remove_prev_arc(Operator *op, AbstractState *other);
     void add_loop(Operator *op);
     bool check_arc(Operator *op, AbstractState *other);
     bool check_and_add_arc(Operator *op, AbstractState *other);
@@ -91,7 +95,6 @@ public:
     long get_size() const;
 
     // We only have a valid abstract state if it was not refined.
-    bool valid() const {return !node->is_split(); }
     int get_refined_var() const {return node->get_var(); }
     AbstractState *get_child(int value);
     AbstractState *get_left_child() const;

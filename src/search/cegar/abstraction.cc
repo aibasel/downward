@@ -281,9 +281,6 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         AbstractState *state = top_pair.second;
         ++expansions;
 
-        if (!state->valid())
-            continue;
-
         const int g = state->get_distance();
         assert(g < INFINITY);
         int new_f = g;
@@ -702,8 +699,6 @@ void Abstraction::write_dot_file(int num) {
         for (Arcs::iterator it = next.begin(); it != next.end(); ++it) {
             Operator *op = it->first;
             AbstractState *next_state = it->second;
-            if (!next_state->valid())
-                continue;
             dotfile << current_state->str() << " -> " << next_state->str()
                     << " [label=\"" << op->get_name() << "\"];" << endl;
         }
