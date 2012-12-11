@@ -2,6 +2,7 @@
 
 #include "abstract_state.h"
 #include "abstraction.h"
+#include "split_tree.h"
 #include "utils.h"
 #include "values.h"
 #include "../operator.h"
@@ -600,5 +601,24 @@ TEST(CegarTest, partial_ordering2) {
     EXPECT_EQ(0, order[0]);
     EXPECT_EQ(1, order[1]);
     EXPECT_EQ(2, order[2]);
+}
+
+TEST(CegarTest, split_values) {
+    init_test();
+    AbstractState a;
+    State s1 = *create_state("0 0 0");
+    SplitTree t = SplitTree(&a);
+    EXPECT_EQ("<>", t.get_node(s1)->abs_state->str());
+
+    AbstractState a1("<1={1}>");
+    AbstractState a2("<1={0,2}>");
+    vector<int> values;
+    values.push_back(0);
+    values.push_back(2);
+    t.root->split(1, values, &a1, &a2);
+    EXPECT_EQ(0, t.root->left_child->abs_state);
+    EXPECT_EQ(&a2, t.root->right_child->abs_state);
+    EXPECT_EQ(&a1, t.root->left_child->left_child->abs_state);
+    EXPECT_EQ(&a2, t.root->left_child->right_child->abs_state);
 }
 }
