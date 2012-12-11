@@ -1,6 +1,7 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
+#include "split_tree.h"
 #include "utils.h"
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
@@ -43,12 +44,8 @@ private:
     Operator *op_out;
     AbstractState *state_out;
 
-    // Refinement hierarchy. Save the variable for which this state was refined
-    // and the resulting abstract child states.
-    int refined_var;
-    int refined_value;
-    AbstractState *left_child;
-    AbstractState *right_child;
+    // This state's node in the refinement hierarchy.
+    Node *node;
 
 public:
     explicit AbstractState(string s = "");
@@ -94,11 +91,13 @@ public:
     long get_size() const;
 
     // We only have a valid abstract state if it was not refined.
-    bool valid() const {return refined_var == UNDEFINED; }
-    int get_refined_var() const {return refined_var; }
+    bool valid() const {return !node->is_split(); }
+    int get_refined_var() const {return node->get_var(); }
     AbstractState *get_child(int value);
-    AbstractState *get_left_child() const {return left_child; }
-    AbstractState *get_right_child() const {return right_child; }
+    AbstractState *get_left_child() const;
+    AbstractState *get_right_child() const;
+    Node *get_node() const {return node; }
+    void set_node(Node *node) {this->node = node; }
 
     void release_memory();
 };

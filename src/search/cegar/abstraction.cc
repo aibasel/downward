@@ -56,6 +56,7 @@ Abstraction::Abstraction()
     init = single;
     goal = single;
     states.insert(init);
+    split_tree.set_root(single);
     if (g_causal_graph)
         partial_ordering(*g_causal_graph, &cg_partial_ordering);
     if (DEBUG) {
@@ -178,6 +179,9 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     states.erase(state);
     states.insert(v1);
     states.insert(v2);
+    // Update split tree.
+    assert(state->get_node());
+    state->get_node()->split(var, value, v1, v2);
     if (state == init) {
         if (v1->is_abstraction_of(*g_initial_state)) {
             init = v1;
@@ -677,15 +681,7 @@ void Abstraction::log_h_values() const {
 }
 
 AbstractState *Abstraction::get_abstract_state(const State &state) const {
-    AbstractState *current = single;
-    while (!current->valid()) {
-        int value = state[current->get_refined_var()];
-        current = current->get_child(value);
-    }
-    assert(current->valid());
-    // We cannot assert that current is an abstraction of state, because its
-    // members have been cleared to save memory.
-    return current;
+    return split_tree.get_node(state)->get_abs_state();
 }
 
 void Abstraction::write_dot_file(int num) {

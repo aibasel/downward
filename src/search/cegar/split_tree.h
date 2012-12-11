@@ -13,6 +13,8 @@ class AbstractState;
 class Node {
 private:
     AbstractState *abs_state;
+    // Save the variable and value for which abs_state was refined
+    // and the resulting abstract child states.
     int var;
     int value;
     Node *left_child;
@@ -25,17 +27,20 @@ public:
     // and the next OR-node as their left child.
     FRIEND_TEST(CegarTest, split_values);
     void split(int var, const vector<int> &values, AbstractState *left, AbstractState *right);
-    bool is_split();
-    int get_var() const;
+    bool is_split() const {return var != UNDEFINED; }
+    int get_var() const {return var; }
     Node *get_child(int value) const;
+    Node *get_left_child() const {return left_child; }
+    Node *get_right_child() const {return right_child; }
+    AbstractState *get_abs_state() const {return abs_state; }
 };
 
 class SplitTree {
 private:
     Node *root;
 public:
-    explicit SplitTree(AbstractState *single);
-    Node *get_node(const State conc_state);
+    void set_root(AbstractState *single);
+    Node *get_node(const State conc_state) const;
     FRIEND_TEST(CegarTest, split_values);
 };
 }

@@ -1,5 +1,7 @@
 #include "split_tree.h"
 
+#include "abstract_state.h"
+
 using namespace std;
 
 namespace cegar_heuristic {
@@ -10,14 +12,15 @@ Node::Node(AbstractState *state)
       value(UNDEFINED),
       left_child(0),
       right_child(0) {
-
+    if (state)
+        state->set_node(this);
 }
 
 void Node::split(int var, int value, AbstractState *left, AbstractState *right) {
     this->var = var;
     this->value = value;
-    this->left_child = new Node(left);
-    this->right_child = new Node(right);
+    left_child = new Node(left);
+    right_child = new Node(right);
 }
 
 void Node::split(int var, const vector<int> &values, AbstractState *left, AbstractState *right) {
@@ -35,26 +38,18 @@ void Node::split(int var, const vector<int> &values, AbstractState *left, Abstra
     helper->abs_state = left;
 }
 
-bool Node::is_split() {
-    return var != UNDEFINED;
-}
-
-int Node::get_var() const {
-    return var;
-}
-
 Node *Node::get_child(int value) const {
     if (value == this->value)
         return right_child;
     return left_child;
 }
 
-SplitTree::SplitTree(AbstractState *single)
-    : root(new Node(single)) {
-
+void SplitTree::set_root(AbstractState *single) {
+    root = new Node(single);
 }
 
-Node *SplitTree::get_node(const State conc_state) {
+Node *SplitTree::get_node(const State conc_state) const {
+    assert(root);
     Node *current = root;
     while (current->is_split()) {
         current = current->get_child(conc_state[current->get_var()]);
