@@ -753,6 +753,7 @@ void Abstraction::release_memory() {
         AbstractState *state = *it;
         delete state;
     }
+    set<AbstractState *>().swap(states);
     memory_released = true;
 }
 
