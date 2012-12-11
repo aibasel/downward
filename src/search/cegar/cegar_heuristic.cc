@@ -67,7 +67,7 @@ void CegarHeuristic::initialize() {
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
-    int h = abstraction->get_abstract_state(state)->get_h();
+    int h = abstraction->get_h(state);
     assert(h >= 0);
     if (h == INFINITY)
         h = DEAD_END;

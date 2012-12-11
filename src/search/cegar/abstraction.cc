@@ -176,10 +176,14 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
              << ")" << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
+    Node *node = state->get_node();
     state->refine(var, value, v1, v2, use_new_arc_check);
 
     // Update split tree.
-    state->get_node()->split(var, value, v1, v2);
+    node->split(var, value, v1, v2);
+
+    v1->set_h(node->get_h());
+    v2->set_h(node->get_h());
 
     states.erase(state);
     states.insert(v1);
@@ -390,7 +394,7 @@ string Abstraction::get_solution_string() const {
 }
 
 void Abstraction::sample_state(State &current_state) const {
-    int h = get_abstract_state(current_state)->get_h();
+    int h = get_h(current_state);
     assert(h != INFINITY);
     int n;
     if (h == 0) {
@@ -427,7 +431,7 @@ void Abstraction::sample_state(State &current_state) const {
             assert(applicable_ops[random]->is_applicable(current_state));
             current_state = State(current_state, *applicable_ops[random]);
             // if current state is dead-end, then restart with initial state
-            h = get_abstract_state(current_state)->get_h();
+            h = get_h(current_state);
             if (h == INFINITY)
                 current_state = *g_initial_state;
         }

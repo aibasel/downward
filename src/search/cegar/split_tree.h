@@ -19,6 +19,8 @@ private:
     int value;
     Node *left_child;
     Node *right_child;
+    // Estimated cost to goal node.
+    int h;
 public:
     explicit Node(AbstractState *state = 0);
     void split(int var, int value, AbstractState *left, AbstractState *right);
@@ -33,6 +35,8 @@ public:
     AbstractState *get_left_child_state() const;
     AbstractState *get_right_child_state() const;
     AbstractState *get_abs_state() const {return abs_state; }
+    void set_h(int h) {this->h = h; }
+    int get_h() const {return h; }
 };
 
 class SplitTree {

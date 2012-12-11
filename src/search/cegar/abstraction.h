@@ -143,6 +143,7 @@ public:
     AbstractState *improve_h(const State &state, AbstractState *abs_state);
 
     AbstractState *get_abstract_state(const State &state) const;
+    int get_h(const State &state) const {return split_tree.get_node(state)->get_h(); }
 
     int get_num_states() const {return states.size(); }
     int get_num_states_online() const;
