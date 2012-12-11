@@ -35,8 +35,6 @@ private:
 
     // Incumbent distance to first expanded node in backwards and forward search.
     int distance;
-    // Estimated cost to goal node.
-    int h;
 
     // Record the neighbours on a solution path.
     Operator *op_in;
@@ -79,8 +77,8 @@ public:
     // A* search.
     void set_distance(int dist) {distance = dist; }
     int get_distance() {return distance; }
-    void set_h(int dist) {h = dist; }
-    int get_h() {return h; }
+    void set_h(int dist) {node->set_h(dist); }
+    int get_h() {return node->get_h(); }
     void set_predecessor(Operator *op, AbstractState *other);
     Operator *get_op_in() const {return op_in; }
     AbstractState *get_state_in() const {return state_in; }

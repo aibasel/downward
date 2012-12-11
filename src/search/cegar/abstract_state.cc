@@ -21,7 +21,6 @@ namespace cegar_heuristic {
 AbstractState::AbstractState(string s)
     : values(new Values()),
       distance(UNDEFINED),
-      h(0),
       node(0) {
     assert(!g_variable_domain.empty());
 
@@ -281,10 +280,6 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
     assert(this->is_abstraction_of(*v2));
-
-    // Pass on the h-value.
-    v1->set_h(h);
-    v2->set_h(h);
 
     if (u_v1 && u_v2)
         assert(state_in->can_refine(var, value));
