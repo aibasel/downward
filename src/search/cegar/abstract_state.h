@@ -98,8 +98,6 @@ public:
     // We only have a valid abstract state if it was not refined.
     int get_refined_var() const {return node->get_var(); }
     AbstractState *get_child(int value);
-    AbstractState *get_left_child() const;
-    AbstractState *get_right_child() const;
     Node *get_node() const {return node; }
     void set_node(Node *node) {this->node = node; }
 };
