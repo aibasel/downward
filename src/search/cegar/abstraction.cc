@@ -50,13 +50,13 @@ Abstraction::Abstraction()
     g_memory_buffer = new char [10 * 1024 * 1024];
 
     single = new AbstractState();
+    split_tree.set_root(single);
     for (int i = 0; i < g_operators.size(); ++i) {
         single->add_loop(&g_operators[i]);
     }
     init = single;
     goal = single;
     states.insert(init);
-    split_tree.set_root(single);
     if (g_causal_graph)
         partial_ordering(*g_causal_graph, &cg_partial_ordering);
     if (DEBUG) {
@@ -176,12 +176,14 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
     state->refine(var, value, v1, v2, use_new_arc_check);
+
+    // Update split tree.
+    state->get_node()->split(var, value, v1, v2);
+
     states.erase(state);
     states.insert(v1);
     states.insert(v2);
-    // Update split tree.
-    assert(state->get_node());
-    state->get_node()->split(var, value, v1, v2);
+
     if (state == init) {
         if (v1->is_abstraction_of(*g_initial_state)) {
             init = v1;
@@ -203,6 +205,10 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
         if (DEBUG)
             cout << "Using new goal state: " << goal->str() << endl;
     }
+
+    delete state;
+    state = 0;
+
     int num_states = get_num_states();
     if (num_states % STATES_LOG_STEP == 0)
         cout << "Abstract states: " << num_states << "/" << max_states_offline << endl;
@@ -745,7 +751,7 @@ void Abstraction::release_memory() {
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
-        state->release_memory();
+        delete state;
     }
     memory_released = true;
 }

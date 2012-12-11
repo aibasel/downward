@@ -51,6 +51,7 @@ private:
 
 public:
     explicit AbstractState(string s = "");
+    ~AbstractState();
     FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
     std::string str() const;
@@ -101,8 +102,6 @@ public:
     AbstractState *get_right_child() const;
     Node *get_node() const {return node; }
     void set_node(Node *node) {this->node = node; }
-
-    void release_memory();
 };
 }
 

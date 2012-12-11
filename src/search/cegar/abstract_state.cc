@@ -60,6 +60,11 @@ AbstractState::AbstractState(string s)
     }
 }
 
+AbstractState::~AbstractState() {
+    delete values;
+    values = 0;
+}
+
 string AbstractState::str() const {
     ostringstream oss;
     oss << "<" << values->str() << ">";
@@ -308,9 +313,6 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
         state_out->state_in = v2;
     }
     */
-
-    // Remove obsolete members.
-    release_memory();
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
@@ -475,13 +477,5 @@ long AbstractState::get_size() const {
     // for 32bit compilations.
     return 2 * sizeof(Arcs) + sizeof(Arc) * (next.capacity() + prev.capacity()) +
            sizeof(Loops) + sizeof(Operator*) * loops.capacity();
-}
-
-void AbstractState::release_memory() {
-    Arcs().swap(next);
-    Arcs().swap(prev);
-    Loops().swap(loops);
-    delete values;
-    values = 0;
 }
 }
