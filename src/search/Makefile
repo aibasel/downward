@@ -122,6 +122,7 @@ HEADERS += cegar/cegar_heuristic.h \
            cegar/abstract_state.h \
            cegar/values.h \
            cegar/abstraction.h \
+           cegar/split_tree.h \
            cegar/utils.h \
 
 SHELL = /bin/bash
