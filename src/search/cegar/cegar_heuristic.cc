@@ -90,7 +90,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_REFINED");
     pick_strategies.push_back("MIN_PREDECESSORS");
     pick_strategies.push_back("MAX_PREDECESSORS");
-    pick_strategies.push_back("ALL");
     parser.add_enum_option("pick", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied condition");
     parser.add_option<int>("h_updates", -1, "how often to update the abstract h-values");
