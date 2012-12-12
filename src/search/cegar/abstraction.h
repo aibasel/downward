@@ -39,9 +39,7 @@ enum PickStrategy {
     MAX_REFINED,
     // Number of predecessors in causal graph.
     MIN_PREDECESSORS,
-    MAX_PREDECESSORS,
-    // Refine the state for the first fact, its children for the second, etc.
-    ALL
+    MAX_PREDECESSORS
 };
 
 class Abstraction {
@@ -61,8 +59,6 @@ private:
 
     // Split state into two child states.
     void refine(AbstractState *state, int var, int value);
-    // Refine state for the first fact, the resulting children for the second, etc.
-    void refine(AbstractState *state, std::vector<pair<int, int> > conditions);
 
     // How to pick the next fact to refine for in there are multiple facts.
     PickStrategy pick;

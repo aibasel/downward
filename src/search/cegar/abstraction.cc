@@ -142,30 +142,26 @@ void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &
         }
         cout << endl;
     }
-    if (pick == ALL && conditions.size() >= 2) {
-        refine(state, conditions);
-    } else {
-        int cond = pick_condition(*state, conditions);
-        assert(cond >= 0 && cond < conditions.size());
-        int var = conditions[cond].first;
-        int value = conditions[cond].second;
-        while (may_keep_refining()) {
-            Node *node = state->get_node();
-            refine(state, var, value);
-            AbstractState *v1 = node->get_left_child_state();
-            AbstractState *v2 = node->get_right_child_state();
-            if (v1->get_state_in() && v2->get_state_in()) {
-                // The arc on the solution u->v is now ambiguous (u->v1 and u->v2 exist).
-                assert(v1->get_op_in() && v2->get_op_in());
-                assert(v1->get_op_in() == v2->get_op_in());
-                assert(v1->get_state_in() == v2->get_state_in());
-                state = v1->get_state_in();
-            } else {
-                break;
-            }
+    int cond = pick_condition(*state, conditions);
+    assert(cond >= 0 && cond < conditions.size());
+    int var = conditions[cond].first;
+    int value = conditions[cond].second;
+    while (may_keep_refining()) {
+        Node *node = state->get_node();
+        refine(state, var, value);
+        AbstractState *v1 = node->get_left_child_state();
+        AbstractState *v2 = node->get_right_child_state();
+        if (v1->get_state_in() && v2->get_state_in()) {
+            // The arc on the solution u->v is now ambiguous (u->v1 and u->v2 exist).
+            assert(v1->get_op_in() && v2->get_op_in());
+            assert(v1->get_op_in() == v2->get_op_in());
+            assert(v1->get_state_in() == v2->get_state_in());
+            state = v1->get_state_in();
+        } else {
+            break;
         }
-        log_h_values();
     }
+    log_h_values();
 }
 
 void Abstraction::refine(AbstractState *state, int var, int value) {
@@ -219,26 +215,6 @@ void Abstraction::refine(AbstractState *state, int var, int value) {
         cout << "Abstract states: " << num_states << "/" << max_states_offline << endl;
     if (WRITE_DOT_FILES)
         write_dot_file(num_states);
-}
-
-void Abstraction::refine(AbstractState *state, std::vector<pair<int, int> > conditions) {
-    // Call by value deliberately to receive a separate copy of the vector.
-    assert(!conditions.empty());
-    pair<int, int> condition = conditions.back();
-    conditions.pop_back();
-    int var = condition.first;
-    int value = condition.second;
-    Node *node = state->get_node();
-    refine(state, var, value);
-    if (conditions.empty())
-        return;
-    AbstractState *v1 = node->get_left_child_state();
-    AbstractState *v2 = node->get_right_child_state();
-    if (may_keep_refining())
-        refine(v1, conditions);
-    if (may_keep_refining())
-        refine(v2, conditions);
-    log_h_values();
 }
 
 AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_state) {
