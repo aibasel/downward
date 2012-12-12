@@ -291,6 +291,173 @@ void AbstractState::refine(int var, int value, AbstractState *v1, AbstractState 
     if (v2_w) v2->set_successor(op_out, state_out);
 }
 
+void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2,
+                          bool use_new_arc_check) {
+    // We can only refine for vars that can have at least two values.
+    // The desired value has to be in the set of possible values.
+    assert(values->count(var) > wanted.size());
+    for (int i = 0; i < wanted.size(); ++i)
+        assert(values->test(var, wanted[i]));
+
+    *v1->values = *values;
+    *v2->values = *values;
+
+    v2->values->remove_all(var);
+    for (int i = 0; i < wanted.size(); ++i) {
+        // In v1 var can have all of the previous values except the desired ones.
+        v1->values->remove(var, wanted[i]);
+
+        // In v2 var can only have the desired value.
+        v2->values->add(var, wanted[i]);
+    }
+
+    // Results from Dijkstra search. If  u --> v --> w  was on the
+    // shortest path and a new path  u --> v{1,2} --> w is created with the
+    // same arcs, we avoid a dijkstra computation.
+    bool u_v1 = false, u_v2 = false, v1_w = false, v2_w = false;
+
+    // Before: u --> this=v --> w
+    //  ==>
+    // After:  v is split into v1 and v2
+    Arcs::iterator it;
+    for (it = prev.begin(); it != prev.end(); ++it) {
+        Operator *op = it->first;
+        AbstractState *u = it->second;
+        assert(u != this);
+        bool is_solution_arc = ((op == op_in) && (u == state_in));
+        // If the first check returns false, the second arc has to be added.
+        if (use_new_arc_check) {
+            int post = get_post(*op, var);
+            if (post == UNDEFINED) {
+                if (u->values->domains_intersect(*(v1->values), var)) {
+                    u->add_arc(op, v1);
+                    u_v1 |= is_solution_arc;
+                }
+                if (u->values->domains_intersect(*(v2->values), var)) {
+                    u->add_arc(op, v2);
+                    u_v2 |= is_solution_arc;
+                }
+            } else if (v2->values->test(var, post)) {
+                u->add_arc(op, v2);
+                u_v2 |= is_solution_arc;
+            } else {
+                u->add_arc(op, v1);
+                u_v1 |= is_solution_arc;
+            }
+        } else {
+            if (u->check_and_add_arc(op, v1)) {
+                bool added = u->check_and_add_arc(op, v2);
+                if (is_solution_arc) {
+                    u_v1 = true;
+                    u_v2 |= added;
+                }
+            } else {
+                u->add_arc(op, v2);
+                u_v2 |= is_solution_arc;
+            }
+        }
+        u->remove_next_arc(op, this);
+    }
+    for (it = next.begin(); it != next.end(); ++it) {
+        Operator *op = it->first;
+        AbstractState *w = it->second;
+        assert(w != this);
+        bool is_solution_arc = ((op == op_out) && (w == state_out));
+        if (use_new_arc_check) {
+            int pre = get_pre(*op, var);
+            int post = get_post(*op, var);
+            if (post == UNDEFINED) {
+                if (v1->values->domains_intersect(*w->values, var)) {
+                    v1->add_arc(op, w);
+                    v1_w |= is_solution_arc;
+                }
+                if (v2->values->domains_intersect(*w->values, var)) {
+                    v2->add_arc(op, w);
+                    v2_w |= is_solution_arc;
+                }
+            } else if (pre == UNDEFINED) {
+                v1->add_arc(op, w);
+                v2->add_arc(op, w);
+                v1_w |= is_solution_arc;
+                v2_w |= is_solution_arc;
+            } else if (v2->values->test(var, pre)) {
+                v2->add_arc(op, w);
+                v2_w |= is_solution_arc;
+            } else {
+                v1->add_arc(op, w);
+                v1_w |= is_solution_arc;
+            }
+        } else {
+            // If the first check returns false, the second arc has to be added.
+            if (v1->check_and_add_arc(op, w)) {
+                bool added = v2->check_and_add_arc(op, w);
+                if (is_solution_arc) {
+                    v1_w = true;
+                    v2_w |= added;
+                }
+            } else {
+                v2->add_arc(op, w);
+                v2_w |= is_solution_arc;
+            }
+        }
+        w->remove_prev_arc(op, this);
+    }
+    for (int i = 0; i < loops.size(); ++i) {
+        Operator *op = loops[i];
+        if (use_new_arc_check) {
+            int pre = get_pre(*op, var);
+            int post = get_post(*op, var);
+            if (pre == UNDEFINED) {
+                if (post == UNDEFINED) {
+                    v1->add_loop(op);
+                    v2->add_loop(op);
+                } else if (v2->values->test(var, post)) {
+                    v1->add_arc(op, v2);
+                    v2->add_loop(op);
+                } else {
+                    assert(v1->values->test(var, post));
+                    v1->add_loop(op);
+                    v2->add_arc(op, v1);
+                }
+            } else if (v2->values->test(var, pre)) {
+                assert(post != UNDEFINED);
+                if (v2->values->test(var, post)) {
+                    v2->add_loop(op);
+                } else {
+                    assert(v1->values->test(var, post));
+                    v2->add_arc(op, v1);
+                }
+            } else if (v2->values->test(var, post)) {
+                v1->add_arc(op, v2);
+            } else {
+                assert(v1->values->test(var, post));
+                v1->add_loop(op);
+            }
+        } else {
+            v1->check_and_add_arc(op, v2);
+            v2->check_and_add_arc(op, v1);
+            v1->check_and_add_loop(op);
+            v2->check_and_add_loop(op);
+        }
+    }
+
+    assert(v1->values->count(var) == values->count(var) - wanted.size());
+    assert(v2->values->count(var) == wanted.size());
+
+    // Check that the sets of possible values are now smaller.
+    assert(this->is_abstraction_of(*v1));
+    assert(this->is_abstraction_of(*v2));
+
+    //if (u_v1 && u_v2)
+    //    assert(state_in->can_refine(var, value));
+
+    // Update the solution path. There may now be two paths (over v1 and v2).
+    if (u_v1) v1->set_predecessor(op_in, state_in);
+    if (u_v2) v2->set_predecessor(op_in, state_in);
+    if (v1_w) v1->set_successor(op_out, state_out);
+    if (v2_w) v2->set_successor(op_out, state_out);
+}
+
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
     // Experiments showed that keeping the arcs sorted for faster removal
     // increases the overall processing time. In 30 domains it made no
