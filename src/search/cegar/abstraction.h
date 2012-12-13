@@ -54,53 +54,14 @@ private:
     AbstractState *init;
     AbstractState *goal;
 
-    double get_average_operator_cost() const;
-
-    // Split state into two child states.
-    void refine(AbstractState *state, int var, const std::vector<int> &wanted);
+    // Queue for A* search.
+    mutable AdaptiveQueue<AbstractState *> *queue;
 
     // How to pick the next split in case of multiple possibilities.
     PickStrategy pick;
     mutable RandomNumberGenerator rng;
-    int pick_split_index(AbstractState &state, const Splits &conditions) const;
-
-    // A* search.
-    mutable AdaptiveQueue<AbstractState *> *queue;
-    void reset_distances() const;
-    FRIEND_TEST(CegarTest, astar_search);
-    FRIEND_TEST(CegarTest, dijkstra_search);
-    bool astar_search(bool forward, bool use_h) const;
-    // Set the incoming and outgoing solution arcs for the states on the solution path.
-    void extract_solution(AbstractState *goal) const;
-
-    void sample_state(State &current_state) const;
-    // Refine states between state and init until the solution is broken.
-    void break_solution(AbstractState *state, const Splits &splits);
-
-    bool check_and_break_solution(State conc_state, AbstractState *abs_state = 0);
-    bool find_and_break_complete_solution();
-    bool find_and_break_solution();
-
-    FRIEND_TEST(CegarTest, find_solution_first_state);
-    FRIEND_TEST(CegarTest, find_solution_second_state);
-    FRIEND_TEST(CegarTest, find_solution_loop);
-    FRIEND_TEST(CegarTest, initialize);
-    bool find_solution(AbstractState *start = 0);
-
-    // Make Dijkstra search to calculate all goal distances and update h-values.
-    void update_h_values() const;
-    void log_h_values() const;
-
-    void print_statistics();
-    double get_avg_h() const;
-
-    // Start of the refinement hierarchy.
-    AbstractState *single;
-
-    std::vector<int> cg_partial_ordering;
 
     // Statistics.
-    mutable int expansions;
     mutable int deviations;
     mutable int unmet_preconditions;
     mutable int unmet_goals;
@@ -120,10 +81,52 @@ private:
     bool log_h;
     double probability_for_random_start;
 
+    // Save whether the states have been destroyed.
     bool memory_released;
     double average_operator_cost;
     Timer timer;
     SplitTree split_tree;
+
+    double get_average_operator_cost() const;
+
+    // Split state into two child states.
+    void refine(AbstractState *state, int var, const std::vector<int> &wanted);
+
+    // Pick a possible split in case of multiple possibilities.
+    int pick_split_index(AbstractState &state, const Splits &conditions) const;
+
+    // A* search.
+    void reset_distances() const;
+    // Set the incoming and outgoing solution arcs for the states on the solution path.
+    void extract_solution(AbstractState *goal) const;
+    FRIEND_TEST(CegarTest, astar_search);
+    FRIEND_TEST(CegarTest, dijkstra_search);
+    bool astar_search(bool forward, bool use_h) const;
+    FRIEND_TEST(CegarTest, find_solution_first_state);
+    FRIEND_TEST(CegarTest, find_solution_second_state);
+    FRIEND_TEST(CegarTest, find_solution_loop);
+    FRIEND_TEST(CegarTest, initialize);
+    bool find_solution(AbstractState *start = 0);
+
+    void sample_state(State &current_state) const;
+    // Refine states between state and init until the solution is broken.
+    void break_solution(AbstractState *state, const Splits &splits);
+
+    bool check_and_break_solution(State conc_state, AbstractState *abs_state = 0);
+    bool find_and_break_complete_solution();
+    bool find_and_break_solution();
+
+    // Make Dijkstra search to calculate all goal distances and update h-values.
+    void update_h_values() const;
+    void log_h_values() const;
+
+    void print_statistics();
+    double get_avg_h() const;
+
+    // Start of the refinement hierarchy.
+    AbstractState *single;
+
+    std::vector<int> cg_partial_ordering;
 
 public:
     Abstraction();
@@ -146,6 +149,7 @@ public:
     bool is_online() const {return num_states_offline != -1; }
     bool may_keep_refining() const;
 
+    // Destroy all states when termination criterion is met.
     void release_memory();
     bool has_released_memory() const {return memory_released; }
 
@@ -158,9 +162,6 @@ public:
     void set_log_h(bool log) {log_h = log; }
     void set_probability_for_random_start(double prob) {probability_for_random_start = prob; }
     void set_pick_strategy(PickStrategy strategy) {pick = strategy; }
-
-    // Statistics.
-    int get_num_expansions() const {return expansions; }
 
     // Testing.
     std::string get_solution_string() const;
