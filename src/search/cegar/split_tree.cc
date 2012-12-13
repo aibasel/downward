@@ -36,6 +36,7 @@ void Node::split(int var, const vector<int> &values, AbstractState *left, Abstra
     }
     assert(helper->var == UNDEFINED);
     helper->abs_state = left;
+    left->set_node(helper);
 }
 
 Node *Node::get_child(int value) const {

@@ -134,24 +134,27 @@ double Abstraction::get_average_operator_cost() const {
     return avg_cost;
 }
 
-void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &conditions) {
+void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
     if (DEBUG) {
         cout << "Unmet conditions: ";
-        for (int i = 0; i < conditions.size(); ++i) {
-            cout << conditions[i].first << "=" << conditions[i].second << " ";
+        for (int i = 0; i < splits.size(); ++i) {
+            cout << splits[i].first << "=" << to_string(splits[i].second) << " ";
         }
         cout << endl;
     }
-    int cond = pick_condition(*state, conditions);
-    assert(cond >= 0 && cond < conditions.size());
-    int var = conditions[cond].first;
-    int value = conditions[cond].second;
+    int i = pick_split_index(*state, splits);
+    assert(i >= 0 && i < splits.size());
+    int var = splits[i].first;
+    const vector<int> &wanted = splits[i].second;
     while (may_keep_refining()) {
         Node *node = state->get_node();
-        refine(state, var, value);
+        refine(state, var, wanted);
         AbstractState *v1 = node->get_left_child_state();
         AbstractState *v2 = node->get_right_child_state();
-        if (v1->get_state_in() && v2->get_state_in()) {
+        // If the solution is still valid after we substitute BOTH v1 and v2
+        // for v, the same split can also be made in u.
+        // TODO: How to generalize for wanted.size() > 1?
+        if (wanted.size() == 1 && v1->get_state_in() && v2->get_state_in()) {
             // The arc on the solution u->v is now ambiguous (u->v1 and u->v2 exist).
             assert(v1->get_op_in() && v2->get_op_in());
             assert(v1->get_op_in() == v2->get_op_in());
@@ -164,22 +167,26 @@ void Abstraction::break_solution(AbstractState *state, vector<pair<int, int> > &
     log_h_values();
 }
 
-void Abstraction::refine(AbstractState *state, int var, int value) {
+void Abstraction::refine(AbstractState *state, int var, const vector<int> &wanted) {
     assert(may_keep_refining());
     if (DEBUG)
-        cout << "Refine " << state->str() << " for " << var << "=" << value
-             << " (" << g_variable_name[var] << "=" << g_fact_names[var][value]
+        cout << "Refine " << state->str() << " for " << var << "=" << to_string(wanted)
+             << " (" << g_variable_name[var] << "=" //<< g_fact_names[var][value]
              << ")" << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
     Node *node = state->get_node();
-    state->refine(var, value, v1, v2, use_new_arc_check);
+    assert(node);
+    state->split(var, wanted, v1, v2, use_new_arc_check);
 
     // Update split tree.
-    node->split(var, value, v1, v2);
+    node->split(var, wanted, v1, v2);
+    assert(v1->get_node());
+    assert(v2->get_node());
 
-    v1->set_h(node->get_h());
-    v2->set_h(node->get_h());
+    int h = node->get_h();
+    v1->set_h(h);
+    v2->set_h(h);
 
     states.erase(state);
     states.insert(v1);
@@ -475,7 +482,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     // Initialize with arbitrary states.
     State prev_conc_state(*g_initial_state);
 
-    vector<pair<int, int> > unmet_cond;
+    Splits splits;
 
     while (true) {
         if (!abs_state->is_abstraction_of(conc_state)) {
@@ -487,17 +494,17 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             assert(prev_op);
             AbstractState desired_prev_state;
             abs_state->regress(*prev_op, &desired_prev_state);
-            prev_state->get_unmet_conditions(desired_prev_state, prev_conc_state,
-                                             &unmet_cond);
-            break_solution(prev_state, unmet_cond);
+            prev_state->get_possible_splits(desired_prev_state, prev_conc_state,
+                                            &splits);
+            break_solution(prev_state, splits);
             return false;
         } else if (next_op && !next_op->is_applicable(conc_state)) {
             // Get unmet preconditions and refine the current state.
             if (DEBUG)
                 cout << "Operator is not applicable: " << next_op->get_name() << endl;
             ++unmet_preconditions;
-            get_unmet_preconditions(*next_op, conc_state, &unmet_cond);
-            break_solution(abs_state, unmet_cond);
+            get_unmet_preconditions(*next_op, conc_state, &splits);
+            break_solution(abs_state, splits);
             return false;
         } else if (next_op) {
             // Go to the next state.
@@ -528,27 +535,26 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     if (DEBUG)
         cout << "Goal test failed." << endl;
     unmet_goals++;
-    get_unmet_goal_conditions(conc_state, &unmet_cond);
-    break_solution(abs_state, unmet_cond);
+    get_unmet_goal_conditions(conc_state, &splits);
+    break_solution(abs_state, splits);
     return false;
 }
 
-int Abstraction::pick_condition(AbstractState &state,
-                                 const vector<pair<int, int> > &conditions) const {
-    assert(!conditions.empty());
+int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) const {
+    assert(!splits.empty());
     // Shortcut for condition lists with only one element.
-    if (conditions.size() == 1) {
+    if (splits.size() == 1) {
         return 0;
     }
     int cond = -1;
-    int random_cond = rng.next(conditions.size());
+    int random_cond = rng.next(splits.size());
     if (pick == FIRST) {
         cond = 0;
     } else if (pick == RANDOM) {
         cond = random_cond;
     } else if (pick == GOAL or pick == NO_GOAL) {
-        for (int i = 0; i < conditions.size(); ++i) {
-            bool is_goal_var = goal_var(conditions[i].first);
+        for (int i = 0; i < splits.size(); ++i) {
+            bool is_goal_var = goal_var(splits[i].first);
             if ((pick == GOAL && is_goal_var) || (pick == NO_GOAL && !is_goal_var)) {
                 cond = i;
                 break;
@@ -559,8 +565,8 @@ int Abstraction::pick_condition(AbstractState &state,
     } else if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
         int max_rest = -1;
         int min_rest = INFINITY;
-        for (int i = 0; i < conditions.size(); ++i) {
-            int rest = state.count(conditions[i].first);
+        for (int i = 0; i < splits.size(); ++i) {
+            int rest = state.count(splits[i].first);
             assert(rest >= 2);
             if (rest > max_rest && pick == MIN_CONSTRAINED) {
                 cond = i;
@@ -574,9 +580,9 @@ int Abstraction::pick_condition(AbstractState &state,
     } else if (pick == MIN_REFINED || pick == MAX_REFINED) {
         double min_refinement = 0.0;
         double max_refinement = -1.1;
-        for (int i = 0; i < conditions.size(); ++i) {
-            int all_values = g_variable_domain[conditions[i].first];
-            int rest = state.count(conditions[i].first);
+        for (int i = 0; i < splits.size(); ++i) {
+            int all_values = g_variable_domain[splits[i].first];
+            int rest = state.count(splits[i].first);
             assert(all_values >= 2);
             assert(rest >= 2);
             assert(rest <= all_values);
@@ -597,8 +603,8 @@ int Abstraction::pick_condition(AbstractState &state,
     } else if (pick == MIN_PREDECESSORS || pick == MAX_PREDECESSORS) {
         int min_pos = INFINITY;
         int max_pos = -1;
-        for (int i = 0; i < conditions.size(); ++i) {
-            int var = conditions[i].first;
+        for (int i = 0; i < splits.size(); ++i) {
+            int var = splits[i].first;
             for (int pos = 0; pos < cg_partial_ordering.size(); ++pos) {
                 if (var == cg_partial_ordering[pos]) {
                     if (pick == MIN_PREDECESSORS && pos < min_pos) {

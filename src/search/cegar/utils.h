@@ -22,15 +22,14 @@ typedef boost::dynamic_bitset<> Bitset;
 typedef Bitset Domain;
 typedef pair<int, int> Condition;
 typedef vector<Condition> Conditions;
+typedef std::vector<std::pair<int, std::vector<int> > > Splits;
 
 int get_pre(const Operator &op, int var);
 int get_post(const Operator &op, int var);
 
-void get_unmet_preconditions(const Operator &op, const State &s,
-                             std::vector<pair<int, int> > *cond);
+void get_unmet_preconditions(const Operator &op, const State &s, Splits *splits);
 
-void get_unmet_goal_conditions(const State &state,
-                               vector<pair<int, int> > *unmet_conditions);
+void get_unmet_goal_conditions(const State &state, Splits *splits);
 
 bool goal_var(int var);
 
@@ -53,6 +52,7 @@ void write_causal_graph(const CausalGraph &causal_graph);
 // Debugging.
 void print_conditions(const vector<pair<int, int> > &conditions);
 string to_string(int i);
+string to_string(const std::vector<int> &v);
 
 extern int get_memory_in_kb(const string& type);
 }
