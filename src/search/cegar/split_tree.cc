@@ -11,7 +11,8 @@ Node::Node(AbstractState *state)
       var(UNDEFINED),
       value(UNDEFINED),
       left_child(0),
-      right_child(0) {
+      right_child(0),
+      h(0) {
     if (state)
         state->set_node(this);
 }
