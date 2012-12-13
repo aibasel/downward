@@ -474,7 +474,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
 
     AbstractState *prev_state = 0;
     Operator *prev_op = 0;
-    Operator *next_op = abs_state->get_op_out();;
+    Operator *next_op = abs_state->get_op_out();
 
     // Initialize with arbitrary states.
     State prev_conc_state(*g_initial_state);
@@ -583,8 +583,6 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             assert(all_values >= 2);
             assert(rest >= 2);
             assert(rest <= all_values);
-            // all=4, remaining=2 -> refinement=0.66
-            // all=5, remaining=2 -> refinement=0.75
             double refinement = - (rest / double(all_values));
             assert(refinement >= -1.0);
             assert(refinement < 0.0);
@@ -757,8 +755,7 @@ void Abstraction::print_statistics() {
                     sizeof(prev) + sizeof(Arc) * prev.capacity() +
                     sizeof(loops) + sizeof(Operator*) * loops.capacity();
     }
-    // Note: Since we don't remove arcs to refined states anymore we cannot make
-    // the following assumption: assert(nexts == prevs);
+    assert(nexts == prevs);
 
     int facts = 0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
@@ -777,7 +774,6 @@ void Abstraction::print_statistics() {
     cout << "Unreachable states: " << unreachable_states << endl;
     cout << "Bitset size single: " << bitset_bytes_single / 1024 << " KB" << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
-    cout << "Arc size diff 2byte ops: " << (nexts + prevs + total_loops) * 2 / 1024 << " KB" << endl;
     cout << "Searches from init state: " << searches_from_init << endl;
     cout << "Searches from random state: " << searches_from_random_state << endl;
     cout << "Init h: " << init->get_h() << endl;
