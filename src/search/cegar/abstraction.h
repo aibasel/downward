@@ -21,13 +21,12 @@ const int STATES_LOG_STEP = 1000;
 const int DEFAULT_H_UPDATE_STEP = 1000;
 
 class AbstractState;
-//template<typename Value> class AdaptiveQueue;
 
 // In case there are multiple unment conditions, how do we choose the next one?
 enum PickStrategy {
     FIRST,
     RANDOM,
-    // Does the variable occur in the goal?
+    // Choose first variable that occurs/doesn't occur in the goal.
     GOAL,
     NO_GOAL,
     // Number of remaining values for each variable.
@@ -37,7 +36,7 @@ enum PickStrategy {
     // Refinement: - (remaining_values / original_domain_size)
     MIN_REFINED,
     MAX_REFINED,
-    // Number of predecessors in causal graph.
+    // Number of predecessors in ordering of causal graph.
     MIN_PREDECESSORS,
     MAX_PREDECESSORS
 };
@@ -48,7 +47,7 @@ private:
     Abstraction(const Abstraction &);
     Abstraction &operator=(const Abstraction &);
 
-    // Set of all valid states, i.e. states that have not been refined.
+    // Set of all valid states, i.e. states that have not been split.
     std::set<AbstractState *> states;
 
     // Abstract init and goal state. There will always be only one goal state.
@@ -60,7 +59,7 @@ private:
     // Split state into two child states.
     void refine(AbstractState *state, int var, const std::vector<int> &wanted);
 
-    // How to pick the next fact to refine for in there are multiple facts.
+    // How to pick the next split in case of multiple possibilities.
     PickStrategy pick;
     mutable RandomNumberGenerator rng;
     int pick_split_index(AbstractState &state, const Splits &conditions) const;
@@ -73,8 +72,6 @@ private:
     bool astar_search(bool forward, bool use_h) const;
     // Set the incoming and outgoing solution arcs for the states on the solution path.
     void extract_solution(AbstractState *goal) const;
-    // Dijsktra search calculating all goal distances, but not setting any h-values.
-    void calculate_costs() const;
 
     void sample_state(State &current_state) const;
     // Refine states between state and init until the solution is broken.
@@ -90,6 +87,7 @@ private:
     FRIEND_TEST(CegarTest, initialize);
     bool find_solution(AbstractState *start = 0);
 
+    // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values() const;
     void log_h_values() const;
 
