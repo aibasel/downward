@@ -50,6 +50,9 @@ private:
     // Set of all valid states, i.e. states that have not been split.
     std::set<AbstractState *> states;
 
+    // Root of the refinement hierarchy.
+    AbstractState *single;
+
     // Abstract init and goal state. There will always be only one goal state.
     AbstractState *init;
     AbstractState *goal;
@@ -83,9 +86,17 @@ private:
 
     // Save whether the states have been destroyed.
     bool memory_released;
+
     double average_operator_cost;
+
+    // The timer is started when we begin building the abstraction.
     Timer timer;
+
+    // Refinement hierarchy containing two child states for each split state.
     SplitTree split_tree;
+
+    // Ordering of the variables in the task's causal graph.
+    std::vector<int> cg_partial_ordering;
 
     double get_average_operator_cost() const;
 
@@ -122,11 +133,6 @@ private:
 
     void print_statistics();
     double get_avg_h() const;
-
-    // Start of the refinement hierarchy.
-    AbstractState *single;
-
-    std::vector<int> cg_partial_ordering;
 
 public:
     Abstraction();
