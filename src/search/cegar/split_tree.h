@@ -17,18 +17,24 @@ private:
     // and the resulting abstract child states.
     int var;
     int value;
+    // While right_child always corresponds to a (possibly split) abstract
+    // state, left_child may correspond to a helper node. Helper nodes
+    // are added to the hierarchy to allow for efficient lookup in case
+    // more than one atom is split off a state.
     Node *left_child;
     Node *right_child;
     // Estimated cost to goal node.
     int h;
 public:
     explicit Node(AbstractState *state = 0);
-    void split(int var, int value, AbstractState *left, AbstractState *right);
+    // Update the split tree for the new split of "abs_state" into "left" and
+    // "right".
     // Additionally to the two normal child nodes Node(left) and Node(right)
     // add |values|-1 OR-nodes that all have Node(right) as their right child
     // and the next OR-node as their left child.
     FRIEND_TEST(CegarTest, split_values);
     void split(int var, const vector<int> &values, AbstractState *left, AbstractState *right);
+
     bool is_split() const {return var != UNDEFINED; }
     int get_var() const {return var; }
     Node *get_child(int value) const;
