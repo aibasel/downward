@@ -192,6 +192,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     states.insert(v1);
     states.insert(v2);
 
+    // TODO: Remove some checks once we always start from the initial state again.
     if (state == init) {
         if (v1->is_abstraction_of(*g_initial_state)) {
             init = v1;

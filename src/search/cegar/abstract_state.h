@@ -53,13 +53,7 @@ public:
     FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
     std::string str() const;
-    void set_value(int var, int value);
-    bool can_refine(int var, int value) const;
     int count(int var) const;
-    // Return a pointer to the state where the next solution check should start.
-    // Return 0 if the search has to be started from the beginning.
-    void refine(int var, int value, AbstractState *v1, AbstractState *v2,
-                bool use_new_arc_check = true);
     void split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2,
                bool use_new_arc_check);
     void add_arc(Operator *op, AbstractState *other);
