@@ -25,12 +25,13 @@ private:
     AbstractState(const AbstractState &);
     AbstractState &operator=(const AbstractState &);
 
-    // Possible values of each variable in this state.
-    // values[1] == {2} -> var1 is concretely set here.
-    // values[1] == {2, 3} -> var1 has two possible values.
+    // Abstract domains for each variable.
     Values *values;
 
+    // Incoming and outgoing transitions.
     Arcs next, prev;
+
+    // Self-loops.
     Loops loops;
 
     // Incumbent distance to first expanded node in backwards and forward search.
@@ -50,24 +51,36 @@ private:
 public:
     explicit AbstractState(string s = "");
     ~AbstractState();
+
+    // Let "result" be the set of states in which applying "op" leads to this state.
     FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
-    std::string str() const;
+
+    // Return the size of var's abstract domain for this state.
     int count(int var) const;
+
+    // Separate the values in "wanted" from the other values in the abstract domain.
     void split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2,
                bool use_new_arc_check);
+
     void add_arc(Operator *op, AbstractState *other);
     void remove_next_arc(Operator *op, AbstractState *other);
     void remove_prev_arc(Operator *op, AbstractState *other);
     void add_loop(Operator *op);
+
+    // Return true if there should be an abstract transition to state "other" with "op".
     bool check_arc(Operator *op, AbstractState *other);
     bool check_and_add_arc(Operator *op, AbstractState *other);
     bool check_and_add_loop(Operator *op);
+
     void get_possible_splits(const AbstractState &desired, const State &prev_conc_state,
                              Splits *conditions) const;
+
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
     bool is_abstraction_of_goal() const;
+
+    // Return fraction of concrete states this state abstracts.
     double get_rel_conc_states() const;
 
     // A* search.
@@ -87,11 +100,11 @@ public:
     Arcs &get_prev() {return prev; }
     Loops &get_loops() {return loops; }
 
-    // We only have a valid abstract state if it was not refined.
-    int get_refined_var() const {return node->get_var(); }
-    AbstractState *get_child(int value);
     Node *get_node() const {return node; }
     void set_node(Node *node) {this->node = node; }
+
+    // Testing.
+    std::string str() const;
 };
 }
 

@@ -111,12 +111,8 @@ void Abstraction::build(int h_updates) {
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     update_h_values();
     print_statistics();
-    cout << "Current memory before releasing memory: "
-         << get_memory_in_kb("VmRSS") << " KB" << endl;
     if (max_states_online <= 0)
         release_memory();
-    cout << "Current memory after building abstraction: "
-         << get_memory_in_kb("VmRSS") << " KB" << endl;
 }
 
 double Abstraction::get_average_operator_cost() const {
@@ -167,9 +163,8 @@ void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
 void Abstraction::refine(AbstractState *state, int var, const vector<int> &wanted) {
     assert(may_keep_refining());
     if (DEBUG)
-        cout << "Refine " << state->str() << " for " << var << "=" << to_string(wanted)
-             << " (" << g_variable_name[var] << "=" //<< g_fact_names[var][value]
-             << ")" << endl;
+        cout << "Refine " << state->str() << " for "
+             << var << "=" << to_string(wanted) << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
     Node *node = state->get_node();
