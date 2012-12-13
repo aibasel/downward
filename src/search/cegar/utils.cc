@@ -67,29 +67,35 @@ int get_post(const Operator &op, int var) {
     return UNDEFINED;
 }
 
-void get_unmet_preconditions(const Operator &op, const State &state,
-                             vector<pair<int, int> > *cond) {
-    assert(cond->empty());
+void get_unmet_preconditions(const Operator &op, const State &state, Splits *splits) {
+    assert(splits->empty());
     for (int i = 0; i < op.get_prevail().size(); ++i) {
         const Prevail &prevail = op.get_prevail()[i];
-        if (state[prevail.var] != prevail.prev)
-            cond->push_back(pair<int,int>(prevail.var, prevail.prev));
+        if (state[prevail.var] != prevail.prev) {
+            vector<int> wanted;
+            wanted.push_back(prevail.prev);
+            splits->push_back(make_pair(prevail.var, wanted));
+        }
     }
     for (int i = 0; i < op.get_pre_post().size(); ++i) {
         const PrePost &pre_post = op.get_pre_post()[i];
-        if ((pre_post.pre != -1) && (state[pre_post.var] != pre_post.pre))
-            cond->push_back(pair<int,int>(pre_post.var, pre_post.pre));
+        if ((pre_post.pre != -1) && (state[pre_post.var] != pre_post.pre)) {
+            vector<int> wanted;
+            wanted.push_back(pre_post.pre);
+            splits->push_back(make_pair(pre_post.var, wanted));
+        }
     }
-    assert(cond->empty() == op.is_applicable(state));
+    assert(splits->empty() == op.is_applicable(state));
 }
 
-void get_unmet_goal_conditions(const State &state,
-                               vector<pair<int, int> > *unmet_conditions) {
+void get_unmet_goal_conditions(const State &state, Splits *splits) {
     for (int i = 0; i < g_goal.size(); i++) {
         int var = g_goal[i].first;
         int value = g_goal[i].second;
         if (state[var] != value) {
-            unmet_conditions->push_back(pair<int, int>(var, value));
+            vector<int> wanted;
+            wanted.push_back(value);
+            splits->push_back(make_pair(var, wanted));
         }
     }
 }
@@ -243,6 +249,16 @@ int get_memory_in_kb(const string& type) {
 string to_string(int i) {
     stringstream out;
     out << i;
+    return out.str();
+}
+
+string to_string(const vector<int> &v) {
+    string sep = "";
+    stringstream out;
+    for (int i = 0; i < v.size(); ++i) {
+        out << sep << v[i];
+        sep = ",";
+    }
     return out.str();
 }
 

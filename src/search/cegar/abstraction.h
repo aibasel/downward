@@ -58,13 +58,12 @@ private:
     double get_average_operator_cost() const;
 
     // Split state into two child states.
-    void refine(AbstractState *state, int var, int value);
+    void refine(AbstractState *state, int var, const std::vector<int> &wanted);
 
     // How to pick the next fact to refine for in there are multiple facts.
     PickStrategy pick;
     mutable RandomNumberGenerator rng;
-    int pick_condition(AbstractState &state,
-                       const std::vector<std::pair<int, int> > &conditions) const;
+    int pick_split_index(AbstractState &state, const Splits &conditions) const;
 
     // A* search.
     mutable AdaptiveQueue<AbstractState *> *queue;
@@ -79,7 +78,7 @@ private:
 
     void sample_state(State &current_state) const;
     // Refine states between state and init until the solution is broken.
-    void break_solution(AbstractState *state, std::vector<pair<int, int> > &conditions);
+    void break_solution(AbstractState *state, const Splits &splits);
 
     bool check_and_break_solution(State conc_state, AbstractState *abs_state = 0);
     bool find_and_break_complete_solution();

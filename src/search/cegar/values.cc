@@ -100,14 +100,22 @@ bool Values::abstracts(const Values &other) const {
     return other.values.is_subset_of(values);
 }
 
-void Values::get_unmet_conditions(const Values &other, const State conc_state,
-                                  Conditions *conditions) const {
+void Values::get_possible_splits(const Values &flaw, const State conc_state,
+                                 Splits *splits) const {
+    assert(splits->empty());
+    Bitset intersection(values & flaw.values);
     for (int var = 0; var < borders.size(); ++var) {
-        if (!other.test(var, conc_state[var])) {
-            conditions->push_back(make_pair(var, conc_state[var]));
+        if (!intersection.test(pos(var, conc_state[var]))) {
+            vector<int> wanted;
+            for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
+                if (intersection.test(pos)) {
+                    wanted.push_back(pos - borders[var]);
+                }
+            }
+            splits->push_back(make_pair(var, wanted));
         }
     }
-    assert(!conditions->empty());
+    assert(!splits->empty());
 }
 
 string Values::str() const {

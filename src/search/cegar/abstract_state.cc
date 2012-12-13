@@ -91,11 +91,11 @@ void AbstractState::regress(const Operator &op, AbstractState *result) const {
     }
 }
 
-void AbstractState::get_unmet_conditions(const AbstractState &desired,
-                                         const State &prev_conc_state,
-                                         vector<pair<int, int> > *conditions)
+void AbstractState::get_possible_splits(const AbstractState &desired,
+                                        const State &prev_conc_state,
+                                        Splits *splits)
 const {
-    values->get_unmet_conditions(*desired.values, prev_conc_state, conditions);
+    values->get_possible_splits(*desired.values, prev_conc_state, splits);
 }
 
 int AbstractState::count(int var) const {
@@ -295,6 +295,7 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
                           bool use_new_arc_check) {
     // We can only refine for vars that can have at least two values.
     // The desired value has to be in the set of possible values.
+    assert(wanted.size() >= 1);
     assert(values->count(var) > wanted.size());
     for (int i = 0; i < wanted.size(); ++i)
         assert(values->test(var, wanted[i]));
@@ -447,9 +448,6 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
     assert(this->is_abstraction_of(*v2));
-
-    //if (u_v1 && u_v2)
-    //    assert(state_in->can_refine(var, value));
 
     // Update the solution path. There may now be two paths (over v1 and v2).
     if (u_v1) v1->set_predecessor(op_in, state_in);

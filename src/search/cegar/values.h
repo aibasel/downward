@@ -38,7 +38,7 @@ public:
     bool all_vars_intersect(const Values &other, const std::vector<bool> &checked) const;
     string str() const;
     bool abstracts(const Values &other) const;
-    void get_unmet_conditions(const Values &other, const State conc_state, Conditions *conditions) const;
+    void get_possible_splits(const Values &flaw, const State conc_state, Splits *splits) const;
     FRIEND_TEST(CegarTest, values);
 };
 }
