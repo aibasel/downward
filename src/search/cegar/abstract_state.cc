@@ -404,11 +404,4 @@ double AbstractState::get_rel_conc_states() const {
     assert(fraction > 0.0);
     return fraction;
 }
-
-long AbstractState::get_size() const {
-    // All three lists consist occupy the same size when they're empty (12 bit
-    // for 32bit compilations.
-    return 2 * sizeof(Arcs) + sizeof(Arc) * (next.capacity() + prev.capacity()) +
-           sizeof(Loops) + sizeof(Operator*) * loops.capacity();
-}
 }

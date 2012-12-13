@@ -742,16 +742,6 @@ void Abstraction::release_memory() {
     memory_released = true;
 }
 
-long Abstraction::get_size() const {
-    int size_in_bytes = 0;
-    set<AbstractState *>::iterator it;
-    for (it = states.begin(); it != states.end(); ++it) {
-        AbstractState *state = *it;
-        size_in_bytes += state->get_size();
-    }
-    return size_in_bytes;
-}
-
 void Abstraction::print_statistics() {
     int nexts = 0, prevs = 0, total_loops = 0;
     int unreachable_states = 0;
@@ -785,7 +775,6 @@ void Abstraction::print_statistics() {
     cout << "Prev-arcs: " << prevs << endl;
     cout << "Self-loops: " << total_loops << endl;
     cout << "Arcs total: " << nexts + prevs + total_loops << endl;
-    cout << "Size: " << get_size() / 1024 << " KB" << endl;
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;

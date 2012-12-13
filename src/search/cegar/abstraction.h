@@ -144,8 +144,6 @@ public:
     int get_num_states() const {return states.size(); }
     int get_num_states_online() const;
     int get_max_states_online() const {return max_states_online; }
-    // Get size estimate in bytes.
-    long get_size() const;
     bool is_online() const {return num_states_offline != -1; }
     bool may_keep_refining() const;
 

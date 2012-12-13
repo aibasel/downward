@@ -87,8 +87,6 @@ public:
     Arcs &get_prev() {return prev; }
     Loops &get_loops() {return loops; }
 
-    long get_size() const;
-
     // We only have a valid abstract state if it was not refined.
     int get_refined_var() const {return node->get_var(); }
     AbstractState *get_child(int value);
