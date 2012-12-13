@@ -17,13 +17,6 @@ Node::Node(AbstractState *state)
         state->set_node(this);
 }
 
-void Node::split(int var, int value, AbstractState *left, AbstractState *right) {
-    this->var = var;
-    this->value = value;
-    left_child = new Node(left);
-    right_child = new Node(right);
-}
-
 void Node::split(int var, const vector<int> &values, AbstractState *left, AbstractState *right) {
     Node *helper = this;
     right_child = new Node(right);
