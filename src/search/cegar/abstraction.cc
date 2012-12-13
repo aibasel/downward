@@ -627,16 +627,12 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     return cond;
 }
 
-void Abstraction::calculate_costs() const {
+void Abstraction::update_h_values() const {
     reset_distances();
     queue->clear();
     queue->push(0, goal);
     goal->set_distance(0);
     astar_search(false, false);
-}
-
-void Abstraction::update_h_values() const {
-    calculate_costs();
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;

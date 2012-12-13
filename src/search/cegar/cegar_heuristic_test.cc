@@ -368,7 +368,7 @@ TEST(CegarTest, find_solution_second_state) {
     ASSERT_TRUE(success);
     EXPECT_EQ("[<1={0,2}>,op1,<1={1}>]", abs.get_solution_string());
 
-    abs.calculate_costs();
+    abs.update_h_values();
     EXPECT_EQ(1, left->get_distance());
     EXPECT_EQ(0, right->get_distance());
 }
@@ -405,7 +405,7 @@ TEST(CegarTest, find_solution_loop) {
     bool success = abs.find_solution();
     ASSERT_FALSE(success);
 
-    abs.calculate_costs();
+    abs.update_h_values();
     EXPECT_EQ(INFINITY, left->get_distance());
     EXPECT_EQ(0, right->get_distance());
 }
@@ -420,7 +420,7 @@ TEST(CegarTest, initialize) {
     Abstraction abstraction;
     abstraction.set_max_states_offline(2);
     abstraction.find_solution();
-    abstraction.calculate_costs();
+    abstraction.update_h_values();
 
     ASSERT_EQ("[<>]", abstraction.get_solution_string());
     EXPECT_EQ(0, abstraction.init->get_distance());
@@ -440,7 +440,7 @@ TEST(CegarTest, initialize) {
     EXPECT_EQ(a2s, right->str());
 
     abstraction.find_solution();
-    abstraction.calculate_costs();
+    abstraction.update_h_values();
 
     ASSERT_EQ("[<1={0,2}>,op1,<1={1}>]", abstraction.get_solution_string());
     EXPECT_EQ(1, abstraction.init->get_distance());
