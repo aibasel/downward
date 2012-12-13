@@ -23,10 +23,12 @@ using namespace std;
 namespace cegar_heuristic {
 
 Abstraction::Abstraction()
-    : pick(RANDOM),
-      rng(2012),
+    : single(new AbstractState()),
+      init(single),
+      goal(single),
       queue(new AdaptiveQueue<AbstractState *>()),
-      expansions(0),
+      pick(RANDOM),
+      rng(2012),
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
@@ -44,23 +46,19 @@ Abstraction::Abstraction()
       probability_for_random_start(0),
       memory_released(false),
       average_operator_cost(get_average_operator_cost()) {
-    //assert(!g_operators.empty() && "Without operators the task is unsolvable");
 
     assert(!g_memory_buffer);
     g_memory_buffer = new char [10 * 1024 * 1024];
 
-    single = new AbstractState();
     split_tree.set_root(single);
     for (int i = 0; i < g_operators.size(); ++i) {
         single->add_loop(&g_operators[i]);
     }
-    init = single;
-    goal = single;
     states.insert(init);
     if (g_causal_graph)
         partial_ordering(*g_causal_graph, &cg_partial_ordering);
     if (DEBUG) {
-        cout << "Partial CG ordering: ";
+        cout << "Causal graph ordering: ";
         for (int pos = 0; pos < cg_partial_ordering.size(); ++pos) {
             cout << cg_partial_ordering[pos] << " ";
         }
@@ -111,7 +109,6 @@ void Abstraction::build(int h_updates) {
     cout << "Solution found while refining: " << valid_complete_conc_solution << endl;
     cout << "Abstract states offline: " << get_num_states() << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
-    cout << "A* expansions: " << get_num_expansions() << endl;
     update_h_values();
     print_statistics();
     cout << "Current memory before releasing memory: "
@@ -275,7 +272,6 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         pair<int, AbstractState *> top_pair = queue->pop();
         int &old_f = top_pair.first;
         AbstractState *state = top_pair.second;
-        ++expansions;
 
         const int g = state->get_distance();
         assert(g < INFINITY);
