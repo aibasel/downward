@@ -374,11 +374,6 @@ bool AbstractState::is_abstraction_of_goal() const {
     return true;
 }
 
-AbstractState *AbstractState::get_child(int value) {
-    assert(node);
-    return node->get_child(value)->get_abs_state();
-}
-
 void AbstractState::set_predecessor(Operator *op, AbstractState *other) {
     op_in = op;
     state_in = other;
