@@ -58,7 +58,6 @@ void CegarHeuristic::initialize() {
     abstraction->set_use_astar(options.get<bool>("use_astar"));
     abstraction->set_use_new_arc_check(options.get<bool>("new_arc_check"));
     abstraction->set_log_h(options.get<bool>("log_h"));
-    abstraction->set_probability_for_random_start(options.get<double>("random"));
 
     abstraction->build(h_updates);
 
@@ -98,7 +97,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("use_astar", true, "find abstract solution with A* or Dijkstra");
     parser.add_option<bool>("new_arc_check", true, "use faster check for adding arcs");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");
-    parser.add_option<double>("random", 0, "probability with which we choose a random start state");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

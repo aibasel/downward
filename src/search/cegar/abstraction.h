@@ -71,8 +71,6 @@ private:
     mutable int num_states_offline;
     mutable double last_avg_h;
     mutable int last_init_h;
-    mutable int searches_from_init;
-    mutable int searches_from_random_state;
 
     // Settings.
     int max_states_offline;
@@ -82,12 +80,9 @@ private:
     bool use_astar;
     bool use_new_arc_check;
     bool log_h;
-    double probability_for_random_start;
 
     // Save whether the states have been destroyed.
     bool memory_released;
-
-    double average_operator_cost;
 
     // The timer is started when we begin building the abstraction.
     Timer timer;
@@ -97,8 +92,6 @@ private:
 
     // Ordering of the variables in the task's causal graph.
     std::vector<int> cg_partial_ordering;
-
-    double get_average_operator_cost() const;
 
     // Split state into two child states.
     void refine(AbstractState *state, int var, const std::vector<int> &wanted);
@@ -119,12 +112,10 @@ private:
     FRIEND_TEST(CegarTest, initialize);
     bool find_solution(AbstractState *start = 0);
 
-    void sample_state(State &current_state) const;
     // Refine states between state and init until the solution is broken.
     void break_solution(AbstractState *state, const Splits &splits);
 
     bool check_and_break_solution(State conc_state, AbstractState *abs_state = 0);
-    bool find_and_break_complete_solution();
     bool find_and_break_solution();
 
     // Make Dijkstra search to calculate all goal distances and update h-values.
@@ -164,7 +155,6 @@ public:
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_use_new_arc_check(bool new_check) {use_new_arc_check = new_check; }
     void set_log_h(bool log) {log_h = log; }
-    void set_probability_for_random_start(double prob) {probability_for_random_start = prob; }
     void set_pick_strategy(PickStrategy strategy) {pick = strategy; }
 
     // Testing.

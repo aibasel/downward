@@ -35,17 +35,13 @@ Abstraction::Abstraction()
       num_states_offline(-1),
       last_avg_h(0),
       last_init_h(0),
-      searches_from_init(0),
-      searches_from_random_state(0),
       max_states_offline(1),
       max_states_online(0),
       max_time(INFINITY),
       use_astar(true),
       use_new_arc_check(true),
       log_h(false),
-      probability_for_random_start(0),
-      memory_released(false),
-      average_operator_cost(get_average_operator_cost()) {
+      memory_released(false) {
 
     assert(!g_memory_buffer);
     g_memory_buffer = new char [10 * 1024 * 1024];
@@ -113,18 +109,6 @@ void Abstraction::build(int h_updates) {
     print_statistics();
     if (max_states_online <= 0)
         release_memory();
-}
-
-double Abstraction::get_average_operator_cost() const {
-    // Calculate average operator costs.
-    double avg_cost = 0;
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        avg_cost += g_operators[i].get_cost();
-    }
-    avg_cost /= g_operators.size();
-    if (DEBUG)
-        cout << "Average operator cost: " << avg_cost << endl;
-    return avg_cost;
 }
 
 void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
@@ -368,52 +352,7 @@ string Abstraction::get_solution_string() const {
     return oss.str();
 }
 
-void Abstraction::sample_state(State &current_state) const {
-    int h = get_h(current_state);
-    assert(h != INFINITY);
-    int n;
-    if (h == 0) {
-        n = 10;
-    } else {
-        // Convert heuristic value into an approximate number of actions
-        // (does nothing on unit-cost problems).
-        // average_operator_cost cannot equal 0, as in this case, all operators
-        // must have costs of 0 and in this case the if-clause triggers.
-        int solution_steps_estimate = int((h / average_operator_cost) + 0.5);
-        n = 4 * solution_steps_estimate;
-    }
-    double p = 0.5;
-    // The expected walk length is np = 2 * estimated number of solution steps.
-    // (We multiply by 2 because the heuristic is underestimating.)
-
-    // calculate length of random walk accoring to a binomial distribution
-    int length = 0;
-    for (int j = 0; j < n; ++j) {
-        double random = rng(); // [0..1)
-        if (random < p)
-            ++length;
-    }
-
-    // Random walk of length length. Last state of the random walk is used as sample.
-    for (int j = 0; j < length; ++j) {
-        vector<const Operator *> applicable_ops;
-        g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
-        // if there are no applicable operators --> do not walk further
-        if (applicable_ops.empty()) {
-            break;
-        } else {
-            int random = rng.next(applicable_ops.size()); // [0..applicable_os.size())
-            assert(applicable_ops[random]->is_applicable(current_state));
-            current_state = State(current_state, *applicable_ops[random]);
-            // if current state is dead-end, then restart with initial state
-            h = get_h(current_state);
-            if (h == INFINITY)
-                current_state = *g_initial_state;
-        }
-    }
-}
-
-bool Abstraction::find_and_break_complete_solution() {
+bool Abstraction::find_and_break_solution() {
     // Start with initial state.
     bool solution_found = find_solution(init);
     // Suppress compiler warning about unused variable.
@@ -424,34 +363,6 @@ bool Abstraction::find_and_break_complete_solution() {
     return check_and_break_solution(*g_initial_state, init);
 }
 
-bool Abstraction::find_and_break_solution() {
-    // Return true iff we found a *complete* concrete solution.
-    if (probability_for_random_start == 0 || rng() >= probability_for_random_start) {
-        // Start with initial state.
-        return find_and_break_complete_solution();
-    } else {
-        // Start at random state.
-        State conc_start = *g_initial_state;
-        sample_state(conc_start);
-        AbstractState *abs_start = get_abstract_state(conc_start);
-        bool solution_found = find_solution(abs_start);
-        if (solution_found) {
-            bool valid_partial_solution = check_and_break_solution(conc_start, abs_start);
-            if (valid_partial_solution) {
-                // If we started at init, this is a complete solution.
-                if (abs_start == init)
-                    return true;
-                // Otherwise, check if the refinement of the partial solution
-                // yielded a valid complete solution.
-                return find_and_break_complete_solution();
-            }
-        }
-        // If no solution has been found, make sure that we keep refining by
-        // searching for a complete solution in between.
-        return find_and_break_complete_solution();
-    }
-}
-
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
     if (!abs_state)
         abs_state = get_abstract_state(conc_state);
@@ -460,12 +371,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     if (DEBUG)
         cout << "Check solution." << endl << "Start at      " << abs_state->str()
              << " (is init: " << (abs_state == init) << ")" << endl;
-
-    if (abs_state == init) {
-        ++searches_from_init;
-    } else {
-        ++searches_from_random_state;
-    }
 
     AbstractState *prev_state = 0;
     Operator *prev_op = 0;
@@ -769,8 +674,6 @@ void Abstraction::print_statistics() {
     cout << "Unreachable states: " << unreachable_states << endl;
     cout << "Bitset size single: " << bitset_bytes_single / 1024 << " KB" << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
-    cout << "Searches from init state: " << searches_from_init << endl;
-    cout << "Searches from random state: " << searches_from_random_state << endl;
     cout << "Init h: " << init->get_h() << endl;
     cout << "Average h: " << get_avg_h() << endl;
 }
