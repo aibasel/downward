@@ -17,30 +17,17 @@ const bool WRITE_DOT_FILES = false;
 
 const int UNDEFINED = -1;
 
-typedef std::pair<int, int> Condition;
 typedef boost::dynamic_bitset<> Bitset;
-typedef Bitset Domain;
-typedef pair<int, int> Condition;
-typedef vector<Condition> Conditions;
 typedef std::vector<std::pair<int, std::vector<int> > > Splits;
 
 int get_pre(const Operator &op, int var);
 int get_post(const Operator &op, int var);
 
-void get_unmet_preconditions(const Operator &op, const State &s, Splits *splits);
+void get_unmet_preconditions(const Operator &op, const State &state, Splits *splits);
 
 void get_unmet_goal_conditions(const State &state, Splits *splits);
 
 bool goal_var(int var);
-
-// Create an operator with cost 1.
-// prevails have the form "var value".
-// pre_posts have the form "0 var pre post" (no conditional effects).
-Operator create_op(const std::string desc);
-Operator create_op(const std::string name, std::vector<string> prevail,
-                   std::vector<string> pre_post, int cost = 1);
-
-State *create_state(const std::string desc);
 
 // Create a "partial order" from the causal graph. Since the CG is not a DAG,
 // we use the following approximation: Order vars with the least incoming edges
@@ -52,6 +39,16 @@ void write_causal_graph(const CausalGraph &causal_graph);
 // Debugging.
 string to_string(int i);
 string to_string(const std::vector<int> &v);
+
+// Testing.
+State *create_state(const std::string desc);
+
+// Create an operator with cost 1.
+// prevails have the form "var value".
+// pre_posts have the form "0 var pre post" (no conditional effects).
+Operator create_op(const std::string desc);
+Operator create_op(const std::string name, std::vector<string> prevail,
+                   std::vector<string> pre_post, int cost = 1);
 }
 
 #endif
