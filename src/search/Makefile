@@ -223,13 +223,13 @@ endif
 
 ifeq ($(OS), linux)
 ifeq ($(LINK_RELEASE_STATICALLY), 0)
-LINKOPT_RELEASE += -lrt
+POSTLINKOPT_RELEASE += -lrt
 else
 POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
 endif
-LINKOPT_DEBUG  += -lrt
-LINKOPT_PROFILE += -lrt
-# LINKOPT_PROFILE += -lc_p
+POSTLINKOPT_DEBUG  += -lrt
+POSTLINKOPT_PROFILE += -lrt
+# POSTLINKOPT_PROFILE += -lc_p
 endif
 
 
