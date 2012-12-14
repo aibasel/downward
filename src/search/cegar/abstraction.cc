@@ -7,6 +7,7 @@
 #include "../rng.h"
 #include "../successor_generator.h"
 #include "../timer.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
@@ -101,7 +102,7 @@ void Abstraction::build(int h_updates) {
     num_states_offline = states.size();
     cout << "Done building abstraction [t=" << g_timer << "]" << endl;
     cout << "Peak memory after building abstraction: "
-         << get_memory_in_kb("VmPeak") << " KB" << endl;
+         << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << valid_complete_conc_solution << endl;
     cout << "Abstract states offline: " << get_num_states() << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;

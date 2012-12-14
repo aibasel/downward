@@ -50,11 +50,8 @@ void partial_ordering(const CausalGraph &causal_graph, vector<int> *order);
 void write_causal_graph(const CausalGraph &causal_graph);
 
 // Debugging.
-void print_conditions(const vector<pair<int, int> > &conditions);
 string to_string(int i);
 string to_string(const std::vector<int> &v);
-
-extern int get_memory_in_kb(const string& type);
 }
 
 #endif
