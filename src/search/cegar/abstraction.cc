@@ -626,8 +626,8 @@ void Abstraction::release_memory() {
     }
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
-        //AbstractState *state = *it;
-        //delete state;
+        AbstractState *state = *it;
+        delete state;
     }
     set<AbstractState *>().swap(states);
     memory_released = true;

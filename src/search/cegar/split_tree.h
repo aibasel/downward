@@ -41,7 +41,11 @@ public:
     AbstractState *get_left_child_state() const;
     AbstractState *get_right_child_state() const;
     AbstractState *get_abs_state() const {return abs_state; }
-    void set_h(int h) {this->h = h; }
+    void set_h(int h) {
+        assert(abs_state);
+        assert(h >= this->h);
+        this->h = h;
+    }
     int get_h() const {return h; }
 };
 
