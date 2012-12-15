@@ -46,12 +46,12 @@ AbstractState *Node::get_left_child_state() const {
     while (!child->get_abs_state()) {
         child = child->left_child;
     }
-    assert(child->get_abs_state());
-    return child->get_abs_state();
+    assert(child->abs_state);
+    return child->abs_state;
 }
 
 AbstractState *Node::get_right_child_state() const {
-    return right_child->get_abs_state();
+    return right_child->abs_state;
 }
 
 void SplitTree::set_root(AbstractState *single) {
@@ -65,6 +65,7 @@ Node *SplitTree::get_node(const State conc_state) const {
         current = current->get_child(conc_state[current->get_var()]);
     }
     assert(!current->is_split());
+    assert(current->get_abs_state());
     return current;
 }
 

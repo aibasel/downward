@@ -101,7 +101,10 @@ public:
     Loops &get_loops() {return loops; }
 
     Node *get_node() const {return node; }
-    void set_node(Node *node) {this->node = node; }
+    void set_node(Node *node) {
+        assert(!this->node);
+        this->node = node;
+    }
 
     // Testing.
     std::string str() const;
