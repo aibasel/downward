@@ -259,7 +259,6 @@ void Abstraction::reset_distances() const {
 }
 
 bool Abstraction::astar_search(bool forward, bool use_h) const {
-    bool debug = DEBUG && false;
     while (!queue->empty()) {
         pair<int, AbstractState *> top_pair = queue->pop();
         int &old_f = top_pair.first;
@@ -275,8 +274,6 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             continue;
         }
         if (forward && state == goal) {
-            if (debug)
-                cout << "GOAL REACHED" << endl;
             extract_solution(goal);
             return true;
         }
