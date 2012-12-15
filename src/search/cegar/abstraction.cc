@@ -159,18 +159,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
              << var << "=" << to_string(wanted) << endl;
     AbstractState *v1 = new AbstractState();
     AbstractState *v2 = new AbstractState();
-    Node *node = state->get_node();
-    assert(node);
     state->split(var, wanted, v1, v2);
-
-    // Update split tree.
-    node->split(var, wanted, v1, v2);
-    assert(v1->get_node());
-    assert(v2->get_node());
-
-    int h = node->get_h();
-    v1->set_h(h);
-    v2->set_h(h);
 
     states.erase(state);
     states.insert(v1);
@@ -211,6 +200,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
              << max_states_offline + max_states_online << endl;
     if (WRITE_DOT_FILES)
         write_dot_file(num_states);
+
+
 }
 
 AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_state) {
