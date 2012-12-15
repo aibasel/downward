@@ -118,10 +118,9 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
         v2->values->add(var, wanted[i]);
     }
 
-    // u --> v --> w  was on the shortest path. We check if we can form paths
-    // with the same transitions over v1 and v2. If both paths u_v1 and u_v2
-    // are valid, we do a cascaded refinement.
-    bool u_v1 = false, u_v2 = false, v1_w = false, v2_w = false;
+    // u --> v  was on the shortest path. We check if both paths u --> v1 and
+    // u --> v2 are valid for the same operators. If so we do cascaded refinement.
+    bool u_v1 = false, u_v2 = false;
 
     // Before: u --> this=v --> w
     //  ==>
@@ -155,29 +154,22 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
         Operator *op = it->first;
         AbstractState *w = it->second;
         assert(w != this);
-        bool is_solution_arc = ((op == op_out) && (w == state_out));
         int pre = get_pre(*op, var);
         int post = get_post(*op, var);
         if (post == UNDEFINED) {
             if (v1->values->domains_intersect(*w->values, var)) {
                 v1->add_arc(op, w);
-                v1_w |= is_solution_arc;
             }
             if (v2->values->domains_intersect(*w->values, var)) {
                 v2->add_arc(op, w);
-                v2_w |= is_solution_arc;
             }
         } else if (pre == UNDEFINED) {
             v1->add_arc(op, w);
             v2->add_arc(op, w);
-            v1_w |= is_solution_arc;
-            v2_w |= is_solution_arc;
         } else if (v2->values->test(var, pre)) {
             v2->add_arc(op, w);
-            v2_w |= is_solution_arc;
         } else {
             v1->add_arc(op, w);
-            v1_w |= is_solution_arc;
         }
         w->remove_prev_arc(op, this);
     }
@@ -220,11 +212,9 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
     assert(this->is_abstraction_of(*v1));
     assert(this->is_abstraction_of(*v2));
 
-    // Update the solution path. There may now be two paths (over v1 and v2).
+    // Indicate for the abstraction whether we should cascade the refinement.
     if (u_v1) v1->set_predecessor(op_in, state_in);
     if (u_v2) v2->set_predecessor(op_in, state_in);
-    if (v1_w) v1->set_successor(op_out, state_out);
-    if (v2_w) v2->set_successor(op_out, state_out);
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {

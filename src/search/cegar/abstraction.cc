@@ -130,8 +130,8 @@ void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
         refine(state, var, wanted);
         AbstractState *v1 = node->get_left_child_state();
         AbstractState *v2 = node->get_right_child_state();
-        // If the solution is still valid after we substitute BOTH v1 and v2
-        // for v, the same split can also be made in u.
+        // If (u, op, v) was on the solution path and both (u, op, v1) and
+        // (u, op, v2) are valid transitions, the same split can also be made in u.
         // TODO: How to generalize for wanted.size() > 1?
         if (wanted.size() == 1 && v1->get_state_in() && v2->get_state_in()) {
             // The arc on the solution u->v is now ambiguous (u->v1 and u->v2 exist).
