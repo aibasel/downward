@@ -81,15 +81,21 @@ void Abstraction::build(int h_updates) {
     } else if (max_states_offline >= 0) {
         h_updates = max_states_offline / update_step;
     }
-    bool valid_complete_conc_solution = false;
     if (WRITE_DOT_FILES) {
         write_causal_graph(*g_causal_graph);
         assert(get_num_states() == 1);
         write_dot_file(get_num_states());
     }
+    // Define here to use it outside the loop later.
+    bool valid_conc_solution = false;
     while (may_keep_refining()) {
-        valid_complete_conc_solution = find_and_break_solution();
-        if (valid_complete_conc_solution)
+        bool solution_found = find_solution(init);
+        if (!solution_found) {
+            cout << "Abstract problem is unsolvable!" << endl;
+            exit(0);
+        }
+        valid_conc_solution = check_and_break_solution(*g_initial_state, init);
+        if (valid_conc_solution)
             break;
         // Update costs to goal evenly distributed over time.
         if (get_num_states() >= (updates + 1) * update_step) {
@@ -104,7 +110,7 @@ void Abstraction::build(int h_updates) {
     cout << "Done building abstraction [t=" << g_timer << "]" << endl;
     cout << "Peak memory after building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
-    cout << "Solution found while refining: " << valid_complete_conc_solution << endl;
+    cout << "Solution found while refining: " << valid_conc_solution << endl;
     cout << "Abstract states offline: " << num_states_offline << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     update_h_values();
@@ -264,9 +270,6 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         int new_f = g;
         if (use_h)
             new_f += state->get_h();
-        if (debug)
-            cout << "VISIT: " << state->str() << " new_f=" << g << "+"
-                 << state->get_h() << "=" << new_f << " old_f:" << old_f << endl;
         assert(new_f <= old_f);
         if (new_f < old_f) {
             continue;
@@ -357,17 +360,6 @@ string Abstraction::get_solution_string() const {
     }
     oss << "]";
     return oss.str();
-}
-
-bool Abstraction::find_and_break_solution() {
-    // Start with initial state.
-    bool solution_found = find_solution(init);
-    // Suppress compiler warning about unused variable.
-    if (!solution_found) {
-        cout << "Abstract problem is unsolvable!" << endl;
-        exit(0);
-    }
-    return check_and_break_solution(*g_initial_state, init);
 }
 
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
