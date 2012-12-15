@@ -111,16 +111,16 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
 
     v2->values->remove_all(var);
     for (int i = 0; i < wanted.size(); ++i) {
-        // In v1 var can have all of the previous values except the desired ones.
+        // In v1 var can have all of the previous values except the wanted ones.
         v1->values->remove(var, wanted[i]);
 
-        // In v2 var can only have the desired value.
+        // In v2 var can only have the wanted values.
         v2->values->add(var, wanted[i]);
     }
 
-    // Results from Dijkstra search. If  u --> v --> w  was on the
-    // shortest path and a new path  u --> v{1,2} --> w is created with the
-    // same arcs, we avoid a dijkstra computation.
+    // u --> v --> w  was on the shortest path. We check if we can form paths
+    // with the same transitions over v1 and v2. If both paths u_v1 and u_v2
+    // are valid, we do a cascaded refinement.
     bool u_v1 = false, u_v2 = false, v1_w = false, v2_w = false;
 
     // Before: u --> this=v --> w
