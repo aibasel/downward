@@ -60,18 +60,12 @@ public:
     int count(int var) const;
 
     // Separate the values in "wanted" from the other values in the abstract domain.
-    void split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2,
-               bool use_new_arc_check);
+    void split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2);
 
     void add_arc(Operator *op, AbstractState *other);
     void remove_next_arc(Operator *op, AbstractState *other);
     void remove_prev_arc(Operator *op, AbstractState *other);
     void add_loop(Operator *op);
-
-    // Return true if there should be an abstract transition to state "other" with "op".
-    bool check_arc(Operator *op, AbstractState *other);
-    bool check_and_add_arc(Operator *op, AbstractState *other);
-    bool check_and_add_loop(Operator *op);
 
     void get_possible_splits(const AbstractState &desired, const State &prev_conc_state,
                              Splits *conditions) const;

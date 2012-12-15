@@ -98,8 +98,7 @@ int AbstractState::count(int var) const {
     return values->count(var);
 }
 
-void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2,
-                          bool use_new_arc_check) {
+void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2) {
     // We can only refine for vars that can have at least two values.
     // The desired value has to be in the set of possible values.
     assert(wanted.size() >= 1);
@@ -133,36 +132,22 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
         AbstractState *u = it->second;
         assert(u != this);
         bool is_solution_arc = ((op == op_in) && (u == state_in));
-        // If the first check returns false, the second arc has to be added.
-        if (use_new_arc_check) {
-            int post = get_post(*op, var);
-            if (post == UNDEFINED) {
-                if (u->values->domains_intersect(*(v1->values), var)) {
-                    u->add_arc(op, v1);
-                    u_v1 |= is_solution_arc;
-                }
-                if (u->values->domains_intersect(*(v2->values), var)) {
-                    u->add_arc(op, v2);
-                    u_v2 |= is_solution_arc;
-                }
-            } else if (v2->values->test(var, post)) {
-                u->add_arc(op, v2);
-                u_v2 |= is_solution_arc;
-            } else {
+        int post = get_post(*op, var);
+        if (post == UNDEFINED) {
+            if (u->values->domains_intersect(*(v1->values), var)) {
                 u->add_arc(op, v1);
                 u_v1 |= is_solution_arc;
             }
-        } else {
-            if (u->check_and_add_arc(op, v1)) {
-                bool added = u->check_and_add_arc(op, v2);
-                if (is_solution_arc) {
-                    u_v1 = true;
-                    u_v2 |= added;
-                }
-            } else {
+            if (u->values->domains_intersect(*(v2->values), var)) {
                 u->add_arc(op, v2);
                 u_v2 |= is_solution_arc;
             }
+        } else if (v2->values->test(var, post)) {
+            u->add_arc(op, v2);
+            u_v2 |= is_solution_arc;
+        } else {
+            u->add_arc(op, v1);
+            u_v1 |= is_solution_arc;
         }
         u->remove_next_arc(op, this);
     }
@@ -171,81 +156,60 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
         AbstractState *w = it->second;
         assert(w != this);
         bool is_solution_arc = ((op == op_out) && (w == state_out));
-        if (use_new_arc_check) {
-            int pre = get_pre(*op, var);
-            int post = get_post(*op, var);
-            if (post == UNDEFINED) {
-                if (v1->values->domains_intersect(*w->values, var)) {
-                    v1->add_arc(op, w);
-                    v1_w |= is_solution_arc;
-                }
-                if (v2->values->domains_intersect(*w->values, var)) {
-                    v2->add_arc(op, w);
-                    v2_w |= is_solution_arc;
-                }
-            } else if (pre == UNDEFINED) {
-                v1->add_arc(op, w);
-                v2->add_arc(op, w);
-                v1_w |= is_solution_arc;
-                v2_w |= is_solution_arc;
-            } else if (v2->values->test(var, pre)) {
-                v2->add_arc(op, w);
-                v2_w |= is_solution_arc;
-            } else {
+        int pre = get_pre(*op, var);
+        int post = get_post(*op, var);
+        if (post == UNDEFINED) {
+            if (v1->values->domains_intersect(*w->values, var)) {
                 v1->add_arc(op, w);
                 v1_w |= is_solution_arc;
             }
+            if (v2->values->domains_intersect(*w->values, var)) {
+                v2->add_arc(op, w);
+                v2_w |= is_solution_arc;
+            }
+        } else if (pre == UNDEFINED) {
+            v1->add_arc(op, w);
+            v2->add_arc(op, w);
+            v1_w |= is_solution_arc;
+            v2_w |= is_solution_arc;
+        } else if (v2->values->test(var, pre)) {
+            v2->add_arc(op, w);
+            v2_w |= is_solution_arc;
         } else {
-            // If the first check returns false, the second arc has to be added.
-            if (v1->check_and_add_arc(op, w)) {
-                bool added = v2->check_and_add_arc(op, w);
-                if (is_solution_arc) {
-                    v1_w = true;
-                    v2_w |= added;
-                }
-            } else {
-                v2->add_arc(op, w);
-                v2_w |= is_solution_arc;
-            }
+            v1->add_arc(op, w);
+            v1_w |= is_solution_arc;
         }
         w->remove_prev_arc(op, this);
     }
     for (int i = 0; i < loops.size(); ++i) {
         Operator *op = loops[i];
-        if (use_new_arc_check) {
-            int pre = get_pre(*op, var);
-            int post = get_post(*op, var);
-            if (pre == UNDEFINED) {
-                if (post == UNDEFINED) {
-                    v1->add_loop(op);
-                    v2->add_loop(op);
-                } else if (v2->values->test(var, post)) {
-                    v1->add_arc(op, v2);
-                    v2->add_loop(op);
-                } else {
-                    assert(v1->values->test(var, post));
-                    v1->add_loop(op);
-                    v2->add_arc(op, v1);
-                }
-            } else if (v2->values->test(var, pre)) {
-                assert(post != UNDEFINED);
-                if (v2->values->test(var, post)) {
-                    v2->add_loop(op);
-                } else {
-                    assert(v1->values->test(var, post));
-                    v2->add_arc(op, v1);
-                }
+        int pre = get_pre(*op, var);
+        int post = get_post(*op, var);
+        if (pre == UNDEFINED) {
+            if (post == UNDEFINED) {
+                v1->add_loop(op);
+                v2->add_loop(op);
             } else if (v2->values->test(var, post)) {
                 v1->add_arc(op, v2);
+                v2->add_loop(op);
             } else {
                 assert(v1->values->test(var, post));
                 v1->add_loop(op);
+                v2->add_arc(op, v1);
             }
+        } else if (v2->values->test(var, pre)) {
+            assert(post != UNDEFINED);
+            if (v2->values->test(var, post)) {
+                v2->add_loop(op);
+            } else {
+                assert(v1->values->test(var, post));
+                v2->add_arc(op, v1);
+            }
+        } else if (v2->values->test(var, post)) {
+            v1->add_arc(op, v2);
         } else {
-            v1->check_and_add_arc(op, v2);
-            v2->check_and_add_arc(op, v1);
-            v1->check_and_add_loop(op);
-            v2->check_and_add_loop(op);
+            assert(v1->values->test(var, post));
+            v1->add_loop(op);
         }
     }
 
@@ -293,61 +257,6 @@ void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
 
 void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
     remove_arc(prev, op, other);
-}
-
-bool AbstractState::check_arc(Operator *op, AbstractState *other) {
-    // Using a vector<bool> here is faster than using a bitset.
-    vector<bool> checked(g_variable_domain.size(), false);
-    for (int i = 0; i < op->get_prevail().size(); ++i) {
-        const Prevail &prevail = op->get_prevail()[i];
-        const int &var = prevail.var;
-        const int &value = prevail.prev;
-        // Check if operator is applicable.
-        assert(value != -1);
-        if (!values->test(var, value))
-            return false;
-        // Check if we land in the desired state.
-        // If this == other we have already done the check above.
-        if ((this != other) && (!other->values->test(var, value)))
-            return false;
-        checked[var] = true;
-    }
-    for (int i = 0; i < op->get_pre_post().size(); ++i) {
-        // Check if pre value is in the set of possible values.
-        const PrePost &prepost = op->get_pre_post()[i];
-        const int &var = prepost.var;
-        const int &pre = prepost.pre;
-        const int &post = prepost.post;
-        assert(prepost.cond.empty());
-        assert(!checked[var]);
-        // Check if operator is applicable.
-        if ((pre != -1) && !values->test(var, pre))
-            return false;
-        // Check if we land in the desired state.
-        if (!other->values->test(var, post))
-            return false;
-        checked[var] = true;
-    }
-    if (this != other) {
-        return values->all_vars_intersect(*other->values, checked);
-    }
-    return true;
-}
-
-bool AbstractState::check_and_add_arc(Operator *op, AbstractState *other) {
-    if (check_arc(op, other)) {
-        add_arc(op, other);
-        return true;
-    }
-    return false;
-}
-
-bool AbstractState::check_and_add_loop(Operator *op) {
-    if (check_arc(op, this)) {
-        add_loop(op);
-        return true;
-    }
-    return false;
 }
 
 bool AbstractState::is_abstraction_of(const State &conc_state) const {
