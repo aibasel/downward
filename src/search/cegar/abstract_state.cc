@@ -215,6 +215,13 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
     // Indicate for the abstraction whether we should cascade the refinement.
     if (u_v1) v1->set_predecessor(op_in, state_in);
     if (u_v2) v2->set_predecessor(op_in, state_in);
+
+    // Update split tree.
+    node->split(var, wanted, v1, v2);
+
+    int h = node->get_h();
+    v1->set_h(h);
+    v2->set_h(h);
 }
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
