@@ -54,6 +54,12 @@ AbstractState *Node::get_right_child_state() const {
     return right_child->abs_state;
 }
 
+
+SplitTree::SplitTree()
+    : root(0) {
+
+}
+
 void SplitTree::set_root(AbstractState *single) {
     root = new Node(single);
 }
