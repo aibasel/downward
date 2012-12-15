@@ -173,10 +173,13 @@ TEST(CegarTest, refine_var0) {
     Operator op1 = make_op1();
 
     AbstractState a;
+    Node node_a(&a);
     a.add_loop(&op1);
     AbstractState *a1 = new AbstractState();
     AbstractState *a2 = new AbstractState();
-    a.refine(0, 1, a1, a2);
+    vector<int> wanted;
+    wanted.push_back(1);
+    a.split(0, wanted, a1, a2);
 
     string a1s = "<0={0}>";
     string a2s = "<0={1}>";
@@ -184,14 +187,14 @@ TEST(CegarTest, refine_var0) {
     // Check refinement hierarchy.
     EXPECT_EQ(a1s, a1->str());
     EXPECT_EQ(a2s, a2->str());
-    EXPECT_EQ(0, a.get_refined_var());
-    AbstractState *left = a.get_child(0);
-    AbstractState *right = a.get_child(1);
+    EXPECT_EQ(0, a.get_node()->get_var());
+    AbstractState *left = a.get_node()->get_left_child_state();
+    AbstractState *right = a.get_node()->get_right_child_state();
     EXPECT_EQ(left, a1);
     EXPECT_EQ(right, a2);
     EXPECT_EQ(a1s, left->str());
-    EXPECT_EQ(a1s, a.get_child(0)->str());
-    EXPECT_EQ(a2s, a.get_child(1)->str());
+    EXPECT_EQ(a1s, a.get_node()->get_left_child_state()->str());
+    EXPECT_EQ(a2s, a.get_node()->get_right_child_state()->str());
 
     // Check transition system.
     ASSERT_EQ(1, a1->get_loops().size());
@@ -210,10 +213,13 @@ TEST(CegarTest, refine_var1) {
     Operator op1 = make_op1();
 
     AbstractState a;
+    Node node_a(&a);
     a.add_loop(&op1);
     AbstractState *a1 = new AbstractState();
     AbstractState *a2 = new AbstractState();
-    a.refine(1, 1, a1, a2);
+    vector<int> wanted;
+    wanted.push_back(1);
+    a.split(1, wanted, a1, a2);
 
     string a1s = "<1={0,2}>";
     string a2s = "<1={1}>";
@@ -221,43 +227,15 @@ TEST(CegarTest, refine_var1) {
     // Check refinement hierarchy.
     EXPECT_EQ(a1s, a1->str());
     EXPECT_EQ(a2s, a2->str());
-    EXPECT_EQ(1, a.get_refined_var());
-    AbstractState *left = a.get_child(0);
-    AbstractState *right = a.get_child(1);
+    EXPECT_EQ(1, a.get_node()->get_var());
+    AbstractState *left = a.get_node()->get_left_child_state();
+    AbstractState *right = a.get_node()->get_right_child_state();
     EXPECT_EQ(left, a1);
     EXPECT_EQ(right, a2);
-    EXPECT_EQ(a1s, a.get_child(0)->str());
-    EXPECT_EQ(a1s, a.get_child(0)->str());
-    EXPECT_EQ(a2s, a.get_child(1)->str());
-    EXPECT_EQ(a1s, a.get_child(2)->str());
-}
-
-TEST(CegarTest, check_arc) {
-    init_test();
-
-    // Operator: <0=0, 1=0 --> 1=1>
-    Operator op = make_op1();
-
-    vector<pair<string, string> > pairs;
-
-    pairs.push_back(pair<string, string>("<>", "<0={0},1={1}>"));
-    pairs.push_back(pair<string, string>("<0={0}>", "<0={0},1={1}>"));
-    pairs.push_back(pair<string, string>("<1={0}>", "<0={0},1={1}>"));
-    pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={0},1={1}>"));
-    pairs.push_back(pair<string, string>("<0={0},1={0}>", "<0={1},1={1}>"));
-    pairs.push_back(pair<string, string>("<0={0,1}>", "<0={0}>"));
-    pairs.push_back(pair<string, string>("<0={1}>", "<>"));
-
-    bool check[] = {
-        true, true, true, true, false, true, false
-    };
-    ASSERT_EQ((sizeof(check) / sizeof(check[0])), pairs.size());
-
-    for (int i = 0; i < pairs.size(); ++i) {
-        AbstractState a(pairs[i].first);
-        AbstractState b(pairs[i].second);
-        ASSERT_EQ(check[i], a.check_and_add_arc(&op, &b));
-    }
+    EXPECT_EQ(a1s, a.get_node()->get_child(0)->get_abs_state()->str());
+    EXPECT_EQ(a1s, a.get_node()->get_child(0)->get_abs_state()->str());
+    EXPECT_EQ(a2s, a.get_node()->get_child(1)->get_abs_state()->str());
+    EXPECT_EQ(a1s, a.get_node()->get_child(2)->get_abs_state()->str());
 }
 
 TEST(CegarTest, is_abstraction_of_other) {
@@ -297,6 +275,7 @@ TEST(CegarTest, find_solution_first_state) {
 
     // -> <>
     Abstraction abs;
+    Node *root = abs.single->get_node();
     abs.set_max_states_offline(2);
     EXPECT_EQ(0, abs.init->get_next().size());
     EXPECT_EQ(0, abs.init->get_prev().size());
@@ -304,22 +283,22 @@ TEST(CegarTest, find_solution_first_state) {
     EXPECT_EQ("op1", abs.init->get_loops()[0]->get_name());
     // -> 1={0,1} -> 1={2}
 
-    abs.refine(abs.init, 1, 2);
+    vector<int> wanted;
+    wanted.push_back(2);
+    abs.refine(abs.init, 1, wanted);
 
     string a1s = "<1={0,1}>";
     string a2s = "<1={2}>";
 
     EXPECT_EQ(a1s, abs.init->str());
 
-    AbstractState *left = abs.single->get_child(0);
-    AbstractState *right = abs.single->get_child(2);
+    AbstractState *left = root->get_child(0)->get_abs_state();
+    AbstractState *test = root->get_child(1)->get_abs_state();
+    AbstractState *right = root->get_child(2)->get_abs_state();
 
     EXPECT_EQ(a1s, left->str());
+    EXPECT_EQ(a1s, test->str());
     EXPECT_EQ(a2s, right->str());
-
-    EXPECT_EQ(a1s, abs.single->get_child(0)->str());
-    EXPECT_EQ(a1s, abs.single->get_child(1)->str());
-    EXPECT_EQ(a2s, abs.single->get_child(2)->str());
 
     ASSERT_EQ(1, left->get_loops().size());
     EXPECT_EQ("op1", left->get_loops()[0]->get_name());
@@ -341,28 +320,31 @@ TEST(CegarTest, find_solution_second_state) {
 
     // -> <>
     Abstraction abs;
+    Node *root = abs.single->get_node();
     abs.set_max_states_offline(2);
     // -> 1={0,2} -> 1={1}
-    abs.refine(abs.init, 1, 1);
+    vector<int> wanted;
+    wanted.push_back(1);
+    abs.refine(abs.init, 1, wanted);
 
     string a1s = "<1={0,2}>";
     string a2s = "<1={1}>";
 
     EXPECT_EQ(a1s, abs.init->str());
 
-    AbstractState *left = abs.single->get_child(0);
-    AbstractState *right = abs.single->get_child(1);
+    AbstractState *left = root->get_child(0)->get_abs_state();
+    AbstractState *right = root->get_child(1)->get_abs_state();
 
     EXPECT_EQ(a1s, left->str());
     EXPECT_EQ(a2s, right->str());
 
-    EXPECT_FALSE(abs.single->valid());
-    EXPECT_TRUE(left->valid());
-    EXPECT_TRUE(right->valid());
+    EXPECT_TRUE(root->is_split());
+    EXPECT_FALSE(left->get_node()->is_split());
+    EXPECT_FALSE(right->get_node()->is_split());
 
-    EXPECT_EQ(a1s, abs.single->get_child(0)->str());
-    EXPECT_EQ(a2s, abs.single->get_child(1)->str());
-    EXPECT_EQ(a1s, abs.single->get_child(2)->str());
+    EXPECT_EQ(a1s, root->get_child(0)->get_abs_state()->str());
+    EXPECT_EQ(a2s, root->get_child(1)->get_abs_state()->str());
+    EXPECT_EQ(a1s, root->get_child(2)->get_abs_state()->str());
 
     bool success = abs.find_solution();
     ASSERT_TRUE(success);
@@ -380,27 +362,30 @@ TEST(CegarTest, find_solution_loop) {
 
     // -> <>
     Abstraction abs;
+    Node *root = abs.single->get_node();
     abs.set_max_states_offline(2);
     // --> 0={0} --> 0={1}  (left state has self-loop).
-    abs.refine(abs.init, 0, 1);
+    vector<int> wanted;
+    wanted.push_back(1);
+    abs.refine(abs.init, 0, wanted);
 
     string a1s = "<0={0}>";
     string a2s = "<0={1}>";
 
     EXPECT_EQ(a1s, abs.init->str());
 
-    AbstractState *left = abs.single->get_child(0);
-    AbstractState *right = abs.single->get_child(1);
+    AbstractState *left = root->get_child(0)->get_abs_state();
+    AbstractState *right = root->get_child(1)->get_abs_state();
 
     EXPECT_EQ(a1s, left->str());
     EXPECT_EQ(a2s, right->str());
 
-    EXPECT_FALSE(abs.single->valid());
-    EXPECT_TRUE(left->valid());
-    EXPECT_TRUE(right->valid());
+    EXPECT_TRUE(root->is_split());
+    EXPECT_FALSE(left->get_node()->is_split());
+    EXPECT_FALSE(right->get_node()->is_split());
 
-    EXPECT_EQ(a1s, abs.single->get_child(0)->str());
-    EXPECT_EQ(a2s, abs.single->get_child(1)->str());
+    EXPECT_EQ(a1s, root->get_child(0)->get_abs_state()->str());
+    EXPECT_EQ(a2s, root->get_child(1)->get_abs_state()->str());
 
     bool success = abs.find_solution();
     ASSERT_FALSE(success);
@@ -426,7 +411,8 @@ TEST(CegarTest, initialize) {
     EXPECT_EQ(0, abstraction.init->get_distance());
 
     // --> 1={0,2} --> 1={1}
-    bool success = abstraction.find_and_break_solution();
+    abstraction.find_solution();
+    bool success = abstraction.check_and_break_solution(*g_initial_state, abstraction.init);
     EXPECT_FALSE(success);
 
     string a1s = "<1={0,2}>";
@@ -471,8 +457,11 @@ TEST(CegarTest, astar_search) {
     Abstraction abs;
 
     AbstractState a("<1={0}>");
+    Node node_a(&a);
     AbstractState b("<1={1}>");
+    Node node_b(&b);
     AbstractState c("<1={2}>");
+    Node node_c(&c);
 
     a.add_arc(&op2, &c);
     a.add_arc(&op1, &b);
@@ -496,13 +485,11 @@ TEST(CegarTest, astar_search) {
     AbstractState *found_goal = abs.init->get_state_out();
     EXPECT_EQ("<1={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_state_out());
-    EXPECT_EQ(3, abs.expansions);
     EXPECT_EQ(4, a.get_h());
     EXPECT_EQ(0, b.get_h());
     EXPECT_EQ(0, c.get_h());
 
     // Run with heuristic information --> only 2 expansions.
-    abs.expansions = 0;
     a.set_h(4);
     b.set_h(2);
     c.set_h(0);
@@ -517,7 +504,6 @@ TEST(CegarTest, astar_search) {
     found_goal = abs.init->get_state_out();
     EXPECT_EQ("<1={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_state_out());
-    EXPECT_EQ(2, abs.expansions);
     EXPECT_EQ(4, a.get_h());
     EXPECT_EQ(2, b.get_h());
     EXPECT_EQ(0, c.get_h());
@@ -544,8 +530,11 @@ TEST(CegarTest, dijkstra_search) {
     Abstraction abs;
 
     AbstractState a("<1={0}>");
+    Node node_a(&a);
     AbstractState b("<1={1}>");
+    Node node_b(&b);
     AbstractState c("<1={2}>");
+    Node node_c(&c);
 
     a.add_arc(&op2, &c);
     a.add_arc(&op1, &b);
@@ -563,7 +552,6 @@ TEST(CegarTest, dijkstra_search) {
     AbstractState *found_goal = abs.init->get_state_out();
     EXPECT_EQ("<1={2}>", found_goal->str());
     EXPECT_FALSE(found_goal->get_state_out());
-    EXPECT_EQ(3, abs.expansions);
 }
 
 TEST(CegarTest, partial_ordering1) {
@@ -607,7 +595,8 @@ TEST(CegarTest, split_values) {
     init_test();
     AbstractState a;
     State s1 = *create_state("0 0 0");
-    SplitTree t = SplitTree(&a);
+    SplitTree t;
+    t.set_root(&a);
     EXPECT_EQ("<>", t.get_node(s1)->abs_state->str());
 
     AbstractState a1("<1={1}>");
