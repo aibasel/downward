@@ -12,6 +12,10 @@ class AbstractState;
 
 class Node {
 private:
+    // Forbid copy constructor and copy assignment operator.
+    Node(const Node &);
+    Node &operator=(const Node &);
+
     AbstractState *abs_state;
     // Save the variable and value for which abs_state was refined
     // and the resulting abstract child states.
@@ -51,8 +55,13 @@ public:
 
 class SplitTree {
 private:
+    // Forbid copy constructor and copy assignment operator.
+    SplitTree(const SplitTree &);
+    SplitTree &operator=(const SplitTree &);
+
     Node *root;
 public:
+    SplitTree();
     void set_root(AbstractState *single);
     Node *get_node(const State conc_state) const;
     FRIEND_TEST(CegarTest, split_values);
