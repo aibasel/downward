@@ -176,7 +176,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     // refinements, we can't assume v2 is never "init" and v1 is never "goal".
     if (state == init) {
         if (v1->is_abstraction_of(*g_initial_state)) {
-            assert(!v2->is_abstraction_of(*g_initial_state))
+            assert(!v2->is_abstraction_of(*g_initial_state));
             init = v1;
         } else {
             assert(v2->is_abstraction_of(*g_initial_state));
