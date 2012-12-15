@@ -172,17 +172,27 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     states.insert(v2);
     ++num_states;
 
+    // Since the search may be started from arbitrary states during online
+    // refinements, we can't assume v2 is never "init" and v1 is never "goal".
     if (state == init) {
-        assert(v1->is_abstraction_of(*g_initial_state));
-        assert(!v2->is_abstraction_of(*g_initial_state));
-        init = v1;
+        if (v1->is_abstraction_of(*g_initial_state)) {
+            assert(!v2->is_abstraction_of(*g_initial_state))
+            init = v1;
+        } else {
+            assert(v2->is_abstraction_of(*g_initial_state));
+            init = v2;
+        }
         if (DEBUG)
             cout << "Using new init state: " << init->str() << endl;
     }
     if (state == goal) {
-        assert(!v1->is_abstraction_of_goal());
-        assert(v2->is_abstraction_of_goal());
-        goal = v2;
+        if (v1->is_abstraction_of_goal()) {
+            assert(!v2->is_abstraction_of_goal());
+            goal = v1;
+        } else {
+            assert(v2->is_abstraction_of_goal());
+            goal = v2;
+        }
         if (DEBUG)
             cout << "Using new goal state: " << goal->str() << endl;
     }
