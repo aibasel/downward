@@ -41,7 +41,6 @@ Abstraction::Abstraction()
       max_states_online(0),
       max_time(INFINITY),
       use_astar(true),
-      use_new_arc_check(true),
       log_h(false),
       memory_released(false) {
 
@@ -156,7 +155,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     AbstractState *v2 = new AbstractState();
     Node *node = state->get_node();
     assert(node);
-    state->split(var, wanted, v1, v2, use_new_arc_check);
+    state->split(var, wanted, v1, v2);
 
     // Update split tree.
     node->split(var, wanted, v1, v2);
