@@ -65,6 +65,7 @@ private:
     mutable RandomNumberGenerator rng;
 
     // Statistics.
+    mutable int num_states;
     mutable int deviations;
     mutable int unmet_preconditions;
     mutable int unmet_goals;
@@ -138,7 +139,7 @@ public:
     AbstractState *get_abstract_state(const State &state) const;
     int get_h(const State &state) const {return split_tree.get_node(state)->get_h(); }
 
-    int get_num_states() const {return states.size(); }
+    int get_num_states() const {return num_states; }
     int get_num_states_online() const;
     int get_max_states_online() const {return max_states_online; }
     bool is_online() const {return num_states_offline != -1; }
