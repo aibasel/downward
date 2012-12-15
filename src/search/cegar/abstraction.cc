@@ -30,6 +30,7 @@ Abstraction::Abstraction()
       queue(new AdaptiveQueue<AbstractState *>()),
       pick(RANDOM),
       rng(2012),
+      num_states(1),
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
@@ -98,13 +99,14 @@ void Abstraction::build(int h_updates) {
         }
     }
     log_h_values();
-    // Remember how many states where refined offline.
-    num_states_offline = states.size();
+    // Remember how many states were refined offline.
+    num_states_offline = get_num_states();
+    assert(num_states_offline == states.size());
     cout << "Done building abstraction [t=" << g_timer << "]" << endl;
     cout << "Peak memory after building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << valid_complete_conc_solution << endl;
-    cout << "Abstract states offline: " << get_num_states() << endl;
+    cout << "Abstract states offline: " << num_states_offline << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     update_h_values();
     print_statistics();
@@ -168,6 +170,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     states.erase(state);
     states.insert(v1);
     states.insert(v2);
+    ++num_states;
 
     if (state == init) {
         assert(v1->is_abstraction_of(*g_initial_state));
@@ -202,6 +205,7 @@ AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_sta
         bool solution_found = find_solution(abs_state);
         if (!solution_found) {
             cout << "No abstract solution found" << endl;
+            abs_state->set_h(INFINITY);
             break;
         }
         bool solution_valid = check_and_break_solution(state, abs_state);
@@ -599,8 +603,8 @@ void Abstraction::write_dot_file(int num) {
 }
 
 int Abstraction::get_num_states_online() const {
-    assert(num_states_offline >= 0);
-    return states.size() - num_states_offline;
+    assert(num_states_offline >= 1);
+    return get_num_states() - num_states_offline;
 }
 
 bool Abstraction::may_keep_refining() const {
@@ -622,8 +626,8 @@ void Abstraction::release_memory() {
     }
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
-        AbstractState *state = *it;
-        delete state;
+        //AbstractState *state = *it;
+        //delete state;
     }
     set<AbstractState *>().swap(states);
     memory_released = true;
