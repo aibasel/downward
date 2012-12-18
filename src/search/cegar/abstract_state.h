@@ -47,6 +47,9 @@ private:
     Node *node;
 
     void remove_arc(Arcs &arcs, Operator *op, AbstractState *other);
+    void update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
+    void update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
+    void update_loops(int var, AbstractState *v1, AbstractState *v2);
 
 public:
     explicit AbstractState(string s = "");

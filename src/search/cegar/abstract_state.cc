@@ -98,35 +98,11 @@ int AbstractState::count(int var) const {
     return values->count(var);
 }
 
-void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2) {
-    // We can only refine for vars that can have at least two values.
-    // The desired value has to be in the set of possible values.
-    assert(wanted.size() >= 1);
-    assert(values->count(var) > wanted.size());
-    for (int i = 0; i < wanted.size(); ++i)
-        assert(values->test(var, wanted[i]));
-
-    *v1->values = *values;
-    *v2->values = *values;
-
-    v2->values->remove_all(var);
-    for (int i = 0; i < wanted.size(); ++i) {
-        // In v1 var can have all of the previous values except the wanted ones.
-        v1->values->remove(var, wanted[i]);
-
-        // In v2 var can only have the wanted values.
-        v2->values->add(var, wanted[i]);
-    }
-
+void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
     // u --> v  was on the shortest path. We check if both paths u --> v1 and
     // u --> v2 are valid for the same operators. If so we do cascaded refinement.
     bool u_v1 = false, u_v2 = false;
-
-    // Before: u --> this=v --> w
-    //  ==>
-    // After:  v is split into v1 and v2
-    Arcs::iterator it;
-    for (it = prev.begin(); it != prev.end(); ++it) {
+    for (Arcs::iterator it = prev.begin(); it != prev.end(); ++it) {
         Operator *op = it->first;
         AbstractState *u = it->second;
         assert(u != this);
@@ -150,7 +126,13 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
         }
         u->remove_next_arc(op, this);
     }
-    for (it = next.begin(); it != next.end(); ++it) {
+    // Indicate for the abstraction whether we should cascade the refinement.
+    if (u_v1) v1->set_predecessor(op_in, state_in);
+    if (u_v2) v2->set_predecessor(op_in, state_in);
+}
+
+void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
+    for (Arcs::iterator it = next.begin(); it != next.end(); ++it) {
         Operator *op = it->first;
         AbstractState *w = it->second;
         assert(w != this);
@@ -173,6 +155,9 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
         }
         w->remove_prev_arc(op, this);
     }
+}
+
+void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) {
     for (int i = 0; i < loops.size(); ++i) {
         Operator *op = loops[i];
         int pre = get_pre(*op, var);
@@ -204,21 +189,43 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
             v1->add_loop(op);
         }
     }
+}
 
-    assert(v1->values->count(var) == values->count(var) - wanted.size());
-    assert(v2->values->count(var) == wanted.size());
+void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2) {
+    // We can only refine for vars that can have at least two values.
+    // The desired value has to be in the set of possible values.
+    assert(wanted.size() >= 1);
+    assert(values->count(var) > wanted.size());
+    for (int i = 0; i < wanted.size(); ++i)
+        assert(values->test(var, wanted[i]));
+
+    *v1->values = *values;
+    *v2->values = *values;
+
+    v2->values->remove_all(var);
+    for (int i = 0; i < wanted.size(); ++i) {
+        // In v1 var can have all of the previous values except the wanted ones.
+        v1->values->remove(var, wanted[i]);
+
+        // In v2 var can only have the wanted values.
+        v2->values->add(var, wanted[i]);
+    }
+    assert(v1->count(var) == count(var) - wanted.size());
+    assert(v2->count(var) == wanted.size());
 
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
     assert(this->is_abstraction_of(*v2));
 
-    // Indicate for the abstraction whether we should cascade the refinement.
-    if (u_v1) v1->set_predecessor(op_in, state_in);
-    if (u_v2) v2->set_predecessor(op_in, state_in);
+    // Update transition system.
+    update_incoming_arcs(var, v1, v2);
+    update_outgoing_arcs(var, v1, v2);
+    update_loops(var, v1, v2);
 
     // Update split tree.
     node->split(var, wanted, v1, v2);
 
+    // Since h-values only increase we can assign the h-value to the children.
     int h = node->get_h();
     v1->set_h(h);
     v2->set_h(h);
