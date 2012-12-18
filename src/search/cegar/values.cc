@@ -5,7 +5,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 int Values::facts = -1;
 vector<int> Values::borders;
 vector<Bitset> Values::masks;
@@ -144,5 +143,4 @@ string Values::str() const {
     }
     return oss.str();
 }
-
 }

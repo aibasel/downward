@@ -8,7 +8,6 @@
 #include <vector>
 
 namespace cegar_heuristic {
-
 class Values {
 private:
     // Possible values of each variable in this state.

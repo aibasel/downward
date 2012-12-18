@@ -7,7 +7,6 @@
 class State;
 
 namespace cegar_heuristic {
-
 class Abstraction;
 
 const int DEFAULT_STATES_OFFLINE = 10000;
