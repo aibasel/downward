@@ -135,16 +135,16 @@ TEST(CegarTest, get_rel_conc_states) {
     init_test();
 
     AbstractState a1("0={0,1},1={0,1}");
-    EXPECT_EQ(2/3., a1.get_rel_conc_states());
+    EXPECT_EQ(2 / 3., a1.get_rel_conc_states());
 
     AbstractState a2("0={0,1},1={1}");
-    EXPECT_EQ(1/3., a2.get_rel_conc_states());
+    EXPECT_EQ(1 / 3., a2.get_rel_conc_states());
 
     AbstractState a3("0={0,1},1={0,1,2}");
     EXPECT_EQ(1, a3.get_rel_conc_states());
 
     AbstractState a4("0={0},1={0},2={1}");
-    EXPECT_EQ(1/12., a4.get_rel_conc_states());
+    EXPECT_EQ(1 / 12., a4.get_rel_conc_states());
 }
 
 TEST(CegarTest, regress) {

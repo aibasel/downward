@@ -127,8 +127,10 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
         u->remove_next_arc(op, this);
     }
     // Indicate for the abstraction whether we should cascade the refinement.
-    if (u_v1) v1->set_predecessor(op_in, state_in);
-    if (u_v2) v2->set_predecessor(op_in, state_in);
+    if (u_v1)
+        v1->set_predecessor(op_in, state_in);
+    if (u_v2)
+        v2->set_predecessor(op_in, state_in);
 }
 
 void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {

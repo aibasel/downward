@@ -5,7 +5,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 Node::Node(AbstractState *state)
     : abs_state(state),
       var(UNDEFINED),
@@ -57,7 +56,6 @@ AbstractState *Node::get_right_child_state() const {
 
 SplitTree::SplitTree()
     : root(0) {
-
 }
 
 void SplitTree::set_root(AbstractState *single) {
@@ -74,5 +72,4 @@ Node *SplitTree::get_node(const State conc_state) const {
     assert(current->get_abs_state());
     return current;
 }
-
 }

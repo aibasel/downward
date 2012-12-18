@@ -22,7 +22,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 Abstraction::Abstraction()
     : single(new AbstractState()),
       init(single),
@@ -43,7 +42,6 @@ Abstraction::Abstraction()
       use_astar(true),
       log_h(false),
       memory_released(false) {
-
     assert(!g_memory_buffer);
     g_memory_buffer = new char [10 * 1024 * 1024];
 
@@ -200,8 +198,6 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
              << max_states_offline + max_states_online << endl;
     if (WRITE_DOT_FILES)
         write_dot_file(num_states);
-
-
 }
 
 AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_state) {
@@ -470,7 +466,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             assert(all_values >= 2);
             assert(rest >= 2);
             assert(rest <= all_values);
-            double refinement = - (rest / double(all_values));
+            double refinement = -(rest / double(all_values));
             assert(refinement >= -1.0);
             assert(refinement < 0.0);
             if (refinement < min_refinement && pick == MIN_REFINED) {
@@ -598,10 +594,10 @@ int Abstraction::get_num_states_online() const {
 }
 
 bool Abstraction::may_keep_refining() const {
-    return (g_memory_buffer &&
-            (is_online() || get_num_states() < max_states_offline) &&
-            (!is_online() || get_num_states_online() < max_states_online) &&
-            (max_time == INFINITY || is_online() || timer() < max_time));
+    return g_memory_buffer &&
+           (is_online() || get_num_states() < max_states_offline) &&
+           (!is_online() || get_num_states_online() < max_states_online) &&
+           (max_time == INFINITY || is_online() || timer() < max_time);
 }
 
 void Abstraction::release_memory() {
@@ -640,7 +636,7 @@ void Abstraction::print_statistics() {
         total_loops += loops.size();
         arc_size += sizeof(next) + sizeof(Arc) * next.capacity() +
                     sizeof(prev) + sizeof(Arc) * prev.capacity() +
-                    sizeof(loops) + sizeof(Operator*) * loops.capacity();
+                    sizeof(loops) + sizeof(Operator *) * loops.capacity();
     }
     assert(nexts == prevs);
 

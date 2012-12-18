@@ -7,7 +7,6 @@
 #include "../ext/gtest/include/gtest/gtest_prod.h"
 
 namespace cegar_heuristic {
-
 class AbstractState;
 
 class Node {
