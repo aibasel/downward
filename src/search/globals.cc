@@ -263,8 +263,10 @@ void dump_everything() {
     for (int i = 0; i < g_variable_name.size(); i++)
         cout << "  " << g_variable_name[i]
              << " (range " << g_variable_domain[i] << ")" << endl;
-    cout << "Initial State:" << endl;
-    g_initial_state->dump();
+    cout << "Initial State (PDDL):" << endl;
+    g_initial_state->dump_pddl();
+    cout << "Initial State (FDR):" << endl;
+    g_initial_state->dump_fdr();
     dump_goal();
     /*
     cout << "Successor Generator:" << endl;
