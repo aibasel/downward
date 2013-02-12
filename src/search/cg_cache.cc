@@ -1,7 +1,7 @@
 #include "cg_cache.h"
 
-#include "causal_graph.h"
 #include "globals.h"
+#include "legacy_causal_graph.h"
 #include "state.h"
 
 #include <algorithm>
@@ -16,7 +16,7 @@ CGCache::CGCache() {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = g_variable_domain.size();
-    CausalGraph *cg = g_causal_graph;
+    LegacyCausalGraph *cg = g_legacy_causal_graph;
 
     // Compute inverted causal graph.
     depends_on.resize(var_count);
