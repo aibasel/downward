@@ -30,6 +30,7 @@ HEADERS = \
           ipc_max_heuristic.h \
           iterated_search.h \
           lazy_search.h \
+          legacy_causal_graph.h \
           max_evaluator.h \
           operator.h \
           operator_cost.h \

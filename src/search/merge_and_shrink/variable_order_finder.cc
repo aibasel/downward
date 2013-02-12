@@ -3,8 +3,8 @@
 #include "merge_and_shrink_heuristic.h" // needed for MergeStrategy type;
 // TODO: move that type somewhere else?
 
-#include "../causal_graph.h"
 #include "../globals.h"
+#include "../legacy_causal_graph.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -42,7 +42,7 @@ void VariableOrderFinder::select_next(int position, int var_no) {
     assert(remaining_vars[position] == var_no);
     remaining_vars.erase(remaining_vars.begin() + position);
     selected_vars.push_back(var_no);
-    const vector<int> &new_vars = g_causal_graph->get_predecessors(var_no);
+    const vector<int> &new_vars = g_legacy_causal_graph->get_predecessors(var_no);
     for (int i = 0; i < new_vars.size(); ++i)
         is_causal_predecessor[new_vars[i]] = true;
 }
