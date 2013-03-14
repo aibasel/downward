@@ -1,5 +1,6 @@
 #include "canonical_pdbs_heuristic.h"
 
+#include "dominance_pruner.h"
 #include "max_cliques.h"
 #include "pdb_heuristic.h"
 #include "util.h"
@@ -103,6 +104,27 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
     }
 }
 
+void CanonicalPDBsHeuristic::dominance_pruning() {
+    Timer timer;
+    int num_patterns = pattern_databases.size();
+    int num_cliques = max_cliques.size();
+
+    DominancePruner(pattern_databases, max_cliques).prune();
+
+    // Adjust size.
+    size = 0;
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        size += pattern_databases[i]->get_size();
+    }
+
+    cout << "Pruned " << num_cliques - max_cliques.size() <<
+    " of " << num_cliques << " cliques" << endl;
+    cout << "Pruned " << num_patterns - pattern_databases.size() <<
+    " of " << num_patterns << " PDBs" << endl;
+
+    cout << "Dominance pruning took " << timer << endl;
+}
+
 void CanonicalPDBsHeuristic::initialize() {
 }
 
@@ -110,13 +132,16 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
     int max_h = 0;
     assert(!max_cliques.empty());
     // if we have an empty collection, then max_cliques = { \emptyset }
+
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        pattern_databases[i]->evaluate(state);
+        if (pattern_databases[i]->is_dead_end())
+            return -1;
+    }
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         const vector<PDBHeuristic *> &clique = max_cliques[i];
         int clique_h = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
-            clique[j]->evaluate(state);
-            if (clique[j]->is_dead_end())
-                return -1;
             clique_h += clique[j]->get_heuristic();
         }
         max_h = max(max_h, clique_h);
