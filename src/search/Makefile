@@ -19,7 +19,6 @@ OS=auto
 HEADERS = \
           axioms.h \
           causal_graph.h \
-          closed_list.h \
           combining_evaluator.h \
           domain_transition_graph.h \
           eager_search.h \
@@ -31,6 +30,7 @@ HEADERS = \
           ipc_max_heuristic.h \
           iterated_search.h \
           lazy_search.h \
+          legacy_causal_graph.h \
           max_evaluator.h \
           operator.h \
           operator_cost.h \
@@ -110,6 +110,7 @@ HEADERS += merge_and_shrink/abstraction.h \
 #           learning/state_vars_feature_extractor.h \
 
 HEADERS += pdbs/canonical_pdbs_heuristic.h \
+           pdbs/dominance_pruner.h \
            pdbs/match_tree.h \
            pdbs/max_cliques.h \
            pdbs/pattern_generation_edelkamp.h \
@@ -214,14 +215,14 @@ POSTLINKOPT =
 
 CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
 CCOPT_DEBUG    = -O3
-CCOPT_PROFILE  = -O1 -pg
+CCOPT_PROFILE  = -O3 -pg
 
 LINKOPT_RELEASE =
 LINKOPT_DEBUG    =
 LINKOPT_PROFILE  = -pg
 
 POSTLINKOPT_RELEASE =
-POSTLINKOPT_DEBUG   = -lrt
+POSTLINKOPT_DEBUG   =
 POSTLINKOPT_PROFILE =
 
 ifeq ($(LINK_RELEASE_STATICALLY), 1)
@@ -230,14 +231,13 @@ endif
 
 ifeq ($(OS), linux)
 ifeq ($(LINK_RELEASE_STATICALLY), 0)
-LINKOPT_RELEASE += -lrt
+POSTLINKOPT_RELEASE += -lrt
 else
 POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
 endif
-LINKOPT_DEBUG  += -lrt
-LINKOPT_PROFILE += -lrt
+POSTLINKOPT_DEBUG  += -lrt
 POSTLINKOPT_PROFILE += -lrt
-# LINKOPT_PROFILE += -lc_p
+# POSTLINKOPT_PROFILE += -lc_p
 endif
 
 
