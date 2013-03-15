@@ -1,4 +1,16 @@
 #include "globals.h"
+
+#include "axioms.h"
+#include "causal_graph.h"
+#include "domain_transition_graph.h"
+#include "heuristic.h"
+#include "legacy_causal_graph.h"
+#include "operator.h"
+#include "rng.h"
+#include "state.h"
+#include "successor_generator.h"
+#include "timer.h"
+
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -12,17 +24,7 @@ using namespace std;
 #include <ext/hash_map>
 using namespace __gnu_cxx;
 
-#include "axioms.h"
-#include "causal_graph.h"
-#include "domain_transition_graph.h"
-#include "heuristic.h"
-#include "operator.h"
-#include "rng.h"
-#include "state.h"
 #include "state_registry.h"
-#include "successor_generator.h"
-#include "timer.h"
-
 
 static const int PRE_FILE_VERSION = 3;
 
@@ -264,7 +266,11 @@ void read_everything(istream &in) {
     g_successor_generator = read_successor_generator(in);
     check_magic(in, "end_SG");
     DomainTransitionGraph::read_all(in);
-    g_causal_graph = new CausalGraph(in);
+    g_legacy_causal_graph = new LegacyCausalGraph(in);
+
+    // NOTE: causal graph is computed from the problem specification,
+    // so must be built after the problem has been read in.
+    g_causal_graph = new CausalGraph;
 }
 
 void dump_everything() {
@@ -276,8 +282,10 @@ void dump_everything() {
     for (int i = 0; i < g_variable_name.size(); i++)
         cout << "  " << g_variable_name[i]
              << " (range " << g_variable_domain[i] << ")" << endl;
-    cout << "Initial State:" << endl;
-    g_initial_state->dump();
+    cout << "Initial State (PDDL):" << endl;
+    g_initial_state->dump_pddl();
+    cout << "Initial State (FDR):" << endl;
+    g_initial_state->dump_fdr();
     dump_goal();
     /*
     cout << "Successor Generator:" << endl;
@@ -341,6 +349,7 @@ AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
+LegacyCausalGraph *g_legacy_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";

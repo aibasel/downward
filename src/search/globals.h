@@ -7,15 +7,16 @@
 #include <string>
 #include <vector>
 
+class Axiom;
 class AxiomEvaluator;
 class CausalGraph;
 class DomainTransitionGraph;
+class LegacyCausalGraph;
 class Operator;
-class Axiom;
+class RandomNumberGenerator;
 class State;
 class SuccessorGenerator;
 class Timer;
-class RandomNumberGenerator;
 class StateRegistry;
 
 bool test_goal(const State &state);
@@ -52,6 +53,7 @@ extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
 extern std::vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
+extern LegacyCausalGraph *g_legacy_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
