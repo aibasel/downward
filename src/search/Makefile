@@ -113,6 +113,7 @@ HEADERS += learning/AODE.h \
            learning/state_vars_feature_extractor.h \
 
 HEADERS += pdbs/canonical_pdbs_heuristic.h \
+           pdbs/dominance_pruner.h \
            pdbs/match_tree.h \
            pdbs/max_cliques.h \
            pdbs/pattern_generation_edelkamp.h \
