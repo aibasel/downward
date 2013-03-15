@@ -9,6 +9,7 @@
 #include "../priority_queue.h"
 #include "../state.h"
 #include "../timer.h"
+#include "../utilities.h"
 
 #include "../merge_and_shrink/variable_order_finder.h"
 
@@ -231,6 +232,7 @@ void PDBHeuristic::create_pdb() {
 }
 
 void PDBHeuristic::set_pattern(const vector<int> &pat) {
+    assert_sorted_unique(pat);
     pattern = pat;
     hash_multipliers.reserve(pattern.size());
     variable_to_index.resize(g_variable_name.size(), -1);
