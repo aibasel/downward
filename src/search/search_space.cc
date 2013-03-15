@@ -126,7 +126,7 @@ void SearchNode::mark_as_dead_end() {
 
 void SearchNode::dump() {
     cout << state_handle.get_id() << ": ";
-    State(state_handle).dump();
+    State(state_handle).dump_fdr();
     if (info.creating_operator) {
         cout << " created by " << info.creating_operator->get_name()
              << " from " << info.parent_state_handle.get_id() << endl;
@@ -170,7 +170,7 @@ void SearchSpace::dump() const {
         StateHandle state_handle = *it;
         SearchNodeInfo &node_info = *search_node_infos[state_handle];
         cout << "#" << state_handle.get_id() << ": ";
-        State(state_handle).dump();
+        State(state_handle).dump_fdr();
         if (node_info.creating_operator &&
                 node_info.parent_state_handle.is_valid()) {
             cout << " created by " << node_info.creating_operator->get_name()

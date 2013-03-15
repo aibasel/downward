@@ -41,7 +41,8 @@ public:
     int operator[](int index) const {
         return vars[index];
     }
-    void dump() const;
+    void dump_pddl() const;
+    void dump_fdr() const;
     bool operator==(const State &other) const;
     bool operator<(const State &other) const;
     size_t hash() const;
