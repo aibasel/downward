@@ -164,7 +164,9 @@ void SelectiveMaxHeuristic::train() {
 
     // initialize all heuristics
     int goal_depth_estimate = 0;
-    max.evaluate(*g_initial_state);
+    // TODO for now we use the global state registry for all states (even temporary states like this)
+    StateHandle initial_state_handle = g_state_registry.get_handle(*g_initial_state);
+    max.evaluate(State(initial_state_handle));
     int h0 = max.get_heuristic();
     goal_depth_estimate = 2 * h0;
 

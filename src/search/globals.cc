@@ -244,8 +244,6 @@ void read_everything(istream &in) {
     read_variables(in);
     read_mutexes(in);
     // Read initial state and keep it until after the axioms are read.
-    // TODO this could be changed if the axioms would occur before the initial
-    // state in the output format.
     state_var_t *initial_state_vars = new state_var_t[g_variable_domain.size()];
     check_magic(in, "begin_state");
     for (int i = 0; i < g_variable_domain.size(); i++) {
