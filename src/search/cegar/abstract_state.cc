@@ -281,9 +281,9 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
 }
 
 bool AbstractState::is_abstraction_of_goal() const {
-    assert(!g_goal.empty());
-    for (int i = 0; i < g_goal.size(); ++i) {
-        if (!values->test(g_goal[i].first, g_goal[i].second))
+    assert(!g_cegar_goal.empty());
+    for (int i = 0; i < g_cegar_goal.size(); ++i) {
+        if (!values->test(g_cegar_goal[i].first, g_cegar_goal[i].second))
             return false;
     }
     return true;

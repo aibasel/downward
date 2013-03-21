@@ -66,6 +66,7 @@ extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
 
 extern cegar_heuristic::Abstraction *g_cegar_abstraction;
+extern std::vector<std::pair<int, int> > g_cegar_goal;
 
 // Reserve some space that can be released when no memory is left.
 extern char *g_memory_buffer;
