@@ -51,7 +51,13 @@ void CegarHeuristic::initialize() {
     g_cegar_goal.clear();
     g_cegar_goal = g_goal;
 
+    vector<int> admissible_operator_costs;
+    for (int i = 0; i < g_operators.size(); ++i) {
+        admissible_operator_costs.push_back(g_operators[i].get_cost());
+    }
+
     abstraction = new Abstraction();
+    abstraction->set_operator_costs(&admissible_operator_costs);
     if (max_states_online > 0)
         g_cegar_abstraction = abstraction;
 
