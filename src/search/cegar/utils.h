@@ -28,6 +28,7 @@ void get_unmet_preconditions(const Operator &op, const State &state, Splits *spl
 void get_unmet_goal_conditions(const State &state, Splits *splits);
 
 bool goal_var(int var);
+bool test_cegar_goal(const State &s);
 
 // Create a "partial order" from the causal graph. Since the CG is not a DAG,
 // we use the following approximation: Order vars with the least incoming edges

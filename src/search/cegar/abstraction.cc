@@ -407,7 +407,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     assert(!abs_state->get_op_out());
     assert(!abs_state->get_state_out());
 
-    if (test_goal(conc_state)) {
+    if (test_cegar_goal(conc_state)) {
         // We have reached the goal.
         return true;
     }
