@@ -29,6 +29,7 @@ Abstraction::Abstraction()
       queue(new AdaptiveQueue<AbstractState *>()),
       pick(RANDOM),
       rng(2012),
+      operator_costs(0),
       num_states(1),
       deviations(0),
       unmet_preconditions(0),
@@ -267,7 +268,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             Operator *op = it->first;
             AbstractState *successor = it->second;
 
-            const int succ_g = g + op->get_cost();
+            const int succ_g = g + get_operator_cost(op);
             if (successor->get_distance() > succ_g) {
                 successor->set_distance(succ_g);
                 int f = succ_g;
@@ -318,7 +319,7 @@ void Abstraction::extract_solution(AbstractState *goal) const {
         assert(op);
         AbstractState *prev = current->get_state_in();
         prev->set_successor(op, current);
-        cost_to_goal += op->get_cost();
+        cost_to_goal += get_operator_cost(op);
         prev->set_h(cost_to_goal);
         assert(prev != current);
         current = prev;
@@ -584,6 +585,13 @@ void Abstraction::write_dot_file(int num) {
     }
     dotfile << "}" << endl;
     dotfile.close();
+}
+
+int Abstraction::get_operator_cost(const Operator *op) const {
+    int op_index = op - &*g_operators.begin();
+    assert(op_index >= 0 && op_index < g_operators.size());
+    assert(operator_costs);
+    return (*operator_costs)[op_index];
 }
 
 int Abstraction::get_num_states_online() const {
