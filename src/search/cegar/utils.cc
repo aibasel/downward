@@ -108,6 +108,15 @@ bool goal_var(int var) {
     return false;
 }
 
+bool test_cegar_goal(const State &state) {
+    for (int i = 0; i < g_cegar_goal.size(); i++) {
+        if (state[g_cegar_goal[i].first] != g_cegar_goal[i].second) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
     assert(order->empty());
     // Set of variables that still have to be ordered.
