@@ -18,7 +18,7 @@ class CegarSumHeuristic : public Heuristic {
     // runtime.
     const int h_updates;
     const bool search;
-    Abstraction *abstraction;
+    std::vector<Abstraction *> abstractions;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);

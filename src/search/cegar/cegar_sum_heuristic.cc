@@ -50,9 +50,8 @@ void CegarSumHeuristic::initialize() {
         admissible_operator_costs.push_back(g_operators[i].get_cost());
     }
 
-    vector<Abstraction *> abstractions;
     for (int i = 0; i < g_goal.size(); ++i) {
-        abstraction = new Abstraction();
+        Abstraction *abstraction = new Abstraction();
         //abstraction.set_concrete_goal();
         abstraction->set_operator_costs(&admissible_operator_costs);
 
@@ -77,11 +76,16 @@ void CegarSumHeuristic::initialize() {
 }
 
 int CegarSumHeuristic::compute_heuristic(const State &state) {
-    int h = abstraction->get_h(state);
-    assert(h >= 0);
-    if (h == INFINITY)
-        h = DEAD_END;
-    return h;
+    int sum_h = 0;
+    for (int i = 0; i < abstractions.size(); ++i) {
+        int h = abstractions[i]->get_h(state);
+        assert(h >= 0);
+        if (h == INFINITY)
+            return DEAD_END;
+        sum_h += h;
+    }
+    assert(sum_h >= 0 && "check against overflow");
+    return sum_h;
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
