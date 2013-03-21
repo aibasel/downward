@@ -60,9 +60,9 @@ void init_test() {
     g_operators.push_back(op1);
 
     // goal(0) = 1, goal(1) = 1
-    g_goal.clear();
-    g_goal.push_back(make_pair(0, 1));
-    g_goal.push_back(make_pair(1, 1));
+    g_cegar_goal.clear();
+    g_cegar_goal.push_back(make_pair(0, 1));
+    g_cegar_goal.push_back(make_pair(1, 1));
 }
 
 TEST(CegarTest, str) {
@@ -358,7 +358,7 @@ TEST(CegarTest, find_solution_second_state) {
 TEST(CegarTest, find_solution_loop) {
     // Operator: <0=0, 1=0 --> 1=1>
     init_test();
-    g_goal.push_back(make_pair(1, 1));
+    g_cegar_goal.push_back(make_pair(1, 1));
 
     // -> <>
     Abstraction abs;
@@ -398,8 +398,8 @@ TEST(CegarTest, find_solution_loop) {
 TEST(CegarTest, initialize) {
     // Operator: <0=0, 1=0 --> 1=1>
     init_test();
-    g_goal.clear();
-    g_goal.push_back(make_pair(1, 1));
+    g_cegar_goal.clear();
+    g_cegar_goal.push_back(make_pair(1, 1));
 
     // --> <>
     Abstraction abstraction;
@@ -446,8 +446,8 @@ TEST(CegarTest, initialize) {
 TEST(CegarTest, astar_search) {
     init_test();
     g_use_metric = true;
-    g_goal.clear();
-    g_goal.push_back(make_pair(0, 2));
+    g_cegar_goal.clear();
+    g_cegar_goal.push_back(make_pair(0, 2));
 
     Operator op1 = make_op(3);
     Operator op2 = make_op(4);
@@ -519,8 +519,8 @@ TEST(CegarTest, astar_search) {
 TEST(CegarTest, dijkstra_search) {
     init_test();
     g_use_metric = true;
-    g_goal.clear();
-    g_goal.push_back(make_pair(0, 2));
+    g_cegar_goal.clear();
+    g_cegar_goal.push_back(make_pair(0, 2));
 
     Operator op1 = make_op(3);
     Operator op2 = make_op(4);

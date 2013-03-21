@@ -362,5 +362,6 @@ string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 
 cegar_heuristic::Abstraction *g_cegar_abstraction;
+std::vector<std::pair<int, int> > g_cegar_goal;
 
 char *g_memory_buffer;

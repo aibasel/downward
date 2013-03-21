@@ -47,6 +47,10 @@ void CegarHeuristic::initialize() {
     if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INFINITY)
         max_states_offline = INFINITY;
 
+    // Use own copy of the goal in order to be able to change it for additive abstractions.
+    g_cegar_goal.clear();
+    g_cegar_goal = g_goal;
+
     abstraction = new Abstraction();
     if (max_states_online > 0)
         g_cegar_abstraction = abstraction;

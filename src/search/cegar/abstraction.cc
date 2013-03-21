@@ -43,6 +43,8 @@ Abstraction::Abstraction()
       use_astar(true),
       log_h(false),
       memory_released(false) {
+    assert(!g_cegar_goal.empty());
+
     assert(!g_memory_buffer);
     g_memory_buffer = new char [10 * 1024 * 1024];
 
