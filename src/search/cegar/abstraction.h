@@ -64,6 +64,9 @@ private:
     PickStrategy pick;
     mutable RandomNumberGenerator rng;
 
+    // Members for additive abstractions.
+    vector<int> *operator_costs;
+
     // Statistics.
     mutable int num_states;
     mutable int deviations;
@@ -124,6 +127,9 @@ private:
     void update_h_values() const;
     void log_h_values() const;
 
+    // Return the admissible operator cost. This is either the original cost or 0.
+    int get_operator_cost(const Operator *op) const;
+
     void print_statistics();
     double get_avg_h() const;
 
@@ -149,6 +155,9 @@ public:
     // Destroy all states when termination criterion is met.
     void release_memory();
     bool has_released_memory() const {return memory_released; }
+
+    // Methods for additive abstractions.
+    void set_operator_costs(vector<int> *costs) { operator_costs = costs; }
 
     // Settings.
     void set_max_states_offline(int states) {max_states_offline = states; }

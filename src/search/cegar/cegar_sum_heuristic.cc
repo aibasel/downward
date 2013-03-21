@@ -54,7 +54,7 @@ void CegarSumHeuristic::initialize() {
     for (int i = 0; i < g_goal.size(); ++i) {
         abstraction = new Abstraction();
         //abstraction.set_concrete_goal();
-        //abstraction.set_admissible_operator_costs(&admissible_operator_costs);
+        abstraction->set_operator_costs(&admissible_operator_costs);
 
         abstraction->set_max_states_offline(max_states_offline);
         abstraction->set_max_time(max_time);
