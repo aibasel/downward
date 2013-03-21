@@ -1,4 +1,4 @@
-#include "cegar_heuristic.h"
+#include "cegar_sum_heuristic.h"
 
 #include "abstraction.h"
 #include "abstract_state.h"
@@ -15,7 +15,7 @@
 using namespace std;
 
 namespace cegar_heuristic {
-CegarHeuristic::CegarHeuristic(const Options &opts)
+CegarSumHeuristic::CegarSumHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
       h_updates(opts.get<int>("h_updates")),
@@ -23,17 +23,14 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     DEBUG = opts.get<bool>("debug");
 }
 
-CegarHeuristic::~CegarHeuristic() {
+CegarSumHeuristic::~CegarSumHeuristic() {
 }
 
-void CegarHeuristic::initialize() {
+void CegarSumHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int max_states_offline = options.get<int>("max_states_offline");
     if (max_states_offline == -1)
         max_states_offline = INFINITY;
-    int max_states_online = options.get<int>("max_states_online");
-    if (max_states_online == -1)
-        max_states_online = INFINITY;
     int max_time = options.get<int>("max_time");
     if (max_time == -1)
         max_time = INFINITY;
@@ -47,26 +44,39 @@ void CegarHeuristic::initialize() {
     if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INFINITY)
         max_states_offline = INFINITY;
 
-    abstraction = new Abstraction();
-    if (max_states_online > 0)
-        g_cegar_abstraction = abstraction;
+    // Vector with operator costs. These will be set to zero by the abstractions.
+    vector<int> admissible_operator_costs;
+    for (int i = 0; i < g_operators.size(); ++i) {
+        admissible_operator_costs.push_back(g_operators[i].get_cost());
+    }
 
-    abstraction->set_max_states_offline(max_states_offline);
-    abstraction->set_max_states_online(max_states_online);
-    abstraction->set_max_time(max_time);
-    abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
-    abstraction->set_use_astar(options.get<bool>("use_astar"));
-    abstraction->set_log_h(options.get<bool>("log_h"));
+    vector<Abstraction *> abstractions;
+    for (int i = 0; i < g_goal.size(); ++i) {
+        abstraction = new Abstraction();
+        //abstraction.set_concrete_goal();
+        //abstraction.set_admissible_operator_costs(&admissible_operator_costs);
 
-    abstraction->build(h_updates);
-    if (max_states_online <= 0)
+        abstraction->set_max_states_offline(max_states_offline);
+        abstraction->set_max_time(max_time);
+        abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
+        abstraction->set_log_h(options.get<bool>("log_h"));
+
+        abstraction->build(h_updates);
+
+        // Set operator costs to zero for operators that lead from state a1 to
+        // state a2 for which h(a1) > h(a2).
+        //abstraction->adapt_operator_costs();
+
         abstraction->release_memory();
+
+        abstractions.push_back(abstraction);
+    }
 
     if (!search)
         exit(0);
 }
 
-int CegarHeuristic::compute_heuristic(const State &state) {
+int CegarSumHeuristic::compute_heuristic(const State &state) {
     int h = abstraction->get_h(state);
     assert(h >= 0);
     if (h == INFINITY)
@@ -77,7 +87,6 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states_offline", DEFAULT_STATES_OFFLINE,
                            "maximum number of abstract states created offline");
-    parser.add_option<int>("max_states_online", 0, "maximum number of abstract states created online");
     parser.add_option<int>("max_time", -1, "maximum time in seconds for building the abstraction");
     vector<string> pick_strategies;
     pick_strategies.push_back("FIRST");
@@ -95,15 +104,14 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("h_updates", -1, "how often to update the abstract h-values");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
     parser.add_option<bool>("debug", false, "print debugging output");
-    parser.add_option<bool>("use_astar", true, "find abstract solution with A* or Dijkstra");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
     else
-        return new CegarHeuristic(opts);
+        return new CegarSumHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("cegar", _parse);
+static Plugin<ScalarEvaluator> _plugin("cegar_sum", _parse);
 }

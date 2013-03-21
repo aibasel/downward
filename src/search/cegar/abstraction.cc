@@ -113,8 +113,6 @@ void Abstraction::build(int h_updates) {
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     update_h_values();
     print_statistics();
-    if (max_states_online <= 0)
-        release_memory();
 }
 
 void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
