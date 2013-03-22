@@ -700,7 +700,7 @@ void Abstraction::print_statistics() {
     cout << "Unmet goals: " << unmet_goals << endl;
     cout << "Unreachable states: " << unreachable_states << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
-    cout << "Init h: " << init->get_h() << endl;
+    cout << "Init h single abstraction: " << init->get_h() << endl;
     cout << "Average h: " << get_avg_h() << endl;
 }
 }

@@ -75,6 +75,7 @@ void CegarSumHeuristic::initialize() {
             break;
         }
     }
+    cout << "CEGAR abstractions: " << abstractions.size() << endl;
 
     if (!search)
         exit(0);
