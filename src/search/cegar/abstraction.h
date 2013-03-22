@@ -160,6 +160,8 @@ public:
     // Methods for additive abstractions.
     int get_op_index(const Operator *op) const;
     void set_operator_costs(vector<int> *costs) { operator_costs = costs; }
+    // For each operator op from a1 to a2, set cost'(op) = max(h(a1)-h(a2), 0).
+    // This makes the next abstraction additive to all previous ones.
     void adapt_operator_costs();
 
     // Settings.
