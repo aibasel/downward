@@ -50,6 +50,7 @@ void CegarSumHeuristic::initialize() {
         admissible_operator_costs.push_back(g_operators[i].get_cost());
     }
 
+    int states_offline = 0;
     for (int i = 0; i < g_goal.size(); ++i) {
         // Set specific goal.
         g_cegar_goal.clear();
@@ -58,7 +59,7 @@ void CegarSumHeuristic::initialize() {
         Abstraction *abstraction = new Abstraction();
         abstraction->set_operator_costs(&admissible_operator_costs);
 
-        abstraction->set_max_states_offline(max_states_offline);
+        abstraction->set_max_states_offline(max_states_offline - states_offline);
         abstraction->set_max_time(max_time);
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
         abstraction->set_log_h(options.get<bool>("log_h"));
@@ -72,6 +73,11 @@ void CegarSumHeuristic::initialize() {
         abstraction->release_memory();
 
         abstractions.push_back(abstraction);
+        states_offline += abstraction->get_num_states();
+
+        if (states_offline >= max_states_offline) {
+            break;
+        }
     }
 
     if (!search)
