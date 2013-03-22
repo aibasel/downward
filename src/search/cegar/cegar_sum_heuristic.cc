@@ -67,7 +67,7 @@ void CegarSumHeuristic::initialize() {
 
         // Set operator costs to zero for operators that lead from state a1 to
         // state a2 for which h(a1) > h(a2).
-        //abstraction->adapt_operator_costs();
+        abstraction->adapt_operator_costs();
 
         abstraction->release_memory();
 
