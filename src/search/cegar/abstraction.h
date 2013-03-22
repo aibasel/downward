@@ -66,6 +66,7 @@ private:
 
     // Members for additive abstractions.
     vector<int> *operator_costs;
+    mutable vector<int> needed_operator_costs;
 
     // Statistics.
     mutable int num_states;
@@ -157,7 +158,9 @@ public:
     bool has_released_memory() const {return memory_released; }
 
     // Methods for additive abstractions.
+    int get_op_index(const Operator *op) const;
     void set_operator_costs(vector<int> *costs) { operator_costs = costs; }
+    void adapt_operator_costs();
 
     // Settings.
     void set_max_states_offline(int states) {max_states_offline = states; }
