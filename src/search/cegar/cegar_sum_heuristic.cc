@@ -65,6 +65,7 @@ void CegarSumHeuristic::initialize() {
         abstraction->set_log_h(options.get<bool>("log_h"));
 
         abstraction->build(h_updates);
+        avg_h_values.push_back(abstraction->get_avg_h());
         abstraction->adapt_operator_costs();
         abstraction->release_memory();
 
@@ -75,10 +76,21 @@ void CegarSumHeuristic::initialize() {
             break;
         }
     }
-    cout << "CEGAR abstractions: " << abstractions.size() << endl;
+    print_statistics();
 
     if (!search)
         exit(0);
+}
+
+void CegarSumHeuristic::print_statistics() {
+    double sum_avg_h = 0;
+    for (int i = 0; i < avg_h_values.size(); ++i) {
+        sum_avg_h += avg_h_values[i];
+    }
+    cout << "CEGAR abstractions: " << abstractions.size() << endl;
+    // There will always be at least one abstraction.
+    cout << "Init h: " << compute_heuristic(*g_initial_state) << endl;
+    cout << "Average h: " << sum_avg_h / abstractions.size() << endl;
 }
 
 int CegarSumHeuristic::compute_heuristic(const State &state) {

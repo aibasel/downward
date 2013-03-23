@@ -116,7 +116,6 @@ void Abstraction::build(int h_updates) {
     cout << "Abstract states offline: " << num_states_offline << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
     update_h_values();
-    print_statistics();
 }
 
 void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
@@ -700,7 +699,8 @@ void Abstraction::print_statistics() {
     cout << "Unmet goals: " << unmet_goals << endl;
     cout << "Unreachable states: " << unreachable_states << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
-    cout << "Init h single abstraction: " << init->get_h() << endl;
+    cout << "Init h: " << init->get_h() << endl;
     cout << "Average h: " << get_avg_h() << endl;
+    cout << "CEGAR abstractions: 1" << endl;
 }
 }
