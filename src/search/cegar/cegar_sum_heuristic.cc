@@ -71,7 +71,7 @@ void CegarSumHeuristic::initialize() {
         abstractions.push_back(abstraction);
         states_offline += abstraction->get_num_states();
 
-        if (states_offline >= max_states_offline) {
+        if (states_offline >= max_states_offline || g_timer() > max_time) {
             break;
         }
     }
