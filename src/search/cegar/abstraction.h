@@ -131,9 +131,6 @@ private:
     // Return the admissible operator cost. This is either the original cost or 0.
     int get_operator_cost(const Operator *op) const;
 
-    void print_statistics();
-    double get_avg_h() const;
-
 public:
     Abstraction();
     ~Abstraction();
@@ -163,6 +160,10 @@ public:
     // For each operator op from a1 to a2, set cost'(op) = max(h(a1)-h(a2), 0).
     // This makes the next abstraction additive to all previous ones.
     void adapt_operator_costs();
+
+    // Statistics.
+    void print_statistics();
+    double get_avg_h() const;
 
     // Settings.
     void set_max_states_offline(int states) {max_states_offline = states; }

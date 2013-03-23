@@ -19,7 +19,9 @@ class CegarSumHeuristic : public Heuristic {
     const int h_updates;
     const bool search;
     std::vector<Abstraction *> abstractions;
+    std::vector<double> avg_h_values;
 protected:
+    virtual void print_statistics();
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
