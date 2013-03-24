@@ -60,7 +60,7 @@ void CegarSumHeuristic::initialize() {
         abstraction->set_operator_costs(&admissible_operator_costs);
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
-        abstraction->set_max_time(max_time - g_timer());
+        abstraction->set_max_time((max_time - g_timer()) / g_goal.size());
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
         abstraction->set_log_h(options.get<bool>("log_h"));
 
