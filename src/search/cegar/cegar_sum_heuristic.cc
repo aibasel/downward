@@ -50,6 +50,11 @@ void CegarSumHeuristic::initialize() {
         admissible_operator_costs.push_back(g_operators[i].get_cost());
     }
 
+    vector<PickStrategy> best_pick_strategies;
+    best_pick_strategies.push_back(MAX_REFINED);
+    best_pick_strategies.push_back(MAX_PREDECESSORS);
+    best_pick_strategies.push_back(GOAL);
+
     int states_offline = 0;
     for (int i = 0; i < g_goal.size(); ++i) {
         // Set specific goal.
@@ -61,8 +66,14 @@ void CegarSumHeuristic::initialize() {
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
         abstraction->set_max_time((max_time - g_timer()) / g_goal.size());
-        abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
         abstraction->set_log_h(options.get<bool>("log_h"));
+
+        PickStrategy pick_strategy = PickStrategy(options.get_enum("pick"));
+        if (pick_strategy == BEST2) {
+            pick_strategy = best_pick_strategies[i % 2];
+        }
+        cout << "Pick strategy: " << pick_strategy << endl;
+        abstraction->set_pick_strategy(pick_strategy);
 
         abstraction->build(h_updates);
         avg_h_values.push_back(abstraction->get_avg_h());
@@ -121,6 +132,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_REFINED");
     pick_strategies.push_back("MIN_PREDECESSORS");
     pick_strategies.push_back("MAX_PREDECESSORS");
+    pick_strategies.push_back("BEST2");
     parser.add_enum_option("pick", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied condition");
     parser.add_option<int>("h_updates", -1, "how often to update the abstract h-values");
