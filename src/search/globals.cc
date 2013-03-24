@@ -334,7 +334,7 @@ void no_memory () {
         g_memory_buffer = 0;
     } else {
         cout << "Memory buffer already released --> Exiting" << endl;
-        exit(1);
+        throw bad_alloc();
     }
 }
 
