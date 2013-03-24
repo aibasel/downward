@@ -38,7 +38,9 @@ enum PickStrategy {
     MAX_REFINED,
     // Number of predecessors in ordering of causal graph.
     MIN_PREDECESSORS,
-    MAX_PREDECESSORS
+    MAX_PREDECESSORS,
+    // Only for cegar_sum.
+    BEST2
 };
 
 class Abstraction {
