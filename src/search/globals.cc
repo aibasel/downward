@@ -260,6 +260,9 @@ void read_everything(istream &in) {
     // NOTE: causal graph is computed from the problem specification,
     // so must be built after the problem has been read in.
     g_causal_graph = new CausalGraph;
+
+    for (int i = 0; i < g_operators.size(); ++i)
+        g_original_op_costs.push_back(g_operators[i].get_cost());
     g_cegar_abstraction = 0;
     g_memory_buffer = 0;
     set_new_handler(no_memory);
@@ -362,6 +365,7 @@ string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 
 cegar_heuristic::Abstraction *g_cegar_abstraction;
-std::vector<std::pair<int, int> > g_cegar_goal;
+std::vector<std::pair<int, int> > g_original_goal;
+std::vector<int> g_original_op_costs;
 
 char *g_memory_buffer;

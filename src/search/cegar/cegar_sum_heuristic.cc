@@ -44,25 +44,21 @@ void CegarSumHeuristic::initialize() {
     if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INFINITY)
         max_states_offline = INFINITY;
 
-    // Vector with operator costs. These will be set to zero by the abstractions.
-    vector<int> admissible_operator_costs;
-    for (int i = 0; i < g_operators.size(); ++i) {
-        admissible_operator_costs.push_back(g_operators[i].get_cost());
-    }
-
     vector<PickStrategy> best_pick_strategies;
     best_pick_strategies.push_back(MAX_REFINED);
     best_pick_strategies.push_back(MAX_PREDECESSORS);
     best_pick_strategies.push_back(GOAL);
 
+    // Copy original goal in order to be able to change it for additive abstractions.
+    g_original_goal = g_goal;
+
     int states_offline = 0;
-    for (int i = 0; i < g_goal.size(); ++i) {
+    for (int i = 0; i < g_original_goal.size(); ++i) {
         // Set specific goal.
-        g_cegar_goal.clear();
-        g_cegar_goal.push_back(g_goal[i]);
+        g_goal.clear();
+        g_goal.push_back(g_original_goal[i]);
 
         Abstraction *abstraction = new Abstraction();
-        abstraction->set_operator_costs(&admissible_operator_costs);
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
         abstraction->set_max_time((max_time - g_timer()) / g_goal.size());
@@ -88,6 +84,9 @@ void CegarSumHeuristic::initialize() {
         }
     }
     print_statistics();
+    g_goal = g_original_goal;
+    for (int i = 0; i < g_operators.size(); ++i)
+        g_operators[i].set_cost(g_original_op_costs[i]);
 
     if (!search)
         exit(0);

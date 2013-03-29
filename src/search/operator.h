@@ -98,6 +98,11 @@ public:
     mutable bool marker1, marker2; // HACK! HACK!
 
     int get_cost() const {return cost; }
+    // Set admissible operator cost for additive abstractions.
+    void set_cost(int new_cost) {
+        assert(new_cost >= 0);
+        cost = new_cost;
+    }
 };
 
 #endif

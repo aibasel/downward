@@ -67,7 +67,6 @@ private:
     mutable RandomNumberGenerator rng;
 
     // Members for additive abstractions.
-    vector<int> *operator_costs;
     mutable vector<int> needed_operator_costs;
 
     // Statistics.
@@ -130,9 +129,6 @@ private:
     void update_h_values() const;
     void log_h_values() const;
 
-    // Return the admissible operator cost. This is either the original cost or 0.
-    int get_operator_cost(const Operator *op) const;
-
 public:
     Abstraction();
     ~Abstraction();
@@ -158,7 +154,6 @@ public:
 
     // Methods for additive abstractions.
     int get_op_index(const Operator *op) const;
-    void set_operator_costs(vector<int> *costs) { operator_costs = costs; }
     // For each operator op from a1 to a2, set cost'(op) = max(h(a1)-h(a2), 0).
     // This makes the next abstraction additive to all previous ones.
     void adapt_operator_costs();
