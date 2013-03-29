@@ -89,9 +89,9 @@ void get_unmet_preconditions(const Operator &op, const State &state, Splits *spl
 }
 
 void get_unmet_goal_conditions(const State &state, Splits *splits) {
-    for (int i = 0; i < g_cegar_goal.size(); i++) {
-        int var = g_cegar_goal[i].first;
-        int value = g_cegar_goal[i].second;
+    for (int i = 0; i < g_goal.size(); i++) {
+        int var = g_goal[i].first;
+        int value = g_goal[i].second;
         if (state[var] != value) {
             vector<int> wanted;
             wanted.push_back(value);
@@ -101,16 +101,16 @@ void get_unmet_goal_conditions(const State &state, Splits *splits) {
 }
 
 bool goal_var(int var) {
-    for (int i = 0; i < g_cegar_goal.size(); i++) {
-        if (var == g_cegar_goal[i].first)
+    for (int i = 0; i < g_goal.size(); i++) {
+        if (var == g_goal[i].first)
             return true;
     }
     return false;
 }
 
 bool test_cegar_goal(const State &state) {
-    for (int i = 0; i < g_cegar_goal.size(); i++) {
-        if (state[g_cegar_goal[i].first] != g_cegar_goal[i].second) {
+    for (int i = 0; i < g_goal.size(); i++) {
+        if (state[g_goal[i].first] != g_goal[i].second) {
             return false;
         }
     }
@@ -196,8 +196,8 @@ void write_causal_graph(const CausalGraph &causal_graph) {
             dotfile << "  " << var << " -> " << successors[i] << ";" << endl;
         }
     }
-    for (int i = 0; i < g_cegar_goal.size(); i++) {
-        int var = g_cegar_goal[i].first;
+    for (int i = 0; i < g_goal.size(); i++) {
+        int var = g_goal[i].first;
         dotfile << var << " [color=red];" << endl;
     }
     dotfile << "}" << endl;
