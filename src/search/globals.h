@@ -38,6 +38,7 @@ bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
 
 // If g_memory_buffer is still present, delete it otherwise halt.
 void no_memory();
+void reset_original_goals_and_costs();
 
 
 extern bool g_use_metric;
