@@ -263,6 +263,8 @@ void read_everything(istream &in) {
 
     for (int i = 0; i < g_operators.size(); ++i)
         g_original_op_costs.push_back(g_operators[i].get_cost());
+    g_original_goal = g_goal;
+
     g_cegar_abstraction = 0;
     g_memory_buffer = 0;
     set_new_handler(no_memory);
@@ -339,6 +341,13 @@ void no_memory () {
         cout << "Memory buffer already released --> Exiting" << endl;
         throw bad_alloc();
     }
+}
+
+void reset_original_goals_and_costs() {
+    g_goal = g_original_goal;
+    assert(g_original_op_costs.size() == g_operators.size());
+    for (int i = 0; i < g_operators.size(); ++i)
+        g_operators[i].set_cost(g_original_op_costs[i]);
 }
 
 

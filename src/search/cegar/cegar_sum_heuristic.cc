@@ -49,9 +49,6 @@ void CegarSumHeuristic::initialize() {
     best_pick_strategies.push_back(MAX_PREDECESSORS);
     best_pick_strategies.push_back(GOAL);
 
-    // Copy original goal in order to be able to change it for additive abstractions.
-    g_original_goal = g_goal;
-
     int states_offline = 0;
     for (int i = 0; i < g_original_goal.size(); ++i) {
         // Set specific goal.
@@ -61,7 +58,7 @@ void CegarSumHeuristic::initialize() {
         Abstraction *abstraction = new Abstraction();
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
-        abstraction->set_max_time((max_time - g_timer()) / g_goal.size());
+        abstraction->set_max_time((max_time - g_timer()) / (g_original_goal.size() - i));
         abstraction->set_log_h(options.get<bool>("log_h"));
 
         PickStrategy pick_strategy = PickStrategy(options.get_enum("pick"));
@@ -84,9 +81,7 @@ void CegarSumHeuristic::initialize() {
         }
     }
     print_statistics();
-    g_goal = g_original_goal;
-    for (int i = 0; i < g_operators.size(); ++i)
-        g_operators[i].set_cost(g_original_op_costs[i]);
+    reset_original_goals_and_costs();
 
     if (!search)
         exit(0);
