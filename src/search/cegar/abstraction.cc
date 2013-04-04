@@ -66,6 +66,11 @@ Abstraction::Abstraction()
             cout << var << ":" << g_variable_domain[var] << " ";
         }
         cout << endl;
+        for (int i = 0; i < g_original_goal.size(); ++i) {
+            int var = g_original_goal[i].first;
+            int value = g_original_goal[i].second;
+            cout << "Goal " << var << "=" << value << " " << g_fact_names[var][value] << endl;
+        }
     }
 }
 
