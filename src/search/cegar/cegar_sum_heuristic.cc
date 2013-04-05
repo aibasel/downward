@@ -19,7 +19,8 @@ CegarSumHeuristic::CegarSumHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
       h_updates(opts.get<int>("h_updates")),
-      search(opts.get<bool>("search")) {
+      search(opts.get<bool>("search")),
+      goal_order(GoalOrder(options.get_enum("goal_order"))) {
     DEBUG = opts.get<bool>("debug");
 }
 
@@ -44,16 +45,28 @@ void CegarSumHeuristic::initialize() {
     if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INFINITY)
         max_states_offline = INFINITY;
 
+    vector<pair<int, int> > goal;
+
+    // Goal ordering strategies.
+    if (goal_order == ORIGINAL) {
+        goal = g_original_goal;
+    } else if (goal_order == MIXED) {
+
+    } else if (goal_order == CG_FORWARD) {
+
+    }
+    assert(goal.size() == g_original_goal.size());
+
     vector<PickStrategy> best_pick_strategies;
     best_pick_strategies.push_back(MAX_REFINED);
     best_pick_strategies.push_back(MAX_PREDECESSORS);
     best_pick_strategies.push_back(GOAL);
 
     int states_offline = 0;
-    for (int i = 0; i < g_original_goal.size(); ++i) {
+    for (int i = 0; i < goal.size(); ++i) {
         // Set specific goal.
         g_goal.clear();
-        g_goal.push_back(g_original_goal[i]);
+        g_goal.push_back(goal[i]);
 
         Abstraction *abstraction = new Abstraction();
 
@@ -129,6 +142,13 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("BEST2");
     parser.add_enum_option("pick", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied condition");
+    vector<string> goal_order_strategies;
+    goal_order_strategies.push_back("ORIGINAL");
+    goal_order_strategies.push_back("MIXED");
+    goal_order_strategies.push_back("CG_FORWARD");
+    goal_order_strategies.push_back("CG_BACKWARD");
+    parser.add_enum_option("goal_order", goal_order_strategies, "ORIGINAL",
+                           "order in which the goals are refined for");
     parser.add_option<int>("h_updates", -1, "how often to update the abstract h-values");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
     parser.add_option<bool>("debug", false, "print debugging output");
