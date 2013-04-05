@@ -11,6 +11,7 @@
 #include "successor_generator.h"
 #include "timer.h"
 #include "utilities.h"
+#include "cegar/utils.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -261,6 +262,17 @@ void read_everything(istream &in) {
     // so must be built after the problem has been read in.
     g_causal_graph = new CausalGraph;
 
+    cegar_heuristic::partial_ordering(*g_causal_graph, &g_causal_graph_ordering);
+    g_causal_graph_ordering_pos.resize(g_causal_graph_ordering.size(), cegar_heuristic::UNDEFINED);
+    for (int i = 0; i < g_causal_graph_ordering.size(); ++i) {
+        int var = g_causal_graph_ordering[i];
+        g_causal_graph_ordering_pos[var] = i;
+    }
+    cout << "Causal graph ordering: ";
+    for (int pos = 0; pos < g_causal_graph_ordering.size(); ++pos)
+        cout << g_causal_graph_ordering[pos] << " ";
+    cout << endl;
+
     for (int i = 0; i < g_operators.size(); ++i)
         g_original_op_costs.push_back(g_operators[i].get_cost());
     g_original_goal = g_goal;
@@ -376,5 +388,7 @@ RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 cegar_heuristic::Abstraction *g_cegar_abstraction;
 std::vector<std::pair<int, int> > g_original_goal;
 std::vector<int> g_original_op_costs;
+std::vector<int> g_causal_graph_ordering;
+std::vector<int> g_causal_graph_ordering_pos;
 
 char *g_memory_buffer;

@@ -27,6 +27,10 @@ CegarSumHeuristic::CegarSumHeuristic(const Options &opts)
 CegarSumHeuristic::~CegarSumHeuristic() {
 }
 
+bool sort_cg_forward(pair<int, int> atom1, pair<int, int> atom2) {
+    return g_causal_graph_ordering_pos[atom1.first] < g_causal_graph_ordering_pos[atom2.first];
+}
+
 void CegarSumHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int max_states_offline = options.get<int>("max_states_offline");
@@ -45,15 +49,20 @@ void CegarSumHeuristic::initialize() {
     if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INFINITY)
         max_states_offline = INFINITY;
 
-    vector<pair<int, int> > goal;
+    vector<pair<int, int> > goal(g_original_goal);
 
     // Goal ordering strategies.
     if (goal_order == ORIGINAL) {
-        goal = g_original_goal;
+        // Nothing to do.
     } else if (goal_order == MIXED) {
-
-    } else if (goal_order == CG_FORWARD) {
-
+        random_shuffle(goal.begin(), goal.end());
+    } else if (goal_order == CG_FORWARD or goal_order == CG_BACKWARD) {
+        sort(goal.begin(), goal.end(), sort_cg_forward);
+        if (goal_order == CG_BACKWARD)
+            reverse(goal.begin(), goal.end());
+    } else {
+        cerr << "Not a valid goal ordering strategy: " << goal_order << endl;
+        exit(1);
     }
     assert(goal.size() == g_original_goal.size());
 
@@ -78,7 +87,8 @@ void CegarSumHeuristic::initialize() {
         if (pick_strategy == BEST2) {
             pick_strategy = best_pick_strategies[i % 2];
         }
-        cout << "Pick strategy: " << pick_strategy << endl;
+        cout << "Refine for " << goal[i].first << "=" << goal[i].second
+             << " with strategy " << pick_strategy << endl;
         abstraction->set_pick_strategy(pick_strategy);
 
         abstraction->build(h_updates);
