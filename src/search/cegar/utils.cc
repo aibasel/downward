@@ -119,6 +119,7 @@ bool test_cegar_goal(const State &state) {
 
 void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
     assert(order->empty());
+    bool debug = false;
     // Set of variables that still have to be ordered.
     set<int> vars;
     set<int>::iterator it;
@@ -150,7 +151,7 @@ void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
             set<int> &succ = successors[*it];
             assert(pre.size() <= g_variable_domain.size());
             assert(succ.size() <= g_variable_domain.size());
-            if (DEBUG) {
+            if (debug) {
                 cout << "pre(" << *it << "): ";
                 for (set<int>::iterator p = pre.begin(); p != pre.end(); ++p)
                     cout << *p << " ";
@@ -163,7 +164,7 @@ void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
             }
         }
         assert(var >= 0);
-        if (DEBUG)
+        if (debug)
             cout << "Choose " << var << endl << endl;
         order->push_back(var);
         vars.erase(var);
