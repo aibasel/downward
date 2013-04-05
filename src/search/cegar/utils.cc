@@ -128,10 +128,8 @@ void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
     }
     // For each variable, maintain sets of predecessor and successor variables
     // that haven't been ordered yet.
-    vector<set<int> > predecessors;
-    vector<set<int> > successors;
-    predecessors.resize(g_variable_domain.size());
-    successors.resize(g_variable_domain.size());
+    vector<set<int> > predecessors(g_variable_domain.size());
+    vector<set<int> > successors(g_variable_domain.size());
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         const vector<int> &pre = causal_graph.get_predecessors(var);
         for (int i = 0; i < pre.size(); ++i) {
@@ -142,10 +140,15 @@ void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
             successors[var].insert(succ[i]);
         }
     }
+    vector<int> front;
+    vector<int> back;
     while (!vars.empty()) {
-        int min_pre = g_variable_domain.size() + 1;
-        int max_succ = -1;
-        int var = -1;
+        int front_in = g_variable_domain.size() + 1;
+        int front_out = -1;
+        int front_var = -1;
+        int back_in = -1;
+        int back_out = g_variable_domain.size() + 1;
+        int back_var = -1;
         for (it = vars.begin(); it != vars.end(); ++it) {
             set<int> &pre = predecessors[*it];
             set<int> &succ = successors[*it];
@@ -157,16 +160,36 @@ void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
                     cout << *p << " ";
                 cout << "(" << succ.size() << " succ)" << endl;
             }
-            if ((pre.size() < min_pre) || ((pre.size() == min_pre) && (succ.size() > max_succ))) {
-                var = *it;
-                min_pre = pre.size();
-                max_succ = succ.size();
+            // A variable is a better front_var if it has fewer incoming or more
+            // outgoing edges.
+            if ((pre.size() < front_in) || ((pre.size() == front_in) && (succ.size() > front_out))) {
+                front_var = *it;
+                front_in = pre.size();
+                front_out = succ.size();
+            }
+            // A variable is a better back_var if it has fewer outgoing edges or
+            // more incoming edges.
+            if ((succ.size() < back_out) || ((succ.size() == back_out) && (pre.size() > back_in))) {
+                back_var = *it;
+                back_in = pre.size();
+                back_out = succ.size();
             }
         }
-        assert(var >= 0);
-        if (debug)
-            cout << "Choose " << var << endl << endl;
-        order->push_back(var);
+        assert(front_var >= 0);
+        assert(back_var >= 0);
+        int var = -1;
+        if ((front_in < back_out) || ((front_in == back_out) && (front_out >= back_in))) {
+            // When many edges leave the front node, it should probably be put in front.
+            var = front_var;
+            front.push_back(var);
+            if (debug)
+                cout << "Put in front: " << var << endl << endl;
+        } else {
+            var = back_var;
+            back.push_back(var);
+            if (debug)
+                cout << "Put in back: " << var << endl << endl;
+        }
         vars.erase(var);
         // For all unsorted variables, delete var from their predecessor and
         // successor lists.
@@ -181,6 +204,9 @@ void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
                 succ.erase(pos);
         }
     }
+    reverse(back.begin(), back.end());
+    order->insert(order->begin(), front.begin(), front.end());
+    order->insert(order->end(), back.begin(), back.end());
     assert(order->size() == g_variable_domain.size());
 }
 

@@ -30,9 +30,10 @@ void get_unmet_goal_conditions(const State &state, Splits *splits);
 bool goal_var(int var);
 bool test_cegar_goal(const State &s);
 
-// Create a "partial order" from the causal graph. Since the CG is not a DAG,
-// we use the following approximation: Order vars with the least incoming edges
-// first. In case of ties, prefer vars with the most outgoing edges.
+// Create an ordering of the variables in the causal graph. Since the CG is not
+// a DAG, we use the following approximation: Put the vars with few incoming and
+// many outgoing edges in front and vars with few outgoing and many incoming
+// edges in the back.
 void partial_ordering(const CausalGraph &causal_graph, vector<int> *order);
 
 void write_causal_graph(const CausalGraph &causal_graph);
