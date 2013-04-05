@@ -11,6 +11,13 @@ class Abstraction;
 
 const int DEFAULT_STATES_OFFLINE = 10000;
 
+enum GoalOrder {
+    ORIGINAL,
+    MIXED,
+    CG_FORWARD,
+    CG_BACKWARD
+};
+
 class CegarSumHeuristic : public Heuristic {
     const Options options;
     // How many times should the goal distances be updated? A higher number
@@ -18,6 +25,7 @@ class CegarSumHeuristic : public Heuristic {
     // runtime.
     const int h_updates;
     const bool search;
+    const GoalOrder goal_order;
     std::vector<Abstraction *> abstractions;
     std::vector<double> avg_h_values;
 protected:
