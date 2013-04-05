@@ -53,8 +53,14 @@ Abstraction::Abstraction()
         single->add_loop(&g_operators[i]);
     }
     states.insert(init);
-    if (g_causal_graph)
+    if (g_causal_graph) {
         partial_ordering(*g_causal_graph, &cg_partial_ordering);
+        cg_partial_ordering_pos.resize(cg_partial_ordering.size(), UNDEFINED);
+        for (int i = 0; i < cg_partial_ordering.size(); ++i) {
+            int var = cg_partial_ordering[i];
+            cg_partial_ordering_pos[var] = i;
+        }
+    }
     if (DEBUG) {
         cout << "Causal graph ordering: ";
         for (int pos = 0; pos < cg_partial_ordering.size(); ++pos) {
@@ -505,17 +511,15 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         int max_pos = -1;
         for (int i = 0; i < splits.size(); ++i) {
             int var = splits[i].first;
-            for (int pos = 0; pos < cg_partial_ordering.size(); ++pos) {
-                if (var == cg_partial_ordering[pos]) {
-                    if (pick == MIN_PREDECESSORS && pos < min_pos) {
-                        cond = i;
-                        min_pos = pos;
-                    }
-                    if (pick == MAX_PREDECESSORS && pos > max_pos) {
-                        cond = i;
-                        max_pos = pos;
-                    }
-                }
+            int pos = cg_partial_ordering_pos[var];
+            assert(pos != UNDEFINED);
+            if (pick == MIN_PREDECESSORS && pos < min_pos) {
+                cond = i;
+                min_pos = pos;
+            }
+            if (pick == MAX_PREDECESSORS && pos > max_pos) {
+                cond = i;
+                max_pos = pos;
             }
         }
     } else {
@@ -652,6 +656,7 @@ void Abstraction::release_memory() {
     cout << "Release memory" << endl;
     assert(!memory_released);
     vector<int>().swap(cg_partial_ordering);
+    vector<int>().swap(cg_partial_ordering_pos);
     delete queue;
     queue = 0;
     if (g_memory_buffer) {

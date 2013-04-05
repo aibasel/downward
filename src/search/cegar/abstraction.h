@@ -97,6 +97,8 @@ private:
 
     // Ordering of the variables in the task's causal graph.
     std::vector<int> cg_partial_ordering;
+    // Positions in the causal graph ordering, ordered by variable.
+    std::vector<int> cg_partial_ordering_pos;
 
     // Split state into two child states.
     void refine(AbstractState *state, int var, const std::vector<int> &wanted);
