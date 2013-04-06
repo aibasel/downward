@@ -15,7 +15,9 @@ enum GoalOrder {
     ORIGINAL,
     MIXED,
     CG_FORWARD,
-    CG_BACKWARD
+    CG_BACKWARD,
+    DOMAIN_SIZE_UP,
+    DOMAIN_SIZE_DOWN
 };
 
 class CegarSumHeuristic : public Heuristic {

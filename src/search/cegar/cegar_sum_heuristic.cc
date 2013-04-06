@@ -31,6 +31,10 @@ bool sort_cg_forward(pair<int, int> atom1, pair<int, int> atom2) {
     return g_causal_graph_ordering_pos[atom1.first] < g_causal_graph_ordering_pos[atom2.first];
 }
 
+bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
+    return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
+}
+
 void CegarSumHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int max_states_offline = options.get<int>("max_states_offline");
@@ -59,6 +63,10 @@ void CegarSumHeuristic::initialize() {
     } else if (goal_order == CG_FORWARD or goal_order == CG_BACKWARD) {
         sort(goal.begin(), goal.end(), sort_cg_forward);
         if (goal_order == CG_BACKWARD)
+            reverse(goal.begin(), goal.end());
+    } else if (goal_order == DOMAIN_SIZE_UP or goal_order == DOMAIN_SIZE_DOWN) {
+        sort(goal.begin(), goal.end(), sort_domain_size_up);
+        if (goal_order == DOMAIN_SIZE_DOWN)
             reverse(goal.begin(), goal.end());
     } else {
         cerr << "Not a valid goal ordering strategy: " << goal_order << endl;
@@ -157,6 +165,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     goal_order_strategies.push_back("MIXED");
     goal_order_strategies.push_back("CG_FORWARD");
     goal_order_strategies.push_back("CG_BACKWARD");
+    goal_order_strategies.push_back("DOMAIN_SIZE_UP");
+    goal_order_strategies.push_back("DOMAIN_SIZE_DOWN");
     parser.add_enum_option("goal_order", goal_order_strategies, "ORIGINAL",
                            "order in which the goals are refined for");
     parser.add_option<int>("h_updates", -1, "how often to update the abstract h-values");
