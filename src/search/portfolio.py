@@ -9,8 +9,10 @@ import sys
 
 
 DEFAULT_TIMEOUT = 1800
-# Measurements show that this process uses about 35 MB of virtual memory.
-BYTES_FOR_PYTHON = 50 * 1024 * 1024
+# psutil reports meminfo(rss=8609792, vms=49770496) for the process that runs
+# this module. top confirms this measurement. We use 128MB as padding to
+# be on the safe side.
+BYTES_FOR_PYTHON = 128 * 1024 * 1024
 
 def parse_args():
     parser = optparse.OptionParser()
