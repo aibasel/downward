@@ -12,7 +12,7 @@ DEFAULT_TIMEOUT = 1800
 # psutil reports meminfo(rss=8609792, vms=49770496) for the process that runs
 # this module. top confirms this measurement. We use some more padding to
 # be on the safe side.
-BYTES_FOR_PYTHON = 64 * 1024 * 1024
+BYTES_FOR_PYTHON = 96 * 1024 * 1024
 
 def parse_args():
     parser = optparse.OptionParser()
