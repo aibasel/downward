@@ -16,6 +16,7 @@
 #include <vector>
 
 namespace cegar_heuristic {
+
 const int INFINITY = std::numeric_limits<int>::max();
 const int STATES_LOG_STEP = 1000;
 const int DEFAULT_H_UPDATE_STEP = 1000;
@@ -40,7 +41,10 @@ enum PickStrategy {
     MIN_PREDECESSORS,
     MAX_PREDECESSORS,
     // Only for cegar_sum.
-    BEST2
+    BEST2,
+    // Choose the variable whose split yields the min/max number of new operators.
+    MIN_OPS,
+    MAX_OPS
 };
 
 class Abstraction {

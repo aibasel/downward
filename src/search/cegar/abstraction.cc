@@ -509,6 +509,52 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
                 max_pos = pos;
             }
         }
+    } else if (pick == MIN_OPS || pick == MAX_OPS) {
+        // Make the variables easily accessible.
+        vector<int> vars(splits.size());
+        for (int i = 0; i < splits.size(); ++i) {
+            vars[i] = splits[i].first;
+        }
+
+        // Record number of new ops per variable.
+        vector<int> new_ops(vars.size(), 0);
+
+        // Loop over all incoming ops o_in and record for each possible split
+        // variable the number of resulting operators. For each operator we get
+        // one new operator if eff(o_in) is defined and two otherwise.
+        for (int i = 0; i < state.get_prev().size(); ++i) {
+            Operator *op = state.get_prev()[i].first;
+            for (int j = 0; j < vars.size(); ++j) {
+                int eff = get_post(*op, vars[j]);
+                new_ops[j] += (eff == UNDEFINED) ? 2 : 1;
+            }
+        }
+        // Loop over all outgoing ops o_out and record for each possible split
+        // variable the number of resulting operators. If eff(o_in) is defined
+        // we get one new operator, else two.
+        for (int i = 0; i < state.get_next().size(); ++i) {
+            Operator *op = state.get_next()[i].first;
+            for (int j = 0; j < vars.size(); ++j) {
+                int pre = get_pre(*op, vars[j]);
+                new_ops[j] += (pre == UNDEFINED) ? 2 : 1;
+            }
+        }
+        // Loop over all self-loops o and record for each possible split
+        // variable the number of resulting operators. If pre(o) is defined we
+        // get one new operator, else two.
+        for (int i = 0; i < state.get_loops().size(); ++i) {
+            Operator *op = state.get_loops()[i];
+            for (int j = 0; j < vars.size(); ++j) {
+                int pre = get_pre(*op, vars[j]);
+                new_ops[j] += (pre == UNDEFINED) ? 2 : 1;
+            }
+        }
+        cout << "Tentative new ops: " << to_string(new_ops) << endl;
+        if (pick == MIN_OPS) {
+            cond = min_element(new_ops.begin(), new_ops.end()) - new_ops.begin();
+        } else {
+            cond = max_element(new_ops.begin(), new_ops.end()) - new_ops.begin();
+        }
     } else {
         cout << "Invalid pick strategy: " << pick << endl;
         exit(2);
