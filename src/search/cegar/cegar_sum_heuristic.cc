@@ -158,6 +158,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MIN_PREDECESSORS");
     pick_strategies.push_back("MAX_PREDECESSORS");
     pick_strategies.push_back("BEST2");
+    pick_strategies.push_back("MIN_OPS");
+    pick_strategies.push_back("MAX_OPS");
     parser.add_enum_option("pick", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied condition");
     vector<string> goal_order_strategies;
