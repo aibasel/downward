@@ -402,6 +402,13 @@ def dump_task(init, goals, actions, axioms, axiom_layer_dict):
             print("%s: layer %d" % (atom, layer))
     sys.stdout = old_stdout
 
+def remove_delete_effects(op):
+    for index, (var, pre, post, cond) in reversed(list(enumerate(op.pre_post))):
+        if pre != -1:
+            del op.pre_post[index]
+            op.prevail.append((var, pre))
+    op.prevail.sort()
+
 def translate_task(strips_to_sas, ranges, translation_key,
                    mutex_dict, mutex_ranges, mutex_key,
                    init, goals,
@@ -471,7 +478,7 @@ def unsolvable_sas_task(msg):
     return sas_tasks.SASTask(variables, mutexes, init, goal,
                              operators, axioms, metric)
 
-def pddl_to_sas(task):
+def pddl_to_sas(task, options):
     with timers.timing("Instantiating", block=True):
         (relaxed_reachable, atoms, actions, axioms,
          reachable_action_params) = instantiate.explore(task)
@@ -487,10 +494,17 @@ def pddl_to_sas(task):
     for item in goal_list:
         assert isinstance(item, pddl.Literal)
 
-    with timers.timing("Computing fact groups", block=True):
-        groups, mutex_groups, translation_key = fact_groups.compute_groups(
-            task, atoms, reachable_action_params,
-            partial_encoding=USE_PARTIAL_ENCODING)
+    if options.relaxed:
+        # No invariant syntheses -> one group for each fluent fact.
+        groups = [[fact] for fact in sorted(atoms)]
+        mutex_groups = []
+        translation_key = [[str(fact), str(fact.negate())] for group in groups
+                           for fact in group]
+    else:
+        with timers.timing("Computing fact groups", block=True):
+            groups, mutex_groups, translation_key = fact_groups.compute_groups(
+                task, atoms, reachable_action_params,
+                partial_encoding=USE_PARTIAL_ENCODING)
 
     with timers.timing("Building STRIPS to SAS dictionary"):
         ranges, strips_to_sas = strips_to_sas_dictionary(
@@ -515,6 +529,10 @@ def pddl_to_sas(task):
             mutex_dict, mutex_ranges, mutex_key,
             task.init, goal_list, actions, axioms, task.use_min_cost_metric,
             implied_facts)
+
+    if options.relaxed:
+        for op in sas_task.operators:
+            remove_delete_effects(op)
 
     print("%d implied effects removed" % removed_implied_effect_counter)
     print("%d effect conditions simplified" % simplified_effect_condition_counter)
@@ -620,6 +638,8 @@ def check_python_version(force_old_python):
 
 def parse_options():
     optparser = optparse.OptionParser(usage="Usage: %prog [options] [<domain.pddl>] <task.pddl>")
+    optparser.add_option("--relaxed", action="store_true",
+                         help="Output relaxed task (no delete-effects)")
     optparser.add_option("--force-old-python", action="store_true",
                          help="Allow running the translator with slow Python 2.6")
     options, args = optparser.parse_args()
@@ -641,7 +661,7 @@ def main():
     # import psyco
     # psyco.full()
 
-    sas_task = pddl_to_sas(task)
+    sas_task = pddl_to_sas(task, options)
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):

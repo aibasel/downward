@@ -240,7 +240,7 @@ def pddl_to_sas(task):
         assert isinstance(item, pddl.Literal)
 
     # switched off invariant syntheses -> one group for each fluent fact
-    groups = [[fact] for fact in atoms]
+    groups = [[fact] for fact in sorted(atoms)]
     mutex_groups = []
     translation_key = [[str(fact),str(fact.negate())] for group in groups
                                                       for fact in group]
