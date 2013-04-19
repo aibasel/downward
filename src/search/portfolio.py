@@ -93,6 +93,8 @@ def determine_timeout(remaining_time_at_start, configs, pos):
     remaining_relative_time = sum(config[0] for config in configs[pos:])
     print "config %d: relative time %d, remaining %d" % (
         pos, relative_time, remaining_relative_time)
+    # For the last config we have relative_time == remaining_relative_time, so
+    # we use all of the remaining time at the end.
     run_timeout = remaining_time * relative_time / remaining_relative_time
     print "timeout: %.2f" % run_timeout
     return run_timeout
@@ -201,11 +203,7 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
 
 def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
     for pos, (relative_time, args) in enumerate(configs):
-        if pos == len(configs) - 1:
-            # Do not add timeout for last config.
-            timeout = None
-        else:
-            timeout = determine_timeout(remaining_time_at_start, configs, pos)
+        timeout = determine_timeout(remaining_time_at_start, configs, pos)
         run_search(planner, args, plan_file, timeout, memory)
 
         if os.path.exists(plan_file):
