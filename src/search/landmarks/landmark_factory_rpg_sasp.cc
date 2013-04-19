@@ -231,14 +231,14 @@ static string get_predicate_for_fact(int var_no, int value) {
     const string &fact_name = g_fact_names[var_no][value];
     if (fact_name == "<none of those>")
         return "";
-    int predicate_pos = -1;
+    int predicate_pos = 0;
     if (fact_name.substr(0, 5) == "Atom ") {
         predicate_pos = 5;
     } else if (fact_name.substr(0, 12) == "NegatedAtom ") {
         predicate_pos = 12;
     }
     int paren_pos = fact_name.find('(', predicate_pos);
-    if (predicate_pos == -1 || paren_pos == string::npos) {
+    if (predicate_pos == 0 || paren_pos == string::npos) {
         cerr << "error: cannot extract predicate from fact: "
              << fact_name << endl;
         exit(1);
