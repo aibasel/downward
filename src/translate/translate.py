@@ -9,6 +9,7 @@ from copy import deepcopy
 import axiom_rules
 import fact_groups
 import instantiate
+import normalize
 import optparse
 import pddl
 import sas_tasks
@@ -620,6 +621,8 @@ def check_python_version(force_old_python):
 
 def parse_options():
     optparser = optparse.OptionParser(usage="Usage: %prog [options] [<domain.pddl>] <task.pddl>")
+    optparser.add_option("--relaxed", dest='generate_relaxed_task', action="store_true",
+                         help="Output relaxed task (no delete effects)")
     optparser.add_option("--force-old-python", action="store_true",
                          help="Allow running the translator with slow Python 2.6")
     options, args = optparser.parse_args()
@@ -637,9 +640,15 @@ def main():
     with timers.timing("Parsing"):
         task = pddl.open()
 
-    # EXPERIMENTAL!
-    # import psyco
-    # psyco.full()
+    with timers.timing("Normalizing task"):
+        normalize.normalize(task)
+
+    if options.generate_relaxed_task:
+        # Remove delete effects.
+        for action in task.actions:
+            for index, effect in reversed(list(enumerate(action.effects))):
+                if effect.literal.negated:
+                    del action.effects[index]
 
     sas_task = pddl_to_sas(task)
     dump_statistics(sas_task)
