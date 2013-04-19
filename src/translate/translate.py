@@ -472,7 +472,7 @@ def unsolvable_sas_task(msg):
     return sas_tasks.SASTask(variables, mutexes, init, goal,
                              operators, axioms, metric)
 
-def pddl_to_sas(task, options):
+def pddl_to_sas(task):
     with timers.timing("Instantiating", block=True):
         (relaxed_reachable, atoms, actions, axioms,
          reachable_action_params) = instantiate.explore(task)
@@ -654,7 +654,7 @@ def main():
     # import psyco
     # psyco.full()
 
-    sas_task = pddl_to_sas(task, options)
+    sas_task = pddl_to_sas(task)
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):
