@@ -154,7 +154,7 @@ def translate_facts(prog, task):
             prog.add_fact(fact)
 
 def translate(task):
-    # Make sure this method is only called for normalized tasks.
+    # Note: The function requires that the task has been normalized.
     with timers.timing("Generating Datalog program"):
         prog = PrologProgram()
         translate_facts(prog, task)
