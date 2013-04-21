@@ -195,11 +195,12 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
         if final_config:
             break
 
-    # run final config without time limit
+    # Run final config with limits in order not to hide potential problems.
     final_config = list(final_config)
     curr_plan_file = adapt_search(final_config, search_cost_type,
                                   heuristic_cost_type, plan_file)
-    run_search(planner, final_config, curr_plan_file)
+    timeout = remaining_time_at_start - sum(os.times()[:4])
+    run_search(planner, final_config, curr_plan_file, timeout, memory)
 
 def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
     for pos, (relative_time, args) in enumerate(configs):
