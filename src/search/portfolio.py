@@ -9,8 +9,14 @@ import sys
 
 
 DEFAULT_TIMEOUT = 1800
-# Measurements show that this process uses about 35 MB of virtual memory.
-BYTES_FOR_PYTHON = 50 * 1024 * 1024
+# psutil reports meminfo(rss=8609792, vms=49770496) for the process that runs
+# this module. top confirms this measurement. However, at least on the grid
+# even a padding of 96MB is too low. Only with 128MB padding the portfolios are
+# correctly stopped when the memory limit is exceeded.
+BYTES_FOR_PYTHON = 128 * 1024 * 1024
+
+# Use custom return code to signal that no solution has been found.
+PORTFOLIO_NO_PLAN = 90
 
 def parse_args():
     parser = optparse.OptionParser()
@@ -91,9 +97,14 @@ def determine_timeout(remaining_time_at_start, configs, pos):
     remaining_relative_time = sum(config[0] for config in configs[pos:])
     print "config %d: relative time %d, remaining %d" % (
         pos, relative_time, remaining_relative_time)
+    # For the last config we have relative_time == remaining_relative_time, so
+    # we use all of the remaining time at the end.
     run_timeout = remaining_time * relative_time / remaining_relative_time
     print "timeout: %.2f" % run_timeout
     return run_timeout
+
+def get_plan_files(plan_file):
+    return glob.glob("%s*" % plan_file)
 
 def run(configs, optimal=True, final_config=None, final_config_builder=None,
         timeout=None):
@@ -132,8 +143,7 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     assert extra_args[0][-1] in ["1", "2", "4"], extra_args
     planner = extra_args.pop(0)
 
-    safe_unlink(plan_file)
-    for filename in glob.glob("%s.*" % plan_file):
+    for filename in get_plan_files(plan_file):
         safe_unlink(filename)
     safe_unlink("plan_numbers_and_cost")
 
@@ -152,6 +162,11 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     else:
         run_sat(configs, unitcost, planner, plan_file, final_config,
                 final_config_builder, remaining_time_at_start, memory)
+
+    if get_plan_files(plan_file):
+        # We found at least one plan.
+        sys.exit(0)
+    sys.exit(PORTFOLIO_NO_PLAN)
 
 def run_sat(configs, unitcost, planner, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
@@ -191,19 +206,16 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
         if final_config:
             break
 
-    # run final config without time limit
+    # Run final config with limits in order not to hide potential problems.
     final_config = list(final_config)
     curr_plan_file = adapt_search(final_config, search_cost_type,
                                   heuristic_cost_type, plan_file)
-    run_search(planner, final_config, curr_plan_file)
+    timeout = remaining_time_at_start - sum(os.times()[:4])
+    run_search(planner, final_config, curr_plan_file, timeout, memory)
 
 def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
     for pos, (relative_time, args) in enumerate(configs):
-        if pos == len(configs) - 1:
-            # Do not add timeout for last config.
-            timeout = None
-        else:
-            timeout = determine_timeout(remaining_time_at_start, configs, pos)
+        timeout = determine_timeout(remaining_time_at_start, configs, pos)
         run_search(planner, args, plan_file, timeout, memory)
 
         if os.path.exists(plan_file):
