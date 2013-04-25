@@ -262,42 +262,44 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             extract_solution(goal);
             return true;
         }
-        Arcs &successors = (forward) ? state->get_next() : state->get_prev();
-        for (Arcs::iterator it = successors.begin(); it != successors.end(); ++it) {
-            Operator *op = it->first;
-            AbstractState *successor = it->second;
-
-            // Special code for additive abstractions.
-            if (forward && !use_h) {
-                // We are currently collecting the needed operator costs.
-                assert(needed_operator_costs.size() == g_operators.size());
-                // cost'(op) = h(a1) - h(a2)
-                const int needed_costs = state->get_h() - successor->get_h();
-                if (needed_costs > 0) {
-                    // needed_costs is negative if we reach a2 with op and
-                    // h(a2) > h(a1). This includes the case when we reach a
-                    // dead-end node. If h(a1)==h(a2) we don't have to update
-                    // anything since we initialize the listwith zeros. This
-                    // handles moving from one dead-end node to another.
-                    const int op_index = get_op_index(op);
-                    needed_operator_costs[op_index] = max(needed_operator_costs[op_index], needed_costs);
+        StatesToOps &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
+        for (StatesToOps::iterator it = successors.begin(); it != successors.end(); ++it) {
+            AbstractState *successor = it->first;
+            Operators &ops = it->second;
+            for (int i = 0; i < ops.size(); ++i) {
+                Operator *op = ops[i];
+                // Special code for additive abstractions.
+                if (forward && !use_h) {
+                    // We are currently collecting the needed operator costs.
+                    assert(needed_operator_costs.size() == g_operators.size());
+                    // cost'(op) = h(a1) - h(a2)
+                    const int needed_costs = state->get_h() - successor->get_h();
+                    if (needed_costs > 0) {
+                        // needed_costs is negative if we reach a2 with op and
+                        // h(a2) > h(a1). This includes the case when we reach a
+                        // dead-end node. If h(a1)==h(a2) we don't have to update
+                        // anything since we initialize the listwith zeros. This
+                        // handles moving from one dead-end node to another.
+                        const int op_index = get_op_index(op);
+                        needed_operator_costs[op_index] = max(needed_operator_costs[op_index], needed_costs);
+                    }
                 }
-            }
 
-            const int succ_g = g + op->get_cost();
-            if (successor->get_distance() > succ_g) {
-                successor->set_distance(succ_g);
-                int f = succ_g;
-                int h = successor->get_h();
-                if (use_h) {
-                    // Ignore dead-end states.
-                    if (h == INFINITY)
-                        continue;
-                    f += h;
+                const int succ_g = g + op->get_cost();
+                if (successor->get_distance() > succ_g) {
+                    successor->set_distance(succ_g);
+                    int f = succ_g;
+                    int h = successor->get_h();
+                    if (use_h) {
+                        // Ignore dead-end states.
+                        if (h == INFINITY)
+                            continue;
+                        f += h;
+                    }
+                    successor->set_predecessor(op, state);
+                    assert(f >= 0);
+                    queue->push(f, successor);
                 }
-                successor->set_predecessor(op, state);
-                assert(f >= 0);
-                queue->push(f, successor);
             }
         }
     }
@@ -510,6 +512,9 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             }
         }
     } else if (pick == MIN_OPS || pick == MAX_OPS) {
+        // TODO: Rewrite or leave out commented out code.
+        cond = 0;
+        /*
         // Make the variables easily accessible.
         vector<int> vars(splits.size());
         for (int i = 0; i < splits.size(); ++i) {
@@ -555,6 +560,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         } else {
             cond = max_element(new_ops.begin(), new_ops.end()) - new_ops.begin();
         }
+        */
     } else {
         cout << "Invalid pick strategy: " << pick << endl;
         exit(2);
@@ -622,12 +628,15 @@ void Abstraction::write_dot_file(int num) {
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *current_state = *it;
-        Arcs &next = current_state->get_next();
-        for (Arcs::iterator it = next.begin(); it != next.end(); ++it) {
-            Operator *op = it->first;
-            AbstractState *next_state = it->second;
-            dotfile << current_state->str() << " -> " << next_state->str()
-                    << " [label=\"" << op->get_name() << "\"];" << endl;
+        StatesToOps &next = current_state->get_arcs_out();
+        for (StatesToOps::iterator it = next.begin(); it != next.end(); ++it) {
+            AbstractState *next_state = it->first;
+            Operators &ops = it->second;
+            for (int i = 0; i < ops.size(); ++i) {
+                Operator *op = ops[i];
+                dotfile << current_state->str() << " -> " << next_state->str()
+                        << " [label=\"" << op->get_name() << "\"];" << endl;
+            }
         }
         if (draw_loops) {
             Loops &loops = current_state->get_loops();
@@ -704,35 +713,36 @@ void Abstraction::release_memory() {
 }
 
 void Abstraction::print_statistics() {
-    int nexts = 0, prevs = 0, total_loops = 0;
+    // TODO: Rewrite or leave out commented out code.
+    //int nexts = 0, prevs = 0, total_loops = 0;
     int unreachable_states = 0;
-    int arc_size = 0;
+    //int arc_size = 0;
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         if (state->get_h() == INFINITY)
             ++unreachable_states;
-        Arcs &next = state->get_next();
-        Arcs &prev = state->get_prev();
-        Loops &loops = state->get_loops();
-        nexts += next.size();
-        prevs += prev.size();
-        total_loops += loops.size();
-        arc_size += sizeof(next) + sizeof(Arc) * next.capacity() +
-                    sizeof(prev) + sizeof(Arc) * prev.capacity() +
-                    sizeof(loops) + sizeof(Operator *) * loops.capacity();
+        //Arcs &next = state->get_next();
+        //Arcs &prev = state->get_prev();
+        //Loops &loops = state->get_loops();
+        //nexts += next.size();
+        //prevs += prev.size();
+        //total_loops += loops.size();
+        //arc_size += sizeof(next) + sizeof(Arc) * next.capacity() +
+        //            sizeof(prev) + sizeof(Arc) * prev.capacity() +
+        //            sizeof(loops) + sizeof(Operator *) * loops.capacity();
     }
-    assert(nexts == prevs);
+    //assert(nexts == prevs);
 
-    cout << "Next-arcs: " << nexts << endl;
-    cout << "Prev-arcs: " << prevs << endl;
-    cout << "Self-loops: " << total_loops << endl;
-    cout << "Arcs total: " << nexts + prevs + total_loops << endl;
+    //cout << "Next-arcs: " << nexts << endl;
+    //cout << "Prev-arcs: " << prevs << endl;
+    //cout << "Self-loops: " << total_loops << endl;
+    //cout << "Arcs total: " << nexts + prevs + total_loops << endl;
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
     cout << "Unreachable states: " << unreachable_states << endl;
-    cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
+    //cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
     cout << "Init h: " << init->get_h() << endl;
     cout << "Average h: " << get_avg_h() << endl;
     cout << "CEGAR abstractions: 1" << endl;

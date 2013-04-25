@@ -102,29 +102,33 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
     // u --> v  was on the shortest path. We check if both paths u --> v1 and
     // u --> v2 are valid for the same operators. If so we do cascaded refinement.
     bool u_v1 = false, u_v2 = false;
-    for (Arcs::iterator it = prev.begin(); it != prev.end(); ++it) {
-        Operator *op = it->first;
-        AbstractState *u = it->second;
+    // TODO: Cache intersections.
+    for (StatesToOps::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
+        AbstractState *u = it->first;
+        Operators &prev = it->second;
         assert(u != this);
-        bool is_solution_arc = ((op == op_in) && (u == state_in));
-        int post = get_post(*op, var);
-        if (post == UNDEFINED) {
-            if (u->values->domains_intersect(*(v1->values), var)) {
+        for (int i = 0; i < prev.size(); ++i) {
+            Operator *op = prev[i];
+            bool is_solution_arc = ((op == op_in) && (u == state_in));
+            int post = get_post(*op, var);
+            if (post == UNDEFINED) {
+                if (u->values->domains_intersect(*(v1->values), var)) {
+                    u->add_arc(op, v1);
+                    u_v1 |= is_solution_arc;
+                }
+                if (u->values->domains_intersect(*(v2->values), var)) {
+                    u->add_arc(op, v2);
+                    u_v2 |= is_solution_arc;
+                }
+            } else if (v2->values->test(var, post)) {
+                u->add_arc(op, v2);
+                u_v2 |= is_solution_arc;
+            } else {
                 u->add_arc(op, v1);
                 u_v1 |= is_solution_arc;
             }
-            if (u->values->domains_intersect(*(v2->values), var)) {
-                u->add_arc(op, v2);
-                u_v2 |= is_solution_arc;
-            }
-        } else if (v2->values->test(var, post)) {
-            u->add_arc(op, v2);
-            u_v2 |= is_solution_arc;
-        } else {
-            u->add_arc(op, v1);
-            u_v1 |= is_solution_arc;
+            u->remove_next_arc(op, this);
         }
-        u->remove_next_arc(op, this);
     }
     // Indicate for the abstraction whether we should cascade the refinement.
     if (u_v1)
@@ -134,28 +138,32 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
 }
 
 void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    for (Arcs::iterator it = next.begin(); it != next.end(); ++it) {
-        Operator *op = it->first;
-        AbstractState *w = it->second;
+    // TODO: Cache intersections.
+    for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
+        AbstractState *w = it->first;
+        Operators &next = it->second;
         assert(w != this);
-        int pre = get_pre(*op, var);
-        int post = get_post(*op, var);
-        if (post == UNDEFINED) {
-            if (v1->values->domains_intersect(*w->values, var)) {
+        for (int i = 0; i < next.size(); ++i) {
+            Operator *op = next[i];
+            int pre = get_pre(*op, var);
+            int post = get_post(*op, var);
+            if (post == UNDEFINED) {
+                if (v1->values->domains_intersect(*w->values, var)) {
+                    v1->add_arc(op, w);
+                }
+                if (v2->values->domains_intersect(*w->values, var)) {
+                    v2->add_arc(op, w);
+                }
+            } else if (pre == UNDEFINED) {
+                v1->add_arc(op, w);
+                v2->add_arc(op, w);
+            } else if (v2->values->test(var, pre)) {
+                v2->add_arc(op, w);
+            } else {
                 v1->add_arc(op, w);
             }
-            if (v2->values->domains_intersect(*w->values, var)) {
-                v2->add_arc(op, w);
-            }
-        } else if (pre == UNDEFINED) {
-            v1->add_arc(op, w);
-            v2->add_arc(op, w);
-        } else if (v2->values->test(var, pre)) {
-            v2->add_arc(op, w);
-        } else {
-            v1->add_arc(op, w);
+            w->remove_prev_arc(op, this);
         }
-        w->remove_prev_arc(op, this);
     }
 }
 
@@ -240,29 +248,29 @@ void AbstractState::add_arc(Operator *op, AbstractState *other) {
     // 3 domains performance was better with sorted arcs.
     // Inlining this method has no effect either.
     assert(other != this);
-    next.push_back(Arc(op, other));
-    other->prev.push_back(Arc(op, this));
+    arcs_out[other].push_back(op);
+    other->arcs_in[this].push_back(op);
 }
 
 void AbstractState::add_loop(Operator *op) {
     loops.push_back(op);
 }
 
-void AbstractState::remove_arc(Arcs &arcs, Operator *op, AbstractState *other) {
-    // Move arcs.back() to pos to speed things up.
-    Arcs::iterator pos = find(arcs.begin(), arcs.end(), Arc(op, other));
-    assert(pos != arcs.end());
+void AbstractState::remove_arc(StatesToOps &arcs, Operator *op, AbstractState *other) {
+    Operators &ops = arcs[other];
+    Operators::iterator pos = find(ops.begin(), ops.end(), op);
+    assert(pos != ops.end());
     // For PODs assignment is faster than swapping.
-    *pos = arcs.back();
-    arcs.pop_back();
+    *pos = ops.back();
+    ops.pop_back();
 }
 
 void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
-    remove_arc(next, op, other);
+    remove_arc(arcs_out, op, other);
 }
 
 void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
-    remove_arc(prev, op, other);
+    remove_arc(arcs_in, op, other);
 }
 
 bool AbstractState::is_abstraction_of(const State &conc_state) const {

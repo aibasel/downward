@@ -17,6 +17,7 @@ const bool WRITE_DOT_FILES = false;
 
 const int UNDEFINED = -1;
 
+typedef std::vector<Operator *> Operators;
 typedef boost::dynamic_bitset<> Bitset;
 typedef std::vector<std::pair<int, std::vector<int> > > Splits;
 

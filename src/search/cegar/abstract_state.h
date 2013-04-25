@@ -18,6 +18,7 @@ class Values;
 typedef pair<Operator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
 typedef std::vector<Operator *> Loops;
+typedef std::map<AbstractState *, Operators> StatesToOps;
 
 class AbstractState {
 private:
@@ -28,8 +29,9 @@ private:
     // Abstract domains for each variable.
     Values *values;
 
-    // Incoming and outgoing transitions.
-    Arcs next, prev;
+    // Incoming and outgoing transitions grouped by the abstract state they come
+    // from or go to.
+    StatesToOps arcs_out, arcs_in;
 
     // Self-loops.
     Loops loops;
@@ -46,7 +48,7 @@ private:
     // This state's node in the refinement hierarchy.
     Node *node;
 
-    void remove_arc(Arcs &arcs, Operator *op, AbstractState *other);
+    void remove_arc(StatesToOps &arcs, Operator *op, AbstractState *other);
     void update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_loops(int var, AbstractState *v1, AbstractState *v2);
@@ -93,8 +95,8 @@ public:
     AbstractState *get_state_out() const {return state_out; }
     void reset_neighbours();
 
-    Arcs &get_next() {return next; }
-    Arcs &get_prev() {return prev; }
+    StatesToOps &get_arcs_out() {return arcs_out; };
+    StatesToOps &get_arcs_in() {return arcs_in; };
     Loops &get_loops() {return loops; }
 
     Node *get_node() const {return node; }
