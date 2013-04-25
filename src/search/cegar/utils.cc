@@ -117,6 +117,10 @@ bool test_cegar_goal(const State &state) {
     return true;
 }
 
+bool cheaper(Operator *op1, Operator* op2) {
+    return op1->get_cost() < op2->get_cost();
+}
+
 void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
     assert(order->empty());
     bool debug = false;

@@ -42,7 +42,8 @@ Abstraction::Abstraction()
       max_time(INFINITY),
       use_astar(true),
       log_h(false),
-      memory_released(false) {
+      memory_released(false),
+      is_unit_cost(false) {
     assert(!g_goal.empty());
 
     assert(!g_memory_buffer);
@@ -63,6 +64,14 @@ Abstraction::Abstraction()
             int var = g_original_goal[i].first;
             int value = g_original_goal[i].second;
             cout << "Goal " << var << "=" << value << " " << g_fact_names[var][value] << endl;
+        }
+    }
+
+    is_unit_cost = true;
+    for (size_t i = 0; i < g_operators.size(); ++i) {
+        if (g_operators[i].get_cost() != 1) {
+            is_unit_cost = false;
+            break;
         }
     }
 }
@@ -266,40 +275,47 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         for (StatesToOps::iterator it = successors.begin(); it != successors.end(); ++it) {
             AbstractState *successor = it->first;
             Operators &ops = it->second;
-            for (int i = 0; i < ops.size(); ++i) {
-                Operator *op = ops[i];
-                // Special code for additive abstractions.
-                if (forward && !use_h) {
-                    // We are currently collecting the needed operator costs.
-                    assert(needed_operator_costs.size() == g_operators.size());
-                    // cost'(op) = h(a1) - h(a2)
-                    const int needed_costs = state->get_h() - successor->get_h();
-                    if (needed_costs > 0) {
-                        // needed_costs is negative if we reach a2 with op and
-                        // h(a2) > h(a1). This includes the case when we reach a
-                        // dead-end node. If h(a1)==h(a2) we don't have to update
-                        // anything since we initialize the listwith zeros. This
-                        // handles moving from one dead-end node to another.
-                        const int op_index = get_op_index(op);
-                        needed_operator_costs[op_index] = max(needed_operator_costs[op_index], needed_costs);
-                    }
-                }
+            assert(!ops.empty());
 
-                const int succ_g = g + op->get_cost();
-                if (successor->get_distance() > succ_g) {
-                    successor->set_distance(succ_g);
-                    int f = succ_g;
-                    int h = successor->get_h();
-                    if (use_h) {
-                        // Ignore dead-end states.
-                        if (h == INFINITY)
-                            continue;
-                        f += h;
-                    }
-                    successor->set_predecessor(op, state);
-                    assert(f >= 0);
-                    queue->push(f, successor);
+            Operator *op = 0;
+            if (is_unit_cost) {
+                op = ops[0];
+            } else {
+                // Find operator with lowest cost.
+                op = *min_element(ops.begin(), ops.end(), cheaper);
+            }
+
+            // Special code for additive abstractions.
+            if (forward && !use_h) {
+                // We are currently collecting the needed operator costs.
+                assert(needed_operator_costs.size() == g_operators.size());
+                // cost'(op) = h(a1) - h(a2)
+                const int needed_costs = state->get_h() - successor->get_h();
+                if (needed_costs > 0) {
+                    // needed_costs is negative if we reach a2 with op and
+                    // h(a2) > h(a1). This includes the case when we reach a
+                    // dead-end node. If h(a1)==h(a2) we don't have to update
+                    // anything since we initialize the listwith zeros. This
+                    // handles moving from one dead-end node to another.
+                    const int op_index = get_op_index(op);
+                    needed_operator_costs[op_index] = max(needed_operator_costs[op_index], needed_costs);
                 }
+            }
+
+            const int succ_g = g + op->get_cost();
+            if (successor->get_distance() > succ_g) {
+                successor->set_distance(succ_g);
+                int f = succ_g;
+                int h = successor->get_h();
+                if (use_h) {
+                    // Ignore dead-end states.
+                    if (h == INFINITY)
+                        continue;
+                    f += h;
+                }
+                successor->set_predecessor(op, state);
+                assert(f >= 0);
+                queue->push(f, successor);
             }
         }
     }
