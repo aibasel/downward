@@ -257,12 +257,16 @@ void AbstractState::add_loop(Operator *op) {
 }
 
 void AbstractState::remove_arc(StatesToOps &arcs, Operator *op, AbstractState *other) {
-    Operators &ops = arcs[other];
+    StatesToOps::iterator it = arcs.find(other);
+    assert(it != arcs.end());
+    Operators &ops = it->second;
     Operators::iterator pos = find(ops.begin(), ops.end(), op);
     assert(pos != ops.end());
     // For PODs assignment is faster than swapping.
     *pos = ops.back();
     ops.pop_back();
+    if (ops.empty())
+        arcs.erase(it);
 }
 
 void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
