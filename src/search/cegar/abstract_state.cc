@@ -116,6 +116,7 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
             bool is_solution_arc = ((op == op_in) && (u == state_in));
             int post = get_post(*op, var);
             if (post == UNDEFINED) {
+                assert(u_and_v1_intersect || u_and_v2_intersect);
                 if (u_and_v1_intersect) {
                     u->add_arc(op, v1);
                     u_v1 |= is_solution_arc;
@@ -156,6 +157,7 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
             int pre = get_pre(*op, var);
             int post = get_post(*op, var);
             if (post == UNDEFINED) {
+                assert(v1_and_w_intersect || v2_and_w_intersect);
                 if (v1_and_w_intersect) {
                     v1->add_arc(op, w);
                 }
