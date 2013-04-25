@@ -31,6 +31,8 @@ void get_unmet_goal_conditions(const State &state, Splits *splits);
 bool goal_var(int var);
 bool test_cegar_goal(const State &s);
 
+bool cheaper(Operator *op1, Operator* op2);
+
 // Create an ordering of the variables in the causal graph. Since the CG is not
 // a DAG, we use the following approximation: Put the vars with few incoming and
 // many outgoing edges in front and vars with few outgoing and many incoming
