@@ -102,21 +102,25 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
     // u --> v  was on the shortest path. We check if both paths u --> v1 and
     // u --> v2 are valid for the same operators. If so we do cascaded refinement.
     bool u_v1 = false, u_v2 = false;
-    // TODO: Cache intersections.
     for (StatesToOps::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
         AbstractState *u = it->first;
         Operators &prev = it->second;
         assert(u != this);
+        assert(!prev.empty());
+
+        bool u_and_v1_intersect = u->values->domains_intersect(*(v1->values), var);
+        bool u_and_v2_intersect = u->values->domains_intersect(*(v2->values), var);
+
         for (int i = 0; i < prev.size(); ++i) {
             Operator *op = prev[i];
             bool is_solution_arc = ((op == op_in) && (u == state_in));
             int post = get_post(*op, var);
             if (post == UNDEFINED) {
-                if (u->values->domains_intersect(*(v1->values), var)) {
+                if (u_and_v1_intersect) {
                     u->add_arc(op, v1);
                     u_v1 |= is_solution_arc;
                 }
-                if (u->values->domains_intersect(*(v2->values), var)) {
+                if (u_and_v2_intersect) {
                     u->add_arc(op, v2);
                     u_v2 |= is_solution_arc;
                 }
@@ -138,20 +142,24 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
 }
 
 void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    // TODO: Cache intersections.
     for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
         AbstractState *w = it->first;
         Operators &next = it->second;
         assert(w != this);
+        assert(!next.empty());
+
+        bool v1_and_w_intersect = v1->values->domains_intersect(*w->values, var);
+        bool v2_and_w_intersect = v2->values->domains_intersect(*w->values, var);
+
         for (int i = 0; i < next.size(); ++i) {
             Operator *op = next[i];
             int pre = get_pre(*op, var);
             int post = get_post(*op, var);
             if (post == UNDEFINED) {
-                if (v1->values->domains_intersect(*w->values, var)) {
+                if (v1_and_w_intersect) {
                     v1->add_arc(op, w);
                 }
-                if (v2->values->domains_intersect(*w->values, var)) {
+                if (v2_and_w_intersect) {
                     v2->add_arc(op, w);
                 }
             } else if (pre == UNDEFINED) {
