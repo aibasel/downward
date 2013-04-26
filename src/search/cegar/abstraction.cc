@@ -239,7 +239,6 @@ void Abstraction::reset_distances_and_solution() const {
 }
 
 bool Abstraction::astar_search(bool forward, bool use_h) const {
-    int cost = -1;
     while (!open->empty()) {
         pair<int, AbstractState *> top_pair = open->pop();
         int &old_f = top_pair.first;
@@ -257,23 +256,6 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         if (DEBUG)
             cout << endl << "Expand: " << state->str() << " g:" << g
                  << " h:" << state->get_h() << " f:" << new_f << endl;
-        // Once we expand the first node with f > minimum solution cost, we can
-        // stop.
-        if (cost != -1 && new_f > cost) {
-            // Make sure we don't expand nodes with too high f-values.
-            break;
-        }
-        if (forward && use_h && state == goal) {
-            // When we reach this point the first time, record the minimum
-            // solution cost.
-            if (cost == -1) {
-                cost = new_f;
-            }
-            assert(cost == new_f && "When expanding the goal again, the f-value can't change.");
-            // We don't need to add the goal's successors to the queue, but we
-            // still keep expanding nodes with the same or lower f-value as the goal.
-            continue;
-        }
         StatesToOps &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (StatesToOps::iterator it = successors.begin(); it != successors.end(); ++it) {
             AbstractState *successor = it->first;
@@ -290,6 +272,8 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
 
             // Special code for additive abstractions.
             if (calculate_needed_operator_costs) {
+                assert(forward);
+                assert(!use_h);
                 // We are currently collecting the needed operator costs.
                 assert(needed_operator_costs.size() == g_operators.size());
                 // cost'(op) = h(a1) - h(a2)
@@ -307,19 +291,16 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
 
             const int succ_g = g + op->get_cost();
 
-            if ((succ_g < successor->get_distance()) ||
-                    (forward && use_h && succ_g == successor->get_distance())) {
+            // If we use Dijkstra instead of A*, we can use "<" here instead of "<=".
+            // This leads to way fewer queue pushes.
+            if (succ_g < successor->get_distance()) {
                 if (DEBUG)
                     cout << "  Succ: " << successor->str()
                          << " f:" << succ_g + successor->get_h()
                          << " g:" << succ_g
                          << " dist:" << successor->get_distance()
                          << " h:" << successor->get_h() << endl;
-                if (succ_g < successor->get_distance()) {
-                    successor->set_predecessor(op, state);
-                } else {
-                    successor->add_predecessor(op, state);
-                }
+                successor->set_predecessor(op, state);
                 successor->set_distance(succ_g);
                 int f = succ_g;
                 if (use_h) {
@@ -334,14 +315,20 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             }
         }
     }
-    if (cost == -1) {
+    if ((forward && goal->get_distance() == INFINITY) ||
+        (!forward && init->get_distance() == INFINITY)) {
         return false;
     }
-    extract_solution(goal);
+    if (forward)
+        extract_solution(goal);
     return true;
 }
 
 bool Abstraction::find_solution(AbstractState *start) {
+    // If we updated the g-values first, they would be overwritten during the
+    // computation of the h-values.
+    update_h_values();
+
     if (!start)
         start = init;
 
@@ -350,6 +337,9 @@ bool Abstraction::find_solution(AbstractState *start) {
     reset_distances_and_solution();
     start->reset_neighbours();
     start->set_distance(0);
+
+    // TODO: Remove use_astar variable.
+    use_astar = false;
 
     if (use_astar) {
         // A*.
@@ -421,48 +411,22 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
 
     unseen.push(make_pair(abs_state, conc_state));
 
+    int h_0 = init->get_h();
+    assert(h_0 != INFINITY);
+
     while (!unseen.empty()) {
         abs_state = unseen.front().first;
         conc_state = unseen.front().second;
         unseen.pop();
+        if (DEBUG)
+            cout << "Current state: " << abs_state->str() << endl;
         // TODO: Leave this out?
         if (!states_to_splits[abs_state].empty())
             continue;
-        Arcs &optimal_arcs = abs_state->get_solution_out();
-        if (DEBUG)
-            cout << "Current state: " << abs_state->str() << " succ:" << optimal_arcs.size() << endl;
-        for (int i = 0; i < optimal_arcs.size(); ++i) {
-            Operator *op = optimal_arcs[i].first;
-            AbstractState *next_abs = optimal_arcs[i].second;
-            if (op->is_applicable(conc_state)) {
-                if (DEBUG)
-                    cout << "Move to state: " << next_abs->str()
-                         << " with " << op->get_name() << endl;
-                State next_conc = State(conc_state, *op);
-                if (next_abs->is_abstraction_of(next_conc)) {
-                    if (seen.count(next_conc) == 0) {
-                        unseen.push(make_pair(next_abs, next_conc));
-                        seen.insert(next_conc);
-                    }
-                } else {
-                    if (DEBUG)
-                        cout << "Concrete path deviates from abstract one." << endl;
-                    ++deviations;
-                    AbstractState desired_abs_state;
-                    next_abs->regress(*op, &desired_abs_state);
-                    abs_state->get_possible_splits(desired_abs_state, conc_state,
-                                                   &states_to_splits[abs_state]);
-                }
-
-            } else {
-                if (DEBUG)
-                    cout << "Operator is not applicable: " << op->get_name() << endl;
-                ++unmet_preconditions;
-                get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
-            }
-        }
-        if (optimal_arcs.empty()) {
-            assert(abs_state == goal);
+        int g = abs_state->get_distance();
+        if (g + abs_state->get_h() != h_0)
+            continue;
+        if (abs_state == goal) {
             if (test_cegar_goal(conc_state)) {
                 // We found a valid concrete solution.
                 return true;
@@ -472,6 +436,43 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     cout << "Goal test failed." << endl;
                 unmet_goals++;
                 get_unmet_goal_conditions(conc_state, &states_to_splits[abs_state]);
+                continue;
+            }
+        }
+        StatesToOps &arcs_out = abs_state->get_arcs_out();
+        for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
+            AbstractState *next_abs = it->first;
+            Operators &ops = it->second;
+            int next_g = next_abs->get_distance();
+            for (int i = 0; i < ops.size(); ++i) {
+                Operator *op = ops[i];
+                if (g + op->get_cost() != next_g)
+                    continue;
+                if (op->is_applicable(conc_state)) {
+                    if (DEBUG)
+                        cout << "Move to state: " << next_abs->str()
+                             << " with " << op->get_name() << endl;
+                    State next_conc = State(conc_state, *op);
+                    if (next_abs->is_abstraction_of(next_conc)) {
+                        if (seen.count(next_conc) == 0) {
+                            unseen.push(make_pair(next_abs, next_conc));
+                            seen.insert(next_conc);
+                        }
+                    } else {
+                        if (DEBUG)
+                            cout << "Concrete path deviates from abstract one." << endl;
+                        ++deviations;
+                        AbstractState desired_abs_state;
+                        next_abs->regress(*op, &desired_abs_state);
+                        abs_state->get_possible_splits(desired_abs_state, conc_state,
+                                                       &states_to_splits[abs_state]);
+                    }
+                } else {
+                    if (DEBUG)
+                        cout << "Operator is not applicable: " << op->get_name() << endl;
+                    ++unmet_preconditions;
+                    get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
+                }
             }
         }
     }
@@ -488,6 +489,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     }
     if (DEBUG)
         cout << "Broke " << broken_solutions << " solutions" << endl;
+    assert(broken_solutions > 0);
     return false;
 }
 
