@@ -41,7 +41,6 @@ Abstraction::Abstraction()
       max_states_offline(1),
       max_states_online(0),
       max_time(INFINITY),
-      use_astar(true),
       log_h(false),
       calculate_needed_operator_costs(false),
       memory_released(false),
@@ -321,30 +320,20 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
 }
 
 bool Abstraction::find_solution(AbstractState *start) {
+    if (!start)
+        start = init;
+
     // If we updated the g-values first, they would be overwritten during the
     // computation of the h-values.
     update_h_values();
 
-    if (!start)
-        start = init;
-
-    bool success = false;
     open->clear();
     reset_distances_and_solution();
     start->set_distance(0);
 
-    // TODO: Remove use_astar variable.
-    use_astar = false;
-
-    if (use_astar) {
-        // A*.
-        open->push(start->get_h(), start);
-        success = astar_search(true, true);
-    } else {
-        // Dijkstra.
-        open->push(0, start);
-        success = astar_search(true, false);
-    }
+    // Dijkstra.
+    open->push(0, start);
+    bool success = astar_search(true, false);
     return success;
 }
 
