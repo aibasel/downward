@@ -19,7 +19,8 @@ const int UNDEFINED = -1;
 
 typedef std::vector<Operator *> Operators;
 typedef boost::dynamic_bitset<> Bitset;
-typedef std::vector<std::pair<int, std::vector<int> > > Splits;
+typedef std::pair<int, std::vector<int> > Split;
+typedef std::vector<Split> Splits;
 
 int get_pre(const Operator &op, int var);
 int get_post(const Operator &op, int var);

@@ -68,7 +68,6 @@ int get_post(const Operator &op, int var) {
 }
 
 void get_unmet_preconditions(const Operator &op, const State &state, Splits *splits) {
-    assert(splits->empty());
     for (int i = 0; i < op.get_prevail().size(); ++i) {
         const Prevail &prevail = op.get_prevail()[i];
         if (state[prevail.var] != prevail.prev) {

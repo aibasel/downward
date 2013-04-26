@@ -101,7 +101,6 @@ bool Values::abstracts(const Values &other) const {
 
 void Values::get_possible_splits(const Values &flaw, const State conc_state,
                                  Splits *splits) const {
-    assert(splits->empty());
     Bitset intersection(values & flaw.values);
     for (int var = 0; var < borders.size(); ++var) {
         if (!intersection.test(pos(var, conc_state[var]))) {
@@ -125,7 +124,6 @@ string Values::str() const {
         vector<int> facts;
         int pos = (var == 0) ? values.find_first() : values.find_next(borders[var] - 1);
         while (pos != Bitset::npos && pos < next_border) {
-            // The variable's value matters for determining the resulting state.
             facts.push_back(pos - borders[var]);
             pos = values.find_next(pos);
         }
