@@ -13,8 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include <boost/unordered_map.hpp>
-
 using namespace std;
 
 namespace cegar_heuristic {
@@ -67,7 +65,7 @@ AbstractState::~AbstractState() {
 string AbstractState::str() const {
     assert(values);
     ostringstream oss;
-    oss << "<" << values->str() << ">";
+    oss << "\"<" << values->str() << "> (h=" << node->get_h() << ")\"";
     return oss.str();
 }
 
@@ -99,9 +97,6 @@ int AbstractState::count(int var) const {
 }
 
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    // u --> v  was on the shortest path. We check if both paths u --> v1 and
-    // u --> v2 are valid for the same operators. If so we do cascaded refinement.
-    bool u_v1 = false, u_v2 = false;
     for (StatesToOps::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
         AbstractState *u = it->first;
         Operators &prev = it->second;
@@ -113,33 +108,23 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
 
         for (int i = 0; i < prev.size(); ++i) {
             Operator *op = prev[i];
-            bool is_solution_arc = ((op == op_in) && (u == state_in));
             int post = get_post(*op, var);
             if (post == UNDEFINED) {
                 assert(u_and_v1_intersect || u_and_v2_intersect);
                 if (u_and_v1_intersect) {
                     u->add_arc(op, v1);
-                    u_v1 |= is_solution_arc;
                 }
                 if (u_and_v2_intersect) {
                     u->add_arc(op, v2);
-                    u_v2 |= is_solution_arc;
                 }
             } else if (v2->values->test(var, post)) {
                 u->add_arc(op, v2);
-                u_v2 |= is_solution_arc;
             } else {
                 u->add_arc(op, v1);
-                u_v1 |= is_solution_arc;
             }
             u->remove_next_arc(op, this);
         }
     }
-    // Indicate for the abstraction whether we should cascade the refinement.
-    if (u_v1)
-        v1->set_predecessor(op_in, state_in);
-    if (u_v2)
-        v2->set_predecessor(op_in, state_in);
 }
 
 void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
@@ -312,17 +297,26 @@ bool AbstractState::is_abstraction_of_goal() const {
 }
 
 void AbstractState::set_predecessor(Operator *op, AbstractState *other) {
-    op_in = op;
-    state_in = other;
+    solution_in.clear();
+    add_predecessor(op, other);
+}
+
+void AbstractState::add_predecessor(Operator *op, AbstractState *other) {
+    solution_in.push_back(Arc(op, other));
 }
 
 void AbstractState::set_successor(Operator *op, AbstractState *other) {
-    op_out = op;
-    state_out = other;
+    solution_out.clear();
+    add_successor(op, other);
+}
+
+void AbstractState::add_successor(Operator *op, AbstractState *other) {
+    solution_out.push_back(Arc(op, other));
 }
 
 void AbstractState::reset_neighbours() {
-    op_in = 0, state_in = 0, op_out = 0, state_out = 0;
+    solution_in.clear();
+    solution_out.clear();
 }
 
 double AbstractState::get_rel_conc_states() const {

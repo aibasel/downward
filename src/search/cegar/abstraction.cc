@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <queue>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -26,7 +27,7 @@ Abstraction::Abstraction()
     : single(new AbstractState()),
       init(single),
       goal(single),
-      queue(new AdaptiveQueue<AbstractState *>()),
+      open(new AdaptiveQueue<AbstractState *>()),
       pick(RANDOM),
       rng(2012),
       needed_operator_costs(),
@@ -136,24 +137,7 @@ void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
     assert(i >= 0 && i < splits.size());
     int var = splits[i].first;
     const vector<int> &wanted = splits[i].second;
-    while (may_keep_refining()) {
-        Node *node = state->get_node();
-        refine(state, var, wanted);
-        AbstractState *v1 = node->get_left_child_state();
-        AbstractState *v2 = node->get_right_child_state();
-        // If (u, op, v) was on the solution path and both (u, op, v1) and
-        // (u, op, v2) are valid transitions, the same split can also be made in u.
-        // TODO: How to generalize for wanted.size() > 1?
-        if (wanted.size() == 1 && v1->get_state_in() && v2->get_state_in()) {
-            // The arc on the solution u->v is now ambiguous (u->v1 and u->v2 exist).
-            assert(v1->get_op_in() && v2->get_op_in());
-            assert(v1->get_op_in() == v2->get_op_in());
-            assert(v1->get_state_in() == v2->get_state_in());
-            state = v1->get_state_in();
-        } else {
-            break;
-        }
-    }
+    refine(state, var, wanted);
     log_h_values();
 }
 
@@ -244,17 +228,19 @@ AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_sta
     return abs_state;
 }
 
-void Abstraction::reset_distances() const {
+void Abstraction::reset_distances_and_solution() const {
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = (*it);
         state->set_distance(INFINITY);
+        state->reset_neighbours();
     }
 }
 
 bool Abstraction::astar_search(bool forward, bool use_h) const {
-    while (!queue->empty()) {
-        pair<int, AbstractState *> top_pair = queue->pop();
+    int cost = -1;
+    while (!open->empty()) {
+        pair<int, AbstractState *> top_pair = open->pop();
         int &old_f = top_pair.first;
         AbstractState *state = top_pair.second;
 
@@ -267,9 +253,25 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         if (new_f < old_f) {
             continue;
         }
+        if (DEBUG)
+            cout << endl << "Expand: " << state->str() << " g:" << g
+                 << " h:" << state->get_h() << " f:" << new_f << endl;
+        // Once we expand the first node with f > minimum solution cost, we can
+        // stop.
+        if (cost != -1 && new_f > cost) {
+            // Make sure we don't expand nodes with too high f-values.
+            break;
+        }
         if (forward && use_h && state == goal) {
-            extract_solution(goal);
-            return true;
+            // When we reach this point the first time, record the minimum
+            // solution cost.
+            if (cost == -1) {
+                cost = new_f;
+            }
+            assert(cost == new_f && "When expanding the goal again, the f-value can't change.");
+            // We don't need to add the goal's successors to the queue, but we
+            // still keep expanding nodes with the same or lower f-value as the goal.
+            continue;
         }
         StatesToOps &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (StatesToOps::iterator it = successors.begin(); it != successors.end(); ++it) {
@@ -295,7 +297,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                     // needed_costs is negative if we reach a2 with op and
                     // h(a2) > h(a1). This includes the case when we reach a
                     // dead-end node. If h(a1)==h(a2) we don't have to update
-                    // anything since we initialize the listwith zeros. This
+                    // anything since we initialize the list with zeros. This
                     // handles moving from one dead-end node to another.
                     const int op_index = get_op_index(op);
                     needed_operator_costs[op_index] = max(needed_operator_costs[op_index], needed_costs);
@@ -303,23 +305,39 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             }
 
             const int succ_g = g + op->get_cost();
-            if (successor->get_distance() > succ_g) {
+
+            if ((succ_g < successor->get_distance()) ||
+                    (forward && use_h && succ_g == successor->get_distance())) {
+                if (DEBUG)
+                    cout << "  Succ: " << successor->str()
+                         << " f:" << succ_g + successor->get_h()
+                         << " g:" << succ_g
+                         << " dist:" << successor->get_distance()
+                         << " h:" << successor->get_h() << endl;
+                if (succ_g < successor->get_distance()) {
+                    successor->set_predecessor(op, state);
+                } else {
+                    successor->add_predecessor(op, state);
+                }
                 successor->set_distance(succ_g);
                 int f = succ_g;
-                int h = successor->get_h();
                 if (use_h) {
+                    int h = successor->get_h();
                     // Ignore dead-end states.
                     if (h == INFINITY)
                         continue;
                     f += h;
                 }
-                successor->set_predecessor(op, state);
                 assert(f >= 0);
-                queue->push(f, successor);
+                open->push(f, successor);
             }
         }
     }
-    return false;
+    if (cost == -1) {
+        return false;
+    }
+    extract_solution(goal);
+    return true;
 }
 
 bool Abstraction::find_solution(AbstractState *start) {
@@ -327,56 +345,64 @@ bool Abstraction::find_solution(AbstractState *start) {
         start = init;
 
     bool success = false;
-    queue->clear();
-    reset_distances();
+    open->clear();
+    reset_distances_and_solution();
     start->reset_neighbours();
     start->set_distance(0);
 
     if (use_astar) {
         // A*.
-        queue->push(start->get_h(), start);
+        open->push(start->get_h(), start);
         success = astar_search(true, true);
     } else {
         // Dijkstra.
-        queue->push(0, start);
+        open->push(0, start);
         success = astar_search(true, false);
     }
     return success;
 }
 
 void Abstraction::extract_solution(AbstractState *goal) const {
-    int cost_to_goal = 0;
-    AbstractState *current = goal;
-    current->set_h(cost_to_goal);
-    while (current->get_state_in()) {
-        Operator *op = current->get_op_in();
-        assert(op);
-        AbstractState *prev = current->get_state_in();
-        prev->set_successor(op, current);
-        cost_to_goal += op->get_cost();
-        prev->set_h(cost_to_goal);
-        assert(prev != current);
-        current = prev;
+    bool debug = DEBUG && true;
+    queue<AbstractState *> states;
+    set<AbstractState *> seen;
+    // We have the same f-value for all states on optimal paths.
+    int f = goal->get_distance();
+    if (debug)
+        cout << "f:" << f << endl;
+    goal->set_h(0);
+    states.push(goal);
+    seen.insert(goal);
+    while (!states.empty()) {
+        AbstractState *current = states.front();
+        states.pop();
+        Arcs &solution_in = current->get_solution_in();
+        if (current == init)
+            assert(solution_in.empty());
+        assert(current->get_distance() + current->get_h() == f);
+        if (debug)
+            cout << endl << "Current: " << current->str()
+                 << " g:" << current->get_distance()
+                 << " h:" << current->get_h()
+                 << " succ:" << solution_in.size() << endl;
+        for (int i = 0; i < solution_in.size(); ++i) {
+            Operator *op = solution_in[i].first;
+            AbstractState *prev = solution_in[i].second;
+            assert(prev != current);
+            prev->add_successor(op, current);
+            if (seen.count(prev) == 0) {
+                states.push(prev);
+                seen.insert(prev);
+                prev->set_h(current->get_h() + op->get_cost());
+            }
+            if (debug)
+                cout << "   Prev: " << prev->str() << " g:" << prev->get_distance()
+                     << " h:" << prev->get_h()
+                     << " c:" << op->get_cost() << " " << op->get_name() << endl;
+            assert(prev->get_h() == current->get_h() + op->get_cost());
+            assert(prev->get_distance() + prev->get_h() == f);
+        }
     }
-}
-
-string Abstraction::get_solution_string() const {
-    string sep = "";
-    ostringstream oss;
-    oss << "[";
-    AbstractState *current = init;
-    oss << init->str();
-    while (true) {
-        AbstractState *next_state = current->get_state_out();
-        if (!next_state)
-            break;
-        Operator *op = current->get_op_out();
-        assert(op);
-        oss << "," << op->get_name() << "," << next_state->str();
-        current = next_state;
-    }
-    oss << "]";
-    return oss.str();
 }
 
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
@@ -388,68 +414,79 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         cout << "Check solution." << endl << "Start at      " << abs_state->str()
              << " (is init: " << (abs_state == init) << ")" << endl;
 
-    AbstractState *prev_state = 0;
-    Operator *prev_op = 0;
-    Operator *next_op = abs_state->get_op_out();
+    map<AbstractState *, Splits> states_to_splits;
+    queue<pair<AbstractState *, State> > unseen;
+    set<State> seen;
 
-    // Initialize with arbitrary states.
-    State prev_conc_state(*g_initial_state);
+    unseen.push(make_pair(abs_state, conc_state));
 
-    Splits splits;
+    while (!unseen.empty()) {
+        abs_state = unseen.front().first;
+        conc_state = unseen.front().second;
+        unseen.pop();
+        // TODO: Leave this out?
+        if (!states_to_splits[abs_state].empty())
+            continue;
+        Arcs &optimal_arcs = abs_state->get_solution_out();
+        if (DEBUG)
+            cout << "Current state: " << abs_state->str() << " succ:" << optimal_arcs.size() << endl;
+        for (int i = 0; i < optimal_arcs.size(); ++i) {
+            Operator *op = optimal_arcs[i].first;
+            AbstractState *next_abs = optimal_arcs[i].second;
+            if (op->is_applicable(conc_state)) {
+                if (DEBUG)
+                    cout << "Move to state: " << next_abs->str()
+                         << " with " << op->get_name() << endl;
+                State next_conc = State(conc_state, *op);
+                if (next_abs->is_abstraction_of(next_conc)) {
+                    if (seen.count(next_conc) == 0) {
+                        unseen.push(make_pair(next_abs, next_conc));
+                        seen.insert(next_conc);
+                    }
+                } else {
+                    if (DEBUG)
+                        cout << "Concrete path deviates from abstract one." << endl;
+                    ++deviations;
+                    AbstractState desired_abs_state;
+                    next_abs->regress(*op, &desired_abs_state);
+                    abs_state->get_possible_splits(desired_abs_state, conc_state,
+                                                   &states_to_splits[abs_state]);
+                }
 
-    while (true) {
-        if (!abs_state->is_abstraction_of(conc_state)) {
-            // Get unmet conditions in previous state and refine it.
-            if (DEBUG)
-                cout << "Concrete path deviates from abstract one." << endl;
-            ++deviations;
-            assert(prev_state);
-            assert(prev_op);
-            AbstractState desired_prev_state;
-            abs_state->regress(*prev_op, &desired_prev_state);
-            prev_state->get_possible_splits(desired_prev_state, prev_conc_state,
-                                            &splits);
-            break_solution(prev_state, splits);
-            return false;
-        } else if (next_op && !next_op->is_applicable(conc_state)) {
-            // Get unmet preconditions and refine the current state.
-            if (DEBUG)
-                cout << "Operator is not applicable: " << next_op->get_name() << endl;
-            ++unmet_preconditions;
-            get_unmet_preconditions(*next_op, conc_state, &splits);
-            break_solution(abs_state, splits);
-            return false;
-        } else if (next_op) {
-            // Go to the next state.
-            assert(abs_state->get_state_out());
-            if (DEBUG)
-                cout << "Move to state " << abs_state->get_state_out()->str()
-                     << " with " << next_op->get_name() << endl;
-            prev_state = abs_state;
-            prev_conc_state = State(conc_state);
-            prev_op = next_op;
-            conc_state = State(conc_state, *next_op);
-            abs_state = abs_state->get_state_out();
-            next_op = abs_state->get_op_out();
-        } else {
-            break;
+            } else {
+                if (DEBUG)
+                    cout << "Operator is not applicable: " << op->get_name() << endl;
+                ++unmet_preconditions;
+                get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
+            }
+        }
+        if (optimal_arcs.empty()) {
+            assert(abs_state == goal);
+            if (test_cegar_goal(conc_state)) {
+                // We found a valid concrete solution.
+                return true;
+            } else {
+                // Get unmet goals and refine the last state.
+                if (DEBUG)
+                    cout << "Goal test failed." << endl;
+                unmet_goals++;
+                get_unmet_goal_conditions(conc_state, &states_to_splits[abs_state]);
+            }
         }
     }
-    assert(abs_state == goal);
-    assert(!abs_state->get_op_out());
-    assert(!abs_state->get_state_out());
-
-    if (test_cegar_goal(conc_state)) {
-        // We have reached the goal.
-        return true;
+    int broken_solutions = 0;
+    for (map<AbstractState *, Splits>::iterator it = states_to_splits.begin(); it != states_to_splits.end(); ++it) {
+        if (!may_keep_refining())
+            break;
+        AbstractState *state = it->first;
+        Splits &splits = it->second;
+        if (!splits.empty()) {
+            break_solution(state, splits);
+            ++broken_solutions;
+        }
     }
-
-    // Get unmet goals and refine the last state.
     if (DEBUG)
-        cout << "Goal test failed." << endl;
-    unmet_goals++;
-    get_unmet_goal_conditions(conc_state, &splits);
-    break_solution(abs_state, splits);
+        cout << "Broke " << broken_solutions << " solutions" << endl;
     return false;
 }
 
@@ -459,6 +496,19 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     if (splits.size() == 1) {
         return 0;
     }
+    if (DEBUG) {
+        cout << "Split: " << state.str() << endl;
+        // TODO: Handle overlapping splits.
+        for (int i = 0; i < splits.size(); ++i) {
+            const Split &split = splits[i];
+            int var = split.first;
+            const vector<int> &wanted = split.second;
+            if (DEBUG)
+                cout << var << "=" << to_string(wanted) << " ";
+        }
+    }
+    if (DEBUG)
+        cout << endl;
     int cond = -1;
     int random_cond = rng.next(splits.size());
     if (pick == FIRST) {
@@ -586,9 +636,9 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
 }
 
 void Abstraction::update_h_values() const {
-    reset_distances();
-    queue->clear();
-    queue->push(0, goal);
+    reset_distances_and_solution();
+    open->clear();
+    open->push(0, goal);
     goal->set_distance(0);
     astar_search(false, false);
     set<AbstractState *>::iterator it;
@@ -682,11 +732,11 @@ void Abstraction::adapt_operator_costs() {
     needed_operator_costs.resize(g_operators.size(), 0);
     // Traverse abstraction and remember the minimum cost we need to keep for
     // each operator in order not to decrease any heuristic values.
-    queue->clear();
-    reset_distances();
+    open->clear();
+    reset_distances_and_solution();
     init->reset_neighbours();
     init->set_distance(0);
-    queue->push(0, init);
+    open->push(0, init);
     astar_search(true, false);
     for (int i = 0; i < needed_operator_costs.size(); ++i) {
         if (DEBUG)
@@ -713,8 +763,8 @@ bool Abstraction::may_keep_refining() const {
 void Abstraction::release_memory() {
     cout << "Release memory" << endl;
     assert(!memory_released);
-    delete queue;
-    queue = 0;
+    delete open;
+    open = 0;
     if (g_memory_buffer) {
         delete[] g_memory_buffer;
         g_memory_buffer = 0;

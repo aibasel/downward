@@ -64,7 +64,7 @@ private:
     AbstractState *goal;
 
     // Queue for A* search.
-    mutable AdaptiveQueue<AbstractState *> *queue;
+    mutable AdaptiveQueue<AbstractState *> *open;
 
     // How to pick the next split in case of multiple possibilities.
     PickStrategy pick;
@@ -109,7 +109,7 @@ private:
     int pick_split_index(AbstractState &state, const Splits &conditions) const;
 
     // A* search.
-    void reset_distances() const;
+    void reset_distances_and_solution() const;
     // Set the incoming and outgoing solution arcs for the states on the solution path.
     void extract_solution(AbstractState *goal) const;
     FRIEND_TEST(CegarTest, astar_search);
@@ -175,7 +175,6 @@ public:
     void set_pick_strategy(PickStrategy strategy) {pick = strategy; }
 
     // Testing.
-    std::string get_solution_string() const;
     void write_dot_file(int num);
 };
 }

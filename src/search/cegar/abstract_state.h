@@ -40,10 +40,7 @@ private:
     int distance;
 
     // Record the neighbours on a solution path.
-    Operator *op_in;
-    AbstractState *state_in;
-    Operator *op_out;
-    AbstractState *state_out;
+    Arcs solution_in, solution_out;
 
     // This state's node in the refinement hierarchy.
     Node *node;
@@ -88,11 +85,11 @@ public:
     void set_h(int dist) {node->set_h(dist); }
     int get_h() {return node->get_h(); }
     void set_predecessor(Operator *op, AbstractState *other);
-    Operator *get_op_in() const {return op_in; }
-    AbstractState *get_state_in() const {return state_in; }
+    void add_predecessor(Operator *op, AbstractState *other);
+    Arcs &get_solution_in() {return solution_in; }
     void set_successor(Operator *op, AbstractState *other);
-    Operator *get_op_out() const {return op_out; }
-    AbstractState *get_state_out() const {return state_out; }
+    void add_successor(Operator *op, AbstractState *other);
+    Arcs &get_solution_out() {return solution_out; }
     void reset_neighbours();
 
     StatesToOps &get_arcs_out() {return arcs_out; };
