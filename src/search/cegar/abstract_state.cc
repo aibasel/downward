@@ -22,8 +22,6 @@ AbstractState::AbstractState(string s)
       node(0) {
     assert(!g_variable_domain.empty());
 
-    reset_neighbours();
-
     if (s.empty())
         return;
 
@@ -294,29 +292,6 @@ bool AbstractState::is_abstraction_of_goal() const {
             return false;
     }
     return true;
-}
-
-void AbstractState::set_predecessor(Operator *op, AbstractState *other) {
-    solution_in.clear();
-    add_predecessor(op, other);
-}
-
-void AbstractState::add_predecessor(Operator *op, AbstractState *other) {
-    solution_in.push_back(Arc(op, other));
-}
-
-void AbstractState::set_successor(Operator *op, AbstractState *other) {
-    solution_out.clear();
-    add_successor(op, other);
-}
-
-void AbstractState::add_successor(Operator *op, AbstractState *other) {
-    solution_out.push_back(Arc(op, other));
-}
-
-void AbstractState::reset_neighbours() {
-    solution_in.clear();
-    solution_out.clear();
 }
 
 double AbstractState::get_rel_conc_states() const {

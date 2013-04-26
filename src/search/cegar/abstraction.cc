@@ -234,7 +234,6 @@ void Abstraction::reset_distances_and_solution() const {
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = (*it);
         state->set_distance(INFINITY);
-        state->reset_neighbours();
     }
 }
 
@@ -300,7 +299,6 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                          << " g:" << succ_g
                          << " dist:" << successor->get_distance()
                          << " h:" << successor->get_h() << endl;
-                successor->set_predecessor(op, state);
                 successor->set_distance(succ_g);
                 int f = succ_g;
                 if (use_h) {
@@ -333,7 +331,6 @@ bool Abstraction::find_solution(AbstractState *start) {
     bool success = false;
     open->clear();
     reset_distances_and_solution();
-    start->reset_neighbours();
     start->set_distance(0);
 
     // TODO: Remove use_astar variable.
@@ -692,7 +689,6 @@ void Abstraction::adapt_operator_costs() {
     // each operator in order not to decrease any heuristic values.
     open->clear();
     reset_distances_and_solution();
-    init->reset_neighbours();
     init->set_distance(0);
     open->push(0, init);
     calculate_needed_operator_costs = true;
