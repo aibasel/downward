@@ -90,6 +90,9 @@ private:
     bool use_astar;
     bool log_h;
 
+    // A* modes.
+    bool calculate_needed_operator_costs;
+
     // Save whether the states have been destroyed.
     bool memory_released;
 

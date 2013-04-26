@@ -43,6 +43,7 @@ Abstraction::Abstraction()
       max_time(INFINITY),
       use_astar(true),
       log_h(false),
+      calculate_needed_operator_costs(false),
       memory_released(false),
       is_unit_cost(false) {
     assert(!g_goal.empty());
@@ -288,7 +289,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             }
 
             // Special code for additive abstractions.
-            if (forward && !use_h) {
+            if (calculate_needed_operator_costs) {
                 // We are currently collecting the needed operator costs.
                 assert(needed_operator_costs.size() == g_operators.size());
                 // cost'(op) = h(a1) - h(a2)
@@ -737,7 +738,9 @@ void Abstraction::adapt_operator_costs() {
     init->reset_neighbours();
     init->set_distance(0);
     open->push(0, init);
+    calculate_needed_operator_costs = true;
     astar_search(true, false);
+    calculate_needed_operator_costs = false;
     for (int i = 0; i < needed_operator_costs.size(); ++i) {
         if (DEBUG)
             cout << i << " " << needed_operator_costs[i] << "/"
