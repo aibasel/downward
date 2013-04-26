@@ -113,8 +113,6 @@ private:
 
     // A* search.
     void reset_distances_and_solution() const;
-    // Set the incoming and outgoing solution arcs for the states on the solution path.
-    void extract_solution(AbstractState *goal) const;
     FRIEND_TEST(CegarTest, astar_search);
     FRIEND_TEST(CegarTest, dijkstra_search);
     bool astar_search(bool forward, bool use_h) const;
