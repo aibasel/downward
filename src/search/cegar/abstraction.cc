@@ -319,8 +319,6 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         (!forward && init->get_distance() == INFINITY)) {
         return false;
     }
-    if (forward)
-        extract_solution(goal);
     return true;
 }
 
@@ -351,49 +349,6 @@ bool Abstraction::find_solution(AbstractState *start) {
         success = astar_search(true, false);
     }
     return success;
-}
-
-void Abstraction::extract_solution(AbstractState *goal) const {
-    bool debug = DEBUG && true;
-    queue<AbstractState *> states;
-    set<AbstractState *> seen;
-    // We have the same f-value for all states on optimal paths.
-    int f = goal->get_distance();
-    if (debug)
-        cout << "f:" << f << endl;
-    goal->set_h(0);
-    states.push(goal);
-    seen.insert(goal);
-    while (!states.empty()) {
-        AbstractState *current = states.front();
-        states.pop();
-        Arcs &solution_in = current->get_solution_in();
-        if (current == init)
-            assert(solution_in.empty());
-        assert(current->get_distance() + current->get_h() == f);
-        if (debug)
-            cout << endl << "Current: " << current->str()
-                 << " g:" << current->get_distance()
-                 << " h:" << current->get_h()
-                 << " succ:" << solution_in.size() << endl;
-        for (int i = 0; i < solution_in.size(); ++i) {
-            Operator *op = solution_in[i].first;
-            AbstractState *prev = solution_in[i].second;
-            assert(prev != current);
-            prev->add_successor(op, current);
-            if (seen.count(prev) == 0) {
-                states.push(prev);
-                seen.insert(prev);
-                prev->set_h(current->get_h() + op->get_cost());
-            }
-            if (debug)
-                cout << "   Prev: " << prev->str() << " g:" << prev->get_distance()
-                     << " h:" << prev->get_h()
-                     << " c:" << op->get_cost() << " " << op->get_name() << endl;
-            assert(prev->get_h() == current->get_h() + op->get_cost());
-            assert(prev->get_distance() + prev->get_h() == f);
-        }
-    }
 }
 
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
