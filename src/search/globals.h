@@ -42,6 +42,7 @@ void reset_original_goals_and_costs();
 
 
 extern bool g_use_metric;
+extern bool g_is_unit_cost;
 extern int g_min_action_cost;
 extern int g_max_action_cost;
 
