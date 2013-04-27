@@ -110,6 +110,8 @@ private:
     // Pick a possible split in case of multiple possibilities.
     int pick_split_index(AbstractState &state, const Splits &conditions) const;
 
+    void sort_operators () const;
+
     // A* search.
     void reset_distances_and_solution() const;
     FRIEND_TEST(CegarTest, astar_search);

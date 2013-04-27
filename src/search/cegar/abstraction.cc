@@ -67,14 +67,6 @@ Abstraction::Abstraction()
             cout << "Goal " << var << "=" << value << " " << g_fact_names[var][value] << endl;
         }
     }
-
-    is_unit_cost = true;
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        if (g_operators[i].get_cost() != 1) {
-            is_unit_cost = false;
-            break;
-        }
-    }
 }
 
 Abstraction::~Abstraction() {
@@ -107,6 +99,7 @@ void Abstraction::build(int h_updates) {
         if (valid_conc_solution)
             break;
         // Update costs to goal evenly distributed over time.
+        // TODO: Remove h-updates.
         if (get_num_states() >= (updates + 1) * update_step) {
             update_h_values();
             ++updates;
@@ -122,6 +115,7 @@ void Abstraction::build(int h_updates) {
     cout << "Solution found while refining: " << valid_conc_solution << endl;
     cout << "Abstract states offline: " << num_states_offline << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
+    sort_operators();
     update_h_values();
 }
 
@@ -260,13 +254,8 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             Operators &ops = it->second;
             assert(!ops.empty());
 
-            Operator *op = 0;
-            if (is_unit_cost) {
-                op = ops[0];
-            } else {
-                // Find operator with lowest cost.
-                op = *min_element(ops.begin(), ops.end(), cheaper);
-            }
+            // We made sure that the cheapest operator is at the front.
+            Operator *op = ops[0];
 
             // Special code for additive abstractions.
             if (calculate_needed_operator_costs) {
@@ -319,22 +308,33 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
     return true;
 }
 
+void Abstraction::sort_operators() const {
+    // Move cheapest operator to the front of each vector and only use the first
+    // one in search and check.
+    if (!g_is_unit_cost) {
+        for (set<AbstractState *>::iterator it = states.begin(); it != states.end(); ++it) {
+            AbstractState *state = *it;
+            state->sort_operators();
+        }
+    }
+}
+
 bool Abstraction::find_solution(AbstractState *start) {
     if (!start)
         start = init;
+
+    sort_operators();
 
     // If we updated the g-values first, they would be overwritten during the
     // computation of the h-values.
     update_h_values();
 
+    // Dijkstra.
     open->clear();
     reset_distances_and_solution();
     start->set_distance(0);
-
-    // Dijkstra.
     open->push(0, start);
-    bool success = astar_search(true, false);
-    return success;
+    return astar_search(true, false);
 }
 
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
@@ -580,6 +580,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
 }
 
 void Abstraction::update_h_values() const {
+    sort_operators();
     reset_distances_and_solution();
     open->clear();
     open->push(0, goal);

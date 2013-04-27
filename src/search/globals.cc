@@ -262,6 +262,8 @@ void read_everything(istream &in) {
     // so must be built after the problem has been read in.
     g_causal_graph = new CausalGraph;
 
+    g_is_unit_cost = (g_min_action_cost == 1 && g_max_action_cost == 1);
+
     cegar_heuristic::partial_ordering(*g_causal_graph, &g_causal_graph_ordering);
     g_causal_graph_ordering_pos.resize(g_causal_graph_ordering.size(), cegar_heuristic::UNDEFINED);
     for (int i = 0; i < g_causal_graph_ordering.size(); ++i) {
@@ -364,6 +366,7 @@ void reset_original_goals_and_costs() {
 
 
 bool g_use_metric;
+bool g_is_unit_cost;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
 vector<string> g_variable_name;

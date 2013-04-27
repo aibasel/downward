@@ -86,6 +86,10 @@ public:
     StatesToOps &get_arcs_in() {return arcs_in; };
     Loops &get_loops() {return loops; }
 
+    // Loop over all incoming and outgoing arcs per state and sort them by
+    // increasing cost.
+    void sort_operators();
+
     Node *get_node() const {return node; }
     void set_node(Node *node) {
         assert(!this->node);

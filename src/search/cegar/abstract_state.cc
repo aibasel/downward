@@ -94,6 +94,24 @@ int AbstractState::count(int var) const {
     return values->count(var);
 }
 
+void move_cheapest_operator_to_front(Operators &ops) {
+    assert(!g_is_unit_cost);
+    assert(!ops.empty());
+    // Find index of operator with lowest cost.
+    Operators::iterator pos = min_element(ops.begin(), ops.end(), cheaper);
+    // Swap first with cheapest operator.
+    swap(ops[0], *pos);
+}
+
+void AbstractState::sort_operators() {
+    for (StatesToOps::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
+        move_cheapest_operator_to_front(it->second);
+    }
+    for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
+        move_cheapest_operator_to_front(it->second);
+    }
+}
+
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
     for (StatesToOps::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
         AbstractState *u = it->first;
@@ -101,6 +119,7 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
         assert(u != this);
         assert(!prev.empty());
 
+        // TODO: Only calculate when needed.
         bool u_and_v1_intersect = u->values->domains_intersect(*(v1->values), var);
         bool u_and_v2_intersect = u->values->domains_intersect(*(v2->values), var);
 
