@@ -115,7 +115,6 @@ void Abstraction::build(int h_updates) {
     cout << "Solution found while refining: " << valid_conc_solution << endl;
     cout << "Abstract states offline: " << num_states_offline << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
-    //sort_operators();
     update_h_values();
 }
 
@@ -308,22 +307,9 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
     return true;
 }
 
-void Abstraction::sort_operators() const {
-    // Move cheapest operator to the front of each vector and only use the first
-    // one in search and check.
-    if (!g_is_unit_cost) {
-        for (set<AbstractState *>::iterator it = states.begin(); it != states.end(); ++it) {
-            AbstractState *state = *it;
-            state->sort_operators();
-        }
-    }
-}
-
 bool Abstraction::find_solution(AbstractState *start) {
     if (!start)
         start = init;
-
-    //sort_operators();
 
     // If we updated the g-values first, they would be overwritten during the
     // computation of the h-values.
@@ -581,7 +567,6 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
 }
 
 void Abstraction::update_h_values() const {
-    sort_operators();
     reset_distances_and_solution();
     open->clear();
     open->push(0, goal);

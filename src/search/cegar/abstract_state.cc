@@ -94,35 +94,6 @@ int AbstractState::count(int var) const {
     return values->count(var);
 }
 
-void move_cheapest_operator_to_front(Operators &ops) {
-    assert(!g_is_unit_cost);
-    assert(!ops.empty());
-    // Find index of operator with lowest cost.
-    int pos = -1;
-    int min_cost = INFINITY;
-    for (int i = 0; i < ops.size(); ++i) {
-        int cost = ops[i]->get_cost();
-        if (cost < min_cost) {
-            pos = i;
-            if (cost == g_min_action_cost)
-                break;
-            min_cost = cost;
-        }
-    }
-    assert(pos >= 0);
-    // Swap first with cheapest operator.
-    swap(ops[0], ops[pos]);
-}
-
-void AbstractState::sort_operators() {
-    for (StatesToOps::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
-        move_cheapest_operator_to_front(it->second);
-    }
-    for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-        move_cheapest_operator_to_front(it->second);
-    }
-}
-
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
     for (StatesToOps::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
         AbstractState *u = it->first;
