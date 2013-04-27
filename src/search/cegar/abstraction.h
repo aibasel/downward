@@ -17,7 +17,6 @@
 
 namespace cegar_heuristic {
 
-const int INFINITY = std::numeric_limits<int>::max();
 const int STATES_LOG_STEP = 1000;
 const int DEFAULT_H_UPDATE_STEP = 1000;
 
