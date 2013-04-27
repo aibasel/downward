@@ -115,7 +115,7 @@ void Abstraction::build(int h_updates) {
     cout << "Solution found while refining: " << valid_conc_solution << endl;
     cout << "Abstract states offline: " << num_states_offline << endl;
     cout << "Cost updates: " << updates << "/" << h_updates << endl;
-    sort_operators();
+    //sort_operators();
     update_h_values();
 }
 
@@ -253,51 +253,51 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             AbstractState *successor = it->first;
             Operators &ops = it->second;
             assert(!ops.empty());
+            for (int i = 0; i < ops.size(); ++i) {
+                Operator *op = ops[i];
 
-            // We made sure that the cheapest operator is at the front.
-            Operator *op = ops[0];
-
-            // Special code for additive abstractions.
-            if (calculate_needed_operator_costs) {
-                assert(forward);
-                assert(!use_h);
-                // We are currently collecting the needed operator costs.
-                assert(needed_operator_costs.size() == g_operators.size());
-                // cost'(op) = h(a1) - h(a2)
-                const int needed_costs = state->get_h() - successor->get_h();
-                if (needed_costs > 0) {
-                    // needed_costs is negative if we reach a2 with op and
-                    // h(a2) > h(a1). This includes the case when we reach a
-                    // dead-end node. If h(a1)==h(a2) we don't have to update
-                    // anything since we initialize the list with zeros. This
-                    // handles moving from one dead-end node to another.
-                    const int op_index = get_op_index(op);
-                    needed_operator_costs[op_index] = max(needed_operator_costs[op_index], needed_costs);
+                // Special code for additive abstractions.
+                if (calculate_needed_operator_costs) {
+                    assert(forward);
+                    assert(!use_h);
+                    // We are currently collecting the needed operator costs.
+                    assert(needed_operator_costs.size() == g_operators.size());
+                    // cost'(op) = h(a1) - h(a2)
+                    const int needed_costs = state->get_h() - successor->get_h();
+                    if (needed_costs > 0) {
+                        // needed_costs is negative if we reach a2 with op and
+                        // h(a2) > h(a1). This includes the case when we reach a
+                        // dead-end node. If h(a1)==h(a2) we don't have to update
+                        // anything since we initialize the list with zeros. This
+                        // handles moving from one dead-end node to another.
+                        const int op_index = get_op_index(op);
+                        needed_operator_costs[op_index] = max(needed_operator_costs[op_index], needed_costs);
+                    }
                 }
-            }
 
-            const int succ_g = g + op->get_cost();
+                const int succ_g = g + op->get_cost();
 
-            // If we use Dijkstra instead of A*, we can use "<" here instead of "<=".
-            // This leads to way fewer queue pushes.
-            if (succ_g < successor->get_distance()) {
-                if (DEBUG)
-                    cout << "  Succ: " << successor->str()
-                         << " f:" << succ_g + successor->get_h()
-                         << " g:" << succ_g
-                         << " dist:" << successor->get_distance()
-                         << " h:" << successor->get_h() << endl;
-                successor->set_distance(succ_g);
-                int f = succ_g;
-                if (use_h) {
-                    int h = successor->get_h();
-                    // Ignore dead-end states.
-                    if (h == INFINITY)
-                        continue;
-                    f += h;
+                // If we use Dijkstra instead of A*, we can use "<" here instead of "<=".
+                // This leads to way fewer queue pushes.
+                if (succ_g < successor->get_distance()) {
+                    if (DEBUG)
+                        cout << "  Succ: " << successor->str()
+                             << " f:" << succ_g + successor->get_h()
+                             << " g:" << succ_g
+                             << " dist:" << successor->get_distance()
+                             << " h:" << successor->get_h() << endl;
+                    successor->set_distance(succ_g);
+                    int f = succ_g;
+                    if (use_h) {
+                        int h = successor->get_h();
+                        // Ignore dead-end states.
+                        if (h == INFINITY)
+                            continue;
+                        f += h;
+                    }
+                    assert(f >= 0);
+                    open->push(f, successor);
                 }
-                assert(f >= 0);
-                open->push(f, successor);
             }
         }
     }
@@ -323,7 +323,7 @@ bool Abstraction::find_solution(AbstractState *start) {
     if (!start)
         start = init;
 
-    sort_operators();
+    //sort_operators();
 
     // If we updated the g-values first, they would be overwritten during the
     // computation of the h-values.
@@ -385,35 +385,36 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             AbstractState *next_abs = it->first;
             Operators &ops = it->second;
             assert(!ops.empty());
-            // We made sure that the cheapest operator is at the front.
-            Operator *op = ops[0];
             int next_g = next_abs->get_distance();
-            if (g + op->get_cost() != next_g)
-                continue;
-            if (op->is_applicable(conc_state)) {
-                if (DEBUG)
-                    cout << "Move to state: " << next_abs->str()
-                         << " with " << op->get_name() << endl;
-                State next_conc = State(conc_state, *op);
-                if (next_abs->is_abstraction_of(next_conc)) {
-                    if (seen.count(next_conc) == 0) {
-                        unseen.push(make_pair(next_abs, next_conc));
-                        seen.insert(next_conc);
+            for (int i = 0; i < ops.size(); ++i) {
+                Operator *op = ops[i];
+                if (g + op->get_cost() != next_g)
+                    continue;
+                if (op->is_applicable(conc_state)) {
+                    if (DEBUG)
+                        cout << "Move to state: " << next_abs->str()
+                             << " with " << op->get_name() << endl;
+                    State next_conc = State(conc_state, *op);
+                    if (next_abs->is_abstraction_of(next_conc)) {
+                        if (seen.count(next_conc) == 0) {
+                            unseen.push(make_pair(next_abs, next_conc));
+                            seen.insert(next_conc);
+                        }
+                    } else {
+                        if (DEBUG)
+                            cout << "Concrete path deviates from abstract one." << endl;
+                        ++deviations;
+                        AbstractState desired_abs_state;
+                        next_abs->regress(*op, &desired_abs_state);
+                        abs_state->get_possible_splits(desired_abs_state, conc_state,
+                                                       &states_to_splits[abs_state]);
                     }
                 } else {
                     if (DEBUG)
-                        cout << "Concrete path deviates from abstract one." << endl;
-                    ++deviations;
-                    AbstractState desired_abs_state;
-                    next_abs->regress(*op, &desired_abs_state);
-                    abs_state->get_possible_splits(desired_abs_state, conc_state,
-                                                   &states_to_splits[abs_state]);
+                        cout << "Operator is not applicable: " << op->get_name() << endl;
+                    ++unmet_preconditions;
+                    get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
                 }
-            } else {
-                if (DEBUG)
-                    cout << "Operator is not applicable: " << op->get_name() << endl;
-                ++unmet_preconditions;
-                get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
             }
         }
     }
