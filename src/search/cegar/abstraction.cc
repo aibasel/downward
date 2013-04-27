@@ -384,36 +384,36 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
             AbstractState *next_abs = it->first;
             Operators &ops = it->second;
+            assert(!ops.empty());
+            // We made sure that the cheapest operator is at the front.
+            Operator *op = ops[0];
             int next_g = next_abs->get_distance();
-            for (int i = 0; i < ops.size(); ++i) {
-                Operator *op = ops[i];
-                if (g + op->get_cost() != next_g)
-                    continue;
-                if (op->is_applicable(conc_state)) {
-                    if (DEBUG)
-                        cout << "Move to state: " << next_abs->str()
-                             << " with " << op->get_name() << endl;
-                    State next_conc = State(conc_state, *op);
-                    if (next_abs->is_abstraction_of(next_conc)) {
-                        if (seen.count(next_conc) == 0) {
-                            unseen.push(make_pair(next_abs, next_conc));
-                            seen.insert(next_conc);
-                        }
-                    } else {
-                        if (DEBUG)
-                            cout << "Concrete path deviates from abstract one." << endl;
-                        ++deviations;
-                        AbstractState desired_abs_state;
-                        next_abs->regress(*op, &desired_abs_state);
-                        abs_state->get_possible_splits(desired_abs_state, conc_state,
-                                                       &states_to_splits[abs_state]);
+            if (g + op->get_cost() != next_g)
+                continue;
+            if (op->is_applicable(conc_state)) {
+                if (DEBUG)
+                    cout << "Move to state: " << next_abs->str()
+                         << " with " << op->get_name() << endl;
+                State next_conc = State(conc_state, *op);
+                if (next_abs->is_abstraction_of(next_conc)) {
+                    if (seen.count(next_conc) == 0) {
+                        unseen.push(make_pair(next_abs, next_conc));
+                        seen.insert(next_conc);
                     }
                 } else {
                     if (DEBUG)
-                        cout << "Operator is not applicable: " << op->get_name() << endl;
-                    ++unmet_preconditions;
-                    get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
+                        cout << "Concrete path deviates from abstract one." << endl;
+                    ++deviations;
+                    AbstractState desired_abs_state;
+                    next_abs->regress(*op, &desired_abs_state);
+                    abs_state->get_possible_splits(desired_abs_state, conc_state,
+                                                   &states_to_splits[abs_state]);
                 }
+            } else {
+                if (DEBUG)
+                    cout << "Operator is not applicable: " << op->get_name() << endl;
+                ++unmet_preconditions;
+                get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
             }
         }
     }
