@@ -230,6 +230,7 @@ void Abstraction::reset_distances_and_solution() const {
 }
 
 bool Abstraction::astar_search(bool forward, bool use_h) const {
+    // TODO: Try using BFS for unit-cost tasks if Dijkstra search is bottleneck.
     while (!open->empty()) {
         pair<int, AbstractState *> top_pair = open->pop();
         int &old_f = top_pair.first;
@@ -297,6 +298,10 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                     assert(f >= 0);
                     open->push(f, successor);
                 }
+                // All subsequent operators also have cost=1 and thus cannot
+                // improve the distance in unit-cost tasks.
+                if (g_is_unit_cost)
+                    break;
             }
         }
     }
