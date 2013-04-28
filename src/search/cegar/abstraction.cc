@@ -74,14 +74,7 @@ Abstraction::~Abstraction() {
         release_memory();
 }
 
-void Abstraction::build(int h_updates) {
-    int updates = 0;
-    int update_step = DEFAULT_H_UPDATE_STEP;
-    if (h_updates >= 0) {
-        update_step = (max_states_offline / (h_updates + 1)) + 1;
-    } else if (max_states_offline >= 0) {
-        h_updates = max_states_offline / update_step;
-    }
+void Abstraction::build() {
     if (WRITE_DOT_FILES) {
         write_causal_graph(*g_causal_graph);
         assert(get_num_states() == 1);
@@ -98,12 +91,6 @@ void Abstraction::build(int h_updates) {
         valid_conc_solution = check_and_break_solution(*g_initial_state, init);
         if (valid_conc_solution)
             break;
-        // Update costs to goal evenly distributed over time.
-        // TODO: Remove h-updates.
-        if (get_num_states() >= (updates + 1) * update_step) {
-            update_h_values();
-            ++updates;
-        }
     }
     log_h_values();
     // Remember how many states were refined offline.
@@ -114,7 +101,6 @@ void Abstraction::build(int h_updates) {
          << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << valid_conc_solution << endl;
     cout << "Abstract states offline: " << num_states_offline << endl;
-    cout << "Cost updates: " << updates << "/" << h_updates << endl;
     update_h_values();
 }
 

@@ -22,10 +22,6 @@ enum GoalOrder {
 
 class CegarSumHeuristic : public Heuristic {
     const Options options;
-    // How many times should the goal distances be updated? A higher number
-    // makes for a better heuristic during the A* searches, but adds additional
-    // runtime.
-    const int h_updates;
     const bool search;
     const GoalOrder goal_order;
     std::vector<Abstraction *> abstractions;
