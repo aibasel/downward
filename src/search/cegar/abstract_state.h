@@ -5,6 +5,7 @@
 #include "utils.h"
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
+#include "../ext/btree/btree_map.h"
 
 #include <set>
 #include <string>
@@ -18,7 +19,7 @@ class Values;
 typedef pair<Operator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
 typedef std::vector<Operator *> Loops;
-typedef std::unordered_map<AbstractState *, Operators> StatesToOps;
+typedef btree::btree_map<AbstractState *, Operators> StatesToOps;
 
 class AbstractState {
 private:
