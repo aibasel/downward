@@ -229,25 +229,21 @@ void Abstraction::reset_distances_and_solution() const {
     }
 }
 
-bool Abstraction::astar_search(bool forward, bool use_h) const {
+bool Abstraction::dijkstra_search(bool forward) const {
     // TODO: Try using BFS for unit-cost tasks if Dijkstra search is bottleneck.
     while (!open->empty()) {
         pair<int, AbstractState *> top_pair = open->pop();
-        int &old_f = top_pair.first;
+        int &old_g = top_pair.first;
         AbstractState *state = top_pair.second;
 
         const int g = state->get_distance();
         assert(g < INFINITY);
-        int new_f = g;
-        if (use_h)
-            new_f += state->get_h();
-        assert(new_f <= old_f);
-        if (new_f < old_f) {
+        assert(g <= old_g);
+        if (g < old_g) {
             continue;
         }
         if (DEBUG)
-            cout << endl << "Expand: " << state->str() << " g:" << g
-                 << " h:" << state->get_h() << " f:" << new_f << endl;
+            cout << endl << "Expand: " << state->str() << " g:" << g << endl;
         StatesToOps &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (StatesToOps::iterator it = successors.begin(); it != successors.end(); ++it) {
             AbstractState *successor = it->first;
@@ -259,7 +255,6 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                 // Special code for additive abstractions.
                 if (calculate_needed_operator_costs) {
                     assert(forward);
-                    assert(!use_h);
                     // We are currently collecting the needed operator costs.
                     assert(needed_operator_costs.size() == g_operators.size());
                     // cost'(op) = h(a1) - h(a2)
@@ -276,27 +271,17 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                 }
 
                 const int succ_g = g + op->get_cost();
+                assert(succ_g >= 0);
 
                 // If we use Dijkstra instead of A*, we can use "<" here instead of "<=".
                 // This leads to way fewer queue pushes.
                 if (succ_g < successor->get_distance()) {
                     if (DEBUG)
                         cout << "  Succ: " << successor->str()
-                             << " f:" << succ_g + successor->get_h()
                              << " g:" << succ_g
-                             << " dist:" << successor->get_distance()
-                             << " h:" << successor->get_h() << endl;
+                             << " dist:" << successor->get_distance() << endl;
                     successor->set_distance(succ_g);
-                    int f = succ_g;
-                    if (use_h) {
-                        int h = successor->get_h();
-                        // Ignore dead-end states.
-                        if (h == INFINITY)
-                            continue;
-                        f += h;
-                    }
-                    assert(f >= 0);
-                    open->push(f, successor);
+                    open->push(succ_g, successor);
                 }
                 // All subsequent operators also have cost=1 and thus cannot
                 // improve the distance in unit-cost tasks.
@@ -325,7 +310,7 @@ bool Abstraction::find_solution(AbstractState *start) {
     reset_distances_and_solution();
     start->set_distance(0);
     open->push(0, start);
-    return astar_search(true, false);
+    return dijkstra_search(true);
 }
 
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
@@ -578,7 +563,7 @@ void Abstraction::update_h_values() const {
     open->clear();
     open->push(0, goal);
     goal->set_distance(0);
-    astar_search(false, false);
+    dijkstra_search(false);
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
@@ -675,7 +660,7 @@ void Abstraction::adapt_operator_costs() {
     init->set_distance(0);
     open->push(0, init);
     calculate_needed_operator_costs = true;
-    astar_search(true, false);
+    dijkstra_search(true);
     calculate_needed_operator_costs = false;
     for (int i = 0; i < needed_operator_costs.size(); ++i) {
         if (DEBUG)
