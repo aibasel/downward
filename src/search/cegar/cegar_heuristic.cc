@@ -18,7 +18,6 @@ namespace cegar_heuristic {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
-      h_updates(opts.get<int>("h_updates")),
       search(opts.get<bool>("search")) {
     DEBUG = opts.get<bool>("debug");
 }
@@ -38,11 +37,6 @@ void CegarHeuristic::initialize() {
     if (max_time == -1)
         max_time = INFINITY;
 
-    if ((h_updates > 0) && (max_states_offline == INFINITY)) {
-        cout << "If h_updates > 0, max_states_offline must be finite" << endl;
-        exit(2);
-    }
-
     // Do not restrict the number of states if a limit has been set.
     if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INFINITY)
         max_states_offline = INFINITY;
@@ -57,7 +51,7 @@ void CegarHeuristic::initialize() {
     abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
     abstraction->set_log_h(options.get<bool>("log_h"));
 
-    abstraction->build(h_updates);
+    abstraction->build();
     abstraction->print_statistics();
     if (max_states_online <= 0)
         abstraction->release_memory();
@@ -95,7 +89,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_OPS");
     parser.add_enum_option("pick", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied condition");
-    parser.add_option<int>("h_updates", -1, "how often to update the abstract h-values");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
     parser.add_option<bool>("debug", false, "print debugging output");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");

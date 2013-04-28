@@ -18,7 +18,6 @@ namespace cegar_heuristic {
 CegarSumHeuristic::CegarSumHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
-      h_updates(opts.get<int>("h_updates")),
       search(opts.get<bool>("search")),
       goal_order(GoalOrder(options.get_enum("goal_order"))) {
     DEBUG = opts.get<bool>("debug");
@@ -43,11 +42,6 @@ void CegarSumHeuristic::initialize() {
     int max_time = options.get<int>("max_time");
     if (max_time == -1)
         max_time = INFINITY;
-
-    if ((h_updates > 0) && (max_states_offline == INFINITY)) {
-        cout << "If h_updates > 0, max_states_offline must be finite" << endl;
-        exit(2);
-    }
 
     // Do not restrict the number of states if a limit has been set.
     if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INFINITY)
@@ -99,7 +93,7 @@ void CegarSumHeuristic::initialize() {
              << " with strategy " << pick_strategy << endl;
         abstraction->set_pick_strategy(pick_strategy);
 
-        abstraction->build(h_updates);
+        abstraction->build();
         avg_h_values.push_back(abstraction->get_avg_h());
         abstraction->adapt_operator_costs();
         abstraction->release_memory();
@@ -171,7 +165,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     goal_order_strategies.push_back("DOMAIN_SIZE_DOWN");
     parser.add_enum_option("goal_order", goal_order_strategies, "ORIGINAL",
                            "order in which the goals are refined for");
-    parser.add_option<int>("h_updates", -1, "how often to update the abstract h-values");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
     parser.add_option<bool>("debug", false, "print debugging output");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");

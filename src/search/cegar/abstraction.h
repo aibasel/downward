@@ -136,7 +136,7 @@ public:
     ~Abstraction();
 
     // Build abstraction offline.
-    void build(int h_updates);
+    void build();
 
     // Refine until the h-value for state improves.
     AbstractState *improve_h(const State &state, AbstractState *abs_state);
