@@ -29,17 +29,17 @@ void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int max_states_offline = options.get<int>("max_states_offline");
     if (max_states_offline == -1)
-        max_states_offline = INFINITY;
+        max_states_offline = INF;
     int max_states_online = options.get<int>("max_states_online");
     if (max_states_online == -1)
-        max_states_online = INFINITY;
+        max_states_online = INF;
     int max_time = options.get<int>("max_time");
     if (max_time == -1)
-        max_time = INFINITY;
+        max_time = INF;
 
     // Do not restrict the number of states if a limit has been set.
-    if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INFINITY)
-        max_states_offline = INFINITY;
+    if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INF)
+        max_states_offline = INF;
 
     abstraction = new Abstraction();
     if (max_states_online > 0)
@@ -63,7 +63,7 @@ void CegarHeuristic::initialize() {
 int CegarHeuristic::compute_heuristic(const State &state) {
     int h = abstraction->get_h(state);
     assert(h >= 0);
-    if (h == INFINITY)
+    if (h == INF)
         h = DEAD_END;
     return h;
 }

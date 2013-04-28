@@ -16,7 +16,8 @@ extern bool DEBUG;
 const bool WRITE_DOT_FILES = false;
 
 const int UNDEFINED = -1;
-const int INFINITY = std::numeric_limits<int>::max();
+// We cannot call the variable INFINITY, because that clashes with something in c++11.
+const int INF = std::numeric_limits<int>::max();
 
 typedef std::vector<Operator *> Operators;
 typedef boost::dynamic_bitset<> Bitset;

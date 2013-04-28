@@ -38,14 +38,14 @@ void CegarSumHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int max_states_offline = options.get<int>("max_states_offline");
     if (max_states_offline == -1)
-        max_states_offline = INFINITY;
+        max_states_offline = INF;
     int max_time = options.get<int>("max_time");
     if (max_time == -1)
-        max_time = INFINITY;
+        max_time = INF;
 
     // Do not restrict the number of states if a limit has been set.
-    if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INFINITY)
-        max_states_offline = INFINITY;
+    if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INF)
+        max_states_offline = INF;
 
     vector<pair<int, int> > goal(g_original_goal);
 
@@ -128,7 +128,7 @@ int CegarSumHeuristic::compute_heuristic(const State &state) {
     for (int i = 0; i < abstractions.size(); ++i) {
         int h = abstractions[i]->get_h(state);
         assert(h >= 0);
-        if (h == INFINITY)
+        if (h == INF)
             return DEAD_END;
         sum_h += h;
     }
