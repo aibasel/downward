@@ -6,9 +6,9 @@
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
 
-#include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -18,7 +18,7 @@ class Values;
 typedef pair<Operator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
 typedef std::vector<Operator *> Loops;
-typedef std::map<AbstractState *, Operators> StatesToOps;
+typedef std::unordered_map<AbstractState *, Operators> StatesToOps;
 
 class AbstractState {
 private:
