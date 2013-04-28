@@ -305,7 +305,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     assert(abs_state->is_abstraction_of(conc_state));
 
     if (DEBUG)
-        cout << "Check solution." << endl << "Start at      " << abs_state->str()
+        cout << "Check solution." << endl << "Start at       " << abs_state->str()
              << " (is init: " << (abs_state == init) << ")" << endl;
 
     map<AbstractState *, Splits> states_to_splits;
@@ -323,8 +323,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         unseen.pop();
         if (DEBUG)
             cout << "Current state: " << abs_state->str() << endl;
-        // TODO: Leave this out?
-        if (!states_to_splits[abs_state].empty())
+        if (!states_to_splits[abs_state].empty() && "Start check from each state only once.")
             continue;
         int g = abs_state->get_distance();
         if (g + abs_state->get_h() != h_0)
@@ -336,7 +335,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             } else {
                 // Get unmet goals and refine the last state.
                 if (DEBUG)
-                    cout << "Goal test failed." << endl;
+                    cout << "      Goal test failed." << endl;
                 unmet_goals++;
                 get_unmet_goal_conditions(conc_state, &states_to_splits[abs_state]);
                 continue;
@@ -345,16 +344,17 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         StatesToOps &arcs_out = abs_state->get_arcs_out();
         for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
             AbstractState *next_abs = it->first;
+            int next_g = next_abs->get_distance();
             Operators &ops = it->second;
             assert(!ops.empty());
-            int next_g = next_abs->get_distance();
             for (int i = 0; i < ops.size(); ++i) {
                 Operator *op = ops[i];
                 if (g + op->get_cost() != next_g)
+                    // Operator is not part of an optimal path.
                     continue;
                 if (op->is_applicable(conc_state)) {
                     if (DEBUG)
-                        cout << "Move to state: " << next_abs->str()
+                        cout << "      Move to: " << next_abs->str()
                              << " with " << op->get_name() << endl;
                     State next_conc = State(conc_state, *op);
                     if (next_abs->is_abstraction_of(next_conc)) {
@@ -362,18 +362,20 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                             unseen.push(make_pair(next_abs, next_conc));
                             seen.insert(next_conc);
                         }
-                    } else {
+                    // Only find deviation reasons if we haven't found any splits already.
+                    } else if (states_to_splits[abs_state].empty()) {
                         if (DEBUG)
-                            cout << "Concrete path deviates from abstract one." << endl;
+                            cout << "      Paths deviate." << endl;
                         ++deviations;
                         AbstractState desired_abs_state;
                         next_abs->regress(*op, &desired_abs_state);
                         abs_state->get_possible_splits(desired_abs_state, conc_state,
                                                        &states_to_splits[abs_state]);
                     }
-                } else {
+                // Only find unmet preconditions if we haven't found any splits already.
+                } else if (states_to_splits[abs_state].empty()) {
                     if (DEBUG)
-                        cout << "Operator is not applicable: " << op->get_name() << endl;
+                        cout << "      Operator not applicable: " << op->get_name() << endl;
                     ++unmet_preconditions;
                     get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
                 }
