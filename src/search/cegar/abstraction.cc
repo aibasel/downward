@@ -323,7 +323,8 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         unseen.pop();
         if (DEBUG)
             cout << "Current state: " << abs_state->str() << endl;
-        if (!states_to_splits[abs_state].empty() && "Start check from each state only once.")
+        // Start check from each state only once.
+        if (!states_to_splits[abs_state].empty())
             continue;
         int g = abs_state->get_distance();
         assert((g + abs_state->get_h() == h_0) && "State must be on optimal path.");
