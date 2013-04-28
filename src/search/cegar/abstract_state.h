@@ -5,11 +5,11 @@
 #include "utils.h"
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
-#include "../ext/btree/btree_map.h"
+
+#include <boost/unordered_map.hpp>
 
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -19,7 +19,7 @@ class Values;
 typedef pair<Operator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
 typedef std::vector<Operator *> Loops;
-typedef btree::btree_map<AbstractState *, Operators> StatesToOps;
+typedef boost::unordered_map<AbstractState *, Operators> StatesToOps;
 
 class AbstractState {
 private:
