@@ -68,6 +68,7 @@ int get_post(const Operator &op, int var) {
 }
 
 void get_unmet_preconditions(const Operator &op, const State &state, Splits *splits) {
+    assert(splits->empty());
     for (int i = 0; i < op.get_prevail().size(); ++i) {
         const Prevail &prevail = op.get_prevail()[i];
         if (state[prevail.var] != prevail.prev) {
@@ -88,6 +89,7 @@ void get_unmet_preconditions(const Operator &op, const State &state, Splits *spl
 }
 
 void get_unmet_goal_conditions(const State &state, Splits *splits) {
+    assert(splits->empty());
     for (int i = 0; i < g_goal.size(); i++) {
         int var = g_goal[i].first;
         int value = g_goal[i].second;
