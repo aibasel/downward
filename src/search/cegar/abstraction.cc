@@ -92,7 +92,6 @@ void Abstraction::build() {
         if (valid_conc_solution)
             break;
     }
-    log_h_values();
     // Remember how many states were refined offline.
     num_states_offline = get_num_states();
     assert(num_states_offline == states.size());
@@ -101,10 +100,16 @@ void Abstraction::build() {
          << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << valid_conc_solution << endl;
     cout << "Abstract states offline: " << num_states_offline << endl;
-    update_h_values();
+
+    // If we haven't refined in the last step, the h-values are still valid.
+    if (!valid_conc_solution)
+        update_h_values();
+    log_h_values();
 }
 
 void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
+    // Log h-values while they are up-to-date.
+    log_h_values();
     if (DEBUG) {
         cout << "Unmet conditions: ";
         for (int i = 0; i < splits.size(); ++i) {
@@ -117,7 +122,6 @@ void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
     int var = splits[i].first;
     const vector<int> &wanted = splits[i].second;
     refine(state, var, wanted);
-    log_h_values();
 }
 
 void Abstraction::refine(AbstractState *state, int var, const vector<int> &wanted) {
@@ -550,7 +554,8 @@ void Abstraction::update_h_values() const {
 }
 
 double Abstraction::get_avg_h() const {
-    update_h_values();
+    // This function is called after the abstraction has been built, so all
+    // h-values are up-to-date.
     double avg_h = 0.;
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
