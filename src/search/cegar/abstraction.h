@@ -111,9 +111,8 @@ private:
 
     // A* search.
     void reset_distances_and_solution() const;
-    FRIEND_TEST(CegarTest, astar_search);
     FRIEND_TEST(CegarTest, dijkstra_search);
-    bool astar_search(bool forward, bool use_h) const;
+    bool dijkstra_search(bool forward) const;
     FRIEND_TEST(CegarTest, find_solution_first_state);
     FRIEND_TEST(CegarTest, find_solution_second_state);
     FRIEND_TEST(CegarTest, find_solution_loop);
