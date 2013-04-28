@@ -18,7 +18,6 @@
 namespace cegar_heuristic {
 
 const int STATES_LOG_STEP = 1000;
-const int DEFAULT_H_UPDATE_STEP = 1000;
 
 class AbstractState;
 
