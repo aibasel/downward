@@ -63,7 +63,7 @@ AbstractState::~AbstractState() {
 string AbstractState::str() const {
     assert(values);
     ostringstream oss;
-    oss << "\"<" << values->str() << "> (h=" << node->get_h() << ")\"";
+    oss << "<" << values->str() << ">";
     return oss.str();
 }
 
