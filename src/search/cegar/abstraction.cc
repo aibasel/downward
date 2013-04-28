@@ -175,30 +175,17 @@ AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_sta
     const int old_h = abs_state->get_h();
     // Loop until the heuristic value increases.
     while (abs_state->get_h() == old_h && may_keep_refining()) {
-        bool solution_found = find_solution(abs_state);
-        if (!solution_found) {
-            cout << "No abstract solution found" << endl;
-            abs_state->set_h(INFINITY);
+        find_solution();
+        if (abs_state->get_h() == INFINITY) {
+            cout << "No abstract solution starts at " << abs_state->str() << endl;
             break;
         }
-        bool solution_valid = check_and_break_solution(state, abs_state);
+        bool solution_valid = check_and_break_solution(*g_initial_state, init);
         if (solution_valid) {
             cout << "Concrete solution found" << endl;
             break;
         }
         abs_state = get_abstract_state(state);
-        if (get_num_states() % DEFAULT_H_UPDATE_STEP == 0) {
-            // Don't update_h_values in each round.
-            update_h_values();
-        } else {
-            // Normally, we use A* for finding the shortest path from abs_state
-            // to the goal since that's much faster than update_h_values().
-            // If a solution is found, the h-values of all states on the path
-            // are updated by the extract_solution function.
-            solution_found = find_solution(abs_state);
-            if (!solution_found)
-                abs_state->set_h(INFINITY);
-        }
         ++rounds;
     }
     assert(abs_state->get_h() >= old_h);
