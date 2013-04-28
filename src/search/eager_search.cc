@@ -368,7 +368,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                     cout << "Improve " << old_h << " -> " << new_h << endl;
                 // Make sure that the h-value was improved, or the state is a
                 // dead end, or it is the goal state or a termination criterion was met.
-                assert(new_h > old_h || new_h == cegar_heuristic::INFINITY ||
+                assert(new_h > old_h || new_h == cegar_heuristic::INF ||
                        abs_state->is_abstraction_of_goal() ||
                        !g_cegar_abstraction->may_keep_refining());
                 // If the heuristic value could be improved, do not expand the state now,

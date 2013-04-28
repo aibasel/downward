@@ -40,7 +40,7 @@ Abstraction::Abstraction()
       last_init_h(0),
       max_states_offline(1),
       max_states_online(0),
-      max_time(INFINITY),
+      max_time(INF),
       log_h(false),
       calculate_needed_operator_costs(false),
       memory_released(false),
@@ -180,7 +180,7 @@ AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_sta
     // Loop until the heuristic value increases.
     while (abs_state->get_h() == old_h && may_keep_refining()) {
         find_solution();
-        if (abs_state->get_h() == INFINITY) {
+        if (abs_state->get_h() == INF) {
             cout << "No abstract solution starts at " << abs_state->str() << endl;
             break;
         }
@@ -202,7 +202,7 @@ void Abstraction::reset_distances_and_solution() const {
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = (*it);
-        state->set_distance(INFINITY);
+        state->set_distance(INF);
     }
 }
 
@@ -214,7 +214,7 @@ bool Abstraction::dijkstra_search(bool forward) const {
         AbstractState *state = top_pair.second;
 
         const int g = state->get_distance();
-        assert(g < INFINITY);
+        assert(g < INF);
         assert(g <= old_g);
         if (g < old_g) {
             continue;
@@ -267,8 +267,8 @@ bool Abstraction::dijkstra_search(bool forward) const {
             }
         }
     }
-    if ((forward && goal->get_distance() == INFINITY) ||
-        (!forward && init->get_distance() == INFINITY)) {
+    if ((forward && goal->get_distance() == INF) ||
+        (!forward && init->get_distance() == INF)) {
         return false;
     }
     return true;
@@ -306,7 +306,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     unseen.push(make_pair(abs_state, conc_state));
 
     int h_0 = init->get_h();
-    assert(h_0 != INFINITY);
+    assert(h_0 != INF);
 
     while (!unseen.empty()) {
         abs_state = unseen.front().first;
@@ -432,7 +432,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             cond = random_cond;
     } else if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
         int max_rest = -1;
-        int min_rest = INFINITY;
+        int min_rest = INF;
         for (int i = 0; i < splits.size(); ++i) {
             int rest = state.count(splits[i].first);
             assert(rest >= 2);
@@ -467,7 +467,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             }
         }
     } else if (pick == MIN_PREDECESSORS || pick == MAX_PREDECESSORS) {
-        int min_pos = INFINITY;
+        int min_pos = INF;
         int max_pos = -1;
         for (int i = 0; i < splits.size(); ++i) {
             int var = splits[i].first;
@@ -562,7 +562,7 @@ double Abstraction::get_avg_h() const {
         AbstractState *state = *it;
         const int h = state->get_h();
         assert(h >= 0);
-        if (h != INFINITY) {
+        if (h != INF) {
             avg_h += h * state->get_rel_conc_states();
         }
     }
@@ -664,7 +664,7 @@ bool Abstraction::may_keep_refining() const {
     return g_memory_buffer &&
            (is_online() || get_num_states() < max_states_offline) &&
            (!is_online() || get_num_states_online() < max_states_online) &&
-           (max_time == INFINITY || is_online() || timer() < max_time);
+           (max_time == INF || is_online() || timer() < max_time);
 }
 
 void Abstraction::release_memory() {
@@ -693,7 +693,7 @@ void Abstraction::print_statistics() {
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
-        if (state->get_h() == INFINITY)
+        if (state->get_h() == INF)
             ++unreachable_states;
         //Arcs &next = state->get_next();
         //Arcs &prev = state->get_prev();
