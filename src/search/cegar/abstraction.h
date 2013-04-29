@@ -96,9 +96,6 @@ private:
     // The timer is started when we begin building the abstraction.
     Timer timer;
 
-    // Do all operators have cost 1?
-    bool is_unit_cost;
-
     // Refinement hierarchy containing two child states for each split state.
     SplitTree split_tree;
 
