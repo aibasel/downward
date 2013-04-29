@@ -292,7 +292,7 @@ struct btree_common_params {
 
     // Available space for values.  This is largest for leaf nodes,
     // which has overhead no fewer than two pointers.
-    kNodeValueSpace = TargetNodeSize - 2 * sizeof(void*),
+    kNodeValueSpace = TargetNodeSize - 2 * sizeof(void*)
   };
 
   // This is an integral type large enough to hold as many
@@ -319,7 +319,7 @@ struct btree_map_params
   typedef const value_type& const_reference;
 
   enum {
-    kValueSize = sizeof(Key) + sizeof(data_type),
+    kValueSize = sizeof(Key) + sizeof(data_type)
   };
 
   static const Key& key(const value_type &x) { return x.first; }
@@ -345,7 +345,7 @@ struct btree_set_params
   typedef const value_type& const_reference;
 
   enum {
-    kValueSize = sizeof(Key),
+    kValueSize = sizeof(Key)
   };
 
   static const Key& key(const value_type &x) { return x; }
@@ -504,7 +504,7 @@ class btree_node {
     kNodeValues = kNodeTargetValues >= 3 ? kNodeTargetValues : 3,
 
     kExactMatch = 1 << 30,
-    kMatchMask = kExactMatch - 1,
+    kMatchMask = kExactMatch - 1
   };
 
   struct leaf_fields : public base_fields {
@@ -881,7 +881,7 @@ class btree : public Params::key_compare {
     kMinNodeValues = kNodeValues / 2,
     kValueSize = node_type::kValueSize,
     kExactMatch = node_type::kExactMatch,
-    kMatchMask = node_type::kMatchMask,
+    kMatchMask = node_type::kMatchMask
   };
 
   // A helper class to get the empty base class optimization for 0-size
