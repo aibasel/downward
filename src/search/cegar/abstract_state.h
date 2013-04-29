@@ -9,7 +9,6 @@
 
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -19,6 +18,13 @@ class Values;
 typedef pair<Operator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
 typedef std::vector<Operator *> Loops;
+// Comparison between different map implementations relative to no-map version:
+//  Time:
+// no-map   std::map    std::unordered_map  boost::unordered_map    btree_map
+// 1.00     1.01        0.80                0.80                    0.72
+//  Memory:
+// no-map   std::map    std::unordered_map  boost::unordered_map    btree_map
+// 1.00     1.37        1.30                1.29                    1.20
 typedef btree::btree_map<AbstractState *, Operators> StatesToOps;
 
 class AbstractState {
