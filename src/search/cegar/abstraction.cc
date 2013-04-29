@@ -265,9 +265,9 @@ bool Abstraction::dijkstra_search(bool forward) const {
                     successor->set_distance(succ_g);
                     open->push(succ_g, successor);
                 }
-                // All subsequent operators also have cost=1 and thus cannot
-                // improve the distance in unit-cost tasks.
-                if (g_is_unit_cost)
+                // All subsequent operators don't have lower cost and thus cannot
+                // improve the distance. This check reduces the mean runtime by ~8%.
+                if (op->get_cost() == g_min_action_cost)
                     break;
             }
         }
