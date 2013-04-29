@@ -9,6 +9,8 @@
 #include "../timer.h"
 #include "../utilities.h"
 
+#include "../ext/btree/btree_map.h"
+
 #include <algorithm>
 #include <cassert>
 #include <fstream>
@@ -24,6 +26,8 @@
 using namespace std;
 
 namespace cegar_heuristic {
+typedef btree::btree_map<AbstractState *, Splits> StatesToSplits;
+
 Abstraction::Abstraction()
     : single(new AbstractState()),
       init(single),
@@ -300,7 +304,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         cout << "Check solution." << endl << "Start at       " << abs_state->str()
              << " (is init: " << (abs_state == init) << ")" << endl;
 
-    map<AbstractState *, Splits> states_to_splits;
+    StatesToSplits states_to_splits;
     queue<pair<AbstractState *, State> > unseen;
     set<State> seen;
 
@@ -380,7 +384,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         }
     }
     int broken_solutions = 0;
-    for (map<AbstractState *, Splits>::iterator it = states_to_splits.begin(); it != states_to_splits.end(); ++it) {
+    for (StatesToSplits::iterator it = states_to_splits.begin(); it != states_to_splits.end(); ++it) {
         if (!may_keep_refining())
             break;
         AbstractState *state = it->first;
