@@ -110,6 +110,7 @@ private:
 
     // A* search.
     void reset_distances_and_solution() const;
+    bool breadth_first_search(queue<AbstractState *> &open_queue, bool forward) const;
     FRIEND_TEST(CegarTest, dijkstra_search);
     bool dijkstra_search(bool forward) const;
     FRIEND_TEST(CegarTest, find_solution_first_state);

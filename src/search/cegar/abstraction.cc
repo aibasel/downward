@@ -211,8 +211,36 @@ void Abstraction::reset_distances_and_solution() const {
     }
 }
 
+bool Abstraction::breadth_first_search(queue<AbstractState *> &open_queue, bool forward) const {
+    assert(is_unit_cost);
+    while (!open_queue.empty()) {
+        AbstractState *state = open_queue.front();
+        open_queue.pop();
+        const int g = state->get_distance();
+        if (DEBUG)
+            cout << endl << "Expand: " << state->str() << " g:" << g << endl;
+        StatesToOps &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
+        for (StatesToOps::iterator it = successors.begin(); it != successors.end(); ++it) {
+            AbstractState *successor = it->first;
+            const int succ_g = g + 1;
+            if (succ_g < successor->get_distance()) {
+                if (DEBUG)
+                    cout << "  Succ: " << successor->str()
+                         << " g:" << succ_g
+                         << " dist:" << successor->get_distance() << endl;
+                successor->set_distance(succ_g);
+                open_queue.push(successor);
+            }
+        }
+    }
+    if ((forward && goal->get_distance() == INF) ||
+        (!forward && init->get_distance() == INF)) {
+        return false;
+    }
+    return true;
+}
+
 bool Abstraction::dijkstra_search(bool forward) const {
-    // TODO: Try using BFS for unit-cost tasks if Dijkstra search is bottleneck.
     while (!open->empty()) {
         pair<int, AbstractState *> top_pair = open->pop();
         int &old_g = top_pair.first;
@@ -287,10 +315,15 @@ bool Abstraction::find_solution(AbstractState *start) {
     // computation of the h-values.
     update_h_values();
 
-    // Dijkstra.
-    open->clear();
     reset_distances_and_solution();
     start->set_distance(0);
+
+    if (is_unit_cost) {
+        queue<AbstractState *> open_queue;
+        open_queue.push(start);
+        return breadth_first_search(open_queue, true);
+    }
+    open->clear();
     open->push(0, start);
     return dijkstra_search(true);
 }
@@ -547,10 +580,16 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
 
 void Abstraction::update_h_values() const {
     reset_distances_and_solution();
-    open->clear();
-    open->push(0, goal);
     goal->set_distance(0);
-    dijkstra_search(false);
+    if (is_unit_cost) {
+        queue<AbstractState *> open_queue;
+        open_queue.push(goal);
+        breadth_first_search(open_queue, false);
+    } else {
+        open->clear();
+        open->push(0, goal);
+        dijkstra_search(false);
+    }
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
