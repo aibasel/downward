@@ -48,8 +48,7 @@ Abstraction::Abstraction()
       max_time(INF),
       log_h(false),
       calculate_needed_operator_costs(false),
-      memory_released(false),
-      is_unit_cost(false) {
+      memory_released(false) {
     assert(!g_goal.empty());
 
     assert(!g_memory_buffer);
@@ -212,7 +211,7 @@ void Abstraction::reset_distances_and_solution() const {
 }
 
 bool Abstraction::breadth_first_search(queue<AbstractState *> &open_queue, bool forward) const {
-    assert(is_unit_cost);
+    assert(g_is_unit_cost);
     while (!open_queue.empty()) {
         AbstractState *state = open_queue.front();
         open_queue.pop();
@@ -314,7 +313,7 @@ bool Abstraction::find_solution(AbstractState *start) {
     reset_distances_and_solution();
     start->set_distance(0);
 
-    if (is_unit_cost) {
+    if (g_is_unit_cost) {
         queue<AbstractState *> open_queue;
         open_queue.push(start);
         return breadth_first_search(open_queue, true);
@@ -577,7 +576,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
 void Abstraction::update_h_values() const {
     reset_distances_and_solution();
     goal->set_distance(0);
-    if (is_unit_cost) {
+    if (g_is_unit_cost) {
         queue<AbstractState *> open_queue;
         open_queue.push(goal);
         breadth_first_search(open_queue, false);
