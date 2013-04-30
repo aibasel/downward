@@ -309,7 +309,7 @@ void HMLandmarks::get_m_sets(int m,
 void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
     cout << g_fact_names[fluent.first][fluent.second]
          << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
-    << "->" << fluent.second << ")";
+         << "->" << fluent.second << ")";
 }
 
 void get_operator_precondition(int op_index, FluentSet &pc) {

@@ -3,8 +3,8 @@
 #include "canonical_pdbs_heuristic.h"
 #include "pdb_heuristic.h"
 
-#include "../causal_graph.h"
 #include "../globals.h"
+#include "../legacy_causal_graph.h"
 #include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -42,7 +42,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
     int current_size = current_heuristic->get_size();
     for (size_t i = 0; i < pattern.size(); ++i) {
         // causally relevant variables for current variable from pattern
-        vector<int> rel_vars = g_causal_graph->get_predecessors(pattern[i]);
+        vector<int> rel_vars = g_legacy_causal_graph->get_predecessors(pattern[i]);
         sort(rel_vars.begin(), rel_vars.end());
         vector<int> relevant_vars;
         // make sure we only use relevant variables which are not already included in pattern
@@ -223,6 +223,11 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             }
         }
         if (improvement < min_improvement) { // end hill climbing algorithm
+            // Note that using dominance pruning during hill-climbing could lead to
+            // fewer discovered patterns and pattern collections.
+            // A dominated pattern (collection) might no longer be dominated
+            // after more patterns are added.
+            current_heuristic->dominance_pruning();
             cout << "iPDB: iterations = " << num_iterations << endl;
             cout << "iPDB: num_patterns = "
                  << current_heuristic->get_pattern_databases().size() << endl;

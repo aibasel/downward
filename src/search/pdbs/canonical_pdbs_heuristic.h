@@ -41,6 +41,11 @@ public:
     // add a new pattern to the collection and recomputes maximal cliques
     void add_pattern(const std::vector<int> &pattern);
 
+    /* Prune pattern set P = {P_1, ..., P_k} if there exists another pattern set
+       Q = {Q_1, ..., Q_l} where each P_i is a subset of some Q_j:
+       this implies h^P <= h^Q for all states. */
+    void dominance_pruning();
+
     // checks for all max cliques if they would be additive to this pattern
     void get_max_additive_subsets(const std::vector<int> &new_pattern,
                                   std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);

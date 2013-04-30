@@ -2,8 +2,6 @@
 # components" (where to conditions are related if they share a variabe) into
 # several rules, one for each connected component and one high-level rule.
 
-import copy
-
 from pddl_to_prolog import Rule, get_variables
 import graph
 import greedy_join
@@ -22,12 +20,12 @@ def get_connected_conditions(conditions):
     for var, conds in var_to_conditions.items():
         for cond in conds[1:]:
             agraph.connect(conds[0], cond)
-    return agraph.connected_components()
+    return sorted(map(sorted, agraph.connected_components()))
 
 def project_rule(rule, conditions, name_generator):
     predicate = next(name_generator)
     effect_variables = set(rule.effect.args) & get_variables(conditions)
-    effect = pddl.Atom(predicate, list(effect_variables))
+    effect = pddl.Atom(predicate, sorted(effect_variables))
     projected_rule = Rule(conditions, effect)
     return projected_rule
 

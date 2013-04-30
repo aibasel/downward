@@ -60,3 +60,14 @@ class PropositionalAxiom:
         for fact in self.condition:
             print("PRE: %s" % fact)
         print("EFF: %s" % self.effect)
+    @property
+    def key(self):
+        return (self.name, self.condition, self.effect)
+    def __lt__(self, other):
+        return self.key < other.key
+    def __le__(self, other):
+        return self.key <= other.key
+    def __eq__(self, other):
+        return self.key == other.key
+    def __repr__(self):
+        return '<PropositionalAxiom %s %s -> %s>' % (self.name, self.condition, self.effect)

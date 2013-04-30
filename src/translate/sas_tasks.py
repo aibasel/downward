@@ -10,8 +10,8 @@ class SASTask:
         self.mutexes = mutexes
         self.init = init
         self.goal = goal
-        self.operators = operators
-        self.axioms = axioms
+        self.operators = sorted(operators, key=lambda op: (op.name, op.prevail, op.pre_post))
+        self.axioms = sorted(axioms, key=lambda axiom: (axiom.condition, axiom.effect))
         self.metric = metric
     def output(self, stream):
         print("begin_version", file=stream)
@@ -158,7 +158,7 @@ class SASOperator:
 
 class SASAxiom:
     def __init__(self, condition, effect):
-        self.condition = condition
+        self.condition = sorted(condition)
         self.effect = effect
         assert self.effect[1] in (0, 1)
 

@@ -231,13 +231,19 @@ static string get_predicate_for_fact(int var_no, int value) {
     const string &fact_name = g_fact_names[var_no][value];
     if (fact_name == "<none of those>")
         return "";
-    int paren_pos = fact_name.find('(', 5);
-    if (fact_name.substr(0, 5) != "Atom " || paren_pos == string::npos) {
+    int predicate_pos = 0;
+    if (fact_name.substr(0, 5) == "Atom ") {
+        predicate_pos = 5;
+    } else if (fact_name.substr(0, 12) == "NegatedAtom ") {
+        predicate_pos = 12;
+    }
+    int paren_pos = fact_name.find('(', predicate_pos);
+    if (predicate_pos == 0 || paren_pos == string::npos) {
         cerr << "error: cannot extract predicate from fact: "
              << fact_name << endl;
         exit(1);
     }
-    return string(fact_name.begin() + 5, fact_name.begin() + paren_pos);
+    return string(fact_name.begin() + predicate_pos, fact_name.begin() + paren_pos);
 }
 
 void LandmarkFactoryRpgSasp::build_disjunction_classes() {
@@ -314,7 +320,6 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
             get_greedy_preconditions_for_lm(bp, op, next_pre);
             for (hash_map<int, int>::iterator it = next_pre.begin(); it
                  != next_pre.end(); it++) {
-
                 int disj_class = disjunction_classes[it->first][it->second];
                 if (disj_class == -1) {
                     // This fact may not participate in any disjunctive LMs
