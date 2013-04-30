@@ -77,8 +77,8 @@ def get_fluents(task):
 
 def get_initial_invariants(task):
     for predicate in get_fluents(task):
-        all_args = list(range(-1, len(predicate.arguments)))
-        for omitted_arg in all_args:
+        all_args = list(range(len(predicate.arguments)))
+        for omitted_arg in [-1] + all_args:
             order = [i for i in all_args if i != omitted_arg]
             part = invariants.InvariantPart(predicate.name, order, omitted_arg)
             yield invariants.Invariant((part,))
@@ -127,17 +127,16 @@ def useful_groups(invariants, initial_facts):
                 overcrowded_groups.add(group_key)
     useful_groups = nonempty_groups - overcrowded_groups
     for (invariant, parameters) in useful_groups:
-        yield [part.instantiate(parameters) for part in invariant.parts]
+        yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
 def get_groups(task, reachable_action_params=None):
     with timers.timing("Finding invariants", block=True):
-        invariants = list(find_invariants(task, reachable_action_params))
+        invariants = sorted(find_invariants(task, reachable_action_params))
     with timers.timing("Checking invariant weight"):
         result = list(useful_groups(invariants, task.init))
     return result
 
 if __name__ == "__main__":
-    import pddl
     import normalize
     print("Parsing...")
     task = pddl.open()

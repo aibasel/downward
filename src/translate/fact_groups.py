@@ -77,8 +77,6 @@ def choose_groups(groups, reachable_facts, partial_encoding=True):
         uncovered_facts.difference_update(group)
         result.append(group)
     print(len(uncovered_facts), "uncovered facts")
-    #for fact in uncovered_facts:
-    #  print fact
     result += [[fact] for fact in uncovered_facts]
     return result
 
@@ -86,7 +84,10 @@ def build_translation_key(groups):
     group_keys = []
     for group in groups:
         group_key = [str(fact) for fact in group]
-        group_key.append("<none of those>")
+        if len(group) == 1:
+            group_key.append(str(group[0].negate()))
+        else:
+            group_key.append("<none of those>")
         group_keys.append(group_key)
     return group_keys
 
@@ -102,11 +103,17 @@ def collect_all_mutex_groups(groups, atoms):
     all_groups += [[fact] for fact in uncovered_facts]
     return all_groups
 
+def sort_groups(groups):
+    return sorted(sorted(group) for group in groups)
+
 def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
     groups = invariant_finder.get_groups(task, reachable_action_params)
+
     with timers.timing("Instantiating groups"):
         groups = instantiate_groups(groups, task, atoms)
 
+    # Sort here already to get deterministic mutex groups.
+    groups = sort_groups(groups)
     # TODO: I think that collect_all_mutex_groups should do the same thing
     #       as choose_groups with partial_encoding=False, so these two should
     #       be unified.
@@ -114,6 +121,7 @@ def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
         mutex_groups = collect_all_mutex_groups(groups, atoms)
     with timers.timing("Choosing groups", block=True):
         groups = choose_groups(groups, atoms, partial_encoding=partial_encoding)
+    groups = sort_groups(groups)
     with timers.timing("Building translation key"):
         translation_key = build_translation_key(groups)
 

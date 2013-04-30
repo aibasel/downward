@@ -23,7 +23,7 @@ def invert_list(alist):
 
 
 def instantiate_factored_mapping(pairs):
-    part_mappings = [[list(zip(preimg, perm_img)) for perm_img in tools.permutations(img)]
+    part_mappings = [[list(zip(preimg, perm_img)) for perm_img in itertools.permutations(img)]
                      for (preimg, img) in pairs]
     return tools.cartesian_product(part_mappings)
 
@@ -114,6 +114,12 @@ class InvariantPart:
     def __ne__(self, other):
         return self.predicate != other.predicate or self.order != other.order
 
+    def __le__(self, other):
+        return self.predicate <= other.predicate or self.order <= other.order
+
+    def __lt__(self, other):
+        return self.predicate < other.predicate or self.order < other.order
+
     def __hash__(self):
         return hash((self.predicate, tuple(self.order)))
 
@@ -198,11 +204,20 @@ class Invariant:
     def __ne__(self, other):
         return self.parts != other.parts
 
+    def __lt__(self, other):
+        return self.parts < other.parts
+
+    def __le__(self, other):
+        return self.parts <= other.parts
+
     def __hash__(self):
         return hash(self.parts)
 
     def __str__(self):
-        return "{%s}" % ", ".join(map(str, self.parts))
+        return "{%s}" % ", ".join(str(part) for part in self.parts)
+
+    def __repr__(self):
+        return '<Invariant %s>' % self
 
     def arity(self):
         return next(iter(self.parts)).arity()
@@ -277,13 +292,12 @@ class Invariant:
         # add_effect must be covered
         assigs = self.get_covering_assignments(inv_vars, add_effect.literal)
 
+        # renaming of operator parameters must be minimal
         minimal_renamings = []
         params = [p.name for p in action.parameters]
         for assignment in assigs:
             system = constraints.ConstraintSystem()
             system.add_assignment(assignment)
-            # renaming of operator parameters must be minimal
-            minimality_clauses = []
             mapping = assignment.get_mapping()
             if len(params) > 1:
                 for (n1, n2) in itertools.combinations(params, 2):
