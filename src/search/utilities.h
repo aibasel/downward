@@ -7,6 +7,21 @@
 #include <vector>
 #include <tr1/functional>
 
+
+#define LINUX 0
+#define OSX 1
+#define CYGWIN 2
+
+#if defined(__CYGWIN32__)
+#define OPERATING_SYSTEM CYGWIN
+#elif defined(__WINNT__)
+#define OPERATING_SYSTEM CYGWIN
+#elif defined(__APPLE__)
+#define OPERATING_SYSTEM OSX
+#else
+#define OPERATING_SYSTEM LINUX
+#endif
+
 extern void register_event_handlers();
 
 extern int get_peak_memory_in_kb();

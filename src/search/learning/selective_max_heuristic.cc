@@ -1,5 +1,4 @@
 #include "selective_max_heuristic.h"
-#include "../successor_generator.h"
 #include "maximum_heuristic.h"
 #include "naive_bayes_classifier.h"
 #include "state_vars_feature_extractor.h"
@@ -7,8 +6,11 @@
 #include "AODE.h"
 #include "probe_state_space_sample.h"
 #include "PDB_state_space_sample.h"
+
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../rng.h"
+#include "../successor_generator.h"
 
 #include <cassert>
 #include <limits>
@@ -334,7 +336,7 @@ int SelectiveMaxHeuristic::compute_heuristic(const State &state) {
     }
 
     if (random_selection) {
-        int h = num_always_calc + (rand() % (num_heuristics - num_always_calc));
+        int h = num_always_calc + g_rng(num_heuristics - num_always_calc);
         eval_heuristic(state, h, true);
         return calc_max();
     }
