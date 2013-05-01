@@ -105,9 +105,9 @@ void Abstraction::build() {
     cout << "Solution found while refining: " << valid_conc_solution << endl;
     cout << "Abstract states offline: " << num_states_offline << endl;
 
-    // If we haven't refined in the last step, the h-values are still valid.
-    if (!valid_conc_solution)
-        update_h_values();
+    // Even if we found a valid concrete solution, we might have refined in the
+    // last iteration, so we must update the h-values.
+    update_h_values();
     log_h_values();
 }
 
