@@ -51,8 +51,9 @@ Abstraction::Abstraction()
       memory_released(false) {
     assert(!g_goal.empty());
 
-    assert(!g_memory_buffer);
-    g_memory_buffer = new char [10 * 1024 * 1024];
+    assert(!g_memory_padding);
+    cout << "Reserving " << g_memory_padding_mb << " MB of memory padding." << endl;
+    g_memory_padding = new char [g_memory_padding_mb * 1024 * 1024];
 
     split_tree.set_root(single);
     for (int i = 0; i < g_operators.size(); ++i) {
@@ -704,7 +705,7 @@ int Abstraction::get_num_states_online() const {
 }
 
 bool Abstraction::may_keep_refining() const {
-    return g_memory_buffer &&
+    return g_memory_padding &&
            (is_online() || get_num_states() < max_states_offline) &&
            (!is_online() || get_num_states_online() < max_states_online) &&
            (max_time == INF || is_online() || timer() < max_time);
@@ -715,9 +716,9 @@ void Abstraction::release_memory() {
     assert(!memory_released);
     delete open;
     open = 0;
-    if (g_memory_buffer) {
-        delete[] g_memory_buffer;
-        g_memory_buffer = 0;
+    if (g_memory_padding) {
+        delete[] g_memory_padding;
+        g_memory_padding = 0;
     }
     set<AbstractState *>::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {

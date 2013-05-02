@@ -280,7 +280,7 @@ void read_everything(istream &in) {
     g_original_goal = g_goal;
 
     g_cegar_abstraction = 0;
-    g_memory_buffer = 0;
+    g_memory_padding = 0;
     set_new_handler(no_memory);
     cout << "Peak memory before building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
@@ -347,10 +347,10 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
 
 void no_memory () {
     cout << "Failed to allocate memory!" << endl;
-    if (g_memory_buffer) {
+    if (g_memory_padding) {
         cout << "Releasing memory buffer" << endl;
-        delete[] g_memory_buffer;
-        g_memory_buffer = 0;
+        delete[] g_memory_padding;
+        g_memory_padding = 0;
     } else {
         cout << "Memory buffer already released --> Exiting" << endl;
         throw bad_alloc();
@@ -394,4 +394,5 @@ std::vector<int> g_original_op_costs;
 std::vector<int> g_causal_graph_ordering;
 std::vector<int> g_causal_graph_ordering_pos;
 
-char *g_memory_buffer;
+int g_memory_padding_mb = 0;
+char *g_memory_padding;
