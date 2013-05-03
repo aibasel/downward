@@ -42,6 +42,8 @@ bool cheaper(Operator *op1, Operator* op2);
 // edges in the back.
 void partial_ordering(const CausalGraph &causal_graph, vector<int> *order);
 
+struct hash_state;
+
 void write_causal_graph(const CausalGraph &causal_graph);
 
 // Debugging.
