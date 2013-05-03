@@ -122,12 +122,6 @@ bool cheaper(Operator *op1, Operator* op2) {
     return op1->get_cost() < op2->get_cost();
 }
 
-struct hash_state {
-    size_t operator()(const State &state ) const {
-        return state.hash();
-    }
-};
-
 void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
     assert(order->empty());
     bool debug = false;
