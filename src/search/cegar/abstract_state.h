@@ -7,7 +7,6 @@
 #include "../ext/gtest/include/gtest/gtest_prod.h"
 #include "../ext/btree/btree_map.h"
 
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
