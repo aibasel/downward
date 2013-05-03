@@ -18,8 +18,8 @@
 #include <iostream>
 #include <map>
 #include <queue>
-#include <set>
 #include <sstream>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -339,7 +339,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
 
     StatesToSplits states_to_splits;
     queue<pair<AbstractState *, State> > unseen;
-    set<State> seen;
+    unordered_set<State, hash_state> seen;
 
     unseen.push(make_pair(abs_state, conc_state));
 
