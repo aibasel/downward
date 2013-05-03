@@ -204,8 +204,7 @@ AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_sta
 }
 
 void Abstraction::reset_distances_and_solution() const {
-    set<AbstractState *>::iterator it;
-    for (it = states.begin(); it != states.end(); ++it) {
+    for (auto it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = (*it);
         state->set_distance(INF);
     }
@@ -590,8 +589,7 @@ void Abstraction::update_h_values() const {
         open->push(0, goal);
         dijkstra_search(false);
     }
-    set<AbstractState *>::iterator it;
-    for (it = states.begin(); it != states.end(); ++it) {
+    for (auto it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         state->set_h(state->get_distance());
     }
@@ -601,8 +599,7 @@ double Abstraction::get_avg_h() const {
     // This function is called after the abstraction has been built, so all
     // h-values are up-to-date.
     double avg_h = 0.;
-    set<AbstractState *>::iterator it;
-    for (it = states.begin(); it != states.end(); ++it) {
+    for (auto it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         const int h = state->get_h();
         assert(h >= 0);
@@ -641,7 +638,7 @@ void Abstraction::write_dot_file(int num) {
         exit(1);
     }
     dotfile << "digraph abstract {" << endl;
-    set<AbstractState *>::iterator it;
+    AbstractStates::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *current_state = *it;
         StatesToOps &next = current_state->get_arcs_out();
@@ -720,12 +717,12 @@ void Abstraction::release_memory() {
         delete[] g_memory_padding;
         g_memory_padding = 0;
     }
-    set<AbstractState *>::iterator it;
+    AbstractStates::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         delete state;
     }
-    set<AbstractState *>().swap(states);
+    AbstractStates().swap(states);
     memory_released = true;
 }
 
@@ -734,7 +731,7 @@ void Abstraction::print_statistics() {
     //int nexts = 0, prevs = 0, total_loops = 0;
     int unreachable_states = 0;
     //int arc_size = 0;
-    set<AbstractState *>::iterator it;
+    AbstractStates::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         if (state->get_h() == INF)

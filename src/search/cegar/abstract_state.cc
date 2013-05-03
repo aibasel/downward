@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <set>
 #include <sstream>
 #include <utility>
 #include <vector>

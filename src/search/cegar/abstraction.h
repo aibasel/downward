@@ -10,16 +10,17 @@
 #include "../ext/gtest/include/gtest/gtest_prod.h"
 
 #include <limits>
-#include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 namespace cegar_heuristic {
+class AbstractState;
+
+typedef unordered_set<AbstractState *> AbstractStates;
 
 const int STATES_LOG_STEP = 1000;
-
-class AbstractState;
 
 // In case there are multiple unment conditions, how do we choose the next one?
 enum PickStrategy {
@@ -52,7 +53,7 @@ private:
     Abstraction &operator=(const Abstraction &);
 
     // Set of all valid states, i.e. states that have not been split.
-    std::set<AbstractState *> states;
+    AbstractStates states;
 
     // Root of the refinement hierarchy.
     AbstractState *single;
