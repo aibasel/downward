@@ -476,9 +476,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             }
         }
     } else if (pick == MIN_OPS || pick == MAX_OPS) {
-        // TODO: Rewrite or leave out commented out code.
         cond = 0;
-        /*
         // Make the variables easily accessible.
         vector<int> vars(splits.size());
         for (int i = 0; i < splits.size(); ++i) {
@@ -491,8 +489,8 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         // Loop over all incoming ops o_in and record for each possible split
         // variable the number of resulting operators. For each operator we get
         // one new operator if eff(o_in) is defined and two otherwise.
-        for (int i = 0; i < state.get_prev().size(); ++i) {
-            Operator *op = state.get_prev()[i].first;
+        for (int i = 0; i < state.get_arcs_in().size(); ++i) {
+            Operator *op = state.get_arcs_in()[i].first;
             for (int j = 0; j < vars.size(); ++j) {
                 int eff = get_post(*op, vars[j]);
                 new_ops[j] += (eff == UNDEFINED) ? 2 : 1;
@@ -501,8 +499,8 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         // Loop over all outgoing ops o_out and record for each possible split
         // variable the number of resulting operators. If eff(o_in) is defined
         // we get one new operator, else two.
-        for (int i = 0; i < state.get_next().size(); ++i) {
-            Operator *op = state.get_next()[i].first;
+        for (int i = 0; i < state.get_arcs_out().size(); ++i) {
+            Operator *op = state.get_arcs_out()[i].first;
             for (int j = 0; j < vars.size(); ++j) {
                 int pre = get_pre(*op, vars[j]);
                 new_ops[j] += (pre == UNDEFINED) ? 2 : 1;
@@ -518,13 +516,11 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
                 new_ops[j] += (pre == UNDEFINED) ? 2 : 1;
             }
         }
-        cout << "Tentative new ops: " << to_string(new_ops) << endl;
         if (pick == MIN_OPS) {
             cond = min_element(new_ops.begin(), new_ops.end()) - new_ops.begin();
         } else {
             cond = max_element(new_ops.begin(), new_ops.end()) - new_ops.begin();
         }
-        */
     } else {
         cout << "Invalid pick strategy: " << pick << endl;
         exit(2);
@@ -680,36 +676,34 @@ void Abstraction::release_memory() {
 }
 
 void Abstraction::print_statistics() {
-    // TODO: Rewrite or leave out commented out code.
-    //int nexts = 0, prevs = 0, total_loops = 0;
+    int nexts = 0, prevs = 0, total_loops = 0;
     int unreachable_states = 0;
-    //int arc_size = 0;
-    AbstractStates::iterator it;
-    for (it = states.begin(); it != states.end(); ++it) {
+    int arc_size = 0;
+    for (auto it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         if (state->get_h() == INF)
             ++unreachable_states;
-        //Arcs &next = state->get_next();
-        //Arcs &prev = state->get_prev();
-        //Loops &loops = state->get_loops();
-        //nexts += next.size();
-        //prevs += prev.size();
-        //total_loops += loops.size();
-        //arc_size += sizeof(next) + sizeof(Arc) * next.capacity() +
-        //            sizeof(prev) + sizeof(Arc) * prev.capacity() +
-        //            sizeof(loops) + sizeof(Operator *) * loops.capacity();
+        Arcs &next = state->get_arcs_out();
+        Arcs &prev = state->get_arcs_in();
+        Loops &loops = state->get_loops();
+        nexts += next.size();
+        prevs += prev.size();
+        total_loops += loops.size();
+        arc_size += sizeof(next) + sizeof(Arc) * next.capacity() +
+                    sizeof(prev) + sizeof(Arc) * prev.capacity() +
+                    sizeof(loops) + sizeof(Operator *) * loops.capacity();
     }
-    //assert(nexts == prevs);
+    assert(nexts == prevs);
 
-    //cout << "Next-arcs: " << nexts << endl;
-    //cout << "Prev-arcs: " << prevs << endl;
-    //cout << "Self-loops: " << total_loops << endl;
-    //cout << "Arcs total: " << nexts + prevs + total_loops << endl;
+    cout << "Next-arcs: " << nexts << endl;
+    cout << "Prev-arcs: " << prevs << endl;
+    cout << "Self-loops: " << total_loops << endl;
+    cout << "Arcs total: " << nexts + prevs + total_loops << endl;
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
     cout << "Unreachable states: " << unreachable_states << endl;
-    //cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
+    cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
     cout << "Init h: " << init->get_h() << endl;
     cout << "Average h: " << get_avg_h() << endl;
     cout << "CEGAR abstractions: 1" << endl;
