@@ -100,19 +100,15 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
         assert(u != this);
         assert(!prev.empty());
 
-        // TODO: Only calculate when needed.
-        bool u_and_v1_intersect = u->values->domains_intersect(*(v1->values), var);
-        bool u_and_v2_intersect = u->values->domains_intersect(*(v2->values), var);
-
         for (int i = 0; i < prev.size(); ++i) {
             Operator *op = prev[i];
             int post = get_post(*op, var);
             if (post == UNDEFINED) {
-                assert(u_and_v1_intersect || u_and_v2_intersect);
-                if (u_and_v1_intersect) {
+                // TODO: If u and v1 don't intersect, we must add the other arc.
+                if (u->values->domains_intersect(*(v1->values), var)) {
                     u->add_arc(op, v1);
                 }
-                if (u_and_v2_intersect) {
+                if (u->values->domains_intersect(*(v2->values), var)) {
                     u->add_arc(op, v2);
                 }
             } else if (v2->values->test(var, post)) {
@@ -132,19 +128,15 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
         assert(w != this);
         assert(!next.empty());
 
-        bool v1_and_w_intersect = v1->values->domains_intersect(*w->values, var);
-        bool v2_and_w_intersect = v2->values->domains_intersect(*w->values, var);
-
         for (int i = 0; i < next.size(); ++i) {
             Operator *op = next[i];
             int pre = get_pre(*op, var);
             int post = get_post(*op, var);
             if (post == UNDEFINED) {
-                assert(v1_and_w_intersect || v2_and_w_intersect);
-                if (v1_and_w_intersect) {
+                if (v1->values->domains_intersect(*w->values, var)) {
                     v1->add_arc(op, w);
                 }
-                if (v2_and_w_intersect) {
+                if (v2->values->domains_intersect(*w->values, var)) {
                     v2->add_arc(op, w);
                 }
             } else if (pre == UNDEFINED) {
