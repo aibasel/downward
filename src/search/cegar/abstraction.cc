@@ -342,9 +342,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
 
     unseen.push(make_pair(abs_state, conc_state));
 
-    int h_0 = init->get_h();
-    assert(h_0 != INF);
-
     while (!unseen.empty()) {
         abs_state = unseen.front().first;
         conc_state = unseen.front().second;
@@ -373,9 +370,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
             AbstractState *next_abs = it->first;
             int next_g = next_abs->get_distance();
-            if (next_g + next_abs->get_h() != h_0)
-                // State is not on optimal path.
-                continue;
             Operators &ops = it->second;
             assert(!ops.empty());
             for (int i = 0; i < ops.size(); ++i) {
