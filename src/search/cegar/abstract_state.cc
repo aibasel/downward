@@ -94,61 +94,51 @@ int AbstractState::count(int var) const {
 }
 
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    for (StatesToOps::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
-        AbstractState *u = it->first;
-        Operators &prev = it->second;
+    for (auto it = arcs_in.begin(); it != arcs_in.end(); ++it) {
+        Operator *op = it->first;
+        AbstractState *u = it->second;
         assert(u != this);
-        assert(!prev.empty());
-
-        for (int i = 0; i < prev.size(); ++i) {
-            Operator *op = prev[i];
-            int post = get_post(*op, var);
-            if (post == UNDEFINED) {
-                // TODO: If u and v1 don't intersect, we must add the other arc.
-                if (u->values->domains_intersect(*(v1->values), var)) {
-                    u->add_arc(op, v1);
-                }
-                if (u->values->domains_intersect(*(v2->values), var)) {
-                    u->add_arc(op, v2);
-                }
-            } else if (v2->values->test(var, post)) {
-                u->add_arc(op, v2);
-            } else {
+        int post = get_post(*op, var);
+        if (post == UNDEFINED) {
+            // TODO: If u and v1 don't intersect, we must add the other arc.
+            if (u->values->domains_intersect(*(v1->values), var)) {
                 u->add_arc(op, v1);
             }
-            u->remove_next_arc(op, this);
+            if (u->values->domains_intersect(*(v2->values), var)) {
+                u->add_arc(op, v2);
+            }
+        } else if (v2->values->test(var, post)) {
+            u->add_arc(op, v2);
+        } else {
+            u->add_arc(op, v1);
         }
+        u->remove_next_arc(op, this);
     }
 }
 
 void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-        AbstractState *w = it->first;
-        Operators &next = it->second;
+    for (auto it = arcs_out.begin(); it != arcs_out.end(); ++it) {
+        Operator *op = it->first;
+        AbstractState *w = it->second;
         assert(w != this);
-        assert(!next.empty());
-
-        for (int i = 0; i < next.size(); ++i) {
-            Operator *op = next[i];
-            int pre = get_pre(*op, var);
-            int post = get_post(*op, var);
-            if (post == UNDEFINED) {
-                if (v1->values->domains_intersect(*w->values, var)) {
-                    v1->add_arc(op, w);
-                }
-                if (v2->values->domains_intersect(*w->values, var)) {
-                    v2->add_arc(op, w);
-                }
-            } else if (pre == UNDEFINED) {
-                v1->add_arc(op, w);
-                v2->add_arc(op, w);
-            } else if (v2->values->test(var, pre)) {
-                v2->add_arc(op, w);
-            } else {
+        int pre = get_pre(*op, var);
+        int post = get_post(*op, var);
+        if (post == UNDEFINED) {
+            if (v1->values->domains_intersect(*w->values, var)) {
                 v1->add_arc(op, w);
             }
-            w->remove_prev_arc(op, this);
+            if (v2->values->domains_intersect(*w->values, var)) {
+                v2->add_arc(op, w);
+            }
+        } else if (pre == UNDEFINED) {
+            v1->add_arc(op, w);
+            v2->add_arc(op, w);
+        } else if (v2->values->test(var, pre)) {
+            v2->add_arc(op, w);
+        } else {
+            v1->add_arc(op, w);
         }
+        w->remove_prev_arc(op, this);
     }
 }
 
@@ -228,30 +218,25 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
 
 void AbstractState::add_arc(Operator *op, AbstractState *other) {
     // Experiments showed that keeping the arcs sorted for faster removal
-    // increases the overall processing time. In 30 domains it made no
+    // increases the overall processing time. Out of 30 domains it made no
     // difference for 10 domains, 17 domains preferred unsorted arcs and in
     // 3 domains performance was better with sorted arcs.
     // Inlining this method has no effect either.
     assert(other != this);
-    arcs_out[other].push_back(op);
-    other->arcs_in[this].push_back(op);
+    arcs_out.push_back(Arc(op, other));
+    other->arcs_in.push_back(Arc(op, this));
 }
 
 void AbstractState::add_loop(Operator *op) {
     loops.push_back(op);
 }
 
-void AbstractState::remove_arc(StatesToOps &arcs, Operator *op, AbstractState *other) {
-    StatesToOps::iterator it = arcs.find(other);
-    assert(it != arcs.end());
-    Operators &ops = it->second;
-    Operators::iterator pos = find(ops.begin(), ops.end(), op);
-    assert(pos != ops.end());
+void AbstractState::remove_arc(Arcs &arcs, Operator *op, AbstractState *other) {
+    auto pos = find(arcs.begin(), arcs.end(), Arc(op, other));
+    assert(pos != arcs.end());
     // For PODs assignment is faster than swapping.
-    *pos = ops.back();
-    ops.pop_back();
-    if (ops.empty())
-        arcs.erase(it);
+    *pos = arcs.back();
+    arcs.pop_back();
 }
 
 void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {

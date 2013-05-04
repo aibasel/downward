@@ -218,9 +218,9 @@ bool Abstraction::breadth_first_search(queue<AbstractState *> &open_queue, bool 
         const int g = state->get_distance();
         if (DEBUG)
             cout << endl << "Expand: " << state->str() << " g:" << g << endl;
-        StatesToOps &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
-        for (StatesToOps::iterator it = successors.begin(); it != successors.end(); ++it) {
-            AbstractState *successor = it->first;
+        Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
+        for (auto it = successors.begin(); it != successors.end(); ++it) {
+            AbstractState *successor = it->second;
             const int succ_g = g + 1;
             if (succ_g < successor->get_distance()) {
                 if (DEBUG)
@@ -253,45 +253,41 @@ bool Abstraction::dijkstra_search(bool forward) const {
         }
         if (DEBUG)
             cout << endl << "Expand: " << state->str() << " g:" << g << endl;
-        StatesToOps &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
-        for (StatesToOps::iterator it = successors.begin(); it != successors.end(); ++it) {
-            AbstractState *successor = it->first;
-            Operators &ops = it->second;
-            assert(!ops.empty());
-            for (int i = 0; i < ops.size(); ++i) {
-                Operator *op = ops[i];
+        Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
+        for (auto it = successors.begin(); it != successors.end(); ++it) {
+            Operator *op = it->first;
+            AbstractState *successor = it->second;
 
-                // Special code for additive abstractions.
-                if (calculate_needed_operator_costs) {
-                    assert(forward);
-                    // We are currently collecting the needed operator costs.
-                    assert(needed_operator_costs.size() == g_operators.size());
-                    // cost'(op) = h(a1) - h(a2)
-                    const int needed_costs = state->get_h() - successor->get_h();
-                    if (needed_costs > 0) {
-                        // needed_costs is negative if we reach a2 with op and
-                        // h(a2) > h(a1). This includes the case when we reach a
-                        // dead-end node. If h(a1)==h(a2) we don't have to update
-                        // anything since we initialize the list with zeros. This
-                        // handles moving from one dead-end node to another.
-                        const int op_index = get_op_index(op);
-                        needed_operator_costs[op_index] = max(needed_operator_costs[op_index], needed_costs);
-                    }
+            // Special code for additive abstractions.
+            if (calculate_needed_operator_costs) {
+                assert(forward);
+                // We are currently collecting the needed operator costs.
+                assert(needed_operator_costs.size() == g_operators.size());
+                // cost'(op) = h(a1) - h(a2)
+                const int needed_costs = state->get_h() - successor->get_h();
+                if (needed_costs > 0) {
+                    // needed_costs is negative if we reach a2 with op and
+                    // h(a2) > h(a1). This includes the case when we reach a
+                    // dead-end node. If h(a1)==h(a2) we don't have to update
+                    // anything since we initialize the list with zeros. This
+                    // handles moving from one dead-end node to another.
+                    const int op_index = get_op_index(op);
+                    needed_operator_costs[op_index] = max(needed_operator_costs[op_index], needed_costs);
                 }
+            }
 
-                const int succ_g = g + op->get_cost();
-                assert(succ_g >= 0);
+            const int succ_g = g + op->get_cost();
+            assert(succ_g >= 0);
 
-                // If we use Dijkstra instead of A*, we can use "<" here instead of "<=".
-                // This leads to way fewer queue pushes.
-                if (succ_g < successor->get_distance()) {
-                    if (DEBUG)
-                        cout << "  Succ: " << successor->str()
-                             << " g:" << succ_g
-                             << " dist:" << successor->get_distance() << endl;
-                    successor->set_distance(succ_g);
-                    open->push(succ_g, successor);
-                }
+            // If we use Dijkstra instead of A*, we can use "<" here instead of "<=".
+            // This leads to way fewer queue pushes.
+            if (succ_g < successor->get_distance()) {
+                if (DEBUG)
+                    cout << "  Succ: " << successor->str()
+                         << " g:" << succ_g
+                         << " dist:" << successor->get_distance() << endl;
+                successor->set_distance(succ_g);
+                open->push(succ_g, successor);
             }
         }
     }
@@ -339,43 +335,39 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 continue;
             }
         }
-        StatesToOps &arcs_out = abs_state->get_arcs_out();
-        for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-            AbstractState *next_abs = it->first;
-            Operators &ops = it->second;
-            assert(!ops.empty());
-            for (int i = 0; i < ops.size(); ++i) {
-                Operator *op = ops[i];
-                if (next_abs->get_h() + op->get_cost() != abs_state->get_h())
-                    // Operator is not part of an optimal path.
-                    continue;
-                if (op->is_applicable(conc_state)) {
-                    if (DEBUG)
-                        cout << "      Move to: " << next_abs->str()
-                             << " with " << op->get_name() << endl;
-                    State next_conc = State(conc_state, *op);
-                    if (next_abs->is_abstraction_of(next_conc)) {
-                        if (seen.count(next_conc) == 0) {
-                            unseen.push(make_pair(next_abs, next_conc));
-                            seen.insert(next_conc);
-                        }
-                    // Only find deviation reasons if we haven't found any splits already.
-                    } else if (states_to_splits[abs_state].empty()) {
-                        if (DEBUG)
-                            cout << "      Paths deviate." << endl;
-                        ++deviations;
-                        AbstractState desired_abs_state;
-                        next_abs->regress(*op, &desired_abs_state);
-                        abs_state->get_possible_splits(desired_abs_state, conc_state,
-                                                       &states_to_splits[abs_state]);
+        Arcs &arcs_out = abs_state->get_arcs_out();
+        for (auto it = arcs_out.begin(); it != arcs_out.end(); ++it) {
+            Operator *op = it->first;
+            AbstractState *next_abs = it->second;
+            if (next_abs->get_h() + op->get_cost() != abs_state->get_h())
+                // Operator is not part of an optimal path.
+                continue;
+            if (op->is_applicable(conc_state)) {
+                if (DEBUG)
+                    cout << "      Move to: " << next_abs->str()
+                         << " with " << op->get_name() << endl;
+                State next_conc = State(conc_state, *op);
+                if (next_abs->is_abstraction_of(next_conc)) {
+                    if (seen.count(next_conc) == 0) {
+                        unseen.push(make_pair(next_abs, next_conc));
+                        seen.insert(next_conc);
                     }
-                // Only find unmet preconditions if we haven't found any splits already.
+                // Only find deviation reasons if we haven't found any splits already.
                 } else if (states_to_splits[abs_state].empty()) {
                     if (DEBUG)
-                        cout << "      Operator not applicable: " << op->get_name() << endl;
-                    ++unmet_preconditions;
-                    get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
+                        cout << "      Paths deviate." << endl;
+                    ++deviations;
+                    AbstractState desired_abs_state;
+                    next_abs->regress(*op, &desired_abs_state);
+                    abs_state->get_possible_splits(desired_abs_state, conc_state,
+                                                   &states_to_splits[abs_state]);
                 }
+            // Only find unmet preconditions if we haven't found any splits already.
+            } else if (states_to_splits[abs_state].empty()) {
+                if (DEBUG)
+                    cout << "      Operator not applicable: " << op->get_name() << endl;
+                ++unmet_preconditions;
+                get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
             }
         }
     }
@@ -605,15 +597,12 @@ void Abstraction::write_dot_file(int num) {
     AbstractStates::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *current_state = *it;
-        StatesToOps &next = current_state->get_arcs_out();
-        for (StatesToOps::iterator it = next.begin(); it != next.end(); ++it) {
-            AbstractState *next_state = it->first;
-            Operators &ops = it->second;
-            for (int i = 0; i < ops.size(); ++i) {
-                Operator *op = ops[i];
-                dotfile << current_state->str() << " -> " << next_state->str()
-                        << " [label=\"" << op->get_name() << "\"];" << endl;
-            }
+        Arcs &next = current_state->get_arcs_out();
+        for (auto it = next.begin(); it != next.end(); ++it) {
+            Operator *op = it->first;
+            AbstractState *next_state = it->second;
+            dotfile << current_state->str() << " -> " << next_state->str()
+                    << " [label=\"" << op->get_name() << "\"];" << endl;
         }
         if (draw_loops) {
             Loops &loops = current_state->get_loops();
