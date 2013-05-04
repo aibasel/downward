@@ -88,8 +88,8 @@ void Abstraction::build() {
     // Define here to use it outside the loop later.
     bool valid_conc_solution = false;
     while (may_keep_refining()) {
-        bool solution_found = find_solution(init);
-        if (!solution_found) {
+        update_h_values();
+        if (init->get_h() == INF) {
             cout << "Abstract problem is unsolvable!" << endl;
             exit(0);
         }
@@ -184,7 +184,7 @@ AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_sta
     const int old_h = abs_state->get_h();
     // Loop until the heuristic value increases.
     while (abs_state->get_h() == old_h && may_keep_refining()) {
-        find_solution();
+        update_h_values();
         if (abs_state->get_h() == INF) {
             cout << "No abstract solution starts at " << abs_state->str() << endl;
             break;
@@ -304,27 +304,6 @@ bool Abstraction::dijkstra_search(bool forward) const {
         return false;
     }
     return true;
-}
-
-bool Abstraction::find_solution(AbstractState *start) {
-    if (!start)
-        start = init;
-
-    // If we updated the g-values first, they would be overwritten during the
-    // computation of the h-values.
-    update_h_values();
-
-    reset_distances_and_solution();
-    start->set_distance(0);
-
-    if (g_is_unit_cost) {
-        queue<AbstractState *> open_queue;
-        open_queue.push(start);
-        return breadth_first_search(open_queue, true);
-    }
-    open->clear();
-    open->push(0, start);
-    return dijkstra_search(true);
 }
 
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
