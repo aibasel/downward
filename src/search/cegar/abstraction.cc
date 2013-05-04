@@ -351,8 +351,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         // Start check from each state only once.
         if (!states_to_splits[abs_state].empty())
             continue;
-        int g = abs_state->get_distance();
-        assert((g + abs_state->get_h() == h_0) && "State must be on optimal path.");
         if (abs_state == goal) {
             if (test_cegar_goal(conc_state)) {
                 // We found a valid concrete solution.
@@ -369,12 +367,11 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         StatesToOps &arcs_out = abs_state->get_arcs_out();
         for (StatesToOps::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
             AbstractState *next_abs = it->first;
-            int next_g = next_abs->get_distance();
             Operators &ops = it->second;
             assert(!ops.empty());
             for (int i = 0; i < ops.size(); ++i) {
                 Operator *op = ops[i];
-                if (g + op->get_cost() != next_g)
+                if (next_abs->get_h() + op->get_cost() != abs_state->get_h())
                     // Operator is not part of an optimal path.
                     continue;
                 if (op->is_applicable(conc_state)) {
