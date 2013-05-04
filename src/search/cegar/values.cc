@@ -77,24 +77,6 @@ bool Values::domains_intersect(const Values &other, int var) {
     return (values & other.values & masks[var]).any();
 }
 
-bool Values::all_vars_intersect(const Values &other, const vector<bool> &checked) const {
-    Bitset intersection(values & other.values);
-    for (int var = 0; var < borders.size(); ++var) {
-        if (checked[var])
-            continue;
-        bool var_intersects = false;
-        for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
-            if (intersection.test(pos)) {
-                var_intersects = true;
-                break;
-            }
-        }
-        if (!var_intersects)
-            return false;
-    }
-    return true;
-}
-
 bool Values::abstracts(const Values &other) const {
     return other.values.is_subset_of(values);
 }
