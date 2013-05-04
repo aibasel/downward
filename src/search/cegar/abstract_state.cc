@@ -100,11 +100,12 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
         assert(u != this);
         int post = get_post(*op, var);
         if (post == UNDEFINED) {
-            // TODO: If u and v1 don't intersect, we must add the other arc.
-            if (u->values->domains_intersect(*(v1->values), var)) {
+            // If the domains of u and v1 don't intersect, we must add the other arc.
+            bool u_and_v1_intersect = u->values->domains_intersect(*(v1->values), var);
+            if (u_and_v1_intersect) {
                 u->add_arc(op, v1);
             }
-            if (u->values->domains_intersect(*(v2->values), var)) {
+            if (!u_and_v1_intersect || u->values->domains_intersect(*(v2->values), var)) {
                 u->add_arc(op, v2);
             }
         } else if (v2->values->test(var, post)) {
@@ -124,10 +125,12 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
         int pre = get_pre(*op, var);
         int post = get_post(*op, var);
         if (post == UNDEFINED) {
-            if (v1->values->domains_intersect(*w->values, var)) {
+            // If the domains of v1 and w don't intersect, we must add the other arc.
+            bool v1_and_w_intersect = v1->values->domains_intersect(*w->values, var);
+            if (v1_and_w_intersect) {
                 v1->add_arc(op, w);
             }
-            if (v2->values->domains_intersect(*w->values, var)) {
+            if (!v1_and_w_intersect || v2->values->domains_intersect(*w->values, var)) {
                 v2->add_arc(op, w);
             }
         } else if (pre == UNDEFINED) {
