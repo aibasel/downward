@@ -5,7 +5,6 @@
 #include "utils.h"
 
 #include "../ext/gtest/include/gtest/gtest_prod.h"
-#include "../ext/btree/btree_map.h"
 
 #include <string>
 #include <utility>
@@ -17,14 +16,6 @@ class Values;
 typedef pair<Operator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
 typedef std::vector<Operator *> Loops;
-// Comparison between different map implementations relative to no-map version:
-//  Time:
-// no-map   std::map    std::unordered_map  boost::unordered_map    btree_map
-// 1.00     1.01        0.80                0.80                    0.72
-//  Memory:
-// no-map   std::map    std::unordered_map  boost::unordered_map    btree_map
-// 1.00     1.37        1.30                1.29                    1.20
-typedef btree::btree_map<AbstractState *, Operators> StatesToOps;
 
 class AbstractState {
 private:
@@ -37,7 +28,7 @@ private:
 
     // Incoming and outgoing transitions grouped by the abstract state they come
     // from or go to.
-    StatesToOps arcs_out, arcs_in;
+    Arcs arcs_out, arcs_in;
 
     // Self-loops.
     Loops loops;
@@ -48,7 +39,7 @@ private:
     // This state's node in the refinement hierarchy.
     Node *node;
 
-    void remove_arc(StatesToOps &arcs, Operator *op, AbstractState *other);
+    void remove_arc(Arcs &arcs, Operator *op, AbstractState *other);
     void update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_loops(int var, AbstractState *v1, AbstractState *v2);
@@ -88,8 +79,8 @@ public:
     void set_h(int dist) {node->set_h(dist); }
     int get_h() {return node->get_h(); }
 
-    StatesToOps &get_arcs_out() {return arcs_out; };
-    StatesToOps &get_arcs_in() {return arcs_in; };
+    Arcs &get_arcs_out() {return arcs_out; };
+    Arcs &get_arcs_in() {return arcs_in; };
     Loops &get_loops() {return loops; }
 
     Node *get_node() const {return node; }
