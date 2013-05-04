@@ -111,11 +111,6 @@ private:
     bool breadth_first_search(queue<AbstractState *> &open_queue, bool forward) const;
     FRIEND_TEST(CegarTest, dijkstra_search);
     bool dijkstra_search(bool forward) const;
-    FRIEND_TEST(CegarTest, find_solution_first_state);
-    FRIEND_TEST(CegarTest, find_solution_second_state);
-    FRIEND_TEST(CegarTest, find_solution_loop);
-    FRIEND_TEST(CegarTest, initialize);
-    bool find_solution(AbstractState *start = 0);
 
     // Refine states between state and init until the solution is broken.
     void break_solution(AbstractState *state, const Splits &splits);
