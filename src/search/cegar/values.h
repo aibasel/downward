@@ -34,7 +34,6 @@ public:
     bool test(int var, int value) const;
     int count(int var) const;
     bool domains_intersect(const Values &other, int var);
-    bool all_vars_intersect(const Values &other, const std::vector<bool> &checked) const;
     bool abstracts(const Values &other) const;
     void get_possible_splits(const Values &flaw, const State conc_state, Splits *splits) const;
     string str() const;
