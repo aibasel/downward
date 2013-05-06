@@ -12,11 +12,11 @@ DEFAULT_TIMEOUT = 1800
 # psutil reports meminfo(rss=8609792, vms=49770496) for the process that runs
 # this module. top confirms this measurement. However, at least on the grid
 # even a padding of 96MB is too low. Only with 128MB padding the portfolios are
-# correctly stopped when the memory limit is exceeded.
-BYTES_FOR_PYTHON = 128 * 1024 * 1024
+# correctly stopped when the memory limit is exceeded. Since this is way too
+# high we leave the limit as it is for now and try to find the reason for the
+# high memory usage.
+BYTES_FOR_PYTHON = 50 * 1024 * 1024
 
-# Use custom return code to signal that no solution has been found.
-PORTFOLIO_NO_PLAN = 90
 
 def parse_args():
     parser = optparse.OptionParser()
@@ -97,13 +97,16 @@ def determine_timeout(remaining_time_at_start, configs, pos):
     remaining_relative_time = sum(config[0] for config in configs[pos:])
     print "config %d: relative time %d, remaining %d" % (
         pos, relative_time, remaining_relative_time)
+    # Round the remaining time to the next integer to account for measurement
+    # errors.
     # For the last config we have relative_time == remaining_relative_time, so
     # we use all of the remaining time at the end.
-    run_timeout = remaining_time * relative_time / remaining_relative_time
-    print "timeout: %.2f" % run_timeout
+    run_timeout = int(remaining_time * relative_time / remaining_relative_time + 1)
+    print "timeout: %d" % run_timeout
     return run_timeout
 
 def get_plan_files(plan_file):
+    # If *plan_file* is "sas_plan", we want to match "sas_plan" and "sas_plan.x".
     return glob.glob("%s*" % plan_file)
 
 def run(configs, optimal=True, final_config=None, final_config_builder=None,
@@ -166,7 +169,7 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     if get_plan_files(plan_file):
         # We found at least one plan.
         sys.exit(0)
-    sys.exit(PORTFOLIO_NO_PLAN)
+    sys.exit(1)
 
 def run_sat(configs, unitcost, planner, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
@@ -206,11 +209,12 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
         if final_config:
             break
 
-    # Run final config with limits in order not to hide potential problems.
+    # Run final config with limits. This way we don't need external monitoring.
     final_config = list(final_config)
     curr_plan_file = adapt_search(final_config, search_cost_type,
                                   heuristic_cost_type, plan_file)
-    timeout = remaining_time_at_start - sum(os.times()[:4])
+    # Round to next integer to account for measurement errors.
+    timeout = int(remaining_time_at_start - sum(os.times()[:4]) + 1)
     run_search(planner, final_config, curr_plan_file, timeout, memory)
 
 def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
