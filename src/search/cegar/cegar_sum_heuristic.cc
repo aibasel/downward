@@ -72,6 +72,10 @@ void CegarSumHeuristic::initialize() {
     best_pick_strategies.push_back(MAX_PREDECESSORS);
     best_pick_strategies.push_back(GOAL);
 
+    // In unit-cost tasks, operators might be assigned a cost of 0, so we can't
+    // use BFS.
+    g_is_unit_cost = false;
+
     int states_offline = 0;
     for (int i = 0; i < goal.size(); ++i) {
         // Set specific goal.
