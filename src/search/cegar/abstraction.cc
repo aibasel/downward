@@ -313,7 +313,8 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
 
     unseen.push(make_pair(abs_state, conc_state));
 
-    while (!unseen.empty()) {
+    // Only search flaws until we hit the memory limit.
+    while (!unseen.empty() && g_memory_padding) {
         abs_state = unseen.front().first;
         conc_state = unseen.front().second;
         unseen.pop();
