@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import glob
+import math
 import optparse
 import os
 import os.path
@@ -13,7 +14,8 @@ DEFAULT_TIMEOUT = 1800
 # On maia the python process that runs this module reserves about 128MB of
 # virtual memory. To make it reserve less space, it is necessary to lower the
 # soft limit for virtual memory before the process is started. This is done in
-# the "downward" wrapper script.
+# the "downward" wrapper script. In order not to reach the external memory limit
+# during a planner run, we don't allow the planner to use the reserved memory.
 BYTES_FOR_PYTHON = 50 * 1024 * 1024
 
 
@@ -77,14 +79,15 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
 def run_search(planner, args, plan_file, timeout=None, memory=None):
     complete_args = [planner] + args + ["--plan-file", plan_file]
     print "args: %s" % complete_args
+    print "timeout: %.2f" % timeout
     sys.stdout.flush()
 
     def set_limits():
         if timeout is not None:
-            set_limit(resource.RLIMIT_CPU, int(timeout))
+            set_limit(resource.RLIMIT_CPU, int(math.ceil(timeout)))
         if memory is not None:
             # Memory in Bytes
-            set_limit(resource.RLIMIT_AS, int(memory))
+            set_limit(resource.RLIMIT_AS, memory)
 
     returncode = subprocess.call(complete_args, stdin=open("output"), preexec_fn=set_limits)
     print "returncode:", returncode
@@ -97,12 +100,9 @@ def determine_timeout(remaining_time_at_start, configs, pos):
     remaining_relative_time = sum(config[0] for config in configs[pos:])
     print "config %d: relative time %d, remaining %d" % (
         pos, relative_time, remaining_relative_time)
-    # Round the remaining time to the next integer to account for measurement
-    # errors.
     # For the last config we have relative_time == remaining_relative_time, so
     # we use all of the remaining time at the end.
-    run_timeout = int(remaining_time * relative_time / remaining_relative_time + 1)
-    print "timeout: %d" % run_timeout
+    run_timeout = remaining_time * relative_time / remaining_relative_time
     return run_timeout
 
 def get_plan_files(plan_file):
@@ -183,6 +183,8 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                                           heuristic_cost_type, plan_file)
             run_timeout = determine_timeout(remaining_time_at_start,
                                             configs, pos)
+            if run_timeout <= 0:
+                return
             run_search(planner, args, curr_plan_file, run_timeout, memory)
 
             if os.path.exists(curr_plan_file):
@@ -209,13 +211,10 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
         if final_config:
             break
 
-    # Run final config with limits. This way we don't need external monitoring.
     final_config = list(final_config)
     curr_plan_file = adapt_search(final_config, search_cost_type,
                                   heuristic_cost_type, plan_file)
-    # Round to next integer to account for measurement errors.
-    timeout = int(remaining_time_at_start - sum(os.times()[:4]) + 1)
-    print "timeout: %d" % timeout
+    timeout = remaining_time_at_start - sum(os.times()[:4])
     if timeout > 0:
         run_search(planner, final_config, curr_plan_file, timeout, memory)
 
