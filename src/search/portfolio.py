@@ -10,12 +10,10 @@ import sys
 
 
 DEFAULT_TIMEOUT = 1800
-# psutil reports meminfo(rss=8609792, vms=49770496) for the process that runs
-# this module. top confirms this measurement.
-# On maia the measurement for vms is about 128MB. To prevent python from
-# reserving too much space, it is necessary to lower the soft limit before the
-# process is started. We do that by calling "ulimit -Sv 51200" in the "downward"
-# wrapper script.
+# On maia the python process that runs this module reserves about 128MB of
+# virtual memory. To make it reserve less space, it is necessary to lower the
+# soft limit for virtual memory before the process is started. This is done in
+# the "downward" wrapper script.
 BYTES_FOR_PYTHON = 50 * 1024 * 1024
 
 
