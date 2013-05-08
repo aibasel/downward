@@ -82,9 +82,9 @@ def run_search(planner, args, plan_file, timeout=None, memory=None):
     sys.stdout.flush()
 
     def set_limits():
-        if timeout:
+        if timeout is not None:
             set_limit(resource.RLIMIT_CPU, int(timeout))
-        if memory:
+        if memory is not None:
             # Memory in Bytes
             set_limit(resource.RLIMIT_AS, int(memory))
 
@@ -217,7 +217,9 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                                   heuristic_cost_type, plan_file)
     # Round to next integer to account for measurement errors.
     timeout = int(remaining_time_at_start - sum(os.times()[:4]) + 1)
-    run_search(planner, final_config, curr_plan_file, timeout, memory)
+    print "timeout: %d" % timeout
+    if timeout > 0:
+        run_search(planner, final_config, curr_plan_file, timeout, memory)
 
 def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
     for pos, (relative_time, args) in enumerate(configs):
