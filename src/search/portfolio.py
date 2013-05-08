@@ -5,6 +5,7 @@ import optparse
 import os
 import os.path
 import resource
+import subprocess
 import sys
 
 
@@ -79,16 +80,17 @@ def run_search(planner, args, plan_file, timeout=None, memory=None):
     complete_args = [planner] + args + ["--plan-file", plan_file]
     print "args: %s" % complete_args
     sys.stdout.flush()
-    if not os.fork():
-        os.close(0)
-        os.open("output", os.O_RDONLY)
+
+    def set_limits():
         if timeout:
             set_limit(resource.RLIMIT_CPU, int(timeout))
         if memory:
             # Memory in Bytes
             set_limit(resource.RLIMIT_AS, int(memory))
-        os.execl(planner, *complete_args)
-    os.wait()
+
+    returncode = subprocess.call(complete_args, stdin=open("output"), preexec_fn=set_limits)
+    print "returncode:", returncode
+    print
 
 def determine_timeout(remaining_time_at_start, configs, pos):
     remaining_time = remaining_time_at_start - sum(os.times()[:4])
