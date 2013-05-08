@@ -21,6 +21,22 @@ echo Dispatcher selected state size $STATE_SIZE.
 UNIT_COST=$($TIME --append "$BASEDIR/unitcost" $TEMPFILE)
 echo This is a $UNIT_COST task.
 PLANNER="$BASEDIR/downward-$STATE_SIZE"
+
+function run_portfolio {
+    PORTFOLIO="$1"
+    shift
+    # On maia the python process that runs the portfolio reserves about 128MB of
+    # virtual memory. We lower the soft limit for virtual memory in order to
+    # make it reserve less space. On maia a soft limit of 20MB is sufficient for
+    # starting the python process, while a limit of 18MB is too small. We use a
+    # higher limit to be on the safe side.
+    ulimit -Sv 51200
+    "$BASEDIR/$PORTFOLIO" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
+    # Explicity return the status code to indicate that there can be no calls
+    # between the portfolio run and the end of the function.
+    return $?
+}
+
 if [[ "$1" == "ipc" ]]; then
     CONFIG="$2"
     shift 2
@@ -109,9 +125,9 @@ if [[ "$1" == "ipc" ]]; then
                      preferred=[hCea,hGoalCount],reopen_closed=true,cost_type=1)],
                 repeat_last=true,continue_on_fail=true)" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-sat-fdss-1" ]]; then
-        "$BASEDIR/downward-seq-sat-fdss-1.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
+        run_portfolio downward-seq-sat-fdss-1.py "$@"
     elif [[ "$CONFIG" == "seq-sat-fdss-2" ]]; then
-        "$BASEDIR/downward-seq-sat-fdss-2.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
+        run_portfolio downward-seq-sat-fdss-2.py "$@"
     elif [[ "$CONFIG" == "seq-sat-lama-2008" ]]; then
         echo "The seq-sat-lama-2008 planner should not use this code."
         exit 2
@@ -159,9 +175,9 @@ if [[ "$1" == "ipc" ]]; then
             --search "astar(hCombinedSelMax,mpd=false,
                             pathmax=true,cost_type=0)" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-fdss-1" ]]; then
-        "$BASEDIR/downward-seq-opt-fdss-1.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
+        run_portfolio downward-seq-opt-fdss-1.py "$@"
     elif [[ "$CONFIG" == "seq-opt-fdss-2" ]]; then
-        "$BASEDIR/downward-seq-opt-fdss-2.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
+        run_portfolio downward-seq-opt-fdss-2.py "$@"
     elif [[ "$CONFIG" == "seq-opt-selmax" ]]; then
         "$PLANNER" --search "astar(selmax([lmcut(),lmcount(lm_merged([lm_hm(m=1),lm_rhw()]),admissible=true)],training_set=1000),mpd=true)" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-bjolp" ]]; then
@@ -169,7 +185,7 @@ if [[ "$1" == "ipc" ]]; then
     elif [[ "$CONFIG" == "seq-opt-lmcut" ]]; then
         "$PLANNER" --search "astar(lmcut())" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-merge-and-shrink" ]]; then
-        "$BASEDIR/downward-seq-opt-merge-and-shrink.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
+        run_portfolio downward-seq-opt-merge-and-shrink.py "$@"
     else
         echo "unknown IPC planner name: $CONFIG"
         exit 2
@@ -178,12 +194,7 @@ elif [[ "$1" == "--portfolio" ]]; then
     # Portfolio files must reside in the search directory.
     PORTFOLIO="$2"
     shift 2
-    # Lower the soft limit for virtual memory in order to make python reserve
-    # less space. On maia a soft limit of 20MB is sufficient for starting the
-    # python process, while a limit of 18MB is too small. We use a higher limit
-    # to be on the safe side.
-    ulimit -Sv 51200
-    "$BASEDIR/$PORTFOLIO" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
+    run_portfolio "$PORTFOLIO" "$@"
 else
     "$PLANNER" "$@" < $TEMPFILE
 fi
