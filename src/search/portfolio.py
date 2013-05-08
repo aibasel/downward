@@ -11,11 +11,11 @@ import sys
 
 DEFAULT_TIMEOUT = 1800
 # psutil reports meminfo(rss=8609792, vms=49770496) for the process that runs
-# this module. top confirms this measurement. However, at least on the grid
-# even a padding of 96MB is too low. Only with 128MB padding the portfolios are
-# correctly stopped when the memory limit is exceeded. Since this is way too
-# high we leave the limit as it is for now and try to find the reason for the
-# high memory usage.
+# this module. top confirms this measurement.
+# On maia the measurement for vms is about 128MB. To prevent python from
+# reserving too much space, it is necessary to lower the soft limit before the
+# process is started. We do that by calling "ulimit -Sv 51200" in the "downward"
+# wrapper script.
 BYTES_FOR_PYTHON = 50 * 1024 * 1024
 
 
