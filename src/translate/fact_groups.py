@@ -84,7 +84,10 @@ def build_translation_key(groups):
     group_keys = []
     for group in groups:
         group_key = [str(fact) for fact in group]
-        group_key.append("<none of those>")
+        if len(group) == 1:
+            group_key.append(str(group[0].negate()))
+        else:
+            group_key.append("<none of those>")
         group_keys.append(group_key)
     return group_keys
 
