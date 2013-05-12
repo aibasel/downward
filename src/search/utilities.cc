@@ -43,6 +43,33 @@ void exit_handler(int, void *) {
     print_peak_memory();
 }
 
+void exit_with(ExitCode exitcode) {
+    switch (exitcode) {
+        case EXIT_PLAN_FOUND:
+            cout << "Solution found." << endl;
+            break;
+        case EXIT_UNEXPLAINED_ERROR:
+            cout << "Unexplained error occured." << endl;
+            break;
+        case EXIT_USAGE_ERROR:
+            cout << "Usage error occured." << endl;
+            break;
+        case EXIT_UNSOLVABLE:
+            cout << "Task is provably unsolvable." << endl;
+            break;
+        case EXIT_UNSOLVED_INCOMPLETE:
+            cout << "Search stopped without finding a solution." << endl;
+            break;
+        case EXIT_MEMORY_ERROR:
+            cout << "Memory limit has been reached." << endl;
+            break;
+        case EXIT_TIMEOUT:
+            cout << "Time limit has been reached." << endl;
+            break;
+    }
+    exit(exitcode);
+}
+
 void signal_handler(int signal_number) {
     // See glibc manual: "Handlers That Terminate the Process"
     static volatile sig_atomic_t handler_in_progress = 0;
