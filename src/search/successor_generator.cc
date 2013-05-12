@@ -2,6 +2,7 @@
 #include "operator.h"
 #include "state.h"
 #include "successor_generator.h"
+#include "utilities.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -88,5 +89,6 @@ SuccessorGenerator *read_successor_generator(istream &in) {
     }
     cout << "Illegal successor generator statement!" << endl;
     cout << "Expected 'switch' or 'check', got '" << type << "'." << endl;
-    exit(2);
+    exit_with(EXIT_INPUT_ERROR);
+    return 0; // Never reached.
 }

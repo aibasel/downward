@@ -51,7 +51,7 @@ void exit_with(ExitCode exitcode) {
         case EXIT_UNEXPLAINED_ERROR:
             cout << "Unexplained error occured." << endl;
             break;
-        case EXIT_USAGE_ERROR:
+        case EXIT_INPUT_ERROR:
             cout << "Usage error occured." << endl;
             break;
         case EXIT_UNSOLVABLE:
@@ -60,7 +60,7 @@ void exit_with(ExitCode exitcode) {
         case EXIT_UNSOLVED_INCOMPLETE:
             cout << "Search stopped without finding a solution." << endl;
             break;
-        case EXIT_MEMORY_ERROR:
+        case EXIT_OUT_OF_MEMORY:
             cout << "Memory limit has been reached." << endl;
             break;
         case EXIT_TIMEOUT:

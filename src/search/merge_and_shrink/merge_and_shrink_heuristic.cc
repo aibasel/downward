@@ -47,7 +47,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
     case MERGE_DFP:
         cout << "Draeger/Finkbeiner/Podelski" << endl;
         cerr << "DFP merge strategy not implemented." << endl;
-        exit(2);
+        exit_with(EXIT_INPUT_ERROR);
     case MERGE_LINEAR_LEVEL:
         cout << "linear by level";
         break;
@@ -246,7 +246,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         opts.get_enum("merge_strategy"));
     if (merge_strategy < 0 || merge_strategy >= MAX_MERGE_STRATEGY) {
         cerr << "error: unknown merge strategy: " << merge_strategy << endl;
-        exit(2);
+        exit_with(EXIT_INPUT_ERROR);
     }
 
     if (parser.dry_run()) {
