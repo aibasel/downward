@@ -49,10 +49,10 @@ void exit_with(ExitCode exitcode) {
             cout << "Solution found." << endl;
             break;
         case EXIT_UNEXPLAINED_ERROR:
-            cout << "Unexplained error occured." << endl;
+            cerr << "Unexplained error occured." << endl;
             break;
         case EXIT_INPUT_ERROR:
-            cout << "Usage error occured." << endl;
+            cerr << "Usage error occured." << endl;
             break;
         case EXIT_UNSOLVABLE:
             cout << "Task is provably unsolvable." << endl;
