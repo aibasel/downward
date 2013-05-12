@@ -104,12 +104,14 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
     cout << "Bisimulation threshold: " << threshold << endl;
     cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
     cout << "At limit: ";
-    if (at_limit == RETURN)
+    if (at_limit == RETURN) {
         cout << "return";
-    else if (at_limit == USE_UP)
+    } else if (at_limit == USE_UP) {
         cout << "use up limit";
-    else
-        abort();
+    } else {
+        cerr << "Unknown setting for at_limit." << endl;
+        exit_with(EXIT_INPUT_ERROR);
+    }
     cout << endl;
 }
 
