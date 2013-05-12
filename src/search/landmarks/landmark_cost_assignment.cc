@@ -299,6 +299,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     }
     ;
 #else
-    ::abort(); // Should be unreachable if USE_LP is not set.
+    // Should be unreachable if USE_LP is not set.
+    exit_with(EXIT_INPUT_ERROR);
 #endif
 }
