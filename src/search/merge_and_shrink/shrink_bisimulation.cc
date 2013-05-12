@@ -440,12 +440,12 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     }
     if (threshold < 1) {
         cerr << "error: bisimulation threshold must be at least 1" << endl;
-        exit(2);
+        exit_with(EXIT_INPUT_ERROR);
     }
     if (threshold > opts.get<int>("max_states")) {
         cerr << "error: bisimulation threshold must not be larger than "
              << "size limit" << endl;
-        exit(2);
+        exit_with(EXIT_INPUT_ERROR);
     }
 
     if (!parser.dry_run())

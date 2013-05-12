@@ -19,7 +19,7 @@ int main(int argc, const char **argv) {
 
     if (argc < 2) {
         cout << OptionParser::usage(argv[0]) << endl;
-        exit(2);
+        exit_with(EXIT_INPUT_ERROR);
     }
 
     if (string(argv[1]).compare("--help") != 0)
@@ -35,7 +35,7 @@ int main(int argc, const char **argv) {
         engine = OptionParser::parse_cmd_line(argc, argv, false);
     } catch (ParseError &pe) {
         cout << pe << endl;
-        exit(2);
+        exit_with(EXIT_INPUT_ERROR);
     }
 
     Timer search_timer;

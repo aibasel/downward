@@ -123,7 +123,7 @@ void SelectiveMaxHeuristic::initialize() {
             break;
         default:
             cerr << "Unknown classifier type" << endl;
-            exit(2);
+            exit_with(EXIT_INPUT_ERROR);
         }
         classifiers[i]->set_feature_extractor(feature_extractor);
         classifiers[i]->buildClassifier(num_classes);
@@ -200,7 +200,8 @@ void SelectiveMaxHeuristic::train() {
         break;
     default:
         cerr << "Unknown state space sample" << endl;
-        exit(2);
+        exit_with(EXIT_INPUT_ERROR);
+        return; // Never reached.
     }
 
     sample->collect();
