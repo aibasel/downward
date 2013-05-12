@@ -7,6 +7,18 @@
 #include <vector>
 #include <tr1/functional>
 
+enum ExitCode {
+    EXIT_PLAN_FOUND = 0,
+    EXIT_UNEXPLAINED_ERROR = 1,
+    EXIT_USAGE_ERROR = 2,
+    EXIT_UNSOLVABLE = 3,
+    EXIT_UNSOLVED_INCOMPLETE = 4,
+    EXIT_MEMORY_ERROR = 5,
+    EXIT_TIMEOUT = 6
+};
+
+extern void exit_with(ExitCode returncode);
+
 extern void register_event_handlers();
 
 extern int get_peak_memory_in_kb();
