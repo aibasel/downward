@@ -10,6 +10,7 @@
 #include "state.h"
 #include "successor_generator.h"
 #include "timer.h"
+#include "utilities.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -319,6 +320,14 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
     return bool(g_inconsistent_facts[a.first][a.second].count(b));
 }
 
+void no_memory () {
+    cout << "Failed to allocate memory." << endl;
+    assert(g_memory_padding);
+    cout << "Releasing memory buffer." << endl;
+    delete[] g_memory_padding;
+    g_memory_padding = 0;
+    exit_with(EXIT_MEMORY_ERROR);
+}
 
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
@@ -341,3 +350,4 @@ LegacyCausalGraph *g_legacy_causal_graph;
 Timer g_timer;
 string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
+char *g_memory_padding = new char [1024];
