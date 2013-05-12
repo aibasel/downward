@@ -48,7 +48,7 @@ void exit_with(ExitCode exitcode) {
         case EXIT_PLAN_FOUND:
             cout << "Solution found." << endl;
             break;
-        case EXIT_UNEXPLAINED_ERROR:
+        case EXIT_CRITICAL_ERROR:
             cerr << "Unexplained error occured." << endl;
             break;
         case EXIT_INPUT_ERROR:
