@@ -31,6 +31,7 @@ void check_magic(std::istream &in, std::string magic);
 
 bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
 
+void no_memory();
 
 extern bool g_use_metric;
 extern int g_min_action_cost;
@@ -56,5 +57,6 @@ extern LegacyCausalGraph *g_legacy_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
+extern char *g_memory_padding;
 
 #endif
