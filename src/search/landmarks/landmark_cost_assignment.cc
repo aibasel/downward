@@ -169,7 +169,7 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
     si = new OsiXxxSolverInterface();
 #else
     cerr << "You must build the planner with the USE_LP symbol defined" << endl;
-    ::exit(1);
+    ::exit(2);
 #endif
 }
 

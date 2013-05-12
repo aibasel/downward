@@ -241,7 +241,7 @@ static string get_predicate_for_fact(int var_no, int value) {
     if (predicate_pos == 0 || paren_pos == string::npos) {
         cerr << "error: cannot extract predicate from fact: "
              << fact_name << endl;
-        exit(1);
+        exit(2);
     }
     return string(fact_name.begin() + predicate_pos, fact_name.begin() + paren_pos);
 }
