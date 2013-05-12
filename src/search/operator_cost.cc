@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "operator_cost.h"
 #include "operator.h"
+#include "utilities.h"
 
 #include <cstdlib>
 using namespace std;
@@ -21,5 +22,6 @@ int get_adjusted_action_cost(const Operator &op, OperatorCost cost_type) {
     default:
         cerr << "Unknown cost type" << endl;
         exit_with(EXIT_INPUT_ERROR);
+        return 0; // Never reached.
     }
 }

@@ -5,9 +5,11 @@
 
 #include "../globals.h"
 #include "../legacy_causal_graph.h"
+#include "../utilities.h"
 
 #include <cassert>
 #include <cstdlib>
+#include <iostream>
 #include <vector>
 using namespace std;
 
@@ -99,7 +101,9 @@ int VariableOrderFinder::next() {
            merge strategy. */
         cerr << "Merge strategy MERGE_DFP not implemented." << endl;
         exit_with(EXIT_INPUT_ERROR);
+        return 0; // Never reached.
     }
     cerr << "Relevance analysis has not been performed." << endl;
-    exit_with(EXIT_UNEXPLAINED_ERROR);
+    exit_with(EXIT_CRITICAL_ERROR);
+    return 0; // Never reached.
 }
