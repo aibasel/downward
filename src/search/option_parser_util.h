@@ -354,7 +354,7 @@ public:
             std::cout << "attempt to retrieve nonexisting object of name "
                       << key << " (type: " << TypeNamer<T>::name() << ")"
                       << " from Options. Aborting." << std::endl;
-            exit(1);
+            exit(2);
         }
         try {
             T result = boost::any_cast<T>(it->second);
@@ -364,7 +364,7 @@ public:
                       << std::endl
                       << key << " is not of type " << TypeNamer<T>::name()
                       << std::endl << "exiting" << std::endl;
-            exit(1);
+            exit(2);
         }
     }
 
@@ -377,7 +377,7 @@ public:
                           << std::endl
                           << "List " << key << " is empty"
                           << std::endl;
-                exit(1);
+                exit(2);
             }
         }
     }

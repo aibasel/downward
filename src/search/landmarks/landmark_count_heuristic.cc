@@ -30,7 +30,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         }
         if (!g_axioms.empty()) {
             cerr << "cost partitioning does not support axioms" << endl;
-            ::exit(1);
+            ::exit(2);
         }
         if (opts.get<bool>("optimal")) {
 #ifdef USE_LP
@@ -39,7 +39,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
 #else
             cerr << "You must build the planner with the USE_LP symbol defined." << endl
                  << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
-            exit(1);
+            exit(2);
 #endif
         } else {
             lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, opts.get<bool>("alm"),

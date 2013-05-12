@@ -88,5 +88,5 @@ SuccessorGenerator *read_successor_generator(istream &in) {
     }
     cout << "Illegal successor generator statement!" << endl;
     cout << "Expected 'switch' or 'check', got '" << type << "'." << endl;
-    exit(1);
+    exit(2);
 }

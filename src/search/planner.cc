@@ -17,7 +17,7 @@ int main(int argc, const char **argv) {
 
     if (argc < 2) {
         cout << OptionParser::usage(argv[0]) << endl;
-        exit(1);
+        exit(2);
     }
 
     if (string(argv[1]).compare("--help") != 0)
@@ -33,7 +33,7 @@ int main(int argc, const char **argv) {
         engine = OptionParser::parse_cmd_line(argc, argv, false);
     } catch (ParseError &pe) {
         cout << pe << endl;
-        exit(1);
+        exit(2);
     }
 
     Timer search_timer;
