@@ -9,13 +9,19 @@
 
 enum ExitCode {
     EXIT_PLAN_FOUND = 0,
+    // Error in an underlying library.
     EXIT_CRITICAL_ERROR = 1,
+    // Wrong commandline syntax or erroneous sas file.
     EXIT_INPUT_ERROR = 2,
-    EXIT_UNSUPPORTED = 8,
-    EXIT_UNSOLVABLE = 3,
-    EXIT_UNSOLVED_INCOMPLETE = 4,
-    EXIT_OUT_OF_MEMORY = 5,
-    EXIT_TIMEOUT = 6
+    // Unsupported feature requested.
+    EXIT_UNSUPPORTED = 3,
+    // Task is provably unsolvable.
+    EXIT_UNSOLVABLE = 4,
+    // Search ended without finding a solution.
+    EXIT_UNSOLVED_INCOMPLETE = 5,
+    EXIT_OUT_OF_MEMORY = 6,
+    // Currently unused.
+    EXIT_TIMEOUT = 7
 };
 
 extern void exit_with(ExitCode returncode);
