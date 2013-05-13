@@ -287,7 +287,7 @@ void verify_no_axioms_no_cond_effects() {
     if (!g_axioms.empty()) {
         cerr << "Heuristic does not support axioms!" << endl << "Terminating."
              << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        exit_with(EXIT_UNSUPPORTED);
     }
 
     for (int i = 0; i < g_operators.size(); i++) {
@@ -309,7 +309,7 @@ void verify_no_axioms_no_cond_effects() {
             cerr << "Heuristic does not support conditional effects "
                  << "(operator " << g_operators[i].get_name() << ")" << endl
                  << "Terminating." << endl;
-            exit_with(EXIT_INPUT_ERROR);
+            exit_with(EXIT_UNSUPPORTED);
         }
     }
 }

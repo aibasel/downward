@@ -54,6 +54,9 @@ void exit_with(ExitCode exitcode) {
         case EXIT_INPUT_ERROR:
             cerr << "Usage error occured." << endl;
             break;
+        case EXIT_UNSUPPORTED:
+            cerr << "Tried to use unsupported feature." << endl;
+            break;
         case EXIT_UNSOLVABLE:
             cout << "Task is provably unsolvable." << endl;
             break;
