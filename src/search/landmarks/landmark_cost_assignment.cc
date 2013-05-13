@@ -169,7 +169,7 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
     si = new OsiXxxSolverInterface();
 #else
     cerr << "You must build the planner with the USE_LP symbol defined" << endl;
-    exit_with(EXIT_INPUT_ERROR);
+    exit_with(EXIT_CRITICAL_ERROR);
 #endif
 }
 
@@ -300,7 +300,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     ;
 #else
     // Should be unreachable if USE_LP is not set.
-    exit_with(EXIT_INPUT_ERROR);
+    exit_with(EXIT_CRITICAL_ERROR);
     return 0; // Never reached.
 #endif
 }

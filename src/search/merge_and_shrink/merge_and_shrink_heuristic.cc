@@ -47,7 +47,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
     case MERGE_DFP:
         cout << "Draeger/Finkbeiner/Podelski" << endl;
         cerr << "DFP merge strategy not implemented." << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        exit_with(EXIT_UNSUPPORTED);
         break;
     case MERGE_LINEAR_LEVEL:
         cout << "linear by level";
