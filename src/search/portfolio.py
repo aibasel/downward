@@ -96,10 +96,12 @@ def run_search(planner, args, plan_file, timeout=None, memory=None):
 
     def set_limits():
         if timeout is not None:
-            soft_time_limit = (math.ceil(timeout))
+            # Don't try to raise the hard limit.
+            _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
+            hard_limit = min(int(math.ceil(timeout)) + 1, external_hard_limit)
             # Soft limit reached --> SIGXCPU.
             # Hard limit reached --> SIGKILL.
-            set_limit(resource.RLIMIT_CPU, soft_time_limit, soft_time_limit + 1)
+            set_limit(resource.RLIMIT_CPU, hard_limit - 1, hard_limit)
         if memory is not None:
             # Memory in Bytes
             set_limit(resource.RLIMIT_AS, memory, memory)
