@@ -188,8 +188,6 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     assert extra_args[0][-1] in ["1", "2", "4"], extra_args
     planner = extra_args.pop(0)
 
-    for filename in get_plan_files(plan_file):
-        safe_unlink(filename)
     safe_unlink("plan_numbers_and_cost")
 
     remaining_time_at_start = float(timeout)
