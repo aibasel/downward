@@ -224,7 +224,7 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
             run_timeout = determine_timeout(remaining_time_at_start,
                                             configs, pos)
             if run_timeout <= 0:
-                return
+                return exitcodes
             exitcode = run_search(planner, args, curr_plan_file, run_timeout,
                                   memory)
             exitcodes.append(exitcode)
