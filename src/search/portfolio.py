@@ -18,6 +18,18 @@ DEFAULT_TIMEOUT = 1800
 # during a planner run, we don't allow the planner to use the reserved memory.
 BYTES_FOR_PYTHON = 50 * 1024 * 1024
 
+# Exit codes.
+EXIT_PLAN_FOUND = 0
+EXIT_CRITICAL_ERROR = 1
+EXIT_INPUT_ERROR = 2
+EXIT_UNSUPPORTED = 3
+EXIT_UNSOLVABLE = 4
+EXIT_UNSOLVED_INCOMPLETE = 5
+EXIT_OUT_OF_MEMORY = 6
+EXIT_TIMEOUT = 7
+EXIT_TIMEOUT_AND_MEMORY = 8
+EXIT_SIGXCPU = -24
+
 
 def parse_args():
     parser = optparse.OptionParser()
@@ -31,14 +43,14 @@ def safe_unlink(filename):
     except EnvironmentError:
         pass
 
-def set_limit(kind, amount):
+def set_limit(kind, soft, hard):
     try:
-        resource.setrlimit(kind, (amount, amount))
+        resource.setrlimit(kind, (soft, hard))
     except (OSError, ValueError), err:
         # This can happen if the limit has already been set externally.
         sys.stderr.write("Limit for %s could not be set to %s (%s). "
                          "Previous limit: %s\n" %
-                         (kind, amount, err, resource.getrlimit(kind)))
+                         (kind, (soft, hard), err, resource.getrlimit(kind)))
 
 def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     g_bound = "infinity"
@@ -84,14 +96,19 @@ def run_search(planner, args, plan_file, timeout=None, memory=None):
 
     def set_limits():
         if timeout is not None:
-            set_limit(resource.RLIMIT_CPU, int(math.ceil(timeout)))
+            soft_time_limit = (math.ceil(timeout))
+            # Soft limit reached --> SIGXCPU.
+            # Hard limit reached --> SIGKILL.
+            set_limit(resource.RLIMIT_CPU, soft_time_limit, soft_time_limit + 1)
         if memory is not None:
             # Memory in Bytes
-            set_limit(resource.RLIMIT_AS, memory)
+            set_limit(resource.RLIMIT_AS, memory, memory)
 
-    returncode = subprocess.call(complete_args, stdin=open("output"), preexec_fn=set_limits)
+    returncode = subprocess.call(complete_args, stdin=open("output"),
+                                 preexec_fn=set_limits)
     print "returncode:", returncode
     print
+    return returncode
 
 def determine_timeout(remaining_time_at_start, configs, pos):
     remaining_time = remaining_time_at_start - sum(os.times()[:4])
@@ -108,6 +125,31 @@ def determine_timeout(remaining_time_at_start, configs, pos):
 def get_plan_files(plan_file):
     # If *plan_file* is "sas_plan", we want to match "sas_plan" and "sas_plan.x".
     return glob.glob("%s*" % plan_file)
+
+def _generate_exitcode(exitcodes):
+    print "Exit codes:", exitcodes
+    # If an error occured, return the corresponding code.
+    for reason in [EXIT_CRITICAL_ERROR, EXIT_INPUT_ERROR]:
+        if any(code == reason for code in exitcodes):
+            return reason
+    if EXIT_PLAN_FOUND in exitcodes and EXIT_UNSOLVABLE in exitcodes:
+        print "Error: Solution found and reported unsolvable."
+        return EXIT_CRITICAL_ERROR
+    if EXIT_PLAN_FOUND in exitcodes:
+        return EXIT_PLAN_FOUND
+    if EXIT_UNSOLVABLE in exitcodes:
+        return EXIT_UNSOLVABLE
+    # If all runs timed out return EXIT_TIMEOUT.
+    if all(code == EXIT_SIGXCPU for code in exitcodes):
+        return EXIT_TIMEOUT
+    for reason in [EXIT_TIMEOUT, EXIT_OUT_OF_MEMORY]:
+        if all(code == reason for code in exitcodes):
+            return reason
+    if all(code in [EXIT_TIMEOUT, EXIT_OUT_OF_MEMORY, EXIT_SIGXCPU]
+           for code in exitcodes):
+        return EXIT_TIMEOUT_AND_MEMORY
+    print "Error: Unexpected exit codes:", exitcodes
+    return EXIT_CRITICAL_ERROR
 
 def run(configs, optimal=True, final_config=None, final_config_builder=None,
         timeout=None):
@@ -161,18 +203,16 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     print "remaining time at start: %s" % remaining_time_at_start
 
     if optimal:
-        run_opt(configs, planner, plan_file, remaining_time_at_start, memory)
+        exitcodes = run_opt(configs, planner, plan_file, remaining_time_at_start,
+                            memory)
     else:
-        run_sat(configs, unitcost, planner, plan_file, final_config,
-                final_config_builder, remaining_time_at_start, memory)
-
-    if get_plan_files(plan_file):
-        # We found at least one plan.
-        sys.exit(0)
-    sys.exit(1)
+        exitcodes = run_sat(configs, unitcost, planner, plan_file, final_config,
+                            final_config_builder, remaining_time_at_start, memory)
+    sys.exit(_generate_exitcode(exitcodes))
 
 def run_sat(configs, unitcost, planner, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
+    exitcodes = []
     heuristic_cost_type = 1
     search_cost_type = 1
     changed_cost_types = False
@@ -185,9 +225,11 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                                             configs, pos)
             if run_timeout <= 0:
                 return
-            run_search(planner, args, curr_plan_file, run_timeout, memory)
+            exitcode = run_search(planner, args, curr_plan_file, run_timeout,
+                                  memory)
+            exitcodes.append(exitcode)
 
-            if os.path.exists(curr_plan_file):
+            if exitcode == EXIT_PLAN_FOUND:
                 # found a plan in last run
                 if not changed_cost_types and unitcost != "unit":
                     # switch to real cost and repeat last run
@@ -200,8 +242,9 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                                                 heuristic_cost_type, plan_file)
                     run_timeout = determine_timeout(remaining_time_at_start,
                                                     configs, pos)
-                    run_search(planner, args, curr_plan_file, run_timeout,
-                               memory)
+                    exitcode = run_search(planner, args, curr_plan_file, run_timeout,
+                                          memory)
+                    exitcodes.append(exitcode)
                 if final_config_builder:
                     # abort scheduled portfolio and start final config
                     args = list(configs[pos][1])
@@ -216,13 +259,18 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                                   heuristic_cost_type, plan_file)
     timeout = remaining_time_at_start - sum(os.times()[:4])
     if timeout > 0:
-        run_search(planner, final_config, curr_plan_file, timeout, memory)
+        exitcode = run_search(planner, final_config, curr_plan_file, timeout,
+                              memory)
+        exitcodes.append(exitcode)
+    return exitcodes
 
 def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
+    exitcodes = []
     for pos, (relative_time, args) in enumerate(configs):
         timeout = determine_timeout(remaining_time_at_start, configs, pos)
-        run_search(planner, args, plan_file, timeout, memory)
+        exitcode = run_search(planner, args, plan_file, timeout, memory)
+        exitcodes.append(exitcode)
 
-        if os.path.exists(plan_file):
-            print "Plan found!"
+        if exitcode in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE]:
             break
+    return exitcodes
