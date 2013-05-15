@@ -961,7 +961,6 @@ void HMLandmarks::generate_landmarks() {
             std::cout << "Subset is: ";
             print_fluentset(h_m_table_[set_index].fluents);
             std::cout << std::endl;
-            //      exit_with(EXIT_UNSOLVABLE);
         }
 
         // set up goals landmarks for processing

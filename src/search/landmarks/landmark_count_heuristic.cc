@@ -39,7 +39,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
 #else
             cerr << "You must build the planner with the USE_LP symbol defined." << endl
                  << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
-            exit_with(EXIT_CRITICAL_ERROR);
+            exit_with(EXIT_INPUT_ERROR);
 #endif
         } else {
             lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, opts.get<bool>("alm"),
