@@ -9,11 +9,8 @@
 
 enum ExitCode {
     EXIT_PLAN_FOUND = 0,
-    // Error in an underlying library.
     EXIT_CRITICAL_ERROR = 1,
-    // Wrong commandline syntax or erroneous sas file.
     EXIT_INPUT_ERROR = 2,
-    // Unsupported feature requested.
     EXIT_UNSUPPORTED = 3,
     // Task is provably unsolvable. Currently unused (see issue377).
     EXIT_UNSOLVABLE = 4,
