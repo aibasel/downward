@@ -6,7 +6,7 @@ import optparse
 import os
 import os.path
 import resource
-import signals
+import signal
 import subprocess
 import sys
 
@@ -29,7 +29,7 @@ EXIT_UNSOLVED_INCOMPLETE = 5
 EXIT_OUT_OF_MEMORY = 6
 EXIT_TIMEOUT = 7
 EXIT_TIMEOUT_AND_MEMORY = 8
-EXIT_SIGXCPU = -signals.SIGXCPU
+EXIT_SIGXCPU = -signal.SIGXCPU
 
 EXPECTED_EXITCODES = [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
                       EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT, EXIT_SIGXCPU]
@@ -134,6 +134,10 @@ def get_plan_files(plan_file):
 
 def _generate_exitcode(exitcodes):
     print "Exit codes:", exitcodes
+    exitcodes = set(exitcodes)
+    if EXIT_SIGXCPU in exitcodes:
+        exitcodes.remove(EXIT_SIGXCPU)
+        exitcodes.add(EXIT_TIMEOUT)
     # If an error occured, return the corresponding code.
     for code in exitcodes:
         if code not in EXPECTED_EXITCODES:
@@ -146,13 +150,10 @@ def _generate_exitcode(exitcodes):
         return EXIT_PLAN_FOUND
     if EXIT_UNSOLVABLE in exitcodes:
         return EXIT_UNSOLVABLE
-    if all(code in [EXIT_TIMEOUT, EXIT_SIGXCPU] for code in exitcodes):
-        return EXIT_TIMEOUT
-    for reason in [EXIT_UNSOLVED_INCOMPLETE, EXIT_OUT_OF_MEMORY]:
-        if all(code == reason for code in exitcodes):
+    for reason in [EXIT_UNSOLVED_INCOMPLETE, EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT]:
+        if exitcodes == set([reason]):
             return reason
-    if all(code in [EXIT_TIMEOUT, EXIT_OUT_OF_MEMORY, EXIT_SIGXCPU]
-           for code in exitcodes):
+    if exitcodes == set([EXIT_TIMEOUT, EXIT_OUT_OF_MEMORY]):
         return EXIT_TIMEOUT_AND_MEMORY
     print "Error: Unexpected exit codes:", exitcodes
     return EXIT_CRITICAL_ERROR
