@@ -15,7 +15,7 @@ enum ExitCode {
     EXIT_INPUT_ERROR = 2,
     // Unsupported feature requested.
     EXIT_UNSUPPORTED = 3,
-    // Task is provably unsolvable.
+    // Task is provably unsolvable. Currently unused (see issue377).
     EXIT_UNSOLVABLE = 4,
     // Search ended without finding a solution.
     EXIT_UNSOLVED_INCOMPLETE = 5,
