@@ -247,8 +247,9 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     MergeStrategy merge_strategy = MergeStrategy(
         opts.get_enum("merge_strategy"));
     if (merge_strategy < 0 || merge_strategy >= MAX_MERGE_STRATEGY) {
+        // TODO: This test and MAX_MERGE_STRATEGY can probably be removed.
         cerr << "error: unknown merge strategy: " << merge_strategy << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        exit_with(EXIT_CRITICAL_ERROR);
     }
 
     if (parser.dry_run()) {

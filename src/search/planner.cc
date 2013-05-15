@@ -54,5 +54,4 @@ int main(int argc, const char **argv) {
     } else {
         exit_with(EXIT_UNSOLVED_INCOMPLETE);
     }
-    return 0;  // Never reached.
 }

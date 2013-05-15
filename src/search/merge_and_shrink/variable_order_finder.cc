@@ -101,9 +101,7 @@ int VariableOrderFinder::next() {
            merge strategy. */
         cerr << "Merge strategy MERGE_DFP not implemented." << endl;
         exit_with(EXIT_UNSUPPORTED);
-        return 0; // Never reached.
     }
     cerr << "Relevance analysis has not been performed." << endl;
     exit_with(EXIT_CRITICAL_ERROR);
-    return 0; // Never reached.
 }
