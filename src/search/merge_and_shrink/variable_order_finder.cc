@@ -103,5 +103,5 @@ int VariableOrderFinder::next() {
         exit_with(EXIT_UNSUPPORTED);
     }
     cerr << "Relevance analysis has not been performed." << endl;
-    exit_with(EXIT_CRITICAL_ERROR);
+    exit_with(EXIT_INPUT_ERROR);
 }
