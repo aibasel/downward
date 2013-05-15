@@ -321,11 +321,10 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
 }
 
 void no_memory () {
-    cout << "Failed to allocate memory." << endl;
     assert(g_memory_padding);
-    cout << "Releasing memory buffer." << endl;
     delete[] g_memory_padding;
     g_memory_padding = 0;
+    cout << "Failed to allocate memory. Released memory buffer." << endl;
     exit_with(EXIT_OUT_OF_MEMORY);
 }
 
