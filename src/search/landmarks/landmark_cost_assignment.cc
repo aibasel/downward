@@ -295,7 +295,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         cerr << "Exception:" << ex.message() << endl
              << " from method " << ex.methodName() << endl
              << " from class " << ex.className() << endl;
-        exit_with(EXIT_UNEXPLAINED_ERROR);
+        exit_with(EXIT_CRITICAL_ERROR);
     }
     ;
 #else
