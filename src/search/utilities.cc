@@ -69,6 +69,9 @@ void exit_with(ExitCode exitcode) {
         case EXIT_TIMEOUT:
             cout << "Time limit has been reached." << endl;
             break;
+        default:
+            cerr << "Unkown exitcode " << exitcode << endl;
+            exit(EXIT_CRITICAL_ERROR);
     }
     exit(exitcode);
 }
