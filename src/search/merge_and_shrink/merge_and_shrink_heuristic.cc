@@ -57,7 +57,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
         break;
     default:
         cerr << "Unknown merge strategy." << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        exit_with(EXIT_CRITICAL_ERROR);
     }
     cout << endl;
     shrink_strategy->dump_options();
