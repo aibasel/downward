@@ -145,10 +145,9 @@ def _generate_exitcode(exitcodes):
         return EXIT_PLAN_FOUND
     if EXIT_UNSOLVABLE in exitcodes:
         return EXIT_UNSOLVABLE
-    # If all runs timed out return EXIT_TIMEOUT.
-    if all(code == EXIT_SIGXCPU for code in exitcodes):
+    if all(code in [EXIT_TIMEOUT, EXIT_SIGXCPU] for code in exitcodes):
         return EXIT_TIMEOUT
-    for reason in [EXIT_UNSOLVED_INCOMPLETE, EXIT_TIMEOUT, EXIT_OUT_OF_MEMORY]:
+    for reason in [EXIT_UNSOLVED_INCOMPLETE, EXIT_OUT_OF_MEMORY]:
         if all(code == reason for code in exitcodes):
             return reason
     if all(code in [EXIT_TIMEOUT, EXIT_OUT_OF_MEMORY, EXIT_SIGXCPU]
