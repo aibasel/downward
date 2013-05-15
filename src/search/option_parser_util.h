@@ -355,7 +355,7 @@ public:
             std::cout << "attempt to retrieve nonexisting object of name "
                       << key << " (type: " << TypeNamer<T>::name() << ")"
                       << " from Options. Aborting." << std::endl;
-            exit_with(EXIT_INPUT_ERROR);
+            exit_with(EXIT_CRITICAL_ERROR);
         }
         try {
             T result = boost::any_cast<T>(it->second);
@@ -365,7 +365,7 @@ public:
                       << std::endl
                       << key << " is not of type " << TypeNamer<T>::name()
                       << std::endl << "exiting" << std::endl;
-            exit_with(EXIT_INPUT_ERROR);
+            exit_with(EXIT_CRITICAL_ERROR);
         }
     }
 
