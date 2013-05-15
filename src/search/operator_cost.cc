@@ -22,6 +22,5 @@ int get_adjusted_action_cost(const Operator &op, OperatorCost cost_type) {
     default:
         cerr << "Unknown cost type" << endl;
         exit_with(EXIT_CRITICAL_ERROR);
-        return 0; // Never reached.
     }
 }

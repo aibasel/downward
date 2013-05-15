@@ -201,7 +201,6 @@ void SelectiveMaxHeuristic::train() {
     default:
         cerr << "Unknown state space sample type" << endl;
         exit_with(EXIT_INPUT_ERROR);
-        return; // Never reached.
     }
 
     sample->collect();

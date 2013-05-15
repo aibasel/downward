@@ -301,6 +301,5 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
 #else
     // Should be unreachable if USE_LP is not set.
     exit_with(EXIT_CRITICAL_ERROR);
-    return 0; // Never reached.
 #endif
 }

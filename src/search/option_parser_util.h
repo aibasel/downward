@@ -366,7 +366,6 @@ public:
                       << key << " is not of type " << TypeNamer<T>::name()
                       << std::endl << "exiting" << std::endl;
             exit_with(EXIT_INPUT_ERROR);
-            return T(); // Never reached.
         }
     }
 
