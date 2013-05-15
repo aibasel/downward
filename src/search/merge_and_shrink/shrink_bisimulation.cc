@@ -110,7 +110,7 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
         cout << "use up limit";
     } else {
         cerr << "Unknown setting for at_limit." << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        exit_with(EXIT_CRITICAL_ERROR);
     }
     cout << endl;
 }
