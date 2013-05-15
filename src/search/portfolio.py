@@ -6,6 +6,7 @@ import optparse
 import os
 import os.path
 import resource
+import signals
 import subprocess
 import sys
 
@@ -28,7 +29,7 @@ EXIT_UNSOLVED_INCOMPLETE = 5
 EXIT_OUT_OF_MEMORY = 6
 EXIT_TIMEOUT = 7
 EXIT_TIMEOUT_AND_MEMORY = 8
-EXIT_SIGXCPU = -24
+EXIT_SIGXCPU = -signals.SIGXCPU
 
 EXPECTED_EXITCODES = [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
                       EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT, EXIT_SIGXCPU]
