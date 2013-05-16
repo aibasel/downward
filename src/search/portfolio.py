@@ -143,14 +143,13 @@ def _generate_exitcode(exitcodes):
     if unexpected_codes:
         print "Error: Unexpected exit codes:", list(unexpected_codes)
         return EXIT_CRITICAL_ERROR
-    elif EXIT_PLAN_FOUND in exitcodes:
-        return EXIT_PLAN_FOUND
-    elif EXIT_UNSOLVABLE in exitcodes:
-        return EXIT_UNSOLVABLE
-    for reason in [EXIT_UNSOLVED_INCOMPLETE, EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT]:
-        if exitcodes == set([reason]):
-            return reason
-    if exitcodes == set([EXIT_TIMEOUT, EXIT_OUT_OF_MEMORY]):
+    for code in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE]:
+        if code in exitcodes:
+            return code
+    for code in [EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT]:
+        if exitcodes == set([code]):
+            return code
+    if exitcodes == set([EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT]):
         return EXIT_TIMEOUT_AND_MEMORY
     print "Error: Unhandled exit codes:", exitcodes
     return EXIT_CRITICAL_ERROR
