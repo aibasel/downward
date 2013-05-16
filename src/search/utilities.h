@@ -21,11 +21,7 @@ enum ExitCode {
     EXIT_TIMEOUT = 7
 };
 
-#ifdef __GNUC__
 extern void exit_with(ExitCode returncode) __attribute__((noreturn));
-#else
-extern void exit_with(ExitCode returncode);
-#endif
 
 extern void register_event_handlers();
 
