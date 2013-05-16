@@ -34,7 +34,7 @@ int main(int argc, const char **argv) {
         OptionParser::parse_cmd_line(argc, argv, true);
         engine = OptionParser::parse_cmd_line(argc, argv, false);
     } catch (ParseError &pe) {
-        cout << pe << endl;
+        cerr << pe << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
 
