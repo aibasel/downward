@@ -143,12 +143,9 @@ def _generate_exitcode(exitcodes):
     if unexpected_codes:
         print "Error: Unexpected exit codes:", list(unexpected_codes)
         return EXIT_CRITICAL_ERROR
-    if EXIT_PLAN_FOUND in exitcodes and EXIT_UNSOLVABLE in exitcodes:
-        print "Error: Solution found and reported unsolvable."
-        return EXIT_CRITICAL_ERROR
-    if EXIT_PLAN_FOUND in exitcodes:
+    elif EXIT_PLAN_FOUND in exitcodes:
         return EXIT_PLAN_FOUND
-    if EXIT_UNSOLVABLE in exitcodes:
+    elif EXIT_UNSOLVABLE in exitcodes:
         return EXIT_UNSOLVABLE
     for reason in [EXIT_UNSOLVED_INCOMPLETE, EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT]:
         if exitcodes == set([reason]):
@@ -233,6 +230,8 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
             exitcode = run_search(planner, args, curr_plan_file, run_timeout,
                                   memory)
             exitcodes.append(exitcode)
+            if exitcode == EXIT_UNSOLVABLE:
+                return exitcodes
 
             if exitcode == EXIT_PLAN_FOUND:
                 # found a plan in last run
@@ -250,6 +249,8 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                     exitcode = run_search(planner, args, curr_plan_file, run_timeout,
                                           memory)
                     exitcodes.append(exitcode)
+                    if exitcode == EXIT_UNSOLVABLE:
+                        return exitcodes
                 if final_config_builder:
                     # abort scheduled portfolio and start final config
                     args = list(configs[pos][1])

@@ -12,7 +12,7 @@ enum ExitCode {
     EXIT_CRITICAL_ERROR = 1,
     EXIT_INPUT_ERROR = 2,
     EXIT_UNSUPPORTED = 3,
-    // Task is provably unsolvable. Currently unused (see issue377).
+    // Task is provably unsolvable with current bound. Currently unused (see issue377).
     EXIT_UNSOLVABLE = 4,
     // Search ended without finding a solution.
     EXIT_UNSOLVED_INCOMPLETE = 5,
