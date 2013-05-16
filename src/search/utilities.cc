@@ -70,8 +70,8 @@ void exit_with(ExitCode exitcode) {
             cout << "Time limit has been reached." << endl;
             break;
         default:
-            cerr << "Unkown exitcode " << exitcode << endl;
-            exit(EXIT_CRITICAL_ERROR);
+            cerr << "Exitcode: " << exitcode << endl;
+            ABORT("Unkown exitcode.");
     }
     exit(exitcode);
 }
