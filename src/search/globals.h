@@ -57,6 +57,5 @@ extern LegacyCausalGraph *g_legacy_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
-extern char *g_memory_padding;
 
 #endif
