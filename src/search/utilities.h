@@ -7,6 +7,14 @@
 #include <vector>
 #include <tr1/functional>
 
+#define ABORT(msg) \
+  ( \
+    (cerr << "Critical error in file " << __FILE__ \
+          << ", line " << __LINE__ << ": " << msg << endl), \
+    (abort()), \
+    (void)0 \
+  )
+
 enum ExitCode {
     EXIT_PLAN_FOUND = 0,
     EXIT_CRITICAL_ERROR = 1,

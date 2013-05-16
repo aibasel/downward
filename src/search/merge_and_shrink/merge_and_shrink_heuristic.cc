@@ -56,8 +56,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
         cout << "linear by reverse level";
         break;
     default:
-        cerr << "Unknown merge strategy." << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
+        ABORT("Unknown merge strategy.");
     }
     cout << endl;
     shrink_strategy->dump_options();

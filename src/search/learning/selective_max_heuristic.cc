@@ -122,8 +122,7 @@ void SelectiveMaxHeuristic::initialize() {
             classifiers[i] = new AODEClassifier();
             break;
         default:
-            cerr << "Unknown classifier type" << endl;
-            exit_with(EXIT_CRITICAL_ERROR);
+            ABORT("Unknown classifier type.");
         }
         classifiers[i]->set_feature_extractor(feature_extractor);
         classifiers[i]->buildClassifier(num_classes);
@@ -199,8 +198,7 @@ void SelectiveMaxHeuristic::train() {
             sample->add_heuristic(heuristics[i]);
         break;
     default:
-        cerr << "Unknown state space sample type" << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        ABORT("Unknown state space sample type");
     }
 
     sample->collect();

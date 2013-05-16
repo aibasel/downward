@@ -20,7 +20,6 @@ int get_adjusted_action_cost(const Operator &op, OperatorCost cost_type) {
         else
             return op.get_cost() + 1;
     default:
-        cerr << "Unknown cost type" << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
+        ABORT("Unknown cost type");
     }
 }
