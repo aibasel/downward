@@ -31,8 +31,9 @@ EXIT_TIMEOUT = 7
 EXIT_TIMEOUT_AND_MEMORY = 8
 EXIT_SIGXCPU = -signal.SIGXCPU
 
-EXPECTED_EXITCODES = [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
-                      EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT, EXIT_SIGXCPU]
+EXPECTED_EXITCODES = set([
+    EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
+    EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT])
 
 
 def parse_args():
@@ -138,11 +139,10 @@ def _generate_exitcode(exitcodes):
     if EXIT_SIGXCPU in exitcodes:
         exitcodes.remove(EXIT_SIGXCPU)
         exitcodes.add(EXIT_TIMEOUT)
-    # If an error occured, return the corresponding code.
-    for code in exitcodes:
-        if code not in EXPECTED_EXITCODES:
-            print "Unexpected exit code:", code
-            return code
+    unexpected_codes = exitcodes - EXPECTED_EXITCODES
+    if unexpected_codes:
+        print "Error: Unexpected exit codes:", list(unexpected_codes)
+        return EXIT_CRITICAL_ERROR
     if EXIT_PLAN_FOUND in exitcodes and EXIT_UNSOLVABLE in exitcodes:
         print "Error: Solution found and reported unsolvable."
         return EXIT_CRITICAL_ERROR
@@ -155,7 +155,7 @@ def _generate_exitcode(exitcodes):
             return reason
     if exitcodes == set([EXIT_TIMEOUT, EXIT_OUT_OF_MEMORY]):
         return EXIT_TIMEOUT_AND_MEMORY
-    print "Error: Unexpected exit codes:", exitcodes
+    print "Error: Unhandled exit codes:", exitcodes
     return EXIT_CRITICAL_ERROR
 
 def run(configs, optimal=True, final_config=None, final_config_builder=None,
