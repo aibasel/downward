@@ -256,7 +256,9 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                     exitcodes.append(exitcode)
                     if exitcode == EXIT_UNSOLVABLE:
                         return exitcodes
-                if final_config_builder:
+                if final_config:
+                    break
+                elif final_config_builder:
                     # abort scheduled portfolio and start final config
                     args = list(configs[pos][1])
                     final_config = final_config_builder(args)
