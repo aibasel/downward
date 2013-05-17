@@ -214,10 +214,9 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
 def run_sat(configs, unitcost, planner, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
     # When a config X fails with bound B and timeout T we can ignore it in
-    # subsequent rounds, because it will also fail with the next bound B' and
-    # timeout T', because B' <= B and T' <= T. The latter is true, because if we
-    # run failed configs again in the next round, the remaining time and thus
-    # the individual timeouts will have decreased.
+    # subsequent rounds, because it will also fail with the next bound B' <= B
+    # and timeout T' < T (if we run failed configs again in the next round, the
+    # remaining time and thus the individual timeouts will have decreased).
     exitcodes = []
     heuristic_cost_type = 1
     search_cost_type = 1
