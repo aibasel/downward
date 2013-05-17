@@ -213,11 +213,17 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
 
 def run_sat(configs, unitcost, planner, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
+    # When a config X fails with bound B and timeout T we can ignore it in
+    # subsequent rounds, because it will also fail with the next bound B' and
+    # timeout T', because B' <= B and T' <= T. The latter is true, because if we
+    # run failed configs again in the next round, the remaining time and thus
+    # the individual timeouts will have decreased.
     exitcodes = []
     heuristic_cost_type = 1
     search_cost_type = 1
     changed_cost_types = False
-    while True:
+    while configs:
+        successful_configs = []
         for pos, (relative_time, args) in enumerate(configs):
             args = list(args)
             curr_plan_file = adapt_search(args, search_cost_type,
@@ -231,9 +237,9 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
             exitcodes.append(exitcode)
             if exitcode == EXIT_UNSOLVABLE:
                 return exitcodes
-
-            if exitcode == EXIT_PLAN_FOUND:
-                # found a plan in last run
+            elif exitcode == EXIT_PLAN_FOUND:
+                # Add original config to the list of configs for the next round.
+                successful_configs.append((relative_time, configs[pos][1]))
                 if not changed_cost_types and unitcost != "unit":
                     # switch to real cost and repeat last run
                     changed_cost_types = True
@@ -259,14 +265,17 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
         if final_config:
             break
 
-    final_config = list(final_config)
-    curr_plan_file = adapt_search(final_config, search_cost_type,
-                                  heuristic_cost_type, plan_file)
-    timeout = remaining_time_at_start - sum(os.times()[:4])
-    if timeout > 0:
-        exitcode = run_search(planner, final_config, curr_plan_file, timeout,
-                              memory)
-        exitcodes.append(exitcode)
+        configs = successful_configs
+
+    if final_config:
+        final_config = list(final_config)
+        curr_plan_file = adapt_search(final_config, search_cost_type,
+                                      heuristic_cost_type, plan_file)
+        timeout = remaining_time_at_start - sum(os.times()[:4])
+        if timeout > 0:
+            exitcode = run_search(planner, final_config, curr_plan_file, timeout,
+                                  memory)
+            exitcodes.append(exitcode)
     return exitcodes
 
 def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
