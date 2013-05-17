@@ -10,6 +10,7 @@
 #include "state.h"
 #include "successor_generator.h"
 #include "timer.h"
+#include "utilities.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -27,6 +28,7 @@ using namespace __gnu_cxx;
 #include "state_registry.h"
 
 static const int PRE_FILE_VERSION = 3;
+static char *memory_padding = new char[1024];
 
 
 // TODO: This needs a proper type and should be moved to a separate
@@ -102,7 +104,7 @@ void check_magic(istream &in, string magic) {
                  << "on a preprocessor file from " << endl
                  << "an older version." << endl;
         }
-        exit(1);
+        exit_with(EXIT_INPUT_ERROR);
     }
 }
 
@@ -115,7 +117,7 @@ void read_and_verify_version(istream &in) {
         cerr << "Expected preprocessor file version " << PRE_FILE_VERSION
              << ", got " << version << "." << endl;
         cerr << "Exiting." << endl;
-        exit(1);
+        exit_with(EXIT_INPUT_ERROR);
     }
 }
 
@@ -143,7 +145,7 @@ void read_variables(istream &in) {
             cerr << "This should not have happened!" << endl;
             cerr << "Are you using the downward script, or are you using "
                  << "downward-1 directly?" << endl;
-            exit(1);
+            exit_with(EXIT_INPUT_ERROR);
         }
 
         in >> ws;
@@ -299,7 +301,7 @@ void verify_no_axioms_no_cond_effects() {
     if (!g_axioms.empty()) {
         cerr << "Heuristic does not support axioms!" << endl << "Terminating."
              << endl;
-        exit(1);
+        exit_with(EXIT_UNSUPPORTED);
     }
 
     for (int i = 0; i < g_operators.size(); i++) {
@@ -321,7 +323,7 @@ void verify_no_axioms_no_cond_effects() {
             cerr << "Heuristic does not support conditional effects "
                  << "(operator " << g_operators[i].get_name() << ")" << endl
                  << "Terminating." << endl;
-            exit(1);
+            exit_with(EXIT_UNSUPPORTED);
         }
     }
 }
@@ -332,6 +334,13 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
     return bool(g_inconsistent_facts[a.first][a.second].count(b));
 }
 
+void no_memory () {
+    assert(memory_padding);
+    delete[] memory_padding;
+    memory_padding = 0;
+    cout << "Failed to allocate memory. Released memory buffer." << endl;
+    exit_with(EXIT_OUT_OF_MEMORY);
+}
 
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();

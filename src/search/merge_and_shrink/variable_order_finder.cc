@@ -5,9 +5,11 @@
 
 #include "../globals.h"
 #include "../legacy_causal_graph.h"
+#include "../utilities.h"
 
 #include <cassert>
 #include <cstdlib>
+#include <iostream>
 #include <vector>
 using namespace std;
 
@@ -97,9 +99,9 @@ int VariableOrderFinder::next() {
     } else if (merge_strategy == MERGE_DFP) {
         /* TODO: Implement this, but not here, as it is *not* a linear
            merge strategy. */
-        abort();
+        cerr << "Merge strategy MERGE_DFP not implemented." << endl;
+        exit_with(EXIT_UNSUPPORTED);
     }
-
-    // This should never happen, at least if we did relevance analysis.
-    abort();
+    cerr << "Relevance analysis has not been performed." << endl;
+    exit_with(EXIT_INPUT_ERROR);
 }
