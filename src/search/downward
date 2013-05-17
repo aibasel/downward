@@ -3,22 +3,28 @@ BASEDIR="$(dirname "$0")"
 TEMPFILE=downward.tmp.$$
 cat > $TEMPFILE
 
-# Need to explicitly ask for GNU time (from MacPorts) on Mac OS X.
-if [[ "$(uname)" == "Darwin" ]]; then
-    TIME="gtime"
-    if ! which $TIME >/dev/null; then
-        echo "$TIME must be installed on Mac OSX (from MacPorts, perhaps) for this to work"
-        exit 1
-    fi
+if [[ "$(uname -o)" == "Cygwin" ]]; then
+    # Not sure how to handle time in Cygwin (command time doesn't work).
+    # Ignoring it for now.
+    STATE_SIZE=$("$BASEDIR/dispatch" $TEMPFILE)
+    UNIT_COST=$("$BASEDIR/unitcost" $TEMPFILE)
 else
-    TIME="command time"
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # Need to explicitly ask for GNU time (from MacPorts) on Mac OS X.
+        TIME="gtime"
+        if ! which $TIME >/dev/null; then
+            echo "$TIME must be installed on Mac OSX (from MacPorts, perhaps) for this to work"
+            exit 1
+        fi
+    else
+        TIME="command time"
+    fi
+    TIME="$TIME --output=elapsed.time --format=%S\n%U\n"
+    STATE_SIZE=$($TIME --append "$BASEDIR/dispatch" $TEMPFILE)
+    UNIT_COST=$($TIME --append "$BASEDIR/unitcost" $TEMPFILE)
 fi
 
-TIME="$TIME --output=elapsed.time --format=%S\n%U\n"
-
-STATE_SIZE=$($TIME --append "$BASEDIR/dispatch" $TEMPFILE)
 echo Dispatcher selected state size $STATE_SIZE.
-UNIT_COST=$($TIME --append "$BASEDIR/unitcost" $TEMPFILE)
 echo This is a $UNIT_COST task.
 PLANNER="$BASEDIR/downward-$STATE_SIZE"
 
