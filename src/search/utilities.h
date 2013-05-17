@@ -7,6 +7,30 @@
 #include <vector>
 #include <tr1/functional>
 
+#define ABORT(msg) \
+  ( \
+    (cerr << "Critical error in file " << __FILE__ \
+          << ", line " << __LINE__ << ": " << msg << endl), \
+    (abort()), \
+    (void)0 \
+  )
+
+enum ExitCode {
+    EXIT_PLAN_FOUND = 0,
+    EXIT_CRITICAL_ERROR = 1,
+    EXIT_INPUT_ERROR = 2,
+    EXIT_UNSUPPORTED = 3,
+    // Task is provably unsolvable with current bound. Currently unused (see issue377).
+    EXIT_UNSOLVABLE = 4,
+    // Search ended without finding a solution.
+    EXIT_UNSOLVED_INCOMPLETE = 5,
+    EXIT_OUT_OF_MEMORY = 6,
+    // Currently unused.
+    EXIT_TIMEOUT = 7
+};
+
+extern void exit_with(ExitCode returncode) __attribute__((noreturn));
+
 extern void register_event_handlers();
 
 extern int get_peak_memory_in_kb();

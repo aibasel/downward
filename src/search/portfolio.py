@@ -6,6 +6,7 @@ import optparse
 import os
 import os.path
 import resource
+import signal
 import subprocess
 import sys
 
@@ -17,6 +18,22 @@ DEFAULT_TIMEOUT = 1800
 # the "downward" wrapper script. In order not to reach the external memory limit
 # during a planner run, we don't allow the planner to use the reserved memory.
 BYTES_FOR_PYTHON = 50 * 1024 * 1024
+
+# Exit codes.
+EXIT_PLAN_FOUND = 0
+EXIT_CRITICAL_ERROR = 1
+EXIT_INPUT_ERROR = 2
+EXIT_UNSUPPORTED = 3
+EXIT_UNSOLVABLE = 4
+EXIT_UNSOLVED_INCOMPLETE = 5
+EXIT_OUT_OF_MEMORY = 6
+EXIT_TIMEOUT = 7
+EXIT_TIMEOUT_AND_MEMORY = 8
+EXIT_SIGXCPU = -signal.SIGXCPU
+
+EXPECTED_EXITCODES = set([
+    EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
+    EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT])
 
 
 def parse_args():
@@ -31,14 +48,14 @@ def safe_unlink(filename):
     except EnvironmentError:
         pass
 
-def set_limit(kind, amount):
+def set_limit(kind, soft, hard):
     try:
-        resource.setrlimit(kind, (amount, amount))
+        resource.setrlimit(kind, (soft, hard))
     except (OSError, ValueError), err:
         # This can happen if the limit has already been set externally.
         sys.stderr.write("Limit for %s could not be set to %s (%s). "
                          "Previous limit: %s\n" %
-                         (kind, amount, err, resource.getrlimit(kind)))
+                         (kind, (soft, hard), err, resource.getrlimit(kind)))
 
 def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     g_bound = "infinity"
@@ -84,14 +101,21 @@ def run_search(planner, args, plan_file, timeout=None, memory=None):
 
     def set_limits():
         if timeout is not None:
-            set_limit(resource.RLIMIT_CPU, int(math.ceil(timeout)))
+            # Don't try to raise the hard limit.
+            _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
+            hard_limit = min(int(math.ceil(timeout)) + 1, external_hard_limit)
+            # Soft limit reached --> SIGXCPU.
+            # Hard limit reached --> SIGKILL.
+            set_limit(resource.RLIMIT_CPU, hard_limit - 1, hard_limit)
         if memory is not None:
             # Memory in Bytes
-            set_limit(resource.RLIMIT_AS, memory)
+            set_limit(resource.RLIMIT_AS, memory, memory)
 
-    returncode = subprocess.call(complete_args, stdin=open("output"), preexec_fn=set_limits)
+    returncode = subprocess.call(complete_args, stdin=open("output"),
+                                 preexec_fn=set_limits)
     print "returncode:", returncode
     print
+    return returncode
 
 def determine_timeout(remaining_time_at_start, configs, pos):
     remaining_time = remaining_time_at_start - sum(os.times()[:4])
@@ -108,6 +132,27 @@ def determine_timeout(remaining_time_at_start, configs, pos):
 def get_plan_files(plan_file):
     # If *plan_file* is "sas_plan", we want to match "sas_plan" and "sas_plan.x".
     return glob.glob("%s*" % plan_file)
+
+def _generate_exitcode(exitcodes):
+    print "Exit codes:", exitcodes
+    exitcodes = set(exitcodes)
+    if EXIT_SIGXCPU in exitcodes:
+        exitcodes.remove(EXIT_SIGXCPU)
+        exitcodes.add(EXIT_TIMEOUT)
+    unexpected_codes = exitcodes - EXPECTED_EXITCODES
+    if unexpected_codes:
+        print "Error: Unexpected exit codes:", list(unexpected_codes)
+        return EXIT_CRITICAL_ERROR
+    for code in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE]:
+        if code in exitcodes:
+            return code
+    for code in [EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT]:
+        if exitcodes == set([code]):
+            return code
+    if exitcodes == set([EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT]):
+        return EXIT_TIMEOUT_AND_MEMORY
+    print "Error: Unhandled exit codes:", exitcodes
+    return EXIT_CRITICAL_ERROR
 
 def run(configs, optimal=True, final_config=None, final_config_builder=None,
         timeout=None):
@@ -146,8 +191,6 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     assert extra_args[0][-1] in ["1", "2", "4"], extra_args
     planner = extra_args.pop(0)
 
-    for filename in get_plan_files(plan_file):
-        safe_unlink(filename)
     safe_unlink("plan_numbers_and_cost")
 
     remaining_time_at_start = float(timeout)
@@ -161,18 +204,16 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     print "remaining time at start: %s" % remaining_time_at_start
 
     if optimal:
-        run_opt(configs, planner, plan_file, remaining_time_at_start, memory)
+        exitcodes = run_opt(configs, planner, plan_file, remaining_time_at_start,
+                            memory)
     else:
-        run_sat(configs, unitcost, planner, plan_file, final_config,
-                final_config_builder, remaining_time_at_start, memory)
-
-    if get_plan_files(plan_file):
-        # We found at least one plan.
-        sys.exit(0)
-    sys.exit(1)
+        exitcodes = run_sat(configs, unitcost, planner, plan_file, final_config,
+                            final_config_builder, remaining_time_at_start, memory)
+    sys.exit(_generate_exitcode(exitcodes))
 
 def run_sat(configs, unitcost, planner, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
+    exitcodes = []
     heuristic_cost_type = 1
     search_cost_type = 1
     changed_cost_types = False
@@ -184,10 +225,14 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
             run_timeout = determine_timeout(remaining_time_at_start,
                                             configs, pos)
             if run_timeout <= 0:
-                return
-            run_search(planner, args, curr_plan_file, run_timeout, memory)
+                return exitcodes
+            exitcode = run_search(planner, args, curr_plan_file, run_timeout,
+                                  memory)
+            exitcodes.append(exitcode)
+            if exitcode == EXIT_UNSOLVABLE:
+                return exitcodes
 
-            if os.path.exists(curr_plan_file):
+            if exitcode == EXIT_PLAN_FOUND:
                 # found a plan in last run
                 if not changed_cost_types and unitcost != "unit":
                     # switch to real cost and repeat last run
@@ -200,8 +245,11 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                                                 heuristic_cost_type, plan_file)
                     run_timeout = determine_timeout(remaining_time_at_start,
                                                     configs, pos)
-                    run_search(planner, args, curr_plan_file, run_timeout,
-                               memory)
+                    exitcode = run_search(planner, args, curr_plan_file, run_timeout,
+                                          memory)
+                    exitcodes.append(exitcode)
+                    if exitcode == EXIT_UNSOLVABLE:
+                        return exitcodes
                 if final_config_builder:
                     # abort scheduled portfolio and start final config
                     args = list(configs[pos][1])
@@ -216,13 +264,18 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                                   heuristic_cost_type, plan_file)
     timeout = remaining_time_at_start - sum(os.times()[:4])
     if timeout > 0:
-        run_search(planner, final_config, curr_plan_file, timeout, memory)
+        exitcode = run_search(planner, final_config, curr_plan_file, timeout,
+                              memory)
+        exitcodes.append(exitcode)
+    return exitcodes
 
 def run_opt(configs, planner, plan_file, remaining_time_at_start, memory):
+    exitcodes = []
     for pos, (relative_time, args) in enumerate(configs):
         timeout = determine_timeout(remaining_time_at_start, configs, pos)
-        run_search(planner, args, plan_file, timeout, memory)
+        exitcode = run_search(planner, args, plan_file, timeout, memory)
+        exitcodes.append(exitcode)
 
-        if os.path.exists(plan_file):
-            print "Plan found!"
+        if exitcode in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE]:
             break
+    return exitcodes
