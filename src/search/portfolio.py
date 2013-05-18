@@ -227,7 +227,8 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
     while configs:
         successful_configs = []
         for pos, (relative_time, args) in enumerate(configs):
-            args = list(args)
+            original_args = list(args)
+            args = original_args[:]
             curr_plan_file = adapt_search(args, search_cost_type,
                                           heuristic_cost_type, plan_file)
             run_timeout = determine_timeout(remaining_time_at_start,
@@ -241,15 +242,15 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                 return exitcodes
             elif exitcode == EXIT_PLAN_FOUND:
                 # Add original config to the list of configs for the next round.
-                successful_configs.append((relative_time, configs[pos][1]))
+                successful_configs.append((relative_time, original_args))
                 if (not changed_cost_types and unitcost != "unit" and
-                        _can_change_cost_type(list(configs[pos][1]))):
+                        _can_change_cost_type(original_args)):
                     # switch to real cost and repeat last run
                     changed_cost_types = True
                     search_cost_type = 0
                     heuristic_cost_type = 2
                     # TODO: refactor: thou shalt not copy code!
-                    args = list(configs[pos][1])
+                    args = original_args[:]
                     curr_plan_file = adapt_search(args, search_cost_type,
                                                 heuristic_cost_type, plan_file)
                     run_timeout = determine_timeout(remaining_time_at_start,
@@ -263,8 +264,7 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                     break
                 elif final_config_builder:
                     # abort scheduled portfolio and start final config
-                    args = list(configs[pos][1])
-                    final_config = final_config_builder(args)
+                    final_config = final_config_builder(original_args[:])
                     break
 
         if final_config:
