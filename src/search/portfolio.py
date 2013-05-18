@@ -211,6 +211,9 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
                             final_config_builder, remaining_time_at_start, memory)
     sys.exit(_generate_exitcode(exitcodes))
 
+def _can_change_cost_type(args):
+    return any('S_COST_TYPE' in part or 'H_COST_TYPE' in part for part in args)
+
 def run_sat(configs, unitcost, planner, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
     # When a config X fails with bound B and timeout T we can ignore it in
@@ -239,7 +242,8 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
             elif exitcode == EXIT_PLAN_FOUND:
                 # Add original config to the list of configs for the next round.
                 successful_configs.append((relative_time, configs[pos][1]))
-                if not changed_cost_types and unitcost != "unit":
+                if (not changed_cost_types and unitcost != "unit" and
+                        _can_change_cost_type(list(configs[pos][1]))):
                     # switch to real cost and repeat last run
                     changed_cost_types = True
                     search_cost_type = 0
