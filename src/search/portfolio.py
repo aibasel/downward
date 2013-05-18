@@ -245,30 +245,24 @@ def run_sat(configs, unitcost, planner, plan_file, final_config,
                 successful_configs.append((relative_time, original_args))
                 if (not changed_cost_types and unitcost != "unit" and
                         _can_change_cost_type(original_args)):
-                    # switch to real cost and repeat last run
+                    print "Switch to real costs and repeat last run."
                     changed_cost_types = True
                     search_cost_type = 0
                     heuristic_cost_type = 2
-                    # TODO: refactor: thou shalt not copy code!
-                    args = original_args[:]
-                    curr_plan_file = adapt_search(args, search_cost_type,
-                                                heuristic_cost_type, plan_file)
-                    run_timeout = determine_timeout(remaining_time_at_start,
-                                                    configs, pos)
-                    exitcode = run_search(planner, args, curr_plan_file, run_timeout,
-                                          memory)
-                    exitcodes.append(exitcode)
-                    if exitcode == EXIT_UNSOLVABLE:
-                        return exitcodes
-                if final_config:
                     break
-                elif final_config_builder:
-                    # abort scheduled portfolio and start final config
+            # We abort the portfolio and run the final config if
+            # - we have previously found a solution for the unit cost version,
+            #   but failed for the non-unit cost run or
+            # - we found a solution just now and cannot change the cost types.
+            if ((EXIT_PLAN_FOUND in exitcodes and exitcode != EXIT_PLAN_FOUND) or
+                    (exitcode == EXIT_PLAN_FOUND and not changed_cost_types)):
+                if final_config_builder and not final_config:
+                    print "Build final config."
                     final_config = final_config_builder(original_args[:])
+                if final_config:
+                    print "Abort portfolio and run final config."
+                    successful_configs = []
                     break
-
-        if final_config:
-            break
 
         configs = successful_configs
 
