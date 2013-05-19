@@ -28,7 +28,7 @@ function run_portfolio {
     # Set soft memory limit of 50 MB to avoid Python using too much space.
     # On the maia cluster, 20 MB have been tested to be sufficient; 18 MB are not.
     ulimit -Sv 51200
-    "$PORTFOLIO" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
+    "$PORTFOLIO" "$TEMPFILE" "$UNIT_COST" "$PLANNER" "$@"
     # Explicit is better than implicit: return portfolio's exit code.
     return $?
 }
