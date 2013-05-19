@@ -227,7 +227,7 @@ def run_sat(configs, unitcost, planner, sas_file, plan_file, final_config,
     search_cost_type = 1
     changed_cost_types = False
     while configs:
-        successful_configs = []
+        configs_next_round = []
         for pos, (relative_time, args) in enumerate(configs):
             original_args = list(args)
             args = original_args[:]
@@ -244,7 +244,7 @@ def run_sat(configs, unitcost, planner, sas_file, plan_file, final_config,
                 return exitcodes
             elif exitcode == EXIT_PLAN_FOUND:
                 # Add original config to the list of configs for the next round.
-                successful_configs.append((relative_time, original_args))
+                configs_next_round.append((relative_time, original_args))
                 if (not changed_cost_types and unitcost != "unit" and
                         _can_change_cost_type(original_args)):
                     print "Switch to real costs and repeat last run."
@@ -263,10 +263,10 @@ def run_sat(configs, unitcost, planner, sas_file, plan_file, final_config,
                     final_config = final_config_builder(original_args[:])
                 if final_config:
                     print "Abort portfolio and run final config."
-                    successful_configs = []
+                    configs_next_round = []
                     break
 
-        configs = successful_configs
+        configs = configs_next_round
 
     if final_config:
         final_config = list(final_config)
