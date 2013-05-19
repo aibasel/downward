@@ -223,9 +223,14 @@ def run_sat(configs, unitcost, planner, sas_file, plan_file, final_config,
     # and timeout T' < T (if we run failed configs again in the next round, the
     # remaining time and thus the individual timeouts will have decreased).
     exitcodes = []
+    # A portfolio is run in the three stages "unitcost", "realcost" and
+    # "finalconfig". For non-unitcost tasks we start by treating all costs as
+    # one. When we find a solution, we rerun the successful config with real
+    # costs. Afterwards, we run the final config. For unitcost tasks we can skip
+    # the first stage.
+    stage = "unitcost" if unitcost == "nonunit" else "realcost"
     heuristic_cost_type = 1
     search_cost_type = 1
-    changed_cost_types = False
     while configs:
         configs_next_round = []
         for pos, (relative_time, args) in enumerate(configs):
@@ -240,43 +245,30 @@ def run_sat(configs, unitcost, planner, sas_file, plan_file, final_config,
             exitcode = run_search(planner, args, sas_file, curr_plan_file,
                                   run_timeout, memory)
             exitcodes.append(exitcode)
-            if exitcode == EXIT_UNSOLVABLE:
+            if stage == "finalconfig" or exitcode == EXIT_UNSOLVABLE:
                 return exitcodes
             elif exitcode == EXIT_PLAN_FOUND:
-                # Add original config to the list of configs for the next round.
                 configs_next_round.append((relative_time, original_args))
-                if (not changed_cost_types and unitcost != "unit" and
-                        _can_change_cost_type(original_args)):
-                    print "Switch to real costs and repeat last run."
-                    changed_cost_types = True
-                    search_cost_type = 0
-                    heuristic_cost_type = 2
-                    break
-            # We abort the portfolio and run the final config if
-            # - we have previously found a solution for the unit cost version,
-            #   but failed for the non-unit cost run or
-            # - we found a solution just now and cannot change the cost types.
-            if ((EXIT_PLAN_FOUND in exitcodes and exitcode != EXIT_PLAN_FOUND) or
-                    (exitcode == EXIT_PLAN_FOUND and not changed_cost_types)):
                 if final_config_builder and not final_config:
-                    print "Build final config."
                     final_config = final_config_builder(original_args[:])
-                if final_config:
-                    print "Abort portfolio and run final config."
-                    configs_next_round = []
-                    break
-
+                if stage == "unitcost":
+                    stage = "realcost"
+                    if _can_change_cost_type(original_args):
+                        print "Switch to real costs and repeat last run."
+                        search_cost_type = 0
+                        heuristic_cost_type = 2
+                        # Run remaining configs after the second run of this
+                        # config if there is no final config.
+                        if not final_config:
+                            configs_next_round.extend(configs[pos + 1:])
+                        break
+            if (stage == "realcost" and EXIT_PLAN_FOUND in exitcodes
+                    and final_config):
+                print "Abort portfolio and run final config."
+                stage = "finalconfig"
+                configs_next_round = [(1, final_config)]
+                break
         configs = configs_next_round
-
-    if final_config:
-        final_config = list(final_config)
-        curr_plan_file = adapt_search(final_config, search_cost_type,
-                                      heuristic_cost_type, plan_file)
-        timeout = remaining_time_at_start - sum(os.times()[:4])
-        if timeout > 0:
-            exitcode = run_search(planner, final_config, sas_file, curr_plan_file, timeout,
-                                  memory)
-            exitcodes.append(exitcode)
     return exitcodes
 
 def run_opt(configs, planner, sas_file, plan_file, remaining_time_at_start,
