@@ -621,10 +621,12 @@ def check_python_version(force_old_python):
 
 def parse_options():
     optparser = optparse.OptionParser(usage="Usage: %prog [options] [<domain.pddl>] <task.pddl>")
-    optparser.add_option("--relaxed", dest='generate_relaxed_task', action="store_true",
-                         help="Output relaxed task (no delete effects)")
-    optparser.add_option("--force-old-python", action="store_true",
-                         help="Allow running the translator with slow Python 2.6")
+    optparser.add_option(
+        "--relaxed", dest="generate_relaxed_task", action="store_true",
+        help="Output relaxed task (no delete effects)")
+    optparser.add_option(
+        "--force-old-python", action="store_true",
+        help="Allow running the translator with slow Python 2.6")
     options, args = optparser.parse_args()
     # Remove the parsed options from sys.argv
     sys.argv = [sys.argv[0]] + args
