@@ -79,5 +79,5 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
                            "operator cost adjustment type");
     parser.add_option<int>("bound",
                            numeric_limits<int>::max(),
-                           "bound on plan cost");
+                           "exclusive bound on plan cost");
 }
