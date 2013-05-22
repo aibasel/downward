@@ -1,14 +1,20 @@
 #include "PDB_state_space_sample.h"
-#include <math.h>
 
-double fac(int n) {
-    double t = 1;
+#include "../globals.h"
+#include "../rng.h"
+
+#include <cmath>
+using namespace std;
+
+
+static double fac(int n) {
+    double t = 1.0;
     for (int i = n; i > 1; i--)
         t *= i;
     return t;
 }
 
-double Bin(int n, double p, int r) {
+static double bin(int n, double p, int r) {
     return fac(n) / (fac(n - r) * fac(r)) * pow(p, r) * pow(1 - p, n - r);
 }
 
@@ -19,9 +25,9 @@ PDBStateSpaceSample::PDBStateSpaceSample(int goal_depth, int probes = 10, int si
 
     prob_table = new double[table_size];
 
-    prob_table[0] = Bin(goal_depth / p, p, 0);
+    prob_table[0] = bin(goal_depth / p, p, 0);
     for (int i = 1; i < (table_size - 1); i++) {
-        prob_table[i] = prob_table[i - 1] + Bin(goal_depth / p, p, i);
+        prob_table[i] = prob_table[i - 1] + bin(goal_depth / p, p, i);
     }
     prob_table[table_size - 1] = 1.0;
 
@@ -34,7 +40,7 @@ PDBStateSpaceSample::~PDBStateSpaceSample() {
 }
 
 int PDBStateSpaceSample::get_random_depth() {
-    double p = drand48();
+    double p = g_rng();
     int d = 0;
     while (prob_table[d] < p) {
         d++;

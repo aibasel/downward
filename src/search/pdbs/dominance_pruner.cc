@@ -23,7 +23,7 @@ void DominancePruner::compute_superset_relation() {
                 // This should not happen, but in case it does we can easily fix
                 // it by replacing one of the PDBs in all cliques that use it.
                 if (superset_relation.count(make_pair(pattern_databases[j],
-                                                       pattern_databases[i]))) {
+                                                      pattern_databases[i]))) {
                     replace_pdb(pattern_databases[j], pattern_databases[i]);
                 }
             }
@@ -68,8 +68,7 @@ void DominancePruner::prune() {
     // other cliques. This prevents removing both copies of a clique that occurs
     // twice.
     vector<bool> clique_removed(max_cliques.size(), false);
-    __gnu_cxx::hash_set<PDBHeuristic *,
-            hash_pointer > remaining_heuristics;
+    __gnu_cxx::hash_set<PDBHeuristic *, hash_pointer > remaining_heuristics;
 
     compute_superset_relation();
     // Check all pairs of cliques for dominance.
@@ -93,7 +92,7 @@ void DominancePruner::prune() {
         if (c1_is_useful) {
             remaining_cliques.push_back(c1);
             for (size_t p_id = 0; p_id < c1.size(); ++p_id) {
-                PDBHeuristic* pdb_heuristic = c1[p_id];
+                PDBHeuristic *pdb_heuristic = c1[p_id];
                 remaining_heuristics.insert(pdb_heuristic);
             }
         } else {

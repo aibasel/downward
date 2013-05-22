@@ -213,7 +213,7 @@ SearchEngine *OptionParser::parse_cmd_line(
         } else {
             cerr << "unknown option " << arg << endl << endl;
             cout << OptionParser::usage(argv[0]) << endl;
-            exit(1);
+            exit_with(EXIT_INPUT_ERROR);
         }
     }
     return engine;

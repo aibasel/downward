@@ -8,16 +8,18 @@
 
 
 #include <iostream>
+#include <new>
 using namespace std;
 
 
 
 int main(int argc, const char **argv) {
+    set_new_handler(no_memory);
     register_event_handlers();
 
     if (argc < 2) {
         cout << OptionParser::usage(argv[0]) << endl;
-        exit(1);
+        exit_with(EXIT_INPUT_ERROR);
     }
 
     if (string(argv[1]).compare("--help") != 0)
@@ -32,8 +34,8 @@ int main(int argc, const char **argv) {
         OptionParser::parse_cmd_line(argc, argv, true);
         engine = OptionParser::parse_cmd_line(argc, argv, false);
     } catch (ParseError &pe) {
-        cout << pe << endl;
-        exit(1);
+        cerr << pe << endl;
+        exit_with(EXIT_INPUT_ERROR);
     }
 
     Timer search_timer;
@@ -47,5 +49,9 @@ int main(int argc, const char **argv) {
     cout << "Search time: " << search_timer << endl;
     cout << "Total time: " << g_timer << endl;
 
-    return engine->found_solution() ? 0 : 1;
+    if (engine->found_solution()) {
+        exit_with(EXIT_PLAN_FOUND);
+    } else {
+        exit_with(EXIT_UNSOLVED_INCOMPLETE);
+    }
 }

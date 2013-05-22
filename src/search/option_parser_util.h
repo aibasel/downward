@@ -1,6 +1,7 @@
 #ifndef OPTION_PARSER_UTIL_H
 #define OPTION_PARSER_UTIL_H
 
+#include "utilities.h"
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -316,7 +317,7 @@ public:
             std::cout << "attempt to retrieve nonexisting object of name "
                       << key << " (type: " << TypeNamer<T>::name() << ")"
                       << " from Options. Aborting." << std::endl;
-            exit(1);
+            exit_with(EXIT_CRITICAL_ERROR);
         }
         try {
             T result = boost::any_cast<T>(it->second);
@@ -326,7 +327,7 @@ public:
                       << std::endl
                       << key << " is not of type " << TypeNamer<T>::name()
                       << std::endl << "exiting" << std::endl;
-            exit(1);
+            exit_with(EXIT_CRITICAL_ERROR);
         }
     }
 
@@ -339,7 +340,7 @@ public:
                           << std::endl
                           << "List " << key << " is empty"
                           << std::endl;
-                exit(1);
+                exit_with(EXIT_INPUT_ERROR);
             }
         }
     }

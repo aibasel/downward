@@ -3,11 +3,13 @@
 #include "merge_and_shrink_heuristic.h" // needed for MergeStrategy type;
 // TODO: move that type somewhere else?
 
-#include "../causal_graph.h"
 #include "../globals.h"
+#include "../legacy_causal_graph.h"
+#include "../utilities.h"
 
 #include <cassert>
 #include <cstdlib>
+#include <iostream>
 #include <vector>
 using namespace std;
 
@@ -42,7 +44,7 @@ void VariableOrderFinder::select_next(int position, int var_no) {
     assert(remaining_vars[position] == var_no);
     remaining_vars.erase(remaining_vars.begin() + position);
     selected_vars.push_back(var_no);
-    const vector<int> &new_vars = g_causal_graph->get_predecessors(var_no);
+    const vector<int> &new_vars = g_legacy_causal_graph->get_predecessors(var_no);
     for (int i = 0; i < new_vars.size(); ++i)
         is_causal_predecessor[new_vars[i]] = true;
 }
@@ -97,9 +99,9 @@ int VariableOrderFinder::next() {
     } else if (merge_strategy == MERGE_DFP) {
         /* TODO: Implement this, but not here, as it is *not* a linear
            merge strategy. */
-        abort();
+        cerr << "Merge strategy MERGE_DFP not implemented." << endl;
+        exit_with(EXIT_UNSUPPORTED);
     }
-
-    // This should never happen, at least if we did relevance analysis.
-    abort();
+    cerr << "Relevance analysis has not been performed." << endl;
+    exit_with(EXIT_INPUT_ERROR);
 }

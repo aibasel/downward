@@ -3,8 +3,8 @@
 #include "pdb_heuristic.h"
 #include "zero_one_pdbs_heuristic.h"
 
-#include "../causal_graph.h"
 #include "../globals.h"
+#include "../legacy_causal_graph.h"
 #include "../plugin.h"
 #include "../rng.h"
 #include "../timer.h"
@@ -104,7 +104,7 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
     while (!vars_to_check.empty()) {
         int var = vars_to_check.back();
         vars_to_check.pop_back();
-        const vector<int> &rel = g_causal_graph->get_predecessors(var);
+        const vector<int> &rel = g_legacy_causal_graph->get_predecessors(var);
         for (size_t i = 0; i < rel.size(); ++i) {
             int var_no = rel[i];
             if (in_original_pattern.count(var_no) &&

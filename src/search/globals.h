@@ -7,15 +7,16 @@
 #include <string>
 #include <vector>
 
+class Axiom;
 class AxiomEvaluator;
 class CausalGraph;
 class DomainTransitionGraph;
+class LegacyCausalGraph;
 class Operator;
-class Axiom;
+class RandomNumberGenerator;
 class State;
 class SuccessorGenerator;
 class Timer;
-class RandomNumberGenerator;
 
 bool test_goal(const State &state);
 void save_plan(const std::vector<const Operator *> &plan, int iter);
@@ -30,6 +31,7 @@ void check_magic(std::istream &in, std::string magic);
 
 bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
 
+extern void no_memory();
 
 extern bool g_use_metric;
 extern int g_min_action_cost;
@@ -51,6 +53,7 @@ extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
 extern std::vector<DomainTransitionGraph *> g_transition_graphs;
 extern CausalGraph *g_causal_graph;
+extern LegacyCausalGraph *g_legacy_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;

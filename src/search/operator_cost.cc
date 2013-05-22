@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "option_parser.h"
+#include "utilities.h"
 
 #include <cstdlib>
 #include <vector>
@@ -22,8 +23,7 @@ int get_adjusted_action_cost(const Operator &op, OperatorCost cost_type) {
         else
             return op.get_cost() + 1;
     default:
-        cerr << "Unknown cost type" << endl;
-        abort();
+        ABORT("Unknown cost type");
     }
 }
 

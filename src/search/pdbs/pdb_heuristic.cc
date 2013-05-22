@@ -87,7 +87,7 @@ PDBHeuristic::~PDBHeuristic() {
 void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
     if (!g_axioms.empty()) {
         cerr << "Heuristic does not support axioms!" << endl << "Terminating." << endl;
-        exit(1);
+        exit_with(EXIT_UNSUPPORTED);
     }
     for (int i = 0; i < g_operators.size(); ++i) {
         const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
@@ -109,7 +109,7 @@ void PDBHeuristic::verify_no_axioms_no_cond_effects() const {
             cerr << "Heuristic does not support conditional effects "
                  << "(operator " << g_operators[i].get_name() << ")"
                  << endl << "Terminating." << endl;
-            exit(1);
+            exit_with(EXIT_UNSUPPORTED);
         }
     }
 }
