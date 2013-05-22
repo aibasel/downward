@@ -5,29 +5,30 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
-#include <sstream>
-#include <unistd.h>
 using namespace std;
 
-#ifdef __APPLE__
+
+#if OPERATING_SYSTEM == LINUX
+static void exit_handler(int exit_code, void *hint);
+#elif OPERATING_SYSTEM == OSX
+static void exit_handler();
 #include <mach/mach.h>
+#elif OPERATING_SYSTEM == CYGWIN
+// nothing
 #endif
 
-#ifdef __APPLE__
-static void exit_handler();
-#else
-static void exit_handler(int exit_code, void *hint);
-#endif
 
 static void signal_handler(int signal_number);
 
 void register_event_handlers() {
     // On exit or when receiving certain signals such as SIGINT (Ctrl-C),
     // print the peak memory usage.
-#ifdef __APPLE__
-    atexit(exit_handler);
-#else
+#if OPERATING_SYSTEM == LINUX
     on_exit(exit_handler, 0);
+#elif OPERATING_SYSTEM == OSX
+    atexit(exit_handler);
+#elif OPERATING_SYSTEM == CYGWIN
+    // nothing
 #endif
     signal(SIGABRT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -35,12 +36,47 @@ void register_event_handlers() {
     signal(SIGINT, signal_handler);
 }
 
-#ifdef __APPLE__
-void exit_handler() {
-#else
+#if OPERATING_SYSTEM != CYGWIN
+#if OPERATING_SYSTEM == LINUX
 void exit_handler(int, void *) {
+#elif OPERATING_SYSTEM == OSX
+void exit_handler() {
 #endif
-    print_peak_memory();
+      print_peak_memory();
+  }
+#endif
+
+void exit_with(ExitCode exitcode) {
+    switch (exitcode) {
+        case EXIT_PLAN_FOUND:
+            cout << "Solution found." << endl;
+            break;
+        case EXIT_CRITICAL_ERROR:
+            cerr << "Unexplained error occured." << endl;
+            break;
+        case EXIT_INPUT_ERROR:
+            cerr << "Usage error occured." << endl;
+            break;
+        case EXIT_UNSUPPORTED:
+            cerr << "Tried to use unsupported feature." << endl;
+            break;
+        case EXIT_UNSOLVABLE:
+            cout << "Task is provably unsolvable." << endl;
+            break;
+        case EXIT_UNSOLVED_INCOMPLETE:
+            cout << "Search stopped without finding a solution." << endl;
+            break;
+        case EXIT_OUT_OF_MEMORY:
+            cout << "Memory limit has been reached." << endl;
+            break;
+        case EXIT_TIMEOUT:
+            cout << "Time limit has been reached." << endl;
+            break;
+        default:
+            cerr << "Exitcode: " << exitcode << endl;
+            ABORT("Unkown exitcode.");
+    }
+    exit(exitcode);
 }
 
 void signal_handler(int signal_number) {
@@ -59,7 +95,7 @@ int get_peak_memory_in_kb() {
     // On error, produces a warning on cerr and returns -1.
     int memory_in_kb = -1;
 
-#ifdef __APPLE__
+#if OPERATING_SYSTEM == OSX
     // Based on http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
     task_basic_info t_info;
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
@@ -69,11 +105,7 @@ int get_peak_memory_in_kb() {
                   &t_info_count) == KERN_SUCCESS)
         memory_in_kb = t_info.virtual_size / 1024;
 #else
-    ostringstream filename_stream;
-    filename_stream << "/proc/" << getpid() << "/status";
-    const char *filename = filename_stream.str().c_str();
-
-    ifstream procfile(filename);
+    ifstream procfile("/proc/self/status");
     string word;
     while (procfile.good()) {
         procfile >> word;
@@ -97,8 +129,8 @@ void print_peak_memory() {
     cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
 }
 
-void assert_sorted_unique(const std::vector<int>& values) {
+void assert_sorted_unique(const std::vector<int> &values) {
     for (size_t i = 1; i < values.size(); ++i) {
-        assert(values[i-1] < values[i]);
+        assert(values[i - 1] < values[i]);
     }
 }

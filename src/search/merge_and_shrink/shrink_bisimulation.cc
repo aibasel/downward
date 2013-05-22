@@ -103,12 +103,13 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
     cout << "Bisimulation threshold: " << threshold << endl;
     cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
     cout << "At limit: ";
-    if (at_limit == RETURN)
+    if (at_limit == RETURN) {
         cout << "return";
-    else if (at_limit == USE_UP)
+    } else if (at_limit == USE_UP) {
         cout << "use up limit";
-    else
-        abort();
+    } else {
+        ABORT("Unknown setting for at_limit.");
+    }
     cout << endl;
 }
 
@@ -174,7 +175,6 @@ void ShrinkBisimulation::shrink_before_merge(
 
 int ShrinkBisimulation::initialize_groups(const Abstraction &abs,
                                           vector<int> &state_to_group) {
-
     /* Group 0 holds all goal states.
 
        Each other group holds all states with one particular h value.
@@ -439,15 +439,10 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
         threshold = opts.get<int>("max_states");
         opts.set("threshold", threshold);
     }
-    if (threshold < 1) {
-        cerr << "error: bisimulation threshold must be at least 1" << endl;
-        exit(2);
-    }
-    if (threshold > opts.get<int>("max_states")) {
-        cerr << "error: bisimulation threshold must not be larger than "
-             << "size limit" << endl;
-        exit(2);
-    }
+    if (threshold < 1)
+        parser.error("bisimulation threshold must be at least 1");
+    if (threshold > opts.get<int>("max_states"))
+        parser.error("bisimulation threshold must not be larger than size limit");
 
     if (!parser.dry_run())
         return new ShrinkBisimulation(opts);

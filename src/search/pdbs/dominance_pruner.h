@@ -21,7 +21,7 @@ private:
 
     void replace_pdb(PDBHeuristic *old_pdb, PDBHeuristic *new_pdb);
     bool clique_dominates(const std::vector<PDBHeuristic *> &c1,
-                         const std::vector<PDBHeuristic *> &c2);
+                          const std::vector<PDBHeuristic *> &c2);
 
 public:
     DominancePruner(std::vector<PDBHeuristic *> &pattern_databases_,

@@ -19,7 +19,6 @@ OS=auto
 HEADERS = \
           axioms.h \
           causal_graph.h \
-          closed_list.h \
           combining_evaluator.h \
           domain_transition_graph.h \
           eager_search.h \
@@ -31,6 +30,7 @@ HEADERS = \
           ipc_max_heuristic.h \
           iterated_search.h \
           lazy_search.h \
+          legacy_causal_graph.h \
           max_evaluator.h \
           operator.h \
           operator_cost.h \
@@ -130,10 +130,16 @@ ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
 
 ifeq ($(OS), auto)
 UNAME := $(shell uname)
+UNAME_O := $(shell uname -o)
 ifeq ($(UNAME), Darwin)
 OS=osx
 endif
 ifeq ($(UNAME), Linux)
+OS=linux
+endif
+ifeq ($(UNAME_O), Cygwin)
+## For now, we treat Linux and Cygwin equally in this Makefile, so we
+## just call Cygwin "linux".
 OS=linux
 endif
 ifeq ($(OS), auto)
@@ -225,13 +231,13 @@ endif
 
 ifeq ($(OS), linux)
 ifeq ($(LINK_RELEASE_STATICALLY), 0)
-LINKOPT_RELEASE += -lrt
+POSTLINKOPT_RELEASE += -lrt
 else
 POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
 endif
-LINKOPT_DEBUG  += -lrt
-LINKOPT_PROFILE += -lrt
-# LINKOPT_PROFILE += -lc_p
+POSTLINKOPT_DEBUG  += -lrt
+POSTLINKOPT_PROFILE += -lrt
+# POSTLINKOPT_PROFILE += -lc_p
 endif
 
 
@@ -343,7 +349,7 @@ clean:
 distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
 
-## Note: If we just call gcc -MM on a source file that lives within a
+## NOTE: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
 ## the for loop with the sed call.
 

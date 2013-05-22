@@ -48,7 +48,6 @@ using namespace std;
  */
 
 namespace cea_heuristic {
-
 struct LocalTransition {
     LocalProblemNode *source;
     LocalProblemNode *target;
@@ -121,7 +120,7 @@ public:
 
 LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
     int var_no, int value) {
-    LocalProblem *&table_entry = local_problem_index[var_no][value];
+    LocalProblem * &table_entry = local_problem_index[var_no][value];
     if (!table_entry) {
         table_entry = build_problem_for_variable(var_no);
         local_problems.push_back(table_entry);
@@ -463,5 +462,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("cea", _parse);
-
 }

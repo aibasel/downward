@@ -9,6 +9,7 @@ from copy import deepcopy
 import axiom_rules
 import fact_groups
 import instantiate
+import normalize
 import optparse
 import pddl
 import sas_tasks
@@ -30,6 +31,7 @@ import tools
 ALLOW_CONFLICTING_EFFECTS = True
 USE_PARTIAL_ENCODING = True
 DETECT_UNREACHABLE = True
+DUMP_TASK = False
 
 ## Setting the following variable to True can cause a severe
 ## performance penalty due to weaker relevance analysis (see issue7).
@@ -376,6 +378,31 @@ def translate_strips_axioms(axioms, strips_to_sas, ranges, mutex_dict, mutex_ran
         result.extend(sas_axioms)
     return result
 
+def dump_task(init, goals, actions, axioms, axiom_layer_dict):
+    old_stdout = sys.stdout
+    with open("output.dump", "w") as dump_file:
+        sys.stdout = dump_file
+        print("Initial state")
+        for atom in init:
+            print(atom)
+        print()
+        print("Goals")
+        for goal in goals:
+            print(goal)
+        for action in actions:
+            print()
+            print("Action")
+            action.dump()
+        for axiom in axioms:
+            print()
+            print("Axiom")
+            axiom.dump()
+        print()
+        print("Axiom layers")
+        for atom, layer in axiom_layer_dict.items():
+            print("%s: layer %d" % (atom, layer))
+    sys.stdout = old_stdout
+
 def translate_task(strips_to_sas, ranges, translation_key,
                    mutex_dict, mutex_ranges, mutex_key,
                    init, goals,
@@ -387,6 +414,11 @@ def translate_task(strips_to_sas, ranges, translation_key,
     #axioms.sort(key=lambda axiom: axiom.name)
     #for axiom in axioms:
     #  axiom.dump()
+
+    if DUMP_TASK:
+        # Remove init facts that don't occur in strips_to_sas: they are constant.
+        nonconstant_init = filter(strips_to_sas.get, init)
+        dump_task(nonconstant_init, goals, actions, axioms, axiom_layer_dict)
 
     init_values = [rang - 1 for rang in ranges]
     # Closed World Assumption: Initialize to "range - 1" == Nothing.
@@ -589,8 +621,12 @@ def check_python_version(force_old_python):
 
 def parse_options():
     optparser = optparse.OptionParser(usage="Usage: %prog [options] [<domain.pddl>] <task.pddl>")
-    optparser.add_option("--force-old-python", action="store_true",
-                         help="Allow running the translator with slow Python 2.6")
+    optparser.add_option(
+        "--relaxed", dest="generate_relaxed_task", action="store_true",
+        help="Output relaxed task (no delete effects)")
+    optparser.add_option(
+        "--force-old-python", action="store_true",
+        help="Allow running the translator with slow Python 2.6")
     options, args = optparser.parse_args()
     # Remove the parsed options from sys.argv
     sys.argv = [sys.argv[0]] + args
@@ -606,9 +642,15 @@ def main():
     with timers.timing("Parsing"):
         task = pddl.open()
 
-    # EXPERIMENTAL!
-    # import psyco
-    # psyco.full()
+    with timers.timing("Normalizing task"):
+        normalize.normalize(task)
+
+    if options.generate_relaxed_task:
+        # Remove delete effects.
+        for action in task.actions:
+            for index, effect in reversed(list(enumerate(action.effects))):
+                if effect.literal.negated:
+                    del action.effects[index]
 
     sas_task = pddl_to_sas(task)
     dump_statistics(sas_task)

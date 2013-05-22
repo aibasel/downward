@@ -17,8 +17,7 @@ enum MergeStrategy {
     MERGE_LINEAR_RANDOM,
     MERGE_DFP,
     MERGE_LINEAR_LEVEL,
-    MERGE_LINEAR_REVERSE_LEVEL,
-    MAX_MERGE_STRATEGY
+    MERGE_LINEAR_REVERSE_LEVEL
 };
 
 class MergeAndShrinkHeuristic : public Heuristic {

@@ -15,7 +15,7 @@ SearchEngine::SearchEngine(const Options &opts)
     solved = false;
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
-        exit(2);
+        exit_with(EXIT_INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
 }

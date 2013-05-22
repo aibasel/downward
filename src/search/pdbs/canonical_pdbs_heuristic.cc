@@ -118,9 +118,9 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
     }
 
     cout << "Pruned " << num_cliques - max_cliques.size() <<
-            " of " << num_cliques << " cliques" << endl;
+    " of " << num_cliques << " cliques" << endl;
     cout << "Pruned " << num_patterns - pattern_databases.size() <<
-            " of " << num_patterns << " PDBs" << endl;
+    " of " << num_patterns << " PDBs" << endl;
 
     cout << "Dominance pruning took " << timer << endl;
 }
