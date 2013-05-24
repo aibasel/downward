@@ -110,6 +110,7 @@ void Abstraction::build() {
     // last iteration, so we must update the h-values.
     update_h_values();
     log_h_values();
+    cout << "Single abstraction init-h: " << init->get_h() << endl;
 }
 
 void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
