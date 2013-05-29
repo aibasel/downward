@@ -9,6 +9,7 @@
 #include "../globals.h"
 #include "../operator.h"
 #include "../state.h"
+#include "../utilities.h"
 
 using namespace std;
 
@@ -219,7 +220,7 @@ void write_causal_graph(const CausalGraph &causal_graph) {
     ofstream dotfile("causal-graph.dot");
     if (!dotfile.is_open()) {
         cout << "dot file for causal graph could not be opened" << endl;
-        exit(1);
+        exit(EXIT_CRITICAL_ERROR);
     }
     dotfile << "digraph cg {" << endl;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
