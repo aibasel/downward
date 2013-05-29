@@ -36,8 +36,8 @@ void check_magic(std::istream &in, std::string magic);
 
 bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
 
-// If g_memory_padding is still present, delete it otherwise halt.
-void no_memory();
+extern void no_memory();
+
 void reset_original_goals_and_costs();
 
 
@@ -77,6 +77,5 @@ extern std::vector<int> g_causal_graph_ordering_pos;
 
 // Reserve some space that can be released when no memory is left.
 extern int g_memory_padding_mb;
-extern char *g_memory_padding;
 
 #endif

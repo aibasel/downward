@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <new>
 #include <queue>
 #include <sstream>
 #include <unordered_set>
@@ -27,6 +28,17 @@ using namespace std;
 
 namespace cegar_heuristic {
 typedef btree::btree_map<AbstractState *, Splits> StatesToSplits;
+
+static char *cegar_memory_padding = 0;
+
+void no_memory_continue () {
+    assert(cegar_memory_padding);
+    delete[] cegar_memory_padding;
+    cegar_memory_padding = 0;
+    cout << "Failed to allocate memory for CEGAR abstraction. "
+         << "Released memory padding and will stop refinement now." << endl;
+    set_new_handler(no_memory);
+}
 
 Abstraction::Abstraction()
     : single(new AbstractState()),
@@ -51,9 +63,10 @@ Abstraction::Abstraction()
       memory_released(false) {
     assert(!g_goal.empty());
 
-    assert(!g_memory_padding);
+    assert(!cegar_memory_padding);
     cout << "Reserving " << g_memory_padding_mb << " MB of memory padding." << endl;
-    g_memory_padding = new char [g_memory_padding_mb * 1024 * 1024];
+    cegar_memory_padding = new char[g_memory_padding_mb * 1024 * 1024];
+    set_new_handler(no_memory_continue);
 
     split_tree.set_root(single);
     for (int i = 0; i < g_operators.size(); ++i) {
@@ -315,7 +328,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     unseen.push(make_pair(abs_state, conc_state));
 
     // Only search flaws until we hit the memory limit.
-    while (!unseen.empty() && g_memory_padding) {
+    while (!unseen.empty() && cegar_memory_padding) {
         abs_state = unseen.front().first;
         conc_state = unseen.front().second;
         unseen.pop();
@@ -653,7 +666,7 @@ int Abstraction::get_num_states_online() const {
 }
 
 bool Abstraction::may_keep_refining() const {
-    return g_memory_padding &&
+    return cegar_memory_padding &&
            (is_online() || get_num_states() < max_states_offline) &&
            (!is_online() || get_num_states_online() < max_states_online) &&
            (max_time == INF || is_online() || timer() < max_time);
@@ -664,9 +677,9 @@ void Abstraction::release_memory() {
     assert(!memory_released);
     delete open;
     open = 0;
-    if (g_memory_padding) {
-        delete[] g_memory_padding;
-        g_memory_padding = 0;
+    if (cegar_memory_padding) {
+        delete[] cegar_memory_padding;
+        cegar_memory_padding = 0;
     }
     AbstractStates::iterator it;
     for (it = states.begin(); it != states.end(); ++it) {

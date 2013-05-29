@@ -137,10 +137,16 @@ ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
 
 ifeq ($(OS), auto)
 UNAME := $(shell uname)
+UNAME_O := $(shell uname -o)
 ifeq ($(UNAME), Darwin)
 OS=osx
 endif
 ifeq ($(UNAME), Linux)
+OS=linux
+endif
+ifeq ($(UNAME_O), Cygwin)
+## For now, we treat Linux and Cygwin equally in this Makefile, so we
+## just call Cygwin "linux".
 OS=linux
 endif
 ifeq ($(OS), auto)
