@@ -17,7 +17,6 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
-#include <new>
 #include <set>
 #include <string>
 #include <vector>
@@ -29,6 +28,8 @@ using namespace __gnu_cxx;
 
 
 static const int PRE_FILE_VERSION = 3;
+// We need at least 8KB for a clean exit.
+static char *memory_padding = new char[10240];
 
 
 // TODO: This needs a proper type and should be moved to a separate
@@ -104,7 +105,7 @@ void check_magic(istream &in, string magic) {
                  << "on a preprocessor file from " << endl
                  << "an older version." << endl;
         }
-        exit(1);
+        exit_with(EXIT_INPUT_ERROR);
     }
 }
 
@@ -117,7 +118,7 @@ void read_and_verify_version(istream &in) {
         cerr << "Expected preprocessor file version " << PRE_FILE_VERSION
              << ", got " << version << "." << endl;
         cerr << "Exiting." << endl;
-        exit(1);
+        exit_with(EXIT_INPUT_ERROR);
     }
 }
 
@@ -145,7 +146,7 @@ void read_variables(istream &in) {
             cerr << "This should not have happened!" << endl;
             cerr << "Are you using the downward script, or are you using "
                  << "downward-1 directly?" << endl;
-            exit(1);
+            exit_with(EXIT_INPUT_ERROR);
         }
 
         in >> ws;
@@ -280,8 +281,6 @@ void read_everything(istream &in) {
     g_original_goal = g_goal;
 
     g_cegar_abstraction = 0;
-    g_memory_padding = 0;
-    set_new_handler(no_memory);
     cout << "Peak memory before building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
 }
@@ -312,7 +311,7 @@ void verify_no_axioms_no_cond_effects() {
     if (!g_axioms.empty()) {
         cerr << "Heuristic does not support axioms!" << endl << "Terminating."
              << endl;
-        exit(1);
+        exit_with(EXIT_UNSUPPORTED);
     }
 
     for (int i = 0; i < g_operators.size(); i++) {
@@ -334,7 +333,7 @@ void verify_no_axioms_no_cond_effects() {
             cerr << "Heuristic does not support conditional effects "
                  << "(operator " << g_operators[i].get_name() << ")" << endl
                  << "Terminating." << endl;
-            exit(1);
+            exit_with(EXIT_UNSUPPORTED);
         }
     }
 }
@@ -346,15 +345,11 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
 }
 
 void no_memory () {
-    cout << "Failed to allocate memory!" << endl;
-    if (g_memory_padding) {
-        cout << "Releasing memory buffer" << endl;
-        delete[] g_memory_padding;
-        g_memory_padding = 0;
-    } else {
-        cout << "Memory buffer already released --> Exiting" << endl;
-        throw bad_alloc();
-    }
+    assert(memory_padding);
+    delete[] memory_padding;
+    memory_padding = 0;
+    cout << "Failed to allocate memory. Released memory buffer." << endl;
+    exit_with(EXIT_OUT_OF_MEMORY);
 }
 
 void reset_original_goals_and_costs() {
@@ -395,4 +390,3 @@ std::vector<int> g_causal_graph_ordering;
 std::vector<int> g_causal_graph_ordering_pos;
 
 int g_memory_padding_mb = 0;
-char *g_memory_padding;

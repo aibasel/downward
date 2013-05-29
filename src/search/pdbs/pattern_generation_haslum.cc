@@ -30,8 +30,6 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       min_improvement(opts.get<int>("min_improvement")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))) {
     Timer timer;
-    // Reserve some memory to be released when we run out of memory.
-    g_memory_padding = new char [opts.get<int>("memory_padding") * 1024 * 1024];
     initialize();
     cout << "Final PDB size: " << current_heuristic->get_size() << endl;
     cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
@@ -99,7 +97,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
     // (We multiply by 2 because the heuristic is underestimating.)
 
     samples.reserve(num_samples);
-    for (int i = 0; i < num_samples && g_memory_padding; ++i) {
+    for (int i = 0; i < num_samples; ++i) {
         // calculate length of random walk accoring to a binomial distribution
         int length = 0;
         for (int j = 0; j < n; ++j) {
@@ -170,7 +168,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     size_t max_pdb_size = 0;
     num_rejected = 0;
     num_removed = 0;
-    while (g_memory_padding) {
+    while (true) {
         num_iterations += 1;
         cout << "current collection size is " << current_heuristic->get_size() << endl;
         current_heuristic->evaluate(*g_initial_state);
@@ -205,7 +203,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         int best_pdb_index = 0;
 
         // Iterate over all candidates and search for the best improving pattern/pdb
-        for (size_t i = 0; i < candidate_pdbs.size() && g_memory_padding; ++i) {
+        for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
             PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
             if (pdb_heuristic == 0) { // candidate pattern is too large
                 continue;
@@ -327,7 +325,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("num_samples", 1000, "number of samples");
     parser.add_option<int>("min_improvement", 10,
                            "minimum improvement while hill climbing");
-    parser.add_option<int>("memory_padding", 0, "memory padding in MB");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
@@ -340,8 +337,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         parser.error("minimum improvement must be at least 1");
     if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
         parser.error("minimum improvement must not be higher than number of samples");
-    if (opts.get<int>("memory_padding") < 0)
-        parser.error("memory padding cannot be negative");
 
     if (parser.dry_run())
         return 0;

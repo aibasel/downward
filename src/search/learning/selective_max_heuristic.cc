@@ -1,5 +1,4 @@
 #include "selective_max_heuristic.h"
-#include "../successor_generator.h"
 #include "maximum_heuristic.h"
 #include "naive_bayes_classifier.h"
 #include "state_vars_feature_extractor.h"
@@ -7,8 +6,11 @@
 #include "AODE.h"
 #include "probe_state_space_sample.h"
 #include "PDB_state_space_sample.h"
+
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../rng.h"
+#include "../successor_generator.h"
 
 #include <cassert>
 #include <limits>
@@ -122,8 +124,7 @@ void SelectiveMaxHeuristic::initialize() {
             classifiers[i] = new AODEClassifier();
             break;
         default:
-            cerr << "Unknown classifier type" << endl;
-            exit(353);
+            ABORT("Unknown classifier type.");
         }
         classifiers[i]->set_feature_extractor(feature_extractor);
         classifiers[i]->buildClassifier(num_classes);
@@ -199,8 +200,7 @@ void SelectiveMaxHeuristic::train() {
             sample->add_heuristic(heuristics[i]);
         break;
     default:
-        cerr << "Unknown state space sample" << endl;
-        exit(931);
+        ABORT("Unknown state space sample type");
     }
 
     sample->collect();
@@ -334,7 +334,7 @@ int SelectiveMaxHeuristic::compute_heuristic(const State &state) {
     }
 
     if (random_selection) {
-        int h = num_always_calc + (rand() % (num_heuristics - num_always_calc));
+        int h = num_always_calc + g_rng(num_heuristics - num_always_calc);
         eval_heuristic(state, h, true);
         return calc_max();
     }
