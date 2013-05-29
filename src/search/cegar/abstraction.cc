@@ -104,7 +104,7 @@ void Abstraction::build() {
         update_h_values();
         if (init->get_h() == INF) {
             cout << "Abstract problem is unsolvable!" << endl;
-            exit(0);
+            exit(EXIT_UNSOLVABLE);
         }
         valid_conc_solution = check_and_break_solution(*g_initial_state, init);
         if (valid_conc_solution)
@@ -538,7 +538,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         }
     } else {
         cout << "Invalid pick strategy: " << pick << endl;
-        exit(2);
+        exit(EXIT_INPUT_ERROR);
     }
     assert(cond >= 0);
     return cond;
@@ -602,7 +602,7 @@ void Abstraction::write_dot_file(int num) {
     ofstream dotfile(filename.c_str());
     if (!dotfile.is_open()) {
         cout << "File " << filename << " could not be opened" << endl;
-        exit(1);
+        exit(EXIT_CRITICAL_ERROR);
     }
     dotfile << "digraph abstract {" << endl;
     AbstractStates::iterator it;
