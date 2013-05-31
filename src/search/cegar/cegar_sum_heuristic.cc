@@ -63,7 +63,7 @@ void CegarSumHeuristic::initialize() {
             reverse(goal.begin(), goal.end());
     } else {
         cerr << "Not a valid goal ordering strategy: " << goal_order << endl;
-        exit(EXIT_INPUT_ERROR);
+        exit_with(EXIT_INPUT_ERROR);
     }
     assert(goal.size() == g_original_goal.size());
 
@@ -112,7 +112,7 @@ void CegarSumHeuristic::initialize() {
     reset_original_goals_and_costs();
 
     if (!search)
-        exit(EXIT_UNSOLVED_INCOMPLETE);
+        exit_with(EXIT_UNSOLVED_INCOMPLETE);
 }
 
 void CegarSumHeuristic::print_statistics() {

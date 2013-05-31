@@ -57,7 +57,7 @@ void CegarHeuristic::initialize() {
         abstraction->release_memory();
 
     if (!search)
-        exit(EXIT_UNSOLVED_INCOMPLETE);
+        exit_with(EXIT_UNSOLVED_INCOMPLETE);
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
