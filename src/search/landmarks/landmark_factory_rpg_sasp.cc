@@ -302,6 +302,12 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
      from each of the operators, which we additionally restrict so that each fact
      in the set stems from the same PDDL predicate. */
 
+    std::cout << "---" << std::endl;
+    std::cout << "DISJUNCTIVE LANDMARKS FOR ";
+    std::cout << g_fact_names[bp->vars[0]][bp->vals[0]] << std::endl;
+
+
+
     vector<int> ops;
     for (int i = 0; i < bp->vars.size(); i++) {
         pair<int, int> b = make_pair(bp->vars[i], bp->vals[i]);
@@ -312,6 +318,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
     int no_ops = 0;
     hash_map<int, vector<pair<int, int> > > preconditions; // maps from
     // pddl_proposition_indeces to props
+    hash_map<int, set<int> > used_operators; //tells for each proposition which operators use it
     for (unsigned i = 0; i < ops.size(); i++) {
         const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
         if (_possibly_reaches_lm(op, lvl_var, bp)) {
@@ -320,6 +327,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
             get_greedy_preconditions_for_lm(bp, op, next_pre);
             for (hash_map<int, int>::iterator it = next_pre.begin(); it
                  != next_pre.end(); it++) {
+                //std::cout << g_fact_names[it->first][it->second] << std::endl;
                 int disj_class = disjunction_classes[it->first][it->second];
                 if (disj_class == -1) {
                     // This fact may not participate in any disjunctive LMs
@@ -329,18 +337,22 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
 
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
-                if (!lm_graph->simple_landmark_exists(*it))
-                    preconditions[disj_class].push_back(*it);
+                if (!lm_graph->simple_landmark_exists(*it)) {
+                    preconditions[disj_class].push_back(*it)    ;
+                    used_operators[disj_class].insert(i);
+                }
             }
         }
+        //std::cout << "---" << std::endl;
     }
     for (hash_map<int, vector<pair<int, int> > >::iterator it =
              preconditions.begin(); it != preconditions.end(); ++it) {
-        if (it->second.size() == no_ops) {
+        if (used_operators[it->first].size() == no_ops) {
             set<pair<int, int> > pre_set; // the set gets rid of duplicate predicates
             pre_set.insert(it->second.begin(), it->second.end());
-            if (pre_set.size() > 1) // otherwise this LM is not actually a disjunctive LM
+            if (pre_set.size() > 1) { // otherwise this LM is not actually a disjunctive LM
                 disjunctive_pre.push_back(pre_set);
+            }
         }
     }
 }
