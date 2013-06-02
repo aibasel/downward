@@ -302,12 +302,6 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
      from each of the operators, which we additionally restrict so that each fact
      in the set stems from the same PDDL predicate. */
 
-    std::cout << "---" << std::endl;
-    std::cout << "DISJUNCTIVE LANDMARKS FOR ";
-    std::cout << g_fact_names[bp->vars[0]][bp->vals[0]] << std::endl;
-
-
-
     vector<int> ops;
     for (int i = 0; i < bp->vars.size(); i++) {
         pair<int, int> b = make_pair(bp->vars[i], bp->vals[i]);
