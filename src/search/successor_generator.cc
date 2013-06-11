@@ -45,7 +45,7 @@ void SuccessorGeneratorSwitch::generate_applicable_ops(
     default_generator->generate_applicable_ops(curr, ops);
 }
 
-void SuccessorGeneratorSwitch::_dump(string indent) {
+void SuccessorGeneratorSwitch::_dump(string string string indent) {
     cout << indent << "switch on " << g_variable_name[switch_var] << endl;
     cout << indent << "immediately:" << endl;
     immediate_ops->_dump(indent + "  ");
