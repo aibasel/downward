@@ -65,12 +65,16 @@ void EnforcedHillClimbingSearch::initialize() {
 
     SearchNode node = search_space.get_node(current_state);
     evaluate(node.get_state(), NULL, node.get_state());
-    search_progress.get_initial_h_values();
-
     if (heuristic->is_dead_end()) {
         cout << "Initial state is a dead end, no solution" << endl;
-        return;
+        if (heuristic->dead_ends_are_reliable())
+            exit(EXIT_UNSOLVABLE);
+        else
+            exit(EXIT_UNSOLVED_INCOMPLETE);
     }
+
+    search_progress.get_initial_h_values();
+
     current_h = heuristic->get_heuristic();
     node.open_initial(current_h);
 
