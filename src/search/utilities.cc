@@ -17,10 +17,17 @@ static void exit_handler();
 // nothing
 #endif
 
+static char *memory_padding = new char[1024];
 
+static void out_of_memory_handler();
 static void signal_handler(int signal_number);
 
+
 void register_event_handlers() {
+    // When running out of memory, release some emergency memory and
+    // terminate.
+    set_new_handler(out_of_memory_handler);
+
     // On exit or when receiving certain signals such as SIGINT (Ctrl-C),
     // print the peak memory usage.
 #if OPERATING_SYSTEM == LINUX
@@ -77,6 +84,14 @@ void exit_with(ExitCode exitcode) {
             ABORT("Unkown exitcode.");
     }
     exit(exitcode);
+}
+
+static void out_of_memory_handler() {
+    assert(memory_padding);
+    delete[] memory_padding;
+    memory_padding = 0;
+    cout << "Failed to allocate memory. Released memory buffer." << endl;
+    exit_with(EXIT_OUT_OF_MEMORY);
 }
 
 void signal_handler(int signal_number) {
