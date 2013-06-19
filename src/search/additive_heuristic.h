@@ -53,6 +53,10 @@ protected:
 public:
     AdditiveHeuristic(const Options &options);
     ~AdditiveHeuristic();
+
+    int get_cost(int var, int value) {
+        return propositions[var][value].cost;
+    }
 };
 
 #endif

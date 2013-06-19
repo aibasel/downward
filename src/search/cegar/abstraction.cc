@@ -2,6 +2,7 @@
 
 #include "abstract_state.h"
 #include "utils.h"
+#include "../additive_heuristic.h"
 #include "../globals.h"
 #include "../operator.h"
 #include "../rng.h"
@@ -48,6 +49,7 @@ Abstraction::Abstraction()
       pick(RANDOM),
       rng(2012),
       needed_operator_costs(),
+      hadd(0),
       num_states(1),
       deviations(0),
       unmet_preconditions(0),
@@ -543,6 +545,27 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         } else {
             cond = max_element(new_ops.begin(), new_ops.end()) - new_ops.begin();
         }
+    } else if (pick == MIN_HADD || pick == MAX_HADD) {
+        assert(hadd);
+        int min_hadd = INF;
+        int max_hadd = -1;
+        for (int i = 0; i < splits.size(); ++i) {
+            int var = splits[i].first;
+            const vector<int> &values = splits[i].second;
+            for (int j = 0; j < values.size(); ++j) {
+                int value = values[j];
+                int hadd_value = hadd->get_cost(var, value);
+                assert(hadd_value != -1);
+                if (pick == MIN_HADD && hadd_value < min_hadd) {
+                    cond = i;
+                    min_hadd = hadd_value;
+                }
+                if (pick == MAX_HADD && hadd_value > max_hadd) {
+                    cond = i;
+                    max_hadd = hadd_value;
+                }
+            }
+        }
     } else {
         cout << "Invalid pick strategy: " << pick << endl;
         exit_with(EXIT_INPUT_ERROR);
@@ -679,6 +702,21 @@ bool Abstraction::may_keep_refining() const {
            (max_time == INF || is_online() || timer() < max_time);
 }
 
+void Abstraction::set_hadd(AdditiveHeuristic *h) {
+    hadd = h;
+    hadd->evaluate(*g_initial_state);
+    if (DEBUG) {
+        cout << "h^add values for all facts:" << endl;
+        for (int var = 0; var < g_variable_domain.size(); ++var) {
+            for (int value = 0; value < g_variable_domain[var]; ++value) {
+                cout << "  " << var << "=" << value << " " << g_fact_names[var][value]
+                     << " cost:" << hadd->get_cost(var, value) << endl;
+            }
+        }
+        cout << endl;
+    }
+}
+
 void Abstraction::release_memory() {
     cout << "Release memory" << endl;
     assert(!memory_released);
@@ -694,6 +732,8 @@ void Abstraction::release_memory() {
         delete state;
     }
     AbstractStates().swap(states);
+    delete hadd;
+    hadd = 0;
     memory_released = true;
 }
 

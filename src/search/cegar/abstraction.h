@@ -15,6 +15,8 @@
 #include <utility>
 #include <vector>
 
+class AdditiveHeuristic;
+
 namespace cegar_heuristic {
 class AbstractState;
 
@@ -43,7 +45,10 @@ enum PickStrategy {
     BEST2,
     // Choose the variable whose split yields the min/max number of new operators.
     MIN_OPS,
-    MAX_OPS
+    MAX_OPS,
+    // Compare the h^add values of the facts.
+    MIN_HADD,
+    MAX_HADD
 };
 
 class Abstraction {
@@ -71,6 +76,8 @@ private:
 
     // Members for additive abstractions.
     mutable vector<int> needed_operator_costs;
+
+    AdditiveHeuristic *hadd;
 
     // Statistics.
     mutable int num_states;
@@ -163,6 +170,7 @@ public:
     void set_max_time(int time) {max_time = time; }
     void set_log_h(bool log) {log_h = log; }
     void set_pick_strategy(PickStrategy strategy) {pick = strategy; }
+    void set_hadd(AdditiveHeuristic *h);
 
     // Testing.
     void write_dot_file(int num);

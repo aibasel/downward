@@ -63,7 +63,7 @@ HEADERS = \
 ## rebuild after such a change. Deleting the executable and running
 ## "make" to relink is enough; no need to do a complete rebuild.
 
-#HEADERS += additive_heuristic.h
+HEADERS += additive_heuristic.h
 #HEADERS += blind_search_heuristic.h
 #HEADERS += cea_heuristic.h
 #HEADERS += cg_heuristic.h cg_cache.h
