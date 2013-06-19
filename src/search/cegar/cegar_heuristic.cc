@@ -2,6 +2,7 @@
 
 #include "abstraction.h"
 #include "abstract_state.h"
+#include "../additive_heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state.h"
@@ -51,6 +52,9 @@ void CegarHeuristic::initialize() {
     abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
     abstraction->set_log_h(options.get<bool>("log_h"));
 
+    AdditiveHeuristic *hadd = new AdditiveHeuristic(options);
+    abstraction->set_hadd(hadd);
+
     abstraction->build();
     abstraction->print_statistics();
     if (max_states_online <= 0)
@@ -87,6 +91,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("BEST2");
     pick_strategies.push_back("MIN_OPS");
     pick_strategies.push_back("MAX_OPS");
+    pick_strategies.push_back("MIN_HADD");
+    pick_strategies.push_back("MAX_HADD");
     parser.add_enum_option("pick", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied condition");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
