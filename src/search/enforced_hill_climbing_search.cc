@@ -4,6 +4,7 @@
 #include "operator.h"
 #include "pref_evaluator.h"
 #include "plugin.h"
+#include "utilities.h"
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     const Options &opts)
