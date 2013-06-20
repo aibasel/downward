@@ -4,17 +4,23 @@
 #include <fstream>
 #include <set>
 #include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "../globals.h"
 #include "../operator.h"
+#include "../option_parser.h"
 #include "../state.h"
 #include "../utilities.h"
+#include "../landmarks/landmark_factory_rpg_sasp.h"
+#include "../landmarks/landmark_graph.h"
 
 using namespace std;
 
 namespace cegar_heuristic {
 bool DEBUG = false;
+typedef unordered_map<int, unordered_set<int> > Edges;
 
 Operator create_op(const string desc) {
     istringstream iss("begin_operator\n" + desc + "\nend_operator");
@@ -123,19 +129,92 @@ bool cheaper(Operator *op1, Operator* op2) {
     return op1->get_cost() < op2->get_cost();
 }
 
-void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
+void partial_ordering(Edges &predecessors, Edges &successors, vector<int> *order) {
     assert(order->empty());
-    bool debug = false;
-    // Set of variables that still have to be ordered.
-    set<int> vars;
-    set<int>::iterator it;
-    for (int i = 0; i < g_variable_domain.size(); ++i) {
-        vars.insert(vars.end(), i);
+    bool debug = true;
+    // Set of nodes that still have to be ordered.
+    set<int> nodes;
+    for (auto it = predecessors.begin(); it != predecessors.end(); ++it) {
+        nodes.insert(it->first);
     }
+    for (auto it = successors.begin(); it != successors.end(); ++it) {
+        nodes.insert(it->first);
+    }
+    const int num_nodes = nodes.size();
+    vector<int> front;
+    vector<int> back;
+    while (!nodes.empty()) {
+        int front_in = INF;
+        int front_out = -1;
+        int front_node = -1;
+        int back_in = -1;
+        int back_out = INF;
+        int back_node = -1;
+        for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+            unordered_set<int> &pre = predecessors[*it];
+            unordered_set<int> &succ = successors[*it];
+            if (debug) {
+                cout << "pre(" << *it << "): ";
+                for (auto p = pre.begin(); p != pre.end(); ++p)
+                    cout << *p << " ";
+                cout << "(" << succ.size() << " succ)" << endl;
+            }
+            // A node is a better front_node if it has fewer incoming or more
+            // outgoing edges.
+            if ((pre.size() < front_in) || ((pre.size() == front_in) && (succ.size() > front_out))) {
+                front_node = *it;
+                front_in = pre.size();
+                front_out = succ.size();
+            }
+            // A node is a better back_node if it has fewer outgoing edges or
+            // more incoming edges.
+            if ((succ.size() < back_out) || ((succ.size() == back_out) && (pre.size() > back_in))) {
+                back_node = *it;
+                back_in = pre.size();
+                back_out = succ.size();
+            }
+        }
+        assert(front_node >= 0);
+        assert(back_node >= 0);
+        int node = -1;
+        if ((front_in < back_out) || ((front_in == back_out) && (front_out >= back_in))) {
+            // When many edges leave the front node, it should probably be put in front.
+            node = front_node;
+            front.push_back(node);
+            if (debug)
+                cout << "Put in front: " << node << endl << endl;
+        } else {
+            node = back_node;
+            back.push_back(node);
+            if (debug)
+                cout << "Put in back: " << node << endl << endl;
+        }
+        nodes.erase(node);
+        // For all unsorted nodes, delete node from their predecessor and
+        // successor lists.
+        for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+            unordered_set<int> &pre = predecessors[*it];
+            unordered_set<int>::iterator pos = find(pre.begin(), pre.end(), node);
+            if (pos != pre.end())
+                pre.erase(pos);
+            unordered_set<int> &succ = successors[*it];
+            pos = find(succ.begin(), succ.end(), node);
+            if (pos != succ.end())
+                succ.erase(pos);
+        }
+    }
+    reverse(back.begin(), back.end());
+    order->insert(order->begin(), front.begin(), front.end());
+    order->insert(order->end(), back.begin(), back.end());
+    if (order->size() != num_nodes)
+        ABORT("Not all nodes have been ordered.");
+}
+
+void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
     // For each variable, maintain sets of predecessor and successor variables
     // that haven't been ordered yet.
-    vector<set<int> > predecessors(g_variable_domain.size());
-    vector<set<int> > successors(g_variable_domain.size());
+    Edges predecessors(g_variable_domain.size());
+    Edges successors(g_variable_domain.size());
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         const vector<int> &pre = causal_graph.get_predecessors(var);
         for (int i = 0; i < pre.size(); ++i) {
@@ -146,74 +225,68 @@ void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
             successors[var].insert(succ[i]);
         }
     }
-    vector<int> front;
-    vector<int> back;
-    while (!vars.empty()) {
-        int front_in = g_variable_domain.size() + 1;
-        int front_out = -1;
-        int front_var = -1;
-        int back_in = -1;
-        int back_out = g_variable_domain.size() + 1;
-        int back_var = -1;
-        for (it = vars.begin(); it != vars.end(); ++it) {
-            set<int> &pre = predecessors[*it];
-            set<int> &succ = successors[*it];
-            assert(pre.size() <= g_variable_domain.size());
-            assert(succ.size() <= g_variable_domain.size());
-            if (debug) {
-                cout << "pre(" << *it << "): ";
-                for (set<int>::iterator p = pre.begin(); p != pre.end(); ++p)
-                    cout << *p << " ";
-                cout << "(" << succ.size() << " succ)" << endl;
-            }
-            // A variable is a better front_var if it has fewer incoming or more
-            // outgoing edges.
-            if ((pre.size() < front_in) || ((pre.size() == front_in) && (succ.size() > front_out))) {
-                front_var = *it;
-                front_in = pre.size();
-                front_out = succ.size();
-            }
-            // A variable is a better back_var if it has fewer outgoing edges or
-            // more incoming edges.
-            if ((succ.size() < back_out) || ((succ.size() == back_out) && (pre.size() > back_in))) {
-                back_var = *it;
-                back_in = pre.size();
-                back_out = succ.size();
-            }
-        }
-        assert(front_var >= 0);
-        assert(back_var >= 0);
-        int var = -1;
-        if ((front_in < back_out) || ((front_in == back_out) && (front_out >= back_in))) {
-            // When many edges leave the front node, it should probably be put in front.
-            var = front_var;
-            front.push_back(var);
-            if (debug)
-                cout << "Put in front: " << var << endl << endl;
-        } else {
-            var = back_var;
-            back.push_back(var);
-            if (debug)
-                cout << "Put in back: " << var << endl << endl;
-        }
-        vars.erase(var);
-        // For all unsorted variables, delete var from their predecessor and
-        // successor lists.
-        for (it = vars.begin(); it != vars.end(); ++it) {
-            set<int> &pre = predecessors[*it];
-            set<int>::iterator pos = find(pre.begin(), pre.end(), var);
-            if (pos != pre.end())
-                pre.erase(pos);
-            set<int> &succ = successors[*it];
-            pos = find(succ.begin(), succ.end(), var);
-            if (pos != succ.end())
-                succ.erase(pos);
+    partial_ordering(predecessors, successors, order);
+}
+
+int get_fact_number(int var, int value) {
+    return g_fact_borders[var] + value;
+}
+
+int get_fact_number(const LandmarkNode *node) {
+    assert(node);
+    assert(node->vars.size() == 1);
+    int var = node->vars[0];
+    int value = node->vals[0];
+    return get_fact_number(var, value);
+}
+
+void get_fact_from_number(int fact_number, int &var, int &value) {
+    var = 0;
+    while (g_fact_borders[var] + g_variable_domain[var] <= fact_number)
+        ++var;
+    value = fact_number - g_fact_borders[var];
+    assert(get_fact_number(var, value) == fact_number);
+}
+
+void order_facts_in_landmark_graph(vector<int> *ordered_fact_numbers) {
+    Options opts = Options();
+    opts.set<int>("cost_type", 0);
+    opts.set<int>("memory_padding", 75);
+    opts.set<bool>("reasonable_orders", true);
+    opts.set<bool>("only_causal_landmarks", false);
+    opts.set<bool>("disjunctive_landmarks", false);
+    opts.set<bool>("conjunctive_landmarks", false);
+    opts.set<bool>("no_orders", false);
+    opts.set<int>("lm_cost_type", 0);
+    opts.set<Exploration *>("explor", new Exploration(opts));
+    LandmarkFactoryRpgSasp lm_graph_factory(opts);
+    LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
+    const set<LandmarkNode *> &nodes = graph->get_nodes();
+    set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
+    Edges predecessors;
+    Edges successors;
+
+    for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
+         != nodes2.end(); it++) {
+        LandmarkNode *node_p = *it;
+        for (auto parent_it = node_p->parents.begin(); parent_it
+             != node_p->parents.end(); ++parent_it) {
+            //const edge_type &edge = parent_it->second;
+            const LandmarkNode *parent_p = parent_it->first;
+            int node_number = get_fact_number(node_p);
+            int parent_number = get_fact_number(parent_p);
+            predecessors[node_number].insert(parent_number);
+            successors[parent_number].insert(node_number);
         }
     }
-    reverse(back.begin(), back.end());
-    order->insert(order->begin(), front.begin(), front.end());
-    order->insert(order->end(), back.begin(), back.end());
-    assert(order->size() == g_variable_domain.size());
+    partial_ordering(predecessors, successors, ordered_fact_numbers);
+    cout << "Ordering: " << to_string(*ordered_fact_numbers) << endl;
+    for (int i = 0; i < ordered_fact_numbers->size(); ++i) {
+        int var = -1;
+        int value = -1;
+        get_fact_from_number((*ordered_fact_numbers)[i], var, value);
+        cout << (*ordered_fact_numbers)[i] << " " << var << "=" << value << " " << g_fact_names[var][value] << endl;
+    }
 }
 
 void write_causal_graph(const CausalGraph &causal_graph) {
