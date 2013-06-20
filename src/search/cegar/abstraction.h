@@ -51,7 +51,9 @@ enum PickStrategy {
     MAX_HADD,
     // Compare position in the partially ordered landmark graph.
     MIN_LM,
-    MAX_LM
+    MAX_LM,
+    MIN_HADD_MIN_LM,
+    MAX_HADD_MAX_LM
 };
 
 class Abstraction {
