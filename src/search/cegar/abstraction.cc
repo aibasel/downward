@@ -555,29 +555,6 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         } else {
             cond = max_element(new_ops.begin(), new_ops.end()) - new_ops.begin();
         }
-    } else if (pick == MIN_HADD || pick == MAX_HADD) {
-        assert(hadd);
-        int min_hadd = INF;
-        int max_hadd = -1;
-        for (int i = 0; i < splits.size(); ++i) {
-            int var = splits[i].first;
-            const vector<int> &values = splits[i].second;
-            for (int j = 0; j < values.size(); ++j) {
-                int value = values[j];
-                int hadd_value = hadd->get_cost(var, value);
-                assert(hadd_value != -1);
-                if (pick == MIN_HADD && hadd_value < min_hadd) {
-                    cond = i;
-                    min_hadd = hadd_value;
-                }
-                if (pick == MAX_HADD && hadd_value > max_hadd) {
-                    cond = i;
-                    max_hadd = hadd_value;
-                }
-            }
-        }
-        if (cond == -1)
-            cond = random_cond;
     } else if (pick == MIN_LM || pick == MAX_LM) {
         int min = INF;
         int max = -1;
@@ -602,12 +579,75 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         }
         if (cond == -1)
             cond = random_cond;
+    } else if (pick == MIN_HADD || pick == MAX_HADD ||
+               pick == MIN_HADD_MIN_LM || pick == MAX_HADD_MAX_LM) {
+        assert(hadd);
+        bool pick_min_hadd = MIN_HADD || MIN_HADD_MIN_LM;
+        int min_hadd = INF;
+        int max_hadd = -1;
+        vector<int> incumbents;
+        for (int i = 0; i < splits.size(); ++i) {
+            int var = splits[i].first;
+            const vector<int> &values = splits[i].second;
+            for (int j = 0; j < values.size(); ++j) {
+                int value = values[j];
+                int hadd_value = hadd->get_cost(var, value);
+                assert(hadd_value != -1);
+                if (pick_min_hadd) {
+                    if (hadd_value < min_hadd) {
+                        incumbents.clear();
+                        min_hadd = hadd_value;
+                    }
+                    if (hadd_value <= min_hadd)
+                        incumbents.push_back(i);
+                }
+                else {
+                    if (hadd_value > max_hadd) {
+                        incumbents.clear();
+                        max_hadd = hadd_value;
+                    }
+                    if (hadd_value >= max_hadd)
+                        incumbents.push_back(i);
+                }
+            }
+        }
+        cout << "Incumbents: " << incumbents << endl;
+        assert(!incumbents.empty());
+        if (pick == MIN_HADD || pick == MAX_HADD)
+            return incumbents[0];
+
+        int min = INF;
+        int max = -1;
+        for (int i = 0; i < incumbents.size(); ++i) {
+            const Split &split = splits[incumbents[i]];
+            int var = split.first;
+            const vector<int> &values = split.second;
+            for (int j = 0; j < values.size(); ++j) {
+                int value = values[j];
+                int fact_number = get_fact_number(var, value);
+                int lm_pos = fact_positions_in_lm_graph_ordering[fact_number];
+                if (lm_pos == -1) {
+                    // If any incumbent is missing in the landmark ordering, we
+                    // don't use the ordering.
+                    cond = incumbents[0];
+                    break;
+                }
+                if (pick == MIN_HADD_MIN_LM && lm_pos < min) {
+                    cond = incumbents[i];
+                    min = lm_pos;
+                }
+                if (pick == MAX_HADD_MAX_LM && lm_pos > max) {
+                    cond = incumbents[i];
+                    max = lm_pos;
+                }
+            }
+        }
     } else {
         cout << "Invalid pick strategy: " << pick << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
     assert(cond >= 0);
-    cout << cond << endl;
+    assert(cond < splits.size());
     return cond;
 }
 
