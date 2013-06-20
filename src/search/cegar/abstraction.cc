@@ -582,7 +582,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     } else if (pick == MIN_HADD || pick == MAX_HADD ||
                pick == MIN_HADD_MIN_LM || pick == MAX_HADD_MAX_LM) {
         assert(hadd);
-        bool pick_min_hadd = MIN_HADD || MIN_HADD_MIN_LM;
+        bool pick_min_hadd = (pick == MIN_HADD) || (pick == MIN_HADD_MIN_LM);
         int min_hadd = INF;
         int max_hadd = -1;
         vector<int> incumbents;
