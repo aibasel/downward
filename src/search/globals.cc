@@ -265,6 +265,12 @@ void read_everything(istream &in) {
 
     g_is_unit_cost = (g_min_action_cost == 1 && g_max_action_cost == 1);
 
+    g_num_facts = 0;
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        g_fact_borders.push_back(g_num_facts);
+        g_num_facts += g_variable_domain[var];
+    }
+
     cegar_heuristic::partial_ordering(*g_causal_graph, &g_causal_graph_ordering);
     g_causal_graph_ordering_pos.resize(g_causal_graph_ordering.size(), cegar_heuristic::UNDEFINED);
     for (int i = 0; i < g_causal_graph_ordering.size(); ++i) {
@@ -388,5 +394,7 @@ std::vector<std::pair<int, int> > g_original_goal;
 std::vector<int> g_original_op_costs;
 std::vector<int> g_causal_graph_ordering;
 std::vector<int> g_causal_graph_ordering_pos;
+int g_num_facts = 0;
+std::vector<int> g_fact_borders;
 
 int g_memory_padding_mb = 0;

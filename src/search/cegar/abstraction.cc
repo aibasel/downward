@@ -70,6 +70,14 @@ Abstraction::Abstraction()
     cegar_memory_padding = new char[g_memory_padding_mb * 1024 * 1024];
     set_new_handler(no_memory_continue);
 
+    vector<int> ordering;
+    order_facts_in_landmark_graph(&ordering);
+    fact_positions_in_lm_graph_ordering.resize(g_num_facts, -1);
+    for (int i = 0; i < ordering.size(); ++i) {
+        int fact_number = ordering[i];
+        fact_positions_in_lm_graph_ordering[fact_number] = i;
+    }
+
     split_tree.set_root(single);
     for (int i = 0; i < g_operators.size(); ++i) {
         single->add_loop(&g_operators[i]);
@@ -235,18 +243,19 @@ void Abstraction::reset_distances_and_solution() const {
 
 bool Abstraction::breadth_first_search(queue<AbstractState *> &open_queue, bool forward) const {
     assert(g_is_unit_cost);
+    bool debug = false && DEBUG;
     while (!open_queue.empty()) {
         AbstractState *state = open_queue.front();
         open_queue.pop();
         const int g = state->get_distance();
-        if (DEBUG)
+        if (debug)
             cout << endl << "Expand: " << state->str() << " g:" << g << endl;
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (auto it = successors.begin(); it != successors.end(); ++it) {
             AbstractState *successor = it->second;
             const int succ_g = g + 1;
             if (succ_g < successor->get_distance()) {
-                if (DEBUG)
+                if (debug)
                     cout << "  Succ: " << successor->str()
                          << " g:" << succ_g
                          << " dist:" << successor->get_distance() << endl;
@@ -263,6 +272,7 @@ bool Abstraction::breadth_first_search(queue<AbstractState *> &open_queue, bool 
 }
 
 bool Abstraction::dijkstra_search(bool forward) const {
+    bool debug = false && DEBUG;
     while (!open->empty()) {
         pair<int, AbstractState *> top_pair = open->pop();
         int &old_g = top_pair.first;
@@ -274,7 +284,7 @@ bool Abstraction::dijkstra_search(bool forward) const {
         if (g < old_g) {
             continue;
         }
-        if (DEBUG)
+        if (debug)
             cout << endl << "Expand: " << state->str() << " g:" << g << endl;
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (auto it = successors.begin(); it != successors.end(); ++it) {
@@ -305,7 +315,7 @@ bool Abstraction::dijkstra_search(bool forward) const {
             // If we use Dijkstra instead of A*, we can use "<" here instead of "<=".
             // This leads to way fewer queue pushes.
             if (succ_g < successor->get_distance()) {
-                if (DEBUG)
+                if (debug)
                     cout << "  Succ: " << successor->str()
                          << " g:" << succ_g
                          << " dist:" << successor->get_distance() << endl;
@@ -566,11 +576,38 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
                 }
             }
         }
+        if (cond == -1)
+            cond = random_cond;
+    } else if (pick == MIN_LM || pick == MAX_LM) {
+        int min = INF;
+        int max = -1;
+        for (int i = 0; i < splits.size(); ++i) {
+            int var = splits[i].first;
+            const vector<int> &values = splits[i].second;
+            for (int j = 0; j < values.size(); ++j) {
+                int value = values[j];
+                int fact_number = get_fact_number(var, value);
+                int lm_pos = fact_positions_in_lm_graph_ordering[fact_number];
+                if (lm_pos == -1)
+                    continue;
+                if (pick == MIN_LM && lm_pos < min) {
+                    cond = i;
+                    min = lm_pos;
+                }
+                if (pick == MAX_LM && lm_pos > max) {
+                    cond = i;
+                    max = lm_pos;
+                }
+            }
+        }
+        if (cond == -1)
+            cond = random_cond;
     } else {
         cout << "Invalid pick strategy: " << pick << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
     assert(cond >= 0);
+    cout << cond << endl;
     return cond;
 }
 

@@ -74,6 +74,8 @@ extern std::vector<int> g_original_op_costs;
 extern std::vector<int> g_causal_graph_ordering;
 // Positions in the causal graph ordering, ordered by variable.
 extern std::vector<int> g_causal_graph_ordering_pos;
+extern int g_num_facts;
+extern std::vector<int> g_fact_borders;
 
 // Reserve some space that can be released when no memory is left.
 extern int g_memory_padding_mb;

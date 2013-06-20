@@ -48,7 +48,10 @@ enum PickStrategy {
     MAX_OPS,
     // Compare the h^add values of the facts.
     MIN_HADD,
-    MAX_HADD
+    MAX_HADD,
+    // Compare position in the partially ordered landmark graph.
+    MIN_LM,
+    MAX_LM
 };
 
 class Abstraction {
@@ -78,6 +81,8 @@ private:
     mutable vector<int> needed_operator_costs;
 
     AdditiveHeuristic *hadd;
+
+    vector<int> fact_positions_in_lm_graph_ordering;
 
     // Statistics.
     mutable int num_states;

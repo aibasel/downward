@@ -48,6 +48,10 @@ struct hash_state {
     }
 };
 
+int get_fact_number(int var, int value);
+void get_fact_from_number(int fact_number, int &var, int &value);
+void order_facts_in_landmark_graph(vector<int> *ordering);
+
 void write_causal_graph(const CausalGraph &causal_graph);
 
 // Debugging.
