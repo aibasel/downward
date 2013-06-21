@@ -131,7 +131,7 @@ bool cheaper(Operator *op1, Operator* op2) {
 
 void partial_ordering(Edges &predecessors, Edges &successors, vector<int> *order) {
     assert(order->empty());
-    bool debug = true;
+    bool debug = true && DEBUG;
     // Set of nodes that still have to be ordered.
     set<int> nodes;
     for (auto it = predecessors.begin(); it != predecessors.end(); ++it) {
@@ -280,12 +280,15 @@ void order_facts_in_landmark_graph(vector<int> *ordered_fact_numbers) {
         }
     }
     partial_ordering(predecessors, successors, ordered_fact_numbers);
-    cout << "Ordering: " << to_string(*ordered_fact_numbers) << endl;
-    for (int i = 0; i < ordered_fact_numbers->size(); ++i) {
-        int var = -1;
-        int value = -1;
-        get_fact_from_number((*ordered_fact_numbers)[i], var, value);
-        cout << (*ordered_fact_numbers)[i] << " " << var << "=" << value << " " << g_fact_names[var][value] << endl;
+    if (DEBUG) {
+        cout << "Ordering: " << to_string(*ordered_fact_numbers) << endl;
+        for (int i = 0; i < ordered_fact_numbers->size(); ++i) {
+            int var = -1;
+            int value = -1;
+            get_fact_from_number((*ordered_fact_numbers)[i], var, value);
+            cout << (*ordered_fact_numbers)[i] << " " << var << "=" << value
+                 << " " << g_fact_names[var][value] << endl;
+        }
     }
 }
 

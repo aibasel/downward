@@ -611,7 +611,8 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
                 }
             }
         }
-        cout << "Incumbents: " << incumbents << endl;
+        if (DEBUG)
+            cout << "Incumbents: " << incumbents << endl;
         assert(!incumbents.empty());
         if (pick == MIN_HADD || pick == MAX_HADD)
             return incumbents[0];
@@ -780,6 +781,7 @@ bool Abstraction::may_keep_refining() const {
 }
 
 void Abstraction::set_hadd(AdditiveHeuristic *h) {
+    cout << "Start computing h^add values [t=" << g_timer << "]" << endl;
     hadd = h;
     hadd->evaluate(*g_initial_state);
     if (DEBUG) {
@@ -792,6 +794,7 @@ void Abstraction::set_hadd(AdditiveHeuristic *h) {
         }
         cout << endl;
     }
+    cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
 }
 
 void Abstraction::release_memory() {
