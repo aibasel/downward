@@ -70,14 +70,6 @@ Abstraction::Abstraction()
     cegar_memory_padding = new char[g_memory_padding_mb * 1024 * 1024];
     set_new_handler(no_memory_continue);
 
-    vector<int> ordering;
-    order_facts_in_landmark_graph(&ordering);
-    fact_positions_in_lm_graph_ordering.resize(g_num_facts, -1);
-    for (int i = 0; i < ordering.size(); ++i) {
-        int fact_number = ordering[i];
-        fact_positions_in_lm_graph_ordering[fact_number] = i;
-    }
-
     split_tree.set_root(single);
     for (int i = 0; i < g_operators.size(); ++i) {
         single->add_loop(&g_operators[i]);
@@ -100,6 +92,21 @@ Abstraction::Abstraction()
 Abstraction::~Abstraction() {
     if (!memory_released)
         release_memory();
+}
+
+void Abstraction::set_pick_strategy(PickStrategy strategy) {
+    pick = strategy;
+    cout << "Use flaw-selection strategy " << pick << endl;
+    if (pick == MIN_LM || pick == MAX_LM ||
+        pick == MIN_HADD_MIN_LM || pick == MAX_HADD_MAX_LM) {
+        vector<int> ordering;
+        order_facts_in_landmark_graph(&ordering);
+        fact_positions_in_lm_graph_ordering.resize(g_num_facts, -1);
+        for (int i = 0; i < ordering.size(); ++i) {
+            int fact_number = ordering[i];
+            fact_positions_in_lm_graph_ordering[fact_number] = i;
+        }
+    }
 }
 
 void Abstraction::build() {
@@ -556,6 +563,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             cond = max_element(new_ops.begin(), new_ops.end()) - new_ops.begin();
         }
     } else if (pick == MIN_LM || pick == MAX_LM) {
+        assert(!fact_positions_in_lm_graph_ordering.empty());
         int min = INF;
         int max = -1;
         for (int i = 0; i < splits.size(); ++i) {
@@ -617,6 +625,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         if (pick == MIN_HADD || pick == MAX_HADD)
             return incumbents[0];
 
+        assert(!fact_positions_in_lm_graph_ordering.empty());
         int min = INF;
         int max = -1;
         for (int i = 0; i < incumbents.size(); ++i) {
