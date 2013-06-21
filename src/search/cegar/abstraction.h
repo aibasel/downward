@@ -176,7 +176,7 @@ public:
     void set_max_states_online(int states) {max_states_online = states; }
     void set_max_time(int time) {max_time = time; }
     void set_log_h(bool log) {log_h = log; }
-    void set_pick_strategy(PickStrategy strategy) {pick = strategy; }
+    void set_pick_strategy(PickStrategy strategy);
     void set_hadd(AdditiveHeuristic *h);
 
     // Testing.
