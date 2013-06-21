@@ -277,10 +277,12 @@ void read_everything(istream &in) {
         int var = g_causal_graph_ordering[i];
         g_causal_graph_ordering_pos[var] = i;
     }
-    cout << "Causal graph ordering: ";
-    for (int pos = 0; pos < g_causal_graph_ordering.size(); ++pos)
-        cout << g_causal_graph_ordering[pos] << " ";
-    cout << endl;
+    if (cegar_heuristic::DEBUG) {
+        cout << "Causal graph ordering: ";
+        for (int pos = 0; pos < g_causal_graph_ordering.size(); ++pos)
+            cout << g_causal_graph_ordering[pos] << " ";
+        cout << endl;
+    }
 
     for (int i = 0; i < g_operators.size(); ++i)
         g_original_op_costs.push_back(g_operators[i].get_cost());

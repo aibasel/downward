@@ -27,7 +27,7 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
              << lm_graph->number_of_conj_landmarks() << " are conjunctive \n"
              << lm_graph->number_of_edges() << " edges\n";
     }
-    lm_graph->dump();
+    //lm_graph->dump();
     return lm_graph;
 }
 
