@@ -312,7 +312,8 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
     int no_ops = 0;
     hash_map<int, vector<pair<int, int> > > preconditions; // maps from
     // pddl_proposition_indeces to props
-    hash_map<int, set<int> > used_operators; //tells for each proposition which operators use it
+    hash_map<int, set<int> > used_operators; // tells for each
+    // proposition which operators use it
     for (unsigned i = 0; i < ops.size(); i++) {
         const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
         if (_possibly_reaches_lm(op, lvl_var, bp)) {
@@ -321,7 +322,6 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
             get_greedy_preconditions_for_lm(bp, op, next_pre);
             for (hash_map<int, int>::iterator it = next_pre.begin(); it
                  != next_pre.end(); it++) {
-                //std::cout << g_fact_names[it->first][it->second] << std::endl;
                 int disj_class = disjunction_classes[it->first][it->second];
                 if (disj_class == -1) {
                     // This fact may not participate in any disjunctive LMs
@@ -332,12 +332,11 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
                 if (!lm_graph->simple_landmark_exists(*it)) {
-                    preconditions[disj_class].push_back(*it)    ;
+                    preconditions[disj_class].push_back(*it);
                     used_operators[disj_class].insert(i);
                 }
             }
         }
-        //std::cout << "---" << std::endl;
     }
     for (hash_map<int, vector<pair<int, int> > >::iterator it =
              preconditions.begin(); it != preconditions.end(); ++it) {
