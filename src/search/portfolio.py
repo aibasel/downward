@@ -272,11 +272,7 @@ def run_sat(configs, unitcost, planner, sas_file, plan_file, final_config,
         if final_config:
             break
 
-        # When a config fails with bound B and timeout T we can ignore it in
-        # subsequent rounds, because it will also fail with the next bound
-        # B' <= B and timeout T' < T (if we run failed configs again in the next
-        # round, the remaining time and thus the individual timeouts will have
-        # decreased).
+        # Only run the successful configs in the next round.
         configs = configs_next_round
 
     if final_config:
