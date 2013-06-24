@@ -127,7 +127,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
         neu setzen auf den neuen node oder man überarbeitet das ganze komplett anders...
         Eine andere Vermutung meinerseits ist, dass die alte Version einen Bug hat und eigentlich
         auch die children-Zeiger der parents von node gelöscht werden müssten, wie es in
-        rm_landmark_node passiert.
+        rm_landmark_node passiert.*/
         // TODO: avoid copy constructor, save attributes locally and assign to new lm
         // new: replace by new program logic
         /*LandmarkNode &node2 = lm_graph->get_disj_lm_node(a);
