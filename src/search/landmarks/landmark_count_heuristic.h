@@ -8,10 +8,6 @@
 #include "landmark_status_manager.h"
 #include "landmark_cost_assignment.h"
 
-extern LandmarkGraph *g_lgraph; // Make global so graph does not need to be built more than once
-// even when iterating search (TODO: clean up use of g_lgraph vs.
-// lgraph in this class).
-
 class LandmarkCountHeuristic : public Heuristic {
     LandmarkGraph &lgraph;
     Exploration *exploration;
@@ -43,7 +39,6 @@ class LandmarkCountHeuristic : public Heuristic {
                                   const LandmarkSet &reached);
     void set_exploration_goals(const State &state);
 
-    //int get_needed_landmarks(const State& state, LandmarkSet& needed) const;
     Exploration *get_exploration() {return exploration; }
     void convert_lms(LandmarkSet &lms_set, const vector<bool> &lms_vec);
 protected:
