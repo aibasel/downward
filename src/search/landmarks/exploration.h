@@ -132,7 +132,6 @@ protected:
 public:
     int get_lower_bound(const State &state);
     void set_additional_goals(const std::vector<std::pair<int, int> > &goals);
-    void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
     void compute_reachability_with_excludes(std::vector<std::vector<int> > &lvl_var,
                                             std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int,
                                                                             hash_int_pair> > &lvl_op,
