@@ -108,41 +108,8 @@ static std::vector<std::string> to_list(std::string s) {
     return result;
 }
 
-//Note: originally the following function was templated (predefine<T>),
-//but there is no Synergy<LandmarkGraph>, so I split it up for now.
-//TODO: merge both methods
-static void predefine_heuristic(std::string s, bool dry_run) {
-    //remove newlines so they don't mess anything up:
-    s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
-
-    size_t split = s.find("=");
-    std::string ls = s.substr(0, split);
-    std::vector<std::string> definees = to_list(ls);
-    std::string rs = s.substr(split + 1);
-    OptionParser op(rs, dry_run);
-    if (definees.size() == 1) { //normal predefinition
-        Predefinitions<Heuristic * >::instance()->predefine(
-            definees[0], op.start_parsing<Heuristic *>());
-    } /*else if (definees.size() > 1) { //synergy
-        if (!dry_run) {
-            std::vector<Heuristic *> heur =
-                op.start_parsing<Synergy *>()->heuristics;
-            for (size_t i(0); i != definees.size(); ++i) {
-                Predefinitions<Heuristic *>::instance()->predefine(
-                    definees[i], heur[i]);
-            }
-        } else {
-            for (size_t i(0); i != definees.size(); ++i) {
-                Predefinitions<Heuristic *>::instance()->predefine(
-                    definees[i], 0);
-            }
-        }
-    } */else {
-        op.error("predefinition has invalid left side");
-    }
-}
-
-static void predefine_lmgraph(std::string s, bool dry_run) {
+template <class T>
+static void predefine(std::string s, bool dry_run) {
     //remove newlines so they don't mess anything up:
     s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
 
@@ -152,8 +119,8 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) {
-        Predefinitions<LandmarkGraph *>::instance()->predefine(
-            definees[0], op.start_parsing<LandmarkGraph *>());
+        Predefinitions<T>::instance()->predefine(
+            definees[0], op.start_parsing<T>());
     } else {
         op.error("predefinition has invalid left side");
     }
@@ -171,10 +138,10 @@ SearchEngine *OptionParser::parse_cmd_line(
         string arg = string(argv[i]);
         if (arg.compare("--heuristic") == 0) {
             ++i;
-            predefine_heuristic(argv[i], dry_run);
+            predefine<Heuristic *>(argv[i], dry_run);
         } else if (arg.compare("--landmarks") == 0) {
             ++i;
-            predefine_lmgraph(argv[i], dry_run);
+            predefine<LandmarkGraph *>(argv[i], dry_run);
         } else if (arg.compare("--search") == 0) {
             ++i;
             OptionParser p(argv[i], dry_run);

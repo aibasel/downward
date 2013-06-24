@@ -302,7 +302,7 @@ int Exploration::compute_hsp_add_heuristic() {
 }
 
 int Exploration::compute_hsp_max_heuristic() {
-/* Note: this function is currently not used */
+// Note: this function is currently not used
     int maximal_cost = 0;
     for (int i = 0; i < goal_propositions.size(); i++) {
         int prop_cost = goal_propositions[i]->h_max_cost;
@@ -314,7 +314,7 @@ int Exploration::compute_hsp_max_heuristic() {
 }
 
 int Exploration::get_lower_bound(const State &state) {
-/* Note: this function is currently not used */
+// Note: this function is currently not used
     prepare_heuristic_computation(state, true);
     int h = compute_hsp_max_heuristic();
     heuristic_recomputation_needed = true;
@@ -460,6 +460,7 @@ void Exploration::collect_ha(ExProposition *goal,
     }
 }
 
+// TODOP: this should be in landmark class
 bool is_landmark(vector<pair<int, int> > &landmarks, int var, int val) {
     // TODO: change landmarks to set or hash_set
     for (int i = 0; i < landmarks.size(); i++)
