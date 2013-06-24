@@ -312,6 +312,8 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
     int no_ops = 0;
     hash_map<int, vector<pair<int, int> > > preconditions; // maps from
     // pddl_proposition_indeces to props
+    hash_map<int, set<int> > used_operators; // tells for each
+    // proposition which operators use it
     for (unsigned i = 0; i < ops.size(); i++) {
         const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
         if (_possibly_reaches_lm(op, lvl_var, bp)) {
@@ -329,18 +331,21 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
 
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
-                if (!lm_graph->simple_landmark_exists(*it))
+                if (!lm_graph->simple_landmark_exists(*it)) {
                     preconditions[disj_class].push_back(*it);
+                    used_operators[disj_class].insert(i);
+                }
             }
         }
     }
     for (hash_map<int, vector<pair<int, int> > >::iterator it =
              preconditions.begin(); it != preconditions.end(); ++it) {
-        if (it->second.size() == no_ops) {
+        if (used_operators[it->first].size() == no_ops) {
             set<pair<int, int> > pre_set; // the set gets rid of duplicate predicates
             pre_set.insert(it->second.begin(), it->second.end());
-            if (pre_set.size() > 1) // otherwise this LM is not actually a disjunctive LM
+            if (pre_set.size() > 1) { // otherwise this LM is not actually a disjunctive LM
                 disjunctive_pre.push_back(pre_set);
+            }
         }
     }
 }
