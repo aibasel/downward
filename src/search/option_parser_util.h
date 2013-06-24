@@ -17,7 +17,6 @@
 class LandmarkGraph;
 class Heuristic;
 class ScalarEvaluator;
-class Synergy;
 class SearchEngine;
 class OptionParser;
 template<class Entry>
@@ -146,10 +145,6 @@ Predefinitions<T> *Predefinitions<T>::instance_ = 0;
 
 
 
-struct Synergy {
-    std::vector<Heuristic *> heuristics;
-};
-
 //TypeNamer prints out names of types.
 //There's something built in for this (typeid().name()), but the output is not always very readable
 
@@ -220,13 +215,6 @@ template <>
 struct TypeNamer<ParseTree> {
     static std::string name() {
         return "parse tree (this just means the input is parsed at a later point. The real type is probably a search engine.)";
-    }
-};
-
-template <>
-struct TypeNamer<Synergy *> {
-    static std::string name() {
-        return "synergy";
     }
 };
 

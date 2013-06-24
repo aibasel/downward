@@ -13,7 +13,6 @@ extern LandmarkGraph *g_lgraph; // Make global so graph does not need to be buil
 // lgraph in this class).
 
 class LandmarkCountHeuristic : public Heuristic {
-    friend class LamaFFSynergy;
     LandmarkGraph &lgraph;
     Exploration *exploration;
     bool use_preferred_operators;

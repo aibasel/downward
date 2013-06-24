@@ -85,7 +85,6 @@ HEADERS += merge_and_shrink/abstraction.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
-           landmarks/lama_ff_synergy.h \
            landmarks/landmark_cost_assignment.h \
            landmarks/landmark_count_heuristic.h \
            landmarks/landmark_status_manager.h \

@@ -57,7 +57,6 @@ static void get_help(string k) {
     get_help_templ<SearchEngine *>(pt);
     get_help_templ<Heuristic *>(pt);
     get_help_templ<ScalarEvaluator *>(pt);
-    get_help_templ<Synergy *>(pt);
     get_help_templ<LandmarkGraph *>(pt);
     Plugin<OpenList<int> >::register_open_lists();
     get_help_templ<OpenList<int> *>(pt);
@@ -79,7 +78,6 @@ static void get_full_help() {
     get_full_help_templ<SearchEngine *>();
     get_full_help_templ<Heuristic *>();
     get_full_help_templ<ScalarEvaluator *>();
-    get_full_help_templ<Synergy *>();
     get_full_help_templ<LandmarkGraph *>();
     Plugin<OpenList<int> >::register_open_lists();
     get_full_help_templ<OpenList<int> *>();
@@ -112,6 +110,7 @@ static std::vector<std::string> to_list(std::string s) {
 
 //Note: originally the following function was templated (predefine<T>),
 //but there is no Synergy<LandmarkGraph>, so I split it up for now.
+//TODO: merge both methods
 static void predefine_heuristic(std::string s, bool dry_run) {
     //remove newlines so they don't mess anything up:
     s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
@@ -124,7 +123,7 @@ static void predefine_heuristic(std::string s, bool dry_run) {
     if (definees.size() == 1) { //normal predefinition
         Predefinitions<Heuristic * >::instance()->predefine(
             definees[0], op.start_parsing<Heuristic *>());
-    } else if (definees.size() > 1) { //synergy
+    } /*else if (definees.size() > 1) { //synergy
         if (!dry_run) {
             std::vector<Heuristic *> heur =
                 op.start_parsing<Synergy *>()->heuristics;
@@ -138,7 +137,7 @@ static void predefine_heuristic(std::string s, bool dry_run) {
                     definees[i], 0);
             }
         }
-    } else {
+    } */else {
         op.error("predefinition has invalid left side");
     }
 }

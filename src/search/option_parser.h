@@ -98,12 +98,6 @@ public:
     static inline SearchEngine *parse(OptionParser &p);
 };
 
-template <>
-class TokenParser<Synergy *> {
-public:
-    static inline Synergy *parse(OptionParser &p);
-};
-
 
 template <>
 class TokenParser<ParseTree> {
@@ -366,15 +360,6 @@ ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {
     return 0;
 }
 
-
-Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<Synergy *>::instance()->contains(pt->value)) {
-        return Registry<Synergy *>::instance()->get(pt->value) (p);
-    }
-    p.error("synergy not found");
-    return 0;
-}
 
 ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
     return *p.get_parse_tree();
