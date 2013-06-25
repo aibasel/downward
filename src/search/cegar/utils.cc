@@ -261,6 +261,8 @@ void order_facts_in_landmark_graph(vector<int> *ordered_fact_numbers) {
     opts.set<Exploration *>("explor", new Exploration(opts));
     LandmarkFactoryRpgSasp lm_graph_factory(opts);
     LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
+    if (DEBUG)
+        graph->dump();
     const set<LandmarkNode *> &nodes = graph->get_nodes();
     set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
     Edges predecessors;
