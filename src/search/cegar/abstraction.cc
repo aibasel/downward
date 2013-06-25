@@ -448,7 +448,7 @@ void Abstraction::restrict_splits(State &conc_state, Splits &splits) const {
                 int value = values[j];
                 int hadd_value = hadd->get_cost(var, value);
                 assert(hadd_value != -1);
-                if (pick == MIN_HADD) {
+                if (pick == MIN_HADD_DYN) {
                     if (hadd_value < min_hadd) {
                         incumbents.clear();
                         min_hadd = hadd_value;
