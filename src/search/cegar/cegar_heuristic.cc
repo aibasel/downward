@@ -2,6 +2,7 @@
 
 #include "abstraction.h"
 #include "abstract_state.h"
+#include "utils.h"
 #include "../additive_heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"

@@ -129,6 +129,57 @@ bool cheaper(Operator *op1, Operator* op2) {
     return op1->get_cost() < op2->get_cost();
 }
 
+struct SortByNumSuccessors {
+    Edges successors;
+
+    explicit SortByNumSuccessors(Edges &succ)
+        : successors(succ) {
+    }
+
+    ~SortByNumSuccessors() {
+    }
+
+    bool operator() (int i, int j) {
+        // Move nodes with the highest number of successors to the front.
+        return (successors[i].size() > successors[j].size());
+    }
+
+};
+
+struct SortByNumPredecessors {
+    Edges predecessors;
+
+    explicit SortByNumPredecessors(Edges &succ)
+        : predecessors(succ) {
+    }
+
+    ~SortByNumPredecessors() {
+    }
+
+    bool operator() (int i, int j) {
+        // Move nodes with the highest number of predecessors to the front.
+        // The order will be reversed later.
+        return (predecessors[i].size() > predecessors[j].size());
+    }
+
+};
+
+void erase_node(int del_node, set<int> &nodes, Edges &predecessors, Edges &successors) {
+    nodes.erase(del_node);
+    // For all unsorted nodes, delete node from their predecessor and
+    // successor lists.
+    for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+        unordered_set<int> &pre = predecessors[*it];
+        auto pos = find(pre.begin(), pre.end(), del_node);
+        if (pos != pre.end())
+            pre.erase(pos);
+        unordered_set<int> &succ = successors[*it];
+        pos = find(succ.begin(), succ.end(), del_node);
+        if (pos != succ.end())
+            succ.erase(pos);
+    }
+}
+
 void partial_ordering(Edges &predecessors, Edges &successors, vector<int> *order) {
     assert(order->empty());
     bool debug = true && DEBUG;
@@ -143,65 +194,82 @@ void partial_ordering(Edges &predecessors, Edges &successors, vector<int> *order
     const int num_nodes = nodes.size();
     vector<int> front;
     vector<int> back;
+    cout << nodes.size() << endl;
     while (!nodes.empty()) {
         int front_in = INF;
         int front_out = -1;
-        int front_node = -1;
+        vector<int> front_nodes;
         int back_in = -1;
         int back_out = INF;
-        int back_node = -1;
+        vector<int> back_nodes;
         for (auto it = nodes.begin(); it != nodes.end(); ++it) {
-            unordered_set<int> &pre = predecessors[*it];
-            unordered_set<int> &succ = successors[*it];
+            int node = *it;
+            unordered_set<int> &pre = predecessors[node];
+            unordered_set<int> &succ = successors[node];
             if (debug) {
-                cout << "pre(" << *it << "): ";
+                cout << "pre(" << node << "): ";
                 for (auto p = pre.begin(); p != pre.end(); ++p)
                     cout << *p << " ";
                 cout << "(" << succ.size() << " succ)" << endl;
             }
-            // A node is a better front_node if it has fewer incoming or more
-            // outgoing edges.
-            if ((pre.size() < front_in) || ((pre.size() == front_in) && (succ.size() > front_out))) {
-                front_node = *it;
+            // We move all nodes without incoming edges to the front. If there
+            // are no such nodes, a node is a better front_node if it has fewer
+            // incoming or more outgoing edges.
+            if (pre.size() == 0) {
+                if (front_in > 0) {
+                    front_nodes.clear();
+                    front_in = 0;
+                }
+                front_nodes.push_back(node);
+            } else if ((pre.size() < front_in) || ((pre.size() < front_in) && (succ.size() > front_out))) {
+                assert(front_nodes.size() <= 1);
+                front_nodes.clear();
+                front_nodes.push_back(node);
                 front_in = pre.size();
                 front_out = succ.size();
             }
-            // A node is a better back_node if it has fewer outgoing edges or
-            // more incoming edges.
-            if ((succ.size() < back_out) || ((succ.size() == back_out) && (pre.size() > back_in))) {
-                back_node = *it;
+            // We move all nodes without outgoing edges to the back. If there
+            // are no such nodes, a node is a better back_node if it has fewer
+            // outgoing edges or more incoming edges.
+            if (succ.size() == 0) {
+                if (back_out > 0) {
+                    back_nodes.clear();
+                    back_out = 0;
+                }
+                back_nodes.push_back(node);
+            } else if ((succ.size() < back_out) || ((succ.size() == back_out) && (pre.size() > back_in))) {
+                assert(back_nodes.size() <= 1);
+                back_nodes.clear();
+                back_nodes.push_back(node);
                 back_in = pre.size();
                 back_out = succ.size();
             }
         }
-        assert(front_node >= 0);
-        assert(back_node >= 0);
-        int node = -1;
-        if ((front_in < back_out) || ((front_in == back_out) && (front_out >= back_in))) {
-            // When many edges leave the front node, it should probably be put in front.
-            node = front_node;
+        assert(!front_nodes.empty());
+        assert(!back_nodes.empty());
+        cout << to_string(front_nodes) << endl;
+        sort(front_nodes.begin(), front_nodes.end(), SortByNumSuccessors(successors));
+        sort(back_nodes.begin(), back_nodes.end(), SortByNumPredecessors(predecessors));
+        cout << to_string(front_nodes) << endl;
+        for (auto it = front_nodes.begin(); it != front_nodes.end(); ++it) {
+            int node = *it;
             front.push_back(node);
             if (debug)
-                cout << "Put in front: " << node << endl << endl;
-        } else {
-            node = back_node;
+                cout << "Put in front: " << node << endl;
+            erase_node(node, nodes, predecessors, successors);
+        }
+        for (auto it = back_nodes.begin(); it != back_nodes.end(); ++it) {
+            int node = *it;
+            if (nodes.count(node) == 0)
+                // The node may have already been added to the front.
+                continue;
             back.push_back(node);
             if (debug)
-                cout << "Put in back: " << node << endl << endl;
+                cout << "Put in back: " << node << endl;
+            erase_node(node, nodes, predecessors, successors);
         }
-        nodes.erase(node);
-        // For all unsorted nodes, delete node from their predecessor and
-        // successor lists.
-        for (auto it = nodes.begin(); it != nodes.end(); ++it) {
-            unordered_set<int> &pre = predecessors[*it];
-            unordered_set<int>::iterator pos = find(pre.begin(), pre.end(), node);
-            if (pos != pre.end())
-                pre.erase(pos);
-            unordered_set<int> &succ = successors[*it];
-            pos = find(succ.begin(), succ.end(), node);
-            if (pos != succ.end())
-                succ.erase(pos);
-        }
+        if (debug)
+            cout << endl;
     }
     reverse(back.begin(), back.end());
     order->insert(order->begin(), front.begin(), front.end());
@@ -297,7 +365,7 @@ void order_facts_in_landmark_graph(vector<int> *ordered_fact_numbers) {
 void write_causal_graph(const CausalGraph &causal_graph) {
     ofstream dotfile("causal-graph.dot");
     if (!dotfile.is_open()) {
-        cout << "dot file for causal graph could not be opened" << endl;
+        cerr << "dot file for causal graph could not be opened" << endl;
         exit_with(EXIT_CRITICAL_ERROR);
     }
     dotfile << "digraph cg {" << endl;
