@@ -247,10 +247,8 @@ void partial_ordering(Edges &predecessors, Edges &successors, vector<int> *order
         }
         assert(!front_nodes.empty());
         assert(!back_nodes.empty());
-        cout << to_string(front_nodes) << endl;
         sort(front_nodes.begin(), front_nodes.end(), SortByNumSuccessors(successors));
         sort(back_nodes.begin(), back_nodes.end(), SortByNumPredecessors(predecessors));
-        cout << to_string(front_nodes) << endl;
         for (auto it = front_nodes.begin(); it != front_nodes.end(); ++it) {
             int node = *it;
             front.push_back(node);
