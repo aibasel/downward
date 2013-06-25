@@ -47,14 +47,14 @@ void CegarHeuristic::initialize() {
     if (max_states_online > 0)
         g_cegar_abstraction = abstraction;
 
+    AdditiveHeuristic *hadd = new AdditiveHeuristic(options);
+    abstraction->set_hadd(hadd);
+
     abstraction->set_max_states_offline(max_states_offline);
     abstraction->set_max_states_online(max_states_online);
     abstraction->set_max_time(max_time);
     abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
     abstraction->set_log_h(options.get<bool>("log_h"));
-
-    AdditiveHeuristic *hadd = new AdditiveHeuristic(options);
-    abstraction->set_hadd(hadd);
 
     abstraction->build();
     abstraction->print_statistics();
