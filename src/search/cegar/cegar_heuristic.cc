@@ -98,6 +98,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_LM");
     pick_strategies.push_back("MIN_HADD_MIN_LM");
     pick_strategies.push_back("MAX_HADD_MAX_LM");
+    pick_strategies.push_back("MIN_HADD_DYN");
+    pick_strategies.push_back("MAX_HADD_DYN");
     parser.add_enum_option("pick", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied condition");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");

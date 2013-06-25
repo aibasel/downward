@@ -46,14 +46,17 @@ enum PickStrategy {
     // Choose the variable whose split yields the min/max number of new operators.
     MIN_OPS,
     MAX_OPS,
-    // Compare the h^add values of the facts.
+    // Compare the h^add(s_0) values of the facts.
     MIN_HADD,
     MAX_HADD,
     // Compare position in the partially ordered landmark graph.
     MIN_LM,
     MAX_LM,
     MIN_HADD_MIN_LM,
-    MAX_HADD_MAX_LM
+    MAX_HADD_MAX_LM,
+    // Compare the h^add(current_state) values of the facts.
+    MIN_HADD_DYN,
+    MAX_HADD_DYN
 };
 
 class Abstraction {
@@ -119,6 +122,8 @@ private:
 
     // Pick a possible split in case of multiple possibilities.
     int pick_split_index(AbstractState &state, const Splits &conditions) const;
+    void restrict_splits(State &conc_state, Splits &splits) const;
+    void evaluate_state_with_hadd(State &conc_state) const;
 
     // A* search.
     void reset_distances_and_solution() const;

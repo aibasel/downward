@@ -373,6 +373,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     cout << "      Goal test failed." << endl;
                 unmet_goals++;
                 get_unmet_goal_conditions(conc_state, &states_to_splits[abs_state]);
+                restrict_splits(conc_state, states_to_splits[abs_state]);
                 continue;
             }
         }
@@ -402,6 +403,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     next_abs->regress(*op, &desired_abs_state);
                     abs_state->get_possible_splits(desired_abs_state, conc_state,
                                                    &states_to_splits[abs_state]);
+                    restrict_splits(conc_state, states_to_splits[abs_state]);
                 }
             // Only find unmet preconditions if we haven't found any splits already.
             } else if (states_to_splits[abs_state].empty()) {
@@ -409,6 +411,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     cout << "      Operator not applicable: " << op->get_name() << endl;
                 ++unmet_preconditions;
                 get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
+                restrict_splits(conc_state, states_to_splits[abs_state]);
             }
         }
     }
@@ -427,6 +430,46 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         cout << "Broke " << broken_solutions << " solutions" << endl;
     assert(broken_solutions > 0);
     return false;
+}
+
+void Abstraction::restrict_splits(State &conc_state, Splits &splits) const {
+    if (splits.size() == 1)
+        return;
+    if (pick == MIN_HADD_DYN || pick == MAX_HADD_DYN) {
+        assert(hadd);
+        evaluate_state_with_hadd(conc_state);
+        int min_hadd = INF;
+        int max_hadd = -1;
+        vector<int> incumbents;
+        for (int i = 0; i < splits.size(); ++i) {
+            int var = splits[i].first;
+            const vector<int> &values = splits[i].second;
+            for (int j = 0; j < values.size(); ++j) {
+                int value = values[j];
+                int hadd_value = hadd->get_cost(var, value);
+                assert(hadd_value != -1);
+                if (pick == MIN_HADD) {
+                    if (hadd_value < min_hadd) {
+                        incumbents.clear();
+                        min_hadd = hadd_value;
+                    }
+                    if (hadd_value <= min_hadd)
+                        incumbents.push_back(i);
+                }
+                else {
+                    if (hadd_value > max_hadd) {
+                        incumbents.clear();
+                        max_hadd = hadd_value;
+                    }
+                    if (hadd_value >= max_hadd)
+                        incumbents.push_back(i);
+                }
+            }
+        }
+        assert(!incumbents.empty());
+        swap(splits[0], splits[incumbents[0]]);
+        splits.resize(1);
+    }
 }
 
 int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) const {
@@ -652,6 +695,8 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
                 }
             }
         }
+    } else if (pick == MIN_HADD_DYN || pick == MAX_HADD_DYN) {
+        // The selection has already been made.
     } else {
         cout << "Invalid pick strategy: " << pick << endl;
         exit_with(EXIT_INPUT_ERROR);
@@ -790,9 +835,13 @@ bool Abstraction::may_keep_refining() const {
 }
 
 void Abstraction::set_hadd(AdditiveHeuristic *h) {
-    cout << "Start computing h^add values [t=" << g_timer << "]" << endl;
     hadd = h;
-    hadd->evaluate(*g_initial_state);
+    evaluate_state_with_hadd(*g_initial_state);
+}
+
+void Abstraction::evaluate_state_with_hadd(State &conc_state) const {
+    cout << "Start computing h^add values [t=" << g_timer << "]" << endl;
+    hadd->evaluate(conc_state);
     if (DEBUG) {
         cout << "h^add values for all facts:" << endl;
         for (int var = 0; var < g_variable_domain.size(); ++var) {
