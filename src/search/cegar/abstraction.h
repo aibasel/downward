@@ -105,6 +105,7 @@ private:
     int max_states_online;
     // Maximum time for building the abstraction.
     int max_time;
+    int max_init_h;
     bool log_h;
 
     // A* modes.
@@ -185,6 +186,7 @@ public:
     void set_log_h(bool log) {log_h = log; }
     void set_pick_strategy(PickStrategy strategy);
     void set_hadd(AdditiveHeuristic *h);
+    void set_max_init_h_factor(double factor);
 
     // Testing.
     void write_dot_file(int num);
