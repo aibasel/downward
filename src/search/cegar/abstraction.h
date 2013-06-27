@@ -53,6 +53,8 @@ enum PickStrategy {
     MIN_LM,
     MAX_LM,
     MIN_HADD_MIN_LM,
+    MIN_HADD_MAX_LM,
+    MAX_HADD_MIN_LM,
     MAX_HADD_MAX_LM,
     // Compare the h^add(current_state) values of the facts.
     MIN_HADD_DYN,

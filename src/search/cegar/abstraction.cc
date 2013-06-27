@@ -98,13 +98,32 @@ void Abstraction::set_pick_strategy(PickStrategy strategy) {
     pick = strategy;
     cout << "Use flaw-selection strategy " << pick << endl;
     if (pick == MIN_LM || pick == MAX_LM ||
-        pick == MIN_HADD_MIN_LM || pick == MAX_HADD_MAX_LM) {
+        pick == MIN_HADD_MIN_LM || pick == MIN_HADD_MAX_LM ||
+        pick == MAX_HADD_MIN_LM || pick == MAX_HADD_MAX_LM) {
         vector<int> ordering;
         order_facts_in_landmark_graph(&ordering);
         fact_positions_in_lm_graph_ordering.resize(g_num_facts, -1);
         for (int i = 0; i < ordering.size(); ++i) {
             int fact_number = ordering[i];
             fact_positions_in_lm_graph_ordering[fact_number] = i;
+        }
+        if (DEBUG) {
+            cout << "Check that landmark graph is ordered by h^add values:" << endl;
+            int last_hadd_value = 0;
+            for (int i = 0; i < ordering.size(); ++i) {
+                int var = -1;
+                int value = -1;
+                get_fact_from_number(ordering[i], var, value);
+                int hadd_value = hadd->get_cost(var, value);
+                cout << var << "=" << value << " " << g_fact_names[var][value]
+                         << " cost:" << hadd_value
+                         << " number:" << ordering[i]
+                         << " pos:" << i << endl;
+                if (hadd_value < last_hadd_value)
+                    cout << "Landmarks are not ordered by h^add values. "
+                            "The landmark graph is probably not fully connected." << endl;
+                last_hadd_value = hadd_value;
+            }
         }
     }
 }
@@ -631,9 +650,11 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         if (cond == -1)
             cond = random_cond;
     } else if (pick == MIN_HADD || pick == MAX_HADD ||
-               pick == MIN_HADD_MIN_LM || pick == MAX_HADD_MAX_LM) {
+               pick == MIN_HADD_MIN_LM || pick == MIN_HADD_MAX_LM ||
+               pick == MAX_HADD_MIN_LM || pick == MAX_HADD_MAX_LM) {
         assert(hadd);
-        bool pick_min_hadd = (pick == MIN_HADD) || (pick == MIN_HADD_MIN_LM);
+        bool pick_min_hadd = (pick == MIN_HADD) || (pick == MIN_HADD_MIN_LM) ||
+                             (pick == MIN_HADD_MAX_LM);
         int min_hadd = INF;
         int max_hadd = -1;
         vector<int> incumbents;
@@ -669,6 +690,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             return incumbents[0];
 
         assert(!fact_positions_in_lm_graph_ordering.empty());
+        bool pick_min_lm = (pick == MIN_HADD_MIN_LM) || (pick == MAX_HADD_MIN_LM);
         int min = INF;
         int max = -1;
         for (int i = 0; i < incumbents.size(); ++i) {
@@ -685,11 +707,10 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
                     cond = incumbents[0];
                     break;
                 }
-                if (pick == MIN_HADD_MIN_LM && lm_pos < min) {
+                if (pick_min_lm && lm_pos < min) {
                     cond = incumbents[i];
                     min = lm_pos;
-                }
-                if (pick == MAX_HADD_MAX_LM && lm_pos > max) {
+                } else if (!pick_min_lm && lm_pos > max) {
                     cond = incumbents[i];
                     max = lm_pos;
                 }
