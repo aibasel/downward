@@ -60,6 +60,7 @@ Abstraction::Abstraction()
       max_states_offline(1),
       max_states_online(0),
       max_time(INF),
+      max_init_h(INF),
       log_h(false),
       calculate_needed_operator_costs(false),
       memory_released(false) {
@@ -852,12 +853,25 @@ bool Abstraction::may_keep_refining() const {
     return cegar_memory_padding &&
            (is_online() || get_num_states() < max_states_offline) &&
            (!is_online() || get_num_states_online() < max_states_online) &&
-           (max_time == INF || is_online() || timer() < max_time);
+           (max_time == INF || is_online() || timer() < max_time) &&
+           (init->get_h() < max_init_h);
 }
 
 void Abstraction::set_hadd(AdditiveHeuristic *h) {
     hadd = h;
     evaluate_state_with_hadd(*g_initial_state);
+}
+
+void Abstraction::set_max_init_h_factor(double factor) {
+    if (factor == -1) {
+        max_init_h = INF;
+    } else {
+        assert(factor >= 0);
+        max_init_h = factor * hadd->get_heuristic();
+        cout << "h^add(s_0)=" << hadd->get_heuristic() << endl;
+        assert(max_init_h >= 0);
+    }
+    cout << "Set max_init_h to " << max_init_h << endl;
 }
 
 void Abstraction::evaluate_state_with_hadd(State &conc_state) const {

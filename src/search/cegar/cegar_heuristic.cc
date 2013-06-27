@@ -50,6 +50,11 @@ void CegarHeuristic::initialize() {
     AdditiveHeuristic *hadd = new AdditiveHeuristic(options);
     abstraction->set_hadd(hadd);
 
+    double factor = options.get<double>("init_h_factor");
+    if (factor != -1) {
+        abstraction->set_max_init_h_factor(factor);
+    }
+
     abstraction->set_max_states_offline(max_states_offline);
     abstraction->set_max_states_online(max_states_online);
     abstraction->set_max_time(max_time);
@@ -78,6 +83,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
                            "maximum number of abstract states created offline");
     parser.add_option<int>("max_states_online", 0, "maximum number of abstract states created online");
     parser.add_option<int>("max_time", -1, "maximum time in seconds for building the abstraction");
+    parser.add_option<double>("init_h_factor", -1, "stop refinement after h(s_0) reaches h^add(s_0) * factor");
     vector<string> pick_strategies;
     pick_strategies.push_back("FIRST");
     pick_strategies.push_back("RANDOM");
