@@ -639,7 +639,7 @@ def main():
     check_python_version(options.force_old_python)
 
     timer = timers.Timer()
-    with timers.timing("Parsing"):
+    with timers.timing("Parsing", True):
         task = pddl.open()
 
     with timers.timing("Normalizing task"):
