@@ -249,6 +249,8 @@ static ParseTree generate_parse_tree(string config) {
             tr.append_child(cur_node, ParseNode(buffer, key));
             buffer.clear();
             key.clear();
+        } else if(next == '(' && buffer.size() == 0) {
+            throw ParseError("misplaced opening bracket (", *cur_node);
         }
         switch (next) {
         case ' ':
@@ -257,7 +259,7 @@ static ParseTree generate_parse_tree(string config) {
             cur_node = last_child(tr, cur_node);
             break;
         case ')':
-            if (cur_node == top)
+            if (cur_node == pseudoroot)
                 throw ParseError("missing (", *cur_node);
             cur_node = tr.parent(cur_node);
             break;
