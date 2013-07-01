@@ -378,6 +378,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         abs_state = unseen.front().first;
         conc_state = unseen.front().second;
         unseen.pop();
+        Splits &splits = states_to_splits[abs_state];
         if (DEBUG)
             cout << "Current state: " << abs_state->str() << endl;
         // Start check from each state only once.
@@ -393,7 +394,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     cout << "      Goal test failed." << endl;
                 unmet_goals++;
                 get_unmet_goal_conditions(conc_state, &states_to_splits[abs_state]);
-                restrict_splits(conc_state, states_to_splits[abs_state]);
+                restrict_splits(conc_state, splits);
                 continue;
             }
         }
@@ -415,23 +416,23 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                         seen.insert(next_conc);
                     }
                 // Only find deviation reasons if we haven't found any splits already.
-                } else if (states_to_splits[abs_state].empty()) {
+                } else if (splits.empty()) {
                     if (DEBUG)
                         cout << "      Paths deviate." << endl;
                     ++deviations;
                     AbstractState desired_abs_state;
                     next_abs->regress(*op, &desired_abs_state);
                     abs_state->get_possible_splits(desired_abs_state, conc_state,
-                                                   &states_to_splits[abs_state]);
-                    restrict_splits(conc_state, states_to_splits[abs_state]);
+                                                   &splits);
+                    restrict_splits(conc_state, splits);
                 }
             // Only find unmet preconditions if we haven't found any splits already.
-            } else if (states_to_splits[abs_state].empty()) {
+            } else if (splits.empty()) {
                 if (DEBUG)
                     cout << "      Operator not applicable: " << op->get_name() << endl;
                 ++unmet_preconditions;
-                get_unmet_preconditions(*op, conc_state, &states_to_splits[abs_state]);
-                restrict_splits(conc_state, states_to_splits[abs_state]);
+                get_unmet_preconditions(*op, conc_state, &splits);
+                restrict_splits(conc_state, splits);
             }
         }
     }
