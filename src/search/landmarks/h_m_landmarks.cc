@@ -581,6 +581,10 @@ HMLandmarks::HMLandmarks(const Options &opts)
     : LandmarkFactory(opts),
       m_(opts.get<int>("m")) {
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
+    if (!g_axioms.empty()) {
+        cerr << "H_m_Landmarks do not support axioms" << endl;
+        exit_with(EXIT_UNSUPPORTED);
+    }
     // need this to be able to print propositions for debugging
     // already called in global.cc
     //  read_external_inconsistencies();
