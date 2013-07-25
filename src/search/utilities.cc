@@ -17,7 +17,7 @@ static void exit_handler();
 // nothing
 #endif
 
-static char *memory_padding = new char[1024];
+static char *memory_padding = new char[512 * 1024];
 
 static void out_of_memory_handler();
 static void signal_handler(int signal_number);
