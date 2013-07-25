@@ -49,7 +49,7 @@ typedef tree<ParseNode> ParseTree;
 
 struct ParseError {
     ParseError(std::string m, ParseTree pt);
-    ParseError(std::string m, ParseTree pt, std::string correctSubstring);
+    ParseError(std::string m, ParseTree pt, std::string correct_substring);
 
     std::string msg;
     ParseTree parse_tree;
