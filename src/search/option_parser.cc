@@ -14,10 +14,10 @@ ParseError::ParseError(string m, ParseTree pt)
       parse_tree(pt) {
 }
 
-ParseError::ParseError(string m, ParseTree pt, string correctSubstring)
+ParseError::ParseError(string m, ParseTree pt, string correct_substring)
     : msg(m),
       parse_tree(pt),
-      substr(correctSubstring){
+      substr(correct_substring) {
 }
 
 HelpElement::HelpElement(string k, string h, string t_n)
