@@ -213,6 +213,7 @@ private:
     bool disjunctive_landmarks;
     bool conjunctive_landmarks;
     bool no_orders;
+    // TODO only needed for LandmarkFactorySasp?
     OperatorCost lm_cost_type;
     int reached_cost;
     int needed_cost;
