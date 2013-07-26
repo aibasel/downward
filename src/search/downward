@@ -136,8 +136,9 @@ if [[ "$1" == "ipc" ]]; then
     elif [[ "$CONFIG" == "seq-sat-lama-2011" ]]; then
         if [[ "$UNIT_COST" == "unit" ]]; then
             "$PLANNER" \
-                --heuristic "hlm,hff=lm_ff_syn(lm_rhw(
-                    reasonable_orders=true,lm_cost_type=2,cost_type=2))" \
+                --heuristic "hlm=lmcount(lm_rhw(reasonable_orders=true,
+                    lm_cost_type=2,cost_type=2),pref=true)" \
+                --heuristic "hff=ff()" \
                 --search "iterated([
                     lazy_greedy([hff,hlm],preferred=[hff,hlm]),
                     lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),
@@ -148,19 +149,20 @@ if [[ "$1" == "ipc" ]]; then
                 "$@" < $TEMPFILE
         elif [[ "$UNIT_COST" == "nonunit" ]]; then
             "$PLANNER" \
-                --heuristic "hlm1,hff1=lm_ff_syn(lm_rhw(
-                    reasonable_orders=true,lm_cost_type=1,cost_type=1))" \
-                --heuristic "hlm2,hff2=lm_ff_syn(lm_rhw(
-                    reasonable_orders=true,lm_cost_type=2,cost_type=2))" \
+                --heuristic "hlm1=lmcount(lm_rhw(reasonable_orders=true,
+                    lm_cost_type=1,cost_type=1),pref=true)" \
+                --heuristic "hlm2=lmcount(lm_rhw(reasonable_orders=true,
+                    lm_cost_type=2,cost_type=2),pref=true)" \
+                --heuristic "hff=ff()" \
                 --search "iterated([
-                    lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],
+                    lazy_greedy([hff,hlm1],preferred=[hff,hlm1],
                                 cost_type=1,reopen_closed=false),
-                    lazy_greedy([hff2,hlm2],preferred=[hff2,hlm2],
+                    lazy_greedy([hff,hlm2],preferred=[hff,hlm2],
                                 reopen_closed=false),
-                    lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=5),
-                    lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=3),
-                    lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=2),
-                    lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=1)],
+                    lazy_wastar([hff,hlm2],preferred=[hff,hlm2],w=5),
+                    lazy_wastar([hff,hlm2],preferred=[hff,hlm2],w=3),
+                    lazy_wastar([hff,hlm2],preferred=[hff,hlm2],w=2),
+                    lazy_wastar([hff,hlm2],preferred=[hff,hlm2],w=1)],
                     repeat_last=true,continue_on_fail=true)" \
                 "$@" < $TEMPFILE
         else
