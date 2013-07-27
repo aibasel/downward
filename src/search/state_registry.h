@@ -1,33 +1,32 @@
 #ifndef STATE_REGISTRY_H
 #define STATE_REGISTRY_H
 
-#include <hash_set>
 #include "globals.h"
 #include "state.h"
 #include "state_handle.h"
 #include "utilities.h"
+
+#include <hash_set>
 
 class StateRegistry {
 private:
     typedef StateHandle::StateRepresentation StateRepresentation;
 
     struct StateRepresentationSemanticHash {
-      size_t operator() (StateRepresentation *representation) const {
-          if (!representation) {
-              return 0;
-          }
-          return ::hash_number_sequence(representation->data, g_variable_domain.size());
+      size_t operator() (const StateRepresentation &representation) const {
+          return ::hash_number_sequence(representation.data, g_variable_domain.size());
       }
     };
 
     struct StateRepresentationSemanticEqual {
-      size_t operator() (StateRepresentation *x, StateRepresentation *y) const {
-          int size = g_variable_domain.size();
-          return ::equal(x->data, x->data + size, y->data);
+      size_t operator() (const StateRepresentation &lhs,
+                         const StateRepresentation &rhs) const {
+          size_t size = g_variable_domain.size();
+          return ::equal(lhs.data, lhs.data + size, rhs.data);
       }
     };
 
-    typedef __gnu_cxx::hash_set<StateRepresentation *,
+    typedef __gnu_cxx::hash_set<StateRepresentation,
                                 StateRepresentationSemanticHash,
                                 StateRepresentationSemanticEqual> StateRepresentationSet;
     StateRepresentationSet registered_states;
@@ -57,7 +56,7 @@ public:
         std::vector<StateHandle> handles;
         for (StateRepresentationSet::const_iterator it = registered_states.begin();
              it != registered_states.end(); ++it) {
-            handles.push_back(StateHandle(*it));
+            handles.push_back(StateHandle(&*it));
         }
         return handles;
     }
