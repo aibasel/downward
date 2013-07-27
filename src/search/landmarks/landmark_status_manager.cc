@@ -7,13 +7,10 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     do_intersection = true;
 }
 
+
 LandmarkStatusManager::~LandmarkStatusManager() {
 }
 
-
-void LandmarkStatusManager::clear_reached() {
-    reached_lms.clear();
-}
 
 vector<bool> &LandmarkStatusManager::get_reached_landmarks(const State &state) {
     return reached_lms[state.get_handle()];

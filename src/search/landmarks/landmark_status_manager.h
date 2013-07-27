@@ -17,7 +17,6 @@ public:
     LandmarkStatusManager(LandmarkGraph &graph);
     virtual ~LandmarkStatusManager();
 
-    void clear_reached();
     vector<bool> &get_reached_landmarks(const State &state);
 
     bool update_lm_status(const State &state);

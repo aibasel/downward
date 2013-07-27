@@ -100,17 +100,17 @@ HEADERS += landmarks/exploration.h \
            landmarks/landmark_factory_zhu_givan.h \
            landmarks/util.h \
 
-HEADERS += learning/AODE.h \
-           learning/classifier.h \
-           learning/composite_feature_extractor.h \
-           learning/feature_extractor.h \
-           learning/maximum_heuristic.h \
-           learning/naive_bayes_classifier.h \
-           learning/PDB_state_space_sample.h \
-           learning/probe_state_space_sample.h \
-           learning/selective_max_heuristic.h \
-           learning/state_space_sample.h \
-           learning/state_vars_feature_extractor.h \
+# HEADERS += learning/AODE.h \
+#            learning/classifier.h \
+#            learning/composite_feature_extractor.h \
+#            learning/feature_extractor.h \
+#            learning/maximum_heuristic.h \
+#            learning/naive_bayes_classifier.h \
+#            learning/PDB_state_space_sample.h \
+#            learning/probe_state_space_sample.h \
+#            learning/selective_max_heuristic.h \
+#            learning/state_space_sample.h \
+#            learning/state_vars_feature_extractor.h \
 
 HEADERS += pdbs/canonical_pdbs_heuristic.h \
            pdbs/dominance_pruner.h \
