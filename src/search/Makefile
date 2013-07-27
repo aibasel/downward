@@ -35,6 +35,7 @@ HEADERS = \
           operator.h \
           operator_cost.h \
           option_parser.h \
+          segmented_vector.h \
           per_state_information.h \
           pref_evaluator.h \
           relaxation_heuristic.h \

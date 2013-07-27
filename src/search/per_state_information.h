@@ -1,12 +1,12 @@
 #ifndef PER_STATE_INFORMATION_H
 #define PER_STATE_INFORMATION_H
 
+#include "globals.h"
+#include "segmented_vector.h"
 #include "state.h"
 #include "state_handle.h"
 #include "state_registry.h"
-#include "globals.h"
 
-#include <vector>
 #include <cassert>
 
 template<class Entry>
@@ -14,7 +14,7 @@ class PerStateInformation {
 private:
     StateRegistry &state_registry;
     const Entry default_value;
-    std::vector<Entry> entries;
+    SegmentedVector<Entry> entries;
 
 public:
     PerStateInformation()
