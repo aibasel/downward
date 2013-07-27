@@ -14,6 +14,7 @@
 class Operator;
 class State;
 
+
 class SearchNode {
     StateHandle state_handle;
     SearchNodeInfo &info;
@@ -50,17 +51,13 @@ public:
     void close();
     void mark_as_dead_end();
 
-    void dump();
+    void dump() const;
 };
 
 
 class SearchSpace {
-    // We have to save pointers here instead of the objects themselves.
-    // otherwise references to the actual SearchNodeInfo objects might become
-    // invalid during reallocation of the vector.
-    // TODO After benchmarking the patch we could try to get back some memory
-    // here by changing this to a value type.
-    PerStateInformation<SearchNodeInfo *> search_node_infos;
+    friend class SearchNode; // TODO: try to make this cleaner
+    PerStateInformation<SearchNodeInfo> search_node_infos;
 
     OperatorCost cost_type;
 public:

@@ -3,11 +3,14 @@
 
 #include "state.h"
 #include "per_state_information.h"
+#include "segmented_vector.h" // HACK
 
 class SearchNodeInfo {
+    // HACK: Get rid of some of these friends
     friend class SearchNode;
     friend class SearchSpace;
     friend class PerStateInformation<SearchNodeInfo>;
+    friend class SegmentedVector<SearchNodeInfo>;
 
     enum NodeStatus {NEW = 0, OPEN = 1, CLOSED = 2, DEAD_END = 3};
 

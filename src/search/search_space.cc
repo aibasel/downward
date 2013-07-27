@@ -10,8 +10,6 @@ using namespace std;
 using namespace __gnu_cxx;
 
 
-
-
 SearchNode::SearchNode(const StateHandle &state_handle_,
                        SearchNodeInfo &info_, OperatorCost cost_type_)
     : state_handle(state_handle_), info(info_), cost_type(cost_type_) {
@@ -124,7 +122,7 @@ void SearchNode::mark_as_dead_end() {
     info.status = SearchNodeInfo::DEAD_END;
 }
 
-void SearchNode::dump() {
+void SearchNode::dump() const {
     cout << state_handle.get_id() << ": ";
     State(state_handle).dump_fdr();
     if (info.creating_operator) {
@@ -136,15 +134,12 @@ void SearchNode::dump() {
 }
 
 SearchSpace::SearchSpace(OperatorCost cost_type_)
-    : search_node_infos(0), cost_type(cost_type_){
+    : cost_type(cost_type_) {
 }
 
 SearchNode SearchSpace::get_node(const StateHandle &handle) {
     assert(handle.is_valid());
-    if (!search_node_infos[handle]) {
-        search_node_infos[handle] = new SearchNodeInfo();
-    }
-    return SearchNode(handle, *search_node_infos[handle], cost_type);
+    return SearchNode(handle, search_node_infos[handle], cost_type);
 }
 
 void SearchSpace::trace_path(const State &goal_state,
@@ -152,7 +147,7 @@ void SearchSpace::trace_path(const State &goal_state,
     StateHandle current_state_handle = goal_state.get_handle();
     assert(path.empty());
     for (;;) {
-        const SearchNodeInfo &info = *search_node_infos[current_state_handle];
+        const SearchNodeInfo &info = search_node_infos[current_state_handle];
         const Operator *op = info.creating_operator;
         if (op == 0) {
             assert(!info.parent_state_handle.is_valid());
@@ -168,7 +163,7 @@ void SearchSpace::dump() const {
     vector<StateHandle> handles = g_state_registry.get_all_registered_handles();
     for (vector<StateHandle>::const_iterator it = handles.begin(); it != handles.end(); ++it) {
         StateHandle state_handle = *it;
-        SearchNodeInfo &node_info = *search_node_infos[state_handle];
+        const SearchNodeInfo &node_info = search_node_infos[state_handle];
         cout << "#" << state_handle.get_id() << ": ";
         State(state_handle).dump_fdr();
         if (node_info.creating_operator &&
