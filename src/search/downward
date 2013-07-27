@@ -156,7 +156,7 @@ if [[ "$1" == "ipc" ]]; then
                     lm_cost_type=PLUSONE,cost_type=PLUSONE),pref=true)" \
                 --heuristic "hff2=ff(cost_type=PLUSONE)" \
                 --search "iterated([
-                    lazy_greedy([hff1,hlm1],preferred=[hff2,hlm1],
+                    lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],
                                 cost_type=ONE,reopen_closed=false),
                     lazy_greedy([hff2,hlm2],preferred=[hff2,hlm2],
                                 reopen_closed=false),
