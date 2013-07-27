@@ -56,11 +56,6 @@ public:
         }
         return entries[state_id];
     }
-
-    void clear() {
-        entries.clear();
-        entries.resize(state_registry.size(), default_value);
-    }
 };
 
 #endif
