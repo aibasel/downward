@@ -5,15 +5,23 @@
 using namespace std;
 
 StateHandle StateRegistry::get_handle(const State &state) {
-    // Create a preliminary StateReprentation with an invalid id.
-    // Later we have to pack the data from state instead of borrowing it
-    StateRepresentation *temp_representation = new StateRepresentation(state.get_buffer());
+    /*
+      Attempt to insert a StateRepresentation for this state if none
+      is present yet.
+
+      If this succeeds (results in a new entry), we will then need to
+      set the proper ID and copy the state data into it. Later, we
+      should pack the data from state instead of copying it.
+
+      If it does not succeed, return the existing entry.
+    */
+
     pair<StateRepresentationSet::iterator, bool> result =
-            registered_states.insert(temp_representation);
-    StateRepresentation *registered_representation = *result.first;
+        registered_states.insert(StateRepresentation(state.get_buffer()));
+    const StateRepresentation &registered_representation = *result.first;
     bool new_entry = result.second;
     if (new_entry) {
-        registered_representation->id = registered_states.size() - 1;
+        registered_representation.id = registered_states.size() - 1;
         // Code duplication with State::copy_buffer_from will disappear when packed
         // states are introduced. State will then copy unpacked states while this
         // method will copy the packed representation.
@@ -22,10 +30,8 @@ StateHandle StateRegistry::get_handle(const State &state) {
         // TODO: Profile if memcpy could speed this up significantly,
         //       e.g. if we do blind A* search.
         for (size_t i = 0; i < g_variable_domain.size(); ++i)
-            copy[i] = registered_representation->data[i];
-        registered_representation->data = copy;
-    } else {
-        delete temp_representation;
+            copy[i] = registered_representation.data[i];
+        registered_representation.data = copy;
     }
-    return StateHandle(registered_representation);
+    return StateHandle(&registered_representation);
 }
