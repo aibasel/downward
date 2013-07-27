@@ -58,8 +58,6 @@ public:
     virtual bool dead_ends_are_reliable() const {
         return true;
     }
-
-    virtual void reset();
 };
 
 #endif

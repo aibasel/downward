@@ -245,11 +245,6 @@ bool LandmarkCountHeuristic::reach_state(const State &parent_state,
     return true;
 }
 
-void LandmarkCountHeuristic::reset() {
-    lm_status_manager.clear_reached();
-    lm_status_manager.set_landmarks_for_initial_state();
-}
-
 void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
                                          const vector<bool> &lms_vec) {
     // This function exists purely so we don't have to change all the
