@@ -61,7 +61,7 @@ extern RandomNumberGenerator g_rng;
 // Only one global object for now. Could later be changed to use one instance
 // for each problem in this case the method State::get_id would also have to be
 // changed.
-extern StateRegistry g_state_registry;
+extern StateRegistry *g_state_registry;
 
 
 
