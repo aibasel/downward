@@ -136,15 +136,14 @@ if [[ "$1" == "ipc" ]]; then
     elif [[ "$CONFIG" == "seq-sat-lama-2011" ]]; then
         if [[ "$UNIT_COST" == "unit" ]]; then
             "$PLANNER" \
-                --heuristic "hlm=lmcount(lm_rhw(reasonable_orders=true,
-                    lm_cost_type=PLUSONE,cost_type=PLUSONE),pref=true,cost_type=PLUSONE)" \
-                --heuristic "hff=ff(cost_type=PLUSONE)" \
+                --heuristic "hlm=lmcount(lm_rhw(reasonable_orders=true),pref=true)" \
+                --heuristic "hff=ff()" \
                 --search "iterated([
-                    lazy_greedy([hff,hlm],preferred=[hff,hlm],cost_type=PLUSONE),
-                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5,cost_type=PLUSONE),
-                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3,cost_type=PLUSONE),
-                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2,cost_type=PLUSONE),
-                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1,cost_type=PLUSONE)],
+                    lazy_greedy([hff,hlm],preferred=[hff,hlm]),
+                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),
+                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),
+                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2),
+                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1)],
                     repeat_last=true,continue_on_fail=true)" \
                 "$@" < $TEMPFILE
         elif [[ "$UNIT_COST" == "nonunit" ]]; then
