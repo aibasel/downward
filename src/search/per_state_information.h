@@ -18,12 +18,12 @@ private:
 
 public:
     PerStateInformation()
-        : state_registry(g_state_registry),
+        : state_registry(*g_state_registry),
           default_value() {
     }
 
     PerStateInformation(const Entry &default_value_)
-        : state_registry(g_state_registry),
+        : state_registry(*g_state_registry),
           default_value(default_value_) {
     }
 

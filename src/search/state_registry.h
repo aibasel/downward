@@ -4,12 +4,16 @@
 #include "globals.h"
 #include "state.h"
 #include "state_handle.h"
+#include "state_var_t.h"
 #include "utilities.h"
 
 #include <hash_set>
 
+template<typename T>
+class SegmentedArrayVector;
+
+
 class StateRegistry {
-private:
     typedef StateHandle::StateRepresentation StateRepresentation;
 
     struct StateRepresentationSemanticHash {
@@ -29,8 +33,13 @@ private:
     typedef __gnu_cxx::hash_set<StateRepresentation,
                                 StateRepresentationSemanticHash,
                                 StateRepresentationSemanticEqual> StateRepresentationSet;
+
+    SegmentedArrayVector<state_var_t> *state_data_pool;
     StateRepresentationSet registered_states;
 public:
+    StateRegistry();
+    ~StateRegistry();
+
     /* After calling this function the returned state is registered and has a
        valid handle.
        Performes a lookup of state. If the same state was previously looked up,

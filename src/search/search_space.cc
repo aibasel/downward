@@ -160,7 +160,7 @@ void SearchSpace::trace_path(const State &goal_state,
 }
 
 void SearchSpace::dump() const {
-    vector<StateHandle> handles = g_state_registry.get_all_registered_handles();
+    vector<StateHandle> handles = g_state_registry->get_all_registered_handles();
     for (vector<StateHandle>::const_iterator it = handles.begin(); it != handles.end(); ++it) {
         StateHandle state_handle = *it;
         const SearchNodeInfo &node_info = search_node_infos[state_handle];
@@ -177,5 +177,5 @@ void SearchSpace::dump() const {
 }
 
 void SearchSpace::statistics() const {
-    cout << "Number of registered states: " << g_state_registry.size() << endl;
+    cout << "Number of registered states: " << g_state_registry->size() << endl;
 }

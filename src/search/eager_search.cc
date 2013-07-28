@@ -65,7 +65,7 @@ void EagerSearch::initialize() {
 
     assert(!heuristics.empty());
 
-    StateHandle initial_state_handle = g_state_registry.get_handle(*g_initial_state);
+    StateHandle initial_state_handle = g_state_registry->get_handle(*g_initial_state);
     for (size_t i = 0; i < heuristics.size(); i++)
         heuristics[i]->evaluate(State(initial_state_handle));
     open_list->evaluate(0, false);
@@ -242,7 +242,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
             // HACK! HACK! we do this because SearchNode has no default/copy constructor
-            StateHandle dummy_handle = g_state_registry.get_handle(*g_initial_state);
+            StateHandle dummy_handle = g_state_registry->get_handle(*g_initial_state);
             SearchNode dummy_node = search_space.get_node(dummy_handle);
             return make_pair(dummy_node, false);
         }
