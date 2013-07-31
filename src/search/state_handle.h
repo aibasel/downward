@@ -10,6 +10,8 @@ class State;
 
 // PIMPL pattern (http://en.wikipedia.org/wiki/Opaque_pointer#C.2B.2B)
 // StateRepresentation should not be used outside of this class and the StateRegistry.
+// For documentation on classes relevant to storing and working with registered
+// states see the file state_registry.h.
 class StateHandle {
     friend class StateRegistry;
 

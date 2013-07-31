@@ -5,6 +5,9 @@
 #include "per_state_information.h"
 #include "segmented_vector.h" // HACK
 
+// For documentation on classes relevant to storing and working with registered
+// states see the file state_registry.h.
+
 class SearchNodeInfo {
     // HACK: Get rid of some of these friends
     friend class SearchNode;
