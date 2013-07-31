@@ -36,19 +36,14 @@ public:
         int state_id = state_handle.get_id();
         size_t virtual_size = state_registry.size();
         assert(state_id >= 0 && state_id < virtual_size);
+        // TODO implement a proper resize method that guarantees amortized constant time.
         while (entries.size() < virtual_size) {
-            // resize() and insert() do not guarantee amortized constant time.
-            // In a lot of cases this will be called once for each state, so we
-            // have to avoid copying the vector every time.
             entries.push_back(default_value);
         }
         return entries[state_id];
     }
 
     const Entry &operator[](const StateHandle &state_handle) const {
-        // We do not change the size here to avoid having to make entries
-        // mutable. Instead, we return the default value by value if the index
-        // is out of bounds.
         int state_id = state_handle.get_id();
         assert(state_id >= 0 && state_id < state_registry.size());
         if (state_id >= entries.size()) {
