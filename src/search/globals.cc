@@ -27,7 +27,6 @@ using namespace __gnu_cxx;
 
 
 static const int PRE_FILE_VERSION = 3;
-static char *memory_padding = new char[1024];
 
 
 // TODO: This needs a proper type and should be moved to a separate
@@ -319,14 +318,6 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
     if (a.first == b.first) // same variable: mutex iff different value
         return a.second != b.second;
     return bool(g_inconsistent_facts[a.first][a.second].count(b));
-}
-
-void no_memory () {
-    assert(memory_padding);
-    delete[] memory_padding;
-    memory_padding = 0;
-    cout << "Failed to allocate memory. Released memory buffer." << endl;
-    exit_with(EXIT_OUT_OF_MEMORY);
 }
 
 bool g_use_metric;

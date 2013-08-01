@@ -31,8 +31,6 @@ void check_magic(std::istream &in, std::string magic);
 
 bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
 
-extern void no_memory();
-
 extern bool g_use_metric;
 extern int g_min_action_cost;
 extern int g_max_action_cost;

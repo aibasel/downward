@@ -14,7 +14,6 @@ using namespace std;
 
 
 int main(int argc, const char **argv) {
-    set_new_handler(no_memory);
     register_event_handlers();
 
     if (argc < 2) {
