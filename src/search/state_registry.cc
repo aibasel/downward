@@ -44,7 +44,7 @@ StateHandle StateRegistry::get_handle(const State &state) {
         registered_representation.id = id;
         // TODO: We don't really need a separate data field any more
         // because it follows from the id.
-        // => additional space optimization opportunity
+        // => additional space optimization opportunity: issue385.
         registered_representation.data = (*state_data_pool)[id];
     }
     return StateHandle(&registered_representation);
