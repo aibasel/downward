@@ -51,15 +51,19 @@ typedef tree<ParseNode> ParseTree;
 
 struct ParseError {
     ParseError(std::string m, ParseTree pt);
+    ParseError(std::string m, ParseTree pt, std::string correct_substring);
 
     std::string msg;
     ParseTree parse_tree;
+    std::string substr;
 
     friend std::ostream &operator<<(std::ostream &out, const ParseError &pe) {
         out << "Parse Error: " << std::endl
         << pe.msg << " at: " << std::endl;
         kptree::print_tree_bracketed<ParseNode>(pe.parse_tree, out);
-        out << std::endl;
+        if(pe.substr.size() > 0) {
+            out << " (cannot continue parsing after \"" << pe.substr << "\")" << std::endl;
+        }
         return out;
     }
 };

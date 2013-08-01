@@ -96,8 +96,6 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
 
     // Two plausibility tests in debug mode.
     assert(h >= 0);
-    if (h == 0 && g_min_action_cost > 0)
-        assert(test_goal(state));
 
     return h;
 }
