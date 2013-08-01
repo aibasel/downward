@@ -110,6 +110,8 @@ def run_search(planner, args, sas_file, plan_file, timeout=None, memory=None):
         if memory is not None:
             # Memory in Bytes
             set_limit(resource.RLIMIT_AS, memory, memory)
+        else:
+            set_limit(resource.RLIMIT_AS, -1, -1)
 
     returncode = subprocess.call(complete_args, stdin=open(sas_file),
                                  preexec_fn=set_limits)
