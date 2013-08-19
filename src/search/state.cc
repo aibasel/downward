@@ -3,6 +3,7 @@
 #include "axioms.h"
 #include "globals.h"
 #include "operator.h"
+#include "utilities.h"
 
 #include <algorithm>
 #include <iostream>
@@ -71,11 +72,19 @@ State::~State() {
     _deallocate();
 }
 
-void State::dump() const {
+void State::dump_pddl() const {
+    for (int i = 0; i < g_variable_domain.size(); i++) {
+        const string &fact_name = g_fact_names[i][vars[i]];
+        if (fact_name != "<none of those>")
+            cout << fact_name << endl;
+    }
+}
+
+void State::dump_fdr() const {
     // We cast the values to int since we'd get bad output otherwise
     // if state_var_t == char.
     for (int i = 0; i < g_variable_domain.size(); i++)
-        cout << "  " << g_variable_name[i] << ": "
+        cout << "  #" << i << " [" << g_variable_name[i] << "] -> "
              << static_cast<int>(vars[i]) << endl;
 }
 
@@ -91,13 +100,5 @@ bool State::operator<(const State &other) const {
 }
 
 size_t State::hash() const {
-    // hash function adapted from Python's hash function for tuples.
-    size_t hash_value = 0x345678;
-    size_t mult = 1000003;
-    for (int i = g_variable_domain.size() - 1; i >= 0; i--) {
-        hash_value = (hash_value ^ vars[i]) * mult;
-        mult += 82520 + i + i;
-    }
-    hash_value += 97531;
-    return hash_value;
+    return ::hash_number_sequence(vars, g_variable_domain.size());
 }

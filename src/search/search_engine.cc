@@ -14,7 +14,7 @@ SearchEngine::SearchEngine(const Options &opts)
     solved = false;
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
-        exit(2);
+        exit_with(EXIT_INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
 }
@@ -79,5 +79,5 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
                            "operator cost adjustment type");
     parser.add_option<int>("bound",
                            numeric_limits<int>::max(),
-                           "bound on plan cost");
+                           "exclusive bound on plan cost");
 }

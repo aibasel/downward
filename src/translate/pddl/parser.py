@@ -6,7 +6,7 @@ class ParseError(Exception):
 # Basic functions for parsing PDDL (Lisp) files.
 def parse_nested_list(input_file):
     tokens = tokenize(input_file)
-    next_token = tokens.next()
+    next_token = next(tokens)
     if next_token != "(":
         raise ParseError("Expected '(', got %s." % next_token)
     result = list(parse_list_aux(tokens))
@@ -25,7 +25,7 @@ def parse_list_aux(tokenstream):
     # Leading "(" has already been swallowed.
     while True:
         try:
-            token = tokenstream.next()
+            token = next(tokenstream)
         except StopIteration:
             raise ParseError()
         if token == ")":
