@@ -124,13 +124,12 @@ void SearchNode::close() {
 }
 
 void SearchNode::mark_as_dead_end() {
-    assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::DEAD_END;
 }
 
 void SearchNode::dump() {
     cout << state_buffer << ": ";
-    State(state_buffer).dump();
+    State(state_buffer).dump_fdr();
     cout << " created by " << info.creating_operator->get_name()
          << " from " << info.parent_state << endl;
 }
@@ -190,7 +189,7 @@ void SearchSpace::dump() {
     int i = 0;
     for (HashTable::iterator iter = nodes->begin(); iter != nodes->end(); iter++) {
         cout << "#" << i++ << " (" << iter->first.state_data << "): ";
-        State(iter->first.state_data).dump();
+        State(iter->first.state_data).dump_fdr();
         if (iter->second.creating_operator &&
             iter->second.parent_state) {
             cout << " created by " << iter->second.creating_operator->get_name()
@@ -202,6 +201,6 @@ void SearchSpace::dump() {
 }
 
 void SearchSpace::statistics() const {
-    cout << "search space hash size: " << nodes->size() << endl;
-    cout << "search space hash bucket count: " << nodes->bucket_count() << endl;
+    cout << "Search space hash size: " << nodes->size() << endl;
+    cout << "Search space hash bucket count: " << nodes->bucket_count() << endl;
 }

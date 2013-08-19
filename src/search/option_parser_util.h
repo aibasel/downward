@@ -1,6 +1,9 @@
 #ifndef OPTION_PARSER_UTIL_H
 #define OPTION_PARSER_UTIL_H
 
+#include "merge_and_shrink/shrink_strategy.h"
+#include "utilities.h"
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -46,15 +49,19 @@ typedef tree<ParseNode> ParseTree;
 
 struct ParseError {
     ParseError(std::string m, ParseTree pt);
+    ParseError(std::string m, ParseTree pt, std::string correct_substring);
 
     std::string msg;
     ParseTree parse_tree;
+    std::string substr;
 
     friend std::ostream &operator<<(std::ostream &out, const ParseError &pe) {
         out << "Parse Error: " << std::endl
         << pe.msg << " at: " << std::endl;
         kptree::print_tree_bracketed<ParseNode>(pe.parse_tree, out);
-        out << std::endl;
+        if(pe.substr.size() > 0) {
+            out << " (cannot continue parsing after \"" << pe.substr << "\")" << std::endl;
+        }
         return out;
     }
 };
@@ -227,6 +234,13 @@ struct TypeNamer<Synergy *> {
     }
 };
 
+template <>
+struct TypeNamer<ShrinkStrategy *> {
+    static std::string name() {
+        return "shrink strategy";
+    }
+};
+
 template <class Entry>
 struct TypeNamer<OpenList<Entry> *> {
     static std::string name() {
@@ -246,7 +260,7 @@ struct TypeNamer<std::vector<T> > {
 
 template <class T>
 struct DefaultValueNamer {
-    static std::string toStr(T val) {
+    static std::string to_str(T val) {
         std::ostringstream strs;
         strs << std::boolalpha << val;
         return strs.str();
@@ -255,18 +269,25 @@ struct DefaultValueNamer {
 
 template <>
 struct DefaultValueNamer<ParseTree> {
-    static std::string toStr(ParseTree val) {
+    static std::string to_str(ParseTree val) {
         return "implement default value naming for parse trees!"
                + val.begin()->value;
     }
 };
 
+template <>
+struct DefaultValueNamer<ShrinkStrategy *> {
+    static std::string to_str(ShrinkStrategy *s) {
+        return s->name();
+    }
+};
+
 template <class T>
 struct DefaultValueNamer<std::vector<T> > {
-    static std::string toStr(std::vector<T> val) {
+    static std::string to_str(std::vector<T> val) {
         std::string s = "[";
         for (size_t i(0); i != val.size(); ++i) {
-            s += DefaultValueNamer<T>::toStr(val[i]);
+            s += DefaultValueNamer<T>::to_str(val[i]);
         }
         s += "]";
         return s;
@@ -338,7 +359,7 @@ public:
             std::cout << "attempt to retrieve nonexisting object of name "
                       << key << " (type: " << TypeNamer<T>::name() << ")"
                       << " from Options. Aborting." << std::endl;
-            exit(1);
+            exit_with(EXIT_CRITICAL_ERROR);
         }
         try {
             T result = boost::any_cast<T>(it->second);
@@ -348,7 +369,7 @@ public:
                       << std::endl
                       << key << " is not of type " << TypeNamer<T>::name()
                       << std::endl << "exiting" << std::endl;
-            exit(1);
+            exit_with(EXIT_CRITICAL_ERROR);
         }
     }
 
@@ -361,7 +382,7 @@ public:
                           << std::endl
                           << "List " << key << " is empty"
                           << std::endl;
-                exit(1);
+                exit_with(EXIT_INPUT_ERROR);
             }
         }
     }

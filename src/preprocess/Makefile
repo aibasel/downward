@@ -1,9 +1,21 @@
+## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
+## static linking of the executable in release mode.
+## On OS X, this is unsupported and will be silently disabled.
+LINK_RELEASE_STATICALLY=1
+
+## On a supported operating system, there should be no need to override
+## the OS setting. If the provided code does not work even though your
+## operating system is a supported one, please report this as a bug.
+OS=auto
+
+
 HEADERS = \
           axiom.h \
           causal_graph.h \
           domain_transition_graph.h \
           helper_functions.h \
           max_dag.h \
+          mutex_group.h \
           operator.h \
           scc.h \
           state.h \
@@ -14,6 +26,32 @@ SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = preprocess
 
 ARGS_PROFILE =
+
+
+ifeq ($(OS), auto)
+UNAME := $(shell uname)
+UNAME_O := $(shell uname -o)
+ifeq ($(UNAME), Darwin)
+OS=osx
+endif
+ifeq ($(UNAME), Linux)
+OS=linux
+endif
+ifeq ($(UNAME_O), Cygwin)
+## For now, we treat Linux and Cygwin equally in this Makefile, so we
+## just call Cygwin "linux".
+OS=linux
+endif
+ifeq ($(OS), auto)
+$(warning OS detection failed -- setting to Linux and hoping for the best!)
+OS=linux
+endif
+endif
+
+ifeq ($(OS), osx)
+## Disable static linking on OS X.
+LINK_RELEASE_STATICALLY=0
+endif
 
 
 
@@ -46,10 +84,22 @@ CCOPT += -m32
 CCOPT += -g
 CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 
-## The following line is a HACK to cross-compile a 64-bit executable
-## on a 32-bit Ubuntu machine (it also needs the -m32 to be changed to
-## -m64, of course.) See http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
-CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+## The following lines contain workarounds for bugs when
+## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
+## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
+## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
+## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
+
+HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
+HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
+
+ifdef HAVE_GCC_4_4
+    CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+endif
+
+ifdef HAVE_GCC_4_5
+    CCOPT += -I/usr/include/c++/4.5/i686-linux-gnu
+endif
 
 LINKOPT  =
 LINKOPT += -m32
@@ -69,10 +119,14 @@ CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
 CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
-LINKOPT_RELEASE  = -static -static-libgcc
+LINKOPT_RELEASE =
 LINKOPT_DEBUG    =
 LINKOPT_PROFILE  = -pg
 # LINKOPT_PROFILE += -lc_p
+
+ifeq ($(LINK_RELEASE_STATICALLY), 1)
+LINKOPT_RELEASE += -static -static-libgcc
+endif
 
 POSTLINKOPT_RELEASE  =
 POSTLINKOPT_DEBUG    =

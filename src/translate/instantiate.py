@@ -1,7 +1,7 @@
 #! /usr/bin/env python
-# -*- coding: latin-1 -*-
 
-from __future__ import with_statement
+from __future__ import print_function
+
 from collections import defaultdict
 
 import build_model
@@ -45,10 +45,12 @@ def instantiate(task, model):
             action = atom.predicate
             parameters = action.parameters
             inst_parameters = atom.args[:len(parameters)]
-            reachable_action_parameters[action.name].append(inst_parameters)
-            if isinstance(action.precondition, pddl.ExistentialCondition):
-                parameters = list(parameters)
-                parameters += action.precondition.parameters
+            # Note: It's important that we use the action object
+            # itself as the key in reachable_action_parameters (rather
+            # than action.name) since we can have multiple different
+            # actions with the same name after normalization, and we
+            # want to distinguish their instantiations.
+            reachable_action_parameters[action].append(inst_parameters)
             variable_mapping = dict([(par.name, arg)
                                      for par, arg in zip(parameters, atom.args)])
             inst_action = action.instantiate(variable_mapping, init_facts,
@@ -57,12 +59,8 @@ def instantiate(task, model):
                 instantiated_actions.append(inst_action)
         elif isinstance(atom.predicate, pddl.Axiom):
             axiom = atom.predicate
-            parameters = axiom.parameters
-            if isinstance(axiom.condition, pddl.ExistentialCondition):
-                parameters = list(parameters)
-                parameters += axiom.condition.parameters
             variable_mapping = dict([(par.name, arg)
-                                     for par, arg in zip(parameters, atom.args)])
+                                     for par, arg in zip(axiom.parameters, atom.args)])
             inst_axiom = axiom.instantiate(variable_mapping, init_facts, fluent_facts)
             if inst_axiom:
                 instantiated_axioms.append(inst_axiom)
@@ -70,7 +68,7 @@ def instantiate(task, model):
             relaxed_reachable = True
 
     return (relaxed_reachable, fluent_facts, instantiated_actions,
-           instantiated_axioms, reachable_action_parameters)
+            sorted(instantiated_axioms), reachable_action_parameters)
 
 def explore(task):
     prog = pddl_to_prolog.translate(task)
@@ -79,21 +77,19 @@ def explore(task):
         return instantiate(task, model)
 
 if __name__ == "__main__":
-    import pddl
-
     task = pddl.open()
-    relaxed_reachable, atoms, actions, axioms = explore(task)
-    print "goal relaxed reachable: %s" % relaxed_reachable
-    print "%d atoms:" % len(atoms)
+    relaxed_reachable, atoms, actions, axioms, _ = explore(task)
+    print("goal relaxed reachable: %s" % relaxed_reachable)
+    print("%d atoms:" % len(atoms))
     for atom in atoms:
-        print " ", atom
-    print
-    print "%d actions:" % len(actions)
+        print(" ", atom)
+    print()
+    print("%d actions:" % len(actions))
     for action in actions:
         action.dump()
-        print
-    print
-    print "%d axioms:" % len(axioms)
+        print()
+    print()
+    print("%d axioms:" % len(axioms))
     for axiom in axioms:
         axiom.dump()
-        print
+        print()

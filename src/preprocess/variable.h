@@ -2,10 +2,11 @@
 #define VARIABLE_H
 
 #include <iostream>
+#include <vector>
 using namespace std;
 
 class Variable {
-    int range;
+    vector<string> values;
     string name;
     int layer;
     int level;
@@ -20,7 +21,9 @@ public:
     string get_name() const;
     int get_layer() const {return layer; }
     bool is_derived() const {return layer != -1; }
+    void generate_cpp_input(ofstream &outfile) const;
     void dump() const;
+    string get_fact_name(int value) const {return values[value]; }
 };
 
 #endif

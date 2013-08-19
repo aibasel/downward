@@ -2,15 +2,51 @@
 BASEDIR="$(dirname "$0")"
 TEMPFILE=downward.tmp.$$
 cat > $TEMPFILE
-STATE_SIZE=$(command time --output=elapsed.time --append --format='%S\n%U\n' "$BASEDIR/dispatch" $TEMPFILE)
+
+if [[ "$(uname -o)" == "Cygwin" ]]; then
+    # Not sure how to handle time in Cygwin (command time doesn't work).
+    # Ignoring it for now.
+    STATE_SIZE=$("$BASEDIR/dispatch" $TEMPFILE)
+    UNIT_COST=$("$BASEDIR/unitcost" $TEMPFILE)
+else
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # Need to explicitly ask for GNU time (from MacPorts) on Mac OS X.
+        TIME="gtime"
+        if ! which $TIME >/dev/null; then
+            echo "$TIME must be installed on Mac OSX (from MacPorts, perhaps) for this to work"
+            exit 1
+        fi
+    else
+        TIME="command time"
+    fi
+    TIME="$TIME --output=elapsed.time --format=%S\n%U\n"
+    STATE_SIZE=$($TIME --append "$BASEDIR/dispatch" $TEMPFILE)
+    UNIT_COST=$($TIME --append "$BASEDIR/unitcost" $TEMPFILE)
+fi
+
 echo Dispatcher selected state size $STATE_SIZE.
-UNIT_COST=$(command time --output=elapsed.time --append --format='%S\n%U\n' "$BASEDIR/unitcost" $TEMPFILE)
 echo This is a $UNIT_COST task.
 PLANNER="$BASEDIR/downward-$STATE_SIZE"
+
+function run_portfolio {
+    PORTFOLIO="$1"
+    shift
+    # Set soft memory limit of 50 MB to avoid Python using too much space.
+    # On the maia cluster, 20 MB have been tested to be sufficient; 18 MB are not.
+    ulimit -Sv 51200
+    "$PORTFOLIO" "$TEMPFILE" "$UNIT_COST" "$PLANNER" "$@"
+    # Explicit is better than implicit: return portfolio's exit code.
+    return $?
+}
+
 if [[ "$1" == "ipc" ]]; then
     CONFIG="$2"
     shift 2
-    if [[ "$CONFIG" == "seq-sat-fd-autotune-1" ]]; then
+    PORTFOLIO_SCRIPT="$BASEDIR/downward-$CONFIG.py"
+    if [[ -e "$PORTFOLIO_SCRIPT" ]]; then
+        # Handle configs seq-{sat,opt}-fdss-{1,2} and seq-opt-merge-and-shrink.
+        run_portfolio "$PORTFOLIO_SCRIPT" "$@"
+    elif [[ "$CONFIG" == "seq-sat-fd-autotune-1" ]]; then
         "$PLANNER" \
             --heuristic "hFF=ff(cost_type=1)" \
             --heuristic "hCea=cea(cost_type=0)" \
@@ -94,10 +130,6 @@ if [[ "$1" == "ipc" ]]; then
                          boost=1000),
                      preferred=[hCea,hGoalCount],reopen_closed=true,cost_type=1)],
                 repeat_last=true,continue_on_fail=true)" "$@" < $TEMPFILE
-    elif [[ "$CONFIG" == "seq-sat-fdss-1" ]]; then
-        "$BASEDIR/downward-seq-sat-fdss-1.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
-    elif [[ "$CONFIG" == "seq-sat-fdss-2" ]]; then
-        "$BASEDIR/downward-seq-sat-fdss-2.py" "$UNIT_COST" "$PLANNER" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-sat-lama-2008" ]]; then
         echo "The seq-sat-lama-2008 planner should not use this code."
         exit 2
@@ -144,23 +176,24 @@ if [[ "$1" == "ipc" ]]; then
                 training_set=10,sample=0,uniform=true)" \
             --search "astar(hCombinedSelMax,mpd=false,
                             pathmax=true,cost_type=0)" "$@" < $TEMPFILE
-    elif [[ "$CONFIG" == "seq-opt-fdss-1" ]]; then
-        "$BASEDIR/downward-seq-opt-fdss-1.py" "$PLANNER" "$@" < $TEMPFILE
-    elif [[ "$CONFIG" == "seq-opt-fdss-2" ]]; then
-        "$BASEDIR/downward-seq-opt-fdss-2.py" "$PLANNER" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-selmax" ]]; then
         "$PLANNER" --search "astar(selmax([lmcut(),lmcount(lm_merged([lm_hm(m=1),lm_rhw()]),admissible=true)],training_set=1000),mpd=true)" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-bjolp" ]]; then
         "$PLANNER" --search "astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true),mpd=true)" "$@" < $TEMPFILE
     elif [[ "$CONFIG" == "seq-opt-lmcut" ]]; then
         "$PLANNER" --search "astar(lmcut())" "$@" < $TEMPFILE
-    elif [[ "$CONFIG" == "seq-opt-merge-and-shrink" ]]; then
-        "$BASEDIR/downward-seq-opt-merge-and-shrink.py" "$PLANNER" "$@" < $TEMPFILE
     else
         echo "unknown IPC planner name: $CONFIG"
         exit 2
     fi
+elif [[ "$1" == "--portfolio" ]]; then
+    # Portfolio files must reside in the search directory.
+    PORTFOLIO="$2"
+    shift 2
+    run_portfolio "$BASEDIR/$PORTFOLIO" "$@"
 else
     "$PLANNER" "$@" < $TEMPFILE
 fi
+EXITCODE=$?
 rm -f $TEMPFILE
+exit $EXITCODE

@@ -2,6 +2,7 @@
 #include "option_parser.h"
 #include "ext/tree_util.hh"
 #include "plugin.h"
+#include "rng.h"
 #include <string>
 #include <algorithm>
 #include <iostream>
@@ -11,6 +12,12 @@ using namespace std;
 ParseError::ParseError(string m, ParseTree pt)
     : msg(m),
       parse_tree(pt) {
+}
+
+ParseError::ParseError(string m, ParseTree pt, string correct_substring)
+    : msg(m),
+      parse_tree(pt),
+      substr(correct_substring) {
 }
 
 HelpElement::HelpElement(string k, string h, string t_n)
@@ -60,6 +67,7 @@ static void get_help(string k) {
     get_help_templ<LandmarkGraph *>(pt);
     Plugin<OpenList<int> >::register_open_lists();
     get_help_templ<OpenList<int> *>(pt);
+    get_help_templ<ShrinkStrategy *>(pt);
 }
 
 template <class T>
@@ -81,6 +89,7 @@ static void get_full_help() {
     get_full_help_templ<LandmarkGraph *>();
     Plugin<OpenList<int> >::register_open_lists();
     get_full_help_templ<OpenList<int> *>();
+    get_full_help_templ<ShrinkStrategy *>();
 }
 
 
@@ -180,6 +189,7 @@ SearchEngine *OptionParser::parse_cmd_line(
         } else if (arg.compare("--random-seed") == 0) {
             ++i;
             srand(atoi(argv[i]));
+            g_rng.seed(atoi(argv[i]));
             cout << "random seed " << argv[i] << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
@@ -197,7 +207,7 @@ SearchEngine *OptionParser::parse_cmd_line(
         } else {
             cerr << "unknown option " << arg << endl << endl;
             cout << OptionParser::usage(argv[0]) << endl;
-            exit(1);
+            exit_with(EXIT_INPUT_ERROR);
         }
     }
     return engine;
@@ -245,6 +255,8 @@ static ParseTree generate_parse_tree(string config) {
             tr.append_child(cur_node, ParseNode(buffer, key));
             buffer.clear();
             key.clear();
+        } else if(next == '(' && buffer.size() == 0) {
+            throw ParseError("misplaced opening bracket (", *cur_node, config.substr(0,i));
         }
         switch (next) {
         case ' ':
@@ -253,13 +265,13 @@ static ParseTree generate_parse_tree(string config) {
             cur_node = last_child(tr, cur_node);
             break;
         case ')':
-            if (cur_node == top)
-                throw ParseError("missing (", *cur_node);
+            if (cur_node == pseudoroot)
+                throw ParseError("missing (", *cur_node, config.substr(0,i));
             cur_node = tr.parent(cur_node);
             break;
         case '[':
             if (!buffer.empty())
-                throw ParseError("misplaced opening bracket [", *cur_node);
+                throw ParseError("misplaced opening bracket [", *cur_node, config.substr(0,i));
             tr.append_child(cur_node, ParseNode("list", key));
             key.clear();
             cur_node = last_child(tr, cur_node);
@@ -271,7 +283,7 @@ static ParseTree generate_parse_tree(string config) {
                 key.clear();
             }
             if (cur_node->value.compare("list") != 0) {
-                throw ParseError("mismatched brackets", *cur_node);
+                throw ParseError("mismatched brackets", *cur_node, config.substr(0,i));
             }
             cur_node = tr.parent(cur_node);
             break;
@@ -279,7 +291,7 @@ static ParseTree generate_parse_tree(string config) {
             break;
         case '=':
             if (buffer.empty())
-                throw ParseError("expected keyword before =", *cur_node);
+                throw ParseError("expected keyword before =", *cur_node, config.substr(0,i));
             key = buffer;
             buffer.clear();
             break;
@@ -364,7 +376,7 @@ void OptionParser::add_enum_option(string k,
             error("invalid enum argument " + name
                   + " for option " + k);
         }
-        opts.set(k, x);
+        opts.set<int>(k, x);
     } else {
         //...otherwise try to map the string to its position in the enumeration vector
         transform(enumeration.begin(), enumeration.end(), enumeration.begin(),
@@ -375,7 +387,7 @@ void OptionParser::add_enum_option(string k,
             error("invalid enum argument " + name
                   + " for option " + k);
         }
-        opts.set(k, it - enumeration.begin());
+        opts.set<int>(k, it - enumeration.begin());
     }
 }
 

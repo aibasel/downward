@@ -26,11 +26,11 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         use_cost_sharing = true;
         if (lgraph.is_using_reasonable_orderings()) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
-            ::exit(2);
+            exit_with(EXIT_INPUT_ERROR);
         }
         if (!g_axioms.empty()) {
             cerr << "cost partitioning does not support axioms" << endl;
-            ::exit(1);
+            exit_with(EXIT_UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
 #ifdef USE_LP
@@ -39,7 +39,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
 #else
             cerr << "You must build the planner with the USE_LP symbol defined." << endl
                  << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
-            exit(1);
+            exit_with(EXIT_INPUT_ERROR);
 #endif
         } else {
             lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, opts.get<bool>("alm"),
@@ -94,29 +94,8 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
         h = total_cost - reached_cost + needed_cost;
     }
 
+    // Two plausibility tests in debug mode.
     assert(h >= 0);
-
-#ifndef NDEBUG
-    // For debugging purposes, check whether heuristic is 0 even though
-    // goal is not reached. This should never happen unless action costs
-    // are used where some actions have cost 0.
-    if (h == 0 && !test_goal(state)) {
-        assert(g_use_metric);
-        bool all_costs_are_zero = true;
-        //cout << "WARNING! Landmark heuristic is 0, but goal not reached" << endl;
-        for (int i = 0; i < g_goal.size(); i++) {
-            if (state[g_goal[i].first] != g_goal[i].second) {
-                //cout << "missing goal prop " << g_variable_name[g_goal[i].first] << " : "
-                //<< g_goal[i].second << endl;
-                LandmarkNode *node_p = lgraph.get_landmark(g_goal[i]);
-                assert(node_p != NULL);
-                if (node_p->min_cost != 0)
-                    all_costs_are_zero = false;
-            }
-        }
-        assert(all_costs_are_zero);
-    }
-#endif
 
     return h;
 }

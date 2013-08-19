@@ -1,11 +1,24 @@
 ## Set USE_LP to 1 to enable linear programming stuff.
 USE_LP=0
+
+## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
+## static linking of the executable in release mode.
+## On OS X, this is unsupported and will be silently disabled.
+LINK_RELEASE_STATICALLY=1
+
+## Set STATE_VAR_BYTES to 1, 2 or 4 to control how large a state
+## variable is. There should be no need to tweak this manually.
 STATE_VAR_BYTES=1
+
+## On a supported operating system, there should be no need to override
+## the OS setting. If the provided code does not work even though your
+## operating system is a supported one, please report this as a bug.
+OS=auto
+
 
 HEADERS = \
           axioms.h \
           causal_graph.h \
-          closed_list.h \
           combining_evaluator.h \
           domain_transition_graph.h \
           eager_search.h \
@@ -17,12 +30,14 @@ HEADERS = \
           ipc_max_heuristic.h \
           iterated_search.h \
           lazy_search.h \
+          legacy_causal_graph.h \
           max_evaluator.h \
           operator.h \
           operator_cost.h \
           option_parser.h \
           pref_evaluator.h \
           relaxation_heuristic.h \
+          rng.h \
           search_engine.h \
           search_node_info.h \
           search_progress.h \
@@ -58,15 +73,15 @@ HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
-# HEADERS += mas_heuristic.h \
-#            abstraction.h \
-#            operator_registry.h \
-#            variable_order_finder.h
-
-HEADERS += raz_mas_heuristic.h \
-           raz_abstraction.h \
-           raz_operator_registry.h \
-           raz_variable_order_finder.h
+HEADERS += merge_and_shrink/abstraction.h \
+           merge_and_shrink/label_reducer.h \
+           merge_and_shrink/merge_and_shrink_heuristic.h \
+           merge_and_shrink/shrink_bisimulation.h \
+           merge_and_shrink/shrink_bucket_based.h \
+           merge_and_shrink/shrink_fh.h \
+           merge_and_shrink/shrink_random.h \
+           merge_and_shrink/shrink_strategy.h \
+           merge_and_shrink/variable_order_finder.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
@@ -76,11 +91,11 @@ HEADERS += landmarks/exploration.h \
            landmarks/landmark_status_manager.h \
            landmarks/landmark_graph_merged.h \
            landmarks/landmark_graph.h \
+           landmarks/landmark_factory.h \
            landmarks/landmark_factory_rpg_exhaust.h \
            landmarks/landmark_factory_rpg_sasp.h \
            landmarks/landmark_factory_zhu_givan.h \
            landmarks/util.h \
-           landmarks/landmark_factory.h
 
 HEADERS += learning/AODE.h \
            learning/classifier.h \
@@ -92,13 +107,50 @@ HEADERS += learning/AODE.h \
            learning/probe_state_space_sample.h \
            learning/selective_max_heuristic.h \
            learning/state_space_sample.h \
-           learning/state_vars_feature_extractor.h
+           learning/state_vars_feature_extractor.h \
+
+HEADERS += pdbs/canonical_pdbs_heuristic.h \
+           pdbs/dominance_pruner.h \
+           pdbs/match_tree.h \
+           pdbs/max_cliques.h \
+           pdbs/pattern_generation_edelkamp.h \
+           pdbs/pattern_generation_haslum.h \
+           pdbs/pdb_heuristic.h \
+           pdbs/util.h \
+           pdbs/zero_one_pdbs_heuristic.h \
+
+SHELL = /bin/bash
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET  = downward
 
 ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
 
+
+ifeq ($(OS), auto)
+UNAME := $(shell uname)
+UNAME_O := $(shell uname -o)
+ifeq ($(UNAME), Darwin)
+OS=osx
+endif
+ifeq ($(UNAME), Linux)
+OS=linux
+endif
+ifeq ($(UNAME_O), Cygwin)
+## For now, we treat Linux and Cygwin equally in this Makefile, so we
+## just call Cygwin "linux".
+OS=linux
+endif
+ifeq ($(OS), auto)
+$(warning OS detection failed -- setting to Linux and hoping for the best!)
+OS=linux
+endif
+endif
+
+ifeq ($(OS), osx)
+## Disable static linking on OS X.
+LINK_RELEASE_STATICALLY=0
+endif
 
 
 OBJECT_SUFFIX_RELEASE = .$(STATE_VAR_BYTES)
@@ -117,7 +169,6 @@ TARGET_DEBUG    = $(TARGET)$(TARGET_SUFFIX_DEBUG)
 OBJECTS_PROFILE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_PROFILE).o)
 TARGET_PROFILE  = $(TARGET)$(TARGET_SUFFIX_PROFILE)
 
-
 CC     = g++
 DEPEND = g++ -MM
 
@@ -125,15 +176,27 @@ DEPEND = g++ -MM
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
-CCOPT  = -g
+CCOPT = -Iext
+CCOPT += -g
 CCOPT += -m32
-CCOPT +=
 CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
 
-## The following line is a HACK to cross-compile a 64-bit executable
-## on a 32-bit Ubuntu machine (it also needs the -m32 to be changed to
-## -m64, of course.) See http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
-CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu -Iext
+## The following lines contain workarounds for bugs when
+## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
+## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
+## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
+## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
+
+HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
+HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
+
+ifdef HAVE_GCC_4_4
+    CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+endif
+
+ifdef HAVE_GCC_4_5
+    CCOPT += -I/usr/include/c++/4.5/i686-linux-gnu
+endif
 
 LINKOPT  = -g
 LINKOPT += -m32
@@ -144,7 +207,7 @@ POSTLINKOPT =
 ## Additional specialized options for the various targets follow.
 ## In release mode, we link statically since this makes it more likely
 ## that local compiles will work on the various grids (gkigrid, Black
-## Forest Grid).
+## Forest Grid, maia).
 ##
 ## NOTE: This precludes some uses of exceptions.
 ##        For details, see man gcc on -static-libgcc.
@@ -153,14 +216,29 @@ CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
 CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
-LINKOPT_RELEASE  = -static -static-libgcc
-LINKOPT_DEBUG    = -lrt
-LINKOPT_PROFILE  = -pg -lrt
-# LINKOPT_PROFILE += -lc_p
+LINKOPT_RELEASE =
+LINKOPT_DEBUG    =
+LINKOPT_PROFILE  = -pg
 
-POSTLINKOPT_RELEASE  = -Wl,-Bstatic -lrt
-POSTLINKOPT_DEBUG    =
-POSTLINKOPT_PROFILE  =
+POSTLINKOPT_RELEASE =
+POSTLINKOPT_DEBUG   =
+POSTLINKOPT_PROFILE =
+
+ifeq ($(LINK_RELEASE_STATICALLY), 1)
+LINKOPT_RELEASE += -static -static-libgcc
+endif
+
+ifeq ($(OS), linux)
+ifeq ($(LINK_RELEASE_STATICALLY), 0)
+POSTLINKOPT_RELEASE += -lrt
+else
+POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+endif
+POSTLINKOPT_DEBUG  += -lrt
+POSTLINKOPT_PROFILE += -lrt
+# POSTLINKOPT_PROFILE += -lc_p
+endif
+
 
 ## Define the default target up here so that the LP stuff below
 ## doesn't define a default target.
@@ -191,24 +269,34 @@ $(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
 
 COIN_LIBS = OsiClp Clp CoinUtils Osi
 
-## We want to link the COIN libraries statically and link other
-## libraries dynamically, unless we are in release mode. We accomplish
-## this by using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
-## afterwards (unless in release mode). See
+## We want to always link the COIN libraries statically, even if static
+## linking is otherwise disabled. We accomplish this by
+## using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
+## afterwards (unless in release mode with static linking enabled). See
 ## http://ubuntuforums.org/showthread.php?t=491455
 
-COIN_CCOPT = -I $(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
-COIN_LINKOPT = -L $(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+COIN_CCOPT = -I$(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
+ifeq ($(OS), osx)
+COIN_LINKOPT = -L$(COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
+else
+COIN_LINKOPT = -L$(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+endif
 
 CCOPT += $(COIN_CCOPT)
 
 POSTLINKOPT_RELEASE += $(COIN_LINKOPT)
-POSTLINKOPT_DEBUG   += $(COIN_LINKOPT) -Wl,-Bdynamic
-POSTLINKOPT_PROFILE += $(COIN_LINKOPT) -Wl,-Bdynamic
+POSTLINKOPT_DEBUG += $(COIN_LINKOPT)
+POSTLINKOPT_PROFILE += $(COIN_LINKOPT)
 
+ifeq ($(OS), linux)
+ifeq ($(LINK_RELEASE_STATICALLY), 0)
+POSTLINKOPT_RELEASE += -Wl,-Bdynamic
+endif
+POSTLINKOPT_DEBUG   += -Wl,-Bdynamic
+POSTLINKOPT_PROFILE += -Wl,-Bdynamic
 endif
 
-SHELL = /bin/bash
+endif # LP code
 
 all: release debug profile
 
@@ -260,7 +348,7 @@ clean:
 distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
 
-## Note: If we just call gcc -MM on a source file that lives within a
+## NOTE: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
 ## the for loop with the sed call.
 
