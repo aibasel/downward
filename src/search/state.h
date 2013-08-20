@@ -8,23 +8,36 @@ using namespace std;
 class Operator;
 
 #include "state_var_t.h"
+#include "state_handle.h"
+#include "globals.h"
 
 class State {
-    state_var_t *vars; // values for vars
     bool borrowed_buffer;
-    void _allocate();
-    void _deallocate();
-    void _copy_buffer_from_state(const State &state);
-
+    // Values for vars. will later be converted to UnpackedStateData.
+    state_var_t *vars;
+    StateHandle handle;
+    void copy_buffer_from(const state_var_t *buffer);
+    // Only used for creating the initial state.
+    explicit State(state_var_t *buffer);
+    explicit State(const State &predecessor, const Operator &op);
 public:
-    explicit State(istream &in);
+    explicit State(const StateHandle &handle);
     State(const State &state);
-    State(const State &predecessor, const Operator &op);
-    ~State();
     State &operator=(const State &other);
-    state_var_t &operator[](int index) {
-        return vars[index];
+    ~State();
+
+    // Creates an unregistered State object for the initial state on the heap.
+    static State *create_initial_state(state_var_t *initial_state_vars);
+    // Named constructor for registered States
+    static State construct_registered_successor(const State &predecessor,
+        const Operator &op, StateRegistry &state_registry = *g_state_registry);
+    // Named constructor for unregistered States
+    static State construct_unregistered_successor(const State &predecessor, const Operator &op);
+
+    StateHandle get_handle() const {
+        return handle;
     }
+
     int operator[](int index) const {
         return vars[index];
     }
@@ -34,11 +47,6 @@ public:
     bool operator<(const State &other) const;
     size_t hash() const;
 
-
-    explicit State(state_var_t *buffer) {
-        vars = buffer;
-        borrowed_buffer = true;
-    }
     const state_var_t *get_buffer() const {
         return vars;
     }
