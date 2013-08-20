@@ -2,11 +2,11 @@
 #define LANDMARKS_LANDMARK_STATUS_MANAGER_H
 
 #include "landmark_graph.h"
-#include "../state_proxy.h"
+#include "../per_state_information.h"
 
 class LandmarkStatusManager {
 private:
-    __gnu_cxx::hash_map<StateProxy, vector<bool> > reached_lms;
+    PerStateInformation<vector<bool> > reached_lms;
 
     bool do_intersection;
     LandmarkGraph &lm_graph;
@@ -17,7 +17,6 @@ public:
     LandmarkStatusManager(LandmarkGraph &graph);
     virtual ~LandmarkStatusManager();
 
-    void clear_reached();
     vector<bool> &get_reached_landmarks(const State &state);
 
     bool update_lm_status(const State &state);

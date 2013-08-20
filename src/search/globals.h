@@ -17,6 +17,7 @@ class RandomNumberGenerator;
 class State;
 class SuccessorGenerator;
 class Timer;
+class StateRegistry;
 
 bool test_goal(const State &state);
 void save_plan(const std::vector<const Operator *> &plan, int iter);
@@ -55,5 +56,11 @@ extern LegacyCausalGraph *g_legacy_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
+// Only one global object for now. Could later be changed to use one instance
+// for each problem in this case the method State::get_id would also have to be
+// changed.
+extern StateRegistry *g_state_registry;
+
+
 
 #endif

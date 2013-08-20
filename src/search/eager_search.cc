@@ -19,7 +19,7 @@ EagerSearch::EagerSearch(
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       do_pathmax(opts.get<bool>("pathmax")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
-      open_list(opts.get<OpenList<state_var_t *> *>("open")),
+      open_list(opts.get<OpenList<StateHandle> *>("open")),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval")) {
     if (opts.contains("preferred")) {
         preferred_operator_heuristics =
@@ -65,8 +65,9 @@ void EagerSearch::initialize() {
 
     assert(!heuristics.empty());
 
+    StateHandle initial_state_handle = g_state_registry->get_handle(*g_initial_state);
     for (size_t i = 0; i < heuristics.size(); i++)
-        heuristics[i]->evaluate(*g_initial_state);
+        heuristics[i]->evaluate(State(initial_state_handle));
     open_list->evaluate(0, false);
     search_progress.inc_evaluated_states();
     search_progress.inc_evaluations(heuristics.size());
@@ -80,10 +81,10 @@ void EagerSearch::initialize() {
             search_progress.report_f_value(f_evaluator->get_value());
         }
         search_progress.check_h_progress(0);
-        SearchNode node = search_space.get_node(*g_initial_state);
+        SearchNode node = search_space.get_node(initial_state_handle);
         node.open_initial(heuristics[0]->get_value());
 
-        open_list->insert(node.get_state_buffer());
+        open_list->insert(node.get_state_handle());
     }
 }
 
@@ -128,11 +129,11 @@ int EagerSearch::step() {
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
-        State succ_state(s, *op);
+        State succ_state = State::construct_registered_successor(s, *op);
         search_progress.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
-        SearchNode succ_node = search_space.get_node(succ_state);
+        SearchNode succ_node = search_space.get_node(succ_state.get_handle());
 
         // Previously encountered dead end. Don't re-evaluate.
         if (succ_node.is_dead_end())
@@ -148,7 +149,7 @@ int EagerSearch::step() {
                   evaluation here. We must call reach_state for each
                   heuristic for its side effects.
                 */
-                if (heuristics[i]->reach_state(s, *op, succ_node.get_state()))
+                if (heuristics[i]->reach_state(s, *op, succ_state))
                     h_is_dirty = true;
             }
             if (h_is_dirty && use_multi_path_dependence)
@@ -190,7 +191,7 @@ int EagerSearch::step() {
             }
             succ_node.open(succ_h, node, op);
 
-            open_list->insert(succ_node.get_state_buffer());
+            open_list->insert(succ_state.get_handle());
             if (search_progress.check_h_progress(succ_node.get_g())) {
                 reward_progress();
             }
@@ -215,7 +216,7 @@ int EagerSearch::step() {
                 // involved? Is this still feasible in the current version?
                 open_list->evaluate(succ_node.get_g(), is_preferred);
 
-                open_list->insert(succ_node.get_state_buffer());
+                open_list->insert(succ_state.get_handle());
             } else {
                 // if we do not reopen closed nodes, we just update the parent pointers
                 // Note that this could cause an incompatibility between
@@ -240,12 +241,15 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
     while (true) {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
-            return make_pair(search_space.get_node(*g_initial_state), false);
+            // HACK! HACK! we do this because SearchNode has no default/copy constructor
+            StateHandle dummy_handle = g_state_registry->get_handle(*g_initial_state);
+            SearchNode dummy_node = search_space.get_node(dummy_handle);
+            return make_pair(dummy_node, false);
         }
         vector<int> last_key_removed;
-        State state(open_list->remove_min(
-                        use_multi_path_dependence ? &last_key_removed : 0));
-        SearchNode node = search_space.get_node(state);
+        StateHandle handle = open_list->remove_min(
+                        use_multi_path_dependence ? &last_key_removed : 0);
+        SearchNode node = search_space.get_node(handle);
 
         if (node.is_closed())
             continue;
@@ -276,7 +280,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                 if (new_h > node.get_h()) {
                     assert(node.is_open());
                     node.increase_h(new_h);
-                    open_list->insert(node.get_state_buffer());
+                    open_list->insert(node.get_state_handle());
                     continue;
                 }
             }
@@ -321,9 +325,9 @@ static SearchEngine *_parse(OptionParser &parser) {
     //open lists are currently registered with the parser on demand,
     //because for templated classes the usual method of registering
     //does not work:
-    Plugin<OpenList<state_var_t *> >::register_open_lists();
+    Plugin<OpenList<StateHandle> >::register_open_lists();
 
-    parser.add_option<OpenList<state_var_t *> *>("open");
+    parser.add_option<OpenList<StateHandle> *>("open");
     parser.add_option<bool>("reopen_closed", false,
                             "reopen closed nodes");
     parser.add_option<bool>("pathmax", false,
@@ -367,8 +371,8 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         std::vector<ScalarEvaluator *> evals;
         evals.push_back(f_eval);
         evals.push_back(eval);
-        OpenList<state_var_t *> *open = \
-            new TieBreakingOpenList<state_var_t *>(evals, false, false);
+        OpenList<StateHandle> *open = \
+            new TieBreakingOpenList<StateHandle>(evals, false, false);
 
         opts.set("open", open);
         opts.set("f_eval", f_eval);
@@ -395,21 +399,21 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
             opts.get_list<ScalarEvaluator *>("evals");
         vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
-        OpenList<state_var_t *> *open;
+        OpenList<StateHandle> *open;
         if ((evals.size() == 1) && preferred_list.empty()) {
-            open = new StandardScalarOpenList<state_var_t *>(evals[0], false);
+            open = new StandardScalarOpenList<StateHandle>(evals[0], false);
         } else {
-            vector<OpenList<state_var_t *> *> inner_lists;
+            vector<OpenList<StateHandle> *> inner_lists;
             for (int i = 0; i < evals.size(); i++) {
                 inner_lists.push_back(
-                    new StandardScalarOpenList<state_var_t *>(evals[i], false));
+                    new StandardScalarOpenList<StateHandle>(evals[i], false));
                 if (!preferred_list.empty()) {
                     inner_lists.push_back(
-                        new StandardScalarOpenList<state_var_t *>(evals[i],
+                        new StandardScalarOpenList<StateHandle>(evals[i],
                                                                   true));
                 }
             }
-            open = new AlternationOpenList<state_var_t *>(
+            open = new AlternationOpenList<StateHandle>(
                 inner_lists, opts.get<int>("boost"));
         }
 
