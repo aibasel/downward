@@ -195,15 +195,37 @@ def parse_task(task_pddl):
 
     assert init[0] == ":init"
     initial = []
+    initial_true = set()
+    initial_false = set()
+    initial_assignments = dict()
     for fact in init[1:]:
         if fact[0] == "=":
             try:
-                initial.append(f_expression.parse_assignment(fact))
+                assignment = f_expression.parse_assignment(fact)
             except ValueError as e:
                 raise SystemExit("Error in initial state specification\n" +
                                  "Reason: %s." %  e)
+            if assignment.fluent in initial_assignments:
+                prev = initial_assignments[assignment.fluent]
+                if assignment.expression == prev.expression:
+                    print("Warning: %s is specified twice" % assignment,
+                          "in initial state specification")
+                else:
+                    raise SystemExit("Error in initial state specification\n" +
+                                     "Reason: conflicting assignment for " +
+                                     "%s." %  assignment.fluent)
+            else:
+                initial_assignments[assignment.fluent] = assignment
+                initial.append(assignment)
+        elif fact[0] == "not":
+            atom = conditions.Atom(fact[1][0], fact[1][1:])
+            check_atom_consistency(atom, initial_false, initial_true, False)
+            initial_false.add(atom)
         else:
-            initial.append(conditions.Atom(fact[0], fact[1:]))
+            atom = conditions.Atom(fact[0], fact[1:])
+            check_atom_consistency(atom, initial_true, initial_false)
+            initial_true.add(atom)
+    initial.extend(initial_true)
     yield initial
 
     goal = next(iterator)
@@ -222,6 +244,15 @@ def parse_task(task_pddl):
     for entry in iterator:
         assert False, entry
 
+def check_atom_consistency(atom, same_truth_value, other_truth_value, atom_is_true=True):
+    if atom in other_truth_value:
+        raise SystemExit("Error in initial state specification\n" +
+                         "Reason: %s is true and false." %  atom)
+    if atom in same_truth_value:
+        if not atom_is_true:
+            atom = atom.negate()
+        print("Warning: %s is specified twice in initial state specification" % atom)
+    
 
 def check_for_duplicates(elements, errmsg, finalmsg):
     seen = set()
