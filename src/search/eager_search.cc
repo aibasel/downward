@@ -423,7 +423,6 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         opts.set("mpd", false);
         ScalarEvaluator *sep = 0;
         opts.set("f_eval", sep);
-        opts.set("bound", numeric_limits<int>::max());
         opts.set("preferred", preferred_list);
         engine = new EagerSearch(opts);
     }

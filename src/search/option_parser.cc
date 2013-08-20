@@ -14,6 +14,12 @@ ParseError::ParseError(string m, ParseTree pt)
       parse_tree(pt) {
 }
 
+ParseError::ParseError(string m, ParseTree pt, string correct_substring)
+    : msg(m),
+      parse_tree(pt),
+      substr(correct_substring) {
+}
+
 HelpElement::HelpElement(string k, string h, string t_n)
     : kwd(k),
       help(h),
@@ -249,6 +255,8 @@ static ParseTree generate_parse_tree(string config) {
             tr.append_child(cur_node, ParseNode(buffer, key));
             buffer.clear();
             key.clear();
+        } else if(next == '(' && buffer.size() == 0) {
+            throw ParseError("misplaced opening bracket (", *cur_node, config.substr(0,i));
         }
         switch (next) {
         case ' ':
@@ -257,13 +265,13 @@ static ParseTree generate_parse_tree(string config) {
             cur_node = last_child(tr, cur_node);
             break;
         case ')':
-            if (cur_node == top)
-                throw ParseError("missing (", *cur_node);
+            if (cur_node == pseudoroot)
+                throw ParseError("missing (", *cur_node, config.substr(0,i));
             cur_node = tr.parent(cur_node);
             break;
         case '[':
             if (!buffer.empty())
-                throw ParseError("misplaced opening bracket [", *cur_node);
+                throw ParseError("misplaced opening bracket [", *cur_node, config.substr(0,i));
             tr.append_child(cur_node, ParseNode("list", key));
             key.clear();
             cur_node = last_child(tr, cur_node);
@@ -275,7 +283,7 @@ static ParseTree generate_parse_tree(string config) {
                 key.clear();
             }
             if (cur_node->value.compare("list") != 0) {
-                throw ParseError("mismatched brackets", *cur_node);
+                throw ParseError("mismatched brackets", *cur_node, config.substr(0,i));
             }
             cur_node = tr.parent(cur_node);
             break;
@@ -283,7 +291,7 @@ static ParseTree generate_parse_tree(string config) {
             break;
         case '=':
             if (buffer.empty())
-                throw ParseError("expected keyword before =", *cur_node);
+                throw ParseError("expected keyword before =", *cur_node, config.substr(0,i));
             key = buffer;
             buffer.clear();
             break;

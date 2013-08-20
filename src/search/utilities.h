@@ -66,7 +66,7 @@ ostream & operator<<(ostream &stream, const vector<T> &vec) {
 }
 
 template<class Sequence>
-size_t hash_number_sequence(Sequence data, size_t length) {
+size_t hash_number_sequence(const Sequence &data, size_t length) {
     // hash function adapted from Python's hash function for tuples.
     size_t hash_value = 0x345678;
     size_t mult = 1000003;
