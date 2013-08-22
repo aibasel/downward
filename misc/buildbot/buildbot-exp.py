@@ -61,8 +61,6 @@ def parse_custom_args():
 def get_exp_dir(rev, test):
     return os.path.join(DIR, 'experiments', '%s-%s' % (rev, test))
 
-
-
 def main():
     args = parse_custom_args()
 
@@ -77,9 +75,7 @@ def main():
 
     combo = [(Translator(REPO, rev=rev), Preprocessor(REPO, rev=rev), Planner(REPO, rev=rev))]
 
-    exp = DownwardExperiment(path=get_exp_dir(rev, args.test),
-                             repo=REPO,
-                             combinations=combo)
+    exp = DownwardExperiment(path=get_exp_dir(rev, args.test), repo=REPO, combinations=combo)
     exp.add_suite(SUITES[args.test])
     for nick, config in CONFIGS[args.test]:
         exp.add_config(nick, config)
