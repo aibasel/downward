@@ -66,10 +66,9 @@ def get_exp_dir(rev, test):
 args = parse_custom_args()
 
 if not args.revision:
-    rev = checkouts.get_global_rev(REPO)
-    # The working directory may contain changes, but we want the vanilla revision.
-    if rev.endswith('+'):
-        rev = rev[:-1]
+    # If the working directory contains changes, the revision ends with '+'.
+    # Strip this to use the vanilla revision.
+    rev = checkouts.get_global_rev(REPO).rstrip('+')
 elif args.revision.lower() == 'baseline':
     rev = BASELINE
 else:
