@@ -19,3 +19,4 @@
 ^new-scripts/reports/
 ^new-scripts/preprocessed-tasks/
 ^new-scripts/exp-.*/
+^misc/buildbot/experiments/
