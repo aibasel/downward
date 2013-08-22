@@ -54,9 +54,10 @@ RELATIVE_ATTRIBUTE_CHECKS = [
 ]
 
 def parse_custom_args():
-    # TODO: Add help strings.
-    ARGPARSER.add_argument('--rev', dest='revision')
-    ARGPARSER.add_argument('--test', choices=['nightly', 'weekly'], default='nightly')
+    ARGPARSER.add_argument('--rev', dest='revision',
+        help='Fast Downward revision or "baseline". If omitted use current revision.')
+    ARGPARSER.add_argument('--test', choices=['nightly', 'weekly'], default='nightly',
+        help='Select whether "nightly" or "weekly" tests should be run.')
     return ARGPARSER.parse_args()
 
 def get_exp_dir(rev, test):
@@ -82,7 +83,7 @@ exp = DownwardExperiment(path=get_exp_dir(rev, args.test),
 exp.add_suite(SUITES[args.test])
 for nick, config in CONFIGS[args.test]:
     exp.add_config(nick, config)
-exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES))
+exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='report')
 
 # Only compare results if we are not running the baseline experiment.
 if rev != BASELINE:
@@ -90,8 +91,9 @@ if rev != BASELINE:
     exp.add_step(Step('fetch-baseline-results', Fetcher(),
                       get_exp_dir(BASELINE, args.test) + '-eval',
                       exp.eval_dir))
-    exp.add_report(AbsoluteReport())
-    exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_ATTRIBUTE_CHECKS))
+    exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
+    exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_ATTRIBUTE_CHECKS),
+                   name='regression-check')
     exp.add_step(Step.remove_exp_dir(exp))
 
 exp()
