@@ -63,36 +63,38 @@ def parse_custom_args():
 def get_exp_dir(rev, test):
     return os.path.join(DIR, 'experiments', '%s-%s' % (rev, test))
 
-args = parse_custom_args()
+def main():
+    args = parse_custom_args()
 
-if not args.revision:
-    # If the working directory contains changes, the revision ends with '+'.
-    # Strip this to use the vanilla revision.
-    rev = checkouts.get_global_rev(REPO).rstrip('+')
-elif args.revision.lower() == 'baseline':
-    rev = BASELINE
-else:
-    rev = checkouts.get_global_rev(REPO, args.revision)
+    if not args.revision:
+        # If the working directory contains changes, the revision ends with '+'.
+        # Strip this to use the vanilla revision.
+        rev = checkouts.get_global_rev(REPO).rstrip('+')
+    elif args.revision.lower() == 'baseline':
+        rev = BASELINE
+    else:
+        rev = checkouts.get_global_rev(REPO, args.revision)
 
-combo = [(Translator(REPO, rev=rev), Preprocessor(REPO, rev=rev), Planner(REPO, rev=rev))]
+    combo = [(Translator(REPO, rev=rev), Preprocessor(REPO, rev=rev), Planner(REPO, rev=rev))]
 
-exp = DownwardExperiment(path=get_exp_dir(rev, args.test),
-                         repo=REPO,
-                         combinations=combo)
-exp.add_suite(SUITES[args.test])
-for nick, config in CONFIGS[args.test]:
-    exp.add_config(nick, config)
-exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='report')
+    exp = DownwardExperiment(path=get_exp_dir(rev, args.test),
+                             repo=REPO,
+                             combinations=combo)
+    exp.add_suite(SUITES[args.test])
+    for nick, config in CONFIGS[args.test]:
+        exp.add_config(nick, config)
+    exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='report')
 
-# Only compare results if we are not running the baseline experiment.
-if rev != BASELINE:
-    logging.info('Testing revision %s' % rev)
-    exp.add_step(Step('fetch-baseline-results', Fetcher(),
-                      get_exp_dir(BASELINE, args.test) + '-eval',
-                      exp.eval_dir))
-    exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
-    exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_ATTRIBUTE_CHECKS),
-                   name='regression-check')
-    exp.add_step(Step.remove_exp_dir(exp))
+    # Only compare results if we are not running the baseline experiment.
+    if rev != BASELINE:
+        exp.add_step(Step('fetch-baseline-results', Fetcher(),
+                          get_exp_dir(BASELINE, args.test) + '-eval',
+                          exp.eval_dir))
+        exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
+        exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_ATTRIBUTE_CHECKS),
+                       name='regression-check')
+        exp.add_step(Step.remove_exp_dir(exp))
 
-exp()
+    exp()
+
+main()
