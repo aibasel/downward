@@ -4,17 +4,22 @@ from downward.reports.absolute import AbsoluteReport
 
 
 class Check(object):
-    def __init__(self, attribute, min_rel=None, max_rel=None, max_abs_diff=0.5):
+    """
+    Compare the attribute values x and y of two runs and check whether
+    *min_rel* <= y/x <= *max_rel*. Even if the check fails, only report the
+    failure if the absolute difference is greater than *ignored_abs_diff*.
+    """
+    def __init__(self, attribute, min_rel=None, max_rel=None, ignored_abs_diff=0):
         self.attribute = attribute
         self.min_rel = min_rel
         self.max_rel = max_rel
-        self.max_abs_diff = max_abs_diff
+        self.ignored_abs_diff = ignored_abs_diff
 
     def get_error(self, base, new):
         # We assume that no attributes are missing.
         val1 = base[self.attribute]
         val2 = new[self.attribute]
-        if abs(val2 - val1) <= self.max_abs_diff or val1 == 0:
+        if abs(val2 - val1) <= self.ignored_abs_diff or val1 == 0:
             return ''
         factor = val2 / float(val1)
         msg = self.attribute + ' | %(val2).2f / %(val1).2f = %(factor).2f' % locals()
