@@ -1,3 +1,5 @@
+import logging
+
 from downward.reports.absolute import AbsoluteReport
 
 
@@ -41,7 +43,6 @@ class RegressionCheckReport(AbsoluteReport):
     def get_markup(self):
         lines = []
         for (domain, problem), runs in self.problem_runs.items():
-            print runs[0]['planner'], runs[1]['planner']
             if runs[0]['planner'] == self.baseline:
                 base, new = runs
             else:
@@ -54,3 +55,12 @@ class RegressionCheckReport(AbsoluteReport):
             # Add header.
             lines.insert(0, '|| Task | Attribute | Error |')
         return '\n'.join(lines)
+
+    def write(self):
+        AbsoluteReport.write(self)
+        markup = self.get_markup()
+        if markup:
+            print 'There has been a regression:'
+            print
+            print markup
+            logging.critical('Regression found.')
