@@ -47,8 +47,8 @@ RELATIVE_ATTRIBUTE_CHECKS = [
     Check('cost', max_rel=0.5),
     Check('search_time', max_rel=1.05),
     Check('total_time', max_rel=1.05),
-    Check('memory', max_rel=1.05, max_abs_diff=1024),
-    Check('translator_time_done', max_rel=1.05, max_abs_diff=1),
+    Check('memory', max_rel=1.05, ignored_abs_diff=1024),
+    Check('translator_time_done', max_rel=1.05, ignored_abs_diff=1),
 ]
 
 def parse_custom_args():
