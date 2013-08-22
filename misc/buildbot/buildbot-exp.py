@@ -10,13 +10,11 @@ Usage:
 ./buildbot-exp.py --test weekly --all
 """
 
-import logging
 import os
-import sys
+import shutil
 
 from lab.fetcher import Fetcher
 from lab.steps import Step
-from lab.tools import ArgParser
 from lab.experiment import ARGPARSER
 from downward.experiments import DownwardExperiment
 # TODO: Use add_revision() once it's available.
@@ -63,6 +61,8 @@ def parse_custom_args():
 def get_exp_dir(rev, test):
     return os.path.join(DIR, 'experiments', '%s-%s' % (rev, test))
 
+
+
 def main():
     args = parse_custom_args()
 
@@ -91,9 +91,10 @@ def main():
                           get_exp_dir(BASELINE, args.test) + '-eval',
                           exp.eval_dir))
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
+        exp.add_step(Step('rm-preprocess-dir', shutil.rmtree, exp.preprocess_exp_path, ignore_errors=True))
+        exp.add_step(Step('rm-exp-dir', shutil.rmtree, exp.path, ignore_errors=True))
         exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_ATTRIBUTE_CHECKS),
                        name='regression-check')
-        exp.add_step(Step.remove_exp_dir(exp))
 
     exp()
 
