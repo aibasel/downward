@@ -17,6 +17,7 @@ import sys
 from lab.fetcher import Fetcher
 from lab.steps import Step
 from lab.tools import ArgParser
+from lab.experiment import ARGPARSER
 from downward.experiments import DownwardExperiment
 # TODO: Use add_revision() once it's available.
 from downward.checkouts import Translator, Preprocessor, Planner
@@ -52,25 +53,11 @@ RELATIVE_ATTRIBUTE_CHECKS = [
     Check('translator_time_done', max_rel=1.05, max_abs_diff=1),
 ]
 
-
-# TODO: Experiment.argparser -> lab.experiment.argparser (make it globally available)
-#       and let users add custom arguments after the normal args (and a dummy epilog)
-#       have been added.
-class ConsumingArgParser(ArgParser):
-    def __init__(self, *args, **kwargs):
-        ArgParser.__init__(self, *args, add_help=False)
-
-    def parse_args(self, *args, **kwargs):
-        args, remaining = self.parse_known_args(*args, **kwargs)
-        sys.argv = [sys.argv[0]] + remaining
-        return args
-
 def parse_custom_args():
-    parser = ConsumingArgParser()
     # TODO: Add help strings.
-    parser.add_argument('--rev', dest='revision')
-    parser.add_argument('--test', choices=['nightly', 'weekly'], default='nightly')
-    return parser.parse_args()
+    ARGPARSER.add_argument('--rev', dest='revision')
+    ARGPARSER.add_argument('--test', choices=['nightly', 'weekly'], default='nightly')
+    return ARGPARSER.parse_args()
 
 def get_exp_dir(rev, test):
     return os.path.join(DIR, 'experiments', '%s-%s' % (rev, test))
@@ -79,6 +66,9 @@ args = parse_custom_args()
 
 if not args.revision:
     rev = checkouts.get_global_rev(REPO)
+    # The working directory may contain changes, but we want the vanilla revision.
+    if rev.endswith('+'):
+        rev = rev[:-1]
 elif args.revision.lower() == 'baseline':
     rev = BASELINE
 else:
