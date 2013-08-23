@@ -31,10 +31,22 @@ REPO = os.path.join(DIR, '../../')
 
 # TODO: Set baseline, configs, suites and attributes.
 BASELINE = checkouts.get_global_rev(REPO, '3222')
-CONFIGS = {
-    'nightly': [('lmcut', ['--search', 'astar(lmcut())'])],
-    'weekly': [('lmcut', ['--search', 'astar(lmcut())'])],
-}
+CONFIGS = {}
+CONFIGS['nightly'] = [
+    ('lmcut', ['--search', 'astar(lmcut())']),
+    ('lazy-greedy-ff', ['--heuristic', 'h=ff()', '--search', 'lazy_greedy(h, preferred=h)']),
+    ('lazy-greedy-cea', ['--heuristic', 'h=cea()', '--search', 'lazy_greedy(h, preferred=h)']),
+    ('lazy-greedy-ff-cea', ['--heuristic', 'hff=ff()', '--heuristic',  'hcea=cea()',
+                            '--search', 'lazy_greedy([hff, hcea], preferred=[hff, hcea])']),
+    ('lama-2011', ['ipc', 'seq-sat-lama-2011']),
+    ('blind', ['--search', 'astar(blind())']),
+    ('merge-and-shrink-bisim', ['--search',
+        'astar(merge_and_shrink(merge_strategy=merge_linear_reverse_level,'
+            'shrink_strategy=shrink_bisimulation(max_states=50000,greedy=false,'
+            'group_by_h=true)))']),
+]
+CONFIGS['weekly'] = CONFIGS['nightly']
+
 SUITES = {
     'nightly': ['gripper:prob01.pddl', 'blocks:probBLOCKS-4-1.pddl'],
     'weekly': ['gripper:prob01.pddl', 'gripper:prob02.pddl',
