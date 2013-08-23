@@ -29,8 +29,7 @@ from check import Check, RegressionCheckReport
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.join(DIR, '../../')
 
-# TODO: Set baseline, configs, suites and attributes.
-BASELINE = checkouts.get_global_rev(REPO, '3222')
+BASELINE = checkouts.get_global_rev(REPO, 'f5110717a963')
 CONFIGS = {}
 CONFIGS['nightly'] = [
     ('lmcut', ['--search', 'astar(lmcut())']),
@@ -52,16 +51,22 @@ SUITES = {
     'weekly': ['gripper:prob01.pddl', 'gripper:prob02.pddl',
                'blocks:probBLOCKS-4-1.pddl', 'blocks:probBLOCKS-4-2.pddl'],
 }
-ABSOLUTE_ATTRIBUTES = ['coverage', 'expansions']
-RELATIVE_ATTRIBUTE_CHECKS = [
-    Check('expansions', max_rel=1.05),
+
+TIME_ATTRIBUTES = ['search_time', 'total_time', 'translator_time_done']
+SEARCH_ATTRIBUTES = ['dead_ends', 'evaluations', 'expansions',
+                     'expansions_until_last_jump', 'generated', 'reopened']
+MEMORY_ATTRIBUTES = ['translator_peak_memory', 'memory']
+RELATIVE_CHECKS = ([
     Check('initial_h_value', min_rel=1.0),
-    Check('cost', max_rel=0.5),
-    Check('search_time', max_rel=1.05),
-    Check('total_time', max_rel=1.05),
-    Check('memory', max_rel=1.05, ignored_abs_diff=1024),
-    Check('translator_time_done', max_rel=1.05, ignored_abs_diff=1),
-]
+    Check('cost', max_rel=1.0),
+    Check('plan_length', max_rel=1.0),] +
+    [Check(attr, max_rel=1.05, ignored_abs_diff=1) for attr in TIME_ATTRIBUTES] +
+    [Check(attr, max_rel=1.05, ignored_abs_diff=1024) for attr in MEMORY_ATTRIBUTES] +
+    [Check(attr, max_rel=1.05) for attr in SEARCH_ATTRIBUTES])
+
+# Absolute attributes are reported, but not checked.
+ABSOLUTE_ATTRIBUTES = [check.attribute for check in RELATIVE_CHECKS]
+
 
 def parse_custom_args():
     ARGPARSER.add_argument('--rev', dest='revision',
@@ -99,9 +104,9 @@ def main():
                           get_exp_dir(BASELINE, args.test) + '-eval',
                           exp.eval_dir))
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
-        exp.add_step(Step('rm-preprocess-dir', shutil.rmtree, exp.preprocess_exp_path, ignore_errors=True))
-        exp.add_step(Step('rm-exp-dir', shutil.rmtree, exp.path, ignore_errors=True))
-        exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_ATTRIBUTE_CHECKS),
+        exp.add_step(Step('rm-preprocess-dir', shutil.rmtree, exp.preprocess_exp_path))
+        exp.add_step(Step('rm-exp-dir', shutil.rmtree, exp.path))
+        exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_CHECKS),
                        name='regression-check')
 
     exp()
