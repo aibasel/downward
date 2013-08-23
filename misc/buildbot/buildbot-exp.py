@@ -33,6 +33,7 @@ from check import Check, RegressionCheckReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.join(DIR, '../../')
+EXPERIMENTS_DIR = os.path.join(DIR, 'experiments')
 
 BASELINE = checkouts.get_global_rev(REPO, 'f5110717a963')
 if not BASELINE:
@@ -84,7 +85,7 @@ def parse_custom_args():
     return ARGPARSER.parse_args()
 
 def get_exp_dir(rev, test):
-    return os.path.join(DIR, 'experiments', '%s-%s' % (rev, test))
+    return os.path.join(EXPERIMENTS_DIR, '%s-%s' % (rev, test))
 
 def main():
     args = parse_custom_args()
