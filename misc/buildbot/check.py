@@ -17,8 +17,15 @@ class Check(object):
 
     def get_error(self, base, new):
         # We assume that no attributes are missing.
-        val1 = base[self.attribute]
-        val2 = new[self.attribute]
+        val1 = base.get(self.attribute)
+        val2 = new.get(self.attribute)
+        if val1 is None and val2 is None:
+            # Some configs don't produce certain attributes.
+            return ''
+        if val1 is None:
+            return 'Attribute %s missing for %s' % (self.attribute, base['config'])
+        if val2 is None:
+            return 'Attribute %s missing for %s' % (self.attribute, new['config'])
         if abs(val2 - val1) <= self.ignored_abs_diff or val1 == 0:
             return ''
         factor = val2 / float(val1)
@@ -48,14 +55,14 @@ class RegressionCheckReport(AbsoluteReport):
     def get_markup(self):
         lines = []
         for (domain, problem), runs in self.problem_runs.items():
-            if runs[0]['planner'] == self.baseline:
-                base, new = runs
-            else:
-                new, base = runs
-            for check in self.checks:
-                error = check.get_error(base, new)
-                if error:
-                    lines.append('| %(domain)s:%(problem)s | %(error)s |' % locals())
+            runs_base = [run for run in runs if run['planner'] == self.baseline]
+            runs_new = [run for run in runs if run['planner'] != self.baseline]
+            for base, new in zip(runs_base, runs_new):
+                assert base['config_nick'] == new['config_nick']
+                for check in self.checks:
+                    error = check.get_error(base, new)
+                    if error:
+                        lines.append('| %(domain)s:%(problem)s | %(error)s |' % locals())
         if lines:
             # Add header.
             lines.insert(0, '|| Task | Attribute | Error |')
