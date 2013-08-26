@@ -5,25 +5,26 @@
 #include <vector>
 #include <ext/hash_map>
 #include "state.h"
-#include "state_proxy.h"
 #include "search_node_info.h"
 #include "operator_cost.h"
+#include "per_state_information.h"
 
 #include <vector>
 
 class Operator;
 class State;
-class StateProxy;
+
 
 class SearchNode {
-    state_var_t *state_buffer;
+    StateHandle state_handle;
     SearchNodeInfo &info;
     OperatorCost cost_type;
 public:
-    SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_, OperatorCost cost_type_);
+    SearchNode(const StateHandle &state_handle_, SearchNodeInfo &info_,
+               OperatorCost cost_type_);
 
-    state_var_t *get_state_buffer() {
-        return state_buffer;
+    StateHandle get_state_handle() const {
+        return state_handle;
     }
     State get_state() const;
 
@@ -38,7 +39,6 @@ public:
     int get_g() const;
     int get_real_g() const;
     int get_h() const;
-    const state_var_t *get_parent_buffer() const;
 
     void open_initial(int h);
     void open(int h, const SearchNode &parent_node,
@@ -51,23 +51,22 @@ public:
     void close();
     void mark_as_dead_end();
 
-    void dump();
+    void dump() const;
 };
 
 
 class SearchSpace {
-    class HashTable;
-    HashTable *nodes;
+    friend class SearchNode; // TODO: try to make this cleaner
+    PerStateInformation<SearchNodeInfo> search_node_infos;
+
     OperatorCost cost_type;
 public:
     SearchSpace(OperatorCost cost_type_);
-    ~SearchSpace();
-    int size() const;
-    SearchNode get_node(const State &state);
+    SearchNode get_node(const StateHandle &handle);
     void trace_path(const State &goal_state,
                     std::vector<const Operator *> &path) const;
 
-    void dump();
+    void dump() const;
     void statistics() const;
 };
 
