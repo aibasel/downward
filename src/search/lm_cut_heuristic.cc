@@ -18,7 +18,7 @@ using namespace std;
 // construction and destruction
 LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
     : Heuristic(opts) {
-    num_propositions = 2; // artifical goal and artificical precondition
+    num_propositions = 2; // artificial goal and artificial precondition
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {

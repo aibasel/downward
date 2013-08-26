@@ -7,24 +7,19 @@ LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     do_intersection = true;
 }
 
+
 LandmarkStatusManager::~LandmarkStatusManager() {
 }
 
 
-void LandmarkStatusManager::clear_reached() {
-    reached_lms.clear();
-}
-
 vector<bool> &LandmarkStatusManager::get_reached_landmarks(const State &state) {
-    StateProxy proxy = StateProxy(&state);
-
-    //assert(reached_lms.find(proxy) != reached_lms.end());
-    return reached_lms[proxy];
+    return reached_lms[state.get_handle()];
 }
 
 
 void LandmarkStatusManager::set_landmarks_for_initial_state() {
-    vector<bool> &reached = get_reached_landmarks(*g_initial_state);
+    State registered_initial_state(g_state_registry->get_handle(*g_initial_state));
+    vector<bool> &reached = get_reached_landmarks(registered_initial_state);
     reached.resize(lm_graph.number_of_landmarks());
     //cout << "NUMBER OF LANDMARKS: " << lm_graph.number_of_landmarks() << endl;
 

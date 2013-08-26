@@ -4,72 +4,118 @@
 #include "globals.h"
 #include "operator.h"
 #include "utilities.h"
+#include "state_registry.h"
 
 #include <algorithm>
 #include <iostream>
 #include <cassert>
 using namespace std;
 
-void State::_allocate() {
-    borrowed_buffer = false;
+void State::copy_buffer_from(const state_var_t *buffer) {
     vars = new state_var_t[g_variable_domain.size()];
-}
-
-void State::_deallocate() {
-    if (!borrowed_buffer)
-        delete[] vars;
-}
-
-void State::_copy_buffer_from_state(const State &state) {
+    // Update values affected by operator.
     // TODO: Profile if memcpy could speed this up significantly,
     //       e.g. if we do blind A* search.
-    for (int i = 0; i < g_variable_domain.size(); i++)
-        vars[i] = state.vars[i];
+    for (size_t i = 0; i < g_variable_domain.size(); ++i)
+        vars[i] = buffer[i];
+    borrowed_buffer = false;
 }
 
-State & State::operator=(const State &other) {
-    if (this != &other) {
-        if (borrowed_buffer)
-            _allocate();
-        _copy_buffer_from_state(other);
-    }
-    return *this;
+State::State(state_var_t *buffer)
+    : borrowed_buffer(true), vars(buffer), handle(StateHandle::invalid) {
+    assert(vars);
 }
 
-State::State(istream &in) {
-    _allocate();
-    check_magic(in, "begin_state");
-    for (int i = 0; i < g_variable_domain.size(); i++) {
-        int var;
-        in >> var;
-        vars[i] = var;
-    }
-    check_magic(in, "end_state");
-
-    g_default_axiom_values.assign(vars, vars + g_variable_domain.size());
-}
-
-State::State(const State &state) {
-    _allocate();
-    _copy_buffer_from_state(state);
-}
-
-State::State(const State &predecessor, const Operator &op) {
+State::State(const State &predecessor, const Operator &op)
+    : handle(StateHandle::invalid) {
     assert(!op.is_axiom());
-    _allocate();
-    _copy_buffer_from_state(predecessor);
-    // Update values affected by operator.
-    for (int i = 0; i < op.get_pre_post().size(); i++) {
+    copy_buffer_from(predecessor.get_buffer());
+    for (size_t i = 0; i < op.get_pre_post().size(); ++i) {
         const PrePost &pre_post = op.get_pre_post()[i];
         if (pre_post.does_fire(predecessor))
             vars[pre_post.var] = pre_post.post;
     }
+    g_axiom_evaluator->evaluate(vars);
+}
 
-    g_axiom_evaluator->evaluate(*this);
+State::State(const StateHandle &handle_)
+    : borrowed_buffer(true), handle(handle_) {
+    if (!handle.is_valid()) {
+        cout << "Tried to create State from invalid StateHandle." << endl;
+        abort();
+    }
+    // We can  treat the buffer as const because it is never changed in a
+    // state object (only assignment can change it, but it changes the whole
+    // state).
+    // TODO think about the use of const here and in StateHandle.
+
+    // This assignment will later be changed into something like this:
+    // vars = handle.unpack_state_data();
+    // The buffer will no longer be shared then
+    vars = const_cast<state_var_t *>(handle.get_buffer());
+    assert(vars);
+}
+
+State *State::create_initial_state(state_var_t *initial_state_vars) {
+    assert(g_axiom_evaluator);
+    g_axiom_evaluator->evaluate(initial_state_vars);
+    return new State(initial_state_vars);
+}
+
+State State::construct_registered_successor(const State &predecessor,
+                                            const Operator &op,
+                                            StateRegistry &state_registry) {
+    State unregistered_copy(predecessor, op);
+    return State(state_registry.get_handle(unregistered_copy));
+}
+
+State State::construct_unregistered_successor(const State &predecessor, const Operator &op) {
+    return State(predecessor, op);
+}
+
+State::State(const State &other)
+    : borrowed_buffer(other.borrowed_buffer),
+      vars(other.vars),
+      handle(other.handle) {
+    // Every State needs valid state variables.
+    assert(vars);
+    // A registered state should always have a borrowed buffer.
+    assert(!handle.is_valid() || borrowed_buffer);
+
+    if (!borrowed_buffer) {
+        // Deep copy for unregistered states.
+        copy_buffer_from(other.vars);
+    }
+}
+
+State &State::operator=(const State &other) {
+    if (this != &other) {
+        // Clean up the old value to avoid a memory leak.
+        if (!borrowed_buffer) {
+            delete vars;
+        }
+
+        borrowed_buffer = other.borrowed_buffer;
+        vars = other.vars;
+        handle = other.handle;
+
+        // Every State needs valid state variables.
+        assert(vars);
+        // A registered state should always have a borrowed buffer.
+        assert(!handle.is_valid() || borrowed_buffer);
+
+        if (!borrowed_buffer) {
+            // Deep copy for unregistered states.
+            copy_buffer_from(other.vars);
+        }
+    }
+    return *this;
 }
 
 State::~State() {
-    _deallocate();
+    if (!borrowed_buffer) {
+        delete vars;
+    }
 }
 
 void State::dump_pddl() const {
@@ -83,14 +129,21 @@ void State::dump_pddl() const {
 void State::dump_fdr() const {
     // We cast the values to int since we'd get bad output otherwise
     // if state_var_t == char.
-    for (int i = 0; i < g_variable_domain.size(); i++)
+    for (size_t i = 0; i < g_variable_domain.size(); ++i)
         cout << "  #" << i << " [" << g_variable_name[i] << "] -> "
              << static_cast<int>(vars[i]) << endl;
 }
 
 bool State::operator==(const State &other) const {
-    int size = g_variable_domain.size();
-    return ::equal(vars, vars + size, other.vars);
+    if (handle.is_valid()) {
+        return handle == other.handle;
+    } else if (vars == other.vars) {
+        // borrowed from same buffer
+        return true;
+    } else {
+        int size = g_variable_domain.size();
+        return ::equal(vars, vars + size, other.vars);
+    }
 }
 
 bool State::operator<(const State &other) const {

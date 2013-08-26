@@ -17,8 +17,8 @@ LazySearch::LazySearch(const Options &opts)
       open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       succ_mode(pref_first),
-      current_state(*g_initial_state),
-      current_predecessor_buffer(NULL),
+      current_state(g_state_registry->get_handle(*g_initial_state)),
+      current_predecessor_handle(StateHandle::invalid),
       current_operator(NULL),
       current_g(0),
       current_real_g(0) {
@@ -95,9 +95,6 @@ void LazySearch::generate_successors() {
     get_successor_operators(operators);
     search_progress.inc_generated(operators.size());
 
-    state_var_t *current_state_buffer =
-        search_space.get_node(current_state).get_state_buffer();
-
     for (int i = 0; i < operators.size(); i++) {
         int new_g = current_g + get_adjusted_cost(*operators[i]);
         int new_real_g = current_real_g + operators[i]->get_cost();
@@ -107,7 +104,7 @@ void LazySearch::generate_successors() {
         if (new_real_g < bound) {
             open_list->evaluate(new_g, is_preferred);
             open_list->insert(
-                make_pair(current_state_buffer, operators[i]));
+                make_pair(current_state.get_handle(), operators[i]));
         }
     }
 }
@@ -120,13 +117,13 @@ int LazySearch::fetch_next_state() {
 
     OpenListEntryLazy next = open_list->remove_min();
 
-    current_predecessor_buffer = next.first;
+    current_predecessor_handle = next.first;
     current_operator = next.second;
-    State current_predecessor(current_predecessor_buffer);
+    State current_predecessor(current_predecessor_handle);
     assert(current_operator->is_applicable(current_predecessor));
-    current_state = State(current_predecessor, *current_operator);
+    current_state = State::construct_registered_successor(current_predecessor, *current_operator);
 
-    SearchNode pred_node = search_space.get_node(current_predecessor);
+    SearchNode pred_node = search_space.get_node(current_predecessor_handle);
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
@@ -142,22 +139,21 @@ int LazySearch::step() {
     // - current_g is the g value of the current state (using real costs)
 
 
-    SearchNode node = search_space.get_node(current_state);
+    SearchNode node = search_space.get_node(current_state.get_handle());
     bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end() && !node.is_new();
 
     if (node.is_new() || reopen) {
-        state_var_t *dummy_address = current_predecessor_buffer;
+        StateHandle dummy_handle = current_predecessor_handle;
         // HACK! HACK! we do this because SearchNode has no default/copy constructor
-        if (dummy_address == NULL) {
-            dummy_address = const_cast<state_var_t *>(g_initial_state->get_buffer());
+        if (!dummy_handle.is_valid()) {
+            dummy_handle = g_state_registry->get_handle(*g_initial_state);
         }
 
-        SearchNode parent_node = search_space.get_node(State(dummy_address));
-        const State perm_state = node.get_state();
+        SearchNode parent_node = search_space.get_node(dummy_handle);
 
         for (int i = 0; i < heuristics.size(); i++) {
             if (current_operator != NULL) {
-                heuristics[i]->reach_state(parent_node.get_state(), *current_operator, perm_state);
+                heuristics[i]->reach_state(parent_node.get_state(), *current_operator, current_state);
             }
             heuristics[i]->evaluate(current_state);
         }
@@ -171,7 +167,7 @@ int LazySearch::step() {
             if (reopen) {
                 node.reopen(parent_node, current_operator);
                 search_progress.inc_reopened();
-            } else if (current_predecessor_buffer == NULL) {
+            } else if (!current_predecessor_handle.is_valid()) {
                 node.open_initial(h);
                 search_progress.get_initial_h_values();
             } else {
