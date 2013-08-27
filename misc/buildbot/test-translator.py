@@ -10,6 +10,9 @@ python2.7 test-translator.py
 # Run bigger test on the first problem of each domain.
 python3.2 test-translator.py first
 
+# Run even bigger test on the whole benchmark suite.
+python2.7 test-translator.py all
+
 # Run test on specific problems.
 python2.6 test-translator.py gripper:prob01.pddl depot:pfile1
 """
@@ -17,10 +20,10 @@ python2.6 test-translator.py gripper:prob01.pddl depot:pfile1
 from __future__ import print_function
 
 from collections import defaultdict
+import itertools
 import os
 import platform
 import re
-import shutil
 import sys
 
 
@@ -75,10 +78,19 @@ def get_first_tasks():
     return [tasks[0] for tasks in get_all_tasks_by_domain().values()]
 
 
+def get_all_tasks():
+    return itertools.chain.from_iterable(
+            tasks for tasks in get_all_tasks_by_domain().values())
+
+
 def get_tasks():
     if 'first' in sys.argv:
         # Use the first problem of each domain.
         return get_first_tasks()
+
+    if 'all' in sys.argv:
+        # Use the whole benchmark suite.
+        return get_all_tasks()
 
     # Use the problems given on the commandline.
     tasks = [arg for arg in sys.argv[1:] if not arg.startswith('--')]
