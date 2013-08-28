@@ -140,7 +140,8 @@ void Abstraction::build() {
     bool valid_conc_solution = false;
     while (may_keep_refining()) {
         update_h_values();
-        if (init->get_h() == INF) {
+        if ((use_astar && goal->get_distance() == INF) ||
+            (!use_astar && init->get_h() == INF)) {
             cout << "Abstract problem is unsolvable!" << endl;
             exit_with(EXIT_UNSOLVABLE);
         }
@@ -262,6 +263,7 @@ AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_sta
     return abs_state;
 }
 
+// TODO: Rename function since no solution is reset.
 void Abstraction::reset_distances_and_solution() const {
     for (auto it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = (*it);
@@ -269,38 +271,8 @@ void Abstraction::reset_distances_and_solution() const {
     }
 }
 
-bool Abstraction::breadth_first_search(queue<AbstractState *> &open_queue, bool forward) const {
-    assert(g_is_unit_cost);
-    bool debug = false && DEBUG;
-    while (!open_queue.empty()) {
-        AbstractState *state = open_queue.front();
-        open_queue.pop();
-        const int g = state->get_distance();
-        if (debug)
-            cout << endl << "Expand: " << state->str() << " g:" << g << endl;
-        Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
-        for (auto it = successors.begin(); it != successors.end(); ++it) {
-            AbstractState *successor = it->second;
-            const int succ_g = g + 1;
-            if (succ_g < successor->get_distance()) {
-                if (debug)
-                    cout << "  Succ: " << successor->str()
-                         << " g:" << succ_g
-                         << " dist:" << successor->get_distance() << endl;
-                successor->set_distance(succ_g);
-                open_queue.push(successor);
-            }
-        }
-    }
-    if ((forward && goal->get_distance() == INF) ||
-        (!forward && init->get_distance() == INF)) {
-        return false;
-    }
-    return true;
-}
-
 bool Abstraction::astar_search(bool forward, bool use_h) const {
-    bool debug = false && DEBUG;
+    bool debug = true && DEBUG;
     while (!open->empty()) {
         pair<int, AbstractState *> top_pair = open->pop();
         int &old_f = top_pair.first;
@@ -395,9 +367,12 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     unordered_set<State, hash_state> seen;
 
     unseen.push(make_pair(abs_state, conc_state));
+    int num_splits = 0;
 
     // Only search flaws until we hit the memory limit.
     while (!unseen.empty() && cegar_memory_padding) {
+        if (use_astar && num_splits > 0)
+            break;
         abs_state = unseen.front().first;
         conc_state = unseen.front().second;
         unseen.pop();
@@ -418,11 +393,14 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 unmet_goals++;
                 get_unmet_goal_conditions(conc_state, &states_to_splits[abs_state]);
                 restrict_splits(conc_state, splits);
+                ++num_splits;
                 continue;
             }
         }
         Arcs &arcs_out = abs_state->get_arcs_out();
         for (auto it = arcs_out.begin(); it != arcs_out.end(); ++it) {
+            if (use_astar && num_splits > 0)
+                break;
             Operator *op = it->first;
             AbstractState *next_abs = it->second;
             if (next_abs->get_h() + op->get_cost() != abs_state->get_h())
@@ -448,6 +426,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     abs_state->get_possible_splits(desired_abs_state, conc_state,
                                                    &splits);
                     restrict_splits(conc_state, splits);
+                    ++num_splits;
                 }
             // Only find unmet preconditions if we haven't found any splits already.
             } else if (splits.empty()) {
@@ -456,7 +435,11 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 ++unmet_preconditions;
                 get_unmet_preconditions(*op, conc_state, &splits);
                 restrict_splits(conc_state, splits);
+                ++num_splits;
             }
+            // Only break one solution when using A*. // TODO: Make configurable.
+            if (use_astar && num_splits > 0)
+                break;
         }
     }
     int broken_solutions = 0;
@@ -473,6 +456,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     if (DEBUG)
         cout << "Broke " << broken_solutions << " solutions" << endl;
     assert(broken_solutions > 0);
+    assert(!use_astar || broken_solutions == 1);
     return false;
 }
 
@@ -752,21 +736,57 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     return cond;
 }
 
+void Abstraction::update_h_values_on_solution_path() const {
+    assert(init->get_h() != INF);
+    AbstractState *current = goal;
+    current->set_h(0);
+    while (current != init) {
+        if (DEBUG)
+            cout << endl << "Current: " << current->str() << " g:" << current->get_distance()
+                 << " h:" << current->get_h() << endl;
+        Arcs &arcs_in = current->get_arcs_in();
+        Operator *opt_prev_op = 0;
+        AbstractState *opt_prev_state = 0;
+        for (int i = 0; i < arcs_in.size(); ++i) {
+            Operator *op = arcs_in[i].first;
+            AbstractState *prev = arcs_in[i].second;
+            if (DEBUG)
+                cout << "Incoming: " << prev->str() << " g:" << prev->get_distance()
+                     << " h:" << prev->get_h() << endl;
+            // On optimal paths, distances must differ by op costs and f-values can only increase.
+            if ((prev->get_distance() + op->get_cost() == current->get_distance()) &&
+                (prev->get_distance() + prev->get_h() <= current->get_distance() + current->get_h())) {
+                opt_prev_op = op;
+                opt_prev_state = prev;
+            }
+        }
+        assert(opt_prev_op);
+        assert(opt_prev_state);
+        opt_prev_state->set_h(current->get_h() + opt_prev_op->get_cost());
+        assert(opt_prev_state != current);
+        current = opt_prev_state;
+    }
+    assert(init->get_h() == goal->get_distance());
+}
+
+
 void Abstraction::update_h_values() const {
     reset_distances_and_solution();
-    goal->set_distance(0);
-    if (g_is_unit_cost) {
-        queue<AbstractState *> open_queue;
-        open_queue.push(goal);
-        breadth_first_search(open_queue, false);
+    open->clear();
+    if (use_astar) {
+        init->set_distance(0);
+        open->push(init->get_h(), init);
+        bool success = astar_search(true, true);
+        if (success)
+            update_h_values_on_solution_path();
     } else {
-        open->clear();
+        goal->set_distance(0);
         open->push(0, goal);
-        astar_search(false, use_astar);
-    }
-    for (auto it = states.begin(); it != states.end(); ++it) {
-        AbstractState *state = *it;
-        state->set_h(state->get_distance());
+        astar_search(false, false);
+        for (auto it = states.begin(); it != states.end(); ++it) {
+            AbstractState *state = *it;
+            state->set_h(state->get_distance());
+        }
     }
 }
 

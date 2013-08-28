@@ -131,7 +131,6 @@ private:
 
     // A* search.
     void reset_distances_and_solution() const;
-    bool breadth_first_search(queue<AbstractState *> &open_queue, bool forward) const;
     FRIEND_TEST(CegarTest, astar_search);
     bool astar_search(bool forward, bool use_h) const;
 
@@ -145,6 +144,8 @@ private:
 
     // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values() const;
+
+    void update_h_values_on_solution_path() const;
     void log_h_values() const;
 
 public:
