@@ -59,6 +59,7 @@ void CegarHeuristic::initialize() {
     abstraction->set_max_states_online(max_states_online);
     abstraction->set_max_time(max_time);
     abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
+    abstraction->set_use_astar(options.get<bool>("use_astar"));
     abstraction->set_log_h(options.get<bool>("log_h"));
 
     abstraction->build();
@@ -111,6 +112,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("pick", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied condition");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
+    parser.add_option<bool>("use_astar", true, "use A* for finding the *single* next solution");
     parser.add_option<bool>("debug", false, "print debugging output");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");
     Heuristic::add_options_to_parser(parser);
