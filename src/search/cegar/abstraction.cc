@@ -271,6 +271,8 @@ void Abstraction::reset_distances_and_solution() const {
     for (auto it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = (*it);
         state->set_distance(INF);
+        state->set_prev_solution_op(0);
+        state->set_next_solution_op(0);
         state->set_prev_solution_state(0);
         state->set_next_solution_state(0);
     }
@@ -348,6 +350,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                 }
                 assert(f >= 0);
                 open->push(f, successor);
+                successor->set_prev_solution_op(op);
                 successor->set_prev_solution_state(state);
             }
         }
@@ -403,8 +406,10 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         for (auto it = arcs_out.begin(); it != arcs_out.end(); ++it) {
             Operator *op = it->first;
             AbstractState *next_abs = it->second;
-            assert(!use_astar || abs_state->get_next_solution_state());
-            if (use_astar && next_abs != abs_state->get_next_solution_state())
+            assert(!use_astar || (abs_state->get_next_solution_op() &&
+                                  abs_state->get_next_solution_state()));
+            if (use_astar && (op != abs_state->get_next_solution_op() ||
+                              next_abs != abs_state->get_next_solution_state()))
                 continue;
             if (next_abs->get_h() + op->get_cost() != abs_state->get_h())
                 // Operator is not part of an optimal path.
@@ -742,11 +747,13 @@ void Abstraction::extract_solution() const {
         if (DEBUG)
             cout << endl << "Current: " << current->str() << " g:" << current->get_distance()
                  << " h:" << current->get_h() << endl;
-        AbstractState *prev = current->get_prev_solution_state();
-        prev->set_next_solution_state(current);
-        prev->set_h(goal->get_distance() - prev->get_distance());
-        assert(prev != current);
-        current = prev;
+        Operator *prev_op = current->get_prev_solution_op();
+        AbstractState *prev_state = current->get_prev_solution_state();
+        prev_state->set_next_solution_op(prev_op);
+        prev_state->set_next_solution_state(current);
+        prev_state->set_h(current->get_h() + prev_op->get_cost());
+        assert(prev_state != current);
+        current = prev_state;
     }
     assert(init->get_h() == goal->get_distance());
 }
