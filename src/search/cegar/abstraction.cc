@@ -298,21 +298,25 @@ bool Abstraction::breadth_first_search(queue<AbstractState *> &open_queue, bool 
     return true;
 }
 
-bool Abstraction::dijkstra_search(bool forward) const {
+bool Abstraction::astar_search(bool forward, bool use_h) const {
     bool debug = false && DEBUG;
     while (!open->empty()) {
         pair<int, AbstractState *> top_pair = open->pop();
-        int &old_g = top_pair.first;
+        int &old_f = top_pair.first;
         AbstractState *state = top_pair.second;
 
         const int g = state->get_distance();
         assert(g < INF);
-        assert(g <= old_g);
-        if (g < old_g) {
+        int new_f = g;
+        if (use_h)
+            new_f += state->get_h();
+        assert(new_f <= old_f);
+        if (new_f < old_f) {
             continue;
         }
         if (debug)
-            cout << endl << "Expand: " << state->str() << " g:" << g << endl;
+            cout << endl << "Expand: " << state->str() << " g:" << g
+                 << " h:" << state->get_h() << " f:" << new_f << endl;
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (auto it = successors.begin(); it != successors.end(); ++it) {
             Operator *op = it->first;
@@ -321,6 +325,7 @@ bool Abstraction::dijkstra_search(bool forward) const {
             // Special code for additive abstractions.
             if (calculate_needed_operator_costs) {
                 assert(forward);
+                assert(!use_h);
                 // We are currently collecting the needed operator costs.
                 assert(needed_operator_costs.size() == g_operators.size());
                 // cost'(op) = h(a1) - h(a2)
@@ -344,10 +349,22 @@ bool Abstraction::dijkstra_search(bool forward) const {
             if (succ_g < successor->get_distance()) {
                 if (debug)
                     cout << "  Succ: " << successor->str()
+                         << " f:" << succ_g + successor->get_h()
                          << " g:" << succ_g
-                         << " dist:" << successor->get_distance() << endl;
+                         << " dist:" << successor->get_distance()
+                         << " h:" << successor->get_h() << endl;
+
                 successor->set_distance(succ_g);
-                open->push(succ_g, successor);
+                int f = succ_g;
+                if (use_h) {
+                    int h = successor->get_h();
+                    // Ignore dead-end states.
+                    if (h == INFINITY)
+                        continue;
+                    f += h;
+                }
+                assert(f >= 0);
+                open->push(f, successor);
             }
         }
     }
@@ -739,7 +756,7 @@ void Abstraction::update_h_values() const {
     } else {
         open->clear();
         open->push(0, goal);
-        dijkstra_search(false);
+        astar_search(false, false);
     }
     for (auto it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
@@ -833,7 +850,7 @@ void Abstraction::adapt_operator_costs() {
     init->set_distance(0);
     open->push(0, init);
     calculate_needed_operator_costs = true;
-    dijkstra_search(true);
+    astar_search(true, false);
     calculate_needed_operator_costs = false;
     for (int i = 0; i < needed_operator_costs.size(); ++i) {
         if (DEBUG)
