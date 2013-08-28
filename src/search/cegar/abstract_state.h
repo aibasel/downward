@@ -36,6 +36,8 @@ private:
     // Incumbent distance to first expanded node in backwards and forward search.
     int distance;
 
+    Operator *prev_solution_op;
+    Operator *next_solution_op;
     AbstractState *prev_solution_state;
     AbstractState *next_solution_state;
 
@@ -81,6 +83,10 @@ public:
     int get_distance() {return distance; }
     void set_h(int dist) {node->set_h(dist); }
     int get_h() {return node->get_h(); }
+    void set_prev_solution_op(Operator *prev) {prev_solution_op = prev; }
+    void set_next_solution_op(Operator *next) {next_solution_op = next; }
+    Operator *get_prev_solution_op() const {return prev_solution_op; }
+    Operator *get_next_solution_op() const {return next_solution_op; }
     void set_prev_solution_state(AbstractState *prev) {prev_solution_state = prev; }
     void set_next_solution_state(AbstractState *next) {next_solution_state = next; }
     AbstractState *get_prev_solution_state() const {return prev_solution_state; }
