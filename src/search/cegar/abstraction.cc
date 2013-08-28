@@ -373,12 +373,9 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     unordered_set<State, hash_state> seen;
 
     unseen.push(make_pair(abs_state, conc_state));
-    int num_splits = 0;
 
     // Only search flaws until we hit the memory limit.
     while (!unseen.empty() && cegar_memory_padding) {
-        if (use_astar && num_splits > 0)
-            break;
         abs_state = unseen.front().first;
         conc_state = unseen.front().second;
         unseen.pop();
@@ -399,14 +396,11 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 unmet_goals++;
                 get_unmet_goal_conditions(conc_state, &states_to_splits[abs_state]);
                 restrict_splits(conc_state, splits);
-                ++num_splits;
                 continue;
             }
         }
         Arcs &arcs_out = abs_state->get_arcs_out();
         for (auto it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-            if (use_astar && num_splits > 0)
-                break;
             Operator *op = it->first;
             AbstractState *next_abs = it->second;
             assert(!use_astar || abs_state->get_next_solution_state());
@@ -435,7 +429,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     abs_state->get_possible_splits(desired_abs_state, conc_state,
                                                    &splits);
                     restrict_splits(conc_state, splits);
-                    ++num_splits;
                 }
             // Only find unmet preconditions if we haven't found any splits already.
             } else if (splits.empty()) {
@@ -444,11 +437,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 ++unmet_preconditions;
                 get_unmet_preconditions(*op, conc_state, &splits);
                 restrict_splits(conc_state, splits);
-                ++num_splits;
             }
-            // Only break one solution when using A*. // TODO: Make configurable.
-            if (use_astar && num_splits > 0)
-                break;
         }
     }
     int broken_solutions = 0;
