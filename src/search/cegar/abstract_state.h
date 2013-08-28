@@ -36,6 +36,9 @@ private:
     // Incumbent distance to first expanded node in backwards and forward search.
     int distance;
 
+    AbstractState *prev_solution_state;
+    AbstractState *next_solution_state;
+
     // This state's node in the refinement hierarchy.
     Node *node;
 
@@ -78,6 +81,10 @@ public:
     int get_distance() {return distance; }
     void set_h(int dist) {node->set_h(dist); }
     int get_h() {return node->get_h(); }
+    void set_prev_solution_state(AbstractState *prev) {prev_solution_state = prev; }
+    void set_next_solution_state(AbstractState *next) {next_solution_state = next; }
+    AbstractState *get_prev_solution_state() const {return prev_solution_state; }
+    AbstractState *get_next_solution_state() const {return next_solution_state; }
 
     Arcs &get_arcs_out() {return arcs_out; };
     Arcs &get_arcs_in() {return arcs_in; };

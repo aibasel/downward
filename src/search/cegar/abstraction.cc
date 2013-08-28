@@ -139,7 +139,11 @@ void Abstraction::build() {
     // Define here to use it outside the loop later.
     bool valid_conc_solution = false;
     while (may_keep_refining()) {
-        update_h_values();
+        if (use_astar) {
+            find_solution();
+        } else {
+            update_h_values();
+        }
         if ((use_astar && goal->get_distance() == INF) ||
             (!use_astar && init->get_h() == INF)) {
             cout << "Abstract problem is unsolvable!" << endl;
@@ -263,11 +267,12 @@ AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_sta
     return abs_state;
 }
 
-// TODO: Rename function since no solution is reset.
 void Abstraction::reset_distances_and_solution() const {
     for (auto it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = (*it);
         state->set_distance(INF);
+        state->set_prev_solution_state(0);
+        state->set_next_solution_state(0);
     }
 }
 
@@ -343,6 +348,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                 }
                 assert(f >= 0);
                 open->push(f, successor);
+                successor->set_prev_solution_state(state);
             }
         }
     }
@@ -403,6 +409,9 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 break;
             Operator *op = it->first;
             AbstractState *next_abs = it->second;
+            assert(!use_astar || abs_state->get_next_solution_state());
+            if (use_astar && next_abs != abs_state->get_next_solution_state())
+                continue;
             if (next_abs->get_h() + op->get_cost() != abs_state->get_h())
                 // Operator is not part of an optimal path.
                 continue;
@@ -736,57 +745,42 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     return cond;
 }
 
-void Abstraction::update_h_values_on_solution_path() const {
-    assert(init->get_h() != INF);
+void Abstraction::extract_solution() const {
+    assert(goal->get_distance() != INF);
+    assert(goal->get_h() == 0);
     AbstractState *current = goal;
-    current->set_h(0);
     while (current != init) {
         if (DEBUG)
             cout << endl << "Current: " << current->str() << " g:" << current->get_distance()
                  << " h:" << current->get_h() << endl;
-        Arcs &arcs_in = current->get_arcs_in();
-        Operator *opt_prev_op = 0;
-        AbstractState *opt_prev_state = 0;
-        for (int i = 0; i < arcs_in.size(); ++i) {
-            Operator *op = arcs_in[i].first;
-            AbstractState *prev = arcs_in[i].second;
-            if (DEBUG)
-                cout << "Incoming: " << prev->str() << " g:" << prev->get_distance()
-                     << " h:" << prev->get_h() << endl;
-            // On optimal paths, distances must differ by op costs and f-values can only increase.
-            if ((prev->get_distance() + op->get_cost() == current->get_distance()) &&
-                (prev->get_distance() + prev->get_h() <= current->get_distance() + current->get_h())) {
-                opt_prev_op = op;
-                opt_prev_state = prev;
-            }
-        }
-        assert(opt_prev_op);
-        assert(opt_prev_state);
-        opt_prev_state->set_h(current->get_h() + opt_prev_op->get_cost());
-        assert(opt_prev_state != current);
-        current = opt_prev_state;
+        AbstractState *prev = current->get_prev_solution_state();
+        prev->set_next_solution_state(current);
+        prev->set_h(goal->get_distance() - prev->get_distance());
+        assert(prev != current);
+        current = prev;
     }
     assert(init->get_h() == goal->get_distance());
 }
 
+void Abstraction::find_solution() const {
+    reset_distances_and_solution();
+    open->clear();
+    init->set_distance(0);
+    open->push(init->get_h(), init);
+    bool success = astar_search(true, true);
+    if (success)
+        extract_solution();
+}
 
 void Abstraction::update_h_values() const {
     reset_distances_and_solution();
     open->clear();
-    if (use_astar) {
-        init->set_distance(0);
-        open->push(init->get_h(), init);
-        bool success = astar_search(true, true);
-        if (success)
-            update_h_values_on_solution_path();
-    } else {
-        goal->set_distance(0);
-        open->push(0, goal);
-        astar_search(false, false);
-        for (auto it = states.begin(); it != states.end(); ++it) {
-            AbstractState *state = *it;
-            state->set_h(state->get_distance());
-        }
+    goal->set_distance(0);
+    open->push(0, goal);
+    astar_search(false, false);
+    for (auto it = states.begin(); it != states.end(); ++it) {
+        AbstractState *state = *it;
+        state->set_h(state->get_distance());
     }
 }
 

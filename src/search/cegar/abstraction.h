@@ -145,7 +145,8 @@ private:
     // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values() const;
 
-    void update_h_values_on_solution_path() const;
+    void extract_solution() const;
+    void find_solution() const;
     void log_h_values() const;
 
 public:
