@@ -61,6 +61,7 @@ Abstraction::Abstraction()
       max_states_online(0),
       max_time(INF),
       max_init_h(INF),
+      use_astar(true),
       log_h(false),
       calculate_needed_operator_costs(false),
       memory_released(false) {
@@ -317,6 +318,11 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
         if (debug)
             cout << endl << "Expand: " << state->str() << " g:" << g
                  << " h:" << state->get_h() << " f:" << new_f << endl;
+         if (forward && use_h && state == goal) {
+            if (debug)
+                cout << "GOAL REACHED" << endl;
+            return true;
+        }
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (auto it = successors.begin(); it != successors.end(); ++it) {
             Operator *op = it->first;
@@ -756,7 +762,7 @@ void Abstraction::update_h_values() const {
     } else {
         open->clear();
         open->push(0, goal);
-        astar_search(false, false);
+        astar_search(false, use_astar);
     }
     for (auto it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
