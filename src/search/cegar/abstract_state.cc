@@ -18,6 +18,8 @@ namespace cegar_heuristic {
 AbstractState::AbstractState(string s)
     : values(new Values()),
       distance(UNDEFINED),
+      prev_solution_state(0),
+      next_solution_state(0),
       node(0) {
     assert(!g_variable_domain.empty());
 
