@@ -337,7 +337,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                 if (use_h) {
                     int h = successor->get_h();
                     // Ignore dead-end states.
-                    if (h == INFINITY)
+                    if (h == INF)
                         continue;
                     f += h;
                 }
