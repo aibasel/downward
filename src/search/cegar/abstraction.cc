@@ -460,8 +460,8 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     }
     if (DEBUG)
         cout << "Broke " << broken_solutions << " solutions" << endl;
-    assert(broken_solutions > 0);
-    assert(!use_astar || broken_solutions == 1);
+    assert(broken_solutions > 0 || !may_keep_refining());
+    assert(!use_astar || broken_solutions == 1 || !may_keep_refining());
     return false;
 }
 

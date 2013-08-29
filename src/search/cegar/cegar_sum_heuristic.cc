@@ -108,8 +108,8 @@ void CegarSumHeuristic::initialize() {
             break;
         }
     }
-    print_statistics();
     reset_original_goals_and_costs();
+    print_statistics();
 
     if (!search)
         exit_with(EXIT_UNSOLVED_INCOMPLETE);
