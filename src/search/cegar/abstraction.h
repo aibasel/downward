@@ -108,6 +108,7 @@ private:
     int max_init_h;
     bool use_astar;
     bool log_h;
+    bool write_dot_files;
 
     // A* modes.
     bool calculate_needed_operator_costs;
@@ -191,6 +192,7 @@ public:
     void set_pick_strategy(PickStrategy strategy);
     void set_hadd(AdditiveHeuristic *h);
     void set_max_init_h_factor(double factor);
+    void set_write_dot_files(bool write) {write_dot_files = write; };
 
     // Testing.
     void write_dot_file(int num);

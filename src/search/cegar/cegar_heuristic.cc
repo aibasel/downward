@@ -61,6 +61,7 @@ void CegarHeuristic::initialize() {
     abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
     abstraction->set_use_astar(options.get<bool>("use_astar"));
     abstraction->set_log_h(options.get<bool>("log_h"));
+    abstraction->set_write_dot_files(options.get<bool>("write_dot_files"));
 
     abstraction->build();
     abstraction->print_statistics();
@@ -115,6 +116,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("use_astar", true, "use A* for finding the *single* next solution");
     parser.add_option<bool>("debug", false, "print debugging output");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");
+    parser.add_option<bool>("write_dot_files", false, "write graph files for debugging");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
