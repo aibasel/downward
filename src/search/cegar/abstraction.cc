@@ -63,6 +63,7 @@ Abstraction::Abstraction()
       max_init_h(INF),
       use_astar(true),
       log_h(false),
+      write_dot_files(false),
       calculate_needed_operator_costs(false),
       memory_released(false) {
     assert(!g_goal.empty());
@@ -131,8 +132,9 @@ void Abstraction::set_pick_strategy(PickStrategy strategy) {
 }
 
 void Abstraction::build() {
-    if (WRITE_DOT_FILES) {
+    if (write_dot_files) {
         write_causal_graph(*g_causal_graph);
+        write_landmark_graph();
         assert(get_num_states() == 1);
         write_dot_file(get_num_states());
     }
@@ -239,7 +241,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     if (num_states % STATES_LOG_STEP == 0)
         cout << "Abstract states: " << num_states << "/"
              << max_states_offline + max_states_online << endl;
-    if (WRITE_DOT_FILES)
+    if (write_dot_files)
         write_dot_file(num_states);
 }
 

@@ -13,7 +13,6 @@
 
 namespace cegar_heuristic {
 extern bool DEBUG;
-const bool WRITE_DOT_FILES = false;
 
 const int UNDEFINED = -1;
 // We cannot call the variable INFINITY, because that clashes with something in c++11.
@@ -51,6 +50,8 @@ struct hash_state {
 int get_fact_number(int var, int value);
 void get_fact_from_number(int fact_number, int &var, int &value);
 void order_facts_in_landmark_graph(vector<int> *ordering);
+
+void write_landmark_graph();
 
 void write_causal_graph(const CausalGraph &causal_graph);
 

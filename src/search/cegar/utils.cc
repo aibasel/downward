@@ -360,6 +360,67 @@ void order_facts_in_landmark_graph(vector<int> *ordered_fact_numbers) {
     }
 }
 
+void write_landmark_graph() {
+    Options opts = Options();
+    opts.set<int>("cost_type", 0);
+    opts.set<int>("memory_padding", 75);
+    opts.set<bool>("reasonable_orders", true);
+    opts.set<bool>("only_causal_landmarks", false);
+    opts.set<bool>("disjunctive_landmarks", false);
+    opts.set<bool>("conjunctive_landmarks", false);
+    opts.set<bool>("no_orders", false);
+    opts.set<int>("lm_cost_type", 0);
+    opts.set<Exploration *>("explor", new Exploration(opts));
+    LandmarkFactoryRpgSasp lm_graph_factory(opts);
+    LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
+    if (DEBUG)
+        graph->dump();
+    const set<LandmarkNode *> &nodes = graph->get_nodes();
+    set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
+
+    ofstream dotfile("landmark-graph.dot");
+    if (!dotfile.is_open()) {
+        cerr << "dot file for causal graph could not be opened" << endl;
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
+    dotfile << "digraph cg {" << endl;
+
+
+    for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
+         != nodes2.end(); it++) {
+        LandmarkNode *node_p = *it;
+        for (auto parent_it = node_p->parents.begin(); parent_it
+             != node_p->parents.end(); ++parent_it) {
+            //const edge_type &edge = parent_it->second;
+            const LandmarkNode *parent_p = parent_it->first;
+            int node_number = get_fact_number(node_p);
+            int parent_number = get_fact_number(parent_p);
+            int var = -1;
+            int value = -1;
+            get_fact_from_number(parent_number, var, value);
+            dotfile << "  \"" << g_fact_names[var][value] << "\" -> ";
+            get_fact_from_number(node_number, var, value);
+            dotfile << "\"" << g_fact_names[var][value] << "\";" << endl;
+            get_fact_from_number(parent_number, var, value);
+            if ((*g_initial_state)[var] == value)
+                dotfile << "\"" << g_fact_names[var][value] << "\" [color=green];" << endl;
+            get_fact_from_number(node_number, var, value);
+            if ((*g_initial_state)[var] == value)
+                dotfile << "\"" << g_fact_names[var][value] << "\" [color=green];" << endl;
+        }
+    }
+    for (int var = 0; var < g_variable_domain.size(); var++) {
+
+    }
+    for (int i = 0; i < g_goal.size(); i++) {
+        int var = g_goal[i].first;
+        int value = g_goal[i].second;
+        dotfile << "\"" << g_fact_names[var][value] << "\" [color=red];" << endl;
+    }
+    dotfile << "}" << endl;
+    dotfile.close();
+}
+
 void write_causal_graph(const CausalGraph &causal_graph) {
     ofstream dotfile("causal-graph.dot");
     if (!dotfile.is_open()) {
