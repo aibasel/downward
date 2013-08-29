@@ -13,7 +13,7 @@
 #include "../option_parser.h"
 #include "../state.h"
 #include "../utilities.h"
-#include "../landmarks/landmark_factory_rpg_sasp.h"
+#include "../landmarks/h_m_landmarks.h"
 #include "../landmarks/landmark_graph.h"
 
 using namespace std;
@@ -325,7 +325,7 @@ void order_facts_in_landmark_graph(vector<int> *ordered_fact_numbers) {
     opts.set<bool>("no_orders", false);
     opts.set<int>("lm_cost_type", 0);
     opts.set<Exploration *>("explor", new Exploration(opts));
-    LandmarkFactoryRpgSasp lm_graph_factory(opts);
+    HMLandmarks lm_graph_factory(opts);
     LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
     if (DEBUG)
         graph->dump();
@@ -364,6 +364,7 @@ void write_landmark_graph() {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
     opts.set<int>("memory_padding", 75);
+    opts.set<int>("m", 1);
     opts.set<bool>("reasonable_orders", true);
     opts.set<bool>("only_causal_landmarks", false);
     opts.set<bool>("disjunctive_landmarks", false);
@@ -371,7 +372,7 @@ void write_landmark_graph() {
     opts.set<bool>("no_orders", false);
     opts.set<int>("lm_cost_type", 0);
     opts.set<Exploration *>("explor", new Exploration(opts));
-    LandmarkFactoryRpgSasp lm_graph_factory(opts);
+    HMLandmarks lm_graph_factory(opts);
     LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
     if (DEBUG)
         graph->dump();
