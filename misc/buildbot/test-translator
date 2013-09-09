@@ -18,8 +18,8 @@
 
 set -ue
 
+# Create clean tmp dir.
 SAS_FILES=/tmp/$(whoami)/sas-files/
-# Clean tmp dir.
 rm -rf "$SAS_FILES"
 mkdir "$SAS_FILES"
 
@@ -37,8 +37,6 @@ for PYTHON in python2.6 python2.7 python3; do
         $PYTHON test-translator.py "$@"
     fi
 done
-
-#rm -f output.sas
 
 
 # Check that all python versions produced the same output.sas
