@@ -18,7 +18,7 @@
 
 set -u
 
-SAS_FILES=/tmp/sas-files.$$.$(whoami)/
+SAS_FILES=/tmp/$(whoami)/sas-files/
 # Clean tmp dir.
 rm -rf "$SAS_FILES"
 mkdir "$SAS_FILES"
