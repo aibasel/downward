@@ -20,6 +20,7 @@ python2.6 test-translator.py gripper:prob01.pddl depot:pfile1
 from __future__ import print_function
 
 from collections import defaultdict
+import getpass
 import itertools
 import os
 import platform
@@ -34,7 +35,7 @@ DEBUG = True
 REPO = os.path.join(os.path.abspath(__file__), '../../../')
 TRANSLATOR = os.path.abspath(os.path.join(REPO, 'src/translate'))
 BENCHMARKS = os.path.abspath(os.path.join(REPO, 'benchmarks'))
-SAS_FILES = '/tmp/sas-files'
+SAS_FILES = os.path.join('/tmp/', getpass.getuser(), 'sas-files')
 
 sys.path.insert(0, TRANSLATOR)
 
