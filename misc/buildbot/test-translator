@@ -16,9 +16,12 @@
 #
 # Returns 0 on success and 1 if an error occurs.
 
-SAS_FILES=/tmp/sas-files
-# Remove tmp dir.
-rm -rf $SAS_FILES
+set -u
+
+SAS_FILES=/tmp/sas-files.$$.$(whoami)/
+# Clean tmp dir.
+rm -rf "$SAS_FILES"
+mkdir "$SAS_FILES"
 
 cd "$(dirname "$0")"
 
