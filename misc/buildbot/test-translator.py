@@ -152,6 +152,7 @@ def main():
         else:
             translate_task(task)
         save_task(dest)
+    os.remove('output.sas')
 
 
 if __name__ == '__main__':
