@@ -43,7 +43,7 @@ rm -f output.sas
 
 # Check that all python versions produced the same output.sas
 
-cd $SAS_FILES
+cd "$SAS_FILES"
 
 printf "\n*****************************************************************\n\n"
 for TASK in $(ls)
@@ -64,6 +64,6 @@ do
 done
 
 # Remove tmp dir.
-rm -rf $SAS_FILES
+rm -rf "$SAS_FILES"
 
 echo "TESTS PASSED"
