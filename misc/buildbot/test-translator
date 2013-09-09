@@ -16,7 +16,7 @@
 #
 # Returns 0 on success and 1 if an error occurs.
 
-set -u
+set -ue
 
 SAS_FILES=/tmp/$(whoami)/sas-files/
 # Clean tmp dir.
@@ -29,9 +29,9 @@ export PYTHONHASHSEED=random
 
 for PYTHON in python2.6 python2.7 python3; do
     # Returns 0 if command is found.
-    command -v $PYTHON >/dev/null 2>&1
+    FULLPATH=`command -v $PYTHON` || true
     # Only test those python versions that are installed.
-    if [ $? -eq 0 ]; then
+    if [ "$FULLPATH" ]; then
         echo
         $PYTHON -V
         $PYTHON test-translator.py "$@"
