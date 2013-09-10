@@ -287,6 +287,7 @@ void read_everything(istream &in) {
     for (int i = 0; i < g_operators.size(); ++i)
         g_original_op_costs.push_back(g_operators[i].get_cost());
     g_original_goal = g_goal;
+    g_original_operators = g_operators;
 
     g_cegar_abstraction = 0;
     cout << "Peak memory before building abstraction: "
@@ -394,6 +395,7 @@ RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 cegar_heuristic::Abstraction *g_cegar_abstraction;
 std::vector<std::pair<int, int> > g_original_goal;
 std::vector<int> g_original_op_costs;
+vector<Operator> g_original_operators;
 std::vector<int> g_causal_graph_ordering;
 std::vector<int> g_causal_graph_ordering_pos;
 int g_num_facts = 0;

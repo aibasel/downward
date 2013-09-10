@@ -19,6 +19,8 @@ public:
     vector<Operator> operators;
 
     void setup() const;
+
+    static void reset_original_task();
 };
 }
 
