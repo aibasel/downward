@@ -70,6 +70,7 @@ extern RandomNumberGenerator g_rng;
 extern cegar_heuristic::Abstraction *g_cegar_abstraction;
 extern std::vector<std::pair<int, int> > g_original_goal;
 extern std::vector<int> g_original_op_costs;
+extern std::vector<Operator> g_original_operators;
 // Ordering of the variables in the task's causal graph.
 extern std::vector<int> g_causal_graph_ordering;
 // Positions in the causal graph ordering, ordered by variable.
