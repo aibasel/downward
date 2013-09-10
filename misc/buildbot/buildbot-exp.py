@@ -60,7 +60,24 @@ SUITES = {
                'blocks:probBLOCKS-4-1.pddl', 'blocks:probBLOCKS-4-2.pddl'],
 }
 
-TIME_ATTRIBUTES = ['search_time', 'total_time', 'translator_time_done']
+TRANSLATOR_ATTRIBUTES = [
+    'auxiliary_atoms', 'axioms', 'derived_variables',
+    'effect_conditions_simplified', 'facts', 'final_queue_length',
+    'implied_effects_removed', 'implied_preconditions_added', 'mutex_groups',
+    'operators', 'operators_removed', 'propositions_removed',
+    'relevant_atoms', 'task_size', 'total_mutex_groups_size',
+    'total_queue_pushes', 'uncovered_facts', 'variables']
+TIME_ATTRIBUTES = (
+    ['search_time', 'total_time'] + ['translator_time_%s' % attr for attr in (
+    'building_dictionary_for_full_mutex_groups', 'building_mutex_information',
+    'building_strips_to_sas_dictionary', 'building_translation_key',
+    'checking_invariant_weight', 'choosing_groups', 'collecting_mutex_groups',
+    'completing_instantiation', 'computing_fact_groups', 'computing_model',
+    'detecting_unreachable_propositions', 'done', 'finding_invariants',
+    'generating_datalog_program', 'instantiating', 'instantiating_groups',
+    'normalizing_datalog_program', 'normalizing_task', 'parsing',
+    'preparing_model', 'processing_axioms', 'simplifying_axioms',
+    'translating_task', 'writing_output')])
 SEARCH_ATTRIBUTES = ['dead_ends', 'evaluations', 'expansions',
                      'expansions_until_last_jump', 'generated', 'reopened']
 MEMORY_ATTRIBUTES = ['translator_peak_memory', 'memory']
@@ -68,9 +85,10 @@ RELATIVE_CHECKS = ([
     Check('initial_h_value', min_rel=1.0),
     Check('cost', max_rel=1.0),
     Check('plan_length', max_rel=1.0)] +
+    [Check('translator_%s' % attr, max_rel=1.0) for attr in TRANSLATOR_ATTRIBUTES] +
     [Check(attr, max_rel=1.05, ignored_abs_diff=1) for attr in TIME_ATTRIBUTES] +
-    [Check(attr, max_rel=1.05, ignored_abs_diff=1024) for attr in MEMORY_ATTRIBUTES] +
-    [Check(attr, max_rel=1.05) for attr in SEARCH_ATTRIBUTES])
+    [Check(attr, max_rel=1.05) for attr in SEARCH_ATTRIBUTES] +
+    [Check(attr, max_rel=1.05, ignored_abs_diff=1024) for attr in MEMORY_ATTRIBUTES])
 
 # Absolute attributes are reported, but not checked.
 ABSOLUTE_ATTRIBUTES = [check.attribute for check in RELATIVE_CHECKS]
