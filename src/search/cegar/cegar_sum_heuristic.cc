@@ -2,6 +2,7 @@
 
 #include "abstraction.h"
 #include "abstract_state.h"
+#include "task.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state.h"
@@ -33,19 +34,7 @@ bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
     return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
 }
 
-void CegarSumHeuristic::initialize() {
-    cout << "Initializing cegar heuristic..." << endl;
-    int max_states_offline = options.get<int>("max_states_offline");
-    if (max_states_offline == -1)
-        max_states_offline = INF;
-    int max_time = options.get<int>("max_time");
-    if (max_time == -1)
-        max_time = INF;
-
-    // Do not restrict the number of states if a limit has been set.
-    if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INF)
-        max_states_offline = INF;
-
+void generate_goal_fact_tasks(GoalOrder goal_order, vector<Task> *tasks) {
     vector<pair<int, int> > goal(g_original_goal);
 
     // Goal ordering strategies.
@@ -67,6 +56,26 @@ void CegarSumHeuristic::initialize() {
     }
     assert(goal.size() == g_original_goal.size());
 
+    for (int i = 0; i < goal.size(); ++i) {
+        Task task;
+        task.goal.push_back(goal[i]);
+        tasks->push_back(task);
+    }
+}
+
+void CegarSumHeuristic::initialize() {
+    cout << "Initializing cegar heuristic..." << endl;
+    int max_states_offline = options.get<int>("max_states_offline");
+    if (max_states_offline == -1)
+        max_states_offline = INF;
+    int max_time = options.get<int>("max_time");
+    if (max_time == -1)
+        max_time = INF;
+
+    // Do not restrict the number of states if a limit has been set.
+    if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INF)
+        max_states_offline = INF;
+
     vector<PickStrategy> best_pick_strategies;
     best_pick_strategies.push_back(MAX_REFINED);
     best_pick_strategies.push_back(MAX_PREDECESSORS);
@@ -76,11 +85,12 @@ void CegarSumHeuristic::initialize() {
     // use BFS.
     g_is_unit_cost = false;
 
+    vector<Task> tasks;
+    generate_goal_fact_tasks(goal_order, &tasks);
+
     int states_offline = 0;
-    for (int i = 0; i < goal.size(); ++i) {
-        // Set specific goal.
-        g_goal.clear();
-        g_goal.push_back(goal[i]);
+    for (int i = 0; i < tasks.size(); ++i) {
+        g_goal = tasks[i].goal;
 
         Abstraction *abstraction = new Abstraction();
 
@@ -92,7 +102,7 @@ void CegarSumHeuristic::initialize() {
         if (pick_strategy == BEST2) {
             pick_strategy = best_pick_strategies[i % 2];
         }
-        cout << "Refine for " << goal[i].first << "=" << goal[i].second
+        cout << "Refine for " << g_goal[0].first << "=" << g_goal[0].second
              << " with strategy " << pick_strategy << endl;
         abstraction->set_pick_strategy(pick_strategy);
 
