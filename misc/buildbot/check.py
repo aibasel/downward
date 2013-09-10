@@ -52,11 +52,14 @@ class RegressionCheckReport(AbsoluteReport):
         self.baseline = baseline
         self.checks = checks
 
+    def _get_rev(self, run):
+        return run.get('planner') or run['search_rev']
+
     def get_markup(self):
         lines = []
         for (domain, problem), runs in self.problem_runs.items():
-            runs_base = [run for run in runs if run['planner'] == self.baseline]
-            runs_new = [run for run in runs if run['planner'] != self.baseline]
+            runs_base = [run for run in runs if self._get_rev(run) == self.baseline]
+            runs_new = [run for run in runs if self._get_rev(run) != self.baseline]
             for base, new in zip(runs_base, runs_new):
                 assert base['config_nick'] == new['config_nick']
                 for check in self.checks:
