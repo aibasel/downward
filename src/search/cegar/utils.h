@@ -22,6 +22,7 @@ typedef std::vector<Operator *> Operators;
 typedef boost::dynamic_bitset<> Bitset;
 typedef std::pair<int, std::vector<int> > Split;
 typedef std::vector<Split> Splits;
+typedef std::pair<int, int> Fact;
 
 int get_pre(const Operator &op, int var);
 int get_post(const Operator &op, int var);
