@@ -17,6 +17,8 @@ public:
     vector<Fact> goal;
     vector<int> variable_domains;
     vector<Operator> operators;
+
+    void setup() const;
 };
 }
 

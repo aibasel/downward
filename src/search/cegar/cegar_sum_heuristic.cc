@@ -90,7 +90,7 @@ void CegarSumHeuristic::initialize() {
 
     int states_offline = 0;
     for (int i = 0; i < tasks.size(); ++i) {
-        g_goal = tasks[i].goal;
+        tasks[i].setup();
 
         Abstraction *abstraction = new Abstraction();
 
