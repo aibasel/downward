@@ -14,7 +14,6 @@ private:
 public:
     Task();
 
-    State *initial_state;
     vector<Fact> goal;
     vector<int> variable_domains;
     vector<Operator> operators;
