@@ -135,6 +135,7 @@ def main():
                           os.path.join(exp.cache_dir, 'revision-cache', rev)))
         exp.add_step(Step('rm-preprocess-dir', shutil.rmtree, exp.preprocess_exp_path))
         exp.add_step(Step('rm-exp-dir', shutil.rmtree, exp.path))
+        exp.add_step(Step('rm-preprocessed-tasks', shutil.rmtree, exp.preprocessed_tasks_dir))
         exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_CHECKS),
                        name='regression-check')
 
