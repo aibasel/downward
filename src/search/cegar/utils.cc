@@ -14,7 +14,6 @@
 #include "../state.h"
 #include "../utilities.h"
 #include "../landmarks/h_m_landmarks.h"
-#include "../landmarks/landmark_graph.h"
 
 using namespace std;
 
@@ -304,6 +303,14 @@ int get_fact_number(const LandmarkNode *node) {
     int var = node->vars[0];
     int value = node->vals[0];
     return get_fact_number(var, value);
+}
+
+pair<int, int> get_fact(const LandmarkNode *node) {
+    assert(node);
+    assert(node->vars.size() == 1);
+    int var = node->vars[0];
+    int value = node->vals[0];
+    return make_pair(var, value);
 }
 
 void get_fact_from_number(int fact_number, int &var, int &value) {

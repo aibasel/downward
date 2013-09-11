@@ -3,9 +3,12 @@
 #include "abstraction.h"
 #include "abstract_state.h"
 #include "task.h"
+#include "utils.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state.h"
+#include "../landmarks/h_m_landmarks.h"
+#include "../landmarks/landmark_graph.h"
 
 #include <algorithm>
 #include <cassert>
@@ -32,6 +35,33 @@ bool sort_cg_forward(pair<int, int> atom1, pair<int, int> atom2) {
 
 bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
     return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
+}
+
+void CegarSumHeuristic::generate_tasks_for_all_landmarks(vector<Task> *tasks) const {
+    Options opts = Options();
+    opts.set<int>("cost_type", 0);
+    opts.set<int>("memory_padding", 75);
+    opts.set<int>("m", 1);
+    opts.set<bool>("reasonable_orders", true);
+    opts.set<bool>("only_causal_landmarks", false);
+    opts.set<bool>("disjunctive_landmarks", false);
+    opts.set<bool>("conjunctive_landmarks", false);
+    opts.set<bool>("no_orders", false);
+    opts.set<int>("lm_cost_type", 0);
+    opts.set<Exploration *>("explor", new Exploration(opts));
+    HMLandmarks lm_graph_factory(opts);
+    LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
+    if (DEBUG)
+        graph->dump();
+    const set<LandmarkNode *> &all_nodes = graph->get_nodes();
+    set<LandmarkNode *, LandmarkNodeComparer> nodes(all_nodes.begin(), all_nodes.end());
+    for (auto it = nodes.begin(); it != nodes.end(); it++) {
+        const LandmarkNode *node_p = *it;
+        Task task;
+        task.goal.push_back(get_fact(node_p));
+        task.operators = g_operators;
+        tasks->push_back(task);
+    }
 }
 
 void CegarSumHeuristic::generate_goal_fact_tasks(vector<Task> *tasks) const {
@@ -67,7 +97,7 @@ void CegarSumHeuristic::generate_goal_fact_tasks(vector<Task> *tasks) const {
 void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
     Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
     if (decomposition == ALL_LANDMARKS) {
-
+        generate_tasks_for_all_landmarks(tasks);
     } else if (decomposition == RANDOM_LANDMARKS) {
 
     } else if (decomposition == GOAL_FACTS) {
@@ -117,7 +147,11 @@ void CegarSumHeuristic::initialize() {
         if (pick_strategy == BEST2) {
             pick_strategy = best_pick_strategies[i % 2];
         }
-        cout << "Refine for " << g_goal[0].first << "=" << g_goal[0].second
+        assert (g_goal.size() == 1);
+        int var = g_goal[0].first;
+        int value = g_goal[0].second;
+        cout << "Refine for " << g_fact_names[var][value]
+             << " (" << var << "=" << value << ")"
              << " with strategy " << pick_strategy << endl;
         abstraction->set_pick_strategy(pick_strategy);
 
