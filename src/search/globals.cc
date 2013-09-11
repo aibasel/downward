@@ -284,11 +284,6 @@ void read_everything(istream &in) {
         cout << endl;
     }
 
-    for (int i = 0; i < g_operators.size(); ++i)
-        g_original_op_costs.push_back(g_operators[i].get_cost());
-    g_original_goal = g_goal;
-    g_original_operators = g_operators;
-
     g_cegar_abstraction = 0;
     cout << "Peak memory before building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
@@ -361,13 +356,6 @@ void no_memory () {
     exit_with(EXIT_OUT_OF_MEMORY);
 }
 
-void reset_original_goals_and_costs() {
-    g_goal = g_original_goal;
-    assert(g_original_op_costs.size() == g_operators.size());
-    for (int i = 0; i < g_operators.size(); ++i)
-        g_operators[i].set_cost(g_original_op_costs[i]);
-}
-
 
 bool g_use_metric;
 bool g_is_unit_cost;
@@ -393,9 +381,6 @@ string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 
 cegar_heuristic::Abstraction *g_cegar_abstraction;
-std::vector<std::pair<int, int> > g_original_goal;
-std::vector<int> g_original_op_costs;
-vector<Operator> g_original_operators;
 std::vector<int> g_causal_graph_ordering;
 std::vector<int> g_causal_graph_ordering_pos;
 int g_num_facts = 0;
