@@ -34,6 +34,7 @@ class CegarSumHeuristic : public Heuristic {
     std::vector<Abstraction *> abstractions;
     std::vector<double> avg_h_values;
 
+    void generate_tasks_for_all_landmarks(std::vector<Task> *tasks) const;
     void generate_goal_fact_tasks(std::vector<Task> *tasks) const;
     void generate_tasks(std::vector<Task> *tasks) const;
 protected:

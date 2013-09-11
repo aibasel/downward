@@ -8,6 +8,7 @@
 #include "../causal_graph.h"
 #include "../operator.h"
 #include "../state.h"
+#include "../landmarks/landmark_graph.h"
 
 #include <boost/dynamic_bitset.hpp>
 
@@ -48,7 +49,9 @@ struct hash_state {
     }
 };
 
+int get_fact_number(const LandmarkNode *node);
 int get_fact_number(int var, int value);
+pair<int, int> get_fact(const LandmarkNode *node);
 void get_fact_from_number(int fact_number, int &var, int &value);
 void order_facts_in_landmark_graph(vector<int> *ordering);
 
