@@ -8,6 +8,7 @@ class State;
 
 namespace cegar_heuristic {
 class Abstraction;
+class Task;
 
 const int DEFAULT_STATES_OFFLINE = 10000;
 
@@ -20,12 +21,10 @@ enum GoalOrder {
     DOMAIN_SIZE_DOWN
 };
 
-enum CegarFacts {
-    RANDOM_LANDMARKS,
+enum Decomposition {
     ALL_LANDMARKS,
-    ALL_LANDMARKS_WITH_INITIAL,
-    GOAL_FACTS,
-    GOAL_FACTS_WITH_INITIAL
+    RANDOM_LANDMARKS,
+    GOAL_FACTS
 };
 
 class CegarSumHeuristic : public Heuristic {
@@ -34,6 +33,9 @@ class CegarSumHeuristic : public Heuristic {
     const GoalOrder goal_order;
     std::vector<Abstraction *> abstractions;
     std::vector<double> avg_h_values;
+
+    void generate_goal_fact_tasks(std::vector<Task> *tasks) const;
+    void generate_tasks(std::vector<Task> *tasks) const;
 protected:
     virtual void print_statistics();
     virtual void initialize();
