@@ -20,6 +20,14 @@ enum GoalOrder {
     DOMAIN_SIZE_DOWN
 };
 
+enum CegarFacts {
+    RANDOM_LANDMARKS,
+    ALL_LANDMARKS,
+    ALL_LANDMARKS_WITH_INITIAL,
+    GOAL_FACTS,
+    GOAL_FACTS_WITH_INITIAL
+};
+
 class CegarSumHeuristic : public Heuristic {
     const Options options;
     const bool search;

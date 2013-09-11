@@ -8,8 +8,12 @@ namespace cegar_heuristic {
 Task::Task() {
 }
 
-void Task::setup() const {
+void Task::install() const {
     g_goal = goal;
+}
+
+Task Task::save_original_task() {
+    return Task();
 }
 
 }
