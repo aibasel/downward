@@ -85,12 +85,13 @@ void CegarSumHeuristic::initialize() {
     // use BFS.
     g_is_unit_cost = false;
 
+    Task original_task = Task::save_original_task();
     vector<Task> tasks;
     generate_goal_fact_tasks(goal_order, &tasks);
 
     int states_offline = 0;
     for (int i = 0; i < tasks.size(); ++i) {
-        tasks[i].setup();
+        tasks[i].install();
 
         Abstraction *abstraction = new Abstraction();
 
@@ -178,6 +179,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     goal_order_strategies.push_back("DOMAIN_SIZE_DOWN");
     parser.add_enum_option("goal_order", goal_order_strategies, "ORIGINAL",
                            "order in which the goals are refined for");
+    parser.add_option<bool>("adapt_task", true, "remove redundant operators and facts");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
     parser.add_option<bool>("debug", false, "print debugging output");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");

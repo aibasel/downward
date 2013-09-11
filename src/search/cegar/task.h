@@ -18,9 +18,9 @@ public:
     vector<int> variable_domains;
     vector<Operator> operators;
 
-    void setup() const;
+    void install() const;
 
-    static void reset_original_task();
+    static Task save_original_task();
 };
 }
 
