@@ -34,7 +34,7 @@ bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
     return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
 }
 
-void generate_goal_fact_tasks(GoalOrder goal_order, vector<Task> *tasks) {
+void CegarSumHeuristic::generate_goal_fact_tasks(vector<Task> *tasks) const {
     vector<pair<int, int> > goal(g_goal);
 
     // Goal ordering strategies.
@@ -64,6 +64,19 @@ void generate_goal_fact_tasks(GoalOrder goal_order, vector<Task> *tasks) {
     }
 }
 
+void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
+    Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
+    if (decomposition == ALL_LANDMARKS) {
+
+    } else if (decomposition == RANDOM_LANDMARKS) {
+
+    } else if (decomposition == GOAL_FACTS) {
+        generate_goal_fact_tasks(tasks);
+    } else {
+        cerr << "Invalid decomposition: " << decomposition << endl;
+    }
+}
+
 void CegarSumHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int max_states_offline = options.get<int>("max_states_offline");
@@ -88,7 +101,7 @@ void CegarSumHeuristic::initialize() {
 
     Task original_task = Task::save_original_task();
     vector<Task> tasks;
-    generate_goal_fact_tasks(goal_order, &tasks);
+    generate_tasks(&tasks);
 
     int states_offline = 0;
     for (int i = 0; i < tasks.size(); ++i) {
@@ -180,7 +193,14 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     goal_order_strategies.push_back("DOMAIN_SIZE_DOWN");
     parser.add_enum_option("goal_order", goal_order_strategies, "ORIGINAL",
                            "order in which the goals are refined for");
+    vector<string> decompositions;
+    decompositions.push_back("ALL_LANDMARKS");
+    decompositions.push_back("RANDOM_LANDMARKS");
+    decompositions.push_back("GOAL_FACTS");
+    parser.add_enum_option("decomposition", decompositions, "GOAL_FACTS",
+                           "build abstractions for each of these facts");
     parser.add_option<bool>("adapt_task", true, "remove redundant operators and facts");
+    parser.add_option<bool>("trivial_facts", false, "include landmarks that are true in the initial state");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
     parser.add_option<bool>("debug", false, "print debugging output");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");
