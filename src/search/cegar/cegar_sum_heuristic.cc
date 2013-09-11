@@ -35,7 +35,7 @@ bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
 }
 
 void generate_goal_fact_tasks(GoalOrder goal_order, vector<Task> *tasks) {
-    vector<pair<int, int> > goal(g_original_goal);
+    vector<pair<int, int> > goal(g_goal);
 
     // Goal ordering strategies.
     if (goal_order == ORIGINAL) {
@@ -54,11 +54,12 @@ void generate_goal_fact_tasks(GoalOrder goal_order, vector<Task> *tasks) {
         cerr << "Not a valid goal ordering strategy: " << goal_order << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    assert(goal.size() == g_original_goal.size());
+    assert(goal.size() == g_goal.size());
 
     for (int i = 0; i < goal.size(); ++i) {
         Task task;
         task.goal.push_back(goal[i]);
+        task.operators = g_operators;
         tasks->push_back(task);
     }
 }
@@ -96,7 +97,7 @@ void CegarSumHeuristic::initialize() {
         Abstraction *abstraction = new Abstraction();
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
-        abstraction->set_max_time((max_time - g_timer()) / (g_original_goal.size() - i));
+        abstraction->set_max_time((max_time - g_timer()) / (original_task.goal.size() - i));
         abstraction->set_log_h(options.get<bool>("log_h"));
 
         PickStrategy pick_strategy = PickStrategy(options.get_enum("pick"));
@@ -119,7 +120,7 @@ void CegarSumHeuristic::initialize() {
             break;
         }
     }
-    reset_original_goals_and_costs();
+    original_task.install();
     print_statistics();
 
     if (!search)

@@ -10,10 +10,14 @@ Task::Task() {
 
 void Task::install() const {
     g_goal = goal;
+    g_operators = operators;
 }
 
 Task Task::save_original_task() {
-    return Task();
+    Task task;
+    task.goal = g_goal;
+    task.operators = g_operators;
+    return task;
 }
 
 }

@@ -38,8 +38,6 @@ bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
 
 extern void no_memory();
 
-void reset_original_goals_and_costs();
-
 
 extern bool g_use_metric;
 extern bool g_is_unit_cost;
@@ -68,9 +66,6 @@ extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
 
 extern cegar_heuristic::Abstraction *g_cegar_abstraction;
-extern std::vector<std::pair<int, int> > g_original_goal;
-extern std::vector<int> g_original_op_costs;
-extern std::vector<Operator> g_original_operators;
 // Ordering of the variables in the task's causal graph.
 extern std::vector<int> g_causal_graph_ordering;
 // Positions in the causal graph ordering, ordered by variable.
