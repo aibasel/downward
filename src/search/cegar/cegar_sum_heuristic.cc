@@ -130,6 +130,10 @@ void CegarSumHeuristic::initialize() {
     g_is_unit_cost = false;
 
     Task original_task = Task::save_original_task();
+    vector<int> original_costs;
+    for (int i = 0; i < g_operators.size(); ++i)
+        original_costs.push_back(g_operators[i].get_cost());
+
     vector<Task> tasks;
     generate_tasks(&tasks);
 
@@ -168,6 +172,9 @@ void CegarSumHeuristic::initialize() {
         }
     }
     original_task.install();
+    for (int i = 0; i < g_operators.size(); ++i)
+        g_operators[i].set_cost(original_costs[i]);
+
     print_statistics();
 
     if (!search)
