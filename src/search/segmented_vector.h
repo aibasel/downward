@@ -38,6 +38,10 @@ class SegmentedVector {
         return new_segment;
     }
 
+    void fill(Entry *position, size_t n, const Entry &entry) {
+        std::fill(position, position + ptrdiff_t(n), entry);
+    }
+
 public:
     SegmentedVector()
         : entry_allocator(),
@@ -82,6 +86,50 @@ public:
         }
         segments[segment][offset] = entry;
         ++the_size;
+    }
+
+    void resize(size_t new_size, Entry entry = Entry()) {
+        if (new_size > the_size) {
+            // 1) Try to fill current segment
+            size_t offset = get_offset(the_size);
+            if (offset > 0) {
+                size_t available = SEGMENT_ELEMENTS - offset;
+                size_t new_entries = std::min(new_size - the_size, available);
+                fill(&segments.back()[offset], new_entries, entry);
+                the_size += new_entries;
+            }
+            // 2) Add full segments
+            while (new_size - the_size >= SEGMENT_ELEMENTS) {
+                Entry *new_segment = add_segment();
+                fill(new_segment, SEGMENT_ELEMENTS, entry);
+                the_size += SEGMENT_ELEMENTS;
+            }
+            // 3) Add partially filled segments
+            if (new_size > the_size) {
+                Entry *new_segment = add_segment();
+                fill(new_segment, new_size - the_size, entry);
+                the_size = new_size;
+            }
+        } else if (new_size < the_size) {
+            // 1) Remove from current segment
+            size_t offset = get_offset(the_size);
+            size_t n_remove = std::min(the_size - new_size, offset);
+            size_t remove_from_index = offset - n_remove;
+            entry_allocator.deallocate(&segments.back()[remove_from_index], n_remove);
+            the_size -= n_remove;
+            // 2) Remove full segments
+            size_t n_remove_segments = (the_size - new_size) / SEGMENT_ELEMENTS;
+            for (size_t i = segments.size() - n_remove_segments; i < segments.size(); ++i) {
+                entry_allocator.deallocate(segments[i], SEGMENT_ELEMENTS);
+            }
+            segments.resize(segments.size() - n_remove_segments);
+            the_size -= SEGMENT_ELEMENTS * n_remove_segments;
+            // 3) Remove from current segment
+            n_remove = the_size - new_size;
+            remove_from_index = SEGMENT_ELEMENTS - n_remove;
+            entry_allocator.deallocate(&segments.back()[remove_from_index], n_remove);
+            the_size = new_size;
+        }
     }
 };
 
