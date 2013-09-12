@@ -3,19 +3,23 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <vector>
 
 // TODO: Get rid of the code duplication here. How to do it without
 // paying a performance penalty?
 
-template<class Entry>
+template<class Entry, class Allocator = std::allocator<Entry> >
 class SegmentedVector {
+    typedef typename Allocator::template rebind<Entry>::other EntryAllocator;
     // TODO: Try to find a good value for SEGMENT_BYTES.
     static const size_t SEGMENT_BYTES = 8192;
 
     static const size_t SEGMENT_ELEMENTS =
         (SEGMENT_BYTES / sizeof(Entry)) >= 1 ?
         (SEGMENT_BYTES / sizeof(Entry)) : 1;
+
+    EntryAllocator entry_allocator;
 
     std::vector<Entry *> segments;
     size_t the_size;
@@ -27,14 +31,27 @@ class SegmentedVector {
     size_t get_offset(size_t index) const {
         return index % SEGMENT_ELEMENTS;
     }
+
+    Entry *add_segment() {
+        Entry *new_segment = entry_allocator.allocate(SEGMENT_ELEMENTS);
+        segments.push_back(new_segment);
+        return new_segment;
+    }
+
 public:
     SegmentedVector()
-        : the_size(0) {
+        : entry_allocator(),
+          the_size(0) {
+    }
+
+    SegmentedVector(const EntryAllocator &allocator_)
+        : entry_allocator(allocator_),
+          the_size(0) {
     }
 
     ~SegmentedVector() {
         for (size_t i = 0; i < segments.size(); ++i)
-            delete[] segments[i];
+            entry_allocator.deallocate(segments[i], SEGMENT_ELEMENTS);
     }
 
     Entry &operator[](size_t index) {
@@ -61,11 +78,7 @@ public:
         if (offset == 0) {
             assert(segment == segments.size());
             // Must add a new segment.
-
-            // TODO: Make this work for classes w/o a default
-            // constructor, like vector does.
-            Entry *new_segment = new Entry[SEGMENT_ELEMENTS];
-            segments.push_back(new_segment);
+            add_segment();
         }
         segments[segment][offset] = entry;
         ++the_size;
