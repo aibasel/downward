@@ -66,24 +66,25 @@ void CegarSumHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
 
 void CegarSumHeuristic::get_goal_facts(vector<Fact> *facts) const {
     (*facts) = g_goal;
+}
 
+void CegarSumHeuristic::order_facts(vector<Fact> &facts) const {
     if (fact_order == ORIGINAL) {
         // Nothing to do.
     } else if (fact_order == MIXED) {
-        random_shuffle(facts->begin(), facts->end());
+        random_shuffle(facts.begin(), facts.end());
     } else if (fact_order == CG_FORWARD or fact_order == CG_BACKWARD) {
-        sort(facts->begin(), facts->end(), sort_cg_forward);
+        sort(facts.begin(), facts.end(), sort_cg_forward);
         if (fact_order == CG_BACKWARD)
-            reverse(facts->begin(), facts->end());
+            reverse(facts.begin(), facts.end());
     } else if (fact_order == DOMAIN_SIZE_UP or fact_order == DOMAIN_SIZE_DOWN) {
-        sort(facts->begin(), facts->end(), sort_domain_size_up);
+        sort(facts.begin(), facts.end(), sort_domain_size_up);
         if (fact_order == DOMAIN_SIZE_DOWN)
-            reverse(facts->begin(), facts->end());
+            reverse(facts.begin(), facts.end());
     } else {
         cerr << "Not a valid fact ordering strategy: " << fact_order << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    assert(facts->size() == g_goal.size());
 }
 
 void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
@@ -99,6 +100,7 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
         cerr << "Invalid decomposition: " << decomposition << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
+    order_facts(facts);
     for (int i = 0; i < facts.size(); i++) {
         if (!options.get<bool>("trivial_facts")) {
             // Filter facts that are true in initial state.
