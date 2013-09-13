@@ -17,6 +17,7 @@ public:
     vector<Fact> goal;
     vector<int> variable_domains;
     vector<Operator> operators;
+    vector<int> original_operator_numbers;
 
     void install() const;
 
