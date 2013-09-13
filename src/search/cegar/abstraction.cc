@@ -70,7 +70,8 @@ Abstraction::Abstraction(Task *task)
     assert(!task->goal.empty());
 
     assert(!cegar_memory_padding);
-    cout << "Reserving " << g_memory_padding_mb << " MB of memory padding." << endl;
+    if (DEBUG)
+        cout << "Reserving " << g_memory_padding_mb << " MB of memory padding." << endl;
     cegar_memory_padding = new char[g_memory_padding_mb * 1024 * 1024];
     set_new_handler(no_memory_continue);
 
@@ -919,7 +920,8 @@ void Abstraction::evaluate_state_with_hadd(State &conc_state) const {
 }
 
 void Abstraction::release_memory() {
-    cout << "Release memory" << endl;
+    if (DEBUG)
+        cout << "Release memory" << endl;
     assert(!memory_released);
     delete open;
     open = 0;
