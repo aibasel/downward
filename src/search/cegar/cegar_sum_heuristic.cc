@@ -54,8 +54,8 @@ bool operator_relaxed_applicable(const Operator &op, const unordered_set<int> &r
     return true;
 }
 
-void CegarSumHeuristic::get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached) {
-    // Delete all operators that achieve L.
+void CegarSumHeuristic::get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached) const {
+    // Delete all operators that achieve last_fact.
     // TODO: Avoid saving temp ops list?
     vector<Operator> operators;
     for (int i = 0; i < g_operators.size(); ++i) {
@@ -184,13 +184,24 @@ void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int
 }
 
 void CegarSumHeuristic::add_operators(Task &task) {
-    // TODO: Remove unneeded operators.
-    task.operators = g_operators;
+    assert(task.goal.size() == 1);
+    Fact &last_fact = task.goal[0];
+    get_possibly_before_facts(last_fact, &task.fact_numbers);
     for (int i = 0; i < g_operators.size(); ++i) {
-        task.original_operator_numbers.push_back(i);
-        int op_number = task.original_operator_numbers[i];
-        task.operators[i].set_cost(remaining_costs[op_number]);
+        // Only keep operators with all preconditions in reachable set of facts.
+        if (operator_relaxed_applicable(g_operators[i], task.fact_numbers)) {
+            Operator op = g_operators[i];
+            op.set_cost(remaining_costs[i]);
+            // If eff(op) == last_fact: set eff(op) = {last_fact}.
+            if (get_eff(op, last_fact.first) == last_fact.second) {
+                // TODO.
+            }
+            task.operators.push_back(op);
+            task.original_operator_numbers.push_back(i);
+        }
     }
+    // TODO: task.facts = F + {last_fact}
+    // TODO: Adapt variable_domain.
 }
 
 void CegarSumHeuristic::initialize() {
@@ -224,6 +235,13 @@ void CegarSumHeuristic::initialize() {
     for (int i = 0; i < tasks.size(); ++i) {
         cout << endl;
         Task &task = tasks[i];
+
+        assert (task.goal.size() == 1);
+        int var = task.goal[0].first;
+        int value = task.goal[0].second;
+        cout << "Refine for " << g_fact_names[var][value]
+             << " (" << var << "=" << value << ")" << endl;
+
         task.install();
         add_operators(task);
         Abstraction *abstraction = new Abstraction(&task);
@@ -236,12 +254,7 @@ void CegarSumHeuristic::initialize() {
         if (pick_strategy == BEST2) {
             pick_strategy = best_pick_strategies[i % 2];
         }
-        assert (task.goal.size() == 1);
-        int var = task.goal[0].first;
-        int value = task.goal[0].second;
-        cout << "Refine for " << g_fact_names[var][value]
-             << " (" << var << "=" << value << ")"
-             << " with strategy " << pick_strategy << endl;
+        cout << "Pick strategy " << pick_strategy << endl;
         abstraction->set_pick_strategy(pick_strategy);
 
         abstraction->build();

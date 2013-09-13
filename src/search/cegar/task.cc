@@ -6,6 +6,8 @@ namespace cegar_heuristic {
 
 
 Task::Task() {
+    // Prevent segfault due to uninitialized variables.
+    fact_numbers.clear();
 }
 
 void Task::install() {
