@@ -116,7 +116,8 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
 }
 
 void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int> &needed_costs) {
-    cout << "Needed:    " << to_string(needed_costs) << endl;
+    if (DEBUG)
+        cout << "Needed:    " << to_string(needed_costs) << endl;
     assert(task.operators.size() == task.original_operator_numbers.size());
     for (int i = 0; i < task.operators.size(); ++i) {
         int op_number = task.original_operator_numbers[i];
@@ -124,7 +125,8 @@ void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int
         remaining_costs[op_number] -= needed_costs[i];
         assert(remaining_costs[op_number] >= 0);
     }
-    cout << "Remaining: " << to_string(remaining_costs) << endl;
+    if (DEBUG)
+        cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
 void CegarSumHeuristic::add_operators(Task &task) {
@@ -166,6 +168,7 @@ void CegarSumHeuristic::initialize() {
 
     int states_offline = 0;
     for (int i = 0; i < tasks.size(); ++i) {
+        cout << endl;
         Task &task = tasks[i];
         task.install();
         add_operators(task);
@@ -201,6 +204,7 @@ void CegarSumHeuristic::initialize() {
             break;
         }
     }
+    cout << endl;
     original_task.install();
     print_statistics();
 
