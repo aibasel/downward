@@ -103,6 +103,13 @@ public:
         assert(new_cost >= 0);
         cost = new_cost;
     }
+
+    void keep_single_effect(int var, int value) {
+        for (auto it = pre_post.end(); it != pre_post.begin(); --it) {
+            if (it->var != var || it->post != value)
+                pre_post.erase(it);
+        }
+    }
 };
 
 #endif

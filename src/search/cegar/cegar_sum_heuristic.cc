@@ -192,9 +192,9 @@ void CegarSumHeuristic::add_operators(Task &task) {
         if (operator_relaxed_applicable(g_operators[i], task.fact_numbers)) {
             Operator op = g_operators[i];
             op.set_cost(remaining_costs[i]);
-            // If eff(op) == last_fact: set eff(op) = {last_fact}.
+            // If op achieves last_fact set eff(op) = {last_fact}.
             if (get_eff(op, last_fact.first) == last_fact.second) {
-                // TODO.
+                op.keep_single_effect(last_fact.first, last_fact.second);
             }
             task.operators.push_back(op);
             task.original_operator_numbers.push_back(i);
@@ -241,6 +241,7 @@ void CegarSumHeuristic::initialize() {
         int value = task.goal[0].second;
         cout << "Refine for " << g_fact_names[var][value]
              << " (" << var << "=" << value << ")" << endl;
+        cout << "Operators: " << task.operators.size() << endl;
 
         task.install();
         add_operators(task);
