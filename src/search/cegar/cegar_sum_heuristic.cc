@@ -265,7 +265,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     fact_order_strategies.push_back("CG_BACKWARD");
     fact_order_strategies.push_back("DOMAIN_SIZE_UP");
     fact_order_strategies.push_back("DOMAIN_SIZE_DOWN");
-    parser.add_enum_option("fact_order", fact_order_strategies, "ORIGINAL",
+    parser.add_enum_option("fact_order", fact_order_strategies, "MIXED",
                            "order in which the goals are refined for");
     vector<string> decompositions;
     decompositions.push_back("ALL_LANDMARKS");
