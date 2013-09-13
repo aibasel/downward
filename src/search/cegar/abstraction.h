@@ -88,7 +88,7 @@ private:
     mutable RandomNumberGenerator rng;
 
     // Members for additive abstractions.
-    mutable vector<int> needed_operator_costs;
+    mutable vector<int> needed_costs;
 
     AdditiveHeuristic *hadd;
 
@@ -113,9 +113,6 @@ private:
     bool log_h;
     bool write_dot_files;
 
-    // A* modes.
-    bool calculate_needed_operator_costs;
-
     // Save whether the states have been destroyed.
     bool memory_released;
 
@@ -136,7 +133,7 @@ private:
     // A* search.
     void reset_distances_and_solution() const;
     FRIEND_TEST(CegarTest, astar_search);
-    bool astar_search(bool forward, bool use_h) const;
+    bool astar_search(bool forward, bool use_h, vector<int> *needed_costs = 0) const;
 
     // Refine states between state and init until the solution is broken.
     void break_solution(AbstractState *state, const Splits &splits);
@@ -180,7 +177,7 @@ public:
     int get_op_index(const Operator *op) const;
     // For each operator op from a1 to a2, set cost'(op) = max(h(a1)-h(a2), 0).
     // This makes the next abstraction additive to all previous ones.
-    void adapt_operator_costs();
+    void get_needed_costs(vector<int> *needed_costs);
 
     // Statistics.
     void print_statistics();
