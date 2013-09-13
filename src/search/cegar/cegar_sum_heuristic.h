@@ -37,6 +37,7 @@ class CegarSumHeuristic : public Heuristic {
     std::vector<double> avg_h_values;
 
     void adapt_remaining_costs(const Task &task, const vector<int> &needed_costs);
+    void add_operators(Task &task);
 
     void get_fact_landmarks(std::vector<Fact> *facts) const;
     void get_goal_facts(std::vector<Fact> *facts) const;

@@ -870,14 +870,6 @@ void Abstraction::get_needed_costs(vector<int> *needed_costs) {
     init->set_distance(0);
     open->push(0, init);
     astar_search(true, false, needed_costs);
-    for (int i = 0; i < needed_costs->size(); ++i) {
-        if (DEBUG)
-            cout << i << " " << (*needed_costs)[i] << "/"
-                 << task->operators[i].get_cost() << " " << task->operators[i].get_name() << endl;
-        Operator &op = task->operators[i];
-        op.set_cost(op.get_cost() - (*needed_costs)[i]);
-        assert(op.get_cost() >= 0);
-    }
 }
 
 int Abstraction::get_num_states_online() const {

@@ -103,11 +103,7 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
         // TODO: Filter facts that are true in initial state.
         Task task;
         task.goal.push_back(facts[i]);
-        task.operators = g_operators;
-        for (int j = 0; j < task.operators.size(); ++j) {
-            task.operators[j].set_cost(remaining_costs[j]);
-            task.original_operator_numbers.push_back(j);
-        }
+        task.variable_domain = g_variable_domain;
         tasks->push_back(task);
     }
 }
@@ -122,6 +118,16 @@ void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int
         assert(remaining_costs[op_number] >= 0);
     }
     cout << "Remaining: " << to_string(remaining_costs) << endl;
+}
+
+void CegarSumHeuristic::add_operators(Task &task) {
+    // TODO: Remove unneeded operators.
+    task.operators = g_operators;
+    for (int i = 0; i < g_operators.size(); ++i) {
+        task.original_operator_numbers.push_back(i);
+        int op_number = task.original_operator_numbers[i];
+        task.operators[i].set_cost(remaining_costs[op_number]);
+    }
 }
 
 void CegarSumHeuristic::initialize() {
@@ -146,12 +152,16 @@ void CegarSumHeuristic::initialize() {
     // use BFS.
     g_is_unit_cost = false;
 
+    Task original_task = Task::get_original_task();
+
     vector<Task> tasks;
     generate_tasks(&tasks);
 
     int states_offline = 0;
     for (int i = 0; i < tasks.size(); ++i) {
         Task &task = tasks[i];
+        task.install();
+        add_operators(task);
         Abstraction *abstraction = new Abstraction(&task);
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
@@ -184,6 +194,7 @@ void CegarSumHeuristic::initialize() {
             break;
         }
     }
+    original_task.install();
     print_statistics();
 
     if (!search)
