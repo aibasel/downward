@@ -37,7 +37,7 @@ bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
     return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
 }
 
-void CegarSumHeuristic::generate_tasks_for_all_landmarks(vector<Task> *tasks) const {
+void CegarSumHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
     opts.set<int>("memory_padding", 75);
@@ -57,53 +57,50 @@ void CegarSumHeuristic::generate_tasks_for_all_landmarks(vector<Task> *tasks) co
     set<LandmarkNode *, LandmarkNodeComparer> nodes(all_nodes.begin(), all_nodes.end());
     for (auto it = nodes.begin(); it != nodes.end(); it++) {
         const LandmarkNode *node_p = *it;
-        Task task;
-        task.goal.push_back(get_fact(node_p));
-        task.operators = g_operators;
-        tasks->push_back(task);
+        facts->push_back(get_fact(node_p));
     }
 }
 
-void CegarSumHeuristic::generate_goal_fact_tasks(vector<Task> *tasks) const {
-    vector<pair<int, int> > goal(g_goal);
+void CegarSumHeuristic::get_goal_facts(vector<Fact> *facts) const {
+    (*facts) = g_goal;
 
-    // Goal ordering strategies.
     if (goal_order == ORIGINAL) {
         // Nothing to do.
     } else if (goal_order == MIXED) {
-        random_shuffle(goal.begin(), goal.end());
+        random_shuffle(facts->begin(), facts->end());
     } else if (goal_order == CG_FORWARD or goal_order == CG_BACKWARD) {
-        sort(goal.begin(), goal.end(), sort_cg_forward);
+        sort(facts->begin(), facts->end(), sort_cg_forward);
         if (goal_order == CG_BACKWARD)
-            reverse(goal.begin(), goal.end());
+            reverse(facts->begin(), facts->end());
     } else if (goal_order == DOMAIN_SIZE_UP or goal_order == DOMAIN_SIZE_DOWN) {
-        sort(goal.begin(), goal.end(), sort_domain_size_up);
+        sort(facts->begin(), facts->end(), sort_domain_size_up);
         if (goal_order == DOMAIN_SIZE_DOWN)
-            reverse(goal.begin(), goal.end());
+            reverse(facts->begin(), facts->end());
     } else {
         cerr << "Not a valid goal ordering strategy: " << goal_order << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    assert(goal.size() == g_goal.size());
-
-    for (int i = 0; i < goal.size(); ++i) {
-        Task task;
-        task.goal.push_back(goal[i]);
-        task.operators = g_operators;
-        tasks->push_back(task);
-    }
+    assert(facts->size() == g_goal.size());
 }
 
 void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
+    vector<Fact> facts;
     Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
     if (decomposition == ALL_LANDMARKS) {
-        generate_tasks_for_all_landmarks(tasks);
+        get_fact_landmarks(&facts);
     } else if (decomposition == RANDOM_LANDMARKS) {
 
     } else if (decomposition == GOAL_FACTS) {
-        generate_goal_fact_tasks(tasks);
+        get_goal_facts(&facts);
     } else {
         cerr << "Invalid decomposition: " << decomposition << endl;
+    }
+    for (int i = 0; i < facts.size(); i++) {
+        // TODO: Filter facts that are true in initial state.
+        Task task;
+        task.goal.push_back(facts[i]);
+        task.operators = g_operators;
+        tasks->push_back(task);
     }
 }
 
