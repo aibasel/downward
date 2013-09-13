@@ -22,7 +22,7 @@ CegarSumHeuristic::CegarSumHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
       search(opts.get<bool>("search")),
-      goal_order(GoalOrder(options.get_enum("goal_order"))) {
+      fact_order(GoalOrder(options.get_enum("fact_order"))) {
     DEBUG = opts.get<bool>("debug");
 
     for (int i = 0; i < g_operators.size(); ++i)
@@ -67,20 +67,20 @@ void CegarSumHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
 void CegarSumHeuristic::get_goal_facts(vector<Fact> *facts) const {
     (*facts) = g_goal;
 
-    if (goal_order == ORIGINAL) {
+    if (fact_order == ORIGINAL) {
         // Nothing to do.
-    } else if (goal_order == MIXED) {
+    } else if (fact_order == MIXED) {
         random_shuffle(facts->begin(), facts->end());
-    } else if (goal_order == CG_FORWARD or goal_order == CG_BACKWARD) {
+    } else if (fact_order == CG_FORWARD or fact_order == CG_BACKWARD) {
         sort(facts->begin(), facts->end(), sort_cg_forward);
-        if (goal_order == CG_BACKWARD)
+        if (fact_order == CG_BACKWARD)
             reverse(facts->begin(), facts->end());
-    } else if (goal_order == DOMAIN_SIZE_UP or goal_order == DOMAIN_SIZE_DOWN) {
+    } else if (fact_order == DOMAIN_SIZE_UP or fact_order == DOMAIN_SIZE_DOWN) {
         sort(facts->begin(), facts->end(), sort_domain_size_up);
-        if (goal_order == DOMAIN_SIZE_DOWN)
+        if (fact_order == DOMAIN_SIZE_DOWN)
             reverse(facts->begin(), facts->end());
     } else {
-        cerr << "Not a valid goal ordering strategy: " << goal_order << endl;
+        cerr << "Not a valid fact ordering strategy: " << fact_order << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
     assert(facts->size() == g_goal.size());
@@ -92,7 +92,7 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
     if (decomposition == ALL_LANDMARKS) {
         get_fact_landmarks(&facts);
     } else if (decomposition == RANDOM_LANDMARKS) {
-
+        // TODO: Implement.
     } else if (decomposition == GOAL_FACTS) {
         get_goal_facts(&facts);
     } else {
@@ -256,14 +256,14 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_OPS");
     parser.add_enum_option("pick", pick_strategies, "RANDOM",
                            "how to pick the next unsatisfied condition");
-    vector<string> goal_order_strategies;
-    goal_order_strategies.push_back("ORIGINAL");
-    goal_order_strategies.push_back("MIXED");
-    goal_order_strategies.push_back("CG_FORWARD");
-    goal_order_strategies.push_back("CG_BACKWARD");
-    goal_order_strategies.push_back("DOMAIN_SIZE_UP");
-    goal_order_strategies.push_back("DOMAIN_SIZE_DOWN");
-    parser.add_enum_option("goal_order", goal_order_strategies, "ORIGINAL",
+    vector<string> fact_order_strategies;
+    fact_order_strategies.push_back("ORIGINAL");
+    fact_order_strategies.push_back("MIXED");
+    fact_order_strategies.push_back("CG_FORWARD");
+    fact_order_strategies.push_back("CG_BACKWARD");
+    fact_order_strategies.push_back("DOMAIN_SIZE_UP");
+    fact_order_strategies.push_back("DOMAIN_SIZE_DOWN");
+    parser.add_enum_option("fact_order", fact_order_strategies, "ORIGINAL",
                            "order in which the goals are refined for");
     vector<string> decompositions;
     decompositions.push_back("ALL_LANDMARKS");
