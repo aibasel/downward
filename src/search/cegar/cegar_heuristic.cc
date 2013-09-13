@@ -2,6 +2,7 @@
 
 #include "abstraction.h"
 #include "abstract_state.h"
+#include "task.h"
 #include "utils.h"
 #include "../additive_heuristic.h"
 #include "../option_parser.h"
@@ -43,7 +44,14 @@ void CegarHeuristic::initialize() {
     if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INF)
         max_states_offline = INF;
 
-    abstraction = new Abstraction();
+    Task task;
+    task.goal = g_goal;
+    task.operators = g_operators;
+    for (int i = 0; i < task.operators.size(); ++i)
+        task.original_operator_numbers.push_back(i);
+    task.variable_domain = g_variable_domain;
+
+    abstraction = new Abstraction(&task);
     if (max_states_online > 0)
         g_cegar_abstraction = abstraction;
 

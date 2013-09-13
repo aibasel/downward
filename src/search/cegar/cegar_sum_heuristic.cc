@@ -139,9 +139,7 @@ void CegarSumHeuristic::initialize() {
 
     int states_offline = 0;
     for (int i = 0; i < tasks.size(); ++i) {
-        tasks[i].install();
-
-        Abstraction *abstraction = new Abstraction();
+        Abstraction *abstraction = new Abstraction(&tasks[i]);
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
         abstraction->set_max_time((max_time - g_timer()) / (original_task.goal.size() - i));
@@ -151,9 +149,9 @@ void CegarSumHeuristic::initialize() {
         if (pick_strategy == BEST2) {
             pick_strategy = best_pick_strategies[i % 2];
         }
-        assert (g_goal.size() == 1);
-        int var = g_goal[0].first;
-        int value = g_goal[0].second;
+        assert (tasks[i].goal.size() == 1);
+        int var = tasks[i].goal[0].first;
+        int value = tasks[i].goal[0].second;
         cout << "Refine for " << g_fact_names[var][value]
              << " (" << var << "=" << value << ")"
              << " with strategy " << pick_strategy << endl;
@@ -171,7 +169,6 @@ void CegarSumHeuristic::initialize() {
             break;
         }
     }
-    original_task.install();
     for (int i = 0; i < g_operators.size(); ++i)
         g_operators[i].set_cost(original_costs[i]);
 

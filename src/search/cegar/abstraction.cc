@@ -1,6 +1,7 @@
 #include "abstraction.h"
 
 #include "abstract_state.h"
+#include "task.h"
 #include "utils.h"
 #include "../additive_heuristic.h"
 #include "../globals.h"
@@ -41,7 +42,7 @@ void no_memory_continue () {
     set_new_handler(no_memory);
 }
 
-Abstraction::Abstraction()
+Abstraction::Abstraction(const Task *task)
     : single(new AbstractState()),
       init(single),
       goal(single),
@@ -66,7 +67,8 @@ Abstraction::Abstraction()
       write_dot_files(false),
       calculate_needed_operator_costs(false),
       memory_released(false) {
-    assert(!g_goal.empty());
+    this->task = task;
+    assert(!task->goal.empty());
 
     assert(!cegar_memory_padding);
     cout << "Reserving " << g_memory_padding_mb << " MB of memory padding." << endl;

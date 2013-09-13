@@ -15,11 +15,9 @@ public:
     Task();
 
     vector<Fact> goal;
-    vector<int> variable_domains;
+    vector<int> variable_domain;
     vector<Operator> operators;
     vector<int> original_operator_numbers;
-
-    void install() const;
 
     static Task save_original_task();
 };
