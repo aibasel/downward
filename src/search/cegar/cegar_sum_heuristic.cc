@@ -100,12 +100,19 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
         exit_with(EXIT_INPUT_ERROR);
     }
     for (int i = 0; i < facts.size(); i++) {
-        // TODO: Filter facts that are true in initial state.
+        if (!options.get<bool>("trivial_facts")) {
+            // Filter facts that are true in initial state.
+            int var = facts[i].first;
+            int value = facts[i].second;
+            if ((*g_initial_state)[var] == value)
+                continue;
+        }
         Task task;
         task.goal.push_back(facts[i]);
         task.variable_domain = g_variable_domain;
         tasks->push_back(task);
     }
+    assert(!tasks->empty());
 }
 
 void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int> &needed_costs) {
