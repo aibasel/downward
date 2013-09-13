@@ -22,4 +22,11 @@ Task Task::get_original_task() {
     return task;
 }
 
+void Task::dump_facts() const {
+    for (auto it = fact_numbers.begin(); it != fact_numbers.end(); ++it) {
+        Fact fact = get_fact(*it);
+        cout << "PB fact " << *it << ": " << g_fact_names[fact.first][fact.second] << endl;
+    }
+}
+
 }

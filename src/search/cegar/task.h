@@ -24,6 +24,8 @@ public:
     void install();
 
     static Task get_original_task();
+
+    void dump_facts() const;
 };
 }
 

@@ -104,11 +104,10 @@ public:
         cost = new_cost;
     }
 
-    void keep_single_effect(int var, int value) {
-        for (auto it = pre_post.end(); it != pre_post.begin(); --it) {
-            if (it->var != var || it->post != value)
-                pre_post.erase(it);
-        }
+    void set_effect(int var, int pre, int post) {
+        pre_post.clear();
+        vector<Prevail> conditions;
+        pre_post.push_back(PrePost(var, pre, post, conditions));
     }
 };
 

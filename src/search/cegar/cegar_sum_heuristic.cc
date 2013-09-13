@@ -48,7 +48,7 @@ bool operator_relaxed_applicable(const Operator &op, const unordered_set<int> &r
     }
     for (int i = 0; i < op.get_pre_post().size(); i++) {
         const PrePost &pre_post = op.get_pre_post()[i];
-        if (reached.count(get_fact_number(pre_post.var, pre_post.pre)) == 0)
+        if (pre_post.pre != UNDEFINED && reached.count(get_fact_number(pre_post.var, pre_post.pre)) == 0)
             return false;
     }
     return true;
@@ -187,6 +187,9 @@ void CegarSumHeuristic::add_operators(Task &task) {
     assert(task.goal.size() == 1);
     Fact &last_fact = task.goal[0];
     get_possibly_before_facts(last_fact, &task.fact_numbers);
+    if (DEBUG) {
+        task.dump_facts();
+    }
     for (int i = 0; i < g_operators.size(); ++i) {
         // Only keep operators with all preconditions in reachable set of facts.
         if (operator_relaxed_applicable(g_operators[i], task.fact_numbers)) {
@@ -194,7 +197,7 @@ void CegarSumHeuristic::add_operators(Task &task) {
             op.set_cost(remaining_costs[i]);
             // If op achieves last_fact set eff(op) = {last_fact}.
             if (get_eff(op, last_fact.first) == last_fact.second) {
-                op.keep_single_effect(last_fact.first, last_fact.second);
+                op.set_effect(last_fact.first, get_pre(op, last_fact.first), last_fact.second);
             }
             task.operators.push_back(op);
             task.original_operator_numbers.push_back(i);
@@ -235,16 +238,17 @@ void CegarSumHeuristic::initialize() {
     for (int i = 0; i < tasks.size(); ++i) {
         cout << endl;
         Task &task = tasks[i];
+        task.install();
 
         assert (task.goal.size() == 1);
         int var = task.goal[0].first;
         int value = task.goal[0].second;
         cout << "Refine for " << g_fact_names[var][value]
              << " (" << var << "=" << value << ")" << endl;
-        cout << "Operators: " << task.operators.size() << endl;
 
-        task.install();
         add_operators(task);
+        cout << "Facts: " << task.fact_numbers.size() << endl;
+        cout << "Operators: " << task.operators.size() << endl;
         Abstraction *abstraction = new Abstraction(&task);
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
