@@ -59,6 +59,15 @@ int get_pre(const Operator &op, int var) {
     return UNDEFINED;
 }
 
+int get_eff(const Operator &op, int var) {
+    for (int i = 0; i < op.get_pre_post().size(); ++i) {
+        const PrePost &pre_post = op.get_pre_post()[i];
+        if (pre_post.var == var)
+            return pre_post.post;
+    }
+    return UNDEFINED;
+}
+
 int get_post(const Operator &op, int var) {
     for (int i = 0; i < op.get_prevail().size(); ++i) {
         const Prevail &prevail = op.get_prevail()[i];
@@ -319,6 +328,15 @@ void get_fact_from_number(int fact_number, int &var, int &value) {
         ++var;
     value = fact_number - g_fact_borders[var];
     assert(get_fact_number(var, value) == fact_number);
+}
+
+Fact get_fact(int fact_number) {
+    int var = 0;
+    while (g_fact_borders[var] + g_variable_domain[var] <= fact_number)
+        ++var;
+    int value = fact_number - g_fact_borders[var];
+    assert(get_fact_number(var, value) == fact_number);
+    return make_pair(var, value);
 }
 
 void order_facts_in_landmark_graph(vector<int> *ordered_fact_numbers) {
