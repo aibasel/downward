@@ -19,6 +19,7 @@ class AdditiveHeuristic;
 
 namespace cegar_heuristic {
 class AbstractState;
+class Task;
 
 typedef unordered_set<AbstractState *> AbstractStates;
 
@@ -66,6 +67,8 @@ private:
     // Forbid copy constructor and copy assignment operator.
     Abstraction(const Abstraction &);
     Abstraction &operator=(const Abstraction &);
+
+    const Task *task;
 
     // Set of all valid states, i.e. states that have not been split.
     AbstractStates states;
@@ -151,7 +154,7 @@ private:
     void log_h_values() const;
 
 public:
-    Abstraction();
+    explicit Abstraction(const Task *task);
     ~Abstraction();
 
     // Build abstraction offline.
