@@ -40,6 +40,51 @@ bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
     return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
 }
 
+bool operator_relaxed_applicable(const Operator &op, const unordered_set<int> &reached) {
+    for (int i = 0; i < op.get_prevail().size(); i++) {
+        const Prevail &prevail = op.get_prevail()[i];
+        if (reached.count(get_fact_number(prevail.var, prevail.prev)) == 0)
+            return false;
+    }
+    for (int i = 0; i < op.get_pre_post().size(); i++) {
+        const PrePost &pre_post = op.get_pre_post()[i];
+        if (reached.count(get_fact_number(pre_post.var, pre_post.pre)) == 0)
+            return false;
+    }
+    return true;
+}
+
+void CegarSumHeuristic::get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached) {
+    // Delete all operators that achieve L.
+    // TODO: Avoid saving temp ops list?
+    vector<Operator> operators;
+    for (int i = 0; i < g_operators.size(); ++i) {
+        int post = get_eff(g_operators[i], last_fact.first);
+        if (post != last_fact.second)
+            operators.push_back(g_operators[i]);
+    }
+
+    // F = s_0
+    for (int var = 0; var < g_variable_domain.size(); ++var)
+        reached->insert(get_fact_number(var, (*g_initial_state)[var]));
+
+    // Until F reaches a fixpoint:
+    int last_num_reached = 0;
+    while (last_num_reached != reached->size()) {
+        last_num_reached = reached->size();
+        // Add all facts to F that are achieved by an operator o with pre(o) \subseteq F.
+        for (int i = 0; i < operators.size(); ++i) {
+            Operator &op = operators[i];
+            if (operator_relaxed_applicable(op, *reached)) {
+                for (int i = 0; i < op.get_pre_post().size(); i++) {
+                    const PrePost &pre_post = op.get_pre_post()[i];
+                    reached->insert(get_fact_number(pre_post.var, pre_post.post));
+                }
+            }
+        }
+    }
+}
+
 void CegarSumHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
