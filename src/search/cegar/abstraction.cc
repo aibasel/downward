@@ -42,7 +42,7 @@ void no_memory_continue () {
     set_new_handler(no_memory);
 }
 
-Abstraction::Abstraction(const Task *task)
+Abstraction::Abstraction(Task *task)
     : single(new AbstractState()),
       init(single),
       goal(single),
@@ -76,8 +76,8 @@ Abstraction::Abstraction(const Task *task)
     set_new_handler(no_memory_continue);
 
     split_tree.set_root(single);
-    for (int i = 0; i < g_operators.size(); ++i) {
-        single->add_loop(&g_operators[i]);
+    for (int i = 0; i < task->operators.size(); ++i) {
+        single->add_loop(&task->operators[i]);
     }
     states.insert(init);
     if (DEBUG) {
@@ -316,7 +316,7 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
                 assert(forward);
                 assert(!use_h);
                 // We are currently collecting the needed operator costs.
-                assert(needed_operator_costs.size() == g_operators.size());
+                assert(needed_operator_costs.size() == task->operators.size());
                 // cost'(op) = h(a1) - h(a2)
                 const int needed_costs = state->get_h() - successor->get_h();
                 if (needed_costs > 0) {
@@ -856,13 +856,13 @@ void Abstraction::write_dot_file(int num) {
 }
 
 int Abstraction::get_op_index(const Operator *op) const {
-    int op_index = op - &*g_operators.begin();
-    assert(op_index >= 0 && op_index < g_operators.size());
+    int op_index = op - &*task->operators.begin();
+    assert(op_index >= 0 && op_index < task->operators.size());
     return op_index;
 }
 
 void Abstraction::adapt_operator_costs() {
-    needed_operator_costs.resize(g_operators.size(), 0);
+    needed_operator_costs.resize(task->operators.size(), 0);
     // Traverse abstraction and remember the minimum cost we need to keep for
     // each operator in order not to decrease any heuristic values.
     open->clear();
@@ -875,8 +875,8 @@ void Abstraction::adapt_operator_costs() {
     for (int i = 0; i < needed_operator_costs.size(); ++i) {
         if (DEBUG)
             cout << i << " " << needed_operator_costs[i] << "/"
-                 << g_operators[i].get_cost() << " " << g_operators[i].get_name() << endl;
-        Operator &op = g_operators[i];
+                 << task->operators[i].get_cost() << " " << task->operators[i].get_name() << endl;
+        Operator &op = task->operators[i];
         op.set_cost(op.get_cost() - needed_operator_costs[i]);
         assert(op.get_cost() >= 0);
     }

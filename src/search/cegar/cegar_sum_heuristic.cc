@@ -129,7 +129,6 @@ void CegarSumHeuristic::initialize() {
     // use BFS.
     g_is_unit_cost = false;
 
-    Task original_task = Task::save_original_task();
     vector<int> original_costs;
     for (int i = 0; i < g_operators.size(); ++i)
         original_costs.push_back(g_operators[i].get_cost());
@@ -142,7 +141,7 @@ void CegarSumHeuristic::initialize() {
         Abstraction *abstraction = new Abstraction(&tasks[i]);
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
-        abstraction->set_max_time((max_time - g_timer()) / (original_task.goal.size() - i));
+        abstraction->set_max_time((max_time - g_timer()) / (tasks.size() - i));
         abstraction->set_log_h(options.get<bool>("log_h"));
 
         PickStrategy pick_strategy = PickStrategy(options.get_enum("pick"));
