@@ -247,8 +247,8 @@ void CegarSumHeuristic::initialize() {
              << " (" << var << "=" << value << ")" << endl;
 
         add_operators(task);
-        cout << "Facts: " << task.fact_numbers.size() << endl;
-        cout << "Operators: " << task.operators.size() << endl;
+        cout << "Facts: " << task.fact_numbers.size() + 1 << "/" << g_num_facts << endl;
+        cout << "Operators: " << task.operators.size() << "/" << g_operators.size() << endl;
         Abstraction *abstraction = new Abstraction(&task);
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
@@ -259,7 +259,6 @@ void CegarSumHeuristic::initialize() {
         if (pick_strategy == BEST2) {
             pick_strategy = best_pick_strategies[i % 2];
         }
-        cout << "Pick strategy " << pick_strategy << endl;
         abstraction->set_pick_strategy(pick_strategy);
 
         abstraction->build();
