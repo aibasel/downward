@@ -87,13 +87,24 @@ void CegarSumHeuristic::order_facts(vector<Fact> &facts) const {
     }
 }
 
+bool is_true_in_initial_state(Fact fact) {
+    return (*g_initial_state)[fact.first] == fact.second;
+}
+
+int num_nontrivial_goal_facts() {
+    int count = 0;
+    for (int i = 0; i < g_goal.size(); ++i) {
+        if (!is_true_in_initial_state(g_goal[i]))
+            ++count;
+    }
+    return count;
+}
+
 void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
     vector<Fact> facts;
     Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
     if (decomposition == ALL_LANDMARKS) {
         get_fact_landmarks(&facts);
-    } else if (decomposition == RANDOM_LANDMARKS) {
-        // TODO: Implement.
     } else if (decomposition == GOAL_FACTS) {
         get_goal_facts(&facts);
     } else {
@@ -102,13 +113,9 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
     }
     order_facts(facts);
     for (int i = 0; i < facts.size(); i++) {
-        if (!options.get<bool>("trivial_facts")) {
-            // Filter facts that are true in initial state.
-            int var = facts[i].first;
-            int value = facts[i].second;
-            if ((*g_initial_state)[var] == value)
-                continue;
-        }
+        // Filter facts that are true in initial state.
+        if (!options.get<bool>("trivial_facts") && is_true_in_initial_state(facts[i]))
+            continue;
         Task task;
         task.goal.push_back(facts[i]);
         task.variable_domain = g_variable_domain;
