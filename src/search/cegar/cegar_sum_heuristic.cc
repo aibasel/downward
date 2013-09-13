@@ -24,6 +24,9 @@ CegarSumHeuristic::CegarSumHeuristic(const Options &opts)
       search(opts.get<bool>("search")),
       goal_order(GoalOrder(options.get_enum("goal_order"))) {
     DEBUG = opts.get<bool>("debug");
+
+    for (int i = 0; i < g_operators.size(); ++i)
+        remaining_costs.push_back(g_operators[i].get_cost());
 }
 
 CegarSumHeuristic::~CegarSumHeuristic() {
@@ -101,10 +104,24 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
         Task task;
         task.goal.push_back(facts[i]);
         task.operators = g_operators;
-        for (int j = 0; j < task.operators.size(); ++j)
+        for (int j = 0; j < task.operators.size(); ++j) {
+            task.operators[j].set_cost(remaining_costs[j]);
             task.original_operator_numbers.push_back(j);
+        }
         tasks->push_back(task);
     }
+}
+
+void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int> &needed_costs) {
+    cout << "Needed:    " << to_string(needed_costs) << endl;
+    assert(task.operators.size() == task.original_operator_numbers.size());
+    for (int i = 0; i < task.operators.size(); ++i) {
+        int op_number = task.original_operator_numbers[i];
+        assert(op_number >= 0 && op_number < remaining_costs.size());
+        remaining_costs[op_number] -= needed_costs[i];
+        assert(remaining_costs[op_number] >= 0);
+    }
+    cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
 void CegarSumHeuristic::initialize() {
@@ -129,16 +146,13 @@ void CegarSumHeuristic::initialize() {
     // use BFS.
     g_is_unit_cost = false;
 
-    vector<int> original_costs;
-    for (int i = 0; i < g_operators.size(); ++i)
-        original_costs.push_back(g_operators[i].get_cost());
-
     vector<Task> tasks;
     generate_tasks(&tasks);
 
     int states_offline = 0;
     for (int i = 0; i < tasks.size(); ++i) {
-        Abstraction *abstraction = new Abstraction(&tasks[i]);
+        Task &task = tasks[i];
+        Abstraction *abstraction = new Abstraction(&task);
 
         abstraction->set_max_states_offline(max_states_offline - states_offline);
         abstraction->set_max_time((max_time - g_timer()) / (tasks.size() - i));
@@ -148,9 +162,9 @@ void CegarSumHeuristic::initialize() {
         if (pick_strategy == BEST2) {
             pick_strategy = best_pick_strategies[i % 2];
         }
-        assert (tasks[i].goal.size() == 1);
-        int var = tasks[i].goal[0].first;
-        int value = tasks[i].goal[0].second;
+        assert (task.goal.size() == 1);
+        int var = task.goal[0].first;
+        int value = task.goal[0].second;
         cout << "Refine for " << g_fact_names[var][value]
              << " (" << var << "=" << value << ")"
              << " with strategy " << pick_strategy << endl;
@@ -158,7 +172,9 @@ void CegarSumHeuristic::initialize() {
 
         abstraction->build();
         avg_h_values.push_back(abstraction->get_avg_h());
-        abstraction->adapt_operator_costs();
+        vector<int> needed_costs;
+        abstraction->get_needed_costs(&needed_costs);
+        adapt_remaining_costs(task, needed_costs);
         abstraction->release_memory();
 
         abstractions.push_back(abstraction);
@@ -168,9 +184,6 @@ void CegarSumHeuristic::initialize() {
             break;
         }
     }
-    for (int i = 0; i < g_operators.size(); ++i)
-        g_operators[i].set_cost(original_costs[i]);
-
     print_statistics();
 
     if (!search)

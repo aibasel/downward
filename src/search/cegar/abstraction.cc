@@ -49,7 +49,7 @@ Abstraction::Abstraction(Task *task)
       open(new AdaptiveQueue<AbstractState *>()),
       pick(RANDOM),
       rng(2012),
-      needed_operator_costs(),
+      needed_costs(),
       hadd(0),
       num_states(1),
       deviations(0),
@@ -65,7 +65,6 @@ Abstraction::Abstraction(Task *task)
       use_astar(true),
       log_h(false),
       write_dot_files(false),
-      calculate_needed_operator_costs(false),
       memory_released(false) {
     this->task = task;
     assert(!task->goal.empty());
@@ -282,7 +281,7 @@ void Abstraction::reset_distances_and_solution() const {
     }
 }
 
-bool Abstraction::astar_search(bool forward, bool use_h) const {
+bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_costs) const {
     bool debug = true && DEBUG;
     while (!open->empty()) {
         pair<int, AbstractState *> top_pair = open->pop();
@@ -312,21 +311,21 @@ bool Abstraction::astar_search(bool forward, bool use_h) const {
             AbstractState *successor = it->second;
 
             // Special code for additive abstractions.
-            if (calculate_needed_operator_costs) {
+            if (needed_costs) {
                 assert(forward);
                 assert(!use_h);
                 // We are currently collecting the needed operator costs.
-                assert(needed_operator_costs.size() == task->operators.size());
+                assert(needed_costs->size() == task->operators.size());
                 // cost'(op) = h(a1) - h(a2)
-                const int needed_costs = state->get_h() - successor->get_h();
-                if (needed_costs > 0) {
+                const int needed = state->get_h() - successor->get_h();
+                if (needed > 0) {
                     // needed_costs is negative if we reach a2 with op and
                     // h(a2) > h(a1). This includes the case when we reach a
                     // dead-end node. If h(a1)==h(a2) we don't have to update
                     // anything since we initialize the list with zeros. This
                     // handles moving from one dead-end node to another.
                     const int op_index = get_op_index(op);
-                    needed_operator_costs[op_index] = max(needed_operator_costs[op_index], needed_costs);
+                    (*needed_costs)[op_index] = max((*needed_costs)[op_index], needed);
                 }
             }
 
@@ -861,23 +860,22 @@ int Abstraction::get_op_index(const Operator *op) const {
     return op_index;
 }
 
-void Abstraction::adapt_operator_costs() {
-    needed_operator_costs.resize(task->operators.size(), 0);
+void Abstraction::get_needed_costs(vector<int> *needed_costs) {
+    assert(needed_costs->empty());
+    needed_costs->resize(task->operators.size(), 0);
     // Traverse abstraction and remember the minimum cost we need to keep for
     // each operator in order not to decrease any heuristic values.
     open->clear();
     reset_distances_and_solution();
     init->set_distance(0);
     open->push(0, init);
-    calculate_needed_operator_costs = true;
-    astar_search(true, false);
-    calculate_needed_operator_costs = false;
-    for (int i = 0; i < needed_operator_costs.size(); ++i) {
+    astar_search(true, false, needed_costs);
+    for (int i = 0; i < needed_costs->size(); ++i) {
         if (DEBUG)
-            cout << i << " " << needed_operator_costs[i] << "/"
+            cout << i << " " << (*needed_costs)[i] << "/"
                  << task->operators[i].get_cost() << " " << task->operators[i].get_name() << endl;
         Operator &op = task->operators[i];
-        op.set_cost(op.get_cost() - needed_operator_costs[i]);
+        op.set_cost(op.get_cost() - (*needed_costs)[i]);
         assert(op.get_cost() >= 0);
     }
 }
