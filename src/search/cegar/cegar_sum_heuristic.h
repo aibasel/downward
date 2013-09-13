@@ -43,7 +43,7 @@ class CegarSumHeuristic : public Heuristic {
 
     // Compute the possible-before-set of facts that can be reached in the
     // delete-relaxation before last_fact is reached the first time.
-    void get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached);
+    void get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached) const;
 
     void order_facts(vector<Fact> &facts) const;
     void get_fact_landmarks(std::vector<Fact> *facts) const;
