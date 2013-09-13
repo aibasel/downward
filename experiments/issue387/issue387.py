@@ -10,6 +10,9 @@ import common_setup
 REVS = ["issue387-base", "issue387-v1"]
 CONFIGS = default_configs_optimal()
 
+# remove config that is disabled in this branch
+del CONFIGS['astar_selmax_lmcut_lmcount']
+
 TEST_RUN = True
 
 if TEST_RUN:
