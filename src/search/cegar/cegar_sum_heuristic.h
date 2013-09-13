@@ -31,7 +31,7 @@ enum Decomposition {
 class CegarSumHeuristic : public Heuristic {
     const Options options;
     const bool search;
-    const GoalOrder goal_order;
+    const GoalOrder fact_order;
     std::vector<int> remaining_costs;
     std::vector<Abstraction *> abstractions;
     std::vector<double> avg_h_values;
