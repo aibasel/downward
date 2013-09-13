@@ -18,8 +18,6 @@ public:
     vector<int> variable_domain;
     vector<Operator> operators;
     vector<int> original_operator_numbers;
-
-    static Task save_original_task();
 };
 }
 
