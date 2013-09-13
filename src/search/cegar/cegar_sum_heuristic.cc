@@ -94,12 +94,15 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
         get_goal_facts(&facts);
     } else {
         cerr << "Invalid decomposition: " << decomposition << endl;
+        exit_with(EXIT_INPUT_ERROR);
     }
     for (int i = 0; i < facts.size(); i++) {
         // TODO: Filter facts that are true in initial state.
         Task task;
         task.goal.push_back(facts[i]);
         task.operators = g_operators;
+        for (int j = 0; j < task.operators.size(); ++j)
+            task.original_operator_numbers.push_back(j);
         tasks->push_back(task);
     }
 }
