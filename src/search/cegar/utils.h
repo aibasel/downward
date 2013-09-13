@@ -26,6 +26,7 @@ typedef std::vector<Split> Splits;
 typedef std::pair<int, int> Fact;
 
 int get_pre(const Operator &op, int var);
+int get_eff(const Operator &op, int var);
 int get_post(const Operator &op, int var);
 
 void get_unmet_preconditions(const Operator &op, const State &state, Splits *splits);
@@ -50,9 +51,12 @@ struct hash_state {
 };
 
 int get_fact_number(const LandmarkNode *node);
+Fact get_fact(const LandmarkNode *node);
+
 int get_fact_number(int var, int value);
-pair<int, int> get_fact(const LandmarkNode *node);
 void get_fact_from_number(int fact_number, int &var, int &value);
+Fact get_fact(int fact_number);
+
 void order_facts_in_landmark_graph(vector<int> *ordering);
 
 void write_landmark_graph();
