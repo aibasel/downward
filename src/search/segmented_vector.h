@@ -3,8 +3,10 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
+#include <iostream>
 #include <vector>
+
+#include "utilities.h"
 
 // TODO: Get rid of the code duplication here. How to do it without
 // paying a performance penalty?
@@ -32,20 +34,13 @@ class SegmentedVector {
         return index % SEGMENT_ELEMENTS;
     }
 
-    Entry *add_segment() {
+    void add_segment() {
         Entry *new_segment = entry_allocator.allocate(SEGMENT_ELEMENTS);
         segments.push_back(new_segment);
-        return new_segment;
     }
-
-    void fill(Entry *position, size_t n, const Entry &entry) {
-        std::fill(position, position + ptrdiff_t(n), entry);
-    }
-
 public:
     SegmentedVector()
-        : entry_allocator(),
-          the_size(0) {
+        : the_size(0) {
     }
 
     SegmentedVector(const EntryAllocator &allocator_)
@@ -89,59 +84,30 @@ public:
     }
 
     void resize(size_t new_size, Entry entry = Entry()) {
-        if (new_size > the_size) {
-            // 1) Try to fill current segment
-            size_t offset = get_offset(the_size);
-            if (offset > 0) {
-                size_t available = SEGMENT_ELEMENTS - offset;
-                size_t new_entries = std::min(new_size - the_size, available);
-                fill(&segments.back()[offset], new_entries, entry);
-                the_size += new_entries;
-            }
-            // 2) Add full segments
-            while (new_size - the_size >= SEGMENT_ELEMENTS) {
-                Entry *new_segment = add_segment();
-                fill(new_segment, SEGMENT_ELEMENTS, entry);
-                the_size += SEGMENT_ELEMENTS;
-            }
-            // 3) Add partially filled segments
-            if (new_size > the_size) {
-                Entry *new_segment = add_segment();
-                fill(new_segment, new_size - the_size, entry);
-                the_size = new_size;
-            }
-        } else if (new_size < the_size) {
-            // 1) Remove from current segment
-            size_t offset = get_offset(the_size);
-            size_t n_remove = std::min(the_size - new_size, offset);
-            size_t remove_from_index = offset - n_remove;
-            entry_allocator.deallocate(&segments.back()[remove_from_index], n_remove);
-            the_size -= n_remove;
-            // 2) Remove full segments
-            size_t n_remove_segments = (the_size - new_size) / SEGMENT_ELEMENTS;
-            for (size_t i = segments.size() - n_remove_segments; i < segments.size(); ++i) {
-                entry_allocator.deallocate(segments[i], SEGMENT_ELEMENTS);
-            }
-            segments.resize(segments.size() - n_remove_segments);
-            the_size -= SEGMENT_ELEMENTS * n_remove_segments;
-            // 3) Remove from current segment
-            n_remove = the_size - new_size;
-            remove_from_index = SEGMENT_ELEMENTS - n_remove;
-            entry_allocator.deallocate(&segments.back()[remove_from_index], n_remove);
-            the_size = new_size;
+        if (new_size < the_size) {
+            std::cerr << "SegmentedVector does not support removing elements. "
+                      << "See revision 6ee5ff7b8873 for an implementation."
+                      << std::endl;
+            exit_with(EXIT_UNSUPPORTED);
+        }
+        while (new_size > the_size) {
+            push_back(entry);
         }
     }
 };
 
 
-template<class Entry>
+template<class Entry, class Allocator = std::allocator<Entry> >
 class SegmentedArrayVector {
+    typedef typename Allocator::template rebind<Entry>::other EntryAllocator;
     // TODO: Try to find a good value for SEGMENT_BYTES.
     static const size_t SEGMENT_BYTES = 8192;
 
     const size_t elements_per_array;
     const size_t arrays_per_segment;
     const size_t elements_per_segment;
+
+    EntryAllocator entry_allocator;
 
     std::vector<Entry *> segments;
     size_t the_size;
@@ -153,19 +119,33 @@ class SegmentedArrayVector {
     size_t get_offset(size_t index) const {
         return (index % arrays_per_segment) * elements_per_array;
     }
+
+    void add_segment() {
+        Entry *new_segment = entry_allocator.allocate(elements_per_segment);
+        segments.push_back(new_segment);
+    }
 public:
     SegmentedArrayVector(size_t elements_per_array_)
         : elements_per_array(elements_per_array_),
           arrays_per_segment(
-              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Entry)),
-                       size_t(1))),
+              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Entry)), size_t(1))),
+          elements_per_segment(elements_per_array * arrays_per_segment),
+          the_size(0) {
+    }
+
+
+    SegmentedArrayVector(size_t elements_per_array_, const EntryAllocator &allocator_)
+        : entry_allocator(allocator_),
+          elements_per_array(elements_per_array_),
+          arrays_per_segment(
+              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Entry)), size_t(1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
           the_size(0) {
     }
 
     ~SegmentedArrayVector() {
         for (size_t i = 0; i < segments.size(); ++i)
-            delete[] segments[i];
+            entry_allocator.deallocate(segments[i], elements_per_segment);
     }
 
     Entry *operator[](size_t index) {
@@ -192,13 +172,23 @@ public:
         if (offset == 0) {
             assert(segment == segments.size());
             // Must add a new segment.
-            Entry *new_segment = new Entry[elements_per_segment];
-            segments.push_back(new_segment);
+            add_segment();
         }
         Entry *dest = segments[segment] + offset;
         for (size_t i = 0; i < elements_per_array; ++i)
             *dest++ = *entry++;
         ++the_size;
+    }
+
+    void resize(size_t new_size, const Entry *entry) {
+        if (new_size < the_size) {
+            std::cerr << "SegmentedArrayVector does not support removing elements."
+                      << std::endl;
+            exit_with(EXIT_UNSUPPORTED);
+        }
+        while (new_size > the_size) {
+            push_back(entry);
+        }
     }
 };
 

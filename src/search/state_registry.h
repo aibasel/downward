@@ -2,15 +2,13 @@
 #define STATE_REGISTRY_H
 
 #include "globals.h"
+#include "segmented_vector.h"
 #include "state.h"
 #include "state_handle.h"
 #include "state_var_t.h"
 #include "utilities.h"
 
 #include <hash_set>
-
-template<typename T>
-class SegmentedArrayVector;
 
 
 class StateRegistry {
