@@ -166,7 +166,6 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
         task.variable_domain = g_variable_domain;
         tasks->push_back(task);
     }
-    assert(!tasks->empty());
 }
 
 void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int> &needed_costs) {
