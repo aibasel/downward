@@ -266,7 +266,7 @@ void CegarSumHeuristic::initialize() {
         abstractions.push_back(abstraction);
         num_states_offline += abstraction->get_num_states();
 
-        // TODO: Remove task.operators to save memory?
+        task.release_memory();
 
         if (num_states_offline >= max_states_offline || g_timer() > max_time) {
             break;
@@ -293,7 +293,7 @@ void CegarSumHeuristic::print_statistics() {
 }
 
 int CegarSumHeuristic::compute_heuristic(const State &state) {
-    assert(tasks.size() == abstractions.size());
+    assert(abstractions.size() <= tasks.size());
     int sum_h = 0;
     for (int i = 0; i < abstractions.size(); ++i) {
         Task &task = tasks[i];

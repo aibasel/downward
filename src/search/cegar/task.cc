@@ -14,6 +14,10 @@ void Task::install() {
     g_variable_domain = variable_domain;
 }
 
+void Task::release_memory() {
+    vector<Operator>().swap(operators);
+}
+
 Task Task::get_original_task() {
     Task task;
     //task.operators = g_operators;

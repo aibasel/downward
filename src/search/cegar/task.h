@@ -22,6 +22,7 @@ public:
     std::unordered_set<int> fact_numbers;
 
     void install();
+    void release_memory();
 
     static Task get_original_task();
 
