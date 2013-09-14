@@ -165,6 +165,7 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
         // Filter facts that are true in initial state.
         if (!options.get<bool>("trivial_facts") && is_true_in_initial_state(facts[i]))
             continue;
+        // TODO: Avoid copying task to vector.
         Task task;
         task.goal.push_back(facts[i]);
         task.variable_domain = g_variable_domain;
@@ -233,7 +234,6 @@ void CegarSumHeuristic::initialize() {
     // use BFS.
     g_is_unit_cost = false;
 
-    vector<Task> tasks;
     generate_tasks(&tasks);
 
     int states_offline = 0;
@@ -273,6 +273,8 @@ void CegarSumHeuristic::initialize() {
         abstractions.push_back(abstraction);
         states_offline += abstraction->get_num_states();
 
+        // TODO: Remove task.operators to save memory?
+
         if (states_offline >= max_states_offline || g_timer() > max_time) {
             break;
         }
@@ -297,9 +299,17 @@ void CegarSumHeuristic::print_statistics() {
 }
 
 int CegarSumHeuristic::compute_heuristic(const State &state) {
+    assert(tasks.size() == abstractions.size());
     int sum_h = 0;
     for (int i = 0; i < abstractions.size(); ++i) {
-        // TODO: s \not \subseteq task.reached => h(s) = 0
+        Task &task = tasks[i];
+
+        // If any fact in state is not reachable in this task, h(state) = 0.
+        unordered_set<int> state_fact_numbers;
+        get_fact_numbers(state, task, &state_fact_numbers);
+        if (!is_subset(state_fact_numbers, task.fact_numbers))
+            continue;
+
         int h = abstractions[i]->get_h(state);
         assert(h >= 0);
         if (h == INF)

@@ -339,6 +339,14 @@ Fact get_fact(int fact_number) {
     return make_pair(var, value);
 }
 
+bool is_subset(unordered_set<int> &a, unordered_set<int> &b) {
+    for (auto it = a.begin(); it != a.end(); ++it) {
+        if (b.count(*it) == 0)
+            return false;
+    }
+    return true;
+}
+
 void order_facts_in_landmark_graph(vector<int> *ordered_fact_numbers) {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
