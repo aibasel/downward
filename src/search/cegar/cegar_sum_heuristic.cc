@@ -185,7 +185,11 @@ void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int
 void CegarSumHeuristic::add_operators(Task &task) {
     assert(task.goal.size() == 1);
     Fact &last_fact = task.goal[0];
-    get_possibly_before_facts(last_fact, &task.fact_numbers);
+    if (options.get<bool>("adapt_task")) {
+        get_possibly_before_facts(last_fact, &task.fact_numbers);
+    } else {
+        task.fact_numbers = original_task.fact_numbers;
+    }
     if (DEBUG) {
         task.dump_facts();
     }
@@ -242,7 +246,10 @@ void CegarSumHeuristic::initialize() {
              << " (" << var << "=" << value << ")" << endl;
 
         add_operators(task);
-        cout << "Facts: " << task.fact_numbers.size() + 1 << "/" << g_num_facts << endl;
+        int num_facts = task.fact_numbers.size();
+        if (options.get<bool>("adapt_task"))
+            ++num_facts;
+        cout << "Facts: " << num_facts << "/" << g_num_facts << endl;
         cout << "Operators: " << task.operators.size() << "/" << g_operators.size() << endl;
         Abstraction *abstraction = new Abstraction(&task);
 

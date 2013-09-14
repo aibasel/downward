@@ -23,6 +23,11 @@ Task Task::get_original_task() {
     //task.operators = g_operators;
     task.goal = g_goal;
     task.variable_domain = g_variable_domain;
+    for (int fact_number = 0; fact_number < g_num_facts; ++fact_number) {
+        // TODO: Use hint.
+        task.fact_numbers.insert(fact_number);
+    }
+    assert(task.fact_numbers.size() == g_num_facts);
     return task;
 }
 
