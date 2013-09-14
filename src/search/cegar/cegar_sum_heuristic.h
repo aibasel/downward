@@ -39,6 +39,7 @@ class CegarSumHeuristic : public Heuristic {
     Task original_task;
     std::vector<Task> tasks;
     std::vector<Abstraction *> abstractions;
+    int num_states_offline;
     std::vector<double> avg_h_values;
 
     void adapt_remaining_costs(const Task &task, const vector<int> &needed_costs);

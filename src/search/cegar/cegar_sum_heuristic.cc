@@ -22,7 +22,8 @@ CegarSumHeuristic::CegarSumHeuristic(const Options &opts)
       options(opts),
       search(opts.get<bool>("search")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
-      original_task(Task::get_original_task()) {
+      original_task(Task::get_original_task()),
+      num_states_offline(0) {
     DEBUG = opts.get<bool>("debug");
 
     for (int i = 0; i < g_operators.size(); ++i)
@@ -236,7 +237,6 @@ void CegarSumHeuristic::initialize() {
 
     generate_tasks(&tasks);
 
-    int states_offline = 0;
     for (int i = 0; i < tasks.size(); ++i) {
         cout << endl;
         Task &task = tasks[i];
@@ -253,7 +253,7 @@ void CegarSumHeuristic::initialize() {
         cout << "Operators: " << task.operators.size() << "/" << g_operators.size() << endl;
         Abstraction *abstraction = new Abstraction(&task);
 
-        abstraction->set_max_states_offline(max_states_offline - states_offline);
+        abstraction->set_max_states_offline(max_states_offline - num_states_offline);
         abstraction->set_max_time((max_time - g_timer()) / (tasks.size() - i));
         abstraction->set_log_h(options.get<bool>("log_h"));
 
@@ -271,11 +271,11 @@ void CegarSumHeuristic::initialize() {
         abstraction->release_memory();
 
         abstractions.push_back(abstraction);
-        states_offline += abstraction->get_num_states();
+        num_states_offline += abstraction->get_num_states();
 
         // TODO: Remove task.operators to save memory?
 
-        if (states_offline >= max_states_offline || g_timer() > max_time) {
+        if (num_states_offline >= max_states_offline || g_timer() > max_time) {
             break;
         }
     }
@@ -293,6 +293,7 @@ void CegarSumHeuristic::print_statistics() {
         sum_avg_h += avg_h_values[i];
     }
     cout << "CEGAR abstractions: " << abstractions.size() << endl;
+    cout << "Abstract states offline: " << num_states_offline << endl;
     // There will always be at least one abstraction.
     cout << "Init h: " << compute_heuristic(*g_initial_state) << endl;
     cout << "Average h: " << sum_avg_h / abstractions.size() << endl;
