@@ -2,7 +2,6 @@
 
 #include "abstraction.h"
 #include "abstract_state.h"
-#include "task.h"
 #include "utils.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -22,7 +21,8 @@ CegarSumHeuristic::CegarSumHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
       search(opts.get<bool>("search")),
-      fact_order(GoalOrder(options.get_enum("fact_order"))) {
+      fact_order(GoalOrder(options.get_enum("fact_order"))),
+      original_task(Task::get_original_task()) {
     DEBUG = opts.get<bool>("debug");
 
     for (int i = 0; i < g_operators.size(); ++i)
@@ -54,6 +54,11 @@ bool operator_relaxed_applicable(const Operator &op, const unordered_set<int> &r
     return true;
 }
 
+void get_fact_numbers(const State &state, const Task &task, unordered_set<int> *fact_numbers) {
+    for (int var = 0; var < task.variable_domain.size(); ++var)
+        fact_numbers->insert(get_fact_number(var, state[var]));
+}
+
 void CegarSumHeuristic::get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached) const {
     // Delete all operators that achieve last_fact.
     // TODO: Avoid saving temp ops list?
@@ -65,8 +70,7 @@ void CegarSumHeuristic::get_possibly_before_facts(const Fact last_fact, unordere
     }
 
     // F = s_0
-    for (int var = 0; var < g_variable_domain.size(); ++var)
-        reached->insert(get_fact_number(var, (*g_initial_state)[var]));
+    get_fact_numbers(*g_initial_state, original_task, reached);
 
     // Until F reaches a fixpoint:
     int last_num_reached = 0;
@@ -229,8 +233,6 @@ void CegarSumHeuristic::initialize() {
     // use BFS.
     g_is_unit_cost = false;
 
-    Task original_task = Task::get_original_task();
-
     vector<Task> tasks;
     generate_tasks(&tasks);
 
@@ -297,6 +299,7 @@ void CegarSumHeuristic::print_statistics() {
 int CegarSumHeuristic::compute_heuristic(const State &state) {
     int sum_h = 0;
     for (int i = 0; i < abstractions.size(); ++i) {
+        // TODO: s \not \subseteq task.reached => h(s) = 0
         int h = abstractions[i]->get_h(state);
         assert(h >= 0);
         if (h == INF)

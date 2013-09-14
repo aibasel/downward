@@ -1,6 +1,7 @@
 #ifndef CEGAR_CEGAR_SUM_HEURISTIC_H
 #define CEGAR_CEGAR_SUM_HEURISTIC_H
 
+#include "task.h"
 #include "utils.h"
 #include "../heuristic.h"
 #include "../option_parser.h"
@@ -35,6 +36,7 @@ class CegarSumHeuristic : public Heuristic {
     const bool search;
     const GoalOrder fact_order;
     std::vector<int> remaining_costs;
+    Task original_task;
     std::vector<Abstraction *> abstractions;
     std::vector<double> avg_h_values;
 
