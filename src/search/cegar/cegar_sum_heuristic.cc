@@ -61,25 +61,19 @@ void get_fact_numbers(const State &state, const Task &task, unordered_set<int> *
 }
 
 void CegarSumHeuristic::get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached) const {
-    // Delete all operators that achieve last_fact.
-    // TODO: Avoid saving temp ops list?
-    vector<Operator> operators;
-    for (int i = 0; i < g_operators.size(); ++i) {
-        int post = get_eff(g_operators[i], last_fact.first);
-        if (post != last_fact.second)
-            operators.push_back(g_operators[i]);
-    }
-
-    // F = s_0
+    // Add facts from initial state.
     get_fact_numbers(*g_initial_state, original_task, reached);
 
-    // Until F reaches a fixpoint:
+    // Until no more facts can be added:
     int last_num_reached = 0;
     while (last_num_reached != reached->size()) {
         last_num_reached = reached->size();
-        // Add all facts to F that are achieved by an operator o with pre(o) \subseteq F.
-        for (int i = 0; i < operators.size(); ++i) {
-            Operator &op = operators[i];
+        for (int i = 0; i < g_operators.size(); ++i) {
+            Operator &op = g_operators[i];
+            // Ignore operators that achieve last_fact.
+            if (get_eff(op, last_fact.first) == last_fact.second)
+                continue;
+            // Add all facts that are achieved by an applicable operator.
             if (operator_relaxed_applicable(op, *reached)) {
                 for (int i = 0; i < op.get_pre_post().size(); i++) {
                     const PrePost &pre_post = op.get_pre_post()[i];
