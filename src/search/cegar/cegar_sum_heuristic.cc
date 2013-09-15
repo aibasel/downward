@@ -34,7 +34,7 @@ CegarSumHeuristic::~CegarSumHeuristic() {
 }
 
 bool sort_cg_forward(pair<int, int> atom1, pair<int, int> atom2) {
-    return g_causal_graph_ordering_pos[atom1.first] < g_causal_graph_ordering_pos[atom2.first];
+    return get_pos_in_causal_graph_ordering(atom1.first) < get_pos_in_causal_graph_ordering(atom2.first);
 }
 
 bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {

@@ -21,6 +21,8 @@ const int UNDEFINED = -1;
 // We cannot call the variable INFINITY, because that clashes with something in c++11.
 const int INF = std::numeric_limits<int>::max();
 
+static std::vector<int> CAUSAL_GRAPH_ORDERING_POS;
+
 typedef std::vector<Operator *> Operators;
 typedef boost::dynamic_bitset<> Bitset;
 typedef std::pair<int, std::vector<int> > Split;
@@ -45,6 +47,7 @@ bool cheaper(Operator *op1, Operator* op2);
 // many outgoing edges in front and vars with few outgoing and many incoming
 // edges in the back.
 void partial_ordering(const CausalGraph &causal_graph, vector<int> *order);
+int get_pos_in_causal_graph_ordering(int var);
 
 struct hash_state {
     size_t operator()(const State &state ) const {

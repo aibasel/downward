@@ -12,6 +12,7 @@
 #include "../operator.h"
 #include "../option_parser.h"
 #include "../state.h"
+#include "../timer.h"
 #include "../utilities.h"
 #include "../landmarks/h_m_landmarks.h"
 
@@ -202,7 +203,6 @@ void partial_ordering(Edges &predecessors, Edges &successors, vector<int> *order
     const int num_nodes = nodes.size();
     vector<int> front;
     vector<int> back;
-    cout << nodes.size() << endl;
     while (!nodes.empty()) {
         int front_in = INF;
         int front_out = -1;
@@ -300,6 +300,26 @@ void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
         }
     }
     partial_ordering(predecessors, successors, order);
+}
+
+int get_pos_in_causal_graph_ordering(int var) {
+    if (CAUSAL_GRAPH_ORDERING_POS.empty()) {
+        cout << "Start ordering causal graph [t=" << g_timer << "]" << endl;
+        vector<int> causal_graph_ordering;
+        partial_ordering(*g_causal_graph, &causal_graph_ordering);
+        CAUSAL_GRAPH_ORDERING_POS.resize(causal_graph_ordering.size(), UNDEFINED);
+        for (int i = 0; i < causal_graph_ordering.size(); ++i) {
+            CAUSAL_GRAPH_ORDERING_POS[causal_graph_ordering[i]] = i;
+        }
+        cout << "Finished ordering causal graph [t=" << g_timer << "]" << endl;
+        if (DEBUG) {
+            cout << "Causal graph ordering: ";
+            for (int pos = 0; pos < causal_graph_ordering.size(); ++pos)
+                cout << causal_graph_ordering[pos] << " ";
+            cout << endl;
+        }
+    }
+    return CAUSAL_GRAPH_ORDERING_POS[var];
 }
 
 int get_fact_number(int var, int value) {

@@ -271,19 +271,6 @@ void read_everything(istream &in) {
         g_num_facts += g_variable_domain[var];
     }
 
-    cegar_heuristic::partial_ordering(*g_causal_graph, &g_causal_graph_ordering);
-    g_causal_graph_ordering_pos.resize(g_causal_graph_ordering.size(), cegar_heuristic::UNDEFINED);
-    for (int i = 0; i < g_causal_graph_ordering.size(); ++i) {
-        int var = g_causal_graph_ordering[i];
-        g_causal_graph_ordering_pos[var] = i;
-    }
-    if (cegar_heuristic::DEBUG) {
-        cout << "Causal graph ordering: ";
-        for (int pos = 0; pos < g_causal_graph_ordering.size(); ++pos)
-            cout << g_causal_graph_ordering[pos] << " ";
-        cout << endl;
-    }
-
     g_cegar_abstraction = 0;
     cout << "Peak memory before building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
@@ -381,8 +368,6 @@ string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 
 cegar_heuristic::Abstraction *g_cegar_abstraction;
-std::vector<int> g_causal_graph_ordering;
-std::vector<int> g_causal_graph_ordering_pos;
 int g_num_facts = 0;
 std::vector<int> g_fact_borders;
 
