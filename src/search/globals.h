@@ -66,10 +66,6 @@ extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
 
 extern cegar_heuristic::Abstraction *g_cegar_abstraction;
-// Ordering of the variables in the task's causal graph.
-extern std::vector<int> g_causal_graph_ordering;
-// Positions in the causal graph ordering, ordered by variable.
-extern std::vector<int> g_causal_graph_ordering_pos;
 extern int g_num_facts;
 extern std::vector<int> g_fact_borders;
 

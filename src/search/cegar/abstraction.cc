@@ -582,7 +582,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         int max_pos = -1;
         for (int i = 0; i < splits.size(); ++i) {
             int var = splits[i].first;
-            int pos = g_causal_graph_ordering_pos[var];
+            int pos = get_pos_in_causal_graph_ordering(var);
             assert(pos != UNDEFINED);
             if (pick == MIN_PREDECESSORS && pos < min_pos) {
                 cond = i;
