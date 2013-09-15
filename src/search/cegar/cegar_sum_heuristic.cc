@@ -253,8 +253,9 @@ void CegarSumHeuristic::initialize() {
         cout << "Operators: " << task.operators.size() << "/" << g_operators.size() << endl;
         Abstraction *abstraction = new Abstraction(&task);
 
-        abstraction->set_max_states_offline(max_states_offline - num_states_offline);
-        abstraction->set_max_time((max_time - g_timer()) / (tasks.size() - i));
+        int rem_tasks = tasks.size() - i;
+        abstraction->set_max_states_offline((max_states_offline - num_states_offline) / rem_tasks);
+        abstraction->set_max_time((max_time - g_timer()) / rem_tasks);
         abstraction->set_log_h(options.get<bool>("log_h"));
 
         PickStrategy pick_strategy = PickStrategy(options.get_enum("pick"));
