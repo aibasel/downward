@@ -100,8 +100,7 @@ void CegarSumHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
     if (DEBUG)
         graph->dump();
-    const set<LandmarkNode *> &all_nodes = graph->get_nodes();
-    set<LandmarkNode *, LandmarkNodeComparer> nodes(all_nodes.begin(), all_nodes.end());
+    const set<LandmarkNode *> &nodes = graph->get_nodes();
     for (auto it = nodes.begin(); it != nodes.end(); it++) {
         const LandmarkNode *node_p = *it;
         facts->push_back(get_fact(node_p));
