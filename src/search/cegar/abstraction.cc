@@ -515,7 +515,6 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     }
     if (DEBUG) {
         cout << "Split: " << state.str() << endl;
-        // TODO: Handle overlapping splits.
         for (int i = 0; i < splits.size(); ++i) {
             const Split &split = splits[i];
             int var = split.first;

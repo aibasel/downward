@@ -159,7 +159,6 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
         // Filter facts that are true in initial state.
         if (!options.get<bool>("trivial_facts") && is_true_in_initial_state(facts[i]))
             continue;
-        // TODO: Avoid copying task to vector.
         Task task;
         task.goal.push_back(facts[i]);
         task.variable_domain = g_variable_domain;
@@ -184,17 +183,14 @@ void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int
 void CegarSumHeuristic::add_operators(Task &task) {
     assert(task.goal.size() == 1);
     Fact &last_fact = task.goal[0];
-    if (options.get<bool>("adapt_task")) {
-        get_possibly_before_facts(last_fact, &task.fact_numbers);
-    } else {
-        task.fact_numbers = original_task.fact_numbers;
-    }
+    get_possibly_before_facts(last_fact, &task.fact_numbers);
     if (DEBUG) {
         task.dump_facts();
     }
     for (int i = 0; i < g_operators.size(); ++i) {
         // Only keep operators with all preconditions in reachable set of facts.
-        if (operator_relaxed_applicable(g_operators[i], task.fact_numbers)) {
+        if (operator_relaxed_applicable(g_operators[i], task.fact_numbers) ||
+            !options.get<bool>("adapt_task")) {
             Operator op = g_operators[i];
             op.set_cost(remaining_costs[i]);
             // If op achieves last_fact set eff(op) = {last_fact}.
