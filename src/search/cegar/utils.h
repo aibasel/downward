@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "../additive_heuristic.h"
 #include "../causal_graph.h"
 #include "../operator.h"
 #include "../state.h"
@@ -20,8 +21,6 @@ extern bool DEBUG;
 const int UNDEFINED = -1;
 // We cannot call the variable INFINITY, because that clashes with something in c++11.
 const int INF = std::numeric_limits<int>::max();
-
-static std::vector<int> CAUSAL_GRAPH_ORDERING_POS;
 
 typedef std::vector<Operator *> Operators;
 typedef boost::dynamic_bitset<> Bitset;
@@ -54,6 +53,9 @@ struct hash_state {
         return state.hash();
     }
 };
+
+int get_hadd_estimate_for_initial_state();
+int get_hadd_value(int var, int value);
 
 int get_fact_number(const LandmarkNode *node);
 Fact get_fact(const LandmarkNode *node);

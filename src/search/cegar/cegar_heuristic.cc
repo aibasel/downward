@@ -55,9 +55,6 @@ void CegarHeuristic::initialize() {
     if (max_states_online > 0)
         g_cegar_abstraction = abstraction;
 
-    AdditiveHeuristic *hadd = new AdditiveHeuristic(options);
-    abstraction->set_hadd(hadd);
-
     double factor = options.get<double>("init_h_factor");
     if (factor != -1) {
         abstraction->set_max_init_h_factor(factor);
