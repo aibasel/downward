@@ -114,7 +114,7 @@ State &State::operator=(const State &other) {
 
 State::~State() {
     if (!borrowed_buffer) {
-        delete vars;
+        delete[] vars;
     }
 }
 

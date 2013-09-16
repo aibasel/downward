@@ -79,7 +79,7 @@ public:
             // Must add a new segment.
             add_segment();
         }
-        segments[segment][offset] = entry;
+        entry_allocator.construct(segments[segment] + offset, entry);
         ++the_size;
     }
 
