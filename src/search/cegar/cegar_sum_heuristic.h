@@ -28,6 +28,7 @@ enum GoalOrder {
 };
 
 enum Decomposition {
+    NONE,
     ALL_LANDMARKS,
     RANDOM_LANDMARKS,
     GOAL_FACTS
