@@ -45,7 +45,7 @@ bool sort_hadd_values_up(Fact fact1, Fact fact2) {
     return get_hadd_value(fact1.first, fact1.second) < get_hadd_value(fact2.first, fact2.second);
 }
 
-bool operator_relaxed_applicable(const Operator &op, const unordered_set<int> &reached) {
+bool operator_applicable(const Operator &op, const unordered_set<int> &reached) {
     for (int i = 0; i < op.get_prevail().size(); i++) {
         const Prevail &prevail = op.get_prevail()[i];
         if (reached.count(get_fact_number(prevail.var, prevail.prev)) == 0)
@@ -78,7 +78,7 @@ void CegarSumHeuristic::get_possibly_before_facts(const Fact last_fact, unordere
             if (get_eff(op, last_fact.first) == last_fact.second)
                 continue;
             // Add all facts that are achieved by an applicable operator.
-            if (operator_relaxed_applicable(op, *reached)) {
+            if (operator_applicable(op, *reached)) {
                 for (int i = 0; i < op.get_pre_post().size(); i++) {
                     const PrePost &pre_post = op.get_pre_post()[i];
                     reached->insert(get_fact_number(pre_post.var, pre_post.post));
@@ -191,6 +191,32 @@ void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int
         cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
+void CegarSumHeuristic::mark_relevant_operators(vector<Operator> &operators, Fact fact) const {
+    for (int i = 0; i < operators.size(); ++i) {
+        Operator &op = operators[i];
+        if (op.is_marked())
+            continue;
+        if (get_eff(op, fact.first) == fact.second) {
+            op.mark();
+            for (int j = 0; j < op.get_prevail().size(); ++j) {
+                const Prevail &prevail = op.get_prevail()[j];
+                mark_relevant_operators(operators, make_pair(prevail.var, prevail.prev));
+            }
+            for (int j = 0; j < op.get_pre_post().size(); ++j) {
+                const PrePost &pre_post = op.get_pre_post()[j];
+                if (pre_post.pre != UNDEFINED)
+                    mark_relevant_operators(operators, make_pair(pre_post.var, pre_post.pre));
+            }
+        }
+    }
+}
+
+void CegarSumHeuristic::unmark_operators(vector<Operator> &operators) const {
+    for (int i = 0; i < operators.size(); ++i) {
+        operators[i].unmark();
+    }
+}
+
 void CegarSumHeuristic::add_operators(Task &task) {
     if (task.goal.size() > 1) {
         task.operators = g_operators;
@@ -204,10 +230,25 @@ void CegarSumHeuristic::add_operators(Task &task) {
     Fact &last_fact = task.goal[0];
     get_possibly_before_facts(last_fact, &task.fact_numbers);
 
+    if (options.get<bool>("relevance_analysis")) {
+        unmark_operators(g_operators);
+        mark_relevant_operators(g_operators, last_fact);
+        if (DEBUG) {
+            int num_relevant_ops = 0;
+            for (int i = 0; i < g_operators.size(); ++i) {
+                if (g_operators[i].is_marked())
+                    ++num_relevant_ops;
+            }
+            cout << "Relevant operators: " << num_relevant_ops << "/" << g_operators.size() << endl;
+        }
+    }
+
     for (int i = 0; i < g_operators.size(); ++i) {
         // Only keep operators with all preconditions in reachable set of facts.
-        if (!options.get<bool>("adapt_task") ||
-            operator_relaxed_applicable(g_operators[i], task.fact_numbers)) {
+        if ((!options.get<bool>("adapt_task") ||
+             operator_applicable(g_operators[i], task.fact_numbers)) &&
+            (!options.get<bool>("relevance_analysis") || g_operators[i].is_marked())) {
+            // Make a copy of the operator.
             Operator op = g_operators[i];
             op.set_cost(remaining_costs[i]);
             // If op achieves last_fact set eff(op) = {last_fact}.
@@ -295,6 +336,7 @@ void CegarSumHeuristic::initialize() {
     }
     cout << endl;
     original_task.install();
+    unmark_operators(g_operators);
     print_statistics();
 
     if (!search)
@@ -385,6 +427,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("decomposition", decompositions, "GOAL_FACTS",
                            "build abstractions for each of these facts");
     parser.add_option<bool>("adapt_task", true, "remove redundant operators and facts");
+    parser.add_option<bool>("relevance_analysis", true, "remove irrelevant operators");
     parser.add_option<bool>("trivial_facts", false, "include landmarks that are true in the initial state");
     parser.add_option<bool>("use_astar", true, "use A* for finding the *single* next solution");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");

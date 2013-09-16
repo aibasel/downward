@@ -46,6 +46,8 @@ class CegarSumHeuristic : public Heuristic {
     std::vector<double> avg_h_values;
 
     void adapt_remaining_costs(const Task &task, const vector<int> &needed_costs);
+    void mark_relevant_operators(std::vector<Operator> &operators, Fact fact) const;
+    void unmark_operators(vector<Operator> &operators) const;
     void add_operators(Task &task);
 
     // Compute the possible-before-set of facts that can be reached in the
