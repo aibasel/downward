@@ -93,7 +93,8 @@ void CegarSumHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     opts.set<int>("cost_type", 0);
     opts.set<int>("memory_padding", 75);
     opts.set<int>("m", 1);
-    opts.set<bool>("reasonable_orders", true);
+    // h^m doesn't produce reasonable orders anyway.
+    opts.set<bool>("reasonable_orders", false);
     opts.set<bool>("only_causal_landmarks", false);
     opts.set<bool>("disjunctive_landmarks", false);
     opts.set<bool>("conjunctive_landmarks", false);
