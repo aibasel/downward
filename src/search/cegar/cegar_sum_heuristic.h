@@ -53,7 +53,6 @@ class CegarSumHeuristic : public Heuristic {
 
     void order_facts(vector<Fact> &facts) const;
     void get_fact_landmarks(std::vector<Fact> *facts) const;
-    void get_goal_facts(std::vector<Fact> *facts) const;
     void generate_tasks(std::vector<Task> *tasks) const;
 protected:
     virtual void print_statistics();
