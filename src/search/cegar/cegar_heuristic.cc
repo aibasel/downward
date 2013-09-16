@@ -288,9 +288,9 @@ void CegarHeuristic::initialize() {
         Task &task = tasks[i];
         task.install();
 
-        for (int i = 0; i < task.goal.size(); ++i)
-            cout << "Refine for " << g_fact_names[task.goal[i].first][task.goal[i].second]
-                 << " (" << task.goal[i].first << "=" << task.goal[i].second << ")" << endl;
+        for (int j = 0; j < task.goal.size(); ++j)
+            cout << "Refine for " << g_fact_names[task.goal[j].first][task.goal[j].second]
+                 << " (" << task.goal[j].first << "=" << task.goal[j].second << ")" << endl;
 
         add_operators(task);
         int num_facts = task.fact_numbers.size();
