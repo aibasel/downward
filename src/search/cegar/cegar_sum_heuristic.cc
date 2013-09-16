@@ -262,6 +262,13 @@ void CegarSumHeuristic::initialize() {
         abstraction->set_max_states_offline((max_states_offline - num_states_offline) / rem_tasks);
         abstraction->set_max_time((max_time - g_timer()) / rem_tasks);
         abstraction->set_log_h(options.get<bool>("log_h"));
+        abstraction->set_write_dot_files(options.get<bool>("write_dot_files"));
+        abstraction->set_use_astar(options.get<bool>("use_astar"));
+
+        double factor = options.get<double>("init_h_factor");
+        if (factor != -1) {
+            abstraction->set_max_init_h_factor(factor);
+        }
 
         PickStrategy pick_strategy = PickStrategy(options.get_enum("pick"));
         if (pick_strategy == BEST2) {
@@ -331,6 +338,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states_offline", DEFAULT_STATES_OFFLINE,
                            "maximum number of abstract states created offline");
     parser.add_option<int>("max_time", -1, "maximum time in seconds for building the abstraction");
+    parser.add_option<double>("init_h_factor", -1, "stop refinement after h(s_0) reaches h^add(s_0) * factor");
     vector<string> pick_strategies;
     pick_strategies.push_back("FIRST");
     pick_strategies.push_back("RANDOM");
@@ -377,9 +385,11 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
                            "build abstractions for each of these facts");
     parser.add_option<bool>("adapt_task", true, "remove redundant operators and facts");
     parser.add_option<bool>("trivial_facts", false, "include landmarks that are true in the initial state");
+    parser.add_option<bool>("use_astar", true, "use A* for finding the *single* next solution");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
     parser.add_option<bool>("debug", false, "print debugging output");
     parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");
+    parser.add_option<bool>("write_dot_files", false, "write graph files for debugging");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
