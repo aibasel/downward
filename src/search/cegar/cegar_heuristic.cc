@@ -17,7 +17,7 @@
 using namespace std;
 
 namespace cegar_heuristic {
-CegarSumHeuristic::CegarSumHeuristic(const Options &opts)
+CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
       search(opts.get<bool>("search")),
@@ -30,7 +30,7 @@ CegarSumHeuristic::CegarSumHeuristic(const Options &opts)
         remaining_costs.push_back(g_operators[i].get_cost());
 }
 
-CegarSumHeuristic::~CegarSumHeuristic() {
+CegarHeuristic::~CegarHeuristic() {
 }
 
 bool sort_cg_forward(pair<int, int> atom1, pair<int, int> atom2) {
@@ -64,7 +64,7 @@ void get_fact_numbers(const State &state, const Task &task, unordered_set<int> *
         fact_numbers->insert(get_fact_number(var, state[var]));
 }
 
-void CegarSumHeuristic::get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached) const {
+void CegarHeuristic::get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached) const {
     // Add facts from initial state.
     get_fact_numbers(*g_initial_state, original_task, reached);
 
@@ -88,7 +88,7 @@ void CegarSumHeuristic::get_possibly_before_facts(const Fact last_fact, unordere
     }
 }
 
-void CegarSumHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
+void CegarHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
     opts.set<int>("memory_padding", 75);
@@ -112,7 +112,7 @@ void CegarSumHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     }
 }
 
-void CegarSumHeuristic::order_facts(vector<Fact> &facts) const {
+void CegarHeuristic::order_facts(vector<Fact> &facts) const {
     if (fact_order == ORIGINAL) {
         // Nothing to do.
     } else if (fact_order == MIXED) {
@@ -148,7 +148,7 @@ int num_nontrivial_goal_facts() {
     return count;
 }
 
-void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
+void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
     vector<Fact> facts;
     Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
     if (decomposition == NONE) {
@@ -177,7 +177,7 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
     }
 }
 
-void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int> &needed_costs) {
+void CegarHeuristic::adapt_remaining_costs(const Task &task, const vector<int> &needed_costs) {
     if (DEBUG)
         cout << "Needed:    " << to_string(needed_costs) << endl;
     assert(task.operators.size() == task.original_operator_numbers.size());
@@ -191,7 +191,7 @@ void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int
         cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
-void CegarSumHeuristic::mark_relevant_operators(vector<Operator> &operators, Fact fact) const {
+void CegarHeuristic::mark_relevant_operators(vector<Operator> &operators, Fact fact) const {
     for (int i = 0; i < operators.size(); ++i) {
         Operator &op = operators[i];
         if (op.is_marked())
@@ -211,13 +211,13 @@ void CegarSumHeuristic::mark_relevant_operators(vector<Operator> &operators, Fac
     }
 }
 
-void CegarSumHeuristic::unmark_operators(vector<Operator> &operators) const {
+void CegarHeuristic::unmark_operators(vector<Operator> &operators) const {
     for (int i = 0; i < operators.size(); ++i) {
         operators[i].unmark();
     }
 }
 
-void CegarSumHeuristic::add_operators(Task &task) {
+void CegarHeuristic::add_operators(Task &task) {
     if (task.goal.size() > 1) {
         task.operators = g_operators;
         for (int i = 0; i < task.operators.size(); ++i)
@@ -263,7 +263,7 @@ void CegarSumHeuristic::add_operators(Task &task) {
     // TODO: Adapt variable_domain.
 }
 
-void CegarSumHeuristic::initialize() {
+void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     int max_states_offline = options.get<int>("max_states_offline");
     if (max_states_offline == -1)
@@ -343,7 +343,7 @@ void CegarSumHeuristic::initialize() {
         exit_with(EXIT_UNSOLVED_INCOMPLETE);
 }
 
-void CegarSumHeuristic::print_statistics() {
+void CegarHeuristic::print_statistics() {
     double sum_avg_h = 0;
     for (int i = 0; i < avg_h_values.size(); ++i) {
         sum_avg_h += avg_h_values[i];
@@ -355,7 +355,7 @@ void CegarSumHeuristic::print_statistics() {
     cout << "Average h: " << sum_avg_h / abstractions.size() << endl;
 }
 
-int CegarSumHeuristic::compute_heuristic(const State &state) {
+int CegarHeuristic::compute_heuristic(const State &state) {
     assert(abstractions.size() <= tasks.size());
     int sum_h = 0;
     for (int i = 0; i < abstractions.size(); ++i) {
@@ -439,7 +439,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new CegarSumHeuristic(opts);
+        return new CegarHeuristic(opts);
 }
 
 static Plugin<ScalarEvaluator> _plugin("cegar", _parse);
