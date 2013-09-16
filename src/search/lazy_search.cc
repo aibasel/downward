@@ -16,7 +16,7 @@ LazySearch::LazySearch(const Options &opts)
     : SearchEngine(opts),
       open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      succ_mode(pref_first),
+      succ_mode(static_cast<SuccMode>(opts.get_enum("succ_mode"))),
       current_state(g_state_registry->get_handle(*g_initial_state)),
       current_predecessor_handle(StateHandle::invalid),
       current_operator(NULL),
@@ -198,6 +198,17 @@ void LazySearch::statistics() const {
     search_progress.print_statistics();
 }
 
+
+static void _add_succ_mode_options(OptionParser &parser) {
+    vector<string> options;
+    options.push_back("ORIGINAL");
+    options.push_back("PREF_FIRST");
+    options.push_back("SHUFFLED");
+    parser.add_enum_option("succ_mode",
+                           options, "PREF_FIRST",
+                           "ordering of applicable operators");
+}
+
 static SearchEngine *_parse(OptionParser &parser) {
     Plugin<OpenList<OpenListEntryLazy > >::register_open_lists();
     parser.add_option<OpenList<OpenListEntryLazy> *>("open");
@@ -206,6 +217,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>(
         "preferred", vector<Heuristic *>(),
         "use preferred operators of these heuristics");
+    _add_succ_mode_options(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -230,6 +242,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
                             "reopen closed nodes");
     parser.add_option<int>("boost", DEFAULT_LAZY_BOOST,
                            "boost value for preferred operator open lists");
+    _add_succ_mode_options(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -274,6 +287,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.add_option<int>("boost", DEFAULT_LAZY_BOOST,
                            "boost value for preferred operator open lists");
     parser.add_option<int>("w", 1, "heuristic weight");
+    _add_succ_mode_options(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
