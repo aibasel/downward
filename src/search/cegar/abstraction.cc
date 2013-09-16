@@ -49,7 +49,6 @@ Abstraction::Abstraction(Task *task)
       open(new AdaptiveQueue<AbstractState *>()),
       pick(RANDOM),
       rng(2012),
-      needed_costs(),
       hadd(0),
       num_states(1),
       deviations(0),
