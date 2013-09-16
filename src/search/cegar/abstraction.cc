@@ -679,7 +679,11 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             for (int j = 0; j < values.size(); ++j) {
                 int value = values[j];
                 int hadd_value = get_hadd_value(var, value);
-                assert(hadd_value != -1);
+                if (hadd_value == -1) {
+                    // Fact is unreachable --> Choose it last.
+                    if (pick == MIN_HADD || pick == MIN_HADD_MIN_LM || pick == MIN_HADD_MAX_LM)
+                        hadd_value = INF;
+                }
                 if (pick_min_hadd) {
                     if (hadd_value < min_hadd) {
                         incumbents.clear();
