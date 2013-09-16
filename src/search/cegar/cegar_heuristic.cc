@@ -29,7 +29,6 @@ CegarHeuristic::~CegarHeuristic() {
 
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
-    cout << "Unit-cost: " << g_is_unit_cost << endl;
     int max_states_offline = options.get<int>("max_states_offline");
     if (max_states_offline == -1)
         max_states_offline = INF;

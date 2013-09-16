@@ -263,8 +263,6 @@ void read_everything(istream &in) {
     // so must be built after the problem has been read in.
     g_causal_graph = new CausalGraph;
 
-    g_is_unit_cost = (g_min_action_cost == 1 && g_max_action_cost == 1);
-
     g_num_facts = 0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         g_fact_borders.push_back(g_num_facts);
@@ -345,7 +343,6 @@ void no_memory () {
 
 
 bool g_use_metric;
-bool g_is_unit_cost;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
 vector<string> g_variable_name;
