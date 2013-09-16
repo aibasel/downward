@@ -348,6 +348,7 @@ void CegarHeuristic::print_statistics() {
     for (int i = 0; i < avg_h_values.size(); ++i) {
         sum_avg_h += avg_h_values[i];
     }
+    cout << "Done building abstractions [t=" << g_timer << "]" << endl;
     cout << "CEGAR abstractions: " << abstractions.size() << endl;
     cout << "Abstract states offline: " << num_states_offline << endl;
     // There will always be at least one abstraction.
