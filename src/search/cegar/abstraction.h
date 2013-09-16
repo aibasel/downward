@@ -87,9 +87,6 @@ private:
     PickStrategy pick;
     mutable RandomNumberGenerator rng;
 
-    // Members for additive abstractions.
-    mutable vector<int> needed_costs;
-
     AdditiveHeuristic *hadd;
 
     vector<int> fact_positions_in_lm_graph_ordering;
