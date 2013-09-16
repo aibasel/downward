@@ -111,10 +111,6 @@ void CegarSumHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     }
 }
 
-void CegarSumHeuristic::get_goal_facts(vector<Fact> *facts) const {
-    (*facts) = g_goal;
-}
-
 void CegarSumHeuristic::order_facts(vector<Fact> &facts) const {
     if (fact_order == ORIGINAL) {
         // Nothing to do.
@@ -157,7 +153,7 @@ void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
     if (decomposition == ALL_LANDMARKS) {
         get_fact_landmarks(&facts);
     } else if (decomposition == GOAL_FACTS) {
-        get_goal_facts(&facts);
+        facts = g_goal;
     } else {
         cerr << "Invalid decomposition: " << decomposition << endl;
         exit_with(EXIT_INPUT_ERROR);
