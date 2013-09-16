@@ -15,8 +15,6 @@
 #include <utility>
 #include <vector>
 
-class AdditiveHeuristic;
-
 namespace cegar_heuristic {
 class AbstractState;
 class Task;
@@ -87,8 +85,6 @@ private:
     PickStrategy pick;
     mutable RandomNumberGenerator rng;
 
-    AdditiveHeuristic *hadd;
-
     vector<int> fact_positions_in_lm_graph_ordering;
 
     // Statistics.
@@ -125,7 +121,6 @@ private:
     // Pick a possible split in case of multiple possibilities.
     int pick_split_index(AbstractState &state, const Splits &conditions) const;
     void restrict_splits(State &conc_state, Splits &splits) const;
-    void evaluate_state_with_hadd(State &conc_state) const;
 
     // A* search.
     void reset_distances_and_solution() const;
@@ -187,7 +182,6 @@ public:
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_log_h(bool log) {log_h = log; }
     void set_pick_strategy(PickStrategy strategy);
-    void set_hadd(AdditiveHeuristic *h);
     void set_max_init_h_factor(double factor);
     void set_write_dot_files(bool write) {write_dot_files = write; };
 

@@ -22,6 +22,9 @@ namespace cegar_heuristic {
 bool DEBUG = false;
 typedef unordered_map<int, unordered_set<int> > Edges;
 
+static std::vector<int> CAUSAL_GRAPH_ORDERING_POS;
+static AdditiveHeuristic *additive_heuristic = 0;
+
 Operator create_op(const string desc) {
     istringstream iss("begin_operator\n" + desc + "\nend_operator");
     return Operator(iss, false);
@@ -320,6 +323,38 @@ int get_pos_in_causal_graph_ordering(int var) {
         }
     }
     return CAUSAL_GRAPH_ORDERING_POS[var];
+}
+
+void setup_hadd() {
+    cout << "Start computing h^add values [t=" << g_timer << "]" << endl;
+    Options opts;
+    opts.set<int>("cost_type", 0);
+    opts.set<int>("memory_padding", 75);
+    additive_heuristic = new AdditiveHeuristic(opts);
+    additive_heuristic->evaluate(*g_initial_state);
+    if (DEBUG) {
+        cout << "h^add values for all facts:" << endl;
+        for (int var = 0; var < g_variable_domain.size(); ++var) {
+            for (int value = 0; value < g_variable_domain[var]; ++value) {
+                cout << "  " << var << "=" << value << " " << g_fact_names[var][value]
+                     << " cost:" << additive_heuristic->get_cost(var, value) << endl;
+            }
+        }
+        cout << endl;
+    }
+    cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
+}
+
+int get_hadd_estimate_for_initial_state() {
+    if (!additive_heuristic)
+        setup_hadd();
+    return additive_heuristic->get_heuristic();
+}
+
+int get_hadd_value(int var, int value) {
+    if (!additive_heuristic)
+        setup_hadd();
+    return additive_heuristic->get_cost(var, value);
 }
 
 int get_fact_number(int var, int value) {
