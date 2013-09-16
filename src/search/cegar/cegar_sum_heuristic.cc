@@ -150,7 +150,13 @@ int num_nontrivial_goal_facts() {
 void CegarSumHeuristic::generate_tasks(vector<Task> *tasks) const {
     vector<Fact> facts;
     Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
-    if (decomposition == ALL_LANDMARKS) {
+    if (decomposition == NONE) {
+        Task task;
+        task.goal = g_goal;
+        task.variable_domain = g_variable_domain;
+        tasks->push_back(task);
+        return;
+    } else if (decomposition == ALL_LANDMARKS) {
         get_fact_landmarks(&facts);
     } else if (decomposition == GOAL_FACTS) {
         facts = g_goal;
@@ -185,16 +191,22 @@ void CegarSumHeuristic::adapt_remaining_costs(const Task &task, const vector<int
 }
 
 void CegarSumHeuristic::add_operators(Task &task) {
+    if (task.goal.size() > 1) {
+        task.operators = g_operators;
+        for (int i = 0; i < task.operators.size(); ++i)
+            task.original_operator_numbers.push_back(i);
+        task.fact_numbers = original_task.fact_numbers;
+        return;
+    }
+
     assert(task.goal.size() == 1);
     Fact &last_fact = task.goal[0];
     get_possibly_before_facts(last_fact, &task.fact_numbers);
-    if (DEBUG) {
-        task.dump_facts();
-    }
+
     for (int i = 0; i < g_operators.size(); ++i) {
         // Only keep operators with all preconditions in reachable set of facts.
-        if (operator_relaxed_applicable(g_operators[i], task.fact_numbers) ||
-            !options.get<bool>("adapt_task")) {
+        if (!options.get<bool>("adapt_task") ||
+            operator_relaxed_applicable(g_operators[i], task.fact_numbers)) {
             Operator op = g_operators[i];
             op.set_cost(remaining_costs[i]);
             // If op achieves last_fact set eff(op) = {last_fact}.
@@ -234,11 +246,9 @@ void CegarSumHeuristic::initialize() {
         Task &task = tasks[i];
         task.install();
 
-        assert (task.goal.size() == 1);
-        int var = task.goal[0].first;
-        int value = task.goal[0].second;
-        cout << "Refine for " << g_fact_names[var][value]
-             << " (" << var << "=" << value << ")" << endl;
+        for (int i = 0; i < task.goal.size(); ++i)
+            cout << "Refine for " << g_fact_names[task.goal[i].first][task.goal[i].second]
+                 << " (" << task.goal[i].first << "=" << task.goal[i].second << ")" << endl;
 
         add_operators(task);
         int num_facts = task.fact_numbers.size();
@@ -359,6 +369,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("fact_order", fact_order_strategies, "MIXED",
                            "order in which the goals are refined for");
     vector<string> decompositions;
+    decompositions.push_back("NONE");
     decompositions.push_back("ALL_LANDMARKS");
     decompositions.push_back("RANDOM_LANDMARKS");
     decompositions.push_back("GOAL_FACTS");
