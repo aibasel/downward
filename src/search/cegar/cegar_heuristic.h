@@ -34,7 +34,7 @@ enum Decomposition {
     GOAL_FACTS
 };
 
-class CegarSumHeuristic : public Heuristic {
+class CegarHeuristic : public Heuristic {
     const Options options;
     const bool search;
     const GoalOrder fact_order;
@@ -62,8 +62,8 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    explicit CegarSumHeuristic(const Options &options);
-    ~CegarSumHeuristic();
+    explicit CegarHeuristic(const Options &options);
+    ~CegarHeuristic();
 };
 }
 
