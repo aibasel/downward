@@ -22,7 +22,9 @@ enum GoalOrder {
     CG_FORWARD,
     CG_BACKWARD,
     DOMAIN_SIZE_UP,
-    DOMAIN_SIZE_DOWN
+    DOMAIN_SIZE_DOWN,
+    HADD_UP,
+    HADD_DOWN
 };
 
 enum Decomposition {

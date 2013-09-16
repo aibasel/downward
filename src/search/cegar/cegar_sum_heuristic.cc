@@ -41,6 +41,10 @@ bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
     return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
 }
 
+bool sort_hadd_values_up(Fact fact1, Fact fact2) {
+    return get_hadd_value(fact1.first, fact1.second) < get_hadd_value(fact2.first, fact2.second);
+}
+
 bool operator_relaxed_applicable(const Operator &op, const unordered_set<int> &reached) {
     for (int i = 0; i < op.get_prevail().size(); i++) {
         const Prevail &prevail = op.get_prevail()[i];
@@ -123,6 +127,10 @@ void CegarSumHeuristic::order_facts(vector<Fact> &facts) const {
     } else if (fact_order == DOMAIN_SIZE_UP or fact_order == DOMAIN_SIZE_DOWN) {
         sort(facts.begin(), facts.end(), sort_domain_size_up);
         if (fact_order == DOMAIN_SIZE_DOWN)
+            reverse(facts.begin(), facts.end());
+    } else if (fact_order == HADD_UP or fact_order == HADD_DOWN) {
+        sort(facts.begin(), facts.end(), sort_hadd_values_up);
+        if (fact_order == HADD_DOWN)
             reverse(facts.begin(), facts.end());
     } else {
         cerr << "Not a valid fact ordering strategy: " << fact_order << endl;
@@ -354,6 +362,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     fact_order_strategies.push_back("CG_BACKWARD");
     fact_order_strategies.push_back("DOMAIN_SIZE_UP");
     fact_order_strategies.push_back("DOMAIN_SIZE_DOWN");
+    fact_order_strategies.push_back("HADD_UP");
+    fact_order_strategies.push_back("HADD_DOWN");
     parser.add_enum_option("fact_order", fact_order_strategies, "MIXED",
                            "order in which the goals are refined for");
     vector<string> decompositions;
