@@ -29,6 +29,8 @@ struct Prevail {
         return !(*this == other);
     }
 
+    void rename_fact(int variable, int before, int after);
+
     void dump() const;
 };
 
@@ -53,6 +55,8 @@ struct PrePost {
                 return false;
         return true;
     }
+
+    void rename_fact(int variable, int before, int after);
 
     void dump() const;
 };
@@ -103,6 +107,8 @@ public:
         assert(new_cost >= 0);
         cost = new_cost;
     }
+
+    void rename_fact(int variable, int before, int after);
 
     void set_effect(int var, int pre, int post) {
         pre_post.clear();
