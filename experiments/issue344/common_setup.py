@@ -55,6 +55,50 @@ def get_repo_base():
         path = os.path.dirname(path)
 
 
+def build_combos_with_names(repo, combinations, revisions, search_revisions):
+    """Build (combos, combo_names) lists for the given planner revisions.
+
+    combos and combo_names are parallel lists, where combos contains
+    (Translator, Preprocessor, Search) triples and combo_names are the names
+    for the respective combinations that lab uses internally.
+
+    See MyExperiment.__init__ for documentation of the parameters
+    combinations, revisions and search_revisions."""
+    combos = []
+    names = []
+    def build(*rev_triple):
+        combo, name = build_combo_with_name(repo, *rev_triple)
+        combos.append(combo)
+        names.append(name)
+
+    for triple in combinations or []:
+        build(triple)
+    for rev in revisions or []:
+        build(rev, rev, rev)
+    for rev in search_revisions or []:
+        build(search_revisions[0], search_revisions[0], rev)
+
+    return combos, names
+
+
+def build_combo_with_name(repo, trans_rev, preprocess_rev, search_rev):
+    """Generate a tuple (combination, name) for the given revisions.
+
+    combination is a (Translator, Preprocessor, Search) tuple
+    and name is the name that lab uses to refer to it."""
+    # TODO: In the future, it would be nice if we didn't need the name
+    # information any more, as it is somewhat of an implementation
+    # detail.
+    combo = (Translator(repo, trans_rev),
+             Preprocessor(repo, preprocess_rev),
+             Planner(repo, search_rev))
+    if trans_rev == preprocess_rev == search_rev:
+        name = str(search_rev)
+    else:
+        name = "%s-%s-%s" % (trans_rev, preprocess_rev, search_rev)
+    return combo, name
+
+
 class MyExperiment(DownwardExperiment):
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
@@ -86,7 +130,7 @@ class MyExperiment(DownwardExperiment):
 
     def __init__(self, configs=None, grid_priority=None, path=None,
                  repo=None, revisions=None, search_revisions=None,
-                 suite=None, **kwargs):
+                 combinations=None, suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
         If "configs" is specified, it should be a dict of {nick:
@@ -102,6 +146,10 @@ class MyExperiment(DownwardExperiment):
         If "repo" is not specified, the repository base is derived
         automatically from the main script's path.
 
+        If "combinations" is specified, it should be a non-empty list
+        of revision triples of the form (translator_rev,
+        preprocessor_rev, search_rev).
+
         If "revisions" is specified, it should be a non-empty
         list of revisions, which specify which planner versions to use
         in the experiment. The same versions are used for translator,
@@ -113,10 +161,7 @@ class MyExperiment(DownwardExperiment):
         translator and preprocessor component of the first
         revision.
 
-        If "suite" is specified, it should specify a problem suite.
-
-        Options "combinations" (from the base class), "revisions" and
-        "search_revisions" are mutually exclusive."""
+        If "suite" is specified, it should specify a problem suite."""
 
         if grid_priority is not None and "environment" not in kwargs:
             kwargs["environment"] = MaiaEnvironment(priority=grid_priority)
@@ -130,33 +175,18 @@ class MyExperiment(DownwardExperiment):
         num_rev_opts_specified = (
             int(revisions is not None) +
             int(search_revisions is not None) +
-            int(kwargs.get("combinations") is not None))
+            int(combinations is not None))
 
         if num_rev_opts_specified > 1:
             raise ValueError('must specify exactly one of "revisions", '
                              '"search_revisions" or "combinations"')
 
-        # See add_comparison_table_step for more on this variable.
-        self._HACK_revisions = revisions
-
-        if revisions is not None:
-            if not revisions:
-                raise ValueError("revisions cannot be empty")
-            combinations = [(Translator(repo, rev),
-                             Preprocessor(repo, rev),
-                             Planner(repo, rev))
-                            for rev in revisions]
-            kwargs["combinations"] = combinations
-
-        if search_revisions is not None:
-            if not search_revisions:
-                raise ValueError("search_revisions cannot be empty")
-            base_rev = search_revisions[0]
-            translator = Translator(repo, base_rev)
-            preprocessor = Preprocessor(repo, base_rev)
-            combinations = [(translator, preprocessor, Planner(repo, rev))
-                            for rev in search_revisions]
-            kwargs["combinations"] = combinations
+        combinations, self._combination_names = build_combos_with_names(
+            repo=repo,
+            combinations=combinations,
+            revisions=revisions,
+            search_revisions=search_revisions)
+        kwargs["combinations"] = combinations
 
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
@@ -170,24 +200,12 @@ class MyExperiment(DownwardExperiment):
         self._report_prefix = get_experiment_name()
 
     def add_comparison_table_step(self, attributes=None):
-        revisions = self._HACK_revisions
-        if revisions is None:
-            # TODO: It's not clear to me what a "revision" in the
-            # overall context of the code really is, e.g. when keeping
-            # the translator and preprocessor method fixed and only
-            # changing the search component. It's also not really
-            # clear to me how the interface of the Compare... reports
-            # works and how to use it more generally. Hence the
-            # present hack.
-
-            # Ideally, this method should look at the table columns we
-            # have (defined by planners and planner configurations),
-            # pair them up in a suitable way, either controlled by a
-            # convenience parameter or a more general grouping method,
-            # and then use this to define which pairs go together.
-            raise NotImplementedError(
-                "only supported when specifying revisions in __init__")
-
+        revisions = self._combination_names
+        if len(revisions) != 2:
+            # TODO: Should generalize this by offering a general
+            # grouping function and then comparing any pair of
+            # settings in the same group.
+            raise NotImplementedError("need two revisions")
         if attributes is None:
             attributes = self.DEFAULT_TABLE_ATTRIBUTES
         report = CompareRevisionsReport(*revisions, attributes=attributes)
@@ -196,13 +214,9 @@ class MyExperiment(DownwardExperiment):
     def add_scatter_plot_step(self, attributes=None):
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
-        revisions = self._HACK_revisions
-        if revisions is None:
-            # TODO: See add_comparison_table_step.
-            raise NotImplementedError(
-                "only supported when specifying revisions in __init__")
+        revisions = self._combination_names
         if len(revisions) != 2:
-            # TODO: Should generalize this, too, by offering a general
+            # TODO: Should generalize this by offering a general
             # grouping function and then comparing any pair of
             # settings in the same group.
             raise NotImplementedError("need two revisions")
@@ -212,6 +226,8 @@ class MyExperiment(DownwardExperiment):
             for nick in configs:
                 config_before = "%s-%s" % (revisions[0], nick)
                 config_after = "%s-%s" % (revisions[1], nick)
+                import sys
+                print >> sys.stderr, revisions, config_before, config_after
                 for attribute in attributes:
                     name = "%s-%s-%s" % (self._report_prefix, attribute, nick)
                     report = ScatterPlotReport(
