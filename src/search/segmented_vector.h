@@ -49,8 +49,12 @@ public:
     }
 
     ~SegmentedVector() {
-        for (size_t i = 0; i < segments.size(); ++i)
-            entry_allocator.deallocate(segments[i], SEGMENT_ELEMENTS);
+        for (size_t i = 0; i < the_size; ++i) {
+            entry_allocator.destroy(&operator[](i));
+        }
+        for (size_t segment = 0; segment < segments.size(); ++segment) {
+            entry_allocator.deallocate(segments[segment], SEGMENT_ELEMENTS);
+        }
     }
 
     Entry &operator[](size_t index) {
@@ -144,8 +148,17 @@ public:
     }
 
     ~SegmentedArrayVector() {
-        for (size_t i = 0; i < segments.size(); ++i)
+        // TODO Factor out common code with SegmentedVector. In particular
+        //      we could destroy the_size * elements_per_array elements here
+        //      wihtout looping over the arrays first.
+        for (size_t i = 0; i < the_size; ++i) {
+            for (size_t offset = 0; offset < elements_per_array; ++offset) {
+                entry_allocator.destroy(&operator[](i) + offset);
+            }
+        }
+        for (size_t i = 0; i < segments.size(); ++i) {
             entry_allocator.deallocate(segments[i], elements_per_segment);
+        }
     }
 
     Entry *operator[](size_t index) {
@@ -176,7 +189,7 @@ public:
         }
         Entry *dest = segments[segment] + offset;
         for (size_t i = 0; i < elements_per_array; ++i)
-            *dest++ = *entry++;
+            entry_allocator.construct(dest++, *entry++);
         ++the_size;
     }
 
