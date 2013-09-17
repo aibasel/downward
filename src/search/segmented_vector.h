@@ -153,7 +153,7 @@ public:
         //      wihtout looping over the arrays first.
         for (size_t i = 0; i < the_size; ++i) {
             for (size_t offset = 0; offset < elements_per_array; ++offset) {
-                entry_allocator.destroy(&operator[](i) + offset);
+                entry_allocator.destroy(operator[](i) + offset);
             }
         }
         for (size_t i = 0; i < segments.size(); ++i) {
