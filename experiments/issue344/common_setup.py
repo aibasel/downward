@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+import platform
 
 from lab.environments import MaiaEnvironment
 from lab.steps import Step
@@ -99,7 +100,20 @@ def build_combo_with_name(repo, trans_rev, preprocess_rev, search_rev):
     return combo, name
 
 
+def is_on_grid():
+    """Returns True if the current machine is on the maia grid.
+
+    Implemented by checking if host name ends with ".cluster".
+    """
+    return platform.node().endswith(".cluster")
+
+
 class MyExperiment(DownwardExperiment):
+    DEFAULT_TEST_SUITE = [
+        "zenotravel:pfile1",
+        "zenotravel:pfile2",
+        ]
+
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
         "coverage",
@@ -130,7 +144,8 @@ class MyExperiment(DownwardExperiment):
 
     def __init__(self, configs=None, grid_priority=None, path=None,
                  repo=None, revisions=None, search_revisions=None,
-                 combinations=None, suite=None, **kwargs):
+                 combinations=None, suite=None, do_test_run="auto",
+                 test_suite=DEFAULT_TEST_SUITE, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
         If "configs" is specified, it should be a dict of {nick:
@@ -161,7 +176,31 @@ class MyExperiment(DownwardExperiment):
         translator and preprocessor component of the first
         revision.
 
-        If "suite" is specified, it should specify a problem suite."""
+        It is possible to specify a mixture of"combinations",
+        "revisions" and "search_revisions".
+
+        If "suite" is specified, it should specify a problem suite.
+
+        If "do_test_run" is true, the "grid_priority" and
+        "environment" (from the base class) arguments are ignored and
+        a local experiment with default arguments is run instead. In
+        this case, the "suite" argument is replaced by the "test_suite"
+        argument.
+
+        If "do_test_run" is the string "auto" (the default), then
+        do_test_run is set to False when run on a grid machine and
+        to True otherwise. A grid machine is identified as one whose
+        node name ends with ".cluster".
+        """
+
+        if do_test_run == "auto":
+            do_test_run = not is_on_grid()
+
+        if do_test_run:
+            # In a test run, overwrite certain arguments.
+            grid_priority = None
+            kwargs.pop("environment", None)
+            suite = test_suite
 
         if grid_priority is not None and "environment" not in kwargs:
             kwargs["environment"] = MaiaEnvironment(priority=grid_priority)
