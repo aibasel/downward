@@ -11,6 +11,8 @@ class Operator;
 #include "state_handle.h"
 #include "globals.h"
 
+// For documentation on classes relevant to storing and working with registered
+// states see the file state_registry.h.
 class State {
     bool borrowed_buffer;
     // Values for vars. will later be converted to UnpackedStateData.
