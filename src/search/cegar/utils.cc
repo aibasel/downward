@@ -369,20 +369,12 @@ int get_fact_number(const LandmarkNode *node) {
     return get_fact_number(var, value);
 }
 
-pair<int, int> get_fact(const LandmarkNode *node) {
+Fact get_fact(const LandmarkNode *node) {
     assert(node);
     assert(node->vars.size() == 1);
     int var = node->vars[0];
     int value = node->vals[0];
-    return make_pair(var, value);
-}
-
-void get_fact_from_number(int fact_number, int &var, int &value) {
-    var = 0;
-    while (g_fact_borders[var] + g_variable_domain[var] <= fact_number)
-        ++var;
-    value = fact_number - g_fact_borders[var];
-    assert(get_fact_number(var, value) == fact_number);
+    return Fact(var, value);
 }
 
 Fact get_fact(int fact_number) {
@@ -391,7 +383,7 @@ Fact get_fact(int fact_number) {
         ++var;
     int value = fact_number - g_fact_borders[var];
     assert(get_fact_number(var, value) == fact_number);
-    return make_pair(var, value);
+    return Fact(var, value);
 }
 
 bool is_subset(unordered_set<int> &a, unordered_set<int> &b) {
@@ -439,11 +431,10 @@ void order_facts_in_landmark_graph(vector<int> *ordered_fact_numbers) {
     if (DEBUG) {
         cout << "Ordering: " << to_string(*ordered_fact_numbers) << endl;
         for (int i = 0; i < ordered_fact_numbers->size(); ++i) {
-            int var = -1;
-            int value = -1;
-            get_fact_from_number((*ordered_fact_numbers)[i], var, value);
-            cout << (*ordered_fact_numbers)[i] << " " << var << "=" << value
-                 << " " << g_fact_names[var][value] << endl;
+            Fact fact = get_fact((*ordered_fact_numbers)[i]);
+            cout << (*ordered_fact_numbers)[i] << " "
+                 << fact.first << "=" << fact.second << " "
+                 << g_fact_names[fact.first][fact.second] << endl;
         }
     }
 }
@@ -484,18 +475,14 @@ void write_landmark_graph() {
             const LandmarkNode *parent_p = parent_it->first;
             int node_number = get_fact_number(node_p);
             int parent_number = get_fact_number(parent_p);
-            int var = -1;
-            int value = -1;
-            get_fact_from_number(parent_number, var, value);
-            dotfile << "  \"" << g_fact_names[var][value] << "\" -> ";
-            get_fact_from_number(node_number, var, value);
-            dotfile << "\"" << g_fact_names[var][value] << "\";" << endl;
-            get_fact_from_number(parent_number, var, value);
-            if ((*g_initial_state)[var] == value)
-                dotfile << "\"" << g_fact_names[var][value] << "\" [color=green];" << endl;
-            get_fact_from_number(node_number, var, value);
-            if ((*g_initial_state)[var] == value)
-                dotfile << "\"" << g_fact_names[var][value] << "\" [color=green];" << endl;
+            Fact parent_fact = get_fact(parent_number);
+            dotfile << "  \"" << g_fact_names[parent_fact.first][parent_fact.second] << "\" -> ";
+            Fact node_fact = get_fact(node_number);
+            dotfile << "\"" << g_fact_names[node_fact.first][node_fact.second] << "\";" << endl;
+            if ((*g_initial_state)[parent_fact.first] == parent_fact.second)
+                dotfile << "\"" << g_fact_names[parent_fact.first][parent_fact.second] << "\" [color=green];" << endl;
+            if ((*g_initial_state)[node_fact.first] == node_fact.second)
+                dotfile << "\"" << g_fact_names[node_fact.first][node_fact.second] << "\" [color=green];" << endl;
         }
     }
     for (int var = 0; var < g_variable_domain.size(); var++) {

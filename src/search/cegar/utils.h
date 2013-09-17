@@ -61,7 +61,6 @@ int get_fact_number(const LandmarkNode *node);
 Fact get_fact(const LandmarkNode *node);
 
 int get_fact_number(int var, int value);
-void get_fact_from_number(int fact_number, int &var, int &value);
 Fact get_fact(int fact_number);
 
 bool is_subset(unordered_set<int> &a, unordered_set<int> &b);
