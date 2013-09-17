@@ -25,6 +25,8 @@ public:
     std::vector<int> original_operator_numbers;
     std::unordered_set<int> fact_numbers;
 
+    void set_goal(std::vector<Fact> facts);
+
     void remove_unreachable_facts();
     void combine_facts(int var, const vector<int> &values);
 

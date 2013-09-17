@@ -18,6 +18,11 @@ Task::Task()
     }
 }
 
+void Task::set_goal(vector<Fact> facts) {
+    // Pass by value to get a copy.
+    goal = facts;
+}
+
 void Task::install() {
     // Do not change g_operators.
     g_goal = goal;

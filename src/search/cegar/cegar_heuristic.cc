@@ -153,7 +153,7 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
     Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
     if (decomposition == NONE) {
         Task task;
-        task.goal = g_goal;
+        task.set_goal(g_goal);
         task.variable_domain = g_variable_domain;
         tasks->push_back(task);
         return;
@@ -171,7 +171,9 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         if (!options.get<bool>("trivial_facts") && is_true_in_initial_state(facts[i]))
             continue;
         Task task;
-        task.goal.push_back(facts[i]);
+        vector<Fact> goal;
+        goal.push_back(facts[i]);
+        task.set_goal(goal);
         task.variable_domain = g_variable_domain;
         tasks->push_back(task);
     }
