@@ -200,12 +200,12 @@ void CegarHeuristic::mark_relevant_operators(vector<Operator> &operators, Fact f
             op.mark();
             for (int j = 0; j < op.get_prevail().size(); ++j) {
                 const Prevail &prevail = op.get_prevail()[j];
-                mark_relevant_operators(operators, make_pair(prevail.var, prevail.prev));
+                mark_relevant_operators(operators, Fact(prevail.var, prevail.prev));
             }
             for (int j = 0; j < op.get_pre_post().size(); ++j) {
                 const PrePost &pre_post = op.get_pre_post()[j];
                 if (pre_post.pre != UNDEFINED)
-                    mark_relevant_operators(operators, make_pair(pre_post.var, pre_post.pre));
+                    mark_relevant_operators(operators, Fact(pre_post.var, pre_post.pre));
             }
         }
     }
@@ -428,7 +428,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("decomposition", decompositions, "GOAL_FACTS",
                            "build abstractions for each of these facts");
     parser.add_option<bool>("adapt_task", true, "remove redundant operators and facts");
-    parser.add_option<bool>("relevance_analysis", true, "remove irrelevant operators");
+    parser.add_option<bool>("relevance_analysis", false, "remove irrelevant operators");
     parser.add_option<bool>("trivial_facts", false, "include landmarks that are true in the initial state");
     parser.add_option<bool>("use_astar", true, "use A* for finding the *single* next solution");
     parser.add_option<bool>("search", true, "if set to false, abort after refining");
