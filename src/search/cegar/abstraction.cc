@@ -114,11 +114,9 @@ void Abstraction::set_pick_strategy(PickStrategy strategy) {
             cout << "Check that landmark graph is ordered by h^add values:" << endl;
             int last_hadd_value = 0;
             for (int i = 0; i < ordering.size(); ++i) {
-                int var = -1;
-                int value = -1;
-                get_fact_from_number(ordering[i], var, value);
-                int hadd_value = get_hadd_value(var, value);
-                cout << var << "=" << value << " " << g_fact_names[var][value]
+                Fact fact = get_fact(ordering[i]);
+                int hadd_value = get_hadd_value(fact.first, fact.second);
+                cout << fact.first << "=" << fact.second << " " << g_fact_names[fact.first][fact.second]
                          << " cost:" << hadd_value
                          << " number:" << ordering[i]
                          << " pos:" << i << endl;
