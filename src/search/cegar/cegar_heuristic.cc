@@ -259,11 +259,11 @@ void CegarHeuristic::add_operators(Task &task) {
             task.original_operator_numbers.push_back(i);
         }
     }
-    //task.fact_numbers.insert(get_fact_from_number(last_fact));
+    // Add last_fact to reachable facts.
+    task.fact_numbers.insert(get_fact_number(last_fact.first, last_fact.second));
     if (options.get<bool>("adapt_task")) {
         task.remove_unreachable_facts();
     }
-    // TODO: task.facts = F + {last_fact}
 }
 
 void CegarHeuristic::initialize() {
