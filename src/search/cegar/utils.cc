@@ -49,6 +49,10 @@ State *create_state(const string desc) {
     return new State(iss);
 }
 
+bool is_marked(Operator &op) {
+    return op.is_marked();
+}
+
 int get_pre(const Operator &op, int var) {
     for (int i = 0; i < op.get_prevail().size(); i++) {
         const Prevail &prevail = op.get_prevail()[i];

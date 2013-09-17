@@ -45,49 +45,6 @@ bool sort_hadd_values_up(Fact fact1, Fact fact2) {
     return get_hadd_value(fact1.first, fact1.second) < get_hadd_value(fact2.first, fact2.second);
 }
 
-bool operator_applicable(const Operator &op, const unordered_set<int> &reached) {
-    for (int i = 0; i < op.get_prevail().size(); i++) {
-        const Prevail &prevail = op.get_prevail()[i];
-        if (reached.count(get_fact_number(prevail.var, prevail.prev)) == 0)
-            return false;
-    }
-    for (int i = 0; i < op.get_pre_post().size(); i++) {
-        const PrePost &pre_post = op.get_pre_post()[i];
-        if (pre_post.pre != UNDEFINED && reached.count(get_fact_number(pre_post.var, pre_post.pre)) == 0)
-            return false;
-    }
-    return true;
-}
-
-void get_fact_numbers(const State &state, const Task &task, unordered_set<int> *fact_numbers) {
-    for (int var = 0; var < task.variable_domain.size(); ++var)
-        fact_numbers->insert(get_fact_number(var, state[var]));
-}
-
-void CegarHeuristic::get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached) const {
-    // Add facts from initial state.
-    get_fact_numbers(*g_initial_state, original_task, reached);
-
-    // Until no more facts can be added:
-    int last_num_reached = 0;
-    while (last_num_reached != reached->size()) {
-        last_num_reached = reached->size();
-        for (int i = 0; i < g_operators.size(); ++i) {
-            Operator &op = g_operators[i];
-            // Ignore operators that achieve last_fact.
-            if (get_eff(op, last_fact.first) == last_fact.second)
-                continue;
-            // Add all facts that are achieved by an applicable operator.
-            if (operator_applicable(op, *reached)) {
-                for (int i = 0; i < op.get_pre_post().size(); i++) {
-                    const PrePost &pre_post = op.get_pre_post()[i];
-                    reached->insert(get_fact_number(pre_post.var, pre_post.post));
-                }
-            }
-        }
-    }
-}
-
 void CegarHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
@@ -154,7 +111,6 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
     if (decomposition == NONE) {
         Task task;
         task.set_goal(g_goal);
-        task.variable_domain = g_variable_domain;
         tasks->push_back(task);
         return;
     } else if (decomposition == ALL_LANDMARKS) {
@@ -170,101 +126,11 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         // Filter facts that are true in initial state.
         if (!options.get<bool>("trivial_facts") && is_true_in_initial_state(facts[i]))
             continue;
-        Task task;
         vector<Fact> goal;
         goal.push_back(facts[i]);
+        Task task;
         task.set_goal(goal);
-        task.variable_domain = g_variable_domain;
         tasks->push_back(task);
-    }
-}
-
-void CegarHeuristic::adapt_remaining_costs(const Task &task, const vector<int> &needed_costs) {
-    if (DEBUG)
-        cout << "Needed:    " << to_string(needed_costs) << endl;
-    assert(task.operators.size() == task.original_operator_numbers.size());
-    for (int i = 0; i < task.operators.size(); ++i) {
-        int op_number = task.original_operator_numbers[i];
-        assert(op_number >= 0 && op_number < remaining_costs.size());
-        remaining_costs[op_number] -= needed_costs[i];
-        assert(remaining_costs[op_number] >= 0);
-    }
-    if (DEBUG)
-        cout << "Remaining: " << to_string(remaining_costs) << endl;
-}
-
-void CegarHeuristic::mark_relevant_operators(vector<Operator> &operators, Fact fact) const {
-    for (int i = 0; i < operators.size(); ++i) {
-        Operator &op = operators[i];
-        if (op.is_marked())
-            continue;
-        if (get_eff(op, fact.first) == fact.second) {
-            op.mark();
-            for (int j = 0; j < op.get_prevail().size(); ++j) {
-                const Prevail &prevail = op.get_prevail()[j];
-                mark_relevant_operators(operators, Fact(prevail.var, prevail.prev));
-            }
-            for (int j = 0; j < op.get_pre_post().size(); ++j) {
-                const PrePost &pre_post = op.get_pre_post()[j];
-                if (pre_post.pre != UNDEFINED)
-                    mark_relevant_operators(operators, Fact(pre_post.var, pre_post.pre));
-            }
-        }
-    }
-}
-
-void CegarHeuristic::unmark_operators(vector<Operator> &operators) const {
-    for (int i = 0; i < operators.size(); ++i) {
-        operators[i].unmark();
-    }
-}
-
-void CegarHeuristic::add_operators(Task &task) {
-    if (task.goal.size() > 1) {
-        task.operators = g_operators;
-        for (int i = 0; i < task.operators.size(); ++i)
-            task.original_operator_numbers.push_back(i);
-        task.fact_numbers = original_task.fact_numbers;
-        return;
-    }
-
-    assert(task.goal.size() == 1);
-    Fact &last_fact = task.goal[0];
-    get_possibly_before_facts(last_fact, &task.fact_numbers);
-
-    if (options.get<bool>("relevance_analysis")) {
-        unmark_operators(g_operators);
-        mark_relevant_operators(g_operators, last_fact);
-        if (DEBUG) {
-            int num_relevant_ops = 0;
-            for (int i = 0; i < g_operators.size(); ++i) {
-                if (g_operators[i].is_marked())
-                    ++num_relevant_ops;
-            }
-            cout << "Relevant operators: " << num_relevant_ops << "/" << g_operators.size() << endl;
-        }
-    }
-
-    for (int i = 0; i < g_operators.size(); ++i) {
-        // Only keep operators with all preconditions in reachable set of facts.
-        if ((!options.get<bool>("adapt_task") ||
-             operator_applicable(g_operators[i], task.fact_numbers)) &&
-            (!options.get<bool>("relevance_analysis") || g_operators[i].is_marked())) {
-            // Make a copy of the operator.
-            Operator op = g_operators[i];
-            op.set_cost(remaining_costs[i]);
-            // If op achieves last_fact set eff(op) = {last_fact}.
-            if (get_eff(op, last_fact.first) == last_fact.second) {
-                op.set_effect(last_fact.first, get_pre(op, last_fact.first), last_fact.second);
-            }
-            task.operators.push_back(op);
-            task.original_operator_numbers.push_back(i);
-        }
-    }
-    // Add last_fact to reachable facts.
-    task.fact_numbers.insert(get_fact_number(last_fact.first, last_fact.second));
-    if (options.get<bool>("adapt_task")) {
-        task.remove_unreachable_facts();
     }
 }
 
@@ -292,17 +158,11 @@ void CegarHeuristic::initialize() {
         cout << endl;
         Task &task = tasks[i];
         task.install();
+        if (options.get<bool>("relevance_analysis"))
+            task.remove_irrelevant_operators();
+        task.adapt_operator_costs(remaining_costs);
+        task.dump();
 
-        for (int j = 0; j < task.goal.size(); ++j)
-            cout << "Refine for " << g_fact_names[task.goal[j].first][task.goal[j].second]
-                 << " (" << task.goal[j].first << "=" << task.goal[j].second << ")" << endl;
-
-        add_operators(task);
-        int num_facts = task.fact_numbers.size();
-        if (options.get<bool>("adapt_task"))
-            ++num_facts;
-        cout << "Facts: " << num_facts << "/" << g_num_facts << endl;
-        cout << "Operators: " << task.operators.size() << "/" << g_operators.size() << endl;
         Abstraction *abstraction = new Abstraction(&task);
 
         int rem_tasks = tasks.size() - i;
@@ -327,7 +187,7 @@ void CegarHeuristic::initialize() {
         avg_h_values.push_back(abstraction->get_avg_h());
         vector<int> needed_costs;
         abstraction->get_needed_costs(&needed_costs);
-        adapt_remaining_costs(task, needed_costs);
+        task.adapt_remaining_costs(remaining_costs, needed_costs);
         abstraction->release_memory();
 
         abstractions.push_back(abstraction);
@@ -341,7 +201,6 @@ void CegarHeuristic::initialize() {
     }
     cout << endl;
     original_task.install();
-    unmark_operators(g_operators);
     print_statistics();
 
     if (!search)
@@ -365,13 +224,13 @@ int CegarHeuristic::compute_heuristic(const State &state) {
     assert(abstractions.size() <= tasks.size());
     int sum_h = 0;
     for (int i = 0; i < abstractions.size(); ++i) {
-        Task &task = tasks[i];
+        //Task &task = tasks[i];
 
         // If any fact in state is not reachable in this task, h(state) = 0.
         unordered_set<int> state_fact_numbers;
-        get_fact_numbers(state, task, &state_fact_numbers);
-        if (!is_subset(state_fact_numbers, task.fact_numbers))
-            continue;
+        // TODO get_fact_numbers(state, task, &state_fact_numbers);
+        //if (!is_subset(state_fact_numbers, task.fact_numbers))
+        //    continue;
 
         int h = abstractions[i]->get_h(state);
         assert(h >= 0);

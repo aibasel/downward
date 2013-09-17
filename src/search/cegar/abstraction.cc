@@ -65,7 +65,7 @@ Abstraction::Abstraction(Task *task)
       write_dot_files(false),
       memory_released(false) {
     this->task = task;
-    assert(!task->goal.empty());
+    assert(!task->get_goal().empty());
 
     assert(!cegar_memory_padding);
     if (DEBUG)
@@ -74,8 +74,8 @@ Abstraction::Abstraction(Task *task)
     set_new_handler(no_memory_continue);
 
     split_tree.set_root(single);
-    for (int i = 0; i < task->operators.size(); ++i) {
-        single->add_loop(&task->operators[i]);
+    for (int i = 0; i < task->get_operators().size(); ++i) {
+        single->add_loop(&task->get_operators()[i]);
     }
     states.insert(init);
     if (DEBUG) {
@@ -312,7 +312,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
                 assert(forward);
                 assert(!use_h);
                 // We are currently collecting the needed operator costs.
-                assert(needed_costs->size() == task->operators.size());
+                assert(needed_costs->size() == task->get_operators().size());
                 // cost'(op) = h(a1) - h(a2)
                 const int needed = state->get_h() - successor->get_h();
                 if (needed > 0) {
@@ -857,14 +857,14 @@ void Abstraction::write_dot_file(int num) {
 }
 
 int Abstraction::get_op_index(const Operator *op) const {
-    int op_index = op - &*task->operators.begin();
-    assert(op_index >= 0 && op_index < task->operators.size());
+    int op_index = op - &*task->get_operators().begin();
+    assert(op_index >= 0 && op_index < task->get_operators().size());
     return op_index;
 }
 
 void Abstraction::get_needed_costs(vector<int> *needed_costs) {
     assert(needed_costs->empty());
-    needed_costs->resize(task->operators.size(), 0);
+    needed_costs->resize(task->get_operators().size(), 0);
     // Traverse abstraction and remember the minimum cost we need to keep for
     // each operator in order not to decrease any heuristic values.
     open->clear();
