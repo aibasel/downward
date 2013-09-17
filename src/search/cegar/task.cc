@@ -5,12 +5,12 @@ using namespace std;
 namespace cegar_heuristic {
 
 Task::Task()
-    : fact_mapping(g_variable_domain.size()),
-      goal(),
-      variable_domain(),
+    : goal(),
+      variable_domain(g_variable_domain),
       operators(),
       original_operator_numbers(),
-      fact_numbers() {
+      fact_numbers(),
+      fact_mapping(g_variable_domain.size()) {
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         fact_mapping[var].resize(g_variable_domain[var]);
         for (int value = 0; value < g_variable_domain[var]; ++value)
@@ -21,6 +21,139 @@ Task::Task()
 void Task::set_goal(vector<Fact> facts) {
     // Pass by value to get a copy.
     goal = facts;
+    compute_facts_and_operators();
+}
+
+bool operator_applicable(const Operator &op, const unordered_set<int> &reached) {
+    for (int i = 0; i < op.get_prevail().size(); i++) {
+        const Prevail &prevail = op.get_prevail()[i];
+        if (reached.count(get_fact_number(prevail.var, prevail.prev)) == 0)
+            return false;
+    }
+    for (int i = 0; i < op.get_pre_post().size(); i++) {
+        const PrePost &pre_post = op.get_pre_post()[i];
+        if (pre_post.pre != UNDEFINED && reached.count(get_fact_number(pre_post.var, pre_post.pre)) == 0)
+            return false;
+    }
+    return true;
+}
+
+void Task::compute_possibly_before_facts(const Fact &last_fact) {
+    unordered_set<int> *reached = &fact_numbers;
+    // Add facts from initial state.
+    for (int var = 0; var < g_variable_domain.size(); ++var)
+        reached->insert(get_fact_number(var, (*g_initial_state)[var]));
+
+    // Until no more facts can be added:
+    int last_num_reached = 0;
+    while (last_num_reached != reached->size()) {
+        last_num_reached = reached->size();
+        for (int i = 0; i < g_operators.size(); ++i) {
+            Operator &op = g_operators[i];
+            // Ignore operators that achieve last_fact.
+            if (get_eff(op, last_fact.first) == last_fact.second)
+                continue;
+            // Add all facts that are achieved by an applicable operator.
+            if (operator_applicable(op, *reached)) {
+                for (int i = 0; i < op.get_pre_post().size(); i++) {
+                    const PrePost &pre_post = op.get_pre_post()[i];
+                    reached->insert(get_fact_number(pre_post.var, pre_post.post));
+                }
+            }
+        }
+    }
+}
+
+void Task::compute_facts_and_operators() {
+    if (goal.size() > 1) {
+        operators = g_operators;
+        for (int i = 0; i < operators.size(); ++i)
+            original_operator_numbers.push_back(i);
+        for (int fact_number = 0; fact_number < g_num_facts; ++fact_number) {
+            // TODO: Use hint.
+            fact_numbers.insert(fact_number);
+        }
+        return;
+    }
+
+    assert(goal.size() == 1);
+    Fact &last_fact = goal[0];
+    compute_possibly_before_facts(last_fact);
+
+    for (int i = 0; i < g_operators.size(); ++i) {
+        // Only keep operators with all preconditions in reachable set of facts.
+        if (operator_applicable(g_operators[i], fact_numbers)) {
+            Operator &op = g_operators[i];
+            // If op achieves last_fact set eff(op) = {last_fact}.
+            if (get_eff(op, last_fact.first) == last_fact.second) {
+                op.set_effect(last_fact.first, get_pre(op, last_fact.first), last_fact.second);
+            }
+            operators.push_back(op);
+            original_operator_numbers.push_back(i);
+        }
+    }
+    // Add last_fact to reachable facts.
+    fact_numbers.insert(get_fact_number(last_fact.first, last_fact.second));
+    remove_unreachable_facts();
+}
+
+void Task::mark_relevant_operators(const Fact &fact) {
+    for (int i = 0; i < operators.size(); ++i) {
+        Operator &op = operators[i];
+        if (op.is_marked())
+            continue;
+        if (get_eff(op, fact.first) == fact.second) {
+            op.mark();
+            for (int j = 0; j < op.get_prevail().size(); ++j) {
+                const Prevail &prevail = op.get_prevail()[j];
+                mark_relevant_operators(Fact(prevail.var, prevail.prev));
+            }
+            for (int j = 0; j < op.get_pre_post().size(); ++j) {
+                const PrePost &pre_post = op.get_pre_post()[j];
+                if (pre_post.pre != UNDEFINED)
+                    mark_relevant_operators(Fact(pre_post.var, pre_post.pre));
+            }
+        }
+    }
+}
+
+void Task::remove_irrelevant_operators() {
+    if (goal.size() > 1)
+        return;
+    for (int i = 0; i < operators.size(); ++i)
+        assert(!operators[i].is_marked());
+    assert(goal.size() == 1);
+    Fact &last_fact = goal[0];
+    mark_relevant_operators(last_fact);
+    if (DEBUG) {
+        int num_relevant_ops = 0;
+        for (int i = 0; i < g_operators.size(); ++i) {
+            if (g_operators[i].is_marked())
+                ++num_relevant_ops;
+        }
+        cout << "Relevant operators: " << num_relevant_ops << "/" << g_operators.size() << endl;
+    }
+    remove_if(operators.begin(), operators.end(), is_marked);
+}
+
+void Task::adapt_operator_costs(const vector<int> &remaining_costs) {
+    assert(operators.size() == original_operator_numbers.size());
+    for (int i = 0; i < operators.size(); ++i)
+        operators[i].set_cost(remaining_costs[original_operator_numbers[i]]);
+}
+
+void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const {
+    if (DEBUG)
+        cout << "Needed:    " << to_string(needed_costs) << endl;
+    assert(operators.size() == original_operator_numbers.size());
+    for (int i = 0; i < operators.size(); ++i) {
+        int op_number = original_operator_numbers[i];
+        assert(op_number >= 0 && op_number < remaining_costs.size());
+        remaining_costs[op_number] -= needed_costs[i];
+        assert(remaining_costs[op_number] >= 0);
+    }
+    if (DEBUG)
+        cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
 void Task::install() {
@@ -41,6 +174,7 @@ void Task::remove_fact(const Fact &fact) {
 }
 
 void Task::remove_unreachable_facts() {
+    // TODO: Rename facts in operators first.
     assert(!fact_numbers.empty());
     for (int fact_number = 0; fact_number < g_num_facts; ++fact_number) {
         if (fact_numbers.count(fact_number) == 0)
@@ -65,13 +199,7 @@ void Task::release_memory() {
 
 Task Task::get_original_task() {
     Task task;
-    task.goal = g_goal;
-    task.variable_domain = g_variable_domain;
-    for (int fact_number = 0; fact_number < g_num_facts; ++fact_number) {
-        // TODO: Use hint.
-        task.fact_numbers.insert(fact_number);
-    }
-    assert(task.fact_numbers.size() == g_num_facts);
+    task.set_goal(g_goal);
     return task;
 }
 
@@ -80,6 +208,14 @@ void Task::dump_facts() const {
         Fact fact = get_fact(*it);
         cout << "PB fact " << *it << ": " << g_fact_names[fact.first][fact.second] << endl;
     }
+}
+
+void Task::dump() const {
+    for (int j = 0; j < goal.size(); ++j)
+        cout << "Refine for " << g_fact_names[goal[j].first][goal[j].second]
+             << " (" << goal[j].first << "=" << goal[j].second << ")" << endl;
+    cout << "Facts: " << fact_numbers.size() << "/" << g_num_facts << endl;
+    cout << "Operators: " << operators.size() << "/" << g_operators.size() << endl;
 }
 
 }
