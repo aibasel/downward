@@ -11,10 +11,11 @@ Task::Task()
       original_operator_numbers(),
       fact_numbers(),
       fact_mapping(g_variable_domain.size()) {
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
-        fact_mapping[var].resize(g_variable_domain[var]);
-        for (int value = 0; value < g_variable_domain[var]; ++value)
+    for (int var = 0; var < variable_domain.size(); ++var) {
+        fact_mapping[var].resize(variable_domain[var]);
+        for (int value = 0; value < variable_domain[var]; ++value) {
             fact_mapping[var][value] = value;
+        }
     }
 }
 
@@ -219,18 +220,41 @@ Task Task::get_original_task() {
 }
 
 void Task::dump_facts() const {
-    for (auto it = fact_numbers.begin(); it != fact_numbers.end(); ++it) {
-        Fact fact = get_fact(*it);
-        cout << "PB fact " << *it << ": " << g_fact_names[fact.first][fact.second] << endl;
+    for (int fact_number = 0; fact_number < g_num_facts; ++fact_number) {
+        if (fact_numbers.count(fact_number)) {
+            Fact fact = get_fact(fact_number);
+            cout << "    " << fact.first << "=" << fact.second
+                 << " (" << fact_number << ")" << ": "
+                 << g_fact_names[fact.first][fact.second] << endl;
+        }
     }
 }
 
 void Task::dump() const {
+    cout << "Task ";
     for (int j = 0; j < goal.size(); ++j)
-        cout << "Refine for " << g_fact_names[goal[j].first][goal[j].second]
-             << " (" << goal[j].first << "=" << goal[j].second << ")" << endl;
-    cout << "Facts: " << fact_numbers.size() << "/" << g_num_facts << endl;
-    cout << "Operators: " << operators.size() << "/" << g_operators.size() << endl;
+        cout << goal[j].first << "=" << goal[j].second << ":"
+             << g_fact_names[goal[j].first][goal[j].second] << " ";
+    cout << endl;
+    cout << "  Facts: " << fact_numbers.size() << "/" << g_num_facts << endl;
+    if (DEBUG)
+        dump_facts();
+    cout << "  Operators: " << operators.size() << "/" << g_operators.size() << endl;
+    if (DEBUG) {
+        for (int i = 0; i < operators.size(); ++i) {
+            cout << "    ";
+            operators[i].dump();//cout << "    " << operators[i].get_name() << " (" << operators[i].get_cost() << ")" << endl;
+        }
+    }
+    cout << "  Variable domain sizes: " << to_string(variable_domain) << endl;
+    if (DEBUG) {
+        cout << "  Fact mapping:" << endl;
+        for (int var = 0; var < variable_domain.size(); ++var) {
+            for (int value = 0; value < variable_domain[var]; ++value)
+                cout << "    " << var << ": " << value << " -> " << fact_mapping[var][value] << endl;
+        }
+    }
+    cout << endl;
 }
 
 }
