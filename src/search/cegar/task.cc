@@ -84,14 +84,15 @@ void Task::compute_facts_and_operators() {
     for (int i = 0; i < g_operators.size(); ++i) {
         // Only keep operators with all preconditions in reachable set of facts.
         if (operator_applicable(g_operators[i], fact_numbers)) {
-            Operator &op = g_operators[i];
-            // If op achieves last_fact set eff(op) = {last_fact}.
-            if (get_eff(op, last_fact.first) == last_fact.second) {
-                op.keep_single_effect(last_fact.first);
-            }
-            operators.push_back(op);
+            operators.push_back(g_operators[i]);
             original_operator_numbers.push_back(i);
         }
+    }
+    for (int i = 0; i < operators.size(); ++i) {
+        Operator &op = operators[i];
+        // If op achieves last_fact set eff(op) = {last_fact}.
+        if (get_eff(op, last_fact.first) == last_fact.second)
+            op.keep_single_effect(last_fact.first);
     }
     // Add last_fact to reachable facts.
     fact_numbers.insert(get_fact_number(last_fact.first, last_fact.second));
