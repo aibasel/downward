@@ -36,6 +36,8 @@ public:
     void remove_irrelevant_operators();
     void adapt_operator_costs(const vector<int> &remaining_costs);
     void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const;
+    bool state_is_reachable(const State &state) const;
+    void project_state(State &state) const;
 
     void combine_facts(int var, const vector<int> &values);
 

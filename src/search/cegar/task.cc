@@ -94,7 +94,7 @@ void Task::compute_facts_and_operators() {
     }
     // Add last_fact to reachable facts.
     fact_numbers.insert(get_fact_number(last_fact.first, last_fact.second));
-    remove_unreachable_facts();
+    // TODO: remove_unreachable_facts();
 }
 
 void Task::mark_relevant_operators(const Fact &fact) {
@@ -154,6 +154,21 @@ void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int>
     }
     if (DEBUG)
         cout << "Remaining: " << to_string(remaining_costs) << endl;
+}
+
+bool Task::state_is_reachable(const State &state) const {
+    assert(g_variable_domain.size() == g_fact_borders.size());
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        if (fact_numbers.count(get_fact_number(var, state[var])) == 0)
+            return false;
+    }
+    return true;
+}
+
+void Task::project_state(State &state) const {
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
+        state[var] = fact_mapping[var][state[var]];
+    }
 }
 
 void Task::install() {
