@@ -15,6 +15,7 @@
 #include <vector>
 
 using namespace __gnu_cxx;
+using namespace std;
 
 LandmarkGraph::LandmarkGraph(const Options &opts)
     : exploration(opts.get<Exploration *>("explor")),

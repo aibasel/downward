@@ -24,7 +24,7 @@ class StateRegistry {
       size_t operator() (const StateRepresentation &lhs,
                          const StateRepresentation &rhs) const {
           size_t size = g_variable_domain.size();
-          return ::equal(lhs.data, lhs.data + size, rhs.data);
+          return std::equal(lhs.data, lhs.data + size, rhs.data);
       }
     };
 
