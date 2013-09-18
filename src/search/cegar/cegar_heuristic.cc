@@ -224,15 +224,16 @@ int CegarHeuristic::compute_heuristic(const State &state) {
     assert(abstractions.size() <= tasks.size());
     int sum_h = 0;
     for (int i = 0; i < abstractions.size(); ++i) {
-        //Task &task = tasks[i];
+        Task &task = tasks[i];
 
         // If any fact in state is not reachable in this task, h(state) = 0.
-        unordered_set<int> state_fact_numbers;
-        // TODO get_fact_numbers(state, task, &state_fact_numbers);
-        //if (!is_subset(state_fact_numbers, task.fact_numbers))
-        //    continue;
+        if (!task.state_is_reachable(state))
+            continue;
 
-        int h = abstractions[i]->get_h(state);
+        State projected_state(state);
+        task.project_state(projected_state);
+
+        int h = abstractions[i]->get_h(projected_state);
         assert(h >= 0);
         if (h == INF)
             return DEAD_END;
