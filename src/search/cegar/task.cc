@@ -87,7 +87,7 @@ void Task::compute_facts_and_operators() {
             Operator &op = g_operators[i];
             // If op achieves last_fact set eff(op) = {last_fact}.
             if (get_eff(op, last_fact.first) == last_fact.second) {
-                op.set_effect(last_fact.first, get_pre(op, last_fact.first), last_fact.second);
+                op.keep_single_effect(last_fact.first);
             }
             operators.push_back(op);
             original_operator_numbers.push_back(i);

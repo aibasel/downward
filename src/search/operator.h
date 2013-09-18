@@ -110,11 +110,7 @@ public:
 
     void rename_fact(int variable, int before, int after);
 
-    void set_effect(int var, int pre, int post) {
-        pre_post.clear();
-        vector<Prevail> conditions;
-        pre_post.push_back(PrePost(var, pre, post, conditions));
-    }
+    void keep_single_effect(int var);
 };
 
 #endif
