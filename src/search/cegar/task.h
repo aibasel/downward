@@ -25,6 +25,8 @@ private:
     void remove_unreachable_facts();
     void mark_relevant_operators(const Fact &fact);
 
+    void dump_facts() const;
+
 public:
     Task();
 
@@ -47,7 +49,6 @@ public:
     static Task get_original_task();
 
     void dump() const;
-    void dump_facts() const;
 };
 }
 
