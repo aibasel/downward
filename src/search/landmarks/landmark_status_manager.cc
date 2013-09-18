@@ -1,6 +1,7 @@
 #include "landmark_status_manager.h"
 
 using namespace __gnu_cxx;
+using namespace std;
 
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : lm_graph(graph) {
