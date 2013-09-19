@@ -18,6 +18,7 @@ private:
     std::vector<Operator> operators;
     std::vector<int> original_operator_numbers;
     std::unordered_set<int> fact_numbers;
+    std::unordered_set<Fact, hash_fact> reachable_facts;
     std::vector<std::vector<int> > fact_mapping;
 
     void rename_fact(int var, int before, int after);

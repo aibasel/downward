@@ -51,6 +51,13 @@ struct hash_state {
     }
 };
 
+struct hash_fact {
+    int max_domain_size = 10000;
+    size_t operator()(const Fact &fact ) const {
+        return fact.first * max_domain_size + fact.second;
+    }
+};
+
 int get_hadd_estimate_for_initial_state();
 int get_hadd_value(int var, int value);
 
