@@ -365,24 +365,11 @@ int get_hadd_value(int var, int value) {
     return additive_heuristic->get_cost(var, value);
 }
 
-int get_fact_number(int var, int value) {
-    return g_fact_borders[var] + value;
-}
-
 Fact get_fact(const LandmarkNode *node) {
     assert(node);
     assert(node->vars.size() == 1);
     int var = node->vars[0];
     int value = node->vals[0];
-    return Fact(var, value);
-}
-
-Fact get_fact(int fact_number) {
-    int var = 0;
-    while (g_fact_borders[var] + g_variable_domain[var] <= fact_number)
-        ++var;
-    int value = fact_number - g_fact_borders[var];
-    assert(get_fact_number(var, value) == fact_number);
     return Fact(var, value);
 }
 

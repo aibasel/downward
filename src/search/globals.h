@@ -66,7 +66,6 @@ extern RandomNumberGenerator g_rng;
 
 extern cegar_heuristic::Abstraction *g_cegar_abstraction;
 extern int g_num_facts;
-extern std::vector<int> g_fact_borders;
 
 // Reserve some space that can be released when no memory is left.
 extern int g_memory_padding_mb;
