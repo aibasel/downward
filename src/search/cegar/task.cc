@@ -1,5 +1,7 @@
 #include "task.h"
 
+#include <set>
+
 using namespace std;
 
 namespace cegar_heuristic {
@@ -7,6 +9,7 @@ namespace cegar_heuristic {
 Task::Task()
     : goal(),
       variable_domain(g_variable_domain),
+      fact_names(g_fact_names),
       operators(),
       original_operator_numbers(),
       fact_numbers(),
@@ -189,6 +192,7 @@ void Task::remove_fact(const Fact &fact) {
     assert(!variable_domain.empty());
     assert(variable_domain[fact.first] >= 2);
     --variable_domain[fact.first];
+    fact_names[fact.first].erase(fact_names[fact.first].begin() + fact.second);
 }
 
 void Task::shrink_domain(int var, int shrink_by) {
@@ -206,7 +210,7 @@ void Task::remove_unreachable_facts() {
             for (int value = fact.second + 1; value < variable_domain[fact.first]; ++value) {
                 rename_fact(fact.first, value, value - 1);
             }
-            shrink_domain(fact.first, 1);
+            remove_fact(fact);
         }
     }
 }
@@ -232,13 +236,12 @@ Task Task::get_original_task() {
 }
 
 void Task::dump_facts() const {
-    for (int fact_number = 0; fact_number < g_num_facts; ++fact_number) {
-        if (fact_numbers.count(fact_number)) {
-            Fact fact = get_fact(fact_number);
-            cout << "    " << fact.first << "=" << fact.second
-                 << " (" << fact_number << ")" << ": "
-                 << g_fact_names[fact.first][fact.second] << endl;
-        }
+    set<int> ordered_fact_numbers(fact_numbers.begin(), fact_numbers.end());
+    for (auto it = ordered_fact_numbers.begin(); it != ordered_fact_numbers.end(); ++it) {
+        Fact fact = get_fact(*it);
+        cout << "    " << fact.first << "=" << fact.second
+             << " (" << *it << ")" << ": "
+             << fact_names[fact.first][fact.second] << endl;
     }
 }
 
@@ -246,7 +249,7 @@ void Task::dump() const {
     cout << "Task ";
     for (int j = 0; j < goal.size(); ++j)
         cout << goal[j].first << "=" << goal[j].second << ":"
-             << g_fact_names[goal[j].first][goal[j].second] << " ";
+             << fact_names[goal[j].first][goal[j].second] << " ";
     cout << endl;
     cout << "  Facts: " << fact_numbers.size() << "/" << g_num_facts << endl;
     if (DEBUG)

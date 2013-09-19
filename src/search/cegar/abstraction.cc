@@ -78,18 +78,6 @@ Abstraction::Abstraction(Task *task)
         single->add_loop(&task->get_operators()[i]);
     }
     states.insert(init);
-    if (DEBUG) {
-        cout << "Variable domain sizes: ";
-        for (int var = 0; var < g_variable_domain.size(); ++var) {
-            cout << var << ":" << g_variable_domain[var] << " ";
-        }
-        cout << endl;
-        for (int i = 0; i < g_goal.size(); ++i) {
-            int var = g_goal[i].first;
-            int value = g_goal[i].second;
-            cout << "Goal " << var << "=" << value << " " << g_fact_names[var][value] << endl;
-        }
-    }
 }
 
 Abstraction::~Abstraction() {
@@ -116,7 +104,7 @@ void Abstraction::set_pick_strategy(PickStrategy strategy) {
             for (int i = 0; i < ordering.size(); ++i) {
                 Fact fact = get_fact(ordering[i]);
                 int hadd_value = get_hadd_value(fact.first, fact.second);
-                cout << fact.first << "=" << fact.second << " " << g_fact_names[fact.first][fact.second]
+                cout << fact.first << "=" << fact.second
                          << " cost:" << hadd_value
                          << " number:" << ordering[i]
                          << " pos:" << i << endl;
