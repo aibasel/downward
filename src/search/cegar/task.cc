@@ -180,6 +180,7 @@ void Task::install() {
     // Do not change g_operators.
     g_goal = goal;
     g_variable_domain = variable_domain;
+    g_fact_names = fact_names;
 }
 
 void Task::rename_fact(int var, int before, int after) {
