@@ -7,7 +7,8 @@ using namespace std;
 namespace cegar_heuristic {
 
 Task::Task(vector<Fact> goal_facts)
-    : goal(goal_facts),
+    : initial_state(*g_initial_state),
+      goal(goal_facts),
       variable_domain(g_variable_domain),
       fact_names(g_fact_names),
       operators(),
@@ -158,6 +159,8 @@ void Task::translate_state(State &state, bool &reachable) const {
 
 void Task::install() {
     // Do not change g_operators.
+    assert(g_initial_state);
+    *g_initial_state = initial_state;
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
@@ -172,6 +175,8 @@ void Task::move_fact(int var, int before, int after) {
         operators[i].rename_fact(var, before, after);
     fact_mapping[var][before] = after;
     fact_names[var][after] = fact_names[var][before];
+    if (initial_state[var] == before)
+        initial_state[var] = after;
     for (int i = 0; i < goal.size(); ++i) {
         if (var == goal[i].first && before == goal[i].second)
             goal[i].second = after;
@@ -187,6 +192,10 @@ void Task::remove_fact(int var, int value) {
     --variable_domain[var];
     assert(value < fact_names[var].size());
     fact_names[var].erase(fact_names[var].begin() + value);
+    assert(initial_state[var] != value);
+    for (int i = 0; i < goal.size(); ++i) {
+        assert(goal[i].first != var || goal[i].second != value);
+    }
     // Rename all values of this variable behind the deleted fact.
     for (int i = value + 1; i < g_variable_domain[var]; ++i) {
         move_fact(var, i, i - 1);
