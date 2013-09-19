@@ -62,8 +62,6 @@ Fact get_fact(int fact_number);
 
 bool is_subset(unordered_set<int> &a, unordered_set<int> &b);
 
-void order_facts_in_landmark_graph(vector<int> *ordering);
-
 void write_landmark_graph();
 
 void write_causal_graph(const CausalGraph &causal_graph);
