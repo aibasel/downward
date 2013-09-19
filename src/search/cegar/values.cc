@@ -10,17 +10,14 @@ vector<int> Values::borders;
 vector<Bitset> Values::masks;
 
 Values::Values() {
-    if (facts == -1)
-        initialize_static_members();
-
-    assert(facts >= 0);
+    assert(facts >= 0 && "Static members have not been initialized.");
     values = Bitset(facts);
     values.set();
 }
 
 void Values::initialize_static_members() {
-    assert(masks.empty());
-    assert(borders.empty());
+    masks.clear();
+    borders.clear();
     facts = 0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         borders.push_back(facts);

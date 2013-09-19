@@ -22,10 +22,10 @@ private:
     // masks[var][pos] == true iff pos belongs to var.
     static vector<Bitset> masks;
 
-    void initialize_static_members();
     int pos(int var, int value) const {return borders[var] + value; }
 public:
     Values();
+    static void initialize_static_members();
     void add(int var, int value);
     void set(int var, int value);
     void remove(int var, int value);
