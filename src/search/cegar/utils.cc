@@ -477,11 +477,9 @@ void write_landmark_graph() {
              != node_p->parents.end(); ++parent_it) {
             //const edge_type &edge = parent_it->second;
             const LandmarkNode *parent_p = parent_it->first;
-            int node_number = get_fact_number(node_p);
-            int parent_number = get_fact_number(parent_p);
-            Fact parent_fact = get_fact(parent_number);
+            Fact parent_fact = get_fact(parent_p);
             dotfile << "  \"" << g_fact_names[parent_fact.first][parent_fact.second] << "\" -> ";
-            Fact node_fact = get_fact(node_number);
+            Fact node_fact = get_fact(node_p);
             dotfile << "\"" << g_fact_names[node_fact.first][node_fact.second] << "\";" << endl;
             if ((*g_initial_state)[parent_fact.first] == parent_fact.second)
                 dotfile << "\"" << g_fact_names[parent_fact.first][parent_fact.second] << "\" [color=green];" << endl;
