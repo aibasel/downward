@@ -22,7 +22,7 @@ class EagerSearch : public SearchEngine {
     bool do_pathmax; // whether to use pathmax correction
     bool use_multi_path_dependence;
 
-    OpenList<StateHandle> *open_list;
+    OpenList<StateID> *open_list;
     ScalarEvaluator *f_evaluator;
 
 protected:

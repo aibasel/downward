@@ -6,22 +6,25 @@
 using namespace std;
 
 class Operator;
+class StateRegistry;
 
+#include "state_id.h"
 #include "state_var_t.h"
-#include "state_handle.h"
 #include "globals.h"
 
 class State {
+    friend class StateRegistry;
     bool borrowed_buffer;
     // Values for vars. will later be converted to UnpackedStateData.
     state_var_t *vars;
-    StateHandle handle;
+    StateID id;
     void copy_buffer_from(const state_var_t *buffer);
     // Only used for creating the initial state.
     explicit State(state_var_t *buffer);
+    // Only used by the state registry.
+    explicit State(state_var_t *buffer, StateID id_);
     explicit State(const State &predecessor, const Operator &op);
 public:
-    explicit State(const StateHandle &handle);
     State(const State &state);
     State &operator=(const State &other);
     ~State();
@@ -34,8 +37,8 @@ public:
     // Named constructor for unregistered States
     static State construct_unregistered_successor(const State &predecessor, const Operator &op);
 
-    StateHandle get_handle() const {
-        return handle;
+    StateID get_id() const {
+        return id;
     }
 
     int operator[](int index) const {

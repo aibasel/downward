@@ -13,12 +13,12 @@ LandmarkStatusManager::~LandmarkStatusManager() {
 
 
 vector<bool> &LandmarkStatusManager::get_reached_landmarks(const State &state) {
-    return reached_lms[state.get_handle()];
+    return reached_lms[state.get_id()];
 }
 
 
 void LandmarkStatusManager::set_landmarks_for_initial_state() {
-    State registered_initial_state(g_state_registry->get_handle(*g_initial_state));
+    State registered_initial_state = g_state_registry->get_registered_state(*g_initial_state);
     vector<bool> &reached = get_reached_landmarks(registered_initial_state);
     reached.resize(lm_graph.number_of_landmarks());
     //cout << "NUMBER OF LANDMARKS: " << lm_graph.number_of_landmarks() << endl;
