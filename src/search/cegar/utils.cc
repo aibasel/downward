@@ -394,14 +394,6 @@ Fact get_fact(int fact_number) {
     return Fact(var, value);
 }
 
-bool is_subset(unordered_set<int> &a, unordered_set<int> &b) {
-    for (auto it = a.begin(); it != a.end(); ++it) {
-        if (b.count(*it) == 0)
-            return false;
-    }
-    return true;
-}
-
 void write_landmark_graph() {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
