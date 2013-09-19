@@ -43,11 +43,6 @@ bool test_cegar_goal(const State &s);
 
 bool cheaper(Operator *op1, Operator* op2);
 
-// Create an ordering of the variables in the causal graph. Since the CG is not
-// a DAG, we use the following approximation: Put the vars with few incoming and
-// many outgoing edges in front and vars with few outgoing and many incoming
-// edges in the back.
-void partial_ordering(const CausalGraph &causal_graph, vector<int> *order);
 int get_pos_in_causal_graph_ordering(int var);
 
 struct hash_state {

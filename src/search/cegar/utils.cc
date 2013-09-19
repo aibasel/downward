@@ -292,6 +292,10 @@ void partial_ordering(Edges &predecessors, Edges &successors, vector<int> *order
 }
 
 void partial_ordering(const CausalGraph &causal_graph, vector<int> *order) {
+    // Create an ordering of the variables in the causal graph. Since the CG is not
+    // a DAG, we use the following approximation: Put the vars with few incoming and
+    // many outgoing edges in front and vars with few outgoing and many incoming
+    // edges in the back.
     // For each variable, maintain sets of predecessor and successor variables
     // that haven't been ordered yet.
     Edges predecessors(g_variable_domain.size());
