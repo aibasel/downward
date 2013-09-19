@@ -18,8 +18,9 @@ vector<bool> &LandmarkStatusManager::get_reached_landmarks(const State &state) {
 
 
 void LandmarkStatusManager::set_landmarks_for_initial_state() {
-    State registered_initial_state = g_state_registry->get_registered_state(*g_initial_state);
-    vector<bool> &reached = get_reached_landmarks(registered_initial_state);
+    // TODO use correct state registry here.
+    State initial_state = g_state_registry->get_initial_state();
+    vector<bool> &reached = get_reached_landmarks(initial_state);
     reached.resize(lm_graph.number_of_landmarks());
     //cout << "NUMBER OF LANDMARKS: " << lm_graph.number_of_landmarks() << endl;
 
@@ -39,7 +40,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state() {
         if (node_p->conjunctive) {
             bool lm_true = true;
             for (int i = 0; i < node_p->vals.size(); i++) {
-                if ((*g_initial_state)[node_p->vars[i]] != node_p->vals[i]) {
+                if (initial_state[node_p->vars[i]] != node_p->vals[i]) {
                     lm_true = false;
                     break;
                 }
@@ -50,7 +51,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state() {
             }
         } else {
             for (int i = 0; i < node_p->vals.size(); i++) {
-                if ((*g_initial_state)[node_p->vars[i]] == node_p->vals[i]) {
+                if (initial_state[node_p->vars[i]] == node_p->vals[i]) {
                     reached[node_p->get_id()] = true;
                     inserted++;
                     break;

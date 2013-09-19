@@ -18,7 +18,7 @@ SearchNode::SearchNode(const StateID &state_id_,
 }
 
 State SearchNode::get_state() const {
-    return g_state_registry->get_registered_state(state_id);
+    return g_state_registry->get_state(state_id);
 }
 
 bool SearchNode::is_open() const {
@@ -125,7 +125,7 @@ void SearchNode::mark_as_dead_end() {
 
 void SearchNode::dump() const {
     cout << state_id.value << ": ";
-    g_state_registry->get_registered_state(state_id).dump_fdr();
+    g_state_registry->get_state(state_id).dump_fdr();
     if (info.creating_operator) {
         cout << " created by " << info.creating_operator->get_name()
              << " from " << info.parent_state_id.value << endl;
@@ -165,7 +165,7 @@ void SearchSpace::dump() const {
         StateID id(i);
         const SearchNodeInfo &node_info = search_node_infos[id];
         cout << "#" << i << ": ";
-        g_state_registry->get_registered_state(id).dump_fdr();
+        g_state_registry->get_state(id).dump_fdr();
         if (node_info.creating_operator &&
                 node_info.parent_state_id.is_valid()) {
             cout << " created by " << node_info.creating_operator->get_name()

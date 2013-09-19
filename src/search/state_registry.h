@@ -40,10 +40,11 @@ class StateRegistry {
     typedef __gnu_cxx::hash_set<StateID,
                                 StateIDSemanticHash,
                                 StateIDSemanticEqual> StateIDSet;
- 
+
     // TODO: why do we need a pointer here?
     SegmentedArrayVector<state_var_t> *state_data_pool;
     StateIDSet registered_states;
+    StateID insert_id_or_pop_state();
 public:
     StateRegistry();
     ~StateRegistry();
@@ -61,10 +62,10 @@ public:
     // signature of this to
     // RegieredState get_registered_state(const UnregisteredState& unregistered_state);
     StateID get_id(const State &state);
-    State get_registered_state(StateID id) const;
-    State get_registered_state(const State &state) {
-        return get_registered_state(get_id(state));
-    }
+    State get_state(StateID id) const;
+
+    State get_initial_state();
+    State get_successor_state(const State &predecessor, const Operator &op);
 
     size_t size() const {
         return registered_states.size();
