@@ -96,7 +96,7 @@ void Task::compute_facts_and_operators() {
     }
     // Add last_fact to reachable facts.
     fact_numbers.insert(get_fact_number(last_fact.first, last_fact.second));
-    // TODO: remove_unreachable_facts();
+    remove_unreachable_facts();
 }
 
 void Task::mark_relevant_operators(const Fact &fact) {
@@ -182,6 +182,7 @@ void Task::install() {
 void Task::rename_fact(int var, int before, int after) {
     for (int i = 0; i < operators.size(); ++i)
         operators[i].rename_fact(var, before, after);
+    fact_mapping[var][before] = after;
 }
 
 void Task::remove_fact(const Fact &fact) {
@@ -190,12 +191,23 @@ void Task::remove_fact(const Fact &fact) {
     --variable_domain[fact.first];
 }
 
+void Task::shrink_domain(int var, int shrink_by) {
+    assert(!variable_domain.empty());
+    assert(variable_domain[var] > shrink_by);
+    variable_domain[var] -= shrink_by;
+}
+
 void Task::remove_unreachable_facts() {
-    // TODO: Rename facts in operators first.
     assert(!fact_numbers.empty());
     for (int fact_number = 0; fact_number < g_num_facts; ++fact_number) {
-        if (fact_numbers.count(fact_number) == 0)
-            remove_fact(get_fact(fact_number));
+        if (fact_numbers.count(fact_number) == 0) {
+            Fact fact = get_fact(fact_number);
+            // Rename all values of this variable after the unreachable fact.
+            for (int value = fact.second + 1; value < variable_domain[fact.first]; ++value) {
+                rename_fact(fact.first, value, value - 1);
+            }
+            shrink_domain(fact.first, 1);
+        }
     }
 }
 
@@ -205,9 +217,8 @@ void Task::combine_facts(int var, const vector<int> &values) {
     // Map all values to the first value.
     for (int i = 1; i < values.size(); ++i) {
         rename_fact(var, values[i], values[0]);
-        remove_fact(Fact(var, values[i]));
-        fact_mapping[var][values[i]] = values[0];
     }
+    shrink_domain(var, values.size() - 1);
 }
 
 void Task::release_memory() {
@@ -244,7 +255,7 @@ void Task::dump() const {
     if (DEBUG) {
         for (int i = 0; i < operators.size(); ++i) {
             cout << "    ";
-            operators[i].dump();//cout << "    " << operators[i].get_name() << " (" << operators[i].get_cost() << ")" << endl;
+            operators[i].dump();
         }
     }
     cout << "  Variable domain sizes: " << to_string(variable_domain) << endl;
