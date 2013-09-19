@@ -14,6 +14,7 @@ typedef std::unordered_set<Fact, hash_fact> FactSet;
 
 class Task {
 private:
+    State initial_state;
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
     std::vector<vector<string> > fact_names;
