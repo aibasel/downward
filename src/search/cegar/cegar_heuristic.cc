@@ -26,6 +26,9 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       num_states_offline(0) {
     DEBUG = opts.get<bool>("debug");
 
+    cout << endl << "Original task:" << endl;
+    original_task.dump();
+
     for (int i = 0; i < g_operators.size(); ++i)
         remaining_costs.push_back(g_operators[i].get_cost());
 }
