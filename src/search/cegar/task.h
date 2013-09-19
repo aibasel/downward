@@ -21,10 +21,11 @@ private:
     std::vector<int> original_operator_numbers;
     std::vector<std::vector<int> > fact_mapping;
 
-    void project_fact(int var, int before, int after);
+    void move_fact(int var, int before, int after);
+    void remove_fact(int var, int value);
+    void remove_facts(int var, vector<int> &values);
     void compute_possibly_before_facts(const Fact &last_fact, FactSet *reached);
     void compute_facts_and_operators();
-    void set_fact_unreachable(int var, int value);
     void remove_unreachable_facts(const FactSet &reached_facts);
     void mark_relevant_operators(const Fact &fact);
 
@@ -39,9 +40,9 @@ public:
     void remove_irrelevant_operators();
     void adapt_operator_costs(const vector<int> &remaining_costs);
     void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const;
-    void project_state(State &state, bool &reachable) const;
+    void translate_state(State &state, bool &reachable) const;
 
-    void combine_facts(int var, const vector<int> &values);
+    void combine_facts(int var, vector<int> &values);
 
     void install();
     void release_memory();

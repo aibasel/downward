@@ -143,7 +143,7 @@ void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int>
         cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
-void Task::project_state(State &state, bool &reachable) const {
+void Task::translate_state(State &state, bool &reachable) const {
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         int value = fact_mapping[var][state[var]];
         if (value == UNDEFINED) {
@@ -163,7 +163,7 @@ void Task::install() {
     g_fact_names = fact_names;
 }
 
-void Task::project_fact(int var, int before, int after) {
+void Task::move_fact(int var, int before, int after) {
     if (DEBUG)
         cout << "Project var " << var << ": " << before << " -> " << after << endl;
     assert(0 <= before && before < fact_mapping[var].size());
@@ -172,43 +172,54 @@ void Task::project_fact(int var, int before, int after) {
         operators[i].rename_fact(var, before, after);
     fact_mapping[var][before] = after;
     fact_names[var][after] = fact_names[var][before];
-    fact_names[var].erase(fact_names[var].begin() + before);
-    --variable_domain[var];
-    assert(variable_domain[var] >= 1);
     for (int i = 0; i < goal.size(); ++i) {
         if (var == goal[i].first && before == goal[i].second)
             goal[i].second = after;
     }
 }
 
-void Task::set_fact_unreachable(int var, int value) {
+void Task::remove_fact(int var, int value) {
     if (DEBUG)
         cout << "Set unreachable: " << var << "=" << value << endl;
+    assert(0 <= value && value < fact_mapping[var].size());
     fact_mapping[var][value] = UNDEFINED;
+    assert(variable_domain[var] >= 2);
+    --variable_domain[var];
+    assert(value < fact_names[var].size());
+    fact_names[var].erase(fact_names[var].begin() + value);
+    // Rename all values of this variable behind the deleted fact.
+    for (int i = value + 1; i < g_variable_domain[var]; ++i) {
+        move_fact(var, i, i - 1);
+    }
+}
+
+void Task::remove_facts(int var, vector<int> &values) {
+    assert(is_sorted(values.begin(), values.end()));
+    // Remove values in descending order to ensure that the indices don't change.
+    for (auto it = values.rbegin(); it != values.rend(); ++it)
+        remove_fact(var, *it);
 }
 
 void Task::remove_unreachable_facts(const FactSet &reached_facts) {
     assert(!reached_facts.empty());
     for (int var = 0; var < g_variable_domain.size(); ++var) {
+        vector<int> values_to_remove;
         for (int value = 0; value < g_variable_domain[var]; ++value) {
-            if (reached_facts.count(Fact(var, value)) == 0) {
-                set_fact_unreachable(var, value);
-                // Rename all values of this variable behind the unreachable fact.
-                for (int i = value + 1; i < g_variable_domain[var]; ++i) {
-                    project_fact(var, i, i - 1);
-                }
-            }
+            if (reached_facts.count(Fact(var, value)) == 0)
+                values_to_remove.push_back(value);
         }
+        remove_facts(var, values_to_remove);
     }
 }
 
-void Task::combine_facts(int var, const vector<int> &values) {
+void Task::combine_facts(int var, vector<int> &values) {
     cout << var << " " << to_string(values) << endl;
     assert(values.size() >= 2);
-    // Map all values to the first value.
-    for (int i = 1; i < values.size(); ++i) {
-        project_fact(var, values[i], values[0]);
-    }
+    int projected_value = values[0];
+    values.erase(values.begin());
+    for (auto it = values.begin(); it != values.end(); ++it)
+        move_fact(var, *it, projected_value);
+    remove_facts(var, values);
 }
 
 void Task::release_memory() {
