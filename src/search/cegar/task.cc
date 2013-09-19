@@ -183,7 +183,7 @@ void Task::project_fact(int var, int before, int after) {
 
 void Task::set_fact_unreachable(int var, int value) {
     if (DEBUG)
-        cout << "Set unreachble: " << var << "=" << value << endl;
+        cout << "Set unreachable: " << var << "=" << value << endl;
     fact_mapping[var][value] = UNDEFINED;
 }
 
