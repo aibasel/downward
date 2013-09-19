@@ -265,7 +265,6 @@ void read_everything(istream &in) {
 
     g_num_facts = 0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
-        g_fact_borders.push_back(g_num_facts);
         g_num_facts += g_variable_domain[var];
     }
 
@@ -366,6 +365,5 @@ RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 
 cegar_heuristic::Abstraction *g_cegar_abstraction;
 int g_num_facts = 0;
-std::vector<int> g_fact_borders;
 
 int g_memory_padding_mb = 0;

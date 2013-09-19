@@ -9,41 +9,37 @@
 #include <vector>
 
 namespace cegar_heuristic {
+
+typedef std::unordered_set<Fact, hash_fact> FactSet;
+
 class Task {
 private:
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
     std::vector<vector<string> > fact_names;
-    std::vector<int> fact_borders;
     std::vector<Operator> operators;
     std::vector<int> original_operator_numbers;
-    std::unordered_set<int> fact_numbers;
-    std::unordered_set<Fact, hash_fact> reachable_facts;
     std::vector<std::vector<int> > fact_mapping;
 
-    void rename_fact(int var, int before, int after);
-    void remove_fact(const Fact &fact);
-    void shrink_domain(int var, int shrink_by);
-    void compute_possibly_before_facts(const Fact &last_fact);
+    void project_fact(int var, int before, int after);
+    void compute_possibly_before_facts(const Fact &last_fact, FactSet *reached);
     void compute_facts_and_operators();
-    void remove_unreachable_facts();
+    void set_fact_unreachable(int var, int value);
+    void remove_unreachable_facts(const FactSet &reached_facts);
     void mark_relevant_operators(const Fact &fact);
 
     void dump_facts() const;
 
 public:
-    Task();
+    explicit Task(std::vector<Fact> goal_facts);
 
     const std::vector<Fact> &get_goal() const {return goal; }
-    void set_goal(std::vector<Fact> facts);
-
     std::vector<Operator> &get_operators() {return operators; }
 
     void remove_irrelevant_operators();
     void adapt_operator_costs(const vector<int> &remaining_costs);
     void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const;
-    bool state_is_reachable(const State &state) const;
-    void project_state(State &state) const;
+    void project_state(State &state, bool &reachable) const;
 
     void combine_facts(int var, const vector<int> &values);
 

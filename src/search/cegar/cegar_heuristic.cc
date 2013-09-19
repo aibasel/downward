@@ -112,8 +112,7 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
     vector<Fact> facts;
     Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
     if (decomposition == NONE) {
-        Task task;
-        task.set_goal(g_goal);
+        Task task(g_goal);
         tasks->push_back(task);
         return;
     } else if (decomposition == ALL_LANDMARKS) {
@@ -131,8 +130,7 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
             continue;
         vector<Fact> goal;
         goal.push_back(facts[i]);
-        Task task;
-        task.set_goal(goal);
+        Task task(goal);
         tasks->push_back(task);
     }
 }
@@ -230,11 +228,11 @@ int CegarHeuristic::compute_heuristic(const State &state) {
         Task &task = tasks[i];
 
         // If any fact in state is not reachable in this task, h(state) = 0.
-        if (!task.state_is_reachable(state))
-            continue;
-
+        bool reachable = false;
         State projected_state(state);
-        task.project_state(projected_state);
+        task.project_state(projected_state, reachable);
+        if (!reachable)
+            continue;
 
         int h = abstractions[i]->get_h(projected_state);
         assert(h >= 0);
