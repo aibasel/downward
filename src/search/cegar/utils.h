@@ -60,10 +60,7 @@ Fact get_fact(const LandmarkNode *node);
 int get_fact_number(int var, int value);
 Fact get_fact(int fact_number);
 
-bool is_subset(unordered_set<int> &a, unordered_set<int> &b);
-
 void write_landmark_graph();
-
 void write_causal_graph(const CausalGraph &causal_graph);
 
 // Debugging.
