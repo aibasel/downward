@@ -249,8 +249,8 @@ void Task::dump() const {
     cout << "  Variable domain sizes: " << to_string(variable_domain) << endl;
     if (DEBUG) {
         cout << "  Fact mapping:" << endl;
-        for (int var = 0; var < variable_domain.size(); ++var) {
-            for (int value = 0; value < variable_domain[var]; ++value) {
+        for (int var = 0; var < fact_mapping.size(); ++var) {
+            for (int value = 0; value < fact_mapping[var].size(); ++value) {
                 cout << "    " << var << ": " << value << " -> " << fact_mapping[var][value] << endl;
             }
         }
