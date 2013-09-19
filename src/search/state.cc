@@ -22,12 +22,12 @@ void State::copy_buffer_from(const state_var_t *buffer) {
 }
 
 State::State(state_var_t *buffer)
-    : borrowed_buffer(true), vars(buffer), handle(StateHandle::invalid) {
+    : borrowed_buffer(true), vars(buffer), id(StateID::invalid) {
     assert(vars);
 }
 
 State::State(const State &predecessor, const Operator &op)
-    : handle(StateHandle::invalid) {
+    : id(StateID::invalid) {
     assert(!op.is_axiom());
     copy_buffer_from(predecessor.get_buffer());
     for (size_t i = 0; i < op.get_pre_post().size(); ++i) {
@@ -38,21 +38,17 @@ State::State(const State &predecessor, const Operator &op)
     g_axiom_evaluator->evaluate(vars);
 }
 
-State::State(const StateHandle &handle_)
-    : borrowed_buffer(true), handle(handle_) {
-    if (!handle.is_valid()) {
-        cout << "Tried to create State from invalid StateHandle." << endl;
-        abort();
-    }
-    // We can  treat the buffer as const because it is never changed in a
-    // state object (only assignment can change it, but it changes the whole
-    // state).
-    // TODO think about the use of const here and in StateHandle.
-
-    // This assignment will later be changed into something like this:
-    // vars = handle.unpack_state_data();
+State::State(state_var_t *buffer, StateID id_)
+    : borrowed_buffer(true),
+      vars(buffer),
+      id(id_) {
+    // The assignment vars(buffer) will later be changed into something like this:
+    // vars = unpack_state_data(buffer);
     // The buffer will no longer be shared then
-    vars = const_cast<state_var_t *>(handle.get_buffer());
+    if (!id.is_valid()) {
+        cerr << "Tried to create State from invalid StateID." << endl;
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
     assert(vars);
 }
 
@@ -66,7 +62,7 @@ State State::construct_registered_successor(const State &predecessor,
                                             const Operator &op,
                                             StateRegistry &state_registry) {
     State unregistered_copy(predecessor, op);
-    return State(state_registry.get_handle(unregistered_copy));
+    return state_registry.get_registered_state(unregistered_copy);
 }
 
 State State::construct_unregistered_successor(const State &predecessor, const Operator &op) {
@@ -76,11 +72,11 @@ State State::construct_unregistered_successor(const State &predecessor, const Op
 State::State(const State &other)
     : borrowed_buffer(other.borrowed_buffer),
       vars(other.vars),
-      handle(other.handle) {
+      id(other.id) {
     // Every State needs valid state variables.
     assert(vars);
     // A registered state should always have a borrowed buffer.
-    assert(!handle.is_valid() || borrowed_buffer);
+    assert(!id.is_valid() || borrowed_buffer);
 
     if (!borrowed_buffer) {
         // Deep copy for unregistered states.
@@ -97,12 +93,12 @@ State &State::operator=(const State &other) {
 
         borrowed_buffer = other.borrowed_buffer;
         vars = other.vars;
-        handle = other.handle;
+        id = other.id;
 
         // Every State needs valid state variables.
         assert(vars);
         // A registered state should always have a borrowed buffer.
-        assert(!handle.is_valid() || borrowed_buffer);
+        assert(!id.is_valid() || borrowed_buffer);
 
         if (!borrowed_buffer) {
             // Deep copy for unregistered states.
@@ -135,8 +131,8 @@ void State::dump_fdr() const {
 }
 
 bool State::operator==(const State &other) const {
-    if (handle.is_valid()) {
-        return handle == other.handle;
+    if (id.is_valid()) {
+        return id.value == other.id.value;
     } else if (vars == other.vars) {
         // borrowed from same buffer
         return true;

@@ -43,8 +43,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
     vector<int> h_s;
 
     // TODO for now we use the global state registry for all states (even temporary states like this)
-    StateHandle initial_state_handle = g_state_registry.get_handle(*g_initial_state);
-    State s = State(initial_state_handle);
+    State s = g_state_registry->get_registered_state(*g_initial_state);
     sample_t::const_iterator succ_it = temporary_samp->find(s);
     if (succ_it == temporary_samp->end()) {
         (*temporary_samp)[s].reserve(0);

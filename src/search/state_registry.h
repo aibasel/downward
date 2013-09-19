@@ -4,7 +4,7 @@
 #include "globals.h"
 #include "segmented_vector.h"
 #include "state.h"
-#include "state_handle.h"
+#include "state_id.h"
 #include "state_var_t.h"
 #include "utilities.h"
 
@@ -12,60 +12,62 @@
 
 
 class StateRegistry {
-    typedef StateHandle::StateRepresentation StateRepresentation;
-
-    struct StateRepresentationSemanticHash {
-      size_t operator() (const StateRepresentation &representation) const {
-          return ::hash_number_sequence(representation.data, g_variable_domain.size());
-      }
+    struct StateIDSemanticHash {
+        const SegmentedArrayVector<state_var_t> &state_data_pool;
+        StateIDSemanticHash(const SegmentedArrayVector<state_var_t> &state_data_pool_)
+            : state_data_pool (state_data_pool_) {
+        }
+        size_t operator() (const StateID &id) const {
+            return ::hash_number_sequence(state_data_pool[id.value], g_variable_domain.size());
+        }
     };
 
-    struct StateRepresentationSemanticEqual {
-      size_t operator() (const StateRepresentation &lhs,
-                         const StateRepresentation &rhs) const {
-          size_t size = g_variable_domain.size();
-          return ::equal(lhs.data, lhs.data + size, rhs.data);
-      }
+    struct StateIDSemanticEqual {
+        const SegmentedArrayVector<state_var_t> &state_data_pool;
+        StateIDSemanticEqual(const SegmentedArrayVector<state_var_t> &state_data_pool_)
+            : state_data_pool (state_data_pool_) {
+        }
+
+        size_t operator() (const StateID &lhs,
+                           const StateID &rhs) const {
+            size_t size = g_variable_domain.size();
+            const state_var_t *lhs_data = state_data_pool[lhs.value];
+            const state_var_t *rhs_data = state_data_pool[rhs.value];
+            return ::equal(lhs_data, lhs_data + size, rhs_data);
+        }
     };
 
-    typedef __gnu_cxx::hash_set<StateRepresentation,
-                                StateRepresentationSemanticHash,
-                                StateRepresentationSemanticEqual> StateRepresentationSet;
-
+    typedef __gnu_cxx::hash_set<StateID,
+                                StateIDSemanticHash,
+                                StateIDSemanticEqual> StateIDSet;
+ 
+    // TODO: why do we need a pointer here?
     SegmentedArrayVector<state_var_t> *state_data_pool;
-    StateRepresentationSet registered_states;
+    StateIDSet registered_states;
 public:
     StateRegistry();
     ~StateRegistry();
 
-    /* After calling this function the returned state is registered and has a
-       valid handle.
+    /*
+       After calling this function the returned state is registered and has a
+       valid id.
        Performes a lookup of state. If the same state was previously looked up,
-       a state with a valid handle to the registered data is returned.
+       a state with a valid id of the registered data is returned.
        Otherwise the state is registered (i.e. gets an id and is stored for
-       later lookups). After this registration a state with a valid handle to
-       the state just registered is returned.
+       later lookups). After this registration a state with a valid id is
+       returned.
     */
     // TODO If State is split in RegieredState and UnregisteredState, change the
     // signature of this to
     // RegieredState get_registered_state(const UnregisteredState& unregistered_state);
-    StateHandle get_handle(const State &state);
+    StateID get_id(const State &state);
+    State get_registered_state(StateID id) const;
+    State get_registered_state(const State &state) {
+        return get_registered_state(get_id(state));
+    }
 
     size_t size() const {
         return registered_states.size();
-    }
-
-    /* An iterator would be nicer but we do not want to expose StateRepresentation.
-       Since this method is only used by debugging output right now (i.e. in
-       SearchSpace::dump()), the effort of writing a custom iterator that returns
-       StateHandles instead of StateRepresentation* is not worth it. */
-    std::vector<StateHandle> get_all_registered_handles() const {
-        std::vector<StateHandle> handles;
-        for (StateRepresentationSet::const_iterator it = registered_states.begin();
-             it != registered_states.end(); ++it) {
-            handles.push_back(StateHandle(&*it));
-        }
-        return handles;
     }
 };
 
