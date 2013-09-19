@@ -402,51 +402,6 @@ bool is_subset(unordered_set<int> &a, unordered_set<int> &b) {
     return true;
 }
 
-void order_facts_in_landmark_graph(vector<int> *ordered_fact_numbers) {
-    Options opts = Options();
-    opts.set<int>("cost_type", 0);
-    opts.set<int>("memory_padding", 75);
-    opts.set<bool>("reasonable_orders", true);
-    opts.set<bool>("only_causal_landmarks", false);
-    opts.set<bool>("disjunctive_landmarks", false);
-    opts.set<bool>("conjunctive_landmarks", false);
-    opts.set<bool>("no_orders", false);
-    opts.set<int>("lm_cost_type", 0);
-    opts.set<Exploration *>("explor", new Exploration(opts));
-    HMLandmarks lm_graph_factory(opts);
-    LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-    if (DEBUG)
-        graph->dump();
-    const set<LandmarkNode *> &nodes = graph->get_nodes();
-    set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
-    Edges predecessors;
-    Edges successors;
-
-    for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
-         != nodes2.end(); it++) {
-        LandmarkNode *node_p = *it;
-        for (auto parent_it = node_p->parents.begin(); parent_it
-             != node_p->parents.end(); ++parent_it) {
-            //const edge_type &edge = parent_it->second;
-            const LandmarkNode *parent_p = parent_it->first;
-            int node_number = get_fact_number(node_p);
-            int parent_number = get_fact_number(parent_p);
-            predecessors[node_number].insert(parent_number);
-            successors[parent_number].insert(node_number);
-        }
-    }
-    partial_ordering(predecessors, successors, ordered_fact_numbers);
-    if (DEBUG) {
-        cout << "Ordering: " << to_string(*ordered_fact_numbers) << endl;
-        for (int i = 0; i < ordered_fact_numbers->size(); ++i) {
-            Fact fact = get_fact((*ordered_fact_numbers)[i]);
-            cout << (*ordered_fact_numbers)[i] << " "
-                 << fact.first << "=" << fact.second << " "
-                 << g_fact_names[fact.first][fact.second] << endl;
-        }
-    }
-}
-
 void write_landmark_graph() {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
