@@ -182,6 +182,8 @@ void Task::project_fact(int var, int before, int after) {
 }
 
 void Task::set_fact_unreachable(int var, int value) {
+    if (DEBUG)
+        cout << "Set unreachble: " << var << "=" << value << endl;
     fact_mapping[var][value] = UNDEFINED;
 }
 
@@ -192,8 +194,9 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
             if (reached_facts.count(Fact(var, value)) == 0) {
                 set_fact_unreachable(var, value);
                 // Rename all values of this variable behind the unreachable fact.
-                for (int i = value + 1; value < variable_domain[var]; ++i)
+                for (int i = value + 1; i < g_variable_domain[var]; ++i) {
                     project_fact(var, i, i - 1);
+                }
             }
         }
     }
