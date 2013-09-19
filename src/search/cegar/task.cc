@@ -14,6 +14,7 @@ Task::Task()
       operators(),
       original_operator_numbers(),
       fact_numbers(),
+      reachable_facts(),
       fact_mapping(g_variable_domain.size()) {
     for (int var = 0; var < variable_domain.size(); ++var) {
         fact_mapping[var].resize(variable_domain[var]);
