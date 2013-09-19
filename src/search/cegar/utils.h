@@ -54,11 +54,9 @@ struct hash_state {
 int get_hadd_estimate_for_initial_state();
 int get_hadd_value(int var, int value);
 
-int get_fact_number(const LandmarkNode *node);
-Fact get_fact(const LandmarkNode *node);
-
 int get_fact_number(int var, int value);
 Fact get_fact(int fact_number);
+Fact get_fact(const LandmarkNode *node);
 
 void write_landmark_graph();
 void write_causal_graph(const CausalGraph &causal_graph);
