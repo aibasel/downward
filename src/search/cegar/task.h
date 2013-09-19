@@ -14,6 +14,7 @@ private:
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
     std::vector<vector<string> > fact_names;
+    std::vector<int> fact_borders;
     std::vector<Operator> operators;
     std::vector<int> original_operator_numbers;
     std::unordered_set<int> fact_numbers;

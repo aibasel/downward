@@ -10,6 +10,7 @@ Task::Task()
     : goal(),
       variable_domain(g_variable_domain),
       fact_names(g_fact_names),
+      fact_borders(g_fact_borders),
       operators(),
       original_operator_numbers(),
       fact_numbers(),
@@ -181,6 +182,7 @@ void Task::install() {
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
+    g_fact_borders = fact_borders;
 }
 
 void Task::rename_fact(int var, int before, int after) {
@@ -192,8 +194,11 @@ void Task::rename_fact(int var, int before, int after) {
 void Task::remove_fact(const Fact &fact) {
     assert(!variable_domain.empty());
     assert(variable_domain[fact.first] >= 2);
-    --variable_domain[fact.first];
     fact_names[fact.first].erase(fact_names[fact.first].begin() + fact.second);
+    for (int var = fact.first + 1; var < variable_domain.size(); ++var) {
+        --fact_borders[var];
+    }
+    --variable_domain[fact.first];
 }
 
 void Task::shrink_domain(int var, int shrink_by) {
@@ -266,8 +271,9 @@ void Task::dump() const {
     if (DEBUG) {
         cout << "  Fact mapping:" << endl;
         for (int var = 0; var < variable_domain.size(); ++var) {
-            for (int value = 0; value < variable_domain[var]; ++value)
+            for (int value = 0; value < variable_domain[var]; ++value) {
                 cout << "    " << var << ": " << value << " -> " << fact_mapping[var][value] << endl;
+            }
         }
     }
     cout << endl;
