@@ -20,6 +20,7 @@ private:
 
     void rename_fact(int var, int before, int after);
     void remove_fact(const Fact &fact);
+    void shrink_domain(int var, int shrink_by);
     void compute_possibly_before_facts(const Fact &last_fact);
     void compute_facts_and_operators();
     void remove_unreachable_facts();
