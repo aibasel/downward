@@ -369,14 +369,6 @@ int get_fact_number(int var, int value) {
     return g_fact_borders[var] + value;
 }
 
-int get_fact_number(const LandmarkNode *node) {
-    assert(node);
-    assert(node->vars.size() == 1);
-    int var = node->vars[0];
-    int value = node->vals[0];
-    return get_fact_number(var, value);
-}
-
 Fact get_fact(const LandmarkNode *node) {
     assert(node);
     assert(node->vars.size() == 1);
