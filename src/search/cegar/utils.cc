@@ -334,6 +334,7 @@ int get_pos_in_causal_graph_ordering(int var) {
 }
 
 void setup_hadd() {
+    // TODO: Move into Task class.
     cout << "Start computing h^add values [t=" << g_timer << "]" << endl;
     Options opts;
     opts.set<int>("cost_type", 0);

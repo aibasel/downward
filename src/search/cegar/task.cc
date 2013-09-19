@@ -1,5 +1,7 @@
 #include "task.h"
 
+#include "values.h"
+
 #include <set>
 
 using namespace std;
@@ -164,6 +166,7 @@ void Task::install() {
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
+    Values::initialize_static_members();
 }
 
 void Task::move_fact(int var, int before, int after) {
