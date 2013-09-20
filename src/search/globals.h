@@ -45,10 +45,6 @@ extern std::vector<int> g_axiom_layers;
 extern std::vector<int> g_default_axiom_values;
 
 extern state_var_t *g_initial_state_buffer;
-// TODO: g_initial_state is registered in the global registry.
-//       If we use more than one registry, we have to check all usages of this
-//       to see if we need to register it in another registry.
-extern State *g_initial_state;
 extern std::vector<std::pair<int, int> > g_goal;
 
 extern std::vector<Operator> g_operators;

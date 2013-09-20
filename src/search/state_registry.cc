@@ -11,7 +11,8 @@ StateRegistry::StateRegistry()
                           g_variable_domain.size())),
       registered_states(0,
                         StateIDSemanticHash(*state_data_pool),
-                        StateIDSemanticEqual(*state_data_pool)) {
+                        StateIDSemanticEqual(*state_data_pool)),
+      cached_initial_state(0) {
 }
 
 
@@ -48,11 +49,14 @@ State StateRegistry::get_state(StateID id) const {
 }
 
 State StateRegistry::get_initial_state() {
-    state_data_pool->push_back(g_initial_state_buffer);
-    state_var_t *vars = (*state_data_pool)[state_data_pool->size() - 1];
-    g_axiom_evaluator->evaluate(vars);
-    StateID id = insert_id_or_pop_state();
-    return get_state(id);
+    if (cached_initial_state == 0) {
+        state_data_pool->push_back(g_initial_state_buffer);
+        state_var_t *vars = (*state_data_pool)[state_data_pool->size() - 1];
+        g_axiom_evaluator->evaluate(vars);
+        StateID id = insert_id_or_pop_state();
+        cached_initial_state = new State(get_state(id));
+    }
+    return *cached_initial_state;
 }
 
 State StateRegistry::get_successor_state(const State &predecessor, const Operator &op) {

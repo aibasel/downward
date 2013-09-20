@@ -1,5 +1,6 @@
 #include "landmark_factory.h"
 #include "../exact_timer.h"
+#include "../state_registry.h"
 #include "util.h"
 
 #include <limits>
@@ -418,12 +419,13 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
     predecessor "parent" of node2, then parent and all predecessors of parent can be ordered reasonably
     before node_p if they interfere with node_p.
     */
+    State initial_state = g_state_registry->get_initial_state();
     for (set<LandmarkNode *>::iterator it = lm_graph->get_nodes().begin(); it != lm_graph->get_nodes().end(); it++) {
         LandmarkNode *node_p = *it;
         if (node_p->disjunctive)
             continue;
 
-        if (node_p->is_true_in_state(*g_initial_state))
+        if (node_p->is_true_in_state(initial_state))
             return;
 
         if (!obedient_orders && node_p->is_goal()) {
