@@ -9,6 +9,7 @@
 #include "../operator.h"
 #include "../option_parser.h" // TODO: Should be removable later.
 #include "../priority_queue.h"
+#include "../state_registry.h"
 #include "../timer.h"
 
 #include <algorithm>
@@ -508,7 +509,8 @@ AtomicAbstraction::AtomicAbstraction(
      */
     int range = g_variable_domain[variable];
 
-    int init_value = (*g_initial_state)[variable];
+    State initial_state = g_state_registry->get_initial_state();
+    int init_value = initial_state[variable];
     int goal_value = -1;
     for (int goal_no = 0; goal_no < g_goal.size(); goal_no++) {
         if (g_goal[goal_no].first == variable) {

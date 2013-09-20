@@ -44,6 +44,7 @@ class StateRegistry {
     // TODO: why do we need a pointer here?
     SegmentedArrayVector<state_var_t> *state_data_pool;
     StateIDSet registered_states;
+    State *cached_initial_state;
     StateID insert_id_or_pop_state();
 public:
     StateRegistry();

@@ -274,7 +274,6 @@ void read_everything(istream &in) {
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
     g_state_registry = new StateRegistry;
-    g_initial_state = new State(g_state_registry->get_initial_state());
 }
 
 void dump_everything() {
@@ -346,7 +345,6 @@ vector<vector<string> > g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
 state_var_t *g_initial_state_buffer;
-State *g_initial_state;
 vector<pair<int, int> > g_goal;
 vector<Operator> g_operators;
 vector<Operator> g_axioms;
