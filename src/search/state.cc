@@ -36,10 +36,7 @@ void State::dump_fdr() const {
 }
 
 bool State::operator==(const State &other) const {
-    // TODO this will not work if there is more than one state registry
-    if (id.is_valid()) {
-        return id.value == other.id.value;
-    } else if (vars == other.vars) {
+    if (vars == other.vars) {
         // borrowed from same buffer
         return true;
     } else {
