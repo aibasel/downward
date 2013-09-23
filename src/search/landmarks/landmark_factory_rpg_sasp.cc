@@ -28,7 +28,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     // operator preconditions, but only reports those effect conditions that are true for ALL
     // effects achieving the LM.
 
-    State initial_state = g_state_registry->get_initial_state();
+    State initial_state = g_initial_state();
     const vector<PrePost> &prepost = o.get_pre_post();
     for (unsigned j = 0; j < prepost.size(); j++) {
         if (prepost[j].pre != -1) {
@@ -168,7 +168,7 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(const set<pair<int, int> > 
                                                      LandmarkNode &b, edge_type t) {
     bool simple_lm_exists = false;
     pair<int, int> lm_prop;
-    State initial_state = g_state_registry->get_initial_state();
+    State initial_state = g_initial_state();
     for (set<pair<int, int> >::iterator it = a.begin(); it != a.end(); ++it) {
         if (initial_state[it->first] == it->second) {
             //cout << endl << "not adding LM that's true in initial state: "
@@ -363,7 +363,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
         open_landmarks.push_back(&lmn);
     }
 
-    State initial_state = g_state_registry->get_initial_state();
+    State initial_state = g_initial_state();
     while (!open_landmarks.empty()) {
         LandmarkNode *bp = open_landmarks.front();
         open_landmarks.pop_front();
@@ -450,7 +450,7 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const pair<int, int> &landmark,
      any value in "exclude". If not, that means that one of the values in "exclude"
      is crucial for achieving the landmark (i.e. is on every path to the LM).
      */
-    State initial_state = g_state_registry->get_initial_state();
+    State initial_state = g_initial_state();
     assert(landmark.second != initial_state[landmark.first]); // no initial state landmarks
     // The value that we want to achieve must not be excluded:
     assert(exclude.find(landmark.second) == exclude.end());
