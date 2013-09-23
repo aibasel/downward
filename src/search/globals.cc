@@ -285,7 +285,7 @@ void dump_everything() {
     for (int i = 0; i < g_variable_name.size(); i++)
         cout << "  " << g_variable_name[i]
              << " (range " << g_variable_domain[i] << ")" << endl;
-    State initial_state = g_state_registry->get_initial_state();
+    State initial_state = g_initial_state();
     cout << "Initial State (PDDL):" << endl;
     initial_state.dump_pddl();
     cout << "Initial State (FDR):" << endl;
@@ -334,6 +334,10 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
     if (a.first == b.first) // same variable: mutex iff different value
         return a.second != b.second;
     return bool(g_inconsistent_facts[a.first][a.second].count(b));
+}
+
+State g_initial_state() {
+    return g_state_registry->get_initial_state();
 }
 
 bool g_use_metric;

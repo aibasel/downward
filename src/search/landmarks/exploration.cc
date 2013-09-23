@@ -373,7 +373,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
                                                      const hash_set<const Operator *, ex_hash_operator_ptr> &excluded_ops,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
-    State initial_state = g_state_registry->get_initial_state();
+    State initial_state = g_initial_state();
     setup_exploration_queue(initial_state, excluded_props, excluded_ops, true);
     relaxed_exploration(true, level_out);
 

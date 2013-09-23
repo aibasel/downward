@@ -730,7 +730,7 @@ void HMLandmarks::propagate_pm_fact(int factindex, bool newly_discovered,
 
 void HMLandmarks::compute_h_m_landmarks() {
     // get subsets of initial state
-    State initial_state = g_state_registry->get_initial_state();
+    State initial_state = g_initial_state();
     std::vector<FluentSet> init_subsets;
     get_m_sets(m_, init_subsets, initial_state);
 

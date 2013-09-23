@@ -12,7 +12,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       heuristic(opts.get<Heuristic *>("h")),
       use_preferred(false),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
-      current_state(g_state_registry->get_initial_state()),
+      current_state(g_initial_state()),
       num_ehc_phases(0) {
     if (opts.contains("preferred")) {
         preferred_heuristics = opts.get_list<Heuristic *>("preferred");

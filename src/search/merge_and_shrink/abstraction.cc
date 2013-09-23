@@ -509,7 +509,7 @@ AtomicAbstraction::AtomicAbstraction(
      */
     int range = g_variable_domain[variable];
 
-    State initial_state = g_state_registry->get_initial_state();
+    State initial_state = g_initial_state();
     int init_value = initial_state[variable];
     int goal_value = -1;
     for (int goal_no = 0; goal_no < g_goal.size(); goal_no++) {

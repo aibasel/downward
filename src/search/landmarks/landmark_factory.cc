@@ -419,7 +419,7 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
     predecessor "parent" of node2, then parent and all predecessors of parent can be ordered reasonably
     before node_p if they interfere with node_p.
     */
-    State initial_state = g_state_registry->get_initial_state();
+    State initial_state = g_initial_state();
     for (set<LandmarkNode *>::iterator it = lm_graph->get_nodes().begin(); it != lm_graph->get_nodes().end(); it++) {
         LandmarkNode *node_p = *it;
         if (node_p->disjunctive)

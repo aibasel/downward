@@ -23,7 +23,7 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
         lmp->in_goal = true;
     }
     // test all other possible facts
-    State initial_state = g_state_registry->get_initial_state();
+    State initial_state = g_initial_state();
     for (int i = 0; i < g_variable_name.size(); i++)
         for (int j = 0; j < g_variable_domain[i]; j++) {
             const pair<int, int> lm = make_pair(i, j);
