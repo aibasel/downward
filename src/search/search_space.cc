@@ -14,7 +14,7 @@ using namespace __gnu_cxx;
 SearchNode::SearchNode(const StateID &state_id_,
                        SearchNodeInfo &info_, OperatorCost cost_type_)
     : state_id(state_id_), info(info_), cost_type(cost_type_) {
-    assert(state_id.is_valid());
+    assert(state_id.value >= 0);
 }
 
 State SearchNode::get_state() const {
@@ -67,7 +67,7 @@ void SearchNode::open_initial(int h) {
     info.g = 0;
     info.real_g = 0;
     info.h = h;
-    info.parent_state_id = StateID::invalid;
+    info.parent_state_id = StateID::no_state;
     info.creating_operator = 0;
 }
 
@@ -139,7 +139,6 @@ SearchSpace::SearchSpace(OperatorCost cost_type_)
 }
 
 SearchNode SearchSpace::get_node(const StateID &id) {
-    assert(id.is_valid());
     return SearchNode(id, search_node_infos[id], cost_type);
 }
 
@@ -151,7 +150,7 @@ void SearchSpace::trace_path(const State &goal_state,
         const SearchNodeInfo &info = search_node_infos[current_state_id];
         const Operator *op = info.creating_operator;
         if (op == 0) {
-            assert(!info.parent_state_id.is_valid());
+            assert(info.parent_state_id.represents_no_state());
             break;
         }
         path.push_back(op);
@@ -166,8 +165,7 @@ void SearchSpace::dump() const {
         const SearchNodeInfo &node_info = search_node_infos[id];
         cout << "#" << i << ": ";
         g_state_registry->get_state(id).dump_fdr();
-        if (node_info.creating_operator &&
-                node_info.parent_state_id.is_valid()) {
+        if (node_info.creating_operator && !node_info.parent_state_id.represents_no_state()) {
             cout << " created by " << node_info.creating_operator->get_name()
                  << " from " << node_info.parent_state_id.value << endl;
         } else {

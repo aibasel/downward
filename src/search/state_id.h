@@ -12,10 +12,10 @@ struct StateID {
     ~StateID() {
     }
 
-    static StateID invalid;
+    static StateID no_state;
 
-    bool is_valid() const {
-        return value >= 0;
+    bool represents_no_state() const {
+        return value < 0;
     }
 };
 

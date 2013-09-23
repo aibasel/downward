@@ -13,7 +13,7 @@ State::State(state_var_t *buffer, StateID id_)
     : vars(buffer),
       id(id_) {
     assert(vars);
-    assert(id.is_valid());
+    assert(id.value >= 0);
 }
 
 State::~State() {
