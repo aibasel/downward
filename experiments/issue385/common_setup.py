@@ -190,8 +190,15 @@ class MyExperiment(DownwardExperiment):
 
         if attributes is None:
             attributes = self.DEFAULT_TABLE_ATTRIBUTES
-        report = CompareRevisionsReport(*revisions, attributes=attributes)
-        self.add_report(report, outfile="%s-compare.html" % self._report_prefix)
+        if len(revisions) == 2:
+            report = CompareRevisionsReport(*revisions, attributes=attributes)
+            self.add_report(report, outfile="%s-compare.html" % self._report_prefix)
+        else:
+            # HACK: assumes the first revision is the noe everything else is compared against
+            for rev in revisions[1:]:
+                report = CompareRevisionsReport(revisions[0], rev, attributes=attributes)
+                self.add_report(report, outfile="%s-compare-%s.html" % (self._report_prefix, rev))
+            
 
     def add_scatter_plot_step(self, attributes=None):
         if attributes is None:
@@ -201,24 +208,24 @@ class MyExperiment(DownwardExperiment):
             # TODO: See add_comparison_table_step.
             raise NotImplementedError(
                 "only supported when specifying revisions in __init__")
-        if len(revisions) != 2:
+        # HACK: assumes the first revision is the noe everything else is compared against
+        for rev in revisions[1:]:
             # TODO: Should generalize this, too, by offering a general
             # grouping function and then comparing any pair of
             # settings in the same group.
-            raise NotImplementedError("need two revisions")
-        scatter_dir = os.path.join(self.eval_dir, "scatter")
-        def make_scatter_plots():
-            configs = [conf[0] for conf in self.configs]
-            for nick in configs:
-                config_before = "%s-%s" % (revisions[0], nick)
-                config_after = "%s-%s" % (revisions[1], nick)
-                for attribute in attributes:
-                    name = "%s-%s-%s" % (self._report_prefix, attribute, nick)
-                    report = ScatterPlotReport(
-                        filter_config=[config_before, config_after],
-                        attributes=[attribute],
-                        get_category=lambda run1, run2: run1["domain"],
-                        legend_location=(1.3, 0.5))
-                    report(self.eval_dir, os.path.join(scatter_dir, name))
+            scatter_dir = os.path.join(self.eval_dir, "scatter")
+            def make_scatter_plots():
+                configs = [conf[0] for conf in self.configs]
+                for nick in configs:
+                    config_before = "%s-%s" % (revisions[0], nick)
+                    config_after = "%s-%s" % (rev, nick)
+                    for attribute in attributes:
+                        name = "%s-%s-%s" % (self._report_prefix, attribute, nick)
+                        report = ScatterPlotReport(
+                            filter_config=[config_before, config_after],
+                            attributes=[attribute],
+                            get_category=lambda run1, run2: run1["domain"],
+                            legend_location=(1.3, 0.5))
+                        report(self.eval_dir, os.path.join(scatter_dir, rev, name))
 
-        self.add_step(Step("make-scatter-plots", make_scatter_plots))
+            self.add_step(Step("make-scatter-plots", make_scatter_plots))
