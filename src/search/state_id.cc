@@ -1,3 +1,3 @@
 #include "state_id.h"
 
-StateID StateID::invalid = StateID(-1);
+StateID StateID::no_state = StateID(-1);
