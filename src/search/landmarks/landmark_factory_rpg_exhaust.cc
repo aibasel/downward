@@ -42,6 +42,13 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
 }
 
 static LandmarkGraph *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Exhaustive Landmarks",
+        "Exhaustively checks for each fact if it is a landmark."
+        "This check is done using relaxed planning.");
+    parser.document_note(
+        "Relevant options",
+        "reasonable_orders, only_causal_landmarks");
     LandmarkGraph::add_options_to_parser(parser);
 
     Options opts = parser.parse();

@@ -304,17 +304,23 @@ void PatternGenerationHaslum::initialize() {
     hill_climbing(average_operator_cost, initial_candidate_patterns);
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("pdb_max_size", 2000000,
-                           "max number of states per pdb");
-    parser.add_option<int>("collection_max_size", 20000000,
-                           "max number of states for collection");
-    parser.add_option<int>("num_samples", 1000, "number of samples");
-    parser.add_option<int>("min_improvement", 10,
-                           "minimum improvement while hill climbing");
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "iPDB",
+        "the pattern selection procedure by Haslum et al. (AAAI 2007); "
+        "see also Sievers et al. (SoCS 2012) for implementation notes");
+    parser.add_option<int>("pdb_max_size",
+                           "max number of states per pdb",  "2000000");
+    parser.add_option<int>("collection_max_size",
+                           "max number of states for collection",  "20000000");
+    parser.add_option<int>("num_samples", "number of samples",  "1000");
+    parser.add_option<int>("min_improvement",
+                           "minimum improvement while hill climbing",  "10");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
+    if(parser.help_mode())
+        return 0;
 
     if (opts.get<int>("pdb_max_size") < 1)
         parser.error("size per pdb must be at least 1");
@@ -332,4 +338,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return pgh.get_pattern_collection_heuristic();
 }
 
-static Plugin<ScalarEvaluator> _plugin("ipdb", _parse);
+static Plugin<Heuristic> _plugin("ipdb", _parse);
