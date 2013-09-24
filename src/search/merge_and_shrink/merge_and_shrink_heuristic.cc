@@ -211,11 +211,11 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Merge-and-shrink heuristic", 
+        "Merge-and-shrink heuristic",
         "Note: The parameter space and syntax for the merge-and-shrink "
         "heuristic has changed significantly in August 2011.");
     parser.document_language_support(
-        "action costs", 
+        "action costs",
         "supported");
     parser.document_language_support("conditional_effects", "not supported");
     parser.document_language_support("axioms", "not supported");
@@ -225,7 +225,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators", "no");
 
     // TODO: better documentation what each parameter does
-    parser.add_option<int>("count", "number of abstractions to build",  "1");
+    parser.add_option<int>("count", "number of abstractions to build", "1");
     vector<string> merge_strategies;
     //TODO: it's a bit dangerous that the merge strategies here
     // have to be specified exactly in the same order
@@ -239,7 +239,7 @@ static Heuristic *_parse(OptionParser &parser) {
     merge_strategies.push_back("MERGE_LINEAR_LEVEL");
     merge_strategies.push_back("MERGE_LINEAR_REVERSE_LEVEL");
     parser.add_enum_option("merge_strategy", merge_strategies,
-                           "merge strategy", 
+                           "merge strategy",
                            "MERGE_LINEAR_CG_GOAL_LEVEL");
 
     parser.add_option<ShrinkStrategy *>(
@@ -276,12 +276,12 @@ static Heuristic *_parse(OptionParser &parser) {
                   "include 1000, 10000, 50000, 100000 and 200000. "
                   "Combine this with the merge strategy "
                   "MERGE_LINEAR_REVERSE_LEVEL to match "
-                  "the heuristic in the paper.")); 
+                  "the heuristic in the paper."));
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
     // TODO: Rename option name to "use_label_reduction" to be
     //       consistent with the papers?
-    parser.add_option<bool>("reduce_labels", "enable label reduction",  "true");
+    parser.add_option<bool>("reduce_labels", "enable label reduction", "true");
     parser.add_option<bool>("expensive_statistics", "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)", "false");
     Heuristic::add_options_to_parser(parser);

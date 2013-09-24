@@ -131,9 +131,9 @@ void IteratedSearch::save_plan_if_necessary() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    parser.document_synopsis("Iterated search","");
+    parser.document_synopsis("Iterated search", "");
     parser.document_note(
-        "Note 1", 
+        "Note 1",
         "We do no cache values between search iterations at the moment. "
         "If you perform a LAMA-style iterative search, heuristic values "
         "will be computed multiple times. "
@@ -158,11 +158,11 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<bool>("repeat_last",
                             "repeat last phase of search",
                             "false");
-    parser.add_option<bool>("continue_on_fail", 
-                            "continue search after no solution found", 
+    parser.add_option<bool>("continue_on_fail",
+                            "continue search after no solution found",
                             "false");
     parser.add_option<bool>("continue_on_solve",
-                            "continue search after solution found", 
+                            "continue search after solution found",
                             "true");
     parser.add_option<int>("plan_counter",
                            "start enumerating plans with plan_counter + 1",

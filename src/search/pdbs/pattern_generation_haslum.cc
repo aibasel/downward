@@ -310,16 +310,16 @@ static Heuristic *_parse(OptionParser &parser) {
         "the pattern selection procedure by Haslum et al. (AAAI 2007); "
         "see also Sievers et al. (SoCS 2012) for implementation notes");
     parser.add_option<int>("pdb_max_size",
-                           "max number of states per pdb",  "2000000");
+                           "max number of states per pdb", "2000000");
     parser.add_option<int>("collection_max_size",
-                           "max number of states for collection",  "20000000");
-    parser.add_option<int>("num_samples", "number of samples",  "1000");
+                           "max number of states for collection", "20000000");
+    parser.add_option<int>("num_samples", "number of samples", "1000");
     parser.add_option<int>("min_improvement",
-                           "minimum improvement while hill climbing",  "10");
+                           "minimum improvement while hill climbing", "10");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
 
     if (opts.get<int>("pdb_max_size") < 1)

@@ -252,7 +252,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         }
         vector<int> last_key_removed;
         StateHandle handle = open_list->remove_min(
-                        use_multi_path_dependence ? &last_key_removed : 0);
+            use_multi_path_dependence ? &last_key_removed : 0);
         SearchNode node = search_space.get_node(handle);
 
         if (node.is_closed())
@@ -330,21 +330,21 @@ static SearchEngine *_parse(OptionParser &parser) {
     //because for templated classes the usual method of registering
     //does not work:
     Plugin<OpenList<StateHandle> >::register_open_lists();
-    
+
     parser.document_synopsis("Eager best first search", "");
-    
+
     parser.add_option<OpenList<StateHandle> *>("open", "open list");
     parser.add_option<bool>("reopen_closed",
-                            "reopen closed nodes",  "false");
+                            "reopen closed nodes", "false");
     parser.add_option<bool>("pathmax",
-                            "use pathmax correction",  "false");
+                            "use pathmax correction", "false");
     parser.add_option<ScalarEvaluator *>("f_eval",
                                          "set evaluator for jump statistics",
                                          "",
                                          OptionFlags(false));
     parser.add_list_option<Heuristic *>
         ("preferred",
-         "use preferred operators of these heuristics",  "[]");
+        "use preferred operators of these heuristics", "[]");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -364,16 +364,16 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         "as f-function. "
         "We break ties using the evaluator. Closed nodes are re-opened.");
     parser.document_note(
-        "mpd option", 
+        "mpd option",
         "This option is currently only present for the A* algorithm and not "
         "for the more general eager search, "
         "because the current implementation of multi-path depedence "
         "does not support general open lists.");
     parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
     parser.add_option<bool>("pathmax",
-                            "use pathmax correction",  "false");
+                            "use pathmax correction", "false");
     parser.add_option<bool>("mpd",
-                            "use multi-path dependence (LM-A*)",  "false");
+                            "use multi-path dependence (LM-A*)", "false");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -420,10 +420,10 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
-        "use preferred operators of these heuristics",  "[]");
+        "use preferred operators of these heuristics", "[]");
     parser.add_option<int>(
         "boost",
-        "boost value for preferred operator open lists",  "0");
+        "boost value for preferred operator open lists", "0");
     SearchEngine::add_options_to_parser(parser);
 
 
@@ -446,8 +446,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
                     new StandardScalarOpenList<StateHandle>(evals[i], false));
                 if (!preferred_list.empty()) {
                     inner_lists.push_back(
-                        new StandardScalarOpenList<StateHandle>(evals[i],
-                                                                  true));
+                        new StandardScalarOpenList<StateHandle>(evals[i], true));
                 }
             }
             open = new AlternationOpenList<StateHandle>(
