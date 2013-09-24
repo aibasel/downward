@@ -36,11 +36,8 @@ public:
         int state_id = state_handle.get_id();
         size_t virtual_size = state_registry.size();
         assert(state_id >= 0 && state_id < virtual_size);
-        while (entries.size() < virtual_size) {
-            // resize() and insert() do not guarantee amortized constant time.
-            // In a lot of cases this will be called once for each state, so we
-            // have to avoid copying the vector every time.
-            entries.push_back(default_value);
+        if (entries.size() < virtual_size) {
+            entries.resize(virtual_size, default_value);
         }
         return entries[state_id];
     }
