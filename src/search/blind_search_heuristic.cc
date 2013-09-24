@@ -33,7 +33,7 @@ int BlindSearchHeuristic::compute_heuristic(const State &state) {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Blind heuristic", 
+    parser.document_synopsis("Blind heuristic",
                              "Returns cost of cheapest action for "
                              "non-goal states, "
                              "0 for goal states");

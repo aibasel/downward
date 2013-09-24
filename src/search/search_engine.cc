@@ -74,5 +74,5 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
     parser.add_option<int>(
         "bound",
         "exclusive depth bound on g-values. Cutoffs are always performed according to "
-        "the real cost, regardless of the cost_type parameter",  "infinity");
+        "the real cost, regardless of the cost_type parameter", "infinity");
 }

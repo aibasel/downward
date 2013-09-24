@@ -15,17 +15,17 @@ class StateRegistry {
     typedef StateHandle::StateRepresentation StateRepresentation;
 
     struct StateRepresentationSemanticHash {
-      size_t operator() (const StateRepresentation &representation) const {
-          return ::hash_number_sequence(representation.data, g_variable_domain.size());
-      }
+        size_t operator()(const StateRepresentation &representation) const {
+            return ::hash_number_sequence(representation.data, g_variable_domain.size());
+        }
     };
 
     struct StateRepresentationSemanticEqual {
-      size_t operator() (const StateRepresentation &lhs,
-                         const StateRepresentation &rhs) const {
-          size_t size = g_variable_domain.size();
-          return std::equal(lhs.data, lhs.data + size, rhs.data);
-      }
+        size_t operator()(const StateRepresentation &lhs,
+                          const StateRepresentation &rhs) const {
+            size_t size = g_variable_domain.size();
+            return std::equal(lhs.data, lhs.data + size, rhs.data);
+        }
     };
 
     typedef __gnu_cxx::hash_set<StateRepresentation,

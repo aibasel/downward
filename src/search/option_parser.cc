@@ -189,7 +189,7 @@ SearchEngine *OptionParser::parse_cmd_line(
             bool txt2tags = false;
             vector<string> helpiands;
             if (i + 1 < argc) {
-                for(int j = i+1; j < argc; ++j) {
+                for (int j = i + 1; j < argc; ++j) {
                     if (string(argv[j]).compare("--txt2tags") == 0) {
                         txt2tags = true;
                     } else {
@@ -197,15 +197,15 @@ SearchEngine *OptionParser::parse_cmd_line(
                     }
                 }
             }
-            if(helpiands.empty()){
+            if (helpiands.empty()) {
                 get_full_help();
             } else {
-                for(int i(0); i != helpiands.size(); ++i) {
+                for (int i(0); i != helpiands.size(); ++i) {
                     get_help(helpiands[i]);
                 }
             }
             DocPrinter *dp;
-            if(txt2tags) {
+            if (txt2tags) {
                 dp = new Txt2TagsPrinter(cout);
             } else {
                 dp = new PlainPrinter(cout);
@@ -268,8 +268,8 @@ static ParseTree generate_parse_tree(string config) {
             tr.append_child(cur_node, ParseNode(buffer, key));
             buffer.clear();
             key.clear();
-        } else if(next == '(' && buffer.size() == 0) {
-            throw ParseError("misplaced opening bracket (", *cur_node, config.substr(0,i));
+        } else if (next == '(' && buffer.size() == 0) {
+            throw ParseError("misplaced opening bracket (", *cur_node, config.substr(0, i));
         }
         switch (next) {
         case ' ':
@@ -279,12 +279,12 @@ static ParseTree generate_parse_tree(string config) {
             break;
         case ')':
             if (cur_node == pseudoroot)
-                throw ParseError("missing (", *cur_node, config.substr(0,i));
+                throw ParseError("missing (", *cur_node, config.substr(0, i));
             cur_node = tr.parent(cur_node);
             break;
         case '[':
             if (!buffer.empty())
-                throw ParseError("misplaced opening bracket [", *cur_node, config.substr(0,i));
+                throw ParseError("misplaced opening bracket [", *cur_node, config.substr(0, i));
             tr.append_child(cur_node, ParseNode("list", key));
             key.clear();
             cur_node = last_child(tr, cur_node);
@@ -296,7 +296,7 @@ static ParseTree generate_parse_tree(string config) {
                 key.clear();
             }
             if (cur_node->value.compare("list") != 0) {
-                throw ParseError("mismatched brackets", *cur_node, config.substr(0,i));
+                throw ParseError("mismatched brackets", *cur_node, config.substr(0, i));
             }
             cur_node = tr.parent(cur_node);
             break;
@@ -304,7 +304,7 @@ static ParseTree generate_parse_tree(string config) {
             break;
         case '=':
             if (buffer.empty())
-                throw ParseError("expected keyword before =", *cur_node, config.substr(0,i));
+                throw ParseError("expected keyword before =", *cur_node, config.substr(0, i));
             key = buffer;
             buffer.clear();
             break;
@@ -453,16 +453,16 @@ void OptionParser::document_property(string property, string note) const {
                                        property, note);
 }
 
-void OptionParser::document_language_support(string feature, 
+void OptionParser::document_language_support(string feature,
                                              string note) const {
     DocStore::instance()->add_feature(parse_tree.begin()->value,
                                       feature, note);
 }
 
-void OptionParser::document_note(string name, 
+void OptionParser::document_note(string name,
                                  string note) const {
     DocStore::instance()->add_note(parse_tree.begin()->value,
-                                      name, note);
+                                   name, note);
 }
 
 void OptionParser::document_hide() const {

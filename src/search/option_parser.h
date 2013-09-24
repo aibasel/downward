@@ -147,7 +147,7 @@ public:
     //call with mandatory = false to specify an optional parameter without default value
     template <class T>
     void add_option(
-        std::string k, std::string h = "",  std::string def_val = "",
+        std::string k, std::string h = "", std::string def_val = "",
         const OptionFlags &flags = OptionFlags());
 
     void add_enum_option(std::string k,
@@ -180,7 +180,7 @@ public:
     bool help_mode() const;
 
     template <class T>
-        static std::string to_str(T in) {
+    static std::string to_str(T in) {
         std::ostringstream out;
         out << std::boolalpha << in;
         return out.str();
@@ -200,7 +200,7 @@ private:
 
 template <class T>
 T OptionParser::start_parsing() {
-    if (help_mode()){
+    if (help_mode()) {
         DocStore::instance()->register_object(parse_tree.begin()->value,
                                               TypeNamer<T>::name());
     }
@@ -213,7 +213,7 @@ void OptionParser::add_option(
     std::string h, std::string default_value, const OptionFlags &flags) {
     if (help_mode()) {
         DocStore::instance()->add_arg(parse_tree.begin()->value,
-                                      k, h, 
+                                      k, h,
                                       TypeNamer<T>::name(), default_value,
                                       flags.mandatory);
         return;
@@ -235,7 +235,7 @@ void OptionParser::add_option(
         }
     } else {
         //handling arguments with explicit keyword:
-        if (!arg->key.empty()) {//to check if we reached the params supplied with key
+        if (!arg->key.empty()) { //to check if we reached the params supplied with key
             //try to find a parameter passed with keyword k
             for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
                 if (arg->key.compare(k) == 0)
@@ -243,7 +243,7 @@ void OptionParser::add_option(
             }
             if (arg == parse_tree.end(parse_tree.begin())) {
                 if (default_value.empty()) {
-                    if(flags.mandatory) {
+                    if (flags.mandatory) {
                         error("missing option: " + k);
                     } else {
                         return;
@@ -254,16 +254,16 @@ void OptionParser::add_option(
             }
         }
     }
-    OptionParser subparser = 
+    OptionParser subparser =
         (use_default ?
-         OptionParser(default_value,dry_run()) :
-         OptionParser(subtree(parse_tree,arg), dry_run()));
+         OptionParser(default_value, dry_run()) :
+         OptionParser(subtree(parse_tree, arg), dry_run()));
     T result = TokenParser<T>::parse(subparser);
     opts.set<T>(k, result);
     //if we have not reached the keyword parameters yet
     //and did not use the default value,
     //increment the argument position pointer
-    if(!use_default && arg->key.empty()) {
+    if (!use_default && arg->key.empty()) {
         ++next_unparsed_argument;
     }
 }
@@ -332,7 +332,7 @@ OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
 Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
     bool predefined;
     Heuristic *result = lookup_in_predefinitions<Heuristic>(p, predefined);
-    if(predefined)
+    if (predefined)
         return result;
     return lookup_in_registry<Heuristic>(p);
 }
@@ -340,7 +340,7 @@ Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
 LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
     bool predefined;
     LandmarkGraph *result = lookup_in_predefinitions<LandmarkGraph>(p, predefined);
-    if(predefined)
+    if (predefined)
         return result;
     return lookup_in_registry<LandmarkGraph>(p);
 }
@@ -355,7 +355,7 @@ ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
         return Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
     } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
         return (ScalarEvaluator *)
-            Registry<Heuristic *>::instance()->get(pt->value) (p);
+               Registry<Heuristic *>::instance()->get(pt->value) (p);
     }
     p.error("ScalarEvaluator " + pt->value + " not found");
     return 0;

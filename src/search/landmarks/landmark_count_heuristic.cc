@@ -260,7 +260,7 @@ static Heuristic *_parse(OptionParser &parser) {
                              "See also LAMAFFSynergy");
     parser.document_note(
         "Note",
-         "to use `optimal=true`, you must build the planner with USE_LP=1. "
+        "to use `optimal=true`, you must build the planner with USE_LP=1. "
         "See LPBuildInstructions.");
     parser.document_note(
         "Optimal search",
@@ -294,13 +294,13 @@ static Heuristic *_parse(OptionParser &parser) {
         "the set of landmarks to use for this heuristic. "
         "The set of landmarks can be specified here, "
         "or predefined (see LandmarkGraph).");
-    parser.add_option<bool>("admissible", "get admissible estimate",  "false");
+    parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>(
         "optimal",
         "use optimal (LP-based) cost sharing "
         "(only makes sense with `admissible=true`)", "false");
-    parser.add_option<bool>("pref", "identify preferred operators",  "false");
-    parser.add_option<bool>("alm", "use action landmarks",  "true");
+    parser.add_option<bool>("pref", "identify preferred operators", "false");
+    parser.add_option<bool>("alm", "use action landmarks", "true");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 

@@ -274,15 +274,15 @@ void PatternGenerationEdelkamp::dump() const {
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Genetic Algorithm PDB", "");
-    parser.add_option<int>("pdb_max_size", "max number of states per pdb",  "50000");
-    parser.add_option<int>("num_collections", "number of pattern collections to maintain",  "5");
-    parser.add_option<int>("num_episodes", "number of episodes",  "30");
-    parser.add_option<double>("mutation_probability", "probability between 0 and 1 for flipping a bit",  "0.01");
-    parser.add_option<bool>("disjoint", "using disjoint variables in the patterns of a collection",  "false");
+    parser.add_option<int>("pdb_max_size", "max number of states per pdb", "50000");
+    parser.add_option<int>("num_collections", "number of pattern collections to maintain", "5");
+    parser.add_option<int>("num_episodes", "number of episodes", "30");
+    parser.add_option<double>("mutation_probability", "probability between 0 and 1 for flipping a bit", "0.01");
+    parser.add_option<bool>("disjoint", "using disjoint variables in the patterns of a collection", "false");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return 0;
 
     if (opts.get<int>("pdb_max_size") < 1)

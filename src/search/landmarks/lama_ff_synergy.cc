@@ -85,9 +85,9 @@ static Synergy *_parse(OptionParser &parser) {
         "(see ReusingHeuristics), for example:\n"
         "\"hlm,hff=lm_ff_syn(...)\"");
     parser.add_option<LandmarkGraph *>("lm_graph");
-    parser.add_option<bool>("admissible", "get admissible estimate",  "false");
-    parser.add_option<bool>("optimal", "optimal cost sharing",  "false");
-    parser.add_option<bool>("alm", "use action landmarks",  "true");
+    parser.add_option<bool>("admissible", "get admissible estimate", "false");
+    parser.add_option<bool>("optimal", "optimal cost sharing", "false");
+    parser.add_option<bool>("alm", "use action landmarks", "true");
     Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();
