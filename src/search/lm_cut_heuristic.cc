@@ -396,7 +396,16 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
    values a bit.
  */
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Landmark-cut heuristic", "");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("axioms", "not supported");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "no");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
+
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
@@ -406,4 +415,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 
-static Plugin<ScalarEvaluator> _plugin("lmcut", _parse);
+static Plugin<Heuristic> _plugin("lmcut", _parse);

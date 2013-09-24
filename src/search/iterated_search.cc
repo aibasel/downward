@@ -131,17 +131,42 @@ void IteratedSearch::save_plan_if_necessary() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    parser.add_list_option<ParseTree>("engine_configs", "");
-    parser.add_option<bool>("pass_bound", true,
-                            "use bound from previous search");
-    parser.add_option<bool>("repeat_last", false,
-                            "repeat last phase of search");
-    parser.add_option<bool>("continue_on_fail", false,
-                            "continue search after no solution found");
-    parser.add_option<bool>("continue_on_solve", true,
-                            "continue search after solution found");
-    parser.add_option<int>("plan_counter", 0,
-                           "start enumerating plans with this number");
+    parser.document_synopsis("Iterated search","");
+    parser.document_note(
+        "Note 1", 
+        "We do no cache values between search iterations at the moment. "
+        "If you perform a LAMA-style iterative search, heuristic values "
+        "will be computed multiple times. "
+        "Adding heuristic caching is [issue108 http://issues.fast-downward.org/issue108].");
+    parser.document_note(
+        "Note 2",
+        "Use heuristic predefinition (see ReusingHeuristics) to avoid duplicate preprocessing (e.g. in the merge-and-shrink heuristic) "
+        "when using the same heuristic multiple times.");
+    parser.document_note(
+        "Note 3",
+        "If you reuse the same landmark count heuristic "
+        "(using heuristic predefinition) between iterations, "
+        "the path data (that is, landmark status for each visited state) "
+        "will be saved between iterations.");
+    parser.add_list_option<ParseTree>("engine_configs",
+                                      "list of search engines for each phase");
+    parser.add_option<bool>(
+        "pass_bound",
+        "use bound from previous search. The bound is the real cost "
+        "of the plan found before, regardless of the cost_type parameter.",
+        "true");
+    parser.add_option<bool>("repeat_last",
+                            "repeat last phase of search",
+                            "false");
+    parser.add_option<bool>("continue_on_fail", 
+                            "continue search after no solution found", 
+                            "false");
+    parser.add_option<bool>("continue_on_solve",
+                            "continue search after solution found", 
+                            "true");
+    parser.add_option<int>("plan_counter",
+                           "start enumerating plans with plan_counter + 1",
+                           "0");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 

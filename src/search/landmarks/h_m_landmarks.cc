@@ -1024,7 +1024,15 @@ void HMLandmarks::generate_landmarks() {
 }
 
 static LandmarkGraph *_parse(OptionParser &parser) {
-    parser.add_option<int>("m", 2, "m (as in h^m)");
+    parser.document_synopsis(
+        "h^m Landmarks", 
+        "The landmark generation method introduced by "
+        "Keyder, Richter & Helmert (ECAI 2010).");
+    parser.document_note(
+        "Relevant options",
+        "m, reasonable_orders, conjunctive_landmarks, no_orders");
+    parser.add_option<int>(
+        "m", "subset size (if unsure, use the default of 2)", "2");
     LandmarkGraph::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())

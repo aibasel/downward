@@ -215,8 +215,24 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
     return 0;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("m", 2);
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("h^m heuristic", "");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional_effects", "ignored");
+    parser.document_language_support("axioms", "ignored");
+    parser.document_property("admissible", 
+                             "yes for tasks without conditional "
+                             "effects or axioms");
+    parser.document_property("consistent",
+                             "yes for tasks without conditional "
+                             "effects or axioms");
+
+    parser.document_property("safe",
+                             "yes for tasks without conditional "
+                             "effects or axioms");
+    parser.document_property("preferred operators", "no");
+
+    parser.add_option<int>("m", "subset size",  "2");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
@@ -226,4 +242,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 
-static Plugin<ScalarEvaluator> _plugin("hm", _parse);
+static Plugin<Heuristic> _plugin("hm", _parse);
