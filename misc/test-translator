@@ -13,8 +13,6 @@
 #
 # Returns 0 on success and 1 if an error occurs.
 
-set -e
-
 SAS_FILES=/tmp/sas-files
 # Remove tmp dir.
 rm -rf $SAS_FILES
