@@ -2,15 +2,13 @@
 #define STATE_REGISTRY_H
 
 #include "globals.h"
+#include "segmented_vector.h"
 #include "state.h"
 #include "state_handle.h"
 #include "state_var_t.h"
 #include "utilities.h"
 
 #include <hash_set>
-
-template<typename T>
-class SegmentedArrayVector;
 
 
 class StateRegistry {
@@ -26,7 +24,7 @@ class StateRegistry {
       size_t operator() (const StateRepresentation &lhs,
                          const StateRepresentation &rhs) const {
           size_t size = g_variable_domain.size();
-          return ::equal(lhs.data, lhs.data + size, rhs.data);
+          return std::equal(lhs.data, lhs.data + size, rhs.data);
       }
     };
 

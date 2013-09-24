@@ -20,7 +20,7 @@ class LabelReducer {
 
     OperatorSignature build_operator_signature(
         const Operator &op, OperatorCost cost_type,
-        const vector<bool> &var_is_used) const;
+        const std::vector<bool> &var_is_used) const;
 public:
     LabelReducer(
         const std::vector<const Operator *> &relevant_operators,

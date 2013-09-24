@@ -92,7 +92,7 @@ State &State::operator=(const State &other) {
     if (this != &other) {
         // Clean up the old value to avoid a memory leak.
         if (!borrowed_buffer) {
-            delete vars;
+            delete[] vars;
         }
 
         borrowed_buffer = other.borrowed_buffer;
@@ -114,7 +114,7 @@ State &State::operator=(const State &other) {
 
 State::~State() {
     if (!borrowed_buffer) {
-        delete vars;
+        delete[] vars;
     }
 }
 
