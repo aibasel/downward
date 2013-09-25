@@ -1,6 +1,5 @@
 #include "landmark_factory.h"
 #include "../exact_timer.h"
-#include "../state_registry.h"
 #include "util.h"
 
 #include <limits>

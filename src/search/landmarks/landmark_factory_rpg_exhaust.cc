@@ -2,7 +2,6 @@
 
 #include "landmark_factory_rpg_exhaust.h"
 #include "../state.h"
-#include "../state_registry.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 

@@ -9,7 +9,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state.h"
-#include "../state_registry.h"
 #include "../timer.h"
 
 #include <cassert>
