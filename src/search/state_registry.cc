@@ -1,6 +1,5 @@
 #include "state_registry.h"
 
-#include "segmented_vector.h"
 #include "state_var_t.h"
 
 using namespace std;

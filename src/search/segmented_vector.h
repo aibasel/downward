@@ -3,7 +3,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 #include <vector>
+
+#include "utilities.h"
 
 
 /*
@@ -43,14 +46,17 @@
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
 
-template<class Entry>
+template<class Entry, class Allocator = std::allocator<Entry> >
 class SegmentedVector {
+    typedef typename Allocator::template rebind<Entry>::other EntryAllocator;
     // TODO: Try to find a good value for SEGMENT_BYTES.
     static const size_t SEGMENT_BYTES = 8192;
 
     static const size_t SEGMENT_ELEMENTS =
         (SEGMENT_BYTES / sizeof(Entry)) >= 1 ?
         (SEGMENT_BYTES / sizeof(Entry)) : 1;
+
+    EntryAllocator entry_allocator;
 
     std::vector<Entry *> segments;
     size_t the_size;
@@ -62,14 +68,28 @@ class SegmentedVector {
     size_t get_offset(size_t index) const {
         return index % SEGMENT_ELEMENTS;
     }
+
+    void add_segment() {
+        Entry *new_segment = entry_allocator.allocate(SEGMENT_ELEMENTS);
+        segments.push_back(new_segment);
+    }
 public:
     SegmentedVector()
         : the_size(0) {
     }
 
+    SegmentedVector(const EntryAllocator &allocator_)
+        : entry_allocator(allocator_),
+          the_size(0) {
+    }
+
     ~SegmentedVector() {
-        for (size_t i = 0; i < segments.size(); ++i)
-            delete[] segments[i];
+        for (size_t i = 0; i < the_size; ++i) {
+            entry_allocator.destroy(&operator[](i));
+        }
+        for (size_t segment = 0; segment < segments.size(); ++segment) {
+            entry_allocator.deallocate(segments[segment], SEGMENT_ELEMENTS);
+        }
     }
 
     Entry &operator[](size_t index) {
@@ -96,26 +116,37 @@ public:
         if (offset == 0) {
             assert(segment == segments.size());
             // Must add a new segment.
-
-            // TODO: Make this work for classes w/o a default
-            // constructor, like vector does: issue387.
-            Entry *new_segment = new Entry[SEGMENT_ELEMENTS];
-            segments.push_back(new_segment);
+            add_segment();
         }
-        segments[segment][offset] = entry;
+        entry_allocator.construct(segments[segment] + offset, entry);
         ++the_size;
+    }
+
+    void resize(size_t new_size, Entry entry = Entry()) {
+        if (new_size < the_size) {
+            std::cerr << "SegmentedVector does not support removing elements. "
+                      << "See revision 6ee5ff7b8873 for an implementation."
+                      << std::endl;
+            exit_with(EXIT_UNSUPPORTED);
+        }
+        while (new_size > the_size) {
+            push_back(entry);
+        }
     }
 };
 
 
-template<class Element>
+template<class Element, class Allocator = std::allocator<Element> >
 class SegmentedArrayVector {
+    typedef typename Allocator::template rebind<Element>::other ElementAllocator;
     // TODO: Try to find a good value for SEGMENT_BYTES.
     static const size_t SEGMENT_BYTES = 8192;
 
     const size_t elements_per_array;
     const size_t arrays_per_segment;
     const size_t elements_per_segment;
+
+    ElementAllocator element_allocator;
 
     std::vector<Element *> segments;
     size_t the_size;
@@ -127,19 +158,42 @@ class SegmentedArrayVector {
     size_t get_offset(size_t index) const {
         return (index % arrays_per_segment) * elements_per_array;
     }
+
+    void add_segment() {
+        Element *new_segment = element_allocator.allocate(elements_per_segment);
+        segments.push_back(new_segment);
+    }
 public:
     SegmentedArrayVector(size_t elements_per_array_)
         : elements_per_array(elements_per_array_),
           arrays_per_segment(
-              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)),
-                       size_t(1))),
+              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t(1))),
+          elements_per_segment(elements_per_array * arrays_per_segment),
+          the_size(0) {
+    }
+
+
+    SegmentedArrayVector(size_t elements_per_array_, const ElementAllocator &allocator_)
+        : element_allocator(allocator_),
+          elements_per_array(elements_per_array_),
+          arrays_per_segment(
+              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t(1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
           the_size(0) {
     }
 
     ~SegmentedArrayVector() {
-        for (size_t i = 0; i < segments.size(); ++i)
-            delete[] segments[i];
+        // TODO Factor out common code with SegmentedVector. In particular
+        //      we could destroy the_size * elements_per_array elements here
+        //      wihtout looping over the arrays first.
+        for (size_t i = 0; i < the_size; ++i) {
+            for (size_t offset = 0; offset < elements_per_array; ++offset) {
+                element_allocator.destroy(operator[](i) + offset);
+            }
+        }
+        for (size_t i = 0; i < segments.size(); ++i) {
+            element_allocator.deallocate(segments[i], elements_per_segment);
+        }
     }
 
     Element *operator[](size_t index) {
@@ -166,13 +220,23 @@ public:
         if (offset == 0) {
             assert(segment == segments.size());
             // Must add a new segment.
-            Element *new_segment = new Element[elements_per_segment];
-            segments.push_back(new_segment);
+            add_segment();
         }
         Element *dest = segments[segment] + offset;
         for (size_t i = 0; i < elements_per_array; ++i)
-            *dest++ = *entry++;
+            element_allocator.construct(dest++, *entry++);
         ++the_size;
+    }
+
+    void resize(size_t new_size, const Element *entry) {
+        if (new_size < the_size) {
+            std::cerr << "SegmentedArrayVector does not support removing elements."
+                      << std::endl;
+            exit_with(EXIT_UNSUPPORTED);
+        }
+        while (new_size > the_size) {
+            push_back(entry);
+        }
     }
 };
 
