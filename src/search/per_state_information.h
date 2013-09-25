@@ -36,9 +36,8 @@ public:
         int state_id = state_handle.get_id();
         size_t virtual_size = state_registry.size();
         assert(state_id >= 0 && state_id < virtual_size);
-        // TODO implement a proper resize method that guarantees amortized constant time: issue 387.
-        while (entries.size() < virtual_size) {
-            entries.push_back(default_value);
+        if (entries.size() < virtual_size) {
+            entries.resize(virtual_size, default_value);
         }
         return entries[state_id];
     }
