@@ -256,8 +256,6 @@ class MyExperiment(DownwardExperiment):
             for nick in configs:
                 config_before = "%s-%s" % (revisions[0], nick)
                 config_after = "%s-%s" % (revisions[1], nick)
-                import sys
-                print >> sys.stderr, revisions, config_before, config_after
                 for attribute in attributes:
                     name = "%s-%s-%s" % (self._report_prefix, attribute, nick)
                     report = ScatterPlotReport(
