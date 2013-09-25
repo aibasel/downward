@@ -43,9 +43,6 @@ public:
     }
 
     const Entry &operator[](const StateHandle &state_handle) const {
-        // We do not change the size here to avoid having to make entries
-        // mutable. Instead, we return the default value by value if the index
-        // is out of bounds.
         int state_id = state_handle.get_id();
         assert(state_id >= 0 && state_id < state_registry.size());
         if (state_id >= entries.size()) {
