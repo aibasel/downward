@@ -106,7 +106,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
                 int random = g_rng.next(applicable_ops.size()); // [0..applicable_os.size())
                 assert(applicable_ops[random]->is_applicable(current_state));
                 // TODO for now, we only generate registered successors. This is a temporary state that
-                // should should not necessarily be registered in the global registry.
+                // should should not necessarily be registered in the global registry: see issue386.
                 current_state = State::construct_registered_successor(current_state, *applicable_ops[random]);
                 // if current state is dead-end, then restart with initial state
                 current_heuristic->evaluate(current_state);
