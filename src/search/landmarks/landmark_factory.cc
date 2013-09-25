@@ -7,6 +7,7 @@
 #include <fstream>
 
 using namespace __gnu_cxx;
+using namespace std;
 
 LandmarkFactory::LandmarkFactory(const Options &opts)
     : lm_graph(new LandmarkGraph(opts)) {

@@ -79,7 +79,20 @@ int FFHeuristic::compute_heuristic(const State &state) {
 }
 
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("FF heuristic", "See also LAMAFFSynergy.");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional_effects", "supported");
+    parser.document_language_support(
+        "axioms",
+        "supported (in the sense that the planner won't complain -- "
+        "handling of axioms might be very stupid "
+        "and even render the heuristic unsafe)");
+    parser.document_property("admissible", "no");
+    parser.document_property("consistent", "no");
+    parser.document_property("safe", "yes for tasks without axioms");
+    parser.document_property("preferred operators", "yes");
+
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
@@ -88,4 +101,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new FFHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("ff", _parse);
+static Plugin<Heuristic> _plugin("ff", _parse);

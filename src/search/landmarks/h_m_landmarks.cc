@@ -8,7 +8,7 @@ std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }
 
-std::ostream & operator<<(std::ostream &os, const FluentSet &fs) {
+std::ostream &operator<<(std::ostream &os, const FluentSet &fs) {
     FluentSet::const_iterator it;
     os << "[";
     for (it = fs.begin(); it != fs.end(); ++it) {
@@ -19,7 +19,7 @@ std::ostream & operator<<(std::ostream &os, const FluentSet &fs) {
 }
 
 template<typename T>
-std::ostream & operator<<(std::ostream &os, const std::list<T> &alist) {
+std::ostream &operator<<(std::ostream &os, const std::list<T> &alist) {
     typename std::list<T>::const_iterator it;
 
     os << "(";
@@ -309,8 +309,8 @@ void HMLandmarks::get_m_sets(int m,
 
 void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
     cout << g_fact_names[fluent.first][fluent.second]
-         << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
-         << "->" << fluent.second << ")";
+    << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
+    << "->" << fluent.second << ")";
 }
 
 void get_operator_precondition(int op_index, FluentSet &pc) {
@@ -1026,7 +1026,15 @@ void HMLandmarks::generate_landmarks() {
 }
 
 static LandmarkGraph *_parse(OptionParser &parser) {
-    parser.add_option<int>("m", 2, "m (as in h^m)");
+    parser.document_synopsis(
+        "h^m Landmarks",
+        "The landmark generation method introduced by "
+        "Keyder, Richter & Helmert (ECAI 2010).");
+    parser.document_note(
+        "Relevant options",
+        "m, reasonable_orders, conjunctive_landmarks, no_orders");
+    parser.add_option<int>(
+        "m", "subset size (if unsure, use the default of 2)", "2");
     LandmarkGraph::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
