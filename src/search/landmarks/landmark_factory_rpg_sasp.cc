@@ -533,6 +533,14 @@ void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
 }
 
 static LandmarkGraph *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "RHW Landmarks",
+        "The landmark generation method introduced by "
+        "Richter, Helmert and Westphal (AAAI 2008).");
+    parser.document_note(
+        "Relevant Options",
+        "reasonable_orders, only_causal_landmarks, "
+        "disjunctive_landmarks, no_orders");
     LandmarkGraph::add_options_to_parser(parser);
 
     Options opts = parser.parse();

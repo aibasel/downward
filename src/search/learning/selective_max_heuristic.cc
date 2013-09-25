@@ -558,29 +558,53 @@ void SelectiveMaxHeuristic::print_statistics() const {
     cout << "Total evaluation time: " << eval_time << endl;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_list_option<Heuristic *>("heuristics");
-    parser.add_option<double>("alpha", 1.0, "alpha");
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Selective-max heuristic", "");
+    parser.document_language_support(
+        "action costs",
+        "if supported by all component heuristics");
+    parser.document_language_support(
+        "conditional_effects",
+        "if supported by all component heuristics");
+    parser.document_language_support(
+        "axioms",
+        "if supported by all component heuristics");
+    parser.document_property(
+        "admissible",
+        "if all component heuristics are admissible");
+    parser.document_property("consistent", "no");
+    parser.document_property(
+        "safe",
+        "if all component heuristics are safe");
+    parser.document_property("preferred operators", "no (not yet)");
+
+    parser.add_list_option<Heuristic *>("heuristics", "heuristics");
+    parser.add_option<double>("alpha", "alpha", "1.0");
     vector<string> classifier_types;
     classifier_types.push_back("NB");
     classifier_types.push_back("AODE");
     parser.add_enum_option(
-        "classifier", classifier_types, "NB", "classifier type");
-    parser.add_option<double>("conf_threshold", 0.6, "confidence threshold");
-    parser.add_option<int>("training_set", 100, "minimum size of training set");
-    parser.add_option<int>("eval_always", 0,
-                           "number of heuristics that should always be evaluated");
-    parser.add_option<bool>("random_sel", false, "random selection");
-    parser.add_option<bool>("retime", false, "retime heuristics");
-    vector<string>sample_types;
+        "classifier", classifier_types, "classifier type", "NB");
+    parser.add_option<double>("conf_threshold", "confidence threshold", "0.6");
+    parser.add_option<int>("training_set", "minimum size of training set", "100");
+    parser.add_option<int>(
+        "eval_always",
+        "number of heuristics that should always be evaluated", "0");
+    parser.add_option<bool>("random_sel", "random selection", "false");
+    parser.add_option<bool>("retime", "retime heuristics", "false");
+    vector<string> sample_types;
+    vector<string> sample_types_doc;
     sample_types.push_back("Probe");
+    sample_types_doc.push_back("stochastic hill-climbing probes of Karpas & Domshlak, IJCAI 2009");
     sample_types.push_back("ProbAStar");
+    sample_types_doc.push_back("probabilistic A* sampling");
     sample_types.push_back("PDB");
+    sample_types_doc.push_back("sampling method of Haslum et al., AAAI 2007");
     parser.add_enum_option(
-        "sample", sample_types, "Probe", "state space sample type");
-    parser.add_option<bool>("uniform", false, "uniform sampling");
-    parser.add_option<bool>("zero_threshold", false,
-                            "set threshold constant 0");
+        "sample", sample_types, "state space sample type", "Probe", sample_types_doc);
+    parser.add_option<bool>("uniform", "uniform sampling", "false");
+    parser.add_option<bool>("zero_threshold",
+                            "set threshold constant 0", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -610,4 +634,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return heur;
 }
 
-static Plugin<ScalarEvaluator> _plugin("selmax", _parse);
+static Plugin<Heuristic> _plugin("selmax", _parse);

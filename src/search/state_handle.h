@@ -20,7 +20,7 @@ class StateHandle {
     friend class State;
 private:
     struct StateRepresentation {
-        enum { INVALID_ID = -1 };
+        enum {INVALID_ID = -1};
         explicit StateRepresentation(const state_var_t *_data)
             : id(INVALID_ID) {
             data = const_cast<state_var_t *>(_data);
@@ -35,7 +35,7 @@ private:
         mutable state_var_t *data;
     };
 
-    const StateRepresentation* representation;
+    const StateRepresentation *representation;
     // Private low level ctor and make_permanent only for use of state registry.
     explicit StateHandle(const StateRepresentation *representation_)
         : representation(representation_) {
@@ -72,7 +72,6 @@ public:
     bool operator==(const StateHandle &other) const {
         return representation == other.representation;
     }
-
 };
 
 namespace __gnu_cxx {

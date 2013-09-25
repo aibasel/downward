@@ -124,15 +124,6 @@ public:
 };
 
 
-struct HelpElement {
-    HelpElement(std::string k, std::string h, std::string tn);
-    void set_default_value(std::string d_v);
-    std::string kwd;
-    std::string help;
-    std::string type_name;
-    std::string default_value;
-};
-
 
 /*The OptionParser stores a parse tree, and a Options.
 By calling addArgument, the parse tree is partially parsed,
@@ -152,26 +143,30 @@ public:
     template <class T>
     T start_parsing();
 
-    //add option with no default value, optional help
+    //add option with default value
     //call with mandatory = false to specify an optional parameter without default value
     template <class T>
-    void add_option(std::string k, std::string h = "", OptionFlags flags = OptionFlags());
-
-    //add option with default value
-    template <class T>
     void add_option(
-        std::string k, T def_val, std::string h = "");
+        std::string k, std::string h = "", std::string def_val = "",
+        const OptionFlags &flags = OptionFlags());
 
     void add_enum_option(std::string k,
                          std::vector<std::string > enumeration,
-                         std::string def_val = "", std::string h = "", OptionFlags flags = OptionFlags());
-
-    template <class T>
-    void add_list_option(std::string k, std::string h = "", OptionFlags flags = OptionFlags());
-
+                         std::string h = "", std::string def_val = "",
+                         std::vector<std::string> enum_doc = std::vector<std::string>(),
+                         const OptionFlags &flags = OptionFlags());
     template <class T>
     void add_list_option(std::string k,
-                         std::vector<T> def_val, std::string h = "");
+                         std::string h = "", std::string def_val = "",
+                         const OptionFlags &flags = OptionFlags());
+
+    void document_values(std::string argument,
+                         ValueExplanations value_explanations) const;
+    void document_synopsis(std::string name, std::string note) const;
+    void document_property(std::string property, std::string note) const;
+    void document_language_support(std::string feature, std::string note) const;
+    void document_note(std::string name, std::string note) const;
+    void document_hide() const;
 
     void error(std::string msg);
     void warning(std::string msg);
@@ -184,87 +179,99 @@ public:
     bool dry_run() const;
     bool help_mode() const;
 
+    template <class T>
+    static std::string to_str(T in) {
+        std::ostringstream out;
+        out << std::boolalpha << in;
+        return out.str();
+    }
+
 private:
     Options opts;
     ParseTree parse_tree;
     bool dry_run_;
     bool help_mode_;
-    std::vector<HelpElement> helpers;
+
     ParseTree::sibling_iterator next_unparsed_argument;
     std::vector<std::string> valid_keys;
-    std::vector<std::string> helpstrings;
 };
 
 //Definitions of OptionParsers template functions:
 
 template <class T>
 T OptionParser::start_parsing() {
+    if (help_mode()) {
+        DocStore::instance()->register_object(parse_tree.begin()->value,
+                                              TypeNamer<T>::name());
+    }
     return TokenParser<T>::parse(*this);
 }
 
 template <class T>
 void OptionParser::add_option(
-    std::string k, std::string h, OptionFlags flags) {
-    if (help_mode_) {
-        helpers.push_back(HelpElement(k, h, TypeNamer<T>::name()));
-        if (opts.contains(k)) {
-            helpers.back().default_value =
-                DefaultValueNamer<T>::to_str(opts.get<T>(k));
-        }
+    std::string k,
+    std::string h, std::string default_value, const OptionFlags &flags) {
+    if (help_mode()) {
+        DocStore::instance()->add_arg(parse_tree.begin()->value,
+                                      k, h,
+                                      TypeNamer<T>::name(), default_value,
+                                      flags.mandatory);
         return;
     }
+    std::cout << "adding option " << k << "(" << default_value << "), " << flags.mandatory << std::endl;
     valid_keys.push_back(k);
-
+    bool use_default(false);
     ParseTree::sibling_iterator arg = next_unparsed_argument;
     //scenario where we have already handled all arguments
     if (arg == parse_tree.end(parse_tree.begin())) {
-        if (!opts.contains(k) && flags.mandatory) {
-            error("missing option: " + k);
-        } else {
-            return;
-        }
-    }
-    //handling arguments with explicit keyword:
-    if (!arg->key.empty()) {
-        //try to find a parameter passed with keyword k
-        for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
-            if (arg->key.compare(k) == 0)
-                break;
-        }
-        if (arg == parse_tree.end(parse_tree.begin())) {
-            if (!opts.contains(k) && flags.mandatory) {
+        if (default_value.empty()) {
+            if (flags.mandatory) {
                 error("missing option: " + k);
             } else {
                 return;
             }
+        } else {
+            use_default = true;
+        }
+    } else {
+        //handling arguments with explicit keyword:
+        if (!arg->key.empty()) { //to check if we reached the params supplied with key
+            //try to find a parameter passed with keyword k
+            for (; arg != parse_tree.end(parse_tree.begin()); ++arg) {
+                if (arg->key.compare(k) == 0)
+                    break;
+            }
+            if (arg == parse_tree.end(parse_tree.begin())) {
+                if (default_value.empty()) {
+                    if (flags.mandatory) {
+                        error("missing option: " + k);
+                    } else {
+                        return;
+                    }
+                } else {
+                    use_default = true;
+                }
+            }
         }
     }
-    OptionParser subparser(subtree(parse_tree, arg), dry_run());
+    OptionParser subparser =
+        (use_default ?
+         OptionParser(default_value, dry_run()) :
+         OptionParser(subtree(parse_tree, arg), dry_run()));
     T result = TokenParser<T>::parse(subparser);
-    opts.set(k, result);
-    //if we have not reached the keyword parameters yet,
+    opts.set<T>(k, result);
+    //if we have not reached the keyword parameters yet
+    //and did not use the default value,
     //increment the argument position pointer
-    if (arg->key.size() == 0)
+    if (!use_default && arg->key.empty()) {
         ++next_unparsed_argument;
+    }
 }
 
 template <class T>
-void OptionParser::add_list_option(std::string k,
-                                   std::vector<T> def_val, std::string h) {
-    opts.set(k, def_val);
-    add_list_option<T>(k, h);
-}
-
-template <class T>
-void OptionParser::add_option(
-    std::string k, T def_val, std::string h) {
-    opts.set(k, def_val);
-    add_option<T>(k, h);
-}
-
-template <class T>
-void OptionParser::add_list_option(std::string k, std::string h, OptionFlags flags) {
-    add_option<std::vector<T> >(k, h, flags.mandatory);
+void OptionParser::add_list_option(
+    std::string k, std::string h, std::string def_val, const OptionFlags &flags) {
+    add_option<std::vector<T> >(k, h, def_val, flags);
 }
 
 //Definitions of TokenParser<T>:
@@ -293,48 +300,52 @@ int TokenParser<int>::parse(OptionParser &p) {
     }
 }
 
+//helper functions for the TokenParser-specializations
+template <class T>
+static T *lookup_in_registry(OptionParser &p) {
+    ParseTree::iterator pt = p.get_parse_tree()->begin();
+    if (Registry<T *>::instance()->contains(pt->value)) {
+        return Registry<T *>::instance()->get(pt->value) (p);
+    }
+    p.error(TypeNamer<T *>::name() + " " + pt->value + " not found");
+    return 0;
+}
+
+template <class T>
+static T *lookup_in_predefinitions(OptionParser &p, bool &found) {
+    ParseTree::iterator pt = p.get_parse_tree()->begin();
+    if (Predefinitions<T *>::instance()->contains(pt->value)) {
+        found = true;
+        return Predefinitions<T *>::instance()->get(pt->value);
+    }
+    found = false;
+    return 0;
+}
+
 
 template <class Entry>
 OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<OpenList<Entry > *>::instance()->contains(pt->value)) {
-        return Registry<OpenList<Entry > *>::instance()->get(pt->value) (p);
-    }
-    p.error("openlist " + pt->value + " not found");
-    return 0;
+    return lookup_in_registry<OpenList<Entry > >(p);
 }
 
 
 Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
-        return Predefinitions<Heuristic *>::instance()->get(pt->value);
-    } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
-        return Registry<Heuristic *>::instance()->get(pt->value) (p);
-        //look if there's a scalar evaluator registered by this name,
-        //and cast (same behaviour as old parser)
-    } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
-        ScalarEvaluator *eval =
-            Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
-        return dynamic_cast<Heuristic *>(eval);
-    }
-
-    p.error("heuristic " + pt->value + " not found");
-    return 0;
+    bool predefined;
+    Heuristic *result = lookup_in_predefinitions<Heuristic>(p, predefined);
+    if (predefined)
+        return result;
+    return lookup_in_registry<Heuristic>(p);
 }
 
 LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<LandmarkGraph *>::instance()->contains(pt->value)) {
-        return Predefinitions<LandmarkGraph *>::instance()->get(pt->value);
-    }
-    if (Registry<LandmarkGraph *>::instance()->contains(pt->value)) {
-        return Registry<LandmarkGraph *>::instance()->get(pt->value) (p);
-    }
-    p.error("landmark graph not found");
-    return 0;
+    bool predefined;
+    LandmarkGraph *result = lookup_in_predefinitions<LandmarkGraph>(p, predefined);
+    if (predefined)
+        return result;
+    return lookup_in_registry<LandmarkGraph>(p);
 }
 
+//TODO find a general way to handle parsing of superclasses (see also issue28)
 ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
@@ -342,38 +353,26 @@ ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
                Predefinitions<Heuristic *>::instance()->get(pt->value);
     } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
         return Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
+    } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
+        return (ScalarEvaluator *)
+               Registry<Heuristic *>::instance()->get(pt->value) (p);
     }
-    p.error("scalar evaluator " + pt->value + " not found");
+    p.error("ScalarEvaluator " + pt->value + " not found");
     return 0;
 }
 
 
 SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<SearchEngine *>::instance()->contains(pt->value)) {
-        return Registry<SearchEngine *>::instance()->get(pt->value) (p);
-    }
-    p.error("search engine not found");
-    return 0;
+    return lookup_in_registry<SearchEngine>(p);
 }
 
 ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<ShrinkStrategy *>::instance()->contains(pt->value)) {
-        return Registry<ShrinkStrategy *>::instance()->get(pt->value) (p);
-    }
-    p.error("Shrink strategy not found");
-    return 0;
+    return lookup_in_registry<ShrinkStrategy>(p);
 }
 
 
 Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<Synergy *>::instance()->contains(pt->value)) {
-        return Registry<Synergy *>::instance()->get(pt->value) (p);
-    }
-    p.error("synergy not found");
-    return 0;
+    return lookup_in_registry<Synergy>(p);
 }
 
 ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
