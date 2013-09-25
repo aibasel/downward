@@ -255,12 +255,52 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 }
 
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<LandmarkGraph *>("lm_graph");
-    parser.add_option<bool>("admissible", false, "get admissible estimate");
-    parser.add_option<bool>("optimal", false, "optimal cost sharing");
-    parser.add_option<bool>("pref", false, "identify preferred operators");
-    parser.add_option<bool>("alm", true, "use action landmarks");
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Landmark-count heuristic",
+                             "See also LAMAFFSynergy");
+    parser.document_note(
+        "Note",
+        "to use `optimal=true`, you must build the planner with USE_LP=1. "
+        "See LPBuildInstructions.");
+    parser.document_note(
+        "Optimal search",
+        "when using landmarks for optimal search (`admissible=true`), "
+        "you probably also want to enable the mpd option of the A* algorithm "
+        "to improve heuristic estimates");
+    parser.document_note(
+        "cost_type parameter",
+        "only used when `admissible=true` (see LandmarkGraph)");
+    parser.document_language_support("action costs",
+                                     "supported");
+    parser.document_language_support("conditional_effects",
+                                     "supported if `admissible=false`");
+    parser.document_language_support(
+        "axioms",
+        "supported if `admissible=false` (but may behave stupidly and lead to an unsafe heuristic)");
+    parser.document_property(
+        "admissible",
+        "yes if `admissible=true` and there are neither conditional effects "
+        "nor axioms");
+    parser.document_property("consistent", "no");
+    parser.document_property(
+        "safe",
+        "yes (except maybe on tasks with axioms or when "
+        "using `admissible=true` on tasks with conditional effects)");
+    parser.document_property("preferred operators",
+                             "yes (if enabled; see `pref_ops` option)");
+
+    parser.add_option<LandmarkGraph *>(
+        "lm_graph",
+        "the set of landmarks to use for this heuristic. "
+        "The set of landmarks can be specified here, "
+        "or predefined (see LandmarkGraph).");
+    parser.add_option<bool>("admissible", "get admissible estimate", "false");
+    parser.add_option<bool>(
+        "optimal",
+        "use optimal (LP-based) cost sharing "
+        "(only makes sense with `admissible=true`)", "false");
+    parser.add_option<bool>("pref", "identify preferred operators", "false");
+    parser.add_option<bool>("alm", "use action landmarks", "true");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -273,5 +313,5 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new LandmarkCountHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin(
+static Plugin<Heuristic> _plugin(
     "lmcount", _parse);

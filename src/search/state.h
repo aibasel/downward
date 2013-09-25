@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <vector>
-using namespace std;
 
 class Operator;
 class StateRegistry;
@@ -12,6 +11,8 @@ class StateRegistry;
 #include "state_var_t.h"
 #include "globals.h"
 
+// For documentation on classes relevant to storing and working with registered
+// states see the file state_registry.h.
 class State {
     friend class StateRegistry;
     // Values for vars. will later be converted to UnpackedStateData.

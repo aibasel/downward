@@ -3,6 +3,9 @@
 
 #include <hash_set>
 
+// For documentation on classes relevant to storing and working with registered
+// states see the file state_registry.h.
+
 struct StateID {
     int value;
     explicit StateID(int value_)
