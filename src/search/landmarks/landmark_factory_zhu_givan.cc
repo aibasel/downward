@@ -2,7 +2,6 @@
 #include "landmark_graph.h"
 #include "../operator.h"
 #include "../state.h"
-#include "../state_registry.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"

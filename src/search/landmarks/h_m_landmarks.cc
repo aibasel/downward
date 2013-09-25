@@ -1,7 +1,6 @@
 #include "h_m_landmarks.h"
 #include "../plugin.h"
 #include "../exact_timer.h"
-#include "../state_registry.h"
 
 
 std::ostream & operator<<(std::ostream &os, const Fluent &p) {

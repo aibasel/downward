@@ -9,7 +9,6 @@
 #include "../operator.h"
 #include "../option_parser.h" // TODO: Should be removable later.
 #include "../priority_queue.h"
-#include "../state_registry.h"
 #include "../timer.h"
 
 #include <algorithm>
