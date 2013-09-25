@@ -211,15 +211,6 @@ class MyExperiment(DownwardExperiment):
         if repo is None:
             repo = get_repo_base()
 
-        num_rev_opts_specified = (
-            int(revisions is not None) +
-            int(search_revisions is not None) +
-            int(combinations is not None))
-
-        if num_rev_opts_specified > 1:
-            raise ValueError('must specify exactly one of "revisions", '
-                             '"search_revisions" or "combinations"')
-
         combinations, self._combination_names = build_combos_with_names(
             repo=repo,
             combinations=combinations,
