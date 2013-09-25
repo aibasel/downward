@@ -7,7 +7,7 @@
 #include "../globals.h"
 
 class LandmarkFactoryRpgSasp : public LandmarkFactory {
-    list<LandmarkNode *> open_landmarks;
+    std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int> > disjunction_classes;
 
     void find_forward_orders(const std::vector<std::vector<int> > &lvl_var,
