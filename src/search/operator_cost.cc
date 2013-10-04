@@ -50,5 +50,6 @@ void add_cost_type_option_to_parser(OptionParser &parser) {
         "Operator cost adjustment type. "
         "No matter what this setting is, axioms will always be considered "
         "as actions of cost 0 by the heuristics that treat axioms as actions.",
-        "NORMAL");
+        "NORMAL",
+        cost_types_doc);
 }
