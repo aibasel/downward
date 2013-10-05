@@ -44,6 +44,9 @@ class CegarHeuristic : public Heuristic {
     std::vector<Abstraction *> abstractions;
     int num_states_offline;
     std::vector<double> avg_h_values;
+    LandmarkGraph landmark_graph;
+
+    LandmarkGraph get_landmark_graph() const;
 
     void mark_relevant_operators(std::vector<Operator> &operators, Fact fact) const;
     void add_operators(Task &task);
