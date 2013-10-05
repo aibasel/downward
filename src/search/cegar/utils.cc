@@ -340,23 +340,14 @@ Fact get_fact(const LandmarkNode *node) {
     return Fact(var, value);
 }
 
-void write_landmark_graph() {
-    Options opts = Options();
-    opts.set<int>("cost_type", 0);
-    opts.set<int>("memory_padding", 75);
-    opts.set<int>("m", 1);
-    opts.set<bool>("reasonable_orders", true);
-    opts.set<bool>("only_causal_landmarks", false);
-    opts.set<bool>("disjunctive_landmarks", false);
-    opts.set<bool>("conjunctive_landmarks", false);
-    opts.set<bool>("no_orders", false);
-    opts.set<int>("lm_cost_type", 0);
-    opts.set<Exploration *>("explor", new Exploration(opts));
-    HMLandmarks lm_graph_factory(opts);
-    LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-    if (DEBUG)
-        graph->dump();
-    const set<LandmarkNode *> &nodes = graph->get_nodes();
+string get_node_name(Fact fact) {
+    stringstream out;
+    out << g_fact_names[fact.first][fact.second] << " (" << fact.first << "=" << fact.second << ")";
+    return out.str();
+}
+
+void write_landmark_graph(const LandmarkGraph &graph) {
+    const set<LandmarkNode *> &nodes = graph.get_nodes();
     set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
 
     ofstream dotfile("landmark-graph.dot");
@@ -376,21 +367,19 @@ void write_landmark_graph() {
             //const edge_type &edge = parent_it->second;
             const LandmarkNode *parent_p = parent_it->first;
             Fact parent_fact = get_fact(parent_p);
-            dotfile << "  \"" << g_fact_names[parent_fact.first][parent_fact.second] << "\" -> ";
-            dotfile << "\"" << g_fact_names[node_fact.first][node_fact.second] << "\";" << endl;
+            dotfile << "  \"" << get_node_name(parent_fact) << "\" -> "
+                    << "\"" << get_node_name(node_fact) << "\";" << endl;
             if ((*g_initial_state)[parent_fact.first] == parent_fact.second)
-                dotfile << "\"" << g_fact_names[parent_fact.first][parent_fact.second] << "\" [color=green];" << endl;
+                dotfile << "\"" << get_node_name(parent_fact) << "\" [color=green];" << endl;
             if ((*g_initial_state)[node_fact.first] == node_fact.second)
-                dotfile << "\"" << g_fact_names[node_fact.first][node_fact.second] << "\" [color=green];" << endl;
+                dotfile << "\"" << get_node_name(node_fact) << "\" [color=green];" << endl;
         }
     }
     for (int var = 0; var < g_variable_domain.size(); var++) {
 
     }
     for (int i = 0; i < g_goal.size(); i++) {
-        int var = g_goal[i].first;
-        int value = g_goal[i].second;
-        dotfile << "\"" << g_fact_names[var][value] << "\" [color=red];" << endl;
+        dotfile << "\"" << get_node_name(g_goal[i]) << "\" [color=red];" << endl;
     }
     dotfile << "}" << endl;
     dotfile.close();

@@ -92,8 +92,6 @@ void Abstraction::set_pick_strategy(PickStrategy strategy) {
 
 void Abstraction::build() {
     if (write_dot_files) {
-        write_causal_graph(*g_causal_graph);
-        write_landmark_graph();
         assert(get_num_states() == 1);
         write_dot_file(get_num_states());
     }
