@@ -370,13 +370,13 @@ void write_landmark_graph() {
     for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
          != nodes2.end(); it++) {
         LandmarkNode *node_p = *it;
+        Fact node_fact = get_fact(node_p);
         for (auto parent_it = node_p->parents.begin(); parent_it
              != node_p->parents.end(); ++parent_it) {
             //const edge_type &edge = parent_it->second;
             const LandmarkNode *parent_p = parent_it->first;
             Fact parent_fact = get_fact(parent_p);
             dotfile << "  \"" << g_fact_names[parent_fact.first][parent_fact.second] << "\" -> ";
-            Fact node_fact = get_fact(node_p);
             dotfile << "\"" << g_fact_names[node_fact.first][node_fact.second] << "\";" << endl;
             if ((*g_initial_state)[parent_fact.first] == parent_fact.second)
                 dotfile << "\"" << g_fact_names[parent_fact.first][parent_fact.second] << "\" [color=green];" << endl;
