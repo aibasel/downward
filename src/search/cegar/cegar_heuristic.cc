@@ -44,9 +44,13 @@ bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
     return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
 }
 
-bool sort_hadd_values_up(Fact fact1, Fact fact2) {
-    return get_hadd_value(fact1.first, fact1.second) < get_hadd_value(fact2.first, fact2.second);
-}
+struct SortHaddValuesUp {
+    const Task task;
+    explicit SortHaddValuesUp(const Task &t) : task(t) {}
+    bool operator() (Fact a, Fact b) {
+        return task.get_hadd_value(a.first, a.second) < task.get_hadd_value(b.first, b.second);
+    }
+};
 
 void CegarHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     Options opts = Options();
@@ -86,7 +90,7 @@ void CegarHeuristic::order_facts(vector<Fact> &facts) const {
         if (fact_order == DOMAIN_SIZE_DOWN)
             reverse(facts.begin(), facts.end());
     } else if (fact_order == HADD_UP or fact_order == HADD_DOWN) {
-        sort(facts.begin(), facts.end(), sort_hadd_values_up);
+        sort(facts.begin(), facts.end(), SortHaddValuesUp(original_task));
         if (fact_order == HADD_DOWN)
             reverse(facts.begin(), facts.end());
     } else {

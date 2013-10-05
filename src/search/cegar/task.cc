@@ -1,6 +1,7 @@
 #include "task.h"
 
 #include "values.h"
+#include "../timer.h"
 
 #include <set>
 
@@ -15,7 +16,8 @@ Task::Task(vector<Fact> goal_facts)
       fact_names(g_fact_names),
       operators(),
       original_operator_numbers(),
-      fact_mapping(g_variable_domain.size()) {
+      fact_mapping(g_variable_domain.size()),
+      additive_heuristic(0) {
     for (int var = 0; var < variable_domain.size(); ++var) {
         fact_mapping[var].resize(variable_domain[var]);
         for (int value = 0; value < variable_domain[var]; ++value) {
@@ -241,6 +243,39 @@ void Task::release_memory() {
 Task Task::get_original_task() {
     Task task(g_goal);
     return task;
+}
+
+void Task::setup_hadd() const {
+    assert(!additive_heuristic);
+    cout << "Start computing h^add values [t=" << g_timer << "]" << endl;
+    Options opts;
+    opts.set<int>("cost_type", 0);
+    opts.set<int>("memory_padding", 75);
+    additive_heuristic = new AdditiveHeuristic(opts);
+    additive_heuristic->evaluate(initial_state);
+    if (DEBUG) {
+        cout << "h^add values for all facts:" << endl;
+        for (int var = 0; var < g_variable_domain.size(); ++var) {
+            for (int value = 0; value < g_variable_domain[var]; ++value) {
+                cout << "  " << var << "=" << value << " " << g_fact_names[var][value]
+                     << " cost:" << additive_heuristic->get_cost(var, value) << endl;
+            }
+        }
+        cout << endl;
+    }
+    cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
+}
+
+int Task::get_hadd_estimate_for_initial_state() const {
+    if (!additive_heuristic)
+        setup_hadd();
+    return additive_heuristic->get_heuristic();
+}
+
+int Task::get_hadd_value(int var, int value) const {
+    if (!additive_heuristic)
+        setup_hadd();
+    return additive_heuristic->get_cost(var, value);
 }
 
 void Task::dump_facts() const {

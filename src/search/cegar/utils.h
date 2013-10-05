@@ -58,9 +58,6 @@ struct hash_fact {
     }
 };
 
-int get_hadd_estimate_for_initial_state();
-int get_hadd_value(int var, int value);
-
 Fact get_fact(const LandmarkNode *node);
 
 void write_landmark_graph();
