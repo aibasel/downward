@@ -23,7 +23,8 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       search(opts.get<bool>("search")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
       original_task(Task::get_original_task()),
-      num_states_offline(0) {
+      num_states_offline(0),
+      landmark_graph(get_landmark_graph()) {
     DEBUG = opts.get<bool>("debug");
 
     cout << endl << "Original task:" << endl;
@@ -53,6 +54,14 @@ struct SortHaddValuesUp {
 };
 
 void CegarHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
+    const set<LandmarkNode *> &nodes = landmark_graph.get_nodes();
+    for (auto it = nodes.begin(); it != nodes.end(); it++) {
+        const LandmarkNode *node_p = *it;
+        facts->push_back(get_fact(node_p));
+    }
+}
+
+LandmarkGraph CegarHeuristic::get_landmark_graph() const {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
     opts.set<int>("memory_padding", 75);
@@ -66,15 +75,9 @@ void CegarHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     opts.set<int>("lm_cost_type", 0);
     opts.set<Exploration *>("explor", new Exploration(opts));
     HMLandmarks lm_graph_factory(opts);
-    LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-    if (DEBUG)
-        graph->dump();
-    const set<LandmarkNode *> &nodes = graph->get_nodes();
-    for (auto it = nodes.begin(); it != nodes.end(); it++) {
-        const LandmarkNode *node_p = *it;
-        facts->push_back(get_fact(node_p));
-    }
+    return *lm_graph_factory.compute_lm_graph();
 }
+
 
 void CegarHeuristic::order_facts(vector<Fact> &facts) const {
     if (fact_order == ORIGINAL) {
