@@ -165,7 +165,7 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         Task task(goal);
         if (DEBUG)
             cout << "For task " << facts[i].first << "=" << facts[i].second << endl;
-        if (decomposition == ALL_LANDMARKS) {
+        if (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS) {
             unordered_map<int, set<int> > groups;
             get_prev_landmarks(facts[i], &groups);
             for (auto it = groups.begin(); it != groups.end(); ++it) {
@@ -331,6 +331,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("decomposition", decompositions, "GOAL_FACTS",
                            "build abstractions for each of these facts");
     parser.add_option<bool>("adapt_task", true, "remove redundant operators and facts");
+    parser.add_option<bool>("combine_facts", true, "combine landmark facts");
     parser.add_option<bool>("relevance_analysis", false, "remove irrelevant operators");
     parser.add_option<bool>("trivial_facts", false, "include landmarks that are true in the initial state");
     parser.add_option<bool>("use_astar", true, "use A* for finding the *single* next solution");
