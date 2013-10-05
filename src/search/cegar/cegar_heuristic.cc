@@ -27,6 +27,11 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       landmark_graph(get_landmark_graph()) {
     DEBUG = opts.get<bool>("debug");
 
+    if (DEBUG)
+        landmark_graph.dump();
+    if (options.get<bool>("write_dot_files"))
+        write_landmark_graph(landmark_graph);
+
     cout << endl << "Original task:" << endl;
     original_task.dump();
 
@@ -55,7 +60,7 @@ struct SortHaddValuesUp {
 
 void CegarHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     const set<LandmarkNode *> &nodes = landmark_graph.get_nodes();
-    for (auto it = nodes.begin(); it != nodes.end(); it++) {
+    for (auto it = nodes.begin(); it != nodes.end(); ++it) {
         const LandmarkNode *node_p = *it;
         facts->push_back(get_fact(node_p));
     }
@@ -76,6 +81,26 @@ LandmarkGraph CegarHeuristic::get_landmark_graph() const {
     opts.set<Exploration *>("explor", new Exploration(opts));
     HMLandmarks lm_graph_factory(opts);
     return *lm_graph_factory.compute_lm_graph();
+}
+
+void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, set<int> > *groups) const {
+    assert(groups->empty());
+    LandmarkNode *node = landmark_graph.get_landmark(fact);
+    vector<const LandmarkNode *> open;
+    for (auto it = node->parents.begin(); it != node->parents.end(); ++it) {
+        const LandmarkNode *parent = it->first;
+        open.push_back(parent);
+    }
+    while (!open.empty()) {
+        const LandmarkNode *ancestor = open.back();
+        open.pop_back();
+        Fact ancestor_fact = get_fact(ancestor);
+        (*groups)[ancestor_fact.first].insert(ancestor_fact.second);
+        for (auto it = ancestor->parents.begin(); it != ancestor->parents.end(); ++it) {
+            const LandmarkNode *parent = it->first;
+            open.push_back(parent);
+        }
+    }
 }
 
 
@@ -138,6 +163,17 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         vector<Fact> goal;
         goal.push_back(facts[i]);
         Task task(goal);
+        if (DEBUG)
+            cout << "For task " << facts[i].first << "=" << facts[i].second << endl;
+        if (decomposition == ALL_LANDMARKS) {
+            unordered_map<int, set<int> > groups;
+            get_prev_landmarks(facts[i], &groups);
+            for (auto it = groups.begin(); it != groups.end(); ++it) {
+                if (it->second.size() >= 2) {
+                    task.combine_facts(it->first, it->second);
+                }
+            }
+        }
         tasks->push_back(task);
     }
 }

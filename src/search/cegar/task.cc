@@ -226,14 +226,19 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
     }
 }
 
-void Task::combine_facts(int var, vector<int> &values) {
-    cout << var << " " << to_string(values) << endl;
+void Task::combine_facts(int var, set<int> &values) {
     assert(values.size() >= 2);
-    int projected_value = values[0];
-    values.erase(values.begin());
-    for (auto it = values.begin(); it != values.end(); ++it)
+    vector<int> mapped_values;
+    for (auto it = values.begin(); it != values.end(); ++it) {
+        mapped_values.push_back(fact_mapping[var][*it]);
+    }
+    if (DEBUG)
+        cout << "Combine " << var << ": " << to_string(mapped_values) << endl;
+    int projected_value = mapped_values[0];
+    mapped_values.erase(mapped_values.begin());
+    for (auto it = mapped_values.begin(); it != mapped_values.end(); ++it)
         move_fact(var, *it, projected_value);
-    remove_facts(var, values);
+    remove_facts(var, mapped_values);
 }
 
 void Task::release_memory() {
