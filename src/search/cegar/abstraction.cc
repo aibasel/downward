@@ -607,7 +607,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             const vector<int> &values = splits[i].second;
             for (int j = 0; j < values.size(); ++j) {
                 int value = values[j];
-                int hadd_value = get_hadd_value(var, value);
+                int hadd_value = task->get_hadd_value(var, value);
                 if (hadd_value == -1) {
                     // Fact is unreachable --> Choose it last.
                     if (pick == MIN_HADD)
@@ -781,8 +781,8 @@ void Abstraction::set_max_init_h_factor(double factor) {
         max_init_h = INF;
     } else {
         assert(factor >= 0);
-        max_init_h = factor * get_hadd_estimate_for_initial_state();
-        cout << "h^add(s_0)=" << get_hadd_estimate_for_initial_state() << endl;
+        max_init_h = factor * task->get_hadd_estimate_for_initial_state();
+        cout << "h^add(s_0)=" << task->get_hadd_estimate_for_initial_state() << endl;
         assert(max_init_h >= 0);
     }
     cout << "Set max_init_h to " << max_init_h << endl;

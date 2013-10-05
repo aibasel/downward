@@ -21,6 +21,7 @@ private:
     std::vector<Operator> operators;
     std::vector<int> original_operator_numbers;
     std::vector<std::vector<int> > fact_mapping;
+    mutable AdditiveHeuristic *additive_heuristic;
 
     void move_fact(int var, int before, int after);
     void remove_fact(int var, int value);
@@ -29,6 +30,8 @@ private:
     void compute_facts_and_operators();
     void remove_unreachable_facts(const FactSet &reached_facts);
     void mark_relevant_operators(const Fact &fact);
+
+    void setup_hadd() const;
 
     void dump_facts() const;
 
@@ -49,6 +52,9 @@ public:
     void release_memory();
 
     static Task get_original_task();
+
+    int get_hadd_estimate_for_initial_state() const;
+    int get_hadd_value(int var, int value) const;
 
     void dump() const;
 };
