@@ -162,13 +162,14 @@ void Task::translate_state(State &state, bool &reachable) const {
 }
 
 void Task::install() {
-    // Do not change g_operators.
     assert(g_initial_state);
     *g_initial_state = initial_state;
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
+    g_operators = operators;
     Values::initialize_static_members();
+    assert(!additive_heuristic && "h^add can only be calculated for installed tasks");
 }
 
 void Task::move_fact(int var, int before, int after) {
