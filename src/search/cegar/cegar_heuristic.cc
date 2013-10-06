@@ -164,7 +164,7 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         goal.push_back(facts[i]);
         Task task(goal);
         if (DEBUG)
-            cout << "For task " << facts[i].first << "=" << facts[i].second << endl;
+            cout << "For task " << facts[i] << endl;
         if (options.get<bool>("relevance_analysis"))
             task.remove_irrelevant_operators();
         if (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS) {

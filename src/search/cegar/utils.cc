@@ -412,6 +412,12 @@ string to_string(int i) {
     return out.str();
 }
 
+string to_string(Fact fact) {
+    stringstream out;
+    out << fact.first << "=" << fact.second;
+    return out.str();
+}
+
 string to_string(const vector<int> &v) {
     string sep = "";
     stringstream out;
@@ -421,4 +427,10 @@ string to_string(const vector<int> &v) {
     }
     return out.str();
 }
+
+ostream & operator<<(ostream &os, const Fact &fact) {
+    os << fact.first << "=" << fact.second;
+    return os;
+}
+
 }
