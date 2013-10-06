@@ -165,6 +165,8 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         Task task(goal);
         if (DEBUG)
             cout << "For task " << facts[i].first << "=" << facts[i].second << endl;
+        if (options.get<bool>("relevance_analysis"))
+            task.remove_irrelevant_operators();
         if (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS) {
             unordered_map<int, set<int> > groups;
             get_prev_landmarks(facts[i], &groups);
@@ -201,11 +203,9 @@ void CegarHeuristic::initialize() {
     for (int i = 0; i < tasks.size(); ++i) {
         cout << endl;
         Task &task = tasks[i];
-        task.install();
-        if (options.get<bool>("relevance_analysis"))
-            task.remove_irrelevant_operators();
         task.adapt_operator_costs(remaining_costs);
         task.dump();
+        task.install();
 
         Abstraction *abstraction = new Abstraction(&task);
 
