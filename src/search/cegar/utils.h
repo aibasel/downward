@@ -1,6 +1,7 @@
 #ifndef CEGAR_UTILS_H
 #define CEGAR_UTILS_H
 
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -65,7 +66,10 @@ void write_causal_graph(const CausalGraph &causal_graph);
 
 // Debugging.
 string to_string(int i);
+string to_string(Fact fact);
 string to_string(const std::vector<int> &v);
+
+std::ostream & operator<<(std::ostream &os, const Fact &fact);
 
 // Testing.
 State *create_state(const std::string desc);
