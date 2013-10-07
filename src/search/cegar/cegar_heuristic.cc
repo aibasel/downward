@@ -133,6 +133,10 @@ bool is_true_in_initial_state(Fact fact) {
 void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
     vector<Fact> facts;
     Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
+    if (options.get<bool>("combine_facts") && decomposition != ALL_LANDMARKS) {
+        cerr << "Combining facts only makes sense when refining for all landmarks" << endl;
+        exit_with(EXIT_INPUT_ERROR);
+    }
     if (decomposition == NONE) {
         Task task(g_goal);
         tasks->push_back(task);
