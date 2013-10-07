@@ -104,6 +104,7 @@ void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, set<int> >
 }
 
 void CegarHeuristic::order_facts(vector<Fact> &facts) const {
+    cout << "Sort " << facts.size() << " facts" << endl;
     if (fact_order == ORIGINAL) {
         // Nothing to do.
     } else if (fact_order == MIXED) {

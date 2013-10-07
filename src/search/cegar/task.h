@@ -24,6 +24,7 @@ private:
     std::vector<std::vector<int> > task_index;
     mutable AdditiveHeuristic *additive_heuristic;
     bool adapt_task;
+    bool is_original_task;
 
     void move_fact(int var, int before, int after);
     void remove_fact(int var, int value);
@@ -35,6 +36,7 @@ private:
 
     void setup_hadd() const;
 
+    void dump_name() const;
     void dump_facts() const;
 
 public:
