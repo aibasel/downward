@@ -19,7 +19,8 @@ Task::Task(vector<Fact> goal_facts, bool adapt)
       orig_index(g_variable_domain.size()),
       task_index(g_variable_domain.size()),
       additive_heuristic(0),
-      adapt_task(adapt) {
+      adapt_task(adapt),
+      is_original_task(false) {
     for (int var = 0; var < variable_domain.size(); ++var) {
         orig_index[var].resize(variable_domain[var]);
         task_index[var].resize(variable_domain[var]);
@@ -170,13 +171,14 @@ void Task::translate_state(State &state, bool &reachable) const {
 
 void Task::install() {
     assert(g_initial_state);
+    if (!is_original_task)
+        assert(!additive_heuristic && "h^add can only be calculated for installed tasks");
     *g_initial_state = initial_state;
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
     g_operators = operators;
     Values::initialize_static_members();
-    assert(!additive_heuristic && "h^add can only be calculated for installed tasks");
 }
 
 void Task::move_fact(int var, int before, int after) {
@@ -281,11 +283,14 @@ void Task::release_memory() {
 
 Task Task::get_original_task() {
     Task task(g_goal, false);
+    task.is_original_task = true;
+    task.setup_hadd();
     return task;
 }
 
 void Task::setup_hadd() const {
     assert(!additive_heuristic);
+    dump_name();
     cout << "Start computing h^add values [t=" << g_timer << "]" << endl;
     Options opts;
     opts.set<int>("cost_type", 0);
@@ -324,12 +329,15 @@ void Task::dump_facts() const {
     }
 }
 
-void Task::dump() const {
+void Task::dump_name() const {
     cout << "Task ";
     for (int j = 0; j < goal.size(); ++j)
-        cout << goal[j].first << "=" << goal[j].second << ":"
-             << fact_names[goal[j].first][goal[j].second] << " ";
+        cout << goal[j] << ":" << fact_names[goal[j].first][goal[j].second] << " ";
     cout << endl;
+}
+
+void Task::dump() const {
+    dump_name();
     int num_facts = 0;
     for (int var = 0; var < variable_domain.size(); ++var)
         num_facts += variable_domain[var];
