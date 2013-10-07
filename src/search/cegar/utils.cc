@@ -428,6 +428,16 @@ string to_string(const vector<int> &v) {
     return out.str();
 }
 
+string to_string(const set<int> &s) {
+    string sep = "";
+    stringstream out;
+    for (auto it = s.begin(); it != s.end(); ++it) {
+        out << sep << *it;
+        sep = ",";
+    }
+    return out.str();
+}
+
 ostream & operator<<(ostream &os, const Fact &fact) {
     os << fact.first << "=" << fact.second;
     return os;
