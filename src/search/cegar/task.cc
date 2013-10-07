@@ -239,6 +239,10 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
             assert(0 <= value && value < task_index[var].size());
             task_index[var][value] = UNDEFINED;
         }
+        if (DEBUG && !values_to_remove.empty()) {
+            cout << "Task index " << var << ": " << to_string(task_index[var]) << endl;
+            cout << "Orig index " << var << ": " << to_string(orig_index[var]) << endl;
+        }
     }
 }
 
@@ -264,6 +268,10 @@ void Task::combine_facts(int var, set<int> &values) {
         move_fact(var, *it, projected_value);
     remove_facts(var, mapped_values);
     fact_names[var][projected_value] = combined_names.str();
+    if (DEBUG) {
+        cout << "Task index " << var << ": " << to_string(task_index[var]) << endl;
+        cout << "Orig index " << var << ": " << to_string(orig_index[var]) << endl;
+    }
 }
 
 void Task::release_memory() {
