@@ -103,7 +103,6 @@ void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, set<int> >
     }
 }
 
-
 void CegarHeuristic::order_facts(vector<Fact> &facts) const {
     if (fact_order == ORIGINAL) {
         // Nothing to do.
@@ -129,15 +128,6 @@ void CegarHeuristic::order_facts(vector<Fact> &facts) const {
 
 bool is_true_in_initial_state(Fact fact) {
     return (*g_initial_state)[fact.first] == fact.second;
-}
-
-int num_nontrivial_goal_facts() {
-    int count = 0;
-    for (int i = 0; i < g_goal.size(); ++i) {
-        if (!is_true_in_initial_state(g_goal[i]))
-            ++count;
-    }
-    return count;
 }
 
 void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
