@@ -9,7 +9,7 @@ using namespace std;
 
 namespace cegar_heuristic {
 
-Task::Task(vector<Fact> goal_facts)
+Task::Task(vector<Fact> goal_facts, bool adapt)
     : initial_state(*g_initial_state),
       goal(goal_facts),
       variable_domain(g_variable_domain),
@@ -18,7 +18,8 @@ Task::Task(vector<Fact> goal_facts)
       original_operator_numbers(),
       orig_index(g_variable_domain.size()),
       task_index(g_variable_domain.size()),
-      additive_heuristic(0) {
+      additive_heuristic(0),
+      adapt_task(adapt) {
     for (int var = 0; var < variable_domain.size(); ++var) {
         orig_index[var].resize(variable_domain[var]);
         task_index[var].resize(variable_domain[var]);
@@ -70,7 +71,7 @@ void Task::compute_possibly_before_facts(const Fact &last_fact, FactSet *reached
 }
 
 void Task::compute_facts_and_operators() {
-    if (goal.size() > 1) {
+    if (!adapt_task) {
         operators = g_operators;
         for (int i = 0; i < operators.size(); ++i)
             original_operator_numbers.push_back(i);
@@ -279,7 +280,7 @@ void Task::release_memory() {
 }
 
 Task Task::get_original_task() {
-    Task task(g_goal);
+    Task task(g_goal, false);
     return task;
 }
 
