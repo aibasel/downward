@@ -68,6 +68,7 @@ void write_causal_graph(const CausalGraph &causal_graph);
 string to_string(int i);
 string to_string(Fact fact);
 string to_string(const std::vector<int> &v);
+string to_string(const std::set<int> &s);
 
 std::ostream & operator<<(std::ostream &os, const Fact &fact);
 
