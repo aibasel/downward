@@ -23,6 +23,7 @@ private:
     std::vector<std::vector<int> > orig_index;
     std::vector<std::vector<int> > task_index;
     mutable AdditiveHeuristic *additive_heuristic;
+    bool adapt_task;
 
     void move_fact(int var, int before, int after);
     void remove_fact(int var, int value);
@@ -37,7 +38,7 @@ private:
     void dump_facts() const;
 
 public:
-    explicit Task(std::vector<Fact> goal_facts);
+    explicit Task(std::vector<Fact> goal_facts, bool adapt);
 
     const std::vector<Fact> &get_goal() const {return goal; }
     std::vector<Operator> &get_operators() {return operators; }
