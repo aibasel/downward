@@ -182,6 +182,8 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
 
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
+    cout << "Peak memory before building abstractions: "
+         << get_peak_memory_in_kb() << " KB" << endl;
     int max_states_offline = options.get<int>("max_states_offline");
     if (max_states_offline == -1)
         max_states_offline = INF;
@@ -257,11 +259,14 @@ void CegarHeuristic::print_statistics() {
         sum_avg_h += avg_h_values[i];
     }
     cout << "Done building abstractions [t=" << g_timer << "]" << endl;
+    cout << "Peak memory after building abstractions: "
+         << get_peak_memory_in_kb() << " KB" << endl;
     cout << "CEGAR abstractions: " << abstractions.size() << endl;
     cout << "Abstract states offline: " << num_states_offline << endl;
     // There will always be at least one abstraction.
     cout << "Init h: " << compute_heuristic(*g_initial_state) << endl;
     cout << "Average h: " << sum_avg_h / abstractions.size() << endl;
+    cout << endl;
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {

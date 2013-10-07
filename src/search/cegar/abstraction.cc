@@ -116,16 +116,16 @@ void Abstraction::build() {
     num_states_offline = get_num_states();
     assert(num_states_offline == states.size());
     cout << "Done building abstraction [t=" << g_timer << "]" << endl;
-    cout << "Peak memory after building abstraction: "
-         << get_peak_memory_in_kb() << " KB" << endl;
+    cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << valid_conc_solution << endl;
-    cout << "Abstract states offline: " << num_states_offline << endl;
+    cout << "Single abstraction states: " << num_states_offline << endl;
 
     // Even if we found a valid concrete solution, we might have refined in the
     // last iteration, so we must update the h-values.
     update_h_values();
     log_h_values();
     cout << "Single abstraction init-h: " << init->get_h() << endl;
+    cout << "Single abstraction avg-h:  " << get_avg_h() << endl;
 }
 
 void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
@@ -834,8 +834,5 @@ void Abstraction::print_statistics() {
     cout << "Unmet goals: " << unmet_goals << endl;
     cout << "Unreachable states: " << unreachable_states << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
-    cout << "Init h: " << init->get_h() << endl;
-    cout << "Average h: " << get_avg_h() << endl;
-    cout << "CEGAR abstractions: 1" << endl;
 }
 }
