@@ -20,7 +20,8 @@ private:
     std::vector<vector<string> > fact_names;
     std::vector<Operator> operators;
     std::vector<int> original_operator_numbers;
-    std::vector<std::vector<int> > fact_mapping;
+    std::vector<std::vector<int> > orig_index;
+    std::vector<std::vector<int> > task_index;
     mutable AdditiveHeuristic *additive_heuristic;
 
     void move_fact(int var, int before, int after);

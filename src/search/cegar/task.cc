@@ -16,12 +16,15 @@ Task::Task(vector<Fact> goal_facts)
       fact_names(g_fact_names),
       operators(),
       original_operator_numbers(),
-      fact_mapping(g_variable_domain.size()),
+      orig_index(g_variable_domain.size()),
+      task_index(g_variable_domain.size()),
       additive_heuristic(0) {
     for (int var = 0; var < variable_domain.size(); ++var) {
-        fact_mapping[var].resize(variable_domain[var]);
+        orig_index[var].resize(variable_domain[var]);
+        task_index[var].resize(variable_domain[var]);
         for (int value = 0; value < variable_domain[var]; ++value) {
-            fact_mapping[var][value] = value;
+            orig_index[var][value] = value;
+            task_index[var][value] = value;
         }
     }
     compute_facts_and_operators();
@@ -129,7 +132,10 @@ void Task::remove_irrelevant_operators() {
 }
 
 void Task::adapt_operator_costs(const vector<int> &remaining_costs) {
-    assert(operators.size() == original_operator_numbers.size());
+    if (operators.size() != original_operator_numbers.size()) {
+        cout << "Updating original_operator_numbers not implemented." << endl;
+        exit(2);
+    }
     for (int i = 0; i < operators.size(); ++i)
         operators[i].set_cost(remaining_costs[original_operator_numbers[i]]);
 }
@@ -150,7 +156,7 @@ void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int>
 
 void Task::translate_state(State &state, bool &reachable) const {
     for (int var = 0; var < g_variable_domain.size(); ++var) {
-        int value = fact_mapping[var][state[var]];
+        int value = task_index[var][state[var]];
         if (value == UNDEFINED) {
             reachable = false;
             return;
@@ -174,12 +180,15 @@ void Task::install() {
 
 void Task::move_fact(int var, int before, int after) {
     if (DEBUG)
-        cout << "Project var " << var << ": " << before << " -> " << after << endl;
-    assert(0 <= before && before < fact_mapping[var].size());
-    assert(0 <= after && after < fact_mapping[var].size());
+        cout << "Move fact " << var << ": " << before << " -> " << after << endl;
+    assert(0 <= before && before < task_index[var].size());
+    assert(0 <= after && after < task_index[var].size());
     for (int i = 0; i < operators.size(); ++i)
         operators[i].rename_fact(var, before, after);
-    fact_mapping[var][before] = after;
+    // We never move a fact with more than one original indices. If we did, we
+    // would have to use a vector here.
+    orig_index[var][after] = orig_index[var][before];
+    task_index[var][orig_index[var][before]] = after;
     fact_names[var][after] = fact_names[var][before];
     if (initial_state[var] == before)
         initial_state[var] = after;
@@ -191,21 +200,22 @@ void Task::move_fact(int var, int before, int after) {
 
 void Task::remove_fact(int var, int value) {
     if (DEBUG)
-        cout << "Set unreachable: " << var << "=" << value << endl;
-    assert(0 <= value && value < fact_mapping[var].size());
-    fact_mapping[var][value] = UNDEFINED;
-    assert(variable_domain[var] >= 2);
-    --variable_domain[var];
-    assert(value < fact_names[var].size());
-    fact_names[var].erase(fact_names[var].begin() + value);
+        cout << "Remove fact: " << var << "=" << value << endl;
     assert(initial_state[var] != value);
     for (int i = 0; i < goal.size(); ++i) {
         assert(goal[i].first != var || goal[i].second != value);
     }
     // Rename all values of this variable behind the deleted fact.
-    for (int i = value + 1; i < g_variable_domain[var]; ++i) {
+    for (int i = value + 1; i < variable_domain[var]; ++i) {
         move_fact(var, i, i - 1);
     }
+    assert(!orig_index[var].empty());
+    orig_index[var].pop_back();
+    assert(!fact_names[var].empty());
+    fact_names[var].pop_back();
+    assert(variable_domain[var] >= 2);
+    --variable_domain[var];
+    assert(orig_index[var].size() == variable_domain[var]);
 }
 
 void Task::remove_facts(int var, vector<int> &values) {
@@ -224,6 +234,11 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
                 values_to_remove.push_back(value);
         }
         remove_facts(var, values_to_remove);
+        for (int i = 0; i < values_to_remove.size(); ++i) {
+            int value = values_to_remove[i];
+            assert(0 <= value && value < task_index[var].size());
+            task_index[var][value] = UNDEFINED;
+        }
     }
 }
 
@@ -231,15 +246,24 @@ void Task::combine_facts(int var, set<int> &values) {
     assert(values.size() >= 2);
     vector<int> mapped_values;
     for (auto it = values.begin(); it != values.end(); ++it) {
-        mapped_values.push_back(fact_mapping[var][*it]);
+        mapped_values.push_back(task_index[var][*it]);
     }
     if (DEBUG)
-        cout << "Combine " << var << ": " << to_string(mapped_values) << endl;
+        cout << "Combine " << var << ": " << to_string(values) << " (mapped "
+             << to_string(mapped_values) << ")" << endl;
+    // Save combined fact_name.
+    stringstream combined_names;
+    string sep = "";
+    for (int i = 0; i < mapped_values.size(); ++i) {
+        combined_names << sep << fact_names[var][i];
+        sep = " OR ";
+    }
     int projected_value = mapped_values[0];
     mapped_values.erase(mapped_values.begin());
     for (auto it = mapped_values.begin(); it != mapped_values.end(); ++it)
         move_fact(var, *it, projected_value);
     remove_facts(var, mapped_values);
+    fact_names[var][projected_value] = combined_names.str();
 }
 
 void Task::release_memory() {
@@ -259,7 +283,7 @@ void Task::setup_hadd() const {
     opts.set<int>("memory_padding", 75);
     additive_heuristic = new AdditiveHeuristic(opts);
     additive_heuristic->evaluate(initial_state);
-    if (DEBUG) {
+    if (false) {
         cout << "h^add values for all facts:" << endl;
         for (int var = 0; var < g_variable_domain.size(); ++var) {
             for (int value = 0; value < g_variable_domain[var]; ++value) {
@@ -313,11 +337,8 @@ void Task::dump() const {
     cout << "  Variable domain sizes: " << to_string(variable_domain) << endl;
     if (DEBUG) {
         cout << "  Fact mapping:" << endl;
-        for (int var = 0; var < fact_mapping.size(); ++var) {
-            for (int value = 0; value < fact_mapping[var].size(); ++value) {
-                cout << "    " << var << ": " << value << " -> " << fact_mapping[var][value] << endl;
-            }
-        }
+        for (int var = 0; var < task_index.size(); ++var)
+            cout << "    " << var << ": " << to_string(task_index[var]) << endl;
     }
     cout << endl;
 }
