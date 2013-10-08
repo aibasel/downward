@@ -156,17 +156,16 @@ void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int>
         cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
-void Task::translate_state(State &state, bool &reachable) const {
+bool Task::translate_state(State &state) const {
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         int value = task_index[var][state[var]];
         if (value == UNDEFINED) {
-            reachable = false;
-            return;
+            return false;
         } else {
             state[var] = value;
         }
     }
-    reachable = true;
+    return true;
 }
 
 void Task::install() {
