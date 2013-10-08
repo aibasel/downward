@@ -50,7 +50,7 @@ public:
     void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const;
     void translate_state(State &state, bool &reachable) const;
 
-    void combine_facts(int var, set<int> &values);
+    void combine_facts(int var, unordered_set<int> &values);
 
     void install();
     void release_memory();

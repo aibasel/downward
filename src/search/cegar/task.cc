@@ -249,23 +249,25 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
     }
 }
 
-void Task::combine_facts(int var, set<int> &values) {
+void Task::combine_facts(int var, unordered_set<int> &values) {
     assert(values.size() >= 2);
-    vector<int> mapped_values;
+    set<int> ordered_values;
     for (auto it = values.begin(); it != values.end(); ++it) {
-        mapped_values.push_back(task_index[var][*it]);
+        ordered_values.insert(task_index[var][*it]);
     }
+    vector<int> mapped_values(ordered_values.begin(), ordered_values.end());
+    assert(is_sorted(mapped_values.begin(), mapped_values.end()));
     if (DEBUG)
-        cout << "Combine " << var << ": " << to_string(values) << " (mapped "
+        cout << "Combine " << var << ": " << to_string(ordered_values) << " (mapped "
              << to_string(mapped_values) << ")" << endl;
     // Save combined fact_name.
     stringstream combined_names;
     string sep = "";
-    for (int i = 0; i < mapped_values.size(); ++i) {
-        combined_names << sep << fact_names[var][i];
+    for (auto it = mapped_values.begin(); it != mapped_values.end(); ++it) {
+        combined_names << sep << fact_names[var][*it];
         sep = " OR ";
     }
-    int projected_value = mapped_values[0];
+    int projected_value = *mapped_values.begin();
     mapped_values.erase(mapped_values.begin());
     for (auto it = mapped_values.begin(); it != mapped_values.end(); ++it)
         move_fact(var, *it, projected_value);

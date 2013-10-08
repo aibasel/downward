@@ -83,7 +83,7 @@ LandmarkGraph CegarHeuristic::get_landmark_graph() const {
     return *lm_graph_factory.compute_lm_graph();
 }
 
-void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, set<int> > *groups) const {
+void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_set<int> > *groups) const {
     assert(groups->empty());
     LandmarkNode *node = landmark_graph.get_landmark(fact);
     vector<const LandmarkNode *> open;
@@ -163,7 +163,7 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         if (options.get<bool>("relevance_analysis"))
             task.remove_irrelevant_operators();
         if (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS) {
-            unordered_map<int, set<int> > groups;
+            unordered_map<int, unordered_set<int> > groups;
             get_prev_landmarks(facts[i], &groups);
             for (auto it = groups.begin(); it != groups.end(); ++it) {
                 if (it->second.size() >= 2) {
@@ -173,6 +173,7 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         }
         tasks->push_back(task);
     }
+    cout << "Done generating tasks [t=" << g_timer << "]" << endl;
 }
 
 void CegarHeuristic::initialize() {
