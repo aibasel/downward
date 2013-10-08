@@ -44,7 +44,6 @@ bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
 void LandmarkFactoryZhuGivan::extract_landmarks(
     const proposition_layer &last_prop_layer) {
     // insert goal landmarks and mark them as goals
-    State initial_state = g_initial_state();
     for (unsigned i = 0; i < g_goal.size(); i++) {
         LandmarkNode *lmp;
         if (lm_graph->simple_landmark_exists(g_goal[i])) {
@@ -71,7 +70,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
 
                 // if landmark is not in the initial state,
                 // relaxed_task_solvable() should be false
-                assert(initial_state[it->first] == it->second ||
+                assert(g_initial_state()[it->first] == it->second ||
                        !relaxed_task_solvable(true, node));
             } else
                 node = &lm_graph->get_simple_lm_node(*it);
@@ -90,7 +89,7 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
     hash_set<int> triggered(g_operators.size() + g_axioms.size());
 
     // set initial layer
-    State initial_state = g_initial_state();
+    const State &initial_state = g_initial_state();
     current_prop_layer.resize(g_variable_domain.size());
     for (unsigned i = 0; i < g_variable_domain.size(); i++) {
         current_prop_layer[i].resize(g_variable_domain[i]);

@@ -20,7 +20,7 @@ vector<bool> &LandmarkStatusManager::get_reached_landmarks(const State &state) {
 
 void LandmarkStatusManager::set_landmarks_for_initial_state() {
     // TODO use correct state registry here.
-    State initial_state = g_initial_state();
+    const State &initial_state = g_initial_state();
     vector<bool> &reached = get_reached_landmarks(initial_state);
     reached.resize(lm_graph.number_of_landmarks());
     //cout << "NUMBER OF LANDMARKS: " << lm_graph.number_of_landmarks() << endl;
@@ -72,7 +72,7 @@ bool LandmarkStatusManager::update_reached_lms(
 
 
     if (&parent_reached == &reached) {
-        assert(state == parent_state);
+        assert(state.get_id() == parent_state.get_id());
         // This can happen, e.g., in Satellite-01.
         return false;
     }

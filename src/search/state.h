@@ -24,6 +24,9 @@ class State {
     const state_var_t *get_buffer() const {
         return vars;
     }
+
+    // No implementation to prevent default construction
+    State();
 public:
     ~State();
 
@@ -36,9 +39,6 @@ public:
     }
     void dump_pddl() const;
     void dump_fdr() const;
-    bool operator==(const State &other) const;
-    bool operator<(const State &other) const;
-    size_t hash() const;
 };
 
 #endif

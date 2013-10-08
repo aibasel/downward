@@ -11,10 +11,10 @@ using namespace std;
 using namespace __gnu_cxx;
 
 
-SearchNode::SearchNode(const StateID &state_id_,
-                       SearchNodeInfo &info_, OperatorCost cost_type_)
+SearchNode::SearchNode(StateID state_id_, SearchNodeInfo &info_,
+                       OperatorCost cost_type_)
     : state_id(state_id_), info(info_), cost_type(cost_type_) {
-    assert(state_id.value >= 0);
+    assert(state_id != StateID::no_state);
 }
 
 State SearchNode::get_state() const {
@@ -124,11 +124,11 @@ void SearchNode::mark_as_dead_end() {
 }
 
 void SearchNode::dump() const {
-    cout << state_id.value << ": ";
+    cout << state_id << ": ";
     g_state_registry->get_state(state_id).dump_fdr();
     if (info.creating_operator) {
         cout << " created by " << info.creating_operator->get_name()
-             << " from " << info.parent_state_id.value << endl;
+             << " from " << info.parent_state_id << endl;
     } else {
         cout << " no parent" << endl;
     }
@@ -138,7 +138,7 @@ SearchSpace::SearchSpace(OperatorCost cost_type_)
     : cost_type(cost_type_) {
 }
 
-SearchNode SearchSpace::get_node(const StateID &id) {
+SearchNode SearchSpace::get_node(StateID id) {
     return SearchNode(id, search_node_infos[id], cost_type);
 }
 
@@ -150,7 +150,7 @@ void SearchSpace::trace_path(const State &goal_state,
         const SearchNodeInfo &info = search_node_infos[current_state_id];
         const Operator *op = info.creating_operator;
         if (op == 0) {
-            assert(info.parent_state_id.represents_no_state());
+            assert(info.parent_state_id == StateID::no_state);
             break;
         }
         path.push_back(op);
@@ -160,14 +160,15 @@ void SearchSpace::trace_path(const State &goal_state,
 }
 
 void SearchSpace::dump() const {
-    for (size_t i = 0; i < g_state_registry->size(); ++i) {
-        StateID id(i);
+    for (PerStateInformation<SearchNodeInfo>::const_iterator it = search_node_infos.begin();
+         it != search_node_infos.end(); ++it) {
+        StateID id = *it;
         const SearchNodeInfo &node_info = search_node_infos[id];
-        cout << "#" << i << ": ";
+        cout << id << ": ";
         g_state_registry->get_state(id).dump_fdr();
-        if (node_info.creating_operator && !node_info.parent_state_id.represents_no_state()) {
+        if (node_info.creating_operator && node_info.parent_state_id != StateID::no_state) {
             cout << " created by " << node_info.creating_operator->get_name()
-                 << " from " << node_info.parent_state_id.value << endl;
+                 << " from " << node_info.parent_state_id << endl;
         } else {
             cout << "has no parent" << endl;
         }

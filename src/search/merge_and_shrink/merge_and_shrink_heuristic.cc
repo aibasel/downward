@@ -192,9 +192,8 @@ void MergeAndShrinkHeuristic::initialize() {
         }
     }
 
-    State initial_state = g_initial_state();
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
-         << endl << "initial h value: " << compute_heuristic(initial_state) << endl;
+         << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
     cout << "Estimated peak memory for abstraction: " << peak_memory << " bytes" << endl;
 }
 

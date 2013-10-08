@@ -66,7 +66,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
 }
 
 void PatternGenerationHaslum::sample_states(vector<State> &samples, double average_operator_cost) {
-    State initial_state = g_initial_state();
+    const State &initial_state = g_initial_state();
     current_heuristic->evaluate(initial_state);
     assert(!current_heuristic->is_dead_end());
 
@@ -159,11 +159,10 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     int num_iterations = 0;
     size_t max_pdb_size = 0;
     num_rejected = 0;
-    State initial_state = g_initial_state();
     while (true) {
         num_iterations += 1;
         cout << "current collection size is " << current_heuristic->get_size() << endl;
-        current_heuristic->evaluate(initial_state);
+        current_heuristic->evaluate(g_initial_state());
         cout << "current initial h value: ";
         if (current_heuristic->is_dead_end()) {
             cout << "infinite => stopping hill-climbing" << endl;
@@ -285,8 +284,7 @@ void PatternGenerationHaslum::initialize() {
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
     current_heuristic = new CanonicalPDBsHeuristic(opts);
-    State initial_state = g_initial_state();
-    current_heuristic->evaluate(initial_state);
+    current_heuristic->evaluate(g_initial_state());
     if (current_heuristic->is_dead_end())
         return;
 

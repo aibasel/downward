@@ -69,7 +69,7 @@ void EagerSearch::initialize() {
 
     assert(!heuristics.empty());
 
-    State initial_state = g_initial_state();
+    const State &initial_state = g_initial_state();
     for (size_t i = 0; i < heuristics.size(); i++)
         heuristics[i]->evaluate(initial_state);
     open_list->evaluate(0, false);
