@@ -185,6 +185,14 @@ void Task::move_fact(int var, int before, int after) {
     if (DEBUG)
         cout << "Move fact " << var << ": " << before << " -> " << after << endl;
     assert(0 <= before && before < task_index[var].size());
+    if (after == UNDEFINED) {
+        assert(initial_state[var] != before);
+        for (int i = 0; i < goal.size(); ++i) {
+            assert(goal[i].first != var || goal[i].second != before);
+        }
+        task_index[var][orig_index[var][before]] = UNDEFINED;
+        return;
+    }
     assert(0 <= after && after < task_index[var].size());
     for (int i = 0; i < operators.size(); ++i)
         operators[i].rename_fact(var, before, after);
@@ -203,11 +211,12 @@ void Task::move_fact(int var, int before, int after) {
 
 void Task::update_facts(int var, int num_values, const vector<int> &new_task_index) {
     assert(num_values >= 1);
-    assert(new_task_index.size() == task_index[var].size());
-    for (int before = 0; before < variable_domain[var]; ++before) {
+    assert(new_task_index.size() == variable_domain[var]);
+    for (int before = 0; before < new_task_index.size(); ++before) {
         int after = new_task_index[before];
         assert(before >= after);
-        if (before != after && after != UNDEFINED) {
+        assert(after != -2);
+        if (before != after) {
             move_fact(var, before, after);
         }
     }
@@ -225,11 +234,13 @@ void Task::update_facts(int var, int num_values, const vector<int> &new_task_ind
 
 void Task::remove_unreachable_facts(const FactSet &reached_facts) {
     assert(!reached_facts.empty());
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
-        vector<int> new_task_index = task_index[var];
+    for (int var = 0; var < variable_domain.size(); ++var) {
+        vector<int> new_task_index(variable_domain[var], -2);
         int num_values = 0;
-        for (int value = 0; value < g_variable_domain[var]; ++value) {
+        for (int value = 0; value < variable_domain[var]; ++value) {
             if (reached_facts.count(Fact(var, value)) == 0) {
+                if (DEBUG)
+                    cout << "Remove fact " << Fact(var, value) << endl;
                 new_task_index[value] = UNDEFINED;
             } else {
                 new_task_index[value] = num_values++;
@@ -250,14 +261,14 @@ void Task::combine_facts(int var, unordered_set<int> &values) {
         cout << "Combine " << var << ": " << " mapped "
              << to_string(ordered_values) << endl;
     int projected_value = *ordered_values.begin();
-    vector<int> new_task_index = task_index[var];
+    vector<int> new_task_index(variable_domain[var], -2);
     int num_values = 0;
     bool seen_projected_value = false;
-    for (int before = 0; before < variable_domain[var]; ++before) {
-        if (ordered_values.count(before) == 0) {
-            new_task_index[before] = num_values++;
+    for (int value = 0; value < variable_domain[var]; ++value) {
+        if (ordered_values.count(value) == 0) {
+            new_task_index[value] = num_values++;
         } else {
-            new_task_index[before] = projected_value;
+            new_task_index[value] = projected_value;
             if (!seen_projected_value) {
                 ++num_values;
                 seen_projected_value = true;
@@ -265,6 +276,7 @@ void Task::combine_facts(int var, unordered_set<int> &values) {
         }
     }
     assert(seen_projected_value);
+    assert(num_values + ordered_values.size() - 1 == variable_domain[var]);
     update_facts(var, num_values, new_task_index);
 
     // Set combined fact_name.
