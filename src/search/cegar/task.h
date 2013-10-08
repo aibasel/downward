@@ -27,8 +27,7 @@ private:
     bool is_original_task;
 
     void move_fact(int var, int before, int after);
-    void remove_fact(int var, int value);
-    void remove_facts(int var, vector<int> &values);
+    void update_facts(int var, int num_values, const std::vector<int> &new_task_index);
     void compute_possibly_before_facts(const Fact &last_fact, FactSet *reached);
     void compute_facts_and_operators();
     void remove_unreachable_facts(const FactSet &reached_facts);
