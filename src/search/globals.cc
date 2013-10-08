@@ -336,7 +336,7 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
     return bool(g_inconsistent_facts[a.first][a.second].count(b));
 }
 
-State g_initial_state() {
+const State &g_initial_state() {
     return g_state_registry->get_initial_state();
 }
 

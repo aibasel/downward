@@ -20,7 +20,7 @@ class SearchNode {
     SearchNodeInfo &info;
     OperatorCost cost_type;
 public:
-    SearchNode(const StateID &state_id_, SearchNodeInfo &info_,
+    SearchNode(StateID state_id_, SearchNodeInfo &info_,
                OperatorCost cost_type_);
 
     StateID get_state_id() const {
@@ -62,7 +62,7 @@ class SearchSpace {
     OperatorCost cost_type;
 public:
     SearchSpace(OperatorCost cost_type_);
-    SearchNode get_node(const StateID &id);
+    SearchNode get_node(StateID id);
     void trace_path(const State &goal_state,
                     std::vector<const Operator *> &path) const;
 

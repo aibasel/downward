@@ -13,7 +13,7 @@ State::State(state_var_t *buffer, StateID id_)
     : vars(buffer),
       id(id_) {
     assert(vars);
-    assert(id.value >= 0);
+    assert(id != StateID::no_state);
 }
 
 State::~State() {
@@ -33,24 +33,4 @@ void State::dump_fdr() const {
     for (size_t i = 0; i < g_variable_domain.size(); ++i)
         cout << "  #" << i << " [" << g_variable_name[i] << "] -> "
              << static_cast<int>(vars[i]) << endl;
-}
-
-bool State::operator==(const State &other) const {
-    if (vars == other.vars) {
-        // borrowed from same buffer
-        return true;
-    } else {
-        int size = g_variable_domain.size();
-        return ::equal(vars, vars + size, other.vars);
-    }
-}
-
-bool State::operator<(const State &other) const {
-    int size = g_variable_domain.size();
-    return ::lexicographical_compare(vars, vars + size,
-                                     other.vars, other.vars + size);
-}
-
-size_t State::hash() const {
-    return ::hash_number_sequence(vars, g_variable_domain.size());
 }

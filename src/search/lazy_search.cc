@@ -145,7 +145,7 @@ int LazySearch::step() {
     if (node.is_new() || reopen) {
         StateID dummy_id = current_predecessor_id;
         // HACK! HACK! we do this because SearchNode has no default/copy constructor
-        if (dummy_id.represents_no_state()) {
+        if (dummy_id == StateID::no_state) {
             dummy_id = g_initial_state().get_id();
         }
 
@@ -167,7 +167,7 @@ int LazySearch::step() {
             if (reopen) {
                 node.reopen(parent_node, current_operator);
                 search_progress.inc_reopened();
-            } else if (current_predecessor_id.represents_no_state()) {
+            } else if (current_predecessor_id == StateID::no_state) {
                 node.open_initial(h);
                 search_progress.get_initial_h_values();
             } else {

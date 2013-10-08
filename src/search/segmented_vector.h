@@ -113,7 +113,8 @@ public:
     void push_back(const Entry &entry) {
         size_t segment = get_segment(the_size);
         size_t offset = get_offset(the_size);
-        if (offset == 0 && segment == segments.size()) {
+        if (segment == segments.size()) {
+            assert(offset == 0);
             // Must add a new segment.
             add_segment();
         }
@@ -130,9 +131,9 @@ public:
     }
 
     void resize(size_t new_size, Entry entry = Entry()) {
-        // NOTE: We currently only increase/decrease the size by 1.
+        // NOTE: We currently grow/shrink one element at a time.
         //       Revision 6ee5ff7b8873 contains an implementation that can
-        //       handle other resizes more efficiently
+        //       handle other resizes more efficiently.
         while (new_size < the_size) {
             pop_back();
         }
@@ -224,7 +225,8 @@ public:
     void push_back(const Element *entry) {
         size_t segment = get_segment(the_size);
         size_t offset = get_offset(the_size);
-        if (offset == 0 && segment == segments.size()) {
+        if (segment == segments.size()) {
+            assert(offset == 0);
             // Must add a new segment.
             add_segment();
         }
@@ -245,9 +247,9 @@ public:
     }
 
     void resize(size_t new_size, const Element *entry) {
-        // NOTE: We currently only increase/decrease the size by 1.
+        // NOTE: We currently grow/shrink one element at a time.
         //       Revision 6ee5ff7b8873 contains an implementation that can
-        //       handle other resizes more efficiently
+        //       handle other resizes more efficiently.
         while (new_size < the_size) {
             pop_back();
         }
