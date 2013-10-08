@@ -344,7 +344,7 @@ void Task::dump() const {
     cout << "  Facts: " << num_facts << "/" << g_num_facts << endl;
     if (DEBUG)
         dump_facts();
-    cout << "  Operators: " << operators.size() << "/" << g_operators.size() << endl;
+    cout << "  Operators: " << operators.size() << endl;
     if (DEBUG) {
         for (int i = 0; i < operators.size(); ++i) {
             cout << "    ";
