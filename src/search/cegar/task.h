@@ -47,7 +47,7 @@ public:
     void remove_irrelevant_operators();
     void adapt_operator_costs(const vector<int> &remaining_costs);
     void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const;
-    void translate_state(State &state, bool &reachable) const;
+    bool translate_state(State &state) const;
 
     void combine_facts(int var, unordered_set<int> &values);
 

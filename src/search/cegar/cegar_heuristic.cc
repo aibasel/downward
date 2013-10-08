@@ -272,9 +272,8 @@ int CegarHeuristic::compute_heuristic(const State &state) {
         Task &task = tasks[i];
 
         // If any fact in state is not reachable in this task, h(state) = 0.
-        bool reachable = false;
         State projected_state(state);
-        task.translate_state(projected_state, reachable);
+        bool reachable = task.translate_state(projected_state);
         if (!reachable)
             continue;
 
