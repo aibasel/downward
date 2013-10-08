@@ -8,28 +8,12 @@ Prevail::Prevail(istream &in) {
     in >> var >> prev;
 }
 
-void Prevail::rename_fact(int variable, int before, int after) {
-    if (var == variable && prev == before)
-        prev = after;
-}
-
 PrePost::PrePost(istream &in) {
     int condCount;
     in >> condCount;
     for (int i = 0; i < condCount; i++)
         cond.push_back(Prevail(in));
     in >> var >> pre >> post;
-}
-
-void PrePost::rename_fact(int variable, int before, int after) {
-    // TODO: Rename conditions.
-    assert(cond.empty());
-    if (var == variable) {
-        if (pre == before)
-            pre = after;
-        if (post == before)
-            post = after;
-    }
 }
 
 Operator::Operator(istream &in, bool axiom) {
@@ -68,10 +52,26 @@ Operator::Operator(istream &in, bool axiom) {
 }
 
 void Operator::rename_fact(int variable, int before, int after) {
-    for (int i = 0; i < prevail.size(); ++i)
-        prevail[i].rename_fact(variable, before, after);
-    for (int i = 0; i < pre_post.size(); ++i)
-        pre_post[i].rename_fact(variable, before, after);
+    for (int i = 0; i < prevail.size(); ++i) {
+        Prevail &pre = prevail[i];
+        if (pre.var == variable && pre.prev == before) {
+            pre.prev = after;
+            return;
+        }
+    }
+    for (int i = 0; i < pre_post.size(); ++i) {
+        PrePost &prepost = pre_post[i];
+        assert(prepost.cond.empty());
+        if (prepost.var == variable) {
+            if (prepost.pre == before) {
+                prepost.pre = after;
+                return;
+            } else if (prepost.post == before) {
+                prepost.post = after;
+                return;
+            }
+        }
+    }
 }
 
 void Prevail::dump() const {

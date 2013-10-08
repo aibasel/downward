@@ -29,8 +29,6 @@ struct Prevail {
         return !(*this == other);
     }
 
-    void rename_fact(int variable, int before, int after);
-
     void dump() const;
 };
 
@@ -55,8 +53,6 @@ struct PrePost {
                 return false;
         return true;
     }
-
-    void rename_fact(int variable, int before, int after);
 
     void dump() const;
 };
