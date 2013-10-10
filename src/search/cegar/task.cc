@@ -130,8 +130,16 @@ void Task::remove_irrelevant_operators() {
     assert(goal.size() == 1);
     Fact &last_fact = goal[0];
     mark_relevant_operators(last_fact);
-    // TODO: Remove last elements from vector and evaluate option again.
-    remove_if(operators.begin(), operators.end(), is_marked);
+    assert(operators.size() == original_operator_numbers.size());
+    vector<int> new_original_operator_numbers;
+    for (int i = 0; i < original_operator_numbers.size(); ++i) {
+        if (operators[i].is_marked())
+            new_original_operator_numbers.push_back(original_operator_numbers[i]);
+    }
+    auto new_end = remove_if(operators.begin(), operators.end(), is_not_marked);
+    operators.erase(new_end, operators.end());
+    original_operator_numbers = new_original_operator_numbers;
+    assert(operators.size() == original_operator_numbers.size());
 }
 
 void Task::adapt_operator_costs(const vector<int> &remaining_costs) {
