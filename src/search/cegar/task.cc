@@ -130,6 +130,7 @@ void Task::remove_irrelevant_operators() {
     assert(goal.size() == 1);
     Fact &last_fact = goal[0];
     mark_relevant_operators(last_fact);
+    // TODO: Remove last elements from vector and evaluate option again.
     remove_if(operators.begin(), operators.end(), is_marked);
 }
 
@@ -169,9 +170,9 @@ bool Task::translate_state(State &state) const {
 }
 
 void Task::install() {
-    assert(g_initial_state);
     if (!is_original_task)
         assert(!additive_heuristic && "h^add can only be calculated for installed tasks");
+    assert(g_initial_state);
     *g_initial_state = initial_state;
     g_goal = goal;
     g_variable_domain = variable_domain;
