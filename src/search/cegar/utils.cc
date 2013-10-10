@@ -48,8 +48,8 @@ State *create_state(const string desc) {
     return new State(iss);
 }
 
-bool is_marked(Operator &op) {
-    return op.is_marked();
+bool is_not_marked(Operator &op) {
+    return !op.is_marked();
 }
 
 int get_pre(const Operator &op, int var) {

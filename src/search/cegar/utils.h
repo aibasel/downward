@@ -29,7 +29,7 @@ typedef std::pair<int, std::vector<int> > Split;
 typedef std::vector<Split> Splits;
 typedef std::pair<int, int> Fact;
 
-bool is_marked(Operator &op);
+bool is_not_marked(Operator &op);
 
 int get_pre(const Operator &op, int var);
 int get_eff(const Operator &op, int var);
