@@ -310,8 +310,8 @@ Task Task::get_original_task() {
 
 void Task::setup_hadd() const {
     assert(!additive_heuristic);
+    cout << "Start computing h^add values [t=" << g_timer << "] for ";
     dump_name();
-    cout << "Start computing h^add values [t=" << g_timer << "]" << endl;
     Options opts;
     opts.set<int>("cost_type", 0);
     opts.set<int>("memory_padding", 75);
@@ -350,30 +350,35 @@ void Task::dump_facts() const {
 }
 
 void Task::dump_name() const {
-    cout << "Task ";
-    for (int j = 0; j < goal.size(); ++j)
-        cout << goal[j] << ":" << fact_names[goal[j].first][goal[j].second] << " ";
+    string prefix = is_original_task ? "Original " : "";
+    cout << prefix << "Task ";
+    string sep = "";
+    for (int j = 0; j < goal.size(); ++j) {
+        cout << sep << goal[j] << ":" << fact_names[goal[j].first][goal[j].second];
+        sep = " ";
+    }
     cout << endl;
 }
 
 void Task::dump() const {
+    string prefix = is_original_task ? "Original " : "";
     dump_name();
     int num_facts = 0;
     for (int var = 0; var < variable_domain.size(); ++var)
         num_facts += variable_domain[var];
-    cout << "  Facts: " << num_facts << "/" << g_num_facts << endl;
+    cout << "  " << prefix << "Facts: " << num_facts << "/" << g_num_facts << endl;
     if (DEBUG)
         dump_facts();
-    cout << "  Operators: " << operators.size() << endl;
+    cout << "  " << prefix << "Operators: " << operators.size() << endl;
     if (DEBUG) {
         for (int i = 0; i < operators.size(); ++i) {
             cout << "    ";
             operators[i].dump();
         }
     }
-    cout << "  Variable domain sizes: " << to_string(variable_domain) << endl;
+    cout << "  " << prefix << "Variable domain sizes: " << to_string(variable_domain) << endl;
     if (DEBUG) {
-        cout << "  Fact mapping:" << endl;
+        cout << "  " << prefix << "Fact mapping:" << endl;
         for (int var = 0; var < task_index.size(); ++var)
             cout << "    " << var << ": " << to_string(task_index[var]) << endl;
     }
