@@ -353,8 +353,9 @@ void Task::dump_name() const {
     string prefix = is_original_task ? "Original " : "";
     cout << prefix << "Task ";
     string sep = "";
-    for (int j = 0; j < goal.size(); ++j) {
-        cout << sep << goal[j] << ":" << fact_names[goal[j].first][goal[j].second];
+    for (int i = 0; i < goal.size(); ++i) {
+        cout << sep << goal[i].first << "=" << orig_index[goal[i].first][goal[i].second]
+             << ":" << fact_names[goal[i].first][goal[i].second];
         sep = " ";
     }
     cout << endl;
