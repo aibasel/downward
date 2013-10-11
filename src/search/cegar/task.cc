@@ -383,7 +383,6 @@ void Task::dump() const {
         for (int var = 0; var < task_index.size(); ++var)
             cout << "    " << var << ": " << to_string(task_index[var]) << endl;
     }
-    cout << endl;
 }
 
 }
