@@ -283,37 +283,25 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
 
 void Task::combine_facts(int var, unordered_set<int> &values) {
     assert(values.size() >= 2);
-    set<int> ordered_values;
+    set<int> mapped_values;
     for (auto it = values.begin(); it != values.end(); ++it) {
-        ordered_values.insert(task_index[var][*it]);
+        mapped_values.insert(task_index[var][*it]);
     }
-    assert(is_sorted(ordered_values.begin(), ordered_values.end()));
     if (DEBUG)
-        cout << "Combine " << var << ": " << " mapped "
-             << to_string(ordered_values) << endl;
-    int projected_value = *ordered_values.begin();
-    vector<int> new_task_index(variable_domain[var], -2);
-    int num_values = 0;
-    bool seen_projected_value = false;
+        cout << "Combine " << var << ": mapped " << to_string(mapped_values) << endl;
+    int projected_value = *mapped_values.begin();
+    set<int> kept_values;
     for (int value = 0; value < variable_domain[var]; ++value) {
-        if (ordered_values.count(value) == 0) {
-            new_task_index[value] = num_values++;
-        } else {
-            new_task_index[value] = projected_value;
-            if (!seen_projected_value) {
-                ++num_values;
-                seen_projected_value = true;
-            }
-        }
+        if (mapped_values.count(value) == 0)
+            kept_values.insert(value);
     }
-    assert(seen_projected_value);
-    assert(num_values + ordered_values.size() - 1 == variable_domain[var]);
-    update_facts(var, num_values, new_task_index);
+    kept_values.insert(projected_value);
+    find_and_apply_new_fact_ordering(var, kept_values, projected_value);
 
     // Set combined fact_name.
     stringstream name;
     string sep = "";
-    for (auto it = ordered_values.begin(); it != ordered_values.end(); ++it) {
+    for (auto it = mapped_values.begin(); it != mapped_values.end(); ++it) {
         name << sep << fact_names[var][*it];
         sep = " OR ";
     }
