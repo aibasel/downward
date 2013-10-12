@@ -241,19 +241,36 @@ void Task::update_facts(int var, int num_values, const vector<int> &new_task_ind
 }
 
 void Task::remove_unreachable_facts(const FactSet &reached_facts) {
+    // Save renamings by filling the removed indices with facts from the back.
     assert(!reached_facts.empty());
     for (int var = 0; var < variable_domain.size(); ++var) {
+        assert(task_index[var].size() == variable_domain[var]);
         vector<int> new_task_index(variable_domain[var], -2);
-        int num_values = 0;
+        set<int> unordered_values;
         for (int value = 0; value < variable_domain[var]; ++value) {
-            if (reached_facts.count(Fact(var, value)) == 0) {
-                if (DEBUG)
-                    cout << "Remove fact " << Fact(var, value) << endl;
-                new_task_index[value] = UNDEFINED;
-            } else {
-                new_task_index[value] = num_values++;
+            if (reached_facts.count(Fact(var, value)) == 1) {
+                unordered_values.insert(value);
+            } else if (DEBUG) {
+                cout << "Remove fact " << Fact(var, value) << endl;
             }
         }
+        int num_values = unordered_values.size();
+        for (int value = 0; value < variable_domain[var]; ++value) {
+            if (new_task_index[value] != -2) {
+                // We already found a position for value.
+            } else if (unordered_values.count(value) == 1) {
+                new_task_index[value] = value;
+                unordered_values.erase(unordered_values.find(value));
+            } else {
+                new_task_index[value] = UNDEFINED;
+                if (!unordered_values.empty()) {
+                    int highest_value = *unordered_values.rbegin();
+                    new_task_index[highest_value] = value;
+                    unordered_values.erase(highest_value);
+                }
+            }
+        }
+        assert(unordered_values.empty());
         update_facts(var, num_values, new_task_index);
     }
 }
