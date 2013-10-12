@@ -131,6 +131,7 @@ bool is_true_in_initial_state(Fact fact) {
 }
 
 void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
+    // TODO: Generate operators when task is installed to save memory.
     cout << "Start generating tasks [t=" << g_timer << "]" << endl;
     vector<Fact> facts;
     Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
