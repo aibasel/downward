@@ -30,6 +30,7 @@ private:
     void update_facts(int var, int num_values, const std::vector<int> &new_task_index);
     void compute_possibly_before_facts(const Fact &last_fact, FactSet *reached);
     void compute_facts_and_operators();
+    void find_and_apply_new_fact_ordering(int var, std::set<int> &unordered_values, int value_for_rest);
     void remove_unreachable_facts(const FactSet &reached_facts);
     void mark_relevant_operators(const Fact &fact);
 

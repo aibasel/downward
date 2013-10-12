@@ -240,8 +240,31 @@ void Task::update_facts(int var, int num_values, const vector<int> &new_task_ind
     }
 }
 
+void Task::find_and_apply_new_fact_ordering(int var, set<int> &unordered_values, int value_for_rest) {
+    // Save renamings by filling the free indices with facts from the back.
+    assert(!unordered_values.empty());
+    int num_values = unordered_values.size();
+    vector<int> new_task_index(variable_domain[var], -2);
+    for (int value = 0; value < variable_domain[var]; ++value) {
+        if (new_task_index[value] != -2) {
+            // We already found a position for value.
+        } else if (unordered_values.count(value) == 1) {
+            new_task_index[value] = value;
+            unordered_values.erase(unordered_values.find(value));
+        } else {
+            new_task_index[value] = value_for_rest;
+            if (!unordered_values.empty()) {
+                int highest_value = *unordered_values.rbegin();
+                new_task_index[highest_value] = value;
+                unordered_values.erase(highest_value);
+            }
+        }
+    }
+    assert(unordered_values.empty());
+    update_facts(var, num_values, new_task_index);
+}
+
 void Task::remove_unreachable_facts(const FactSet &reached_facts) {
-    // Save renamings by filling the removed indices with facts from the back.
     assert(!reached_facts.empty());
     for (int var = 0; var < variable_domain.size(); ++var) {
         assert(task_index[var].size() == variable_domain[var]);
@@ -254,24 +277,7 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
                 cout << "Remove fact " << Fact(var, value) << endl;
             }
         }
-        int num_values = unordered_values.size();
-        for (int value = 0; value < variable_domain[var]; ++value) {
-            if (new_task_index[value] != -2) {
-                // We already found a position for value.
-            } else if (unordered_values.count(value) == 1) {
-                new_task_index[value] = value;
-                unordered_values.erase(unordered_values.find(value));
-            } else {
-                new_task_index[value] = UNDEFINED;
-                if (!unordered_values.empty()) {
-                    int highest_value = *unordered_values.rbegin();
-                    new_task_index[highest_value] = value;
-                    unordered_values.erase(highest_value);
-                }
-            }
-        }
-        assert(unordered_values.empty());
-        update_facts(var, num_values, new_task_index);
+        find_and_apply_new_fact_ordering(var, unordered_values, UNDEFINED);
     }
 }
 
