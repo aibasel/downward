@@ -203,10 +203,10 @@ static SearchEngine *_parse(OptionParser &parser) {
     Plugin<OpenList<OpenListEntryLazy > >::register_open_lists();
     parser.add_option<OpenList<OpenListEntryLazy> *>("open", "open list");
     parser.add_option<bool>("reopen_closed",
-                            "reopen closed nodes",  "false");
+                            "reopen closed nodes", "false");
     parser.add_list_option<Heuristic *>(
         "preferred",
-        "use preferred operators of these heuristics",  "[]");
+        "use preferred operators of these heuristics", "[]");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -237,9 +237,9 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
-        "use preferred operators of these heuristics",  "[]");
+        "use preferred operators of these heuristics", "[]");
     parser.add_option<bool>("reopen_closed",
-                            "reopen closed nodes",  "false");
+                            "reopen closed nodes", "false");
     parser.add_option<int>(
         "boost",
         "boost value for alternation queues that are restricted "
@@ -297,12 +297,12 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
-        "use preferred operators of these heuristics",  "[]");
-    parser.add_option<bool>("reopen_closed", "reopen closed nodes",  "true");
+        "use preferred operators of these heuristics", "[]");
+    parser.add_option<bool>("reopen_closed", "reopen closed nodes", "true");
     parser.add_option<int>("boost",
                            "boost value for preferred operator open lists",
                            OptionParser::to_str(DEFAULT_LAZY_BOOST));
-    parser.add_option<int>("w", "heuristic weight",  "1");
+    parser.add_option<int>("w", "heuristic weight", "1");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 

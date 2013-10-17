@@ -60,6 +60,7 @@ struct Signature {
             return succ_signature < other.succ_signature;
         return state < other.state;
     }
+
     void dump() const {
         cout << "Signature(h_and_goal = " << h_and_goal
              << ", group = " << group
@@ -203,8 +204,8 @@ int ShrinkBisimulation::initialize_groups(const Abstraction &abs,
             if (result.second) {
                 // We inserted a new element => a new group was started.
                 ++num_groups;
+            }
         }
-    }
     }
     return num_groups;
 }
@@ -218,38 +219,38 @@ void ShrinkBisimulation::compute_signatures(
     // Step 1: Compute bare state signatures (without transition information).
     signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
     for (int state = 0; state < abs.size(); ++state) {
-            int h = abs.get_goal_distance(state);
+        int h = abs.get_goal_distance(state);
         assert(h >= 0 && h <= abs.get_max_h());
         Signature signature(h, abs.is_goal_state(state),
                             state_to_group[state], SuccessorSignature(),
-                                state);
-            signatures.push_back(signature);
-        }
+                            state);
+        signatures.push_back(signature);
+    }
     signatures.push_back(Signature(infinity, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-        int num_ops = abs.get_num_ops();
+    int num_ops = abs.get_num_ops();
     for (int op_no = 0; op_no < num_ops; ++op_no) {
-            const vector<AbstractTransition> &transitions =
-                abs.get_transitions_for_op(op_no);
+        const vector<AbstractTransition> &transitions =
+            abs.get_transitions_for_op(op_no);
         int op_cost = abs.get_cost_for_op(op_no);
         for (size_t i = 0; i < transitions.size(); ++i) {
-                const AbstractTransition &trans = transitions[i];
-                    assert(signatures[trans.src + 1].state == trans.src);
-                    bool skip_transition = false;
-                    if (greedy) {
-                        int src_h = abs.get_goal_distance(trans.src);
-                        int target_h = abs.get_goal_distance(trans.target);
+            const AbstractTransition &trans = transitions[i];
+            assert(signatures[trans.src + 1].state == trans.src);
+            bool skip_transition = false;
+            if (greedy) {
+                int src_h = abs.get_goal_distance(trans.src);
+                int target_h = abs.get_goal_distance(trans.target);
                 assert(target_h + op_cost >= src_h);
                 skip_transition = (target_h + op_cost != src_h);
-                    }
+            }
             if (!skip_transition) {
                 int target_group = state_to_group[trans.target];
-                        signatures[trans.src + 1].succ_signature.push_back(
-                            make_pair(op_no, target_group));
-                }
+                signatures[trans.src + 1].succ_signature.push_back(
+                    make_pair(op_no, target_group));
             }
         }
+    }
 
     /* Step 3: Canonicalize the representation. The resulting
        signatures must satisfy the following properties:
@@ -267,13 +268,13 @@ void ShrinkBisimulation::compute_signatures(
      */
 
     for (size_t i = 0; i < signatures.size(); ++i) {
-            SuccessorSignature &succ_sig = signatures[i].succ_signature;
-            ::sort(succ_sig.begin(), succ_sig.end());
-            succ_sig.erase(::unique(succ_sig.begin(), succ_sig.end()),
-                           succ_sig.end());
-        }
+        SuccessorSignature &succ_sig = signatures[i].succ_signature;
+        ::sort(succ_sig.begin(), succ_sig.end());
+        succ_sig.erase(::unique(succ_sig.begin(), succ_sig.end()),
+                       succ_sig.end());
+    }
 
-        ::sort(signatures.begin(), signatures.end());
+    ::sort(signatures.begin(), signatures.end());
     /* TODO: Should we sort an index set rather than shuffle the whole
        signatures around? But since swapping vectors is fast, we
        probably don't have to worry about that. */
@@ -356,33 +357,33 @@ void ShrinkBisimulation::compute_abstraction(
                    state number.
                 */
                 stop_requested = true;
-                    break;
+                break;
             } else if (num_new_groups != num_old_groups) {
                 // Split into new groups.
                 stable = false;
 
-                    int new_group_no = -1;
+                int new_group_no = -1;
                 for (size_t i = sig_start; i < sig_end; ++i) {
-                        const Signature &prev_sig = signatures[i - 1];
-                        const Signature &curr_sig = signatures[i];
+                    const Signature &prev_sig = signatures[i - 1];
+                    const Signature &curr_sig = signatures[i];
 
-                        if (prev_sig.group != curr_sig.group) {
-                            // Start first group of a block; keep old group no.
-                            new_group_no = curr_sig.group;
-                        } else if (prev_sig.succ_signature
-                                   != curr_sig.succ_signature) {
-                                new_group_no = num_groups++;
-                                assert(num_groups <= target_size);
-                            }
+                    if (prev_sig.group != curr_sig.group) {
+                        // Start first group of a block; keep old group no.
+                        new_group_no = curr_sig.group;
+                    } else if (prev_sig.succ_signature
+                               != curr_sig.succ_signature) {
+                        new_group_no = num_groups++;
+                        assert(num_groups <= target_size);
+                    }
 
-                        assert(new_group_no != -1);
-                        state_to_group[curr_sig.state] = new_group_no;
+                    assert(new_group_no != -1);
+                    state_to_group[curr_sig.state] = new_group_no;
                     if (num_groups == target_size)
                         break;
-                    }
+                }
                 if (num_groups == target_size)
                     break;
-                }
+            }
             sig_start = sig_end;
         }
     }
@@ -402,7 +403,6 @@ void ShrinkBisimulation::compute_abstraction(
             equivalence_relation[group].push_front(state);
         }
     }
-
 }
 
 ShrinkStrategy *ShrinkBisimulation::create_default() {
@@ -420,15 +420,15 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
-    parser.add_option<int>("threshold", "TODO: document",  "-1"); // default: same as max_states
-    parser.add_option<bool>("group_by_h", "TODO: document",  "false");
+    parser.add_option<int>("threshold", "TODO: document", "-1");  // default: same as max_states
+    parser.add_option<bool>("group_by_h", "TODO: document", "false");
 
     vector<string> at_limit;
     at_limit.push_back("RETURN");
     at_limit.push_back("USE_UP");
     parser.add_enum_option(
         "at_limit", at_limit,
-        "what to do when the size limit is hit",  "RETURN");
+        "what to do when the size limit is hit", "RETURN");
 
     Options opts = parser.parse();
 

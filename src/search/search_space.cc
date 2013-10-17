@@ -167,7 +167,7 @@ void SearchSpace::dump() const {
         cout << "#" << state_handle.get_id() << ": ";
         State(state_handle).dump_fdr();
         if (node_info.creating_operator &&
-                node_info.parent_state_handle.is_valid()) {
+            node_info.parent_state_handle.is_valid()) {
             cout << " created by " << node_info.creating_operator->get_name()
                  << " from " << node_info.parent_state_handle.get_id() << endl;
         } else {

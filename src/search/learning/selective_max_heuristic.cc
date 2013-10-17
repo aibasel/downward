@@ -165,7 +165,7 @@ void SelectiveMaxHeuristic::train() {
 
     // initialize all heuristics
     int goal_depth_estimate = 0;
-    // TODO for now we use the global state registry for all states (even temporary states like this)
+    // TODO for now we use the global state registry for all states (even temporary states like this): see issue386.
     StateHandle initial_state_handle = g_state_registry.get_handle(*g_initial_state);
     max.evaluate(State(initial_state_handle));
     int h0 = max.get_heuristic();
@@ -561,7 +561,7 @@ void SelectiveMaxHeuristic::print_statistics() const {
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Selective-max heuristic", "");
     parser.document_language_support(
-        "action costs", 
+        "action costs",
         "if supported by all component heuristics");
     parser.document_language_support(
         "conditional_effects",
@@ -570,28 +570,28 @@ static Heuristic *_parse(OptionParser &parser) {
         "axioms",
         "if supported by all component heuristics");
     parser.document_property(
-        "admissible", 
+        "admissible",
         "if all component heuristics are admissible");
     parser.document_property("consistent", "no");
     parser.document_property(
-        "safe", 
+        "safe",
         "if all component heuristics are safe");
     parser.document_property("preferred operators", "no (not yet)");
 
     parser.add_list_option<Heuristic *>("heuristics", "heuristics");
-    parser.add_option<double>("alpha", "alpha",  "1.0");
+    parser.add_option<double>("alpha", "alpha", "1.0");
     vector<string> classifier_types;
     classifier_types.push_back("NB");
     classifier_types.push_back("AODE");
     parser.add_enum_option(
-        "classifier", classifier_types, "classifier type",  "NB");
-    parser.add_option<double>("conf_threshold", "confidence threshold",  "0.6");
-    parser.add_option<int>("training_set", "minimum size of training set",  "100");
+        "classifier", classifier_types, "classifier type", "NB");
+    parser.add_option<double>("conf_threshold", "confidence threshold", "0.6");
+    parser.add_option<int>("training_set", "minimum size of training set", "100");
     parser.add_option<int>(
         "eval_always",
-        "number of heuristics that should always be evaluated",  "0");
-    parser.add_option<bool>("random_sel", "random selection",  "false");
-    parser.add_option<bool>("retime", "retime heuristics",  "false");
+        "number of heuristics that should always be evaluated", "0");
+    parser.add_option<bool>("random_sel", "random selection", "false");
+    parser.add_option<bool>("retime", "retime heuristics", "false");
     vector<string> sample_types;
     vector<string> sample_types_doc;
     sample_types.push_back("Probe");
@@ -602,9 +602,9 @@ static Heuristic *_parse(OptionParser &parser) {
     sample_types_doc.push_back("sampling method of Haslum et al., AAAI 2007");
     parser.add_enum_option(
         "sample", sample_types, "state space sample type", "Probe", sample_types_doc);
-    parser.add_option<bool>("uniform", "uniform sampling",  "false");
+    parser.add_option<bool>("uniform", "uniform sampling", "false");
     parser.add_option<bool>("zero_threshold",
-                            "set threshold constant 0",  "false");
+                            "set threshold constant 0", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 

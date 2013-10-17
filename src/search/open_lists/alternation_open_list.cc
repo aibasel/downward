@@ -11,7 +11,7 @@ using namespace std;
 template<class Entry>
 OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
     parser.document_synopsis("Alternation open list",
-                        "alternates between several open lists.");
+                             "alternates between several open lists.");
     parser.document_note(
         "Preferred operators",
         "Preferred operators are only taken from sub-open-lists "

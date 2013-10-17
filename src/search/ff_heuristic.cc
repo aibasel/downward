@@ -84,9 +84,9 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional_effects", "supported");
     parser.document_language_support(
-        "axioms", 
+        "axioms",
         "supported (in the sense that the planner won't complain -- "
-        "handling of axioms might be very stupid " 
+        "handling of axioms might be very stupid "
         "and even render the heuristic unsafe)");
     parser.document_property("admissible", "no");
     parser.document_property("consistent", "no");

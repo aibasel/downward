@@ -10,6 +10,8 @@ class State;
 
 // PIMPL pattern (http://en.wikipedia.org/wiki/Opaque_pointer#C.2B.2B)
 // StateRepresentation should not be used outside of this class and the StateRegistry.
+// For documentation on classes relevant to storing and working with registered
+// states see the file state_registry.h.
 class StateHandle {
     friend class StateRegistry;
 
@@ -18,7 +20,7 @@ class StateHandle {
     friend class State;
 private:
     struct StateRepresentation {
-        enum { INVALID_ID = -1 };
+        enum {INVALID_ID = -1};
         explicit StateRepresentation(const state_var_t *_data)
             : id(INVALID_ID) {
             data = const_cast<state_var_t *>(_data);
@@ -33,7 +35,7 @@ private:
         mutable state_var_t *data;
     };
 
-    const StateRepresentation* representation;
+    const StateRepresentation *representation;
     // Private low level ctor and make_permanent only for use of state registry.
     explicit StateHandle(const StateRepresentation *representation_)
         : representation(representation_) {
@@ -62,6 +64,7 @@ public:
     // TODO get rid of this if/when we split the State class into RegisteredState
     // and UnregisteredState. In this case UnregisteredState would not have a
     // handle and RegisteredState would always have a valid handle.
+    // See issue386.
     bool is_valid() const {
         return representation != 0;
     }
@@ -69,7 +72,6 @@ public:
     bool operator==(const StateHandle &other) const {
         return representation == other.representation;
     }
-
 };
 
 namespace __gnu_cxx {
