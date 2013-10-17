@@ -130,6 +130,15 @@ bool is_true_in_initial_state(Fact fact) {
     return (*g_initial_state)[fact.first] == fact.second;
 }
 
+struct is_not_leaf_landmark {
+    const LandmarkGraph graph;
+    explicit is_not_leaf_landmark(const LandmarkGraph &g) : graph(g) {}
+    bool operator() (Fact fact) {
+        LandmarkNode *node = graph.get_landmark(fact);
+        return !node->children.empty();
+    }
+};
+
 void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
     // TODO: Generate operators when task is installed to save memory.
     cout << "Start generating tasks [t=" << g_timer << "]" << endl;
@@ -147,6 +156,10 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         get_fact_landmarks(&facts);
     } else if (decomposition == GOAL_FACTS) {
         facts = g_goal;
+    } else if (decomposition == GOAL_LEAVES) {
+        facts = g_goal;
+        auto new_end = remove_if(facts.begin(), facts.end(), is_not_leaf_landmark(landmark_graph));
+        facts.erase(new_end, facts.end());
     } else {
         cerr << "Invalid decomposition: " << decomposition << endl;
         exit_with(EXIT_INPUT_ERROR);
@@ -329,6 +342,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     decompositions.push_back("ALL_LANDMARKS");
     decompositions.push_back("RANDOM_LANDMARKS");
     decompositions.push_back("GOAL_FACTS");
+    decompositions.push_back("GOAL_LEAVES");
     parser.add_enum_option("decomposition", decompositions, "GOAL_FACTS",
                            "build abstractions for each of these facts");
     parser.add_option<bool>("adapt_task", true, "remove redundant operators and facts");
