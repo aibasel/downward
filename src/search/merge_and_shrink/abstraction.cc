@@ -21,6 +21,7 @@
 #include <string>
 #include <sstream>
 using namespace std;
+using namespace __gnu_cxx;
 
 /* Implementation note: Transitions are grouped by their operators,
  not by source state or any such thing. Such a grouping is beneficial

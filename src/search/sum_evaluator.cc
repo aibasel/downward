@@ -32,7 +32,7 @@ int SumEvaluator::combine_values(const vector<int> &values) {
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.document_synopsis("Sum evaluator",
                              "Calculates the sum of the sub-evaluators.");
-    
+
     parser.add_list_option<ScalarEvaluator *>("evals",
                                               "at least one scalar evaluator");
     Options opts = parser.parse();

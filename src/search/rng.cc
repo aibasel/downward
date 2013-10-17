@@ -32,7 +32,7 @@ RandomNumberGenerator::RandomNumberGenerator(
     *this = copy;
 }
 
-RandomNumberGenerator & RandomNumberGenerator::operator=(
+RandomNumberGenerator &RandomNumberGenerator::operator=(
     const RandomNumberGenerator &copy) {
     for (int i = 0; i < N; ++i)
         mt[i] = copy.mt[i];

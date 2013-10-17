@@ -112,7 +112,7 @@ void parse_pattern(OptionParser &parser, Options &opts) {
     parser.add_list_option<int>("pattern", "the pattern", "", OptionFlags(false));
 
     opts = parser.parse();
-    if(parser.help_mode())
+    if (parser.help_mode())
         return;
 
     vector<int> pattern;

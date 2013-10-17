@@ -39,7 +39,7 @@ struct ParseNode {
     std::string value;
     std::string key;
 
-    friend std::ostream & operator<<(std::ostream &out, const ParseNode &pn) {
+    friend std::ostream &operator<<(std::ostream &out, const ParseNode &pn) {
         if (pn.key.compare("") != 0)
             out << pn.key << " = ";
         out << pn.value;
@@ -61,7 +61,7 @@ struct ParseError {
         out << "Parse Error: " << std::endl
         << pe.msg << " at: " << std::endl;
         kptree::print_tree_bracketed<ParseNode>(pe.parse_tree, out);
-        if(pe.substr.size() > 0) {
+        if (pe.substr.size() > 0) {
             out << " (cannot continue parsing after \"" << pe.substr << "\")" << std::endl;
         }
         return out;
@@ -378,12 +378,12 @@ struct ArgumentInfo {
     ArgumentInfo(
         std::string k, std::string h, std::string t_n, std::string def_val,
         bool mand, ValueExplanations val_expl)
-       : kwd(k),
-         help(h),
-         type_name(t_n),
-         default_value(def_val),
-         mandatory(mand),
-         value_explanations(val_expl) {
+        : kwd(k),
+          help(h),
+          type_name(t_n),
+          default_value(def_val),
+          mandatory(mand),
+          value_explanations(val_expl) {
     }
     std::string kwd;
     std::string help;
@@ -412,7 +412,7 @@ struct NoteInfo {
 };
 
 
-struct LanguageSupportInfo{
+struct LanguageSupportInfo {
     LanguageSupportInfo(std::string feat, std::string descr)
         : feature(feat),
           description(descr) {
@@ -455,7 +455,7 @@ public:
     void add_value_explanations(std::string k,
                                 std::string arg_name,
                                 ValueExplanations value_explanations);
-    void set_synopsis(std::string k, 
+    void set_synopsis(std::string k,
                       std::string name, std::string description);
     void add_property(std::string k,
                       std::string name, std::string description);
