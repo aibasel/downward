@@ -32,7 +32,8 @@ enum Decomposition {
     NONE,
     ALL_LANDMARKS,
     RANDOM_LANDMARKS,
-    GOAL_FACTS
+    GOAL_FACTS,
+    GOAL_LEAVES
 };
 
 class CegarHeuristic : public Heuristic {
