@@ -40,8 +40,6 @@ enum PickStrategy {
     // Number of predecessors in ordering of causal graph.
     MIN_PREDECESSORS,
     MAX_PREDECESSORS,
-    // Only for cegar_sum.
-    BEST2,
     // Choose the variable whose split yields the min/max number of new operators.
     MIN_OPS,
     MAX_OPS,

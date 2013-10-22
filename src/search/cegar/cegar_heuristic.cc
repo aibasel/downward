@@ -205,11 +205,6 @@ void CegarHeuristic::initialize() {
     if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INF)
         max_states_offline = INF;
 
-    vector<PickStrategy> best_pick_strategies;
-    best_pick_strategies.push_back(MAX_REFINED);
-    best_pick_strategies.push_back(MAX_PREDECESSORS);
-    best_pick_strategies.push_back(GOAL);
-
     generate_tasks(&tasks);
 
     for (int i = 0; i < tasks.size(); ++i) {
@@ -233,11 +228,7 @@ void CegarHeuristic::initialize() {
             abstraction->set_max_init_h_factor(factor);
         }
 
-        PickStrategy pick_strategy = PickStrategy(options.get_enum("pick"));
-        if (pick_strategy == BEST2) {
-            pick_strategy = best_pick_strategies[i % 2];
-        }
-        abstraction->set_pick_strategy(pick_strategy);
+        abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
         abstraction->build();
         avg_h_values.push_back(abstraction->get_avg_h());
@@ -317,7 +308,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_REFINED");
     pick_strategies.push_back("MIN_PREDECESSORS");
     pick_strategies.push_back("MAX_PREDECESSORS");
-    pick_strategies.push_back("BEST2");
     pick_strategies.push_back("MIN_OPS");
     pick_strategies.push_back("MAX_OPS");
     pick_strategies.push_back("MIN_HADD");
