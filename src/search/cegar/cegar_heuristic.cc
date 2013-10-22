@@ -144,13 +144,19 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
     cout << "Start generating tasks [t=" << g_timer << "]" << endl;
     vector<Fact> facts;
     Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
+    int max_abstractions = options.get<int>("max_abstractions");
     if (options.get<bool>("combine_facts") && decomposition != ALL_LANDMARKS) {
         cerr << "Combining facts only makes sense when refining for all landmarks" << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
     if (decomposition == NONE) {
-        Task task(g_goal, false);
-        tasks->push_back(task);
+        int num_abstractions = 1;
+        if (max_abstractions != INF)
+            num_abstractions = max_abstractions;
+        for (int i = 0; i < num_abstractions; ++i) {
+            Task task(g_goal, false);
+            tasks->push_back(task);
+        }
         return;
     } else if (decomposition == ALL_LANDMARKS) {
         get_fact_landmarks(&facts);
@@ -164,11 +170,16 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         cerr << "Invalid decomposition: " << decomposition << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
+    // Filter facts that are true in initial state.
+    if (!options.get<bool>("trivial_facts")) {
+        auto new_end = remove_if(facts.begin(), facts.end(), is_true_in_initial_state);
+        facts.erase(new_end, facts.end());
+    }
     order_facts(facts);
-    for (int i = 0; i < facts.size(); i++) {
-        // Filter facts that are true in initial state.
-        if (!options.get<bool>("trivial_facts") && is_true_in_initial_state(facts[i]))
-            continue;
+    int num_abstractions = facts.size();
+    if (num_abstractions > max_abstractions)
+        num_abstractions = max_abstractions;
+    for (int i = 0; i < num_abstractions; i++) {
         vector<Fact> goal;
         goal.push_back(facts[i]);
         if (DEBUG)
@@ -335,6 +346,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     decompositions.push_back("GOAL_LEAVES");
     parser.add_enum_option("decomposition", decompositions, "GOAL_FACTS",
                            "build abstractions for each of these facts");
+    parser.add_option<int>("max_abstractions", INF, "max number of abstractions to build");
     parser.add_option<bool>("adapt_task", true, "remove redundant operators and facts");
     parser.add_option<bool>("combine_facts", true, "combine landmark facts");
     parser.add_option<bool>("relevance_analysis", false, "remove irrelevant operators");
