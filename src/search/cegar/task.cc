@@ -152,6 +152,7 @@ void Task::set_goal(const Fact &fact) {
     goal.push_back(fact);
     compute_facts_and_operators();
     is_original_task = false;
+    remove_hadd();
 }
 
 void Task::adapt_operator_costs(const vector<int> &remaining_costs) {

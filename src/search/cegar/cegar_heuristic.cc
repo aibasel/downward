@@ -210,6 +210,7 @@ void CegarHeuristic::initialize() {
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
         Task task = original_task;
+        task.remove_hadd();
         if (decomposition != NONE) {
             task.set_goal(facts[i]);
         }
