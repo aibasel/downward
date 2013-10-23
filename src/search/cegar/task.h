@@ -43,7 +43,7 @@ public:
     explicit Task(std::vector<Fact> goal_facts, bool adapt);
 
     const std::vector<Fact> &get_goal() const {return goal; }
-    std::vector<Operator> &get_operators() {return operators; }
+    const std::vector<Operator> &get_operators() const {return operators; }
 
     void remove_irrelevant_operators();
     void adapt_operator_costs(const vector<int> &remaining_costs);

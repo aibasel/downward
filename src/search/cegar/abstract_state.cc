@@ -99,7 +99,7 @@ int AbstractState::count(int var) const {
 
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
     for (auto it = arcs_in.begin(); it != arcs_in.end(); ++it) {
-        Operator *op = it->first;
+        const Operator *op = it->first;
         AbstractState *u = it->second;
         assert(u != this);
         int post = get_post(*op, var);
@@ -123,7 +123,7 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
 
 void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
     for (auto it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-        Operator *op = it->first;
+        const Operator *op = it->first;
         AbstractState *w = it->second;
         assert(w != this);
         int pre = get_pre(*op, var);
@@ -151,7 +151,7 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
 
 void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) {
     for (int i = 0; i < loops.size(); ++i) {
-        Operator *op = loops[i];
+        const Operator *op = loops[i];
         int pre = get_pre(*op, var);
         int post = get_post(*op, var);
         if (pre == UNDEFINED) {
@@ -223,7 +223,7 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
     v2->set_h(h);
 }
 
-void AbstractState::add_arc(Operator *op, AbstractState *other) {
+void AbstractState::add_arc(const Operator *op, AbstractState *other) {
     // Experiments showed that keeping the arcs sorted for faster removal
     // increases the overall processing time. Out of 30 domains it made no
     // difference for 10 domains, 17 domains preferred unsorted arcs and in
@@ -234,11 +234,11 @@ void AbstractState::add_arc(Operator *op, AbstractState *other) {
     other->arcs_in.push_back(Arc(op, this));
 }
 
-void AbstractState::add_loop(Operator *op) {
+void AbstractState::add_loop(const Operator *op) {
     loops.push_back(op);
 }
 
-void AbstractState::remove_arc(Arcs &arcs, Operator *op, AbstractState *other) {
+void AbstractState::remove_arc(Arcs &arcs, const Operator *op, AbstractState *other) {
     auto pos = find(arcs.begin(), arcs.end(), Arc(op, other));
     assert(pos != arcs.end());
     // For PODs assignment is faster than swapping.
@@ -246,11 +246,11 @@ void AbstractState::remove_arc(Arcs &arcs, Operator *op, AbstractState *other) {
     arcs.pop_back();
 }
 
-void AbstractState::remove_next_arc(Operator *op, AbstractState *other) {
+void AbstractState::remove_next_arc(const Operator *op, AbstractState *other) {
     remove_arc(arcs_out, op, other);
 }
 
-void AbstractState::remove_prev_arc(Operator *op, AbstractState *other) {
+void AbstractState::remove_prev_arc(const Operator *op, AbstractState *other) {
     remove_arc(arcs_in, op, other);
 }
 

@@ -42,8 +42,9 @@ void no_memory_continue () {
     set_new_handler(no_memory);
 }
 
-Abstraction::Abstraction(Task *task)
-    : single(new AbstractState()),
+Abstraction::Abstraction(const Task *t)
+    : task(t),
+      single(new AbstractState()),
       init(single),
       goal(single),
       open(new AdaptiveQueue<AbstractState *>()),
@@ -64,7 +65,6 @@ Abstraction::Abstraction(Task *task)
       log_h(false),
       write_dot_files(false),
       memory_released(false) {
-    this->task = task;
     assert(!task->get_goal().empty());
 
     assert(!cegar_memory_padding);

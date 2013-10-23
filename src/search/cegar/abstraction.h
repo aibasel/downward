@@ -57,7 +57,7 @@ private:
     Abstraction(const Abstraction &);
     Abstraction &operator=(const Abstraction &);
 
-    Task *task;
+    const Task *task;
 
     // Set of all valid states, i.e. states that have not been split.
     AbstractStates states;
@@ -134,7 +134,7 @@ private:
     void log_h_values() const;
 
 public:
-    explicit Abstraction(Task *task);
+    explicit Abstraction(const Task *t);
     ~Abstraction();
 
     // Build abstraction offline.
