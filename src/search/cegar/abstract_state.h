@@ -13,9 +13,9 @@
 namespace cegar_heuristic {
 class AbstractState;
 class Values;
-typedef pair<Operator *, AbstractState *> Arc;
+typedef pair<const Operator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
-typedef std::vector<Operator *> Loops;
+typedef std::vector<const Operator *> Loops;
 
 class AbstractState {
 private:
@@ -44,7 +44,7 @@ private:
     // This state's node in the refinement hierarchy.
     Node *node;
 
-    void remove_arc(Arcs &arcs, Operator *op, AbstractState *other);
+    void remove_arc(Arcs &arcs, const Operator *op, AbstractState *other);
     void update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_loops(int var, AbstractState *v1, AbstractState *v2);
@@ -63,10 +63,10 @@ public:
     // Separate the values in "wanted" from the other values in the abstract domain.
     void split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2);
 
-    void add_arc(Operator *op, AbstractState *other);
-    void remove_next_arc(Operator *op, AbstractState *other);
-    void remove_prev_arc(Operator *op, AbstractState *other);
-    void add_loop(Operator *op);
+    void add_arc(const Operator *op, AbstractState *other);
+    void remove_next_arc(const Operator *op, AbstractState *other);
+    void remove_prev_arc(const Operator *op, AbstractState *other);
+    void add_loop(const Operator *op);
 
     void get_possible_splits(const AbstractState &desired, const State &prev_conc_state,
                              Splits *conditions) const;
