@@ -60,6 +60,7 @@ public:
 
     static Task get_original_task();
 
+    void remove_hadd() const {additive_heuristic = 0; }
     int get_hadd_estimate_for_initial_state() const;
     int get_hadd_value(int var, int value) const;
 
