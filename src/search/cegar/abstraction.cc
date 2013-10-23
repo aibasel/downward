@@ -410,6 +410,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             break;
         AbstractState *state = it->first;
         Splits &splits = it->second;
+        random_shuffle(splits.begin(), splits.end());
         if (!splits.empty()) {
             break_solution(state, splits);
             ++broken_solutions;
