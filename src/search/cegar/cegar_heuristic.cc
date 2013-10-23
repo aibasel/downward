@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -86,6 +87,7 @@ LandmarkGraph CegarHeuristic::get_landmark_graph() const {
 void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_set<int> > *groups) const {
     assert(groups->empty());
     LandmarkNode *node = landmark_graph.get_landmark(fact);
+    assert(node);
     vector<const LandmarkNode *> open;
     for (auto it = node->parents.begin(); it != node->parents.end(); ++it) {
         const LandmarkNode *parent = it->first;
@@ -165,17 +167,6 @@ void CegarHeuristic::get_facts(vector<Fact> &facts) const {
 void CegarHeuristic::install_task(Task &task) const {
     if (options.get<bool>("relevance_analysis"))
         task.remove_irrelevant_operators();
-    if (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS) {
-        unordered_map<int, unordered_set<int> > groups;
-        assert(task.get_goal().size() == 1);
-        const Fact &fact = task.get_goal()[0];
-        get_prev_landmarks(fact, &groups);
-        for (auto it = groups.begin(); it != groups.end(); ++it) {
-            if (it->second.size() >= 2) {
-                task.combine_facts(it->first, it->second);
-            }
-        }
-    }
     task.adapt_operator_costs(remaining_costs);
     task.dump();
     task.install();
@@ -213,6 +204,14 @@ void CegarHeuristic::initialize() {
         task.remove_hadd();
         if (decomposition != NONE) {
             task.set_goal(facts[i]);
+            if (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS) {
+                unordered_map<int, unordered_set<int> > groups;
+                get_prev_landmarks(facts[i], &groups);
+                for (auto it = groups.begin(); it != groups.end(); ++it) {
+                    if (it->second.size() >= 2)
+                        task.combine_facts(it->first, it->second);
+                }
+            }
         }
         tasks.push_back(task);
         install_task(task);
@@ -221,7 +220,7 @@ void CegarHeuristic::initialize() {
 
         int rem_tasks = num_abstractions - i;
         abstraction->set_max_states_offline((max_states_offline - num_states_offline) / rem_tasks);
-        abstraction->set_max_time((max_time - g_timer()) / rem_tasks);
+        abstraction->set_max_time(ceil((max_time - g_timer()) / rem_tasks));
         abstraction->set_log_h(options.get<bool>("log_h"));
         abstraction->set_write_dot_files(options.get<bool>("write_dot_files"));
         abstraction->set_use_astar(options.get<bool>("use_astar"));
