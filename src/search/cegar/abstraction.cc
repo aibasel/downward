@@ -263,7 +263,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
         }
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (auto it = successors.begin(); it != successors.end(); ++it) {
-            Operator *op = it->first;
+            const Operator *op = it->first;
             AbstractState *successor = it->second;
 
             // Special code for additive abstractions.
@@ -363,7 +363,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         }
         Arcs &arcs_out = abs_state->get_arcs_out();
         for (auto it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-            Operator *op = it->first;
+            const Operator *op = it->first;
             AbstractState *next_abs = it->second;
             assert(!use_astar || (abs_state->get_next_solution_op() &&
                                   abs_state->get_next_solution_state()));
@@ -567,7 +567,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         // variable the number of resulting operators. For each operator we get
         // one new operator if eff(o_in) is defined and two otherwise.
         for (int i = 0; i < state.get_arcs_in().size(); ++i) {
-            Operator *op = state.get_arcs_in()[i].first;
+            const Operator *op = state.get_arcs_in()[i].first;
             for (int j = 0; j < vars.size(); ++j) {
                 int eff = get_post(*op, vars[j]);
                 new_ops[j] += (eff == UNDEFINED) ? 2 : 1;
@@ -577,7 +577,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         // variable the number of resulting operators. If eff(o_in) is defined
         // we get one new operator, else two.
         for (int i = 0; i < state.get_arcs_out().size(); ++i) {
-            Operator *op = state.get_arcs_out()[i].first;
+            const Operator *op = state.get_arcs_out()[i].first;
             for (int j = 0; j < vars.size(); ++j) {
                 int pre = get_pre(*op, vars[j]);
                 new_ops[j] += (pre == UNDEFINED) ? 2 : 1;
@@ -587,7 +587,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         // variable the number of resulting operators. If pre(o) is defined we
         // get one new operator, else two.
         for (int i = 0; i < state.get_loops().size(); ++i) {
-            Operator *op = state.get_loops()[i];
+            const Operator *op = state.get_loops()[i];
             for (int j = 0; j < vars.size(); ++j) {
                 int pre = get_pre(*op, vars[j]);
                 new_ops[j] += (pre == UNDEFINED) ? 2 : 1;
@@ -640,7 +640,7 @@ void Abstraction::extract_solution() const {
         if (DEBUG)
             cout << endl << "Current: " << current->str() << " g:" << current->get_distance()
                  << " h:" << current->get_h() << endl;
-        Operator *prev_op = current->get_prev_solution_op();
+        const Operator *prev_op = current->get_prev_solution_op();
         AbstractState *prev_state = current->get_prev_solution_state();
         prev_state->set_next_solution_op(prev_op);
         prev_state->set_next_solution_state(current);
@@ -721,7 +721,7 @@ void Abstraction::write_dot_file(int num) {
         AbstractState *current_state = *it;
         Arcs &next = current_state->get_arcs_out();
         for (auto it = next.begin(); it != next.end(); ++it) {
-            Operator *op = it->first;
+            const Operator *op = it->first;
             AbstractState *next_state = it->second;
             dotfile << current_state->str() << " -> " << next_state->str()
                     << " [label=\"" << op->get_name() << "\"];" << endl;
@@ -729,7 +729,7 @@ void Abstraction::write_dot_file(int num) {
         if (draw_loops) {
             Loops &loops = current_state->get_loops();
             for (Loops::iterator it = loops.begin(); it != loops.end(); ++it) {
-                Operator *op = *it;
+                const Operator *op = *it;
                 dotfile << current_state->str() << " -> " << current_state->str()
                         << " [label=\"" << op->get_name() << "\"];" << endl;
             }
