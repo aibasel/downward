@@ -23,7 +23,6 @@ private:
     std::vector<std::vector<int> > orig_index;
     std::vector<std::vector<int> > task_index;
     mutable AdditiveHeuristic *additive_heuristic;
-    bool adapt_task;
     bool is_original_task;
 
     void move_fact(int var, int before, int after);
@@ -32,6 +31,8 @@ private:
     void compute_facts_and_operators();
     void find_and_apply_new_fact_ordering(int var, std::set<int> &unordered_values, int value_for_rest);
     void remove_unreachable_facts(const FactSet &reached_facts);
+    void remove_unmarked_operators();
+    void remove_inapplicable_operators(const FactSet reachable_facts);
     void mark_relevant_operators(const Fact &fact);
 
     void setup_hadd() const;
@@ -40,12 +41,14 @@ private:
     void dump_facts() const;
 
 public:
-    explicit Task(std::vector<Fact> goal_facts, bool adapt);
+    explicit Task(std::vector<int> domain, std::vector<std::vector<std::string> > names,
+                  std::vector<Operator> ops, State init, std::vector<Fact> goal_facts);
 
     const std::vector<Fact> &get_goal() const {return goal; }
     const std::vector<Operator> &get_operators() const {return operators; }
 
     void remove_irrelevant_operators();
+    void set_goal(const Fact &fact);
     void adapt_operator_costs(const vector<int> &remaining_costs);
     void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const;
     bool translate_state(State &state) const;

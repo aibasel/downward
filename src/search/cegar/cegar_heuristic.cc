@@ -22,6 +22,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       options(opts),
       search(opts.get<bool>("search")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
+      decomposition(Decomposition(options.get_enum("decomposition"))),
       original_task(Task::get_original_task()),
       num_states_offline(0),
       landmark_graph(get_landmark_graph()) {
@@ -139,26 +140,9 @@ struct is_not_leaf_landmark {
     }
 };
 
-void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
-    // TODO: Generate operators when task is installed to save memory.
-    cout << "Start generating tasks [t=" << g_timer << "]" << endl;
-    vector<Fact> facts;
-    Decomposition decomposition = Decomposition(options.get_enum("decomposition"));
-    int max_abstractions = options.get<int>("max_abstractions");
-    if (options.get<bool>("combine_facts") && decomposition != ALL_LANDMARKS) {
-        cerr << "Combining facts only makes sense when refining for all landmarks" << endl;
-        exit_with(EXIT_INPUT_ERROR);
-    }
-    if (decomposition == NONE) {
-        int num_abstractions = 1;
-        if (max_abstractions != INF)
-            num_abstractions = max_abstractions;
-        for (int i = 0; i < num_abstractions; ++i) {
-            Task task(g_goal, false);
-            tasks->push_back(task);
-        }
-        return;
-    } else if (decomposition == ALL_LANDMARKS) {
+void CegarHeuristic::get_facts(vector<Fact> &facts) const {
+    assert(decomposition != NONE);
+    if (decomposition == ALL_LANDMARKS) {
         get_fact_landmarks(&facts);
     } else if (decomposition == GOAL_FACTS) {
         facts = g_goal;
@@ -176,29 +160,25 @@ void CegarHeuristic::generate_tasks(vector<Task> *tasks) const {
         facts.erase(new_end, facts.end());
     }
     order_facts(facts);
-    int num_abstractions = facts.size();
-    if (num_abstractions > max_abstractions)
-        num_abstractions = max_abstractions;
-    for (int i = 0; i < num_abstractions; i++) {
-        vector<Fact> goal;
-        goal.push_back(facts[i]);
-        if (DEBUG)
-            cout << "For task " << facts[i] << endl;
-        Task task(goal, options.get<bool>("adapt_task"));
-        if (options.get<bool>("relevance_analysis"))
-            task.remove_irrelevant_operators();
-        if (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS) {
-            unordered_map<int, unordered_set<int> > groups;
-            get_prev_landmarks(facts[i], &groups);
-            for (auto it = groups.begin(); it != groups.end(); ++it) {
-                if (it->second.size() >= 2) {
-                    task.combine_facts(it->first, it->second);
-                }
+}
+
+void CegarHeuristic::install_task(Task &task) const {
+    if (options.get<bool>("relevance_analysis"))
+        task.remove_irrelevant_operators();
+    if (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS) {
+        unordered_map<int, unordered_set<int> > groups;
+        assert(task.get_goal().size() == 1);
+        const Fact &fact = task.get_goal()[0];
+        get_prev_landmarks(fact, &groups);
+        for (auto it = groups.begin(); it != groups.end(); ++it) {
+            if (it->second.size() >= 2) {
+                task.combine_facts(it->first, it->second);
             }
         }
-        tasks->push_back(task);
     }
-    cout << "Done generating tasks [t=" << g_timer << "]" << endl;
+    task.adapt_operator_costs(remaining_costs);
+    task.dump();
+    task.install();
 }
 
 void CegarHeuristic::initialize() {
@@ -216,18 +196,29 @@ void CegarHeuristic::initialize() {
     if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INF)
         max_states_offline = INF;
 
-    generate_tasks(&tasks);
+    vector<Fact> facts;
+    int num_abstractions = 1;
+    int max_abstractions = options.get<int>("max_abstractions");
+    if (decomposition == NONE) {
+        if (max_abstractions != INF)
+            num_abstractions = max_abstractions;
+    } else {
+        get_facts(facts);
+        num_abstractions = min(static_cast<int>(facts.size()), max_abstractions);
+    }
 
-    for (int i = 0; i < tasks.size(); ++i) {
+    for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
-        Task &task = tasks[i];
-        task.adapt_operator_costs(remaining_costs);
-        task.dump();
-        task.install();
+        Task task = original_task;
+        if (decomposition != NONE) {
+            task.set_goal(facts[i]);
+        }
+        tasks.push_back(task);
+        install_task(task);
 
         Abstraction *abstraction = new Abstraction(&task);
 
-        int rem_tasks = tasks.size() - i;
+        int rem_tasks = num_abstractions - i;
         abstraction->set_max_states_offline((max_states_offline - num_states_offline) / rem_tasks);
         abstraction->set_max_time((max_time - g_timer()) / rem_tasks);
         abstraction->set_log_h(options.get<bool>("log_h"));
