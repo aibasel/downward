@@ -48,7 +48,7 @@ public:
     const std::vector<Operator> &get_operators() const {return operators; }
 
     void remove_irrelevant_operators();
-    void set_goal(const Fact &fact);
+    void set_goal(const Fact &fact, bool adapt);
     void adapt_operator_costs(const vector<int> &remaining_costs);
     void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const;
     bool translate_state(State &state) const;

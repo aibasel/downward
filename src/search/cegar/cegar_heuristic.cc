@@ -203,8 +203,9 @@ void CegarHeuristic::initialize() {
         Task task = original_task;
         task.remove_hadd();
         if (decomposition != NONE) {
-            task.set_goal(facts[i]);
-            if (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS) {
+            bool combine_facts = (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS);
+            task.set_goal(facts[i], options.get<bool>("adapt_task") || combine_facts);
+            if (combine_facts) {
                 unordered_map<int, unordered_set<int> > groups;
                 get_prev_landmarks(facts[i], &groups);
                 for (auto it = groups.begin(); it != groups.end(); ++it) {

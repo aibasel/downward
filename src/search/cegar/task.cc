@@ -147,10 +147,11 @@ void Task::remove_irrelevant_operators() {
     remove_unmarked_operators();
 }
 
-void Task::set_goal(const Fact &fact) {
+void Task::set_goal(const Fact &fact, bool adapt) {
     goal.clear();
     goal.push_back(fact);
-    compute_facts_and_operators();
+    if (adapt)
+        compute_facts_and_operators();
     is_original_task = false;
     remove_hadd();
 }
