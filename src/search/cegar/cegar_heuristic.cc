@@ -23,7 +23,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       options(opts),
       search(opts.get<bool>("search")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
-      decomposition(Decomposition(options.get_enum("decomposition"))),
       original_task(Task::get_original_task()),
       num_states_offline(0),
       landmark_graph(get_landmark_graph()) {
@@ -142,7 +141,7 @@ struct is_not_leaf_landmark {
     }
 };
 
-void CegarHeuristic::get_facts(vector<Fact> &facts) const {
+void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition) const {
     assert(decomposition != NONE);
     if (decomposition == ALL_LANDMARKS) {
         get_fact_landmarks(&facts);
@@ -172,10 +171,7 @@ void CegarHeuristic::install_task(Task &task) const {
     task.install();
 }
 
-void CegarHeuristic::initialize() {
-    cout << "Initializing cegar heuristic..." << endl;
-    cout << "Peak memory before building abstractions: "
-         << get_peak_memory_in_kb() << " KB" << endl;
+void CegarHeuristic::build_abstractions(Decomposition decomposition) {
     int max_states_offline = options.get<int>("max_states_offline");
     if (max_states_offline == -1)
         max_states_offline = INF;
@@ -194,7 +190,7 @@ void CegarHeuristic::initialize() {
         if (max_abstractions != INF)
             num_abstractions = max_abstractions;
     } else {
-        get_facts(facts);
+        get_facts(facts, decomposition);
         num_abstractions = min(static_cast<int>(facts.size()), max_abstractions);
     }
 
@@ -249,6 +245,13 @@ void CegarHeuristic::initialize() {
             break;
         }
     }
+}
+
+void CegarHeuristic::initialize() {
+    cout << "Initializing cegar heuristic..." << endl;
+    cout << "Peak memory before building abstractions: "
+         << get_peak_memory_in_kb() << " KB" << endl;
+    build_abstractions(Decomposition(options.get_enum("decomposition")));
     cout << endl;
     original_task.install();
     print_statistics();

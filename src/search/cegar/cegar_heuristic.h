@@ -40,7 +40,6 @@ class CegarHeuristic : public Heuristic {
     const Options options;
     const bool search;
     const GoalOrder fact_order;
-    const Decomposition decomposition;
     std::vector<int> remaining_costs;
     Task original_task;
     std::vector<Task> tasks;
@@ -61,8 +60,9 @@ class CegarHeuristic : public Heuristic {
 
     void order_facts(vector<Fact> &facts) const;
     void get_fact_landmarks(std::vector<Fact> *facts) const;
-    void get_facts(std::vector<Fact> &facts) const;
+    void get_facts(std::vector<Fact> &facts, Decomposition decomposition) const;
     void install_task(Task &task) const;
+    void build_abstractions(Decomposition decomposition);
 protected:
     virtual void print_statistics();
     virtual void initialize();
