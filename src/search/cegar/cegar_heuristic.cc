@@ -146,9 +146,9 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
     if (decomposition == ALL_LANDMARKS) {
         get_fact_landmarks(&facts);
     } else if (decomposition == GOAL_FACTS) {
-        facts = g_goal;
+        facts = original_task.get_goal();
     } else if (decomposition == GOAL_LEAVES) {
-        facts = g_goal;
+        facts = original_task.get_goal();
         auto new_end = remove_if(facts.begin(), facts.end(), is_not_leaf_landmark(landmark_graph));
         facts.erase(new_end, facts.end());
     } else {
@@ -251,9 +251,20 @@ void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     cout << "Peak memory before building abstractions: "
          << get_peak_memory_in_kb() << " KB" << endl;
-    build_abstractions(Decomposition(options.get_enum("decomposition")));
+    Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
+    vector<Decomposition> decompositions;
+    if (decomposition == LANDMARKS_AND_GOALS) {
+        decompositions.push_back(ALL_LANDMARKS);
+        decompositions.push_back(GOAL_FACTS);
+    } else {
+        decompositions.push_back(decomposition);
+    }
+    for (int i = 0; i < decompositions.size(); ++i) {
+        cout << endl << "Using decomposition " << decompositions[i] << endl;
+        build_abstractions(decompositions[i]);
+        original_task.install();
+    }
     cout << endl;
-    original_task.install();
     print_statistics();
 
     if (!search)
@@ -339,6 +350,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     decompositions.push_back("RANDOM_LANDMARKS");
     decompositions.push_back("GOAL_FACTS");
     decompositions.push_back("GOAL_LEAVES");
+    decompositions.push_back("LANDMARKS_AND_GOALS");
     parser.add_enum_option("decomposition", decompositions, "GOAL_FACTS",
                            "build abstractions for each of these facts");
     parser.add_option<int>("max_abstractions", INF, "max number of abstractions to build");
