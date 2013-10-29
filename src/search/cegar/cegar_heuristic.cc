@@ -22,11 +22,20 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
       search(opts.get<bool>("search")),
+      max_states(options.get<int>("max_states_offline")),
+      max_time(options.get<int>("max_time")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
       original_task(Task::get_original_task()),
-      num_states_offline(0),
+      num_states(0),
       landmark_graph(get_landmark_graph()) {
     DEBUG = opts.get<bool>("debug");
+    assert(max_time >= 0);
+
+    if (max_states == -1)
+        max_states = INF;
+    // Do not restrict the number of states if a limit has been set.
+    if (max_states == DEFAULT_STATES_OFFLINE && max_time != INF)
+        max_states = INF;
 
     if (DEBUG)
         landmark_graph.dump();
@@ -172,17 +181,6 @@ void CegarHeuristic::install_task(Task &task) const {
 }
 
 void CegarHeuristic::build_abstractions(Decomposition decomposition) {
-    int max_states_offline = options.get<int>("max_states_offline");
-    if (max_states_offline == -1)
-        max_states_offline = INF;
-    int max_time = options.get<int>("max_time");
-    if (max_time == -1)
-        max_time = INF;
-
-    // Do not restrict the number of states if a limit has been set.
-    if (max_states_offline == DEFAULT_STATES_OFFLINE && max_time != INF)
-        max_states_offline = INF;
-
     vector<Fact> facts;
     int num_abstractions = 1;
     int max_abstractions = options.get<int>("max_abstractions");
@@ -216,7 +214,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         Abstraction *abstraction = new Abstraction(&task);
 
         int rem_tasks = num_abstractions - i;
-        abstraction->set_max_states_offline((max_states_offline - num_states_offline) / rem_tasks);
+        abstraction->set_max_states_offline((max_states - num_states) / rem_tasks);
         abstraction->set_max_time(ceil((max_time - g_timer()) / rem_tasks));
         abstraction->set_log_h(options.get<bool>("log_h"));
         abstraction->set_write_dot_files(options.get<bool>("write_dot_files"));
@@ -237,13 +235,12 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         abstraction->release_memory();
 
         abstractions.push_back(abstraction);
-        num_states_offline += abstraction->get_num_states();
+        num_states += abstraction->get_num_states();
 
         task.release_memory();
 
-        if (num_states_offline >= max_states_offline || g_timer() > max_time) {
+        if (num_states >= max_states || g_timer() > max_time)
             break;
-        }
     }
 }
 
@@ -263,6 +260,8 @@ void CegarHeuristic::initialize() {
         cout << endl << "Using decomposition " << decompositions[i] << endl;
         build_abstractions(decompositions[i]);
         original_task.install();
+        if (num_states >= max_states || g_timer() > max_time)
+            break;
     }
     cout << endl;
     print_statistics();
@@ -280,7 +279,7 @@ void CegarHeuristic::print_statistics() {
     cout << "Peak memory after building abstractions: "
          << get_peak_memory_in_kb() << " KB" << endl;
     cout << "CEGAR abstractions: " << abstractions.size() << endl;
-    cout << "Abstract states offline: " << num_states_offline << endl;
+    cout << "Abstract states offline: " << num_states << endl;
     // There will always be at least one abstraction.
     cout << "Init h: " << compute_heuristic(*g_initial_state) << endl;
     cout << "Average h: " << sum_avg_h / abstractions.size() << endl;
@@ -312,7 +311,7 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states_offline", DEFAULT_STATES_OFFLINE,
                            "maximum number of abstract states created offline");
-    parser.add_option<int>("max_time", -1, "maximum time in seconds for building the abstraction");
+    parser.add_option<int>("max_time", INF, "maximum time in seconds for building the abstraction");
     parser.add_option<double>("init_h_factor", -1, "stop refinement after h(s_0) reaches h^add(s_0) * factor");
     vector<string> pick_strategies;
     pick_strategies.push_back("FIRST");
