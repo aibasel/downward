@@ -40,12 +40,14 @@ enum Decomposition {
 class CegarHeuristic : public Heuristic {
     const Options options;
     const bool search;
+    int max_states;
+    const int max_time;
     const GoalOrder fact_order;
     std::vector<int> remaining_costs;
     Task original_task;
     std::vector<Task> tasks;
     std::vector<Abstraction *> abstractions;
-    int num_states_offline;
+    int num_states;
     std::vector<double> avg_h_values;
     LandmarkGraph landmark_graph;
 
