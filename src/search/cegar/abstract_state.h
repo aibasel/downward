@@ -4,8 +4,6 @@
 #include "split_tree.h"
 #include "utils.h"
 
-#include "../ext/gtest/include/gtest/gtest_prod.h"
-
 #include <string>
 #include <utility>
 #include <vector>
@@ -54,7 +52,6 @@ public:
     ~AbstractState();
 
     // Let "result" be the set of states in which applying "op" leads to this state.
-    FRIEND_TEST(CegarTest, regress);
     void regress(const Operator &op, AbstractState *result) const;
 
     // Return the size of var's abstract domain for this state.

@@ -7,8 +7,6 @@
 #include "../state.h"
 #include "../timer.h"
 
-#include "../ext/gtest/include/gtest/gtest_prod.h"
-
 #include <limits>
 #include <string>
 #include <unordered_set>
@@ -115,7 +113,6 @@ private:
 
     // A* search.
     void reset_distances_and_solution() const;
-    FRIEND_TEST(CegarTest, astar_search);
     bool astar_search(bool forward, bool use_h, vector<int> *needed_costs = 0) const;
 
     // Refine states between state and init until the solution is broken.

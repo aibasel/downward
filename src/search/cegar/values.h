@@ -3,8 +3,6 @@
 
 #include "utils.h"
 
-#include "../ext/gtest/include/gtest/gtest_prod.h"
-
 #include <vector>
 
 namespace cegar_heuristic {
@@ -37,7 +35,6 @@ public:
     bool abstracts(const Values &other) const;
     void get_possible_splits(const Values &flaw, const State conc_state, Splits *splits) const;
     string str() const;
-    FRIEND_TEST(CegarTest, values);
 };
 }
 

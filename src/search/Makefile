@@ -223,7 +223,7 @@ POSTLINKOPT =
 ##        For details, see man gcc on -static-libgcc.
 
 CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
-CCOPT_DEBUG    = -g
+CCOPT_DEBUG    = -O3 -g
 CCOPT_PROFILE  = -O3 -pg
 
 LINKOPT_RELEASE =
@@ -354,8 +354,6 @@ clean:
 	rm -f *~ *.pyc
 	rm -f Makefile.depend gmon.out PROFILE core
 	rm -f sas_plan
-	rm -f cegar_heuristic_test cegar_heuristic_test.o
-	rm -f gtest_main.a gtest-all.o gtest_main.a gtest_main.o
 
 distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
@@ -364,51 +362,6 @@ lint:
 	python ../../misc/cpplint.py \
 		--filter=-legal/copyright,-build/header_guard,-whitespace/labels,-build/include,-whitespace/line_length,-readability/todo,-build/namespaces \
 		cegar/*.h cegar/*.cc
-
-# The following lines contain build instructions for gtest.
-
-# Points to the root of Google Test.
-GTEST_DIR = ext/gtest
-
-GTEST_OPT = -I$(GTEST_DIR)/include -Wno-variadic-macros -Wno-long-long
-
-# All Google Test headers.  Usually you shouldn't change this
-# definition.
-GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
-                $(GTEST_DIR)/include/gtest/internal/*.h
-
-# Usually you shouldn't tweak such internal variables, indicated by a
-# trailing _.
-GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
-
-# For simplicity and to avoid depending on Google Test's
-# implementation details, the dependencies specified below are
-# conservative and not optimized.  This is fine as Google Test
-# compiles fast and for ordinary users its source rarely changes.
-gtest-all.o : $(GTEST_SRCS_)
-	$(CC) -I$(GTEST_DIR) $(CCOPT) $(GTEST_OPT) -c $(GTEST_DIR)/src/gtest-all.cc
-
-gtest_main.o : $(GTEST_SRCS_)
-	$(CC) -I$(GTEST_DIR) $(CCOPT) $(GTEST_OPT) -c $(GTEST_DIR)/src/gtest_main.cc
-
-gtest_main.a : gtest-all.o gtest_main.o
-	$(AR) $(ARFLAGS) $@ $^
-
-cegar_heuristic_test.o: $(HEADERS) cegar/cegar_heuristic_test.cc
-	# Apparently the gtest libs or pthread has to come last.
-	$(CC) $(CCOPT) $(CCOPT_DEBUG) $(GTEST_OPT) -c cegar/cegar_heuristic_test.cc -o $@
-
-# A test should link with either gtest.a or gtest_main.a, depending on whether
-# it defines its own main() function.
-PLANNER_OBJ = .obj/planner.1.debug.o
-OTHER_OBJ = $(filter-out $(PLANNER_OBJ),$(OBJECTS_DEBUG))
-cegar_heuristic_test: $(OTHER_OBJ) cegar_heuristic_test.o gtest_main.a
-	# Apparently pthread has to come last.
-	$(CC) $(CCOPT) $(CCOPT_DEBUG) $(GTEST_OPT) $(LINKOPT) $(LINKOPT_DEBUG) $^ \
-          $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o cegar_heuristic_test -lpthread
-
-test: cegar_heuristic_test
-	./cegar_heuristic_test
 
 ## Note: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
