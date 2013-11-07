@@ -4,8 +4,6 @@
 #include "utils.h"
 #include "../state.h"
 
-#include "../ext/gtest/include/gtest/gtest_prod.h"
-
 namespace cegar_heuristic {
 class AbstractState;
 
@@ -35,7 +33,6 @@ public:
     // Additionally to the two normal child nodes Node(left) and Node(right)
     // add |values|-1 OR-nodes that all have Node(right) as their right child
     // and the next OR-node as their left child.
-    FRIEND_TEST(CegarTest, split_values);
     void split(int var, const vector<int> &values, AbstractState *left, AbstractState *right);
 
     bool is_split() const {return var != UNDEFINED; }
@@ -63,7 +60,6 @@ public:
     SplitTree();
     void set_root(AbstractState *single);
     Node *get_node(const State conc_state) const;
-    FRIEND_TEST(CegarTest, split_values);
 };
 }
 
