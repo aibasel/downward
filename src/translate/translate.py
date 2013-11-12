@@ -28,7 +28,6 @@ import tools
 # derived variable is synonymous with another variable (derived or
 # non-derived).
 
-ALLOW_CONFLICTING_EFFECTS = True
 USE_PARTIAL_ENCODING = True
 DETECT_UNREACHABLE = True
 DUMP_TASK = False
@@ -228,45 +227,41 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
                         operator.dump()
                         assert False, "Add effect with uncertain del effect partner?"
                 if other_val == val:
-                    if ALLOW_CONFLICTING_EFFECTS:
-                        # Conflicting ADD and DEL effect. This is *only* allowed if
-                        # this is also a precondition, in which case there is *no*
-                        # effect (the ADD takes precedence). We delete the add effect here.
-                        if condition.get(var) != val:
-                            # HACK HACK HACK!
-                            # There used to be an assertion here that actually
-                            # forbid this, but this was wrong in Pipesworld-notankage
-                            # (e.g. task 01). The thing is, it *is* possible for
-                            # an operator with proven (with the given invariants)
-                            # inconsistent preconditions to actually end up here if
-                            # the inconsistency of the preconditions is not obvious at
-                            # the SAS+ encoding level.
-                            #
-                            # Example: Pipes-Notank-01, operator
-                            # (pop-unitarypipe s12 b4 a1 a2 b4 lco lco).
-                            # This has precondition last(b4, s12) and on(b4, a2) which
-                            # is inconsistent because b4 can only be in one place.
-                            # However, the chosen encoding encodes *what is last in s12*
-                            # separately, and so the precondition translates to
-                            # "last(s12) = b4 and on(b4) = a2", which does not look
-                            # inconsistent at first glance.
-                            #
-                            # Something reasonable to do here would be to make a
-                            # decent check that the precondition is indeed inconsistent
-                            # (using *all* mutexes), but that seems tough with this
-                            # convoluted code, so we just warn and reject the operator.
-                            print("Warning: %s rejected. Cross your fingers." % (
-                                operator.name))
-                            if DEBUG:
-                                operator.dump()
-                            return None
-                            assert False
+                    # Conflicting ADD and DEL effect. This is *only* allowed if
+                    # this is also a precondition, in which case there is *no*
+                    # effect (the ADD takes precedence). We delete the add effect here.
+                    if condition.get(var) != val:
+                        # HACK HACK HACK!
+                        # There used to be an assertion here that actually
+                        # forbid this, but this was wrong in Pipesworld-notankage
+                        # (e.g. task 01). The thing is, it *is* possible for
+                        # an operator with proven (with the given invariants)
+                        # inconsistent preconditions to actually end up here if
+                        # the inconsistency of the preconditions is not obvious at
+                        # the SAS+ encoding level.
+                        #
+                        # Example: Pipes-Notank-01, operator
+                        # (pop-unitarypipe s12 b4 a1 a2 b4 lco lco).
+                        # This has precondition last(b4, s12) and on(b4, a2) which
+                        # is inconsistent because b4 can only be in one place.
+                        # However, the chosen encoding encodes *what is last in s12*
+                        # separately, and so the precondition translates to
+                        # "last(s12) = b4 and on(b4) = a2", which does not look
+                        # inconsistent at first glance.
+                        #
+                        # Something reasonable to do here would be to make a
+                        # decent check that the precondition is indeed inconsistent
+                        # (using *all* mutexes), but that seems tough with this
+                        # convoluted code, so we just warn and reject the operator.
+                        print("Warning: %s rejected. Cross your fingers." % (
+                            operator.name))
+                        if DEBUG:
+                            operator.dump()
+                        return None
+                        assert False
 
-                        assert eff_conditions == [[]]
-                        del effect[var]
-                    else:
-                        assert not eff_condition[0] and not eff_conditions[0], "Uncertain conflict"
-                        return None  # Definite conflict otherwise.
+                    assert eff_conditions == [[]]
+                    del effect[var]
             else: # no add effect on this variable
                 if condition.get(var) != val:
                     if var in condition:
