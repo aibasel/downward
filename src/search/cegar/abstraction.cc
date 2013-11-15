@@ -57,7 +57,6 @@ Abstraction::Abstraction(const Task *t)
       last_avg_h(0),
       last_init_h(0),
       max_states_offline(1),
-      max_states_online(0),
       max_time(INF),
       max_init_h(INF),
       use_astar(true),
@@ -165,8 +164,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     states.insert(v2);
     ++num_states;
 
-    // Since the search may be started from arbitrary states during online
-    // refinements, we can't assume v2 is never "init" and v1 is never "goal".
+    // TODO: Since the search is always started from the abstract initial state
+    // we can assume v2 is never "init" and v1 is never "goal".
     if (state == init) {
         if (v1->is_abstraction_of(*g_initial_state)) {
             assert(!v2->is_abstraction_of(*g_initial_state));
@@ -196,33 +195,9 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     int num_states = get_num_states();
     if (num_states % STATES_LOG_STEP == 0)
         cout << "Abstract states: " << num_states << "/"
-             << max_states_offline + max_states_online << endl;
+             << max_states_offline << endl;
     if (write_dot_files)
         write_dot_file(num_states);
-}
-
-AbstractState *Abstraction::improve_h(const State &state, AbstractState *abs_state) {
-    int rounds = 0;
-    const int old_h = abs_state->get_h();
-    // Loop until the heuristic value increases.
-    while (abs_state->get_h() == old_h && may_keep_refining()) {
-        update_h_values();
-        if (abs_state->get_h() == INF) {
-            cout << "No abstract solution starts at " << abs_state->str() << endl;
-            break;
-        }
-        bool solution_valid = check_and_break_solution(*g_initial_state, init);
-        if (solution_valid) {
-            cout << "Concrete solution found" << endl;
-            break;
-        }
-        abs_state = get_abstract_state(state);
-        ++rounds;
-    }
-    assert(abs_state->get_h() >= old_h);
-    if (DEBUG)
-        cout << "Refinement rounds: " << rounds << endl;
-    return abs_state;
 }
 
 void Abstraction::reset_distances_and_solution() const {
@@ -761,16 +736,10 @@ void Abstraction::get_needed_costs(vector<int> *needed_costs) {
     astar_search(true, false, needed_costs);
 }
 
-int Abstraction::get_num_states_online() const {
-    assert(num_states_offline >= 1);
-    return get_num_states() - num_states_offline;
-}
-
 bool Abstraction::may_keep_refining() const {
     return cegar_memory_padding &&
-           (is_online() || get_num_states() < max_states_offline) &&
-           (!is_online() || get_num_states_online() < max_states_online) &&
-           (max_time == INF || is_online() || timer() < max_time) &&
+           (get_num_states() < max_states_offline) &&
+           (max_time == INF || timer() < max_time) &&
            (init->get_h() < max_init_h);
 }
 

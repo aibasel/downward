@@ -87,7 +87,6 @@ private:
 
     // Settings.
     int max_states_offline;
-    int max_states_online;
     // Maximum time for building the abstraction.
     int max_time;
     int max_init_h;
@@ -137,16 +136,10 @@ public:
     // Build abstraction offline.
     void build();
 
-    // Refine until the h-value for state improves.
-    AbstractState *improve_h(const State &state, AbstractState *abs_state);
-
     AbstractState *get_abstract_state(const State &state) const;
     int get_h(const State &state) const {return split_tree.get_node(state)->get_h(); }
 
     int get_num_states() const {return num_states; }
-    int get_num_states_online() const;
-    int get_max_states_online() const {return max_states_online; }
-    bool is_online() const {return num_states_offline != -1; }
     bool may_keep_refining() const;
 
     // Destroy all states when termination criterion is met.
@@ -165,7 +158,6 @@ public:
 
     // Settings.
     void set_max_states_offline(int states) {max_states_offline = states; }
-    void set_max_states_online(int states) {max_states_online = states; }
     void set_max_time(int time) {max_time = time; }
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_log_h(bool log) {log_h = log; }
