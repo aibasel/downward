@@ -20,7 +20,6 @@ class PatternGenerationHaslum {
     CanonicalPDBsHeuristic *current_heuristic;
 
     int num_rejected; // for stats only
-    int num_removed;  // for stats only
 
     /* For the given pattern, all possible extensions of the pattern by one relevant variable
        are inserted into candidate_patterns. This may generate duplicated patterns. */
