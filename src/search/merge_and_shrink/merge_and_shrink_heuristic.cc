@@ -197,7 +197,7 @@ void MergeAndShrinkHeuristic::initialize() {
          << endl << "initial h value: " << compute_heuristic(
         *g_initial_state) << endl;
     cout << "Estimated peak memory for abstraction: " << peak_memory << " bytes" << endl;
-    cout << "Peak memory after building abstraction: " << get_peak_memory_in_kb() << " KB" << endl;
+    cout << "Peak memory after initialization: " << get_peak_memory_in_kb() << " KB" << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {

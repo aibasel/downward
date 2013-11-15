@@ -77,11 +77,8 @@ PDBHeuristic::PDBHeuristic(
 
     Timer timer;
     set_pattern(opts.get_list<int>("pattern"));
-    if (dump) {
+    if (dump)
         cout << "PDB construction time: " << timer << endl;
-        cout << "Peak memory after building abstraction: "
-             << get_peak_memory_in_kb() << " KB" << endl;
-    }
 }
 
 PDBHeuristic::~PDBHeuristic() {
