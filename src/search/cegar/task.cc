@@ -391,7 +391,7 @@ void Task::dump() const {
     int num_facts = 0;
     for (int var = 0; var < variable_domain.size(); ++var)
         num_facts += variable_domain[var];
-    cout << "  " << prefix << "Facts: " << num_facts << "/" << g_num_facts << endl;
+    cout << "  " << prefix << "Facts: " << num_facts << endl;
     if (DEBUG)
         dump_facts();
     cout << "  " << prefix << "Operators: " << operators.size() << endl;

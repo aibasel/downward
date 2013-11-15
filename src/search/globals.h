@@ -58,6 +58,4 @@ extern Timer g_timer;
 extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
 
-extern int g_num_facts;
-
 #endif

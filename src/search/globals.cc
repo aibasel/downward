@@ -260,11 +260,6 @@ void read_everything(istream &in) {
     // NOTE: causal graph is computed from the problem specification,
     // so must be built after the problem has been read in.
     g_causal_graph = new CausalGraph;
-
-    g_num_facts = 0;
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
-        g_num_facts += g_variable_domain[var];
-    }
 }
 
 void dump_everything() {
@@ -355,5 +350,3 @@ LegacyCausalGraph *g_legacy_causal_graph;
 Timer g_timer;
 string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
-
-int g_num_facts = 0;
