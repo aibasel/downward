@@ -7,11 +7,7 @@
 #include "g_evaluator.h"
 #include "sum_evaluator.h"
 #include "plugin.h"
-#include "cegar/abstraction.h"
-#include "cegar/abstract_state.h"
-#include "cegar/utils.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <set>
@@ -24,10 +20,7 @@ EagerSearch::EagerSearch(
       do_pathmax(opts.get<bool>("pathmax")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<OpenList<state_var_t *> *>("open")),
-      f_evaluator(opts.get<ScalarEvaluator *>("f_eval")),
-      num_pushed_h_lower(0),
-      num_h_too_low(0),
-      num_h_improved(0) {
+      f_evaluator(opts.get<ScalarEvaluator *>("f_eval")) {
     if (opts.contains("preferred")) {
         preferred_operator_heuristics =
             opts.get_list<Heuristic *>("preferred");
@@ -100,7 +93,6 @@ void EagerSearch::statistics() const {
     search_space.statistics();
 }
 
-
 int EagerSearch::step() {
     pair<SearchNode, bool> n = fetch_next_node();
     if (!n.second) {
@@ -109,15 +101,8 @@ int EagerSearch::step() {
     SearchNode node = n.first;
 
     State s = node.get_state();
-
-    if (check_goal_and_set_plan(s)) {
-        cout << "Abstract states online: " << (g_cegar_abstraction ?
-            g_cegar_abstraction->get_num_states_online() : 0) << endl;
-        cout << "Pushed h was lower: " << num_pushed_h_lower << endl;
-        cout << "h too low: " << num_h_too_low << endl;
-        cout << "h improved: " << num_h_improved << endl;
+    if (check_goal_and_set_plan(s))
         return SOLVED;
-    }
 
     vector<const Operator *> applicable_ops;
     set<const Operator *> preferred_ops;
@@ -194,7 +179,6 @@ int EagerSearch::step() {
 
             //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
             int succ_h = heuristics[0]->get_heuristic();
-
             if (do_pathmax) {
                 if ((node.get_h() - get_adjusted_cost(*op)) > succ_h) {
                     //cout << "Pathmax correction: " << succ_h << " -> " << node.get_h() - get_adjusted_cost(*op) << endl;
@@ -244,27 +228,6 @@ int EagerSearch::step() {
     return IN_PROGRESS;
 }
 
-void EagerSearch::evaluate_and_push_node(SearchNode &node) {
-    for (size_t i = 0; i < heuristics.size(); i++)
-        heuristics[i]->evaluate(node.get_state());
-    node.clear_h_dirty();
-    search_progress.inc_evaluations(heuristics.size());
-
-    open_list->evaluate(node.get_g(), false);
-    bool dead_end = open_list->is_dead_end();
-    if (dead_end) {
-        node.mark_as_dead_end();
-        search_progress.inc_dead_ends();
-        return;
-    }
-    int new_h = heuristics[0]->get_heuristic();
-    if (new_h > node.get_h()) {
-        assert(node.is_open());
-        node.increase_h(new_h);
-        open_list->insert(node.get_state_buffer());
-    }
-}
-
 pair<SearchNode, bool> EagerSearch::fetch_next_node() {
     /* TODO: The bulk of this code deals with multi-path dependence,
        which is a bit unfortunate since that is a special case that
@@ -279,9 +242,9 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             cout << "Completely explored state space -- no solution!" << endl;
             return make_pair(search_space.get_node(*g_initial_state), false);
         }
-        bool get_pushed_h = use_multi_path_dependence || g_cegar_abstraction;
         vector<int> last_key_removed;
-        State state(open_list->remove_min(get_pushed_h ? &last_key_removed : 0));
+        State state(open_list->remove_min(
+                        use_multi_path_dependence ? &last_key_removed : 0));
         SearchNode node = search_space.get_node(state);
 
         if (node.is_closed())
@@ -297,90 +260,25 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             }
             assert(node.get_h() == pushed_h);
             if (!node.is_closed() && node.is_h_dirty()) {
-                evaluate_and_push_node(node);
-                continue;
-            }
-        }
+                for (size_t i = 0; i < heuristics.size(); i++)
+                    heuristics[i]->evaluate(node.get_state());
+                node.clear_h_dirty();
+                search_progress.inc_evaluations(heuristics.size());
 
-        cegar_heuristic::AbstractState *abs_state = 0;
-        if (g_cegar_abstraction && g_cegar_abstraction->get_max_states_online() > 0) {
-            abs_state = g_cegar_abstraction->get_abstract_state(state);
-
-            // If h(s) is higher now than when s was pushed, we don't expand s, but
-            // push it into the open-queue again.
-            assert(last_key_removed.size() == 2);
-            const int pushed_h = last_key_removed[1];
-            assert(abs_state->get_h() >= pushed_h);
-            if (abs_state->get_h() > pushed_h) {
-                ++num_pushed_h_lower;
-                evaluate_and_push_node(node);
-                continue;
-            }
-            assert(abs_state->get_h() == node.get_h());
-        }
-
-        bool keep_refining = g_cegar_abstraction && g_cegar_abstraction->may_keep_refining();
-
-        if (g_cegar_abstraction && !keep_refining && !g_cegar_abstraction->has_released_memory())
-            g_cegar_abstraction->release_memory();
-
-        if (keep_refining) {
-            // If we can see that h(s) is too low by looking at its successors, we
-            // refine abs_state(s) until h(s) is higher. Then we push s into the
-            // open-list again.
-            vector<const Operator *> applicable_ops;
-            g_successor_generator->generate_applicable_ops(state, applicable_ops);
-
-            assert(abs_state->is_abstraction_of(state));
-            const int state_h = abs_state->get_h();
-
-            // Check if we can show that h(s) is too low by looking at all successors.
-            bool h_too_low = true;
-            for (int i = 0; i < applicable_ops.size(); i++) {
-                const Operator *op = applicable_ops[i];
-
-                if ((node.get_real_g() + op->get_cost()) >= bound)
-                    continue;
-
-                State succ_state(state, *op);
-                search_progress.inc_generated();
-                SearchNode succ_node = search_space.get_node(succ_state);
-
-                // Previously encountered dead end. Don't re-evaluate.
-                if (succ_node.is_dead_end())
-                    continue;
-
-                const int succ_h = g_cegar_abstraction->get_abstract_state(succ_state)->get_h();
-                search_progress.inc_evaluated_states();
-                if (state_h >= succ_h + op->get_cost()) {
-                    // We cannot prove that the heuristic makes an error here.
-                    h_too_low = false;
-                    break;
-                }
-            }
-
-            if (h_too_low) {
-                ++num_h_too_low;
-                const int old_h = abs_state->get_h();
-                abs_state = g_cegar_abstraction->improve_h(state, abs_state);
-                const int new_h = abs_state->get_h();
-                if (cegar_heuristic::DEBUG)
-                    cout << "Improve " << old_h << " -> " << new_h << endl;
-                // Make sure that the h-value was improved, or the state is a
-                // dead end, or it is the goal state or a termination criterion was met.
-                assert(new_h > old_h || new_h == cegar_heuristic::INF ||
-                       abs_state->is_abstraction_of_goal() ||
-                       !g_cegar_abstraction->may_keep_refining());
-                // If the heuristic value could be improved, do not expand the state now,
-                // but readd it to the open-list.
-                if (new_h > old_h) {
-                    ++num_h_improved;
-                    evaluate_and_push_node(node);
+                open_list->evaluate(node.get_g(), false);
+                bool dead_end = open_list->is_dead_end();
+                if (dead_end) {
+                    node.mark_as_dead_end();
+                    search_progress.inc_dead_ends();
                     continue;
                 }
-                // Note: If h(s) wasn't improved, we could treat s with a higher
-                // h-value nonetheless (set_evaluator_value), but this probably
-                // doesn't make any difference.
+                int new_h = heuristics[0]->get_heuristic();
+                if (new_h > node.get_h()) {
+                    assert(node.is_open());
+                    node.increase_h(new_h);
+                    open_list->insert(node.get_state_buffer());
+                    continue;
+                }
             }
         }
 
