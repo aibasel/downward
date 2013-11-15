@@ -11,8 +11,6 @@
 #include "../timer.h"
 #include "../utilities.h"
 
-#include "../ext/btree/btree_map.h"
-
 #include <algorithm>
 #include <cassert>
 #include <fstream>
@@ -23,13 +21,14 @@
 #include <queue>
 #include <sstream>
 #include <unordered_set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 using namespace std;
 
 namespace cegar_heuristic {
-typedef btree::btree_map<AbstractState *, Splits> StatesToSplits;
+typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
 static char *cegar_memory_padding = 0;
 
