@@ -30,8 +30,6 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
     Timer timer;
     genetic_algorithm();
     cout << "Pattern generation (Edelkamp) time: " << timer << endl;
-    cout << "Peak memory after building abstraction: "
-         << get_peak_memory_in_kb() << " KB" << endl;
 }
 
 PatternGenerationEdelkamp::~PatternGenerationEdelkamp() {

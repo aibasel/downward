@@ -33,16 +33,7 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
     initialize();
     cout << "Final PDB size: " << current_heuristic->get_size() << endl;
     cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
-    cout << "Patterns:" << endl;
-    const std::vector<PDBHeuristic *> &pdbs = current_heuristic->get_pattern_databases();
-    for (int i = 0; i < pdbs.size(); ++i) {
-        const vector<int> &pattern = pdbs[i]->get_pattern();
-        for (int j = 0; j < pattern.size(); ++j) {
-            cout << pattern[j] << " ";
-        }
-        cout << endl;
-    }
-    cout << "Peak memory after building abstraction: "
+    cout << "Peak memory after initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
 }
 
