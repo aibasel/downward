@@ -268,7 +268,6 @@ void read_everything(istream &in) {
         g_num_facts += g_variable_domain[var];
     }
 
-    g_cegar_abstraction = 0;
     cout << "Peak memory before building abstraction: "
          << get_peak_memory_in_kb() << " KB" << endl;
 }
@@ -363,7 +362,6 @@ Timer g_timer;
 string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 
-cegar_heuristic::Abstraction *g_cegar_abstraction;
 int g_num_facts = 0;
 
 int g_memory_padding_mb = 0;
