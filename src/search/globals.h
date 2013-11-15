@@ -18,11 +18,6 @@ class State;
 class SuccessorGenerator;
 class Timer;
 
-namespace cegar_heuristic {
-class Abstraction;
-}
-
-
 bool test_goal(const State &state);
 void save_plan(const std::vector<const Operator *> &plan, int iter);
 int calculate_plan_cost(const std::vector<const Operator *> &plan);
@@ -37,7 +32,6 @@ void check_magic(std::istream &in, std::string magic);
 bool are_mutex(const std::pair<int, int> &a, const std::pair<int, int> &b);
 
 extern void no_memory();
-
 
 extern bool g_use_metric;
 extern int g_min_action_cost;
@@ -65,8 +59,5 @@ extern std::string g_plan_filename;
 extern RandomNumberGenerator g_rng;
 
 extern int g_num_facts;
-
-// Reserve some space that can be released when no memory is left.
-extern int g_memory_padding_mb;
 
 #endif

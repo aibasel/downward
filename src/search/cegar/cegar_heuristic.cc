@@ -246,7 +246,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
-    cout << "Peak memory before building abstractions: "
+    cout << "Peak memory before initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
     Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
     vector<Decomposition> decompositions;
@@ -276,7 +276,7 @@ void CegarHeuristic::print_statistics() {
         sum_avg_h += avg_h_values[i];
     }
     cout << "Done building abstractions [t=" << g_timer << "]" << endl;
-    cout << "Peak memory after building abstractions: "
+    cout << "Peak memory after initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
     cout << "CEGAR abstractions: " << abstractions.size() << endl;
     cout << "Abstract states: " << num_states << endl;

@@ -267,9 +267,6 @@ void read_everything(istream &in) {
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         g_num_facts += g_variable_domain[var];
     }
-
-    cout << "Peak memory before building abstraction: "
-         << get_peak_memory_in_kb() << " KB" << endl;
 }
 
 void dump_everything() {
@@ -339,7 +336,6 @@ void no_memory () {
     exit_with(EXIT_OUT_OF_MEMORY);
 }
 
-
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
@@ -363,5 +359,3 @@ string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 
 int g_num_facts = 0;
-
-int g_memory_padding_mb = 0;
