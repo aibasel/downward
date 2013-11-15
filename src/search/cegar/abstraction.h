@@ -162,7 +162,7 @@ public:
     void set_log_h(bool log) {log_h = log; }
     void set_pick_strategy(PickStrategy strategy);
     void set_max_init_h_factor(double factor);
-    void set_write_dot_files(bool write) {write_dot_files = write; };
+    void set_write_dot_files(bool write) {write_dot_files = write; }
 
     // Testing.
     void write_dot_file(int num);
