@@ -75,11 +75,11 @@ void Operator::rename_fact(int variable, int before, int after) {
 }
 
 void Prevail::dump() const {
-    cout << var << ": " << prev;
+    cout << g_variable_name[var] << ": " << var << "=" << prev;
 }
 
 void PrePost::dump() const {
-    cout << var << ": " << pre << " => " << post;
+    cout << g_variable_name[var] << ": " << var << "=" << pre << " => " << post;
     if (!cond.empty()) {
         cout << " if";
         for (int i = 0; i < cond.size(); i++) {
