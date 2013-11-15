@@ -22,7 +22,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
       search(opts.get<bool>("search")),
-      max_states(options.get<int>("max_states_offline")),
+      max_states(options.get<int>("max_states")),
       max_time(options.get<int>("max_time")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
       original_task(Task::get_original_task()),
@@ -214,7 +214,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         Abstraction *abstraction = new Abstraction(&task);
 
         int rem_tasks = num_abstractions - i;
-        abstraction->set_max_states_offline((max_states - num_states) / rem_tasks);
+        abstraction->set_max_states((max_states - num_states) / rem_tasks);
         abstraction->set_max_time(ceil((max_time - g_timer()) / rem_tasks));
         abstraction->set_log_h(options.get<bool>("log_h"));
         abstraction->set_write_dot_files(options.get<bool>("write_dot_files"));
@@ -279,7 +279,7 @@ void CegarHeuristic::print_statistics() {
     cout << "Peak memory after building abstractions: "
          << get_peak_memory_in_kb() << " KB" << endl;
     cout << "CEGAR abstractions: " << abstractions.size() << endl;
-    cout << "Abstract states offline: " << num_states << endl;
+    cout << "Abstract states: " << num_states << endl;
     // There will always be at least one abstraction.
     cout << "Init h: " << compute_heuristic(*g_initial_state) << endl;
     cout << "Average h: " << sum_avg_h / abstractions.size() << endl;
@@ -309,8 +309,8 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("max_states_offline", DEFAULT_STATES_OFFLINE,
-                           "maximum number of abstract states created offline");
+    parser.add_option<int>("max_states", DEFAULT_STATES_OFFLINE,
+                           "maximum number of abstract states");
     parser.add_option<int>("max_time", INF, "maximum time in seconds for building the abstraction");
     parser.add_option<double>("init_h_factor", -1, "stop refinement after h(s_0) reaches h^add(s_0) * factor");
     vector<string> pick_strategies;
