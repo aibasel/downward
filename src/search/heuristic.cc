@@ -2,7 +2,6 @@
 #include "operator.h"
 #include "option_parser.h"
 #include "operator_cost.h"
-#include "utilities.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -13,12 +12,6 @@ using namespace std;
 Heuristic::Heuristic(const Options &opts)
     : cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
-
-    g_memory_padding_mb = opts.get<int>("memory_padding");
-    if (g_memory_padding_mb < 0) {
-        cerr << "memory padding cannot be negative" << endl;
-        exit_with(EXIT_INPUT_ERROR);
-    }
 
     is_unit_cost = true;
     for (size_t i = 0; i < g_operators.size(); ++i) {
@@ -136,11 +129,6 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
                            cost_types,
                            "NORMAL",
                            "operator cost adjustment type");
-    // Memory paddings of <= 50 MB often result in the run being killed, just
-    // because it is very close to its memory limit. Setting this to 75 MB
-    // avoids this issue. The reason for this behaviour seems to be that the
-    // search needs adjacent memory.
-    parser.add_option<int>("memory_padding", 75, "memory in MB that can be released when we run out of space");
 }
 
 //this solution to get default values seems not optimal:

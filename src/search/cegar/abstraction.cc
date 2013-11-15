@@ -32,6 +32,12 @@ typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
 static char *cegar_memory_padding = 0;
 
+// Memory paddings of <= 50 MB often result in the run being killed, just
+// because it is very close to its memory limit. Setting this to 75 MB
+// avoids this issue. The reason for this behaviour seems to be that the
+// search needs adjacent memory.
+static const int MEMORY_PADDING_MB = 75;
+
 void no_memory_continue () {
     assert(cegar_memory_padding);
     delete[] cegar_memory_padding;
@@ -66,8 +72,8 @@ Abstraction::Abstraction(const Task *t)
 
     assert(!cegar_memory_padding);
     if (DEBUG)
-        cout << "Reserving " << g_memory_padding_mb << " MB of memory padding." << endl;
-    cegar_memory_padding = new char[g_memory_padding_mb * 1024 * 1024];
+        cout << "Reserving " << MEMORY_PADDING_MB << " MB of memory padding." << endl;
+    cegar_memory_padding = new char[MEMORY_PADDING_MB * 1024 * 1024];
     set_new_handler(no_memory_continue);
 
     split_tree.set_root(single);
