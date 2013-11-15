@@ -11,7 +11,6 @@
 #include "successor_generator.h"
 #include "timer.h"
 #include "utilities.h"
-#include "cegar/utils.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -28,8 +27,7 @@ using namespace __gnu_cxx;
 
 
 static const int PRE_FILE_VERSION = 3;
-// We need at least 8KB for a clean exit.
-static char *memory_padding = new char[10240];
+static char *memory_padding = new char[1024];
 
 
 // TODO: This needs a proper type and should be moved to a separate
