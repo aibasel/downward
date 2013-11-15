@@ -22,8 +22,6 @@ class SearchNode {
 public:
     SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_, OperatorCost cost_type_);
 
-    SearchNode& operator=(const SearchNode&);
-
     state_var_t *get_state_buffer() {
         return state_buffer;
     }
