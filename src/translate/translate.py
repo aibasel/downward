@@ -5,6 +5,7 @@ from __future__ import print_function
 
 from collections import defaultdict
 from copy import deepcopy
+from itertools import product
 
 import axiom_rules
 import fact_groups
@@ -31,6 +32,7 @@ import tools
 USE_PARTIAL_ENCODING = True
 DETECT_UNREACHABLE = True
 DUMP_TASK = False
+USE_NEW_TRANSLATION = False
 
 ## Setting the following variable to True can cause a severe
 ## performance penalty due to weaker relevance analysis (see issue7).
@@ -158,17 +160,145 @@ def translate_strips_conditions(conditions, dictionary, ranges,
     return translate_strips_conditions_aux(conditions, dictionary, ranges)
 
 def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ranges, implied_facts):
-
     conditions = translate_strips_conditions(operator.precondition, dictionary, ranges, mutex_dict, mutex_ranges)
     if conditions is None:
         return []
     sas_operators = []
     for condition in conditions:
-        op = translate_strips_operator_aux(operator, dictionary, ranges,
-                                           mutex_dict, mutex_ranges,
-                                           implied_facts, condition)
-        sas_operators.append(op)
+        if USE_NEW_TRANSLATION:
+            op = translate_strips_operator_aux_new(operator, dictionary, ranges,
+                                               mutex_dict, mutex_ranges,
+                                               implied_facts, condition)
+        else:
+            op = translate_strips_operator_aux(operator, dictionary, ranges,
+                                               mutex_dict, mutex_ranges,
+                                               implied_facts, condition)
+        if op is not None:
+            sas_operators.append(op)
     return sas_operators
+
+def negate_and_translate_condition(condition, dictionary, ranges, mutex_dict,
+                                   mutex_ranges):
+    # condition is a list of lists of literals (DNF)
+    # the result is the negation of the condition in DNF in
+    # finite-domain representation (a list of dictionaries that map
+    # variables to values)
+    negation = []
+    if [] in condition: # condition always satisfied
+        return None # negation unsatisfiable
+    for combination in product(*condition):
+        cond = [l.negate() for l in combination]
+        cond = translate_strips_conditions(cond, dictionary, ranges,
+                                mutex_dict, mutex_ranges)
+        if cond is not None:
+            negation.extend(cond)
+    return negation if negation else None
+
+def translate_strips_operator_aux_new(operator, dictionary, ranges, mutex_dict,
+    mutex_ranges, implied_facts, condition):
+
+    # collect all add effects
+    effects_by_variable = defaultdict(dict)
+    add_conds_by_variable = defaultdict(list)
+    for conditions, fact in operator.add_effects:
+        eff_condition_list = translate_strips_conditions(conditions, dictionary,
+                                                         ranges, mutex_dict,
+                                                         mutex_ranges)
+        if eff_condition_list is None: # Impossible condition for this effect.
+            continue
+        for var, val in dictionary[fact]:
+            effect_on_var = effects_by_variable.setdefault(var, {})
+            effect_cond_for_val = effect_on_var.setdefault(val, [])
+            effect_cond_for_val.extend(eff_condition_list)
+            add_conds_by_variable[var].append(conditions)
+    
+    # collect all del effects
+    del_effects_by_variable = {}
+    for conditions, fact in operator.del_effects:
+        eff_condition_list = translate_strips_conditions(conditions, dictionary,
+                                                         ranges, mutex_dict,
+                                                         mutex_ranges)
+        if eff_condition_list is None: # Impossible condition for this effect.
+            continue
+        for var, val in dictionary[fact]:
+            effect_on_var = del_effects_by_variable.setdefault(var, {})
+            effect_cond_for_val = effect_on_var.setdefault(val, [])
+            effect_cond_for_val.extend(eff_condition_list)
+
+    # add effect var=none_of_those for all del effects with the additional
+    # condition that the deleted value has been true and no add effect triggers
+    for var in del_effects_by_variable:
+        no_add_effect_condition = negate_and_translate_condition(
+            add_conds_by_variable[var], dictionary, ranges, mutex_dict,
+            mutex_ranges)
+        if no_add_effect_condition is None: # there is always an add effect
+            continue
+        none_of_those = ranges[var] - 1
+        for val, conds in del_effects_by_variable[var].items():
+            for cond in conds:
+                # add guard
+                if var in cond and cond[var] != val:
+                    continue # condition inconsistent with deleted atom
+                cond[var] = val 
+                # add condition that no add effect triggers
+                for no_add_cond in no_add_effect_condition:
+                    new_cond = dict(cond)
+                    for cvar, cval in no_add_cond.items():
+                        if cvar in new_cond and new_cond[cvar] != cval:
+                            # the del effect condition plus the deleted atom
+                            # imply that some add effect on the variable
+                            # triggers
+                            break
+                        new_cond[cvar] = cval
+                    else:
+                        t = effects_by_variable[var].setdefault(
+                            none_of_those, [])
+                        t.append(new_cond)
+
+    return build_sas_operator(operator.name, condition, effects_by_variable,
+                              operator.cost, ranges, implied_facts)
+
+def build_sas_operator(name, condition, effects_by_variable, cost, ranges, implied_facts):
+    if ADD_IMPLIED_PRECONDITIONS:
+        implied_precondition = set()
+        for fact in condition.items():
+            implied_precondition.update(implied_facts[fact])
+
+    pre_post = []
+    for var in effects_by_variable:
+        orig_pre = condition.get(var, -1)
+        # TODO make this an non-error output
+        if len(effects_by_variable[var]) > 1:
+            sys.stderr.write("more than one possible effect on a variable\n")
+        for post, eff_conditions in effects_by_variable[var].items():
+            pre = orig_pre
+            # if the effect does not change the variable value, we ignore it
+            if pre == post:
+                continue
+            # otherwise the condition on var is not a prevail condition but a
+            # precondition, so we remove it from the prevail condition
+            condition.pop(var, -1)
+            eff_condition_lists = [sorted(eff_cond.items())
+                                  for eff_cond in eff_conditions]
+            if ranges[var] == 2:
+                # Apply simplifications for binary variables.
+                if prune_stupid_effect_conditions(var, post, eff_condition_lists):
+                    global simplified_effect_condition_counter
+                    simplified_effect_condition_counter += 1
+                if (ADD_IMPLIED_PRECONDITIONS and
+                    pre == -1 and (var, 1 - post) in implied_precondition):
+                    global added_implied_precondition_counter
+                    added_implied_precondition_counter += 1
+                    pre = 1 - post
+            for eff_condition in eff_condition_lists:
+                # we do not need to represent a precondition as effect condition
+                if (var, pre) in eff_condition:
+                    eff_condition.remove((var,pre))
+                pre_post.append((var, pre, post, eff_condition))
+    if not pre_post: # operator is noop
+        return None
+    prevail = list(condition.items())
+    return sas_tasks.SASOperator(name, prevail, pre_post, cost)
 
 def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
     mutex_ranges, implied_facts, condition):
@@ -620,6 +750,9 @@ def parse_options():
         "--relaxed", dest="generate_relaxed_task", action="store_true",
         help="Output relaxed task (no delete effects)")
     optparser.add_option(
+        "--newtrans", dest="new_translation", action="store_true",
+        help="Use new translation")
+    optparser.add_option(
         "--force-old-python", action="store_true",
         help="Allow running the translator with slow Python 2.6")
     options, args = optparser.parse_args()
@@ -646,6 +779,10 @@ def main():
             for index, effect in reversed(list(enumerate(action.effects))):
                 if effect.literal.negated:
                     del action.effects[index]
+
+    if options.new_translation:
+        global USE_NEW_TRANSLATION
+        USE_NEW_TRANSLATION = True
 
     sas_task = pddl_to_sas(task)
     dump_statistics(sas_task)
