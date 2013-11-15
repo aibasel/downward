@@ -9,7 +9,6 @@
 #include <vector>
 
 namespace cegar_heuristic {
-
 typedef std::unordered_set<Fact, hash_fact> FactSet;
 
 class Task {

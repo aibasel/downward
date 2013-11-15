@@ -38,7 +38,7 @@ static char *cegar_memory_padding = 0;
 // search needs adjacent memory.
 static const int MEMORY_PADDING_MB = 75;
 
-void no_memory_continue () {
+void no_memory_continue() {
     assert(cegar_memory_padding);
     delete[] cegar_memory_padding;
     cegar_memory_padding = 0;
@@ -235,7 +235,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
         if (debug)
             cout << endl << "Expand: " << state->str() << " g:" << g
                  << " h:" << state->get_h() << " f:" << new_f << endl;
-         if (forward && use_h && state == goal) {
+        if (forward && use_h && state == goal) {
             if (debug)
                 cout << "GOAL REACHED" << endl;
             return true;
@@ -362,8 +362,8 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                         unseen.push(make_pair(next_abs, next_conc));
                         seen.insert(next_conc);
                     }
-                // Only find deviation reasons if we haven't found any splits already.
                 } else if (splits.empty()) {
+                    // Only find deviation reasons if we haven't found any splits already.
                     if (DEBUG)
                         cout << "      Paths deviate." << endl;
                     ++deviations;
@@ -373,8 +373,8 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                                                    &splits);
                     restrict_splits(conc_state, splits);
                 }
-            // Only find unmet preconditions if we haven't found any splits already.
             } else if (splits.empty()) {
+                // Only find unmet preconditions if we haven't found any splits already.
                 if (DEBUG)
                     cout << "      Operator not applicable: " << op->get_name() << endl;
                 ++unmet_preconditions;
@@ -428,8 +428,7 @@ void Abstraction::restrict_splits(State &conc_state, Splits &splits) const {
                     }
                     if (hadd_value <= min_hadd)
                         incumbents.push_back(i);
-                }
-                else {
+                } else {
                     if (hadd_value > max_hadd) {
                         incumbents.clear();
                         max_hadd = hadd_value;

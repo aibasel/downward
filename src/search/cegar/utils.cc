@@ -140,7 +140,7 @@ bool test_cegar_goal(const State &state) {
     return true;
 }
 
-bool cheaper(Operator *op1, Operator* op2) {
+bool cheaper(Operator *op1, Operator *op2) {
     return op1->get_cost() < op2->get_cost();
 }
 
@@ -154,11 +154,10 @@ struct SortByNumSuccessors {
     ~SortByNumSuccessors() {
     }
 
-    bool operator() (int i, int j) {
+    bool operator()(int i, int j) {
         // Move nodes with the highest number of successors to the front.
-        return (successors[i].size() > successors[j].size());
+        return successors[i].size() > successors[j].size();
     }
-
 };
 
 struct SortByNumPredecessors {
@@ -171,12 +170,11 @@ struct SortByNumPredecessors {
     ~SortByNumPredecessors() {
     }
 
-    bool operator() (int i, int j) {
+    bool operator()(int i, int j) {
         // Move nodes with the highest number of predecessors to the front.
         // The order will be reversed later.
-        return (predecessors[i].size() > predecessors[j].size());
+        return predecessors[i].size() > predecessors[j].size();
     }
-
 };
 
 void erase_node(int del_node, set<int> &nodes, Edges &predecessors, Edges &successors) {
@@ -376,7 +374,6 @@ void write_landmark_graph(const LandmarkGraph &graph) {
         }
     }
     for (int var = 0; var < g_variable_domain.size(); var++) {
-
     }
     for (int i = 0; i < g_goal.size(); i++) {
         dotfile << "\"" << get_node_name(g_goal[i]) << "\" [color=red];" << endl;
@@ -448,9 +445,8 @@ string to_string(const unordered_set<int> &s) {
     return out.str();
 }
 
-ostream & operator<<(ostream &os, const Fact &fact) {
+ostream &operator<<(ostream &os, const Fact &fact) {
     os << fact.first << "=" << fact.second;
     return os;
 }
-
 }

@@ -62,7 +62,7 @@ bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
 struct SortHaddValuesUp {
     const Task task;
     explicit SortHaddValuesUp(const Task &t) : task(t) {}
-    bool operator() (Fact a, Fact b) {
+    bool operator()(Fact a, Fact b) {
         return task.get_hadd_value(a.first, a.second) < task.get_hadd_value(b.first, b.second);
     }
 };
@@ -144,7 +144,7 @@ bool is_true_in_initial_state(Fact fact) {
 struct is_not_leaf_landmark {
     const LandmarkGraph graph;
     explicit is_not_leaf_landmark(const LandmarkGraph &g) : graph(g) {}
-    bool operator() (Fact fact) {
+    bool operator()(Fact fact) {
         LandmarkNode *node = graph.get_landmark(fact);
         return !node->children.empty();
     }

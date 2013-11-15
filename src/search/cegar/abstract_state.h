@@ -89,8 +89,8 @@ public:
     AbstractState *get_prev_solution_state() const {return prev_solution_state; }
     AbstractState *get_next_solution_state() const {return next_solution_state; }
 
-    Arcs &get_arcs_out() {return arcs_out; };
-    Arcs &get_arcs_in() {return arcs_in; };
+    Arcs &get_arcs_out() {return arcs_out; }
+    Arcs &get_arcs_in() {return arcs_in; }
     Loops &get_loops() {return loops; }
 
     Node *get_node() const {return node; }

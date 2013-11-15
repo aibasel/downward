@@ -8,7 +8,6 @@
 using namespace std;
 
 namespace cegar_heuristic {
-
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> ops,
            State init, vector<Fact> goal_facts)
     : initial_state(init),
@@ -408,5 +407,4 @@ void Task::dump() const {
             cout << "    " << var << ": " << to_string(task_index[var]) << endl;
     }
 }
-
 }
