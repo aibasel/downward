@@ -53,10 +53,9 @@ Abstraction::Abstraction(const Task *t)
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
-      num_states_offline(-1),
       last_avg_h(0),
       last_init_h(0),
-      max_states_offline(1),
+      max_states(1),
       max_time(INF),
       max_init_h(INF),
       use_astar(true),
@@ -110,13 +109,13 @@ void Abstraction::build() {
         if (valid_conc_solution)
             break;
     }
-    // Remember how many states were refined offline.
-    num_states_offline = get_num_states();
-    assert(num_states_offline == states.size());
+    // Remember number of states before we release the memory.
+    num_states = get_num_states();
+    assert(num_states == states.size());
     cout << "Done building abstraction [t=" << g_timer << "]" << endl;
     cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << valid_conc_solution << endl;
-    cout << "Single abstraction states: " << num_states_offline << endl;
+    cout << "Single abstraction states: " << num_states << endl;
 
     // Even if we found a valid concrete solution, we might have refined in the
     // last iteration, so we must update the h-values.
@@ -195,7 +194,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     int num_states = get_num_states();
     if (num_states % STATES_LOG_STEP == 0)
         cout << "Abstract states: " << num_states << "/"
-             << max_states_offline << endl;
+             << max_states << endl;
     if (write_dot_files)
         write_dot_file(num_states);
 }
@@ -738,7 +737,7 @@ void Abstraction::get_needed_costs(vector<int> *needed_costs) {
 
 bool Abstraction::may_keep_refining() const {
     return cegar_memory_padding &&
-           (get_num_states() < max_states_offline) &&
+           (get_num_states() < max_states) &&
            (max_time == INF || timer() < max_time) &&
            (init->get_h() < max_init_h);
 }

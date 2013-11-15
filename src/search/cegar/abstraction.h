@@ -81,12 +81,11 @@ private:
     mutable int deviations;
     mutable int unmet_preconditions;
     mutable int unmet_goals;
-    mutable int num_states_offline;
     mutable double last_avg_h;
     mutable int last_init_h;
 
     // Settings.
-    int max_states_offline;
+    int max_states;
     // Maximum time for building the abstraction.
     int max_time;
     int max_init_h;
@@ -133,7 +132,7 @@ public:
     explicit Abstraction(const Task *t);
     ~Abstraction();
 
-    // Build abstraction offline.
+    // Build abstraction.
     void build();
 
     AbstractState *get_abstract_state(const State &state) const;
@@ -157,7 +156,7 @@ public:
     double get_avg_h() const;
 
     // Settings.
-    void set_max_states_offline(int states) {max_states_offline = states; }
+    void set_max_states(int states) {max_states = states; }
     void set_max_time(int time) {max_time = time; }
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_log_h(bool log) {log_h = log; }
