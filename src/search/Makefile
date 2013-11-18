@@ -187,9 +187,7 @@ DEPEND = g++ -MM
 CCOPT = -Iext
 CCOPT += -g
 CCOPT += -m32
-# The flag -std=c++11 is only supported by gcc 4.7 and later.
-CCOPT += -std=c++0x
-CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
+CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
 
 ## The following lines contain workarounds for bugs when
 ## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
@@ -223,7 +221,7 @@ POSTLINKOPT =
 ##        For details, see man gcc on -static-libgcc.
 
 CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
-CCOPT_DEBUG    = -O3 -g
+CCOPT_DEBUG    = -O3
 CCOPT_PROFILE  = -O3 -pg
 
 LINKOPT_RELEASE =
