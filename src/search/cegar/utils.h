@@ -44,8 +44,6 @@ bool test_cegar_goal(const State &s);
 
 bool cheaper(Operator *op1, Operator *op2);
 
-int get_pos_in_causal_graph_ordering(int var);
-
 struct hash_state {
     size_t operator()(const State &state) const {
         return state.hash();

@@ -35,9 +35,6 @@ enum PickStrategy {
     // Refinement: - (remaining_values / original_domain_size)
     MIN_REFINED,
     MAX_REFINED,
-    // Number of predecessors in ordering of causal graph.
-    MIN_PREDECESSORS,
-    MAX_PREDECESSORS,
     // Choose the variable whose split yields the min/max number of new operators.
     MIN_OPS,
     MAX_OPS,
