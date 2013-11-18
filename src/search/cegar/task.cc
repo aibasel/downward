@@ -80,8 +80,7 @@ void Task::remove_unmarked_operators() {
         if (operators[i].is_marked())
             new_original_operator_numbers.push_back(original_operator_numbers[i]);
     }
-    auto new_end = remove_if(operators.begin(), operators.end(), is_not_marked);
-    operators.erase(new_end, operators.end());
+    operators.erase(remove_if(operators.begin(), operators.end(), is_not_marked), operators.end());
     original_operator_numbers = new_original_operator_numbers;
     assert(operators.size() == original_operator_numbers.size());
 }
@@ -297,7 +296,7 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
 void Task::combine_facts(int var, unordered_set<int> &values) {
     assert(values.size() >= 2);
     set<int> mapped_values;
-    for (auto it = values.begin(); it != values.end(); ++it) {
+    for (unordered_set<int>::iterator it = values.begin(); it != values.end(); ++it) {
         mapped_values.insert(task_index[var][*it]);
     }
     if (DEBUG)
@@ -314,7 +313,7 @@ void Task::combine_facts(int var, unordered_set<int> &values) {
     // Set combined fact_name.
     stringstream name;
     string sep = "";
-    for (auto it = mapped_values.begin(); it != mapped_values.end(); ++it) {
+    for (set<int>::iterator it = mapped_values.begin(); it != mapped_values.end(); ++it) {
         name << sep << fact_names[var][*it];
         sep = " OR ";
     }

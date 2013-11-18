@@ -90,7 +90,7 @@ void PrePost::dump() const {
 }
 
 void Operator::keep_single_effect(int var) {
-    for(auto it = pre_post.begin(); it != pre_post.end();) {
+    for(vector<PrePost>::iterator it = pre_post.begin(); it != pre_post.end();) {
         if (it->var != var) {
             if (it->pre != -1)
                 prevail.push_back(Prevail(it->var, it->pre));
