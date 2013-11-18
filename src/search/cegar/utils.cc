@@ -353,7 +353,7 @@ void write_landmark_graph(const LandmarkGraph &graph) {
         cerr << "dot file for causal graph could not be opened" << endl;
         exit_with(EXIT_CRITICAL_ERROR);
     }
-    dotfile << "digraph cg {" << endl;
+    dotfile << "digraph landmark-graph {" << endl;
 
 
     for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
