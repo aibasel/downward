@@ -319,8 +319,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_CONSTRAINED");
     pick_strategies.push_back("MIN_REFINED");
     pick_strategies.push_back("MAX_REFINED");
-    pick_strategies.push_back("MIN_OPS");
-    pick_strategies.push_back("MAX_OPS");
     pick_strategies.push_back("MIN_HADD");
     pick_strategies.push_back("MAX_HADD");
     pick_strategies.push_back("MIN_HADD_DYN");

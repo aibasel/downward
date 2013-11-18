@@ -514,52 +514,6 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
                 max_refinement = refinement;
             }
         }
-    } else if (pick == MIN_OPS || pick == MAX_OPS) {
-        cond = 0;
-        // Make the variables easily accessible.
-        vector<int> vars(splits.size());
-        for (int i = 0; i < splits.size(); ++i) {
-            vars[i] = splits[i].first;
-        }
-
-        // Record number of new ops per variable.
-        vector<int> new_ops(vars.size(), 0);
-
-        // Loop over all incoming ops o_in and record for each possible split
-        // variable the number of resulting operators. For each operator we get
-        // one new operator if eff(o_in) is defined and two otherwise.
-        for (int i = 0; i < state.get_arcs_in().size(); ++i) {
-            const Operator *op = state.get_arcs_in()[i].first;
-            for (int j = 0; j < vars.size(); ++j) {
-                int eff = get_post(*op, vars[j]);
-                new_ops[j] += (eff == UNDEFINED) ? 2 : 1;
-            }
-        }
-        // Loop over all outgoing ops o_out and record for each possible split
-        // variable the number of resulting operators. If eff(o_in) is defined
-        // we get one new operator, else two.
-        for (int i = 0; i < state.get_arcs_out().size(); ++i) {
-            const Operator *op = state.get_arcs_out()[i].first;
-            for (int j = 0; j < vars.size(); ++j) {
-                int pre = get_pre(*op, vars[j]);
-                new_ops[j] += (pre == UNDEFINED) ? 2 : 1;
-            }
-        }
-        // Loop over all self-loops o and record for each possible split
-        // variable the number of resulting operators. If pre(o) is defined we
-        // get one new operator, else two.
-        for (int i = 0; i < state.get_loops().size(); ++i) {
-            const Operator *op = state.get_loops()[i];
-            for (int j = 0; j < vars.size(); ++j) {
-                int pre = get_pre(*op, vars[j]);
-                new_ops[j] += (pre == UNDEFINED) ? 2 : 1;
-            }
-        }
-        if (pick == MIN_OPS) {
-            cond = min_element(new_ops.begin(), new_ops.end()) - new_ops.begin();
-        } else {
-            cond = max_element(new_ops.begin(), new_ops.end()) - new_ops.begin();
-        }
     } else if (pick == MIN_HADD || pick == MAX_HADD) {
         int min_hadd = INF;
         int max_hadd = -2;
