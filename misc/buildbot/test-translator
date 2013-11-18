@@ -21,7 +21,7 @@ set -ue
 # Create clean tmp dir.
 SAS_FILES=/tmp/$(whoami)/sas-files/
 rm -rf "$SAS_FILES"
-mkdir "$SAS_FILES"
+mkdir -p "$SAS_FILES"
 
 cd "$(dirname "$0")"
 
