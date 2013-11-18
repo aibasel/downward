@@ -514,22 +514,6 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
                 max_refinement = refinement;
             }
         }
-    } else if (pick == MIN_PREDECESSORS || pick == MAX_PREDECESSORS) {
-        int min_pos = INF;
-        int max_pos = -1;
-        for (int i = 0; i < splits.size(); ++i) {
-            int var = splits[i].first;
-            int pos = get_pos_in_causal_graph_ordering(var);
-            assert(pos != UNDEFINED);
-            if (pick == MIN_PREDECESSORS && pos < min_pos) {
-                cond = i;
-                min_pos = pos;
-            }
-            if (pick == MAX_PREDECESSORS && pos > max_pos) {
-                cond = i;
-                max_pos = pos;
-            }
-        }
     } else if (pick == MIN_OPS || pick == MAX_OPS) {
         cond = 0;
         // Make the variables easily accessible.
