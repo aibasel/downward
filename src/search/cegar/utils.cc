@@ -7,6 +7,8 @@
 #include <tr1/unordered_map>
 #include <vector>
 
+#include <ext/hash_map>
+
 #include "../globals.h"
 #include "../operator.h"
 #include "../option_parser.h"
@@ -170,8 +172,8 @@ void write_landmark_graph(const LandmarkGraph &graph) {
          != nodes2.end(); it++) {
         LandmarkNode *node_p = *it;
         Fact node_fact = get_fact(node_p);
-        for (auto parent_it = node_p->parents.begin(); parent_it
-             != node_p->parents.end(); ++parent_it) {
+        for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator parent_it =
+                node_p->parents.begin(); parent_it != node_p->parents.end(); ++parent_it) {
             //const edge_type &edge = parent_it->second;
             const LandmarkNode *parent_p = parent_it->first;
             Fact parent_fact = get_fact(parent_p);
@@ -238,7 +240,7 @@ string to_string(const vector<int> &v) {
 string to_string(const set<int> &s) {
     string sep = "";
     stringstream out;
-    for (auto it = s.begin(); it != s.end(); ++it) {
+    for (set<int>::const_iterator it = s.begin(); it != s.end(); ++it) {
         out << sep << *it;
         sep = ",";
     }
@@ -248,7 +250,7 @@ string to_string(const set<int> &s) {
 string to_string(const unordered_set<int> &s) {
     string sep = "";
     stringstream out;
-    for (auto it = s.begin(); it != s.end(); ++it) {
+    for (unordered_set<int>::const_iterator it = s.begin(); it != s.end(); ++it) {
         out << sep << *it;
         sep = ",";
     }

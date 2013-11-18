@@ -98,7 +98,7 @@ int AbstractState::count(int var) const {
 }
 
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    for (auto it = arcs_in.begin(); it != arcs_in.end(); ++it) {
+    for (Arcs::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
         const Operator *op = it->first;
         AbstractState *u = it->second;
         assert(u != this);
@@ -122,7 +122,7 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
 }
 
 void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    for (auto it = arcs_out.begin(); it != arcs_out.end(); ++it) {
+    for (Arcs::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
         const Operator *op = it->first;
         AbstractState *w = it->second;
         assert(w != this);
@@ -239,7 +239,7 @@ void AbstractState::add_loop(const Operator *op) {
 }
 
 void AbstractState::remove_arc(Arcs &arcs, const Operator *op, AbstractState *other) {
-    auto pos = find(arcs.begin(), arcs.end(), Arc(op, other));
+    Arcs::iterator pos = find(arcs.begin(), arcs.end(), Arc(op, other));
     assert(pos != arcs.end());
     // For PODs assignment is faster than swapping.
     *pos = arcs.back();

@@ -206,7 +206,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
 }
 
 void Abstraction::reset_distances_and_solution() const {
-    for (auto it = states.begin(); it != states.end(); ++it) {
+    for (AbstractStates::const_iterator it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = (*it);
         state->set_distance(INF);
         state->set_prev_solution_op(0);
@@ -241,7 +241,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             return true;
         }
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
-        for (auto it = successors.begin(); it != successors.end(); ++it) {
+        for (Arcs::iterator it = successors.begin(); it != successors.end(); ++it) {
             const Operator *op = it->first;
             AbstractState *successor = it->second;
 
@@ -341,7 +341,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             }
         }
         Arcs &arcs_out = abs_state->get_arcs_out();
-        for (auto it = arcs_out.begin(); it != arcs_out.end(); ++it) {
+        for (Arcs::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
             const Operator *op = it->first;
             AbstractState *next_abs = it->second;
             assert(!use_astar || (abs_state->get_next_solution_op() &&
@@ -583,7 +583,7 @@ void Abstraction::update_h_values() const {
     goal->set_distance(0);
     open->push(0, goal);
     astar_search(false, false);
-    for (auto it = states.begin(); it != states.end(); ++it) {
+    for (AbstractStates::const_iterator it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         state->set_h(state->get_distance());
     }
@@ -593,7 +593,7 @@ double Abstraction::get_avg_h() const {
     // This function is called after the abstraction has been built, so all
     // h-values are up-to-date.
     double avg_h = 0.;
-    for (auto it = states.begin(); it != states.end(); ++it) {
+    for (AbstractStates::const_iterator it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         const int h = state->get_h();
         assert(h >= 0);
@@ -636,7 +636,7 @@ void Abstraction::write_dot_file(int num) {
     for (it = states.begin(); it != states.end(); ++it) {
         AbstractState *current_state = *it;
         Arcs &next = current_state->get_arcs_out();
-        for (auto it = next.begin(); it != next.end(); ++it) {
+        for (Arcs::iterator it = next.begin(); it != next.end(); ++it) {
             const Operator *op = it->first;
             AbstractState *next_state = it->second;
             dotfile << current_state->str() << " -> " << next_state->str()
@@ -720,7 +720,7 @@ void Abstraction::print_statistics() {
     int nexts = 0, prevs = 0, total_loops = 0;
     int unreachable_states = 0;
     int arc_size = 0;
-    for (auto it = states.begin(); it != states.end(); ++it) {
+    for (AbstractStates::iterator it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         if (state->get_h() == INF)
             ++unreachable_states;
