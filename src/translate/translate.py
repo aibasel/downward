@@ -192,7 +192,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
     mutex_ranges, implied_facts, condition):
 
     # collect all add effects
-    effects_by_variable = defaultdict(dict)
+    effects_by_variable = defaultdict(lambda : defaultdict(list))
     add_conds_by_variable = defaultdict(list)
     for conditions, fact in operator.add_effects:
         eff_condition_list = translate_strips_conditions(conditions, dictionary,
@@ -201,13 +201,11 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
         if eff_condition_list is None: # Impossible condition for this effect.
             continue
         for var, val in dictionary[fact]:
-            effect_on_var = effects_by_variable.setdefault(var, {})
-            effect_cond_for_val = effect_on_var.setdefault(val, [])
-            effect_cond_for_val.extend(eff_condition_list)
+            effects_by_variable[var][val].extend(eff_condition_list)
             add_conds_by_variable[var].append(conditions)
     
     # collect all del effects
-    del_effects_by_variable = {}
+    del_effects_by_variable = defaultdict(lambda: defaultdict(list))
     for conditions, fact in operator.del_effects:
         eff_condition_list = translate_strips_conditions(conditions, dictionary,
                                                          ranges, mutex_dict,
@@ -215,9 +213,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
         if eff_condition_list is None: # Impossible condition for this effect.
             continue
         for var, val in dictionary[fact]:
-            effect_on_var = del_effects_by_variable.setdefault(var, {})
-            effect_cond_for_val = effect_on_var.setdefault(val, [])
-            effect_cond_for_val.extend(eff_condition_list)
+            del_effects_by_variable[var][val].extend(eff_condition_list)
 
     # add effect var=none_of_those for all del effects with the additional
     # condition that the deleted value has been true and no add effect triggers
@@ -245,9 +241,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
                             break
                         new_cond[cvar] = cval
                     else:
-                        t = effects_by_variable[var].setdefault(
-                            none_of_those, [])
-                        t.append(new_cond)
+                        effects_by_variable[var][none_of_those].append(new_cond)
 
     return build_sas_operator(operator.name, condition, effects_by_variable,
                               operator.cost, ranges, implied_facts)
