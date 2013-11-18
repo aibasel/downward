@@ -181,7 +181,7 @@ void erase_node(int del_node, set<int> &nodes, Edges &predecessors, Edges &succe
     nodes.erase(del_node);
     // For all unsorted nodes, delete node from their predecessor and
     // successor lists.
-    for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+    for (set<int>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
         unordered_set<int> &pre = predecessors[*it];
         auto pos = find(pre.begin(), pre.end(), del_node);
         if (pos != pre.end())

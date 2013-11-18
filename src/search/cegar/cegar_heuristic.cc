@@ -9,6 +9,8 @@
 #include "../landmarks/h_m_landmarks.h"
 #include "../landmarks/landmark_graph.h"
 
+#include <ext/hash_map>
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -70,7 +72,7 @@ struct SortHaddValuesUp {
 
 void CegarHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
     const set<LandmarkNode *> &nodes = landmark_graph.get_nodes();
-    for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+    for (set<LandmarkNode *>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
         const LandmarkNode *node_p = *it;
         facts->push_back(get_fact(node_p));
     }
@@ -98,7 +100,8 @@ void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_
     LandmarkNode *node = landmark_graph.get_landmark(fact);
     assert(node);
     vector<const LandmarkNode *> open;
-    for (auto it = node->parents.begin(); it != node->parents.end(); ++it) {
+    for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
+            node->parents.begin(); it != node->parents.end(); ++it) {
         const LandmarkNode *parent = it->first;
         open.push_back(parent);
     }
@@ -107,7 +110,8 @@ void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_
         open.pop_back();
         Fact ancestor_fact = get_fact(ancestor);
         (*groups)[ancestor_fact.first].insert(ancestor_fact.second);
-        for (auto it = ancestor->parents.begin(); it != ancestor->parents.end(); ++it) {
+        for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
+                ancestor->parents.begin(); it != ancestor->parents.end(); ++it) {
             const LandmarkNode *parent = it->first;
             open.push_back(parent);
         }
@@ -159,16 +163,15 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
         facts = original_task.get_goal();
     } else if (decomposition == GOAL_LEAVES) {
         facts = original_task.get_goal();
-        auto new_end = remove_if(facts.begin(), facts.end(), is_not_leaf_landmark(landmark_graph));
-        facts.erase(new_end, facts.end());
+        facts.erase(remove_if(facts.begin(), facts.end(),
+            is_not_leaf_landmark(landmark_graph)), facts.end());
     } else {
         cerr << "Invalid decomposition: " << decomposition << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
     // Filter facts that are true in initial state.
     if (!options.get<bool>("trivial_facts")) {
-        auto new_end = remove_if(facts.begin(), facts.end(), is_true_in_initial_state);
-        facts.erase(new_end, facts.end());
+        facts.erase(remove_if(facts.begin(), facts.end(), is_true_in_initial_state), facts.end());
     }
     order_facts(facts);
 }
@@ -203,7 +206,8 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             if (combine_facts) {
                 unordered_map<int, unordered_set<int> > groups;
                 get_prev_landmarks(facts[i], &groups);
-                for (auto it = groups.begin(); it != groups.end(); ++it) {
+                for (unordered_map<int, unordered_set<int> >::iterator it =
+                        groups.begin(); it != groups.end(); ++it) {
                     if (it->second.size() >= 2)
                         task.combine_facts(it->first, it->second);
                 }
