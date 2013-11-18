@@ -6,6 +6,7 @@
 #include <set>
 
 using namespace std;
+using namespace std::tr1;
 
 namespace cegar_heuristic {
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> ops,

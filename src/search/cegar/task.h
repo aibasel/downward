@@ -9,7 +9,7 @@
 #include <vector>
 
 namespace cegar_heuristic {
-typedef std::unordered_set<Fact, hash_fact> FactSet;
+typedef std::tr1::unordered_set<Fact, hash_fact> FactSet;
 
 class Task {
 private:
@@ -52,7 +52,7 @@ public:
     void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const;
     bool translate_state(State &state) const;
 
-    void combine_facts(int var, unordered_set<int> &values);
+    void combine_facts(int var, std::tr1::unordered_set<int> &values);
 
     void install();
     void release_memory();

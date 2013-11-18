@@ -6,8 +6,8 @@
 #include "../heuristic.h"
 #include "../option_parser.h"
 
-#include <unordered_map>
-#include <unordered_set>
+#include <tr1/unordered_map>
+#include <tr1/unordered_set>
 
 class State;
 
@@ -52,14 +52,14 @@ class CegarHeuristic : public Heuristic {
     LandmarkGraph landmark_graph;
 
     LandmarkGraph get_landmark_graph() const;
-    void get_prev_landmarks(Fact fact, unordered_map<int, unordered_set<int> > *groups) const;
+    void get_prev_landmarks(Fact fact, std::tr1::unordered_map<int, std::tr1::unordered_set<int> > *groups) const;
 
     void mark_relevant_operators(std::vector<Operator> &operators, Fact fact) const;
     void add_operators(Task &task);
 
     // Compute the possible-before-set of facts that can be reached in the
     // delete-relaxation before last_fact is reached the first time.
-    void get_possibly_before_facts(const Fact last_fact, unordered_set<int> *reached) const;
+    void get_possibly_before_facts(const Fact last_fact, std::tr1::unordered_set<int> *reached) const;
 
     void order_facts(vector<Fact> &facts) const;
     void get_fact_landmarks(std::vector<Fact> *facts) const;

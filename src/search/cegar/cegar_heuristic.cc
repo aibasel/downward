@@ -16,6 +16,7 @@
 #include <vector>
 
 using namespace std;
+using namespace std::tr1;
 
 namespace cegar_heuristic {
 CegarHeuristic::CegarHeuristic(const Options &opts)

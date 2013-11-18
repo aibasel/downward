@@ -14,7 +14,7 @@
 
 #include <boost/dynamic_bitset.hpp>
 
-#include <unordered_set>
+#include <tr1/unordered_set>
 
 namespace cegar_heuristic {
 extern bool DEBUG;
@@ -68,7 +68,7 @@ string to_string(int i);
 string to_string(Fact fact);
 string to_string(const std::vector<int> &v);
 string to_string(const std::set<int> &s);
-string to_string(const std::unordered_set<int> &s);
+string to_string(const std::tr1::unordered_set<int> &s);
 
 std::ostream &operator<<(std::ostream &os, const Fact &fact);
 
