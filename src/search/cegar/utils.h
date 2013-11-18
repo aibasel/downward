@@ -42,8 +42,6 @@ void get_unmet_goal_conditions(const State &state, Splits *splits);
 bool goal_var(int var);
 bool test_cegar_goal(const State &s);
 
-bool cheaper(Operator *op1, Operator *op2);
-
 struct hash_state {
     size_t operator()(const State &state) const {
         return state.hash();

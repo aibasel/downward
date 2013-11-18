@@ -140,10 +140,6 @@ bool test_cegar_goal(const State &state) {
     return true;
 }
 
-bool cheaper(Operator *op1, Operator *op2) {
-    return op1->get_cost() < op2->get_cost();
-}
-
 Fact get_fact(const LandmarkNode *node) {
     assert(node);
     assert(node->vars.size() == 1);
