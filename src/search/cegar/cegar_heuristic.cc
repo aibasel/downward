@@ -54,10 +54,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 CegarHeuristic::~CegarHeuristic() {
 }
 
-bool sort_cg_forward(pair<int, int> atom1, pair<int, int> atom2) {
-    return get_pos_in_causal_graph_ordering(atom1.first) < get_pos_in_causal_graph_ordering(atom2.first);
-}
-
 bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
     return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
 }
@@ -124,10 +120,6 @@ void CegarHeuristic::order_facts(vector<Fact> &facts) const {
         // Nothing to do.
     } else if (fact_order == MIXED) {
         random_shuffle(facts.begin(), facts.end());
-    } else if (fact_order == CG_FORWARD or fact_order == CG_BACKWARD) {
-        sort(facts.begin(), facts.end(), sort_cg_forward);
-        if (fact_order == CG_BACKWARD)
-            reverse(facts.begin(), facts.end());
     } else if (fact_order == DOMAIN_SIZE_UP or fact_order == DOMAIN_SIZE_DOWN) {
         sort(facts.begin(), facts.end(), sort_domain_size_up);
         if (fact_order == DOMAIN_SIZE_DOWN)
@@ -340,8 +332,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     vector<string> fact_order_strategies;
     fact_order_strategies.push_back("ORIGINAL");
     fact_order_strategies.push_back("MIXED");
-    fact_order_strategies.push_back("CG_FORWARD");
-    fact_order_strategies.push_back("CG_BACKWARD");
     fact_order_strategies.push_back("DOMAIN_SIZE_UP");
     fact_order_strategies.push_back("DOMAIN_SIZE_DOWN");
     fact_order_strategies.push_back("HADD_UP");

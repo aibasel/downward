@@ -20,8 +20,6 @@ const int DEFAULT_STATES_OFFLINE = 10000;
 enum GoalOrder {
     ORIGINAL,
     MIXED,
-    CG_FORWARD,
-    CG_BACKWARD,
     DOMAIN_SIZE_UP,
     DOMAIN_SIZE_DOWN,
     HADD_UP,
