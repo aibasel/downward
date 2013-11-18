@@ -32,7 +32,6 @@ import tools
 USE_PARTIAL_ENCODING = True
 DETECT_UNREACHABLE = True
 DUMP_TASK = False
-USE_NEW_TRANSLATION = False
 
 ## Setting the following variable to True can cause a severe
 ## performance penalty due to weaker relevance analysis (see issue7).
@@ -165,14 +164,9 @@ def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ra
         return []
     sas_operators = []
     for condition in conditions:
-        if USE_NEW_TRANSLATION:
-            op = translate_strips_operator_aux_new(operator, dictionary, ranges,
-                                               mutex_dict, mutex_ranges,
-                                               implied_facts, condition)
-        else:
-            op = translate_strips_operator_aux(operator, dictionary, ranges,
-                                               mutex_dict, mutex_ranges,
-                                               implied_facts, condition)
+        op = translate_strips_operator_aux(operator, dictionary, ranges,
+                                           mutex_dict, mutex_ranges,
+                                           implied_facts, condition)
         if op is not None:
             sas_operators.append(op)
     return sas_operators
@@ -194,7 +188,7 @@ def negate_and_translate_condition(condition, dictionary, ranges, mutex_dict,
             negation.extend(cond)
     return negation if negation else None
 
-def translate_strips_operator_aux_new(operator, dictionary, ranges, mutex_dict,
+def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
     mutex_ranges, implied_facts, condition):
 
     # collect all add effects
@@ -267,9 +261,6 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges, impli
     pre_post = []
     for var in effects_by_variable:
         orig_pre = condition.get(var, -1)
-        # TODO make this an non-error output
-        if len(effects_by_variable[var]) > 1:
-            sys.stderr.write("more than one possible effect on a variable\n")
         for post, eff_conditions in effects_by_variable[var].items():
             pre = orig_pre
             # if the effect does not change the variable value, we ignore it
@@ -299,149 +290,6 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges, impli
         return None
     prevail = list(condition.items())
     return sas_tasks.SASOperator(name, prevail, pre_post, cost)
-
-def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
-    mutex_ranges, implied_facts, condition):
-    # NOTE: This function does not really deal with the intricacies of properly
-    # encoding delete effects for grouped propositions in the presence of
-    # conditional effects. It should work ok but will bail out in more
-    # complicated cases even though a conflict does not necessarily exist.
-    possible_add_conflict = False
-
-    effect = {}
-
-    for conditions, fact in operator.add_effects:
-        eff_condition_list = translate_strips_conditions(conditions, dictionary,
-                                                         ranges, mutex_dict,
-                                                         mutex_ranges)
-        if eff_condition_list is None: # Impossible condition for this effect.
-            continue
-        eff_condition = [sorted(eff_cond.items())
-                         for eff_cond in eff_condition_list]
-        for var, val in dictionary[fact]:
-            if condition.get(var) == val:
-                # Effect implied by precondition.
-                global removed_implied_effect_counter
-                removed_implied_effect_counter += 1
-                # print "Skipping effect of %s..." % operator.name
-                continue
-            effect_pair = effect.get(var)
-            if not effect_pair:
-                effect[var] = (val, eff_condition)
-            else:
-                other_val, eff_conditions = effect_pair
-                # Don't flag conflict just yet... the operator might be invalid
-                # because of conflicting add/delete effects (see pipesworld).
-                if other_val != val:
-                    possible_add_conflict = True
-                eff_conditions.extend(eff_condition)
-
-    for conditions, fact in operator.del_effects:
-        eff_condition_list = translate_strips_conditions(conditions, dictionary, ranges, mutex_dict, mutex_ranges)
-        if eff_condition_list is None:
-            continue
-        eff_condition = [sorted(eff_cond.items())
-                         for eff_cond in eff_condition_list]
-        for var, val in dictionary[fact]:
-            none_of_those = ranges[var] - 1
-
-            other_val, eff_conditions = effect.setdefault(var, (none_of_those, []))
-
-            if other_val != none_of_those:
-                # Look for matching add effect; ignore this del effect if found.
-                for cond in eff_condition:
-                    if cond not in eff_conditions and [] not in eff_conditions:
-                        print("Condition:")
-                        print(cond)
-                        print("Operator:")
-                        operator.dump()
-                        assert False, "Add effect with uncertain del effect partner?"
-                if other_val == val:
-                    # Conflicting ADD and DEL effect. This is *only* allowed if
-                    # this is also a precondition, in which case there is *no*
-                    # effect (the ADD takes precedence). We delete the add effect here.
-                    if condition.get(var) != val:
-                        # HACK HACK HACK!
-                        # There used to be an assertion here that actually
-                        # forbid this, but this was wrong in Pipesworld-notankage
-                        # (e.g. task 01). The thing is, it *is* possible for
-                        # an operator with proven (with the given invariants)
-                        # inconsistent preconditions to actually end up here if
-                        # the inconsistency of the preconditions is not obvious at
-                        # the SAS+ encoding level.
-                        #
-                        # Example: Pipes-Notank-01, operator
-                        # (pop-unitarypipe s12 b4 a1 a2 b4 lco lco).
-                        # This has precondition last(b4, s12) and on(b4, a2) which
-                        # is inconsistent because b4 can only be in one place.
-                        # However, the chosen encoding encodes *what is last in s12*
-                        # separately, and so the precondition translates to
-                        # "last(s12) = b4 and on(b4) = a2", which does not look
-                        # inconsistent at first glance.
-                        #
-                        # Something reasonable to do here would be to make a
-                        # decent check that the precondition is indeed inconsistent
-                        # (using *all* mutexes), but that seems tough with this
-                        # convoluted code, so we just warn and reject the operator.
-                        print("Warning: %s rejected. Cross your fingers." % (
-                            operator.name))
-                        if DEBUG:
-                            operator.dump()
-                        return None
-                        assert False
-
-                    assert eff_conditions == [[]]
-                    del effect[var]
-            else: # no add effect on this variable
-                if condition.get(var) != val:
-                    if var in condition:
-                        ## HACK HACK HACK! There is a precondition on the variable for
-                        ## this delete effect on another value, so there is no need to
-                        ## represent the delete effect. Right? Right???
-                        del effect[var]
-                        continue
-                    for index, cond in enumerate(eff_condition_list):
-                        if cond.get(var) != val:
-                            # Need a guard for this delete effect.
-                            assert (var not in condition and
-                                    var not in eff_condition[index]), "Oops?"
-                            eff_condition[index].append((var, val))
-                eff_conditions.extend(eff_condition)
-
-    if possible_add_conflict:
-        operator.dump()
-
-
-    assert not possible_add_conflict, "Conflicting add effects?"
-
-    # assert eff_condition != other_condition, "Duplicate effect"
-    # assert eff_condition and other_condition, "Dominated conditional effect"
-
-    if ADD_IMPLIED_PRECONDITIONS:
-        implied_precondition = set()
-        for fact in condition.items():
-            implied_precondition.update(implied_facts[fact])
-
-    pre_post = []
-    for var, (post, eff_condition_lists) in effect.items():
-        pre = condition.pop(var, -1)
-        if ranges[var] == 2:
-            # Apply simplifications for binary variables.
-            if prune_stupid_effect_conditions(var, post, eff_condition_lists):
-                global simplified_effect_condition_counter
-                simplified_effect_condition_counter += 1
-            if (ADD_IMPLIED_PRECONDITIONS and
-                pre == -1 and (var, 1 - post) in implied_precondition):
-                global added_implied_precondition_counter
-                added_implied_precondition_counter += 1
-                pre = 1 - post
-                # print "Added precondition (%d = %d) to %s" % (
-                #     var, pre, operator.name)
-        for eff_condition in eff_condition_lists:
-            pre_post.append((var, pre, post, eff_condition))
-    prevail = list(condition.items())
-
-    return sas_tasks.SASOperator(operator.name, prevail, pre_post, operator.cost)
 
 def prune_stupid_effect_conditions(var, val, conditions):
     ## (IF <conditions> THEN <var> := <val>) is a conditional effect.
@@ -750,9 +598,6 @@ def parse_options():
         "--relaxed", dest="generate_relaxed_task", action="store_true",
         help="Output relaxed task (no delete effects)")
     optparser.add_option(
-        "--newtrans", dest="new_translation", action="store_true",
-        help="Use new translation")
-    optparser.add_option(
         "--force-old-python", action="store_true",
         help="Allow running the translator with slow Python 2.6")
     options, args = optparser.parse_args()
@@ -779,10 +624,6 @@ def main():
             for index, effect in reversed(list(enumerate(action.effects))):
                 if effect.literal.negated:
                     del action.effects[index]
-
-    if options.new_translation:
-        global USE_NEW_TRANSLATION
-        USE_NEW_TRANSLATION = True
 
     sas_task = pddl_to_sas(task)
     dump_statistics(sas_task)
