@@ -4,8 +4,7 @@
 #include <fstream>
 #include <set>
 #include <sstream>
-#include <unordered_map>
-#include <unordered_set>
+#include <tr1/unordered_map>
 #include <vector>
 
 #include "../globals.h"
@@ -17,6 +16,7 @@
 #include "../landmarks/h_m_landmarks.h"
 
 using namespace std;
+using namespace std::tr1;
 
 namespace cegar_heuristic {
 bool DEBUG = false;
