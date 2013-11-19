@@ -207,6 +207,10 @@ def parse_task(task_pddl):
             except ValueError as e:
                 raise SystemExit("Error in initial state specification\n" +
                                  "Reason: %s." %  e)
+            if not isinstance(assignment.expression,
+                              f_expression.NumericConstant):
+                raise SystemExit("Illegal assignment in initial state " +
+                    "specification:\n%s" % assignment)
             if assignment.fluent in initial_assignments:
                 prev = initial_assignments[assignment.fluent]
                 if assignment.expression == prev.expression:
