@@ -201,6 +201,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
 
     # collect all add effects
     effects_by_variable = defaultdict(lambda: defaultdict(list))
+    # effects_by_variables: var -> val -> list(FDR conditions)
     add_conds_by_variable = defaultdict(list)
     for conditions, fact in operator.add_effects:
         eff_condition_list = translate_strips_conditions(conditions, dictionary,
@@ -241,6 +242,16 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
                 # add condition that no add effect triggers
                 for no_add_cond in no_add_effect_condition:
                     new_cond = dict(cond)
+                    # This is a rather expensive step. We try every no_add_cond
+                    # with every condition of the delete effect and discard the
+                    # overal combination if it is unsatisfiable. Since
+                    # no_add_effect_condition is precomputed it can contain many
+                    # no_add_conds in which a certain literal occurs. So if cond
+                    # plus the literal is already unsatisfiable, we still try
+                    # all these combinations. A possible optimization would be
+                    # to re-compute no_add_effect_condition for every delete
+                    # effect and to unfold the product(*condition) in
+                    # negate_and_translate_condition to allow an early break.
                     for cvar, cval in no_add_cond.items():
                         if cvar in new_cond and new_cond[cvar] != cval:
                             # the del effect condition plus the deleted atom
