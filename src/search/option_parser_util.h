@@ -152,7 +152,8 @@ Predefinitions<T> *Predefinitions<T>::instance_ = 0;
 
 
 
-struct Synergy {
+class Synergy {
+public:
     std::vector<Heuristic *> heuristics;
 };
 
