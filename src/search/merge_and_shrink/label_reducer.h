@@ -4,44 +4,30 @@
 #include "../globals.h"
 #include "../operator.h"
 #include "../operator_cost.h"
+#include "label.h"
 
 #include <cassert>
 #include <vector>
 
-class OperatorSignature;
+class LabelSignature;
 
 class LabelReducer {
-    std::vector<const Operator *> reduced_label_by_index;
-    inline int get_op_index(const Operator *op) const;
+    std::vector<int> reduced_label_by_index;
 
     int num_pruned_vars;
     int num_labels;
     int num_reduced_labels;
 
-    OperatorSignature build_operator_signature(
-        const Operator &op, OperatorCost cost_type,
+    LabelSignature build_label_signature(const Label &label,
         const std::vector<bool> &var_is_used) const;
 public:
-    LabelReducer(
-        const std::vector<const Operator *> &relevant_operators,
-        const std::vector<int> &pruned_vars,
-        OperatorCost cost_type);
+    LabelReducer(const std::vector<const Label *> &relevant_labels,
+        const std::vector<int> &pruned_vars);
     ~LabelReducer();
-    inline const Operator *get_reduced_label(const Operator *op) const;
+    int get_reduced_label(int label_no) const {
+        return reduced_label_by_index[label_no];
+    }
     void statistics() const;
 };
-
-inline int LabelReducer::get_op_index(const Operator *op) const {
-    int op_index = op - &*g_operators.begin();
-    assert(op_index >= 0 && op_index < g_operators.size());
-    return op_index;
-}
-
-inline const Operator *LabelReducer::get_reduced_label(
-    const Operator *op) const {
-    const Operator *reduced_label = reduced_label_by_index[get_op_index(op)];
-    assert(reduced_label);
-    return reduced_label;
-}
 
 #endif

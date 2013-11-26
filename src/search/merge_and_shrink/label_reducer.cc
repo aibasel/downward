@@ -13,11 +13,11 @@ using namespace __gnu_cxx;
 
 typedef pair<int, int> Assignment;
 
-struct OperatorSignature {
+struct LabelSignature {
     vector<int> data;
 
-    OperatorSignature(const vector<Assignment> &preconditions,
-                      const vector<Assignment> &effects, int cost) {
+    LabelSignature(const vector<Assignment> &preconditions,
+                   const vector<Assignment> &effects, int cost) {
         // We require that preconditions and effects are sorted by
         // variable -- some sort of canonical representation is needed
         // to guarantee that we can properly test for uniqueness.
@@ -38,7 +38,7 @@ struct OperatorSignature {
         data.push_back(cost);
     }
 
-    bool operator==(const OperatorSignature &other) const {
+    bool operator==(const LabelSignature &other) const {
         return data == other.data;
     }
 
@@ -49,40 +49,39 @@ struct OperatorSignature {
 
 namespace __gnu_cxx {
 template<>
-struct hash<OperatorSignature> {
-    size_t operator()(const OperatorSignature &sig) const {
+struct hash<LabelSignature> {
+    size_t operator()(const LabelSignature &sig) const {
         return sig.hash();
     }
 };
 }
 
 LabelReducer::LabelReducer(
-    const vector<const Operator *> &relevant_operators,
-    const vector<int> &pruned_vars,
-    OperatorCost cost_type) {
+    const vector<const Label *> &relevant_labels,
+    const vector<int> &pruned_vars) {
     num_pruned_vars = pruned_vars.size();
-    num_labels = relevant_operators.size();
+    num_labels = relevant_labels.size();
     num_reduced_labels = 0;
 
     vector<bool> var_is_used(g_variable_domain.size(), true);
     for (size_t i = 0; i < pruned_vars.size(); ++i)
         var_is_used[pruned_vars[i]] = false;
 
-    hash_map<OperatorSignature, const Operator *> reduced_label_map;
+    hash_map<LabelSignature, int> reduced_label_map;
     reduced_label_by_index.resize(g_operators.size(), 0);
 
-    for (size_t i = 0; i < relevant_operators.size(); ++i) {
-        const Operator *op = relevant_operators[i];
-        OperatorSignature signature = build_operator_signature(
-            *op, cost_type, var_is_used);
+    for (size_t i = 0; i < relevant_labels.size(); ++i) {
+        const Label *label = relevant_labels[i];
+        LabelSignature signature = build_label_signature(
+            *label, var_is_used);
 
-        int op_index = get_op_index(op);
+        int label_index = label->get_index();
         if (!reduced_label_map.count(signature)) {
-            reduced_label_map[signature] = op;
-            reduced_label_by_index[op_index] = op;
+            reduced_label_map[signature] = label_index;
+            reduced_label_by_index[label_index] = label_index;
             ++num_reduced_labels;
         } else {
-            reduced_label_by_index[op_index] = reduced_label_map[signature];
+            reduced_label_by_index[label_index] = reduced_label_map[signature];
         }
     }
     assert(reduced_label_map.size() == num_reduced_labels);
@@ -91,14 +90,14 @@ LabelReducer::LabelReducer(
 LabelReducer::~LabelReducer() {
 }
 
-OperatorSignature LabelReducer::build_operator_signature(
-    const Operator &op, OperatorCost cost_type,
+LabelSignature LabelReducer::build_label_signature(
+    const Label &label,
     const vector<bool> &var_is_used) const {
     vector<Assignment> preconditions;
     vector<Assignment> effects;
 
-    int op_cost = get_adjusted_action_cost(op, cost_type);
-    const vector<Prevail> &prev = op.get_prevail();
+    const Operator *op = label.get_canonical_op();
+    const vector<Prevail> &prev = op->get_prevail();
     for (size_t i = 0; i < prev.size(); ++i) {
         int var = prev[i].var;
         if (var_is_used[var]) {
@@ -106,7 +105,7 @@ OperatorSignature LabelReducer::build_operator_signature(
             preconditions.push_back(make_pair(var, val));
         }
     }
-    const vector<PrePost> &pre_post = op.get_pre_post();
+    const vector<PrePost> &pre_post = op->get_pre_post();
     for (size_t i = 0; i < pre_post.size(); ++i) {
         int var = pre_post[i].var;
         if (var_is_used[var]) {
@@ -120,7 +119,7 @@ OperatorSignature LabelReducer::build_operator_signature(
     ::sort(preconditions.begin(), preconditions.end());
     ::sort(effects.begin(), effects.end());
 
-    return OperatorSignature(preconditions, effects, op_cost);
+    return LabelSignature(preconditions, effects, label.get_cost());
 }
 
 void LabelReducer::statistics() const {

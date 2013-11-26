@@ -6,20 +6,26 @@
 #include <vector>
 
 class LabelReducer;
-class Operator;
+class Label;
 
 class LabelReduction {
     const Options options;
     LabelReducer *label_reducer;
     int next_label_no;
+
+    std::vector<const Label *> labels;
 public:
     LabelReduction(const Options &options);
-    void reduce_labels(const std::vector<const Operator *> &relevant_operators,
-                  const std::vector<int> &pruned_vars,
-                  OperatorCost cost_type);
+    void reduce_labels(const std::vector<const Label *> &relevant_labels,
+                  const std::vector<int> &pruned_vars);
 
-    const Operator *get_reduced_label(const Operator *op) const;
+    int get_reduced_label(int label_no) const;
     void free();
+    int get_cost_for_label(int label_no) const;
+    const Label *get_label_by_index(int index) const;
+    const std::vector<const Label *> &get_labels() const {
+        return labels;
+    }
 };
 
 #endif // LABEL_REDUCTION_H
