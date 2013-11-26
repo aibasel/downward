@@ -4,12 +4,13 @@
 #include "shrink_strategy.h"
 
 #include "../operator_cost.h"
+#include "label.h"
 
 #include <ext/slist>
 #include <vector>
 
 class State;
-class Operator;
+//class Operator;
 class LabelReduction;
 
 struct AbstractTransition {
@@ -44,10 +45,12 @@ class Abstraction {
 
     const bool is_unit_cost;
     const OperatorCost cost_type;
+    // TODO: remove cost_type
+    LabelReduction *label_reduction;
 
-    std::vector<const Operator *> relevant_operators;
+    std::vector<const Label *> relevant_labels;
     int num_states;
-    std::vector<std::vector<AbstractTransition> > transitions_by_op;
+    std::vector<std::vector<AbstractTransition> > transitions_by_label;
 
     std::vector<int> init_distances;
     std::vector<int> goal_distances;
@@ -80,7 +83,7 @@ protected:
                                                        AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
 public:
-    Abstraction(bool is_unit_cost, OperatorCost cost_type);
+    Abstraction(bool is_unit_cost, OperatorCost cost_type, LabelReduction *label_reduction);
     virtual ~Abstraction();
 
     // Two methods to identify the abstraction in output.
@@ -89,9 +92,9 @@ public:
     virtual std::string description() const = 0;
     std::string tag() const;
 
-    static void build_atomic_abstractions(
-        bool is_unit_cost, OperatorCost cost_type,
-        std::vector<Abstraction *> &result);
+    // TODO: label_reduction has only to be passed because the method is static.
+    static void build_atomic_abstractions(bool is_unit_cost, OperatorCost cost_type,
+        std::vector<Abstraction *> &result, LabelReduction *label_reduction);
     bool is_solvable() const;
 
     int get_cost(const State &state) const;
@@ -107,7 +110,7 @@ public:
     bool is_in_varset(int var) const;
 
     void compute_distances();
-    void normalize(LabelReduction *label_reduction = 0);
+    void normalize(bool reduce_labels);
     void release_memory();
 
     void dump() const;
@@ -130,14 +133,16 @@ public:
     }
 
     int get_num_ops() const {
-        return transitions_by_op.size();
+        return transitions_by_label.size();
     }
 
     const std::vector<AbstractTransition> &get_transitions_for_op(int op_no) const {
-        return transitions_by_op[op_no];
+        return transitions_by_label[op_no];
     }
 
     int get_cost_for_op(int op_no) const;
+    // TODO: not abstraction-specific
+    int get_cost_for_label(int label_no) const;
 };
 
 class AtomicAbstraction : public Abstraction {
@@ -150,7 +155,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, int variable);
+    AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, LabelReduction *label_reduction, int variable);
     virtual ~AtomicAbstraction();
 };
 
@@ -164,8 +169,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    CompositeAbstraction(
-        bool is_unit_cost, OperatorCost cost_type,
+    CompositeAbstraction(bool is_unit_cost, OperatorCost cost_type, LabelReduction *label_reduction,
         Abstraction *abs1, Abstraction *abs2);
     virtual ~CompositeAbstraction();
 };

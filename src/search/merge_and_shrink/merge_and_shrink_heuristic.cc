@@ -101,7 +101,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
     vector<Abstraction *> atomic_abstractions;
     Abstraction::build_atomic_abstractions(
-        is_unit_cost_problem(), get_cost_type(), atomic_abstractions);
+        is_unit_cost_problem(), get_cost_type(), atomic_abstractions, label_reduction);
 
     cout << "Shrinking atomic abstractions..." << endl;
     for (size_t i = 0; i < atomic_abstractions.size(); ++i) {
@@ -128,8 +128,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         // TODO: When using nonlinear merge strategies, make sure not
         // to normalize multiple parts of a composite. See issue68.
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            abstraction->normalize(label_reduction);
-            other_abstraction->normalize();
+            abstraction->normalize(use_label_reduction);
+            other_abstraction->normalize(false);
         }
 
         abstraction->compute_distances();
@@ -153,11 +153,12 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         abstraction->statistics(use_expensive_statistics);
 
         // Don't label-reduce the atomic abstraction -- see issue68.
-        other_abstraction->normalize();
+        other_abstraction->normalize(false);
         other_abstraction->statistics(use_expensive_statistics);
 
         Abstraction *new_abstraction = new CompositeAbstraction(
             is_unit_cost_problem(), get_cost_type(),
+            label_reduction,
             abstraction, other_abstraction);
 
         abstraction->release_memory();
