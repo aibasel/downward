@@ -10,6 +10,7 @@
 
 class State;
 class Operator;
+class LabelReduction;
 
 struct AbstractTransition {
     AbstractStateRef src;
@@ -106,7 +107,7 @@ public:
     bool is_in_varset(int var) const;
 
     void compute_distances();
-    void normalize(bool reduce_labels);
+    void normalize(LabelReduction *label_reduction = 0);
     void release_memory();
 
     void dump() const;
