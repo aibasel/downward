@@ -1,6 +1,6 @@
 #include "abstraction.h"
 
-#include "label_reducer.h"
+#include "label_reduction.h"
 #include "merge_and_shrink_heuristic.h" // needed for ShrinkStrategy type;
 // TODO: move that type somewhere else?
 #include "shrink_fh.h"
@@ -368,21 +368,19 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(const vector<
     }
 }
 
-void Abstraction::normalize(bool reduce_labels) {
+void Abstraction::normalize(LabelReduction *label_reduction) {
     // Apply label reduction and remove duplicate transitions.
 
     // dump();
 
     cout << tag() << "normalizing ";
 
-    LabelReducer *reducer = 0;
-    if (reduce_labels) {
+    if (label_reduction) {
         if (are_labels_reduced) {
             cout << "without label reduction (already reduced)" << endl;
         } else {
             cout << "with label reduction" << endl;
-            reducer = new LabelReducer(relevant_operators, varset, cost_type);
-            reducer->statistics();
+            label_reduction->reduce_labels(relevant_operators, varset, cost_type);
             are_labels_reduced = true;
         }
     } else {
@@ -399,9 +397,9 @@ void Abstraction::normalize(bool reduce_labels) {
         vector<AbstractTransition> &transitions = transitions_by_op[op_no];
         if (!transitions.empty()) {
             int reduced_op_no;
-            if (reducer) {
+            if (label_reduction) {
                 const Operator *op = &g_operators[op_no];
-                const Operator *reduced_op = reducer->get_reduced_label(op);
+                const Operator *reduced_op = label_reduction->get_reduced_label(op);
                 reduced_op_no = get_op_index(reduced_op);
             } else {
                 reduced_op_no = op_no;
@@ -442,7 +440,9 @@ void Abstraction::normalize(bool reduce_labels) {
         }
     }
 
-    delete reducer;
+    if (label_reduction) {
+        label_reduction->free();
+    }
     // dump();
 }
 

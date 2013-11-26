@@ -1,6 +1,7 @@
 #include "merge_and_shrink_heuristic.h"
 
 #include "abstraction.h"
+#include "label_reduction.h"
 #include "shrink_fh.h"
 #include "variable_order_finder.h"
 
@@ -24,9 +25,18 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_label_reduction(opts.get<bool>("reduce_labels")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
+    if (use_label_reduction) {
+        label_reduction = new LabelReduction(opts);
+    } else {
+        label_reduction = 0;
+    }
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
+    if (use_label_reduction) {
+        assert(label_reduction);
+        delete label_reduction;
+    }
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
@@ -118,8 +128,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         // TODO: When using nonlinear merge strategies, make sure not
         // to normalize multiple parts of a composite. See issue68.
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            abstraction->normalize(use_label_reduction);
-            other_abstraction->normalize(false);
+            abstraction->normalize(label_reduction);
+            other_abstraction->normalize();
         }
 
         abstraction->compute_distances();
@@ -139,11 +149,11 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         abstraction->statistics(use_expensive_statistics);
         other_abstraction->statistics(use_expensive_statistics);
 
-        abstraction->normalize(use_label_reduction);
+        abstraction->normalize(label_reduction);
         abstraction->statistics(use_expensive_statistics);
 
         // Don't label-reduce the atomic abstraction -- see issue68.
-        other_abstraction->normalize(false);
+        other_abstraction->normalize();
         other_abstraction->statistics(use_expensive_statistics);
 
         Abstraction *new_abstraction = new CompositeAbstraction(
