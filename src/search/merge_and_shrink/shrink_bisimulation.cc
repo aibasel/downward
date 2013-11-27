@@ -229,25 +229,26 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(infinity, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    int num_ops = abs.get_num_ops();
-    for (int op_no = 0; op_no < num_ops; ++op_no) {
+    int num_labels = abs.get_num_labels();
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
         const vector<AbstractTransition> &transitions =
-            abs.get_transitions_for_op(op_no);
-        int op_cost = abs.get_cost_for_op(op_no);
+            abs.get_transitions_for_label(label_no);
+        int label_cost = abs.get_cost_for_label(label_no);
         for (size_t i = 0; i < transitions.size(); ++i) {
+            assert(label_cost != -1);
             const AbstractTransition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
             bool skip_transition = false;
             if (greedy) {
                 int src_h = abs.get_goal_distance(trans.src);
                 int target_h = abs.get_goal_distance(trans.target);
-                assert(target_h + op_cost >= src_h);
-                skip_transition = (target_h + op_cost != src_h);
+                assert(target_h + label_cost >= src_h);
+                skip_transition = (target_h + label_cost != src_h);
             }
             if (!skip_transition) {
                 int target_group = state_to_group[trans.target];
                 signatures[trans.src + 1].succ_signature.push_back(
-                    make_pair(op_no, target_group));
+                    make_pair(label_no, target_group));
             }
         }
     }

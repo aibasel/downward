@@ -101,7 +101,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
     vector<Abstraction *> atomic_abstractions;
     Abstraction::build_atomic_abstractions(
-        is_unit_cost_problem(), get_cost_type(), atomic_abstractions, labels);
+        is_unit_cost_problem(), atomic_abstractions, labels);
 
     cout << "Shrinking atomic abstractions..." << endl;
     for (size_t i = 0; i < atomic_abstractions.size(); ++i) {
@@ -160,7 +160,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         //other_abstraction->dump();
 
         Abstraction *new_abstraction = new CompositeAbstraction(
-            is_unit_cost_problem(), get_cost_type(),
+            is_unit_cost_problem(),
             labels,
             abstraction, other_abstraction);
 
