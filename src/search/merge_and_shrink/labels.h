@@ -30,6 +30,9 @@ public:
     inline const std::vector<const Label *> &get_labels() const {
         return labels;
     }
+    inline bool are_labels_reduced() const {
+        return label_reducer;
+    }
 };
 
 #endif // LABEL_REDUCTION_H

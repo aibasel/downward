@@ -6,7 +6,6 @@
 #include "shrink_fh.h"
 
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h" // TODO: Should be removable later.
 #include "../priority_queue.h"
 #include "../timer.h"
@@ -100,8 +99,8 @@ inline int get_op_index(const Operator *op) {
     return op_index;
 }
 
-Abstraction::Abstraction(bool is_unit_cost_, OperatorCost cost_type_, Labels *label_reduction_)
-    : is_unit_cost(is_unit_cost_), cost_type(cost_type_), labels(label_reduction_),
+Abstraction::Abstraction(bool is_unit_cost_, Labels *label_reduction_)
+    : is_unit_cost(is_unit_cost_), labels(label_reduction_),
       are_labels_reduced(false), peak_memory(0) {
     clear_distances();
     // at most n-1 fresh labels will be needed if n is the number of operators
@@ -214,10 +213,6 @@ void Abstraction::compute_distances() {
     }
 }
 
-int Abstraction::get_cost_for_op(int op_no) const {
-    return get_adjusted_action_cost(g_operators[op_no], cost_type);
-}
-
 int Abstraction::get_cost_for_label(int label_no) const {
     return labels->get_cost_for_label(label_no);
 }
@@ -306,14 +301,8 @@ static void dijkstra_search(
 void Abstraction::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(num_states);
     for (int i = 0; i < transitions_by_label.size(); i++) {
+        int label_cost = get_cost_for_label(i);
         const vector<AbstractTransition> &transitions = transitions_by_label[i];
-        int label_cost = -1;
-        if (!transitions.empty()) {
-            // if there are no transitions for label index i, then the label may
-            // not exist (yet), and thus we cannot retrieve any cost for it.
-            // TODO: change such that get_cost_for_label returns -1 if undefined?
-            label_cost = get_cost_for_label(i);
-        }
         for (int j = 0; j < transitions.size(); j++) {
             assert(label_cost != -1);
             const AbstractTransition &trans = transitions[j];
@@ -337,12 +326,8 @@ void Abstraction::compute_init_distances_general_cost() {
 void Abstraction::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(num_states);
     for (int i = 0; i < transitions_by_label.size(); i++) {
+        int label_cost = get_cost_for_label(i);
         const vector<AbstractTransition> &transitions = transitions_by_label[i];
-        int label_cost = -1;
-        if (!transitions.empty()) {
-            // See compute_init_distances_general_cost
-            label_cost = get_cost_for_label(i);
-        }
         for (int j = 0; j < transitions.size(); j++) {
             assert(label_cost != -1);
             const AbstractTransition &trans = transitions[j];
@@ -415,10 +400,7 @@ void Abstraction::normalize(bool reduce_labels) {
         vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         if (!transitions.empty()) {
             int reduced_label_no;
-            if (reduce_labels) {
-                //const Operator *op = &g_operators[label_no];
-                //const Operator *reduced_op = label_reduction->get_reduced_label(op);
-                //reduced_label_no = get_op_index(reduced_op);
+            if (labels->are_labels_reduced()) {
                 reduced_label_no = labels->get_reduced_label(label_no);
             } else {
                 reduced_label_no = label_no;
@@ -465,8 +447,7 @@ void Abstraction::normalize(bool reduce_labels) {
     // dump();
 }
 
-void Abstraction::build_atomic_abstractions(
-    bool is_unit_cost, OperatorCost cost_type,
+void Abstraction::build_atomic_abstractions(bool is_unit_cost,
     vector<Abstraction *> &result,
     Labels *label_reduction) {
     assert(result.empty());
@@ -476,7 +457,7 @@ void Abstraction::build_atomic_abstractions(
     // Step 1: Create the abstraction objects without transitions.
     for (int var_no = 0; var_no < var_count; var_no++)
         result.push_back(new AtomicAbstraction(
-                             is_unit_cost, cost_type, label_reduction, var_no));
+                             is_unit_cost, label_reduction, var_no));
 
     // Step 2: Add transitions.
     // Note that when building atomic abstractions, no other labels than the
@@ -521,8 +502,8 @@ void Abstraction::build_atomic_abstractions(
     }
 }
 
-AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, Labels *label_reduction, int variable_)
-    : Abstraction(is_unit_cost, cost_type, label_reduction), variable(variable_) {
+AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, Labels *labels, int variable_)
+    : Abstraction(is_unit_cost, labels), variable(variable_) {
     varset.push_back(variable);
     /*
       This generates the states of the atomic abstraction, but not the
@@ -556,11 +537,9 @@ AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, 
 AtomicAbstraction::~AtomicAbstraction() {
 }
 
-CompositeAbstraction::CompositeAbstraction(
-    bool is_unit_cost, OperatorCost cost_type,
-    Labels *label_reduction,
-    Abstraction *abs1, Abstraction *abs2)
-    : Abstraction(is_unit_cost, cost_type, label_reduction) {
+CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
+    Labels *labels, Abstraction *abs1, Abstraction *abs2)
+    : Abstraction(is_unit_cost, labels) {
     cout << "Merging " << abs1->description() << " and "
          << abs2->description() << endl;
 
@@ -593,9 +572,9 @@ CompositeAbstraction::CompositeAbstraction(
         abs2->relevant_labels[i]->marker2 = true;
 
     int multiplier = abs2->size();
-    const vector<const Label *> & labels = label_reduction->get_labels();
-    for (int label_no = 0; label_no < labels.size(); label_no++) {
-        const Label *label = labels[label_no];
+    const vector<const Label *> &_labels = labels->get_labels();
+    for (int label_no = 0; label_no < _labels.size(); label_no++) {
+        const Label *label = _labels[label_no];
         bool relevant1 = label->marker1;
         bool relevant2 = label->marker2;
         //cout << "index: " << label_no << endl;
