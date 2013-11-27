@@ -306,9 +306,16 @@ static void dijkstra_search(
 void Abstraction::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(num_states);
     for (int i = 0; i < transitions_by_label.size(); i++) {
-        int label_cost = get_cost_for_label(i);
         const vector<AbstractTransition> &transitions = transitions_by_label[i];
+        int label_cost = -1;
+        if (!transitions.empty()) {
+            // if there are no transitions for label index i, then the label may
+            // not exist (yet), and thus we cannot retrieve any cost for it.
+            // TODO: change such that get_cost_for_label returns -1 if undefined?
+            label_cost = get_cost_for_label(i);
+        }
         for (int j = 0; j < transitions.size(); j++) {
+            assert(label_cost != -1);
             const AbstractTransition &trans = transitions[j];
             forward_graph[trans.src].push_back(
                 make_pair(trans.target, label_cost));
@@ -330,9 +337,14 @@ void Abstraction::compute_init_distances_general_cost() {
 void Abstraction::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(num_states);
     for (int i = 0; i < transitions_by_label.size(); i++) {
-        int label_cost = get_cost_for_label(i);
         const vector<AbstractTransition> &transitions = transitions_by_label[i];
+        int label_cost = -1;
+        if (!transitions.empty()) {
+            // See compute_init_distances_general_cost
+            label_cost = get_cost_for_label(i);
+        }
         for (int j = 0; j < transitions.size(); j++) {
+            assert(label_cost != -1);
             const AbstractTransition &trans = transitions[j];
             backward_graph[trans.target].push_back(
                 make_pair(trans.src, label_cost));
