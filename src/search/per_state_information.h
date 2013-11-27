@@ -19,6 +19,7 @@ private:
 
 public:
     // TODO this iterates over StateIDs not over entries. Move it to StateRegistry?
+    //      A better implementation would allow to iterate over pair<StateID, Entry>.
     class const_iterator : public std::iterator<std::forward_iterator_tag,
                                                 StateID> {
         const SegmentedVector<Entry> *entries;

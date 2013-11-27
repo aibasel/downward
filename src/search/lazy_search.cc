@@ -119,7 +119,7 @@ int LazySearch::fetch_next_state() {
 
     current_predecessor_id = next.first;
     current_operator = next.second;
-    State current_predecessor = g_state_registry->get_state(current_predecessor_id);
+    State current_predecessor = g_state_registry->lookup_state(current_predecessor_id);
     assert(current_operator->is_applicable(current_predecessor));
     current_state = g_state_registry->get_successor_state(current_predecessor, *current_operator);
 

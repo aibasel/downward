@@ -56,7 +56,6 @@ public:
 
 
 class SearchSpace {
-    friend class SearchNode; // TODO: try to make this cleaner
     PerStateInformation<SearchNodeInfo> search_node_infos;
 
     OperatorCost cost_type;
