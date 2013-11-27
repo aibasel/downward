@@ -16,10 +16,10 @@ class StateRegistry;
 class State {
     friend class StateRegistry;
     // Values for vars. will later be converted to UnpackedStateData.
-    state_var_t *vars;
+    const state_var_t *vars;
     StateID id;
     // Only used by the state registry.
-    explicit State(state_var_t *buffer, StateID id_);
+    explicit State(const state_var_t *buffer, StateID id_);
 
     const state_var_t *get_buffer() const {
         return vars;

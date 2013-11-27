@@ -159,7 +159,7 @@ int EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
         OpenListEntryEHC next = open_list->remove_min();
         StateID last_parent_id = next.first;
-        State last_parent = g_state_registry->get_state(last_parent_id);
+        State last_parent = g_state_registry->lookup_state(last_parent_id);
         int d = next.second.first;
         const Operator *last_op = next.second.second;
 

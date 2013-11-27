@@ -36,8 +36,8 @@ StateID StateRegistry::insert_id_or_pop_state() {
     return *result.first;
 }
 
-State StateRegistry::get_state(StateID id) const {
-    return State(const_cast<state_var_t*>(state_data_pool[id.value]), id);
+State StateRegistry::lookup_state(StateID id) const {
+    return State(state_data_pool[id.value], id);
 }
 
 const State &StateRegistry::get_initial_state() {
@@ -46,7 +46,7 @@ const State &StateRegistry::get_initial_state() {
         state_var_t *vars = state_data_pool[state_data_pool.size() - 1];
         g_axiom_evaluator->evaluate(vars);
         StateID id = insert_id_or_pop_state();
-        cached_initial_state = new State(get_state(id));
+        cached_initial_state = new State(lookup_state(id));
     }
     return *cached_initial_state;
 }
@@ -62,5 +62,5 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
     }
     g_axiom_evaluator->evaluate(vars);
     StateID id = insert_id_or_pop_state();
-    return get_state(id);
+    return lookup_state(id);
 }

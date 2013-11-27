@@ -9,7 +9,7 @@
 #include <cassert>
 using namespace std;
 
-State::State(state_var_t *buffer, StateID id_)
+State::State(const state_var_t *buffer, StateID id_)
     : vars(buffer),
       id(id_) {
     assert(vars);
