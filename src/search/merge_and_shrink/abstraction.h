@@ -11,7 +11,7 @@
 
 class State;
 //class Operator;
-class LabelReduction;
+class Labels;
 
 struct AbstractTransition {
     AbstractStateRef src;
@@ -46,7 +46,7 @@ class Abstraction {
     const bool is_unit_cost;
     const OperatorCost cost_type;
     // TODO: remove cost_type
-    LabelReduction *label_reduction;
+    Labels *labels;
 
     std::vector<const Label *> relevant_labels;
     int num_states;
@@ -83,7 +83,7 @@ protected:
                                                        AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
 public:
-    Abstraction(bool is_unit_cost, OperatorCost cost_type, LabelReduction *label_reduction);
+    Abstraction(bool is_unit_cost, OperatorCost cost_type, Labels *labels);
     virtual ~Abstraction();
 
     // Two methods to identify the abstraction in output.
@@ -94,7 +94,7 @@ public:
 
     // TODO: label_reduction has only to be passed because the method is static.
     static void build_atomic_abstractions(bool is_unit_cost, OperatorCost cost_type,
-        std::vector<Abstraction *> &result, LabelReduction *label_reduction);
+        std::vector<Abstraction *> &result, Labels *labels);
     bool is_solvable() const;
 
     int get_cost(const State &state) const;
@@ -155,7 +155,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, LabelReduction *label_reduction, int variable);
+    AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, Labels *labels, int variable);
     virtual ~AtomicAbstraction();
 };
 
@@ -169,7 +169,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    CompositeAbstraction(bool is_unit_cost, OperatorCost cost_type, LabelReduction *label_reduction,
+    CompositeAbstraction(bool is_unit_cost, OperatorCost cost_type, Labels *labels,
         Abstraction *abs1, Abstraction *abs2);
     virtual ~CompositeAbstraction();
 };

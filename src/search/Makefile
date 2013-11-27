@@ -80,8 +80,8 @@ HEADERS += max_heuristic.h
 
 HEADERS += merge_and_shrink/abstraction.h \
            merge_and_shrink/label.h \
+           merge_and_shrink/labels.h \
            merge_and_shrink/label_reducer.h \
-           merge_and_shrink/label_reduction.h \
            merge_and_shrink/merge_and_shrink_heuristic.h \
            merge_and_shrink/shrink_bisimulation.h \
            merge_and_shrink/shrink_bucket_based.h \

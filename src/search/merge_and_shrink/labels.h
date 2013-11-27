@@ -8,14 +8,14 @@
 class LabelReducer;
 class Label;
 
-class LabelReduction {
+class Labels {
     const Options options;
     LabelReducer *label_reducer;
     int next_label_no;
 
     std::vector<const Label *> labels;
 public:
-    LabelReduction(const Options &options);
+    Labels(const Options &options);
     void reduce_labels(const std::vector<const Label *> &relevant_labels,
                   const std::vector<int> &pruned_vars);
 

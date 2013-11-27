@@ -1,6 +1,6 @@
 #include "abstraction.h"
 
-#include "label_reduction.h"
+#include "labels.h"
 #include "merge_and_shrink_heuristic.h" // needed for ShrinkStrategy type;
 // TODO: move that type somewhere else?
 #include "shrink_fh.h"
@@ -100,8 +100,8 @@ inline int get_op_index(const Operator *op) {
     return op_index;
 }
 
-Abstraction::Abstraction(bool is_unit_cost_, OperatorCost cost_type_, LabelReduction *label_reduction_)
-    : is_unit_cost(is_unit_cost_), cost_type(cost_type_), label_reduction(label_reduction_),
+Abstraction::Abstraction(bool is_unit_cost_, OperatorCost cost_type_, Labels *label_reduction_)
+    : is_unit_cost(is_unit_cost_), cost_type(cost_type_), labels(label_reduction_),
       are_labels_reduced(false), peak_memory(0) {
     clear_distances();
     // at most n-1 fresh labels will be needed if n is the number of operators
@@ -219,7 +219,7 @@ int Abstraction::get_cost_for_op(int op_no) const {
 }
 
 int Abstraction::get_cost_for_label(int label_no) const {
-    return label_reduction->get_cost_for_label(label_no);
+    return labels->get_cost_for_label(label_no);
 }
 
 static void breadth_first_search(
@@ -385,7 +385,7 @@ void Abstraction::normalize(bool reduce_labels) {
             cout << "without label reduction (already reduced)" << endl;
         } else {
             cout << "with label reduction" << endl;
-            label_reduction->reduce_labels(relevant_labels, varset);
+            labels->reduce_labels(relevant_labels, varset);
             are_labels_reduced = true;
         }
     } else {
@@ -407,7 +407,7 @@ void Abstraction::normalize(bool reduce_labels) {
                 //const Operator *op = &g_operators[label_no];
                 //const Operator *reduced_op = label_reduction->get_reduced_label(op);
                 //reduced_label_no = get_op_index(reduced_op);
-                reduced_label_no = label_reduction->get_reduced_label(label_no);
+                reduced_label_no = labels->get_reduced_label(label_no);
             } else {
                 reduced_label_no = label_no;
             }
@@ -448,7 +448,7 @@ void Abstraction::normalize(bool reduce_labels) {
     }
 
     if (reduce_labels) {
-        label_reduction->free();
+        labels->free();
     }
     // dump();
 }
@@ -456,7 +456,7 @@ void Abstraction::normalize(bool reduce_labels) {
 void Abstraction::build_atomic_abstractions(
     bool is_unit_cost, OperatorCost cost_type,
     vector<Abstraction *> &result,
-    LabelReduction *label_reduction) {
+    Labels *label_reduction) {
     assert(result.empty());
     cout << "Building atomic abstractions... " << endl;
     int var_count = g_variable_domain.size();
@@ -509,7 +509,7 @@ void Abstraction::build_atomic_abstractions(
     }
 }
 
-AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, LabelReduction *label_reduction, int variable_)
+AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, OperatorCost cost_type, Labels *label_reduction, int variable_)
     : Abstraction(is_unit_cost, cost_type, label_reduction), variable(variable_) {
     varset.push_back(variable);
     /*
@@ -546,7 +546,7 @@ AtomicAbstraction::~AtomicAbstraction() {
 
 CompositeAbstraction::CompositeAbstraction(
     bool is_unit_cost, OperatorCost cost_type,
-    LabelReduction *label_reduction,
+    Labels *label_reduction,
     Abstraction *abs1, Abstraction *abs2)
     : Abstraction(is_unit_cost, cost_type, label_reduction) {
     cout << "Merging " << abs1->description() << " and "
