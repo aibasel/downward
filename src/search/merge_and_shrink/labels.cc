@@ -5,30 +5,34 @@
 #include "../globals.h"
 
 #include <cassert>
-#include <ostream>
 
-using namespace std;
-
-Labels::Labels(const Options &options_)
-    : options(options_), label_reducer(0), next_label_no(g_operators.size()) {
+Labels::Labels(OperatorCost cost_type)
+    : label_reducer(0) {
     for (size_t i = 0; i < g_operators.size(); ++i) {
-        labels.push_back(new Label(i, get_adjusted_action_cost(g_operators[i], OperatorCost(options.get_enum("cost_type"))), &g_operators[i]));
+        labels.push_back(new Label(i, get_adjusted_action_cost(g_operators[i], cost_type), &g_operators[i]));
     }
 }
 
+Labels::~Labels() {
+    free();
+}
+
 void Labels::reduce_labels(const std::vector<const Label *> &relevant_labels,
-              const std::vector<int> &pruned_vars) {
+                           const std::vector<int> &pruned_vars) {
+    assert(!label_reducer);
     label_reducer = new LabelReducer(relevant_labels, pruned_vars);
     label_reducer->statistics();
 }
 
 int Labels::get_reduced_label(int label_no) const {
+    assert(label_reducer);
     return label_reducer->get_reduced_label(label_no);
 }
 
 void Labels::free() {
     if (label_reducer) {
         delete label_reducer;
+        label_reducer = 0;
     }
 }
 
@@ -44,9 +48,6 @@ const Label *Labels::get_label_by_index(int index) const {
 
 void Labels::dump() const {
     for (size_t i = 0; i < labels.size(); ++i) {
-        if (i < g_operators.size()) {
-            cout << "regular operator" << endl;
-        }
         labels[i]->dump();
     }
 }

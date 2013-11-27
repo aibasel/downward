@@ -22,9 +22,9 @@ class LabelReducer {
         const std::vector<bool> &var_is_used) const;
 public:
     LabelReducer(const std::vector<const Label *> &relevant_labels,
-        const std::vector<int> &pruned_vars);
+                 const std::vector<int> &pruned_vars);
     ~LabelReducer();
-    int get_reduced_label(int label_no) const {
+    inline int get_reduced_label(int label_no) const {
         return reduced_label_by_index[label_no];
     }
     void statistics() const;

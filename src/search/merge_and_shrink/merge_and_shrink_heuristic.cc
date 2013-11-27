@@ -26,7 +26,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       use_label_reduction(opts.get<bool>("reduce_labels")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
     if (use_label_reduction) {
-        labels = new Labels(opts);
+        labels = new Labels(cost_type);
     } else {
         labels = 0;
     }
