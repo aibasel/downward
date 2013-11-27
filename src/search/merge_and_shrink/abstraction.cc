@@ -586,6 +586,9 @@ CompositeAbstraction::CompositeAbstraction(
         const Label *label = labels[label_no];
         bool relevant1 = label->marker1;
         bool relevant2 = label->marker2;
+        //cout << "index: " << label_no << endl;
+        //cout << "relevant1: " << relevant1 << endl;
+        //cout << "relevant2: " << relevant2 << endl;
         if (relevant1 || relevant2) {
             vector<AbstractTransition> &transitions = transitions_by_label[label_no];
             relevant_labels.push_back(label);
@@ -907,4 +910,8 @@ void Abstraction::dump() const {
         }
     }
     cout << "}" << endl;
+
+    for (size_t i = 0; i < relevant_labels.size(); ++i) {
+        relevant_labels[i]->get_canonical_op()->dump();
+    }
 }
