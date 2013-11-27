@@ -1,5 +1,7 @@
 #include "label.h"
 
+#include "../globals.h"
+
 #include <ostream>
 
 using namespace std;
@@ -22,7 +24,7 @@ const Operator *Label::get_canonical_op() const {
 }
 
 void Label::dump() const {
-    cout << "index: " << index << endl;
+    cout << "index: " << index << (index < g_operators.size() ? " regular operator" : "" ) << endl;
     cout << "cost: " << cost << endl;
     if (canonical_op) {
         cout << "canonical op:" << endl;
