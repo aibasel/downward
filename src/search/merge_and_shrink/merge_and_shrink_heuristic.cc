@@ -1,7 +1,7 @@
 #include "merge_and_shrink_heuristic.h"
 
 #include "abstraction.h"
-#include "label_reduction.h"
+#include "labels.h"
 #include "shrink_fh.h"
 #include "variable_order_finder.h"
 
@@ -26,16 +26,16 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       use_label_reduction(opts.get<bool>("reduce_labels")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
     if (use_label_reduction) {
-        label_reduction = new LabelReduction(opts);
+        labels = new Labels(opts);
     } else {
-        label_reduction = 0;
+        labels = 0;
     }
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
     if (use_label_reduction) {
-        assert(label_reduction);
-        delete label_reduction;
+        assert(labels);
+        delete labels;
     }
 }
 
@@ -101,7 +101,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
     vector<Abstraction *> atomic_abstractions;
     Abstraction::build_atomic_abstractions(
-        is_unit_cost_problem(), get_cost_type(), atomic_abstractions, label_reduction);
+        is_unit_cost_problem(), get_cost_type(), atomic_abstractions, labels);
 
     cout << "Shrinking atomic abstractions..." << endl;
     for (size_t i = 0; i < atomic_abstractions.size(); ++i) {
@@ -149,7 +149,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         abstraction->statistics(use_expensive_statistics);
         other_abstraction->statistics(use_expensive_statistics);
 
-        abstraction->normalize(label_reduction);
+        abstraction->normalize(labels);
         abstraction->statistics(use_expensive_statistics);
 
         // Don't label-reduce the atomic abstraction -- see issue68.
@@ -161,7 +161,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
         Abstraction *new_abstraction = new CompositeAbstraction(
             is_unit_cost_problem(), get_cost_type(),
-            label_reduction,
+            labels,
             abstraction, other_abstraction);
 
         //new_abstraction->dump();

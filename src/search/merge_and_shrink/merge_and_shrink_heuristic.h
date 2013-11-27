@@ -9,7 +9,7 @@
 #include <vector>
 
 class Abstraction;
-class LabelReduction;
+class Labels;
 
 enum MergeStrategy {
     MERGE_LINEAR_CG_GOAL_LEVEL,
@@ -27,7 +27,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     ShrinkStrategy *const shrink_strategy;
     const bool use_label_reduction;
     const bool use_expensive_statistics;
-    LabelReduction *label_reduction;
+    Labels *labels;
 
     std::vector<Abstraction *> abstractions;
     Abstraction *build_abstraction(bool is_first = true);
