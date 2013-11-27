@@ -5,6 +5,9 @@
 #include "../globals.h"
 
 #include <cassert>
+#include <ostream>
+
+using namespace std;
 
 LabelReduction::LabelReduction(const Options &options_)
     : options(options_), label_reducer(0), next_label_no(g_operators.size()) {
@@ -37,4 +40,13 @@ int LabelReduction::get_cost_for_label(int label_no) const {
 const Label *LabelReduction::get_label_by_index(int index) const {
     assert(index >= 0 && index < labels.size());
     return labels[index];
+}
+
+void LabelReduction::dump() const {
+    for (size_t i = 0; i < labels.size(); ++i) {
+        if (i < g_operators.size()) {
+            cout << "regular operator" << endl;
+        }
+        labels[i]->dump();
+    }
 }

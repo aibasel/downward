@@ -156,10 +156,16 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         other_abstraction->normalize(false);
         other_abstraction->statistics(use_expensive_statistics);
 
+        //abstraction->dump();
+        //other_abstraction->dump();
+
         Abstraction *new_abstraction = new CompositeAbstraction(
             is_unit_cost_problem(), get_cost_type(),
             label_reduction,
             abstraction, other_abstraction);
+
+        //new_abstraction->dump();
+        //exit(0);
 
         abstraction->release_memory();
         other_abstraction->release_memory();

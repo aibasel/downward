@@ -75,6 +75,10 @@ LabelReducer::LabelReducer(
         LabelSignature signature = build_label_signature(
             *label, var_is_used);
 
+        //for (size_t i = 0; i < signature.data.size(); ++i) {
+        //    cout << signature.data[i] << endl;
+        //}
+
         int label_index = label->get_index();
         if (!reduced_label_map.count(signature)) {
             reduced_label_map[signature] = label_index;

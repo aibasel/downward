@@ -26,6 +26,7 @@ public:
     const std::vector<const Label *> &get_labels() const {
         return labels;
     }
+    void dump() const;
 };
 
 #endif // LABEL_REDUCTION_H

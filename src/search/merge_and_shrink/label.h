@@ -23,6 +23,7 @@ public:
     int get_cost() const {
         return cost;
     }
+    void dump() const;
 
     mutable bool marker1, marker2; // HACK! HACK!
 };
