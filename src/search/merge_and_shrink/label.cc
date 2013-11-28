@@ -11,16 +11,22 @@ Label::Label(int index_, int cost_, const Operator *op)
     marker1 = marker2 = false;
 }
 
-//void Label::add_mapped_operator(const Operator *op) {
-//    mapped_operators.push_back(op);
-//}
+Label::Label(int index_, const Label *label)
+    : index(index_), cost(label->get_cost()), canonical_op(0) {
+    add_mapping_label(label);
+}
+
+void Label::add_mapping_label(const Label *label) const {
+    assert(cost == label->get_cost());
+    mapping_labels.push_back(label);
+}
 
 const Operator *Label::get_canonical_op() const {
     if (canonical_op) {
         return canonical_op;
     }
-    assert(!mapped_labels.empty());
-    return mapped_labels[0]->get_canonical_op();
+    assert(!mapping_labels.empty());
+    return mapping_labels[0]->get_canonical_op();
 }
 
 void Label::dump() const {

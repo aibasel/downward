@@ -89,9 +89,6 @@ public:
     virtual std::string description() const = 0;
     std::string tag() const;
 
-    // TODO: labels has only to be passed because the method is static.
-    // The method is static to get access to private members... maybe move this
-    // method to merge_and_shrink?
     static void build_atomic_abstractions(bool is_unit_cost,
         std::vector<Abstraction *> &result, Labels *labels);
     bool is_solvable() const;
