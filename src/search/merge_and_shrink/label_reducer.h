@@ -12,7 +12,7 @@
 class LabelSignature;
 
 class LabelReducer {
-    std::vector<int> reduced_label_by_index;
+    std::vector<const Label *> reduced_label_by_index;
 
     int num_pruned_vars;
     int num_labels;
@@ -22,12 +22,17 @@ class LabelReducer {
         const std::vector<bool> &var_is_used) const;
 public:
     LabelReducer(const std::vector<const Label *> &relevant_labels,
-                 const std::vector<int> &pruned_vars);
+                 const std::vector<int> &pruned_vars,
+                 std::vector<const Label* > &labels);
     ~LabelReducer();
-    inline int get_reduced_label(int label_no) const {
-        return reduced_label_by_index[label_no];
-    }
+
     void statistics() const;
+
+    inline int get_reduced_label(int label_no) const {
+        const Label *label = reduced_label_by_index[label_no];
+        assert(label);
+        return label->get_index();
+    }
 };
 
 #endif

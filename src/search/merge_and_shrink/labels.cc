@@ -20,7 +20,7 @@ Labels::~Labels() {
 void Labels::reduce_labels(const std::vector<const Label *> &relevant_labels,
                            const std::vector<int> &pruned_vars) {
     assert(!label_reducer);
-    label_reducer = new LabelReducer(relevant_labels, pruned_vars);
+    label_reducer = new LabelReducer(relevant_labels, pruned_vars, labels);
     label_reducer->statistics();
 }
 

@@ -56,9 +56,8 @@ struct hash<LabelSignature> {
 };
 }
 
-LabelReducer::LabelReducer(
-    const vector<const Label *> &relevant_labels,
-    const vector<int> &pruned_vars) {
+LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
+    const vector<int> &pruned_vars, std::vector<const Label *> &labels) {
     num_pruned_vars = pruned_vars.size();
     num_labels = relevant_labels.size();
     num_reduced_labels = 0;
@@ -67,8 +66,8 @@ LabelReducer::LabelReducer(
     for (size_t i = 0; i < pruned_vars.size(); ++i)
         var_is_used[pruned_vars[i]] = false;
 
-    hash_map<LabelSignature, int> reduced_label_map;
-    reduced_label_by_index.resize(g_operators.size(), 0);
+    hash_map<LabelSignature, const Label *> reduced_label_map;
+    reduced_label_by_index.resize(labels.size(), 0);
 
     for (size_t i = 0; i < relevant_labels.size(); ++i) {
         const Label *label = relevant_labels[i];
@@ -81,11 +80,14 @@ LabelReducer::LabelReducer(
 
         int label_index = label->get_index();
         if (!reduced_label_map.count(signature)) {
-            reduced_label_map[signature] = label_index;
-            reduced_label_by_index[label_index] = label_index;
+            const Label *new_label = new Label(labels.size(), label);
+            reduced_label_map[signature] = new_label;
+            reduced_label_by_index[label_index] = new_label;
+            labels.push_back(new_label);
             ++num_reduced_labels;
         } else {
             reduced_label_by_index[label_index] = reduced_label_map[signature];
+            reduced_label_by_index[label_index]->add_mapping_label(label);
         }
     }
     assert(reduced_label_map.size() == num_reduced_labels);
