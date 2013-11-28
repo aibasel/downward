@@ -1,20 +1,13 @@
 #ifndef SEARCH_NODE_INFO_H
 #define SEARCH_NODE_INFO_H
 
-#include "state.h"
-#include "per_state_information.h"
-#include "segmented_vector.h" // HACK
+#include "state_id.h"
+#include "operator.h"
 
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
 
-class SearchNodeInfo {
-    // HACK: Get rid of some of these friends
-    friend class SearchNode;
-    friend class SearchSpace;
-    friend class PerStateInformation<SearchNodeInfo>;
-    friend class SegmentedVector<SearchNodeInfo>;
-
+struct SearchNodeInfo {
     enum NodeStatus {NEW = 0, OPEN = 1, CLOSED = 2, DEAD_END = 3};
 
     unsigned int status : 2;
