@@ -51,6 +51,9 @@ const State &StateRegistry::get_initial_state() {
     return *cached_initial_state;
 }
 
+//TODO it would be nice to move the actual state creation (and operator application)
+//     out of the StateRegistry. This could for example be done by global functions
+//     operating on state buffers (state_var_t *).
 State StateRegistry::get_successor_state(const State &predecessor, const Operator &op) {
     assert(!op.is_axiom());
     state_data_pool.push_back(predecessor.get_buffer());
