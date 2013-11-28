@@ -251,7 +251,6 @@ string OptionParser::usage(string progname) {
 
 
 static ParseTree generate_parse_tree(string config) {
-    cout << "generating parse tree for: " << config << endl;
     //remove newlines so they don't mess anything up:
     config.erase(std::remove(config.begin(), config.end(), '\n'), config.end());
 

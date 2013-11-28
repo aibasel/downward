@@ -141,8 +141,10 @@ def parse_domain(domain_pddl):
                                  [pddl_types.TypedObject("?x", "object"),
                                   pddl_types.TypedObject("?y", "object")])]
         elif field == ":functions":
-            the_functions = [functions.Function.parse(entry)
-                             for entry in opt[1:]]
+            the_functions = pddl_types.parse_typed_list(
+                opt[1:],
+                constructor=functions.Function.parse,
+                default_type="number")
     pddl_types.set_supertypes(the_types)
     # for type in the_types:
     #   print repr(type), type.supertype_names
@@ -205,6 +207,10 @@ def parse_task(task_pddl):
             except ValueError as e:
                 raise SystemExit("Error in initial state specification\n" +
                                  "Reason: %s." %  e)
+            if not isinstance(assignment.expression,
+                              f_expression.NumericConstant):
+                raise SystemExit("Illegal assignment in initial state " +
+                    "specification:\n%s" % assignment)
             if assignment.fluent in initial_assignments:
                 prev = initial_assignments[assignment.fluent]
                 if assignment.expression == prev.expression:

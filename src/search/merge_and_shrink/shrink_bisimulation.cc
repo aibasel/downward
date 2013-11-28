@@ -432,6 +432,9 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
 
+    if (parser.help_mode())
+        return 0;
+
     ShrinkStrategy::handle_option_defaults(opts);
 
     int threshold = opts.get<int>("threshold");

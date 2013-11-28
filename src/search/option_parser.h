@@ -218,7 +218,6 @@ void OptionParser::add_option(
                                       flags.mandatory);
         return;
     }
-    std::cout << "adding option " << k << "(" << default_value << "), " << flags.mandatory << std::endl;
     valid_keys.push_back(k);
     bool use_default(false);
     ParseTree::sibling_iterator arg = next_unparsed_argument;
