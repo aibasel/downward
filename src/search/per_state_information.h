@@ -22,13 +22,18 @@ public:
     //      A better implementation would allow to iterate over pair<StateID, Entry>.
     class const_iterator : public std::iterator<std::forward_iterator_tag,
                                                 StateID> {
-        const SegmentedVector<Entry> *entries;
+        friend class PerStateInformation<Entry>;
+        const PerStateInformation<Entry> &owner;
         StateID pos;
-      public:
-        const_iterator(const SegmentedVector<Entry> *entries_, size_t start)
-            : entries(entries_), pos(start) {}
+
+        const_iterator(const PerStateInformation<Entry> &owner_, size_t start)
+            : owner(owner_), pos(start) {}
+    public:
         const_iterator(const const_iterator& other)
-            : entries(other.entries), pos(other.pos) {}
+            : owner(other.owner), pos(other.pos) {}
+
+        ~const_iterator() {}
+
         const_iterator& operator++() {
             ++pos.value;
             return *this;
@@ -41,7 +46,7 @@ public:
         }
 
         bool operator==(const const_iterator& rhs) {
-            return entries == rhs.entries && pos == rhs.pos;
+            return &owner == &rhs.owner && pos == rhs.pos;
         }
 
         bool operator!=(const const_iterator& rhs) {
@@ -57,8 +62,8 @@ public:
         }
     };
 
-    const_iterator begin() const {return const_iterator(&entries, 0); }
-    const_iterator end() const {return const_iterator(&entries, entries.size()); }
+    const_iterator begin() const {return const_iterator(*this, 0); }
+    const_iterator end() const {return const_iterator(*this, entries.size()); }
 
     PerStateInformation()
         : state_registry(*g_state_registry),
