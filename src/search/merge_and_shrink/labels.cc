@@ -37,15 +37,7 @@ void Labels::free() {
 }
 
 int Labels::get_cost_for_label(int label_no) const {
-    assert(label_no >= 0);
-    if (label_no >= labels.size()) {
-        // As the current m&s-implementation maintains a vector of size twice
-        // the number of operatros for labels, it may happen that a caller of
-        // this function passes an index for which no label has been created
-        // yet. TODO: provide access to the number of currently used labels
-        // (ie the highest index in use)
-        return -1;
-    }
+    assert(label_no >= 0 && label_no < labels.size());
     return labels[label_no]->get_cost();
 }
 

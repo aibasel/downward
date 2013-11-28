@@ -27,6 +27,9 @@ public:
     const Label *get_label_by_index(int index) const;
     void dump() const;
 
+    inline unsigned int get_size() const {
+        return labels.size();
+    }
     inline const std::vector<const Label *> &get_labels() const {
         return labels;
     }
