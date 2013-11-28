@@ -6,14 +6,12 @@
 #include "variable_order_finder.h"
 
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state.h"
 #include "../timer.h"
 
 #include <cassert>
-#include <limits>
 #include <vector>
 using namespace std;
 
