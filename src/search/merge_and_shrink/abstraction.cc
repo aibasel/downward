@@ -213,6 +213,23 @@ void Abstraction::compute_distances() {
     }
 }
 
+bool Abstraction::transitions_consistent() const {
+    size_t num_labels = labels->get_size();
+    if (num_labels > transitions_by_label.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < transitions_by_label.size(); ++i) {
+        if (i >= num_labels && !transitions_by_label[i].empty()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int Abstraction::get_num_labels() const {
+    return labels->get_size();
+}
+
 int Abstraction::get_cost_for_label(int label_no) const {
     return labels->get_cost_for_label(label_no);
 }
@@ -300,7 +317,9 @@ static void dijkstra_search(
 
 void Abstraction::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(num_states);
-    for (int i = 0; i < transitions_by_label.size(); i++) {
+    assert(transitions_consistent());
+    size_t num_labels = labels->get_size();
+    for (int i = 0; i < num_labels; i++) {
         int label_cost = get_cost_for_label(i);
         const vector<AbstractTransition> &transitions = transitions_by_label[i];
         for (int j = 0; j < transitions.size(); j++) {
@@ -325,7 +344,9 @@ void Abstraction::compute_init_distances_general_cost() {
 
 void Abstraction::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(num_states);
-    for (int i = 0; i < transitions_by_label.size(); i++) {
+    assert(transitions_consistent());
+    size_t num_labels = labels->get_size();
+    for (int i = 0; i < num_labels; i++) {
         int label_cost = get_cost_for_label(i);
         const vector<AbstractTransition> &transitions = transitions_by_label[i];
         for (int j = 0; j < transitions.size(); j++) {
@@ -396,7 +417,9 @@ void Abstraction::normalize(bool reduce_labels) {
        away the transitions that have been processed. */
     // TODO: update comment
     vector<StateBucket> target_buckets(num_states);
-    for (int label_no = 0; label_no < transitions_by_label.size(); label_no++) {
+    assert(transitions_consistent());
+    size_t num_labels = labels->get_size();
+    for (int label_no = 0; label_no < num_labels; label_no++) {
         vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         if (!transitions.empty()) {
             int reduced_label_no;
@@ -465,6 +488,7 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {
         const Operator *op = &g_operators[op_no];
         const Label *label = label_reduction->get_label_by_index(op_no);
+        assert(op == label->get_canonical_op());
         const vector<Prevail> &prev = op->get_prevail();
         for (int i = 0; i < prev.size(); i++) {
             int var = prev[i].var;
@@ -746,7 +770,9 @@ void Abstraction::apply_abstraction(
 
     vector<vector<AbstractTransition> > new_transitions_label_op(
         transitions_by_label.size());
-    for (int label_no = 0; label_no < transitions_by_label.size(); label_no++) {
+    assert(transitions_consistent());
+    size_t num_labels = labels->get_size();
+    for (int label_no = 0; label_no < num_labels; label_no++) {
         const vector<AbstractTransition> &transitions =
             transitions_by_label[label_no];
         vector<AbstractTransition> &new_transitions =

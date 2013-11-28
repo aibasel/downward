@@ -130,10 +130,10 @@ public:
         return goal_distances[state];
     }
 
+    // This method should be protected but is public for shrink_bisimulation
+    virtual bool transitions_consistent() const;
     // The following methods are shrink_bisimulation-exclusive
-    int get_num_labels() const {
-        return transitions_by_label.size();
-    }
+    int get_num_labels() const;
     const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const {
         return transitions_by_label[label_no];
     }
