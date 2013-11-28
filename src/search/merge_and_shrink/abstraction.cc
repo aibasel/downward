@@ -6,6 +6,7 @@
 #include "shrink_fh.h"
 
 #include "../globals.h"
+#include "../operator.h"
 #include "../option_parser.h" // TODO: Should be removable later.
 #include "../priority_queue.h"
 #include "../timer.h"
@@ -485,6 +486,10 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
     // Step 2: Add transitions.
     // Note that when building atomic abstractions, no other labels than the
     // original operators have been added yet.
+    // TODO: this still needs operators. we also cannot use abstraction->get_size()
+    // for the number labels (which anyway equals the number of operators at
+    // this point) or abstraction->consisten_transitions() because we do not
+    // hold any abstraction object (before entering the inner loop).
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {
         const Operator *op = &g_operators[op_no];
         const Label *label = label_reduction->get_label_by_index(op_no);
