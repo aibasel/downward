@@ -97,7 +97,7 @@ void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_
     assert(node);
     vector<const LandmarkNode *> open;
     for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
-            node->parents.begin(); it != node->parents.end(); ++it) {
+             node->parents.begin(); it != node->parents.end(); ++it) {
         const LandmarkNode *parent = it->first;
         open.push_back(parent);
     }
@@ -107,7 +107,7 @@ void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_
         Fact ancestor_fact = get_fact(ancestor);
         (*groups)[ancestor_fact.first].insert(ancestor_fact.second);
         for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
-                ancestor->parents.begin(); it != ancestor->parents.end(); ++it) {
+                 ancestor->parents.begin(); it != ancestor->parents.end(); ++it) {
             const LandmarkNode *parent = it->first;
             open.push_back(parent);
         }
@@ -156,7 +156,7 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
     } else if (decomposition == GOAL_LEAVES) {
         facts = original_task.get_goal();
         facts.erase(remove_if(facts.begin(), facts.end(),
-            is_not_leaf_landmark(landmark_graph)), facts.end());
+                              is_not_leaf_landmark(landmark_graph)), facts.end());
     } else {
         cerr << "Invalid decomposition: " << decomposition << endl;
         exit_with(EXIT_INPUT_ERROR);
@@ -199,7 +199,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
                 unordered_map<int, unordered_set<int> > groups;
                 get_prev_landmarks(facts[i], &groups);
                 for (unordered_map<int, unordered_set<int> >::iterator it =
-                        groups.begin(); it != groups.end(); ++it) {
+                         groups.begin(); it != groups.end(); ++it) {
                     if (it->second.size() >= 2)
                         task.combine_facts(it->first, it->second);
                 }
