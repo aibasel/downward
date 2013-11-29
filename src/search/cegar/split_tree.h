@@ -4,6 +4,8 @@
 #include "utils.h"
 #include "../state.h"
 
+#include <vector>
+
 namespace cegar_heuristic {
 class AbstractState;
 

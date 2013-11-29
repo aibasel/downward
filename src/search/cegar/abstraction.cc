@@ -19,6 +19,7 @@
 #include <map>
 #include <new>
 #include <queue>
+#include <set>
 #include <sstream>
 #include <tr1/unordered_map>
 #include <utility>

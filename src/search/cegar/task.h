@@ -6,6 +6,7 @@
 #include "../state.h"
 
 #include <set>
+#include <string>
 #include <vector>
 
 namespace cegar_heuristic {
@@ -16,7 +17,7 @@ private:
     State initial_state;
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
-    std::vector<vector<string> > fact_names;
+    std::vector<vector<std::string> > fact_names;
     std::vector<Operator> operators;
     std::vector<int> original_operator_numbers;
     std::vector<std::vector<int> > orig_index;

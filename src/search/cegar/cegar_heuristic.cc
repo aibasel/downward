@@ -54,7 +54,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 CegarHeuristic::~CegarHeuristic() {
 }
 
-bool sort_domain_size_up(pair<int, int> atom1, pair<int, int> atom2) {
+bool sort_domain_size_up(Fact atom1, Fact atom2) {
     return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
 }
 

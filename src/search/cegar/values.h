@@ -3,6 +3,7 @@
 
 #include "utils.h"
 
+#include <string>
 #include <vector>
 
 namespace cegar_heuristic {

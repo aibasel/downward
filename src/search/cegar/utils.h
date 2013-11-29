@@ -1,11 +1,6 @@
 #ifndef CEGAR_UTILS_H
 #define CEGAR_UTILS_H
 
-#include <ostream>
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "../additive_heuristic.h"
 #include "../causal_graph.h"
 #include "../operator.h"
@@ -14,7 +9,13 @@
 
 #include <boost/dynamic_bitset.hpp>
 
+#include <limits>
+#include <ostream>
+#include <set>
+#include <string>
 #include <tr1/unordered_set>
+#include <utility>
+#include <vector>
 
 namespace cegar_heuristic {
 extern bool DEBUG;
