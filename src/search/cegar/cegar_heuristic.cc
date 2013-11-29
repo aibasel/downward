@@ -120,11 +120,11 @@ void CegarHeuristic::order_facts(vector<Fact> &facts) const {
         // Nothing to do.
     } else if (fact_order == MIXED) {
         random_shuffle(facts.begin(), facts.end());
-    } else if (fact_order == DOMAIN_SIZE_UP or fact_order == DOMAIN_SIZE_DOWN) {
+    } else if (fact_order == DOMAIN_SIZE_UP || fact_order == DOMAIN_SIZE_DOWN) {
         sort(facts.begin(), facts.end(), sort_domain_size_up);
         if (fact_order == DOMAIN_SIZE_DOWN)
             reverse(facts.begin(), facts.end());
-    } else if (fact_order == HADD_UP or fact_order == HADD_DOWN) {
+    } else if (fact_order == HADD_UP || fact_order == HADD_DOWN) {
         sort(facts.begin(), facts.end(), SortHaddValuesUp(original_task));
         if (fact_order == HADD_DOWN)
             reverse(facts.begin(), facts.end());

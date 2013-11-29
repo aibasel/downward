@@ -64,10 +64,12 @@ class CegarHeuristic : public Heuristic {
     void get_facts(std::vector<Fact> &facts, Decomposition decomposition) const;
     void install_task(Task &task) const;
     void build_abstractions(Decomposition decomposition);
+
 protected:
     virtual void print_statistics();
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
+
 public:
     explicit CegarHeuristic(const Options &options);
     ~CegarHeuristic();

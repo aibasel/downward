@@ -468,7 +468,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         cond = 0;
     } else if (pick == RANDOM) {
         cond = random_cond;
-    } else if (pick == GOAL or pick == NO_GOAL) {
+    } else if (pick == GOAL || pick == NO_GOAL) {
         for (int i = 0; i < splits.size(); ++i) {
             bool is_goal_var = goal_var(splits[i].first);
             if ((pick == GOAL && is_goal_var) || (pick == NO_GOAL && !is_goal_var)) {
@@ -497,12 +497,12 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         double min_refinement = 0.0;
         double max_refinement = -1.1;
         for (int i = 0; i < splits.size(); ++i) {
-            int all_values = g_variable_domain[splits[i].first];
-            int rest = state.count(splits[i].first);
+            double all_values = g_variable_domain[splits[i].first];
+            double rest = state.count(splits[i].first);
             assert(all_values >= 2);
             assert(rest >= 2);
             assert(rest <= all_values);
-            double refinement = -(rest / double(all_values));
+            double refinement = -(rest / all_values);
             assert(refinement >= -1.0);
             assert(refinement < 0.0);
             if (refinement < min_refinement && pick == MIN_REFINED) {

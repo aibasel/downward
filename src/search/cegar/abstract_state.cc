@@ -281,9 +281,9 @@ bool AbstractState::is_abstraction_of_goal() const {
 double AbstractState::get_rel_conc_states() const {
     double fraction = 1.0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
-        const int domain_size = values->count(var);
+        const double domain_size = values->count(var);
         assert(domain_size >= 1);
-        fraction *= double(domain_size) / g_variable_domain[var];
+        fraction *= domain_size / g_variable_domain[var];
     }
     assert(fraction <= 1.0);
     assert(fraction > 0.0);

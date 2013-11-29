@@ -21,6 +21,7 @@ private:
     static vector<Bitset> masks;
 
     int pos(int var, int value) const {return borders[var] + value; }
+
 public:
     Values();
     static void initialize_static_members();

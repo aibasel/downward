@@ -26,6 +26,7 @@ private:
     Node *right_child;
     // Estimated cost to goal node.
     int h;
+
 public:
     explicit Node(AbstractState *state = 0);
     // Update the split tree for the new split of "abs_state" into "left" and
@@ -56,6 +57,7 @@ private:
     SplitTree &operator=(const SplitTree &);
 
     Node *root;
+
 public:
     SplitTree();
     void set_root(AbstractState *single);
