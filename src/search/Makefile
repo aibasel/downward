@@ -356,11 +356,6 @@ clean:
 distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
 
-lint:
-	python ../../misc/cpplint.py \
-		--filter=-legal/copyright,-build/header_guard,-whitespace/labels,-whitespace/indent,-build/include,+build/include_what_you_use,-whitespace/line_length,-readability/todo,-build/namespaces,-runtime/references,-readability/namespace,-readability/streams \
-		cegar/*.h cegar/*.cc
-
 ## Note: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
 ## the for loop with the sed call.
@@ -389,4 +384,4 @@ ifneq ($(MAKECMDGOALS),distclean)
 endif
 endif
 
-.PHONY: default all release debug profile clean distclean lint
+.PHONY: default all release debug profile clean distclean
