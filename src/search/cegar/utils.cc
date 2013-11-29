@@ -174,7 +174,6 @@ void write_landmark_graph(const LandmarkGraph &graph) {
         Fact node_fact = get_fact(node_p);
         for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator parent_it =
                  node_p->parents.begin(); parent_it != node_p->parents.end(); ++parent_it) {
-            //const edge_type &edge = parent_it->second;
             const LandmarkNode *parent_p = parent_it->first;
             Fact parent_fact = get_fact(parent_p);
             dotfile << "  \"" << get_node_name(parent_fact) << "\" -> "
