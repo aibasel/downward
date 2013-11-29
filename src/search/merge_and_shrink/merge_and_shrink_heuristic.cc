@@ -10,7 +10,6 @@
 #include "../plugin.h"
 #include "../state.h"
 #include "../timer.h"
-#include "../utilities.h"
 
 #include <cassert>
 #include <limits>
@@ -197,7 +196,6 @@ void MergeAndShrinkHeuristic::initialize() {
          << endl << "initial h value: " << compute_heuristic(
         *g_initial_state) << endl;
     cout << "Estimated peak memory for abstraction: " << peak_memory << " bytes" << endl;
-    cout << "Peak memory after initialization: " << get_peak_memory_in_kb() << " KB" << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
