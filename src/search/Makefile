@@ -358,7 +358,7 @@ distclean: clean
 
 lint:
 	python ../../misc/cpplint.py \
-		--filter=-legal/copyright,-build/header_guard,-whitespace/labels,-whitespace/indent,-build/include,-whitespace/line_length,-readability/todo,-build/namespaces,-runtime/references,-readability/namespace,-readability/streams \
+		--filter=-legal/copyright,-build/header_guard,-whitespace/labels,-whitespace/indent,-build/include,+build/include_what_you_use,-whitespace/line_length,-readability/todo,-build/namespaces,-runtime/references,-readability/namespace,-readability/streams \
 		cegar/*.h cegar/*.cc
 
 ## Note: If we just call gcc -MM on a source file that lives within a
