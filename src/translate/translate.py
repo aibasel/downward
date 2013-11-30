@@ -607,10 +607,12 @@ def dump_statistics(sas_task):
            len([layer for layer in sas_task.variables.axiom_layers
                 if layer >= 0])))
     print("Translator facts: %d" % sum(sas_task.variables.ranges))
+    print("Translator goal facts: %d" % len(sas_task.goal.pairs))
     print("Translator mutex groups: %d" % len(sas_task.mutexes))
     print(("Translator total mutex groups size: %d" %
            sum(mutex.get_encoding_size() for mutex in sas_task.mutexes)))
     print("Translator operators: %d" % len(sas_task.operators))
+    print("Translator axioms: %d" % len(sas_task.axioms))
     print("Translator task size: %d" % sas_task.get_encoding_size())
     try:
         peak_memory = tools.get_peak_memory_in_kb()
