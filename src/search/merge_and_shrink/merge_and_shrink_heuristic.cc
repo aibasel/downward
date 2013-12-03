@@ -148,6 +148,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         other_abstraction->statistics(use_expensive_statistics);
 
         abstraction->normalize(labels);
+        //abstraction->dump();
+        //exit(0);
         abstraction->statistics(use_expensive_statistics);
 
         // Don't label-reduce the atomic abstraction -- see issue68.
@@ -162,14 +164,14 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
             labels,
             abstraction, other_abstraction);
 
-        //new_abstraction->dump();
-        //exit(0);
-
         abstraction->release_memory();
         other_abstraction->release_memory();
 
         abstraction = new_abstraction;
         abstraction->statistics(use_expensive_statistics);
+
+        //new_abstraction->dump();
+        //exit(0);
     }
 
     abstraction->compute_distances();

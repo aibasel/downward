@@ -48,6 +48,7 @@ class Abstraction {
     std::vector<const Label *> relevant_labels;
     int num_states;
     std::vector<std::vector<AbstractTransition> > transitions_by_label;
+    int num_labels;
 
     std::vector<int> init_distances;
     std::vector<int> goal_distances;
@@ -75,6 +76,7 @@ class Abstraction {
 protected:
     std::vector<int> varset;
 
+    virtual bool is_label_reduced() const;
     virtual AbstractStateRef get_abstract_state(const State &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(const std::vector<
                                                        AbstractStateRef> &abstraction_mapping) = 0;

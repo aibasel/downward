@@ -13,7 +13,10 @@ class Label;
  *labels used by merge-and-shrink abstractions.
  */
 class Labels {
+    // the list of *all* labels ever created
     std::vector<const Label *> labels;
+    // the list of *active* labels, accessed by index
+    std::vector<const Label *> reduced_label_by_index;
     LabelReducer *label_reducer;
 public:
     Labels(OperatorCost cost_type);
@@ -21,6 +24,7 @@ public:
     void reduce_labels(const std::vector<const Label *> &relevant_labels,
                        const std::vector<int> &pruned_vars);
     int get_reduced_label(int label_no) const;
+    const Label *get_red_label(const Label *label) const;
     void free();
 
     int get_cost_for_label(int label_no) const;
