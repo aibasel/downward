@@ -13,6 +13,7 @@ Label::Label(int index_, int cost_, const Operator *op)
 
 Label::Label(int index_, const Label *label)
     : index(index_), cost(label->get_cost()), canonical_op(0) {
+    marker1 = marker2 = false;
     add_mapping_label(label);
 }
 
