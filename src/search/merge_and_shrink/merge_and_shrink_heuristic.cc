@@ -156,8 +156,10 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         other_abstraction->normalize(false);
         other_abstraction->statistics(use_expensive_statistics);
 
-        //abstraction->dump();
-        //other_abstraction->dump();
+        if (abstraction->tag() == "Abstraction (16/153 vars): ") {
+            abstraction->dump();
+            other_abstraction->dump();
+        }
 
         Abstraction *new_abstraction = new CompositeAbstraction(
             is_unit_cost_problem(),
@@ -170,7 +172,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         abstraction = new_abstraction;
         abstraction->statistics(use_expensive_statistics);
 
-        //new_abstraction->dump();
+        if (new_abstraction->tag() == "Abstraction (17/153 vars): ") {
+            new_abstraction->dump();
+        }
         //exit(0);
     }
 
