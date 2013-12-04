@@ -926,6 +926,13 @@ bool Abstraction::is_in_varset(int var) const {
     return find(varset.begin(), varset.end(), var) != varset.end();
 }
 
+void Abstraction::dump_transitions_sizes() const {
+    for (int label_no = 0; label_no < transitions_by_label.size(); label_no++) {
+        const vector<AbstractTransition> &trans = transitions_by_label[label_no];
+        cout << "label_no: " << label_no << ", no transitions: " << trans.size() << endl;
+    }
+}
+
 void Abstraction::dump() const {
     cout << "digraph abstract_transition_graph";
     for (int i = 0; i < varset.size(); i++)
@@ -953,7 +960,7 @@ void Abstraction::dump() const {
     }
     cout << "}" << endl;
 
-    for (size_t i = 0; i < relevant_labels.size(); ++i) {
+    /*for (size_t i = 0; i < relevant_labels.size(); ++i) {
         relevant_labels[i]->get_canonical_op()->dump();
-    }
+    }*/
 }

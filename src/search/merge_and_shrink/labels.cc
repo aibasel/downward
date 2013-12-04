@@ -40,7 +40,11 @@ void Labels::reduce_labels(const std::vector<const Label *> &relevant_labels,
 int Labels::get_reduced_label(int label_no) const {
     //assert(label_reducer);
     //return label_reducer->get_reduced_label(label_no);
-    return reduced_label_by_index[label_no]->get_index();
+    int current_label_no = label_no;
+    while (reduced_label_by_index[current_label_no]->get_index() != current_label_no) {
+        current_label_no = reduced_label_by_index[current_label_no]->get_index();
+    }
+    return current_label_no;
 }
 
 const Label *Labels::get_red_label(const Label *label) const {
