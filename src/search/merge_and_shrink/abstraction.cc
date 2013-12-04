@@ -791,8 +791,10 @@ void Abstraction::apply_abstraction(
     for (int label_no = 0; label_no < num_labels; label_no++) {
         const vector<AbstractTransition> &transitions =
             transitions_by_label[label_no];
+        int mapped_label_no = labels->get_reduced_label(label_no);
+        // TODO: check that mapped_label_no == label_no iff ...?
         vector<AbstractTransition> &new_transitions =
-            new_transitions_by_label[label_no];
+            new_transitions_by_label[mapped_label_no];
         new_transitions.reserve(transitions.size());
         for (int i = 0; i < transitions.size(); i++) {
             const AbstractTransition &trans = transitions[i];
@@ -803,6 +805,9 @@ void Abstraction::apply_abstraction(
         }
     }
     vector<vector<AbstractTransition> > ().swap(transitions_by_label);
+    // need to update num_labels here as the abstraction is now "up to date"
+    // in terms of all labels are correctly mapped to their new labels.
+    num_labels = labels->get_size();
 
     num_states = new_num_states;
     transitions_by_label.swap(new_transitions_by_label);
