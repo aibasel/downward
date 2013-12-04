@@ -175,6 +175,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         if (new_abstraction->tag() == "Abstraction (17/153 vars): ") {
             new_abstraction->dump();
         }
+        /*for (size_t i = 0; i < labels->get_size(); ++i) {
+            cout << "label " << i << " mapped to " << labels->get_reduced_label(i) << endl;
+        }*/
         //exit(0);
     }
 

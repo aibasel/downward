@@ -111,6 +111,7 @@ public:
     void normalize(bool reduce_labels);
     void release_memory();
 
+    void dump_transitions_sizes() const;
     void dump() const;
 
     // The following methods exist for the benefit of shrink strategies.
