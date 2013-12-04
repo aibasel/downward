@@ -49,7 +49,10 @@ int Labels::get_reduced_label(int label_no) const {
 
 const Label *Labels::get_red_label(const Label *label) const {
     int label_no = label->get_index();
-    const Label *reduced_label = reduced_label_by_index[label_no];
+    int reduced_label_no = get_reduced_label(label_no);
+    const Label *reduced_label = get_label_by_index(reduced_label_no);
+    // TODO: have a function return label by label_index that can be used by get_reduced_label and get_red_label.
+    // Or only use numbers in abstraction and access labels only via get_label_by_index
     return reduced_label;
 }
 
