@@ -45,6 +45,7 @@ class Abstraction {
     const bool is_unit_cost;
     Labels *labels;
 
+    // TODO: consider changing this to vector<int> for the label indices only
     std::vector<const Label *> relevant_labels;
     int num_states;
     std::vector<std::vector<AbstractTransition> > transitions_by_label;
@@ -138,7 +139,7 @@ public:
     const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const {
         return transitions_by_label[label_no];
     }
-    int get_cost_for_label(int label_no) const;
+    int get_label_cost_by_index(int label_no) const;
 };
 
 class AtomicAbstraction : public Abstraction {

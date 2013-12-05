@@ -23,11 +23,10 @@ public:
     ~Labels();
     void reduce_labels(const std::vector<const Label *> &relevant_labels,
                        const std::vector<int> &pruned_vars);
-    int get_reduced_label(int label_no) const;
-    const Label *get_red_label(const Label *label) const;
+    int get_reduced_label_no(int label_no) const;
+    const Label *get_reduced_label(const Label *label) const;
     void free();
 
-    int get_cost_for_label(int label_no) const;
     const Label *get_label_by_index(int index) const;
     void dump() const;
 
