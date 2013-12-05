@@ -17,8 +17,8 @@ LazySearch::LazySearch(const Options &opts)
       open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       succ_mode(pref_first),
-      current_state(g_state_registry->get_handle(*g_initial_state)),
-      current_predecessor_handle(StateHandle::invalid),
+      current_state(g_initial_state()),
+      current_predecessor_id(StateID::no_state),
       current_operator(NULL),
       current_g(0),
       current_real_g(0) {
@@ -104,7 +104,7 @@ void LazySearch::generate_successors() {
         if (new_real_g < bound) {
             open_list->evaluate(new_g, is_preferred);
             open_list->insert(
-                make_pair(current_state.get_handle(), operators[i]));
+                make_pair(current_state.get_id(), operators[i]));
         }
     }
 }
@@ -117,13 +117,13 @@ int LazySearch::fetch_next_state() {
 
     OpenListEntryLazy next = open_list->remove_min();
 
-    current_predecessor_handle = next.first;
+    current_predecessor_id = next.first;
     current_operator = next.second;
-    State current_predecessor(current_predecessor_handle);
+    State current_predecessor = g_state_registry->lookup_state(current_predecessor_id);
     assert(current_operator->is_applicable(current_predecessor));
-    current_state = State::construct_registered_successor(current_predecessor, *current_operator);
+    current_state = g_state_registry->get_successor_state(current_predecessor, *current_operator);
 
-    SearchNode pred_node = search_space.get_node(current_predecessor_handle);
+    SearchNode pred_node = search_space.get_node(current_predecessor_id);
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
@@ -139,17 +139,17 @@ int LazySearch::step() {
     // - current_g is the g value of the current state (using real costs)
 
 
-    SearchNode node = search_space.get_node(current_state.get_handle());
+    SearchNode node = search_space.get_node(current_state.get_id());
     bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end() && !node.is_new();
 
     if (node.is_new() || reopen) {
-        StateHandle dummy_handle = current_predecessor_handle;
+        StateID dummy_id = current_predecessor_id;
         // HACK! HACK! we do this because SearchNode has no default/copy constructor
-        if (!dummy_handle.is_valid()) {
-            dummy_handle = g_state_registry->get_handle(*g_initial_state);
+        if (dummy_id == StateID::no_state) {
+            dummy_id = g_initial_state().get_id();
         }
 
-        SearchNode parent_node = search_space.get_node(dummy_handle);
+        SearchNode parent_node = search_space.get_node(dummy_id);
 
         for (int i = 0; i < heuristics.size(); i++) {
             if (current_operator != NULL) {
@@ -167,7 +167,7 @@ int LazySearch::step() {
             if (reopen) {
                 node.reopen(parent_node, current_operator);
                 search_progress.inc_reopened();
-            } else if (!current_predecessor_handle.is_valid()) {
+            } else if (current_predecessor_id == StateID::no_state) {
                 node.open_initial(h);
                 search_progress.get_initial_h_values();
             } else {

@@ -27,6 +27,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     // operator preconditions, but only reports those effect conditions that are true for ALL
     // effects achieving the LM.
 
+    const State &initial_state = g_initial_state();
     const vector<PrePost> &prepost = o.get_pre_post();
     for (unsigned j = 0; j < prepost.size(); j++) {
         if (prepost[j].pre != -1) {
@@ -35,9 +36,9 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
         } else if (g_variable_domain[prepost[j].var] == 2) {
             for (int i = 0; i < lmp->vars.size(); i++) {
                 if (lmp->vars[i] == prepost[j].var
-                    && (*g_initial_state)[prepost[j].var] != lmp->vals[i]) {
+                    && initial_state[prepost[j].var] != lmp->vals[i]) {
                     result.insert(make_pair(prepost[j].var,
-                                            (*g_initial_state)[prepost[j].var]));
+                                            initial_state[prepost[j].var]));
                     break;
                 }
             }
@@ -166,8 +167,9 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(const set<pair<int, int> > 
                                                      LandmarkNode &b, edge_type t) {
     bool simple_lm_exists = false;
     pair<int, int> lm_prop;
+    const State &initial_state = g_initial_state();
     for (set<pair<int, int> >::iterator it = a.begin(); it != a.end(); ++it) {
-        if ((*g_initial_state)[it->first] == it->second) {
+        if (initial_state[it->first] == it->second) {
             //cout << endl << "not adding LM that's true in initial state: "
             //<< g_variable_name[it->first] << " -> " << it->second << endl;
             return;
@@ -365,7 +367,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
         open_landmarks.pop_front();
         assert(bp->forward_orders.empty());
 
-        if (!bp->is_true_in_state(*g_initial_state)) {
+        if (!bp->is_true_in_state(g_initial_state())) {
             // Backchain from landmark bp and compute greedy necessary predecessors.
             // Firstly, collect information about the earliest possible time step in a
             // relaxed plan that propositions are achieved (in lvl_var) and operators
@@ -446,17 +448,18 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const pair<int, int> &landmark,
      any value in "exclude". If not, that means that one of the values in "exclude"
      is crucial for achieving the landmark (i.e. is on every path to the LM).
      */
-    assert(landmark.second != (*g_initial_state)[landmark.first]); // no initial state landmarks
+    const State &initial_state = g_initial_state();
+    assert(landmark.second != initial_state[landmark.first]); // no initial state landmarks
     // The value that we want to achieve must not be excluded:
     assert(exclude.find(landmark.second) == exclude.end());
     // If the value in the initial state is excluded, we won't achieve our goal value:
-    if (exclude.find((*g_initial_state)[landmark.first]) != exclude.end())
+    if (exclude.find(initial_state[landmark.first]) != exclude.end())
         return false;
     list<int> open;
     hash_set<int> closed(g_variable_domain[landmark.first]);
     closed = exclude;
-    open.push_back((*g_initial_state)[landmark.first]);
-    closed.insert((*g_initial_state)[landmark.first]);
+    open.push_back(initial_state[landmark.first]);
+    closed.insert(initial_state[landmark.first]);
     while (closed.find(landmark.second) == closed.end()) {
         if (open.empty()) // landmark not in closed and nothing more to insert
             return false;
