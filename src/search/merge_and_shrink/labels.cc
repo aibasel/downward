@@ -37,9 +37,7 @@ void Labels::reduce_labels(const std::vector<const Label *> &relevant_labels,
     }
 }
 
-int Labels::get_reduced_label(int label_no) const {
-    //assert(label_reducer);
-    //return label_reducer->get_reduced_label(label_no);
+int Labels::get_reduced_label_no(int label_no) const {
     int current_label_no = label_no;
     while (reduced_label_by_index[current_label_no]->get_index() != current_label_no) {
         current_label_no = reduced_label_by_index[current_label_no]->get_index();
@@ -47,12 +45,10 @@ int Labels::get_reduced_label(int label_no) const {
     return current_label_no;
 }
 
-const Label *Labels::get_red_label(const Label *label) const {
+const Label *Labels::get_reduced_label(const Label *label) const {
     int label_no = label->get_index();
-    int reduced_label_no = get_reduced_label(label_no);
-    const Label *reduced_label = get_label_by_index(reduced_label_no);
-    // TODO: have a function return label by label_index that can be used by get_reduced_label and get_red_label.
-    // Or only use numbers in abstraction and access labels only via get_label_by_index
+    int reduced_label_no = get_reduced_label_no(label_no);
+    const Label *reduced_label = labels[reduced_label_no];
     return reduced_label;
 }
 
@@ -61,11 +57,6 @@ void Labels::free() {
         delete label_reducer;
         label_reducer = 0;
     }
-}
-
-int Labels::get_cost_for_label(int label_no) const {
-    assert(label_no >= 0 && label_no < labels.size());
-    return labels[label_no]->get_cost();
 }
 
 const Label *Labels::get_label_by_index(int index) const {

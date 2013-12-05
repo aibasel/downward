@@ -75,22 +75,7 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
         LabelSignature signature = build_label_signature(
             *label, var_is_used);
 
-        //for (size_t i = 0; i < signature.data.size(); ++i) {
-        //    cout << signature.data[i] << endl;
-        //}
-
         int label_index = label->get_index();
-        /*if (!reduced_label_map.count(signature)) {
-            const Label *new_label = new Label(labels.size(), label);
-            reduced_label_map[signature] = new_label;
-            reduced_label_by_index[label_index] = new_label;
-            labels.push_back(new_label);
-            ++num_reduced_labels;
-        } else {
-            reduced_label_by_index[label_index] = reduced_label_map[signature];
-            reduced_label_by_index[label_index]->add_mapping_label(label);
-        }*/
-
         if (!reduced_label_map.count(signature)) {
             reduced_label_map[signature] = label;
             is_label_reduced[signature] = false;
