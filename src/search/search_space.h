@@ -16,15 +16,15 @@ class State;
 
 
 class SearchNode {
-    StateHandle state_handle;
+    StateID state_id;
     SearchNodeInfo &info;
     OperatorCost cost_type;
 public:
-    SearchNode(const StateHandle &state_handle_, SearchNodeInfo &info_,
+    SearchNode(StateID state_id_, SearchNodeInfo &info_,
                OperatorCost cost_type_);
 
-    StateHandle get_state_handle() const {
-        return state_handle;
+    StateID get_state_id() const {
+        return state_id;
     }
     State get_state() const;
 
@@ -56,13 +56,12 @@ public:
 
 
 class SearchSpace {
-    friend class SearchNode; // TODO: try to make this cleaner
     PerStateInformation<SearchNodeInfo> search_node_infos;
 
     OperatorCost cost_type;
 public:
     SearchSpace(OperatorCost cost_type_);
-    SearchNode get_node(const StateHandle &handle);
+    SearchNode get_node(StateID id);
     void trace_path(const State &goal_state,
                     std::vector<const Operator *> &path) const;
 
