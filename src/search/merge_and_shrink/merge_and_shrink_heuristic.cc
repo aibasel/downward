@@ -147,7 +147,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
         abstraction->statistics(use_expensive_statistics);
         other_abstraction->statistics(use_expensive_statistics);
 
-        abstraction->normalize(labels);
+        abstraction->normalize(use_label_reduction);
         abstraction->statistics(use_expensive_statistics);
 
         // Don't label-reduce the atomic abstraction -- see issue68.

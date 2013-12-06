@@ -32,4 +32,4 @@ public:
     mutable bool marker1, marker2; // HACK! HACK!
 };
 
-#endif // LABEL_H
+#endif

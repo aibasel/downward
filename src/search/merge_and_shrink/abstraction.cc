@@ -474,7 +474,7 @@ void Abstraction::normalize(bool reduce_labels) {
 
 void Abstraction::build_atomic_abstractions(bool is_unit_cost,
     vector<Abstraction *> &result,
-    Labels *label_reduction) {
+    Labels *labels) {
     assert(result.empty());
     cout << "Building atomic abstractions... " << endl;
     int var_count = g_variable_domain.size();
@@ -482,14 +482,14 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
     // Step 1: Create the abstraction objects without transitions.
     for (int var_no = 0; var_no < var_count; var_no++)
         result.push_back(new AtomicAbstraction(
-                             is_unit_cost, label_reduction, var_no));
+                             is_unit_cost, labels, var_no));
 
     // Step 2: Add transitions.
     // Note that when building atomic abstractions, no other labels than the
     // original operators have been added yet.
     for (int op_no = 0; op_no < g_operators.size(); op_no++) {
         const Operator *op = &g_operators[op_no];
-        const Label *label = label_reduction->get_label_by_index(op_no);
+        const Label *label = labels->get_label_by_index(op_no);
         assert(op == label->get_canonical_op());
         const vector<Prevail> &prev = op->get_prevail();
         for (int i = 0; i < prev.size(); i++) {
@@ -790,7 +790,7 @@ void Abstraction::apply_abstraction(
         // TODO: check that mapped_label_no == label_no iff ...?
         vector<AbstractTransition> &new_transitions =
             new_transitions_by_label[mapped_label_no];
-        new_transitions.reserve(transitions.size());
+        new_transitions.reserve(new_transitions.size() + transitions.size());
         for (int i = 0; i < transitions.size(); i++) {
             const AbstractTransition &trans = transitions[i];
             int src = abstraction_mapping[trans.src];
