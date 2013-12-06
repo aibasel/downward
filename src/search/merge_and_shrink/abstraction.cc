@@ -218,6 +218,10 @@ int Abstraction::get_num_labels() const {
     return labels->get_size();
 }
 
+const vector<AbstractTransition> &Abstraction::get_transitions_for_label(int label_no) const {
+    return transitions_by_label[labels->get_reduced_label_no(label_no)];
+}
+
 int Abstraction::get_label_cost_by_index(int label_no) const {
     const Label *label = labels->get_label_by_index(label_no);
     return label->get_cost();
@@ -393,13 +397,16 @@ void Abstraction::normalize(bool reduce_labels) {
         } else {
             cout << "with label reduction" << endl;
             labels->reduce_labels(relevant_labels, varset);
-            // update num_labels as we may have introduced new labels
-            num_labels = labels->get_size();
             are_labels_reduced = true;
         }
     } else {
         cout << "without label reduction" << endl;
     }
+    // update num_labels as we may have introduced new labels
+    // NOTE: for the same reasons as we call "get_reduced_label_no" a few lines
+    // below even if reduce_labels is false, we have to update num_labels here
+    // to guarantee usage of consistent labels.
+    num_labels = labels->get_size();
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
 

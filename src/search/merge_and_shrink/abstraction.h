@@ -136,9 +136,7 @@ public:
     virtual bool transitions_consistent() const;
     // The following methods are shrink_bisimulation-exclusive
     int get_num_labels() const;
-    const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const {
-        return transitions_by_label[label_no];
-    }
+    const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const;
     int get_label_cost_by_index(int label_no) const;
 };
 
