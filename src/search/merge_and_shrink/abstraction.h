@@ -43,12 +43,14 @@ class Abstraction {
     static const int DISTANCE_UNKNOWN = -2;
 
     const bool is_unit_cost;
+    // TODO: shared pointer
     Labels *labels;
 
     // TODO: consider changing this to vector<int> for the label indices only
     std::vector<const Label *> relevant_labels;
     int num_states;
     std::vector<std::vector<AbstractTransition> > transitions_by_label;
+    // TODO: invariant
     int num_labels;
 
     std::vector<int> init_distances;
@@ -77,7 +79,6 @@ class Abstraction {
 protected:
     std::vector<int> varset;
 
-    virtual bool is_label_reduced() const;
     virtual AbstractStateRef get_abstract_state(const State &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(const std::vector<
                                                        AbstractStateRef> &abstraction_mapping) = 0;
@@ -133,7 +134,8 @@ public:
     }
 
     // This method should be protected but is public for shrink_bisimulation
-    virtual bool transitions_consistent() const;
+    bool transitions_consistent() const;
+    bool is_label_reduced() const;
     // The following methods are shrink_bisimulation-exclusive
     int get_num_labels() const;
     const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const;

@@ -8,9 +8,9 @@
 class LabelReducer;
 class Label;
 
-/**
- * @brief The Labels class is basically a container class for the set of all
- *labels used by merge-and-shrink abstractions.
+/*
+ The Labels class is basically a container class for the set of all
+ labels used by merge-and-shrink abstractions.
  */
 class Labels {
     // the list of *all* labels ever created
@@ -19,7 +19,7 @@ class Labels {
     std::vector<const Label *> reduced_label_by_index;
     LabelReducer *label_reducer;
 public:
-    Labels(OperatorCost cost_type);
+    explicit Labels(OperatorCost cost_type);
     ~Labels();
     void reduce_labels(const std::vector<const Label *> &relevant_labels,
                        const std::vector<int> &pruned_vars);
@@ -30,15 +30,26 @@ public:
     const Label *get_label_by_index(int index) const;
     void dump() const;
 
-    inline unsigned int get_size() const {
+    std::size_t get_size() const {
         return labels.size();
     }
-    inline const std::vector<const Label *> &get_labels() const {
+    const std::vector<const Label *> &get_labels() const {
         return labels;
     }
-    inline bool are_labels_reduced() const {
+    bool are_labels_reduced() const {
         return label_reducer;
     }
 };
 
 #endif
+
+
+/*void OperatorLabel::update_root(Label *new_root) {
+    root = new_root;
+}
+
+void CompositeLabel::update_root(Label *new_root) {
+    for (size_t i = 0; i < parents.size(); ++i)
+        parents[i]->update_root(new_root);
+    root = new_root;
+}*/
