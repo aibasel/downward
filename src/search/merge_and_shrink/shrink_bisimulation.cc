@@ -236,7 +236,6 @@ void ShrinkBisimulation::compute_signatures(
             abs.get_transitions_for_label(label_no);
         int label_cost = abs.get_label_cost_by_index(label_no);
         for (size_t i = 0; i < transitions.size(); ++i) {
-            assert(label_cost != -1);
             const AbstractTransition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
             bool skip_transition = false;
