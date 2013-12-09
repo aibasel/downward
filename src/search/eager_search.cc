@@ -85,11 +85,10 @@ void EagerSearch::initialize() {
             search_progress.report_f_value(f_evaluator->get_value());
         }
         search_progress.check_h_progress(0);
-        StateID initial_state_id = initial_state.get_id();
-        SearchNode node = search_space.get_node(initial_state_id);
+        SearchNode node = search_space.get_node(initial_state);
         node.open_initial(heuristics[0]->get_value());
 
-        open_list->insert(initial_state_id);
+        open_list->insert(initial_state.get_id());
     }
 }
 
@@ -138,7 +137,7 @@ int EagerSearch::step() {
         search_progress.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
-        SearchNode succ_node = search_space.get_node(succ_state.get_id());
+        SearchNode succ_node = search_space.get_node(succ_state);
 
         // Previously encountered dead end. Don't re-evaluate.
         if (succ_node.is_dead_end())
@@ -247,14 +246,18 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
             // HACK! HACK! we do this because SearchNode has no default/copy constructor
-            StateID dummy_id = g_initial_state().get_id();
-            SearchNode dummy_node = search_space.get_node(dummy_id);
+            SearchNode dummy_node = search_space.get_node(g_initial_state());
             return make_pair(dummy_node, false);
         }
         vector<int> last_key_removed;
         StateID id = open_list->remove_min(
             use_multi_path_dependence ? &last_key_removed : 0);
-        SearchNode node = search_space.get_node(id);
+        // TODO is there a way we can avoid creating the state here and then
+        //      recreate it outside of this function with node.get_state()?
+        //      One way would be to store State objects inside SearchNodes
+        //      instead of StateIDs
+        State s = g_state_registry->lookup_state(id);
+        SearchNode node = search_space.get_node(s);
 
         if (node.is_closed())
             continue;
