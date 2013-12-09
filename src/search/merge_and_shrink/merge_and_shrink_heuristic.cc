@@ -17,7 +17,6 @@ using namespace std;
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
-      abstraction_count(opts.get<int>("count")),
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_label_reduction(opts.get<bool>("reduce_labels")),
@@ -58,8 +57,6 @@ void MergeAndShrinkHeuristic::dump_options() const {
     }
     cout << endl;
     shrink_strategy->dump_options();
-    cout << "Number of abstractions to maximize over: "
-         << abstraction_count << endl;
     cout << "Label reduction: "
          << (use_label_reduction ? "enabled" : "disabled") << endl
          << "Expensive statistics: "
@@ -82,7 +79,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
+Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_abstractions also
     //       allocates memory.
@@ -101,7 +98,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
     cout << "Merging abstractions..." << endl;
 
-    VariableOrderFinder order(merge_strategy, is_first);
+    VariableOrderFinder order(merge_strategy);
 
     int var_no = order.next();
     cout << "First variable: #" << var_no << endl;
@@ -175,34 +172,22 @@ void MergeAndShrinkHeuristic::initialize() {
     warn_on_unusual_options();
 
     verify_no_axioms_no_cond_effects();
-    int peak_memory = 0;
 
-    for (int i = 0; i < abstraction_count; i++) {
-        cout << "Building abstraction #" << (i + 1) << "..." << endl;
-        Abstraction *abstraction = build_abstraction(i == 0);
-        peak_memory = max(peak_memory, abstraction->get_peak_memory_estimate());
-        abstractions.push_back(abstraction);
-        if (!abstractions.back()->is_solvable()) {
-            cout << "Abstract problem is unsolvable!" << endl;
-            if (i + 1 < abstraction_count)
-                cout << "Skipping remaining abstractions." << endl;
-            break;
-        }
+    cout << "Building abstraction..." << endl;
+    final_abstraction = build_abstraction();
+    if (!final_abstraction->is_solvable()) {
+        cout << "Abstract problem is unsolvable!" << endl;
     }
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
-    cout << "Estimated peak memory for abstraction: " << peak_memory << " bytes" << endl;
+    cout << "Estimated peak memory for abstraction: " << final_abstraction->get_peak_memory_estimate() << " bytes" << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
-    int cost = 0;
-    for (int i = 0; i < abstractions.size(); i++) {
-        int abs_cost = abstractions[i]->get_cost(state);
-        if (abs_cost == -1)
-            return DEAD_END;
-        cost = max(cost, abs_cost);
-    }
+    int cost = final_abstraction->get_cost(state);
+    if (cost == -1)
+        return DEAD_END;
     return cost;
 }
 
@@ -222,7 +207,6 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators", "no");
 
     // TODO: better documentation what each parameter does
-    parser.add_option<int>("count", "number of abstractions to build", "1");
     vector<string> merge_strategies;
     //TODO: it's a bit dangerous that the merge strategies here
     // have to be specified exactly in the same order
