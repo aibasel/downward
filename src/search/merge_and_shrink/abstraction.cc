@@ -219,10 +219,14 @@ int Abstraction::get_num_labels() const {
 }
 
 const vector<AbstractTransition> &Abstraction::get_transitions_for_label(int label_no) const {
-    return transitions_by_label[labels->get_reduced_label_no(label_no)];
+    // we do *not* return the transitions for the mapped label because shrink_bisimulation
+    // iterates over all labels anyway, otherwise transitions for some labels could be
+    // dealt with several times when iterating over all labels.
+    return transitions_by_label[label_no];
 }
 
 int Abstraction::get_label_cost_by_index(int label_no) const {
+    // as for get_transitions_for_label, do *not* map the label number
     const Label *label = labels->get_label_by_index(label_no);
     return label->get_cost();
 }
