@@ -240,7 +240,7 @@ class Invariant:
         for part in self.parts:
             actions_to_check |= balance_checker.get_threats(part.predicate)
         for action in actions_to_check:
-            heavy_action = balance_checker.get_heavy_action(action.name)
+            heavy_action = balance_checker.get_heavy_action(action)
             if self.operator_too_heavy(heavy_action):
                 return False
             if self.operator_unbalanced(action, enqueue_func):
