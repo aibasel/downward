@@ -5,9 +5,6 @@
 
 #include "../heuristic.h"
 
-#include <utility>
-#include <vector>
-
 class Abstraction;
 class Labels;
 
@@ -22,15 +19,14 @@ enum MergeStrategy {
 };
 
 class MergeAndShrinkHeuristic : public Heuristic {
-    const int abstraction_count;
     const MergeStrategy merge_strategy;
     ShrinkStrategy *const shrink_strategy;
     const bool use_label_reduction;
     const bool use_expensive_statistics;
     Labels *labels;
 
-    std::vector<Abstraction *> abstractions;
-    Abstraction *build_abstraction(bool is_first = true);
+    Abstraction *final_abstraction;
+    Abstraction *build_abstraction();
 
     void dump_options() const;
     void warn_on_unusual_options() const;

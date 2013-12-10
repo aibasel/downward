@@ -4,7 +4,7 @@
 #include "globals.h"
 #include "segmented_vector.h"
 #include "state.h"
-#include "state_handle.h"
+#include "state_id.h"
 #include "state_var_t.h"
 #include "utilities.h"
 
@@ -16,133 +16,149 @@
   State
     This class is used for manipulating states.
     It contains the (uncompressed) variable values for fast access by the heuristic.
-    A State can be registered or unregistered, i.e., its handle can be valid or not.
-    States can be constructed by factory methods for the initial state and successor
-    states or from a valid StateHandle.
-    Constructed successor states own their data until they are registered. The
-    ownership is then transfered to the StateRegistry. This means that copying an
-    unregistered state is more expensive than copying a registered state.
-    States are not intended for long term storage. Instead they should be registered
-    and their handles should be stored.
+    A State is always registered in a StateRegistry and has a valid ID.
+    States can be constructed from a StateRegistry by factory methods for the
+    initial state and successor states.
+    They never own the actual state data which is borrowed from the StateRegistry
+    that created them.
 
-  StateHandle
-    StateHandles are light weight representativies of registered states. They can
-    be obtained from a registered state or by registering a state in a registry.
-    StateHandles are intended for long term storage (e.g. in open lists) and
-    replace StateProxies.
-    They do not own the state data of their respective state.
-
-  StateRepresentation
-    This is an internal class used only inside StateHandle and StateRegistry.
-    StateRepresentations should not be used directly.
-    They do not own the state data of their respective state.
-    StateRepresentations are used for long term storage in the StateRegistry to
-    associate an id with the (compressed) state data (state_var_t* for now).
+  StateID
+    StateIDs identify states within a state registry.
+    If the registry is known, the ID is sufficient to look up the state, which
+    is why ids are intended for long term storage (e.g. in open lists).
+    Internally, a StateID is just an integer, so it is cheap to store and copy.
 
   state_var_t*
-    The actual state data is internaly represented as an array of type state_var_t.
+    The actual state data is internally represented as a state_var_t array.
+    To minimize allocation overhead, the implementation stores the data of many
+    such states in a single large array (see SegmentedArrayVector)
     Currently there is no difference between compressed and uncompressed states.
-    Arrays like this are created in the State class, and copied into a
-    SegmentedArrayVector in the StateRegistry. The latter is used for long term
-    storage. Registered states borrow the state_var_t* from the registry.
 
   -------------
 
   StateRegistry
-    The StateRegistry allows to register states giving them a unique id. It also
-    stores the actual state data in a memory friendly way.
+    The StateRegistry allows to create states giving them an ID. IDs from
+    different state registries must not be mixed.
+    The StateRegistry also stores the actual state data in a memory friendly way.
+    It uses the following class:
 
   SegmentedArrayVector<state_var_t>
-    This class is used to store the actual state data for all registered states
+    This class is used to store the actual state data for all states
     while avoiding dynamically allocating each state individually.
-    The index within this vector corresponds to the id of the state's handle.
+    The index within this vector corresponds to the ID of the state.
 
-  StateRepresentationSet
-    Hash set of StateRepresentations used to detect states that are already
-    registered and find their handles.
+  PerStateInformation<T>
+    Associates a value of type T with every state in a given StateRegistry.
+    Can be thought of as a very compactly implemented map from State to T.
+    References stay valid forever. Memory usage is essentially the same as a
+    vector<T> whose size is the number of states in the registry.
 
-  -------------
 
-  SearchNodeInfo
-    Remaining part of a search node besides the state that needs to be stored.
+  ---------------
+  Usage example 1
+  ---------------
+  Problem:
+    A search node contains a state together with some information about how this
+    state was reached and the status of the node. The state data is already
+    stored and should not be duplicated. Open lists should in theory store search
+    nodes but we want to keep the amount of data stored in the open list to a
+    minimum.
 
-  SearchNode
-    A SearchNode combines a StateHandle, a reference to a SearchNodeInfo and
-    OperatorCost. It is generated for easier access and not intended for long
-    term storage.
+  Solution:
 
-  SearchSpace
-    The SearchSpace maps StateHandles to SearchNodeInfos.
+    SearchNodeInfo
+      Remaining part of a search node besides the state that needs to be stored.
 
-  -------------
+    SearchNode
+      A SearchNode combines a StateID, a reference to a SearchNodeInfo and
+      OperatorCost. It is generated for easier access and not intended for long
+      term storage. The state data is only stored once an can be accessed
+      through the StateID.
 
-  PerStateInformation
-    Template class that stores one entry for each registered state.
-    References to entries stay valid forever.
+    SearchSpace
+      The SearchSpace uses PerStateInformation<SearchNodeInfo> to map StateIDs to
+      SearchNodeInfos. The open lists only have to store StateIDs which can be
+      used to look up a search node in the SearchSpace on demand.
 
-  SegmentedVector
-    Container that stores elements in segments. All segments have the same length.
-    Segments are never resized, so all references to entries stay valid.
+  ---------------
+  Usage example 2
+  ---------------
+  Problem:
+    In the LMcount heuristic each state should store which landmarks are
+    already reached when this state is reached. This should only require
+    additional memory, when the LMcount heuristic is used.
+
+  Solution:
+    The heuristic object uses a field of type PerStateInformation<std::vector<bool> >
+    to store for each state and each landmark whether it was reached in this state.
 */
 
 class StateRegistry {
-    typedef StateHandle::StateRepresentation StateRepresentation;
-
-    struct StateRepresentationSemanticHash {
-        size_t operator()(const StateRepresentation &representation) const {
-            return ::hash_number_sequence(representation.data, g_variable_domain.size());
+    struct StateIDSemanticHash {
+        const SegmentedArrayVector<state_var_t> &state_data_pool;
+        StateIDSemanticHash(const SegmentedArrayVector<state_var_t> &state_data_pool_)
+            : state_data_pool (state_data_pool_) {
+        }
+        size_t operator() (StateID id) const {
+            return ::hash_number_sequence(state_data_pool[id.value], g_variable_domain.size());
         }
     };
 
-    struct StateRepresentationSemanticEqual {
-        size_t operator()(const StateRepresentation &lhs,
-                          const StateRepresentation &rhs) const {
+    struct StateIDSemanticEqual {
+        const SegmentedArrayVector<state_var_t> &state_data_pool;
+        StateIDSemanticEqual(const SegmentedArrayVector<state_var_t> &state_data_pool_)
+            : state_data_pool (state_data_pool_) {
+        }
+
+        size_t operator() (StateID lhs, StateID rhs) const {
             size_t size = g_variable_domain.size();
-            return std::equal(lhs.data, lhs.data + size, rhs.data);
+            const state_var_t *lhs_data = state_data_pool[lhs.value];
+            const state_var_t *rhs_data = state_data_pool[rhs.value];
+            return std::equal(lhs_data, lhs_data + size, rhs_data);
         }
     };
 
-    typedef __gnu_cxx::hash_set<StateRepresentation,
-                                StateRepresentationSemanticHash,
-                                StateRepresentationSemanticEqual> StateRepresentationSet;
+    /*
+      Hash set of StateIDs used to detect states that are already registered in
+      this registry and find their IDs. States are compared/hashed semantically,
+      i.e. the actual state data is compared, not the memory location.
+    */
+    typedef __gnu_cxx::hash_set<StateID,
+                                StateIDSemanticHash,
+                                StateIDSemanticEqual> StateIDSet;
 
-    SegmentedArrayVector<state_var_t> *state_data_pool;
-    StateRepresentationSet registered_states;
+    SegmentedArrayVector<state_var_t> state_data_pool;
+    StateIDSet registered_states;
+    State *cached_initial_state;
+    StateID insert_id_or_pop_state();
 public:
     StateRegistry();
     ~StateRegistry();
-    /*
-       After calling this function the returned state is registered and has a
-       valid handle.
-       Performes a lookup of state. If the same state was previously looked up,
-       a state with a valid handle to the registered data is returned.
-       Otherwise the state is registered (i.e. gets an id and is stored for
-       later lookups). After this registration a state with a valid handle to
-       the state just registered is returned.
-    */
-    // TODO If State is split in RegieredState and UnregisteredState, change the
-    // signature of this to
-    // RegieredState get_registered_state(const UnregisteredState& unregistered_state);
-    // See issue386.
-    StateHandle get_handle(const State &state);
 
+    /*
+      Returns the state that was registered at the given ID. The ID must refer
+      to a state in this registry. Do not mix IDs from from different registries.
+    */
+    State lookup_state(StateID id) const;
+
+    /*
+      Returns a reference to the initial state and registers it if this was not
+      done before. The result is cached internally so subsequent calls are cheap.
+    */
+    const State &get_initial_state();
+
+    /*
+      Returns the state that results from applying op to predecessor and
+      registers it if this was not done before. This is an expensive operation
+      as it includes duplicate checking.
+    */
+    State get_successor_state(const State &predecessor, const Operator &op);
+
+    /*
+      Returns the number of states registered so far.
+    */
     size_t size() const {
         return registered_states.size();
-    }
-
-    /*
-       An iterator would be nicer but we do not want to expose StateRepresentation.
-       Since this method is only used by debugging output right now (i.e. in
-       SearchSpace::dump()), the effort of writing a custom iterator that returns
-       StateHandles instead of StateRepresentation* is not worth it.
-    */
-    std::vector<StateHandle> get_all_registered_handles() const {
-        std::vector<StateHandle> handles;
-        for (StateRepresentationSet::const_iterator it = registered_states.begin();
-             it != registered_states.end(); ++it) {
-            handles.push_back(StateHandle(&*it));
-        }
-        return handles;
     }
 };
 

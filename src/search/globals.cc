@@ -247,23 +247,20 @@ void read_everything(istream &in) {
     read_metric(in);
     read_variables(in);
     read_mutexes(in);
-    // Read initial state and keep it until after the axioms are read.
-    state_var_t *initial_state_vars = new state_var_t[g_variable_domain.size()];
+    g_initial_state_buffer = new state_var_t[g_variable_domain.size()];
     check_magic(in, "begin_state");
     for (int i = 0; i < g_variable_domain.size(); i++) {
         int var;
         in >> var;
-        initial_state_vars[i] = var;
+        g_initial_state_buffer[i] = var;
     }
     check_magic(in, "end_state");
-    g_default_axiom_values.assign(initial_state_vars,
-                                  initial_state_vars + g_variable_domain.size());
+    g_default_axiom_values.assign(g_initial_state_buffer,
+                                  g_initial_state_buffer + g_variable_domain.size());
 
     read_goal(in);
     read_operators(in);
     read_axioms(in);
-    // After the axioms are known, we can create the initial state (see above).
-    g_initial_state = State::create_initial_state(initial_state_vars);
     check_magic(in, "begin_SG");
     g_successor_generator = read_successor_generator(in);
     check_magic(in, "end_SG");
@@ -288,10 +285,11 @@ void dump_everything() {
     for (int i = 0; i < g_variable_name.size(); i++)
         cout << "  " << g_variable_name[i]
              << " (range " << g_variable_domain[i] << ")" << endl;
+    State initial_state = g_initial_state();
     cout << "Initial State (PDDL):" << endl;
-    g_initial_state->dump_pddl();
+    initial_state.dump_pddl();
     cout << "Initial State (FDR):" << endl;
-    g_initial_state->dump_fdr();
+    initial_state.dump_fdr();
     dump_goal();
     /*
     cout << "Successor Generator:" << endl;
@@ -338,6 +336,10 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
     return bool(g_inconsistent_facts[a.first][a.second].count(b));
 }
 
+const State &g_initial_state() {
+    return g_state_registry->get_initial_state();
+}
+
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
@@ -346,7 +348,7 @@ vector<int> g_variable_domain;
 vector<vector<string> > g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
-State *g_initial_state;
+state_var_t *g_initial_state_buffer;
 vector<pair<int, int> > g_goal;
 vector<Operator> g_operators;
 vector<Operator> g_axioms;
