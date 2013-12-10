@@ -110,8 +110,7 @@ LabelSignature LabelReducer::build_label_signature(
     vector<Assignment> preconditions;
     vector<Assignment> effects;
 
-    const Operator *op = label.get_canonical_op();
-    const vector<Prevail> &prev = op->get_prevail();
+    const vector<Prevail> &prev = label.get_prevail();
     for (size_t i = 0; i < prev.size(); ++i) {
         int var = prev[i].var;
         if (var_is_used[var]) {
@@ -119,7 +118,7 @@ LabelSignature LabelReducer::build_label_signature(
             preconditions.push_back(make_pair(var, val));
         }
     }
-    const vector<PrePost> &pre_post = op->get_pre_post();
+    const vector<PrePost> &pre_post = label.get_pre_post();
     for (size_t i = 0; i < pre_post.size(); ++i) {
         int var = pre_post[i].var;
         if (var_is_used[var]) {

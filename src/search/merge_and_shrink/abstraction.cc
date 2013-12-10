@@ -6,7 +6,6 @@
 #include "shrink_fh.h"
 
 #include "../globals.h"
-#include "../operator.h"
 #include "../priority_queue.h"
 #include "../timer.h"
 
@@ -491,23 +490,21 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
     // Step 2: Add transitions.
     // Note that when building atomic abstractions, no other labels than the
     // original operators have been added yet.
-    for (int op_no = 0; op_no < g_operators.size(); op_no++) {
-        const Operator *op = &g_operators[op_no];
-        const Label *label = labels->get_label_by_index(op_no);
-        assert(op == label->get_canonical_op());
-        const vector<Prevail> &prev = op->get_prevail();
+    for (int label_no = 0; label_no < labels->get_size(); label_no++) {
+        const Label *label = labels->get_label_by_index(label_no);
+        const vector<Prevail> &prev = label->get_prevail();
         for (int i = 0; i < prev.size(); i++) {
             int var = prev[i].var;
             int value = prev[i].prev;
             Abstraction *abs = result[var];
             AbstractTransition trans(value, value);
-            abs->transitions_by_label[op_no].push_back(trans);
+            abs->transitions_by_label[label_no].push_back(trans);
 
             if (abs->relevant_labels.empty()
                 || abs->relevant_labels.back() != label)
                 abs->relevant_labels.push_back(label);
         }
-        const vector<PrePost> &pre_post = op->get_pre_post();
+        const vector<PrePost> &pre_post = label->get_pre_post();
         for (int i = 0; i < pre_post.size(); i++) {
             int var = pre_post[i].var;
             int pre_value = pre_post[i].pre;
@@ -523,7 +520,7 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
             }
             for (int value = pre_value_min; value < pre_value_max; value++) {
                 AbstractTransition trans(value, post_value);
-                abs->transitions_by_label[op_no].push_back(trans);
+                abs->transitions_by_label[label_no].push_back(trans);
             }
             if (abs->relevant_labels.empty()
                 || abs->relevant_labels.back() != label)
