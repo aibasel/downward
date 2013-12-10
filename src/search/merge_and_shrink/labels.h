@@ -5,7 +5,6 @@
 
 #include <vector>
 
-class LabelReducer;
 class Label;
 
 /*
@@ -17,7 +16,6 @@ class Labels {
     std::vector<const Label *> labels;
     // the list of *active* labels, accessed by index
     std::vector<const Label *> reduced_label_by_index;
-    LabelReducer *label_reducer;
 public:
     explicit Labels(OperatorCost cost_type);
     ~Labels();
@@ -25,8 +23,6 @@ public:
                        const std::vector<int> &pruned_vars);
     int get_reduced_label_no(int label_no) const;
     const Label *get_reduced_label(const Label *label) const;
-    void free();
-
     const Label *get_label_by_index(int index) const;
     void dump() const;
 
@@ -35,9 +31,6 @@ public:
     }
     const std::vector<const Label *> &get_labels() const {
         return labels;
-    }
-    bool are_labels_reduced() const {
-        return label_reducer;
     }
 };
 
