@@ -12,7 +12,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       heuristic(opts.get<Heuristic *>("h")),
       use_preferred(false),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
-      current_state(g_state_registry->get_handle(*g_initial_state)),
+      current_state(g_initial_state()),
       num_ehc_phases(0) {
     if (opts.contains("preferred")) {
         preferred_heuristics = opts.get_list<Heuristic *>("preferred");
@@ -64,7 +64,7 @@ void EnforcedHillClimbingSearch::initialize() {
     }
     cout << "(real) g-bound = " << bound << endl;
 
-    SearchNode node = search_space.get_node(current_state.get_handle());
+    SearchNode node = search_space.get_node(current_state.get_id());
     evaluate(current_state, NULL, current_state);
 
     if (heuristic->is_dead_end()) {
@@ -142,12 +142,12 @@ int EnforcedHillClimbingSearch::step() {
     vector<const Operator *> ops;
     get_successors(current_state, ops);
 
-    SearchNode current_node = search_space.get_node(current_state.get_handle());
+    SearchNode current_node = search_space.get_node(current_state.get_id());
     current_node.close();
 
     for (int i = 0; i < ops.size(); i++) {
         int d = get_adjusted_cost(*ops[i]);
-        OpenListEntryEHC entry = make_pair(current_state.get_handle(), make_pair(d, ops[i]));
+        OpenListEntryEHC entry = make_pair(current_state.get_id(), make_pair(d, ops[i]));
         open_list->evaluate(d, ops[i]->is_marked());
         open_list->insert(entry);
         ops[i]->unmark();
@@ -158,18 +158,18 @@ int EnforcedHillClimbingSearch::step() {
 int EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
         OpenListEntryEHC next = open_list->remove_min();
-        StateHandle last_parent_handle = next.first;
-        State last_parent = State(last_parent_handle);
+        StateID last_parent_id = next.first;
+        State last_parent = g_state_registry->lookup_state(last_parent_id);
         int d = next.second.first;
         const Operator *last_op = next.second.second;
 
-        if (search_space.get_node(last_parent_handle).get_real_g() + last_op->get_cost() >= bound)
+        if (search_space.get_node(last_parent_id).get_real_g() + last_op->get_cost() >= bound)
             continue;
 
-        State s = State::construct_registered_successor(last_parent, *last_op);
+        State s = g_state_registry->get_successor_state(last_parent, *last_op);
         search_progress.inc_generated();
 
-        SearchNode node = search_space.get_node(s.get_handle());
+        SearchNode node = search_space.get_node(s.get_id());
 
         if (node.is_new()) {
             evaluate(last_parent, last_op, s);
@@ -181,7 +181,7 @@ int EnforcedHillClimbingSearch::ehc() {
             }
 
             int h = heuristic->get_heuristic();
-            node.open(h, search_space.get_node(last_parent_handle), last_op);
+            node.open(h, search_space.get_node(last_parent_id), last_op);
 
             if (h < current_h) {
                 current_g = node.get_g();
@@ -205,7 +205,7 @@ int EnforcedHillClimbingSearch::ehc() {
                 node.close();
                 for (int i = 0; i < ops.size(); i++) {
                     int new_d = d + get_adjusted_cost(*ops[i]);
-                    OpenListEntryEHC entry = make_pair(node.get_state_handle(), make_pair(new_d, ops[i]));
+                    OpenListEntryEHC entry = make_pair(node.get_state_id(), make_pair(new_d, ops[i]));
                     open_list->evaluate(new_d, ops[i]->is_marked());
                     open_list->insert(entry);
                     ops[i]->unmark();

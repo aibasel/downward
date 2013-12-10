@@ -113,8 +113,8 @@ public:
     void push_back(const Entry &entry) {
         size_t segment = get_segment(the_size);
         size_t offset = get_offset(the_size);
-        if (offset == 0) {
-            assert(segment == segments.size());
+        if (segment == segments.size()) {
+            assert(offset == 0);
             // Must add a new segment.
             add_segment();
         }
@@ -122,12 +122,20 @@ public:
         ++the_size;
     }
 
+    void pop_back() {
+        entry_allocator.destroy(&operator[](the_size - 1));
+        --the_size;
+        // If the removed element was the last in its segment, the segment
+        // is not removed (memory is not deallocated). This way a subsequent
+        // push_back does not have to allocate the memory again.
+    }
+
     void resize(size_t new_size, Entry entry = Entry()) {
-        if (new_size < the_size) {
-            std::cerr << "SegmentedVector does not support removing elements. "
-                      << "See revision 6ee5ff7b8873 for an implementation."
-                      << std::endl;
-            exit_with(EXIT_UNSUPPORTED);
+        // NOTE: We currently grow/shrink one element at a time.
+        //       Revision 6ee5ff7b8873 contains an implementation that can
+        //       handle other resizes more efficiently.
+        while (new_size < the_size) {
+            pop_back();
         }
         while (new_size > the_size) {
             push_back(entry);
@@ -217,8 +225,8 @@ public:
     void push_back(const Element *entry) {
         size_t segment = get_segment(the_size);
         size_t offset = get_offset(the_size);
-        if (offset == 0) {
-            assert(segment == segments.size());
+        if (segment == segments.size()) {
+            assert(offset == 0);
             // Must add a new segment.
             add_segment();
         }
@@ -228,11 +236,22 @@ public:
         ++the_size;
     }
 
+    void pop_back() {
+        for (size_t offset = 0; offset < elements_per_array; ++offset) {
+            element_allocator.destroy(operator[](the_size - 1) + offset);
+        }
+        --the_size;
+        // If the removed element was the last in its segment, the segment
+        // is not removed (memory is not deallocated). This way a subsequent
+        // push_back does not have to allocate the memory again.
+    }
+
     void resize(size_t new_size, const Element *entry) {
-        if (new_size < the_size) {
-            std::cerr << "SegmentedArrayVector does not support removing elements."
-                      << std::endl;
-            exit_with(EXIT_UNSUPPORTED);
+        // NOTE: We currently grow/shrink one element at a time.
+        //       Revision 6ee5ff7b8873 contains an implementation that can
+        //       handle other resizes more efficiently.
+        while (new_size < the_size) {
+            pop_back();
         }
         while (new_size > the_size) {
             push_back(entry);

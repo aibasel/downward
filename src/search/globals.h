@@ -2,6 +2,7 @@
 #define GLOBALS_H
 
 #include "operator_cost.h"
+#include "state_var_t.h"
 
 #include <iosfwd>
 #include <string>
@@ -43,7 +44,11 @@ extern std::vector<std::vector<std::string> > g_fact_names;
 extern std::vector<int> g_axiom_layers;
 extern std::vector<int> g_default_axiom_values;
 
-extern State *g_initial_state;
+extern state_var_t *g_initial_state_buffer;
+// TODO The following function returns the initial state that is registered
+//      in g_state_registry. This is only a short-term solution. In the
+//      medium term, we should get rid of the global registry.
+extern const State &g_initial_state();
 extern std::vector<std::pair<int, int> > g_goal;
 
 extern std::vector<Operator> g_operators;

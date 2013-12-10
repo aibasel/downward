@@ -539,7 +539,7 @@ AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, Labels *labels, int vari
      */
     int range = g_variable_domain[variable];
 
-    int init_value = (*g_initial_state)[variable];
+    int init_value = g_initial_state()[variable];
     int goal_value = -1;
     for (int goal_no = 0; goal_no < g_goal.size(); goal_no++) {
         if (g_goal[goal_no].first == variable) {
