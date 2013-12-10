@@ -12,7 +12,8 @@ Labels::Labels(OperatorCost cost_type)
     : label_reducer(0) {
     reduced_label_by_index.resize(g_operators.size() * 2, 0);
     for (size_t i = 0; i < g_operators.size(); ++i) {
-        labels.push_back(new Label(i, get_adjusted_action_cost(g_operators[i], cost_type), &g_operators[i]));
+        labels.push_back(new Label(i, get_adjusted_action_cost(g_operators[i], cost_type),
+                                   g_operators[i].get_prevail(), g_operators[i].get_pre_post()));
         reduced_label_by_index[i] = labels[i];
     }
 }
