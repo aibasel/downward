@@ -22,18 +22,10 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_label_reduction(opts.get<bool>("reduce_labels")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
-    if (use_label_reduction) {
-        labels = new Labels(cost_type);
-    } else {
-        labels = 0;
-    }
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
-    if (use_label_reduction) {
-        assert(labels);
-        delete labels;
-    }
+    delete labels;
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
@@ -185,6 +177,7 @@ void MergeAndShrinkHeuristic::initialize() {
     verify_no_axioms_no_cond_effects();
 
     cout << "Building abstraction..." << endl;
+    labels = new Labels(cost_type);
     final_abstraction = build_abstraction();
     if (!final_abstraction->is_solvable()) {
         cout << "Abstract problem is unsolvable!" << endl;
