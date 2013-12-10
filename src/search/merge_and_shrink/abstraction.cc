@@ -405,6 +405,7 @@ void Abstraction::normalize(bool reduce_labels) {
     } else {
         cout << "without label reduction" << endl;
     }
+    // TODO: move below the loop below
     // update num_labels as we may have introduced new labels
     // NOTE: for the same reasons as we call "get_reduced_label_no" a few lines
     // below even if reduce_labels is false, we have to update num_labels here
@@ -469,9 +470,6 @@ void Abstraction::normalize(bool reduce_labels) {
         }
     }
 
-    if (reduce_labels) {
-        labels->free();
-    }
     // dump();
 }
 

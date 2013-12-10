@@ -89,7 +89,7 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
                 int old_label_index = old_label->get_index();
                 assert(reduced_label_by_index[old_label_index] == old_label);
                 // create new label from old label as in reduced_label_map
-                const Label *new_label = new Label(labels.size(), old_label);
+                const Label *new_label = new CompositeLable(labels.size(), old_label);
                 labels.push_back(new_label);
                 reduced_label_map[signature] = new_label;
                 reduced_label_by_index[old_label_index] = new_label;
