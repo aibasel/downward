@@ -593,12 +593,12 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
     }
 
     for (int i = 0; i < abs1->relevant_labels.size(); i++) {
-        labels->get_reduced_label(abs1->relevant_labels[i])->marker1 = true;
-        //abs1->relevant_labels[i]->dump();
+        //labels->get_reduced_label(abs1->relevant_labels[i])->marker1 = true;
+        abs1->relevant_labels[i]->get_reduced_label()->marker1 = true;
     }
     for (int i = 0; i < abs2->relevant_labels.size(); i++) {
-        labels->get_reduced_label(abs2->relevant_labels[i])->marker2 = true;
-        //abs2->relevant_labels[i]->dump();
+        //labels->get_reduced_label(abs2->relevant_labels[i])->marker2 = true;
+        abs2->relevant_labels[i]->get_reduced_label()->marker2 = true;
     }
 
     int multiplier = abs2->size();
@@ -661,9 +661,11 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
     }
 
     for (int i = 0; i < abs1->relevant_labels.size(); i++)
-        labels->get_reduced_label(abs1->relevant_labels[i])->marker1 = false;
+        abs1->relevant_labels[i]->get_reduced_label()->marker1 = false;
+        //labels->get_reduced_label(abs1->relevant_labels[i])->marker1 = false;
     for (int i = 0; i < abs2->relevant_labels.size(); i++)
-        labels->get_reduced_label(abs2->relevant_labels[i])->marker2 = false;
+        abs2->relevant_labels[i]->get_reduced_label()->marker2 = false;
+        //labels->get_reduced_label(abs2->relevant_labels[i])->marker2 = false;
 }
 
 CompositeAbstraction::~CompositeAbstraction() {
