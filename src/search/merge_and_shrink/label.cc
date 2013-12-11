@@ -7,7 +7,7 @@
 using namespace std;
 
 Label::Label(int id_, int cost_, const vector<Prevail> &prevail_, const vector<PrePost> &pre_post_)
-    : id(id_), cost(cost_), prevail(prevail_), pre_post(pre_post_) {
+    : id(id_), cost(cost_), prevail(prevail_), pre_post(pre_post_), root(0) {
     marker1 = marker2 = false;
 }
 
@@ -15,15 +15,12 @@ SingleLabel::SingleLabel(int id, int cost, const vector<Prevail> &prevail, const
     : Label(id, cost, prevail, pre_post) {
 }
 
-CompositeLable::CompositeLable(int id, const Label *label)
-    : Label(id, label->get_cost(), label->get_prevail(), label->get_pre_post()) {
-    add_mapping_label(label);
-}
-
-void Label::add_mapping_label(const Label *label) const {
-    assert(cost == label->get_cost());
-    // TODO: check that prevail/pre_post are indeed "local equivalent"?
-    mapping_labels.push_back(label);
+CompositeLabel::CompositeLabel(int id, const std::vector<const Label *> &labels)
+    : Label(id, labels[0]->get_cost(), labels[0]->get_prevail(), labels[0]->get_pre_post()),
+      parents(labels) {
+    // TODO: here we take the first label as the "canonical" label for prevail and
+    // pre-post conditions. can we somehow check the other labels in labels for
+    // local equivalence?
 }
 
 void Label::dump() const {

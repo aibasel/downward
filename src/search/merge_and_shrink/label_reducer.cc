@@ -66,39 +66,40 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
     for (size_t i = 0; i < pruned_vars.size(); ++i)
         var_is_used[pruned_vars[i]] = false;
 
-    hash_map<LabelSignature, const Label *> reduced_label_map;
+    hash_map<LabelSignature, vector<const Label *> > reduced_label_map;
     hash_map<LabelSignature, bool> is_label_reduced;
-    reduced_label_by_index.resize(labels.size(), 0);
+    vector<LabelSignature> reduced_label_signatures;
+    reduced_label_by_id.resize(labels.size(), 0);
 
     for (size_t i = 0; i < relevant_labels.size(); ++i) {
         const Label *label = relevant_labels[i];
         LabelSignature signature = build_label_signature(
             *label, var_is_used);
 
-        int label_index = label->get_index();
         if (!reduced_label_map.count(signature)) {
-            reduced_label_map[signature] = label;
             is_label_reduced[signature] = false;
-            reduced_label_by_index[label_index] = label;
             ++num_reduced_labels;
         } else {
             assert(is_label_reduced.count(signature));
             if (!is_label_reduced[signature]) {
                 is_label_reduced[signature] = true;
-                const Label *old_label = reduced_label_map[signature];
-                int old_label_index = old_label->get_index();
-                assert(reduced_label_by_index[old_label_index] == old_label);
-                // create new label from old label as in reduced_label_map
-                const Label *new_label = new CompositeLable(labels.size(), old_label);
-                labels.push_back(new_label);
-                reduced_label_map[signature] = new_label;
-                reduced_label_by_index[old_label_index] = new_label;
+                reduced_label_signatures.push_back(signature);
             }
-            reduced_label_map[signature]->add_mapping_label(label);
-            reduced_label_by_index[label_index] = reduced_label_map[signature];
         }
+        reduced_label_map[signature].push_back(label);
     }
     assert(reduced_label_map.size() == num_reduced_labels);
+
+    for (size_t i = 0; i < reduced_label_signatures.size(); ++i) {
+        const LabelSignature &signature = reduced_label_signatures[i];
+        const vector<const Label *> &reduced_labels = reduced_label_map[signature];
+        const Label *new_label = new CompositeLabel(labels.size(), reduced_labels);
+        labels.push_back(new_label);
+        for (size_t j = 0; j < reduced_labels.size(); ++j) {
+            int label_id = reduced_labels[j]->get_id();
+            reduced_label_by_id[label_id] = new_label;
+        }
+    }
 }
 
 LabelReducer::~LabelReducer() {
