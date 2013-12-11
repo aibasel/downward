@@ -67,9 +67,16 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
         var_is_used[pruned_vars[i]] = false;
 
     hash_map<LabelSignature, vector<const Label *> > reduced_label_map;
+    // TODO: consider combining reduced_label_signature and is_label_reduced
+    // into a set or hash-set (is_label_reduced only serves to make sure
+    // that every label signature is pushed at most once into reduced_label_signatures).
+    // The questions is if iterating over the set or hash set is efficient
+    // (and produces the same result, because we would then very probably
+    // settle for different 'canonical labels' because the ordering would be
+    // lost).
     hash_map<LabelSignature, bool> is_label_reduced;
     vector<LabelSignature> reduced_label_signatures;
-    reduced_label_by_id.resize(labels.size(), 0);
+    //reduced_label_by_id.resize(labels.size(), 0);
 
     for (size_t i = 0; i < relevant_labels.size(); ++i) {
         const Label *label = relevant_labels[i];
@@ -95,10 +102,10 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
         const vector<const Label *> &reduced_labels = reduced_label_map[signature];
         const Label *new_label = new CompositeLabel(labels.size(), reduced_labels);
         labels.push_back(new_label);
-        for (size_t j = 0; j < reduced_labels.size(); ++j) {
+        /*for (size_t j = 0; j < reduced_labels.size(); ++j) {
             int label_id = reduced_labels[j]->get_id();
             reduced_label_by_id[label_id] = new_label;
-        }
+        }*/
     }
 }
 
