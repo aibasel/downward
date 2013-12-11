@@ -24,7 +24,7 @@ void Labels::reduce_labels(const std::vector<const Label *> &relevant_labels,
                            const std::vector<int> &pruned_vars) {
     LabelReducer label_reducer(relevant_labels, pruned_vars, labels);
     label_reducer.statistics();
-    const vector<const Label *> &temp = label_reducer.get_reduced_label_by_index();
+    const vector<const Label *> &temp = label_reducer.get_reduced_label_by_id();
     for (size_t i = 0; i < labels.size(); ++i) {
         if (i < temp.size()) {
             if (temp[i] != 0)
@@ -37,14 +37,14 @@ void Labels::reduce_labels(const std::vector<const Label *> &relevant_labels,
 
 int Labels::get_reduced_label_no(int label_no) const {
     int current_label_no = label_no;
-    while (reduced_label_by_index[current_label_no]->get_index() != current_label_no) {
-        current_label_no = reduced_label_by_index[current_label_no]->get_index();
+    while (reduced_label_by_index[current_label_no]->get_id() != current_label_no) {
+        current_label_no = reduced_label_by_index[current_label_no]->get_id();
     }
     return current_label_no;
 }
 
 const Label *Labels::get_reduced_label(const Label *label) const {
-    int label_no = label->get_index();
+    int label_no = label->get_id();
     int reduced_label_no = get_reduced_label_no(label_no);
     const Label *reduced_label = labels[reduced_label_no];
     return reduced_label;
