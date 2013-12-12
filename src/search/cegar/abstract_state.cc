@@ -93,6 +93,10 @@ const {
     values->get_possible_splits(*desired.values, prev_conc_state, splits);
 }
 
+bool AbstractState::domains_intersect(const AbstractState *other, int var) {
+    return values->domains_intersect(*other->values, var);
+}
+
 int AbstractState::count(int var) const {
     return values->count(var);
 }

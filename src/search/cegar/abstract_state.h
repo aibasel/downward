@@ -47,6 +47,8 @@ private:
     void update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_loops(int var, AbstractState *v1, AbstractState *v2);
 
+    bool domains_intersect(const AbstractState *other, int var);
+
 public:
     explicit AbstractState(string s = "");
     ~AbstractState();
