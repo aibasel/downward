@@ -469,16 +469,6 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         cond = 0;
     } else if (pick == RANDOM) {
         cond = random_cond;
-    } else if (pick == GOAL || pick == NO_GOAL) {
-        for (int i = 0; i < splits.size(); ++i) {
-            bool is_goal_var = goal_var(splits[i].first);
-            if ((pick == GOAL && is_goal_var) || (pick == NO_GOAL && !is_goal_var)) {
-                cond = i;
-                break;
-            }
-        }
-        if (cond == -1)
-            cond = random_cond;
     } else if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
         int max_rest = -1;
         int min_rest = INF;
