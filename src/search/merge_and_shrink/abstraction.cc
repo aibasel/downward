@@ -200,6 +200,11 @@ void Abstraction::compute_distances() {
     }
 }
 
+int Abstraction::get_label_cost_by_index(int label_no) const {
+    const Label *label = labels->get_label_by_index(label_no);
+    return label->get_cost();
+}
+
 bool Abstraction::transitions_consistent() const {
     assert(num_labels <= labels->get_size());
     if (num_labels > transitions_by_label.size()) {
@@ -213,6 +218,10 @@ bool Abstraction::transitions_consistent() const {
     return true;
 }
 
+bool Abstraction::is_label_reduced() const {
+    return (num_labels == labels->get_size());
+}
+
 int Abstraction::get_num_labels() const {
     return labels->get_size();
 }
@@ -222,12 +231,6 @@ const vector<AbstractTransition> &Abstraction::get_transitions_for_label(int lab
     // iterates over all labels anyway, otherwise transitions for some labels could be
     // dealt with several times when iterating over all labels.
     return transitions_by_label[label_no];
-}
-
-int Abstraction::get_label_cost_by_index(int label_no) const {
-    // as for get_transitions_for_label, do *not* map the label number
-    const Label *label = labels->get_label_by_index(label_no);
-    return label->get_cost();
 }
 
 static void breadth_first_search(
@@ -389,8 +392,6 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(
 
 void Abstraction::normalize(bool reduce_labels) {
     // Apply label reduction and remove duplicate transitions.
-
-    // dump();
 
     cout << tag() << "normalizing ";
 
@@ -815,10 +816,6 @@ int Abstraction::get_cost(const State &state) const {
     int cost = goal_distances[abs_state];
     assert(cost != infinity);
     return cost;
-}
-
-bool Abstraction::is_label_reduced() const {
-    return (num_labels == labels->get_size());
 }
 
 int Abstraction::memory_estimate() const {
