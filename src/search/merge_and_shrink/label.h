@@ -19,7 +19,7 @@ class Label {
     // prevail and pre_posts are references to those of one "canonical"
     // operator, which is the operator an OperatorLabel was built from or
     // the "first" label of all parent labels when constructing a CompositeLabel.
-    // TODO: can this be dealt with differntly? E.g. only keep var/val pairs
+    // TODO: can this be dealt with differently? E.g. only keep var/val pairs
     // from prevail/pre_post in composite labels where all parent labels agree
     // on?
     const std::vector<Prevail> &prevail;

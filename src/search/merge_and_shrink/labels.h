@@ -16,6 +16,9 @@ class Labels {
 public:
     explicit Labels(OperatorCost cost_type);
     ~Labels();
+    // pruned_vars is the set of variables of the calling abstraction. The
+    // variables in it will *not* be used when checking for local equivalence
+    // between labels.
     void reduce_labels(const std::vector<const Label *> &relevant_labels,
                        const std::vector<int> &abs_vars);
     int get_reduced_label_no(int label_no) const;
