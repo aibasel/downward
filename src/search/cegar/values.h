@@ -7,7 +7,11 @@
 #include <vector>
 
 namespace cegar_heuristic {
+class AbstractState;
+
 class Values {
+friend class AbstractState;
+
 private:
     // Possible values of each variable in this state.
     // Values are represented from right to left (least- to most-significant).
@@ -21,11 +25,10 @@ private:
     // masks[var][pos] == true iff pos belongs to var.
     static vector<Bitset> masks;
 
+    Values();
+
     int pos(int var, int value) const {return borders[var] + value; }
 
-public:
-    Values();
-    static void initialize_static_members();
     void add(int var, int value);
     void set(int var, int value);
     void remove(int var, int value);
@@ -36,7 +39,11 @@ public:
     bool domains_intersect(const Values &other, int var);
     bool abstracts(const Values &other) const;
     void get_possible_splits(const Values &flaw, const State conc_state, Splits *splits) const;
+
     string str() const;
+
+public:
+    static void initialize_static_members();
 };
 }
 
