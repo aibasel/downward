@@ -57,14 +57,14 @@ struct hash<LabelSignature> {
 }
 
 LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
-    const vector<int> &pruned_vars, std::vector<const Label *> &labels) {
-    num_pruned_vars = pruned_vars.size();
+    const vector<int> &abs_vars, std::vector<const Label *> &labels) {
+    num_pruned_vars = abs_vars.size();
     num_labels = relevant_labels.size();
     num_reduced_labels = 0;
 
     vector<bool> var_is_used(g_variable_domain.size(), true);
-    for (size_t i = 0; i < pruned_vars.size(); ++i)
-        var_is_used[pruned_vars[i]] = false;
+    for (size_t i = 0; i < abs_vars.size(); ++i)
+        var_is_used[abs_vars[i]] = false;
 
     hash_map<LabelSignature, vector<const Label *> > reduced_label_map;
     // TODO: consider combining reduced_label_signature and is_label_reduced
