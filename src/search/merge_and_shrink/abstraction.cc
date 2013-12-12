@@ -408,10 +408,7 @@ void Abstraction::normalize(bool reduce_labels) {
     }
     // TODO: move below the loop below
     // update num_labels as we may have introduced new labels
-    // NOTE: for the same reasons as we call "get_reduced_label_no" a few lines
-    // below even if reduce_labels is false, we have to update num_labels here
-    // to guarantee usage of consistent labels.
-    num_labels = labels->get_size();
+
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
 
@@ -439,6 +436,10 @@ void Abstraction::normalize(bool reduce_labels) {
             vector<AbstractTransition> ().swap(transitions);
         }
     }
+    // NOTE: for the same reasons as we call "get_reduced_label_no" above even
+    // if reduce_labels is false, we have to update num_labels here to guarantee
+    // usage of consistent labels.
+    num_labels = labels->get_size();
 
     // Second, partition by src state.
     vector<StateBucket> src_buckets(num_states);
