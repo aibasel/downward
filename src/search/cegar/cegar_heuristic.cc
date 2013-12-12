@@ -54,10 +54,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 CegarHeuristic::~CegarHeuristic() {
 }
 
-bool sort_domain_size_up(Fact atom1, Fact atom2) {
-    return g_variable_domain[atom1.first] < g_variable_domain[atom2.first];
-}
-
 struct SortHaddValuesUp {
     const Task task;
     explicit SortHaddValuesUp(const Task &t) : task(t) {}
@@ -120,10 +116,6 @@ void CegarHeuristic::order_facts(vector<Fact> &facts) const {
         // Nothing to do.
     } else if (fact_order == MIXED) {
         random_shuffle(facts.begin(), facts.end());
-    } else if (fact_order == DOMAIN_SIZE_UP || fact_order == DOMAIN_SIZE_DOWN) {
-        sort(facts.begin(), facts.end(), sort_domain_size_up);
-        if (fact_order == DOMAIN_SIZE_DOWN)
-            reverse(facts.begin(), facts.end());
     } else if (fact_order == HADD_UP || fact_order == HADD_DOWN) {
         sort(facts.begin(), facts.end(), SortHaddValuesUp(original_task));
         if (fact_order == HADD_DOWN)
@@ -326,8 +318,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     vector<string> fact_order_strategies;
     fact_order_strategies.push_back("ORIGINAL");
     fact_order_strategies.push_back("MIXED");
-    fact_order_strategies.push_back("DOMAIN_SIZE_UP");
-    fact_order_strategies.push_back("DOMAIN_SIZE_DOWN");
     fact_order_strategies.push_back("HADD_UP");
     fact_order_strategies.push_back("HADD_DOWN");
     parser.add_enum_option("fact_order", fact_order_strategies, "MIXED",
