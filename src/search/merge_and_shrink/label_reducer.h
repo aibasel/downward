@@ -22,7 +22,7 @@ class LabelReducer {
         const std::vector<bool> &var_is_used) const;
 public:
     LabelReducer(const std::vector<const Label *> &relevant_labels,
-                 const std::vector<int> &pruned_vars,
+                 const std::vector<int> &abs_vars,
                  std::vector<const Label* > &labels);
     ~LabelReducer();
 

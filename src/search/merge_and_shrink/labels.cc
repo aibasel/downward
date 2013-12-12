@@ -19,8 +19,8 @@ Labels::~Labels() {
 }
 
 void Labels::reduce_labels(const std::vector<const Label *> &relevant_labels,
-                           const std::vector<int> &pruned_vars) {
-    LabelReducer label_reducer(relevant_labels, pruned_vars, labels);
+                           const std::vector<int> &abs_vars) {
+    LabelReducer label_reducer(relevant_labels, abs_vars, labels);
     label_reducer.statistics();
 }
 

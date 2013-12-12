@@ -406,9 +406,6 @@ void Abstraction::normalize(bool reduce_labels) {
     } else {
         cout << "without label reduction" << endl;
     }
-    // TODO: move below the loop below
-    // update num_labels as we may have introduced new labels
-
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
 
