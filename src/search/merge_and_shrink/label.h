@@ -16,8 +16,14 @@ class Label {
     friend class CompositeLabel;
     int id;
     int cost;
-    const std::vector<Prevail> prevail;
-    const std::vector<PrePost> pre_post;
+    // prevail and pre_posts are references to those of one "canonical"
+    // operator, which is the operator an OperatorLabel was built from or
+    // the "first" label of all parent labels when constructing a CompositeLabel.
+    // TODO: can this be dealt with differntly? E.g. only keep var/val pairs
+    // from prevail/pre_post in composite labels where all parent labels agree
+    // on?
+    const std::vector<Prevail> &prevail;
+    const std::vector<PrePost> &pre_post;
 protected:
     // root is a pointer to a composite label that this label has been reduced
     // to, if such a label exists, or to itself, if the label has not been
@@ -29,6 +35,7 @@ protected:
     mutable Label *root;
 
     Label(int id, int cost, const std::vector<Prevail> &prevail, const std::vector<PrePost> &pre_post);
+    virtual ~Label() {}
     virtual void update_root(CompositeLabel *new_root) const = 0;
 public:
     const std::vector<Prevail> &get_prevail() const {return prevail; }

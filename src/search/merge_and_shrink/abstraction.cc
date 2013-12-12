@@ -429,11 +429,7 @@ void Abstraction::normalize(bool reduce_labels) {
             // new labels are used rather than the old ones.
             // We thus do *not* only use reduced labels if reduce_labels is true,
             // but always, in order to guarantee consistent labels.
-            //if (labels->are_labels_reduced()) {
             reduced_label_no = labels->get_reduced_label_no(label_no);
-            //} else {
-            //    reduced_label_no = label_no;
-            //}
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &t = transitions[i];
                 target_buckets[t.target].push_back(
@@ -469,8 +465,6 @@ void Abstraction::normalize(bool reduce_labels) {
                 op_bucket.push_back(trans);
         }
     }
-
-    // dump();
 }
 
 void Abstraction::build_atomic_abstractions(bool is_unit_cost,
@@ -592,14 +586,10 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
         }
     }
 
-    for (int i = 0; i < abs1->relevant_labels.size(); i++) {
-        //labels->get_reduced_label(abs1->relevant_labels[i])->marker1 = true;
+    for (int i = 0; i < abs1->relevant_labels.size(); i++)
         abs1->relevant_labels[i]->get_reduced_label()->marker1 = true;
-    }
-    for (int i = 0; i < abs2->relevant_labels.size(); i++) {
-        //labels->get_reduced_label(abs2->relevant_labels[i])->marker2 = true;
+    for (int i = 0; i < abs2->relevant_labels.size(); i++)
         abs2->relevant_labels[i]->get_reduced_label()->marker2 = true;
-    }
 
     int multiplier = abs2->size();
     for (int label_no = 0; label_no < num_labels; label_no++) {
@@ -607,18 +597,12 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
         bool relevant1 = label->marker1;
         bool relevant2 = label->marker2;
         if (relevant1 || relevant2) {
-            //cout << "relevant1: " << relevant1 << endl;
-            //cout << "relevant2: " << relevant2 << endl;
-            //cout << "relevant label" << endl;
-            //label->dump();
             vector<AbstractTransition> &transitions = transitions_by_label[label_no];
             relevant_labels.push_back(label);
             const vector<AbstractTransition> &bucket1 =
                 abs1->transitions_by_label[label_no];
-            //cout << "abs 1 trans: " << bucket1.size() << endl;
             const vector<AbstractTransition> &bucket2 =
                 abs2->transitions_by_label[label_no];
-            //cout << "abs 2 trans: " << bucket2.size() << endl;
             if (relevant1 && relevant2) {
                 transitions.reserve(bucket1.size() * bucket2.size());
                 for (int i = 0; i < bucket1.size(); i++) {
@@ -662,10 +646,8 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
 
     for (int i = 0; i < abs1->relevant_labels.size(); i++)
         abs1->relevant_labels[i]->get_reduced_label()->marker1 = false;
-        //labels->get_reduced_label(abs1->relevant_labels[i])->marker1 = false;
     for (int i = 0; i < abs2->relevant_labels.size(); i++)
         abs2->relevant_labels[i]->get_reduced_label()->marker2 = false;
-        //labels->get_reduced_label(abs2->relevant_labels[i])->marker2 = false;
 }
 
 CompositeAbstraction::~CompositeAbstraction() {
@@ -922,14 +904,6 @@ bool Abstraction::is_in_varset(int var) const {
     return find(varset.begin(), varset.end(), var) != varset.end();
 }
 
-// TODO: remove after debugging
-void Abstraction::dump_transitions_sizes() const {
-    for (int label_no = 0; label_no < transitions_by_label.size(); label_no++) {
-        const vector<AbstractTransition> &trans = transitions_by_label[label_no];
-        cout << "label_no: " << label_no << ", no transitions: " << trans.size() << endl;
-    }
-}
-
 void Abstraction::dump() const {
     cout << "digraph abstract_transition_graph";
     for (int i = 0; i < varset.size(); i++)
@@ -956,8 +930,4 @@ void Abstraction::dump() const {
         }
     }
     cout << "}" << endl;
-
-    /*for (size_t i = 0; i < relevant_labels.size(); ++i) {
-        relevant_labels[i]->get_canonical_op()->dump();
-    }*/
 }
