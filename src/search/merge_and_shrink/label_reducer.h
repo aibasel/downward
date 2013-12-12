@@ -12,8 +12,8 @@
 class LabelSignature;
 
 class LabelReducer {
-    //std::vector<const Label *> reduced_label_by_id;
-
+    // TODO: remove this instance variables and print them directly at the
+    // end of the constructor (and get rid of statistics())?
     int num_pruned_vars;
     int num_labels;
     int num_reduced_labels;
@@ -27,10 +27,6 @@ public:
     ~LabelReducer();
 
     void statistics() const;
-
-    /*inline const std::vector<const Label *> get_reduced_label_by_id() const {
-        return reduced_label_by_id;
-    }*/
 };
 
 #endif

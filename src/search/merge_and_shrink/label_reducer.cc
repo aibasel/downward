@@ -76,7 +76,6 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
     // lost).
     hash_map<LabelSignature, bool> is_label_reduced;
     vector<LabelSignature> reduced_label_signatures;
-    //reduced_label_by_id.resize(labels.size(), 0);
 
     for (size_t i = 0; i < relevant_labels.size(); ++i) {
         const Label *label = relevant_labels[i];
@@ -102,10 +101,6 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
         const vector<const Label *> &reduced_labels = reduced_label_map[signature];
         const Label *new_label = new CompositeLabel(labels.size(), reduced_labels);
         labels.push_back(new_label);
-        /*for (size_t j = 0; j < reduced_labels.size(); ++j) {
-            int label_id = reduced_labels[j]->get_id();
-            reduced_label_by_id[label_id] = new_label;
-        }*/
     }
 }
 

@@ -43,14 +43,13 @@ class Abstraction {
     static const int DISTANCE_UNKNOWN = -2;
 
     const bool is_unit_cost;
-    // TODO: shared pointer
+    // TODO: document owner of this
     Labels *labels;
 
-    // TODO: consider changing this to vector<int> for the label indices only
     std::vector<const Label *> relevant_labels;
     int num_states;
     std::vector<std::vector<AbstractTransition> > transitions_by_label;
-    // TODO: invariant
+    // TODO: document this invariant and when it holds and when it does not
     int num_labels;
 
     std::vector<int> init_distances;
