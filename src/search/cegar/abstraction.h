@@ -23,7 +23,6 @@ const int STATES_LOG_STEP = 1000;
 
 // In case there are multiple unment conditions, how do we choose the next one?
 enum PickStrategy {
-    FIRST,
     RANDOM,
     // Number of remaining values for each variable.
     // "Constrainment" is bigger if there are less remaining possible values.

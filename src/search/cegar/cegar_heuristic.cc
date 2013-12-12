@@ -303,7 +303,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("max_time", INF, "maximum time in seconds for building the abstraction");
     parser.add_option<double>("init_h_factor", -1, "stop refinement after h(s_0) reaches h^add(s_0) * factor");
     vector<string> pick_strategies;
-    pick_strategies.push_back("FIRST");
     pick_strategies.push_back("RANDOM");
     pick_strategies.push_back("MIN_CONSTRAINED");
     pick_strategies.push_back("MAX_CONSTRAINED");

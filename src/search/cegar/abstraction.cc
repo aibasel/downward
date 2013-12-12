@@ -465,9 +465,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         cout << endl;
     int cond = -1;
     int random_cond = rng.next(splits.size());
-    if (pick == FIRST) {
-        cond = 0;
-    } else if (pick == RANDOM) {
+    if (pick == RANDOM) {
         cond = random_cond;
     } else if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
         int max_rest = -1;
