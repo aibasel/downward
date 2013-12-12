@@ -335,7 +335,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     vector<string> decompositions;
     decompositions.push_back("NONE");
     decompositions.push_back("ALL_LANDMARKS");
-    decompositions.push_back("RANDOM_LANDMARKS");
     decompositions.push_back("GOAL_FACTS");
     decompositions.push_back("GOAL_LEAVES");
     decompositions.push_back("LANDMARKS_AND_GOALS");
