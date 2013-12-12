@@ -25,9 +25,6 @@ const int STATES_LOG_STEP = 1000;
 enum PickStrategy {
     FIRST,
     RANDOM,
-    // Choose first variable that occurs/doesn't occur in the goal.
-    GOAL,
-    NO_GOAL,
     // Number of remaining values for each variable.
     // "Constrainment" is bigger if there are less remaining possible values.
     MIN_CONSTRAINED,

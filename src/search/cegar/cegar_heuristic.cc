@@ -313,8 +313,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     vector<string> pick_strategies;
     pick_strategies.push_back("FIRST");
     pick_strategies.push_back("RANDOM");
-    pick_strategies.push_back("GOAL");
-    pick_strategies.push_back("NO_GOAL");
     pick_strategies.push_back("MIN_CONSTRAINED");
     pick_strategies.push_back("MAX_CONSTRAINED");
     pick_strategies.push_back("MIN_REFINED");
