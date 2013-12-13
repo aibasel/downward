@@ -164,6 +164,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     while (true) {
         num_iterations += 1;
         cout << "current collection size is " << current_heuristic->get_size() << endl;
+        // TODO think about how to handle this when state_registries are moved into the search algorithms.
         current_heuristic->evaluate(g_initial_state());
         cout << "current initial h value: ";
         if (current_heuristic->is_dead_end()) {
@@ -173,9 +174,9 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             cout << current_heuristic->get_heuristic() << endl;
         }
 
-        StateRegistry temporary_registry;
+        StateRegistry sample_registry;
         vector<State> samples;
-        sample_states(temporary_registry, samples, average_operator_cost);
+        sample_states(sample_registry, samples, average_operator_cost);
 
         // For the new candidate patterns check whether they already have been candidates before and
         // thus already a PDB has been created an inserted into candidate_pdbs.
