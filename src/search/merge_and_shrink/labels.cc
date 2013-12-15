@@ -19,9 +19,15 @@ Labels::~Labels() {
 }
 
 void Labels::reduce_labels(const std::vector<const Label *> &relevant_labels,
-                           const std::vector<int> &abs_vars) {
-    LabelReducer label_reducer(relevant_labels, abs_vars, labels);
-    label_reducer.statistics();
+                           const std::vector<int> &abs_vars,
+                           const EquivalenceRelation *relation) {
+    if (relation) {
+        LabelReducer label_reducer(relation, labels);
+        label_reducer.statistics2();
+    } else {
+        LabelReducer label_reducer(relevant_labels, abs_vars, labels);
+        label_reducer.statistics();
+    }
 }
 
 int Labels::get_reduced_label_no(int label_no) const {
@@ -33,6 +39,14 @@ const Label *Labels::get_label_by_index(int index) const {
     return labels[index];
 }
 
+bool Labels::is_label_reduced(int label_no) const {
+    return label_no != get_reduced_label_no(label_no);
+}
+
 void Labels::dump() const {
     cout << "no of labels: " << labels.size() << endl;
+    for (size_t i = 0; i < labels.size(); ++i) {
+        const Label *label = labels[i];
+        cout << label->get_id() << "->" << label->get_reduced_label()->get_id() << endl;
+    }
 }
