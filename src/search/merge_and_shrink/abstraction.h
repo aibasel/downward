@@ -1,16 +1,18 @@
 #ifndef MERGE_AND_SHRINK_ABSTRACTION_H
 #define MERGE_AND_SHRINK_ABSTRACTION_H
 
+#include "equivalence_relation.h"
+#include "label.h"
 #include "shrink_strategy.h"
 
 #include "../operator_cost.h"
-#include "label.h"
 
 #include <ext/slist>
 #include <vector>
 
-class State;
+class Label;
 class Labels;
+class State;
 
 struct AbstractTransition {
     AbstractStateRef src;
@@ -109,7 +111,8 @@ public:
     bool is_in_varset(int var) const;
 
     void compute_distances();
-    void normalize(bool reduce_labels);
+    void normalize(bool reduce_labels, const EquivalenceRelation *relation = 0);
+    EquivalenceRelation compute_local_equivalence_relation() const;
     void release_memory();
 
     void dump_transitions_sizes() const;

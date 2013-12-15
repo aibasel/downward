@@ -8,12 +8,14 @@
 #include "../globals.h"
 #include "../priority_queue.h"
 #include "../timer.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
 #include <deque>
+#include <ext/hash_map>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -390,7 +392,7 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(
     }
 }
 
-void Abstraction::normalize(bool reduce_labels) {
+void Abstraction::normalize(bool reduce_labels, const EquivalenceRelation *relation) {
     // Apply label reduction and remove duplicate transitions.
 
     cout << tag() << "normalizing ";
@@ -400,7 +402,7 @@ void Abstraction::normalize(bool reduce_labels) {
             cout << "without label reduction (already reduced)" << endl;
         } else {
             cout << "with label reduction" << endl;
-            labels->reduce_labels(relevant_labels, varset);
+            labels->reduce_labels(relevant_labels, varset, relation);
             are_labels_reduced = true;
         }
     } else {
@@ -464,6 +466,129 @@ void Abstraction::normalize(bool reduce_labels) {
                 op_bucket.push_back(trans);
         }
     }
+}
+
+struct TransitionSignature {
+    vector<int> data;
+
+    TransitionSignature(const vector<pair<int, int> > &transitions, int cost) {
+        // transitions must be sorted.
+        for (size_t i = 0; i < transitions.size(); ++i) {
+            if (i != 0)
+                assert(transitions[i].first > transitions[i - 1].first);
+            data.push_back(transitions[i].first);
+            data.push_back(transitions[i].second);
+        }
+        data.push_back(-1); // marker
+        data.push_back(cost);
+    }
+
+    bool operator==(const TransitionSignature &other) const {
+        return data == other.data;
+    }
+
+    size_t hash() const {
+        return ::hash_number_sequence(data, data.size());
+    }
+};
+
+namespace __gnu_cxx {
+template<>
+struct hash<TransitionSignature> {
+    size_t operator()(const TransitionSignature &sig) const {
+        return sig.hash();
+    }
+};
+}
+
+EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
+    assert(is_label_reduced());
+    //cout << (is_label_reduced() ? "" : "not ") << "label reduced" << endl;
+    hash_map<TransitionSignature, vector<int> > labels_by_transitions;
+    //hash_map<TransitionSignature, bool> transition_has_several_labels;
+    vector<TransitionSignature> transition_signatures;
+    for (size_t label_no = 0; label_no < num_labels; ++label_no) {
+        // TODO: das hier überdenken. bereits reduziertes label kann natürlich
+        // noch weiter reduziert werden, aber dazu reicht es, dass labe zu
+        // betrachten, auf dass reduziert wird (später im schleifendurchlauf)
+        // TODO: zu ende debuggen. funktnioniert das jetzt etwa wirklich?! :)
+        if (labels->is_label_reduced(label_no))
+            continue;
+        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
+        vector<pair<int, int> > sorted_trans;
+        sorted_trans.reserve(transitions.size());
+        for (size_t j = 0; j < transitions.size(); ++j) {
+            const AbstractTransition &trans = transitions[j];
+            sorted_trans.push_back(make_pair(trans.src, trans.target));
+        }
+        ::sort(sorted_trans.begin(), sorted_trans.end());
+        TransitionSignature signature(sorted_trans, labels->get_label_by_index(label_no)->get_cost());
+        if (!labels_by_transitions.count(signature)) {
+            //transition_has_several_labels[signature] = false;
+            transition_signatures.push_back(signature);
+        }/* else {
+            assert(transition_has_several_labels.count(signature));
+            if (!transition_has_several_labels[signature]) {
+                transition_has_several_labels[signature] = true;
+                transition_signatures.push_back(signature);
+            }
+        }*/
+        labels_by_transitions[signature].push_back(label_no);
+    }
+    vector<pair<int, int> > labeled_label_nos;
+    //labeled_label_nos.reserve(relevant_labels.size());
+    cout << "grouped label nos:" << endl;
+    for (size_t i = 0; i < transition_signatures.size(); ++i) {
+        const TransitionSignature &signature = transition_signatures[i];
+        const vector<int> &label_nos = labels_by_transitions[signature];
+        for (size_t j = 0; j < label_nos.size(); ++j) {
+            int label_no = label_nos[j];
+            labeled_label_nos.push_back(make_pair(i, label_no));
+            cout << label_no << " ";
+            //cout << "label no: " << label_no << endl;
+            const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
+            for (size_t k = j + 1; k < label_nos.size(); ++k) {
+                int other_label_no = label_nos[k];
+                //cout << "other label no: " << other_label_no << endl;
+                assert(labels->get_label_by_index(label_no)->get_cost()
+                       == labels->get_label_by_index(other_label_no)->get_cost());
+                const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
+                assert(transitions.size() == other_transitions.size());
+                for (size_t l = 0; l < transitions.size(); ++l) {
+                    //cout << "transition[" << l << "]: " << transitions[l].src << "->"
+                    //     << transitions[l].target << endl;
+                    const AbstractTransition &transition = transitions[l];
+                    bool matched_transition = false;
+                    for (size_t m = 0; m < other_transitions.size(); ++m) {
+                        const AbstractTransition &other_transition = other_transitions[m];
+                        //cout << "other_transition[" << m << "]: " << transitions[m].src
+                        //     << "->" << transitions[m].target << endl;
+                        if (transition == other_transition) {
+                            matched_transition = true;
+                            break;
+                        }
+                    }
+                    assert(matched_transition);
+                }
+            }
+        }
+        //if (label_nos.size() > 1)
+            cout << endl;
+    }
+    //size_t processed_labels_count = labeled_label_nos.size();
+    //for (size_t i = 0; i < irrelevant_label_nos.size(); ++i) {
+    //    labeled_label_nos.push_back(make_pair(processed_labels_count, irrelevant_label_nos[i]));
+    //}
+    //cout << "relevant labels:" << endl;
+    //for (size_t i = 0; i < relevant_labels.size(); ++i) {
+    //    cout << relevant_labels[i]->get_id() << endl;
+    //}
+    // NOTE: this assertion does not hold as soon as label reduction has been
+    // used on some other abstractions, because relevant_labels never get
+    // updated when reducing labels.
+    // TODO: change?
+    //assert(labeled_label_nos.size() == relevant_labels.size());
+    return EquivalenceRelation::from_labels<int>(labels->get_size(), labeled_label_nos);
 }
 
 void Abstraction::build_atomic_abstractions(bool is_unit_cost,
