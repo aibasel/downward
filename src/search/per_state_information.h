@@ -52,7 +52,7 @@ template<class Entry>
 class PerStateInformation : public PerStateInformationBase {
     const Entry default_value;
     typedef __gnu_cxx::hash_map<const StateRegistry *,
-        SegmentedVector<Entry>, hash_pointer > EntryVectorMap;
+        SegmentedVector<Entry> *, hash_pointer > EntryVectorMap;
     EntryVectorMap entries_by_registry;
 
     mutable const StateRegistry *cached_registry;
@@ -69,13 +69,14 @@ class PerStateInformation : public PerStateInformationBase {
             cached_registry = registry;
             typename EntryVectorMap::const_iterator it = entries_by_registry.find(registry);
             if (it == entries_by_registry.end()) {
-                cached_entries = &entries_by_registry[registry];
+                cached_entries = new SegmentedVector<Entry>();
+                entries_by_registry[registry] = cached_entries;
                 registry->subscribe(this);
             } else {
-                cached_entries = const_cast<SegmentedVector<Entry> *>(&it->second);
+                cached_entries = it->second;
             }
         }
-        assert(cached_registry == registry && cached_entries == &entries_by_registry[registry]);
+        assert(cached_registry == registry && cached_entries == entries_by_registry[registry]);
         return cached_entries;
     }
 
@@ -92,13 +93,16 @@ class PerStateInformation : public PerStateInformationBase {
                 return 0;
             } else {
                 cached_registry = registry;
-                cached_entries = const_cast<SegmentedVector<Entry> *>(&it->second);
+                cached_entries = const_cast<SegmentedVector<Entry> *>(it->second);
             }
         }
         assert(cached_registry == registry);
         return cached_entries;
     }
 
+    // No implementation to forbid copies and assignment
+    PerStateInformation(const PerStateInformation<Entry> &);
+    PerStateInformation & operator=(const PerStateInformation<Entry> &);
 public:
     // TODO this iterates over StateIDs not over entries. Move it to StateRegistry?
     //      A better implementation would allow to iterate over pair<StateID, Entry>.
@@ -169,6 +173,7 @@ public:
         for (typename EntryVectorMap::iterator it = entries_by_registry.begin();
              it != entries_by_registry.end(); ++it) {
             it->first->unsubscribe(this);
+            delete it->second;
         }
     }
 
@@ -199,6 +204,7 @@ public:
     }
 
     void remove_state_registry(StateRegistry *registry) {
+        delete entries_by_registry[registry];
         entries_by_registry.erase(registry);
         if (registry == cached_registry) {
             cached_registry = 0;
