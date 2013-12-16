@@ -166,10 +166,10 @@ public:
     }
 
     /*
-      Remembers the given PerStateInformation. If this StateRegisty is
-      discarded, it notifies all subscribed PerStateInformation objects.
+      Remembers the given PerStateInformation. If this StateRegistry is
+      destroyed, it notifies all subscribed PerStateInformation objects.
       The information stored in them that relates to states from this
-      registry is then discarded as well.
+      registry is then destroyed as well.
     */
     void subscribe(PerStateInformationBase *psi) const;
     void unsubscribe(PerStateInformationBase *psi) const;

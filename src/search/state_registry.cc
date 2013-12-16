@@ -19,7 +19,7 @@ StateRegistry::StateRegistry()
 StateRegistry::~StateRegistry() {
     for (set<PerStateInformationBase *>::iterator it = subscribers.begin();
          it != subscribers.end(); ++it) {
-        (*it)->state_registry_discarded(this);
+        (*it)->remove_state_registry(this);
     }
     delete cached_initial_state;
 }
@@ -42,7 +42,7 @@ StateID StateRegistry::insert_id_or_pop_state() {
 }
 
 State StateRegistry::lookup_state(StateID id) const {
-    return State(state_data_pool[id.value], this, id);
+    return State(state_data_pool[id.value], *this, id);
 }
 
 const State &StateRegistry::get_initial_state() {
