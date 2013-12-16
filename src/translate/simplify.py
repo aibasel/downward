@@ -56,9 +56,31 @@ def build_dtgs(task):
         for pre in pre_values:
             dtgs[var_no].add_arc(pre, post)
 
+    def get_effective_pre(var_no, pre_spec, cond):
+        # Search pre_spec and cond for all conditions on var_no
+        # and return:
+        # -1    if there is no such condition
+        # val   if there is a condition of the form var_no=val
+        #       (possibly repeated multiple times)
+        # None  if there are contradictory conditions on var_no
+        result = pre_spec
+        for cond_var_no, cond_val in cond:
+            if cond_var_no == var_no:
+                if result == -1:
+                    # This is the first condition on var_no.
+                    result = cond_val
+                elif cond_val != result:
+                    # We have contradictory conditions on var_no.
+                    return None
+        return result
+
     for op in task.operators:
         for var_no, pre_spec, post, cond in op.pre_post:
-            add_arc(var_no, pre_spec, post)
+            # Check all conditions on var_no for this effect.
+            # These can come from the pre_spec or from cond.
+            effective_pre = get_effective_pre(var_no, pre_spec, cond)
+            if effective_pre is not None:
+                add_arc(var_no, pre_spec, post)
     for axiom in task.axioms:
         var_no, val = axiom.effect
         add_arc(var_no, -1, val)
