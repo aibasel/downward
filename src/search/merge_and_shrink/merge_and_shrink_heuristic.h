@@ -24,7 +24,7 @@ enum MergeStrategy {
 class MergeAndShrinkHeuristic : public Heuristic {
     const MergeStrategy merge_strategy;
     ShrinkStrategy *const shrink_strategy;
-    const int label_reduction;
+    const bool use_label_reduction;
     const bool use_expensive_statistics;
     Labels *labels;
 

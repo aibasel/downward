@@ -20,7 +20,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      label_reduction(opts.get<int>("label_reduction")),
+      use_label_reduction(opts.get<bool>("reduce_labels")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
 }
 
@@ -60,7 +60,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
     cout << endl;
     shrink_strategy->dump_options();
     cout << "Label reduction: "
-         << (label_reduction ? "enabled" : "disabled") << endl
+         << (use_label_reduction ? "enabled" : "disabled") << endl
          << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
@@ -148,7 +148,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         // to normalize multiple parts of a composite. See issue68.
         EquivalenceRelation relation = compute_outside_equivalence(abstraction, all_abstractions);
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            abstraction->normalize(label_reduction, &relation);
+            abstraction->normalize(use_label_reduction, &relation);
             other_abstraction->normalize(false);
         }
 
@@ -169,7 +169,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         abstraction->statistics(use_expensive_statistics);
         other_abstraction->statistics(use_expensive_statistics);
 
-        abstraction->normalize(label_reduction, &relation);
+        abstraction->normalize(use_label_reduction, &relation);
         abstraction->statistics(use_expensive_statistics);
 
         // Don't label-reduce the atomic abstraction -- see issue68.
@@ -302,7 +302,7 @@ static Heuristic *_parse(OptionParser &parser) {
 
     // TODO: Rename option name to "use_label_reduction" to be
     //       consistent with the papers?
-    parser.add_option<int>("label_reduction", "0: disabled, 1: approximate, 2: exact", "1");
+    parser.add_option<bool>("reduce_labels", "enable label reduction", "true");
     parser.add_option<bool>("expensive_statistics", "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)", "false");
     Heuristic::add_options_to_parser(parser);
