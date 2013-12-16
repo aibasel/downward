@@ -81,6 +81,7 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
 
     for (size_t i = 0; i < relevant_labels.size(); ++i) {
         const Label *label = relevant_labels[i];
+        assert(label->get_reduced_label() == label);
         LabelSignature signature = build_label_signature(
             *label, var_is_used);
 
@@ -152,8 +153,7 @@ LabelReducer::LabelReducer(const EquivalenceRelation *relation,
                            vector<const Label *> &labels) {
     num_pruned_vars = -1;
     num_labels = 0;
-    num_reduced_labels = relation->get_num_blocks();
-    cout << "label reducer: relation num elements: " << relation->get_num_elements() << endl;
+    num_reduced_labels = 0;
     for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
         const Block &block = *it;
         vector<const Label *> equivalent_labels;
@@ -161,6 +161,7 @@ LabelReducer::LabelReducer(const EquivalenceRelation *relation,
             assert(*jt < labels.size());
             const Label *label = labels[*jt];
             if (label->get_reduced_label() != label) {
+                // ignore already reduced labels
                 continue;
             }
             equivalent_labels.push_back(label);
@@ -169,11 +170,9 @@ LabelReducer::LabelReducer(const EquivalenceRelation *relation,
         if (equivalent_labels.size() > 1) {
             const Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
             labels.push_back(new_label);
-            cout << "equivalent labels:" << endl;
-            for (size_t i = 0; i < equivalent_labels.size(); ++i) {
-                cout << equivalent_labels[i]->get_id() << " ";
-            }
-            cout << endl;
+        }
+        if (!equivalent_labels.empty()) {
+            ++num_reduced_labels;
         }
     }
 }
