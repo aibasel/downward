@@ -9,10 +9,10 @@
 #include <cassert>
 using namespace std;
 
-State::State(const state_var_t *buffer, const StateRegistry *registry_,
+State::State(const state_var_t *buffer, const StateRegistry &registry_,
              StateID id_)
     : vars(buffer),
-      registry(registry_),
+      registry(&registry_),
       id(id_) {
     assert(vars);
     assert(id != StateID::no_state);
