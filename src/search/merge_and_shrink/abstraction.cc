@@ -469,6 +469,7 @@ void Abstraction::normalize(bool reduce_labels, const EquivalenceRelation *relat
 }
 
 struct TransitionSignature {
+    // TODO: duplicated code from LabelReducer
     vector<int> data;
 
     TransitionSignature(const vector<pair<int, int> > &transitions, int cost) {
@@ -502,16 +503,21 @@ struct hash<TransitionSignature> {
 }
 
 EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
+    // TODO: can we get rid of the need that the abstractions have to be
+    // label reduced when computuing the label equivalence relation?
+    // The problem is that when iterating over labels whose transitions have
+    // not been normalized (i.e. not been "moved" to the right index and merged
+    // with the transitions from all other labels of the same equivalence class),
+    // we risk considering the same transitions several times.
     assert(is_label_reduced());
     //cout << (is_label_reduced() ? "" : "not ") << "label reduced" << endl;
+    // groups the labels by the (uniquely ordered) set of transitions they
+    // induce in the abstraction
     hash_map<TransitionSignature, vector<int> > labels_by_transitions;
-    //hash_map<TransitionSignature, bool> transition_has_several_labels;
+    // collects all transition signatures occuring in the abstraction
     vector<TransitionSignature> transition_signatures;
     for (size_t label_no = 0; label_no < num_labels; ++label_no) {
-        // TODO: das hier überdenken. bereits reduziertes label kann natürlich
-        // noch weiter reduziert werden, aber dazu reicht es, dass labe zu
-        // betrachten, auf dass reduziert wird (später im schleifendurchlauf)
-        // TODO: zu ende debuggen. funktnioniert das jetzt etwa wirklich?! :)
+        // NOTE: see TODO above
         if (labels->is_label_reduced(label_no))
             continue;
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
@@ -524,45 +530,36 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
         ::sort(sorted_trans.begin(), sorted_trans.end());
         TransitionSignature signature(sorted_trans, labels->get_label_by_index(label_no)->get_cost());
         if (!labels_by_transitions.count(signature)) {
-            //transition_has_several_labels[signature] = false;
             transition_signatures.push_back(signature);
-        }/* else {
-            assert(transition_has_several_labels.count(signature));
-            if (!transition_has_several_labels[signature]) {
-                transition_has_several_labels[signature] = true;
-                transition_signatures.push_back(signature);
-            }
-        }*/
+        }
         labels_by_transitions[signature].push_back(label_no);
     }
     vector<pair<int, int> > labeled_label_nos;
+    // TODO: we cannot use relevant_labels because even if the abstraction
+    // is normalized and label reduced, relevant_labels might not be updated!
+    // relevant_labels is currently never updated.
     //labeled_label_nos.reserve(relevant_labels.size());
-    cout << "grouped label nos:" << endl;
     for (size_t i = 0; i < transition_signatures.size(); ++i) {
         const TransitionSignature &signature = transition_signatures[i];
         const vector<int> &label_nos = labels_by_transitions[signature];
         for (size_t j = 0; j < label_nos.size(); ++j) {
             int label_no = label_nos[j];
             labeled_label_nos.push_back(make_pair(i, label_no));
-            cout << label_no << " ";
-            //cout << "label no: " << label_no << endl;
+            /*
+            // Debug: check that all grouped labels indeed have the exact
+            // same set of induced transitions
             const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
             for (size_t k = j + 1; k < label_nos.size(); ++k) {
                 int other_label_no = label_nos[k];
-                //cout << "other label no: " << other_label_no << endl;
                 assert(labels->get_label_by_index(label_no)->get_cost()
                        == labels->get_label_by_index(other_label_no)->get_cost());
                 const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
                 assert(transitions.size() == other_transitions.size());
                 for (size_t l = 0; l < transitions.size(); ++l) {
-                    //cout << "transition[" << l << "]: " << transitions[l].src << "->"
-                    //     << transitions[l].target << endl;
                     const AbstractTransition &transition = transitions[l];
                     bool matched_transition = false;
                     for (size_t m = 0; m < other_transitions.size(); ++m) {
                         const AbstractTransition &other_transition = other_transitions[m];
-                        //cout << "other_transition[" << m << "]: " << transitions[m].src
-                        //     << "->" << transitions[m].target << endl;
                         if (transition == other_transition) {
                             matched_transition = true;
                             break;
@@ -570,24 +567,15 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
                     }
                     assert(matched_transition);
                 }
-            }
+            }*/
         }
-        //if (label_nos.size() > 1)
-            cout << endl;
     }
-    //size_t processed_labels_count = labeled_label_nos.size();
-    //for (size_t i = 0; i < irrelevant_label_nos.size(); ++i) {
-    //    labeled_label_nos.push_back(make_pair(processed_labels_count, irrelevant_label_nos[i]));
-    //}
-    //cout << "relevant labels:" << endl;
-    //for (size_t i = 0; i < relevant_labels.size(); ++i) {
-    //    cout << relevant_labels[i]->get_id() << endl;
-    //}
-    // NOTE: this assertion does not hold as soon as label reduction has been
-    // used on some other abstractions, because relevant_labels never get
-    // updated when reducing labels.
-    // TODO: change?
-    //assert(labeled_label_nos.size() == relevant_labels.size());
+    // Note: with the current assumption that the abstraction is label reduced,
+    // labels->get_size() equals num_labels.
+    // Note: all labels not mentioned in labeled_label_nos are such labels that
+    // have been mapped to new ones. They will be implicitly contained in the
+    // equivalence relation and should be ignored when using it for label
+    // reduction.
     return EquivalenceRelation::from_labels<int>(labels->get_size(), labeled_label_nos);
 }
 
