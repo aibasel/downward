@@ -100,9 +100,9 @@ EquivalenceRelation MergeAndShrinkHeuristic::compute_outside_equivalence(const A
             continue;
         Abstraction *abs = all_abstractions[i];
         if (abs != abstraction) {
-            //cout << "computing local equivalence for " << abs->tag() << endl;
+            cout << "computing local equivalence for " << abs->tag() << endl;
             if (!abs->is_label_reduced()) {
-                //cout << "need to normalize" << endl;
+                cout << "need to normalize" << endl;
                 abs->normalize(false);
             }
             EquivalenceRelation next_relation = all_abstractions[i]->compute_local_equivalence_relation();

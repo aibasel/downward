@@ -2,6 +2,7 @@
 #define MERGE_AND_SHRINK_EQUIVALENCE_RELATION_H
 
 #include <algorithm>
+#include <cmath>
 #include <ext/hash_map>
 #include <list>
 #include <vector>
@@ -17,7 +18,7 @@ struct DoubleEpsilonEquality {
     bool operator() (const double &d1, const double &d2) {
         // TODO avoid code duplication with landmark count heuristic
         static const double epsilon = 0.01;
-        return __gnu_cxx::abs(d1 - d2) < epsilon;
+        return abs(d1 - d2) < epsilon;
     }
 };
 

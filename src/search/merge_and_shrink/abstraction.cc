@@ -475,8 +475,13 @@ struct TransitionSignature {
     TransitionSignature(const vector<pair<int, int> > &transitions, int cost) {
         // transitions must be sorted.
         for (size_t i = 0; i < transitions.size(); ++i) {
-            if (i != 0)
-                assert(transitions[i].first > transitions[i - 1].first);
+            cout << transitions[i].first << "->" << transitions[i].second << endl;
+            if (i != 0) {
+                assert(transitions[i].first >= transitions[i - 1].first);
+                if (transitions[i].first == transitions[i - 1].first) {
+                    assert(transitions[i].second > transitions[i - 1].second);
+                }
+            }
             data.push_back(transitions[i].first);
             data.push_back(transitions[i].second);
         }
@@ -523,11 +528,14 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         vector<pair<int, int> > sorted_trans;
         sorted_trans.reserve(transitions.size());
+        cout << "trans for label " << label_no << endl;
         for (size_t j = 0; j < transitions.size(); ++j) {
             const AbstractTransition &trans = transitions[j];
             sorted_trans.push_back(make_pair(trans.src, trans.target));
+            cout << trans.src << "->" << trans.target << endl;
         }
         ::sort(sorted_trans.begin(), sorted_trans.end());
+        cout << "transition sig for label " << label_no << endl;
         TransitionSignature signature(sorted_trans, labels->get_label_by_index(label_no)->get_cost());
         if (!labels_by_transitions.count(signature)) {
             transition_signatures.push_back(signature);
@@ -603,6 +611,10 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
             Abstraction *abs = result[var];
             AbstractTransition trans(value, value);
             abs->transitions_by_label[label_no].push_back(trans);
+            if (abs->tag() == "Atomic abstraction #3: ") {
+                cout << "add trans for abs " << abs->tag() << " and label " << label_no << endl;
+                cout << trans.src << "->" << trans.target << endl;
+            }
 
             if (abs->relevant_labels.empty()
                 || abs->relevant_labels.back() != label)
@@ -625,6 +637,10 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
             for (int value = pre_value_min; value < pre_value_max; value++) {
                 AbstractTransition trans(value, post_value);
                 abs->transitions_by_label[label_no].push_back(trans);
+                if (abs->tag() == "Atomic abstraction #3: ") {
+                    cout << "add trans for abs " << abs->tag() << " and label " << label_no << endl;
+                    cout << trans.src << "->" << trans.target << endl;
+                }
             }
             if (abs->relevant_labels.empty()
                 || abs->relevant_labels.back() != label)
@@ -872,6 +888,17 @@ void Abstraction::apply_abstraction(
     vector<int>().swap(goal_distances);
     vector<bool>().swap(goal_states);
 
+    if (tag() == "Atomic abstraction #3: ") {
+        cout << "trans by label before shrink:" << endl;
+        for (size_t i = 0; i < transitions_by_label.size(); ++i) {
+            const vector<AbstractTransition> &transitions = transitions_by_label[i];
+            cout << "trans for abs " << tag() << " and label " << i << endl;
+            for (size_t j = 0; j < transitions.size(); ++j) {
+                cout << abstraction_mapping[transitions[j].src] << "->" << abstraction_mapping[transitions[j].target] << endl;
+            }
+        }
+    }
+
     vector<vector<AbstractTransition> > new_transitions_by_label(
         transitions_by_label.size());
     assert(transitions_consistent());
@@ -913,6 +940,17 @@ void Abstraction::apply_abstraction(
     if (must_clear_distances) {
         cout << tag() << "simplification was not f-preserving!" << endl;
         clear_distances();
+    }
+
+    if (tag() == "Atomic abstraction #3: ") {
+        cout << "trans by label after shrink:" << endl;
+        for (size_t i = 0; i < transitions_by_label.size(); ++i) {
+            const vector<AbstractTransition> &transitions = transitions_by_label[i];
+            cout << "trans for abs " << tag() << " and label " << i << endl;
+            for (size_t j = 0; j < transitions.size(); ++j) {
+                cout << transitions[j].src << "->" << transitions[j].target << endl;
+            }
+        }
     }
 }
 
