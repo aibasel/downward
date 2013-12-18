@@ -102,8 +102,8 @@ def run_search(planner, args, sas_file, plan_file, timeout=None, memory=None):
         if timeout is not None:
             # Don't try to raise the hard limit.
             _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
-            if external_hard_limit < 0:
-                external_hard_limit = sys.maxint
+            if external_hard_limit == resource.RLIM_INFINITY:
+                external_hard_limit = float("inf")
             # Soft limit reached --> SIGXCPU.
             # Hard limit reached --> SIGKILL.
             soft_limit = int(math.ceil(timeout))
