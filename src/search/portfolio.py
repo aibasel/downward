@@ -96,17 +96,21 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
 def run_search(planner, args, sas_file, plan_file, timeout=None, memory=None):
     complete_args = [planner] + args + ["--plan-file", plan_file]
     print "args: %s" % complete_args
-    print "timeout: %.2f" % timeout
     sys.stdout.flush()
 
     def set_limits():
         if timeout is not None:
             # Don't try to raise the hard limit.
             _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
-            hard_limit = min(int(math.ceil(timeout)) + 1, external_hard_limit)
+            if external_hard_limit < 0:
+                external_hard_limit = sys.maxint
             # Soft limit reached --> SIGXCPU.
             # Hard limit reached --> SIGKILL.
-            set_limit(resource.RLIMIT_CPU, hard_limit - 1, hard_limit)
+            soft_limit = int(math.ceil(timeout))
+            hard_limit = min(soft_limit + 1, external_hard_limit)
+            print "timeout: %.2f -> (%d, %d)" % (timeout, soft_limit, hard_limit)
+            sys.stdout.flush()
+            set_limit(resource.RLIMIT_CPU, soft_limit, hard_limit)
         if memory is not None:
             # Memory in Bytes
             set_limit(resource.RLIMIT_AS, memory, memory)
