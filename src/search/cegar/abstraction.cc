@@ -65,7 +65,6 @@ Abstraction::Abstraction(const Task *t)
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
-      last_avg_h(0),
       last_init_h(0),
       max_states(1),
       max_time(INF),
@@ -135,13 +134,6 @@ void Abstraction::build() {
 }
 
 void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
-    int avg_h_check_step = 50000;
-    if (num_states % avg_h_check_step == 0) {
-        double new_avg_h = get_avg_h();
-        double progress = (new_avg_h - last_avg_h) * 100000 / avg_h_check_step;
-        cout << "Avg-h: " << new_avg_h << ", progress: " << progress << endl;
-        last_avg_h = new_avg_h;
-    }
     if (DEBUG) {
         cout << "Unmet conditions: ";
         for (int i = 0; i < splits.size(); ++i) {

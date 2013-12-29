@@ -71,7 +71,6 @@ private:
     mutable int deviations;
     mutable int unmet_preconditions;
     mutable int unmet_goals;
-    mutable double last_avg_h;
     mutable int last_init_h;
 
     // Settings.
