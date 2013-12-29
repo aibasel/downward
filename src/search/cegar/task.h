@@ -17,7 +17,7 @@ typedef std::tr1::unordered_set<Fact, hash_fact> FactSet;
 class Task {
 private:
     StateRegistry *state_registry;
-    State initial_state;
+    state_var_t *initial_state_buffer;
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
     std::vector<std::vector<std::string> > fact_names;
@@ -45,7 +45,7 @@ private:
 
 public:
     explicit Task(std::vector<int> domain, std::vector<std::vector<std::string> > names,
-                  std::vector<Operator> ops, State init, std::vector<Fact> goal_facts);
+                  std::vector<Operator> ops, state_var_t *init, std::vector<Fact> goal_facts);
 
     StateRegistry *get_state_registry() const {
         assert(state_registry);
