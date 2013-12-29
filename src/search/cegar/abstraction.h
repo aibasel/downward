@@ -71,7 +71,6 @@ private:
     mutable int deviations;
     mutable int unmet_preconditions;
     mutable int unmet_goals;
-    mutable int last_init_h;
 
     // Settings.
     int max_states;

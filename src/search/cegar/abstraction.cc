@@ -65,7 +65,6 @@ Abstraction::Abstraction(const Task *t)
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
-      last_init_h(0),
       max_states(1),
       max_time(INF),
       use_astar(true),
