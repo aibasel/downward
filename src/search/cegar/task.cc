@@ -2,6 +2,7 @@
 
 #include "values.h"
 #include "../timer.h"
+#include "../state_registry.h"
 
 #include <set>
 
@@ -11,7 +12,8 @@ using namespace std::tr1;
 namespace cegar_heuristic {
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> ops,
            State init, vector<Fact> goal_facts)
-    : initial_state(init),
+    : state_registry(new StateRegistry()),
+      initial_state(init),
       goal(goal_facts),
       variable_domain(domain),
       fact_names(names),

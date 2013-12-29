@@ -9,11 +9,14 @@
 #include <string>
 #include <vector>
 
+class StateRegistry;
+
 namespace cegar_heuristic {
 typedef std::tr1::unordered_set<Fact, hash_fact> FactSet;
 
 class Task {
 private:
+    StateRegistry *state_registry;
     State initial_state;
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
@@ -44,6 +47,7 @@ public:
     explicit Task(std::vector<int> domain, std::vector<std::vector<std::string> > names,
                   std::vector<Operator> ops, State init, std::vector<Fact> goal_facts);
 
+    StateRegistry *get_state_registry() const {return state_registry; }
     const std::vector<Fact> &get_goal() const {return goal; }
     const std::vector<Operator> &get_operators() const {return operators; }
 
