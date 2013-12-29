@@ -122,14 +122,14 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
 }
 
 bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
-                                                    const State &sample) {
+                                                    const State &sample,
+                                                    vector<vector<PDBHeuristic *> > max_additive_subsets) {
     pdb_heuristic->evaluate(sample);
     if (pdb_heuristic->is_dead_end()) {
         return true;
     }
     int h_pattern = pdb_heuristic->get_heuristic(); // h-value of the new pattern
-    vector<vector<PDBHeuristic *> > max_additive_subsets;
-    current_heuristic->get_max_additive_subsets(pdb_heuristic->get_pattern(), max_additive_subsets);
+
     current_heuristic->evaluate(sample);
     int h_collection = current_heuristic->get_heuristic(); // h-value of the current collection heuristic
     for (size_t k = 0; k < max_additive_subsets.size(); ++k) { // for each max additive subset...
@@ -213,8 +213,10 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             // TODO: The original implementation by Haslum et al. uses m/t as a statistical
             // confidence intervall to stop the astar-search (which they use, see above) earlier.
             int count = 0;
+            vector<vector<PDBHeuristic *> > max_additive_subsets;
+            current_heuristic->get_max_additive_subsets(pdb_heuristic->get_pattern(), max_additive_subsets);
             for (size_t j = 0; j < samples.size(); ++j) {
-                if (is_heuristic_improved(pdb_heuristic, samples[j]))
+                if (is_heuristic_improved(pdb_heuristic, samples[j], max_additive_subsets))
                     ++count;
             }
             if (count > improvement) {
