@@ -78,7 +78,6 @@ private:
     int max_states;
     // Maximum time for building the abstraction.
     int max_time;
-    int max_init_h;
     bool use_astar;
     bool log_h;
     bool write_dot_files;
@@ -151,7 +150,6 @@ public:
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_log_h(bool log) {log_h = log; }
     void set_pick_strategy(PickStrategy strategy);
-    void set_max_init_h_factor(double factor);
     void set_write_dot_files(bool write) {write_dot_files = write; }
 
     // Testing.

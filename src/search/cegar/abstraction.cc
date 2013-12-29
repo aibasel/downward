@@ -69,7 +69,6 @@ Abstraction::Abstraction(const Task *t)
       last_init_h(0),
       max_states(1),
       max_time(INF),
-      max_init_h(INF),
       use_astar(true),
       log_h(false),
       write_dot_files(false),
@@ -675,20 +674,7 @@ void Abstraction::get_needed_costs(vector<int> *needed_costs) {
 bool Abstraction::may_keep_refining() const {
     return cegar_memory_padding &&
            (get_num_states() < max_states) &&
-           (max_time == INF || timer() < max_time) &&
-           (init->get_h() < max_init_h);
-}
-
-void Abstraction::set_max_init_h_factor(double factor) {
-    if (factor == -1) {
-        max_init_h = INF;
-    } else {
-        assert(factor >= 0);
-        max_init_h = factor * task->get_hadd_estimate_for_initial_state();
-        cout << "h^add(s_0)=" << task->get_hadd_estimate_for_initial_state() << endl;
-        assert(max_init_h >= 0);
-    }
-    cout << "Set max_init_h to " << max_init_h << endl;
+           (max_time == INF || timer() < max_time);
 }
 
 void Abstraction::release_memory() {
