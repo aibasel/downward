@@ -10,6 +10,7 @@
 #include "../plugin.h"
 #include "../rng.h"
 #include "../state.h"
+#include "../state_registry.h"
 #include "../successor_generator.h"
 #include "../timer.h"
 #include "../utilities.h"
@@ -65,7 +66,8 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
 }
 
 void PatternGenerationHaslum::sample_states(vector<State> &samples, double average_operator_cost) {
-    current_heuristic->evaluate(*g_initial_state);
+    const State &initial_state = g_initial_state();
+    current_heuristic->evaluate(initial_state);
     assert(!current_heuristic->is_dead_end());
 
     int h = current_heuristic->get_heuristic();
@@ -95,7 +97,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
         }
 
         // random walk of length length
-        State current_state(*g_initial_state);
+        State current_state(initial_state);
         for (int j = 0; j < length; ++j) {
             vector<const Operator *> applicable_ops;
             g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
@@ -105,11 +107,13 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
             } else {
                 int random = g_rng.next(applicable_ops.size()); // [0..applicable_os.size())
                 assert(applicable_ops[random]->is_applicable(current_state));
-                current_state = State(current_state, *applicable_ops[random]);
+                // TODO for now, we only generate registered successors. This is a temporary state that
+                // should should not necessarily be registered in the global registry: see issue386.
+                current_state = g_state_registry->get_successor_state(current_state, *applicable_ops[random]);
                 // if current state is dead-end, then restart with initial state
                 current_heuristic->evaluate(current_state);
                 if (current_heuristic->is_dead_end())
-                    current_state = *g_initial_state;
+                    current_state = initial_state;
             }
         }
         // last state of the random walk is used as sample
@@ -158,7 +162,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     while (true) {
         num_iterations += 1;
         cout << "current collection size is " << current_heuristic->get_size() << endl;
-        current_heuristic->evaluate(*g_initial_state);
+        current_heuristic->evaluate(g_initial_state());
         cout << "current initial h value: ";
         if (current_heuristic->is_dead_end()) {
             cout << "infinite => stopping hill-climbing" << endl;
@@ -280,7 +284,7 @@ void PatternGenerationHaslum::initialize() {
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
     current_heuristic = new CanonicalPDBsHeuristic(opts);
-    current_heuristic->evaluate(*g_initial_state);
+    current_heuristic->evaluate(g_initial_state());
     if (current_heuristic->is_dead_end())
         return;
 
@@ -302,17 +306,23 @@ void PatternGenerationHaslum::initialize() {
     hill_climbing(average_operator_cost, initial_candidate_patterns);
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("pdb_max_size", 2000000,
-                           "max number of states per pdb");
-    parser.add_option<int>("collection_max_size", 20000000,
-                           "max number of states for collection");
-    parser.add_option<int>("num_samples", 1000, "number of samples");
-    parser.add_option<int>("min_improvement", 10,
-                           "minimum improvement while hill climbing");
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "iPDB",
+        "the pattern selection procedure by Haslum et al. (AAAI 2007); "
+        "see also Sievers et al. (SoCS 2012) for implementation notes");
+    parser.add_option<int>("pdb_max_size",
+                           "max number of states per pdb", "2000000");
+    parser.add_option<int>("collection_max_size",
+                           "max number of states for collection", "20000000");
+    parser.add_option<int>("num_samples", "number of samples", "1000");
+    parser.add_option<int>("min_improvement",
+                           "minimum improvement while hill climbing", "10");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
+    if (parser.help_mode())
+        return 0;
 
     if (opts.get<int>("pdb_max_size") < 1)
         parser.error("size per pdb must be at least 1");
@@ -330,4 +340,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return pgh.get_pattern_collection_heuristic();
 }
 
-static Plugin<ScalarEvaluator> _plugin("ipdb", _parse);
+static Plugin<Heuristic> _plugin("ipdb", _parse);

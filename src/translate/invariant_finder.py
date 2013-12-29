@@ -13,7 +13,7 @@ import timers
 class BalanceChecker(object):
     def __init__(self, task, reachable_action_params):
         self.predicates_to_add_actions = defaultdict(set)
-        self.action_name_to_heavy_action = {}
+        self.action_to_heavy_action = {}
         for act in task.actions:
             action = self.add_inequality_preconds(act, reachable_action_params)
             too_heavy_effects = []
@@ -34,13 +34,13 @@ class BalanceChecker(object):
                                         action.cost)
             # heavy_act: duplicated universal effects and assigned unique names
             # to all quantified variables (implicitly in constructor)
-            self.action_name_to_heavy_action[action.name] = heavy_act
+            self.action_to_heavy_action[action] = heavy_act
 
     def get_threats(self, predicate):
         return self.predicates_to_add_actions.get(predicate, set())
 
-    def get_heavy_action(self, action_name):
-        return self.action_name_to_heavy_action[action_name]
+    def get_heavy_action(self, action):
+        return self.action_to_heavy_action[action]
 
     def add_inequality_preconds(self, action, reachable_action_params):
         if reachable_action_params is None or len(action.parameters) < 2:

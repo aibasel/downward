@@ -17,7 +17,7 @@ private:
     State initial_state;
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
-    std::vector<vector<std::string> > fact_names;
+    std::vector<std::vector<std::string> > fact_names;
     std::vector<Operator> operators;
     std::vector<int> original_operator_numbers;
     std::vector<std::vector<int> > orig_index;
@@ -49,8 +49,8 @@ public:
 
     void remove_irrelevant_operators();
     void set_goal(const Fact &fact, bool adapt);
-    void adapt_operator_costs(const vector<int> &remaining_costs);
-    void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const;
+    void adapt_operator_costs(const std::vector<int> &remaining_costs);
+    void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;
     bool translate_state(State &state) const;
 
     void combine_facts(int var, std::tr1::unordered_set<int> &values);

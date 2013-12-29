@@ -1,5 +1,6 @@
 ~$
 \.pyc$
+^experiments/issue[0-9]*/data/
 ^src/preprocess/\.obj/
 ^src/preprocess/Makefile\.depend$
 ^src/preprocess/preprocess$

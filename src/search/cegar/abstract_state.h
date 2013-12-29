@@ -11,7 +11,7 @@
 namespace cegar_heuristic {
 class AbstractState;
 class Values;
-typedef pair<const Operator *, AbstractState *> Arc;
+typedef std::pair<const Operator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
 typedef std::vector<const Operator *> Loops;
 
@@ -50,7 +50,7 @@ private:
     bool domains_intersect(const AbstractState *other, int var);
 
 public:
-    explicit AbstractState(string s = "");
+    explicit AbstractState(std::string s = "");
     ~AbstractState();
 
     // Let "result" be the set of states in which applying "op" leads to this state.
@@ -60,7 +60,7 @@ public:
     int count(int var) const;
 
     // Separate the values in "wanted" from the other values in the abstract domain.
-    void split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2);
+    void split(int var, std::vector<int> wanted, AbstractState *v1, AbstractState *v2);
 
     void add_arc(const Operator *op, AbstractState *other);
     void remove_next_arc(const Operator *op, AbstractState *other);

@@ -80,7 +80,8 @@ void ZeroOnePDBsHeuristic::dump() const {
     }
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Zero-One PDB", "");
     Heuristic::add_options_to_parser(parser);
     Options opts;
     parse_patterns(parser, opts);
@@ -91,4 +92,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return new ZeroOnePDBsHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("zopdbs", _parse);
+static Plugin<Heuristic> _plugin("zopdbs", _parse);

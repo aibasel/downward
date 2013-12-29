@@ -184,7 +184,7 @@ bool Task::translate_state(State &state) const {
         if (value == UNDEFINED) {
             return false;
         } else {
-            state[var] = value;
+            // TODO: state[var] = value;
         }
     }
     return true;
@@ -194,7 +194,7 @@ void Task::install() {
     if (!is_original_task)
         assert(!additive_heuristic && "h^add can only be calculated for installed tasks");
     assert(g_initial_state);
-    *g_initial_state = initial_state;
+    // TODO: *g_initial_state = initial_state;
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
@@ -222,8 +222,8 @@ void Task::move_fact(int var, int before, int after) {
     orig_index[var][after] = orig_index[var][before];
     task_index[var][orig_index[var][before]] = after;
     fact_names[var][after] = fact_names[var][before];
-    if (initial_state[var] == before)
-        initial_state[var] = after;
+    //if (initial_state[var] == before)
+        // TODO: initial_state[var] = after;
     for (int i = 0; i < goal.size(); ++i) {
         if (var == goal[i].first && before == goal[i].second)
             goal[i].second = after;
@@ -325,7 +325,7 @@ void Task::release_memory() {
 }
 
 Task Task::get_original_task() {
-    Task task(g_variable_domain, g_fact_names, g_operators, *g_initial_state, g_goal);
+    Task task(g_variable_domain, g_fact_names, g_operators, g_initial_state(), g_goal);
     task.is_original_task = true;
     task.setup_hadd();
     return task;
