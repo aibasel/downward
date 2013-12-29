@@ -111,8 +111,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
                 // should should not necessarily be registered in the global registry: see issue386.
                 current_state = g_state_registry->get_successor_state(current_state, *applicable_ops[random]);
                 // if current state is dead-end, then restart with initial state
-                current_heuristic->evaluate(current_state);
-                if (current_heuristic->is_dead_end())
+                if (current_heuristic->dead_end(current_state))
                     current_state = initial_state;
             }
         }
