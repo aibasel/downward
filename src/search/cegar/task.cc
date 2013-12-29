@@ -4,6 +4,7 @@
 #include "../timer.h"
 #include "../state_registry.h"
 
+#include <algorithm>
 #include <set>
 
 using namespace std;
@@ -11,9 +12,9 @@ using namespace std::tr1;
 
 namespace cegar_heuristic {
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> ops,
-           State init, vector<Fact> goal_facts)
+           state_var_t *init, vector<Fact> goal_facts)
     : state_registry(new StateRegistry()),
-      initial_state(init),
+      initial_state_buffer(new state_var_t[g_variable_domain.size()]),
       goal(goal_facts),
       variable_domain(domain),
       fact_names(names),
@@ -23,6 +24,7 @@ Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> o
       task_index(domain.size()),
       additive_heuristic(0),
       is_original_task(false) {
+    copy(init, init + g_variable_domain.size(), initial_state_buffer);
     for (int var = 0; var < variable_domain.size(); ++var) {
         orig_index[var].resize(variable_domain[var]);
         task_index[var].resize(variable_domain[var]);
@@ -52,7 +54,7 @@ bool operator_applicable(const Operator &op, const FactSet &reached) {
 void Task::compute_possibly_before_facts(const Fact &last_fact, FactSet *reached) {
     // Add facts from initial state.
     for (int var = 0; var < variable_domain.size(); ++var)
-        reached->insert(Fact(var, initial_state[var]));
+        reached->insert(Fact(var, initial_state_buffer[var]));
 
     // Until no more facts can be added:
     int last_num_reached = 0;
@@ -195,8 +197,7 @@ bool Task::translate_state(State &state) const {
 void Task::install() {
     if (!is_original_task)
         assert(!additive_heuristic && "h^add can only be calculated for installed tasks");
-    assert(g_initial_state);
-    // TODO: *g_initial_state = initial_state;
+    copy(initial_state_buffer, initial_state_buffer + g_variable_domain.size(), g_initial_state_buffer);
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
@@ -209,7 +210,7 @@ void Task::move_fact(int var, int before, int after) {
         cout << "Move fact " << var << ": " << before << " -> " << after << endl;
     assert(0 <= before && before < task_index[var].size());
     if (after == UNDEFINED) {
-        assert(initial_state[var] != before);
+        assert(initial_state_buffer[var] != before);
         for (int i = 0; i < goal.size(); ++i) {
             assert(goal[i].first != var || goal[i].second != before);
         }
@@ -224,8 +225,8 @@ void Task::move_fact(int var, int before, int after) {
     orig_index[var][after] = orig_index[var][before];
     task_index[var][orig_index[var][before]] = after;
     fact_names[var][after] = fact_names[var][before];
-    //if (initial_state[var] == before)
-        // TODO: initial_state[var] = after;
+    if (initial_state_buffer[var] == before)
+        initial_state_buffer[var] = after;
     for (int i = 0; i < goal.size(); ++i) {
         if (var == goal[i].first && before == goal[i].second)
             goal[i].second = after;
@@ -329,7 +330,7 @@ void Task::release_memory() {
 }
 
 Task Task::get_original_task() {
-    Task task(g_variable_domain, g_fact_names, g_operators, g_initial_state(), g_goal);
+    Task task(g_variable_domain, g_fact_names, g_operators, g_initial_state_buffer, g_goal);
     task.is_original_task = true;
     task.setup_hadd();
     return task;
@@ -343,6 +344,10 @@ void Task::setup_hadd() const {
     opts.set<int>("cost_type", 0);
     opts.set<int>("memory_padding", 75);
     additive_heuristic = new AdditiveHeuristic(opts);
+    const State &initial_state = state_registry->get_initial_state();
+    for (int var = 0; var < variable_domain.size(); ++var) {
+        assert(initial_state[var] == initial_state_buffer[var]);
+    }
     additive_heuristic->evaluate(initial_state);
     if (false) {
         cout << "h^add values for all facts:" << endl;
