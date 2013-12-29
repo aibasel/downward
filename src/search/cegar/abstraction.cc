@@ -70,7 +70,6 @@ Abstraction::Abstraction(const Task *t)
       max_states(1),
       max_time(INF),
       use_astar(true),
-      log_h(false),
       write_dot_files(false),
       memory_released(false) {
     assert(!task->get_goal().empty());
@@ -131,14 +130,11 @@ void Abstraction::build() {
     // Even if we found a valid concrete solution, we might have refined in the
     // last iteration, so we must update the h-values.
     update_h_values();
-    log_h_values();
     cout << "Single abstraction init-h: " << init->get_h() << endl;
     cout << "Single abstraction avg-h:  " << get_avg_h() << endl;
 }
 
 void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
-    // Log h-values while they are up-to-date.
-    log_h_values();
     int avg_h_check_step = 50000;
     if (num_states % avg_h_check_step == 0) {
         double new_avg_h = get_avg_h();
@@ -596,18 +592,6 @@ double Abstraction::get_avg_h() const {
     }
     assert(avg_h >= 0.);
     return avg_h;
-}
-
-void Abstraction::log_h_values() const {
-    int init_h = log_h ? init->get_h() : 0;
-    // We cannot assert(avg_h >= last_avg_h), because due to dead-end states,
-    // which we don't count for the average h-value, the average h-value may
-    // have decreased.
-    if (init_h > last_init_h) {
-        cout << "States: " << get_num_states() << ", avg-h: " << get_avg_h()
-             << ", init-h: " << init_h << endl;
-        last_init_h = init_h;
-    }
 }
 
 AbstractState *Abstraction::get_abstract_state(const State &state) const {

@@ -79,7 +79,6 @@ private:
     // Maximum time for building the abstraction.
     int max_time;
     bool use_astar;
-    bool log_h;
     bool write_dot_files;
 
     // Save whether the states have been destroyed.
@@ -115,7 +114,6 @@ private:
 
     void extract_solution() const;
     void find_solution() const;
-    void log_h_values() const;
 
 public:
     explicit Abstraction(const Task *t);
@@ -148,7 +146,6 @@ public:
     void set_max_states(int states) {max_states = states; }
     void set_max_time(int time) {max_time = time; }
     void set_use_astar(bool astar) {use_astar = astar; }
-    void set_log_h(bool log) {log_h = log; }
     void set_pick_strategy(PickStrategy strategy);
     void set_write_dot_files(bool write) {write_dot_files = write; }
 

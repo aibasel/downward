@@ -205,7 +205,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         int rem_tasks = num_abstractions - i;
         abstraction->set_max_states((max_states - num_states) / rem_tasks);
         abstraction->set_max_time(ceil((max_time - g_timer()) / rem_tasks));
-        abstraction->set_log_h(options.get<bool>("log_h"));
         abstraction->set_write_dot_files(options.get<bool>("write_dot_files"));
         abstraction->set_use_astar(options.get<bool>("use_astar"));
 
@@ -336,7 +335,6 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
-    parser.add_option<bool>("log_h", "log development of init-h and avg-h", "false");
     parser.add_option<bool>("write_dot_files", "write graph files for debugging", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
