@@ -15,7 +15,7 @@ using namespace std;
 
 
 VariableOrderFinder::VariableOrderFinder(
-    MergeStrategy merge_strategy_, bool is_first)
+    MergeStrategy merge_strategy_)
     : merge_strategy(merge_strategy_) {
     int var_count = g_variable_domain.size();
     if (merge_strategy_ == MERGE_LINEAR_REVERSE_LEVEL) {
@@ -27,8 +27,7 @@ VariableOrderFinder::VariableOrderFinder(
     }
 
     if (merge_strategy == MERGE_LINEAR_CG_GOAL_RANDOM ||
-        merge_strategy == MERGE_LINEAR_RANDOM ||
-        !is_first)
+        merge_strategy == MERGE_LINEAR_RANDOM)
         random_shuffle(remaining_vars.begin(), remaining_vars.end());
 
     is_causal_predecessor.resize(var_count, false);

@@ -44,12 +44,6 @@ Operator create_op(const string name, vector<string> prevail, vector<string> pre
     return create_op(oss.str());
 }
 
-State *create_state(const string desc) {
-    string full_desc = "begin_state\n" + desc + "\nend_state";
-    istringstream iss(full_desc);
-    return new State(iss);
-}
-
 bool is_not_marked(Operator &op) {
     return !op.is_marked();
 }
@@ -178,10 +172,10 @@ void write_landmark_graph(const LandmarkGraph &graph) {
             Fact parent_fact = get_fact(parent_p);
             dotfile << "  \"" << get_node_name(parent_fact) << "\" -> "
                     << "\"" << get_node_name(node_fact) << "\";" << endl;
-            if ((*g_initial_state)[parent_fact.first] == parent_fact.second)
-                dotfile << "\"" << get_node_name(parent_fact) << "\" [color=green];" << endl;
-            if ((*g_initial_state)[node_fact.first] == node_fact.second)
-                dotfile << "\"" << get_node_name(node_fact) << "\" [color=green];" << endl;
+            //if (g_initial_state()[parent_fact.first] == parent_fact.second)
+            //    dotfile << "\"" << get_node_name(parent_fact) << "\" [color=green];" << endl;
+            //if (g_initial_state()[node_fact.first] == node_fact.second)
+            //    dotfile << "\"" << get_node_name(node_fact) << "\" [color=green];" << endl;
         }
     }
     for (int var = 0; var < g_variable_domain.size(); var++) {

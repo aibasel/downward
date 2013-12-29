@@ -64,7 +64,7 @@ private:
     PickStrategy pick;
     mutable RandomNumberGenerator rng;
 
-    vector<int> fact_positions_in_lm_graph_ordering;
+    std::vector<int> fact_positions_in_lm_graph_ordering;
 
     // Statistics.
     mutable int num_states;
@@ -101,7 +101,7 @@ private:
 
     // A* search.
     void reset_distances_and_solution() const;
-    bool astar_search(bool forward, bool use_h, vector<int> *needed_costs = 0) const;
+    bool astar_search(bool forward, bool use_h, std::vector<int> *needed_costs = 0) const;
 
     // Refine states between state and init until the solution is broken.
     void break_solution(AbstractState *state, const Splits &splits);
@@ -139,7 +139,7 @@ public:
     int get_op_index(const Operator *op) const;
     // For each operator op from a1 to a2, set cost'(op) = max(h(a1)-h(a2), 0).
     // This makes the next abstraction additive to all previous ones.
-    void get_needed_costs(vector<int> *needed_costs);
+    void get_needed_costs(std::vector<int> *needed_costs);
 
     // Statistics.
     void print_statistics();

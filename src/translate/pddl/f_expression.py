@@ -55,6 +55,9 @@ class PrimitiveNumericExpression(FunctionalExpression):
     def __init__(self, symbol, args):
         self.symbol = symbol
         self.args = tuple(args)
+        self.hash = hash((self.__class__, self.symbol, self.args))
+    def __hash__(self):
+        return self.hash
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and self.symbol == other.symbol
                 and self.args == other.args)

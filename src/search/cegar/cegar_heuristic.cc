@@ -127,7 +127,7 @@ void CegarHeuristic::order_facts(vector<Fact> &facts) const {
 }
 
 bool is_true_in_initial_state(Fact fact) {
-    return (*g_initial_state)[fact.first] == fact.second;
+    return g_initial_state()[fact.first] == fact.second;
 }
 
 struct is_not_leaf_landmark {
@@ -270,7 +270,7 @@ void CegarHeuristic::print_statistics() {
     cout << "CEGAR abstractions: " << abstractions.size() << endl;
     cout << "Abstract states: " << num_states << endl;
     // There will always be at least one abstraction.
-    cout << "Init h: " << compute_heuristic(*g_initial_state) << endl;
+    cout << "Init h: " << compute_heuristic(g_initial_state()) << endl;
     cout << "Average h: " << sum_avg_h / abstractions.size() << endl;
     cout << endl;
 }
@@ -298,10 +298,9 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("max_states", DEFAULT_STATES_OFFLINE,
-                           "maximum number of abstract states");
-    parser.add_option<int>("max_time", INF, "maximum time in seconds for building the abstraction");
-    parser.add_option<double>("init_h_factor", -1, "stop refinement after h(s_0) reaches h^add(s_0) * factor");
+    parser.add_option<int>("max_states", "maximum number of abstract states", "infinity");
+    parser.add_option<int>("max_time", "maximum time in seconds for building the abstraction", "900");
+    parser.add_option<double>("init_h_factor", "stop refinement after h(s_0) reaches h^add(s_0) * factor", "-1");
     vector<string> pick_strategies;
     pick_strategies.push_back("RANDOM");
     pick_strategies.push_back("MIN_CONSTRAINED");
@@ -312,33 +311,39 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_HADD");
     pick_strategies.push_back("MIN_HADD_DYN");
     pick_strategies.push_back("MAX_HADD_DYN");
-    parser.add_enum_option("pick", pick_strategies, "RANDOM",
-                           "how to pick the next unsatisfied condition");
+    parser.add_enum_option("pick",
+                           pick_strategies,
+                           "how to pick the next unsatisfied condition",
+                           "RANDOM");
     vector<string> fact_order_strategies;
     fact_order_strategies.push_back("ORIGINAL");
     fact_order_strategies.push_back("MIXED");
     fact_order_strategies.push_back("HADD_UP");
     fact_order_strategies.push_back("HADD_DOWN");
-    parser.add_enum_option("fact_order", fact_order_strategies, "MIXED",
-                           "order in which the goals are refined for");
+    parser.add_enum_option("fact_order",
+                           fact_order_strategies,
+                           "order in which the goals are refined for",
+                           "MIXED");
     vector<string> decompositions;
     decompositions.push_back("NONE");
     decompositions.push_back("ALL_LANDMARKS");
     decompositions.push_back("GOAL_FACTS");
     decompositions.push_back("GOAL_LEAVES");
     decompositions.push_back("LANDMARKS_AND_GOALS");
-    parser.add_enum_option("decomposition", decompositions, "GOAL_FACTS",
-                           "build abstractions for each of these facts");
-    parser.add_option<int>("max_abstractions", INF, "max number of abstractions to build");
-    parser.add_option<bool>("adapt_task", true, "remove redundant operators and facts");
-    parser.add_option<bool>("combine_facts", true, "combine landmark facts");
-    parser.add_option<bool>("relevance_analysis", false, "remove irrelevant operators");
-    parser.add_option<bool>("trivial_facts", false, "include landmarks that are true in the initial state");
-    parser.add_option<bool>("use_astar", true, "use A* for finding the *single* next solution");
-    parser.add_option<bool>("search", true, "if set to false, abort after refining");
-    parser.add_option<bool>("debug", false, "print debugging output");
-    parser.add_option<bool>("log_h", false, "log development of init-h and avg-h");
-    parser.add_option<bool>("write_dot_files", false, "write graph files for debugging");
+    parser.add_enum_option("decomposition",
+                           decompositions,
+                           "build abstractions for each of these facts",
+                           "GOAL_FACTS");
+    parser.add_option<int>("max_abstractions", "max number of abstractions to build", "infinity");
+    parser.add_option<bool>("adapt_task", "remove redundant operators and facts", "true");
+    parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
+    parser.add_option<bool>("relevance_analysis", "remove irrelevant operators", "false");
+    parser.add_option<bool>("trivial_facts", "include landmarks that are true in the initial state", "false");
+    parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
+    parser.add_option<bool>("search", "if set to false, abort after refining", "true");
+    parser.add_option<bool>("debug", "print debugging output", "false");
+    parser.add_option<bool>("log_h", "log development of init-h and avg-h", "false");
+    parser.add_option<bool>("write_dot_files", "write graph files for debugging", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

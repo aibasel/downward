@@ -17,10 +17,17 @@ static void exit_handler();
 // nothing
 #endif
 
+static char *memory_padding = new char[512 * 1024];
 
+static void out_of_memory_handler();
 static void signal_handler(int signal_number);
 
+
 void register_event_handlers() {
+    // When running out of memory, release some emergency memory and
+    // terminate.
+    set_new_handler(out_of_memory_handler);
+
     // On exit or when receiving certain signals such as SIGINT (Ctrl-C),
     // print the peak memory usage.
 #if OPERATING_SYSTEM == LINUX
@@ -42,41 +49,49 @@ void exit_handler(int, void *) {
 #elif OPERATING_SYSTEM == OSX
 void exit_handler() {
 #endif
-      print_peak_memory();
-  }
+    print_peak_memory();
+}
 #endif
 
 void exit_with(ExitCode exitcode) {
     switch (exitcode) {
-        case EXIT_PLAN_FOUND:
-            cout << "Solution found." << endl;
-            break;
-        case EXIT_CRITICAL_ERROR:
-            cerr << "Unexplained error occured." << endl;
-            break;
-        case EXIT_INPUT_ERROR:
-            cerr << "Usage error occured." << endl;
-            break;
-        case EXIT_UNSUPPORTED:
-            cerr << "Tried to use unsupported feature." << endl;
-            break;
-        case EXIT_UNSOLVABLE:
-            cout << "Task is provably unsolvable." << endl;
-            break;
-        case EXIT_UNSOLVED_INCOMPLETE:
-            cout << "Search stopped without finding a solution." << endl;
-            break;
-        case EXIT_OUT_OF_MEMORY:
-            cout << "Memory limit has been reached." << endl;
-            break;
-        case EXIT_TIMEOUT:
-            cout << "Time limit has been reached." << endl;
-            break;
-        default:
-            cerr << "Exitcode: " << exitcode << endl;
-            ABORT("Unkown exitcode.");
+    case EXIT_PLAN_FOUND:
+        cout << "Solution found." << endl;
+        break;
+    case EXIT_CRITICAL_ERROR:
+        cerr << "Unexplained error occured." << endl;
+        break;
+    case EXIT_INPUT_ERROR:
+        cerr << "Usage error occured." << endl;
+        break;
+    case EXIT_UNSUPPORTED:
+        cerr << "Tried to use unsupported feature." << endl;
+        break;
+    case EXIT_UNSOLVABLE:
+        cout << "Task is provably unsolvable." << endl;
+        break;
+    case EXIT_UNSOLVED_INCOMPLETE:
+        cout << "Search stopped without finding a solution." << endl;
+        break;
+    case EXIT_OUT_OF_MEMORY:
+        cout << "Memory limit has been reached." << endl;
+        break;
+    case EXIT_TIMEOUT:
+        cout << "Time limit has been reached." << endl;
+        break;
+    default:
+        cerr << "Exitcode: " << exitcode << endl;
+        ABORT("Unkown exitcode.");
     }
     exit(exitcode);
+}
+
+static void out_of_memory_handler() {
+    assert(memory_padding);
+    delete[] memory_padding;
+    memory_padding = 0;
+    cout << "Failed to allocate memory. Released memory buffer." << endl;
+    exit_with(EXIT_OUT_OF_MEMORY);
 }
 
 void signal_handler(int signal_number) {

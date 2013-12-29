@@ -17,8 +17,8 @@ LazySearch::LazySearch(const Options &opts)
       open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       succ_mode(pref_first),
-      current_state(*g_initial_state),
-      current_predecessor_buffer(NULL),
+      current_state(g_initial_state()),
+      current_predecessor_id(StateID::no_state),
       current_operator(NULL),
       current_g(0),
       current_real_g(0) {
@@ -95,9 +95,6 @@ void LazySearch::generate_successors() {
     get_successor_operators(operators);
     search_progress.inc_generated(operators.size());
 
-    state_var_t *current_state_buffer =
-        search_space.get_node(current_state).get_state_buffer();
-
     for (int i = 0; i < operators.size(); i++) {
         int new_g = current_g + get_adjusted_cost(*operators[i]);
         int new_real_g = current_real_g + operators[i]->get_cost();
@@ -107,7 +104,7 @@ void LazySearch::generate_successors() {
         if (new_real_g < bound) {
             open_list->evaluate(new_g, is_preferred);
             open_list->insert(
-                make_pair(current_state_buffer, operators[i]));
+                make_pair(current_state.get_id(), operators[i]));
         }
     }
 }
@@ -120,13 +117,13 @@ int LazySearch::fetch_next_state() {
 
     OpenListEntryLazy next = open_list->remove_min();
 
-    current_predecessor_buffer = next.first;
+    current_predecessor_id = next.first;
     current_operator = next.second;
-    State current_predecessor(current_predecessor_buffer);
+    State current_predecessor = g_state_registry->lookup_state(current_predecessor_id);
     assert(current_operator->is_applicable(current_predecessor));
-    current_state = State(current_predecessor, *current_operator);
+    current_state = g_state_registry->get_successor_state(current_predecessor, *current_operator);
 
-    SearchNode pred_node = search_space.get_node(current_predecessor);
+    SearchNode pred_node = search_space.get_node(current_predecessor_id);
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
@@ -142,22 +139,21 @@ int LazySearch::step() {
     // - current_g is the g value of the current state (using real costs)
 
 
-    SearchNode node = search_space.get_node(current_state);
+    SearchNode node = search_space.get_node(current_state.get_id());
     bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end() && !node.is_new();
 
     if (node.is_new() || reopen) {
-        state_var_t *dummy_address = current_predecessor_buffer;
+        StateID dummy_id = current_predecessor_id;
         // HACK! HACK! we do this because SearchNode has no default/copy constructor
-        if (dummy_address == NULL) {
-            dummy_address = const_cast<state_var_t *>(g_initial_state->get_buffer());
+        if (dummy_id == StateID::no_state) {
+            dummy_id = g_initial_state().get_id();
         }
 
-        SearchNode parent_node = search_space.get_node(State(dummy_address));
-        const State perm_state = node.get_state();
+        SearchNode parent_node = search_space.get_node(dummy_id);
 
         for (int i = 0; i < heuristics.size(); i++) {
             if (current_operator != NULL) {
-                heuristics[i]->reach_state(parent_node.get_state(), *current_operator, perm_state);
+                heuristics[i]->reach_state(parent_node.get_state(), *current_operator, current_state);
             }
             heuristics[i]->evaluate(current_state);
         }
@@ -171,7 +167,7 @@ int LazySearch::step() {
             if (reopen) {
                 node.reopen(parent_node, current_operator);
                 search_progress.inc_reopened();
-            } else if (current_predecessor_buffer == NULL) {
+            } else if (current_predecessor_id == StateID::no_state) {
                 node.open_initial(h);
                 search_progress.get_initial_h_values();
             } else {
@@ -203,13 +199,14 @@ void LazySearch::statistics() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
+    parser.document_synopsis("Lazy best first search", "");
     Plugin<OpenList<OpenListEntryLazy > >::register_open_lists();
-    parser.add_option<OpenList<OpenListEntryLazy> *>("open");
-    parser.add_option<bool>("reopen_closed", false,
-                            "reopen closed nodes");
+    parser.add_option<OpenList<OpenListEntryLazy> *>("open", "open list");
+    parser.add_option<bool>("reopen_closed",
+                            "reopen closed nodes", "false");
     parser.add_list_option<Heuristic *>(
-        "preferred", vector<Heuristic *>(),
-        "use preferred operators of these heuristics");
+        "preferred",
+        "use preferred operators of these heuristics", "[]");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -226,14 +223,28 @@ static SearchEngine *_parse(OptionParser &parser) {
 
 
 static SearchEngine *_parse_greedy(OptionParser &parser) {
-    parser.add_list_option<ScalarEvaluator *>("evals");
+    parser.document_synopsis("Greedy search (lazy)", "");
+    parser.document_note(
+        "Open lists",
+        "In most cases, lazy greedy best first search uses "
+        "an alternation open list with one queue for each evaluator. "
+        "If preferred operator heuristics are used, it adds an "
+        "extra queue for each of these evaluators that includes "
+        "only the nodes that are generated with a preferred operator. "
+        "If only one evaluator and no preferred operator heuristic is used, "
+        "the search does not use an alternation open list "
+        "but a standard open list with only one queue.");
+    parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
-        "preferred", vector<Heuristic *>(),
-        "use preferred operators of these heuristics");
-    parser.add_option<bool>("reopen_closed", false,
-                            "reopen closed nodes");
-    parser.add_option<int>("boost", DEFAULT_LAZY_BOOST,
-                           "boost value for preferred operator open lists");
+        "preferred",
+        "use preferred operators of these heuristics", "[]");
+    parser.add_option<bool>("reopen_closed",
+                            "reopen closed nodes", "false");
+    parser.add_option<int>(
+        "boost",
+        "boost value for alternation queues that are restricted "
+        "to preferred operator nodes",
+        OptionParser::to_str(DEFAULT_LAZY_BOOST));
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -270,14 +281,28 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 }
 
 static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
-    parser.add_list_option<ScalarEvaluator *>("evals");
+    parser.document_synopsis(
+        "(Weighted) A* search (lazy)",
+        "Weighted A* is a special case of lazy best first search.");
+    parser.document_note(
+        "Open lists",
+        "In the general case, it uses an alternation open list "
+        "with one queue for each evaluator h that ranks the nodes "
+        "by g + w * h. If preferred operator heuristics are used, "
+        "it adds for each of the evaluators another such queue that "
+        "only inserts nodes that are generated by preferred operators. "
+        "In the special case with only one evaluator and no preferred "
+        "operator heuristics, it uses a single queue that "
+        "is ranked by g + w * h. ");
+    parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
-        "preferred", vector<Heuristic *>(),
-        "use preferred operators of these heuristics");
-    parser.add_option<bool>("reopen_closed", true, "reopen closed nodes");
-    parser.add_option<int>("boost", DEFAULT_LAZY_BOOST,
-                           "boost value for preferred operator open lists");
-    parser.add_option<int>("w", 1, "heuristic weight");
+        "preferred",
+        "use preferred operators of these heuristics", "[]");
+    parser.add_option<bool>("reopen_closed", "reopen closed nodes", "true");
+    parser.add_option<int>("boost",
+                           "boost value for preferred operator open lists",
+                           OptionParser::to_str(DEFAULT_LAZY_BOOST));
+    parser.add_option<int>("w", "heuristic weight", "1");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 

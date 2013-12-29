@@ -42,9 +42,9 @@ void get_unmet_goal_conditions(const State &state, Splits *splits);
 bool goal_var(int var);
 bool test_cegar_goal(const State &s);
 
-struct hash_state {
-    size_t operator()(const State &state) const {
-        return state.hash();
+struct hash_state_id {
+    size_t operator()(const StateID &id) const {
+        return id.hash();
     }
 };
 
@@ -60,23 +60,20 @@ void write_landmark_graph(const LandmarkGraph &graph);
 void write_causal_graph(const CausalGraph &causal_graph);
 
 // Debugging.
-string to_string(int i);
-string to_string(Fact fact);
-string to_string(const std::vector<int> &v);
-string to_string(const std::set<int> &s);
-string to_string(const std::tr1::unordered_set<int> &s);
+std::string to_string(int i);
+std::string to_string(Fact fact);
+std::string to_string(const std::vector<int> &v);
+std::string to_string(const std::set<int> &s);
+std::string to_string(const std::tr1::unordered_set<int> &s);
 
 std::ostream &operator<<(std::ostream &os, const Fact &fact);
-
-// Testing.
-State *create_state(const std::string desc);
 
 // Create an operator with cost 1.
 // prevails have the form "var value".
 // pre_posts have the form "0 var pre post" (no conditional effects).
 Operator create_op(const std::string desc);
-Operator create_op(const std::string name, std::vector<string> prevail,
-                   std::vector<string> pre_post, int cost = 1);
+Operator create_op(const std::string name, std::vector<std::string> prevail,
+                   std::vector<std::string> pre_post, int cost = 1);
 }
 
 #endif

@@ -57,7 +57,7 @@ class CegarHeuristic : public Heuristic {
     // delete-relaxation before last_fact is reached the first time.
     void get_possibly_before_facts(const Fact last_fact, std::tr1::unordered_set<int> *reached) const;
 
-    void order_facts(vector<Fact> &facts) const;
+    void order_facts(std::vector<Fact> &facts) const;
     void get_fact_landmarks(std::vector<Fact> *facts) const;
     void get_facts(std::vector<Fact> &facts, Decomposition decomposition) const;
     void install_task(Task &task) const;

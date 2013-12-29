@@ -55,7 +55,6 @@ public:
     bool dead_end_is_reliable() const;
     void set_evaluator_value(int val);
     void get_involved_heuristics(std::set<Heuristic *> &hset) {hset.insert(this); }
-    virtual void reset() {}
     OperatorCost get_cost_type() const {return cost_type; }
 
     static void add_options_to_parser(OptionParser &parser);

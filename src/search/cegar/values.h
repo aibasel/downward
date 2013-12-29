@@ -21,9 +21,9 @@ private:
     // Total number of facts and size of the values bitset.
     static int facts;
     // The first bit for var is at borders[var].
-    static vector<int> borders;
+    static std::vector<int> borders;
     // masks[var][pos] == true iff pos belongs to var.
-    static vector<Bitset> masks;
+    static std::vector<Bitset> masks;
 
     Values();
 
@@ -40,7 +40,7 @@ private:
     bool abstracts(const Values &other) const;
     void get_possible_splits(const Values &flaw, const State conc_state, Splits *splits) const;
 
-    string str() const;
+    std::string str() const;
 
 public:
     static void initialize_static_members();

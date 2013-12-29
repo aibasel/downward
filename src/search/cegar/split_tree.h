@@ -36,7 +36,7 @@ public:
     // Additionally to the two normal child nodes Node(left) and Node(right)
     // add |values|-1 OR-nodes that all have Node(right) as their right child
     // and the next OR-node as their left child.
-    void split(int var, const vector<int> &values, AbstractState *left, AbstractState *right);
+    void split(int var, const std::vector<int> &values, AbstractState *left, AbstractState *right);
 
     bool is_split() const {return var != UNDEFINED; }
     int get_var() const {return var; }

@@ -7,6 +7,7 @@
 #include "../globals.h"
 #include "../operator.h"
 #include "../rng.h"
+#include "../state_registry.h"
 #include "../successor_generator.h"
 #include "../timer.h"
 #include "../utilities.h"
@@ -39,13 +40,17 @@ static char *cegar_memory_padding = 0;
 // search needs adjacent memory.
 static const int MEMORY_PADDING_MB = 75;
 
+// Save previous out-of-memory handler.
+static void (*global_out_of_memory_handler)(void);
+
 void no_memory_continue() {
     assert(cegar_memory_padding);
     delete[] cegar_memory_padding;
     cegar_memory_padding = 0;
     cout << "Failed to allocate memory for CEGAR abstraction. "
          << "Released memory padding and will stop refinement now." << endl;
-    set_new_handler(no_memory);
+    assert(global_out_of_memory_handler);
+    set_new_handler(global_out_of_memory_handler);
 }
 
 Abstraction::Abstraction(const Task *t)
@@ -75,7 +80,7 @@ Abstraction::Abstraction(const Task *t)
     if (DEBUG)
         cout << "Reserving " << MEMORY_PADDING_MB << " MB of memory padding." << endl;
     cegar_memory_padding = new char[MEMORY_PADDING_MB * 1024 * 1024];
-    set_new_handler(no_memory_continue);
+    global_out_of_memory_handler = set_new_handler(no_memory_continue);
 
     split_tree.set_root(single);
     for (int i = 0; i < task->get_operators().size(); ++i) {
@@ -112,7 +117,7 @@ void Abstraction::build() {
             cout << "Abstract problem is unsolvable!" << endl;
             exit_with(EXIT_UNSOLVABLE);
         }
-        valid_conc_solution = check_and_break_solution(*g_initial_state, init);
+        valid_conc_solution = check_and_break_solution(g_initial_state(), init);
         if (valid_conc_solution)
             break;
     }
@@ -173,11 +178,11 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     // TODO: Since the search is always started from the abstract initial state
     // we can assume v2 is never "init" and v1 is never "goal".
     if (state == init) {
-        if (v1->is_abstraction_of(*g_initial_state)) {
-            assert(!v2->is_abstraction_of(*g_initial_state));
+        if (v1->is_abstraction_of(g_initial_state())) {
+            assert(!v2->is_abstraction_of(g_initial_state()));
             init = v1;
         } else {
-            assert(v2->is_abstraction_of(*g_initial_state));
+            assert(v2->is_abstraction_of(g_initial_state()));
             init = v2;
         }
         if (DEBUG)
@@ -312,7 +317,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
 
     StatesToSplits states_to_splits;
     queue<pair<AbstractState *, State> > unseen;
-    unordered_set<State, hash_state> seen;
+    unordered_set<StateID, hash_state_id> seen;
 
     unseen.push(make_pair(abs_state, conc_state));
 
@@ -357,11 +362,11 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 if (DEBUG)
                     cout << "      Move to: " << next_abs->str()
                          << " with " << op->get_name() << endl;
-                State next_conc = State(conc_state, *op);
+                State next_conc = g_state_registry->get_successor_state(conc_state, *op);
                 if (next_abs->is_abstraction_of(next_conc)) {
-                    if (seen.count(next_conc) == 0) {
+                    if (seen.count(next_conc.get_id()) == 0) {
                         unseen.push(make_pair(next_abs, next_conc));
-                        seen.insert(next_conc);
+                        seen.insert(next_conc.get_id());
                     }
                 } else if (splits.empty()) {
                     // Only find deviation reasons if we haven't found any splits already.
