@@ -209,11 +209,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         abstraction->set_write_dot_files(options.get<bool>("write_dot_files"));
         abstraction->set_use_astar(options.get<bool>("use_astar"));
 
-        double factor = options.get<double>("init_h_factor");
-        if (factor != -1) {
-            abstraction->set_max_init_h_factor(factor);
-        }
-
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
         abstraction->build();
@@ -300,7 +295,6 @@ int CegarHeuristic::compute_heuristic(const State &state) {
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states", "maximum number of abstract states", "infinity");
     parser.add_option<int>("max_time", "maximum time in seconds for building the abstraction", "900");
-    parser.add_option<double>("init_h_factor", "stop refinement after h(s_0) reaches h^add(s_0) * factor", "-1");
     vector<string> pick_strategies;
     pick_strategies.push_back("RANDOM");
     pick_strategies.push_back("MIN_CONSTRAINED");
