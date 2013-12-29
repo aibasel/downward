@@ -348,7 +348,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 if (DEBUG)
                     cout << "      Move to: " << next_abs->str()
                          << " with " << op->get_name() << endl;
-                State next_conc = g_state_registry->get_successor_state(conc_state, *op);
+                State next_conc = task->get_state_registry()->get_successor_state(conc_state, *op);
                 if (next_abs->is_abstraction_of(next_conc)) {
                     if (seen.count(next_conc.get_id()) == 0) {
                         unseen.push(make_pair(next_abs, next_conc));
