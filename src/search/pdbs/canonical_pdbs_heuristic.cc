@@ -136,7 +136,7 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         pattern_databases[i]->evaluate(state);
         if (pattern_databases[i]->is_dead_end())
-            return -1;
+            return DEAD_END;
     }
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         const vector<PDBHeuristic *> &clique = max_cliques[i];

@@ -271,7 +271,7 @@ void PDBHeuristic::initialize() {
 int PDBHeuristic::compute_heuristic(const State &state) {
     int h = distances[hash_index(state)];
     if (h == numeric_limits<int>::max())
-        return -1;
+        return DEAD_END;
     return h;
 }
 
