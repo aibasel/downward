@@ -47,7 +47,10 @@ public:
     explicit Task(std::vector<int> domain, std::vector<std::vector<std::string> > names,
                   std::vector<Operator> ops, State init, std::vector<Fact> goal_facts);
 
-    StateRegistry *get_state_registry() const {return state_registry; }
+    StateRegistry *get_state_registry() const {
+        assert(state_registry);
+        return state_registry;
+    }
     const std::vector<Fact> &get_goal() const {return goal; }
     const std::vector<Operator> &get_operators() const {return operators; }
 

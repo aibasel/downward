@@ -324,6 +324,8 @@ void Task::combine_facts(int var, unordered_set<int> &values) {
 
 void Task::release_memory() {
     vector<Operator>().swap(operators);
+    //delete state_registry;
+    //state_registry = 0;
 }
 
 Task Task::get_original_task() {
