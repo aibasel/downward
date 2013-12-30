@@ -293,8 +293,6 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
 }
 
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
-    if (!abs_state)
-        abs_state = get_abstract_state(conc_state);
     assert(abs_state->is_abstraction_of(conc_state));
 
     if (DEBUG)
@@ -583,10 +581,6 @@ double Abstraction::get_avg_h() const {
     }
     assert(avg_h >= 0.);
     return avg_h;
-}
-
-AbstractState *Abstraction::get_abstract_state(const State &state) const {
-    return split_tree.get_node(state)->get_abs_state();
 }
 
 void Abstraction::write_dot_file(int num) {
