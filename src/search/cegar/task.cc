@@ -12,8 +12,8 @@ using namespace std::tr1;
 
 namespace cegar_heuristic {
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> ops,
-           state_var_t *init, vector<Fact> goal_facts)
-    : state_registry(new StateRegistry()),
+           StateRegistry *registry, vector<Fact> goal_facts)
+    : state_registry(registry),
       initial_state_buffer(new state_var_t[g_variable_domain.size()]),
       goal(goal_facts),
       variable_domain(domain),
@@ -24,7 +24,10 @@ Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> o
       task_index(domain.size()),
       additive_heuristic(0),
       is_original_task(false) {
-    copy(init, init + g_variable_domain.size(), initial_state_buffer);
+    assert(state_registry);
+    copy(g_initial_state_buffer,
+         g_initial_state_buffer + g_variable_domain.size(),
+         initial_state_buffer);
     for (int var = 0; var < variable_domain.size(); ++var) {
         orig_index[var].resize(variable_domain[var]);
         task_index[var].resize(variable_domain[var]);
@@ -194,10 +197,16 @@ bool Task::translate_state(State &state) const {
     return true;
 }
 
+void Task::create_new_state_registry() {
+    copy(initial_state_buffer, initial_state_buffer + g_variable_domain.size(), g_initial_state_buffer);
+    state_registry = new StateRegistry();
+    state_registry->get_initial_state();
+}
+
 void Task::install() {
     if (!is_original_task)
         assert(!additive_heuristic && "h^add can only be calculated for installed tasks");
-    copy(initial_state_buffer, initial_state_buffer + g_variable_domain.size(), g_initial_state_buffer);
+    g_state_registry = state_registry;
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
@@ -330,7 +339,7 @@ void Task::release_memory() {
 }
 
 Task Task::get_original_task() {
-    Task task(g_variable_domain, g_fact_names, g_operators, g_initial_state_buffer, g_goal);
+    Task task(g_variable_domain, g_fact_names, g_operators, g_state_registry, g_goal);
     task.is_original_task = true;
     task.setup_hadd();
     return task;

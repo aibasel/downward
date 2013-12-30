@@ -44,9 +44,10 @@ private:
     void dump_facts() const;
 
 public:
-    explicit Task(std::vector<int> domain, std::vector<std::vector<std::string> > names,
-                  std::vector<Operator> ops, state_var_t *init, std::vector<Fact> goal_facts);
+    Task(std::vector<int> domain, std::vector<std::vector<std::string> > names,
+         std::vector<Operator> ops, StateRegistry *state_registry, std::vector<Fact> goal_facts);
 
+    void create_new_state_registry();
     StateRegistry *get_state_registry() const {
         assert(state_registry);
         return state_registry;

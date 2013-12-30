@@ -197,6 +197,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
                 }
             }
         }
+        task.create_new_state_registry();
         tasks.push_back(task);
         install_task(task);
 
