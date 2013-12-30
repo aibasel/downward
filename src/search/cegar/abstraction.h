@@ -105,7 +105,7 @@ private:
     // Try to convert the abstract solution into a concrete trace. If a flaw
     // is encountered, refine the abstraction in a way that prevents the flaw
     // from appearing in the next round again.
-    bool check_and_break_solution(State conc_state, AbstractState *abs_state = 0);
+    bool check_and_break_solution(State conc_state, AbstractState *abs_state);
 
     // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values() const;
@@ -120,7 +120,6 @@ public:
     // Build abstraction.
     void build();
 
-    AbstractState *get_abstract_state(const State &state) const;
     int get_h(const State &state) const {return split_tree.get_node(state)->get_h(); }
 
     int get_num_states() const {return num_states; }
