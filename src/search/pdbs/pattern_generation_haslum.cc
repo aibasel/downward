@@ -29,6 +29,7 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")),
+      max_time(opts.get<int>("max_time")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))) {
     Timer timer;
     initialize();
@@ -226,7 +227,25 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                      << " - improvement: " << count << endl;
             }
         }
-        if (improvement < min_improvement) { // end hill climbing algorithm
+        const vector<int> &best_pattern = candidate_pdbs[best_pdb_index]->get_pattern();
+        if (improvement >= min_improvement) {
+            // add the best pattern to the CanonicalPDBsHeuristic
+            cout << "found a better pattern with improvement " << improvement << endl;
+            cout << "pattern: " << best_pattern << endl;
+            current_heuristic->add_pattern(best_pattern);
+        }
+
+        bool stop_hill_climbing = false;
+        if (improvement < min_improvement) {
+            cout << "Improvement below threshold. Abort hill climbing." << endl;
+            stop_hill_climbing = true;
+        }
+        if (max_time > 0 && timer() > max_time) {
+            cout << "Time limit reached. Abort hill climbing." << endl;
+            stop_hill_climbing = true;
+        }
+
+        if (stop_hill_climbing) {
             // Note that using dominance pruning during hill-climbing could lead to
             // fewer discovered patterns and pattern collections.
             // A dominated pattern (collection) might no longer be dominated
@@ -242,12 +261,6 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
             break;
         }
-
-        // add the best pattern to the CanonicalPDBsHeuristic
-        const vector<int> &best_pattern = candidate_pdbs[best_pdb_index]->get_pattern();
-        cout << "found a better pattern with improvement " << improvement << endl;
-        cout << "pattern: " << best_pattern << endl;
-        current_heuristic->add_pattern(best_pattern);
 
         // clear current new_candidates and get successors for next iteration
         new_candidates.clear();
@@ -318,6 +331,9 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("num_samples", "number of samples", "1000");
     parser.add_option<int>("min_improvement",
                            "minimum improvement while hill climbing", "10");
+    parser.add_option<int>("max_time",
+                           "Time limit for hill climbing. Use 0 (default) for no limit.",
+                           "0");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

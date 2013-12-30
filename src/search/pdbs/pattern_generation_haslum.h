@@ -16,6 +16,7 @@ class PatternGenerationHaslum {
     const int collection_max_size; // maximum added size of all pdbs
     const int num_samples;
     const int min_improvement; // minimal improvement required for hill climbing to continue search
+    const int max_time;
     const OperatorCost cost_type;
     CanonicalPDBsHeuristic *current_heuristic;
 
