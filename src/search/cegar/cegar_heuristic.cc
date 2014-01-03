@@ -308,7 +308,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("pick",
                            pick_strategies,
                            "how to pick the next unsatisfied condition",
-                           "RANDOM");
+                           "MAX_REFINED");
     vector<string> fact_order_strategies;
     fact_order_strategies.push_back("ORIGINAL");
     fact_order_strategies.push_back("MIXED");
@@ -317,7 +317,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("fact_order",
                            fact_order_strategies,
                            "order in which the goals are refined for",
-                           "MIXED");
+                           "HADD_DOWN");
     vector<string> decompositions;
     decompositions.push_back("NONE");
     decompositions.push_back("ALL_LANDMARKS");
@@ -327,7 +327,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.add_enum_option("decomposition",
                            decompositions,
                            "build abstractions for each of these facts",
-                           "GOAL_FACTS");
+                           "LANDMARKS_AND_GOALS");
     parser.add_option<int>("max_abstractions", "max number of abstractions to build", "infinity");
     parser.add_option<bool>("adapt_task", "remove redundant operators and facts", "true");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
