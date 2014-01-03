@@ -47,7 +47,6 @@ public:
     Task(std::vector<int> domain, std::vector<std::vector<std::string> > names,
          std::vector<Operator> ops, StateRegistry *state_registry, std::vector<Fact> goal_facts);
 
-    void create_new_state_registry();
     StateRegistry *get_state_registry() const {
         assert(state_registry);
         return state_registry;
@@ -68,7 +67,11 @@ public:
 
     static Task get_original_task();
 
-    void remove_hadd() const {additive_heuristic = 0; }
+    void reset_pointers() {
+        additive_heuristic = 0;
+        state_registry = 0;
+    }
+
     int get_hadd_value(int var, int value) const;
 
     void dump() const;
