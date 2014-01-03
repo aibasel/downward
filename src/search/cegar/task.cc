@@ -159,7 +159,7 @@ void Task::set_goal(const Fact &fact, bool adapt) {
     if (adapt)
         compute_facts_and_operators();
     is_original_task = false;
-    remove_hadd();
+    reset_pointers();
 }
 
 void Task::adapt_operator_costs(const vector<int> &remaining_costs) {
@@ -199,16 +199,20 @@ state_var_t *Task::translate_state(const State &state) const {
     return new_state_buffer;
 }
 
-void Task::create_new_state_registry() {
-    copy(initial_state_buffer, initial_state_buffer + g_variable_domain.size(), g_initial_state_buffer);
-    state_registry = new StateRegistry();
-    state_registry->get_initial_state();
-}
-
 void Task::install() {
     if (!is_original_task)
         assert(!additive_heuristic && "h^add can only be calculated for installed tasks");
+    // By overriding g_initial_state buffer, we assign the new registry
+    // a modified initial state.
+    if (!state_registry) {
+        copy(initial_state_buffer, initial_state_buffer + variable_domain.size(), g_initial_state_buffer);
+        state_registry = new StateRegistry();
+    }
     g_state_registry = state_registry;
+    const State &initial_state = g_state_registry->get_initial_state();
+    for (int var = 0; var < variable_domain.size(); ++var) {
+        assert(initial_state[var] == initial_state_buffer[var]);
+    }
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
@@ -336,6 +340,7 @@ void Task::combine_facts(int var, unordered_set<int> &values) {
 
 void Task::release_memory() {
     vector<Operator>().swap(operators);
+    assert(state_registry);
     delete state_registry;
     state_registry = 0;
 }
@@ -355,6 +360,7 @@ void Task::setup_hadd() const {
     opts.set<int>("cost_type", 0);
     opts.set<int>("memory_padding", 75);
     additive_heuristic = new AdditiveHeuristic(opts);
+    assert(state_registry);
     const State &initial_state = state_registry->get_initial_state();
     for (int var = 0; var < variable_domain.size(); ++var) {
         assert(initial_state[var] == initial_state_buffer[var]);
