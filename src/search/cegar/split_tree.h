@@ -63,7 +63,7 @@ private:
 public:
     SplitTree();
     void set_root(AbstractState *single);
-    Node *get_node(const State conc_state) const;
+    Node *get_node(const state_var_t *buffer) const;
 };
 }
 

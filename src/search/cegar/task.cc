@@ -185,16 +185,18 @@ void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int>
         cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
-bool Task::translate_state(State &state) const {
+state_var_t *Task::translate_state(const State &state) const {
+    state_var_t *new_state_buffer = new state_var_t[variable_domain.size()];
     for (int var = 0; var < variable_domain.size(); ++var) {
         int value = task_index[var][state[var]];
         if (value == UNDEFINED) {
-            return false;
+            delete new_state_buffer;
+            return 0;
         } else {
-            // TODO: state[var] = value;
+            new_state_buffer[var] = value;
         }
     }
-    return true;
+    return new_state_buffer;
 }
 
 void Task::create_new_state_registry() {
