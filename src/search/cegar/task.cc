@@ -373,12 +373,6 @@ void Task::setup_hadd() const {
     cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
 }
 
-int Task::get_hadd_estimate_for_initial_state() const {
-    if (!additive_heuristic)
-        setup_hadd();
-    return additive_heuristic->get_heuristic();
-}
-
 int Task::get_hadd_value(int var, int value) const {
     if (!additive_heuristic)
         setup_hadd();
