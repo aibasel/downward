@@ -239,8 +239,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         if (improvement < min_improvement) {
             cout << "Improvement below threshold. Abort hill climbing." << endl;
             stop_hill_climbing = true;
-        }
-        if (max_time > 0 && timer() > max_time) {
+        } else if (max_time > 0 && timer() > max_time) {
             cout << "Time limit reached. Abort hill climbing." << endl;
             stop_hill_climbing = true;
         }
