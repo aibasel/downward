@@ -14,7 +14,7 @@ namespace cegar_heuristic {
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> ops,
            StateRegistry *registry, vector<Fact> goal_facts)
     : state_registry(registry),
-      initial_state_buffer(new state_var_t[g_variable_domain.size()]),
+      initial_state_buffer(g_variable_domain.size()),
       goal(goal_facts),
       variable_domain(domain),
       fact_names(names),
@@ -27,7 +27,7 @@ Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> o
     assert(state_registry);
     copy(g_initial_state_buffer,
          g_initial_state_buffer + g_variable_domain.size(),
-         initial_state_buffer);
+         initial_state_buffer.begin());
     for (int var = 0; var < variable_domain.size(); ++var) {
         orig_index[var].resize(variable_domain[var]);
         task_index[var].resize(variable_domain[var]);
@@ -205,11 +205,12 @@ void Task::install() {
     // By overriding g_initial_state buffer, we assign the new registry
     // a modified initial state.
     if (!state_registry) {
-        copy(initial_state_buffer, initial_state_buffer + variable_domain.size(), g_initial_state_buffer);
+        copy(initial_state_buffer.begin(), initial_state_buffer.end(), g_initial_state_buffer);
         state_registry = new StateRegistry();
     }
     g_state_registry = state_registry;
     const State &initial_state = g_state_registry->get_initial_state();
+    assert(g_state_registry->size() == 1);
     for (int var = 0; var < variable_domain.size(); ++var) {
         assert(initial_state[var] == initial_state_buffer[var]);
     }
