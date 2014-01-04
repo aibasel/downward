@@ -27,8 +27,8 @@ enum GoalOrder {
 
 enum Decomposition {
     NONE,
-    ALL_LANDMARKS,
-    GOAL_FACTS,
+    LANDMARKS,
+    GOALS,
     GOAL_LEAVES,
     LANDMARKS_AND_GOALS
 };
