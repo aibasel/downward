@@ -141,9 +141,9 @@ struct is_not_leaf_landmark {
 
 void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition) const {
     assert(decomposition != NONE);
-    if (decomposition == ALL_LANDMARKS) {
+    if (decomposition == LANDMARKS) {
         get_fact_landmarks(&facts);
-    } else if (decomposition == GOAL_FACTS) {
+    } else if (decomposition == GOALS) {
         facts = original_task.get_goal();
     } else if (decomposition == GOAL_LEAVES) {
         facts = original_task.get_goal();
@@ -185,7 +185,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         Task task = original_task;
         task.reset_pointers();
         if (decomposition != NONE) {
-            bool combine_facts = (options.get<bool>("combine_facts") && decomposition == ALL_LANDMARKS);
+            bool combine_facts = (options.get<bool>("combine_facts") && decomposition == LANDMARKS);
             task.set_goal(facts[i], options.get<bool>("adapt_task") || combine_facts);
             if (combine_facts) {
                 unordered_map<int, unordered_set<int> > groups;
@@ -234,8 +234,8 @@ void CegarHeuristic::initialize() {
     Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
     vector<Decomposition> decompositions;
     if (decomposition == LANDMARKS_AND_GOALS) {
-        decompositions.push_back(ALL_LANDMARKS);
-        decompositions.push_back(GOAL_FACTS);
+        decompositions.push_back(LANDMARKS);
+        decompositions.push_back(GOALS);
     } else {
         decompositions.push_back(decomposition);
     }
@@ -320,8 +320,8 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
                            "HADD_DOWN");
     vector<string> decompositions;
     decompositions.push_back("NONE");
-    decompositions.push_back("ALL_LANDMARKS");
-    decompositions.push_back("GOAL_FACTS");
+    decompositions.push_back("LANDMARKS");
+    decompositions.push_back("GOALS");
     decompositions.push_back("GOAL_LEAVES");
     decompositions.push_back("LANDMARKS_AND_GOALS");
     parser.add_enum_option("decomposition",
