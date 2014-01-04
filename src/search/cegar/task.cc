@@ -209,7 +209,10 @@ void Task::install() {
         state_registry = new StateRegistry();
     }
     g_state_registry = state_registry;
+    // Explicitly ensure that the initial state is set correctly.
     const State &initial_state = g_state_registry->get_initial_state();
+    // Silence warning about unused variable.
+    (void) initial_state;
     assert(g_state_registry->size() == 1);
     for (int var = 0; var < variable_domain.size(); ++var) {
         assert(initial_state[var] == initial_state_buffer[var]);
