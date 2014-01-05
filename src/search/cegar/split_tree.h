@@ -16,16 +16,16 @@ private:
     Node &operator=(const Node &);
 
     AbstractState *abs_state;
-    // Save the variable and value for which abs_state was refined
-    // and the resulting abstract child states.
-    int var;
-    int value;
     // While right_child always corresponds to a (possibly split) abstract
     // state, left_child may correspond to a helper node. Helper nodes
     // are added to the hierarchy to allow for efficient lookup in case
     // more than one atom is split off a state.
     Node *left_child;
     Node *right_child;
+    // Save the variable and value for which abs_state was refined
+    // and the resulting abstract child states.
+    int var;
+    int value;
     // Estimated cost to goal node.
     int h;
 
