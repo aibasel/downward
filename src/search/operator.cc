@@ -51,26 +51,31 @@ Operator::Operator(istream &in, bool axiom) {
     marker1 = marker2 = false;
 }
 
-void Operator::rename_fact(int variable, int before, int after) {
-    for (int i = 0; i < prevail.size(); ++i) {
-        Prevail &pre = prevail[i];
-        if (pre.var == variable && pre.prev == before) {
-            pre.prev = after;
-            return;
+void rename_fact_in_conditions(int variable, int before, int after, vector<Prevail> &conditions) {
+    // TODO: Break out of loop when var > variable once conditions are sorted.
+    for (int j = 0; j < conditions.size(); ++j) {
+        Prevail &cond = conditions[j];
+        if (cond.var == variable && cond.prev == before) {
+            cond.prev = after;
+            // Each variable appears in at most one effect condition.
+            break;
         }
     }
+}
+
+void Operator::rename_fact(int variable, int before, int after) {
+    // TODO: Break out of loop when var > variable once conditions are sorted.
+    rename_fact_in_conditions(variable, before, after, prevail);
     for (int i = 0; i < pre_post.size(); ++i) {
         PrePost &prepost = pre_post[i];
-        assert(prepost.cond.empty());
         if (prepost.var == variable) {
             if (prepost.pre == before) {
                 prepost.pre = after;
-                return;
             } else if (prepost.post == before) {
                 prepost.post = after;
-                return;
             }
         }
+        rename_fact_in_conditions(variable, before, after, prepost.cond);
     }
 }
 
