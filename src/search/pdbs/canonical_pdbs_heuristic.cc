@@ -223,6 +223,18 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
     }
 }
 
+void CanonicalPDBsHeuristic::evaluate_dead_end(const State &state) {
+    int evaluator_value = 0;
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        pattern_databases[i]->evaluate(state);
+        if (pattern_databases[i]->is_dead_end()) {
+            evaluator_value = DEAD_END;
+            break;
+        }
+    }
+    set_evaluator_value(evaluator_value);
+}
+
 void CanonicalPDBsHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) const {
     // print compatibility graph
     cout << "Compatibility graph" << endl;
