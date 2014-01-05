@@ -7,10 +7,10 @@ using namespace std;
 namespace cegar_heuristic {
 Node::Node(AbstractState *state)
     : abs_state(state),
-      var(UNDEFINED),
-      value(UNDEFINED),
       left_child(0),
       right_child(0),
+      var(UNDEFINED),
+      value(UNDEFINED),
       h(0) {
     if (state)
         state->set_node(this);
