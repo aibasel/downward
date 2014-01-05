@@ -58,7 +58,7 @@ public:
     void set_goal(const Fact &fact, bool adapt);
     void adapt_operator_costs(const std::vector<int> &remaining_costs);
     void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;
-    state_var_t *translate_state(const State &state) const;
+    bool translate_state(const State &state, state_var_t *translated) const;
 
     void combine_facts(int var, std::tr1::unordered_set<int> &values);
 

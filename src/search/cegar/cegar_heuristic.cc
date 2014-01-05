@@ -30,7 +30,8 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       fact_order(GoalOrder(options.get_enum("fact_order"))),
       original_task(Task::get_original_task()),
       num_states(0),
-      landmark_graph(get_landmark_graph()) {
+      landmark_graph(get_landmark_graph()),
+      temp_state_buffer(new state_var_t[g_variable_domain.size()]) {
     DEBUG = opts.get<bool>("debug");
     assert(max_time >= 0);
 
@@ -52,6 +53,9 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 }
 
 CegarHeuristic::~CegarHeuristic() {
+    delete temp_state_buffer;
+    temp_state_buffer = 0;
+    // TODO: Delete abstractions.
 }
 
 struct SortHaddValuesUp {
@@ -276,13 +280,11 @@ int CegarHeuristic::compute_heuristic(const State &state) {
         Task &task = tasks[i];
 
         // If any fact in state is not reachable in this task, h(state) = 0.
-        state_var_t *projected_state_buffer = task.translate_state(state);
-        if (!projected_state_buffer)
+        bool reachable = task.translate_state(state, temp_state_buffer);
+        if (!reachable)
             continue;
 
-        int h = abstractions[i]->get_h(projected_state_buffer);
-        delete projected_state_buffer;
-        projected_state_buffer = 0;
+        int h = abstractions[i]->get_h(temp_state_buffer);
         assert(h >= 0);
         if (h == INF)
             return DEAD_END;
