@@ -115,7 +115,7 @@ void Task::compute_facts_and_operators() {
         Operator &op = operators[i];
         // If op achieves last_fact set eff(op) = {last_fact}.
         if (get_eff(op, last_fact.first) == last_fact.second)
-            op.keep_single_effect(last_fact.first);
+            op.keep_single_effect(last_fact.first, last_fact.second);
     }
     // Add last_fact to reachable facts.
     reached_facts.insert(last_fact);

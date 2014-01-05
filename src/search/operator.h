@@ -105,7 +105,7 @@ public:
 
     void rename_fact(int variable, int before, int after);
 
-    void keep_single_effect(int var);
+    void keep_single_effect(int var, int value);
 };
 
 #endif

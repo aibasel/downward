@@ -89,14 +89,14 @@ void PrePost::dump() const {
     }
 }
 
-void Operator::keep_single_effect(int var) {
+void Operator::keep_single_effect(int var, int value) {
     for(vector<PrePost>::iterator it = pre_post.begin(); it != pre_post.end();) {
-        if (it->var != var) {
+        if (it->var == var and it->post == value) {
+            ++it;
+        } else {
             if (it->pre != -1)
                 prevail.push_back(Prevail(it->var, it->pre));
             it = pre_post.erase(it);
-        } else {
-            ++it;
         }
     }
 }
