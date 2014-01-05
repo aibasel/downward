@@ -223,13 +223,16 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
     }
 }
 
-bool CanonicalPDBsHeuristic::dead_end(const State &state) const {
+void CanonicalPDBsHeuristic::evaluate_dead_end(const State &state) {
+    int evaluator_value = 0;
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         pattern_databases[i]->evaluate(state);
-        if (pattern_databases[i]->is_dead_end())
-            return true;
+        if (pattern_databases[i]->is_dead_end()) {
+            evaluator_value = DEAD_END;
+            break;
+        }
     }
-    return false;
+    set_evaluator_value(evaluator_value);
 }
 
 void CanonicalPDBsHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) const {
