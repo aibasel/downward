@@ -123,7 +123,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
 
 bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
                                                     const State &sample,
-                                                    vector<vector<PDBHeuristic *> > max_additive_subsets) {
+                                                    const vector<vector<PDBHeuristic *> > &max_additive_subsets) {
     pdb_heuristic->evaluate(sample);
     if (pdb_heuristic->is_dead_end()) {
         return true;
