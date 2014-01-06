@@ -4,13 +4,13 @@
 #include "shrink_strategy.h"
 
 #include "../operator_cost.h"
-#include "label.h"
 
 #include <ext/slist>
 #include <vector>
 
-class State;
+class Label;
 class Labels;
+class State;
 
 struct AbstractTransition {
     AbstractStateRef src;
@@ -109,7 +109,7 @@ public:
     bool is_in_varset(int var) const;
 
     void compute_distances();
-    void normalize(bool reduce_labels);
+    void normalize();
     void release_memory();
 
     void dump_transitions_sizes() const;
@@ -140,6 +140,14 @@ public:
     // The following methods are shrink_bisimulation-exclusive
     int get_num_labels() const;
     const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const;
+
+    // The following two getters serve LabelReducer
+    const std::vector<const Label *> &get_relevant_labels() const {
+        return relevant_labels;
+    }
+    const std::vector<int> &get_varset() const {
+        return varset;
+    }
 };
 
 class AtomicAbstraction : public Abstraction {
