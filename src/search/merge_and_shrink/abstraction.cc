@@ -401,6 +401,10 @@ void Abstraction::normalize() {
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
 
+    // TODO: come up with a good way of updating relevant_labels here
+    //vector<const Label*>().swap(relevant_labels);
+    //hash_set<int> relevant_labels_;
+
     /* First, partition by target state. Possibly replace labels by
        their new label which they are mapped to via label reduction and clear
        away the transitions that have been processed. */
@@ -410,6 +414,7 @@ void Abstraction::normalize() {
         vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         if (!transitions.empty()) {
             int reduced_label_no = labels->get_reduced_label_no(label_no);
+            //relevant_labels_.insert(reduced_label_no);
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &t = transitions[i];
                 target_buckets[t.target].push_back(
@@ -418,6 +423,15 @@ void Abstraction::normalize() {
             vector<AbstractTransition> ().swap(transitions);
         }
     }
+    /*vector<int> rel_lab;
+    for (hash_set<int>::iterator it = relevant_labels_.begin();
+         it != relevant_labels_.end(); ++it) {
+        rel_lab.push_back(*it);
+    }
+    ::sort(rel_lab.begin(), rel_lab.end());
+    for (size_t i = 0; i < rel_lab.size(); ++i) {
+        relevant_labels.push_back(labels->get_label_by_index(rel_lab[i]));
+    }*/
 
     // Second, partition by src state.
     vector<StateBucket> src_buckets(num_states);
