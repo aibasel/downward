@@ -434,6 +434,11 @@ def translate_task(strips_to_sas, ranges, translation_key,
 
     goal_dict_list = translate_strips_conditions(goals, strips_to_sas, ranges,
                                                  mutex_dict, mutex_ranges)
+    if goal_dict_list is None:
+        # "None" is a signal that the goal is unreachable because it
+        # violates a mutex.
+        return unsolvable_sas_task("Goal violates a mutex")
+
     assert len(goal_dict_list) == 1, "Negative goal not supported"
     ## we could substitute the negative goal literal in
     ## normalize.substitute_complicated_goal, using an axiom. We currently
