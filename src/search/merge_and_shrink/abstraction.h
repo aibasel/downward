@@ -122,6 +122,7 @@ public:
     void compute_distances();
     void normalize();
 	EquivalenceRelation compute_local_equivalence_relation() const;
+    EquivalenceRelation compute_local_equivalence_relation2() const;
     void release_memory();
 
     void dump_transitions_sizes() const;

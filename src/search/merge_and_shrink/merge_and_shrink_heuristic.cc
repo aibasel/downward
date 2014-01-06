@@ -148,7 +148,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         // to normalize multiple parts of a composite. See issue68.
         // TODO: do not reduce labels several times for the same abstraction!
         bool reduced_labels = false;
-		EquivalenceRelation relation = compute_outside_equivalence(abstraction, all_abstractions);
+        EquivalenceRelation relation = compute_outside_equivalence(abstraction, all_abstractions);
         if (shrink_strategy->reduce_labels_before_shrinking()) {
             labels->reduce_labels(abstraction->get_relevant_labels(), abstraction->get_varset(), &relation);
             reduced_labels = true;
