@@ -1,18 +1,20 @@
 #ifndef MERGE_AND_SHRINK_LABEL_REDUCER_H
 #define MERGE_AND_SHRINK_LABEL_REDUCER_H
 
+#include "label.h"
+
 #include "../globals.h"
 #include "../operator.h"
 #include "../operator_cost.h"
-#include "label.h"
 
 #include <cassert>
 #include <vector>
 
+class EquivalenceRelation;
 class LabelSignature;
 
 class LabelReducer {
-    // TODO: remove this instance variables and print them directly at the
+    // TODO: remove these instance variables and print them directly at the
     // end of the constructor (and get rid of statistics())?
     int num_pruned_vars;
     int num_labels;
@@ -25,8 +27,12 @@ public:
                  const std::vector<int> &abs_vars,
                  std::vector<const Label* > &labels);
     ~LabelReducer();
-
     void statistics() const;
+
+    // exact label reduction
+    LabelReducer(const EquivalenceRelation *relation,
+                 std::vector<const Label* > &labels);
+    void statistics2() const;
 };
 
 #endif

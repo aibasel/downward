@@ -1,5 +1,7 @@
 #include "label_reducer.h"
 
+#include "equivalence_relation.h"
+
 #include "../globals.h"
 #include "../operator.h"
 #include "../utilities.h"
@@ -144,6 +146,41 @@ LabelSignature LabelReducer::build_label_signature(
 void LabelReducer::statistics() const {
     cout << "Label reduction: "
          << num_pruned_vars << " pruned vars, "
+         << num_labels << " labels, "
+         << num_reduced_labels << " reduced labels"
+         << endl;
+}
+
+LabelReducer::LabelReducer(const EquivalenceRelation *relation,
+                           vector<const Label *> &labels) {
+    num_pruned_vars = -1;
+    num_labels = 0;
+    num_reduced_labels = 0;
+    for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
+        const Block &block = *it;
+        vector<const Label *> equivalent_labels;
+        for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
+            assert(*jt < labels.size());
+            const Label *label = labels[*jt];
+            if (label->get_reduced_label() != label) {
+                // ignore already reduced labels
+                continue;
+            }
+            equivalent_labels.push_back(label);
+            ++num_labels;
+        }
+        if (equivalent_labels.size() > 1) {
+            const Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
+            labels.push_back(new_label);
+        }
+        if (!equivalent_labels.empty()) {
+            ++num_reduced_labels;
+        }
+    }
+}
+
+void LabelReducer::statistics2() const {
+    cout << "Label reduction: "
          << num_labels << " labels, "
          << num_reduced_labels << " reduced labels"
          << endl;
