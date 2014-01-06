@@ -1,5 +1,6 @@
 #include "abstraction.h"
 
+#include "label.h"
 #include "labels.h"
 #include "merge_and_shrink_heuristic.h" // needed for ShrinkStrategy type;
 // TODO: move that type somewhere else?
@@ -390,41 +391,25 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(
     }
 }
 
-void Abstraction::normalize(bool reduce_labels) {
-    // Apply label reduction and remove duplicate transitions.
+void Abstraction::normalize() {
+    // This method normalizes all labels and transitions. Labels are normalized
+    // if transitions of labels that have been reduced via label reduction are
+    // correctly ordered with their new labels.
+    // Remove duplicate transitions.
 
-    cout << tag() << "normalizing ";
-
-    if (reduce_labels) {
-        if (are_labels_reduced) {
-            cout << "without label reduction (already reduced)" << endl;
-        } else {
-            cout << "with label reduction" << endl;
-            labels->reduce_labels(relevant_labels, varset);
-            are_labels_reduced = true;
-        }
-    } else {
-        cout << "without label reduction" << endl;
-    }
+    cout << tag() << "normalizing" << endl;
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
 
-    /* First, partition by target state. Also replace operators by
-       their canonical representatives via label reduction and clear
+    /* First, partition by target state. Possibly replace labels by
+       their new label which they are mapped to via label reduction and clear
        away the transitions that have been processed. */
-    // TODO: update comment
     vector<StateBucket> target_buckets(num_states);
     assert(transitions_consistent());
     for (int label_no = 0; label_no < num_labels; label_no++) {
         vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         if (!transitions.empty()) {
-            int reduced_label_no;
-            // Note: at least use the label reduction from previous label
-            // reductions on other abstractions in order to make sure that the
-            // new labels are used rather than the old ones.
-            // We thus do *not* only use reduced labels if reduce_labels is true,
-            // but always, in order to guarantee consistent labels.
-            reduced_label_no = labels->get_reduced_label_no(label_no);
+            int reduced_label_no = labels->get_reduced_label_no(label_no);
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &t = transitions[i];
                 target_buckets[t.target].push_back(
@@ -433,10 +418,6 @@ void Abstraction::normalize(bool reduce_labels) {
             vector<AbstractTransition> ().swap(transitions);
         }
     }
-    // NOTE: for the same reasons as we call "get_reduced_label_no" above even
-    // if reduce_labels is false, we have to update num_labels here to guarantee
-    // usage of consistent labels.
-    num_labels = labels->get_size();
 
     // Second, partition by src state.
     vector<StateBucket> src_buckets(num_states);
@@ -464,6 +445,9 @@ void Abstraction::normalize(bool reduce_labels) {
                 op_bucket.push_back(trans);
         }
     }
+
+    // Abstraction has been normalized, restore invariant
+    num_labels = labels->get_size();
 }
 
 void Abstraction::build_atomic_abstractions(bool is_unit_cost,

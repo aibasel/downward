@@ -115,8 +115,10 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         // TODO: When using nonlinear merge strategies, make sure not
         // to normalize multiple parts of a composite. See issue68.
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            abstraction->normalize(use_label_reduction);
-            other_abstraction->normalize(false);
+            labels->reduce_labels(abstraction->get_relevant_labels(), abstraction->get_varset());
+            abstraction->normalize();
+            // no label reduction for other_abstraction now
+            other_abstraction->normalize();
         }
 
         abstraction->compute_distances();
@@ -136,11 +138,12 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         abstraction->statistics(use_expensive_statistics);
         other_abstraction->statistics(use_expensive_statistics);
 
-        abstraction->normalize(use_label_reduction);
+        labels->reduce_labels(abstraction->get_relevant_labels(), abstraction->get_varset());
+        abstraction->normalize();
         abstraction->statistics(use_expensive_statistics);
 
         // Don't label-reduce the atomic abstraction -- see issue68.
-        other_abstraction->normalize(false);
+        other_abstraction->normalize();
         other_abstraction->statistics(use_expensive_statistics);
 
         Abstraction *new_abstraction = new CompositeAbstraction(
