@@ -473,7 +473,7 @@ struct TransitionSignature {
     TransitionSignature(const vector<pair<int, int> > &transitions, int cost) {
         // transitions must be sorted.
         for (size_t i = 0; i < transitions.size(); ++i) {
-            cout << transitions[i].first << "->" << transitions[i].second << endl;
+            //cout << transitions[i].first << "->" << transitions[i].second << endl;
             if (i != 0) {
                 assert(transitions[i].first >= transitions[i - 1].first);
                 if (transitions[i].first == transitions[i - 1].first) {
@@ -526,14 +526,14 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         vector<pair<int, int> > sorted_trans;
         sorted_trans.reserve(transitions.size());
-        /*cout << "trans for label " << label_no << endl;
+        //cout << "trans for label " << label_no << endl;
         for (size_t j = 0; j < transitions.size(); ++j) {
             const AbstractTransition &trans = transitions[j];
             sorted_trans.push_back(make_pair(trans.src, trans.target));
-            cout << trans.src << "->" << trans.target << endl;
+            //cout << trans.src << "->" << trans.target << endl;
         }
         ::sort(sorted_trans.begin(), sorted_trans.end());
-        cout << "transition sig for label " << label_no << endl;*/
+        //cout << "transition sig for label " << label_no << endl;
         TransitionSignature signature(sorted_trans, labels->get_label_by_index(label_no)->get_cost());
         if (!labels_by_transitions.count(signature)) {
             transition_signatures.push_back(signature);
