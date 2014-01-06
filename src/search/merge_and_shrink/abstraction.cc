@@ -585,6 +585,66 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
     return EquivalenceRelation::from_labels<int>(labels->get_size(), labeled_label_nos);
 }
 
+void assert_sorted_unique(const vector<AbstractTransition> &transitions) {
+    //cout << "transitions:" << endl;
+    //for (size_t i = 0; i < transitions.size(); ++i) {
+    //    cout << transitions[i].src << "->" << transitions[i].target << endl;
+    //}
+    for (size_t i = 1; i < transitions.size(); ++i) {
+        assert(transitions[i].src >= transitions[i - 1].src);
+        if (transitions[i].src == transitions[i - 1].src) {
+            assert(transitions[i].target > transitions[i - 1].target);
+        }
+    }
+}
+
+EquivalenceRelation Abstraction::compute_local_equivalence_relation2() const {
+    // TODO: apparently, transitions are *not* sorted
+    assert(is_label_reduced());
+    vector<bool> considered_labels(num_labels, false);
+    vector<pair<int, int> > labeled_label_nos;
+    int group_number = 0;
+    for (size_t label_no = 0; label_no < num_labels; ++label_no) {
+        if (labels->is_label_reduced(label_no)) {
+            // do not consider non-leaf labels
+            continue;
+        }
+        if (considered_labels[label_no]) {
+            continue;
+        }
+        labeled_label_nos.push_back(make_pair(group_number, label_no));
+        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
+        if (transitions.empty()) {
+            continue;
+        }
+        assert_sorted_unique(transitions);
+        for (size_t other_label_no = label_no; other_label_no < num_labels; ++other_label_no) {
+            if (labels->is_label_reduced(other_label_no)) {
+                // do not consider non-leaf labels
+                continue;
+            }
+            if (considered_labels[other_label_no]) {
+                continue;
+            }
+            const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
+            if (other_transitions.empty()) {
+                continue;
+            }
+            assert_sorted_unique(other_transitions);
+            if (transitions == other_transitions) {
+                for (size_t i = 0; i < transitions.size(); ++i) {
+                    cout << label_no << ": " << transitions[i].src << "->" << transitions[i].target << endl;
+                    cout << other_label_no << ": " << other_transitions[i].src << "->" << other_transitions[i].target << endl;
+                }
+                considered_labels[other_label_no] = true;
+                labeled_label_nos.push_back(make_pair(group_number, other_label_no));
+            }
+        }
+        ++group_number;
+    }
+    return EquivalenceRelation::from_labels<int>(num_labels, labeled_label_nos);
+}
+
 void Abstraction::build_atomic_abstractions(bool is_unit_cost,
     vector<Abstraction *> &result,
     Labels *labels) {
