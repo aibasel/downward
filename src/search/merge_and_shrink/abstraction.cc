@@ -490,6 +490,10 @@ void Abstraction::build_atomic_abstractions(
             for (int value = pre_value_min; value < pre_value_max; value++) {
                 AbstractTransition trans(value, post_value);
                 abs->transitions_by_op[op_no].push_back(trans);
+                if (!pre_post[i].cond.empty()) {
+                    AbstractTransition loop(value, value);
+                    abs->transitions_by_op[op_no].push_back(loop);
+                }
             }
             if (abs->relevant_operators.empty()
                 || abs->relevant_operators.back() != op)
