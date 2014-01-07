@@ -85,13 +85,15 @@ using namespace __gnu_cxx;
 
  */
 
+bool sorted(const vector<AbstractTransition> &transitions);
+
 //  TODO: We define infinity in more than a few places right now (=>
 //        grep for it). It should only be defined once.
 static const int infinity = numeric_limits<int>::max();
 
 Abstraction::Abstraction(bool is_unit_cost_, Labels *labels_)
     : is_unit_cost(is_unit_cost_), labels(labels_), num_labels(labels->get_size()),
-      are_labels_reduced(false), peak_memory(0) {
+      normalized(true), peak_memory(0) {
     clear_distances();
     // at most n-1 fresh labels will be needed if n is the number of operators
     transitions_by_label.resize(g_operators.size() * 2);
@@ -208,23 +210,6 @@ int Abstraction::get_label_cost_by_index(int label_no) const {
     return label->get_cost();
 }
 
-bool Abstraction::transitions_consistent() const {
-    assert(num_labels <= labels->get_size());
-    if (num_labels > transitions_by_label.size()) {
-        return false;
-    }
-    for (size_t i = 0; i < transitions_by_label.size(); ++i) {
-        if (i >= num_labels && !transitions_by_label[i].empty()) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool Abstraction::is_label_reduced() const {
-    return (num_labels == labels->get_size());
-}
-
 int Abstraction::get_num_labels() const {
     return labels->get_size();
 }
@@ -254,7 +239,6 @@ static void breadth_first_search(
 
 void Abstraction::compute_init_distances_unit_cost() {
     vector<vector<AbstractStateRef> > forward_graph(num_states);
-    assert(transitions_consistent());
     for (int label_no = 0; label_no < num_labels; label_no++) {
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (int j = 0; j < transitions.size(); j++) {
@@ -275,7 +259,6 @@ void Abstraction::compute_init_distances_unit_cost() {
 
 void Abstraction::compute_goal_distances_unit_cost() {
     vector<vector<AbstractStateRef> > backward_graph(num_states);
-    assert(transitions_consistent());
     for (int label_no = 0; label_no < num_labels; label_no++) {
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (int j = 0; j < transitions.size(); j++) {
@@ -321,7 +304,6 @@ static void dijkstra_search(
 
 void Abstraction::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(num_states);
-    assert(transitions_consistent());
     for (int label_no = 0; label_no < num_labels; label_no++) {
         int label_cost = get_label_cost_by_index(label_no);
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
@@ -347,7 +329,6 @@ void Abstraction::compute_init_distances_general_cost() {
 
 void Abstraction::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(num_states);
-    assert(transitions_consistent());
     for (int label_no = 0; label_no < num_labels; label_no++) {
         int label_cost = get_label_cost_by_index(label_no);
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
@@ -393,12 +374,20 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(
     }
 }
 
+bool Abstraction::is_normalized() const {
+    return ((num_labels == labels->get_size()) && normalized);
+}
+
 void Abstraction::normalize() {
     // This method normalizes all labels and transitions. Labels are normalized
     // if transitions of labels that have been reduced via label reduction are
     // correctly ordered with their new labels.
     // Remove duplicate transitions.
 
+    if (is_normalized()) {
+        assert(sorted_unique());
+        return;
+    }
     cout << tag() << "normalizing" << endl;
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
@@ -411,7 +400,6 @@ void Abstraction::normalize() {
        their new label which they are mapped to via label reduction and clear
        away the transitions that have been processed. */
     vector<StateBucket> target_buckets(num_states);
-    assert(transitions_consistent());
     for (int label_no = 0; label_no < num_labels; label_no++) {
         vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         if (!transitions.empty()) {
@@ -463,7 +451,9 @@ void Abstraction::normalize() {
     }
 
     // Abstraction has been normalized, restore invariant
+    assert(sorted_unique());
     num_labels = labels->get_size();
+    normalized = true;
 }
 
 struct TransitionSignature {
@@ -505,35 +495,31 @@ struct hash<TransitionSignature> {
 };
 }
 
-EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
-    // TODO: can we get rid of the need that the abstractions have to be
-    // label reduced when computuing the label equivalence relation?
-    // The problem is that when iterating over labels whose transitions have
-    // not been normalized (i.e. not been "moved" to the right index and merged
-    // with the transitions from all other labels of the same equivalence class),
-    // we risk considering the same transitions several times.
-    assert(is_label_reduced());
-    //cout << (is_label_reduced() ? "" : "not ") << "label reduced" << endl;
+EquivalenceRelation Abstraction::compute_local_equivalence_relation(/*vector<pair<int, int> > &labeled_label_nos*/) const {
+    // We require the abstraction to be normalized and label reduced, because
+    // when iterating over labels whose transitions have not been normalized
+    // (i.e. not been "moved" to the right index and merged with the transitions
+    // from all other labels of the same equivalence class), we risk considering
+    // the same transitions several times.
+    assert(is_normalized());
+    assert(sorted_unique());
     // groups the labels by the (uniquely ordered) set of transitions they
     // induce in the abstraction
     hash_map<TransitionSignature, vector<int> > labels_by_transitions;
     // collects all transition signatures occuring in the abstraction
     vector<TransitionSignature> transition_signatures;
     for (size_t label_no = 0; label_no < num_labels; ++label_no) {
-        // NOTE: see TODO above
-        if (labels->is_label_reduced(label_no))
+        if (labels->is_label_reduced(label_no)) {
             continue;
+        }
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         vector<pair<int, int> > sorted_trans;
         sorted_trans.reserve(transitions.size());
-        //cout << "trans for label " << label_no << endl;
         for (size_t j = 0; j < transitions.size(); ++j) {
             const AbstractTransition &trans = transitions[j];
             sorted_trans.push_back(make_pair(trans.src, trans.target));
-            //cout << trans.src << "->" << trans.target << endl;
         }
         ::sort(sorted_trans.begin(), sorted_trans.end());
-        //cout << "transition sig for label " << label_no << endl;
         TransitionSignature signature(sorted_trans, labels->get_label_by_index(label_no)->get_cost());
         if (!labels_by_transitions.count(signature)) {
             transition_signatures.push_back(signature);
@@ -541,43 +527,14 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
         labels_by_transitions[signature].push_back(label_no);
     }
     vector<pair<int, int> > labeled_label_nos;
-    // TODO: we cannot use relevant_labels because even if the abstraction
-    // is normalized and label reduced, relevant_labels might not be updated!
-    // relevant_labels is currently never updated.
-    //labeled_label_nos.reserve(relevant_labels.size());
     for (size_t i = 0; i < transition_signatures.size(); ++i) {
         const TransitionSignature &signature = transition_signatures[i];
         const vector<int> &label_nos = labels_by_transitions[signature];
         for (size_t j = 0; j < label_nos.size(); ++j) {
             int label_no = label_nos[j];
             labeled_label_nos.push_back(make_pair(i, label_no));
-            /*
-            // Debug: check that all grouped labels indeed have the exact
-            // same set of induced transitions
-            const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-            for (size_t k = j + 1; k < label_nos.size(); ++k) {
-                int other_label_no = label_nos[k];
-                assert(labels->get_label_by_index(label_no)->get_cost()
-                       == labels->get_label_by_index(other_label_no)->get_cost());
-                const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
-                assert(transitions.size() == other_transitions.size());
-                for (size_t l = 0; l < transitions.size(); ++l) {
-                    const AbstractTransition &transition = transitions[l];
-                    bool matched_transition = false;
-                    for (size_t m = 0; m < other_transitions.size(); ++m) {
-                        const AbstractTransition &other_transition = other_transitions[m];
-                        if (transition == other_transition) {
-                            matched_transition = true;
-                            break;
-                        }
-                    }
-                    assert(matched_transition);
-                }
-            }*/
         }
     }
-    // Note: with the current assumption that the abstraction is label reduced,
-    // labels->get_size() equals num_labels.
     // Note: all labels not mentioned in labeled_label_nos are such labels that
     // have been mapped to new ones. They will be implicitly contained in the
     // equivalence relation and should be ignored when using it for label
@@ -585,22 +542,9 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
     return EquivalenceRelation::from_labels<int>(labels->get_size(), labeled_label_nos);
 }
 
-void assert_sorted_unique(const vector<AbstractTransition> &transitions) {
-    //cout << "transitions:" << endl;
-    //for (size_t i = 0; i < transitions.size(); ++i) {
-    //    cout << transitions[i].src << "->" << transitions[i].target << endl;
-    //}
-    for (size_t i = 1; i < transitions.size(); ++i) {
-        assert(transitions[i].src >= transitions[i - 1].src);
-        if (transitions[i].src == transitions[i - 1].src) {
-            assert(transitions[i].target > transitions[i - 1].target);
-        }
-    }
-}
-
-EquivalenceRelation Abstraction::compute_local_equivalence_relation2() const {
-    // TODO: apparently, transitions are *not* sorted
-    assert(is_label_reduced());
+EquivalenceRelation Abstraction::compute_local_equivalence_relation2(/*vector<pair<int, int> > &labeled_label_nos*/) const {
+    assert(is_normalized());
+    assert(sorted_unique());
     vector<bool> considered_labels(num_labels, false);
     vector<pair<int, int> > labeled_label_nos;
     int group_number = 0;
@@ -612,13 +556,13 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation2() const {
         if (considered_labels[label_no]) {
             continue;
         }
+        int label_cost = labels->get_label_by_index(label_no)->get_cost();
         labeled_label_nos.push_back(make_pair(group_number, label_no));
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        if (transitions.empty()) {
-            continue;
-        }
-        assert_sorted_unique(transitions);
-        for (size_t other_label_no = label_no; other_label_no < num_labels; ++other_label_no) {
+        //if (transitions.empty()) {
+        //    continue;
+        //}
+        for (size_t other_label_no = label_no + 1; other_label_no < num_labels; ++other_label_no) {
             if (labels->is_label_reduced(other_label_no)) {
                 // do not consider non-leaf labels
                 continue;
@@ -626,16 +570,18 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation2() const {
             if (considered_labels[other_label_no]) {
                 continue;
             }
-            const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
-            if (other_transitions.empty()) {
+            if (label_cost != labels->get_label_by_index(other_label_no)->get_cost()) {
                 continue;
             }
-            assert_sorted_unique(other_transitions);
-            if (transitions == other_transitions) {
-                for (size_t i = 0; i < transitions.size(); ++i) {
-                    cout << label_no << ": " << transitions[i].src << "->" << transitions[i].target << endl;
-                    cout << other_label_no << ": " << other_transitions[i].src << "->" << other_transitions[i].target << endl;
-                }
+            const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
+            //if (other_transitions.empty()) {
+            //    continue;
+            //}
+            if ((transitions.empty() && other_transitions.empty())
+                || (transitions == other_transitions)) {
+                //for (size_t i = 0; i < transitions.size(); ++i) {
+                //    assert(transitions[i] == other_transitions[i]);
+                //}
                 considered_labels[other_label_no] = true;
                 labeled_label_nos.push_back(make_pair(group_number, other_label_no));
             }
@@ -697,6 +643,11 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
                 abs->relevant_labels.push_back(label);
         }
     }
+
+    for (size_t i = 0; i < result.size(); ++i) {
+        assert(result[i]->is_normalized());
+        assert(result[i]->sorted_unique());
+    }
 }
 
 AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, Labels *labels, int variable_)
@@ -741,7 +692,8 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
          << abs2->description() << endl;
 
     assert(abs1->is_solvable() && abs2->is_solvable());
-    assert(abs1->is_label_reduced() && abs1->is_label_reduced());
+    assert(abs1->is_normalized() && abs2->is_normalized());
+    assert(abs1->sorted_unique() && abs2->sorted_unique());
 
     components[0] = abs1;
     components[1] = abs2;
@@ -826,6 +778,11 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
         abs1->relevant_labels[i]->get_reduced_label()->marker1 = false;
     for (int i = 0; i < abs2->relevant_labels.size(); i++)
         abs2->relevant_labels[i]->get_reduced_label()->marker2 = false;
+
+    if (!sorted_unique())
+        normalized = false;
+    //assert(is_normalized());
+    //assert(sorted_unique());
 }
 
 CompositeAbstraction::~CompositeAbstraction() {
@@ -940,7 +897,6 @@ void Abstraction::apply_abstraction(
 
     vector<vector<AbstractTransition> > new_transitions_by_label(
         transitions_by_label.size());
-    assert(transitions_consistent());
     for (int label_no = 0; label_no < num_labels; label_no++) {
         // TODO: check correctness! What happens if several labels are mapped
         // to the same label and thus to the same "new_transitions" (which then
@@ -961,9 +917,6 @@ void Abstraction::apply_abstraction(
         }
     }
     vector<vector<AbstractTransition> > ().swap(transitions_by_label);
-    // need to update num_labels here as the abstraction is now "up to date"
-    // in terms of all labels are correctly mapped to their new labels.
-    num_labels = labels->get_size();
 
     num_states = new_num_states;
     transitions_by_label.swap(new_transitions_by_label);
@@ -980,6 +933,10 @@ void Abstraction::apply_abstraction(
         cout << tag() << "simplification was not f-preserving!" << endl;
         clear_distances();
     }
+
+    if (!sorted_unique())
+        normalized = false;
+    num_labels = labels->get_size();
 }
 
 bool Abstraction::is_solvable() const {
@@ -1078,6 +1035,28 @@ bool Abstraction::is_in_varset(int var) const {
     return find(varset.begin(), varset.end(), var) != varset.end();
 }
 
+bool sorted(const vector<AbstractTransition> &transitions) {
+    for (size_t j = 1; j < transitions.size(); ++j) {
+        if (!(transitions[j].src >= transitions[j - 1].src))
+            return false;
+        if (transitions[j].src == transitions[j - 1].src) {
+            if (!(transitions[j].target > transitions[j - 1].target))
+                return false;
+        }
+    }
+    return true;
+}
+
+bool Abstraction::sorted_unique() const {
+    for (size_t i = 0; i < transitions_by_label.size(); ++i) {
+        const vector<AbstractTransition> &transitions = transitions_by_label[i];
+        if (!sorted(transitions)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void Abstraction::dump() const {
     cout << "digraph abstract_transition_graph";
     for (int i = 0; i < varset.size(); i++)
@@ -1094,6 +1073,7 @@ void Abstraction::dump() const {
     }
     // TODO: assertion invalidated by new Label Class
     //assert(transitions_by_label.size() == g_operators.size());
+    // TODO: consider  mapped labels. use num_labels
     for (int label_no = 0; label_no < transitions_by_label.size(); label_no++) {
         const vector<AbstractTransition> &trans = transitions_by_label[label_no];
         for (int i = 0; i < trans.size(); i++) {
