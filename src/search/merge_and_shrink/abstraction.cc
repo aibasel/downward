@@ -498,9 +498,11 @@ void Abstraction::build_atomic_abstractions(
                 AbstractTransition trans(value, post_value);
                 abs->transitions_by_op[op_no].push_back(trans);
                 /* Add self-loop if the effect might not trigger. If the effect
-                   is only conditioned on variable var add the transition,
-                   but not the loop. */
-                if (!eff_cond.empty() && !(eff_cond.size() == 1 && eff_cond[0].var == var)) {
+                   is only conditioned on variable var, add the transition,
+                   but not the loop. Do not add the same transition twice. */
+                if (!eff_cond.empty() &&
+                    !(eff_cond.size() == 1 && eff_cond[0].var == var) &&
+                    value != post_value) {
                     AbstractTransition loop(value, value);
                     abs->transitions_by_op[op_no].push_back(loop);
                 }
