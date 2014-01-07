@@ -72,7 +72,7 @@ class Abstraction {
     int max_g;
     int max_h;
 
-    bool are_labels_reduced;
+    bool normalized;
 
     mutable int peak_memory;
 
@@ -120,12 +120,16 @@ public:
     bool is_in_varset(int var) const;
 
     void compute_distances();
+    bool is_normalized() const;
     void normalize();
-	EquivalenceRelation compute_local_equivalence_relation() const;
-    EquivalenceRelation compute_local_equivalence_relation2() const;
+    EquivalenceRelation compute_local_equivalence_relation(/*std::vector<std::pair<int, int> > &labeled_label_nos*/) const;
+    EquivalenceRelation compute_local_equivalence_relation2(/*std::vector<std::pair<int, int> > &labeled_label_nos*/) const;
     void release_memory();
 
-    void dump_transitions_sizes() const;
+    // For debugging purposes. sorted_unique() is currently to determine whether
+    // an abstraction is normalized or not after construction (composite abstraction)
+    // and shrinking (apply_abstraction)
+    bool sorted_unique() const;
     void dump() const;
 
     // The following methods exist for the benefit of shrink strategies.
@@ -147,15 +151,11 @@ public:
 
     // This method should be private but is public for shrink_bisimulation
     int get_label_cost_by_index(int label_no) const;
-    // This method should be protected but is public for shrink_bisimulation
-    bool transitions_consistent() const;
-    // TODO: currently, is_label_reduced is also used by MergeAndShrinkHeuristic
-    bool is_label_reduced() const;
     // The following methods are shrink_bisimulation-exclusive
     int get_num_labels() const;
     const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const;
 
-    // The following two getters serve LabelReducer
+    // The following two getters serve the m&s heuristic for label reduction
     const std::vector<const Label *> &get_relevant_labels() const {
         return relevant_labels;
     }
