@@ -294,7 +294,7 @@ int CegarHeuristic::compute_heuristic(const State &state) {
     return sum_h;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states", "maximum number of abstract states", "infinity");
     parser.add_option<int>("max_time", "maximum time in seconds for building the abstraction", "900");
     vector<string> pick_strategies;
@@ -347,5 +347,5 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new CegarHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("cegar", _parse);
+static Plugin<Heuristic> _plugin("cegar", _parse);
 }
