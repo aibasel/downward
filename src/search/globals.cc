@@ -334,7 +334,7 @@ int get_first_cond_effects_op_id() {
 }
 
 bool has_cond_effects() {
-    return get_first_cond_effects_op_id() == -1;
+    return get_first_cond_effects_op_id() != -1;
 }
 
 void verify_no_cond_effects() {
