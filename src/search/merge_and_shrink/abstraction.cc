@@ -478,8 +478,15 @@ void Abstraction::build_atomic_abstractions(
             int var = pre_post[i].var;
             int pre_value = pre_post[i].pre;
             int post_value = pre_post[i].post;
+            const vector<Prevail> &eff_cond = pre_post[i].cond;
             Abstraction *abs = result[var];
             int pre_value_min, pre_value_max;
+            if (pre_value == -1) {
+                for (int j = 0; j < eff_cond.size(); ++j) {
+                    if (eff_cond[j].var == var)
+                        pre_value = eff_cond[j].prev;
+                }
+            }
             if (pre_value == -1) {
                 pre_value_min = 0;
                 pre_value_max = g_variable_domain[var];
@@ -490,7 +497,7 @@ void Abstraction::build_atomic_abstractions(
             for (int value = pre_value_min; value < pre_value_max; value++) {
                 AbstractTransition trans(value, post_value);
                 abs->transitions_by_op[op_no].push_back(trans);
-                if (!pre_post[i].cond.empty()) {
+                if (!eff_cond.empty()) {
                     AbstractTransition loop(value, value);
                     abs->transitions_by_op[op_no].push_back(loop);
                 }
