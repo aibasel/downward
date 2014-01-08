@@ -360,7 +360,6 @@ void Task::setup_hadd() const {
     dump_name();
     Options opts;
     opts.set<int>("cost_type", 0);
-    opts.set<int>("memory_padding", 75);
     additive_heuristic = new AdditiveHeuristic(opts);
     assert(state_registry);
     const State &initial_state = state_registry->get_initial_state();
