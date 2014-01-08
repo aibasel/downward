@@ -233,6 +233,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
+    verify_no_axioms_no_cond_effects();
     cout << "Peak memory before initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
     Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
