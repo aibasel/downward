@@ -16,8 +16,6 @@ namespace cegar_heuristic {
 class Abstraction;
 class Task;
 
-const int DEFAULT_STATES_OFFLINE = 10000;
-
 enum GoalOrder {
     ORIGINAL,
     MIXED,

@@ -37,12 +37,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 
     verify_no_axioms_no_cond_effects();
 
-    if (max_states == -1)
-        max_states = INF;
-    // Do not restrict the number of states if a limit has been set.
-    if (max_states == DEFAULT_STATES_OFFLINE && max_time != INF)
-        max_states = INF;
-
     if (DEBUG)
         landmark_graph.dump();
     if (options.get<bool>("write_dot_files"))
