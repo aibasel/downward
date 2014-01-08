@@ -227,6 +227,13 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                      << " - improvement: " << count << endl;
             }
         }
+        const vector<int> &best_pattern = candidate_pdbs[best_pdb_index]->get_pattern();
+        if (improvement >= min_improvement) {
+            // add the best pattern to the CanonicalPDBsHeuristic
+            cout << "found a better pattern with improvement " << improvement << endl;
+            cout << "pattern: " << best_pattern << endl;
+            current_heuristic->add_pattern(best_pattern);
+        }
 
         bool stop_hill_climbing = false;
         if (improvement < min_improvement) {
@@ -253,13 +260,6 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
             break;
         }
-
-        // add the best pattern to the CanonicalPDBsHeuristic
-		assert(improvement >= min_improvement);
-        const vector<int> &best_pattern = candidate_pdbs[best_pdb_index]->get_pattern();
-        cout << "found a better pattern with improvement " << improvement << endl;
-        cout << "pattern: " << best_pattern << endl;
-        current_heuristic->add_pattern(best_pattern);
 
         // clear current new_candidates and get successors for next iteration
         new_candidates.clear();
