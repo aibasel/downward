@@ -23,7 +23,7 @@ class PatternGenerationHaslum {
 
     /* For the given pattern, all possible extensions of the pattern by one relevant variable
        are inserted into candidate_patterns. This may generate duplicated patterns. */
-    void generate_candidate_patterns(const std::vector<int> &pattern,
+    void generate_candidate_patterns(const PDBHeuristic *pdb,
                                      std::vector<std::vector<int> > &candidate_patterns);
 
     /* Performs num_samples random walks with a lenght (different for each random walk) chosen

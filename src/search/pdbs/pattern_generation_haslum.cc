@@ -29,7 +29,8 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")),
-      cost_type(OperatorCost(opts.get<int>("cost_type"))) {
+      cost_type(OperatorCost(opts.get<int>("cost_type"))),
+      num_rejected(0) {
     Timer timer;
     initialize();
     cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
@@ -38,8 +39,9 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
 PatternGenerationHaslum::~PatternGenerationHaslum() {
 }
 
-void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pattern,
+void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pdb,
                                                           vector<vector<int> > &candidate_patterns) {
+    const vector<int> &pattern = pdb->get_pattern();
     int current_size = current_heuristic->get_size();
     for (size_t i = 0; i < pattern.size(); ++i) {
         // causally relevant variables for current variable from pattern
@@ -158,7 +160,6 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     vector<PDBHeuristic *> candidate_pdbs;
     int num_iterations = 0;
     size_t max_pdb_size = 0;
-    num_rejected = 0;
     while (true) {
         num_iterations += 1;
         cout << "current collection size is " << current_heuristic->get_size() << endl;
@@ -196,11 +197,13 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         // Iterate over all candidates and search for the best improving pattern/pdb
         for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
             PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
-            if (pdb_heuristic == 0) { // candidate pattern is too large
+            if (pdb_heuristic == 0) {
+                // candidate pattern is too large or has already been added to
+                // the canonical heuristic.
                 continue;
             }
             // If a candidate's size added to the current collection's size exceeds the maximum
-            // collection size, then delete the PDB and let the PDB's entry point to a null reference
+            // collection size, then delete the PDB and let the PDB's entry point to a null reference.
             if (current_heuristic->get_size() + pdb_heuristic->get_size() > collection_max_size) {
                 delete pdb_heuristic;
                 candidate_pdbs[i] = 0;
@@ -246,14 +249,15 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         }
 
         // add the best pattern to the CanonicalPDBsHeuristic
-        const vector<int> &best_pattern = candidate_pdbs[best_pdb_index]->get_pattern();
+        const PDBHeuristic *best_pdb = candidate_pdbs[best_pdb_index];
+        const vector<int> &best_pattern = best_pdb->get_pattern();
         cout << "found a better pattern with improvement " << improvement << endl;
         cout << "pattern: " << best_pattern << endl;
         current_heuristic->add_pattern(best_pattern);
 
         // clear current new_candidates and get successors for next iteration
         new_candidates.clear();
-        generate_candidate_patterns(best_pattern, new_candidates);
+        generate_candidate_patterns(best_pdb, new_candidates);
 
         // remove from candidate_pdbs the added PDB
         delete candidate_pdbs[best_pdb_index];
@@ -293,8 +297,8 @@ void PatternGenerationHaslum::initialize() {
     // initial candidate patterns, computed separately for each pattern from the initial collection
     vector<vector<int> > initial_candidate_patterns;
     for (size_t i = 0; i < current_heuristic->get_pattern_databases().size(); ++i) {
-        const vector<int> &current_pattern = current_heuristic->get_pattern_databases()[i]->get_pattern();
-        generate_candidate_patterns(current_pattern, initial_candidate_patterns);
+        const PDBHeuristic *current_pdb = current_heuristic->get_pattern_databases()[i];
+        generate_candidate_patterns(current_pdb, initial_candidate_patterns);
     }
     // remove duplicates in the candidate list
     sort(initial_candidate_patterns.begin(), initial_candidate_patterns.end());
