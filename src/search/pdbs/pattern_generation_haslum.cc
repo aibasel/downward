@@ -190,8 +190,11 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
 
         // TODO: The original implementation by Haslum et al. uses astar to compute h values for
         // the sample states only instead of generating all PDBs.
-        int improvement = 0; // best improvement (= hightest count) for a pattern so far
-        int best_pdb_index = 0;
+        // improvement: best improvement (= hightest count) for a pattern so far.
+        // We require that a pattern must have an improvement of at least one in
+        // order to be taken into account.
+        int improvement = 0;
+        int best_pdb_index = -1;
 
         // Iterate over all candidates and search for the best improving pattern/pdb
         for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
@@ -246,6 +249,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         }
 
         // add the best pattern to the CanonicalPDBsHeuristic
+        assert(best_pdb_index != -1);
         const vector<int> &best_pattern = candidate_pdbs[best_pdb_index]->get_pattern();
         cout << "found a better pattern with improvement " << improvement << endl;
         cout << "pattern: " << best_pattern << endl;
@@ -303,6 +307,13 @@ void PatternGenerationHaslum::initialize() {
                                      initial_candidate_patterns.end());
     cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
 
+    if (initial_candidate_patterns.empty()) {
+        cout << "no candidate patterns found which respect the given pdb max size" << endl;
+        cout << "ending pattern generation haslum now, returning canonical heuristic "
+                "function consisting of only the goal-patterns" << endl;
+        return;
+    }
+
     // call to this method modifies initial_candidate_patterns (contains the new_candidates
     // after each call to generate_candidate_patterns)
     hill_climbing(average_operator_cost, initial_candidate_patterns);
@@ -313,6 +324,13 @@ static Heuristic *_parse(OptionParser &parser) {
         "iPDB",
         "the pattern selection procedure by Haslum et al. (AAAI 2007); "
         "see also Sievers et al. (SoCS 2012) for implementation notes");
+    parser.document_note(
+        "Note",
+        "the algorithm will always build a canonical heuristic function, "
+        "consisting of at least all goal-patterns, no matter how small the "
+        "values chosen for pdb_max_size or collection_max_size may be. "
+        "This is done assuming that the goal-patterns will always fit into "
+        "memory.");
     parser.add_option<int>("pdb_max_size",
                            "max number of states per pdb", "2000000");
     parser.add_option<int>("collection_max_size",
