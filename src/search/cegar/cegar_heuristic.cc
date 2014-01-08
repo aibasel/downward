@@ -35,6 +35,8 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     DEBUG = opts.get<bool>("debug");
     assert(max_time >= 0);
 
+    verify_no_axioms_no_cond_effects();
+
     if (max_states == -1)
         max_states = INF;
     // Do not restrict the number of states if a limit has been set.
@@ -233,7 +235,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
-    verify_no_axioms_no_cond_effects();
     cout << "Peak memory before initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
     Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
