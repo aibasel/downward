@@ -34,7 +34,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     void dump_options() const;
     void warn_on_unusual_options() const;
     EquivalenceRelation *compute_outside_equivalence(const Abstraction *abstraction,
-                                                    const std::vector<Abstraction *> &all_abstractions) const;
+                                                     const std::vector<Abstraction *> &all_abstractions) const;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);

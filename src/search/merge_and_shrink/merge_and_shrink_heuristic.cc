@@ -82,7 +82,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
 }
 
 EquivalenceRelation *MergeAndShrinkHeuristic::compute_outside_equivalence(const Abstraction *abstraction,
-                                                                         const vector<Abstraction *> &all_abstractions) const {
+                                                                          const vector<Abstraction *> &all_abstractions) const {
     /*Returns an equivalence relation over labels s.t. l ~ l'
     iff l and l' are locally equivalent in all transition systems
     T' \neq T. (They may or may not be locally equivalent in T.)
