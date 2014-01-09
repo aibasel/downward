@@ -20,7 +20,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      use_label_reduction(opts.get<bool>("reduce_labels")),
+      exact_label_reduction(opts.get<bool>("exact_label_reduction")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
 }
 
@@ -60,7 +60,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
     cout << endl;
     shrink_strategy->dump_options();
     cout << "Label reduction: "
-         << (use_label_reduction ? "enabled" : "disabled") << endl
+         << (exact_label_reduction ? "exact" : "approximative") << endl
          << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
@@ -81,7 +81,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-EquivalenceRelation MergeAndShrinkHeuristic::compute_outside_equivalence(const Abstraction *abstraction,
+EquivalenceRelation *MergeAndShrinkHeuristic::compute_outside_equivalence(const Abstraction *abstraction,
                                                                          const vector<Abstraction *> &all_abstractions) const {
     /*Returns an equivalence relation over labels s.t. l ~ l'
     iff l and l' are locally equivalent in all transition systems
@@ -99,7 +99,7 @@ EquivalenceRelation MergeAndShrinkHeuristic::compute_outside_equivalence(const A
         labeled_label_nos.push_back(make_pair(0, label_no));
     }
     // start with the relation where all labels are equivalent
-    EquivalenceRelation relation = EquivalenceRelation::from_labels<int>(num_labels, labeled_label_nos);
+    EquivalenceRelation *relation = EquivalenceRelation::from_labels<int>(num_labels, labeled_label_nos);
     for (size_t i = 0; i < all_abstractions.size(); ++i) {
         if (!all_abstractions[i]) {
             continue;
@@ -113,8 +113,8 @@ EquivalenceRelation MergeAndShrinkHeuristic::compute_outside_equivalence(const A
                 cout << "need to normalize" << endl;
                 abs->normalize();
             }
-            EquivalenceRelation next_relation = abs->compute_local_equivalence_relation();
-            relation.refine(next_relation);
+            EquivalenceRelation *next_relation = abs->compute_local_equivalence_relation();
+            relation->refine(*next_relation);
         }
     }
     return relation;
@@ -158,9 +158,16 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         // to normalize multiple parts of a composite. See issue68.
         // Note: do not reduce labels several times for the same abstraction!
         bool reduced_labels = false;
-        EquivalenceRelation relation = compute_outside_equivalence(abstraction, all_abstractions);
+        EquivalenceRelation *relation = 0;
+        if (exact_label_reduction) {
+            relation = compute_outside_equivalence(abstraction, all_abstractions);
+        }
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            labels->reduce_labels(abstraction->get_relevant_labels(), abstraction->get_varset(), &relation);
+            if (exact_label_reduction) {
+                labels->reduce_exactly(relation);
+            } else {
+                labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
+            }
             reduced_labels = true;
             abstraction->normalize();
             assert(abstraction->sorted_unique());
@@ -187,7 +194,11 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         other_abstraction->statistics(use_expensive_statistics);
 
         if (!reduced_labels) {
-            labels->reduce_labels(abstraction->get_relevant_labels(), abstraction->get_varset(), &relation);
+            if (exact_label_reduction) {
+                labels->reduce_exactly(relation);
+            } else {
+                labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
+            }
         }
         abstraction->normalize();
         assert(abstraction->sorted_unique());
@@ -322,9 +333,7 @@ static Heuristic *_parse(OptionParser &parser) {
                   "the heuristic in the paper."));
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
-    // TODO: Rename option name to "use_label_reduction" to be
-    //       consistent with the papers?
-    parser.add_option<bool>("reduce_labels", "enable label reduction", "true");
+    parser.add_option<bool>("exact_label_reduction", "use exact label reduction", "false");
     parser.add_option<bool>("expensive_statistics", "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)", "false");
     Heuristic::add_options_to_parser(parser);

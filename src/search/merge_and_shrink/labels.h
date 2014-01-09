@@ -20,9 +20,9 @@ public:
     // abs_vars is the set of variables of the considered abstraction. The
     // variables in it will *not* be used when checking for local equivalence
     // of labels in relevant_labels
-    void reduce_labels(const std::vector<const Label *> &relevant_labels,
-                       const std::vector<int> &abs_vars,
-                       const EquivalenceRelation *relation);
+    void reduce_approximatively(const std::vector<const Label *> &relevant_labels,
+                                const std::vector<int> &abs_vars);
+    void reduce_exactly(const EquivalenceRelation *relation);
     int get_reduced_label_no(int label_no) const;
     const Label *get_label_by_index(int index) const;
     bool is_label_reduced(int label_no) const;

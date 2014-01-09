@@ -24,7 +24,7 @@ enum MergeStrategy {
 class MergeAndShrinkHeuristic : public Heuristic {
     const MergeStrategy merge_strategy;
     ShrinkStrategy *const shrink_strategy;
-    const bool use_label_reduction;
+    const bool exact_label_reduction;
     const bool use_expensive_statistics;
     Labels *labels;
 
@@ -33,7 +33,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
 
     void dump_options() const;
     void warn_on_unusual_options() const;
-    EquivalenceRelation compute_outside_equivalence(const Abstraction *abstraction,
+    EquivalenceRelation *compute_outside_equivalence(const Abstraction *abstraction,
                                                     const std::vector<Abstraction *> &all_abstractions) const;
 protected:
     virtual void initialize();
