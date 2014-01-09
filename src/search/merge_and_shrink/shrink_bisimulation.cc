@@ -229,8 +229,6 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(infinity, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    assert(abs.is_normalized());
-    assert(abs.sorted_unique());
     int num_labels = abs.get_num_labels();
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         const vector<AbstractTransition> &transitions =

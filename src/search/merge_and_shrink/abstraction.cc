@@ -216,8 +216,9 @@ int Abstraction::get_num_labels() const {
 
 const vector<AbstractTransition> &Abstraction::get_transitions_for_label(int label_no) const {
     // we do *not* return the transitions for the mapped label because shrink_bisimulation
-    // iterates over all labels anyway, otherwise transitions for some labels could be
-    // dealt with several times when iterating over all labels.
+    // iterates over all labels anyway. if the abstraction is not normalized, then we
+    // need to do so anyway, if it is, it doesn't hurt to return the then empty
+    // transitions of mapped labels.
     return transitions_by_label[label_no];
 }
 
