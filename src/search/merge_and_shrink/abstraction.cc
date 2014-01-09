@@ -456,7 +456,7 @@ void Abstraction::normalize() {
     normalized = true;
 }
 
-EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
+EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
     assert(is_normalized());
     assert(sorted_unique());
     vector<bool> considered_labels(num_labels, false);

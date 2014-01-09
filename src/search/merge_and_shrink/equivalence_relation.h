@@ -108,37 +108,37 @@ public:
     //      Also, default parameters are not allowed for function templates in
     //      the current c++ standard.
     template<class T>
-    static EquivalenceRelation from_labels(int n,
+    static EquivalenceRelation *from_labels(int n,
                                            std::vector<std::pair<T, int> > &labeled_elements);
     template<class T, class Equal>
-    static EquivalenceRelation from_labels(int n,
+    static EquivalenceRelation *from_labels(int n,
                                            std::vector<std::pair<T, int> > &labeled_elements);
 };
 
 template<class T>
-EquivalenceRelation EquivalenceRelation::from_labels(int n,
+EquivalenceRelation *EquivalenceRelation::from_labels(int n,
     std::vector<std::pair<T, int> > &labeled_elements) {
     return EquivalenceRelation::from_labels<T, std::equal_to<T> >(n, labeled_elements);
 }
 
 template<class T, class Equal>
-EquivalenceRelation EquivalenceRelation::from_labels(int n,
+EquivalenceRelation *EquivalenceRelation::from_labels(int n,
     std::vector<std::pair<T, int> > &labeled_elements) {
-    EquivalenceRelation relation(n);
+    EquivalenceRelation *relation = new EquivalenceRelation(n);
     if (!labeled_elements.empty()) {
         sort(labeled_elements.begin(), labeled_elements.end());
         Equal equal;
         T current_class_label = labeled_elements[0].first;
-        BlockListIter it_current_block = relation.add_empty_block();
+        BlockListIter it_current_block = relation->add_empty_block();
         for (size_t i = 0; i < labeled_elements.size(); ++i) {
             T label = labeled_elements[i].first;
             int element = labeled_elements[i].second;
             if (!equal(label, current_class_label)) {
                 current_class_label = label;
-                it_current_block = relation.add_empty_block();
+                it_current_block = relation->add_empty_block();
             }
             ElementListIter it_element = it_current_block->insert(element);
-            relation.element_positions[element] = make_pair(it_current_block, it_element);
+            relation->element_positions[element] = make_pair(it_current_block, it_element);
         }
     }
     return relation;

@@ -122,7 +122,7 @@ public:
     void compute_distances();
     bool is_normalized() const;
     void normalize();
-    EquivalenceRelation compute_local_equivalence_relation() const;
+    EquivalenceRelation *compute_local_equivalence_relation() const;
     void release_memory();
 
     // For debugging purposes. sorted_unique() is currently to determine whether
