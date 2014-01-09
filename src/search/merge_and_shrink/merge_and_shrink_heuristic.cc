@@ -83,26 +83,32 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
 
 EquivalenceRelation MergeAndShrinkHeuristic::compute_outside_equivalence(const Abstraction *abstraction,
                                                                          const vector<Abstraction *> &all_abstractions) const {
-    /*Returns an equivalence relation over operators s.t. o ~ o'
-    iff o and o' are locally equivalent in all transition systems
-    T' \neq T. (They may or may not be locally equivalent in T.) */
+    /*Returns an equivalence relation over labels s.t. l ~ l'
+    iff l and l' are locally equivalent in all transition systems
+    T' \neq T. (They may or may not be locally equivalent in T.)
+    Here: T = abstraction. */
     cout << "compute outside equivalence for " << abstraction->tag() << endl;
 
+    int num_labels = labels->get_size();
     vector<pair<int, int> > labeled_label_nos;
-    labeled_label_nos.reserve(labels->get_size());
-    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
+    labeled_label_nos.reserve(num_labels);
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
+        if (labels->is_label_reduced(label_no)) {
+            continue;
+        }
         labeled_label_nos.push_back(make_pair(0, label_no));
     }
     // start with the relation where all labels are equivalent
-    EquivalenceRelation relation = EquivalenceRelation::from_labels<int>(labeled_label_nos.size(), labeled_label_nos);
+    EquivalenceRelation relation = EquivalenceRelation::from_labels<int>(num_labels, labeled_label_nos);
     for (size_t i = 0; i < all_abstractions.size(); ++i) {
-        if (!all_abstractions[i])
+        if (!all_abstractions[i]) {
             continue;
+        }
         Abstraction *abs = all_abstractions[i];
         if (abs != abstraction) {
             cout << "computing local equivalence for " << abs->tag() << endl;
             if (!abs->is_normalized()) {
-                // TODO: get rid of this, as normalize itself checks wheter
+                // TODO: get rid of this, as normalize itself checks whether
                 // the abstraction is already normalized or not?
                 cout << "need to normalize" << endl;
                 abs->normalize();
@@ -122,6 +128,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     vector<Abstraction *> atomic_abstractions;
     Abstraction::build_atomic_abstractions(
         is_unit_cost_problem(), atomic_abstractions, labels);
+    // vector of all abstractions. entries with 0 have been merged.
     vector<Abstraction *> all_abstractions(atomic_abstractions);
 
     cout << "Shrinking atomic abstractions..." << endl;
