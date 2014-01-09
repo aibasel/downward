@@ -102,58 +102,12 @@ EquivalenceRelation MergeAndShrinkHeuristic::compute_outside_equivalence(const A
         if (abs != abstraction) {
             cout << "computing local equivalence for " << abs->tag() << endl;
             if (!abs->is_normalized()) {
+                // TODO: get rid of this, as normalize itself checks wheter
+                // the abstraction is already normalized or not?
                 cout << "need to normalize" << endl;
                 abs->normalize();
             }
-            assert(abs->is_normalized());
-            assert(abs->sorted_unique());
-            //vector<pair<int, int> > labeled_label_nos;
-            EquivalenceRelation next_relation = abs->compute_local_equivalence_relation(/*labeled_label_nos*/);
-            //vector<pair<int, int> > labeled_label_nos2;
-            EquivalenceRelation next_relation2 = abs->compute_local_equivalence_relation2(/*labeled_label_nos2*/);
-            //assert(labeled_label_nos == labeled_label_nos2);
-            assert(next_relation.get_num_elements() == next_relation2.get_num_elements());
-            assert(next_relation.get_num_blocks() == next_relation2.get_num_blocks());
-            for (BlockListConstIter it = next_relation.begin(); it != next_relation.end(); ++it) {
-                const Block &block = *it;
-                ElementListConstIter jt = block.begin();
-                if (!block.empty()) {
-                    int label = *jt;
-                    if (labels->is_label_reduced(label)) {
-                        // ignore already reduced labels
-                        continue;
-                    }
-                    // find label and its block in next_relation2
-                    const Block *block_of_label_in_next_relation2 = 0;
-                    for (BlockListConstIter it2 = next_relation2.begin(); it2 != next_relation2.end(); ++it2) {
-                        const Block &block2 = *it2;
-                        for (ElementListConstIter jt2 = block2.begin(); jt2 != block2.end(); ++jt2) {
-                            int label2 = *jt2;
-                            if (labels->is_label_reduced(label2)) {
-                                // ignore already reduced labels
-                                continue;
-                            }
-                            if (label2 == label) {
-                                block_of_label_in_next_relation2 = &block2;
-                                break;
-                            }
-                        }
-                    }
-                    assert(block_of_label_in_next_relation2);
-                    for (ElementListConstIter block1it = block.begin(); block1it != block.end(); ++block1it) {
-                        int label_no = *block1it;
-                        bool found_label = false;
-                        for (ElementListConstIter block2it = block_of_label_in_next_relation2->begin();
-                             block2it != block_of_label_in_next_relation2->end(); ++block2it) {
-                            if (label_no == *block2it) {
-                                found_label = true;
-                                break;
-                            }
-                        }
-                        assert(found_label);
-                    }
-                }
-            }
+            EquivalenceRelation next_relation = abs->compute_local_equivalence_relation();
             relation.refine(next_relation);
         }
     }
@@ -195,7 +149,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
         // TODO: When using nonlinear merge strategies, make sure not
         // to normalize multiple parts of a composite. See issue68.
-        // TODO: do not reduce labels several times for the same abstraction!
+        // Note: do not reduce labels several times for the same abstraction!
         bool reduced_labels = false;
         EquivalenceRelation relation = compute_outside_equivalence(abstraction, all_abstractions);
         if (shrink_strategy->reduce_labels_before_shrinking()) {

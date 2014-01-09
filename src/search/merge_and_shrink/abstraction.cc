@@ -456,93 +456,7 @@ void Abstraction::normalize() {
     normalized = true;
 }
 
-struct TransitionSignature {
-    // TODO: duplicated code from LabelReducer
-    vector<int> data;
-
-    TransitionSignature(const vector<pair<int, int> > &transitions, int cost) {
-        // transitions must be sorted.
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            //cout << transitions[i].first << "->" << transitions[i].second << endl;
-            if (i != 0) {
-                assert(transitions[i].first >= transitions[i - 1].first);
-                if (transitions[i].first == transitions[i - 1].first) {
-                    assert(transitions[i].second > transitions[i - 1].second);
-                }
-            }
-            data.push_back(transitions[i].first);
-            data.push_back(transitions[i].second);
-        }
-        data.push_back(-1); // marker
-        data.push_back(cost);
-    }
-
-    bool operator==(const TransitionSignature &other) const {
-        return data == other.data;
-    }
-
-    size_t hash() const {
-        return ::hash_number_sequence(data, data.size());
-    }
-};
-
-namespace __gnu_cxx {
-template<>
-struct hash<TransitionSignature> {
-    size_t operator()(const TransitionSignature &sig) const {
-        return sig.hash();
-    }
-};
-}
-
-EquivalenceRelation Abstraction::compute_local_equivalence_relation(/*vector<pair<int, int> > &labeled_label_nos*/) const {
-    // We require the abstraction to be normalized and label reduced, because
-    // when iterating over labels whose transitions have not been normalized
-    // (i.e. not been "moved" to the right index and merged with the transitions
-    // from all other labels of the same equivalence class), we risk considering
-    // the same transitions several times.
-    assert(is_normalized());
-    assert(sorted_unique());
-    // groups the labels by the (uniquely ordered) set of transitions they
-    // induce in the abstraction
-    hash_map<TransitionSignature, vector<int> > labels_by_transitions;
-    // collects all transition signatures occuring in the abstraction
-    vector<TransitionSignature> transition_signatures;
-    for (size_t label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_label_reduced(label_no)) {
-            continue;
-        }
-        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        vector<pair<int, int> > sorted_trans;
-        sorted_trans.reserve(transitions.size());
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const AbstractTransition &trans = transitions[j];
-            sorted_trans.push_back(make_pair(trans.src, trans.target));
-        }
-        ::sort(sorted_trans.begin(), sorted_trans.end());
-        TransitionSignature signature(sorted_trans, labels->get_label_by_index(label_no)->get_cost());
-        if (!labels_by_transitions.count(signature)) {
-            transition_signatures.push_back(signature);
-        }
-        labels_by_transitions[signature].push_back(label_no);
-    }
-    vector<pair<int, int> > labeled_label_nos;
-    for (size_t i = 0; i < transition_signatures.size(); ++i) {
-        const TransitionSignature &signature = transition_signatures[i];
-        const vector<int> &label_nos = labels_by_transitions[signature];
-        for (size_t j = 0; j < label_nos.size(); ++j) {
-            int label_no = label_nos[j];
-            labeled_label_nos.push_back(make_pair(i, label_no));
-        }
-    }
-    // Note: all labels not mentioned in labeled_label_nos are such labels that
-    // have been mapped to new ones. They will be implicitly contained in the
-    // equivalence relation and should be ignored when using it for label
-    // reduction.
-    return EquivalenceRelation::from_labels<int>(labels->get_size(), labeled_label_nos);
-}
-
-EquivalenceRelation Abstraction::compute_local_equivalence_relation2(/*vector<pair<int, int> > &labeled_label_nos*/) const {
+EquivalenceRelation Abstraction::compute_local_equivalence_relation() const {
     assert(is_normalized());
     assert(sorted_unique());
     vector<bool> considered_labels(num_labels, false);
@@ -559,9 +473,6 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation2(/*vector<pa
         int label_cost = labels->get_label_by_index(label_no)->get_cost();
         labeled_label_nos.push_back(make_pair(group_number, label_no));
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        //if (transitions.empty()) {
-        //    continue;
-        //}
         for (size_t other_label_no = label_no + 1; other_label_no < num_labels; ++other_label_no) {
             if (labels->is_label_reduced(other_label_no)) {
                 // do not consider non-leaf labels
@@ -574,14 +485,8 @@ EquivalenceRelation Abstraction::compute_local_equivalence_relation2(/*vector<pa
                 continue;
             }
             const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
-            //if (other_transitions.empty()) {
-            //    continue;
-            //}
             if ((transitions.empty() && other_transitions.empty())
                 || (transitions == other_transitions)) {
-                //for (size_t i = 0; i < transitions.size(); ++i) {
-                //    assert(transitions[i] == other_transitions[i]);
-                //}
                 considered_labels[other_label_no] = true;
                 labeled_label_nos.push_back(make_pair(group_number, other_label_no));
             }
@@ -1071,10 +976,11 @@ void Abstraction::dump() const {
         if (is_init)
             cout << "    start -> node" << i << ";" << endl;
     }
-    // TODO: assertion invalidated by new Label Class
-    //assert(transitions_by_label.size() == g_operators.size());
-    // TODO: consider  mapped labels. use num_labels
-    for (int label_no = 0; label_no < transitions_by_label.size(); label_no++) {
+    assert(is_normalized());
+    for (int label_no = 0; label_no < num_labels; label_no++) {
+        if (labels->is_label_reduced(label_no)) {
+            continue;
+        }
         const vector<AbstractTransition> &trans = transitions_by_label[label_no];
         for (int i = 0; i < trans.size(); i++) {
             int src = trans[i].src;
