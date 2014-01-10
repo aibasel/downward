@@ -101,21 +101,19 @@ EquivalenceRelation *MergeAndShrinkHeuristic::compute_outside_equivalence(const 
     // start with the relation where all labels are equivalent
     EquivalenceRelation *relation = EquivalenceRelation::from_labels<int>(num_labels, labeled_label_nos);
     for (size_t i = 0; i < all_abstractions.size(); ++i) {
-        if (!all_abstractions[i]) {
+        Abstraction *abs = all_abstractions[i];
+        if (!abs || abs == abstraction) {
             continue;
         }
-        Abstraction *abs = all_abstractions[i];
-        if (abs != abstraction) {
-            cout << "computing local equivalence for " << abs->tag() << endl;
-            if (!abs->is_normalized()) {
-                // TODO: get rid of this, as normalize itself checks whether
-                // the abstraction is already normalized or not?
-                cout << "need to normalize" << endl;
-                abs->normalize();
-            }
-            EquivalenceRelation *next_relation = abs->compute_local_equivalence_relation();
-            relation->refine(*next_relation);
+        cout << "computing local equivalence for " << abs->tag() << endl;
+        if (!abs->is_normalized()) {
+            // TODO: get rid of this, as normalize itself checks whether
+            // the abstraction is already normalized or not?
+            cout << "need to normalize" << endl;
+            abs->normalize();
         }
+        EquivalenceRelation *next_relation = abs->compute_local_equivalence_relation();
+        relation->refine(*next_relation);
     }
     return relation;
 }
@@ -164,7 +162,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         }
         if (shrink_strategy->reduce_labels_before_shrinking()) {
             if (exact_label_reduction) {
-                labels->reduce_exactly(relation);
+                labels->reduce_exactly(abstraction->get_relevant_labels(), relation);
             } else {
                 labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
             }
@@ -195,7 +193,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
         if (!reduced_labels) {
             if (exact_label_reduction) {
-                labels->reduce_exactly(relation);
+                labels->reduce_exactly(abstraction->get_relevant_labels(), relation);
             } else {
                 labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
             }

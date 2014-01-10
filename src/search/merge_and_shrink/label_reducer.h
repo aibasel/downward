@@ -30,7 +30,8 @@ public:
     void statistics() const;
 
     // exact label reduction
-    LabelReducer(const EquivalenceRelation *relation,
+    LabelReducer(const std::vector<const Label *> &relevant_labels,
+                 const EquivalenceRelation *relation,
                  std::vector<const Label* > &labels);
     void statistics2() const;
 };

@@ -24,8 +24,9 @@ void Labels::reduce_approximatively(const std::vector<const Label *> &relevant_l
     label_reducer.statistics();
 }
 
-void Labels::reduce_exactly(const EquivalenceRelation *relation) {
-    LabelReducer label_reducer(relation, labels);
+void Labels::reduce_exactly(const vector<const Label *> &relevant_labels,
+                            const EquivalenceRelation *relation) {
+    LabelReducer label_reducer(relevant_labels, relation, labels);
     label_reducer.statistics2();
 }
 

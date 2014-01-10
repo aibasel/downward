@@ -22,7 +22,8 @@ public:
     // of labels in relevant_labels
     void reduce_approximatively(const std::vector<const Label *> &relevant_labels,
                                 const std::vector<int> &abs_vars);
-    void reduce_exactly(const EquivalenceRelation *relation);
+    void reduce_exactly(const std::vector<const Label *> &relevant_labels,
+                        const EquivalenceRelation *relation);
     int get_reduced_label_no(int label_no) const;
     const Label *get_label_by_index(int index) const;
     bool is_label_reduced(int label_no) const;
