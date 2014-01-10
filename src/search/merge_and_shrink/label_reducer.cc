@@ -60,8 +60,9 @@ struct hash<LabelSignature> {
 
 LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
     const vector<int> &abs_vars, std::vector<const Label *> &labels) {
+    cout << relevant_labels.size() << endl;
     num_pruned_vars = abs_vars.size();
-    num_labels = relevant_labels.size();
+    num_labels = 0;//relevant_labels.size();
     num_reduced_labels = 0;
 
     vector<bool> var_is_used(g_variable_domain.size(), true);
@@ -79,11 +80,16 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
     hash_map<LabelSignature, bool> is_label_reduced;
     vector<LabelSignature> reduced_label_signatures;
 
-    for (size_t i = 0; i < relevant_labels.size(); ++i) {
-        const Label *label = relevant_labels[i];
+    for (size_t i = 0; i < labels.size(); ++i) {
+        const Label *label = labels[i];
+        if (label->get_reduced_label() != label) {
+            // ignore already reduced labels
+            continue;
+        }
+        ++num_labels;
         // require that the considered abstraction's relevant labels are reduced
         // to make sure that we cannot reduce the same label several times.
-        assert(label->get_reduced_label() == label);
+        //assert(label->get_reduced_label() == label);
         LabelSignature signature = build_label_signature(
             *label, var_is_used);
 
@@ -145,7 +151,7 @@ LabelSignature LabelReducer::build_label_signature(
 
 void LabelReducer::statistics() const {
     cout << "Label reduction: "
-         << num_pruned_vars << " pruned vars, "
+         //<< num_pruned_vars << " pruned vars, "
          << num_labels << " labels, "
          << num_reduced_labels << " reduced labels"
          << endl;
@@ -154,6 +160,7 @@ void LabelReducer::statistics() const {
 LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
                            const EquivalenceRelation *relation,
                            vector<const Label *> &labels) {
+    cout << relevant_labels.size() << endl;
     num_pruned_vars = -1;
     num_labels = 0;
     num_reduced_labels = 0;
@@ -167,13 +174,13 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
                 // ignore already reduced labels
                 continue;
             }
-            for (size_t i = 0; i < relevant_labels.size(); ++i) {
-                if (label == relevant_labels[i]) {
+            //for (size_t i = 0; i < relevant_labels.size(); ++i) {
+            //    if (label == relevant_labels[i]) {
                     equivalent_labels.push_back(label);
                     ++num_labels;
-                    break;
-                }
-            }
+            //        break;
+            //    }
+            //}
         }
         if (equivalent_labels.size() > 1) {
             const Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
