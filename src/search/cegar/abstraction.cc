@@ -411,7 +411,10 @@ void Abstraction::restrict_splits(State &conc_state, Splits &splits) const {
             for (int j = 0; j < values.size(); ++j) {
                 int value = values[j];
                 int hadd_value = hadd.get_cost(var, value);
-                assert(hadd_value != -1);
+                if (hadd_value == -1 && pick == MIN_HADD_DYN) {
+                    // Fact is unreachable --> Choose it last.
+                    hadd_value = INF - 1;
+                }
                 if (pick == MIN_HADD_DYN) {
                     if (hadd_value < min_hadd) {
                         incumbents.clear();
@@ -502,10 +505,9 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             for (int j = 0; j < values.size(); ++j) {
                 int value = values[j];
                 int hadd_value = task->get_hadd_value(var, value);
-                if (hadd_value == -1) {
+                if (hadd_value == -1 && pick == MIN_HADD) {
                     // Fact is unreachable --> Choose it last.
-                    if (pick == MIN_HADD)
-                        hadd_value = INF - 1;
+                    hadd_value = INF - 1;
                 }
                 if (pick == MIN_HADD && hadd_value < min_hadd) {
                     cond = i;
