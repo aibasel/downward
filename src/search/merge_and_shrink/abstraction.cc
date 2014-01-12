@@ -393,10 +393,6 @@ void Abstraction::normalize() {
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
 
-    // TODO: come up with a good way of updating relevant_labels here
-    vector<const Label*>().swap(relevant_labels);
-    hash_set<int> relevant_labels_;
-
     /* First, partition by target state. Possibly replace labels by
        their new label which they are mapped to via label reduction and clear
        away the transitions that have been processed. */
@@ -405,7 +401,6 @@ void Abstraction::normalize() {
         vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         if (!transitions.empty()) {
             int reduced_label_no = labels->get_reduced_label_no(label_no);
-            relevant_labels_.insert(reduced_label_no);
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &t = transitions[i];
                 target_buckets[t.target].push_back(
@@ -413,15 +408,6 @@ void Abstraction::normalize() {
             }
             vector<AbstractTransition> ().swap(transitions);
         }
-    }
-    vector<int> rel_lab;
-    for (hash_set<int>::iterator it = relevant_labels_.begin();
-         it != relevant_labels_.end(); ++it) {
-        rel_lab.push_back(*it);
-    }
-    ::sort(rel_lab.begin(), rel_lab.end());
-    for (size_t i = 0; i < rel_lab.size(); ++i) {
-        relevant_labels.push_back(labels->get_label_by_index(rel_lab[i]));
     }
 
     // Second, partition by src state.
@@ -448,6 +434,15 @@ void Abstraction::normalize() {
             AbstractTransition trans(src, target);
             if (op_bucket.empty() || op_bucket.back() != trans)
                 op_bucket.push_back(trans);
+        }
+    }
+
+    // Update relevant labels
+    vector<const Label*>().swap(relevant_labels);
+    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
+        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
+        if (!transitions.empty()) {
+            relevant_labels.push_back(labels->get_label_by_index(label_no));
         }
     }
 
@@ -554,6 +549,24 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
         assert(result[i]->is_normalized());
         assert(result[i]->sorted_unique());
     }
+
+    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
+        for (size_t i = 0; i < result.size(); ++i) {
+            Abstraction *abs = result[i];
+            bool relevant = false;
+            for (size_t j = 0; j < abs->relevant_labels.size(); ++j) {
+                const Label *label = abs->relevant_labels[j];
+                if (label->get_id() == label_no) {
+                    relevant = true;
+                    break;
+                }
+            }
+            if (relevant)
+                assert(!abs->transitions_by_label[label_no].empty());
+            else
+                assert(abs->transitions_by_label[label_no].empty());
+        }
+    }
 }
 
 AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, Labels *labels, int variable_)
@@ -622,10 +635,16 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
         }
     }
 
-    for (int i = 0; i < abs1->relevant_labels.size(); i++)
+    // TODO: we do not actually need relevant labels here. we could check for
+    // every label if there are any induced transitions.
+    for (int i = 0; i < abs1->relevant_labels.size(); i++) {
+        assert(!labels->is_label_reduced(abs1->relevant_labels[i]->get_id()));
         abs1->relevant_labels[i]->get_reduced_label()->marker1 = true;
-    for (int i = 0; i < abs2->relevant_labels.size(); i++)
+    }
+    for (int i = 0; i < abs2->relevant_labels.size(); i++) {
+        assert(!labels->is_label_reduced(abs1->relevant_labels[i]->get_id()));
         abs2->relevant_labels[i]->get_reduced_label()->marker2 = true;
+    }
 
     int multiplier = abs2->size();
     for (int label_no = 0; label_no < num_labels; label_no++) {
@@ -639,6 +658,14 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
                 abs1->transitions_by_label[label_no];
             const vector<AbstractTransition> &bucket2 =
                 abs2->transitions_by_label[label_no];
+            if (relevant1)
+                assert(!bucket1.empty());
+            else
+                assert(bucket1.empty());
+            if (relevant2)
+                assert(!bucket2.empty());
+            else
+                assert(bucket2.empty());
             if (relevant1 && relevant2) {
                 transitions.reserve(bucket1.size() * bucket2.size());
                 for (int i = 0; i < bucket1.size(); i++) {
