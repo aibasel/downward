@@ -26,6 +26,7 @@ public:
                         const EquivalenceRelation *relation);
     int get_reduced_label_no(int label_no) const;
     const Label *get_label_by_index(int index) const;
+    // TODO: rename and/or add is_leaf method
     bool is_label_reduced(int label_no) const;
     void dump() const;
 
