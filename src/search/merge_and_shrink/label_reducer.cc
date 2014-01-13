@@ -162,7 +162,7 @@ void LabelReducer::statistics() const {
 LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
                            const EquivalenceRelation *relation,
                            vector<const Label *> &labels) {
-    //cout << relevant_labels.size() << endl;
+    cout << relevant_labels.size() << endl;
     num_pruned_vars = -1;
     num_labels = 0;
     num_reduced_labels = 0;
@@ -176,13 +176,13 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
                 // ignore already reduced labels
                 continue;
             }
-            for (size_t i = 0; i < relevant_labels.size(); ++i) {
-                if (label == relevant_labels[i]) {
+            //for (size_t i = 0; i < relevant_labels.size(); ++i) {
+            //    if (label == relevant_labels[i]) {
                     equivalent_labels.push_back(label);
                     ++num_labels;
-                    break;
-                }
-            }
+            //        break;
+            //    }
+            //}
         }
         if (equivalent_labels.size() > 1) {
             const Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
