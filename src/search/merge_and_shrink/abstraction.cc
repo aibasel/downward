@@ -642,7 +642,7 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
         abs1->relevant_labels[i]->get_reduced_label()->marker1 = true;
     }
     for (int i = 0; i < abs2->relevant_labels.size(); i++) {
-        assert(!labels->is_label_reduced(abs1->relevant_labels[i]->get_id()));
+        assert(!labels->is_label_reduced(abs2->relevant_labels[i]->get_id()));
         abs2->relevant_labels[i]->get_reduced_label()->marker2 = true;
     }
 

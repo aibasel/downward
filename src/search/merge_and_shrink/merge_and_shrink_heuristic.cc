@@ -147,6 +147,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     Abstraction *abstraction = atomic_abstractions[var_first];
     abstraction->statistics(use_expensive_statistics);
 
+    int original_labels = labels->get_size();
+    int total_reduced_labels = 0;
     while (!order.done()) {
         int var_no = order.next();
         cout << "Next variable: #" << var_no << endl;
@@ -162,9 +164,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         }
         if (shrink_strategy->reduce_labels_before_shrinking()) {
             if (exact_label_reduction) {
-                labels->reduce_exactly(abstraction->get_relevant_labels(), relation);
+                total_reduced_labels += labels->reduce_exactly(abstraction->get_relevant_labels(), relation);
             } else {
-                labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
+                total_reduced_labels += labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
             }
             reduced_labels = true;
             abstraction->normalize();
@@ -193,9 +195,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
         if (!reduced_labels) {
             if (exact_label_reduction) {
-                labels->reduce_exactly(abstraction->get_relevant_labels(), relation);
+                total_reduced_labels += labels->reduce_exactly(abstraction->get_relevant_labels(), relation);
             } else {
-                labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
+                total_reduced_labels += labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
             }
         }
         abstraction->normalize();
@@ -232,6 +234,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
     abstraction->statistics(use_expensive_statistics);
     abstraction->release_memory();
+
+    cout << "Number of original labels: " << original_labels << endl;
+    cout << "Number of reduced labels: " << total_reduced_labels << endl;
     return abstraction;
 }
 

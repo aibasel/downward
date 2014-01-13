@@ -34,6 +34,10 @@ public:
                  const EquivalenceRelation *relation,
                  std::vector<const Label* > &labels);
     void statistics2() const;
+
+    int get_no_reduced_labels() const {
+        return num_labels - num_reduced_labels;
+    }
 };
 
 #endif
