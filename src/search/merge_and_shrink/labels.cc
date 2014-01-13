@@ -18,16 +18,18 @@ Labels::Labels(OperatorCost cost_type) {
 Labels::~Labels() {
 }
 
-void Labels::reduce_approximatively(const std::vector<const Label *> &relevant_labels,
+int Labels::reduce_approximatively(const std::vector<const Label *> &relevant_labels,
                                     const std::vector<int> &abs_vars) {
     LabelReducer label_reducer(relevant_labels, abs_vars, labels);
     label_reducer.statistics();
+    return label_reducer.get_no_reduced_labels();
 }
 
-void Labels::reduce_exactly(const vector<const Label *> &relevant_labels,
+int Labels::reduce_exactly(const vector<const Label *> &relevant_labels,
                             const EquivalenceRelation *relation) {
     LabelReducer label_reducer(relevant_labels, relation, labels);
     label_reducer.statistics2();
+    return label_reducer.get_no_reduced_labels();
 }
 
 
