@@ -114,6 +114,7 @@ EquivalenceRelation *MergeAndShrinkHeuristic::compute_outside_equivalence(const 
         }
         EquivalenceRelation *next_relation = abs->compute_local_equivalence_relation();
         relation->refine(*next_relation);
+        delete next_relation;
     }
     return relation;
 }
@@ -199,6 +200,10 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
             } else {
                 total_reduced_labels += labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
             }
+        }
+        if (exact_label_reduction) {
+            assert(relation);
+            delete relation;
         }
         abstraction->normalize();
         assert(abstraction->sorted_unique());
