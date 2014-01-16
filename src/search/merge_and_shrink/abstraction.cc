@@ -438,13 +438,13 @@ void Abstraction::normalize() {
     }
 
     // Update relevant labels
-    vector<const Label*>().swap(relevant_labels);
+    /*vector<const Label*>().swap(relevant_labels);
     for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         if (!transitions.empty()) {
             relevant_labels.push_back(labels->get_label_by_index(label_no));
         }
-    }
+    }*/
 
     // Abstraction has been normalized, restore invariant
     assert(sorted_unique());
@@ -638,11 +638,11 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
     // TODO: we do not actually need relevant labels here. we could check for
     // every label if there are any induced transitions.
     for (int i = 0; i < abs1->relevant_labels.size(); i++) {
-        assert(!labels->is_label_reduced(abs1->relevant_labels[i]->get_id()));
+        //assert(!labels->is_label_reduced(abs1->relevant_labels[i]->get_id()));
         abs1->relevant_labels[i]->get_reduced_label()->marker1 = true;
     }
     for (int i = 0; i < abs2->relevant_labels.size(); i++) {
-        assert(!labels->is_label_reduced(abs2->relevant_labels[i]->get_id()));
+        //assert(!labels->is_label_reduced(abs2->relevant_labels[i]->get_id()));
         abs2->relevant_labels[i]->get_reduced_label()->marker2 = true;
     }
 
@@ -658,14 +658,14 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
                 abs1->transitions_by_label[label_no];
             const vector<AbstractTransition> &bucket2 =
                 abs2->transitions_by_label[label_no];
-            if (relevant1)
+            /*if (relevant1)
                 assert(!bucket1.empty());
             else
                 assert(bucket1.empty());
             if (relevant2)
                 assert(!bucket2.empty());
             else
-                assert(bucket2.empty());
+                assert(bucket2.empty());*/
             if (relevant1 && relevant2) {
                 transitions.reserve(bucket1.size() * bucket2.size());
                 for (int i = 0; i < bucket1.size(); i++) {
