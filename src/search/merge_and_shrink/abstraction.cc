@@ -485,10 +485,11 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
             bool relevant1 = false;
             bool relevant2 = false;
             for (size_t i = 0; i < relevant_labels.size(); ++i) {
-                if (label == relevant_labels[i]) {
+                const Label *relevant_label = relevant_labels[i]->get_reduced_label();
+                if (label == relevant_label) {
                     relevant1 = true;
                 }
-                if (other_label == relevant_labels[i]) {
+                if (other_label == relevant_label) {
                     relevant2 = true;
                 }
                 if (relevant1 && relevant2) {
