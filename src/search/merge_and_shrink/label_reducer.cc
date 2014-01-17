@@ -60,9 +60,9 @@ struct hash<LabelSignature> {
 
 LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
     const vector<int> &abs_vars, std::vector<const Label *> &labels) {
-    //cout << relevant_labels.size() << endl;
+    cout << relevant_labels.size() << endl;
     num_pruned_vars = abs_vars.size();
-    num_labels = relevant_labels.size();
+    num_labels = 0;//relevant_labels.size();
     num_reduced_labels = 0;
 
     vector<bool> var_is_used(g_variable_domain.size(), true);
@@ -80,15 +80,15 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
     hash_map<LabelSignature, bool> is_label_reduced;
     vector<LabelSignature> reduced_label_signatures;
 
-    for (size_t i = 0; i < relevant_labels.size(); ++i) {
-         const Label *label = relevant_labels[i];
-    /*for (size_t i = 0; i < labels.size(); ++i) {
+    //for (size_t i = 0; i < relevant_labels.size(); ++i) {
+        //const Label *label = relevant_labels[i];
+    for (size_t i = 0; i < labels.size(); ++i) {
         const Label *label = labels[i];
         if (label->get_reduced_label() != label) {
             // ignore already reduced labels
             continue;
         }
-        ++num_labels;*/
+        ++num_labels;
         // require that the considered abstraction's relevant labels are reduced
         // to make sure that we cannot reduce the same label several times.
         // TODO: does this assertion currently hold?
