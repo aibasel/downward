@@ -458,52 +458,30 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
     vector<bool> considered_labels(num_labels, false);
     vector<pair<int, int> > labeled_label_nos;
     int group_number = 0;
-    for (size_t label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_label_reduced(label_no)) {
-            // do not consider non-leaf labels
+    for (size_t i = 0; i < relevant_labels.size(); ++i) {
+        const Label *label = relevant_labels[i]->get_reduced_label();
+        int label_id = label->get_id();
+        if (considered_labels[label_id]) {
             continue;
         }
-        if (considered_labels[label_no]) {
-            continue;
-        }
-        const Label *label = labels->get_label_by_index(label_no);
         int label_cost = label->get_cost();
-        labeled_label_nos.push_back(make_pair(group_number, label_no));
-        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        for (size_t other_label_no = label_no + 1; other_label_no < num_labels; ++other_label_no) {
-            if (labels->is_label_reduced(other_label_no)) {
-                // do not consider non-leaf labels
+        labeled_label_nos.push_back(make_pair(group_number, label_id));
+        considered_labels[label_id] = true;
+        const vector<AbstractTransition> &transitions = transitions_by_label[label_id];
+        for (size_t j = i + 1; j < relevant_labels.size(); ++j) {
+            const Label *other_label = relevant_labels[j]->get_reduced_label();
+            int other_label_id = other_label->get_id();
+            if (considered_labels[other_label_id]) {
                 continue;
             }
-            if (considered_labels[other_label_no]) {
-                continue;
-            }
-            const Label *other_label = labels->get_label_by_index(other_label_no);
             if (label_cost != other_label->get_cost()) {
                 continue;
             }
-            bool relevant1 = false;
-            bool relevant2 = false;
-            for (size_t i = 0; i < relevant_labels.size(); ++i) {
-                const Label *relevant_label = relevant_labels[i]->get_reduced_label();
-                if (label == relevant_label) {
-                    relevant1 = true;
-                }
-                if (other_label == relevant_label) {
-                    relevant2 = true;
-                }
-                if (relevant1 && relevant2) {
-                    break;
-                }
-            }
-            if (relevant1 != relevant2) {
-                continue;
-            }
-            const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
+            const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_id];
             if ((transitions.empty() && other_transitions.empty())
                 || (transitions == other_transitions)) {
-                considered_labels[other_label_no] = true;
-                labeled_label_nos.push_back(make_pair(group_number, other_label_no));
+                considered_labels[other_label_id] = true;
+                labeled_label_nos.push_back(make_pair(group_number, other_label_id));
             }
         }
         ++group_number;
