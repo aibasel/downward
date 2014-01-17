@@ -466,7 +466,8 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
         if (considered_labels[label_no]) {
             continue;
         }
-        int label_cost = labels->get_label_by_index(label_no)->get_cost();
+        const Label *label = labels->get_label_by_index(label_no);
+        int label_cost = label->get_cost();
         labeled_label_nos.push_back(make_pair(group_number, label_no));
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (size_t other_label_no = label_no + 1; other_label_no < num_labels; ++other_label_no) {
@@ -477,7 +478,24 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
             if (considered_labels[other_label_no]) {
                 continue;
             }
-            if (label_cost != labels->get_label_by_index(other_label_no)->get_cost()) {
+            const Label *other_label = labels->get_label_by_index(other_label_no);
+            if (label_cost != other_label->get_cost()) {
+                continue;
+            }
+            bool relevant1 = false;
+            bool relevant2 = false;
+            for (size_t i = 0; i < relevant_labels.size(); ++i) {
+                if (label == relevant_labels[i]) {
+                    relevant1 = true;
+                }
+                if (other_label == relevant_labels[i]) {
+                    relevant2 = true;
+                }
+                if (relevant1 && relevant2) {
+                    break;
+                }
+            }
+            if (relevant1 != relevant2) {
                 continue;
             }
             const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
