@@ -91,6 +91,7 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
         ++num_labels;*/
         // require that the considered abstraction's relevant labels are reduced
         // to make sure that we cannot reduce the same label several times.
+        // TODO: does this assertion currently hold?
         assert(label->get_reduced_label() == label);
         LabelSignature signature = build_label_signature(
             *label, var_is_used);
