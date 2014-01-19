@@ -36,9 +36,10 @@ class PatternGenerationHaslum {
     void sample_states(std::vector<State> &samples, double average_operator_costs);
 
     /* Returns true iff the h-value of the new pattern (from pdb_heuristic) plus the h-value of all
-       additive subsets from the current pattern collection heuristic if the new pattern was added
-       to it is greater than the the h-value of the current pattern collection. */
-    bool is_heuristic_improved(PDBHeuristic *pdb_heuristic, const State &sample);
+       maximal additive subsets from the current pattern collection heuristic if the new pattern was
+       added to it is greater than the the h-value of the current pattern collection. */
+    bool is_heuristic_improved(PDBHeuristic *pdb_heuristic, const State &sample,
+                               const std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
 
     /* This is the core algorithm of this class. As soon as after an iteration, the improvement (according
        to the "counting approximation") is smaller than the minimal required improvement, the search is
