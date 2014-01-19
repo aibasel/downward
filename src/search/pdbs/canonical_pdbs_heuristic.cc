@@ -136,7 +136,7 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         pattern_databases[i]->evaluate(state);
         if (pattern_databases[i]->is_dead_end())
-            return -1;
+            return DEAD_END;
     }
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         const vector<PDBHeuristic *> &clique = max_cliques[i];
@@ -221,6 +221,18 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
         // the only additive subset is the empty set.
         max_additive_subsets.push_back(vector<PDBHeuristic *>());
     }
+}
+
+void CanonicalPDBsHeuristic::evaluate_dead_end(const State &state) {
+    int evaluator_value = 0;
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        pattern_databases[i]->evaluate(state);
+        if (pattern_databases[i]->is_dead_end()) {
+            evaluator_value = DEAD_END;
+            break;
+        }
+    }
+    set_evaluator_value(evaluator_value);
 }
 
 void CanonicalPDBsHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) const {

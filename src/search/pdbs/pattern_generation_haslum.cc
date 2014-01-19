@@ -110,8 +110,8 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
                 // TODO for now, we only generate registered successors. This is a temporary state that
                 // should should not necessarily be registered in the global registry: see issue386.
                 current_state = g_state_registry->get_successor_state(current_state, *applicable_ops[random]);
-                // if current state is dead-end, then restart with initial state
-                current_heuristic->evaluate(current_state);
+                // if current state is a dead end, then restart with initial state
+                current_heuristic->evaluate_dead_end(current_state);
                 if (current_heuristic->is_dead_end())
                     current_state = initial_state;
             }
@@ -122,14 +122,14 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
 }
 
 bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
-                                                    const State &sample) {
+                                                    const State &sample,
+                                                    const vector<vector<PDBHeuristic *> > &max_additive_subsets) {
     pdb_heuristic->evaluate(sample);
     if (pdb_heuristic->is_dead_end()) {
         return true;
     }
     int h_pattern = pdb_heuristic->get_heuristic(); // h-value of the new pattern
-    vector<vector<PDBHeuristic *> > max_additive_subsets;
-    current_heuristic->get_max_additive_subsets(pdb_heuristic->get_pattern(), max_additive_subsets);
+
     current_heuristic->evaluate(sample);
     int h_collection = current_heuristic->get_heuristic(); // h-value of the current collection heuristic
     for (size_t k = 0; k < max_additive_subsets.size(); ++k) { // for each max additive subset...
@@ -213,8 +213,10 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             // TODO: The original implementation by Haslum et al. uses m/t as a statistical
             // confidence intervall to stop the astar-search (which they use, see above) earlier.
             int count = 0;
+            vector<vector<PDBHeuristic *> > max_additive_subsets;
+            current_heuristic->get_max_additive_subsets(pdb_heuristic->get_pattern(), max_additive_subsets);
             for (size_t j = 0; j < samples.size(); ++j) {
-                if (is_heuristic_improved(pdb_heuristic, samples[j]))
+                if (is_heuristic_improved(pdb_heuristic, samples[j], max_additive_subsets))
                     ++count;
             }
             if (count > improvement) {
