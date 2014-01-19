@@ -117,7 +117,7 @@ void ShrinkStrategy::apply(
     abs.apply_abstraction(equivalence_relation);
     cout << abs.tag() << "size after shrink " << abs.size()
          << ", target " << target << endl;
-    assert(abs.size() <= target);
+    //assert(abs.size() <= target);
 }
 
 void ShrinkStrategy::add_options_to_parser(OptionParser &parser) {
