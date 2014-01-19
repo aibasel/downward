@@ -164,9 +164,10 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         }
         if (shrink_strategy->reduce_labels_before_shrinking()) {
             if (exact_label_reduction) {
-                total_reduced_labels += labels->reduce_exactly(abstraction->get_relevant_labels(), relation);
+                total_reduced_labels += labels->reduce_exactly(relation);
             } else {
-                total_reduced_labels += labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
+                total_reduced_labels += labels->reduce_approximatively(/*abstraction->get_relevant_labels(), */
+                                                                       abstraction->get_varset());
             }
             reduced_labels = true;
             abstraction->normalize();
@@ -195,9 +196,10 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
         if (!reduced_labels) {
             if (exact_label_reduction) {
-                total_reduced_labels += labels->reduce_exactly(abstraction->get_relevant_labels(), relation);
+                total_reduced_labels += labels->reduce_exactly(relation);
             } else {
-                total_reduced_labels += labels->reduce_approximatively(abstraction->get_relevant_labels(), abstraction->get_varset());
+                total_reduced_labels += labels->reduce_approximatively(/*abstraction->get_relevant_labels(), */
+                                                                       abstraction->get_varset());
             }
         }
         if (exact_label_reduction) {
