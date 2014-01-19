@@ -14,6 +14,8 @@ class EquivalenceRelation;
 class LabelSignature;
 
 // TODO: possible refactoring: ApproximateLabelReducer and ExactLabelReducer
+// Or: LabelReducer only takes data set of labels which should be mapped
+// together and all it does is create the new labels and mappings
 class LabelReducer {
     int num_labels;
     int num_reduced_labels;
@@ -21,15 +23,14 @@ class LabelReducer {
     LabelSignature build_label_signature(const Label &label,
         const std::vector<bool> &var_is_used) const;
 public:
-    LabelReducer(const std::vector<const Label *> &relevant_labels,
+    LabelReducer(/*const std::vector<const Label *> &relevant_labels,*/
                  const std::vector<int> &abs_vars,
                  std::vector<const Label* > &labels);
     ~LabelReducer();
     void statistics() const;
 
     // exact label reduction
-    LabelReducer(const std::vector<const Label *> &relevant_labels,
-                 const EquivalenceRelation *relation,
+    LabelReducer(const EquivalenceRelation *relation,
                  std::vector<const Label* > &labels);
     void statistics2() const;
 

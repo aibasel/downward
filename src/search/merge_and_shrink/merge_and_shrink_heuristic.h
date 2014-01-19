@@ -33,6 +33,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
 
     void dump_options() const;
     void warn_on_unusual_options() const;
+    // TODO: move this into Labels or LabelReducer
     EquivalenceRelation *compute_outside_equivalence(const Abstraction *abstraction,
                                                      const std::vector<Abstraction *> &all_abstractions) const;
 protected:

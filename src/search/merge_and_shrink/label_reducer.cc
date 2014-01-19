@@ -58,9 +58,9 @@ struct hash<LabelSignature> {
 };
 }
 
-LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
+LabelReducer::LabelReducer(/*const vector<const Label *> &relevant_labels,*/
     const vector<int> &abs_vars, std::vector<const Label *> &labels) {
-    cout << relevant_labels.size() << endl;
+    //cout << relevant_labels.size() << endl;
     num_labels = 0;//relevant_labels.size();
     num_reduced_labels = 0;
 
@@ -158,10 +158,8 @@ void LabelReducer::statistics() const {
          << endl;
 }
 
-LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
-                           const EquivalenceRelation *relation,
+LabelReducer::LabelReducer(const EquivalenceRelation *relation,
                            vector<const Label *> &labels) {
-    cout << relevant_labels.size() << endl;
     num_labels = 0;
     num_reduced_labels = 0;
     for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
@@ -174,13 +172,8 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
                 // ignore already reduced labels
                 continue;
             }
-            //for (size_t i = 0; i < relevant_labels.size(); ++i) {
-            //    if (label == relevant_labels[i]) {
-                    equivalent_labels.push_back(label);
-                    ++num_labels;
-            //        break;
-            //    }
-            //}
+            equivalent_labels.push_back(label);
+            ++num_labels;
         }
         if (equivalent_labels.size() > 1) {
             const Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
