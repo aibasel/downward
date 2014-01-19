@@ -61,7 +61,6 @@ struct hash<LabelSignature> {
 LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
     const vector<int> &abs_vars, std::vector<const Label *> &labels) {
     cout << relevant_labels.size() << endl;
-    num_pruned_vars = abs_vars.size();
     num_labels = 0;//relevant_labels.size();
     num_reduced_labels = 0;
 
@@ -154,7 +153,6 @@ LabelSignature LabelReducer::build_label_signature(
 
 void LabelReducer::statistics() const {
     cout << "Label reduction: "
-         //<< num_pruned_vars << " pruned vars, "
          << num_labels << " labels, "
          << num_reduced_labels << " reduced labels"
          << endl;
@@ -164,7 +162,6 @@ LabelReducer::LabelReducer(const vector<const Label *> &relevant_labels,
                            const EquivalenceRelation *relation,
                            vector<const Label *> &labels) {
     cout << relevant_labels.size() << endl;
-    num_pruned_vars = -1;
     num_labels = 0;
     num_reduced_labels = 0;
     for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {

@@ -13,10 +13,8 @@
 class EquivalenceRelation;
 class LabelSignature;
 
+// TODO: possible refactoring: ApproximateLabelReducer and ExactLabelReducer
 class LabelReducer {
-    // TODO: remove these instance variables and print them directly at the
-    // end of the constructor (and get rid of statistics())?
-    int num_pruned_vars;
     int num_labels;
     int num_reduced_labels;
 

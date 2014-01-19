@@ -437,15 +437,6 @@ void Abstraction::normalize() {
         }
     }
 
-    // Update relevant labels
-    /*vector<const Label*>().swap(relevant_labels);
-    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
-        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        if (!transitions.empty()) {
-            relevant_labels.push_back(labels->get_label_by_index(label_no));
-        }
-    }*/
-
     // Abstraction has been normalized, restore invariant
     assert(sorted_unique());
     num_labels = labels->get_size();
@@ -568,24 +559,6 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
         assert(result[i]->is_normalized());
         assert(result[i]->sorted_unique());
     }
-
-    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
-        for (size_t i = 0; i < result.size(); ++i) {
-            Abstraction *abs = result[i];
-            bool relevant = false;
-            for (size_t j = 0; j < abs->relevant_labels.size(); ++j) {
-                const Label *label = abs->relevant_labels[j];
-                if (label->get_id() == label_no) {
-                    relevant = true;
-                    break;
-                }
-            }
-            if (relevant)
-                assert(!abs->transitions_by_label[label_no].empty());
-            else
-                assert(abs->transitions_by_label[label_no].empty());
-        }
-    }
 }
 
 AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, Labels *labels, int variable_)
@@ -654,16 +627,10 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
         }
     }
 
-    // TODO: we do not actually need relevant labels here. we could check for
-    // every label if there are any induced transitions.
-    for (int i = 0; i < abs1->relevant_labels.size(); i++) {
-        //assert(!labels->is_label_reduced(abs1->relevant_labels[i]->get_id()));
+    for (int i = 0; i < abs1->relevant_labels.size(); i++)
         abs1->relevant_labels[i]->get_reduced_label()->marker1 = true;
-    }
-    for (int i = 0; i < abs2->relevant_labels.size(); i++) {
-        //assert(!labels->is_label_reduced(abs2->relevant_labels[i]->get_id()));
+    for (int i = 0; i < abs2->relevant_labels.size(); i++)
         abs2->relevant_labels[i]->get_reduced_label()->marker2 = true;
-    }
 
     int multiplier = abs2->size();
     for (int label_no = 0; label_no < num_labels; label_no++) {
@@ -677,14 +644,6 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
                 abs1->transitions_by_label[label_no];
             const vector<AbstractTransition> &bucket2 =
                 abs2->transitions_by_label[label_no];
-            /*if (relevant1)
-                assert(!bucket1.empty());
-            else
-                assert(bucket1.empty());
-            if (relevant2)
-                assert(!bucket2.empty());
-            else
-                assert(bucket2.empty());*/
             if (relevant1 && relevant2) {
                 transitions.reserve(bucket1.size() * bucket2.size());
                 for (int i = 0; i < bucket1.size(); i++) {
@@ -731,10 +690,9 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
     for (int i = 0; i < abs2->relevant_labels.size(); i++)
         abs2->relevant_labels[i]->get_reduced_label()->marker2 = false;
 
+    // TODO do not check if transitions are sorted but just assume they are not?
     if (!sorted_unique())
         normalized = false;
-    //assert(is_normalized());
-    //assert(sorted_unique());
 }
 
 CompositeAbstraction::~CompositeAbstraction() {
@@ -850,13 +808,9 @@ void Abstraction::apply_abstraction(
     vector<vector<AbstractTransition> > new_transitions_by_label(
         transitions_by_label.size());
     for (int label_no = 0; label_no < num_labels; label_no++) {
-        // TODO: check correctness! What happens if several labels are mapped
-        // to the same label and thus to the same "new_transitions" (which then
-        // is possibly non-empty when trying to reserve space...)?
         const vector<AbstractTransition> &transitions =
             transitions_by_label[label_no];
         int mapped_label_no = labels->get_reduced_label_no(label_no);
-        // TODO: check that mapped_label_no == label_no iff ...?
         vector<AbstractTransition> &new_transitions =
             new_transitions_by_label[mapped_label_no];
         new_transitions.reserve(new_transitions.size() + transitions.size());
@@ -886,6 +840,7 @@ void Abstraction::apply_abstraction(
         clear_distances();
     }
 
+    // TODO do not check if transitions are sorted but just assume they are not?
     if (!sorted_unique())
         normalized = false;
     num_labels = labels->get_size();
@@ -1023,7 +978,6 @@ void Abstraction::dump() const {
         if (is_init)
             cout << "    start -> node" << i << ";" << endl;
     }
-    //assert(is_normalized());
     for (int label_no = 0; label_no < num_labels; label_no++) {
         // reduced labels are automatically skipped because trans is then empty
         const vector<AbstractTransition> &trans = transitions_by_label[label_no];
