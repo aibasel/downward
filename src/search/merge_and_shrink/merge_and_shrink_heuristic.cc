@@ -148,7 +148,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     Abstraction *abstraction = atomic_abstractions[var_first];
     abstraction->statistics(use_expensive_statistics);
 
-    int original_labels = labels->get_size();
     int total_reduced_labels = 0;
     while (!order.done()) {
         int var_no = order.next();
@@ -225,6 +224,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         abstraction = new_abstraction;
         abstraction->statistics(use_expensive_statistics);
 
+        cout << "Number of reduced labels so far: " << total_reduced_labels << endl;
+
         all_abstractions[var_first] = abstraction;
         all_abstractions[var_no] = 0;
     }
@@ -240,8 +241,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     abstraction->statistics(use_expensive_statistics);
     abstraction->release_memory();
 
-    cout << "Number of original labels: " << original_labels << endl;
-    cout << "Number of reduced labels: " << total_reduced_labels << endl;
+    cout << "Final number of reduced labels: " << total_reduced_labels << endl;
     return abstraction;
 }
 
