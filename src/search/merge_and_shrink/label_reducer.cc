@@ -1,5 +1,6 @@
 #include "label_reducer.h"
 
+#include "abstraction.h"
 #include "equivalence_relation.h"
 
 #include "../globals.h"
@@ -158,8 +159,10 @@ void LabelReducer::statistics() const {
          << endl;
 }
 
-LabelReducer::LabelReducer(const EquivalenceRelation *relation,
+LabelReducer::LabelReducer(const Abstraction *abstraction,
+                           const vector<Abstraction *> &all_abstractions,
                            vector<const Label *> &labels) {
+    EquivalenceRelation *relation = compute_outside_equivalence(abstraction, all_abstractions, labels);
     num_labels = 0;
     num_reduced_labels = 0;
     for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
@@ -183,6 +186,48 @@ LabelReducer::LabelReducer(const EquivalenceRelation *relation,
             ++num_reduced_labels;
         }
     }
+    delete relation;
+}
+
+EquivalenceRelation *LabelReducer::compute_outside_equivalence(const Abstraction *abstraction,
+                                                               const vector<Abstraction *> &all_abstractions,
+                                                               const vector<const Label *> &labels) const {
+    /*Returns an equivalence relation over labels s.t. l ~ l'
+    iff l and l' are locally equivalent in all transition systems
+    T' \neq T. (They may or may not be locally equivalent in T.)
+    Here: T = abstraction. */
+    cout << "compute outside equivalence for " << abstraction->tag() << endl;
+
+    int num_labels = labels.size();
+    vector<pair<int, int> > labeled_label_nos;
+    labeled_label_nos.reserve(num_labels);
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
+        const Label *label = labels[label_no];
+        assert(label->get_id() == label_no);
+        if (label->get_reduced_label() != label) {
+            continue;
+        }
+        labeled_label_nos.push_back(make_pair(0, label_no));
+    }
+    // start with the relation where all labels are equivalent
+    EquivalenceRelation *relation = EquivalenceRelation::from_labels<int>(num_labels, labeled_label_nos);
+    for (size_t i = 0; i < all_abstractions.size(); ++i) {
+        Abstraction *abs = all_abstractions[i];
+        if (!abs || abs == abstraction) {
+            continue;
+        }
+        cout << "computing local equivalence for " << abs->tag() << endl;
+        if (!abs->is_normalized()) {
+            // TODO: get rid of this, as normalize itself checks whether
+            // the abstraction is already normalized or not?
+            cout << "need to normalize" << endl;
+            abs->normalize();
+        }
+        EquivalenceRelation *next_relation = abs->compute_local_equivalence_relation();
+        relation->refine(*next_relation);
+        delete next_relation;
+    }
+    return relation;
 }
 
 void LabelReducer::statistics2() const {

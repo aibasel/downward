@@ -5,7 +5,7 @@
 
 #include <vector>
 
-class EquivalenceRelation;
+class Abstraction;
 class Label;
 
 /*
@@ -22,7 +22,8 @@ public:
     // of labels in relevant_labels
     int reduce_approximatively(/*const std::vector<const Label *> &relevant_labels,*/
                                const std::vector<int> &abs_vars);
-    int reduce_exactly(const EquivalenceRelation *relation);
+    int reduce_exactly(const Abstraction *abstraction,
+                       const std::vector<Abstraction *> &all_abstractions);
     int get_reduced_label_no(int label_no) const;
     const Label *get_label_by_index(int index) const;
     // TODO: rename and/or add is_leaf method
