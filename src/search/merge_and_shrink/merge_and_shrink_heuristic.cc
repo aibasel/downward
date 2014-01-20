@@ -81,44 +81,6 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-EquivalenceRelation *MergeAndShrinkHeuristic::compute_outside_equivalence(const Abstraction *abstraction,
-                                                                          const vector<Abstraction *> &all_abstractions) const {
-    /*Returns an equivalence relation over labels s.t. l ~ l'
-    iff l and l' are locally equivalent in all transition systems
-    T' \neq T. (They may or may not be locally equivalent in T.)
-    Here: T = abstraction. */
-    cout << "compute outside equivalence for " << abstraction->tag() << endl;
-
-    int num_labels = labels->get_size();
-    vector<pair<int, int> > labeled_label_nos;
-    labeled_label_nos.reserve(num_labels);
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_label_reduced(label_no)) {
-            continue;
-        }
-        labeled_label_nos.push_back(make_pair(0, label_no));
-    }
-    // start with the relation where all labels are equivalent
-    EquivalenceRelation *relation = EquivalenceRelation::from_labels<int>(num_labels, labeled_label_nos);
-    for (size_t i = 0; i < all_abstractions.size(); ++i) {
-        Abstraction *abs = all_abstractions[i];
-        if (!abs || abs == abstraction) {
-            continue;
-        }
-        cout << "computing local equivalence for " << abs->tag() << endl;
-        if (!abs->is_normalized()) {
-            // TODO: get rid of this, as normalize itself checks whether
-            // the abstraction is already normalized or not?
-            cout << "need to normalize" << endl;
-            abs->normalize();
-        }
-        EquivalenceRelation *next_relation = abs->compute_local_equivalence_relation();
-        relation->refine(*next_relation);
-        delete next_relation;
-    }
-    return relation;
-}
-
 Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_abstractions also
@@ -158,13 +120,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         // to normalize multiple parts of a composite. See issue68.
         // Note: do not reduce labels several times for the same abstraction!
         bool reduced_labels = false;
-        EquivalenceRelation *relation = 0;
-        if (exact_label_reduction) {
-            relation = compute_outside_equivalence(abstraction, all_abstractions);
-        }
         if (shrink_strategy->reduce_labels_before_shrinking()) {
             if (exact_label_reduction) {
-                total_reduced_labels += labels->reduce_exactly(relation);
+                total_reduced_labels += labels->reduce_exactly(abstraction, all_abstractions);
             } else {
                 total_reduced_labels += labels->reduce_approximatively(/*abstraction->get_relevant_labels(), */
                                                                        abstraction->get_varset());
@@ -196,15 +154,11 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
         if (!reduced_labels) {
             if (exact_label_reduction) {
-                total_reduced_labels += labels->reduce_exactly(relation);
+                total_reduced_labels += labels->reduce_exactly(abstraction, all_abstractions);
             } else {
                 total_reduced_labels += labels->reduce_approximatively(/*abstraction->get_relevant_labels(), */
                                                                        abstraction->get_varset());
             }
-        }
-        if (exact_label_reduction) {
-            assert(relation);
-            delete relation;
         }
         abstraction->normalize();
         assert(abstraction->sorted_unique());

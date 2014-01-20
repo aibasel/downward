@@ -1,7 +1,6 @@
 #ifndef MERGE_AND_SHRINK_MERGE_AND_SHRINK_HEURISTIC_H
 #define MERGE_AND_SHRINK_MERGE_AND_SHRINK_HEURISTIC_H
 
-#include "equivalence_relation.h"
 #include "shrink_strategy.h"
 
 #include "../heuristic.h"
@@ -33,9 +32,6 @@ class MergeAndShrinkHeuristic : public Heuristic {
 
     void dump_options() const;
     void warn_on_unusual_options() const;
-    // TODO: move this into Labels or LabelReducer
-    EquivalenceRelation *compute_outside_equivalence(const Abstraction *abstraction,
-                                                     const std::vector<Abstraction *> &all_abstractions) const;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);

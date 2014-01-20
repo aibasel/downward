@@ -10,6 +10,7 @@
 #include <cassert>
 #include <vector>
 
+class Abstraction;
 class EquivalenceRelation;
 class LabelSignature;
 
@@ -22,6 +23,9 @@ class LabelReducer {
 
     LabelSignature build_label_signature(const Label &label,
         const std::vector<bool> &var_is_used) const;
+    EquivalenceRelation *compute_outside_equivalence(const Abstraction *abstraction,
+                                                     const std::vector<Abstraction *> &all_abstractions,
+                                                     const std::vector<const Label *> &labels) const;
 public:
     LabelReducer(/*const std::vector<const Label *> &relevant_labels,*/
                  const std::vector<int> &abs_vars,
@@ -30,11 +34,12 @@ public:
     void statistics() const;
 
     // exact label reduction
-    LabelReducer(const EquivalenceRelation *relation,
+    LabelReducer(const Abstraction *abstraction,
+                 const std::vector<Abstraction *> &all_abstractions,
                  std::vector<const Label* > &labels);
     void statistics2() const;
 
-    int get_no_reduced_labels() const {
+    int get_number_reduced_labels() const {
         return num_labels - num_reduced_labels;
     }
 };
