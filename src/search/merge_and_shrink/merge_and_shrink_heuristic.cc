@@ -20,7 +20,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      exact_label_reduction(opts.get<bool>("exact_label_reduction")),
+      label_reduction(LabelReduction(opts.get_enum("label_reduction"))),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
 }
 
@@ -59,9 +59,25 @@ void MergeAndShrinkHeuristic::dump_options() const {
     }
     cout << endl;
     shrink_strategy->dump_options();
-    cout << "Label reduction: "
-         << (exact_label_reduction ? "exact" : "approximative") << endl
-         << "Expensive statistics: "
+    cout << "Label reduction: ";
+    switch (label_reduction) {
+    case NONE:
+        cout << "disabled";
+        break;
+       case APPROXIMATIVE:
+        cout << "approximative";
+        break;
+    case EXACT:
+        cout << "exact";
+        break;
+    case EXACT_WITH_FIXPOINT:
+        cout << "exact with fixpoint computation";
+        break;
+    default:
+        ABORT("Unknown label reduction method");
+    }
+    cout << endl;
+    cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
 
@@ -121,11 +137,19 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         // Note: do not reduce labels several times for the same abstraction!
         bool reduced_labels = false;
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            if (exact_label_reduction) {
-                total_reduced_labels += labels->reduce_exactly(abstraction, all_abstractions);
-            } else {
+            switch (label_reduction) {
+            case NONE:
+                break;
+            case APPROXIMATIVE:
                 total_reduced_labels += labels->reduce_approximatively(/*abstraction->get_relevant_labels(), */
                                                                        abstraction->get_varset());
+                break;
+            case EXACT:
+                total_reduced_labels += labels->reduce_exactly(var_first, all_abstractions);
+                break;
+            case EXACT_WITH_FIXPOINT:
+                total_reduced_labels += labels->reduce_exactly(var_first, all_abstractions, true);
+                break;
             }
             reduced_labels = true;
             abstraction->normalize();
@@ -153,11 +177,19 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         other_abstraction->statistics(use_expensive_statistics);
 
         if (!reduced_labels) {
-            if (exact_label_reduction) {
-                total_reduced_labels += labels->reduce_exactly(abstraction, all_abstractions);
-            } else {
+            switch (label_reduction) {
+            case NONE:
+                break;
+            case APPROXIMATIVE:
                 total_reduced_labels += labels->reduce_approximatively(/*abstraction->get_relevant_labels(), */
                                                                        abstraction->get_varset());
+                break;
+            case EXACT:
+                total_reduced_labels += labels->reduce_exactly(var_first, all_abstractions);
+                break;
+            case EXACT_WITH_FIXPOINT:
+                total_reduced_labels += labels->reduce_exactly(var_first, all_abstractions, true);
+                break;
             }
         }
         abstraction->normalize();
@@ -297,7 +329,12 @@ static Heuristic *_parse(OptionParser &parser) {
                   "the heuristic in the paper."));
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
-    parser.add_option<bool>("exact_label_reduction", "use exact label reduction", "false");
+    vector<string> label_reduction;
+    label_reduction.push_back("NONE");
+    label_reduction.push_back("APPROXIMATIVE");
+    label_reduction.push_back("EXACT");
+    label_reduction.push_back("EXACT_WITH_FIXPOINT");
+    parser.add_enum_option("label_reduction", label_reduction, "label reduction method", "APPROXIMATIVE");
     parser.add_option<bool>("expensive_statistics", "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)", "false");
     Heuristic::add_options_to_parser(parser);
