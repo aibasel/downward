@@ -20,10 +20,17 @@ enum MergeStrategy {
     MERGE_LINEAR_REVERSE_LEVEL
 };
 
+enum LabelReduction {
+    NONE,
+    APPROXIMATIVE,
+    EXACT,
+    EXACT_WITH_FIXPOINT
+};
+
 class MergeAndShrinkHeuristic : public Heuristic {
     const MergeStrategy merge_strategy;
     ShrinkStrategy *const shrink_strategy;
-    const bool exact_label_reduction;
+    const LabelReduction label_reduction;
     const bool use_expensive_statistics;
     Labels *labels;
 

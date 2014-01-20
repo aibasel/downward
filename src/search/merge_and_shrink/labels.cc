@@ -21,14 +21,12 @@ Labels::~Labels() {
 int Labels::reduce_approximatively(/*const std::vector<const Label *> &relevant_labels,*/
                                    const std::vector<int> &abs_vars) {
     LabelReducer label_reducer(/*relevant_labels, */abs_vars, labels);
-    label_reducer.statistics();
     return label_reducer.get_number_reduced_labels();
 }
 
-int Labels::reduce_exactly(const Abstraction *abstraction,
-                           const vector<Abstraction *> &all_abstractions) {
-    LabelReducer label_reducer(abstraction, all_abstractions, labels);
-    label_reducer.statistics2();
+int Labels::reduce_exactly(int abs_index,
+                           const vector<Abstraction *> &all_abstractions, bool fixpoint) {
+    LabelReducer label_reducer(abs_index, all_abstractions, labels, fixpoint);
     return label_reducer.get_number_reduced_labels();
 }
 
