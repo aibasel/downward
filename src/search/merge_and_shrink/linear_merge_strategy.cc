@@ -25,6 +25,9 @@ pair<int, int> LinearMergeStrategy::get_next(const vector<Abstraction *> &all_ab
     next_indices.second = order.next();
     previous_index = next_indices.first;
     assert(all_abstractions[next_indices.first]);
+    if (!all_abstractions[next_indices.second]) {
+        exit(1);
+    }
     assert(all_abstractions[next_indices.second]);
     return next_indices;
 }
