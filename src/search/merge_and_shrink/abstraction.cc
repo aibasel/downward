@@ -398,15 +398,103 @@ void Abstraction::normalize() {
        away the transitions that have been processed. */
     vector<StateBucket> target_buckets(num_states);
     for (int label_no = 0; label_no < num_labels; label_no++) {
+        int reduced_label_no = labels->get_reduced_label_no(label_no);
+        if (reduced_label_no >= num_labels) {
+            // skip freshly reduced labels and deal with them separately
+            continue;
+        }
         vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         if (!transitions.empty()) {
-            int reduced_label_no = labels->get_reduced_label_no(label_no);
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &t = transitions[i];
                 target_buckets[t.target].push_back(
                     make_pair(t.src, reduced_label_no));
             }
             vector<AbstractTransition> ().swap(transitions);
+        }
+    }
+
+    hash_set<int> empty_transitions;
+    for (int reduced_label_no = num_labels; reduced_label_no < labels->get_size();
+         ++reduced_label_no) {
+        const Label *reduced_label = labels->get_label_by_index(reduced_label_no);
+        const vector<const Label *> &parents = reduced_label->get_parents();
+        bool one_parent_irrelevant = false;
+        bool all_relevant_self_loops = true;
+        for (size_t i = 0; i < parents.size(); ++i) {
+            const Label *parent = parents[i];
+            int parent_id = parent->get_id();
+            // We require that we only have to deal with one label reduction at
+            // at time when normalizing. Otherwise the following assertion could
+            // be broken and we would need to consider parents' parents and so
+            // on...
+            assert(parent_id < num_labels);
+            vector<AbstractTransition> &transitions =
+                    transitions_by_label[parent_id];
+            if (!transitions.empty()) {
+                for (int i = 0; i < transitions.size(); i++) {
+                    const AbstractTransition &t = transitions[i];
+                    target_buckets[t.target].push_back(
+                        make_pair(t.src, reduced_label_no));
+                    if (t.target != t.src) {
+                        all_relevant_self_loops = false;
+                    }
+                }
+                vector<AbstractTransition> ().swap(transitions);
+            } else {
+                if (!one_parent_irrelevant) {
+                    bool relevant = false;
+                    for (size_t j = 0; j < relevant_labels.size(); ++j) {
+                        if (relevant_labels[j] == parent) {
+                            relevant = true;
+                            break;
+                        }
+                    }
+                    if (!relevant) {
+                        one_parent_irrelevant = true;
+                    }
+                }
+            }
+        }
+        if (one_parent_irrelevant) {
+            if (all_relevant_self_loops) {
+                //cout << "label " << reduced_label_no << " will be marked as "
+                //        "irrelevant and all its transitions be removed" << endl;
+                // remove all transitions (later)
+                empty_transitions.insert(reduced_label_no);
+                // mark all origin labels of label as irrelevant
+                vector<const Label *> origins;
+                reduced_label->get_origins(origins);
+                vector<const Label *>::iterator it = relevant_labels.begin();
+                // TODO: iterate over origins or relevant_labels in outer loop,
+                // what should be expected to be faster?
+                while (it != relevant_labels.end()) {
+                    const Label *label = *it;
+                    bool to_be_removed = false;
+                    for (size_t i = 0; i < origins.size(); ++i) {
+                        if (origins[i] == label) {
+                            to_be_removed = true;
+                            break;
+                        }
+                    }
+                    if (to_be_removed) {
+                        //cout << "erasing label " << label->get_id() << " from relevant labels" << endl;
+                        // erase returns the new iterator
+                        it = relevant_labels.erase(it);
+                    }
+                    else {
+                        ++it;
+                    }
+                }
+            } else {
+                //cout << "label " << reduced_label_no << " remains relevant but "
+                //        "has additional self loops at every state" << endl;
+                // make self loops explicit
+                for (int i = 0; i < num_states; ++i) {
+                    target_buckets[i].push_back(
+                        make_pair(i, reduced_label_no));
+                }
+            }
         }
     }
 
@@ -429,6 +517,11 @@ void Abstraction::normalize() {
         for (int i = 0; i < bucket.size(); i++) {
             int target = bucket[i].first;
             int label_no = bucket[i].second;
+
+            if (empty_transitions.count(label_no)) {
+                assert(transitions_by_label[label_no].empty());
+                continue;
+            }
 
             vector<AbstractTransition> &op_bucket = transitions_by_label[label_no];
             AbstractTransition trans(src, target);
@@ -962,6 +1055,13 @@ bool Abstraction::sorted_unique() const {
         }
     }
     return true;
+}
+
+void Abstraction::dump_relevant_labels() const {
+    cout << "relevant labels" << endl;
+    for (size_t i = 0; i < relevant_labels.size(); ++i) {
+        cout << relevant_labels[i]->get_id() << "->" << relevant_labels[i]->get_reduced_label()->get_id() << endl;
+    }
 }
 
 void Abstraction::dump() const {

@@ -162,8 +162,13 @@ LabelReducer::LabelReducer(int abs_index,
     int current_index = abs_index;
     num_reduced_labels = 0;
     while (true) {
-        const Abstraction *current_abstraction = all_abstractions[current_index];
+        Abstraction *current_abstraction = all_abstractions[current_index];
         if (current_abstraction) {
+            // Note: we need to normalize the current abstraction in order to
+            // avoid that when normalizing it at some point later, we would
+            // have two label reductions to incorporate.
+            // See Abstraction::normalize()
+            current_abstraction->normalize();
             EquivalenceRelation *relation = compute_outside_equivalence(current_abstraction, all_abstractions, labels);
             int reduced_labels = reduce(relation, labels);
             delete relation;

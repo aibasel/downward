@@ -1,5 +1,6 @@
 #include "label.h"
 
+#include "../utilities.h"
 #include "../globals.h"
 
 #include <ostream>
@@ -17,9 +18,8 @@ OperatorLabel::OperatorLabel(int id, int cost, const vector<Prevail> &prevail, c
 
 CompositeLabel::CompositeLabel(int id, const std::vector<const Label *> &parents_)
     : Label(id, parents_[0]->get_cost(), parents_[0]->get_prevail(), parents_[0]->get_pre_post()) {
-    // TODO: here we take the first label as the "canonical" label for prevail and
-    // pre-post conditions. can we somehow check the other labels in labels for
-    // local equivalence?
+    // TODO: We take the first label as the "canonical" label for prevail and
+    // pre-post conditions. Is that correct?
     for (size_t i = 0; i < parents_.size(); ++i) {
         const Label *parent = parents_[i];
         parent->update_root(this);
@@ -35,6 +35,20 @@ void CompositeLabel::update_root(CompositeLabel *new_root) const {
     for (size_t i = 0; i < parents.size(); ++i)
         parents[i]->update_root(new_root);
     root = new_root;
+}
+
+void OperatorLabel::get_origins(vector<const Label *> &origins) const {
+    origins.push_back(this);
+}
+
+void CompositeLabel::get_origins(vector<const Label *> &origins) const {
+    for (size_t i = 0; i < parents.size(); ++i) {
+        parents[i]->get_origins(origins);
+    }
+}
+
+const vector<const Label *> &OperatorLabel::get_parents() const {
+    exit_with(EXIT_CRITICAL_ERROR);
 }
 
 void Label::dump() const {

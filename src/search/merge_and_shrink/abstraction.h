@@ -127,6 +127,7 @@ public:
     // abstraction is normalized or not after construction (composite abstraction)
     // and shrinking (apply_abstraction)
     bool sorted_unique() const;
+    void dump_relevant_labels() const;
     void dump() const;
 
     // The following methods exist for the benefit of shrink strategies.
