@@ -14,6 +14,45 @@
 using namespace std;
 using namespace __gnu_cxx;
 
+LabelReducer::LabelReducer(int abs_index,
+                           const vector<Abstraction *> &all_abstractions,
+                           vector<const Label *> &labels,
+                           bool exact,
+                           bool fixpoint) {
+    if (exact) {
+        int current_index = abs_index;
+        num_reduced_labels = 0;
+        while (true) {
+            Abstraction *current_abstraction = all_abstractions[current_index];
+            if (current_abstraction) {
+                // Note: we need to normalize the current abstraction in order to
+                // avoid that when normalizing it at some point later, we would
+                // have two label reductions to incorporate.
+                // See Abstraction::normalize()
+                current_abstraction->normalize();
+                EquivalenceRelation *relation = compute_outside_equivalence(current_abstraction, all_abstractions, labels);
+                int reduced_labels = reduce_exactly(relation, labels);
+                delete relation;
+                num_reduced_labels += reduced_labels;
+                if (reduced_labels == 0 || !fixpoint) {
+                    break;
+                }
+            }
+            ++current_index;
+            if (current_index == all_abstractions.size()) {
+                current_index = 0;
+            }
+        }
+    } else {
+        for (size_t i = 0; i < all_abstractions.size(); ++i) {
+            if (all_abstractions[i]) {
+                all_abstractions[i]->normalize();
+            }
+        }
+        num_reduced_labels = reduce_approximatively(all_abstractions[abs_index]->get_varset(), labels);
+    }
+}
+
 typedef pair<int, int> Assignment;
 
 struct LabelSignature {
@@ -59,9 +98,39 @@ struct hash<LabelSignature> {
 };
 }
 
-LabelReducer::LabelReducer(/*const vector<const Label *> &relevant_labels,*/
-    const vector<int> &abs_vars, std::vector<const Label *> &labels) {
-    //cout << relevant_labels.size() << endl;
+LabelSignature LabelReducer::build_label_signature(
+    const Label &label,
+    const vector<bool> &var_is_used) const {
+    vector<Assignment> preconditions;
+    vector<Assignment> effects;
+
+    const vector<Prevail> &prev = label.get_prevail();
+    for (size_t i = 0; i < prev.size(); ++i) {
+        int var = prev[i].var;
+        if (var_is_used[var]) {
+            int val = prev[i].prev;
+            preconditions.push_back(make_pair(var, val));
+        }
+    }
+    const vector<PrePost> &pre_post = label.get_pre_post();
+    for (size_t i = 0; i < pre_post.size(); ++i) {
+        int var = pre_post[i].var;
+        if (var_is_used[var]) {
+            int pre = pre_post[i].pre;
+            if (pre != -1)
+                preconditions.push_back(make_pair(var, pre));
+            int post = pre_post[i].post;
+            effects.push_back(make_pair(var, post));
+        }
+    }
+    ::sort(preconditions.begin(), preconditions.end());
+    ::sort(effects.begin(), effects.end());
+
+    return LabelSignature(preconditions, effects, label.get_cost());
+}
+
+int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
+                                         vector<const Label *> &labels) const {
     int num_labels = 0;//relevant_labels.size();
     int num_labels_after_reduction = 0;
 
@@ -121,67 +190,7 @@ LabelReducer::LabelReducer(/*const vector<const Label *> &relevant_labels,*/
          << num_labels << " labels, "
          << num_labels_after_reduction << " after reduction"
          << endl;
-    num_reduced_labels = num_labels - num_labels_after_reduction;
-}
-
-LabelSignature LabelReducer::build_label_signature(
-    const Label &label,
-    const vector<bool> &var_is_used) const {
-    vector<Assignment> preconditions;
-    vector<Assignment> effects;
-
-    const vector<Prevail> &prev = label.get_prevail();
-    for (size_t i = 0; i < prev.size(); ++i) {
-        int var = prev[i].var;
-        if (var_is_used[var]) {
-            int val = prev[i].prev;
-            preconditions.push_back(make_pair(var, val));
-        }
-    }
-    const vector<PrePost> &pre_post = label.get_pre_post();
-    for (size_t i = 0; i < pre_post.size(); ++i) {
-        int var = pre_post[i].var;
-        if (var_is_used[var]) {
-            int pre = pre_post[i].pre;
-            if (pre != -1)
-                preconditions.push_back(make_pair(var, pre));
-            int post = pre_post[i].post;
-            effects.push_back(make_pair(var, post));
-        }
-    }
-    ::sort(preconditions.begin(), preconditions.end());
-    ::sort(effects.begin(), effects.end());
-
-    return LabelSignature(preconditions, effects, label.get_cost());
-}
-
-LabelReducer::LabelReducer(int abs_index,
-                           const vector<Abstraction *> &all_abstractions,
-                           vector<const Label *> &labels,
-                           bool fixpoint) {
-    int current_index = abs_index;
-    num_reduced_labels = 0;
-    while (true) {
-        Abstraction *current_abstraction = all_abstractions[current_index];
-        if (current_abstraction) {
-            // Note: we need to normalize the current abstraction in order to
-            // avoid that when normalizing it at some point later, we would
-            // have two label reductions to incorporate.
-            // See Abstraction::normalize()
-            current_abstraction->normalize();
-            EquivalenceRelation *relation = compute_outside_equivalence(current_abstraction, all_abstractions, labels);
-            int reduced_labels = reduce(relation, labels);
-            delete relation;
-            num_reduced_labels += reduced_labels;
-            if (reduced_labels == 0 || !fixpoint) {
-                break;
-            }
-        }
-        ++current_index;
-        if (current_index == all_abstractions.size()) {
-            current_index = 0;
-        }
-    }
+    return num_labels - num_labels_after_reduction;
 }
 
 EquivalenceRelation *LabelReducer::compute_outside_equivalence(const Abstraction *abstraction,
@@ -225,7 +234,7 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(const Abstraction
     return relation;
 }
 
-int LabelReducer::reduce(const EquivalenceRelation *relation, vector<const Label *> &labels) const {
+int LabelReducer::reduce_exactly(const EquivalenceRelation *relation, vector<const Label *> &labels) const {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
     for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {

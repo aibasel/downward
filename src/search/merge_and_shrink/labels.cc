@@ -18,18 +18,13 @@ Labels::Labels(OperatorCost cost_type) {
 Labels::~Labels() {
 }
 
-int Labels::reduce_approximatively(/*const std::vector<const Label *> &relevant_labels,*/
-                                   const std::vector<int> &abs_vars) {
-    LabelReducer label_reducer(/*relevant_labels, */abs_vars, labels);
+int Labels::reduce(int abs_index,
+                   const std::vector<Abstraction *> &all_abstractions,
+                   bool exact,
+                   bool fixpoint) {
+    LabelReducer label_reducer(abs_index, all_abstractions, labels, exact, fixpoint);
     return label_reducer.get_number_reduced_labels();
 }
-
-int Labels::reduce_exactly(int abs_index,
-                           const vector<Abstraction *> &all_abstractions, bool fixpoint) {
-    LabelReducer label_reducer(abs_index, all_abstractions, labels, fixpoint);
-    return label_reducer.get_number_reduced_labels();
-}
-
 
 int Labels::get_reduced_label_no(int label_no) const {
     return get_label_by_index(label_no)->get_reduced_label()->get_id();
