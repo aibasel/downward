@@ -2,8 +2,8 @@
 
 #include "abstraction.h"
 #include "labels.h"
+#include "linear_merge_strategy.h"
 #include "shrink_fh.h"
-#include "variable_order_finder.h"
 
 #include "../globals.h"
 #include "../option_parser.h"
@@ -18,7 +18,7 @@ using namespace std;
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
-      merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
+      merge_strategy_enum(MergeStrategyEnum(opts.get_enum("merge_strategy"))),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       label_reduction(LabelReduction(opts.get_enum("label_reduction"))),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
@@ -30,7 +30,7 @@ MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 
 void MergeAndShrinkHeuristic::dump_options() const {
     cout << "Merge strategy: ";
-    switch (merge_strategy) {
+    switch (merge_strategy_enum) {
     case MERGE_LINEAR_CG_GOAL_LEVEL:
         cout << "linear CG/GOAL, tie breaking on level (main)";
         break;
@@ -119,16 +119,25 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
     cout << "Merging abstractions..." << endl;
 
-    VariableOrderFinder order(merge_strategy);
+    MergeStrategy *merge_strategy = 0;
+    if (merge_strategy_enum != MERGE_DFP) {
+        merge_strategy = new LinearMergeStrategy(merge_strategy_enum);
+    } else {
+        exit_with(EXIT_INPUT_ERROR);
+    }
 
-    int var_first = order.next();
-    cout << "First variable: #" << var_first << endl;
-    Abstraction *abstraction = atomic_abstractions[var_first];
-    abstraction->statistics(use_expensive_statistics);
-
+    int var_first = -1;
+    Abstraction *abstraction = 0;
     int total_reduced_labels = 0;
-    while (!order.done()) {
-        int var_no = order.next();
+    while (!merge_strategy->done()) {
+        pair<int, int> next_vars = merge_strategy->get_next(all_abstractions);
+        if (var_first == -1) {
+            var_first = next_vars.first;
+            abstraction = atomic_abstractions[var_first];
+            cout << "First variable: #" << var_first << endl;
+            abstraction->statistics(use_expensive_statistics);
+        }
+        int var_no = next_vars.second;
         cout << "Next variable: #" << var_no << endl;
         Abstraction *other_abstraction = atomic_abstractions[var_no];
 
@@ -228,6 +237,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
     abstraction->statistics(use_expensive_statistics);
     abstraction->release_memory();
+
+    delete merge_strategy;
 
     cout << "Final number of reduced labels: " << total_reduced_labels << endl;
     return abstraction;
