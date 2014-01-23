@@ -64,8 +64,12 @@ void MergeAndShrinkHeuristic::dump_options() const {
     case NONE:
         cout << "disabled";
         break;
-       case APPROXIMATIVE:
+    case APPROXIMATIVE:
         cout << "approximative";
+        break;
+    case APPROXIMATIVE_WITH_FIXPOINT:
+        //cout << "approximative with fixpoint computation";
+        ABORT("not implemented");
         break;
     case EXACT:
         cout << "exact";
@@ -95,6 +99,28 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
             "You have been warned. Don't use this for benchmarking!")
         << endl << dashes << endl;
     }
+}
+
+int MergeAndShrinkHeuristic::reduce_labels(int var_first,
+                                           const vector<Abstraction *> &all_abstractions) {
+    int reduced_labels = 0;
+    switch (label_reduction) {
+    case NONE:
+        break;
+    case APPROXIMATIVE:
+        reduced_labels = labels->reduce(var_first, all_abstractions, false);
+        break;
+    case APPROXIMATIVE_WITH_FIXPOINT:
+        reduced_labels = labels->reduce(var_first, all_abstractions, false, true);
+        break;
+    case EXACT:
+        reduced_labels = labels->reduce(var_first, all_abstractions, true);
+        break;
+    case EXACT_WITH_FIXPOINT:
+        reduced_labels = labels->reduce(var_first, all_abstractions, true, true);
+        break;
+    }
+    return reduced_labels;
 }
 
 Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
@@ -146,20 +172,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         // Note: do not reduce labels several times for the same abstraction!
         bool reduced_labels = false;
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            switch (label_reduction) {
-            case NONE:
-                break;
-            case APPROXIMATIVE:
-                total_reduced_labels += labels->reduce_approximatively(/*abstraction->get_relevant_labels(), */
-                                                                       abstraction->get_varset());
-                break;
-            case EXACT:
-                total_reduced_labels += labels->reduce_exactly(var_first, all_abstractions);
-                break;
-            case EXACT_WITH_FIXPOINT:
-                total_reduced_labels += labels->reduce_exactly(var_first, all_abstractions, true);
-                break;
-            }
+            total_reduced_labels += reduce_labels(var_first, all_abstractions);
             reduced_labels = true;
             abstraction->normalize();
             assert(abstraction->sorted_unique());
@@ -186,20 +199,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         other_abstraction->statistics(use_expensive_statistics);
 
         if (!reduced_labels) {
-            switch (label_reduction) {
-            case NONE:
-                break;
-            case APPROXIMATIVE:
-                total_reduced_labels += labels->reduce_approximatively(/*abstraction->get_relevant_labels(), */
-                                                                       abstraction->get_varset());
-                break;
-            case EXACT:
-                total_reduced_labels += labels->reduce_exactly(var_first, all_abstractions);
-                break;
-            case EXACT_WITH_FIXPOINT:
-                total_reduced_labels += labels->reduce_exactly(var_first, all_abstractions, true);
-                break;
-            }
+            total_reduced_labels += reduce_labels(var_first, all_abstractions);
         }
         abstraction->normalize();
         assert(abstraction->sorted_unique());
@@ -343,6 +343,7 @@ static Heuristic *_parse(OptionParser &parser) {
     vector<string> label_reduction;
     label_reduction.push_back("NONE");
     label_reduction.push_back("APPROXIMATIVE");
+    label_reduction.push_back("APPROXIMATIVE_WITH_FIXPOINT");
     label_reduction.push_back("EXACT");
     label_reduction.push_back("EXACT_WITH_FIXPOINT");
     parser.add_enum_option("label_reduction", label_reduction, "label reduction method", "APPROXIMATIVE");

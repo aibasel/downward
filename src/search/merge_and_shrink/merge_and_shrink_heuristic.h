@@ -14,6 +14,7 @@ class Labels;
 enum LabelReduction {
     NONE,
     APPROXIMATIVE,
+    APPROXIMATIVE_WITH_FIXPOINT,
     EXACT,
     EXACT_WITH_FIXPOINT
 };
@@ -30,6 +31,8 @@ class MergeAndShrinkHeuristic : public Heuristic {
 
     void dump_options() const;
     void warn_on_unusual_options() const;
+    int reduce_labels(int var_first,
+                      const std::vector<Abstraction *> &all_abstractions);
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
