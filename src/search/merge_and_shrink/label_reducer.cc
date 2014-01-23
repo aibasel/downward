@@ -19,37 +19,41 @@ LabelReducer::LabelReducer(int abs_index,
                            vector<const Label *> &labels,
                            bool exact,
                            bool fixpoint) {
-    if (exact) {
-        int current_index = abs_index;
-        num_reduced_labels = 0;
-        while (true) {
-            Abstraction *current_abstraction = all_abstractions[current_index];
-            if (current_abstraction) {
+    int current_index = abs_index;
+    num_reduced_labels = 0;
+    while (true) {
+        Abstraction *current_abstraction = all_abstractions[current_index];
+        if (current_abstraction) {
+            int reduced_labels = 0;
+            if (exact) {
                 // Note: we need to normalize the current abstraction in order to
                 // avoid that when normalizing it at some point later, we would
                 // have two label reductions to incorporate.
                 // See Abstraction::normalize()
                 current_abstraction->normalize();
                 EquivalenceRelation *relation = compute_outside_equivalence(current_abstraction, all_abstractions, labels);
-                int reduced_labels = reduce_exactly(relation, labels);
+                reduced_labels = reduce_exactly(relation, labels);
                 delete relation;
-                num_reduced_labels += reduced_labels;
-                if (reduced_labels == 0 || !fixpoint) {
-                    break;
+            } else {
+                // Note: we need to normalize all abstractions as this does
+                // otherwise not happen between several label reductions.
+                // See above and Abstration::normalize()
+                for (size_t i = 0; i < all_abstractions.size(); ++i) {
+                    if (all_abstractions[i]) {
+                        all_abstractions[i]->normalize();
+                    }
                 }
+                reduced_labels = reduce_approximatively(current_abstraction->get_varset(), labels);
             }
-            ++current_index;
-            if (current_index == all_abstractions.size()) {
-                current_index = 0;
-            }
-        }
-    } else {
-        for (size_t i = 0; i < all_abstractions.size(); ++i) {
-            if (all_abstractions[i]) {
-                all_abstractions[i]->normalize();
+            num_reduced_labels += reduced_labels;
+            if (reduced_labels == 0 || !fixpoint) {
+                break;
             }
         }
-        num_reduced_labels = reduce_approximatively(all_abstractions[abs_index]->get_varset(), labels);
+        ++current_index;
+        if (current_index == all_abstractions.size()) {
+            current_index = 0;
+        }
     }
 }
 

@@ -68,8 +68,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
         cout << "approximative";
         break;
     case APPROXIMATIVE_WITH_FIXPOINT:
-        //cout << "approximative with fixpoint computation";
-        ABORT("not implemented");
+        cout << "approximative with fixpoint computation";
         break;
     case EXACT:
         cout << "exact";
