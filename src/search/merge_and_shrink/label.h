@@ -49,6 +49,8 @@ public:
     const Label *get_reduced_label() const {
         return root;
     }
+    virtual void get_origins(std::vector<const Label *> &origins) const = 0;
+    virtual const std::vector<const Label *> &get_parents() const = 0;
     void dump() const;
 
     mutable bool marker1, marker2; // HACK! HACK!
@@ -58,13 +60,20 @@ class OperatorLabel : public Label {
     void update_root(CompositeLabel *new_root) const;
 public:
     OperatorLabel(int id, int cost, const std::vector<Prevail> &prevail, const std::vector<PrePost> &pre_post);
+    virtual void get_origins(std::vector<const Label *> &origins) const;
+    virtual const std::vector<const Label *> &get_parents() const;
 };
 
 class CompositeLabel : public Label {
+    std::vector<const Label *> origins;
     std::vector<const Label *> parents;
     void update_root(CompositeLabel *new_root) const;
 public:
     CompositeLabel(int id, const std::vector<const Label *> &parents);
+    virtual void get_origins(std::vector<const Label *> &origins) const;
+    virtual const std::vector<const Label *> &get_parents() const {
+        return parents;
+    }
 };
 
 #endif
