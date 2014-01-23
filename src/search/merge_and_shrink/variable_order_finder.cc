@@ -15,7 +15,7 @@ using namespace std;
 
 
 VariableOrderFinder::VariableOrderFinder(
-    MergeStrategy merge_strategy_)
+    MergeStrategyEnum merge_strategy_)
     : merge_strategy(merge_strategy_) {
     int var_count = g_variable_domain.size();
     if (merge_strategy_ == MERGE_LINEAR_REVERSE_LEVEL) {

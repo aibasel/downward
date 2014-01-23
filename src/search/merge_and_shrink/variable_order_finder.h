@@ -7,7 +7,7 @@
 #include <vector>
 
 class VariableOrderFinder {
-    const MergeStrategy merge_strategy;
+    const MergeStrategyEnum merge_strategy;
     std::vector<int> selected_vars;
     std::vector<int> remaining_vars;
     std::vector<bool> is_goal_variable;
@@ -15,7 +15,7 @@ class VariableOrderFinder {
 
     void select_next(int position, int var_no);
 public:
-    VariableOrderFinder(MergeStrategy merge_strategy);
+    VariableOrderFinder(MergeStrategyEnum merge_strategy);
     ~VariableOrderFinder();
     bool done() const;
     int next();
