@@ -1,5 +1,6 @@
 #include "utilities.h"
 
+#include <cassert>
 #include <csignal>
 #include <cstdlib>
 #include <iostream>

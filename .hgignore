@@ -20,3 +20,4 @@
 ^new-scripts/reports/
 ^new-scripts/preprocessed-tasks/
 ^new-scripts/exp-.*/
+^new-scripts/downward-xmlrpc\.secret$
