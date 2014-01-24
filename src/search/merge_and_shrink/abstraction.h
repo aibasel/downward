@@ -149,14 +149,14 @@ public:
 
     // This method should be private but is public for shrink_bisimulation
     int get_label_cost_by_index(int label_no) const;
-    // The following methods are shrink_bisimulation-exclusive
+    // This method is shrink_bisimulation-exclusive
     int get_num_labels() const;
+    // This method is used by shrink_bisimulation and for computing non-linear
+    // merge strategies.
     const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const;
-
-    // The following two getters serve the m&s heuristic for label reduction
-    const std::vector<const Label *> &get_relevant_labels() const {
-        return relevant_labels;
-    }
+    // This getter is used by non_linear_merge_strategy
+    void compute_label_ranks(std::vector<int> &label_ranks);
+    // This serves approximative label reduction
     const std::vector<int> &get_varset() const {
         return varset;
     }

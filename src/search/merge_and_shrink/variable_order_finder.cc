@@ -16,7 +16,7 @@ VariableOrderFinder::VariableOrderFinder(
     LinearMergeStrategyType linear_merge_strategy_type_)
     : linear_merge_strategy_type(linear_merge_strategy_type_) {
     int var_count = g_variable_domain.size();
-    if (linear_merge_strategy_type_ == MERGE_LINEAR_REVERSE_LEVEL) {
+    if (linear_merge_strategy_type_ == REVERSE_LEVEL) {
         for (int i = 0; i < var_count; ++i)
             remaining_vars.push_back(i);
     } else {
@@ -24,8 +24,8 @@ VariableOrderFinder::VariableOrderFinder(
             remaining_vars.push_back(i);
     }
 
-    if (linear_merge_strategy_type == MERGE_LINEAR_CG_GOAL_RANDOM ||
-        linear_merge_strategy_type == MERGE_LINEAR_RANDOM)
+    if (linear_merge_strategy_type == CG_GOAL_RANDOM ||
+        linear_merge_strategy_type == RANDOM)
         random_shuffle(remaining_vars.begin(), remaining_vars.end());
 
     is_causal_predecessor.resize(var_count, false);
@@ -52,8 +52,8 @@ bool VariableOrderFinder::done() const {
 
 int VariableOrderFinder::next() {
     assert(!done());
-    if (linear_merge_strategy_type == MERGE_LINEAR_CG_GOAL_LEVEL || linear_merge_strategy_type
-        == MERGE_LINEAR_CG_GOAL_RANDOM) {
+    if (linear_merge_strategy_type == CG_GOAL_LEVEL || linear_merge_strategy_type
+        == CG_GOAL_RANDOM) {
         // First run: Try to find a causally connected variable.
         for (int i = 0; i < remaining_vars.size(); ++i) {
             int var_no = remaining_vars[i];
@@ -70,7 +70,7 @@ int VariableOrderFinder::next() {
                 return var_no;
             }
         }
-    } else if (linear_merge_strategy_type == MERGE_LINEAR_GOAL_CG_LEVEL) {
+    } else if (linear_merge_strategy_type == GOAL_CG_LEVEL) {
         // First run: Try to find a goal variable.
         for (int i = 0; i < remaining_vars.size(); ++i) {
             int var_no = remaining_vars[i];
@@ -87,9 +87,9 @@ int VariableOrderFinder::next() {
                 return var_no;
             }
         }
-    } else if (linear_merge_strategy_type == MERGE_LINEAR_RANDOM ||
-               linear_merge_strategy_type == MERGE_LINEAR_LEVEL ||
-               linear_merge_strategy_type == MERGE_LINEAR_REVERSE_LEVEL) {
+    } else if (linear_merge_strategy_type == RANDOM ||
+               linear_merge_strategy_type == LEVEL ||
+               linear_merge_strategy_type == REVERSE_LEVEL) {
         int var_no = remaining_vars[0];
         select_next(0, var_no);
         return var_no;
@@ -99,24 +99,24 @@ int VariableOrderFinder::next() {
 }
 
 void VariableOrderFinder::dump() const {
-    cout << "Linear merge strategy type:";
+    cout << "Linear merge strategy type: ";
     switch (linear_merge_strategy_type) {
-    case MERGE_LINEAR_CG_GOAL_LEVEL:
+    case CG_GOAL_LEVEL:
         cout << "CG/GOAL, tie breaking on level (main)";
         break;
-    case MERGE_LINEAR_CG_GOAL_RANDOM:
+    case CG_GOAL_RANDOM:
         cout << "CG/GOAL, tie breaking random";
         break;
-    case MERGE_LINEAR_GOAL_CG_LEVEL:
+    case GOAL_CG_LEVEL:
         cout << "GOAL/CG, tie breaking on level";
         break;
-    case MERGE_LINEAR_RANDOM:
+    case RANDOM:
         cout << "random";
         break;
-    case MERGE_LINEAR_LEVEL:
+    case LEVEL:
         cout << "by level";
         break;
-    case MERGE_LINEAR_REVERSE_LEVEL:
+    case REVERSE_LEVEL:
         cout << "by reverse level";
         break;
     default:
