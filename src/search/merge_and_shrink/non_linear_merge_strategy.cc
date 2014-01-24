@@ -72,6 +72,7 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
                             pair_weight = min(pair_weight, max_label_rank);
                         }
                     }
+                    cout << "pair weight for " << abs_index << " and " << other_abs_index << ": " << pair_weight << endl;
                     if (pair_weight < minimum_weight) {
                         minimum_weight = pair_weight;
                         next_indices.first = abs_index;

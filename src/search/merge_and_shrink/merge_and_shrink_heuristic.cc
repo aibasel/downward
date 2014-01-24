@@ -69,6 +69,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     for (size_t i = 0; i < atomic_abstractions.size(); ++i) {
         assert(atomic_abstractions[i]->sorted_unique());
         atomic_abstractions[i]->compute_distances();
+        atomic_abstractions[i]->dump();
         if (!atomic_abstractions[i]->is_solvable())
             return atomic_abstractions[i];
         shrink_strategy->shrink_atomic(*atomic_abstractions[i]);
