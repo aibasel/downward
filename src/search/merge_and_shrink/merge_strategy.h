@@ -14,7 +14,7 @@ public:
     virtual ~MergeStrategy() {}
 
     virtual bool done() const = 0;
-    virtual std::pair<int, int> get_next(const std::vector<Abstraction *> &all_abstractions) = 0;
+    virtual void get_next(const std::vector<Abstraction *> &all_abstractions, std::pair<int, int> &next_indices) = 0;
 
     void dump_options() const;
     virtual std::string name() const = 0;

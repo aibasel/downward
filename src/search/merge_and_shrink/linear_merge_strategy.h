@@ -16,7 +16,7 @@ public:
     explicit LinearMergeStrategy(const Options &opts);
 
     virtual bool done() const;
-    virtual std::pair<int, int> get_next(const std::vector<Abstraction *> &all_abstractions);
+    virtual void get_next(const std::vector<Abstraction *> &all_abstractions, std::pair<int, int> &next_indices);
     virtual std::string name() const;
 };
 

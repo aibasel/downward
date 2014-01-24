@@ -61,7 +61,7 @@ static void build_pattern_for_size_limit(
     if (size_limit < 1)
         parser.error("abstraction size must be at least 1");
 
-    VariableOrderFinder order(MERGE_LINEAR_GOAL_CG_LEVEL);
+    VariableOrderFinder order(GOAL_CG_LEVEL);
     size_t size = 1;
     while (true) {
         if (order.done())

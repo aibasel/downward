@@ -4,12 +4,12 @@
 #include <vector>
 
 enum LinearMergeStrategyType {
-    MERGE_LINEAR_CG_GOAL_LEVEL,
-    MERGE_LINEAR_CG_GOAL_RANDOM,
-    MERGE_LINEAR_GOAL_CG_LEVEL,
-    MERGE_LINEAR_RANDOM,
-    MERGE_LINEAR_LEVEL,
-    MERGE_LINEAR_REVERSE_LEVEL
+    CG_GOAL_LEVEL,
+    CG_GOAL_RANDOM,
+    GOAL_CG_LEVEL,
+    RANDOM,
+    LEVEL,
+    REVERSE_LEVEL
 };
 
 class VariableOrderFinder {

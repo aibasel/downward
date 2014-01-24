@@ -79,33 +79,43 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     int var_first = -1;
     Abstraction *abstraction = 0;
     int total_reduced_labels = 0;
+    vector<int> variable_order;
+    // TODO: reconsider in which oder things are done in the main loop
     while (!merge_strategy->done()) {
-        pair<int, int> next_vars = merge_strategy->get_next(all_abstractions);
+        pair<int, int> next_vars;
+        merge_strategy->get_next(all_abstractions, next_vars);
         if (var_first == -1) {
             var_first = next_vars.first;
-            abstraction = atomic_abstractions[var_first];
-            cout << "First variable: #" << var_first << endl;
-            abstraction->statistics(use_expensive_statistics);
         }
-        int var_no = next_vars.second;
-        cout << "Next variable: #" << var_no << endl;
-        Abstraction *other_abstraction = atomic_abstractions[var_no];
+        int var_one = next_vars.first;
+        if (merge_strategy->name() == "linear") {
+            assert(var_first == var_one);
+        }
+        variable_order.push_back(var_one);
+        cout << "Index one: " << var_one << endl;
+        abstraction = all_abstractions[var_one];
+        assert(abstraction);
+        abstraction->statistics(use_expensive_statistics);
+        int var_two = next_vars.second;
+        variable_order.push_back(var_two);
+        cout << "Index two: " << var_two << endl;
+        Abstraction *other_abstraction = all_abstractions[var_two];
+        assert(other_abstraction);
+        other_abstraction->statistics(use_expensive_statistics);
 
         // TODO: When using nonlinear merge strategies, make sure not
         // to normalize multiple parts of a composite. See issue68.
         // Note: do not reduce labels several times for the same abstraction!
         bool reduced_labels = false;
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            total_reduced_labels += labels->reduce(var_first, all_abstractions);
+            total_reduced_labels += labels->reduce(var_one, all_abstractions);
             reduced_labels = true;
             abstraction->normalize();
-            assert(abstraction->sorted_unique());
-            // no label reduction for other_abstraction now
             other_abstraction->normalize();
-            assert(other_abstraction->sorted_unique());
         }
 
         abstraction->compute_distances();
+        // TODO: check for which abstraction?
         if (!abstraction->is_solvable())
             return abstraction;
 
@@ -123,15 +133,11 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         other_abstraction->statistics(use_expensive_statistics);
 
         if (!reduced_labels) {
-            total_reduced_labels += labels->reduce(var_first, all_abstractions);
+            total_reduced_labels += labels->reduce(var_one, all_abstractions);
         }
         abstraction->normalize();
-        assert(abstraction->sorted_unique());
         abstraction->statistics(use_expensive_statistics);
-
-        // Don't label-reduce the atomic abstraction -- see issue68.
         other_abstraction->normalize();
-        assert(abstraction->sorted_unique());
         other_abstraction->statistics(use_expensive_statistics);
 
         Abstraction *new_abstraction = new CompositeAbstraction(
@@ -147,8 +153,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
         cout << "Number of reduced labels so far: " << total_reduced_labels << endl;
 
-        all_abstractions[var_first] = abstraction;
-        all_abstractions[var_no] = 0;
+        all_abstractions[var_one] = abstraction;
+        all_abstractions[var_two] = 0;
     }
 
     abstraction->compute_distances();
@@ -163,6 +169,11 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     abstraction->release_memory();
 
     cout << "Final number of reduced labels: " << total_reduced_labels << endl;
+    cout << "Order of merged indices: ";
+    for (size_t i = 1; i < variable_order.size(); i += 2) {
+        cout << variable_order[i - 1] << " " << variable_order[i] << ", ";
+    }
+    cout << endl;
     return abstraction;
 }
 
