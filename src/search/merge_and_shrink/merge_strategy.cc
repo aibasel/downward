@@ -1,5 +1,10 @@
 #include "merge_strategy.h"
 
-MergeStrategy::MergeStrategy(const MergeStrategyEnum &merge_strategy_enum_)
-    : merge_strategy_enum(merge_strategy_enum_){
+#include <iostream>
+
+using namespace std;
+
+void MergeStrategy::dump_options() const {
+    cout << "Merge strategy: " << name() << endl;
+    dump_strategy_specific_options();
 }
