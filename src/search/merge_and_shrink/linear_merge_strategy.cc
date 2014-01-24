@@ -1,6 +1,7 @@
 #include "linear_merge_strategy.h"
 
 #include <cassert>
+#include <cstdlib>
 
 using namespace std;
 

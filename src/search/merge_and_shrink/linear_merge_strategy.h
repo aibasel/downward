@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_SHRINK_LINEAR_MERGE_STRATEGY_H
 #define MERGE_AND_SHRINK_SHRINK_LINEAR_MERGE_STRATEGY_H
 
+#include "merge_strategy.h"
+
 #include "variable_order_finder.h"
 
 class LinearMergeStrategy : public MergeStrategy {
