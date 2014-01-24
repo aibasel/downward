@@ -81,7 +81,7 @@ def attempt(func, *args):
     else:
         for entry in result:
             logging.info(repr(entry))
-        logging.info("Call to ", func.__name__, " successful.")
+        logging.info("Call to %s successful." % func.__name__)
         return result
 
 def insert_wiki_links(text, titles):
@@ -114,17 +114,15 @@ def build_planner():
 def get_pages_from_planner():
     p = subprocess.Popen(["../../src/search/downward-1", "--help", "--txt2tags"], stdout=subprocess.PIPE)
     out = p.communicate()[0]
-    #split the output into tuples (title, text)
+    #split the output into tuples (title, markup_text)
     pagesplitter = re.compile(r'>>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<', re.DOTALL)
     pages = dict()
     for title, markup_text in pagesplitter.findall(out):
-        title = DOC_PREFIX + title
-        doc = markup.Document()
-        doc.add_text("<<TableOfContents>>\n" + markup_text)
-        text = doc.render("moin")
-        #remove anything before the table of contents (to get rid of the date)
-        text = text[text.find("<<TableOfContents>>"):]
-        pages[title] = text
+        document = markup.Document(date='')
+        document.add_text("<<TableOfContents>>")
+        document.add_text(markup_text)
+        rendered_text = document.render("moin").strip()
+        pages[DOC_PREFIX + title] = rendered_text
     return pages
 
 def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
@@ -134,14 +132,13 @@ def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
         overview_lines.append(" * [[" + title + "]]")
         new_text = insert_wiki_links(text, all_titles)
         #if a page with this title exists, re-use the text preceding the table of contents
-        old_text = old_doc_pages.get(title)
-        if old_text:
-            introduction = old_text[0:old_text.find("<<TableOfContents>>")]
-            new_text = introduction + new_text
+        old_text = old_doc_pages.get(title, '')
+        introduction = old_text[0:old_text.find("<<TableOfContents>>")]
+        new_text = introduction + new_text
         #check if this page is new or changed
         if old_text != new_text:
             logging.info("%s changed, adding to update list...", title)
-            changed_pages.append([title, text])
+            changed_pages.append([title, new_text])
     #update the overview page
     overview_title = DOC_PREFIX + "Overview"
     overview_text = "\n".join(overview_lines);
