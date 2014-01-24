@@ -1,8 +1,8 @@
 #ifndef MERGE_AND_SHRINK_MERGE_AND_SHRINK_HEURISTIC_H
 #define MERGE_AND_SHRINK_MERGE_AND_SHRINK_HEURISTIC_H
 
-#include "merge_strategy.h"
-#include "shrink_strategy.h"
+//#include "merge_strategy.h"
+//#include "shrink_strategy.h"
 
 #include "../heuristic.h"
 
@@ -10,6 +10,8 @@
 
 class Abstraction;
 class Labels;
+class MergeStrategy;
+class ShrinkStrategy;
 
 enum LabelReduction {
     NONE,
@@ -20,7 +22,7 @@ enum LabelReduction {
 };
 
 class MergeAndShrinkHeuristic : public Heuristic {
-    const MergeStrategyEnum merge_strategy_enum;
+    MergeStrategy *const merge_strategy;
     ShrinkStrategy *const shrink_strategy;
     const LabelReduction label_reduction;
     const bool use_expensive_statistics;

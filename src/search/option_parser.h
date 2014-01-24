@@ -45,6 +45,7 @@ class LandmarkGraph;
 template<class Entry>
 class OpenList;
 class SearchEngine;
+class MergeStrategy;
 class ShrinkStrategy;
 
 /*
@@ -109,6 +110,12 @@ template <>
 class TokenParser<ParseTree> {
 public:
     static inline ParseTree parse(OptionParser &p);
+};
+
+template <>
+class TokenParser<MergeStrategy *> {
+public:
+    static inline MergeStrategy *parse(OptionParser &p);
 };
 
 template <>
@@ -363,6 +370,10 @@ ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
 
 SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
     return lookup_in_registry<SearchEngine>(p);
+}
+
+MergeStrategy *TokenParser<MergeStrategy *>::parse(OptionParser &p) {
+    return lookup_in_registry<MergeStrategy>(p);
 }
 
 ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {

@@ -2,8 +2,9 @@
 
 #include "abstraction.h"
 #include "labels.h"
-#include "linear_merge_strategy.h"
+#include "merge_strategy.h"
 #include "shrink_fh.h"
+#include "shrink_strategy.h"
 
 #include "../globals.h"
 #include "../option_parser.h"
@@ -18,46 +19,19 @@ using namespace std;
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
-      merge_strategy_enum(MergeStrategyEnum(opts.get_enum("merge_strategy"))),
+      merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       label_reduction(LabelReduction(opts.get_enum("label_reduction"))),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
+    delete merge_strategy;
     delete labels;
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
-    cout << "Merge strategy: ";
-    switch (merge_strategy_enum) {
-    case MERGE_LINEAR_CG_GOAL_LEVEL:
-        cout << "linear CG/GOAL, tie breaking on level (main)";
-        break;
-    case MERGE_LINEAR_CG_GOAL_RANDOM:
-        cout << "linear CG/GOAL, tie breaking random";
-        break;
-    case MERGE_LINEAR_GOAL_CG_LEVEL:
-        cout << "linear GOAL/CG, tie breaking on level";
-        break;
-    case MERGE_LINEAR_RANDOM:
-        cout << "linear random";
-        break;
-    case MERGE_DFP:
-        cout << "Draeger/Finkbeiner/Podelski" << endl;
-        cerr << "DFP merge strategy not implemented." << endl;
-        exit_with(EXIT_UNSUPPORTED);
-        break;
-    case MERGE_LINEAR_LEVEL:
-        cout << "linear by level";
-        break;
-    case MERGE_LINEAR_REVERSE_LEVEL:
-        cout << "linear by reverse level";
-        break;
-    default:
-        ABORT("Unknown merge strategy.");
-    }
-    cout << endl;
+    merge_strategy->dump_options();
     shrink_strategy->dump_options();
     cout << "Label reduction: ";
     switch (label_reduction) {
@@ -143,13 +117,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     }
 
     cout << "Merging abstractions..." << endl;
-
-    MergeStrategy *merge_strategy = 0;
-    if (merge_strategy_enum != MERGE_DFP) {
-        merge_strategy = new LinearMergeStrategy(merge_strategy_enum);
-    } else {
-        exit_with(EXIT_INPUT_ERROR);
-    }
 
     int var_first = -1;
     Abstraction *abstraction = 0;
@@ -237,8 +204,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     abstraction->statistics(use_expensive_statistics);
     abstraction->release_memory();
 
-    delete merge_strategy;
-
     cout << "Final number of reduced labels: " << total_reduced_labels << endl;
     return abstraction;
 }
@@ -285,22 +250,10 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
 
-    // TODO: better documentation what each parameter does
-    vector<string> merge_strategies;
-    //TODO: it's a bit dangerous that the merge strategies here
-    // have to be specified exactly in the same order
-    // as in the enum definition. Try to find a way around this,
-    // or at least raise an error when the order is wrong.
-    merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_LEVEL");
-    merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_RANDOM");
-    merge_strategies.push_back("MERGE_LINEAR_GOAL_CG_LEVEL");
-    merge_strategies.push_back("MERGE_LINEAR_RANDOM");
-    merge_strategies.push_back("MERGE_DFP");
-    merge_strategies.push_back("MERGE_LINEAR_LEVEL");
-    merge_strategies.push_back("MERGE_LINEAR_REVERSE_LEVEL");
-    parser.add_enum_option("merge_strategy", merge_strategies,
-                           "merge strategy",
-                           "MERGE_LINEAR_CG_GOAL_LEVEL");
+    parser.add_option<MergeStrategy *>(
+        "merge_strategy",
+        "merge strategy; choose between merge_linear or merge_non_linear",
+        "merge_linear");
 
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy",

@@ -5,14 +5,19 @@
 
 #include "variable_order_finder.h"
 
+class Options;
+
 class LinearMergeStrategy : public MergeStrategy {
     VariableOrderFinder order;
     int previous_index;
+
+    void dump_strategy_specific_options() const;
 public:
-    LinearMergeStrategy(const MergeStrategyEnum &merge_strategy_enum);
+    explicit LinearMergeStrategy(const Options &opts);
 
     virtual bool done() const;
     virtual std::pair<int, int> get_next(const std::vector<Abstraction *> &all_abstractions);
+    virtual std::string name() const;
 };
 
 #endif

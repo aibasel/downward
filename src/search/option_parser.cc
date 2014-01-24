@@ -61,6 +61,7 @@ static void get_help(string k) {
     get_help_templ<LandmarkGraph *>(pt);
     Plugin<OpenList<int> >::register_open_lists();
     get_help_templ<OpenList<int> *>(pt);
+    get_help_templ<MergeStrategy *>(pt);
     get_help_templ<ShrinkStrategy *>(pt);
 }
 
@@ -82,6 +83,7 @@ static void get_full_help() {
     get_full_help_templ<LandmarkGraph *>();
     Plugin<OpenList<int> >::register_open_lists();
     get_full_help_templ<OpenList<int> *>();
+    get_full_help_templ<MergeStrategy *>();
     get_full_help_templ<ShrinkStrategy *>();
 }
 
