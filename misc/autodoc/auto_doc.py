@@ -49,7 +49,6 @@ def get_all_titles_from_wiki():
 def get_pages_from_wiki(titles):
     multi_call = connect()
     for title in titles:
-        print title
         multi_call.getPage(title)
     response = list(multi_call())
     assert(response[0] == 'SUCCESS')
@@ -66,8 +65,9 @@ def attempt(func, *args):
     try:
         result = func(*args)
     except xmlrpclib.Fault as error:
-        #this usually means the page content did not change. Should not happen anymore.
-        print error
+        #this usually means the page content did not change.
+        logging.exception("Error: %s\nShould not happen anymore." % error)
+        sys.exit(1)
     except xmlrpclib.ProtocolError, err:
         logging.warning("Error: %s\n"
             "Will retry after %s seconds." % (err.errcode, sleep_time))
@@ -139,6 +139,9 @@ def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
         if old_text != new_text:
             logging.info("%s changed, adding to update list...", title)
             changed_pages.append([title, new_text])
+            print title, "changed"
+        else:
+            print title, "unchanged"
     #update the overview page
     overview_title = DOC_PREFIX + "Overview"
     overview_text = "\n".join(overview_lines);
@@ -165,4 +168,9 @@ if __name__ == '__main__':
         attempt(send_pages, changed_pages)
     else:
         logging.info("no changes found")
+    missing_titles = set(old_doc_titles) - set(new_doc_pages.keys()) - set([DOC_PREFIX + "Overview"])
+    if missing_titles:
+        logging.warning("There are pages in the wiki documentation "
+            "that are not created by Fast Downward:\n" +
+            "\n".join(sorted(missing_titles)))
     print "Done"
