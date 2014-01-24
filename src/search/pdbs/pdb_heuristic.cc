@@ -11,8 +11,6 @@
 #include "../timer.h"
 #include "../utilities.h"
 
-#include "../merge_and_shrink/variable_order_finder.h"
-
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
