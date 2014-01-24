@@ -1,5 +1,5 @@
-#ifndef NON_LINEAR_MERGE_STRATEGY_H
-#define NON_LINEAR_MERGE_STRATEGY_H
+#ifndef MERGE_AND_SHRINK_SHRINK_NON_LINEAR_MERGE_STRATEGY_H
+#define MERGE_AND_SHRINK_SHRINK_NON_LINEAR_MERGE_STRATEGY_H
 
 #include "merge_strategy.h"
 
@@ -15,4 +15,4 @@ public:
     virtual std::string name() const;
 };
 
-#endif // NON_LINEAR_MERGE_STRATEGY_H
+#endif
