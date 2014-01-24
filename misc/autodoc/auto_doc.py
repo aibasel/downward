@@ -39,14 +39,14 @@ def connect():
     multi_call.applyAuthToken(auth_token)
     return multi_call
 
-def get_all_titles():
+def get_all_titles_from_wiki():
     multi_call = connect()
     multi_call.getAllPages()
     response = list(multi_call())
     assert(response[0] == 'SUCCESS' and len(response) == 2)
     return response[1]
 
-def get_pages(titles):
+def get_pages_from_wiki(titles):
     multi_call = connect()
     for title in titles:
         print title
@@ -104,64 +104,68 @@ def insert_wiki_links(text, titles):
         text = re.sub("\W" + key + "\W", make_link, text)
     return text
 
-if __name__ == '__main__':
-    logging.info("getting existing page titles...")
-    old_titles = attempt(get_all_titles)
-    #update the planner executable if necessary
+def build_planner():
     build_dir = "../../src/search"
     cwd = os.getcwd()
     os.chdir(build_dir)
     os.system("make")
     os.chdir(cwd)
 
-    #retrieve documentation output from the planner
+def get_pages_from_planner():
     p = subprocess.Popen(["../../src/search/downward-1", "--help", "--txt2tags"], stdout=subprocess.PIPE)
     out = p.communicate()[0]
-
-    #split the output into tuples (category, text)
+    #split the output into tuples (title, text)
     pagesplitter = re.compile(r'>>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<', re.DOTALL)
-    pages = pagesplitter.findall(out)
+    pages = dict()
+    for title, markup_text in pagesplitter.findall(out):
+        title = DOC_PREFIX + title
+        doc = markup.Document()
+        doc.add_text("<<TableOfContents>>\n" + markup_text)
+        text = doc.render("moin")
+        #remove anything before the table of contents (to get rid of the date)
+        text = text[text.find("<<TableOfContents>>"):]
+        pages[title] = text
+    return pages
 
-    #build a dictionary of existing pages
-    logging.info("getting existing doc pages...")
-    old_doc_titles = [title for title in old_titles if title.startswith(DOC_PREFIX)]
-    old_doc_pages = attempt(get_pages, old_doc_titles)
-    
-    all_titles = set(old_titles) | set([title for title, text in pages])
-
-    #build a list of changed pages
+def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
     changed_pages = []
     overview_lines = [];
-    for page in pages:
-        title, text = page
-        title = DOC_PREFIX + title
+    for title, text in sorted(new_doc_pages.items()):
         overview_lines.append(" * [[" + title + "]]")
-        text = "<<TableOfContents>>\n" + text
-        doc = markup.Document()
-        doc.add_text(text)
-        text = doc.render("moin")
-        #remove anything before the table of contents (to get rid of the date):
-        text = text[text.find("<<TableOfContents>>"):]
-        text = insert_wiki_links(text, all_titles)
-        #if a page with this title exists, re-use the text preceding the table of contents:
-        introduction = ""
-        if title in old_doc_titles:
-            old_text = old_doc_pages[title]
+        new_text = insert_wiki_links(text, all_titles)
+        #if a page with this title exists, re-use the text preceding the table of contents
+        old_text = old_doc_pages.get(title)
+        if old_text:
             introduction = old_text[0:old_text.find("<<TableOfContents>>")]
-        text = introduction + text
-        #check if this page is new or changed)
-        if not title in old_doc_titles or old_doc_pages[title] != text:
-            changed_pages.append([title, text])
+            new_text = introduction + new_text
+        #check if this page is new or changed
+        if old_text != new_text:
             logging.info("%s changed, adding to update list...", title)
-
+            changed_pages.append([title, text])
     #update the overview page
     overview_title = DOC_PREFIX + "Overview"
     overview_text = "\n".join(overview_lines);
-    if not overview_title in old_doc_titles or old_doc_pages.get(overview_title) != overview_text:
-        changed_pages.append([overview_title, overview_text])
+    if old_doc_pages.get(overview_title) != overview_text:
         logging.info("%s changed, adding to update list...", overview_title)
+        changed_pages.append([overview_title, overview_text])
+    return changed_pages
 
-    logging.info("sending changed pages...")
-    attempt(send_pages, changed_pages)
-
+if __name__ == '__main__':
+    logging.info("building planner...")
+    build_planner()
+    logging.info("getting new pages from planner...")
+    new_doc_pages = get_pages_from_planner()
+    logging.info("getting existing page titles from wiki...")
+    old_titles = attempt(get_all_titles_from_wiki)
+    old_doc_titles = [title for title in old_titles if title.startswith(DOC_PREFIX)]
+    all_titles = set(old_titles) | set(new_doc_pages.keys())
+    logging.info("getting existing doc page contents from wiki...")
+    old_doc_pages = attempt(get_pages_from_wiki, old_doc_titles)
+    logging.info("looking for changed pages...")
+    changed_pages = get_changed_pages(old_doc_pages, new_doc_pages, all_titles)
+    if changed_pages:
+        logging.info("sending changed pages...")
+        attempt(send_pages, changed_pages)
+    else:
+        logging.info("no changes found")
     print "Done"
