@@ -99,7 +99,7 @@ int VariableOrderFinder::next() {
 }
 
 void VariableOrderFinder::dump() const {
-    cout << "linear merge strategy type:";
+    cout << "Linear merge strategy type:";
     switch (linear_merge_strategy_type) {
     case MERGE_LINEAR_CG_GOAL_LEVEL:
         cout << "CG/GOAL, tie breaking on level (main)";
