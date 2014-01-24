@@ -4,12 +4,13 @@
 import logging
 import os
 from os.path import dirname, join
+import re
+import subprocess
 import sys
-import xmlrpclib
-import getpass, subprocess, re
-import markup
 import time
-import random #can be removed when testing is done
+import xmlrpclib
+
+import markup
 
 
 #how many seconds to wait after a failed requests. Will be doubled after each failed request.
@@ -140,8 +141,6 @@ if __name__ == '__main__':
     pagetitles = [];
     for page in pages:
         title = page[0]
-        if(title == "Synergy"):
-            title = "LAMAFFSynergy"
         title = "DOC/"+title
         pagetitles.append(title)
         text = page[1]
