@@ -21,8 +21,8 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      label_reduction(LabelReduction(opts.get_enum("label_reduction"))),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
+    labels = new Labels(cost_type, LabelReduction(opts.get_enum("label_reduction")));
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -33,27 +33,7 @@ MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
-    cout << "Label reduction: ";
-    switch (label_reduction) {
-    case NONE:
-        cout << "disabled";
-        break;
-    case APPROXIMATIVE:
-        cout << "approximative";
-        break;
-    case APPROXIMATIVE_WITH_FIXPOINT:
-        cout << "approximative with fixpoint computation";
-        break;
-    case EXACT:
-        cout << "exact";
-        break;
-    case EXACT_WITH_FIXPOINT:
-        cout << "exact with fixpoint computation";
-        break;
-    default:
-        ABORT("Unknown label reduction method");
-    }
-    cout << endl;
+    labels->dump_options();
     cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
@@ -72,28 +52,6 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
             "You have been warned. Don't use this for benchmarking!")
         << endl << dashes << endl;
     }
-}
-
-int MergeAndShrinkHeuristic::reduce_labels(int var_first,
-                                           const vector<Abstraction *> &all_abstractions) {
-    int reduced_labels = 0;
-    switch (label_reduction) {
-    case NONE:
-        break;
-    case APPROXIMATIVE:
-        reduced_labels = labels->reduce(var_first, all_abstractions, false);
-        break;
-    case APPROXIMATIVE_WITH_FIXPOINT:
-        reduced_labels = labels->reduce(var_first, all_abstractions, false, true);
-        break;
-    case EXACT:
-        reduced_labels = labels->reduce(var_first, all_abstractions, true);
-        break;
-    case EXACT_WITH_FIXPOINT:
-        reduced_labels = labels->reduce(var_first, all_abstractions, true, true);
-        break;
-    }
-    return reduced_labels;
 }
 
 Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
@@ -138,7 +96,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         // Note: do not reduce labels several times for the same abstraction!
         bool reduced_labels = false;
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            total_reduced_labels += reduce_labels(var_first, all_abstractions);
+            total_reduced_labels += labels->reduce(var_first, all_abstractions);
             reduced_labels = true;
             abstraction->normalize();
             assert(abstraction->sorted_unique());
@@ -165,7 +123,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         other_abstraction->statistics(use_expensive_statistics);
 
         if (!reduced_labels) {
-            total_reduced_labels += reduce_labels(var_first, all_abstractions);
+            total_reduced_labels += labels->reduce(var_first, all_abstractions);
         }
         abstraction->normalize();
         assert(abstraction->sorted_unique());
@@ -217,7 +175,6 @@ void MergeAndShrinkHeuristic::initialize() {
     verify_no_axioms_no_cond_effects();
 
     cout << "Building abstraction..." << endl;
-    labels = new Labels(cost_type);
     final_abstraction = build_abstraction();
     if (!final_abstraction->is_solvable()) {
         cout << "Abstract problem is unsolvable!" << endl;
