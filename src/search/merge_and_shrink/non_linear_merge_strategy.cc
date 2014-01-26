@@ -21,11 +21,14 @@ static const int infinity = numeric_limits<int>::max();
 NonLinearMergeStrategy::NonLinearMergeStrategy(const Options &opts)
     : MergeStrategy(),
       non_linear_merge_strategy_type(NonLinearMergeStrategyType(opts.get_enum("type"))),
-      remaining_merges(-1) {
+      remaining_merges(-1), pair_weights_unequal_zero_counter(0) {
 }
 
 bool NonLinearMergeStrategy::done() const {
-    cout << "remaining merges: " << remaining_merges << endl;
+    if (remaining_merges == 0) {
+        cout << "Number of times a pair with weight unequal 0 has been chosen: "
+             << pair_weights_unequal_zero_counter << endl;
+    }
     return remaining_merges == 0;
 }
 
@@ -47,6 +50,8 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
             }
         }
     }
+    //next_indices.first = -1;
+    //next_indices.second = -1;
     vector<vector<int> > abstraction_label_ranks(all_abstractions.size());
     int minimum_weight = infinity;
     for (size_t abs_index = 0; abs_index < all_abstractions.size(); ++abs_index) {
@@ -64,16 +69,20 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
                         other_abstraction->compute_label_ranks(other_label_ranks);
                     }
 
+                    //cout << "comparing label ranks for " << abs_index << " and " << other_abs_index << endl,
                     assert(label_ranks.size() == other_label_ranks.size());
                     int pair_weight = infinity;
                     for (size_t i = 0; i < label_ranks.size(); ++i) {
                         if (label_ranks[i] != -1 && other_label_ranks[i] != -1) {
+                            //cout << "label " << i << ": " << label_ranks[i] << " " << other_label_ranks[i] << endl;
                             int max_label_rank = max(label_ranks[i], other_label_ranks[i]);
                             pair_weight = min(pair_weight, max_label_rank);
                         }
                     }
-                    cout << "pair weight for " << abs_index << " and " << other_abs_index << ": " << pair_weight << endl;
-                    if (pair_weight < minimum_weight) {
+                    //if (pair_weight != 0 && pair_weight != infinity) {
+                    //    cout << "pair weight for " << abs_index << " and " << other_abs_index << ": " << pair_weight << endl;
+                    //}
+                    if (pair_weight < minimum_weight/* && pair_weight > 0*/) {
                         minimum_weight = pair_weight;
                         next_indices.first = abs_index;
                         next_indices.second = other_abs_index;
@@ -81,6 +90,27 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
                 }
             }
         }
+    }
+    /*int index = 0;
+    while (next_indices.second == -1) {
+        Abstraction *abs = all_abstractions[index];
+        if (abs) {
+            if (next_indices.first == -1) {
+                next_indices.first = index;
+                ++index;
+                continue;
+            }
+            if (next_indices.second == -1) {
+                assert(next_indices.first != -1);
+                next_indices.second = index;
+                break;
+            }
+        } else {
+            ++index;
+        }
+    }*/
+    if (minimum_weight != 0 ) {
+        ++pair_weights_unequal_zero_counter;
     }
     --remaining_merges;
 }

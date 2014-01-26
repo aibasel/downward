@@ -11,6 +11,7 @@ class NonLinearMergeStrategy : public MergeStrategy {
     };
     NonLinearMergeStrategyType non_linear_merge_strategy_type;
     int remaining_merges;
+    int pair_weights_unequal_zero_counter;
 
     void dump_strategy_specific_options() const;
 public:
