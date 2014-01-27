@@ -258,6 +258,35 @@ struct TypeNamer<std::vector<T> > {
     }
 };
 
+// TypeDocumenter allows to add global documentation to the types.
+// This cannot be done during parsing, because types are not parsed.
+
+template <class T>
+struct TypeDocumenter {
+    static std::string synopsis() {
+        return "";
+    }
+};
+
+template <>
+struct TypeDocumenter<Heuristic *> {
+    static std::string synopsis() {
+        return "A heuristic specification is either a newly created heuristic "
+               "instance or a heuristic that has been defined previously. "
+               "This page describes how one can specify a new heuristic instance. "
+               "For re-using heuristics, see ReusingHeuristics.\n\n"
+               "Definitions of //properties// in the descriptions below:\n\n"
+               " * **admissible:** h(s) <= h*(s) for all states s\n"
+               " * **consistent:** h(s) + c(s, s') >= h(s') for all states s "
+               "connected to states s' by an action with cost c(s, s')\n"
+               " * **safe:** h(s) = infinity is only true for states "
+               "with h*(s) = infinity\n"
+               " * **preferred operators:** this heuristic identifies "
+               "preferred operators ";
+    }
+};
+
+
 //helper functions for the ParseTree (=tree<ParseNode>)
 
 template<class T>
