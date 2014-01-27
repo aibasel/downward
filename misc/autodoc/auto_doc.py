@@ -130,15 +130,11 @@ def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
     overview_lines = [];
     for title, text in sorted(new_doc_pages.items()):
         overview_lines.append(" * [[" + title + "]]")
-        new_text = insert_wiki_links(text, all_titles)
-        #if a page with this title exists, re-use the text preceding the table of contents
-        old_text = old_doc_pages.get(title, '')
-        introduction = old_text[0:old_text.find("<<TableOfContents>>")]
-        new_text = introduction + new_text
+        text = insert_wiki_links(text, all_titles) 
         #check if this page is new or changed
-        if old_text != new_text:
+        if old_doc_pages.get(title, '') != text:
             logging.info("%s changed, adding to update list...", title)
-            changed_pages.append([title, new_text])
+            changed_pages.append([title, text])
             print title, "changed"
         else:
             print title, "unchanged"
