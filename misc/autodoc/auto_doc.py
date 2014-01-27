@@ -88,20 +88,28 @@ def insert_wiki_links(text, titles):
     def make_link(m, prefix=''):
         s = m.group(0)
         key = s[1:-1]
+        anchor = m.group('anchor') or ''
+        link_name = m.group('link')
+        target = prefix + link_name
+        if anchor:
+            target += '#' + anchor
+            link_name = anchor
+        link_name = link_name.replace("_", " ")
         #leave out the prefix in the link name
-        result = s[0] + "[[" + prefix + key + "|" + key + "]]" + s[-1]
+        result = m.group('before') + "[[" + target + "|" + link_name + "]]" + m.group('after')
         return result
 
     def make_doc_link(m):
         return make_link(m, prefix=DOC_PREFIX)
 
+    re_link = "(?P<before>\W)(?P<link>%s)(#(?P<anchor>\w+))?(?P<after>\W)"
     doctitles = [title[4:] for title in titles if title.startswith(DOC_PREFIX)]
     for key in doctitles:
-        text = re.sub("\W" + key + "\W", make_doc_link, text)
+        text = re.sub(re_link % key, make_doc_link, text)
     othertitles = [title for title in titles
                         if not title.startswith(DOC_PREFIX) and title not in doctitles]
     for key in othertitles:
-        text = re.sub("\W" + key + "\W", make_link, text)
+        text = re.sub(re_link % key, make_link, text)
     return text
 
 def build_planner():
