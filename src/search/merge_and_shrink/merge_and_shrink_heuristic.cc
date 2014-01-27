@@ -80,6 +80,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     Abstraction *abstraction = 0;
     int total_reduced_labels = 0;
     vector<int> variable_order;
+    bool indices_order_is_non_linear = false;
     // TODO: reconsider in which oder things are done in the main loop
     while (!merge_strategy->done()) {
         pair<int, int> next_vars;
@@ -92,14 +93,17 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
             assert(var_first == var_one);
         }
         variable_order.push_back(var_one);
-        cout << "Index one: " << var_one << endl;
         abstraction = all_abstractions[var_one];
         assert(abstraction);
         abstraction->statistics(use_expensive_statistics);
         int var_two = next_vars.second;
         assert(var_one != var_two);
+        if (merge_strategy->name() == "non linear") {
+            if (var_one != var_first && var_two != var_first) {
+                indices_order_is_non_linear = true;
+            }
+        }
         variable_order.push_back(var_two);
-        cout << "Index two: " << var_two << endl;
         Abstraction *other_abstraction = all_abstractions[var_two];
         assert(other_abstraction);
         other_abstraction->statistics(use_expensive_statistics);
@@ -175,6 +179,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         cout << variable_order[i - 1] << " " << variable_order[i] << ", ";
     }
     cout << endl;
+    cout << "Order of indices is truely non linear: " << indices_order_is_non_linear << endl;
     return abstraction;
 }
 
