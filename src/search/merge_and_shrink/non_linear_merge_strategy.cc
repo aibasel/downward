@@ -79,19 +79,6 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
             }
         }
     }
-
-        /*for (size_t abs_index = 0; abs_index < all_abstractions.size(); ++abs_index) {
-            if (all_abstractions[abs_index]) {
-                for (size_t other_abs_index = abs_index + 1; other_abs_index < all_abstractions.size(); ++other_abs_index) {
-                    if (all_abstractions[other_abs_index]) {
-                        next_indices.first = abs_index;
-                        next_indices.second = other_abs_index;
-                        --remaining_merges;
-                        return;
-                    }
-                }
-            }
-        }*/
     // we simply take the first two valid indices from the set of all
     // abstractions to be merged next if:
     // 1) remaining_merges = 1 (there are only two abstractions left)
@@ -113,6 +100,13 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
         } else {
             ++index;
         }
+    }
+    cout << "Next pair of indices: (" << next_indices.first << ", " << next_indices.second << ")" << endl;
+    if (remaining_merges > 1 && minimum_weight != infinity) {
+        // in the case we do not make a trivial choice of a next pair
+        cout << "Computed weight: " << minimum_weight << endl;
+    } else {
+        cout << "No weight computed (pair has been chosen trivially by order)" << endl;
     }
     if (minimum_weight != 0 && minimum_weight != infinity) {
         ++pair_weights_unequal_zero_counter;
