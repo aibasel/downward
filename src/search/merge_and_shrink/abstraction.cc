@@ -132,6 +132,57 @@ int Abstraction::get_max_h() const {
     return max_h;
 }
 
+int Abstraction::get_label_cost_by_index(int label_no) const {
+    const Label *label = labels->get_label_by_index(label_no);
+    return label->get_cost();
+}
+
+int Abstraction::get_num_labels() const {
+    return labels->get_size();
+}
+
+const vector<AbstractTransition> &Abstraction::get_transitions_for_label(int label_no) const {
+    // we do *not* return the transitions for the mapped label because shrink_bisimulation
+    // iterates over all labels anyway. if the abstraction is not normalized, then we
+    // need to do so anyway, if it is, it doesn't hurt to return the then empty
+    // transitions of mapped labels.
+    return transitions_by_label[label_no];
+}
+
+void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
+    // abstraction needs to be normalized when considering labels and their
+    // transitions
+    if (!is_normalized()) {
+        normalize();
+    }
+    // distances have been computed
+    if (max_h == DISTANCE_UNKNOWN) {
+        compute_distances();
+    }
+    assert(label_ranks.empty());
+    label_ranks.resize(transitions_by_label.size(), -1);
+    for (size_t i = 0; i < relevant_labels.size(); ++i) {
+        int label_id = relevant_labels[i]->get_reduced_label()->get_id();
+        if (label_ranks[label_id] != -1) {
+            // already dealt with reduced label (label_id)
+            continue;
+        }
+        const vector<AbstractTransition> &transitions = transitions_by_label[label_id];
+        int label_rank = infinity;
+        //cout << "label " << label_id << endl;
+        for (size_t j = 0; j < transitions.size(); ++j) {
+            const AbstractTransition &t = transitions[j];
+            //cout << "target: " << t.target << endl;
+            //cout << "goal distance: " << goal_distances[t.target] << endl;
+            label_rank = min(label_rank, goal_distances[t.target]);
+        }
+        // relevant labels with no transitions have a rank of infitiy (they
+        // block snychronization)
+        //cout << tag() << " label " << label_id << " rank " << label_rank << endl;
+        label_ranks[label_id] = label_rank;
+    }
+}
+
 void Abstraction::compute_distances() {
     cout << tag() << flush;
     if (max_h != DISTANCE_UNKNOWN) {
@@ -202,57 +253,6 @@ void Abstraction::compute_distances() {
         ShrinkStrategy *shrink_temp = ShrinkFH::create_default(num_states);
         shrink_temp->shrink(*this, num_states, true);
         delete shrink_temp;
-    }
-}
-
-int Abstraction::get_label_cost_by_index(int label_no) const {
-    const Label *label = labels->get_label_by_index(label_no);
-    return label->get_cost();
-}
-
-int Abstraction::get_num_labels() const {
-    return labels->get_size();
-}
-
-const vector<AbstractTransition> &Abstraction::get_transitions_for_label(int label_no) const {
-    // we do *not* return the transitions for the mapped label because shrink_bisimulation
-    // iterates over all labels anyway. if the abstraction is not normalized, then we
-    // need to do so anyway, if it is, it doesn't hurt to return the then empty
-    // transitions of mapped labels.
-    return transitions_by_label[label_no];
-}
-
-void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
-    // abstraction needs to be normalized when considering labels and their
-    // transitions
-    if (!is_normalized()) {
-        normalize();
-    }
-    // distances have been computed
-    if (max_h == DISTANCE_UNKNOWN) {
-        compute_distances();
-    }
-    assert(label_ranks.empty());
-    label_ranks.resize(transitions_by_label.size(), -1);
-    for (size_t i = 0; i < relevant_labels.size(); ++i) {
-        int label_id = relevant_labels[i]->get_reduced_label()->get_id();
-        if (label_ranks[label_id] != -1) {
-            // already dealt with reduced label (label_id)
-            continue;
-        }
-        const vector<AbstractTransition> &transitions = transitions_by_label[label_id];
-        int label_rank = infinity;
-        //cout << "label " << label_id << endl;
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const AbstractTransition &t = transitions[j];
-            //cout << "target: " << t.target << endl;
-            //cout << "goal distance: " << goal_distances[t.target] << endl;
-            label_rank = min(label_rank, goal_distances[t.target]);
-        }
-        // relevant labels with no transitions have a rank of infitiy (they
-        // block snychronization)
-        //cout << tag() << " label " << label_id << " rank " << label_rank << endl;
-        label_ranks[label_id] = label_rank;
     }
 }
 
