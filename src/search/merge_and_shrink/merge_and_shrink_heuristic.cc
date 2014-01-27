@@ -97,6 +97,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         assert(abstraction);
         abstraction->statistics(use_expensive_statistics);
         int var_two = next_vars.second;
+        assert(var_one != var_two);
         variable_order.push_back(var_two);
         cout << "Index two: " << var_two << endl;
         Abstraction *other_abstraction = all_abstractions[var_two];
