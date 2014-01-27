@@ -290,9 +290,7 @@ double PDBHeuristic::compute_mean_finite_h() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "PDB",
-        "TODO");
+    parser.document_synopsis("Pattern database heuristic", "TODO");
     Heuristic::add_options_to_parser(parser);
     Options opts;
     parse_pattern(parser, opts);
