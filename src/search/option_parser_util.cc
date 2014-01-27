@@ -58,8 +58,8 @@ void DocStore::add_feature(string k,
 }
 
 void DocStore::add_note(string k,
-                        string name, string description) {
-    registered[k].notes.push_back(NoteInfo(name, description));
+                        string name, string description, bool long_text) {
+    registered[k].notes.push_back(NoteInfo(name, description, long_text));
 }
 
 void DocStore::hide(std::string k) {
@@ -188,7 +188,7 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
                 pair<string, string> explanation =
                     arg.value_explanations[k];
                 if (is_call(explanation.first)) {
-                    os << " {{{" << endl << explanation.first << "}}}" << endl
+                    os << endl << "```" << endl << explanation.first << endl << "```" << endl
                        << " " << explanation.second << endl;
                 } else {
                     os << " - ``" << explanation.first << "``: "
@@ -202,7 +202,12 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
 void Txt2TagsPrinter::print_notes(const DocStruct &info) {
     for (size_t j(0); j != info.notes.size(); ++j) {
         NoteInfo note = info.notes[j];
-        os << "**" << note.name << ":** " << note.description << endl << endl;
+        if (note.long_text) {
+            os << "=== " << note.name << " ===" << endl
+               << note.description << endl << endl;
+        } else {
+            os << "**" << note.name << ":** " << note.description << endl << endl;
+        }
     }
 }
 
@@ -283,7 +288,12 @@ void PlainPrinter::print_notes(const DocStruct &info) {
     if (print_all) {
         for (size_t j(0); j != info.notes.size(); ++j) {
             NoteInfo note = info.notes[j];
-            os << " * " << note.name << ": " << note.description << endl << endl;
+            if (note.long_text) {
+                os << "=== " << note.name << " ===" << endl
+                   << note.description << endl << endl;
+            } else {
+                os << " * " << note.name << ": " << note.description << endl << endl;
+            }
         }
     }
 }
