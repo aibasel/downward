@@ -111,13 +111,16 @@ void DocPrinter::print_all() {
     DocStore *ds = DocStore::instance();
     vector<string> types = ds->get_types();
     for (size_t n(0); n != types.size(); ++n) {
-        print_category(types[n]);
+        // Entries for the category itself have an empty type
+        if (!types[n].empty())
+            print_category(types[n]);
     }
 }
 
 void DocPrinter::print_category(string category_name) {
     print_category_header(category_name);
     DocStore *ds = DocStore::instance();
+    print_element("", ds->get(category_name));
     vector<string> keys = ds->get_keys();
     for (size_t i(0); i != keys.size(); ++i) {
         DocStruct info = ds->get(keys[i]);
@@ -146,24 +149,28 @@ Txt2TagsPrinter::~Txt2TagsPrinter() {
 }
 
 void Txt2TagsPrinter::print_synopsis(const DocStruct &info) {
-    os << "== " << info.full_name << " ==" << endl
-       << info.synopsis << endl;
+    if (!info.full_name.empty())
+        os << "== " << info.full_name << " ==" << endl;
+    if (!info.synopsis.empty())
+        os << info.synopsis << endl;
 }
 
 void Txt2TagsPrinter::print_usage(string call_name, const DocStruct &info) {
-    os << "``` " << call_name << "(";
-    for (size_t j(0); j != info.arg_help.size(); ++j) {
-        ArgumentInfo arg = info.arg_help[j];
-        os << arg.kwd;
-        if (!info.arg_help[j].default_value.empty()) {
-            os << "=" << info.arg_help[j].default_value;
-        } else if (!info.arg_help[j].mandatory) {
-            os << "=None";
+    if (!call_name.empty()) {
+        os << "``` " << call_name << "(";
+        for (size_t j(0); j != info.arg_help.size(); ++j) {
+            ArgumentInfo arg = info.arg_help[j];
+            os << arg.kwd;
+            if (!info.arg_help[j].default_value.empty()) {
+                os << "=" << info.arg_help[j].default_value;
+            } else if (!info.arg_help[j].mandatory) {
+                os << "=None";
+            }
+            if (j != info.arg_help.size() - 1)
+                os << ", ";
         }
-        if (j != info.arg_help.size() - 1)
-            os << ", ";
+        os << ")" << endl << endl << endl;
     }
-    os << ")" << endl << endl << endl;
 }
 
 static bool is_call(string s) {
@@ -238,26 +245,29 @@ PlainPrinter::~PlainPrinter() {
 }
 
 void PlainPrinter::print_synopsis(const DocStruct &info) {
-    os << "== " << info.full_name << " ==" << endl;
-    if (print_all) {
+    if (!info.full_name.empty())
+        os << "== " << info.full_name << " ==" << endl;
+    if (print_all && !info.synopsis.empty()) {
         os << info.synopsis << endl;
     }
 }
 
 void PlainPrinter::print_usage(string call_name, const DocStruct &info) {
-    os << call_name << "(";
-    for (size_t j(0); j != info.arg_help.size(); ++j) {
-        ArgumentInfo arg = info.arg_help[j];
-        os << arg.kwd;
-        if (!info.arg_help[j].default_value.empty()) {
-            os << "=" << info.arg_help[j].default_value;
-        } else if (!info.arg_help[j].mandatory) {
-            os << "=None";
+    if (!call_name.empty()) {
+        os << call_name << "(";
+        for (size_t j(0); j != info.arg_help.size(); ++j) {
+            ArgumentInfo arg = info.arg_help[j];
+            os << arg.kwd;
+            if (!info.arg_help[j].default_value.empty()) {
+                os << "=" << info.arg_help[j].default_value;
+            } else if (!info.arg_help[j].mandatory) {
+                os << "=None";
+            }
+            if (j != info.arg_help.size() - 1)
+                os << ", ";
         }
-        if (j != info.arg_help.size() - 1)
-            os << ", ";
+        os << ")" << endl;
     }
-    os << ")" << endl;
 }
 
 void PlainPrinter::print_arguments(const DocStruct &info) {
