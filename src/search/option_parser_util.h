@@ -274,7 +274,7 @@ struct TypeDocumenter<Heuristic *> {
         return "A heuristic specification is either a newly created heuristic "
                "instance or a heuristic that has been defined previously. "
                "This page describes how one can specify a new heuristic instance. "
-               "For re-using heuristics, see ReusingHeuristics.\n\n"
+               "For re-using heuristics, see OptionSyntax#Heuristic_Predefinitions.\n\n"
                "Definitions of //properties// in the descriptions below:\n\n"
                " * **admissible:** h(s) <= h*(s) for all states s\n"
                " * **consistent:** h(s) + c(s, s') >= h(s') for all states s "
@@ -283,6 +283,24 @@ struct TypeDocumenter<Heuristic *> {
                "with h*(s) = infinity\n"
                " * **preferred operators:** this heuristic identifies "
                "preferred operators ";
+    }
+};
+
+template <>
+struct TypeDocumenter<LandmarkGraph *> {
+    static std::string synopsis() {
+        return "A landmark graph specification is either a newly created "
+               "instance or a landmark graph that has been defined previously. "
+               "This page describes how one can specify a new landmark graph instance. "
+               "For re-using landmark graphs, see OptionSyntax#Landmark_Predefinitions.\n\n"
+               "**Warning:** See OptionCaveats for using cost types with Landmarks";
+    }
+};
+
+template <>
+struct TypeDocumenter<ScalarEvaluator *> {
+    static std::string synopsis() {
+        return "XXX TODO: description of the role of scalar evaluators and the connection to Heuristic";
     }
 };
 
@@ -433,12 +451,14 @@ struct PropertyInfo {
 };
 
 struct NoteInfo {
-    NoteInfo(std::string n, std::string descr)
+    NoteInfo(std::string n, std::string descr, bool long_text_)
         : name(n),
-          description(descr) {
+          description(descr),
+          long_text(long_text_){
     }
     std::string name;
     std::string description;
+    bool long_text;
 };
 
 
@@ -492,7 +512,7 @@ public:
     void add_feature(std::string k,
                      std::string feature, std::string description);
     void add_note(std::string k,
-                  std::string name, std::string description);
+                  std::string name, std::string description, bool long_text);
     void hide(std::string k);
 
     bool contains(std::string k);

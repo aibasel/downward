@@ -461,9 +461,9 @@ void OptionParser::document_language_support(string feature,
 }
 
 void OptionParser::document_note(string name,
-                                 string note) const {
+                                 string note, bool long_text) const {
     DocStore::instance()->add_note(parse_tree.begin()->value,
-                                   name, note);
+                                   name, note, long_text);
 }
 
 void OptionParser::document_hide() const {
