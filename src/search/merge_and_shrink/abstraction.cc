@@ -700,8 +700,10 @@ AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, Labels *labels, int vari
 
     int init_value = g_initial_state()[variable];
     int goal_value = -1;
+    goal_relevant = false;
     for (int goal_no = 0; goal_no < g_goal.size(); goal_no++) {
         if (g_goal[goal_no].first == variable) {
+            goal_relevant = true;
             assert(goal_value == -1);
             goal_value = g_goal[goal_no].second;
         }
@@ -741,6 +743,7 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
 
     num_states = abs1->size() * abs2->size();
     goal_states.resize(num_states, false);
+    goal_relevant = (abs1->goal_relevant || abs2->goal_relevant);
 
     lookup_table.resize(abs1->size(), vector<AbstractStateRef> (abs2->size()));
     for (int s1 = 0; s1 < abs1->size(); s1++) {
