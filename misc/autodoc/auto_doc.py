@@ -20,7 +20,7 @@ sleep_time = 10
 BOT_USERNAME = "XmlRpcBot"
 PASSWORD_FILE = "downward-xmlrpc.secret" # relative to this source file
 WIKI_URL = "http://www.fast-downward.org"
-DOC_PREFIX = "DOC/"
+DOC_PREFIX = "Doc/"
 
 def read_password():
     path = join(dirname(__file__), PASSWORD_FILE)
