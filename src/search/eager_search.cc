@@ -340,8 +340,9 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<bool>("pathmax",
                             "use pathmax correction", "false");
     parser.add_option<ScalarEvaluator *>("f_eval",
-                                         "set evaluator for jump statistics",
-                                         "",
+        "set evaluator for jump statistics. "
+        "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
+        "",
                                          OptionFlags(false));
     parser.add_list_option<Heuristic *>
         ("preferred",
@@ -370,6 +371,13 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         "for the more general eager search, "
         "because the current implementation of multi-path depedence "
         "does not support general open lists.");
+    parser.document_note("Equivalent statements using general eager search",
+        "\n```\n--search astar(evaluator)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h=evaluator\n"
+        "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
+        "               reopen_closed=true, pathmax=false, progress_evaluator=sum([g(), h]))\n"
+        "```\n", true);
     parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
     parser.add_option<bool>("pathmax",
                             "use pathmax correction", "false");
@@ -418,6 +426,30 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.document_note(
         "Closed nodes",
         "Closed node are not re-opened");
+    parser.document_note("Equivalent statements using general eager search",
+        "\n```\n--heuristic h2=eval2\n"
+        "--search eager_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
+        "--search eager(alt([single(h1), single(h1, pref_only=true), single(h2), \n"
+        "                    single(h2, pref_only=true)], boost=100),\n"
+        "               preferred=h2)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search eager_greedy([eval1, eval2])\n```\n"
+        "is equivalent to\n"
+        "```\n--search eager(alt([single(eval1), single(eval2)]))\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--heuristic h1=eval1\n"
+        "--search eager_greedy(h1, preferred=h1)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h1=eval1\n"
+        "--search eager(alt([single(h1), single(h1, pref_only=true)]),\n"
+        "               preferred=h1)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search eager_greedy(eval1)\n```\n"
+        "is equivalent to\n"
+        "```\n--search eager(single(eval1))\n```\n", true);
+
     parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
