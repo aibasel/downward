@@ -25,10 +25,6 @@ NonLinearMergeStrategy::NonLinearMergeStrategy(const Options &opts)
 }
 
 bool NonLinearMergeStrategy::done() const {
-    if (remaining_merges == 0) {
-        cout << "Number of times a pair with weight unequal 0 has been chosen: "
-             << pair_weights_unequal_zero_counter << endl;
-    }
     return remaining_merges == 0;
 }
 
@@ -51,56 +47,73 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
                 for (size_t other_abs_index = abs_index + 1; other_abs_index < all_abstractions.size(); ++other_abs_index) {
                     Abstraction *other_abstraction = all_abstractions[other_abs_index];
                     if (other_abstraction) {
+                        if (!abstraction->is_goal_relevant() && !other_abstraction->is_goal_relevant()) {
+                            // only consider pairs where at least one abstraction is goal relevant
+                            continue;
+                        }
                         vector<int> &other_label_ranks = abstraction_label_ranks[other_abs_index];
                         if (other_label_ranks.empty()) {
                             other_abstraction->compute_label_ranks(other_label_ranks);
                         }
 
-                        //cout << "comparing label ranks for " << abs_index << " and " << other_abs_index << endl,
                         assert(label_ranks.size() == other_label_ranks.size());
                         int pair_weight = infinity;
                         for (size_t i = 0; i < label_ranks.size(); ++i) {
                             if (label_ranks[i] != -1 && other_label_ranks[i] != -1) {
-                                //cout << "label " << i << ": " << label_ranks[i] << " " << other_label_ranks[i] << endl;
                                 int max_label_rank = max(label_ranks[i], other_label_ranks[i]);
                                 pair_weight = min(pair_weight, max_label_rank);
                             }
                         }
-                        //if (pair_weight != 0 && pair_weight != infinity) {
-                        //    cout << "pair weight for " << abs_index << " and " << other_abs_index << ": " << pair_weight << endl;
-                        //}
-                        if (pair_weight < minimum_weight/* && pair_weight > 0*/) {
+                        if (pair_weight < minimum_weight) {
                             minimum_weight = pair_weight;
-                            next_indices.first = abs_index;
-                            next_indices.second = other_abs_index;
+                            // always return a goal relevant abstraction as a first index
+                            if (abstraction->is_goal_relevant()) {
+                                next_indices.first = abs_index;
+                                next_indices.second = other_abs_index;
+                            } else {
+                                assert(other_abstraction->is_goal_relevant());
+                                next_indices.first = other_abs_index;
+                                next_indices.second = abs_index;
+                            }
                         }
                     }
                 }
             }
         }
     }
-    // we simply take the first two valid indices from the set of all
-    // abstractions to be merged next if:
-    // 1) remaining_merges = 1 (there are only two abstractions left)
-    // 2) when all pair weights have been computed to be infinity
-    int index = 0;
-    while (next_indices.second == -1) {
-        Abstraction *abs = all_abstractions[index];
-        if (abs) {
-            if (next_indices.first == -1) {
-                next_indices.first = index;
-                ++index;
-                continue;
+    if (next_indices.first == -1) {
+        assert(next_indices.second == -1);
+        assert(remaining_merges == 1 || minimum_weight == infinity);
+        // we simply take the first two valid indices from the set of all
+        // abstractions (prefering goal relevant abstractions) to be merged next if:
+        // 1) remaining_merges = 1 (there are only two abstractions left)
+        // 2) when all pair weights have been computed to be infinity
+        for (size_t abs_index = 0; abs_index < all_abstractions.size(); ++abs_index) {
+            Abstraction *abstraction = all_abstractions[abs_index];
+            if (abstraction) {
+                for (size_t other_abs_index = abs_index + 1; other_abs_index < all_abstractions.size(); ++other_abs_index) {
+                    Abstraction *other_abstraction = all_abstractions[other_abs_index];
+                    if (other_abstraction) {
+                        if (!abstraction->is_goal_relevant() && !other_abstraction->is_goal_relevant()) {
+                            // only consider pairs where at least one abstraction is goal relevant
+                            continue;
+                        }
+                        // always return a goal relevant abstraction as a first index
+                        if (abstraction->is_goal_relevant()) {
+                            next_indices.first = abs_index;
+                            next_indices.second = other_abs_index;
+                        } else {
+                            assert(other_abstraction->is_goal_relevant());
+                            next_indices.first = other_abs_index;
+                            next_indices.second = abs_index;
+                        }
+                    }
+                }
             }
-            if (next_indices.second == -1) {
-                assert(next_indices.first != -1);
-                next_indices.second = index;
-                break;
-            }
-        } else {
-            ++index;
         }
     }
+    assert(next_indices.first != -1);
+    assert(next_indices.second != -1);
     cout << "Next pair of indices: (" << next_indices.first << ", " << next_indices.second << ")" << endl;
     if (remaining_merges > 1 && minimum_weight != infinity) {
         // in the case we do not make a trivial choice of a next pair
@@ -128,6 +141,11 @@ void NonLinearMergeStrategy::dump_strategy_specific_options() const {
 
 string NonLinearMergeStrategy::name() const {
     return "non linear";
+}
+
+void NonLinearMergeStrategy::print_summary() const {
+    cout << "Number of times a pair with weight unequal 0 has been chosen: "
+         << pair_weights_unequal_zero_counter << endl;
 }
 
 static MergeStrategy *_parse(OptionParser &parser) {

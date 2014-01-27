@@ -180,6 +180,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     }
     cout << endl;
     cout << "Order of indices is truely non linear: " << indices_order_is_non_linear << endl;
+    merge_strategy->print_summary();
     return abstraction;
 }
 

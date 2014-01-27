@@ -70,6 +70,7 @@ class Abstraction {
     int max_h;
 
     bool normalized;
+    bool goal_relevant;
 
     mutable int peak_memory;
 
@@ -132,7 +133,7 @@ public:
 
     // The following methods exist for the benefit of shrink strategies.
     int get_max_f() const;
-    int get_max_g() const;
+    int get_max_g() const; // Not being used!
     int get_max_h() const;
 
     bool is_goal_state(int state) const {
@@ -154,8 +155,11 @@ public:
     // This method is used by shrink_bisimulation and for computing non-linear
     // merge strategies.
     const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const;
-    // This getter is used by non_linear_merge_strategy
+    // These methods are used by non_linear_merge_strategy
     void compute_label_ranks(std::vector<int> &label_ranks);
+    bool is_goal_relevant() const {
+        return goal_relevant;
+    }
     // This serves approximative label reduction
     const std::vector<int> &get_varset() const {
         return varset;

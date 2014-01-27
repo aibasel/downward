@@ -18,6 +18,7 @@ public:
     virtual bool done() const;
     virtual void get_next(const std::vector<Abstraction *> &all_abstractions, std::pair<int, int> &next_indices);
     virtual std::string name() const;
+    virtual void print_summary() const {}
 };
 
 #endif
