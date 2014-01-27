@@ -81,7 +81,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     int total_reduced_labels = 0;
     vector<int> variable_order;
     bool indices_order_is_non_linear = false;
-    // TODO: reconsider in which oder things are done in the main loop
+    // TODO: reconsider in which order things are done in the main loop
     while (!merge_strategy->done()) {
         pair<int, int> next_vars;
         merge_strategy->get_next(all_abstractions, next_vars);

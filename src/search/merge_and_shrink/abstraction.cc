@@ -169,16 +169,12 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
         }
         const vector<AbstractTransition> &transitions = transitions_by_label[label_id];
         int label_rank = infinity;
-        //cout << "label " << label_id << endl;
         for (size_t j = 0; j < transitions.size(); ++j) {
             const AbstractTransition &t = transitions[j];
-            //cout << "target: " << t.target << endl;
-            //cout << "goal distance: " << goal_distances[t.target] << endl;
             label_rank = min(label_rank, goal_distances[t.target]);
         }
         // relevant labels with no transitions have a rank of infitiy (they
         // block snychronization)
-        //cout << tag() << " label " << label_id << " rank " << label_rank << endl;
         label_ranks[label_id] = label_rank;
     }
 }
