@@ -126,24 +126,23 @@ def get_pages_from_planner():
     return pages
 
 def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
+    def add_page(title, text):
+        #check if this page is new or changed
+        if old_doc_pages.get(title, '') != text:
+            print title, "changed"
+            changed_pages.append([title, text])
+        else:
+            print title, "unchanged"
+
     changed_pages = []
     overview_lines = [];
     for title, text in sorted(new_doc_pages.items()):
         overview_lines.append(" * [[" + title + "]]")
-        text = insert_wiki_links(text, all_titles) 
-        #check if this page is new or changed
-        if old_doc_pages.get(title, '') != text:
-            logging.info("%s changed, adding to update list...", title)
-            changed_pages.append([title, text])
-            print title, "changed"
-        else:
-            print title, "unchanged"
-    #update the overview page
+        text = insert_wiki_links(text, all_titles)
+        add_page(title, text)
     overview_title = DOC_PREFIX + "Overview"
     overview_text = "\n".join(overview_lines);
-    if old_doc_pages.get(overview_title) != overview_text:
-        logging.info("%s changed, adding to update list...", overview_title)
-        changed_pages.append([overview_title, overview_text])
+    add_page(overview_title, overview_text)
     return changed_pages
 
 if __name__ == '__main__':
