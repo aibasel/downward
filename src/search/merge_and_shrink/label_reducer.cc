@@ -135,7 +135,7 @@ LabelSignature LabelReducer::build_label_signature(
 
 int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
                                          vector<const Label *> &labels) const {
-    int num_labels = 0;//relevant_labels.size();
+    int num_labels = 0;
     int num_labels_after_reduction = 0;
 
     vector<bool> var_is_used(g_variable_domain.size(), true);
