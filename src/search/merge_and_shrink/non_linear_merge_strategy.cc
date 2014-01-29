@@ -130,7 +130,7 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
 void NonLinearMergeStrategy::dump_strategy_specific_options() const {
     cout << "Non linear merge strategy type: ";
     switch (non_linear_merge_strategy_type) {
-    case MERGE_NON_LINEAR_DFP:
+    case DFP:
         cout << "DFP";
         break;
     default:
