@@ -7,6 +7,7 @@
 #include "../operator.h"
 #include "../utilities.h"
 
+#include <algorithm>
 #include <cassert>
 #include <ext/hash_map>
 #include <iostream>
@@ -68,15 +69,21 @@ struct LabelSignature {
         // variable -- some sort of canonical representation is needed
         // to guarantee that we can properly test for uniqueness.
         for (size_t i = 0; i < preconditions.size(); ++i) {
-            if (i != 0)
-                assert(preconditions[i].first > preconditions[i - 1].first);
+            if (i != 0) {
+                if (preconditions[i].first <= preconditions[i - 1].first) {
+                    assert(preconditions[i].second > preconditions[i - 1].second);
+                }
+            }
             data.push_back(preconditions[i].first);
             data.push_back(preconditions[i].second);
         }
         data.push_back(-1); // marker
         for (size_t i = 0; i < effects.size(); ++i) {
-            if (i != 0)
-                assert(effects[i].first > effects[i - 1].first);
+            if (i != 0) {
+                if (effects[i].first <= effects[i - 1].first) {
+                    assert(effects[i].second > effects[i - 1].second);
+                }
+            }
             data.push_back(effects[i].first);
             data.push_back(effects[i].second);
         }
@@ -128,7 +135,11 @@ LabelSignature LabelReducer::build_label_signature(
         }
     }
     ::sort(preconditions.begin(), preconditions.end());
+    vector<Assignment>::iterator it = unique(preconditions.begin(), preconditions.end());
+    preconditions.resize(distance(preconditions.begin(), it));
     ::sort(effects.begin(), effects.end());
+    it = unique(effects.begin(), effects.end());
+    effects.resize(distance(effects.begin(), it));
 
     return LabelSignature(preconditions, effects, label.get_cost());
 }
@@ -153,8 +164,6 @@ int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
     hash_map<LabelSignature, bool> is_label_reduced;
     vector<LabelSignature> reduced_label_signatures;
 
-    //for (size_t i = 0; i < relevant_labels.size(); ++i) {
-        //const Label *label = relevant_labels[i];
     for (size_t i = 0; i < labels.size(); ++i) {
         const Label *label = labels[i];
         if (label->get_reduced_label() != label) {
@@ -162,10 +171,6 @@ int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
             continue;
         }
         ++num_labels;
-        // require that the considered abstraction's relevant labels are reduced
-        // to make sure that we cannot reduce the same label several times.
-        // TODO: does this assertion currently hold?
-        assert(label->get_reduced_label() == label);
         LabelSignature signature = build_label_signature(
             *label, var_is_used);
 
@@ -183,10 +188,47 @@ int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
     }
     assert(reduced_label_map.size() == num_labels_after_reduction);
 
+    hash_set<int> vars(abs_vars.begin(), abs_vars.end());
     for (size_t i = 0; i < reduced_label_signatures.size(); ++i) {
         const LabelSignature &signature = reduced_label_signatures[i];
         const vector<const Label *> &reduced_labels = reduced_label_map[signature];
-        const Label *new_label = new CompositeLabel(labels.size(), reduced_labels);
+        vector<Prevail> prev;
+        vector<PrePost> pre_post;
+        // collect all prevail and pre-post conditions for variables of the
+        // considered abstraction
+        for (size_t j = 0; j < reduced_labels.size(); ++j) {
+            const Label *label = reduced_labels[j];
+            const vector<Prevail> &_prev = label->get_prevail();
+            for (size_t k = 0; k < _prev.size(); ++k) {
+                if (vars.count(_prev[k].var)) {
+                    prev.push_back(_prev[k]);
+                }
+            }
+            const vector<PrePost> &_pre_post = label->get_pre_post();
+            for (size_t k = 0; k < _pre_post.size(); ++k) {
+                if (vars.count(_pre_post[k].var)) {
+                    pre_post.push_back(_pre_post[k]);
+                }
+            }
+        }
+        // collect all prevail and pre-post conditions for variables which are
+        // not part of the considered abstraction. as these must be the same
+        // for all origin labels, we only need to take those of an arbitrary
+        // one.
+        const Label *label = reduced_labels[0];
+        const vector<Prevail> &_prev = label->get_prevail();
+        for (size_t k = 0; k < _prev.size(); ++k) {
+            if (!vars.count(_prev[k].var)) {
+                prev.push_back(_prev[k]);
+            }
+        }
+        const vector<PrePost> &_pre_post = label->get_pre_post();
+        for (size_t k = 0; k < _pre_post.size(); ++k) {
+            if (!vars.count(_pre_post[k].var)) {
+                pre_post.push_back(_pre_post[k]);
+            }
+        }
+        const Label *new_label = new CompositeLabel(labels.size(), reduced_labels, prev, pre_post);
         labels.push_back(new_label);
     }
 
