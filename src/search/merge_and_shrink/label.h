@@ -8,22 +8,14 @@
 class CompositeLabel;
 
 /* This class implements labels as used by merge-and-shrink abstractions.
-   It is a wrapper class for regular operators that allows to store additional
-   informations associated with labels.
+   It abstracts from the underlying regular operators and allows to store
+   additional information associated with labels.
    NOTE: operators that are axioms are currently not supported! */
 
 class Label {
     friend class CompositeLabel;
     int id;
     int cost;
-    // prevail and pre_posts are references to those of one "canonical"
-    // operator, which is the operator an OperatorLabel was built from or
-    // the "first" label of all parent labels when constructing a CompositeLabel.
-    // TODO: can this be dealt with differently? E.g. only keep var/val pairs
-    // from prevail/pre_post in composite labels where all parent labels agree
-    // on?
-    const std::vector<Prevail> &prevail;
-    const std::vector<PrePost> &pre_post;
 protected:
     // root is a pointer to a composite label that this label has been reduced
     // to, if such a label exists, or to itself, if the label has not been
@@ -34,12 +26,12 @@ protected:
     // vector of const label pointers to all labels generated.
     mutable Label *root;
 
-    Label(int id, int cost, const std::vector<Prevail> &prevail, const std::vector<PrePost> &pre_post);
+    Label(int id, int cost);
     virtual ~Label() {}
     virtual void update_root(CompositeLabel *new_root) const = 0;
 public:
-    const std::vector<Prevail> &get_prevail() const {return prevail; }
-    const std::vector<PrePost> &get_pre_post() const {return pre_post; }
+    virtual const std::vector<Prevail> &get_prevail() const = 0;
+    virtual const std::vector<PrePost> &get_pre_post() const = 0;
     int get_id() const {
         return id;
     }
@@ -57,21 +49,41 @@ public:
 };
 
 class OperatorLabel : public Label {
+    // prevail and pre_post are references to the corresponding fields of the
+    // underlying original operator
+    const std::vector<Prevail> &prevail;
+    const std::vector<PrePost> &pre_post;
+
     void update_root(CompositeLabel *new_root) const;
 public:
-    OperatorLabel(int id, int cost, const std::vector<Prevail> &prevail, const std::vector<PrePost> &pre_post);
-    virtual void get_origins(std::vector<const Label *> &origins) const;
-    virtual const std::vector<const Label *> &get_parents() const;
+    OperatorLabel(int id, int cost, const std::vector<Prevail> &prevail,
+                  const std::vector<PrePost> &pre_post);
+    const std::vector<Prevail> &get_prevail() const {return prevail; }
+    const std::vector<PrePost> &get_pre_post() const {return pre_post; }
+    void get_origins(std::vector<const Label *> &origins) const;
+    const std::vector<const Label *> &get_parents() const;
 };
 
 class CompositeLabel : public Label {
-    std::vector<const Label *> origins;
+    // prevail and pre_post are "imaginary" conditions of the composite label.
+    // they are *not* valid prevail or pre-post conditions as those of a
+    // regular operator! they are defined in a way that they would induce
+    // exactly the transitions that are associated with this label in m&s
+    // abstractions.
+    std::vector<Prevail> prevail;
+    std::vector<PrePost> pre_post;
     std::vector<const Label *> parents;
+
     void update_root(CompositeLabel *new_root) const;
 public:
     CompositeLabel(int id, const std::vector<const Label *> &parents);
-    virtual void get_origins(std::vector<const Label *> &origins) const;
-    virtual const std::vector<const Label *> &get_parents() const {
+    CompositeLabel(int id, const std::vector<const Label *> &parents,
+                   const std::vector<Prevail> &prevail,
+                   const std::vector<PrePost> &pre_post);
+    const std::vector<Prevail> &get_prevail() const {return prevail; }
+    const std::vector<PrePost> &get_pre_post() const {return pre_post; }
+    void get_origins(std::vector<const Label *> &origins) const;
+    const std::vector<const Label *> &get_parents() const {
         return parents;
     }
 };

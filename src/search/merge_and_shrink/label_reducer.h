@@ -14,9 +14,6 @@ class Abstraction;
 class EquivalenceRelation;
 class LabelSignature;
 
-// TODO: possible refactoring: ApproximateLabelReducer and ExactLabelReducer
-// Or: LabelReducer only takes data set of labels which should be mapped
-// together and all it does is create the new labels and mappings
 class LabelReducer {
     int num_reduced_labels;
 
