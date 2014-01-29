@@ -21,17 +21,17 @@ class LabelReducer {
     LabelSignature build_label_signature(const Label &label,
         const std::vector<bool> &var_is_used) const;
     int reduce_approximatively(const std::vector<int> &abs_vars,
-                               std::vector<const Label *> &labels) const;
+                               std::vector<Label *> &labels) const;
 
     // exact label reduction
     EquivalenceRelation *compute_outside_equivalence(const Abstraction *abstraction,
                                                      const std::vector<Abstraction *> &all_abstractions,
-                                                     const std::vector<const Label *> &labels) const;
-    int reduce_exactly(const EquivalenceRelation *relation, std::vector<const Label *> &labels) const;
+                                                     const std::vector<Label *> &labels) const;
+    int reduce_exactly(const EquivalenceRelation *relation, std::vector<Label *> &labels) const;
 public:
     LabelReducer(int abs_index,
                  const std::vector<Abstraction *> &all_abstractions,
-                 std::vector<const Label* > &labels,
+                 std::vector<Label* > &labels,
                  bool exact,
                  bool fixpoint);
 
