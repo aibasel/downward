@@ -17,7 +17,7 @@ using namespace __gnu_cxx;
 
 LabelReducer::LabelReducer(int abs_index,
                            const vector<Abstraction *> &all_abstractions,
-                           vector<const Label *> &labels,
+                           std::vector<Label *> &labels,
                            bool exact,
                            bool fixpoint) {
     int current_index = abs_index;
@@ -145,7 +145,7 @@ LabelSignature LabelReducer::build_label_signature(
 }
 
 int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
-                                         vector<const Label *> &labels) const {
+                                         std::vector<Label *> &labels) const {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
 
@@ -153,7 +153,7 @@ int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
     for (size_t i = 0; i < abs_vars.size(); ++i)
         var_is_used[abs_vars[i]] = false;
 
-    hash_map<LabelSignature, vector<const Label *> > reduced_label_map;
+    hash_map<LabelSignature, vector<Label *> > reduced_label_map;
     // TODO: consider combining reduced_label_signature and is_label_reduced
     // into a set or hash-set (is_label_reduced only serves to make sure
     // that every label signature is pushed at most once into reduced_label_signatures).
@@ -165,8 +165,8 @@ int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
     vector<LabelSignature> reduced_label_signatures;
 
     for (size_t i = 0; i < labels.size(); ++i) {
-        const Label *label = labels[i];
-        if (label->get_reduced_label() != label) {
+        Label *label = labels[i];
+        if (label->is_reduced()) {
             // ignore already reduced labels
             continue;
         }
@@ -191,7 +191,7 @@ int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
     hash_set<int> vars(abs_vars.begin(), abs_vars.end());
     for (size_t i = 0; i < reduced_label_signatures.size(); ++i) {
         const LabelSignature &signature = reduced_label_signatures[i];
-        const vector<const Label *> &reduced_labels = reduced_label_map[signature];
+        const vector<Label *> &reduced_labels = reduced_label_map[signature];
         vector<Prevail> prev;
         vector<PrePost> pre_post;
         // collect all prevail and pre-post conditions for variables of the
@@ -228,7 +228,7 @@ int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
                 pre_post.push_back(_pre_post[k]);
             }
         }
-        const Label *new_label = new CompositeLabel(labels.size(), reduced_labels, prev, pre_post);
+        Label *new_label = new CompositeLabel(labels.size(), reduced_labels, prev, pre_post);
         labels.push_back(new_label);
     }
 
@@ -241,7 +241,7 @@ int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
 
 EquivalenceRelation *LabelReducer::compute_outside_equivalence(const Abstraction *abstraction,
                                                                const vector<Abstraction *> &all_abstractions,
-                                                               const vector<const Label *> &labels) const {
+                                                               const vector<Label *> &labels) const {
     /*Returns an equivalence relation over labels s.t. l ~ l'
     iff l and l' are locally equivalent in all transition systems
     T' \neq T. (They may or may not be locally equivalent in T.)
@@ -254,7 +254,8 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(const Abstraction
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         const Label *label = labels[label_no];
         assert(label->get_id() == label_no);
-        if (label->get_reduced_label() != label) {
+        if (label->is_reduced()) {
+            // ignore already reduced labels
             continue;
         }
         labeled_label_nos.push_back(make_pair(0, label_no));
@@ -280,16 +281,16 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(const Abstraction
     return relation;
 }
 
-int LabelReducer::reduce_exactly(const EquivalenceRelation *relation, vector<const Label *> &labels) const {
+int LabelReducer::reduce_exactly(const EquivalenceRelation *relation, std::vector<Label *> &labels) const {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
     for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
         const Block &block = *it;
-        vector<const Label *> equivalent_labels;
+        vector<Label *> equivalent_labels;
         for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
             assert(*jt < labels.size());
-            const Label *label = labels[*jt];
-            if (label->get_reduced_label() != label) {
+            Label *label = labels[*jt];
+            if (label->is_reduced()) {
                 // ignore already reduced labels
                 continue;
             }
@@ -297,7 +298,7 @@ int LabelReducer::reduce_exactly(const EquivalenceRelation *relation, vector<con
             ++num_labels;
         }
         if (equivalent_labels.size() > 1) {
-            const Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
+            Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
             labels.push_back(new_label);
         }
         if (!equivalent_labels.empty()) {

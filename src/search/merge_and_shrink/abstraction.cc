@@ -448,7 +448,7 @@ void Abstraction::normalize() {
     for (int reduced_label_no = num_labels; reduced_label_no < labels->get_size();
          ++reduced_label_no) {
         const Label *reduced_label = labels->get_label_by_index(reduced_label_no);
-        const vector<const Label *> &parents = reduced_label->get_parents();
+        const vector<Label *> &parents = reduced_label->get_parents();
         bool one_parent_irrelevant = false;
         bool all_relevant_self_loops = true;
         for (size_t i = 0; i < parents.size(); ++i) {

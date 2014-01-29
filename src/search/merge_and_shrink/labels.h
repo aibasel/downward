@@ -21,7 +21,7 @@ enum LabelReduction {
  labels used by merge-and-shrink abstractions.
  */
 class Labels {
-    std::vector<const Label *> labels;
+    std::vector<Label *> labels;
     LabelReduction label_reduction;
     bool exact;
     bool fixpoint;
