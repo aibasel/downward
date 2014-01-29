@@ -155,7 +155,7 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
     if (!is_normalized()) {
         normalize();
     }
-    // distances have been computed
+    // distances have not been computed
     if (max_h == DISTANCE_UNKNOWN) {
         compute_distances();
     }
@@ -173,7 +173,7 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
             const AbstractTransition &t = transitions[j];
             label_rank = min(label_rank, goal_distances[t.target]);
         }
-        // relevant labels with no transitions have a rank of infitiy (they
+        // relevant labels with no transitions have a rank of infinity (they
         // block snychronization)
         label_ranks[label_id] = label_rank;
     }

@@ -7,7 +7,7 @@ class Options;
 
 class NonLinearMergeStrategy : public MergeStrategy {
     enum NonLinearMergeStrategyType {
-        MERGE_NON_LINEAR_DFP
+        DFP
     };
     NonLinearMergeStrategyType non_linear_merge_strategy_type;
     int remaining_merges;
