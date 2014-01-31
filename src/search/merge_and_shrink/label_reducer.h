@@ -33,7 +33,8 @@ public:
                  const std::vector<Abstraction *> &all_abstractions,
                  std::vector<Label* > &labels,
                  bool exact,
-                 bool fixpoint);
+                 bool fixpoint,
+                 const std::vector<int> &variable_order);
 
     int get_number_reduced_labels() const {
         return num_reduced_labels;

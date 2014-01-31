@@ -16,6 +16,12 @@ enum LabelReduction {
     EXACT_WITH_FIXPOINT
 };
 
+enum FixpointVariableOrder {
+    NATURAL,
+    REVERSE,
+    RANDOM
+};
+
 /*
  The Labels class is basically a container class for the set of all
  labels used by merge-and-shrink abstractions.
@@ -23,10 +29,13 @@ enum LabelReduction {
 class Labels {
     std::vector<Label *> labels;
     LabelReduction label_reduction;
+    FixpointVariableOrder fix_point_variable_order;
+    std::vector<int> variable_order;
     bool exact;
     bool fixpoint;
 public:
-    Labels(OperatorCost cost_type, LabelReduction label_reduction);
+    Labels(OperatorCost cost_type, LabelReduction label_reduction,
+           FixpointVariableOrder fix_point_variable_order);
     ~Labels();
     int reduce(int abs_index,
                const std::vector<Abstraction *> &all_abstractions);

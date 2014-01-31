@@ -6,12 +6,14 @@
 #include "../globals.h"
 #include "../utilities.h"
 
+#include <algorithm>
 #include <cassert>
 
 using namespace std;
 
-Labels::Labels(OperatorCost cost_type, LabelReduction label_reduction_)
-    : label_reduction(label_reduction_) {
+Labels::Labels(OperatorCost cost_type, LabelReduction label_reduction_,
+               FixpointVariableOrder fix_point_variable_order_)
+    : label_reduction(label_reduction_), fix_point_variable_order(fix_point_variable_order_) {
     for (size_t i = 0; i < g_operators.size(); ++i) {
         labels.push_back(new OperatorLabel(i, get_adjusted_action_cost(g_operators[i], cost_type),
                                            g_operators[i].get_prevail(), g_operators[i].get_pre_post()));
@@ -22,8 +24,10 @@ Labels::Labels(OperatorCost cost_type, LabelReduction label_reduction_)
     case NONE:
         break;
     case APPROXIMATIVE:
+        exit_with(EXIT_UNSUPPORTED);
         break;
     case APPROXIMATIVE_WITH_FIXPOINT:
+        exit_with(EXIT_UNSUPPORTED);
         fixpoint = true;
         break;
     case EXACT:
@@ -32,6 +36,17 @@ Labels::Labels(OperatorCost cost_type, LabelReduction label_reduction_)
     case EXACT_WITH_FIXPOINT:
         exact = true;
         fixpoint = true;
+        for (int i = 0; i < g_variable_domain.size(); ++i) {
+            if (fix_point_variable_order == NATURAL
+                    || fix_point_variable_order == RANDOM) {
+                variable_order.push_back(i);
+            } else if (fix_point_variable_order == REVERSE) {
+                variable_order.push_back(g_variable_domain.size() - 1 - i);
+            }
+        }
+        if (fix_point_variable_order == RANDOM) {
+            random_shuffle(variable_order.begin(), variable_order.end());
+        }
         break;
     default:
         exit_with(EXIT_INPUT_ERROR);
@@ -46,7 +61,8 @@ int Labels::reduce(int abs_index,
     if (label_reduction == NONE) {
         return 0;
     }
-    LabelReducer label_reducer(abs_index, all_abstractions, labels, exact, fixpoint);
+    LabelReducer label_reducer(abs_index, all_abstractions, labels,
+                               exact, fixpoint, variable_order);
     return label_reducer.get_number_reduced_labels();
 }
 
@@ -91,4 +107,20 @@ void Labels::dump_options() const {
         break;
     }
     cout << endl;
+    if (label_reduction == EXACT_WITH_FIXPOINT) {
+        cout << "Fixpoint variable order: ";
+        switch (fix_point_variable_order) {
+        case NATURAL:
+            cout << "natural";
+            break;
+        case REVERSE:
+            cout << "reversed";
+            break;
+        case RANDOM:
+            cout << "random";
+            break;
+        }
+        cout << endl;
+        cout << variable_order << endl;
+    }
 }

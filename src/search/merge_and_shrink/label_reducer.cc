@@ -19,11 +19,16 @@ LabelReducer::LabelReducer(int abs_index,
                            const vector<Abstraction *> &all_abstractions,
                            std::vector<Label *> &labels,
                            bool exact,
-                           bool fixpoint) {
-    int current_index = abs_index;
+                           bool fixpoint,
+                           const vector<int> &variable_order) {
+    int variable_order_index = 0;
+    while (variable_order[variable_order_index] != abs_index) {
+        ++variable_order_index;
+    }
+    //int current_index = abs_index;
     num_reduced_labels = 0;
     while (true) {
-        Abstraction *current_abstraction = all_abstractions[current_index];
+        Abstraction *current_abstraction = all_abstractions[variable_order[variable_order_index]];
         if (current_abstraction) {
             int reduced_labels = 0;
             if (exact) {
@@ -51,9 +56,9 @@ LabelReducer::LabelReducer(int abs_index,
                 break;
             }
         }
-        ++current_index;
-        if (current_index == all_abstractions.size()) {
-            current_index = 0;
+        ++variable_order_index;
+        if (variable_order_index == variable_order.size()) {
+            variable_order_index = 0;
         }
     }
 }
