@@ -22,7 +22,8 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
-    labels = new Labels(cost_type, LabelReduction(opts.get_enum("label_reduction")));
+    labels = new Labels(cost_type, LabelReduction(opts.get_enum("label_reduction")),
+                        FixpointVariableOrder(opts.get_enum("fixpoint_var_order")));
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -273,7 +274,14 @@ static Heuristic *_parse(OptionParser &parser) {
     label_reduction.push_back("APPROXIMATIVE_WITH_FIXPOINT");
     label_reduction.push_back("EXACT");
     label_reduction.push_back("EXACT_WITH_FIXPOINT");
-    parser.add_enum_option("label_reduction", label_reduction, "label reduction method", "APPROXIMATIVE");
+    parser.add_enum_option("label_reduction", label_reduction, "label reduction method", "EXACT");
+    vector<string> fixpoint_variable_order;
+    fixpoint_variable_order.push_back("NATURAL");
+    fixpoint_variable_order.push_back("REVERSE");
+    fixpoint_variable_order.push_back("RANDOM");
+    parser.add_enum_option("fixpoint_var_order", fixpoint_variable_order,
+                           "order in which variables are considered when using "
+                           "fixpoint iteration for label reduction", "NATURAL");
     parser.add_option<bool>("expensive_statistics", "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow -- check the warning in the output)", "false");
     Heuristic::add_options_to_parser(parser);
