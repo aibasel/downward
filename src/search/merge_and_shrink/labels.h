@@ -17,7 +17,7 @@ enum LabelReduction {
 };
 
 enum FixpointVariableOrder {
-    NATURAL,
+    REGULAR,
     REVERSE,
     RANDOM
 };
