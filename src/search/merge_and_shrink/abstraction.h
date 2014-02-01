@@ -84,8 +84,6 @@ class Abstraction {
 
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
-
-    void trace_solution() const;
 protected:
     std::vector<int> varset;
 
@@ -166,6 +164,8 @@ public:
     const std::vector<int> &get_varset() const {
         return varset;
     }
+
+    void trace_solution() const;
 };
 
 class AtomicAbstraction : public Abstraction {

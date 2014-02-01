@@ -26,7 +26,7 @@ fi
 
 echo Dispatcher selected state size $STATE_SIZE.
 echo This is a $UNIT_COST task.
-PLANNER="$BASEDIR/downward-$STATE_SIZE"
+PLANNER="$BASEDIR/downward-$STATE_SIZE-debug"
 
 function run_portfolio {
     PORTFOLIO="$1"
