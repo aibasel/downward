@@ -84,6 +84,8 @@ class Abstraction {
 
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
+
+    void trace_solution() const;
 protected:
     std::vector<int> varset;
 

@@ -578,6 +578,8 @@ void Abstraction::normalize() {
     assert(sorted_unique());
     num_labels = labels->get_size();
     normalized = true;
+
+    trace_solution();
 }
 
 EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
@@ -1136,4 +1138,88 @@ void Abstraction::dump() const {
         }
     }
     cout << "}" << endl;
+}
+
+void Abstraction::trace_solution() const {
+    vector<const char *> solution;
+    solution.push_back("fly plane1 city0 city1 fl1 fl0");
+
+    set<AbstractStateRef> possible_states;
+    possible_states.insert(init_state);
+
+    for (size_t i = 0; i < solution.size(); ++i) {
+        set<AbstractStateRef> next_states;
+
+        // Fetch the operator with the given name.
+        string op_name = solution[i];
+        const Operator *op = 0;
+        for (size_t j = 0; j < g_operators.size(); ++j) {
+            if (g_operators[j].get_name() == op_name) {
+                op = &g_operators[j];
+                break;
+            }
+        }
+        if (!op) {
+            cerr << "operator does not exist: " << op_name << endl;
+            abort();
+        }
+
+        // Determine which label corresponds to this operator and if it
+        // is relevant.
+        int correct_label_no = -1;
+        bool is_relevant = false;
+        for (size_t label_no = 0; label_no < num_labels; ++label_no) {
+            if (labels->is_label_reduced(label_no)) {
+                assert(transitions_by_label[label_no].empty());
+                continue;
+            }
+            vector<const Label *> origin_labels;
+            labels->get_label_by_index(label_no)->get_origins(origin_labels);
+            for (size_t j = 0; j < origin_labels.size(); ++j) {
+                const OperatorLabel *label =
+                    dynamic_cast<const OperatorLabel *>(origin_labels[j]);
+                if (label != 0 && label->get_operator() == op) {
+                    for (size_t k = 0; k < relevant_labels.size(); ++k) {
+                        if (relevant_labels[k] == label) {
+                            is_relevant = true;
+                            break;
+                        }
+                    }
+                    assert(correct_label_no == -1);
+                    correct_label_no = label_no;
+                    break;
+                }
+            }
+        }
+        assert(correct_label_no != -1);
+
+        // Follow transitions induced by the label.
+        if (is_relevant) {
+            const vector<AbstractTransition> &transitions = transitions_by_label.at(
+                correct_label_no);
+            for (size_t j = 0; j < transitions.size(); ++j) {
+                const AbstractTransition &trans = transitions[j];
+                if (possible_states.count(trans.src)) {
+                    next_states.insert(trans.target);
+                }
+            }
+        } else {
+            next_states = possible_states;
+        }
+
+        possible_states = next_states;
+    }
+
+    for (size_t state_no = 0; state_no < num_states; ++state_no) {
+        if (goal_states[state_no]) {
+            AbstractStateRef state = state_no;
+            if (possible_states.count(state)) {
+                cout << "could trace the solution!" << endl;
+                return;
+            }
+        }
+    }
+
+    cout << "OOPS! Could not trace the solution => not a goal state!" << endl;
+    abort();
 }
