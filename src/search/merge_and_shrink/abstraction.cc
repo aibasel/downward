@@ -1142,7 +1142,16 @@ void Abstraction::dump() const {
 }
 
 void Abstraction::trace_solution() const {
-    const bool VERBOSE = false;
+    static int counter = 0;
+
+    counter++;
+    cout << "counter = " << counter << endl;
+
+    bool VERBOSE = false;
+
+    if (counter == 3456) {
+        VERBOSE = true;
+    }
 
     cout << "tracing solution..." << endl;
 
@@ -1190,12 +1199,15 @@ void Abstraction::trace_solution() const {
         const Operator *op = 0;
         for (size_t j = 0; j < g_operators.size(); ++j) {
             if (g_operators[j].get_name() == op_name) {
+                if (op != 0) {
+                    cout << "unsupported: duplicate operator name " << op_name << endl;
+                    abort();
+                }
                 op = &g_operators[j];
-                break;
             }
         }
         if (!op) {
-            cerr << "operator does not exist: " << op_name << endl;
+            cout << "operator does not exist: " << op_name << endl;
             abort();
         }
 
@@ -1266,5 +1278,11 @@ void Abstraction::trace_solution() const {
     }
 
     cout << "OOPS! Could not trace the solution => not a goal state!" << endl;
+
+    dump();
+    labels->dump();
+    for (size_t i = 0; i < g_operators.size(); ++i)
+        cout << "label #" << i << " is " << g_operators[i].get_name() << endl;
+
     abort();
 }
