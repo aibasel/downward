@@ -154,10 +154,10 @@ static MergeStrategy *_parse(OptionParser &parser) {
     // have to be specified exactly in the same order
     // as in the enum definition. Try to find a way around this,
     // or at least raise an error when the order is wrong.
-    merge_strategies.push_back("MERGE_NON_LINEAR_DFP");
+    merge_strategies.push_back("DFP");
     parser.add_enum_option("type", merge_strategies,
                            "non linear merge strategy",
-                           "MERGE_NON_LINEAR_DFP");
+                           "DFP");
 
     Options opts = parser.parse();
     if (parser.help_mode())
