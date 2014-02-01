@@ -1148,7 +1148,12 @@ void Abstraction::trace_solution() const {
         cout << "label #" << i << " is " << g_operators[i].get_name() << endl;
 
     vector<const char *> solution;
-    solution.push_back("fly plane1 city0 city1 fl1 fl0");
+    solution.push_back("board person1 plane1 city0");
+    solution.push_back("fly plane1 city0 city1 fl4 fl3");
+    solution.push_back("debark person1 plane1 city1");
+    solution.push_back("board person3 plane1 city1");
+    solution.push_back("fly plane1 city1 city0 fl3 fl2");
+    solution.push_back("debark person3 plane1 city0");
 
     set<AbstractStateRef> possible_states;
     possible_states.insert(init_state);
@@ -1173,10 +1178,8 @@ void Abstraction::trace_solution() const {
             abort();
         }
 
-        // Determine which label corresponds to this operator and if it
-        // is relevant.
+        // Determine which label corresponds to this operator.
         int correct_label_no = -1;
-        bool is_relevant = false;
         for (size_t label_no = 0; label_no < num_labels; ++label_no) {
             if (labels->is_label_reduced(label_no)) {
                 assert(transitions_by_label[label_no].empty());
@@ -1188,12 +1191,6 @@ void Abstraction::trace_solution() const {
                 const OperatorLabel *label =
                     dynamic_cast<const OperatorLabel *>(origin_labels[j]);
                 if (label != 0 && label->get_operator() == op) {
-                    for (size_t k = 0; k < relevant_labels.size(); ++k) {
-                        if (relevant_labels[k]->get_id() == label->get_id()) {
-                            is_relevant = true;
-                            break;
-                        }
-                    }
                     assert(correct_label_no == -1);
                     correct_label_no = label_no;
                     break;
@@ -1201,8 +1198,17 @@ void Abstraction::trace_solution() const {
             }
         }
         assert(correct_label_no != -1);
-
         cout << "correct_label_no = " << correct_label_no << endl;
+
+        // Determine if the labels is relevant.
+        bool is_relevant = false;
+        for (size_t j = 0; j < relevant_labels.size(); ++j) {
+            if (relevant_labels[j]->get_reduced_label()->get_id() ==
+                correct_label_no) {
+                is_relevant = true;
+                break;
+            }
+        }
         cout << "is_relevant = " << is_relevant << endl;
 
         // Follow transitions induced by the label.
