@@ -1141,11 +1141,19 @@ void Abstraction::dump() const {
 }
 
 void Abstraction::trace_solution() const {
+    const bool VERBOSE = false;
+
     cout << "tracing solution..." << endl;
-    dump();
-    labels->dump();
-    for (size_t i = 0; i < g_operators.size(); ++i)
-        cout << "label #" << i << " is " << g_operators[i].get_name() << endl;
+
+    if (VERBOSE) {
+        dump();
+        labels->dump();
+    }
+
+    if (VERBOSE) {
+        for (size_t i = 0; i < g_operators.size(); ++i)
+            cout << "label #" << i << " is " << g_operators[i].get_name() << endl;
+    }
 
     vector<const char *> solution;
     solution.push_back("board person1 plane1 city0");
@@ -1158,8 +1166,10 @@ void Abstraction::trace_solution() const {
     set<AbstractStateRef> possible_states;
     possible_states.insert(init_state);
 
-    cout << "possible_states (start): "
-         << vector<AbstractStateRef>(possible_states.begin(), possible_states.end()) << endl;
+    if (VERBOSE) {
+        cout << "possible_states (start): "
+             << vector<AbstractStateRef>(possible_states.begin(), possible_states.end()) << endl;
+    }
 
     for (size_t i = 0; i < solution.size(); ++i) {
         set<AbstractStateRef> next_states;
@@ -1198,7 +1208,8 @@ void Abstraction::trace_solution() const {
             }
         }
         assert(correct_label_no != -1);
-        cout << "correct_label_no = " << correct_label_no << endl;
+        if (VERBOSE)
+            cout << "correct_label_no = " << correct_label_no << endl;
 
         // Determine if the labels is relevant.
         bool is_relevant = false;
@@ -1209,7 +1220,8 @@ void Abstraction::trace_solution() const {
                 break;
             }
         }
-        cout << "is_relevant = " << is_relevant << endl;
+        if (VERBOSE)
+            cout << "is_relevant = " << is_relevant << endl;
 
         // Follow transitions induced by the label.
         if (is_relevant) {
@@ -1226,8 +1238,9 @@ void Abstraction::trace_solution() const {
         }
 
         possible_states = next_states;
-        cout << "possible_states (" << i << "/" << solution.size() << "): "
-             << vector<AbstractStateRef>(possible_states.begin(), possible_states.end()) << endl;
+        if (VERBOSE)
+            cout << "possible_states (" << i << "/" << solution.size() << "): "
+                 << vector<AbstractStateRef>(possible_states.begin(), possible_states.end()) << endl;
 
     }
 
