@@ -21,14 +21,20 @@ LabelReducer::LabelReducer(int abs_index,
                            bool exact,
                            bool fixpoint,
                            const vector<int> &variable_order) {
+    int current_abs_index = abs_index;
     int variable_order_index = 0;
-    while (variable_order[variable_order_index] != abs_index) {
-        ++variable_order_index;
+    if (fixpoint) {
+        assert(!variable_order.empty());
+        while (variable_order[variable_order_index] != abs_index) {
+            ++variable_order_index;
+        }
+        assert(variable_order[variable_order_index] == current_abs_index);
     }
-    //int current_index = abs_index;
     num_reduced_labels = 0;
     while (true) {
-        Abstraction *current_abstraction = all_abstractions[variable_order[variable_order_index]];
+        Abstraction *current_abstraction = all_abstractions[current_abs_index];
+        // for the very first current_abs_index, current_abstraction should
+        // always be a valid pointer
         if (current_abstraction) {
             int reduced_labels = 0;
             if (exact) {
@@ -56,10 +62,14 @@ LabelReducer::LabelReducer(int abs_index,
                 break;
             }
         }
+        // we can never end up here when *not* using fixpoint iteration
+        assert(fixpoint);
+        assert(!variable_order.empty());
         ++variable_order_index;
         if (variable_order_index == variable_order.size()) {
             variable_order_index = 0;
         }
+        current_abs_index = variable_order[variable_order_index];
     }
 }
 
