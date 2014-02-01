@@ -1141,11 +1141,20 @@ void Abstraction::dump() const {
 }
 
 void Abstraction::trace_solution() const {
+    cout << "tracing solution..." << endl;
+    dump();
+    labels->dump();
+    for (size_t i = 0; i < g_operators.size(); ++i)
+        cout << "label #" << i << " is " << g_operators[i].get_name() << endl;
+
     vector<const char *> solution;
     solution.push_back("fly plane1 city0 city1 fl1 fl0");
 
     set<AbstractStateRef> possible_states;
     possible_states.insert(init_state);
+
+    cout << "possible_states (start): "
+         << vector<AbstractStateRef>(possible_states.begin(), possible_states.end()) << endl;
 
     for (size_t i = 0; i < solution.size(); ++i) {
         set<AbstractStateRef> next_states;
@@ -1180,7 +1189,7 @@ void Abstraction::trace_solution() const {
                     dynamic_cast<const OperatorLabel *>(origin_labels[j]);
                 if (label != 0 && label->get_operator() == op) {
                     for (size_t k = 0; k < relevant_labels.size(); ++k) {
-                        if (relevant_labels[k] == label) {
+                        if (relevant_labels[k]->get_id() == label->get_id()) {
                             is_relevant = true;
                             break;
                         }
@@ -1192,6 +1201,9 @@ void Abstraction::trace_solution() const {
             }
         }
         assert(correct_label_no != -1);
+
+        cout << "correct_label_no = " << correct_label_no << endl;
+        cout << "is_relevant = " << is_relevant << endl;
 
         // Follow transitions induced by the label.
         if (is_relevant) {
@@ -1208,6 +1220,9 @@ void Abstraction::trace_solution() const {
         }
 
         possible_states = next_states;
+        cout << "possible_states (" << i << "/" << solution.size() << "): "
+             << vector<AbstractStateRef>(possible_states.begin(), possible_states.end()) << endl;
+
     }
 
     for (size_t state_no = 0; state_no < num_states; ++state_no) {
