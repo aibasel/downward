@@ -722,6 +722,10 @@ AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, Labels *labels, int vari
 AtomicAbstraction::~AtomicAbstraction() {
 }
 
+bool compare_labels(const Label *lhs, const Label *rhs) {
+    return lhs->get_id() < rhs->get_id();
+}
+
 CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
     Labels *labels, Abstraction *abs1, Abstraction *abs2)
     : Abstraction(is_unit_cost, labels) {
@@ -759,8 +763,9 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
     for (int i = 0; i < abs2->relevant_labels.size(); i++)
         abs2->relevant_labels[i]->get_reduced_label()->marker2 = true;
 
-    relevant_labels.insert(relevant_labels.begin(), abs1->relevant_labels.begin(), abs1->relevant_labels.end());
-    relevant_labels.insert(relevant_labels.begin(), abs2->relevant_labels.begin(), abs2->relevant_labels.end());
+    ::set_union(abs1->relevant_labels.begin(), abs1->relevant_labels.end(),
+                abs2->relevant_labels.begin(), abs2->relevant_labels.end(),
+                back_inserter(relevant_labels), compare_labels);
 
     int multiplier = abs2->size();
     for (int label_no = 0; label_no < num_labels; label_no++) {
