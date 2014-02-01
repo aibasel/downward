@@ -37,7 +37,7 @@ Labels::Labels(OperatorCost cost_type, LabelReduction label_reduction_,
         exact = true;
         fixpoint = true;
         for (int i = 0; i < g_variable_domain.size(); ++i) {
-            if (fix_point_variable_order == NATURAL
+            if (fix_point_variable_order == REGULAR
                     || fix_point_variable_order == RANDOM) {
                 variable_order.push_back(i);
             } else if (fix_point_variable_order == REVERSE) {
@@ -112,8 +112,8 @@ void Labels::dump_options() const {
     if (label_reduction == EXACT_WITH_FIXPOINT) {
         cout << "Fixpoint variable order: ";
         switch (fix_point_variable_order) {
-        case NATURAL:
-            cout << "natural";
+        case REGULAR:
+            cout << "regular";
             break;
         case REVERSE:
             cout << "reversed";
