@@ -15,7 +15,7 @@ Labels::Labels(OperatorCost cost_type, LabelReduction label_reduction_,
                FixpointVariableOrder fix_point_variable_order_)
     : label_reduction(label_reduction_), fix_point_variable_order(fix_point_variable_order_) {
     for (size_t i = 0; i < g_operators.size(); ++i) {
-        labels.push_back(new OperatorLabel(i, get_adjusted_action_cost(g_operators[i], cost_type),
+        labels.push_back(new OperatorLabel(&g_operators[i], i, get_adjusted_action_cost(g_operators[i], cost_type),
                                            g_operators[i].get_prevail(), g_operators[i].get_pre_post()));
     }
     exact = false;

@@ -52,13 +52,18 @@ class OperatorLabel : public Label {
     const std::vector<PrePost> &pre_post;
 
     void update_root(CompositeLabel *new_root);
+
+    const Operator *op; // for debugging only
 public:
-    OperatorLabel(int id, int cost, const std::vector<Prevail> &prevail,
+    OperatorLabel(const Operator *op,
+                  int id, int cost, const std::vector<Prevail> &prevail,
                   const std::vector<PrePost> &pre_post);
     const std::vector<Prevail> &get_prevail() const {return prevail; }
     const std::vector<PrePost> &get_pre_post() const {return pre_post; }
     void get_origins(std::vector<const Label *> &origins) const;
     const std::vector<Label *> &get_parents() const;
+
+    const Operator *get_operator() const {return op;}
 };
 
 class CompositeLabel : public Label {

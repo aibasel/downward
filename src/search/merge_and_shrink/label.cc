@@ -16,9 +16,10 @@ bool Label::is_reduced() const {
     return root != this;
 }
 
-OperatorLabel::OperatorLabel(int id, int cost, const vector<Prevail> &prevail_,
+OperatorLabel::OperatorLabel(const Operator *op_,
+                             int id, int cost, const vector<Prevail> &prevail_,
                              const vector<PrePost> &pre_post_)
-    : Label(id, cost), prevail(prevail_), pre_post(pre_post_) {
+    : Label(id, cost), prevail(prevail_), pre_post(pre_post_), op(op_) {
 }
 
 CompositeLabel::CompositeLabel(int id, const std::vector<Label *> &parents_)
