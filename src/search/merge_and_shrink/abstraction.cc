@@ -488,23 +488,13 @@ void Abstraction::normalize() {
                     }
                     if (!relevant) {
                         one_parent_irrelevant = true;
-                    }
-                    /*for (size_t j = 0; j < relevant_labels.size(); ++j) {
-                        if (relevant_labels[j] == parent) {
-                            relevant = true;
-                            break;
                         }
                     }
-                    if (!relevant) {
-                        one_parent_irrelevant = true;
-                    }*/
                 }
             }
         }
         if (one_parent_irrelevant) {
             if (all_relevant_self_loops) {
-                //cout << "label " << reduced_label_no << " will be marked as "
-                //        "irrelevant and all its transitions be removed" << endl;
                 // remove all transitions (later)
                 empty_transitions.insert(reduced_label_no);
                 // mark all origin labels of label as irrelevant
@@ -532,8 +522,6 @@ void Abstraction::normalize() {
                     }
                 }
             } else {
-                //cout << "label " << reduced_label_no << " remains relevant but "
-                //        "has additional self loops at every state" << endl;
                 // make self loops explicit
                 for (int i = 0; i < num_states; ++i) {
                     target_buckets[i].push_back(
@@ -775,6 +763,9 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
     for (int i = 0; i < abs2->relevant_labels.size(); i++)
         abs2->relevant_labels[i]->get_reduced_label()->marker2 = true;
 
+    relevant_labels.insert(relevant_labels.begin(), abs1->relevant_labels.begin(), abs1->relevant_labels.end());
+    relevant_labels.insert(relevant_labels.begin(), abs2->relevant_labels.begin(), abs2->relevant_labels.end());
+
     int multiplier = abs2->size();
     for (int label_no = 0; label_no < num_labels; label_no++) {
         const Label *label = labels->get_label_by_index(label_no);
@@ -782,7 +773,6 @@ CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
         bool relevant2 = label->marker2;
         if (relevant1 || relevant2) {
             vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-            relevant_labels.push_back(label);
             const vector<AbstractTransition> &bucket1 =
                 abs1->transitions_by_label[label_no];
             const vector<AbstractTransition> &bucket2 =
