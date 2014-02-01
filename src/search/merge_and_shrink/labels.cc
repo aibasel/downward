@@ -42,6 +42,8 @@ Labels::Labels(OperatorCost cost_type, LabelReduction label_reduction_,
                 variable_order.push_back(i);
             } else if (fix_point_variable_order == REVERSE) {
                 variable_order.push_back(g_variable_domain.size() - 1 - i);
+            } else {
+                exit_with(EXIT_INPUT_ERROR);
             }
         }
         if (fix_point_variable_order == RANDOM) {
