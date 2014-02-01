@@ -474,7 +474,21 @@ void Abstraction::normalize() {
             } else {
                 if (!one_parent_irrelevant) {
                     bool relevant = false;
-                    for (size_t j = 0; j < relevant_labels.size(); ++j) {
+                    vector<const Label *> origins;
+                    parent->get_origins(origins);
+                    for (size_t j = 0; j < origins.size(); ++j) {
+                        const Label *origin = origins[j];
+                        for (size_t k = 0; k < relevant_labels.size(); ++k) {
+                            if (relevant_labels[k] == origin) {
+                                relevant = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!relevant) {
+                        one_parent_irrelevant = true;
+                    }
+                    /*for (size_t j = 0; j < relevant_labels.size(); ++j) {
                         if (relevant_labels[j] == parent) {
                             relevant = true;
                             break;
@@ -482,7 +496,7 @@ void Abstraction::normalize() {
                     }
                     if (!relevant) {
                         one_parent_irrelevant = true;
-                    }
+                    }*/
                 }
             }
         }
