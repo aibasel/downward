@@ -18,6 +18,7 @@
 #include <deque>
 #include <ext/hash_map>
 #include <iostream>
+#include <fstream>
 #include <limits>
 #include <string>
 #include <sstream>
@@ -1155,13 +1156,23 @@ void Abstraction::trace_solution() const {
             cout << "label #" << i << " is " << g_operators[i].get_name() << endl;
     }
 
-    vector<const char *> solution;
-    solution.push_back("board person1 plane1 city0");
-    solution.push_back("fly plane1 city0 city1 fl4 fl3");
-    solution.push_back("debark person1 plane1 city1");
-    solution.push_back("board person3 plane1 city1");
-    solution.push_back("fly plane1 city1 city0 fl3 fl2");
-    solution.push_back("debark person3 plane1 city0");
+    vector<string> solution;
+    ifstream solution_file("SOLUTION");
+    while (solution_file.good()) {
+        string s;
+        getline(solution_file, s);
+        if (!s.empty()) {
+            if (s[0] != '(' || s[s.length() - 1] != ')') {
+                cout << "invalid SOLUTION file?" << endl;
+                abort();
+            }
+            solution.push_back(s.substr(1, s.length() - 2));
+        }
+    }
+    if (solution.empty()) {
+        cout << "problem reading SOLUTION" << endl;
+        abort();
+    }
 
     set<AbstractStateRef> possible_states;
     possible_states.insert(init_state);
