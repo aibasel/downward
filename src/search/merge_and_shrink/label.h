@@ -63,7 +63,7 @@ public:
     void get_origins(std::vector<const Label *> &origins) const;
     const std::vector<Label *> &get_parents() const;
 
-    const Operator *get_operator() const {return op;}
+    const Operator *get_operator() const {return op; }
 };
 
 class CompositeLabel : public Label {

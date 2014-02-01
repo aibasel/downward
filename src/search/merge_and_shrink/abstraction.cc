@@ -488,7 +488,6 @@ void Abstraction::normalize() {
                     }
                     if (!relevant) {
                         one_parent_irrelevant = true;
-                        }
                     }
                 }
             }
@@ -513,7 +512,6 @@ void Abstraction::normalize() {
                         }
                     }
                     if (to_be_removed) {
-                        //cout << "erasing label " << label->get_id() << " from relevant labels" << endl;
                         // erase returns the new iterator
                         it = relevant_labels.erase(it);
                     }
@@ -567,8 +565,6 @@ void Abstraction::normalize() {
     assert(sorted_unique());
     num_labels = labels->get_size();
     normalized = true;
-
-    trace_solution();
 }
 
 EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
@@ -976,7 +972,6 @@ void Abstraction::apply_abstraction(
     // TODO do not check if transitions are sorted but just assume they are not?
     if (!sorted_unique())
         normalized = false;
-    num_labels = labels->get_size();
 }
 
 bool Abstraction::is_solvable() const {
@@ -1138,10 +1133,6 @@ void Abstraction::trace_solution() const {
     cout << "counter = " << counter << endl;
 
     bool VERBOSE = false;
-
-    if (counter == 3456) {
-        VERBOSE = true;
-    }
 
     cout << "tracing solution..." << endl;
 
