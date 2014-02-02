@@ -31,6 +31,8 @@ LabelReducer::LabelReducer(int abs_index,
         assert(variable_order[variable_order_index] == current_abs_index);
     }
     num_reduced_labels = 0;
+    int index_of_last_unsuccesful_reduction = -1;
+    vector<EquivalenceRelation *> local_equivalence_relations(all_abstractions.size(), 0);
     while (true) {
         Abstraction *current_abstraction = all_abstractions[current_abs_index];
         // for the very first current_abs_index, current_abstraction should
@@ -42,8 +44,8 @@ LabelReducer::LabelReducer(int abs_index,
                 // avoid that when normalizing it at some point later, we would
                 // have two label reductions to incorporate.
                 // See Abstraction::normalize()
-                current_abstraction->normalize();
-                EquivalenceRelation *relation = compute_outside_equivalence(current_abstraction, all_abstractions, labels);
+                EquivalenceRelation *relation = compute_outside_equivalence(current_abs_index, all_abstractions,
+                                                                            labels, local_equivalence_relations);
                 reduced_labels = reduce_exactly(relation, labels);
                 delete relation;
             } else {
@@ -58,8 +60,18 @@ LabelReducer::LabelReducer(int abs_index,
                 reduced_labels = reduce_approximatively(current_abstraction->get_varset(), labels);
             }
             num_reduced_labels += reduced_labels;
-            if (reduced_labels == 0 || !fixpoint) {
+            if (!fixpoint) {
                 break;
+            }
+            assert(fixpoint);
+            assert(reduced_labels >= 0);
+            if (reduced_labels > 0) {
+                index_of_last_unsuccesful_reduction = -1;
+            } else {
+                assert(reduced_labels == 0);
+                if (index_of_last_unsuccesful_reduction == -1) {
+                    index_of_last_unsuccesful_reduction = variable_order_index;
+                }
             }
         }
         // we can never end up here when *not* using fixpoint iteration
@@ -69,7 +81,16 @@ LabelReducer::LabelReducer(int abs_index,
         if (variable_order_index == variable_order.size()) {
             variable_order_index = 0;
         }
+        if (variable_order_index == index_of_last_unsuccesful_reduction) {
+            // reached fixpoint
+            break;
+        }
         current_abs_index = variable_order[variable_order_index];
+    }
+    for (size_t i = 0; i < local_equivalence_relations.size(); ++i) {
+        if (local_equivalence_relations[i]) {
+            delete local_equivalence_relations[i];
+        }
     }
 }
 
@@ -254,14 +275,18 @@ int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
     return num_labels - num_labels_after_reduction;
 }
 
-EquivalenceRelation *LabelReducer::compute_outside_equivalence(const Abstraction *abstraction,
+EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
                                                                const vector<Abstraction *> &all_abstractions,
-                                                               const vector<Label *> &labels) const {
+                                                               const vector<Label *> &labels,
+                                                               vector<EquivalenceRelation *> &local_equivalence_relations) const {
     /*Returns an equivalence relation over labels s.t. l ~ l'
     iff l and l' are locally equivalent in all transition systems
     T' \neq T. (They may or may not be locally equivalent in T.)
     Here: T = abstraction. */
-    cout << "compute outside equivalence for " << abstraction->tag() << endl;
+    Abstraction *abstraction = all_abstractions[abs_index];
+    assert(abstraction);
+    cout << abstraction->tag() << "compute combinable labels" << endl;
+    abstraction->normalize();
 
     int num_labels = labels.size();
     vector<pair<int, int> > labeled_label_nos;
@@ -282,16 +307,22 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(const Abstraction
         if (!abs || abs == abstraction) {
             continue;
         }
-        cout << "computing local equivalence for " << abs->tag() << endl;
         if (!abs->is_normalized()) {
-            // TODO: get rid of this, as normalize itself checks whether
-            // the abstraction is already normalized or not?
-            cout << "need to normalize" << endl;
             abs->normalize();
+            if (local_equivalence_relations[i]) {
+                delete local_equivalence_relations[i];
+                local_equivalence_relations[i] = 0;
+            }
         }
-        EquivalenceRelation *next_relation = abs->compute_local_equivalence_relation();
-        relation->refine(*next_relation);
-        delete next_relation;
+        cout << abs->tag();
+        if (!local_equivalence_relations[i]) {
+            cout << "compute local equivalence relation" << endl;
+            local_equivalence_relations[i] = abs->compute_local_equivalence_relation();
+        } else {
+            cout << "use cached local equivalence relation" << endl;
+            assert(abs->is_normalized());
+        }
+        relation->refine(*local_equivalence_relations[i]);
     }
     return relation;
 }

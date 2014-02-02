@@ -24,9 +24,10 @@ class LabelReducer {
                                std::vector<Label *> &labels) const;
 
     // exact label reduction
-    EquivalenceRelation *compute_outside_equivalence(const Abstraction *abstraction,
+    EquivalenceRelation *compute_outside_equivalence(int abs_index,
                                                      const std::vector<Abstraction *> &all_abstractions,
-                                                     const std::vector<Label *> &labels) const;
+                                                     const std::vector<Label *> &labels,
+                                                     std::vector<EquivalenceRelation *> &local_equivalence_relations) const;
     int reduce_exactly(const EquivalenceRelation *relation, std::vector<Label *> &labels) const;
 public:
     LabelReducer(int abs_index,
