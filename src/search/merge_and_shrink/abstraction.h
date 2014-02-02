@@ -1,7 +1,6 @@
 #ifndef MERGE_AND_SHRINK_ABSTRACTION_H
 #define MERGE_AND_SHRINK_ABSTRACTION_H
 
-#include "equivalence_relation.h"
 #include "shrink_strategy.h"
 
 #include "../operator_cost.h"
@@ -9,6 +8,7 @@
 #include <ext/slist>
 #include <vector>
 
+class EquivalenceRelation;
 class Label;
 class Labels;
 class State;
@@ -59,6 +59,7 @@ class Abstraction {
     // generated through label reduction, we do *not* update all abstractions
     // immediately.
     int num_labels;
+    EquivalenceRelation *local_equivalence_relation;
 
     std::vector<int> init_distances;
     std::vector<int> goal_distances;

@@ -1,5 +1,6 @@
 #include "abstraction.h"
 
+#include "equivalence_relation.h"
 #include "label.h"
 #include "labels.h"
 #include "merge_and_shrink_heuristic.h" // needed for ShrinkStrategy type;
