@@ -287,6 +287,10 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
     assert(abstraction);
     cout << abstraction->tag() << "compute combinable labels" << endl;
     abstraction->normalize();
+    if (local_equivalence_relations[abs_index]) {
+        delete local_equivalence_relations[abs_index];
+        local_equivalence_relations[abs_index] = 0;
+    }
 
     int num_labels = labels.size();
     vector<pair<int, int> > labeled_label_nos;
