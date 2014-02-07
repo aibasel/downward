@@ -11,7 +11,7 @@
 #include <new>
 using namespace std;
 
-// Test the buildbot: 2
+// Test the buildbot: 3
 
 int main(int argc, const char **argv) {
     register_event_handlers();
