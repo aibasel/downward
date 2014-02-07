@@ -65,8 +65,10 @@ void PatternGenerationHaslum::generate_candidate_patterns(const vector<int> &pat
     }
 }
 
-void PatternGenerationHaslum::sample_states(vector<State> &samples, double average_operator_cost) {
-    const State &initial_state = g_initial_state();
+void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
+                                            vector<State> &samples,
+                                            double average_operator_cost) {
+    const State &initial_state = sample_registry.get_initial_state();
     current_heuristic->evaluate(initial_state);
     assert(!current_heuristic->is_dead_end());
 
@@ -109,7 +111,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
                 assert(applicable_ops[random]->is_applicable(current_state));
                 // TODO for now, we only generate registered successors. This is a temporary state that
                 // should should not necessarily be registered in the global registry: see issue386.
-                current_state = g_state_registry->get_successor_state(current_state, *applicable_ops[random]);
+                current_state = sample_registry.get_successor_state(current_state, *applicable_ops[random]);
                 // if current state is a dead end, then restart with initial state
                 current_heuristic->evaluate_dead_end(current_state);
                 if (current_heuristic->is_dead_end())
@@ -162,6 +164,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     while (true) {
         num_iterations += 1;
         cout << "current collection size is " << current_heuristic->get_size() << endl;
+        // TODO think about how to handle this when state_registries are moved into the search algorithms.
         current_heuristic->evaluate(g_initial_state());
         cout << "current initial h value: ";
         if (current_heuristic->is_dead_end()) {
@@ -171,8 +174,9 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             cout << current_heuristic->get_heuristic() << endl;
         }
 
+        StateRegistry sample_registry;
         vector<State> samples;
-        sample_states(samples, average_operator_cost);
+        sample_states(sample_registry, samples, average_operator_cost);
 
         // For the new candidate patterns check whether they already have been candidates before and
         // thus already a PDB has been created an inserted into candidate_pdbs.
