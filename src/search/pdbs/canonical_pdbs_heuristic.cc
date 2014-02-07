@@ -136,7 +136,7 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         pattern_databases[i]->evaluate(state);
         if (pattern_databases[i]->is_dead_end())
-            return -1;
+            return DEAD_END;
     }
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         const vector<PDBHeuristic *> &clique = max_cliques[i];
@@ -223,6 +223,18 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
     }
 }
 
+void CanonicalPDBsHeuristic::evaluate_dead_end(const State &state) {
+    int evaluator_value = 0;
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        pattern_databases[i]->evaluate(state);
+        if (pattern_databases[i]->is_dead_end()) {
+            evaluator_value = DEAD_END;
+            break;
+        }
+    }
+    set_evaluator_value(evaluator_value);
+}
+
 void CanonicalPDBsHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) const {
     // print compatibility graph
     cout << "Compatibility graph" << endl;
@@ -259,7 +271,19 @@ void CanonicalPDBsHeuristic::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Canonical PDB", "");
+    parser.document_synopsis("Canonical PDB",
+        "The canonical pattern database heuristic is calculated as follows. "
+        "For a given pattern collection C, the value of the canonical heuristic "
+        "function is the maximum over all maximal additive subsets A in C, where "
+        "the value for one subset S in A is the sum of the heuristic values for "
+        "all patterns in S for a given state.");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("axioms", "not supported");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "yes");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
     Heuristic::add_options_to_parser(parser);
     Options opts;
     parse_patterns(parser, opts);

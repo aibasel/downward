@@ -17,7 +17,6 @@ using namespace std;
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
-      abstraction_count(opts.get<int>("count")),
       merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_label_reduction(opts.get<bool>("reduce_labels")),
@@ -58,8 +57,6 @@ void MergeAndShrinkHeuristic::dump_options() const {
     }
     cout << endl;
     shrink_strategy->dump_options();
-    cout << "Number of abstractions to maximize over: "
-         << abstraction_count << endl;
     cout << "Label reduction: "
          << (use_label_reduction ? "enabled" : "disabled") << endl
          << "Expensive statistics: "
@@ -82,7 +79,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
+Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_abstractions also
     //       allocates memory.
@@ -101,7 +98,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction(bool is_first) {
 
     cout << "Merging abstractions..." << endl;
 
-    VariableOrderFinder order(merge_strategy, is_first);
+    VariableOrderFinder order(merge_strategy);
 
     int var_no = order.next();
     cout << "First variable: #" << var_no << endl;
@@ -175,34 +172,22 @@ void MergeAndShrinkHeuristic::initialize() {
     warn_on_unusual_options();
 
     verify_no_axioms_no_cond_effects();
-    int peak_memory = 0;
 
-    for (int i = 0; i < abstraction_count; i++) {
-        cout << "Building abstraction #" << (i + 1) << "..." << endl;
-        Abstraction *abstraction = build_abstraction(i == 0);
-        peak_memory = max(peak_memory, abstraction->get_peak_memory_estimate());
-        abstractions.push_back(abstraction);
-        if (!abstractions.back()->is_solvable()) {
-            cout << "Abstract problem is unsolvable!" << endl;
-            if (i + 1 < abstraction_count)
-                cout << "Skipping remaining abstractions." << endl;
-            break;
-        }
+    cout << "Building abstraction..." << endl;
+    final_abstraction = build_abstraction();
+    if (!final_abstraction->is_solvable()) {
+        cout << "Abstract problem is unsolvable!" << endl;
     }
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
-    cout << "Estimated peak memory for abstraction: " << peak_memory << " bytes" << endl;
+    cout << "Estimated peak memory for abstraction: " << final_abstraction->get_peak_memory_estimate() << " bytes" << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
-    int cost = 0;
-    for (int i = 0; i < abstractions.size(); i++) {
-        int abs_cost = abstractions[i]->get_cost(state);
-        if (abs_cost == -1)
-            return DEAD_END;
-        cost = max(cost, abs_cost);
-    }
+    int cost = final_abstraction->get_cost(state);
+    if (cost == -1)
+        return DEAD_END;
     return cost;
 }
 
@@ -222,26 +207,33 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators", "no");
 
     // TODO: better documentation what each parameter does
-    parser.add_option<int>("count", "number of abstractions to build", "1");
     vector<string> merge_strategies;
+    vector<string> merge_strategies_doc;
     //TODO: it's a bit dangerous that the merge strategies here
     // have to be specified exactly in the same order
     // as in the enum definition. Try to find a way around this,
     // or at least raise an error when the order is wrong.
     merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_LEVEL");
+    merge_strategies_doc.push_back("TODO");
     merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_RANDOM");
+    merge_strategies_doc.push_back("TODO");
     merge_strategies.push_back("MERGE_LINEAR_GOAL_CG_LEVEL");
+    merge_strategies_doc.push_back("TODO");
     merge_strategies.push_back("MERGE_LINEAR_RANDOM");
+    merge_strategies_doc.push_back("TODO");
     merge_strategies.push_back("MERGE_DFP");
+    merge_strategies_doc.push_back("(not implemented)");
     merge_strategies.push_back("MERGE_LINEAR_LEVEL");
+    merge_strategies_doc.push_back("TODO");
     merge_strategies.push_back("MERGE_LINEAR_REVERSE_LEVEL");
+    merge_strategies_doc.push_back("TODO");
     parser.add_enum_option("merge_strategy", merge_strategies,
                            "merge strategy",
                            "MERGE_LINEAR_CG_GOAL_LEVEL");
 
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy",
-        "shrink strategy; these are not fully documented yet; "
+        "shrink strategy; "
         "try one of the following:",
         "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low)");
     ValueExplanations shrink_value_explanations;
@@ -278,9 +270,21 @@ static Heuristic *_parse(OptionParser &parser) {
 
     // TODO: Rename option name to "use_label_reduction" to be
     //       consistent with the papers?
-    parser.add_option<bool>("reduce_labels", "enable label reduction", "true");
-    parser.add_option<bool>("expensive_statistics", "show statistics on \"unique unlabeled edges\" (WARNING: "
-                            "these are *very* slow -- check the warning in the output)", "false");
+    parser.add_option<bool>("reduce_labels",
+                            "enable label reduction. "
+                            " Note: it is hard to fathom a scenario where label reduction is a bad idea. "
+                            "The overhead should be low and the gains in time and memory can be massive. "
+                            "So unless you really know what you're doing, don't set this to false. "
+                            "(The point of this option is to perform controlled experiments on how useful "
+                            "label reduction is exactly.)",
+                            "true");
+    parser.add_option<bool>("expensive_statistics",
+                            "show statistics on \"unique unlabeled edges\" (WARNING: "
+                            "these are *very* slow, i.e. too expensive to show by default "
+                            "(in terms of time and memory). When this is used, the planner "
+                            "prints a big warning on stderr with information on the performance impact. "
+                            "Don't use when benchmarking!)",
+                            "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())

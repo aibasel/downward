@@ -82,7 +82,7 @@ static Synergy *_parse(OptionParser &parser) {
         "landmark count heuristic, we can exploit synergy effects by "
         "using the LAMA-FF synergy. "
         "This synergy can only be used via Predefinition "
-        "(see ReusingHeuristics), for example:\n"
+        "(see OptionSyntax#Predefinitions), for example:\n"
         "\"hlm,hff=lm_ff_syn(...)\"");
     parser.add_option<LandmarkGraph *>("lm_graph");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");

@@ -234,6 +234,30 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "If only one evaluator and no preferred operator heuristic is used, "
         "the search does not use an alternation open list "
         "but a standard open list with only one queue.");
+    parser.document_note("Equivalent statements using general lazy search",
+         "\n```\n--heuristic h2=eval2\n"
+         "--search lazy_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
+         "is equivalent to\n"
+         "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
+         "--search lazy(alt([single(h1), single(h1, pref_only=true), single(h2),\n"
+         "                  single(h2, pref_only=true)], boost=100),\n"
+         "              preferred=h2)\n```\n"
+         "------------------------------------------------------------\n"
+         "```\n--search lazy_greedy([eval1, eval2], boost=100)\n```\n"
+         "is equivalent to\n"
+         "```\n--search lazy(alt([single(eval1), single(eval2)], boost=100))\n```\n"
+         "------------------------------------------------------------\n"
+         "```\n--heuristic h1=eval1\n--search lazy_greedy(h1, preferred=h1)\n```\n"
+         "is equivalent to\n"
+         "```\n--heuristic h1=eval1\n"
+         "--search lazy(alt([single(h1), single(h1, pref_only=true)], boost=1000),\n"
+         "              preferred=h1)\n```\n"
+         "------------------------------------------------------------\n"
+         "```\n--search lazy_greedy(eval1)\n```\n"
+         "is equivalent to\n"
+         "```\n--search lazy(single(eval1))\n```\n",
+         true);
+
     parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
@@ -294,6 +318,37 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         "In the special case with only one evaluator and no preferred "
         "operator heuristics, it uses a single queue that "
         "is ranked by g + w * h. ");
+    parser.document_note("Equivalent statements using general lazy search",
+        "\n```\n--heuristic h1=eval1\n"
+        "--search lazy_wastar([h1, eval2], w=2, preferred=h1,\n"
+        "                     bound=100, boost=500)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
+        "--search lazy(alt([single(sum([g(), weight(h1, 2)])),\n"
+        "                   single(sum([g(), weight(h1, 2)]), pref_only=true),\n"
+        "                   single(sum([g(), weight(h2, 2)])),\n"
+        "                   single(sum([g(), weight(h2, 2)]), pref_only=true)],\n"
+        "                  boost=500),\n"
+        "              preferred=h1, reopen_closed=true, bound=100)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search lazy_wastar([eval1, eval2], w=2, bound=100)\n```\n"
+        "is equivalent to\n"
+        "```\n--search lazy(alt([single(sum([g(), weight(eval1, 2)])),\n"
+        "                   single(sum([g(), weight(eval2, 2)]))],\n"
+        "                  boost=1000),\n"
+        "              reopen_closed=true, bound=100)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search lazy_wastar([eval1, eval2], bound=100, boost=0)\n```\n"
+        "is equivalent to\n"
+        "```\n--search lazy(alt([single(sum([g(), eval1])),\n"
+        "                   single(sum([g(), eval2]))])\n"
+        "              reopen_closed=true, bound=100)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search lazy_wastar(eval1, w=2)\n```\n"
+        "is equivalent to\n"
+        "```\n--search lazy(single(sum([g(), weight(eval1, 2)])), reopen_closed=true)\n```\n",
+        true);
+
     parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",
