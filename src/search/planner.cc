@@ -11,7 +11,7 @@
 #include <new>
 using namespace std;
 
-// This is a commit to test the buildbot.
+// Test the buildbot: 1
 
 int main(int argc, const char **argv) {
     register_event_handlers();
