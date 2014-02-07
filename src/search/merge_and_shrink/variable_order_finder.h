@@ -15,7 +15,7 @@ class VariableOrderFinder {
 
     void select_next(int position, int var_no);
 public:
-    VariableOrderFinder(MergeStrategy merge_strategy, bool is_first = true);
+    VariableOrderFinder(MergeStrategy merge_strategy);
     ~VariableOrderFinder();
     bool done() const;
     int next();

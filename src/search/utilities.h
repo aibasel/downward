@@ -1,7 +1,6 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#include <cassert>
 #include <ostream>
 #include <utility>
 #include <vector>
@@ -22,12 +21,12 @@
 #endif
 
 #define ABORT(msg) \
-  ( \
-    (cerr << "Critical error in file " << __FILE__ \
-          << ", line " << __LINE__ << ": " << msg << endl), \
-    (abort()), \
-    (void)0 \
-  )
+    ( \
+        (cerr << "Critical error in file " << __FILE__ \
+              << ", line " << __LINE__ << ": " << msg << endl), \
+        (abort()), \
+        (void)0 \
+    )
 
 enum ExitCode {
     EXIT_PLAN_FOUND = 0,
@@ -53,7 +52,7 @@ extern void assert_sorted_unique(const std::vector<int> &values);
 
 namespace std {
 template<class T>
-ostream & operator<<(ostream &stream, const vector<T> &vec) {
+ostream &operator<<(ostream &stream, const vector<T> &vec) {
     stream << "[";
     for (size_t i = 0; i < vec.size(); ++i) {
         if (i != 0)

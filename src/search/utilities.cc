@@ -1,5 +1,6 @@
 #include "utilities.h"
 
+#include <cassert>
 #include <csignal>
 #include <cstdlib>
 #include <iostream>
@@ -49,39 +50,39 @@ void exit_handler(int, void *) {
 #elif OPERATING_SYSTEM == OSX
 void exit_handler() {
 #endif
-      print_peak_memory();
-  }
+    print_peak_memory();
+}
 #endif
 
 void exit_with(ExitCode exitcode) {
     switch (exitcode) {
-        case EXIT_PLAN_FOUND:
-            cout << "Solution found." << endl;
-            break;
-        case EXIT_CRITICAL_ERROR:
-            cerr << "Unexplained error occured." << endl;
-            break;
-        case EXIT_INPUT_ERROR:
-            cerr << "Usage error occured." << endl;
-            break;
-        case EXIT_UNSUPPORTED:
-            cerr << "Tried to use unsupported feature." << endl;
-            break;
-        case EXIT_UNSOLVABLE:
-            cout << "Task is provably unsolvable." << endl;
-            break;
-        case EXIT_UNSOLVED_INCOMPLETE:
-            cout << "Search stopped without finding a solution." << endl;
-            break;
-        case EXIT_OUT_OF_MEMORY:
-            cout << "Memory limit has been reached." << endl;
-            break;
-        case EXIT_TIMEOUT:
-            cout << "Time limit has been reached." << endl;
-            break;
-        default:
-            cerr << "Exitcode: " << exitcode << endl;
-            ABORT("Unkown exitcode.");
+    case EXIT_PLAN_FOUND:
+        cout << "Solution found." << endl;
+        break;
+    case EXIT_CRITICAL_ERROR:
+        cerr << "Unexplained error occured." << endl;
+        break;
+    case EXIT_INPUT_ERROR:
+        cerr << "Usage error occured." << endl;
+        break;
+    case EXIT_UNSUPPORTED:
+        cerr << "Tried to use unsupported feature." << endl;
+        break;
+    case EXIT_UNSOLVABLE:
+        cout << "Task is provably unsolvable." << endl;
+        break;
+    case EXIT_UNSOLVED_INCOMPLETE:
+        cout << "Search stopped without finding a solution." << endl;
+        break;
+    case EXIT_OUT_OF_MEMORY:
+        cout << "Memory limit has been reached." << endl;
+        break;
+    case EXIT_TIMEOUT:
+        cout << "Time limit has been reached." << endl;
+        break;
+    default:
+        cerr << "Exitcode: " << exitcode << endl;
+        ABORT("Unkown exitcode.");
     }
     exit(exitcode);
 }

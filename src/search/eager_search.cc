@@ -19,8 +19,12 @@ EagerSearch::EagerSearch(
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       do_pathmax(opts.get<bool>("pathmax")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
-      open_list(opts.get<OpenList<state_var_t *> *>("open")),
-      f_evaluator(opts.get<ScalarEvaluator *>("f_eval")) {
+      open_list(opts.get<OpenList<StateID> *>("open")) {
+    if (opts.contains("f_eval")) {
+        f_evaluator = opts.get<ScalarEvaluator *>("f_eval");
+    } else {
+        f_evaluator = 0;
+    }
     if (opts.contains("preferred")) {
         preferred_operator_heuristics =
             opts.get_list<Heuristic *>("preferred");
@@ -65,8 +69,9 @@ void EagerSearch::initialize() {
 
     assert(!heuristics.empty());
 
+    const State &initial_state = g_initial_state();
     for (size_t i = 0; i < heuristics.size(); i++)
-        heuristics[i]->evaluate(*g_initial_state);
+        heuristics[i]->evaluate(initial_state);
     open_list->evaluate(0, false);
     search_progress.inc_evaluated_states();
     search_progress.inc_evaluations(heuristics.size());
@@ -80,10 +85,11 @@ void EagerSearch::initialize() {
             search_progress.report_f_value(f_evaluator->get_value());
         }
         search_progress.check_h_progress(0);
-        SearchNode node = search_space.get_node(*g_initial_state);
+        StateID initial_state_id = initial_state.get_id();
+        SearchNode node = search_space.get_node(initial_state_id);
         node.open_initial(heuristics[0]->get_value());
 
-        open_list->insert(node.get_state_buffer());
+        open_list->insert(initial_state_id);
     }
 }
 
@@ -128,11 +134,11 @@ int EagerSearch::step() {
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
-        State succ_state(s, *op);
+        State succ_state = g_state_registry->get_successor_state(s, *op);
         search_progress.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
-        SearchNode succ_node = search_space.get_node(succ_state);
+        SearchNode succ_node = search_space.get_node(succ_state.get_id());
 
         // Previously encountered dead end. Don't re-evaluate.
         if (succ_node.is_dead_end())
@@ -148,7 +154,7 @@ int EagerSearch::step() {
                   evaluation here. We must call reach_state for each
                   heuristic for its side effects.
                 */
-                if (heuristics[i]->reach_state(s, *op, succ_node.get_state()))
+                if (heuristics[i]->reach_state(s, *op, succ_state))
                     h_is_dirty = true;
             }
             if (h_is_dirty && use_multi_path_dependence)
@@ -190,7 +196,7 @@ int EagerSearch::step() {
             }
             succ_node.open(succ_h, node, op);
 
-            open_list->insert(succ_node.get_state_buffer());
+            open_list->insert(succ_state.get_id());
             if (search_progress.check_h_progress(succ_node.get_g())) {
                 reward_progress();
             }
@@ -215,7 +221,7 @@ int EagerSearch::step() {
                 // involved? Is this still feasible in the current version?
                 open_list->evaluate(succ_node.get_g(), is_preferred);
 
-                open_list->insert(succ_node.get_state_buffer());
+                open_list->insert(succ_state.get_id());
             } else {
                 // if we do not reopen closed nodes, we just update the parent pointers
                 // Note that this could cause an incompatibility between
@@ -240,12 +246,15 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
     while (true) {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
-            return make_pair(search_space.get_node(*g_initial_state), false);
+            // HACK! HACK! we do this because SearchNode has no default/copy constructor
+            StateID dummy_id = g_initial_state().get_id();
+            SearchNode dummy_node = search_space.get_node(dummy_id);
+            return make_pair(dummy_node, false);
         }
         vector<int> last_key_removed;
-        State state(open_list->remove_min(
-                        use_multi_path_dependence ? &last_key_removed : 0));
-        SearchNode node = search_space.get_node(state);
+        StateID id = open_list->remove_min(
+            use_multi_path_dependence ? &last_key_removed : 0);
+        SearchNode node = search_space.get_node(id);
 
         if (node.is_closed())
             continue;
@@ -276,7 +285,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                 if (new_h > node.get_h()) {
                     assert(node.is_open());
                     node.increase_h(new_h);
-                    open_list->insert(node.get_state_buffer());
+                    open_list->insert(node.get_state_id());
                     continue;
                 }
             }
@@ -321,18 +330,23 @@ static SearchEngine *_parse(OptionParser &parser) {
     //open lists are currently registered with the parser on demand,
     //because for templated classes the usual method of registering
     //does not work:
-    Plugin<OpenList<state_var_t *> >::register_open_lists();
+    Plugin<OpenList<StateID> >::register_open_lists();
 
-    parser.add_option<OpenList<state_var_t *> *>("open");
-    parser.add_option<bool>("reopen_closed", false,
-                            "reopen closed nodes");
-    parser.add_option<bool>("pathmax", false,
-                            "use pathmax correction");
-    parser.add_option<ScalarEvaluator *>("f_eval", 0,
-                                         "set evaluator for jump statistics");
+    parser.document_synopsis("Eager best first search", "");
+
+    parser.add_option<OpenList<StateID> *>("open", "open list");
+    parser.add_option<bool>("reopen_closed",
+                            "reopen closed nodes", "false");
+    parser.add_option<bool>("pathmax",
+                            "use pathmax correction", "false");
+    parser.add_option<ScalarEvaluator *>("f_eval",
+        "set evaluator for jump statistics. "
+        "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
+        "",
+                                         OptionFlags(false));
     parser.add_list_option<Heuristic *>
-        ("preferred", vector<Heuristic *>(),
-        "use preferred operators of these heuristics");
+        ("preferred",
+        "use preferred operators of these heuristics", "[]");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -346,11 +360,29 @@ static SearchEngine *_parse(OptionParser &parser) {
 }
 
 static SearchEngine *_parse_astar(OptionParser &parser) {
-    parser.add_option<ScalarEvaluator *>("eval");
-    parser.add_option<bool>("pathmax", false,
-                            "use pathmax correction");
-    parser.add_option<bool>("mpd", false,
-                            "use multi-path dependence (LM-A*)");
+    parser.document_synopsis(
+        "A* search (eager)",
+        "A* is a special case of eager best first search that uses g+h "
+        "as f-function. "
+        "We break ties using the evaluator. Closed nodes are re-opened.");
+    parser.document_note(
+        "mpd option",
+        "This option is currently only present for the A* algorithm and not "
+        "for the more general eager search, "
+        "because the current implementation of multi-path depedence "
+        "does not support general open lists.");
+    parser.document_note("Equivalent statements using general eager search",
+        "\n```\n--search astar(evaluator)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h=evaluator\n"
+        "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
+        "               reopen_closed=true, pathmax=false, progress_evaluator=sum([g(), h]))\n"
+        "```\n", true);
+    parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
+    parser.add_option<bool>("pathmax",
+                            "use pathmax correction", "false");
+    parser.add_option<bool>("mpd",
+                            "use multi-path dependence (LM-A*)", "false");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -367,8 +399,8 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         std::vector<ScalarEvaluator *> evals;
         evals.push_back(f_eval);
         evals.push_back(eval);
-        OpenList<state_var_t *> *open = \
-            new TieBreakingOpenList<state_var_t *>(evals, false, false);
+        OpenList<StateID> *open = \
+            new TieBreakingOpenList<StateID>(evals, false, false);
 
         opts.set("open", open);
         opts.set("f_eval", f_eval);
@@ -380,9 +412,51 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
 }
 
 static SearchEngine *_parse_greedy(OptionParser &parser) {
-    parser.add_list_option<ScalarEvaluator *>("evals");
-    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(), "use preferred operators of these heuristics");
-    parser.add_option<int>("boost", 0, "boost value for preferred operator open lists");
+    parser.document_synopsis("Greedy search (eager)", "");
+    parser.document_note(
+        "Open list",
+        "In most cases, eager greedy best first search uses "
+        "an alternation open list with one queue for each evaluator. "
+        "If preferred operator heuristics are used, it adds an extra queue "
+        "for each of these evaluators that includes only the nodes that "
+        "are generated with a preferred operator. "
+        "If only one evaluator and no preferred operator heuristic is used, "
+        "the search does not use an alternation open list but a "
+        "standard open list with only one queue.");
+    parser.document_note(
+        "Closed nodes",
+        "Closed node are not re-opened");
+    parser.document_note("Equivalent statements using general eager search",
+        "\n```\n--heuristic h2=eval2\n"
+        "--search eager_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
+        "--search eager(alt([single(h1), single(h1, pref_only=true), single(h2), \n"
+        "                    single(h2, pref_only=true)], boost=100),\n"
+        "               preferred=h2)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search eager_greedy([eval1, eval2])\n```\n"
+        "is equivalent to\n"
+        "```\n--search eager(alt([single(eval1), single(eval2)]))\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--heuristic h1=eval1\n"
+        "--search eager_greedy(h1, preferred=h1)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h1=eval1\n"
+        "--search eager(alt([single(h1), single(h1, pref_only=true)]),\n"
+        "               preferred=h1)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search eager_greedy(eval1)\n```\n"
+        "is equivalent to\n"
+        "```\n--search eager(single(eval1))\n```\n", true);
+
+    parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
+    parser.add_list_option<Heuristic *>(
+        "preferred",
+        "use preferred operators of these heuristics", "[]");
+    parser.add_option<int>(
+        "boost",
+        "boost value for preferred operator open lists", "0");
     SearchEngine::add_options_to_parser(parser);
 
 
@@ -395,21 +469,20 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
             opts.get_list<ScalarEvaluator *>("evals");
         vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
-        OpenList<state_var_t *> *open;
+        OpenList<StateID> *open;
         if ((evals.size() == 1) && preferred_list.empty()) {
-            open = new StandardScalarOpenList<state_var_t *>(evals[0], false);
+            open = new StandardScalarOpenList<StateID>(evals[0], false);
         } else {
-            vector<OpenList<state_var_t *> *> inner_lists;
+            vector<OpenList<StateID> *> inner_lists;
             for (int i = 0; i < evals.size(); i++) {
                 inner_lists.push_back(
-                    new StandardScalarOpenList<state_var_t *>(evals[i], false));
+                    new StandardScalarOpenList<StateID>(evals[i], false));
                 if (!preferred_list.empty()) {
                     inner_lists.push_back(
-                        new StandardScalarOpenList<state_var_t *>(evals[i],
-                                                                  true));
+                        new StandardScalarOpenList<StateID>(evals[i], true));
                 }
             }
-            open = new AlternationOpenList<state_var_t *>(
+            open = new AlternationOpenList<StateID>(
                 inner_lists, opts.get<int>("boost"));
         }
 

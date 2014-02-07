@@ -12,7 +12,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       heuristic(opts.get<Heuristic *>("h")),
       use_preferred(false),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
-      current_state(*g_initial_state),
+      current_state(g_initial_state()),
       num_ehc_phases(0) {
     if (opts.contains("preferred")) {
         preferred_heuristics = opts.get_list<Heuristic *>("preferred");
@@ -64,8 +64,9 @@ void EnforcedHillClimbingSearch::initialize() {
     }
     cout << "(real) g-bound = " << bound << endl;
 
-    SearchNode node = search_space.get_node(current_state);
-    evaluate(node.get_state(), NULL, node.get_state());
+    SearchNode node = search_space.get_node(current_state.get_id());
+    evaluate(current_state, NULL, current_state);
+
     if (heuristic->is_dead_end()) {
         cout << "Initial state is a dead end, no solution" << endl;
         if (heuristic->dead_ends_are_reliable())
@@ -132,7 +133,7 @@ int EnforcedHillClimbingSearch::step() {
     search_progress.check_h_progress(current_g);
 
     // current_state is the current state, and it is the last state to be evaluated
-    // cuurent_h is the h value of the current state
+    // current_h is the h value of the current state
 
     if (check_goal_and_set_plan(current_state)) {
         return SOLVED;
@@ -141,12 +142,12 @@ int EnforcedHillClimbingSearch::step() {
     vector<const Operator *> ops;
     get_successors(current_state, ops);
 
-    SearchNode current_node = search_space.get_node(current_state);
+    SearchNode current_node = search_space.get_node(current_state.get_id());
     current_node.close();
 
     for (int i = 0; i < ops.size(); i++) {
         int d = get_adjusted_cost(*ops[i]);
-        OpenListEntryEHC entry = make_pair(current_node.get_state_buffer(), make_pair(d, ops[i]));
+        OpenListEntryEHC entry = make_pair(current_state.get_id(), make_pair(d, ops[i]));
         open_list->evaluate(d, ops[i]->is_marked());
         open_list->insert(entry);
         ops[i]->unmark();
@@ -157,20 +158,21 @@ int EnforcedHillClimbingSearch::step() {
 int EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
         OpenListEntryEHC next = open_list->remove_min();
-        State last_parent = search_space.get_node(State(next.first)).get_state();
+        StateID last_parent_id = next.first;
+        State last_parent = g_state_registry->lookup_state(last_parent_id);
         int d = next.second.first;
         const Operator *last_op = next.second.second;
 
-        if (search_space.get_node(last_parent).get_real_g() + last_op->get_cost() >= bound)
+        if (search_space.get_node(last_parent_id).get_real_g() + last_op->get_cost() >= bound)
             continue;
 
-        State s(last_parent, *last_op);
+        State s = g_state_registry->get_successor_state(last_parent, *last_op);
         search_progress.inc_generated();
 
-        SearchNode node = search_space.get_node(s);
+        SearchNode node = search_space.get_node(s.get_id());
 
         if (node.is_new()) {
-            evaluate(last_parent, last_op, node.get_state());
+            evaluate(last_parent, last_op, s);
 
             if (heuristic->is_dead_end()) {
                 node.mark_as_dead_end();
@@ -179,7 +181,7 @@ int EnforcedHillClimbingSearch::ehc() {
             }
 
             int h = heuristic->get_heuristic();
-            node.open(h, search_space.get_node(last_parent), last_op);
+            node.open(h, search_space.get_node(last_parent_id), last_op);
 
             if (h < current_h) {
                 current_g = node.get_g();
@@ -192,7 +194,7 @@ int EnforcedHillClimbingSearch::ehc() {
                 p.second = p.second + search_progress.get_expanded() - last_expanded;
                 d_counts[d] = p;
 
-                current_state = node.get_state();
+                current_state = s;
                 current_h = heuristic->get_heuristic();
                 open_list->clear();
                 return IN_PROGRESS;
@@ -203,7 +205,7 @@ int EnforcedHillClimbingSearch::ehc() {
                 node.close();
                 for (int i = 0; i < ops.size(); i++) {
                     int new_d = d + get_adjusted_cost(*ops[i]);
-                    OpenListEntryEHC entry = make_pair(node.get_state_buffer(), make_pair(new_d, ops[i]));
+                    OpenListEntryEHC entry = make_pair(node.get_state_id(), make_pair(new_d, ops[i]));
                     open_list->evaluate(new_d, ops[i]->is_marked());
                     open_list->insert(entry);
                     ops[i]->unmark();
@@ -229,20 +231,20 @@ void EnforcedHillClimbingSearch::statistics() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    parser.add_option<Heuristic *>("h");
-
-    parser.add_option<bool>("bfs_use_cost", false,
-                            "use cost for bfs");
-
+    parser.document_synopsis("Enforced hill-climbing", "");
+    parser.add_option<Heuristic *>("h", "heuristic");
+    parser.add_option<bool>("bfs_use_cost",
+                            "use cost for bfs", "false");
     vector<string> preferred_usages;
     preferred_usages.push_back("PRUNE_BY_PREFERRED");
     preferred_usages.push_back("RANK_PREFERRED_FIRST");
     parser.add_enum_option("preferred_usage", preferred_usages,
-                           "PRUNE_BY_PREFERRED",
-                           "preferred operator usage");
+                           "preferred operator usage",
+                           "PRUNE_BY_PREFERRED");
 
-    parser.add_list_option<Heuristic *>("preferred", vector<Heuristic *>(),
-                                        "use preferred operators of these heuristics");
+    parser.add_list_option<Heuristic *>(
+        "preferred",
+        "use preferred operators of these heuristics", "[]");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
