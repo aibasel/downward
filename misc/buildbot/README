@@ -54,3 +54,8 @@ Updating the buildbot config
 # $X chmod go-r master.cfg
 # $X buildbot checkconfig
 # sudo /etc/init.d/buildbot reload
+
+
+Changing the buildbot experiment
+================================
+Running ./buildbot-exp.py without arguments prints the commandline help.

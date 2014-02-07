@@ -2,6 +2,7 @@
 \.pyc$
 ^experiments/issue[0-9]*/data/
 ^misc/autodoc/downward-xmlrpc\.secret$
+^misc/buildbot/experiments/
 ^src/preprocess/\.obj/
 ^src/preprocess/Makefile\.depend$
 ^src/preprocess/preprocess$
@@ -21,4 +22,3 @@
 ^new-scripts/reports/
 ^new-scripts/preprocessed-tasks/
 ^new-scripts/exp-.*/
-
