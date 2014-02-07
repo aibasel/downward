@@ -16,9 +16,9 @@ class IteratedSearch : public SearchEngine {
     int plan_counter;
 
     SearchEngine *current_search;
-    string current_search_name;
+    std::string current_search_name;
 
-    const vector<ParseTree> engine_configs;
+    const std::vector<ParseTree> engine_configs;
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;

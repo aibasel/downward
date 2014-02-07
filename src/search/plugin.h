@@ -11,15 +11,6 @@
 #include "open_lists/alternation_open_list.h"
 #include "open_lists/pareto_open_list.h"
 
-class SearchEngine;
-class LandmarkGraph;
-class ScalarEvaluator;
-class OptionParser;
-class Heuristic;
-template <class Entry>
-class OpenList;
-
-
 template <class T>
 class Plugin {
     Plugin(const Plugin<T> &copy);

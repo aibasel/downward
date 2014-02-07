@@ -22,12 +22,13 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
         lmp->in_goal = true;
     }
     // test all other possible facts
+    const State &initial_state = g_initial_state();
     for (int i = 0; i < g_variable_name.size(); i++)
         for (int j = 0; j < g_variable_domain[i]; j++) {
             const pair<int, int> lm = make_pair(i, j);
             if (!lm_graph->simple_landmark_exists(lm)) {
                 LandmarkNode *new_lm = &lm_graph->landmark_add_simple(lm);
-                if ((*g_initial_state)[lm.first] != lm.second && relaxed_task_solvable(true, new_lm)) {
+                if (initial_state[lm.first] != lm.second && relaxed_task_solvable(true, new_lm)) {
                     assert(lm_graph->landmark_exists(lm));
                     LandmarkNode *node;
                     if (lm_graph->simple_landmark_exists(lm))
@@ -42,6 +43,13 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
 }
 
 static LandmarkGraph *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Exhaustive Landmarks",
+        "Exhaustively checks for each fact if it is a landmark."
+        "This check is done using relaxed planning.");
+    parser.document_note(
+        "Relevant options",
+        "reasonable_orders, only_causal_landmarks");
     LandmarkGraph::add_options_to_parser(parser);
 
     Options opts = parser.parse();

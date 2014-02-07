@@ -52,8 +52,8 @@ private:
     int loop_acyclic_graph(LandmarkNode &lmn,
                            __gnu_cxx::hash_set<LandmarkNode *, hash_pointer> &acyclic_node_set);
     bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                         list<std::pair<LandmarkNode *, edge_type> > &path,
-                                         list<std::pair<LandmarkNode *, edge_type> >::iterator it);
+                                         std::list<std::pair<LandmarkNode *, edge_type> > &path,
+                                         std::list<std::pair<LandmarkNode *, edge_type> >::iterator it);
     int calculate_lms_cost() const;
     void collect_ancestors(__gnu_cxx::hash_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
                            bool use_reasonable);
