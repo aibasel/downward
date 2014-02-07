@@ -14,7 +14,7 @@ LandmarkStatusManager::~LandmarkStatusManager() {
 
 
 vector<bool> &LandmarkStatusManager::get_reached_landmarks(const State &state) {
-    return reached_lms[state.get_id()];
+    return reached_lms[state];
 }
 
 
