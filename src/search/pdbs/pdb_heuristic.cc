@@ -11,8 +11,6 @@
 #include "../timer.h"
 #include "../utilities.h"
 
-#include "../merge_and_shrink/variable_order_finder.h"
-
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -271,7 +269,7 @@ void PDBHeuristic::initialize() {
 int PDBHeuristic::compute_heuristic(const State &state) {
     int h = distances[hash_index(state)];
     if (h == numeric_limits<int>::max())
-        return -1;
+        return DEAD_END;
     return h;
 }
 
@@ -292,9 +290,15 @@ double PDBHeuristic::compute_mean_finite_h() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "PDB",
-        "TODO");
+    parser.document_synopsis("Pattern database heuristic", "TODO");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("axioms", "not supported");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "yes");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
+
     Heuristic::add_options_to_parser(parser);
     Options opts;
     parse_pattern(parser, opts);
