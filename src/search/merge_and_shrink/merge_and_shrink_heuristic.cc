@@ -96,7 +96,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         variable_order.push_back(var_one);
         abstraction = all_abstractions[var_one];
         assert(abstraction);
-        abstraction->statistics(use_expensive_statistics);
         int var_two = next_vars.second;
         assert(var_one != var_two);
         if (merge_strategy->name() == "non linear") {
@@ -107,7 +106,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         variable_order.push_back(var_two);
         Abstraction *other_abstraction = all_abstractions[var_two];
         assert(other_abstraction);
-        other_abstraction->statistics(use_expensive_statistics);
 
         // TODO: When using nonlinear merge strategies, make sure not
         // to normalize multiple parts of a composite. See issue68.
@@ -118,6 +116,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
             reduced_labels = true;
             abstraction->normalize();
             other_abstraction->normalize();
+            abstraction->statistics(use_expensive_statistics);
+            other_abstraction->statistics(use_expensive_statistics);
         }
 
         abstraction->compute_distances();
@@ -142,9 +142,12 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
             total_reduced_labels += labels->reduce(var_one, all_abstractions);
         }
         abstraction->normalize();
-        abstraction->statistics(use_expensive_statistics);
         other_abstraction->normalize();
-        other_abstraction->statistics(use_expensive_statistics);
+        if (!reduced_labels) {
+            // only print statistics if we just possibly reduced labels
+            other_abstraction->statistics(use_expensive_statistics);
+            abstraction->statistics(use_expensive_statistics);
+        }
 
         Abstraction *new_abstraction = new CompositeAbstraction(
             is_unit_cost_problem(),

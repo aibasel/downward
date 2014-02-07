@@ -123,6 +123,6 @@ void Labels::dump_options() const {
             break;
         }
         cout << endl;
-        cout << variable_order << endl;
+        //cout << variable_order << endl;
     }
 }

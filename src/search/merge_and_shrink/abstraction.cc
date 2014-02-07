@@ -421,7 +421,7 @@ void Abstraction::normalize() {
         assert(sorted_unique());
         return;
     }
-    cout << tag() << "normalizing" << endl;
+    //cout << tag() << "normalizing" << endl;
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
 
