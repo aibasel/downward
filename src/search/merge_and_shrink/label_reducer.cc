@@ -285,7 +285,7 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
     Here: T = abstraction. */
     Abstraction *abstraction = all_abstractions[abs_index];
     assert(abstraction);
-    cout << abstraction->tag() << "compute combinable labels" << endl;
+    //cout << abstraction->tag() << "compute combinable labels" << endl;
     abstraction->normalize();
     if (local_equivalence_relations[abs_index]) {
         delete local_equivalence_relations[abs_index];
@@ -318,12 +318,12 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
                 local_equivalence_relations[i] = 0;
             }
         }
-        cout << abs->tag();
+        //cout << abs->tag();
         if (!local_equivalence_relations[i]) {
-            cout << "compute local equivalence relation" << endl;
+            //cout << "compute local equivalence relation" << endl;
             local_equivalence_relations[i] = abs->compute_local_equivalence_relation();
         } else {
-            cout << "use cached local equivalence relation" << endl;
+            //cout << "use cached local equivalence relation" << endl;
             assert(abs->is_normalized());
         }
         relation->refine(*local_equivalence_relations[i]);
@@ -355,9 +355,12 @@ int LabelReducer::reduce_exactly(const EquivalenceRelation *relation, std::vecto
             ++num_labels_after_reduction;
         }
     }
-    cout << "Label reduction: "
-         << num_labels << " labels, "
-         << num_labels_after_reduction << " after reduction"
-         << endl;
-    return num_labels - num_labels_after_reduction;
+    int number_reduced_labels = num_labels - num_labels_after_reduction;
+    if (number_reduced_labels > 0) {
+        cout << "Label reduction: "
+             << num_labels << " labels, "
+             << num_labels_after_reduction << " after reduction"
+             << endl;
+    }
+    return number_reduced_labels;
 }

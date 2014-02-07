@@ -115,12 +115,12 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
     assert(next_indices.first != -1);
     assert(next_indices.second != -1);
     cout << "Next pair of indices: (" << next_indices.first << ", " << next_indices.second << ")" << endl;
-    if (remaining_merges > 1 && minimum_weight != infinity) {
-        // in the case we do not make a trivial choice of a next pair
-        cout << "Computed weight: " << minimum_weight << endl;
-    } else {
-        cout << "No weight computed (pair has been chosen trivially by order)" << endl;
-    }
+//    if (remaining_merges > 1 && minimum_weight != infinity) {
+//        // in the case we do not make a trivial choice of a next pair
+//        cout << "Computed weight: " << minimum_weight << endl;
+//    } else {
+//        cout << "No weight computed (pair has been chosen trivially by order)" << endl;
+//    }
     if (minimum_weight != 0 && minimum_weight != infinity) {
         ++pair_weights_unequal_zero_counter;
     }
@@ -144,8 +144,8 @@ string NonLinearMergeStrategy::name() const {
 }
 
 void NonLinearMergeStrategy::print_summary() const {
-    cout << "Number of times a pair with weight unequal 0 has been chosen: "
-         << pair_weights_unequal_zero_counter << endl;
+//    cout << "Number of times a pair with weight unequal 0 has been chosen: "
+//         << pair_weights_unequal_zero_counter << endl;
 }
 
 static MergeStrategy *_parse(OptionParser &parser) {
