@@ -27,7 +27,7 @@ cd "$(dirname "$0")"
 
 export PYTHONHASHSEED=random
 
-for PYTHON in python2.6 python2.7 python3; do
+for PYTHON in python2.7 python3; do
     echo
     $PYTHON -V
     $PYTHON test-translator.py "$@"
