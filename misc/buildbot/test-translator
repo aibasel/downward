@@ -28,14 +28,9 @@ cd "$(dirname "$0")"
 export PYTHONHASHSEED=random
 
 for PYTHON in python2.6 python2.7 python3; do
-    # Returns 0 if command is found.
-    FULLPATH=`command -v $PYTHON` || true
-    # Only test those python versions that are installed.
-    if [ "$FULLPATH" ]; then
-        echo
-        $PYTHON -V
-        $PYTHON test-translator.py "$@"
-    fi
+    echo
+    $PYTHON -V
+    $PYTHON test-translator.py "$@"
 done
 
 
@@ -43,7 +38,7 @@ done
 
 cd "$SAS_FILES"
 
-printf "\n*****************************************************************\n\n"
+printf "\n*********************************************************\n\n"
 for TASK in $(ls)
 do
     echo "Comparing SAS+ files for $TASK:"
