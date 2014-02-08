@@ -31,7 +31,7 @@ from check import Check, RegressionCheckReport
 
 
 DIR = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.join(DIR, '../../')
+REPO = os.path.abspath(os.path.join(DIR, '../../'))
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 
 BASELINE = checkouts.get_global_rev(REPO, 'f5110717a963')
