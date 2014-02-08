@@ -1,16 +1,16 @@
 #! /usr/bin/env python
 
 USAGE = """\
-# Test baseline manually every time it is changed.
+# Set or change baseline manually.
 ./buildbot-exp.py --test nightly --rev baseline --all
 ./buildbot-exp.py --test weekly --rev baseline --all
 
-# Let the buildbot run the following for every changeset (bundle).
+# Let the buildbot compare the current revision to the baseline.
 ./buildbot-exp.py --test nightly --all
 
-The second command exits with 1 if a regression was found. You can adapt the
-experiment by changing the values for BASELINE, CONFIGS, SUITES and
-RELATIVE_CHECKS below.
+The second command exits with 1 if a regression was found. You can
+adapt the experiment by changing the values for BASELINE, CONFIGS,
+SUITES and RELATIVE_CHECKS below.
 """
 
 import logging
@@ -25,7 +25,6 @@ from downward.experiments import DownwardExperiment
 # TODO: Use add_revision() once it's available.
 from downward.checkouts import Translator, Preprocessor, Planner
 from downward import checkouts
-from downward import configs
 from downward.reports.absolute import AbsoluteReport
 
 from check import Check, RegressionCheckReport
@@ -33,7 +32,7 @@ from check import Check, RegressionCheckReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.join(DIR, '../../')
-EXPERIMENTS_DIR = os.path.join(DIR, 'experiments')
+EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 
 BASELINE = checkouts.get_global_rev(REPO, 'f5110717a963')
 if not BASELINE:
