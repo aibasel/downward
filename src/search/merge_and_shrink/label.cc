@@ -7,8 +7,8 @@
 
 using namespace std;
 
-Label::Label(int id_, int cost_)
-    : id(id_), cost(cost_), root(this) {
+Label::Label(int id_, int cost_, const vector<Prevail> &prevail_, const vector<PrePost> &pre_post_)
+    : id(id_), cost(cost_), prevail(prevail_), pre_post(pre_post_), root(this) {
     marker1 = marker2 = false;
 }
 
@@ -17,28 +17,15 @@ bool Label::is_reduced() const {
 }
 
 OperatorLabel::OperatorLabel(const Operator *op_,
-                             int id, int cost, const vector<Prevail> &prevail_,
-                             const vector<PrePost> &pre_post_)
-    : Label(id, cost), prevail(prevail_), pre_post(pre_post_), op(op_) {
+                             int id, int cost, const vector<Prevail> &prevail,
+                             const vector<PrePost> &pre_post)
+    : Label(id, cost, prevail, pre_post), op(op_) {
 }
 
 CompositeLabel::CompositeLabel(int id, const std::vector<Label *> &parents_)
-    : Label(id, parents_[0]->get_cost()) {
-    for (size_t i = 0; i < parents_.size(); ++i) {
-        Label *parent = parents_[i];
-        if (i > 0)
-            assert(parent->get_cost() == parents_[i - 1]->get_cost());
-        parent->update_root(this);
-        parents.push_back(parent);
-    }
-}
-
-CompositeLabel::CompositeLabel(int id, const std::vector<Label *> &parents_,
-                               const std::vector<Prevail> &prevail_,
-                               const std::vector<PrePost> &pre_post_)
-    : Label(id, parents_[0]->get_cost()),
-      prevail(prevail_.begin(), prevail_.end()),
-      pre_post(pre_post_.begin(), pre_post_.end()) {
+    : Label(id, parents_[0]->get_cost(), parents_[0]->get_prevail(), parents_[0]->get_pre_post()) {
+    // We take the first label as the "canonical" label for prevail and pre-post
+    // to match the old implementation of label reduction.
     for (size_t i = 0; i < parents_.size(); ++i) {
         Label *parent = parents_[i];
         if (i > 0)

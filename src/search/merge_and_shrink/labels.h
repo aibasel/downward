@@ -10,6 +10,7 @@ class Label;
 
 enum LabelReduction {
     NONE,
+    OLD,
     APPROXIMATIVE,
     APPROXIMATIVE_WITH_FIXPOINT,
     EXACT,
@@ -31,8 +32,6 @@ class Labels {
     LabelReduction label_reduction;
     FixpointVariableOrder fix_point_variable_order;
     std::vector<int> variable_order;
-    bool exact;
-    bool fixpoint;
 public:
     Labels(OperatorCost cost_type, LabelReduction label_reduction,
            FixpointVariableOrder fix_point_variable_order);
