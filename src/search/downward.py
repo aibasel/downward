@@ -88,13 +88,17 @@ def main():
 
     # TODO: Only do complex input analysis if we care about the
     # unit-cost/non-unit-cost question? We only do with LAMA-2011.
-    file_info = input_analyzer.analyze(args.file)
-    file_info.dump()
+    is_unit_cost = input_analyzer.read_unit_cost(args.file)
+    print "is_unit_cost:", is_unit_cost
+
+    state_var_size = input_analyzer.read_state_var_size(args.file)
+    print "state_var_size:", state_var_size
 
     if args.alias:
         assert not search_args
         # TODO: Implement this.
         raise NotImplementedError
+
     elif args.portfolio:
         assert not search_args
         # TODO: Implement this.
