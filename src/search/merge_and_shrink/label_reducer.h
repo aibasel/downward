@@ -2,6 +2,7 @@
 #define MERGE_AND_SHRINK_LABEL_REDUCER_H
 
 #include "label.h"
+#include "labels.h"
 
 #include "../globals.h"
 #include "../operator.h"
@@ -17,11 +18,11 @@ class LabelSignature;
 class LabelReducer {
     int num_reduced_labels;
 
-    // approximative label reduction
+    // old label reduction
     LabelSignature build_label_signature(const Label &label,
         const std::vector<bool> &var_is_used) const;
-    int reduce_approximatively(const std::vector<int> &abs_vars,
-                               std::vector<Label *> &labels) const;
+    int reduce_old(const std::vector<int> &abs_vars,
+                   std::vector<Label *> &labels) const;
 
     // exact label reduction
     EquivalenceRelation *compute_outside_equivalence(int abs_index,
@@ -33,8 +34,7 @@ public:
     LabelReducer(int abs_index,
                  const std::vector<Abstraction *> &all_abstractions,
                  std::vector<Label* > &labels,
-                 bool exact,
-                 bool fixpoint,
+                 const LabelReduction &label_reduction,
                  const std::vector<int> &variable_order);
 
     int get_number_reduced_labels() const {

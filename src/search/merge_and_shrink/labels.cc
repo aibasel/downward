@@ -18,24 +18,8 @@ Labels::Labels(OperatorCost cost_type, LabelReduction label_reduction_,
         labels.push_back(new OperatorLabel(&g_operators[i], i, get_adjusted_action_cost(g_operators[i], cost_type),
                                            g_operators[i].get_prevail(), g_operators[i].get_pre_post()));
     }
-    exact = false;
-    fixpoint = false;
-    switch (label_reduction) {
-    case NONE:
-        break;
-    case APPROXIMATIVE:
-        exit_with(EXIT_UNSUPPORTED);
-        break;
-    case APPROXIMATIVE_WITH_FIXPOINT:
-        exit_with(EXIT_UNSUPPORTED);
-        fixpoint = true;
-        break;
-    case EXACT:
-        exact = true;
-        break;
-    case EXACT_WITH_FIXPOINT:
-        exact = true;
-        fixpoint = true;
+    if (label_reduction == APPROXIMATIVE_WITH_FIXPOINT
+            || label_reduction == EXACT_WITH_FIXPOINT) {
         for (int i = 0; i < g_variable_domain.size(); ++i) {
             if (fix_point_variable_order == REGULAR
                     || fix_point_variable_order == RANDOM) {
@@ -49,9 +33,6 @@ Labels::Labels(OperatorCost cost_type, LabelReduction label_reduction_,
         if (fix_point_variable_order == RANDOM) {
             random_shuffle(variable_order.begin(), variable_order.end());
         }
-        break;
-    default:
-        exit_with(EXIT_INPUT_ERROR);
     }
 }
 
@@ -64,7 +45,7 @@ int Labels::reduce(int abs_index,
         return 0;
     }
     LabelReducer label_reducer(abs_index, all_abstractions, labels,
-                               exact, fixpoint, variable_order);
+                               label_reduction, variable_order);
     return label_reducer.get_number_reduced_labels();
 }
 
@@ -95,6 +76,9 @@ void Labels::dump_options() const {
     case NONE:
         cout << "disabled";
         break;
+    case OLD:
+        cout << "old";
+        break;
     case APPROXIMATIVE:
         cout << "approximative";
         break;
@@ -109,7 +93,8 @@ void Labels::dump_options() const {
         break;
     }
     cout << endl;
-    if (label_reduction == EXACT_WITH_FIXPOINT) {
+    if (label_reduction == APPROXIMATIVE_WITH_FIXPOINT
+            || label_reduction == EXACT_WITH_FIXPOINT) {
         cout << "Fixpoint variable order: ";
         switch (fix_point_variable_order) {
         case REGULAR:

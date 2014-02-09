@@ -16,18 +16,24 @@ class Label {
     friend class CompositeLabel;
     int id;
     int cost;
+    // prevail and pre_posts are references to those of one "canonical"
+    // operator, which is the operator an OperatorLabel was built from or
+    // the "first" label of all parent labels when constructing a CompositeLabel.
+    const std::vector<Prevail> &prevail;
+    const std::vector<PrePost> &pre_post;
 protected:
     // root is a pointer to a composite label that this label has been reduced
     // to, if such a label exists, or to itself, if the label has not been
     // reduced yet.
     Label *root;
 
-    Label(int id, int cost);
+    Label(int id, int cost, const std::vector<Prevail> &prevail,
+          const std::vector<PrePost> &pre_post);
     virtual ~Label() {}
     virtual void update_root(CompositeLabel *new_root) = 0;
 public:
-    virtual const std::vector<Prevail> &get_prevail() const = 0;
-    virtual const std::vector<PrePost> &get_pre_post() const = 0;
+    const std::vector<Prevail> &get_prevail() const {return prevail; }
+    const std::vector<PrePost> &get_pre_post() const {return pre_post; }
     int get_id() const {
         return id;
     }
@@ -46,11 +52,6 @@ public:
 };
 
 class OperatorLabel : public Label {
-    // prevail and pre_post are references to the corresponding fields of the
-    // underlying original operator
-    const std::vector<Prevail> &prevail;
-    const std::vector<PrePost> &pre_post;
-
     void update_root(CompositeLabel *new_root);
 
     const Operator *op; // for debugging only
@@ -58,8 +59,7 @@ public:
     OperatorLabel(const Operator *op,
                   int id, int cost, const std::vector<Prevail> &prevail,
                   const std::vector<PrePost> &pre_post);
-    const std::vector<Prevail> &get_prevail() const {return prevail; }
-    const std::vector<PrePost> &get_pre_post() const {return pre_post; }
+
     void get_origins(std::vector<const Label *> &origins) const;
     const std::vector<Label *> &get_parents() const;
 
@@ -67,23 +67,11 @@ public:
 };
 
 class CompositeLabel : public Label {
-    // prevail and pre_post are "imaginary" conditions of the composite label.
-    // they are *not* valid prevail or pre-post conditions as those of a
-    // regular operator! they are defined in a way that they would induce
-    // exactly the transitions that are associated with this label in m&s
-    // abstractions.
-    std::vector<Prevail> prevail;
-    std::vector<PrePost> pre_post;
     std::vector<Label *> parents;
 
     void update_root(CompositeLabel *new_root);
 public:
     CompositeLabel(int id, const std::vector<Label *> &parents);
-    CompositeLabel(int id, const std::vector<Label *> &parents,
-                   const std::vector<Prevail> &prevail,
-                   const std::vector<PrePost> &pre_post);
-    const std::vector<Prevail> &get_prevail() const {return prevail; }
-    const std::vector<PrePost> &get_pre_post() const {return pre_post; }
     void get_origins(std::vector<const Label *> &origins) const;
     const std::vector<Label *> &get_parents() const {
         return parents;

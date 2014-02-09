@@ -273,11 +273,12 @@ static Heuristic *_parse(OptionParser &parser) {
 
     vector<string> label_reduction;
     label_reduction.push_back("NONE");
+    label_reduction.push_back("OLD");
     label_reduction.push_back("APPROXIMATIVE");
     label_reduction.push_back("APPROXIMATIVE_WITH_FIXPOINT");
     label_reduction.push_back("EXACT");
     label_reduction.push_back("EXACT_WITH_FIXPOINT");
-    parser.add_enum_option("label_reduction", label_reduction, "label reduction method", "EXACT");
+    parser.add_enum_option("label_reduction", label_reduction, "label reduction method", "EXACT_WITH_FIXPOINT");
     vector<string> fixpoint_variable_order;
     fixpoint_variable_order.push_back("REGULAR");
     fixpoint_variable_order.push_back("REVERSE");
@@ -295,6 +296,11 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
+        if (opts.get_enum("label_reduction") == OLD
+                && opts.get<MergeStrategy *>("merge_strategy")->name() != "linear") {
+            parser.error("old label reduction is only correct when used with a "
+                         "linear merge strategy!");
+        }
         MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(opts);
         return result;
     }

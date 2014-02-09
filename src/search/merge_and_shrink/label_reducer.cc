@@ -7,7 +7,7 @@
 #include "../operator.h"
 #include "../utilities.h"
 
-#include <algorithm>
+//#include <algorithm>
 #include <cassert>
 #include <ext/hash_map>
 #include <iostream>
@@ -18,9 +18,29 @@ using namespace __gnu_cxx;
 LabelReducer::LabelReducer(int abs_index,
                            const vector<Abstraction *> &all_abstractions,
                            std::vector<Label *> &labels,
-                           bool exact,
-                           bool fixpoint,
+                           const LabelReduction &label_reduction,
                            const vector<int> &variable_order) {
+    num_reduced_labels = 0;
+    if (label_reduction == NONE) {
+        exit_with(EXIT_INPUT_ERROR);
+    }
+    if (label_reduction == OLD) {
+        // we need to normalize all abstraction to incorporate possible previous
+        // label reductions (normalize cannot deal with several label reductions
+        // at the time)
+        for (size_t i = 0; i < all_abstractions.size(); ++i) {
+            if (all_abstractions[i]) {
+                all_abstractions[i]->normalize();
+            }
+        }
+        num_reduced_labels += reduce_old(all_abstractions[abs_index]->get_varset(), labels);
+        return;
+    }
+    bool fixpoint = false;
+    if (label_reduction == APPROXIMATIVE_WITH_FIXPOINT
+            || label_reduction == EXACT_WITH_FIXPOINT) {
+        fixpoint = true;
+    }
     int current_abs_index = abs_index;
     int variable_order_index = 0;
     if (fixpoint) {
@@ -30,7 +50,6 @@ LabelReducer::LabelReducer(int abs_index,
         }
         assert(variable_order[variable_order_index] == current_abs_index);
     }
-    num_reduced_labels = 0;
     int index_of_last_unsuccesful_reduction = -1;
     vector<EquivalenceRelation *> local_equivalence_relations(all_abstractions.size(), 0);
     while (true) {
@@ -39,7 +58,7 @@ LabelReducer::LabelReducer(int abs_index,
         // always be a valid pointer
         if (current_abstraction) {
             int reduced_labels = 0;
-            if (exact) {
+            if (label_reduction == EXACT || label_reduction == EXACT_WITH_FIXPOINT) {
                 // Note: we need to normalize the current abstraction in order to
                 // avoid that when normalizing it at some point later, we would
                 // have two label reductions to incorporate.
@@ -49,15 +68,7 @@ LabelReducer::LabelReducer(int abs_index,
                 reduced_labels = reduce_exactly(relation, labels);
                 delete relation;
             } else {
-                // Note: we need to normalize all abstractions as this does
-                // otherwise not happen between several label reductions.
-                // See above and Abstration::normalize()
-                for (size_t i = 0; i < all_abstractions.size(); ++i) {
-                    if (all_abstractions[i]) {
-                        all_abstractions[i]->normalize();
-                    }
-                }
-                reduced_labels = reduce_approximatively(current_abstraction->get_varset(), labels);
+                exit_with(EXIT_INPUT_ERROR);
             }
             num_reduced_labels += reduced_labels;
             if (!fixpoint) {
@@ -105,21 +116,25 @@ struct LabelSignature {
         // variable -- some sort of canonical representation is needed
         // to guarantee that we can properly test for uniqueness.
         for (size_t i = 0; i < preconditions.size(); ++i) {
-            if (i != 0) {
-                if (preconditions[i].first <= preconditions[i - 1].first) {
-                    assert(preconditions[i].second > preconditions[i - 1].second);
-                }
-            }
+            if (i != 0)
+                assert(preconditions[i].first > preconditions[i - 1].first);
+//            if (i != 0) {
+//                if (preconditions[i].first <= preconditions[i - 1].first) {
+//                    assert(preconditions[i].second > preconditions[i - 1].second);
+//                }
+//            }
             data.push_back(preconditions[i].first);
             data.push_back(preconditions[i].second);
         }
         data.push_back(-1); // marker
         for (size_t i = 0; i < effects.size(); ++i) {
-            if (i != 0) {
-                if (effects[i].first <= effects[i - 1].first) {
-                    assert(effects[i].second > effects[i - 1].second);
-                }
-            }
+            if (i != 0)
+                assert(effects[i].first > effects[i - 1].first);
+//            if (i != 0) {
+//                if (effects[i].first <= effects[i - 1].first) {
+//                    assert(effects[i].second > effects[i - 1].second);
+//                }
+//            }
             data.push_back(effects[i].first);
             data.push_back(effects[i].second);
         }
@@ -171,17 +186,17 @@ LabelSignature LabelReducer::build_label_signature(
         }
     }
     ::sort(preconditions.begin(), preconditions.end());
-    vector<Assignment>::iterator it = unique(preconditions.begin(), preconditions.end());
-    preconditions.resize(distance(preconditions.begin(), it));
+//    vector<Assignment>::iterator it = unique(preconditions.begin(), preconditions.end());
+//    preconditions.resize(distance(preconditions.begin(), it));
     ::sort(effects.begin(), effects.end());
-    it = unique(effects.begin(), effects.end());
-    effects.resize(distance(effects.begin(), it));
+//    it = unique(effects.begin(), effects.end());
+//    effects.resize(distance(effects.begin(), it));
 
     return LabelSignature(preconditions, effects, label.get_cost());
 }
 
-int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
-                                         std::vector<Label *> &labels) const {
+int LabelReducer::reduce_old(const vector<int> &abs_vars,
+                             vector<Label *> &labels) const {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
 
@@ -224,47 +239,10 @@ int LabelReducer::reduce_approximatively(const vector<int> &abs_vars,
     }
     assert(reduced_label_map.size() == num_labels_after_reduction);
 
-    hash_set<int> vars(abs_vars.begin(), abs_vars.end());
     for (size_t i = 0; i < reduced_label_signatures.size(); ++i) {
         const LabelSignature &signature = reduced_label_signatures[i];
         const vector<Label *> &reduced_labels = reduced_label_map[signature];
-        vector<Prevail> prev;
-        vector<PrePost> pre_post;
-        // collect all prevail and pre-post conditions for variables of the
-        // considered abstraction
-        for (size_t j = 0; j < reduced_labels.size(); ++j) {
-            const Label *label = reduced_labels[j];
-            const vector<Prevail> &_prev = label->get_prevail();
-            for (size_t k = 0; k < _prev.size(); ++k) {
-                if (vars.count(_prev[k].var)) {
-                    prev.push_back(_prev[k]);
-                }
-            }
-            const vector<PrePost> &_pre_post = label->get_pre_post();
-            for (size_t k = 0; k < _pre_post.size(); ++k) {
-                if (vars.count(_pre_post[k].var)) {
-                    pre_post.push_back(_pre_post[k]);
-                }
-            }
-        }
-        // collect all prevail and pre-post conditions for variables which are
-        // not part of the considered abstraction. as these must be the same
-        // for all origin labels, we only need to take those of an arbitrary
-        // one.
-        const Label *label = reduced_labels[0];
-        const vector<Prevail> &_prev = label->get_prevail();
-        for (size_t k = 0; k < _prev.size(); ++k) {
-            if (!vars.count(_prev[k].var)) {
-                prev.push_back(_prev[k]);
-            }
-        }
-        const vector<PrePost> &_pre_post = label->get_pre_post();
-        for (size_t k = 0; k < _pre_post.size(); ++k) {
-            if (!vars.count(_pre_post[k].var)) {
-                pre_post.push_back(_pre_post[k]);
-            }
-        }
-        Label *new_label = new CompositeLabel(labels.size(), reduced_labels, prev, pre_post);
+        Label *new_label = new CompositeLabel(labels.size(), reduced_labels);
         labels.push_back(new_label);
     }
 
