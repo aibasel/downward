@@ -327,7 +327,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     cout << "      Goal test failed." << endl;
                 unmet_goals++;
                 get_unmet_goal_conditions(conc_state, &states_to_splits[abs_state]);
-                restrict_splits(conc_state, splits);
                 continue;
             }
         }
@@ -362,7 +361,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     next_abs->regress(*op, &desired_abs_state);
                     abs_state->get_possible_splits(desired_abs_state, conc_state,
                                                    &splits);
-                    restrict_splits(conc_state, splits);
                 }
             } else if (splits.empty()) {
                 // Only find unmet preconditions if we haven't found any splits already.
@@ -370,7 +368,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     cout << "      Operator not applicable: " << op->get_name() << endl;
                 ++unmet_preconditions;
                 get_unmet_preconditions(*op, conc_state, &splits);
-                restrict_splits(conc_state, splits);
             }
         }
     }
@@ -391,51 +388,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     assert(broken_solutions > 0 || !may_keep_refining());
     assert(!use_astar || broken_solutions == 1 || !may_keep_refining());
     return false;
-}
-
-void Abstraction::restrict_splits(State &conc_state, Splits &splits) const {
-    if (splits.size() == 1)
-        return;
-    if (pick == MIN_HADD_DYN || pick == MAX_HADD_DYN) {
-        Options opts;
-        opts.set<int>("cost_type", 0);
-        opts.set<int>("memory_padding", 75);
-        AdditiveHeuristic hadd(opts);
-        hadd.evaluate(conc_state);
-        int min_hadd = INF;
-        int max_hadd = -1;
-        vector<int> incumbents;
-        for (int i = 0; i < splits.size(); ++i) {
-            int var = splits[i].first;
-            const vector<int> &values = splits[i].second;
-            for (int j = 0; j < values.size(); ++j) {
-                int value = values[j];
-                int hadd_value = hadd.get_cost(var, value);
-                if (hadd_value == -1 && pick == MIN_HADD_DYN) {
-                    // Fact is unreachable --> Choose it last.
-                    hadd_value = INF - 1;
-                }
-                if (pick == MIN_HADD_DYN) {
-                    if (hadd_value < min_hadd) {
-                        incumbents.clear();
-                        min_hadd = hadd_value;
-                    }
-                    if (hadd_value <= min_hadd)
-                        incumbents.push_back(i);
-                } else {
-                    if (hadd_value > max_hadd) {
-                        incumbents.clear();
-                        max_hadd = hadd_value;
-                    }
-                    if (hadd_value >= max_hadd)
-                        incumbents.push_back(i);
-                }
-            }
-        }
-        assert(!incumbents.empty());
-        swap(splits[0], splits[incumbents[0]]);
-        splits.resize(1);
-    }
 }
 
 int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) const {
@@ -518,8 +470,6 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
                 }
             }
         }
-    } else if (pick == MIN_HADD_DYN || pick == MAX_HADD_DYN) {
-        // The selection has already been made.
     } else {
         cout << "Invalid pick strategy: " << pick << endl;
         exit_with(EXIT_INPUT_ERROR);
