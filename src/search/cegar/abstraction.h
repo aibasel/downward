@@ -33,10 +33,7 @@ enum PickStrategy {
     MAX_REFINED,
     // Compare the h^add(s_0) values of the facts.
     MIN_HADD,
-    MAX_HADD,
-    // Compare the h^add(current_state) values of the facts.
-    MIN_HADD_DYN,
-    MAX_HADD_DYN
+    MAX_HADD
 };
 
 class Abstraction {
@@ -93,7 +90,6 @@ private:
 
     // Pick a possible split in case of multiple possibilities.
     int pick_split_index(AbstractState &state, const Splits &conditions) const;
-    void restrict_splits(State &conc_state, Splits &splits) const;
 
     // A* search.
     void reset_distances_and_solution() const;

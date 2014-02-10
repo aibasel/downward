@@ -301,8 +301,6 @@ static Heuristic *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_REFINED");
     pick_strategies.push_back("MIN_HADD");
     pick_strategies.push_back("MAX_HADD");
-    pick_strategies.push_back("MIN_HADD_DYN");
-    pick_strategies.push_back("MAX_HADD_DYN");
     parser.add_enum_option("pick",
                            pick_strategies,
                            "how to pick the next unsatisfied condition",
