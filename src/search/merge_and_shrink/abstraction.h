@@ -3,9 +3,10 @@
 
 #include "shrink_strategy.h"
 
-#include "../operator_cost.h"
+#include "../utilities.h"
 
 #include <ext/slist>
+#include <ext/hash_set>
 #include <vector>
 
 class EquivalenceRelation;
@@ -48,10 +49,8 @@ class Abstraction {
     // and managed by MergeAndShrinkHeuristic. All abstraction instances have
     // a copy of the object required for normalization.
     const Labels *labels;
-    // The set of relevant labels will *never* be updated after label reduction
-    // and may thus contain non-leaf labels. Make sure to always consider the
-    // mapped labels of relevant labels.
-    std::vector<const Label *> relevant_labels;
+    // relevant_labels is updated in normalize() and only contains leaf labels
+    __gnu_cxx::hash_set<const Label *, hash_pointer> relevant_labels;
     int num_states;
     std::vector<std::vector<AbstractTransition> > transitions_by_label;
     // The number of labels that this abstraction is "aware of", i.e. that have
@@ -149,23 +148,21 @@ public:
         return goal_distances[state];
     }
 
-    // This method should be private but is public for shrink_bisimulation
+    // These methods should be private but is public for shrink_bisimulation
     int get_label_cost_by_index(int label_no) const;
+    const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const;
     // This method is shrink_bisimulation-exclusive
     int get_num_labels() const;
-    // This method is used by shrink_bisimulation and for computing non-linear
-    // merge strategies.
-    const std::vector<AbstractTransition> &get_transitions_for_label(int label_no) const;
     // These methods are used by non_linear_merge_strategy
     void compute_label_ranks(std::vector<int> &label_ranks);
     bool is_goal_relevant() const {
         return goal_relevant;
     }
-    // This serves approximative label reduction
+    // This is used by the "old label reduction" method
     const std::vector<int> &get_varset() const {
         return varset;
     }
-
+    // For debugging
     void trace_solution() const;
 };
 
