@@ -18,12 +18,14 @@ import markup
 sleep_time = 10
 
 BOT_USERNAME = "XmlRpcBot"
-PASSWORD_FILE = "downward-xmlrpc.secret" # relative to this source file
+PASSWORD_FILE = ".downward-xmlrpc.secret" # relative to this source file or in the home directory
 WIKI_URL = "http://www.fast-downward.org"
 DOC_PREFIX = "Doc/"
 
 def read_password():
     path = join(dirname(__file__), PASSWORD_FILE)
+    if not os.path.exists(path):
+        path = os.path.expanduser(join('~', PASSWORD_FILE))
     with open(path) as password_file:
         try:
             return password_file.read().strip()
