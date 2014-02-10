@@ -42,7 +42,7 @@ PatternGenerationHaslum::~PatternGenerationHaslum() {
 void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pdb,
                                                           vector<vector<int> > &candidate_patterns) {
     const vector<int> &pattern = pdb->get_pattern();
-    int current_size = pdb->get_size();
+    int pdb_size = pdb->get_size();
     for (size_t i = 0; i < pattern.size(); ++i) {
         // causally relevant variables for current variable from pattern
         vector<int> rel_vars = g_legacy_causal_graph->get_predecessors(pattern[i]);
@@ -52,7 +52,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pd
         set_difference(rel_vars.begin(), rel_vars.end(), pattern.begin(), pattern.end(), back_inserter(relevant_vars));
         for (size_t j = 0; j < relevant_vars.size(); ++j) {
             // test against overflow and pdb_max_size
-            if (current_size <= pdb_max_size / g_variable_domain[relevant_vars[j]]) {
+            if (pdb_size <= pdb_max_size / g_variable_domain[relevant_vars[j]]) {
                 // current_size * g_variable_domain[relevant_vars[j]] <= pdb_max_size
                 vector<int> new_pattern(pattern);
                 new_pattern.push_back(relevant_vars[j]);
