@@ -42,7 +42,7 @@ PatternGenerationHaslum::~PatternGenerationHaslum() {
 void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pdb,
                                                           vector<vector<int> > &candidate_patterns) {
     const vector<int> &pattern = pdb->get_pattern();
-    int current_size = current_heuristic->get_size();
+    int current_size = pdb->get_size();
     for (size_t i = 0; i < pattern.size(); ++i) {
         // causally relevant variables for current variable from pattern
         vector<int> rel_vars = g_legacy_causal_graph->get_predecessors(pattern[i]);
