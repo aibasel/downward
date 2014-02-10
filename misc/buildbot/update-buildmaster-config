@@ -1,0 +1,54 @@
+#! /bin/bash
+
+## NOTE on using this script:
+##
+## - This script must be run manually on the buildmaster.
+##   There is no automated trigger to restart the buildbot when the
+##   config in the repository changes.
+##
+##   To run this script (assuming you have everything set up
+##   properly), do:
+##
+##   $ ssh aidev
+##   $ ./update-buildmaster-config
+##
+## NOTE on modifying this script:
+##
+## - The master version of this script lives in the Fast Downward
+##   repository under misc/buildbot. If you modify the version on
+##   the aidev server, make sure to feed the changes back to the
+##   repository.
+
+## This script restarts the buildmaster. Note that this disconnects
+## the buildslaves as a side effect. I think they should automatically
+## try to reconnect after a while, but I am not sure. The aidev
+## buildslave is restarted automatically by this script, so it should
+## be back up immediately.
+##
+## Run this script on cs-aidev whenever the buildmaster config has
+## changed. This fetches the newest buildmaster config from the
+## default branch of hg.fast-downward.org and installs it.
+##
+## This needs to be run by someone with sudo privileges.
+
+set -e
+
+## Note: X and Y are defined in such a convoluted way because we want
+## ~buildslave/.profile to be read to set up the buildslave's login
+## shell. This requires running bash between sudo and the desired
+## command, and we must set -l so that we have a bash login shell.
+X="sudo -u buildbot -H bash -l -c"
+Y="sudo -u buildslave -H bash -l -c"
+
+cd /var/lib/buildbot/masters/downward
+$X "mv master.cfg master.cfg.bak"
+$X "wget http://hg.fast-downward.org/raw-file/default/misc/buildbot/master.cfg"
+$X "chmod go-r master.cfg"
+$X "buildbot checkconfig"
+$X "buildbot restart"
+$X "rm master.cfg.bak"
+
+sudo service apache2 restart
+
+cd /home/buildslave/downward-slave
+$Y "buildslave restart"

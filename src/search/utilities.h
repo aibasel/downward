@@ -1,7 +1,6 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#include <cassert>
 #include <ostream>
 #include <utility>
 #include <vector>

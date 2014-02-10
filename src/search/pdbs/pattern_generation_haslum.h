@@ -2,6 +2,7 @@
 #define PDBS_PATTERN_GENERATION_HASLUM_H
 
 #include "../operator_cost.h"
+#include "../state_registry.h"
 
 #include <map>
 #include <vector>
@@ -33,7 +34,8 @@ class PatternGenerationHaslum {
        applicable, the walk starts over again from the initial state. At the end of each random
        walk, the last state visited is taken as a sample state, thus totalling exactly
        num_samples of sample states. */
-    void sample_states(std::vector<State> &samples, double average_operator_costs);
+    void sample_states(StateRegistry &sample_registry, std::vector<State> &samples,
+                       double average_operator_costs);
 
     /* Returns true iff the h-value of the new pattern (from pdb_heuristic) plus the h-value of all
        maximal additive subsets from the current pattern collection heuristic if the new pattern was
