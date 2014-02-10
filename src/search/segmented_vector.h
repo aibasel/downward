@@ -73,6 +73,10 @@ class SegmentedVector {
         Entry *new_segment = entry_allocator.allocate(SEGMENT_ELEMENTS);
         segments.push_back(new_segment);
     }
+
+    // No implementation to forbid copies and assignment
+    SegmentedVector(const SegmentedVector<Entry> &);
+    SegmentedVector & operator=(const SegmentedVector<Entry> &);
 public:
     SegmentedVector()
         : the_size(0) {
@@ -171,6 +175,10 @@ class SegmentedArrayVector {
         Element *new_segment = element_allocator.allocate(elements_per_segment);
         segments.push_back(new_segment);
     }
+
+    // No implementation to forbid copies and assignment
+    SegmentedArrayVector(const SegmentedArrayVector<Element> &);
+    SegmentedArrayVector & operator=(const SegmentedArrayVector<Element> &);
 public:
     SegmentedArrayVector(size_t elements_per_array_)
         : elements_per_array(elements_per_array_),

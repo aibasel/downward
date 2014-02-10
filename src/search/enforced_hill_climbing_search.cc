@@ -64,7 +64,7 @@ void EnforcedHillClimbingSearch::initialize() {
     }
     cout << "(real) g-bound = " << bound << endl;
 
-    SearchNode node = search_space.get_node(current_state.get_id());
+    SearchNode node = search_space.get_node(current_state);
     evaluate(current_state, NULL, current_state);
 
     if (heuristic->is_dead_end()) {
@@ -142,7 +142,7 @@ int EnforcedHillClimbingSearch::step() {
     vector<const Operator *> ops;
     get_successors(current_state, ops);
 
-    SearchNode current_node = search_space.get_node(current_state.get_id());
+    SearchNode current_node = search_space.get_node(current_state);
     current_node.close();
 
     for (int i = 0; i < ops.size(); i++) {
@@ -163,13 +163,13 @@ int EnforcedHillClimbingSearch::ehc() {
         int d = next.second.first;
         const Operator *last_op = next.second.second;
 
-        if (search_space.get_node(last_parent_id).get_real_g() + last_op->get_cost() >= bound)
+        if (search_space.get_node(last_parent).get_real_g() + last_op->get_cost() >= bound)
             continue;
 
         State s = g_state_registry->get_successor_state(last_parent, *last_op);
         search_progress.inc_generated();
 
-        SearchNode node = search_space.get_node(s.get_id());
+        SearchNode node = search_space.get_node(s);
 
         if (node.is_new()) {
             evaluate(last_parent, last_op, s);
@@ -181,7 +181,7 @@ int EnforcedHillClimbingSearch::ehc() {
             }
 
             int h = heuristic->get_heuristic();
-            node.open(h, search_space.get_node(last_parent_id), last_op);
+            node.open(h, search_space.get_node(last_parent), last_op);
 
             if (h < current_h) {
                 current_g = node.get_g();

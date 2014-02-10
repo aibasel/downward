@@ -3,6 +3,7 @@
 #include "axioms.h"
 #include "operator.h"
 #include "state_var_t.h"
+#include "per_state_information.h"
 
 using namespace std;
 
@@ -16,6 +17,10 @@ StateRegistry::StateRegistry()
 
 
 StateRegistry::~StateRegistry() {
+    for (set<PerStateInformationBase *>::iterator it = subscribers.begin();
+         it != subscribers.end(); ++it) {
+        (*it)->remove_state_registry(this);
+    }
     delete cached_initial_state;
 }
 
@@ -37,7 +42,7 @@ StateID StateRegistry::insert_id_or_pop_state() {
 }
 
 State StateRegistry::lookup_state(StateID id) const {
-    return State(state_data_pool[id.value], id);
+    return State(state_data_pool[id.value], *this, id);
 }
 
 const State &StateRegistry::get_initial_state() {
@@ -66,4 +71,12 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
     g_axiom_evaluator->evaluate(vars);
     StateID id = insert_id_or_pop_state();
     return lookup_state(id);
+}
+
+void StateRegistry::subscribe(PerStateInformationBase *psi) const {
+    subscribers.insert(psi);
+}
+
+void StateRegistry::unsubscribe(PerStateInformationBase *const psi) const {
+    subscribers.erase(psi);
 }

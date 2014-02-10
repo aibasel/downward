@@ -85,11 +85,10 @@ void EagerSearch::initialize() {
             search_progress.report_f_value(f_evaluator->get_value());
         }
         search_progress.check_h_progress(0);
-        StateID initial_state_id = initial_state.get_id();
-        SearchNode node = search_space.get_node(initial_state_id);
+        SearchNode node = search_space.get_node(initial_state);
         node.open_initial(heuristics[0]->get_value());
 
-        open_list->insert(initial_state_id);
+        open_list->insert(initial_state.get_id());
     }
 }
 
@@ -138,7 +137,7 @@ int EagerSearch::step() {
         search_progress.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
-        SearchNode succ_node = search_space.get_node(succ_state.get_id());
+        SearchNode succ_node = search_space.get_node(succ_state);
 
         // Previously encountered dead end. Don't re-evaluate.
         if (succ_node.is_dead_end())
@@ -247,14 +246,18 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
             // HACK! HACK! we do this because SearchNode has no default/copy constructor
-            StateID dummy_id = g_initial_state().get_id();
-            SearchNode dummy_node = search_space.get_node(dummy_id);
+            SearchNode dummy_node = search_space.get_node(g_initial_state());
             return make_pair(dummy_node, false);
         }
         vector<int> last_key_removed;
         StateID id = open_list->remove_min(
             use_multi_path_dependence ? &last_key_removed : 0);
-        SearchNode node = search_space.get_node(id);
+        // TODO is there a way we can avoid creating the state here and then
+        //      recreate it outside of this function with node.get_state()?
+        //      One way would be to store State objects inside SearchNodes
+        //      instead of StateIDs
+        State s = g_state_registry->lookup_state(id);
+        SearchNode node = search_space.get_node(s);
 
         if (node.is_closed())
             continue;
@@ -340,8 +343,9 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<bool>("pathmax",
                             "use pathmax correction", "false");
     parser.add_option<ScalarEvaluator *>("f_eval",
-                                         "set evaluator for jump statistics",
-                                         "",
+        "set evaluator for jump statistics. "
+        "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
+        "",
                                          OptionFlags(false));
     parser.add_list_option<Heuristic *>
         ("preferred",
@@ -370,6 +374,13 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         "for the more general eager search, "
         "because the current implementation of multi-path depedence "
         "does not support general open lists.");
+    parser.document_note("Equivalent statements using general eager search",
+        "\n```\n--search astar(evaluator)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h=evaluator\n"
+        "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
+        "               reopen_closed=true, pathmax=false, progress_evaluator=sum([g(), h]))\n"
+        "```\n", true);
     parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
     parser.add_option<bool>("pathmax",
                             "use pathmax correction", "false");
@@ -418,6 +429,30 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.document_note(
         "Closed nodes",
         "Closed node are not re-opened");
+    parser.document_note("Equivalent statements using general eager search",
+        "\n```\n--heuristic h2=eval2\n"
+        "--search eager_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
+        "--search eager(alt([single(h1), single(h1, pref_only=true), single(h2), \n"
+        "                    single(h2, pref_only=true)], boost=100),\n"
+        "               preferred=h2)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search eager_greedy([eval1, eval2])\n```\n"
+        "is equivalent to\n"
+        "```\n--search eager(alt([single(eval1), single(eval2)]))\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--heuristic h1=eval1\n"
+        "--search eager_greedy(h1, preferred=h1)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h1=eval1\n"
+        "--search eager(alt([single(h1), single(h1, pref_only=true)]),\n"
+        "               preferred=h1)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search eager_greedy(eval1)\n```\n"
+        "is equivalent to\n"
+        "```\n--search eager(single(eval1))\n```\n", true);
+
     parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
         "preferred",

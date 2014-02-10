@@ -138,34 +138,36 @@ SearchSpace::SearchSpace(OperatorCost cost_type_)
     : cost_type(cost_type_) {
 }
 
-SearchNode SearchSpace::get_node(StateID id) {
-    return SearchNode(id, search_node_infos[id], cost_type);
+SearchNode SearchSpace::get_node(const State &state) {
+    return SearchNode(state.get_id(), search_node_infos[state], cost_type);
 }
 
 void SearchSpace::trace_path(const State &goal_state,
                              vector<const Operator *> &path) const {
-    StateID current_state_id = goal_state.get_id();
+    State current_state = goal_state;
     assert(path.empty());
     for (;;) {
-        const SearchNodeInfo &info = search_node_infos[current_state_id];
+        const SearchNodeInfo &info = search_node_infos[current_state];
         const Operator *op = info.creating_operator;
         if (op == 0) {
             assert(info.parent_state_id == StateID::no_state);
             break;
         }
         path.push_back(op);
-        current_state_id = info.parent_state_id;
+        current_state = g_state_registry->lookup_state(info.parent_state_id);
     }
     reverse(path.begin(), path.end());
 }
 
 void SearchSpace::dump() const {
-    for (PerStateInformation<SearchNodeInfo>::const_iterator it = search_node_infos.begin();
-         it != search_node_infos.end(); ++it) {
+    for (PerStateInformation<SearchNodeInfo>::const_iterator it =
+            search_node_infos.begin(g_state_registry);
+         it != search_node_infos.end(g_state_registry); ++it) {
         StateID id = *it;
-        const SearchNodeInfo &node_info = search_node_infos[id];
+        State s = g_state_registry->lookup_state(id);
+        const SearchNodeInfo &node_info = search_node_infos[s];
         cout << id << ": ";
-        g_state_registry->lookup_state(id).dump_fdr();
+        s.dump_fdr();
         if (node_info.creating_operator && node_info.parent_state_id != StateID::no_state) {
             cout << " created by " << node_info.creating_operator->get_name()
                  << " from " << node_info.parent_state_id << endl;
