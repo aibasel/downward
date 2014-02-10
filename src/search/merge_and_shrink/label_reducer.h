@@ -4,10 +4,6 @@
 #include "label.h"
 #include "labels.h"
 
-#include "../globals.h"
-#include "../operator.h"
-#include "../operator_cost.h"
-
 #include <cassert>
 #include <vector>
 

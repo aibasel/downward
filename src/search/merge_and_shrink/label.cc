@@ -9,7 +9,6 @@ using namespace std;
 
 Label::Label(int id_, int cost_, const vector<Prevail> &prevail_, const vector<PrePost> &pre_post_)
     : id(id_), cost(cost_), prevail(prevail_), pre_post(pre_post_), root(this) {
-    marker1 = marker2 = false;
 }
 
 bool Label::is_reduced() const {
@@ -43,16 +42,6 @@ void CompositeLabel::update_root(CompositeLabel *new_root) {
     for (size_t i = 0; i < parents.size(); ++i)
         parents[i]->update_root(new_root);
     root = new_root;
-}
-
-void OperatorLabel::get_origins(vector<const Label *> &origins) const {
-    origins.push_back(this);
-}
-
-void CompositeLabel::get_origins(vector<const Label *> &origins) const {
-    for (size_t i = 0; i < parents.size(); ++i) {
-        parents[i]->get_origins(origins);
-    }
 }
 
 const std::vector<Label *> &OperatorLabel::get_parents() const {

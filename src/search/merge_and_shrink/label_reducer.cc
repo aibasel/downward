@@ -7,7 +7,7 @@
 #include "../operator.h"
 #include "../utilities.h"
 
-//#include <algorithm>
+#include <algorithm>
 #include <cassert>
 #include <ext/hash_map>
 #include <iostream>
@@ -54,8 +54,6 @@ LabelReducer::LabelReducer(int abs_index,
     vector<EquivalenceRelation *> local_equivalence_relations(all_abstractions.size(), 0);
     while (true) {
         Abstraction *current_abstraction = all_abstractions[current_abs_index];
-        // for the very first current_abs_index, current_abstraction should
-        // always be a valid pointer
         if (current_abstraction) {
             int reduced_labels = 0;
             if (label_reduction == EXACT || label_reduction == EXACT_WITH_FIXPOINT) {
@@ -118,11 +116,6 @@ struct LabelSignature {
         for (size_t i = 0; i < preconditions.size(); ++i) {
             if (i != 0)
                 assert(preconditions[i].first > preconditions[i - 1].first);
-//            if (i != 0) {
-//                if (preconditions[i].first <= preconditions[i - 1].first) {
-//                    assert(preconditions[i].second > preconditions[i - 1].second);
-//                }
-//            }
             data.push_back(preconditions[i].first);
             data.push_back(preconditions[i].second);
         }
@@ -130,11 +123,6 @@ struct LabelSignature {
         for (size_t i = 0; i < effects.size(); ++i) {
             if (i != 0)
                 assert(effects[i].first > effects[i - 1].first);
-//            if (i != 0) {
-//                if (effects[i].first <= effects[i - 1].first) {
-//                    assert(effects[i].second > effects[i - 1].second);
-//                }
-//            }
             data.push_back(effects[i].first);
             data.push_back(effects[i].second);
         }
@@ -186,11 +174,7 @@ LabelSignature LabelReducer::build_label_signature(
         }
     }
     ::sort(preconditions.begin(), preconditions.end());
-//    vector<Assignment>::iterator it = unique(preconditions.begin(), preconditions.end());
-//    preconditions.resize(distance(preconditions.begin(), it));
     ::sort(effects.begin(), effects.end());
-//    it = unique(effects.begin(), effects.end());
-//    effects.resize(distance(effects.begin(), it));
 
     return LabelSignature(preconditions, effects, label.get_cost());
 }
