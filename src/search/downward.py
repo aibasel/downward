@@ -1,10 +1,12 @@
 #! /usr/bin/env python
 
 import argparse
+import os
 import os.path
 import resource
 import sys
 
+import aliases
 import input_analyzer
 
 
@@ -56,7 +58,12 @@ def parse_args():
                         help="run a portfolio specified in FILE")
     parser.add_argument("--show-aliases", action="store_true",
                         help="show the known aliases; don't run search")
+
     args, search_args = parser.parse_known_args()
+    args.search_args = search_args
+    args.unit_cost_search_args = None
+
+    print "*** raw args:", args, search_args
 
     check_arg_conflicts(parser, [
             ("--alias", args.alias is not None),
@@ -65,237 +72,66 @@ def parse_args():
             ("arguments to search component", bool(search_args))])
 
     if args.help_search:
-        search_args = ["--help"]
-    del args.help_search
+        args.search_args = ["--help"]
 
-    return args, search_args
+    if args.alias:
+        try:
+            aliases.set_args_for_alias(args.alias, args)
+        except KeyError:
+            parser.error("unknown alias: %r" % args.alias)
+
+    return args
 
 
 def main():
-    set_memory_limit()
-    args, search_args = parse_args()
+    args = parse_args()
 
-    ## TODO: take into account args.debug
+    print "*** processed args:", args
 
-    print args
-    print search_args
+    if args.portfolio is not None:
+        set_memory_limit()
 
     if args.show_aliases:
-        # This takes precedence over other options.
-        # TODO: Implement this.
-        raise NotImplementedError
+        aliases.show_aliases()
         sys.exit()
 
-    # TODO: Only do complex input analysis if we care about the
-    # unit-cost/non-unit-cost question? We only do with LAMA-2011.
-    is_unit_cost = input_analyzer.read_unit_cost(args.file)
-    print "is_unit_cost:", is_unit_cost
+    if args.unit_cost_search_args is not None:
+        is_unit_cost = input_analyzer.read_unit_cost(args.file)
+        if is_unit_cost:
+            args.search_args = args.unit_cost_search_args
+            print "using special configuration for unit-cost problems"
 
-    state_var_size = input_analyzer.read_state_var_size(args.file)
-    print "state_var_size:", state_var_size
+    if args.help_search:
+        state_var_size = 1
+    else:
+        state_var_size = input_analyzer.read_state_var_size(args.file)
+        print "state_var_size:", state_var_size
 
-    if args.alias:
-        assert not search_args
-        # TODO: Implement this.
-        raise NotImplementedError
+    executable = os.path.join(BASE_DIR, "downward-%d" % state_var_size)
+    if args.debug:
+        executable += "-debug"
 
-    elif args.portfolio:
-        assert not search_args
-        # TODO: Implement this.
+    print "*** executable:", executable
+
+    if args.portfolio:
+        assert not args.search_args
+        # TODO: Implement portfolios. Don't forget exit code. Take
+        # into account the time used by *this* process too for the
+        # portfolio time slices. After all, we used to take into
+        # account time for dispatch script and unitcost script, and
+        # these are now in-process.
         raise NotImplementedError
     else:
-        # TODO: Implement this.
-        raise NotImplementedError
-
-    # TODO: When not running a portfolio, we can run the actual search
-    # code with exec rather than forking. In that case, we should not
-    # lower the memory limit. Probably best to move the
-    # set_memory_limit call to the portfolio case.
+        print "*** final search args:", args.search_args
+        if not args.help_search:
+            # Redirect stdin to the input file.
+            os.close(sys.stdin.fileno())
+            os.open(args.file, os.O_RDONLY)
+        # Run planner with exec to conserve memory.
+        os.execv(executable, [executable] + args.search_args)
 
 
 if __name__ == "__main__":
+    # TODO: Test suite that tests all the aliases, including
+    # unit/general case. Ditto for the portfolios.
     main()
-
-
-## TODO: Take into account the time used by *this* process too for the
-## portfolio time slices. After all, we used to take into account time
-## for dispatch script and unitcost script, and these are now
-## in-process.
-
-
-## TODO: The stuff below are parts of the bash script that remain to
-## be translated.
-
-"""
-PLANNER="$BASEDIR/downward-$STATE_SIZE"
-
-function run_portfolio {
-    PORTFOLIO="$1"
-    shift
-    # Set soft memory limit of 50 MB to avoid Python using too much space.
-    # On the maia cluster, 20 MB have been tested to be sufficient; 18 MB are not.
-    ulimit -Sv 51200
-    "$PORTFOLIO" "$TEMPFILE" "$UNIT_COST" "$PLANNER" "$@"
-    # Explicit is better than implicit: return portfolio's exit code.
-    return $?
-}
-
-if [[ "$1" == "ipc" ]]; then
-    CONFIG="$2"
-    shift 2
-    PORTFOLIO_SCRIPT="$BASEDIR/downward-$CONFIG.py"
-    if [[ -e "$PORTFOLIO_SCRIPT" ]]; then
-        # Handle configs seq-{sat,opt}-fdss-{1,2} and seq-opt-merge-and-shrink.
-        run_portfolio "$PORTFOLIO_SCRIPT" "$@"
-    elif [[ "$CONFIG" == "seq-sat-fd-autotune-1" ]]; then
-        "$PLANNER" \
-            --heuristic "hFF=ff(cost_type=1)" \
-            --heuristic "hCea=cea(cost_type=0)" \
-            --heuristic "hCg=cg(cost_type=2)" \
-            --heuristic "hGoalCount=goalcount(cost_type=0)" \
-            --heuristic "hAdd=add(cost_type=0)" \
-            --search "iterated([
-                lazy(alt([single(sum([g(),weight(hFF, 10)])),
-                          single(sum([g(),weight(hFF, 10)]),pref_only=true)],
-                          boost=2000),
-                     preferred=hFF,reopen_closed=false,cost_type=1),
-                lazy(alt([single(sum([g(),weight(hAdd, 7)])),
-                          single(sum([g(),weight(hAdd, 7)]),pref_only=true),
-                          single(sum([g(),weight(hCg, 7)])),
-                          single(sum([g(),weight(hCg, 7)]),pref_only=true),
-                          single(sum([g(),weight(hCea, 7)])),
-                          single(sum([g(),weight(hCea, 7)]),pref_only=true),
-                          single(sum([g(),weight(hGoalCount, 7)])),
-                          single(sum([g(),weight(hGoalCount, 7)]),pref_only=true)],
-                          boost=1000),
-                     preferred=[hCea,hGoalCount],
-                     reopen_closed=false,cost_type=1),
-                lazy(alt([tiebreaking([sum([g(),weight(hAdd, 3)]),hAdd]),
-                          tiebreaking([sum([g(),weight(hAdd, 3)]),hAdd],pref_only=true),
-                          tiebreaking([sum([g(),weight(hCg, 3)]),hCg]),
-                          tiebreaking([sum([g(),weight(hCg, 3)]),hCg],pref_only=true),
-                          tiebreaking([sum([g(),weight(hCea, 3)]),hCea]),
-                          tiebreaking([sum([g(),weight(hCea, 3)]),hCea],pref_only=true),
-                          tiebreaking([sum([g(),weight(hGoalCount, 3)]),hGoalCount]),
-                          tiebreaking([sum([g(),weight(hGoalCount, 3)]),hGoalCount],pref_only=true)],
-                         boost=5000),
-                     preferred=[hCea,hGoalCount],reopen_closed=false,cost_type=0),
-                eager(alt([tiebreaking([sum([g(),weight(hAdd, 10)]),hAdd]),
-                           tiebreaking([sum([g(),weight(hAdd, 10)]),hAdd],pref_only=true),
-                           tiebreaking([sum([g(),weight(hCg, 10)]),hCg]),
-                           tiebreaking([sum([g(),weight(hCg, 10)]),hCg],pref_only=true),
-                           tiebreaking([sum([g(),weight(hCea, 10)]),hCea]),
-                           tiebreaking([sum([g(),weight(hCea, 10)]),hCea],pref_only=true),
-                           tiebreaking([sum([g(),weight(hGoalCount, 10)]),hGoalCount]),
-                           tiebreaking([sum([g(),weight(hGoalCount, 10)]),hGoalCount],pref_only=true)],
-                          boost=500),
-                      preferred=[hCea,hGoalCount],reopen_closed=true,
-                      pathmax=true,cost_type=0)],
-                repeat_last=true,continue_on_fail=true)" "$@" < $TEMPFILE
-    elif [[ "$CONFIG" == "seq-sat-fd-autotune-2" ]]; then
-        "$PLANNER" \
-            --heuristic "hCea=cea(cost_type=2)" \
-            --heuristic "hCg=cg(cost_type=1)" \
-            --heuristic "hGoalCount=goalcount(cost_type=2)" \
-            --heuristic "hFF=ff(cost_type=0)" \
-            --search "iterated([
-                ehc(hCea, preferred=hCea,preferred_usage=0,cost_type=0),
-                lazy(alt([single(sum([weight(g(), 2),weight(hFF, 3)])),
-                          single(sum([weight(g(), 2),weight(hFF, 3)]),pref_only=true),
-                          single(sum([weight(g(), 2),weight(hCg, 3)])),
-                          single(sum([weight(g(), 2),weight(hCg, 3)]),pref_only=true),
-                          single(sum([weight(g(), 2),weight(hCea, 3)])),
-                          single(sum([weight(g(), 2),weight(hCea, 3)]),pref_only=true),
-                          single(sum([weight(g(), 2),weight(hGoalCount, 3)])),
-                          single(sum([weight(g(), 2),weight(hGoalCount, 3)]),pref_only=true)],
-                         boost=200),
-                     preferred=[hCea,hGoalCount],reopen_closed=false,cost_type=1),
-                lazy(alt([single(sum([g(),weight(hFF, 5)])),
-                          single(sum([g(),weight(hFF, 5)]),pref_only=true),
-                          single(sum([g(),weight(hCg, 5)])),
-                          single(sum([g(),weight(hCg, 5)]),pref_only=true),
-                          single(sum([g(),weight(hCea, 5)])),
-                          single(sum([g(),weight(hCea, 5)]),pref_only=true),
-                          single(sum([g(),weight(hGoalCount, 5)])),
-                          single(sum([g(),weight(hGoalCount, 5)]),pref_only=true)],
-                         boost=5000),
-                     preferred=[hCea,hGoalCount],reopen_closed=true,cost_type=0),
-                lazy(alt([single(sum([g(),weight(hFF, 2)])),
-                          single(sum([g(),weight(hFF, 2)]),pref_only=true),
-                          single(sum([g(),weight(hCg, 2)])),
-                          single(sum([g(),weight(hCg, 2)]),pref_only=true),
-                          single(sum([g(),weight(hCea, 2)])),
-                          single(sum([g(),weight(hCea, 2)]),pref_only=true),
-                          single(sum([g(),weight(hGoalCount, 2)])),
-                          single(sum([g(),weight(hGoalCount, 2)]),pref_only=true)],
-                         boost=1000),
-                     preferred=[hCea,hGoalCount],reopen_closed=true,cost_type=1)],
-                repeat_last=true,continue_on_fail=true)" "$@" < $TEMPFILE
-    elif [[ "$CONFIG" == "seq-sat-lama-2008" ]]; then
-        echo "The seq-sat-lama-2008 planner should not use this code."
-        exit 2
-    elif [[ "$CONFIG" == "seq-sat-lama-2011" ]]; then
-        if [[ "$UNIT_COST" == "unit" ]]; then
-            "$PLANNER" \
-                --heuristic "hlm,hff=lm_ff_syn(lm_rhw(
-                    reasonable_orders=true,lm_cost_type=2,cost_type=2))" \
-                --search "iterated([
-                    lazy_greedy([hff,hlm],preferred=[hff,hlm]),
-                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),
-                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),
-                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2),
-                    lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1)],
-                    repeat_last=true,continue_on_fail=true)" \
-                "$@" < $TEMPFILE
-        elif [[ "$UNIT_COST" == "nonunit" ]]; then
-            "$PLANNER" \
-                --heuristic "hlm1,hff1=lm_ff_syn(lm_rhw(
-                    reasonable_orders=true,lm_cost_type=1,cost_type=1))" \
-                --heuristic "hlm2,hff2=lm_ff_syn(lm_rhw(
-                    reasonable_orders=true,lm_cost_type=2,cost_type=2))" \
-                --search "iterated([
-                    lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],
-                                cost_type=1,reopen_closed=false),
-                    lazy_greedy([hff2,hlm2],preferred=[hff2,hlm2],
-                                reopen_closed=false),
-                    lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=5),
-                    lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=3),
-                    lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=2),
-                    lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=1)],
-                    repeat_last=true,continue_on_fail=true)" \
-                "$@" < $TEMPFILE
-        else
-            echo "Something is seriously messed up!"
-            exit 2
-        fi
-    elif [[ "$CONFIG" == "seq-opt-fd-autotune" ]]; then
-        "$PLANNER" \
-            --heuristic "hLMCut=lmcut()" \
-            --heuristic "hHMax=hmax()" \
-            --heuristic "hCombinedSelMax=selmax(
-                [hLMCut,hHMax],alpha=4,classifier=0,conf_threshold=0.85,
-                training_set=10,sample=0,uniform=true)" \
-            --search "astar(hCombinedSelMax,mpd=false,
-                            pathmax=true,cost_type=0)" "$@" < $TEMPFILE
-    elif [[ "$CONFIG" == "seq-opt-selmax" ]]; then
-        "$PLANNER" --search "astar(selmax([lmcut(),lmcount(lm_merged([lm_hm(m=1),lm_rhw()]),admissible=true)],training_set=1000),mpd=true)" "$@" < $TEMPFILE
-    elif [[ "$CONFIG" == "seq-opt-bjolp" ]]; then
-        "$PLANNER" --search "astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true),mpd=true)" "$@" < $TEMPFILE
-    elif [[ "$CONFIG" == "seq-opt-lmcut" ]]; then
-        "$PLANNER" --search "astar(lmcut())" "$@" < $TEMPFILE
-    else
-        echo "unknown IPC planner name: $CONFIG"
-        exit 2
-    fi
-elif [[ "$1" == "--portfolio" ]]; then
-    # Portfolio files must reside in the search directory.
-    PORTFOLIO="$2"
-    shift 2
-    run_portfolio "$BASEDIR/$PORTFOLIO" "$@"
-else
-    "$PLANNER" "$@" < $TEMPFILE
-fi
-EXITCODE=$?
-rm -f $TEMPFILE
-exit $EXITCODE
-"""
