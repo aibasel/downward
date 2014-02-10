@@ -57,13 +57,14 @@ class Action(object):
                 cost = effects.parse_effects(effect_list, eff)
             except ValueError as e:
                 raise SystemExit("Error in Action %s\nReason: %s." % (name, e))
-        else:
-            # discard actions with an empty effect
-            return None
         for rest in iterator:
             assert False, rest
-        return Action(name, parameters, len(parameters),
-                      precondition, eff, cost)
+        if eff:
+            return Action(name, parameters, len(parameters),
+                          precondition, eff, cost)
+        else:
+            return None
+
     parse = staticmethod(parse)
     def dump(self):
         print("%s(%s)" % (self.name, ", ".join(map(str, self.parameters))))
