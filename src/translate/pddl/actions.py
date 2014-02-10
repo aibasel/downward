@@ -58,8 +58,8 @@ class Action(object):
             except ValueError as e:
                 raise SystemExit("Error in Action %s\nReason: %s." % (name, e))
         else:
-            # Note that :effect () is allowed in PDDL.
-            cost = None
+            # discard actions with an empty effect
+            return None
         for rest in iterator:
             assert False, rest
         return Action(name, parameters, len(parameters),
