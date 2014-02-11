@@ -62,7 +62,7 @@ def get_task_name(path):
 
 def translate_task(task_file):
     print('\nTranslating %s:' % get_task_name(task_file))
-    sys.argv = [sys.argv[0], '--force-old-python', task_file]
+    sys.argv = [sys.argv[0], task_file]
     translate.main()
 
 
