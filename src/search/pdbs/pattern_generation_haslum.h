@@ -4,6 +4,7 @@
 #include "../operator_cost.h"
 
 #include <map>
+#include <set>
 #include <vector>
 
 class Options;
@@ -26,6 +27,10 @@ class PatternGenerationHaslum {
     void generate_candidate_patterns(const std::vector<int> &pattern,
                                      std::vector<std::vector<int> > &candidate_patterns);
 
+    std::size_t generate_pdbs_for_candidates(std::set<std::vector<int> > &generated_patterns,
+                                             std::vector<std::vector<int> > &new_candidates,
+                                             std::vector<PDBHeuristic *> &candidate_pdbs) const;
+
     /* Performs num_samples random walks with a lenght (different for each random walk) chosen
        according to a binomial distribution with n = 4 * solution depth estimate and p = 0.5,
        starting from the initial state. In each step of a random walk, a random operator is taken
@@ -34,6 +39,10 @@ class PatternGenerationHaslum {
        walk, the last state visited is taken as a sample state, thus totalling exactly
        num_samples of sample states. */
     void sample_states(std::vector<State> &samples, double average_operator_costs);
+
+    void find_best_improving_pdb(std::vector<State> &samples,
+                                 std::vector<PDBHeuristic *> &candidate_pdbs,
+                                 std::pair<int, int> &improv_and_index);
 
     /* Returns true iff the h-value of the new pattern (from pdb_heuristic) plus the h-value of all
        maximal additive subsets from the current pattern collection heuristic if the new pattern was
