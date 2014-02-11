@@ -50,6 +50,8 @@ class InputAnalyzer(object):
         self._skip_to("end_goal")
         num_operators = self._read_int(min_value=0)
         for _ in xrange(num_operators):
+            self._skip_to("begin_operator")
+            self._next_line() # Skip over operator name in case it's "end_operator."
             self._skip_to("end_operator")
             action_cost = self._parse_int(self.prev_line, min_value=0)
             if use_metric:
