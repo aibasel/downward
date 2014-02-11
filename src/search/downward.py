@@ -49,7 +49,7 @@ def parse_args():
     parser.add_argument("--debug", action="store_true",
                         help="run search component in debug mode")
     parser.add_argument("--file", default="output",
-                        help="preprocessed input file (default: output)")
+                        help="preprocessed input file (default: %(default)s)")
     parser.add_argument("--help-search", action="store_true",
                         help="pass --help argument to search component")
     parser.add_argument("--ipc", dest="alias",
