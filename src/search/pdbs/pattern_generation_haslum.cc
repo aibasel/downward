@@ -333,13 +333,6 @@ void PatternGenerationHaslum::initialize() {
                                      initial_candidate_patterns.end());
     cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
 
-    if (initial_candidate_patterns.empty()) {
-        cout << "no candidate patterns found which respect the given pdb max size" << endl;
-        cout << "ending pattern generation haslum now, returning canonical heuristic "
-                "function consisting of only the goal-patterns" << endl;
-        return;
-    }
-
     // call to this method modifies initial_candidate_patterns (contains the new_candidates
     // after each call to generate_candidate_patterns)
     hill_climbing(average_operator_cost, initial_candidate_patterns);
@@ -352,11 +345,9 @@ static Heuristic *_parse(OptionParser &parser) {
         "see also Sievers et al. (SoCS 2012) for implementation notes");
     parser.document_note(
         "Note",
-        "the algorithm will always build a canonical heuristic function, "
-        "consisting of at least all goal-patterns, no matter how small the "
-        "values chosen for pdb_max_size or collection_max_size may be. "
-        "This is done assuming that the goal-patterns will always fit into "
-        "memory.");
+        "The pattern collection created by the algorithm will always contain "
+        "all patterns consisting of a single goal variable, even if this violates "
+        "the pdb_max_size or collection_max_size limits.");
     parser.add_option<int>("pdb_max_size",
                            "max number of states per pdb", "2000000");
     parser.add_option<int>("collection_max_size",
