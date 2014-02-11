@@ -19,7 +19,7 @@ import axiom_rules
 import fact_groups
 import instantiate
 import normalize
-import optparse
+import argparse
 import pddl
 import sas_tasks
 import simplify
@@ -635,20 +635,20 @@ def dump_statistics(sas_task):
         print("Translator peak memory: %d KB" % peak_memory)
 
 
-def parse_options():
-    optparser = optparse.OptionParser(
+def parse_args():
+    argparser = argparse.ArgumentParser(
         usage="Usage: %prog [options] [<domain.pddl>] <task.pddl>")
-    optparser.add_option(
+    argparser.add_argument(
         "--relaxed", dest="generate_relaxed_task", action="store_true",
         help="Output relaxed task (no delete effects)")
-    options, args = optparser.parse_args()
-    # Remove the parsed options from sys.argv
-    sys.argv = [sys.argv[0]] + args
-    return options, args
+    known_args, other_args = argparser.parse_known_args()
+    # Remove the parsed arguments from sys.argv
+    sys.argv = [sys.argv[0]] + other_args
+    return known_args
 
 
 def main():
-    options, args = parse_options()
+    args = parse_args()
 
     timer = timers.Timer()
     with timers.timing("Parsing", True):
@@ -657,7 +657,7 @@ def main():
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
 
-    if options.generate_relaxed_task:
+    if args.generate_relaxed_task:
         # Remove delete effects.
         for action in task.actions:
             for index, effect in reversed(list(enumerate(action.effects))):
