@@ -14,7 +14,7 @@ python3.2 test-translator.py first
 python2.7 test-translator.py all
 
 # Run test on specific problems.
-python2.6 test-translator.py gripper:prob01.pddl depot:pfile1
+python3.3 test-translator.py gripper:prob01.pddl depot:pfile1
 """
 
 from __future__ import print_function
