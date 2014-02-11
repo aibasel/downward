@@ -3,6 +3,14 @@
 
 from __future__ import print_function
 
+try:
+    # Added in Python 2.7 and 3.2.
+    import argparse
+except ImportError:
+    print("Error: Translator only supports Python 2.7 and Python >= 3.2.",
+          file=sys.stderr)
+    sys.exit(1)
+
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product
@@ -627,28 +635,12 @@ def dump_statistics(sas_task):
         print("Translator peak memory: %d KB" % peak_memory)
 
 
-def check_python_version(force_old_python):
-    if sys.version_info[:2] == (2, 6):
-        if force_old_python:
-            print("Warning: Running with slow Python 2.6", file=sys.stderr)
-        else:
-            print("Error: Python 2.6 runs the translator very slowly. You "
-                  "should use Python 2.7 or 3.x instead. If you really need "
-                  "to run it with Python 2.6, you can pass the "
-                  "--force-old-python flag.",
-                  file=sys.stderr)
-            sys.exit(1)
-
-
 def parse_options():
     optparser = optparse.OptionParser(
         usage="Usage: %prog [options] [<domain.pddl>] <task.pddl>")
     optparser.add_option(
         "--relaxed", dest="generate_relaxed_task", action="store_true",
         help="Output relaxed task (no delete effects)")
-    optparser.add_option(
-        "--force-old-python", action="store_true",
-        help="Allow running the translator with slow Python 2.6")
     options, args = optparser.parse_args()
     # Remove the parsed options from sys.argv
     sys.argv = [sys.argv[0]] + args
@@ -657,8 +649,6 @@ def parse_options():
 
 def main():
     options, args = parse_options()
-
-    check_python_version(options.force_old_python)
 
     timer = timers.Timer()
     with timers.timing("Parsing", True):
