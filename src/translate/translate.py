@@ -636,15 +636,17 @@ def dump_statistics(sas_task):
 
 
 def parse_args():
-    argparser = argparse.ArgumentParser(
-        usage="Usage: %prog [options] [<domain.pddl>] <task.pddl>")
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument(
+        "domain", nargs="?", metavar="DOMAIN",
+        help="path to domain pddl file")
+    argparser.add_argument(
+        "task", metavar="TASK",
+        help="path to task pddl file")
     argparser.add_argument(
         "--relaxed", dest="generate_relaxed_task", action="store_true",
-        help="Output relaxed task (no delete effects)")
-    known_args, other_args = argparser.parse_known_args()
-    # Remove the parsed arguments from sys.argv
-    sys.argv = [sys.argv[0]] + other_args
-    return known_args
+        help="output relaxed task (no delete effects)")
+    return argparser.parse_args()
 
 
 def main():
@@ -652,7 +654,7 @@ def main():
 
     timer = timers.Timer()
     with timers.timing("Parsing", True):
-        task = pddl.open()
+        task = pddl.open(task_filename=args.task, domain_filename=args.domain)
 
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
