@@ -77,34 +77,21 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
     cout << "Merging abstractions..." << endl;
 
-    int var_first = -1;
     Abstraction *abstraction = 0;
     int total_reduced_labels = 0;
-    vector<int> variable_order;
-    bool indices_order_is_non_linear = false;
+    vector<int> system_order;
     // TODO: reconsider in which order things are done in the main loop
     while (!merge_strategy->done()) {
-        pair<int, int> next_vars;
-        merge_strategy->get_next(all_abstractions, next_vars);
-        if (var_first == -1) {
-            var_first = next_vars.first;
-        }
-        int var_one = next_vars.first;
-        if (merge_strategy->name() == "linear") {
-            assert(var_first == var_one);
-        }
-        variable_order.push_back(var_one);
-        abstraction = all_abstractions[var_one];
+        pair<int, int> next_systems;
+        merge_strategy->get_next(all_abstractions, next_systems);
+        int system_one = next_systems.first;
+        system_order.push_back(system_one);
+        abstraction = all_abstractions[system_one];
         assert(abstraction);
-        int var_two = next_vars.second;
-        assert(var_one != var_two);
-        if (merge_strategy->name() == "non linear") {
-            if (var_one != var_first && var_two != var_first) {
-                indices_order_is_non_linear = true;
-            }
-        }
-        variable_order.push_back(var_two);
-        Abstraction *other_abstraction = all_abstractions[var_two];
+        int system_two = next_systems.second;
+        assert(system_one != system_two);
+        system_order.push_back(system_two);
+        Abstraction *other_abstraction = all_abstractions[system_two];
         assert(other_abstraction);
 
         // TODO: When using nonlinear merge strategies, make sure not
@@ -112,7 +99,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         // Note: do not reduce labels several times for the same abstraction!
         bool reduced_labels = false;
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            total_reduced_labels += labels->reduce(var_one, all_abstractions);
+            total_reduced_labels += labels->reduce(system_one, all_abstractions);
             reduced_labels = true;
             abstraction->normalize();
             other_abstraction->normalize();
@@ -139,7 +126,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         other_abstraction->statistics(use_expensive_statistics);
 
         if (!reduced_labels) {
-            total_reduced_labels += labels->reduce(var_one, all_abstractions);
+            total_reduced_labels += labels->reduce(system_one, all_abstractions);
         }
         abstraction->normalize();
         other_abstraction->normalize();
@@ -162,8 +149,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
         cout << "Number of reduced labels so far: " << total_reduced_labels << endl;
 
-        all_abstractions[var_one] = abstraction;
-        all_abstractions[var_two] = 0;
+        all_abstractions[system_one] = abstraction;
+        all_abstractions[system_two] = 0;
     }
 
     abstraction->compute_distances();
@@ -179,11 +166,10 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
     cout << "Final number of reduced labels: " << total_reduced_labels << endl;
     cout << "Order of merged indices: ";
-    for (size_t i = 1; i < variable_order.size(); i += 2) {
-        cout << variable_order[i - 1] << " " << variable_order[i] << ", ";
+    for (size_t i = 1; i < system_order.size(); i += 2) {
+        cout << system_order[i - 1] << " " << system_order[i] << ", ";
     }
     cout << endl;
-    cout << "Order of indices is truely non linear: " << indices_order_is_non_linear << endl;
     merge_strategy->print_summary();
     return abstraction;
 }
@@ -215,10 +201,7 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Merge-and-shrink heuristic",
-        "Note: The parameter space and syntax for the merge-and-shrink "
-        "heuristic has changed significantly in August 2011.");
+    parser.document_synopsis("Merge-and-shrink heuristic", "");
     parser.document_language_support(
         "action costs",
         "supported");
@@ -295,8 +278,6 @@ static Heuristic *_parse(OptionParser &parser) {
                             "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
 
     if (parser.dry_run()) {
         return 0;
