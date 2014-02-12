@@ -1,0 +1,80 @@
+* main code
+
+  1212 abstraction.cc
+   195 abstraction.h
+    55 label.cc
+    72 label.h
+   328 label_reducer.cc
+    41 label_reducer.h
+   109 labels.cc
+    52 labels.h
+   314 merge_and_shrink_heuristic.cc
+    32 merge_and_shrink_heuristic.h
+
+* merge strategies
+
+    71 linear_merge_strategy.cc
+    24 linear_merge_strategy.h
+    10 merge_strategy.cc
+    24 merge_strategy.h
+   171 non_linear_merge_strategy.cc
+    26 non_linear_merge_strategy.h
+
+* shrink strategies
+
+   456 shrink_bisimulation.cc
+    53 shrink_bisimulation.h
+   106 shrink_bucket_based.cc
+    53 shrink_bucket_based.h
+   189 shrink_fh.cc
+    60 shrink_fh.h
+    50 shrink_random.cc
+    19 shrink_random.h
+   171 shrink_strategy.cc
+    92 shrink_strategy.h
+
+* utilities
+
+   158 equivalence_relation.cc
+   147 equivalence_relation.h
+   126 variable_order_finder.cc
+    31 variable_order_finder.h
+
+- TODO: in variable_order_finder.{cc,h}, remove references to "merge
+  strategy" etc. in variable and type names. (The class is to be used
+  more generally.)
+
+* General TODOs for now
+
+- The attribute that knows if we have a unit-cost problem could live
+  in Labels rather than Abstraction.
+- After we've started merging, the fixed-point variable order for
+  label reduction doesn't really talk about variables any more but
+  also about merged abstractions. Take this into account when thinking
+  about this variable order. One possible idea we could try in the
+  future would be to take into account the size of the transition
+  systems when deciding what to combine.
+
+* General TODOs for later
+
+- To reduce memory, we might combine the representation of the
+  transitions of locally equivalent labels. That is, if label1 and
+  label2 have the same transitions, don't store "label1: transition1,
+  ...; label2: transition1, ...", but instead store "{label1, label2}:
+  transition1, ...".
+- Make names of classes, variables etc. more consistent with the
+  papers. For example, Abstraction => TransitionSystem. Also clean up
+  the documentation. (Do this after all other changes are done and
+  evaluated?)
+- Replace all the estimated memory stuff with actual memory
+  measurements (or maybe better for now: add actual memory
+  measurements)?
+- Later: split the representation of the abstraction function and
+  heuristic from the transition systems so that we can throw away the
+  transition systems after constructing them?
+
+* TODOs for rest of the code:
+
+- Only use help_mode() when the behaviour should differ from
+  dry_run() (dry_run() is also set in help mode).
+
