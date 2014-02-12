@@ -424,9 +424,10 @@ void Abstraction::normalize() {
        away the transitions that have been processed. */
     vector<StateBucket> target_buckets(num_states);
     for (int label_no = 0; label_no < num_labels; label_no++) {
-        int reduced_label_no = labels->get_reduced_label_no(label_no);
-        if (reduced_label_no >= num_labels) {
-            // skip freshly reduced labels and deal with them separately
+        if (labels->is_label_reduced(label_no)) {
+            // skip all labels that have been reduced (previously, in which case
+            // they do not induce any transitions or recently, in which case we
+            // deal with them separately).
             continue;
         }
         vector<AbstractTransition> &transitions = transitions_by_label[label_no];
@@ -434,7 +435,7 @@ void Abstraction::normalize() {
             for (int i = 0; i < transitions.size(); i++) {
                 const AbstractTransition &t = transitions[i];
                 target_buckets[t.target].push_back(
-                    make_pair(t.src, reduced_label_no));
+                    make_pair(t.src, label_no));
             }
             vector<AbstractTransition> ().swap(transitions);
         }
@@ -1010,10 +1011,6 @@ void Abstraction::statistics(bool include_expensive_statistics) const {
 
 int Abstraction::get_peak_memory_estimate() const {
     return peak_memory;
-}
-
-bool Abstraction::is_in_varset(int var) const {
-    return find(varset.begin(), varset.end(), var) != varset.end();
 }
 
 bool sorted(const vector<AbstractTransition> &transitions) {
