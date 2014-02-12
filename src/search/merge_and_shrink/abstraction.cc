@@ -827,6 +827,13 @@ void Abstraction::apply_abstraction(
        right after construction.
      */
 
+    // abstraction must have been normalized if any labels have been reduced
+    // before. Note that we do *not* require transitions to be sorted (thus
+    // not asserting is_normalized()), because shrink can indirectly be called
+    // from the distances computation, which is done for the final abstraction
+    // which on its turn may not be normalized at that time.
+    assert(num_labels == labels->get_size());
+
     cout << tag() << "applying abstraction (" << size()
          << " to " << collapsed_groups.size() << " states)" << endl;
 
@@ -884,12 +891,15 @@ void Abstraction::apply_abstraction(
     vector<vector<AbstractTransition> > new_transitions_by_label(
         transitions_by_label.size());
     for (int label_no = 0; label_no < num_labels; label_no++) {
+        if (labels->is_label_reduced(label_no)) {
+            // do not consider non-leaf labels
+            continue;
+        }
         const vector<AbstractTransition> &transitions =
             transitions_by_label[label_no];
-        int mapped_label_no = labels->get_reduced_label_no(label_no);
         vector<AbstractTransition> &new_transitions =
-            new_transitions_by_label[mapped_label_no];
-        new_transitions.reserve(new_transitions.size() + transitions.size());
+            new_transitions_by_label[label_no];
+        new_transitions.reserve(transitions.size());
         for (int i = 0; i < transitions.size(); i++) {
             const AbstractTransition &trans = transitions[i];
             int src = abstraction_mapping[trans.src];

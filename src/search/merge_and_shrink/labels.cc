@@ -49,24 +49,20 @@ int Labels::reduce(int abs_index,
     return label_reducer.get_number_reduced_labels();
 }
 
-int Labels::get_reduced_label_no(int label_no) const {
-    return get_label_by_index(label_no)->get_reduced_label()->get_id();
-}
-
 const Label *Labels::get_label_by_index(int index) const {
     assert(index >= 0 && index < labels.size());
     return labels[index];
 }
 
 bool Labels::is_label_reduced(int label_no) const {
-    return label_no != get_reduced_label_no(label_no);
+    return get_label_by_index(label_no)->is_reduced();
 }
 
 void Labels::dump() const {
     cout << "no of labels: " << labels.size() << endl;
     for (size_t i = 0; i < labels.size(); ++i) {
         const Label *label = labels[i];
-        cout << label->get_id() << "->" << label->get_reduced_label()->get_id() << endl;
+        label->dump();
     }
 }
 
