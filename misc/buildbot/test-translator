@@ -8,38 +8,37 @@
 # Run bigger test on the first problem of each domain.
 # $ ./test-translator first
 #
+# Run even bigger test on the whole benchmark suite.
+# $ ./test-translator all
+#
 # Run test on specific problems.
 # $ ./test-translator gripper:prob01.pddl depot:pfile1
 #
 # Returns 0 on success and 1 if an error occurs.
 
-SAS_FILES=/tmp/sas-files
-# Remove tmp dir.
-rm -rf $SAS_FILES
+set -ue
+
+# Create clean tmp dir.
+SAS_FILES=/tmp/$(whoami)/sas-files/
+rm -rf "$SAS_FILES"
+mkdir -p "$SAS_FILES"
 
 cd "$(dirname "$0")"
 
 export PYTHONHASHSEED=random
 
-for PYTHON in python2.6 python2.7 python3; do
-    # Returns 0 if command is found.
-    command -v $PYTHON >/dev/null 2>&1
-    # Only test those python versions that are installed.
-    if [ $? -eq 0 ]; then
-        echo
-        $PYTHON -V
-        $PYTHON test-translator.py "$@"
-    fi
+for PYTHON in python2.7 python3; do
+    echo
+    $PYTHON -V
+    $PYTHON test-translator.py "$@"
 done
-
-rm -f output.sas
 
 
 # Check that all python versions produced the same output.sas
 
-cd $SAS_FILES
+cd "$SAS_FILES"
 
-printf "\n*****************************************************************\n\n"
+printf "\n*********************************************************\n\n"
 for TASK in $(ls)
 do
     echo "Comparing SAS+ files for $TASK:"
@@ -58,6 +57,6 @@ do
 done
 
 # Remove tmp dir.
-rm -rf $SAS_FILES
+rm -rf "$SAS_FILES"
 
 echo "TESTS PASSED"

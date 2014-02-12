@@ -290,9 +290,15 @@ double PDBHeuristic::compute_mean_finite_h() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "PDB",
-        "TODO");
+    parser.document_synopsis("Pattern database heuristic", "TODO");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("axioms", "not supported");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "yes");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
+
     Heuristic::add_options_to_parser(parser);
     Options opts;
     parse_pattern(parser, opts);

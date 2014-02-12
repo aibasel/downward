@@ -107,9 +107,14 @@ static void build_singleton_patterns(
 }
 
 void parse_pattern(OptionParser &parser, Options &opts) {
-    parser.document_synopsis("PDB", "Pattern database heuristic");
-    parser.add_option<int>("max_states", "maximum abstraction size", "1000000");
-    parser.add_list_option<int>("pattern", "the pattern", "", OptionFlags(false));
+    parser.add_option<int>("max_states",
+        "maximal number of abstract states in the pattern database",
+        "1000000");
+    parser.add_list_option<int>("pattern",
+        "list of variable numbers of the planning task that should be used as pattern. "
+        "Default: the variables are selected automatically based on a simple greedy strategy.",
+        "",
+        OptionFlags(false));
 
     opts = parser.parse();
     if (parser.help_mode())
@@ -131,7 +136,11 @@ void parse_pattern(OptionParser &parser, Options &opts) {
 
 void parse_patterns(OptionParser &parser, Options &opts) {
     parser.add_list_option<vector<int> >(
-        "patterns", "the pattern collection", "", OptionFlags(false));
+        "patterns",
+        "list of patterns (which are lists of variable numbers of the planning task) "
+        "Default: each goal variable is used as a single-variable pattern in the collection.",
+        "",
+        OptionFlags(false));
     parser.add_option<bool>(
         "combo", "use the combo strategy", "false");
     parser.add_option<int>(
