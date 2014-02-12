@@ -58,7 +58,6 @@ class Abstraction {
     // generated through label reduction, we do *not* update all abstractions
     // immediately.
     int num_labels;
-    EquivalenceRelation *local_equivalence_relation;
 
     std::vector<int> init_distances;
     std::vector<int> goal_distances;
@@ -114,8 +113,6 @@ public:
     //       have been computed along the way by calls to statistics().
     // TODO: Find a better way of doing this that doesn't require
     //       a mutable attribute?
-
-    bool is_in_varset(int var) const;
 
     void compute_distances();
     bool is_normalized() const;
