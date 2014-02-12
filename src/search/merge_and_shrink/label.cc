@@ -49,6 +49,7 @@ const std::vector<Label *> &OperatorLabel::get_parents() const {
 }
 
 void Label::dump() const {
-    cout << "index: " << id << (id < g_operators.size() ? " regular operator" : "" ) << endl;
-    cout << "cost: " << cost << endl;
+    cout << id << "->" << root->get_id() << endl;
+    //cout << "index: " << id << (id < g_operators.size() ? " regular operator" : "" ) << endl;
+    //cout << "cost: " << cost << endl;
 }

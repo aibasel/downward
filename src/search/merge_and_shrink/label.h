@@ -40,9 +40,6 @@ public:
     int get_cost() const {
         return cost;
     }
-    const Label *get_reduced_label() const {
-        return root;
-    }
     bool is_reduced() const;
     virtual const std::vector<Label *> &get_parents() const = 0;
     void dump() const;
