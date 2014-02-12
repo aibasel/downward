@@ -286,8 +286,13 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_enum_option("fixpoint_var_order", fixpoint_variable_order,
                            "order in which variables are considered when using "
                            "fixpoint iteration for label reduction", "REGULAR");
-    parser.add_option<bool>("expensive_statistics", "show statistics on \"unique unlabeled edges\" (WARNING: "
-                            "these are *very* slow -- check the warning in the output)", "false");
+    parser.add_option<bool>("expensive_statistics",
+                            "show statistics on \"unique unlabeled edges\" (WARNING: "
+                            "these are *very* slow, i.e. too expensive to show by default "
+                            "(in terms of time and memory). When this is used, the planner "
+                            "prints a big warning on stderr with information on the performance impact. "
+                            "Don't use when benchmarking!)",
+                            "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())

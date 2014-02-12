@@ -10,16 +10,21 @@ python2.7 test-translator.py
 # Run bigger test on the first problem of each domain.
 python3.2 test-translator.py first
 
+# Run even bigger test on the whole benchmark suite.
+python2.7 test-translator.py all
+
 # Run test on specific problems.
 python2.6 test-translator.py gripper:prob01.pddl depot:pfile1
 """
 
 from __future__ import print_function
 
+from collections import defaultdict
+import getpass
+import itertools
 import os
 import platform
 import re
-import shutil
 import sys
 
 
@@ -27,10 +32,10 @@ import sys
 # for easier debugging.
 DEBUG = True
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.join(os.path.abspath(__file__), '../../../')
 TRANSLATOR = os.path.abspath(os.path.join(REPO, 'src/translate'))
 BENCHMARKS = os.path.abspath(os.path.join(REPO, 'benchmarks'))
-SAS_FILES = '/tmp/sas-files'
+SAS_FILES = os.path.join('/tmp/', getpass.getuser(), 'sas-files')
 
 sys.path.insert(0, TRANSLATOR)
 
@@ -61,20 +66,32 @@ def translate_task(task_file):
     translate.main()
 
 
-def get_first_tasks():
-    tasks = []
-    for domain in sorted(os.listdir(BENCHMARKS)):
+def get_all_tasks_by_domain():
+    tasks = defaultdict(list)
+    for domain in os.listdir(BENCHMARKS):
         path = os.path.join(BENCHMARKS, domain)
-        domain = [os.path.join(BENCHMARKS, domain, f)
-                 for f in sorted(os.listdir(path)) if not 'domain' in f]
-        tasks.append(domain[0])
+        tasks[domain] = [os.path.join(BENCHMARKS, domain, f)
+                         for f in sorted(os.listdir(path)) if not 'domain' in f]
     return tasks
+
+
+def get_first_tasks():
+    return [tasks[0] for tasks in get_all_tasks_by_domain().values()]
+
+
+def get_all_tasks():
+    return itertools.chain.from_iterable(
+            tasks for tasks in get_all_tasks_by_domain().values())
 
 
 def get_tasks():
     if 'first' in sys.argv:
         # Use the first problem of each domain.
         return get_first_tasks()
+
+    if 'all' in sys.argv:
+        # Use the whole benchmark suite.
+        return get_all_tasks()
 
     # Use the problems given on the commandline.
     tasks = [arg for arg in sys.argv[1:] if not arg.startswith('--')]
@@ -136,6 +153,7 @@ def main():
         else:
             translate_task(task)
         save_task(dest)
+    os.remove('output.sas')
 
 
 if __name__ == '__main__':
