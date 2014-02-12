@@ -3,8 +3,6 @@
 
 #include "../heuristic.h"
 
-#include <vector>
-
 class Abstraction;
 class Labels;
 class MergeStrategy;
