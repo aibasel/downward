@@ -3,14 +3,18 @@
 
 from __future__ import print_function
 
-try:
-    # Added in Python 2.7 and 3.2.
-    import argparse
-except ImportError:
+import sys
+
+def python_version_supported():
+    major, minor = sys.version_info[:2]
+    return (major == 2 and minor == 7) or (major == 3 and minor >= 2)
+
+if not python_version_supported():
     print("Error: Translator only supports Python 2.7 and Python >= 3.2.",
           file=sys.stderr)
     sys.exit(1)
 
+import argparse
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product
@@ -19,11 +23,9 @@ import axiom_rules
 import fact_groups
 import instantiate
 import normalize
-import argparse
 import pddl
 import sas_tasks
 import simplify
-import sys
 import timers
 import tools
 
