@@ -142,9 +142,9 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples, double avera
     }
 }
 
-void PatternGenerationHaslum::find_best_improving_pdb(vector<State> &samples,
-                                                      vector<PDBHeuristic *> &candidate_pdbs,
-                                                      pair<int, int> &improv_and_index) {
+std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
+        vector<State> &samples,
+        vector<PDBHeuristic *> &candidate_pdbs) {
 
     // TODO: The original implementation by Haslum et al. uses astar to compute h values for
     // the sample states only instead of generating all PDBs.
@@ -190,8 +190,7 @@ void PatternGenerationHaslum::find_best_improving_pdb(vector<State> &samples,
         }
     }
 
-    improv_and_index.first = improvement;
-    improv_and_index.second = best_pdb_index;
+    return make_pair(improvement, best_pdb_index);
 }
 
 bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
@@ -252,8 +251,8 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         vector<State> samples;
         sample_states(samples, average_operator_cost);
 
-        pair<int, int> improvement_and_index;
-        find_best_improving_pdb(samples, candidate_pdbs, improvement_and_index);
+        pair<int, int> improvement_and_index
+                = find_best_improving_pdb(samples, candidate_pdbs);
         int improvement = improvement_and_index.first;
         int best_pdb_index = improvement_and_index.second;
 
