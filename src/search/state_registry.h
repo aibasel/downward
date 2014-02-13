@@ -8,7 +8,8 @@
 #include "state_var_t.h"
 #include "utilities.h"
 
-#include <hash_set>
+#include <set>
+#include <ext/hash_set>
 
 /*
   Overview of classes relevant to storing and working with registered states.
@@ -93,6 +94,8 @@
     to store for each state and each landmark whether it was reached in this state.
 */
 
+class PerStateInformationBase;
+
 class StateRegistry {
     struct StateIDSemanticHash {
         const SegmentedArrayVector<state_var_t> &state_data_pool;
@@ -130,6 +133,7 @@ class StateRegistry {
     SegmentedArrayVector<state_var_t> state_data_pool;
     StateIDSet registered_states;
     State *cached_initial_state;
+    mutable std::set<PerStateInformationBase *> subscribers;
     StateID insert_id_or_pop_state();
 public:
     StateRegistry();
@@ -160,6 +164,15 @@ public:
     size_t size() const {
         return registered_states.size();
     }
+
+    /*
+      Remembers the given PerStateInformation. If this StateRegistry is
+      destroyed, it notifies all subscribed PerStateInformation objects.
+      The information stored in them that relates to states from this
+      registry is then destroyed as well.
+    */
+    void subscribe(PerStateInformationBase *psi) const;
+    void unsubscribe(PerStateInformationBase *psi) const;
 };
 
 #endif
