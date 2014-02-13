@@ -145,8 +145,6 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
         get_fact_landmarks(&facts);
     } else if (decomposition == GOALS) {
         facts = original_task.get_goal();
-    } else if (decomposition == GOAL_LEAVES) {
-        facts = original_task.get_goal();
         facts.erase(remove_if(facts.begin(), facts.end(),
                               is_not_leaf_landmark(landmark_graph)), facts.end());
     } else {
@@ -318,7 +316,6 @@ static Heuristic *_parse(OptionParser &parser) {
     decompositions.push_back("NONE");
     decompositions.push_back("LANDMARKS");
     decompositions.push_back("GOALS");
-    decompositions.push_back("GOAL_LEAVES");
     decompositions.push_back("LANDMARKS_AND_GOALS");
     parser.add_enum_option("decomposition",
                            decompositions,
