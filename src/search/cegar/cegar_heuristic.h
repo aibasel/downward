@@ -27,7 +27,6 @@ enum Decomposition {
     NONE,
     LANDMARKS,
     GOALS,
-    GOAL_LEAVES,
     LANDMARKS_AND_GOALS
 };
 
