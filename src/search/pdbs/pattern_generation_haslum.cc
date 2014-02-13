@@ -109,8 +109,6 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
             } else {
                 int random = g_rng.next(applicable_ops.size()); // [0..applicable_os.size())
                 assert(applicable_ops[random]->is_applicable(current_state));
-                // TODO for now, we only generate registered successors. This is a temporary state that
-                // should should not necessarily be registered in the global registry: see issue386.
                 current_state = sample_registry.get_successor_state(current_state, *applicable_ops[random]);
                 // if current state is a dead end, then restart with initial state
                 current_heuristic->evaluate_dead_end(current_state);
