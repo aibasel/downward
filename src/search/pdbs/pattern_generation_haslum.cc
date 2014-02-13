@@ -320,7 +320,12 @@ static Heuristic *_parse(OptionParser &parser) {
         "Planning http://www.informatik.uni-freiburg.de/~ki/papers/haslum-etal-aaai07.pdf].<<BR>>\n"
         " In //Proceedings of the 22nd AAAI Conference on Artificial Intelligence (AAAI 2007)//, "
         "pp. 1007-1012. AAAI Press 2007.\n"
-        "See also Sievers et al. (SoCS 2012) for implementation notes");
+        "For implementation notes, see also this paper:\n\n"
+        " * Silvan Sievers, Manuela Ortlieb and Malte Helmert.<<BR>>\n"
+        " [Efficient Implementation of Pattern Database Heuristics for Classical Planning "
+        "http://ai.cs.unibas.ch/papers/sievers-et-al-socs2012.pdf].<<BR>>\n"
+        " In //Proceedings of the Fifth Annual Symposium on Combinatorial Search (SoCS 2012)//, "
+        "pp. 105-111. AAAI Press 2012.\n");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional_effects", "not supported");
     parser.document_language_support("axioms", "not supported");
