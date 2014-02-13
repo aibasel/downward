@@ -4,7 +4,6 @@
 #include "operator.h"
 
 #include <cassert>
-#include <ext/hash_map>
 #include "search_node_info.h"
 
 using namespace std;
