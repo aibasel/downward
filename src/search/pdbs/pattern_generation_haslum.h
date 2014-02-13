@@ -27,6 +27,8 @@ class PatternGenerationHaslum {
     void generate_candidate_patterns(const std::vector<int> &pattern,
                                      std::vector<std::vector<int> > &candidate_patterns);
 
+    /* Generates the PDBHeuristics for patterns in new_candidates if they have
+       not been generated already. */
     std::size_t generate_pdbs_for_candidates(std::set<std::vector<int> > &generated_patterns,
                                              std::vector<std::vector<int> > &new_candidates,
                                              std::vector<PDBHeuristic *> &candidate_pdbs) const;
@@ -40,9 +42,12 @@ class PatternGenerationHaslum {
        num_samples of sample states. */
     void sample_states(std::vector<State> &samples, double average_operator_costs);
 
-    void find_best_improving_pdb(std::vector<State> &samples,
-                                 std::vector<PDBHeuristic *> &candidate_pdbs,
-                                 std::pair<int, int> &improv_and_index);
+
+    /* Searches for the best improving pdb in candidate_pdbs according to the
+       counting approximation and the given samples. Returns the improvement and
+       the index of the best pdb in candidate_pdbs. */
+    std::pair<int, int> find_best_improving_pdb(std::vector<State> &samples,
+                                                std::vector<PDBHeuristic *> &candidate_pdbs);
 
     /* Returns true iff the h-value of the new pattern (from pdb_heuristic) plus the h-value of all
        maximal additive subsets from the current pattern collection heuristic if the new pattern was
