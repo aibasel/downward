@@ -7,14 +7,18 @@
 #include <cassert>
 #include <vector>
 
+struct PackedVariable {
+    int index;
+    int shift;
+    PackedStateEntry read_mask;
+    PackedStateEntry clear_mask;
+};
 
 struct PackedStateProperties {
     int state_size;
-    int *shift;
-    int *entry;
-    int *read_mask;
-    int *clear_mask;
+    PackedVariable *variables;
     PackedStateProperties(const std::vector<int> &variable_domain);
+    ~PackedStateProperties();
 };
 
 template<class Entry>
@@ -49,12 +53,15 @@ PackedState<Entry>::~PackedState() {
 
 template<class Entry>
 int PackedState<Entry>::get(int index) const {
-    return buffer[index];
+    const PackedVariable &var = g_packed_state_properties->variables[index];
+    return (buffer[var.index] & var.read_mask) >> var.shift;
 }
 
 template<class Entry>
 void PackedState<Entry>::set(int index, int value) {
-    buffer[index] = value;
+    const PackedVariable &var = g_packed_state_properties->variables[index];
+    PackedStateEntry before = buffer[var.index];
+    buffer[var.index] = (before & var.clear_mask) | (value << var.shift);
 }
 
 
