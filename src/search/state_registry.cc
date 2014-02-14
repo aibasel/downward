@@ -2,8 +2,9 @@
 
 #include "axioms.h"
 #include "operator.h"
-#include "state_var_t.h"
+#include "packed_state.h"
 #include "per_state_information.h"
+#include "state_var_t.h"
 
 using namespace std;
 
@@ -42,14 +43,16 @@ StateID StateRegistry::insert_id_or_pop_state() {
 }
 
 State StateRegistry::lookup_state(StateID id) const {
-    return State(state_data_pool[id.value], *this, id);
+    ReadOnlyPackedState state_data(state_data_pool[id.value]);
+    return State(state_data, *this, id);
 }
 
 const State &StateRegistry::get_initial_state() {
     if (cached_initial_state == 0) {
         state_data_pool.push_back(g_initial_state_buffer);
         state_var_t *vars = state_data_pool[state_data_pool.size() - 1];
-        g_axiom_evaluator->evaluate(vars);
+        MutablePackedState state_data(vars);
+        g_axiom_evaluator->evaluate(state_data);
         StateID id = insert_id_or_pop_state();
         cached_initial_state = new State(lookup_state(id));
     }
@@ -61,14 +64,15 @@ const State &StateRegistry::get_initial_state() {
 //     operating on state buffers (state_var_t *).
 State StateRegistry::get_successor_state(const State &predecessor, const Operator &op) {
     assert(!op.is_axiom());
-    state_data_pool.push_back(predecessor.get_buffer());
-    state_var_t *vars = state_data_pool[state_data_pool.size() - 1];
+    state_data_pool.push_back(predecessor.get_packed_state().get_buffer());
+    state_var_t *buffer = state_data_pool[state_data_pool.size() - 1];
+    MutablePackedState state_data(buffer);
     for (size_t i = 0; i < op.get_pre_post().size(); ++i) {
         const PrePost &pre_post = op.get_pre_post()[i];
         if (pre_post.does_fire(predecessor))
-            vars[pre_post.var] = pre_post.post;
+            state_data.set(pre_post.var, pre_post.post);
     }
-    g_axiom_evaluator->evaluate(vars);
+    g_axiom_evaluator->evaluate(state_data);
     StateID id = insert_id_or_pop_state();
     return lookup_state(id);
 }
