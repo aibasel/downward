@@ -141,11 +141,11 @@ void read_variables(istream &in) {
         int range;
         in >> range;
         g_variable_domain.push_back(range);
-        if (range > numeric_limits<state_var_t>::max()) {
+        if (range > numeric_limits<PackedStateEntry>::max()) {
             cerr << "This should not have happened!" << endl;
-            cerr << "Are you using the downward script, or are you using "
-                 << "downward-1 directly?" << endl;
-            exit_with(EXIT_INPUT_ERROR);
+            cerr << "Variable " << i << " has a domain with more than "
+                 << numeric_limits<PackedStateEntry>::max() << "values." << endl;
+            exit_with(EXIT_CRITICAL_ERROR);
         }
 
         in >> ws;
@@ -247,16 +247,17 @@ void read_everything(istream &in) {
     read_metric(in);
     read_variables(in);
     read_mutexes(in);
-    g_initial_state_buffer = new state_var_t[g_variable_domain.size()];
+    g_state_size = PackedStateMasks::set_variables(g_variable_domain);
+    g_initial_state_buffer = new PackedStateEntry[g_state_size];
+    MutablePackedState initial_state_data(g_initial_state_buffer);
     check_magic(in, "begin_state");
     for (int i = 0; i < g_variable_domain.size(); i++) {
         int var;
         in >> var;
-        g_initial_state_buffer[i] = var;
+        initial_state_data.set(i, var);
+        g_default_axiom_values.push_back(var);
     }
     check_magic(in, "end_state");
-    g_default_axiom_values.assign(g_initial_state_buffer,
-                                  g_initial_state_buffer + g_variable_domain.size());
 
     read_goal(in);
     read_operators(in);
@@ -348,7 +349,8 @@ vector<int> g_variable_domain;
 vector<vector<string> > g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
-state_var_t *g_initial_state_buffer;
+int g_state_size;
+PackedStateEntry *g_initial_state_buffer;
 vector<pair<int, int> > g_goal;
 vector<Operator> g_operators;
 vector<Operator> g_axioms;

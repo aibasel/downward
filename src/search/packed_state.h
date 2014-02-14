@@ -1,47 +1,57 @@
 #ifndef PACKED_STATE_H
 #define PACKED_STATE_H
 
-#include "state_var_t.h"
-
 #include <cassert>
+#include <vector>
 
 
-template<class PackedStateEntry>
+class PackedStateMasks {
+public:
+    static int set_variables(const std::vector<int> &variable_domain) {
+        // TODO use less than one PackedStateEntry per variable
+        return variable_domain.size();
+    }
+};
+
+// TODO Make this dependent on the size of a word (32/64 bit).
+typedef int PackedStateEntry;
+
+template<class Entry>
 class PackedState {
     friend class StateRegistry;
-    PackedStateEntry *buffer;
-    const PackedStateEntry *get_buffer() const {
+    Entry *buffer;
+    const Entry *get_buffer() const {
         return buffer;
     }
 public:
-    PackedState(PackedStateEntry *buffer_);
+    PackedState(Entry *buffer_);
     ~PackedState();
 
     int get(int index) const;
     void set(int index, int value);
 };
 
-typedef PackedState<state_var_t> MutablePackedState;
-typedef PackedState<const state_var_t> ReadOnlyPackedState;
+typedef PackedState<PackedStateEntry> MutablePackedState;
+typedef PackedState<const PackedStateEntry> ReadOnlyPackedState;
 
 
-template<class PackedStateEntry>
-PackedState<PackedStateEntry>::PackedState(PackedStateEntry *buffer_)
+template<class Entry>
+PackedState<Entry>::PackedState(Entry *buffer_)
     : buffer(buffer_) {
     assert(buffer);
 }
 
-template<class PackedStateEntry>
-PackedState<PackedStateEntry>::~PackedState() {
+template<class Entry>
+PackedState<Entry>::~PackedState() {
 }
 
-template<class PackedStateEntry>
-int PackedState<PackedStateEntry>::get(int index) const {
+template<class Entry>
+int PackedState<Entry>::get(int index) const {
     return buffer[index];
 }
 
-template<class PackedStateEntry>
-void PackedState<PackedStateEntry>::set(int index, int value) {
+template<class Entry>
+void PackedState<Entry>::set(int index, int value) {
     buffer[index] = value;
 }
 

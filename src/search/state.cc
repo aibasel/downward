@@ -29,9 +29,7 @@ void State::dump_pddl() const {
 }
 
 void State::dump_fdr() const {
-    // We cast the values to int since we'd get bad output otherwise
-    // if state_var_t == char.
     for (size_t i = 0; i < g_variable_domain.size(); ++i)
         cout << "  #" << i << " [" << g_variable_name[i] << "] -> "
-             << static_cast<int>((*this)[i]) << endl;
+             << (*this)[i] << endl;
 }

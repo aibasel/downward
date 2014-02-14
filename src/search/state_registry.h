@@ -5,7 +5,6 @@
 #include "segmented_vector.h"
 #include "state.h"
 #include "state_id.h"
-#include "state_var_t.h"
 #include "utilities.h"
 
 #include <set>
@@ -29,11 +28,18 @@
     is why ids are intended for long term storage (e.g. in open lists).
     Internally, a StateID is just an integer, so it is cheap to store and copy.
 
-  state_var_t*
-    The actual state data is internally represented as a state_var_t array.
+  PackedStateEntry* (usually the same as int*, depends on word size)
+    The actual state data is internally represented as a PackedStateEntry array.
+    Each PackedStateEntry can contain the values multiple variables.
     To minimize allocation overhead, the implementation stores the data of many
-    such states in a single large array (see SegmentedArrayVector)
-    Currently there is no difference between compressed and uncompressed states.
+    such states in a single large array (see SegmentedArrayVector).
+    PackedStateEntry arrays are never manipulated directly but through
+    PackedState classes.
+
+  ReadOnlyPackedState
+    Wrapper for PackedStateEntry* that allows read access to the state.
+  MutablePackedState
+    Wrapper for PackedStateEntry* that allows read and write access to the state.
 
   -------------
 
@@ -43,8 +49,8 @@
     The StateRegistry also stores the actual state data in a memory friendly way.
     It uses the following class:
 
-  SegmentedArrayVector<state_var_t>
-    This class is used to store the actual state data for all states
+  SegmentedArrayVector<PackedStateEntry>
+    This class is used to store the actual (packed) state data for all states
     while avoiding dynamically allocating each state individually.
     The index within this vector corresponds to the ID of the state.
 
@@ -98,25 +104,25 @@ class PerStateInformationBase;
 
 class StateRegistry {
     struct StateIDSemanticHash {
-        const SegmentedArrayVector<state_var_t> &state_data_pool;
-        StateIDSemanticHash(const SegmentedArrayVector<state_var_t> &state_data_pool_)
+        const SegmentedArrayVector<PackedStateEntry> &state_data_pool;
+        StateIDSemanticHash(const SegmentedArrayVector<PackedStateEntry> &state_data_pool_)
             : state_data_pool (state_data_pool_) {
         }
         size_t operator() (StateID id) const {
-            return ::hash_number_sequence(state_data_pool[id.value], g_variable_domain.size());
+            return ::hash_number_sequence(state_data_pool[id.value], g_state_size);
         }
     };
 
     struct StateIDSemanticEqual {
-        const SegmentedArrayVector<state_var_t> &state_data_pool;
-        StateIDSemanticEqual(const SegmentedArrayVector<state_var_t> &state_data_pool_)
+        const SegmentedArrayVector<PackedStateEntry> &state_data_pool;
+        StateIDSemanticEqual(const SegmentedArrayVector<PackedStateEntry> &state_data_pool_)
             : state_data_pool (state_data_pool_) {
         }
 
         size_t operator() (StateID lhs, StateID rhs) const {
-            size_t size = g_variable_domain.size();
-            const state_var_t *lhs_data = state_data_pool[lhs.value];
-            const state_var_t *rhs_data = state_data_pool[rhs.value];
+            size_t size = g_state_size;
+            const PackedStateEntry *lhs_data = state_data_pool[lhs.value];
+            const PackedStateEntry *rhs_data = state_data_pool[rhs.value];
             return std::equal(lhs_data, lhs_data + size, rhs_data);
         }
     };
@@ -130,7 +136,7 @@ class StateRegistry {
                                 StateIDSemanticHash,
                                 StateIDSemanticEqual> StateIDSet;
 
-    SegmentedArrayVector<state_var_t> state_data_pool;
+    SegmentedArrayVector<PackedStateEntry> state_data_pool;
     StateIDSet registered_states;
     State *cached_initial_state;
     mutable std::set<PerStateInformationBase *> subscribers;
