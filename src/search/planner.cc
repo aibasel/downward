@@ -1,4 +1,4 @@
-breaking planner to test the build bot
+breaking planner to test build bot
 
 #include "globals.h"
 #include "operator.h"
