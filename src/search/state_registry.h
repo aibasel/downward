@@ -109,7 +109,7 @@ class StateRegistry {
             : state_data_pool (state_data_pool_) {
         }
         size_t operator() (StateID id) const {
-            return ::hash_number_sequence(state_data_pool[id.value], g_state_size);
+            return ::hash_number_sequence(state_data_pool[id.value], g_packed_state_properties->state_size);
         }
     };
 
@@ -120,7 +120,7 @@ class StateRegistry {
         }
 
         size_t operator() (StateID lhs, StateID rhs) const {
-            size_t size = g_state_size;
+            size_t size = g_packed_state_properties->state_size;
             const PackedStateEntry *lhs_data = state_data_pool[lhs.value];
             const PackedStateEntry *rhs_data = state_data_pool[rhs.value];
             return std::equal(lhs_data, lhs_data + size, rhs_data);

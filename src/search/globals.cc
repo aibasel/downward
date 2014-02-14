@@ -247,8 +247,8 @@ void read_everything(istream &in) {
     read_metric(in);
     read_variables(in);
     read_mutexes(in);
-    g_state_size = PackedStateMasks::set_variables(g_variable_domain);
-    g_initial_state_buffer = new PackedStateEntry[g_state_size];
+    g_packed_state_properties = new PackedStateProperties(g_variable_domain);
+    g_initial_state_buffer = new PackedStateEntry[g_packed_state_properties->state_size];
     MutablePackedState initial_state_data(g_initial_state_buffer);
     check_magic(in, "begin_state");
     for (int i = 0; i < g_variable_domain.size(); i++) {
@@ -349,7 +349,7 @@ vector<int> g_variable_domain;
 vector<vector<string> > g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
-int g_state_size;
+PackedStateProperties *g_packed_state_properties;
 PackedStateEntry *g_initial_state_buffer;
 vector<pair<int, int> > g_goal;
 vector<Operator> g_operators;
