@@ -22,3 +22,4 @@
 ^new-scripts/reports/
 ^new-scripts/preprocessed-tasks/
 ^new-scripts/exp-.*/
+^src/search/downward-release$

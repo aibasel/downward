@@ -6,10 +6,6 @@ USE_LP=0
 ## On OS X, this is unsupported and will be silently disabled.
 LINK_RELEASE_STATICALLY=1
 
-## Set STATE_VAR_BYTES to 1, 2 or 4 to control how large a state
-## variable is. There should be no need to tweak this manually.
-STATE_VAR_BYTES=1
-
 ## On a supported operating system, there should be no need to override
 ## the OS setting. If the provided code does not work even though your
 ## operating system is a supported one, please report this as a bug.
@@ -159,12 +155,12 @@ LINK_RELEASE_STATICALLY=0
 endif
 
 
-OBJECT_SUFFIX_RELEASE = .$(STATE_VAR_BYTES)
-TARGET_SUFFIX_RELEASE = -$(STATE_VAR_BYTES)
-OBJECT_SUFFIX_DEBUG   = .$(STATE_VAR_BYTES).debug
-TARGET_SUFFIX_DEBUG   = -$(STATE_VAR_BYTES)-debug
-OBJECT_SUFFIX_PROFILE = .$(STATE_VAR_BYTES).profile
-TARGET_SUFFIX_PROFILE = -$(STATE_VAR_BYTES)-profile
+OBJECT_SUFFIX_RELEASE = 
+TARGET_SUFFIX_RELEASE = -release
+OBJECT_SUFFIX_DEBUG   = .debug
+TARGET_SUFFIX_DEBUG   = -debug
+OBJECT_SUFFIX_PROFILE = .profile
+TARGET_SUFFIX_PROFILE = -profile
 
 OBJECTS_RELEASE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_RELEASE).o)
 TARGET_RELEASE  = $(TARGET)$(TARGET_SUFFIX_RELEASE)
@@ -185,7 +181,7 @@ DEPEND = g++ -MM
 CCOPT = -Iext
 CCOPT += -g
 CCOPT += -m32
-CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
+CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 
 ## The following lines contain workarounds for bugs when
 ## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
@@ -367,14 +363,10 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 	    cat Makefile.temp0 >> Makefile.temp; \
 	done
 	rm -f Makefile.temp0 Makefile.depend
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.temp0
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.temp0
-	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.temp0
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_RELEASE).o:\2@" Makefile.temp >> Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_DEBUG).o:\2@" Makefile.temp >> Makefile.depend
+	sed -e "s@\(.*\)\.o:\(.*\)@.obj/\1$(OBJECT_SUFFIX_PROFILE).o:\2@" Makefile.temp >> Makefile.depend
 	rm -f Makefile.temp
-	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.1.\2@" Makefile.temp0 >> Makefile.depend
-	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.2.\2@" Makefile.temp0 >> Makefile.depend
-	sed -e "s@\(.*\)\.$(STATE_VAR_BYTES)\.\(.*\)@\1.4.\2@" Makefile.temp0 >> Makefile.depend
-	rm -f Makefile.temp0
 
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(MAKECMDGOALS),distclean)

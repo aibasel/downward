@@ -4,7 +4,6 @@
 #include "operator.h"
 #include "packed_state.h"
 #include "per_state_information.h"
-#include "state_var_t.h"
 
 using namespace std;
 
@@ -50,8 +49,8 @@ State StateRegistry::lookup_state(StateID id) const {
 const State &StateRegistry::get_initial_state() {
     if (cached_initial_state == 0) {
         state_data_pool.push_back(g_initial_state_buffer);
-        state_var_t *vars = state_data_pool[state_data_pool.size() - 1];
-        MutablePackedState state_data(vars);
+        PackedStateEntry *buffer = state_data_pool[state_data_pool.size() - 1];
+        MutablePackedState state_data(buffer);
         g_axiom_evaluator->evaluate(state_data);
         StateID id = insert_id_or_pop_state();
         cached_initial_state = new State(lookup_state(id));
@@ -61,11 +60,11 @@ const State &StateRegistry::get_initial_state() {
 
 //TODO it would be nice to move the actual state creation (and operator application)
 //     out of the StateRegistry. This could for example be done by global functions
-//     operating on state buffers (state_var_t *).
+//     operating on state buffers (PackedStateEntry *).
 State StateRegistry::get_successor_state(const State &predecessor, const Operator &op) {
     assert(!op.is_axiom());
     state_data_pool.push_back(predecessor.get_packed_state().get_buffer());
-    state_var_t *buffer = state_data_pool[state_data_pool.size() - 1];
+    PackedStateEntry *buffer = state_data_pool[state_data_pool.size() - 1];
     MutablePackedState state_data(buffer);
     for (size_t i = 0; i < op.get_pre_post().size(); ++i) {
         const PrePost &pre_post = op.get_pre_post()[i];
