@@ -1,20 +1,21 @@
 #ifndef PACKED_STATE_H
 #define PACKED_STATE_H
 
+#include "globals.h"
+#include "packed_state_entry.h"
+
 #include <cassert>
 #include <vector>
 
 
-class PackedStateMasks {
-public:
-    static int set_variables(const std::vector<int> &variable_domain) {
-        // TODO use less than one PackedStateEntry per variable
-        return variable_domain.size();
-    }
+struct PackedStateProperties {
+    int state_size;
+    int *shift;
+    int *entry;
+    int *read_mask;
+    int *clear_mask;
+    PackedStateProperties(const std::vector<int> &variable_domain);
 };
-
-// TODO Make this dependent on the size of a word (32/64 bit).
-typedef int PackedStateEntry;
 
 template<class Entry>
 class PackedState {
@@ -38,6 +39,7 @@ typedef PackedState<const PackedStateEntry> ReadOnlyPackedState;
 template<class Entry>
 PackedState<Entry>::PackedState(Entry *buffer_)
     : buffer(buffer_) {
+    assert(g_packed_state_properties);
     assert(buffer);
 }
 
