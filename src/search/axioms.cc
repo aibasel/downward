@@ -1,6 +1,7 @@
 #include "axioms.h"
 #include "globals.h"
 #include "operator.h"
+#include "packed_state.h"
 #include "state.h"
 
 #include <deque>
@@ -48,16 +49,16 @@ AxiomEvaluator::AxiomEvaluator() {
     }
 }
 
-void AxiomEvaluator::evaluate(state_var_t *state_buffer) {
+void AxiomEvaluator::evaluate(MutablePackedState &state_data) {
     // TODO rethink the way this is called: see issue 348.
     // cout << "Evaluating axioms..." << endl;
     deque<AxiomLiteral *> queue;
     for (int i = 0; i < g_axiom_layers.size(); i++) {
         if (g_axiom_layers[i] != -1) {
-            state_buffer[i] = g_default_axiom_values[i];
+            state_data.set(i, g_default_axiom_values[i]);
         } else {
             // cout << "Enqueuing " << &axiom_literals[i][state[i]] << endl;
-            queue.push_back(&axiom_literals[i][state_buffer[i]]);
+            queue.push_back(&axiom_literals[i][state_data.get(i)]);
         }
     }
 
@@ -79,9 +80,9 @@ void AxiomEvaluator::evaluate(state_var_t *state_buffer) {
             // some time.
             int var_no = rules[i].effect_var;
             int val = rules[i].effect_val;
-            if (state_buffer[var_no] != val) {
+            if (state_data.get(var_no) != val) {
                 // cout << "  -> deduced " << var_no << " = " << val << endl;
-                state_buffer[var_no] = val;
+                state_data.set(var_no, val);
                 queue.push_back(rules[i].effect_literal);
             }
         }
@@ -97,9 +98,9 @@ void AxiomEvaluator::evaluate(state_var_t *state_buffer) {
                 if (--(rule->unsatisfied_conditions) == 0) {
                     int var_no = rule->effect_var;
                     int val = rule->effect_val;
-                    if (state_buffer[var_no] != val) {
+                    if (state_data.get(var_no) != val) {
                         // cout << "  -> deduced " << var_no << " = " << val << endl;
-                        state_buffer[var_no] = val;
+                        state_data.set(var_no, val);
                         queue.push_back(rule->effect_literal);
                     }
                 }
@@ -110,7 +111,7 @@ void AxiomEvaluator::evaluate(state_var_t *state_buffer) {
         const vector<NegationByFailureInfo> &nbf_info = nbf_info_by_layer[layer_no];
         for (int i = 0; i < nbf_info.size(); i++) {
             int var_no = nbf_info[i].var_no;
-            if (state_buffer[var_no] == g_default_axiom_values[var_no])
+            if (state_data.get(var_no) == g_default_axiom_values[var_no])
                 queue.push_back(nbf_info[i].literal);
         }
     }

@@ -1,15 +1,15 @@
 #ifndef STATE_H
 #define STATE_H
 
+#include "globals.h"
+#include "packed_state.h"
+#include "state_id.h"
+
 #include <iostream>
 #include <vector>
 
 class Operator;
 class StateRegistry;
-
-#include "state_id.h"
-#include "state_var_t.h"
-#include "globals.h"
 
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
@@ -17,17 +17,17 @@ class State {
     friend class StateRegistry;
     template <class Entry>
     friend class PerStateInformation;
-    // Values for vars. will later be converted to UnpackedStateData.
-    const state_var_t *vars;
+    // Values for vars are maintained in a packed state and accessed on demand.
+    ReadOnlyPackedState packed_state;
     // registry isn't a reference because we want to support operator=
     const StateRegistry *registry;
     StateID id;
     // Only used by the state registry.
-    State(const state_var_t *buffer, const StateRegistry &registry_,
+    State(ReadOnlyPackedState &packed_state_, const StateRegistry &registry_,
           StateID id_);
 
-    const state_var_t *get_buffer() const {
-        return vars;
+    const ReadOnlyPackedState &get_packed_state() const {
+        return packed_state;
     }
 
     const StateRegistry &get_registry() const {
@@ -43,9 +43,10 @@ public:
         return id;
     }
 
-    int operator[](int index) const {
-        return vars[index];
+    int operator[](int index) const{
+        return packed_state.get(index);
     }
+
     void dump_pddl() const;
     void dump_fdr() const;
 };

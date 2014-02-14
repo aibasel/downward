@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "state_var_t.h"
+#include "packed_state.h"
 
 class AxiomEvaluator {
     struct AxiomRule;
@@ -33,7 +33,7 @@ class AxiomEvaluator {
     std::vector<std::vector<NegationByFailureInfo> > nbf_info_by_layer;
 public:
     AxiomEvaluator();
-    void evaluate(state_var_t *state_buffer);
+    void evaluate(MutablePackedState &state_data);
 };
 
 #endif

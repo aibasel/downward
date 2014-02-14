@@ -9,12 +9,11 @@
 #include <cassert>
 using namespace std;
 
-State::State(const state_var_t *buffer, const StateRegistry &registry_,
+State::State(ReadOnlyPackedState &packed_state_, const StateRegistry &registry_,
              StateID id_)
-    : vars(buffer),
+    : packed_state(packed_state_),
       registry(&registry_),
       id(id_) {
-    assert(vars);
     assert(id != StateID::no_state);
 }
 
@@ -23,7 +22,7 @@ State::~State() {
 
 void State::dump_pddl() const {
     for (int i = 0; i < g_variable_domain.size(); i++) {
-        const string &fact_name = g_fact_names[i][vars[i]];
+        const string &fact_name = g_fact_names[i][(*this)[i]];
         if (fact_name != "<none of those>")
             cout << fact_name << endl;
     }
@@ -34,5 +33,5 @@ void State::dump_fdr() const {
     // if state_var_t == char.
     for (size_t i = 0; i < g_variable_domain.size(); ++i)
         cout << "  #" << i << " [" << g_variable_name[i] << "] -> "
-             << static_cast<int>(vars[i]) << endl;
+             << static_cast<int>((*this)[i]) << endl;
 }
