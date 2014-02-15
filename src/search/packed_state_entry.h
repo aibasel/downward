@@ -2,7 +2,7 @@
 #define PACKED_STATE_ENTRY_H
 
 // TODO Make this dependent on the size of a word (32/64 bit).
-typedef int PackedStateEntry;
+typedef unsigned int PackedStateEntry;
 
 
 #endif
