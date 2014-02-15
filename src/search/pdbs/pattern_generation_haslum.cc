@@ -19,6 +19,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -67,6 +68,26 @@ void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pd
     }
 }
 
+size_t PatternGenerationHaslum::generate_pdbs_for_candidates(set<vector<int> > &generated_patterns,
+                                                             vector<vector<int> > &new_candidates,
+                                                             vector<PDBHeuristic *> &candidate_pdbs) const {
+    // For the new candidate patterns check whether they already have been candidates before and
+    // thus already a PDB has been created an inserted into candidate_pdbs.
+    size_t max_pdb_size = 0;
+    for (size_t i = 0; i < new_candidates.size(); ++i) {
+        if (generated_patterns.count(new_candidates[i]) == 0) {
+            Options opts;
+            opts.set<int>("cost_type", cost_type);
+            opts.set<vector<int> >("pattern", new_candidates[i]);
+            candidate_pdbs.push_back(new PDBHeuristic(opts, false));
+            max_pdb_size = max(max_pdb_size,
+                               candidate_pdbs.back()->get_size());
+            generated_patterns.insert(new_candidates[i]);
+        }
+    }
+    return max_pdb_size;
+}
+
 void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
                                             vector<State> &samples,
                                             double average_operator_cost) {
@@ -111,8 +132,6 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
             } else {
                 int random = g_rng.next(applicable_ops.size()); // [0..applicable_os.size())
                 assert(applicable_ops[random]->is_applicable(current_state));
-                // TODO for now, we only generate registered successors. This is a temporary state that
-                // should should not necessarily be registered in the global registry: see issue386.
                 current_state = sample_registry.get_successor_state(current_state, *applicable_ops[random]);
                 // if current state is a dead end, then restart with initial state
                 current_heuristic->evaluate_dead_end(current_state);
@@ -123,6 +142,59 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
         // last state of the random walk is used as sample
         samples.push_back(current_state);
     }
+}
+
+std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
+        vector<State> &samples,
+        vector<PDBHeuristic *> &candidate_pdbs) {
+
+    // TODO: The original implementation by Haslum et al. uses astar to compute h values for
+    // the sample states only instead of generating all PDBs.
+    // improvement: best improvement (= hightest count) for a pattern so far.
+    // We require that a pattern must have an improvement of at least one in
+    // order to be taken into account.
+    int improvement = 0;
+    int best_pdb_index = -1;
+
+    // Iterate over all candidates and search for the best improving pattern/pdb
+    for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
+        PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
+        if (pdb_heuristic == 0) { 
+            // candidate pattern is too large or has already been added to
+            // the canonical heuristic.
+            continue;
+        }
+        // If a candidate's size added to the current collection's size exceeds the maximum
+        // collection size, then delete the PDB and let the PDB's entry point to a null reference
+        if (current_heuristic->get_size() + pdb_heuristic->get_size() > collection_max_size) {
+            delete pdb_heuristic;
+            candidate_pdbs[i] = 0;
+            continue;
+        }
+
+        // Calculate the "counting approximation" for all sample states: count the number of
+        // samples for which the current pattern collection heuristic would be improved
+        // if the new pattern was included into it.
+        // TODO: The original implementation by Haslum et al. uses m/t as a statistical
+        // confidence intervall to stop the astar-search (which they use, see above) earlier.
+        int count = 0;
+        vector<vector<PDBHeuristic *> > max_additive_subsets;
+        current_heuristic->get_max_additive_subsets(pdb_heuristic->get_pattern(), max_additive_subsets);
+        for (size_t j = 0; j < samples.size(); ++j) {
+            if (is_heuristic_improved(pdb_heuristic, samples[j], max_additive_subsets))
+                ++count;
+        }
+        if (count > improvement) {
+            improvement = count;
+            best_pdb_index = i;
+        }
+        if (count > 0) {
+            cout << "pattern: " << candidate_pdbs[i]->get_pattern()
+                 << " - improvement: " << count << endl;
+        }
+    }
+
+    return make_pair(improvement, best_pdb_index);
 }
 
 bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
@@ -175,66 +247,20 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             cout << current_heuristic->get_heuristic() << endl;
         }
 
+        size_t new_max_pdb_size = generate_pdbs_for_candidates(generated_patterns,
+                                                               new_candidates,
+                                                               candidate_pdbs);
+        max_pdb_size = max(max_pdb_size, new_max_pdb_size);
+
         StateRegistry sample_registry;
         vector<State> samples;
         sample_states(sample_registry, samples, average_operator_cost);
 
-        // For the new candidate patterns check whether they already have been candidates before and
-        // thus already a PDB has been created an inserted into candidate_pdbs.
-        for (size_t i = 0; i < new_candidates.size(); ++i) {
-            if (generated_patterns.count(new_candidates[i]) == 0) {
-                Options opts;
-                opts.set<int>("cost_type", cost_type);
-                opts.set<vector<int> >("pattern", new_candidates[i]);
-                candidate_pdbs.push_back(new PDBHeuristic(opts, false));
-                max_pdb_size = max(max_pdb_size,
-                                   candidate_pdbs.back()->get_size());
-                generated_patterns.insert(new_candidates[i]);
-            }
-        }
+        pair<int, int> improvement_and_index
+                = find_best_improving_pdb(samples, candidate_pdbs);
+        int improvement = improvement_and_index.first;
+        int best_pdb_index = improvement_and_index.second;
 
-        // TODO: The original implementation by Haslum et al. uses astar to compute h values for
-        // the sample states only instead of generating all PDBs.
-        int improvement = 0; // best improvement (= hightest count) for a pattern so far
-        int best_pdb_index = 0;
-
-        // Iterate over all candidates and search for the best improving pattern/pdb
-        for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
-            PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
-            if (pdb_heuristic == 0) {
-                // candidate pattern is too large or has already been added to
-                // the canonical heuristic.
-                continue;
-            }
-            // If a candidate's size added to the current collection's size exceeds the maximum
-            // collection size, then delete the PDB and let the PDB's entry point to a null reference.
-            if (current_heuristic->get_size() + pdb_heuristic->get_size() > collection_max_size) {
-                delete pdb_heuristic;
-                candidate_pdbs[i] = 0;
-                continue;
-            }
-
-            // Calculate the "counting approximation" for all sample states: count the number of
-            // samples for which the current pattern collection heuristic would be improved
-            // if the new pattern was included into it.
-            // TODO: The original implementation by Haslum et al. uses m/t as a statistical
-            // confidence intervall to stop the astar-search (which they use, see above) earlier.
-            int count = 0;
-            vector<vector<PDBHeuristic *> > max_additive_subsets;
-            current_heuristic->get_max_additive_subsets(pdb_heuristic->get_pattern(), max_additive_subsets);
-            for (size_t j = 0; j < samples.size(); ++j) {
-                if (is_heuristic_improved(pdb_heuristic, samples[j], max_additive_subsets))
-                    ++count;
-            }
-            if (count > improvement) {
-                improvement = count;
-                best_pdb_index = i;
-            }
-            if (count > 0) {
-                cout << "pattern: " << candidate_pdbs[i]->get_pattern()
-                     << " - improvement: " << count << endl;
-            }
-        }
         if (improvement < min_improvement) { // end hill climbing algorithm
             // Note that using dominance pruning during hill-climbing could lead to
             // fewer discovered patterns and pattern collections.
@@ -253,6 +279,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         }
 
         // add the best pattern to the CanonicalPDBsHeuristic
+        assert(best_pdb_index != -1);
         const PDBHeuristic *best_pdb = candidate_pdbs[best_pdb_index];
         const vector<int> &best_pattern = best_pdb->get_pattern();
         cout << "found a better pattern with improvement " << improvement << endl;
@@ -326,7 +353,17 @@ static Heuristic *_parse(OptionParser &parser) {
         "Planning http://www.informatik.uni-freiburg.de/~ki/papers/haslum-etal-aaai07.pdf].<<BR>>\n"
         " In //Proceedings of the 22nd AAAI Conference on Artificial Intelligence (AAAI 2007)//, "
         "pp. 1007-1012. AAAI Press 2007.\n"
-        "See also Sievers et al. (SoCS 2012) for implementation notes");
+        "For implementation notes, see also this paper:\n\n"
+        " * Silvan Sievers, Manuela Ortlieb and Malte Helmert.<<BR>>\n"
+        " [Efficient Implementation of Pattern Database Heuristics for Classical Planning "
+        "http://ai.cs.unibas.ch/papers/sievers-et-al-socs2012.pdf].<<BR>>\n"
+        " In //Proceedings of the Fifth Annual Symposium on Combinatorial Search (SoCS 2012)//, "
+        "pp. 105-111. AAAI Press 2012.\n");
+    parser.document_note(
+        "Note",
+        "The pattern collection created by the algorithm will always contain "
+        "all patterns consisting of a single goal variable, even if this violates "
+        "the pdb_max_size or collection_max_size limits.");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional_effects", "not supported");
     parser.document_language_support("axioms", "not supported");
