@@ -17,7 +17,7 @@ using namespace std;
 
 class Options;
 
-typedef pair<state_var_t *, pair<int, const Operator * > > OpenListEntryEHC;
+typedef pair<StateID, pair<int, const Operator * > > OpenListEntryEHC;
 
 enum PreferredUsage {
     PRUNE_BY_PREFERRED, RANK_PREFERRED_FIRST,

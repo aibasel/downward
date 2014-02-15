@@ -110,6 +110,20 @@ void LandmarkGraphMerged::generate_landmarks() {
 
 
 static LandmarkGraph *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Merged Landmarks",
+        "Merges the landmarks and orderings from the parameter landmarks");
+    parser.document_note(
+        "Precedence",
+        "Fact landmarks take precedence over disjunctive landmarks, "
+        "orderings take precedence in the usual manner "
+        "(gn > nat > reas > o_reas). ");
+    parser.document_note(
+        "Relevant options",
+        "Depends on landmarks");
+    parser.document_note(
+        "Note",
+        "Does not currently support conjunctive landmarks");
     parser.add_list_option<LandmarkGraph *>("lm_graphs");
     LandmarkGraph::add_options_to_parser(parser);
     Options opts = parser.parse();
