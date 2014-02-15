@@ -248,6 +248,10 @@ void read_everything(istream &in) {
     read_variables(in);
     read_mutexes(in);
     g_packed_state_properties = new PackedStateProperties(g_variable_domain);
+    cout << "Variables: " << g_variable_domain.size() << endl;
+    cout << "PackedState size: "
+         << g_packed_state_properties->state_size * sizeof(PackedStateEntry)
+         << endl;
     g_initial_state_buffer = new PackedStateEntry[g_packed_state_properties->state_size];
     MutablePackedState initial_state_data(g_initial_state_buffer);
     check_magic(in, "begin_state");
