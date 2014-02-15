@@ -3,6 +3,17 @@
 
 from __future__ import print_function
 
+import sys
+
+def python_version_supported():
+    major, minor = sys.version_info[:2]
+    return (major == 2 and minor >= 7) or (major == 3 and minor >= 2)
+
+if not python_version_supported():
+    sys.exit("Error: Translator only supports Python >= 2.7 and Python >= 3.2.")
+
+
+import argparse
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product
@@ -11,11 +22,9 @@ import axiom_rules
 import fact_groups
 import instantiate
 import normalize
-import optparse
 import pddl
 import sas_tasks
 import simplify
-import sys
 import timers
 import tools
 
@@ -317,7 +326,7 @@ def prune_stupid_effect_conditions(var, val, conditions):
     ## 1. Conditions of the form "var = dualval" where var is the
     ##    effect variable and dualval != val can be omitted.
     ##    (If var != dualval, then var == val because it is binary,
-    ##    which mesans that in such situations the effect is a no-op.)
+    ##    which means that in such situations the effect is a no-op.)
     ## 2. If conditions contains any empty list, it is equivalent
     ##    to True and we can remove all other disjuncts.
     ##
@@ -627,47 +636,29 @@ def dump_statistics(sas_task):
         print("Translator peak memory: %d KB" % peak_memory)
 
 
-def check_python_version(force_old_python):
-    if sys.version_info[:2] == (2, 6):
-        if force_old_python:
-            print("Warning: Running with slow Python 2.6", file=sys.stderr)
-        else:
-            print("Error: Python 2.6 runs the translator very slowly. You "
-                  "should use Python 2.7 or 3.x instead. If you really need "
-                  "to run it with Python 2.6, you can pass the "
-                  "--force-old-python flag.",
-                  file=sys.stderr)
-            sys.exit(1)
-
-
-def parse_options():
-    optparser = optparse.OptionParser(
-        usage="Usage: %prog [options] [<domain.pddl>] <task.pddl>")
-    optparser.add_option(
+def parse_args():
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument(
+        "domain", nargs="?", help="path to domain pddl file")
+    argparser.add_argument(
+        "task", help="path to task pddl file")
+    argparser.add_argument(
         "--relaxed", dest="generate_relaxed_task", action="store_true",
-        help="Output relaxed task (no delete effects)")
-    optparser.add_option(
-        "--force-old-python", action="store_true",
-        help="Allow running the translator with slow Python 2.6")
-    options, args = optparser.parse_args()
-    # Remove the parsed options from sys.argv
-    sys.argv = [sys.argv[0]] + args
-    return options, args
+        help="output relaxed task (no delete effects)")
+    return argparser.parse_args()
 
 
 def main():
-    options, args = parse_options()
-
-    check_python_version(options.force_old_python)
+    args = parse_args()
 
     timer = timers.Timer()
     with timers.timing("Parsing", True):
-        task = pddl.open()
+        task = pddl.open(task_filename=args.task, domain_filename=args.domain)
 
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
 
-    if options.generate_relaxed_task:
+    if args.generate_relaxed_task:
         # Remove delete effects.
         for action in task.actions:
             for index, effect in reversed(list(enumerate(action.effects))):
