@@ -8,7 +8,7 @@
 using namespace std;
 
 StateRegistry::StateRegistry()
-    : state_data_pool(g_variable_domain.size()),
+    : state_data_pool(g_packed_state_properties->state_size),
       registered_states(0,
                         StateIDSemanticHash(state_data_pool),
                         StateIDSemanticEqual(state_data_pool)),
