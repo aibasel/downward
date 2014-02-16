@@ -108,9 +108,7 @@ def main():
     args = parse_custom_args()
 
     if not args.revision:
-        # If the working directory contains changes, the revision ends with '+'.
-        # Strip this to use the vanilla revision.
-        rev = checkouts.get_global_rev(REPO).rstrip('+')
+        rev = 'WORK'
     elif args.revision.lower() == 'baseline':
         rev = BASELINE
     else:
