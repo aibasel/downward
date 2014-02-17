@@ -538,7 +538,8 @@ def pddl_to_sas(task):
             task.init, goal_list, actions, axioms, task.use_min_cost_metric,
             implied_facts)
 
-    print("%d implied effects removed" % removed_implied_effect_counter)
+    print("%d effect conditions simplified" %
+          simplified_effect_condition_counter)
     print("%d implied preconditions added" %
           added_implied_precondition_counter)
 
