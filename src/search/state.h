@@ -1,7 +1,6 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include "globals.h"
 #include "packed_state_entry.h"
 #include "state_id.h"
 
@@ -11,16 +10,16 @@
 class Operator;
 class StateRegistry;
 
-struct PackedVariable {
-    int index;
-    int shift;
-    PackedStateEntry read_mask;
-    PackedStateEntry clear_mask;
-};
-
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
 class State {
+    struct PackedVariable {
+        int index;
+        int shift;
+        PackedStateEntry read_mask;
+        PackedStateEntry clear_mask;
+    };
+
     static int packed_size;
     static std::vector<PackedVariable> packed_variables;
 

@@ -14,7 +14,6 @@ class CausalGraph;
 class DomainTransitionGraph;
 class LegacyCausalGraph;
 class Operator;
-class PackedVariable;
 class RandomNumberGenerator;
 class State;
 class SuccessorGenerator;
