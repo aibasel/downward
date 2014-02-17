@@ -101,22 +101,25 @@ def parse_custom_args():
         help='Select whether "nightly" or "weekly" tests should be run.')
     return ARGPARSER.parse_args()
 
-def get_exp_dir(rev, test):
-    return os.path.join(EXPERIMENTS_DIR, '%s-%s' % (rev, test))
+def get_exp_dir(name, test):
+    return os.path.join(EXPERIMENTS_DIR, '%s-%s' % (name, test))
 
 def main():
     args = parse_custom_args()
 
     if not args.revision:
         rev = 'WORK'
+        name = 'current'
     elif args.revision.lower() == 'baseline':
         rev = BASELINE
+        name = 'baseline'
     else:
         rev = checkouts.get_global_rev(REPO, args.revision)
+        name = rev
 
     combo = [(Translator(REPO, rev=rev), Preprocessor(REPO, rev=rev), Planner(REPO, rev=rev))]
 
-    exp = DownwardExperiment(path=get_exp_dir(rev, args.test), repo=REPO, combinations=combo)
+    exp = DownwardExperiment(path=get_exp_dir(name, args.test), repo=REPO, combinations=combo)
     exp.add_suite(SUITES[args.test])
     for nick, config in CONFIGS[args.test]:
         exp.add_config(nick, config)
@@ -124,8 +127,9 @@ def main():
 
     # Only compare results if we are not running the baseline experiment.
     if rev != BASELINE:
+        exp.steps.insert(0, Step('rm-eval-dir', shutil.rmtree, exp.eval_dir, ignore_errors=True))
         exp.add_step(Step('fetch-baseline-results', Fetcher(),
-                          get_exp_dir(BASELINE, args.test) + '-eval',
+                          get_exp_dir('baseline', args.test) + '-eval',
                           exp.eval_dir))
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
         exp.add_step(Step('rm-preprocess-dir', shutil.rmtree, exp.preprocess_exp_path))
