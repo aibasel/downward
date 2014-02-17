@@ -120,5 +120,5 @@ void State::dump_fdr() const {
              << (*this)[i] << endl;
 }
 
-std::vector<PackedVariable> State::packed_variables;
+std::vector<State::PackedVariable> State::packed_variables;
 int State::packed_size = 0;
