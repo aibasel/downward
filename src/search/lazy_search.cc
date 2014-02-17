@@ -123,7 +123,7 @@ int LazySearch::fetch_next_state() {
     assert(current_operator->is_applicable(current_predecessor));
     current_state = g_state_registry->get_successor_state(current_predecessor, *current_operator);
 
-    SearchNode pred_node = search_space.get_node(current_predecessor_id);
+    SearchNode pred_node = search_space.get_node(current_predecessor);
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
@@ -139,7 +139,7 @@ int LazySearch::step() {
     // - current_g is the g value of the current state (using real costs)
 
 
-    SearchNode node = search_space.get_node(current_state.get_id());
+    SearchNode node = search_space.get_node(current_state);
     bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end() && !node.is_new();
 
     if (node.is_new() || reopen) {
@@ -148,12 +148,12 @@ int LazySearch::step() {
         if (dummy_id == StateID::no_state) {
             dummy_id = g_initial_state().get_id();
         }
-
-        SearchNode parent_node = search_space.get_node(dummy_id);
+        State parent_state = g_state_registry->lookup_state(dummy_id);
+        SearchNode parent_node = search_space.get_node(parent_state);
 
         for (int i = 0; i < heuristics.size(); i++) {
             if (current_operator != NULL) {
-                heuristics[i]->reach_state(parent_node.get_state(), *current_operator, current_state);
+                heuristics[i]->reach_state(parent_state, *current_operator, current_state);
             }
             heuristics[i]->evaluate(current_state);
         }
