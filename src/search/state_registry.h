@@ -34,12 +34,7 @@
     To minimize allocation overhead, the implementation stores the data of many
     such states in a single large array (see SegmentedArrayVector).
     PackedStateEntry arrays are never manipulated directly but through
-    PackedState classes.
-
-  ReadOnlyPackedState
-    Wrapper for PackedStateEntry* that allows read access to the state.
-  MutablePackedState
-    Wrapper for PackedStateEntry* that allows read and write access to the state.
+    static methods in the State class.
 
   -------------
 
@@ -109,7 +104,7 @@ class StateRegistry {
             : state_data_pool (state_data_pool_) {
         }
         size_t operator() (StateID id) const {
-            return ::hash_number_sequence(state_data_pool[id.value], g_packed_state_properties->state_size);
+            return ::hash_number_sequence(state_data_pool[id.value], State::packed_size);
         }
     };
 
@@ -120,7 +115,7 @@ class StateRegistry {
         }
 
         size_t operator() (StateID lhs, StateID rhs) const {
-            size_t size = g_packed_state_properties->state_size;
+            size_t size = State::packed_size;
             const PackedStateEntry *lhs_data = state_data_pool[lhs.value];
             const PackedStateEntry *rhs_data = state_data_pool[rhs.value];
             return std::equal(lhs_data, lhs_data + size, rhs_data);

@@ -1,9 +1,9 @@
 #ifndef AXIOMS_H
 #define AXIOMS_H
 
-#include <vector>
+#include "packed_state_entry.h"
 
-#include "packed_state.h"
+#include <vector>
 
 class AxiomEvaluator {
     struct AxiomRule;
@@ -33,7 +33,7 @@ class AxiomEvaluator {
     std::vector<std::vector<NegationByFailureInfo> > nbf_info_by_layer;
 public:
     AxiomEvaluator();
-    void evaluate(MutablePackedState &state_data);
+    void evaluate(PackedStateEntry *buffer);
 };
 
 #endif

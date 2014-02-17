@@ -141,13 +141,6 @@ void read_variables(istream &in) {
         int range;
         in >> range;
         g_variable_domain.push_back(range);
-        if (range > numeric_limits<PackedStateEntry>::max()) {
-            cerr << "This should not have happened!" << endl;
-            cerr << "Variable " << i << " has a domain with more than "
-                 << numeric_limits<PackedStateEntry>::max() << "values." << endl;
-            exit_with(EXIT_CRITICAL_ERROR);
-        }
-
         in >> ws;
         vector<string> fact_names(range);
         for (size_t i = 0; i < fact_names.size(); i++)
@@ -247,19 +240,13 @@ void read_everything(istream &in) {
     read_metric(in);
     read_variables(in);
     read_mutexes(in);
-    g_packed_state_properties = new PackedStateProperties(g_variable_domain);
-    cout << "Variables: " << g_variable_domain.size() << endl;
-    cout << "PackedState size: "
-         << g_packed_state_properties->state_size * sizeof(PackedStateEntry)
-         << endl;
-    g_initial_state_buffer = new PackedStateEntry[g_packed_state_properties->state_size];
-    MutablePackedState initial_state_data(g_initial_state_buffer);
+    g_initial_state_data.reserve(g_variable_domain.size());
     check_magic(in, "begin_state");
     for (int i = 0; i < g_variable_domain.size(); i++) {
-        int var;
-        in >> var;
-        initial_state_data.set(i, var);
-        g_default_axiom_values.push_back(var);
+        int val;
+        in >> val;
+        g_initial_state_data[i] = val;
+        g_default_axiom_values.push_back(val);
     }
     check_magic(in, "end_state");
 
@@ -278,6 +265,7 @@ void read_everything(istream &in) {
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
+    State::calculate_packed_size();
     g_state_registry = new StateRegistry;
 }
 
@@ -353,8 +341,7 @@ vector<int> g_variable_domain;
 vector<vector<string> > g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
-PackedStateProperties *g_packed_state_properties;
-PackedStateEntry *g_initial_state_buffer;
+vector<int> g_initial_state_data;
 vector<pair<int, int> > g_goal;
 vector<Operator> g_operators;
 vector<Operator> g_axioms;
