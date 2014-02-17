@@ -60,6 +60,7 @@ class RegressionCheckReport(AbsoluteReport):
         for (domain, problem), runs in self.problem_runs.items():
             runs_base = [run for run in runs if self._get_rev(run) == self.baseline]
             runs_new = [run for run in runs if self._get_rev(run) != self.baseline]
+            assert len(runs_base) == len(runs_new), (len(runs_base), len(runs_new))
             for base, new in zip(runs_base, runs_new):
                 assert base['config_nick'] == new['config_nick']
                 for check in self.checks:

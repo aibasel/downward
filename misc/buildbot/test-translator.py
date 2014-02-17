@@ -14,7 +14,7 @@ python3.2 test-translator.py first
 python2.7 test-translator.py all
 
 # Run test on specific problems.
-python2.6 test-translator.py gripper:prob01.pddl depot:pfile1
+python3.2 test-translator.py gripper:prob01.pddl depot:pfile1
 """
 
 from __future__ import print_function
@@ -62,7 +62,7 @@ def get_task_name(path):
 
 def translate_task(task_file):
     print('\nTranslating %s:' % get_task_name(task_file))
-    sys.argv = [sys.argv[0], '--force-old-python', task_file]
+    sys.argv = [sys.argv[0], task_file]
     translate.main()
 
 
