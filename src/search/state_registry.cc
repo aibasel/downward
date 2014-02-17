@@ -2,13 +2,12 @@
 
 #include "axioms.h"
 #include "operator.h"
-#include "packed_state.h"
 #include "per_state_information.h"
 
 using namespace std;
 
 StateRegistry::StateRegistry()
-    : state_data_pool(g_packed_state_properties->state_size),
+    : state_data_pool(State::packed_size),
       registered_states(0,
                         StateIDSemanticHash(state_data_pool),
                         StateIDSemanticEqual(state_data_pool)),
@@ -42,16 +41,19 @@ StateID StateRegistry::insert_id_or_pop_state() {
 }
 
 State StateRegistry::lookup_state(StateID id) const {
-    ReadOnlyPackedState state_data(state_data_pool[id.value]);
-    return State(state_data, *this, id);
+    return State(state_data_pool[id.value], *this, id);
 }
 
 const State &StateRegistry::get_initial_state() {
     if (cached_initial_state == 0) {
-        state_data_pool.push_back(g_initial_state_buffer);
-        PackedStateEntry *buffer = state_data_pool[state_data_pool.size() - 1];
-        MutablePackedState state_data(buffer);
-        g_axiom_evaluator->evaluate(state_data);
+        PackedStateEntry *buffer = new PackedStateEntry[State::packed_size];
+        for (size_t i = 0; i < g_initial_state_data.size(); ++i) {
+            State::set(buffer, i, g_initial_state_data[i]);
+        }
+        g_axiom_evaluator->evaluate(buffer);
+        state_data_pool.push_back(buffer);
+        // buffer is copied by push_back
+        delete buffer;
         StateID id = insert_id_or_pop_state();
         cached_initial_state = new State(lookup_state(id));
     }
@@ -63,15 +65,14 @@ const State &StateRegistry::get_initial_state() {
 //     operating on state buffers (PackedStateEntry *).
 State StateRegistry::get_successor_state(const State &predecessor, const Operator &op) {
     assert(!op.is_axiom());
-    state_data_pool.push_back(predecessor.get_packed_state().get_buffer());
+    state_data_pool.push_back(predecessor.get_packed_buffer());
     PackedStateEntry *buffer = state_data_pool[state_data_pool.size() - 1];
-    MutablePackedState state_data(buffer);
     for (size_t i = 0; i < op.get_pre_post().size(); ++i) {
         const PrePost &pre_post = op.get_pre_post()[i];
         if (pre_post.does_fire(predecessor))
-            state_data.set(pre_post.var, pre_post.post);
+            State::set(buffer, pre_post.var, pre_post.post);
     }
-    g_axiom_evaluator->evaluate(state_data);
+    g_axiom_evaluator->evaluate(buffer);
     StateID id = insert_id_or_pop_state();
     return lookup_state(id);
 }

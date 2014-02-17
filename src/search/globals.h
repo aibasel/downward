@@ -14,7 +14,7 @@ class CausalGraph;
 class DomainTransitionGraph;
 class LegacyCausalGraph;
 class Operator;
-class PackedStateProperties;
+class PackedVariable;
 class RandomNumberGenerator;
 class State;
 class SuccessorGenerator;
@@ -45,8 +45,7 @@ extern std::vector<std::vector<std::string> > g_fact_names;
 extern std::vector<int> g_axiom_layers;
 extern std::vector<int> g_default_axiom_values;
 
-extern PackedStateProperties *g_packed_state_properties;
-extern PackedStateEntry *g_initial_state_buffer;
+extern std::vector<int> g_initial_state_data;
 // TODO The following function returns the initial state that is registered
 //      in g_state_registry. This is only a short-term solution. In the
 //      medium term, we should get rid of the global registry.
