@@ -62,7 +62,7 @@ SUITES = {
 TRANSLATOR_ATTRIBUTES = [
     'auxiliary_atoms', 'axioms', 'derived_variables',
     'effect_conditions_simplified', 'facts', 'final_queue_length',
-    'implied_effects_removed', 'implied_preconditions_added', 'mutex_groups',
+    'implied_preconditions_added', 'mutex_groups',
     'operators', 'operators_removed', 'propositions_removed',
     'relevant_atoms', 'task_size', 'total_mutex_groups_size',
     'total_queue_pushes', 'uncovered_facts', 'variables']
