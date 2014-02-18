@@ -15,15 +15,26 @@ void set_bits(PackedStateEntry &mask, unsigned int from, const unsigned int to) 
     }
 }
 
-int bits_needed(int domain) {
+int bits_needed(int num_values) {
     unsigned int bits_needed = 0;
-    domain--;
+    num_values--;
     do {
-        domain >>= 1;
+        num_values >>= 1;
         ++bits_needed;
-    } while (domain);
+    } while (num_values);
     return bits_needed;
 }
+
+int get_max_fitting_bits(const vector<vector<int> > &vars_by_needed_bits,
+                                 int available_bits) {
+    for (size_t bits = available_bits; bits >= 0; --bits) {
+        if (!vars_by_needed_bits[bits].empty()) {
+            return bits;
+        }
+    }
+    return 0;
+}
+
 
 State::State(const PackedStateEntry *buffer_, const StateRegistry &registry_,
              StateID id_)
@@ -41,69 +52,60 @@ int State::operator[](int index) const {
     return get(buffer, index);
 }
 
-int State::get(const PackedStateEntry *buffer, int index) {
-    const PackedVariable &var = packed_variables[index];
-    return (buffer[var.index] & var.read_mask) >> var.shift;
+int State::get(const PackedStateEntry *buffer, int var) {
+    const PackedVariable &packed_var = packed_variables[var];
+    return (buffer[packed_var.index] & packed_var.read_mask) >> packed_var.shift;
 }
 
-void State::set(PackedStateEntry *buffer, int index, int value) {
-    const PackedVariable &var = packed_variables[index];
-    PackedStateEntry before = buffer[var.index];
-    buffer[var.index] = (before & var.clear_mask) | (value << var.shift);
+void State::set(PackedStateEntry *buffer, int var, int value) {
+    const PackedVariable &packed_var = packed_variables[var];
+    PackedStateEntry before = buffer[packed_var.index];
+    buffer[packed_var.index] = (before & packed_var.clear_mask) | (value << packed_var.shift);
 }
 
 void State::calculate_packed_size() {
     assert(g_packed_variables.empty());
-    packed_variables.resize(g_variable_domain.size());
+    int num_variables = g_variable_domain.size();
+    packed_variables.resize(num_variables);
 
-    int available_bits = sizeof(PackedStateEntry) * 8;
-    int max_needed_bits = 0;
-    vector<vector<int> > vars_by_needed_bits(available_bits);
-    for (size_t var_id = 0; var_id < g_variable_domain.size(); ++var_id) {
-        int bits = bits_needed(g_variable_domain[var_id]);
-        vars_by_needed_bits[bits].push_back(var_id);
-        max_needed_bits = max(max_needed_bits, bits);
+    int bits_per_entry = sizeof(PackedStateEntry) * 8;
+    vector<vector<int> > vars_by_needed_bits(bits_per_entry);
+    for (size_t var = 0; var < num_variables; ++var) {
+        int bits = bits_needed(g_variable_domain[var]);
+        if (bits >= bits_per_entry) {
+            ABORT("Variable has unexpectedly huge domain");
+        }
+        vars_by_needed_bits[bits].push_back(var);
     }
     // Greedy strategy: always add the largest fitting variable.
-    assert(max_needed_bits < available_bits);
-    int remaining_bits = 0;
-    int max_fitting_bits = 0;
-    packed_size = 0;
-    while (max_needed_bits > 0) {
-        while (max_fitting_bits > 0 &&
-               (max_fitting_bits > remaining_bits ||
-                vars_by_needed_bits[max_fitting_bits].empty())) {
-            --max_fitting_bits;
+    int num_packed_variables = 0;
+    packed_size = 1;
+    int remaining_bits = bits_per_entry;
+    while (num_packed_variables < num_variables) {
+        int bits = get_max_fitting_bits(vars_by_needed_bits, remaining_bits);
+        if (bits == 0) {
+            // We cannot pack another variable into the current word so we add
+            // an additional word to the state.
+            ++packed_size;
+            remaining_bits = bits_per_entry;
+            continue;
         }
-
-        if (max_fitting_bits == 0) {
-            // We cannot pack another value into the current word.
-            // Continue with the largest variable still available.
-            while (max_needed_bits > 0 && vars_by_needed_bits[max_needed_bits].empty()) {
-                --max_needed_bits;
-            }
-            if (max_needed_bits > 0) {
-                // Start a new word.
-                ++packed_size;
-                remaining_bits = available_bits;
-                max_fitting_bits = max_needed_bits;
-            }
-        } else {
-            // We can pack another value of size max_fitting_bits into the current word.
-            int var_id = vars_by_needed_bits[max_fitting_bits].back();
-            vars_by_needed_bits[max_fitting_bits].pop_back();
-            PackedVariable &var = packed_variables[var_id];
-            var.shift = available_bits - remaining_bits;
-            var.index = packed_size - 1;
-            var.read_mask = 0;
-            set_bits(var.read_mask, var.shift, var.shift + max_fitting_bits);
-            var.clear_mask = ~var.read_mask;
-            remaining_bits -= max_fitting_bits;
-        }
+        // We can pack another value of size max_fitting_bits into the current word.
+        vector<int> &vars = vars_by_needed_bits[bits];
+        assert(!vars.empty());
+        int var = vars.back();
+        vars.pop_back();
+        PackedVariable &packed_var = packed_variables[var];
+        packed_var.shift = bits_per_entry - remaining_bits;
+        packed_var.index = packed_size - 1;
+        packed_var.read_mask = 0;
+        set_bits(packed_var.read_mask, packed_var.shift, packed_var.shift + bits);
+        packed_var.clear_mask = ~packed_var.read_mask;
+        remaining_bits -= bits;
+        ++num_packed_variables;
     }
     cout << "Variables: " << g_variable_domain.size() << endl;
-    cout << "PackedState size: "
-         << packed_size * sizeof(PackedStateEntry) << endl;
+    cout << "Bytes per state: " << packed_size * sizeof(PackedStateEntry) << endl;
 }
 
 void State::dump_pddl() const {
