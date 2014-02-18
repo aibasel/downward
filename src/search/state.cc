@@ -27,7 +27,7 @@ int bits_needed(int num_values) {
 
 int get_max_fitting_bits(const vector<vector<int> > &vars_by_needed_bits,
                                  int available_bits) {
-    for (size_t bits = available_bits; bits >= 0; --bits) {
+    for (size_t bits = available_bits; bits != 0; --bits) {
         if (!vars_by_needed_bits[bits].empty()) {
             return bits;
         }
@@ -64,12 +64,12 @@ void State::set(PackedStateEntry *buffer, int var, int value) {
 }
 
 void State::calculate_packed_size() {
-    assert(g_packed_variables.empty());
+    assert(packed_variables.empty());
     int num_variables = g_variable_domain.size();
     packed_variables.resize(num_variables);
 
     int bits_per_entry = sizeof(PackedStateEntry) * 8;
-    vector<vector<int> > vars_by_needed_bits(bits_per_entry);
+    vector<vector<int> > vars_by_needed_bits(bits_per_entry + 1);
     for (size_t var = 0; var < num_variables; ++var) {
         int bits = bits_needed(g_variable_domain[var]);
         if (bits >= bits_per_entry) {
