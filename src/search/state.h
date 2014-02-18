@@ -57,8 +57,8 @@ public:
     void dump_pddl() const;
     void dump_fdr() const;
 
-    static int get(const PackedStateEntry *buffer, int index);
-    static void set(PackedStateEntry *buffer, int index, int value);
+    static int get(const PackedStateEntry *buffer, int var);
+    static void set(PackedStateEntry *buffer, int var, int value);
     static void calculate_packed_size();
 };
 

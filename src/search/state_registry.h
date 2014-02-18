@@ -30,7 +30,7 @@
 
   PackedStateEntry* (usually the same as int*, depends on word size)
     The actual state data is internally represented as a PackedStateEntry array.
-    Each PackedStateEntry can contain the values multiple variables.
+    Each PackedStateEntry can contain the values of multiple variables.
     To minimize allocation overhead, the implementation stores the data of many
     such states in a single large array (see SegmentedArrayVector).
     PackedStateEntry arrays are never manipulated directly but through

@@ -2,7 +2,6 @@
 #define GLOBALS_H
 
 #include "operator_cost.h"
-#include "packed_state_entry.h"
 
 #include <iosfwd>
 #include <string>
