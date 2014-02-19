@@ -37,7 +37,9 @@ exp = common_setup.MyExperiment(
     )
 
 
-exp.add_comparison_table_step()
+exp.add_comparison_table_step(
+    attributes=common_setup.MyExperiment.DEFAULT_TABLE_ATTRIBUTES + ['bytes_per_state', 'variables', 'state_var_t_size']
+)
 exp.add_scatter_plot_step()
 
 exp()
