@@ -141,9 +141,7 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
         exit_with(EXIT_INPUT_ERROR);
     }
     // Filter facts that are true in initial state.
-    if (!options.get<bool>("trivial_facts")) {
-        facts.erase(remove_if(facts.begin(), facts.end(), is_true_in_initial_state), facts.end());
-    }
+    facts.erase(remove_if(facts.begin(), facts.end(), is_true_in_initial_state), facts.end());
     order_facts(facts);
 }
 
@@ -314,7 +312,6 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>("adapt_task", "remove redundant operators and facts", "true");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("relevance_analysis", "remove irrelevant operators", "false");
-    parser.add_option<bool>("trivial_facts", "include landmarks that are true in the initial state", "false");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
