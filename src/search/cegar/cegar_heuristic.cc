@@ -55,8 +55,8 @@ CegarHeuristic::~CegarHeuristic() {
 }
 
 struct SortHaddValuesUp {
-    const Task task;
-    explicit SortHaddValuesUp(const Task &t) : task(t) {}
+    const Task &task;
+    explicit SortHaddValuesUp(const Task &task_) : task(task_) {}
     bool operator()(Fact a, Fact b) {
         return task.get_hadd_value(a.first, a.second) < task.get_hadd_value(b.first, b.second);
     }
