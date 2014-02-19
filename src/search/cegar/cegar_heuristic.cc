@@ -247,7 +247,7 @@ void CegarHeuristic::print_statistics() {
     cout << "Peak memory after initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
     cout << "CEGAR abstractions: " << abstractions.size() << endl;
-    cout << "Abstract states: " << num_states << endl;
+    cout << "Total abstract states: " << num_states << endl;
     // There will always be at least one abstraction.
     cout << "Init h: " << compute_heuristic(g_initial_state()) << endl;
     cout << "Average h: " << sum_avg_h / abstractions.size() << endl;
