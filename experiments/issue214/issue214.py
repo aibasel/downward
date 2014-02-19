@@ -32,7 +32,8 @@ exp = common_setup.MyExperiment(
     grid_priority=PRIORITY,
     revisions=REVS,
     configs=CONFIGS,
-    suite=SUITE
+    suite=SUITE,
+    parsers=['state_size_parser.py'],
     )
 
 
