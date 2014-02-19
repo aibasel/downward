@@ -7,7 +7,7 @@ from downward.configs import default_configs_optimal
 import common_setup
 
 
-REVS = ["issue214-base", "issue214-v1"]
+REVS = ["issue214-base", "issue214-v2"]
 CONFIGS = default_configs_optimal()
 
 # remove config that is disabled in this branch
