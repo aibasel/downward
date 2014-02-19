@@ -24,6 +24,8 @@ private:
     static std::vector<int> borders;
     // masks[var][pos] == true iff pos belongs to var.
     static std::vector<Bitset> masks;
+    // Temporary bitset for calculations in domains_intersect().
+    static Bitset temp_values;
 
     Values();
 

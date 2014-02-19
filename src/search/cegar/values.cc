@@ -8,6 +8,7 @@ namespace cegar_heuristic {
 int Values::facts = -1;
 vector<int> Values::borders;
 vector<Bitset> Values::masks;
+Bitset Values::temp_values;
 
 Values::Values() {
     assert(facts >= 0 && "Static members have not been initialized.");
@@ -30,6 +31,7 @@ void Values::initialize_static_members() {
         mask.resize(facts, false);
         masks.push_back(mask);
     }
+    temp_values.resize(facts);
 }
 
 void Values::add(int var, int value) {
@@ -70,8 +72,15 @@ int Values::count(int var) const {
 
 bool Values::domains_intersect(const Values &other, int var) {
     // Using test() directly doesn't make execution much faster even for
-    // problems with many boolean vars.
-    return (values & other.values & masks[var]).any();
+    // problems with many boolean vars. We use temp_values to reduce
+    // memory allocations. This substantially reduces the relative time
+    // spent in this method.
+    temp_values.set();
+    temp_values &= values;
+    temp_values &= other.values;
+    temp_values &= masks[var];
+    assert(temp_values.any() == (values & other.values & masks[var]).any());
+    return temp_values.any();
 }
 
 bool Values::abstracts(const Values &other) const {
