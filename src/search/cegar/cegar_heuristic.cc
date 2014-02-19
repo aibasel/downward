@@ -130,23 +130,12 @@ bool is_true_in_initial_state(Fact fact) {
     return g_initial_state()[fact.first] == fact.second;
 }
 
-struct is_not_leaf_landmark {
-    const LandmarkGraph graph;
-    explicit is_not_leaf_landmark(const LandmarkGraph &g) : graph(g) {}
-    bool operator()(Fact fact) {
-        LandmarkNode *node = graph.get_landmark(fact);
-        return !node->children.empty();
-    }
-};
-
 void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition) const {
     assert(decomposition != NONE);
     if (decomposition == LANDMARKS) {
         get_fact_landmarks(&facts);
     } else if (decomposition == GOALS) {
         facts = original_task.get_goal();
-        facts.erase(remove_if(facts.begin(), facts.end(),
-                              is_not_leaf_landmark(landmark_graph)), facts.end());
     } else {
         cerr << "Invalid decomposition: " << decomposition << endl;
         exit_with(EXIT_INPUT_ERROR);
