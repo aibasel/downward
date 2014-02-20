@@ -73,6 +73,48 @@
   heuristic from the transition systems so that we can throw away the
   transition systems after constructing them?
 
+* General TODOs for the "big refactoring"
+
+- Reconsider what we understand by "normalized", e.g. define the notion of a
+  "valid state" of an abstraction as:
+  - Transitions are sorted (by labels, by states)
+  - All labels are incorporated
+  - Distances are computed and stored
+  - Maybe: locally equivalent labels are computed and stored (we then could
+    store the transitions for locally equivalent labels only once. We could
+    even consider dropping '(ir)relevant labels' and making self loops
+    explicit in this case.
+
+- Transition systems should always be valid (see above), i.e. immediately after
+  shrinking, after label reduction and after construction. We could have
+  private methods apply_abstraction, apply_label_mapping. The only remaining
+  public (non-const) methods could be release_memory.
+
+- Split pruning of irrelevant states off from compute_distances and do not use
+  a shrink strategy for it. Instead, we could have a private method
+  discard_states or similar that does the pruning.
+
+- Get rid of unused labels rather than having a tree-like structure for the set
+  of all labels. This should be possible under the assumption that abstractions
+  are always in a valid state.
+
+- Some thoughts on the order in which things could be done in the merge-and-
+  shrink main loop:
+  - build atomic abstractions
+  - compute distances
+  - apply label reduction
+  - main loop:
+    - choose two abstractions
+    - shrink (make sure state is valid!)
+    - merge
+    - compute distances
+    - apply label reduction
+
+  where apply label reduction means to determine combinable labels, to combine
+  labels and to apply the label mapping in all abstractions (valid state!)
+
+- Possible bug in apply_abstraction concerning flag must_clear_distances
+
 * TODOs for rest of the code:
 
 - Only use help_mode() when the behaviour should differ from
