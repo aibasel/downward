@@ -260,12 +260,19 @@ int CegarHeuristic::compute_heuristic(const State &state) {
     for (int i = 0; i < abstractions.size(); ++i) {
         Task &task = tasks[i];
 
-        // If any fact in state is not reachable in this task, h(state) = 0.
-        bool reachable = task.translate_state(state, temp_state_buffer);
-        if (!reachable)
-            continue;
+        const state_var_t *buffer = 0;
+        // TODO: Use state buffer also for goal decomposition and adapt_task=false.
+        if (Decomposition(options.get_enum("decomposition")) == NONE) {
+            buffer = state.get_buffer();
+        } else {
+            // If any fact in state is not reachable in this task, h(state) = 0.
+            bool reachable = task.translate_state(state, temp_state_buffer);
+            if (!reachable)
+                continue;
+            buffer = temp_state_buffer;
+        }
 
-        int h = abstractions[i]->get_h(temp_state_buffer);
+        int h = abstractions[i]->get_h(buffer);
         assert(h >= 0);
         if (h == INF)
             return DEAD_END;

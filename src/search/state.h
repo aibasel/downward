@@ -7,6 +7,10 @@
 class Operator;
 class StateRegistry;
 
+namespace cegar_heuristic {
+    class CegarHeuristic;
+}
+
 #include "state_id.h"
 #include "state_var_t.h"
 #include "globals.h"
@@ -15,6 +19,7 @@ class StateRegistry;
 // states see the file state_registry.h.
 class State {
     friend class StateRegistry;
+    friend class cegar_heuristic::CegarHeuristic;
     // Values for vars. will later be converted to UnpackedStateData.
     const state_var_t *vars;
     StateID id;
