@@ -870,10 +870,12 @@ void Abstraction::apply_abstraction(
 
         ++pos;
         for (; pos != group.end(); ++pos) {
+            // TODO: !=, remove new_init_dist assignment
             if (init_distances[*pos] < new_init_dist) {
                 must_clear_distances = true;
                 new_init_dist = init_distances[*pos];
             }
+            // TODO: !=, remove new_goal_dist assignment
             if (goal_distances[*pos] < new_goal_dist) {
                 must_clear_distances = true;
                 new_goal_dist = goal_distances[*pos];
