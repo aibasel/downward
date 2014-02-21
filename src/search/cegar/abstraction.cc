@@ -118,19 +118,14 @@ void Abstraction::build() {
         if (valid_conc_solution)
             break;
     }
-    // Remember number of states before we release the memory.
-    num_states = get_num_states();
-    assert(num_states == states.size());
-    cout << "Done building abstraction [t=" << g_timer << "]" << endl;
-    cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "Solution found while refining: " << valid_conc_solution << endl;
-    cout << "Single abstraction states: " << num_states << endl;
-
     // Even if we found a valid concrete solution, we might have refined in the
     // last iteration, so we must update the h-values.
     update_h_values();
-    cout << "Single abstraction init-h: " << init->get_h() << endl;
-    cout << "Single abstraction avg-h:  " << get_avg_h() << endl;
+    // Remember number of states before we release the memory.
+    num_states = get_num_states();
+    assert(num_states == states.size());
+    print_statistics();
 }
 
 void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
@@ -622,12 +617,12 @@ void Abstraction::release_memory() {
 
 void Abstraction::print_statistics() {
     int nexts = 0, prevs = 0, total_loops = 0;
-    int unreachable_states = 0;
+    int dead_ends = 0;
     int arc_size = 0;
     for (AbstractStates::iterator it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
         if (state->get_h() == INF)
-            ++unreachable_states;
+            ++dead_ends;
         Arcs &next = state->get_arcs_out();
         Arcs &prev = state->get_arcs_in();
         Loops &loops = state->get_loops();
@@ -640,14 +635,20 @@ void Abstraction::print_statistics() {
     }
     assert(nexts == prevs);
 
-    cout << "Next-arcs: " << nexts << endl;
-    cout << "Prev-arcs: " << prevs << endl;
+    cout << "Done building abstraction [t=" << g_timer << "]" << endl;
+    cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
+    cout << "States: " << num_states << endl;
+    cout << "Dead-ends: " << dead_ends << endl;
+    cout << "Init-h: " << init->get_h() << endl;
+    cout << "Avg-h:  " << get_avg_h() << endl;
+
+    cout << "Transitions: " << nexts << endl;
     cout << "Self-loops: " << total_loops << endl;
-    cout << "Arcs total: " << nexts + prevs + total_loops << endl;
+    cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
+
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
-    cout << "Unreachable states: " << unreachable_states << endl;
-    cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
+
 }
 }
