@@ -649,6 +649,29 @@ void Abstraction::print_statistics() {
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
+}
 
+void Abstraction::print_histograms() const {
+    //long double num_conc_states = 1;
+    //for (int var = 0; var < g_variable_domain.size(); ++var)
+    //    num_conc_states *= g_variable_domain[var];
+    //cout << "Num conc states: " << fixed << num_conc_states << scientific << endl;
+    map<int, int> h_to_abs_states;
+    map<int, double> h_to_rel_conc_states;
+    for (AbstractStates::const_iterator it = states.begin(); it != states.end(); ++it) {
+        AbstractState *state = *it;
+        const int h = state->get_h();
+        assert(h >= 0);
+        h_to_abs_states[h] += 1;
+        h_to_rel_conc_states[h] += state->get_rel_conc_states();
+    }
+    cout << "Number of abstract states" << endl;
+    for (map<int, int>::iterator it = h_to_abs_states.begin(); it != h_to_abs_states.end(); ++it) {
+        cout << "h=" << left << setw(3) << it->first << ": " << it->second << endl;
+    }
+    cout << "Percentage of concrete states" << endl;
+    for (map<int, double>::iterator it = h_to_rel_conc_states.begin(); it != h_to_rel_conc_states.end(); ++it) {
+        cout << "h=" << left << setw(3) << it->first << ": " << fixed << 100 * it->second << endl;
+    }
 }
 }

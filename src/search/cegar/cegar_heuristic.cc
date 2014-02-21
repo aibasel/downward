@@ -197,6 +197,8 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
         abstraction->build();
         avg_h_values.push_back(abstraction->get_avg_h());
+        if (decomposition == NONE && num_abstractions == 1 && !search)
+            abstraction->print_histograms();
         vector<int> needed_costs;
         abstraction->get_needed_costs(&needed_costs);
         task.adapt_remaining_costs(remaining_costs, needed_costs);
