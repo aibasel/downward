@@ -3,6 +3,7 @@
 
 from downward.suites import suite_optimal_with_ipc11
 from downward.configs import default_configs_optimal
+from downward.reports.scatter import ScatterPlotReport
 
 import common_setup
 
@@ -41,5 +42,10 @@ exp.add_comparison_table_step(
     attributes=common_setup.MyExperiment.DEFAULT_TABLE_ATTRIBUTES + ['bytes_per_state', 'variables', 'state_var_t_size']
 )
 exp.add_scatter_plot_step()
+
+exp.add_report(ScatterPlotReport(
+        attributes=['bytes_per_state'],
+    ),
+    outfile='bytes_per_state.png')
 
 exp()
