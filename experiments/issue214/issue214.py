@@ -45,7 +45,17 @@ exp.add_scatter_plot_step()
 
 exp.add_report(ScatterPlotReport(
         attributes=['bytes_per_state'],
+        filter_config_nick='astar_blind',
     ),
-    outfile='bytes_per_state.png')
+    outfile='issue214_bytes_per_state.png')
+
+for config_nick in ['astar_blind', 'astar_lmcut', 'astar_merge_and_shrink_bisim', 'astar_ipdb']:
+    for attr in ['memory', 'total_time']:
+        exp.add_report(ScatterPlotReport(
+                attributes=[attr],
+                filter_config_nick=config_nick,
+            ),
+            outfile='issue214_%s_%s.png' % (attr, config_nick))
+
 
 exp()
