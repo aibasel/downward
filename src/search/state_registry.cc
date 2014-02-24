@@ -53,7 +53,7 @@ const State &StateRegistry::get_initial_state() {
         g_axiom_evaluator->evaluate(buffer);
         state_data_pool.push_back(buffer);
         // buffer is copied by push_back
-        delete buffer;
+        delete[] buffer;
         StateID id = insert_id_or_pop_state();
         cached_initial_state = new State(lookup_state(id));
     }
