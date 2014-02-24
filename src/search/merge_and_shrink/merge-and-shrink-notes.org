@@ -85,6 +85,9 @@
     even consider dropping '(ir)relevant labels' and making self loops
     explicit in this case.
 
+- Related to the previous item: "normalized" currently means "sorted unique".
+  This should be changed
+
 - Transition systems should always be valid (see above), i.e. immediately after
   shrinking, after label reduction and after construction. We could have
   private methods apply_abstraction, apply_label_mapping. The only remaining
@@ -114,6 +117,10 @@
   labels and to apply the label mapping in all abstractions (valid state!)
 
 - Possible bug in apply_abstraction concerning flag must_clear_distances
+
+- Main loop: use new indices in all_abstractions (reserve 2*#abs - 1). This
+  also makes sure that we do not choose indices at which we expect an atomic
+  abstraction for example, but find a composite abstraction.
 
 * TODOs for rest of the code:
 
