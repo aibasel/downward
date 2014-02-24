@@ -59,7 +59,7 @@ public:
 
     static int get(const PackedStateEntry *buffer, int var);
     static void set(PackedStateEntry *buffer, int var, int value);
-    static void calculate_packed_size();
+    static void pack_state();
 };
 
 #endif

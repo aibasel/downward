@@ -9,20 +9,16 @@
 #include <cassert>
 using namespace std;
 
-void set_bits(PackedStateEntry &mask, unsigned int from, const unsigned int to) {
-    for (; from < to; ++from) {
-        mask |= (1 << from);
-    }
+void set_bits(PackedStateEntry &mask, unsigned int from, unsigned int to) {
+    assert (from <= to);
+    mask |= (PackedStateEntry(1) << to) - (PackedStateEntry(1) << from);
 }
 
-int bits_needed(int num_values) {
-    unsigned int bits_needed = 0;
-    num_values--;
-    do {
-        num_values >>= 1;
-        ++bits_needed;
-    } while (num_values);
-    return bits_needed;
+int get_needed_bits(int num_values) {
+    unsigned int num_bits = 0;
+    while (num_values > 1U << num_bits)
+        ++num_bits;
+    return num_bits;
 }
 
 int get_max_fitting_bits(const vector<vector<int> > &vars_by_needed_bits,
@@ -63,7 +59,7 @@ void State::set(PackedStateEntry *buffer, int var, int value) {
     buffer[packed_var.index] = (before & packed_var.clear_mask) | (value << packed_var.shift);
 }
 
-void State::calculate_packed_size() {
+void State::pack_state() {
     assert(packed_variables.empty());
     int num_variables = g_variable_domain.size();
     packed_variables.resize(num_variables);
@@ -71,10 +67,8 @@ void State::calculate_packed_size() {
     int bits_per_entry = sizeof(PackedStateEntry) * 8;
     vector<vector<int> > vars_by_needed_bits(bits_per_entry + 1);
     for (size_t var = 0; var < num_variables; ++var) {
-        int bits = bits_needed(g_variable_domain[var]);
-        if (bits >= bits_per_entry) {
-            ABORT("Variable has unexpectedly huge domain");
-        }
+        int bits = get_needed_bits(g_variable_domain[var]);
+        assert(bits < bits_per_entry);
         vars_by_needed_bits[bits].push_back(var);
     }
     // Greedy strategy: always add the largest fitting variable.
