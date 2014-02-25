@@ -8,6 +8,7 @@ namespace cegar_heuristic {
 int Values::facts = -1;
 vector<int> Values::borders;
 vector<Bitset> Values::masks;
+vector<Bitset> Values::inverse_masks;
 Bitset Values::temp_values;
 
 Values::Values() {
@@ -18,6 +19,7 @@ Values::Values() {
 
 void Values::initialize_static_members() {
     masks.clear();
+    inverse_masks.clear();
     borders.clear();
     facts = 0;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
@@ -30,6 +32,7 @@ void Values::initialize_static_members() {
         mask.resize(borders[var] + g_variable_domain[var], true);
         mask.resize(facts, false);
         masks.push_back(mask);
+        inverse_masks.push_back(~mask);
     }
     temp_values.resize(facts);
 }
@@ -52,7 +55,7 @@ void Values::add_all(int var) {
 }
 
 void Values::remove_all(int var) {
-    values &= ~masks[var];
+    values &= inverse_masks[var];
 }
 
 bool Values::test(int var, int value) const {
