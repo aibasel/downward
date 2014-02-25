@@ -38,19 +38,12 @@ Node *Node::get_child(int value) const {
     return left_child;
 }
 
-AbstractState *Node::get_left_child_state() const {
-    Node *child = left_child;
-    assert(child);
-    // Jump helper nodes.
-    while (!child->get_abs_state()) {
-        child = child->left_child;
-    }
-    assert(child->abs_state);
-    return child->abs_state;
+Node *Node::get_left_child() const {
+    return left_child;
 }
 
-AbstractState *Node::get_right_child_state() const {
-    return right_child->abs_state;
+Node *Node::get_right_child() const {
+    return right_child;
 }
 
 

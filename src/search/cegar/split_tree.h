@@ -40,9 +40,10 @@ public:
 
     bool is_split() const {return var != UNDEFINED; }
     int get_var() const {return var; }
+    int get_value() const {return value; }
     Node *get_child(int value) const;
-    AbstractState *get_left_child_state() const;
-    AbstractState *get_right_child_state() const;
+    Node *get_left_child() const;
+    Node *get_right_child() const;
     AbstractState *get_abs_state() const {return abs_state; }
     void set_h(int h) {
         assert(abs_state);
@@ -64,6 +65,7 @@ public:
     SplitTree();
     void set_root(AbstractState *single);
     Node *get_node(const state_var_t *buffer) const;
+    const Node *get_root() const {return root; }
 };
 }
 
