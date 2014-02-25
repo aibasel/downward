@@ -60,12 +60,11 @@ bool Values::test(int var, int value) const {
 }
 
 int Values::count(int var) const {
-    // Profiling showed that an explicit loop is faster (~3 times) than
-    // doing: return (values & masks[var]).count();
+    // Profiling showed that an explicit loop is faster than doing:
+    // (values & masks[var]).count(); (even if using a temp bitset).
     int num_values = 0;
     for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
-        if (values.test(pos))
-            ++num_values;
+        num_values += values.test(pos);
     }
     return num_values;
 }
