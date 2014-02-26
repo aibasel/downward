@@ -423,6 +423,14 @@ void Abstraction::normalize() {
        their new label which they are mapped to via label reduction and clear
        away the transitions that have been processed. */
     vector<StateBucket> target_buckets(num_states);
+
+    /* We handle "old" and "new" labels separately. The following loop
+       goes over all labels that were already known when we last
+       normalized. It ignores labels that are no longer current
+       because they have been mapped to fresh labels in the last label
+       reduction. (These labels are handled separately in the next
+       loop.) */
+
     for (int label_no = 0; label_no < num_labels; label_no++) {
         if (labels->is_label_reduced(label_no)) {
             // skip all labels that have been reduced (previously, in which case
@@ -431,23 +439,41 @@ void Abstraction::normalize() {
             continue;
         }
         vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        if (!transitions.empty()) {
-            for (int i = 0; i < transitions.size(); i++) {
-                const AbstractTransition &t = transitions[i];
-                target_buckets[t.target].push_back(
-                    make_pair(t.src, label_no));
-            }
-            vector<AbstractTransition> ().swap(transitions);
+        for (int i = 0; i < transitions.size(); i++) {
+            const AbstractTransition &t = transitions[i];
+            target_buckets[t.target].push_back(
+                make_pair(t.src, label_no));
         }
+        vector<AbstractTransition> ().swap(transitions);
     }
 
-    hash_set<int> empty_transitions;
+    /* Now we handle "new" labels. We iterate over the fresh labels and
+       determine the "old" labels from which they were generated to combine
+       their transitions.
+
+       Some complications arise when we combine labels of which some
+       are relevant and others are not. In this case, we test if all
+       transitions of relevant labels are self-loops. If this happens,
+       we make the new label irrelevant. Otherwise, the new labels is
+       relevant and we must materialize all previously implicit
+       self-loops.
+
+       Note that currently we do not detect the case where a label
+       becomes irrelevant due to shrinking. This could be a future
+       optimization.
+    */
+
+    /* labels_made_irrelevant stores labels for which we collect
+       transitions that later turn out to be unnecessary because the
+       label becomes irrelevant.
+    */
+    hash_set<int> labels_made_irrelevant;
     for (int reduced_label_no = num_labels; reduced_label_no < labels->get_size();
          ++reduced_label_no) {
         const Label *reduced_label = labels->get_label_by_index(reduced_label_no);
         const vector<Label *> &parents = reduced_label->get_parents();
-        bool one_parent_irrelevant = false;
-        bool all_relevant_self_loops = true;
+        bool some_parent_is_irrelevant = false;
+        bool all_transitions_are_self_loops = true;
         for (size_t i = 0; i < parents.size(); ++i) {
             const Label *parent = parents[i];
             int parent_id = parent->get_id();
@@ -458,35 +484,30 @@ void Abstraction::normalize() {
             assert(parent_id < num_labels);
             vector<AbstractTransition> &transitions =
                     transitions_by_label[parent_id];
-            if (!transitions.empty()) {
-                assert(relevant_labels.count(parent));
+
+            if (relevant_labels.count(parent)) {
                 for (int i = 0; i < transitions.size(); i++) {
                     const AbstractTransition &t = transitions[i];
                     target_buckets[t.target].push_back(
                         make_pair(t.src, reduced_label_no));
                     if (t.target != t.src) {
-                        all_relevant_self_loops = false;
+                        all_transitions_are_self_loops = false;
                     }
                 }
                 vector<AbstractTransition> ().swap(transitions);
-            } else {
-                if (!one_parent_irrelevant) {
-                    if (!relevant_labels.count(parent)) {
-                        one_parent_irrelevant = true;
-                    }
-                }
-            }
-            if (relevant_labels.count(parent)) {
+
                 // remove parent from relevant labels (will be replaced by the
                 // new composite label)
                 relevant_labels.erase(parent);
+            } else {
+                some_parent_is_irrelevant = true;
             }
         }
-        if (one_parent_irrelevant) {
-            if (all_relevant_self_loops) {
+        if (some_parent_is_irrelevant) {
+            if (all_transitions_are_self_loops) {
                 // new label is irrelevant (implicit self-loops)
                 // remove all transitions (later)
-                empty_transitions.insert(reduced_label_no);
+                labels_made_irrelevant.insert(reduced_label_no);
             } else {
                 // new label is relevant
                 relevant_labels.insert(reduced_label);
@@ -510,7 +531,11 @@ void Abstraction::normalize() {
         for (int i = 0; i < bucket.size(); i++) {
             AbstractStateRef src = bucket[i].first;
             int label_no = bucket[i].second;
-            src_buckets[src].push_back(make_pair(target, label_no));
+            if (labels_made_irrelevant.count(label_no)) {
+                assert(transitions_by_label[label_no].empty());
+            } else {
+                src_buckets[src].push_back(make_pair(target, label_no));
+            }
         }
     }
     vector<StateBucket> ().swap(target_buckets);
@@ -521,12 +546,6 @@ void Abstraction::normalize() {
         for (int i = 0; i < bucket.size(); i++) {
             int target = bucket[i].first;
             int label_no = bucket[i].second;
-
-            // TODO: move this check in the "second" step above
-            if (empty_transitions.count(label_no)) {
-                assert(transitions_by_label[label_no].empty());
-                continue;
-            }
 
             vector<AbstractTransition> &op_bucket = transitions_by_label[label_no];
             AbstractTransition trans(src, target);
