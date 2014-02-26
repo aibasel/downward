@@ -13,6 +13,9 @@
 
 * merge strategies
 
+=> also check methods in abstraction.cc that were previously skipped:
+- Abstraction::compute_label_ranks
+
     71 linear_merge_strategy.cc
     24 linear_merge_strategy.h
     10 merge_strategy.cc
@@ -77,7 +80,8 @@
 
 - Reconsider what we understand by "normalized", e.g. define the notion of a
   "valid state" of an abstraction as:
-  - Transitions are sorted (by labels, by states)
+  - Transitions are sorted (by labels, by states) and there are no
+    duplicates.
   - All labels are incorporated
   - Distances are computed and stored
   - Maybe: locally equivalent labels are computed and stored (we then could
