@@ -201,18 +201,20 @@ static Heuristic *_parse(OptionParser &parser) {
         "supported");
     parser.document_language_support(
         "conditional_effects",
-        "basic support implemented (We add self-loops in the atomic "
-        "abstractions for all effects that might not trigger. For tasks "
-        "with conditional effects this invalidates some of the heuristic's "
-        "invariants when no shrinking is performed: the "
-        "synchronized product of all atomic abstractions is not necessarily "
-        "identical to the original task anymore and therefore the resulting "
-        "heuristic is not guaranteed to be perfect.)");
+        "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
+    parser.document_note(
+        "Note",
+        "Conditional effects are supported directly. Note, however, that "
+        "for tasks that are not factored (in the sense of the JACM 2014 "
+        "merge-and-shrink paper), the atomic abstractions on which "
+        "merge-and-shrink heuristics are based are nondeterministic, "
+        "which can lead to poor heuristics even when no shrinking is "
+        "performed.");
 
     // TODO: better documentation what each parameter does
     vector<string> merge_strategies;
