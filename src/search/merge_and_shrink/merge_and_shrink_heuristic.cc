@@ -199,7 +199,15 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support(
         "action costs",
         "supported");
-    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support(
+        "conditional_effects",
+        "basic support implemented (We add self-loops in the atomic "
+        "abstractions for all effects that might not trigger. For tasks "
+        "with conditional effects this invalidates some of the heuristic's "
+        "invariants when no shrinking is performed: the "
+        "synchronized product of all atomic abstractions is not necessarily "
+        "identical to the original task anymore and therefore the resulting "
+        "heuristic is not guaranteed to be perfect.)");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");
