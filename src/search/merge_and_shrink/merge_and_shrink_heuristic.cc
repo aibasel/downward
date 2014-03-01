@@ -171,8 +171,7 @@ void MergeAndShrinkHeuristic::initialize() {
     dump_options();
     warn_on_unusual_options();
 
-    // TODO: Add verify_no_axioms() once issue397 is merged.
-    //verify_no_axioms_no_cond_effects();
+    verify_no_axioms();
 
     cout << "Building abstraction..." << endl;
     final_abstraction = build_abstraction();
