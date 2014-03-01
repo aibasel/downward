@@ -476,17 +476,13 @@ void Abstraction::build_atomic_abstractions(
         const vector<PrePost> &pre_post = op->get_pre_post();
         for (int i = 0; i < pre_post.size(); i++) {
             int var = pre_post[i].var;
-            int pre_value = pre_post[i].pre;
             int post_value = pre_post[i].post;
-            const vector<Prevail> &eff_cond = pre_post[i].cond;
             Abstraction *abs = result[var];
+
+            // Determine possible values that var can have when this
+            // operator is applicable.
+            int pre_value = pre_post[i].pre;
             int pre_value_min, pre_value_max;
-            if (pre_value == -1) {
-                for (int j = 0; j < eff_cond.size(); ++j) {
-                    if (eff_cond[j].var == var)
-                        pre_value = eff_cond[j].prev;
-                }
-            }
             if (pre_value == -1) {
                 pre_value_min = 0;
                 pre_value_max = g_variable_domain[var];
@@ -494,19 +490,49 @@ void Abstraction::build_atomic_abstractions(
                 pre_value_min = pre_value;
                 pre_value_max = pre_value + 1;
             }
-            for (int value = pre_value_min; value < pre_value_max; value++) {
-                AbstractTransition trans(value, post_value);
-                abs->transitions_by_op[op_no].push_back(trans);
-                /* Add self-loop if the effect might not trigger. If the effect
-                   is only conditioned on variable var, add the transition,
-                   but not the loop. Do not add the same transition twice. */
-                if (!eff_cond.empty() &&
-                    !(eff_cond.size() == 1 && eff_cond[0].var == var) &&
-                    value != post_value) {
-                    AbstractTransition loop(value, value);
-                    abs->transitions_by_op[op_no].push_back(loop);
+
+            // cond_effect_pre_value == x means that the effect has an
+            // effect condition "var == x".
+            // cond_effect_pre_value == -1 means no effect condition on var.
+            // has_other_effect_cond is true iff there exists an effect
+            // condition on a variable other than var.
+            const vector<Prevail> &eff_cond = pre_post[i].cond;
+            int cond_effect_pre_value = -1;
+            bool has_other_effect_cond = false;
+            for (size_t j = 0; j < eff_cond.size(); ++j) {
+                if (eff_cond[j].var == var) {
+                    cond_effect_pre_value = eff_cond[j].prev;
+                } else {
+                    has_other_effect_cond = true;
                 }
             }
+
+            // Handle transitions that occur when the effect triggers.
+            for (int value = pre_value_min; value < pre_value_max; value++) {
+                /* Only add a transition if it is possible that the effect
+                   triggers. We can rule out that the effect triggers if it has
+                   a condition on var and this condition is not satisfied. */
+                if (cond_effect_pre_value == -1 || cond_effect_pre_value == value) {
+                    AbstractTransition trans(value, post_value);
+                    abs->transitions_by_op[op_no].push_back(trans);
+                }
+            }
+
+            // Handle transitions that occur when the effect does not trigger.
+            if (!eff_cond.empty()) {
+                for (int value = pre_value_min; value < pre_value_max; value++) {
+                    /* Add self-loop if the effect might not trigger.
+                       If the effect has a condition on another variable, then
+                       it can fail to trigger no matter which value var has.
+                       If it only has a condition on var, then the effect
+                       fails to trigger if this condition is false. */
+                    if (has_other_effect_cond || value != cond_effect_pre_value) {
+                        AbstractTransition loop(value, value);
+                        abs->transitions_by_op[op_no].push_back(loop);
+                    }
+                }
+            }
+
             if (abs->relevant_operators.empty()
                 || abs->relevant_operators.back() != op)
                 abs->relevant_operators.push_back(op);
