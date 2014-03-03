@@ -126,6 +126,11 @@
   also makes sure that we do not choose indices at which we expect an atomic
   abstraction for example, but find a composite abstraction.
 
+- Abstraction::compute_local_equivalence_relation():
+  make computation faster through sorting transitions (O(n log n)) or hashing
+  (O(n)). Sorting is probably better, because we do not need to consider all
+  transitions in the best case.
+
 * TODOs for rest of the code:
 
 - Only use help_mode() when the behaviour should differ from
