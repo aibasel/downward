@@ -77,6 +77,8 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
     cout << "Merging abstractions..." << endl;
 
+    // TODO: fix case where there is only one variable
+    // remove variable "abstraction"
     Abstraction *abstraction = 0;
     int total_reduced_labels = 0;
     vector<int> system_order;
@@ -152,6 +154,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         all_abstractions[system_one] = abstraction;
         all_abstractions[system_two] = 0;
     }
+
+    // TODO: iterate over all_abstraction and assert that only one abstraction
+    // is left over. Otherwise throw exception.
 
     abstraction->compute_distances();
     if (!abstraction->is_solvable())
