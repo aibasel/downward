@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import glob
 import math
 import optparse
 import os
-import os.path
 import resource
 import signal
 import subprocess
@@ -34,6 +32,16 @@ EXIT_SIGXCPU = -signal.SIGXCPU
 EXPECTED_EXITCODES = set([
     EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
     EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT])
+
+# The portfolio's exitcode is determined as follows:
+# There is exactly one type of unexpected exit code -> use it.
+# There are multiple types of unexpected exit codes -> EXIT_CRITICAL_ERROR.
+# [..., EXIT_PLAN_FOUND, ...] -> EXIT_PLAN_FOUND
+# [..., EXIT_UNSOLVABLE, ...] -> EXIT_UNSOLVABLE
+# [..., EXIT_UNSOLVED_INCOMPLETE, ...] -> EXIT_UNSOLVED_INCOMPLETE
+# [..., EXIT_OUT_OF_MEMORY, ..., EXIT_TIMEOUT, ...] -> EXIT_TIMEOUT_AND_MEMORY
+# [..., EXIT_TIMEOUT, ...] -> EXIT_TIMEOUT
+# [..., EXIT_OUT_OF_MEMORY, ...] -> EXIT_OUT_OF_MEMORY
 
 
 def parse_args():
