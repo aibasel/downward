@@ -245,6 +245,10 @@ bool LandmarkCountHeuristic::reach_state(const State &parent_state,
     return true;
 }
 
+bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
+    return !has_axioms();
+}
+
 void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
                                          const vector<bool> &lms_vec) {
     // This function exists purely so we don't have to change all the
