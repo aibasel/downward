@@ -299,13 +299,19 @@ void dump_everything() {
     */
 }
 
-void verify_no_axioms_no_cond_effects() {
-    if (!g_axioms.empty()) {
+bool has_axioms() {
+    return !g_axioms.empty();
+}
+
+void verify_no_axioms() {
+    if (has_axioms()) {
         cerr << "Heuristic does not support axioms!" << endl << "Terminating."
              << endl;
         exit_with(EXIT_UNSUPPORTED);
     }
+}
 
+int get_first_cond_effects_op_id() {
     for (int i = 0; i < g_operators.size(); i++) {
         const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
         for (int j = 0; j < pre_post.size(); j++) {
@@ -321,13 +327,29 @@ void verify_no_axioms_no_cond_effects() {
             if (pre == -1 && cond.size() == 1 && cond[0].var == var
                 && cond[0].prev != post && g_variable_domain[var] == 2)
                 continue;
-
-            cerr << "Heuristic does not support conditional effects "
-                 << "(operator " << g_operators[i].get_name() << ")" << endl
-                 << "Terminating." << endl;
-            exit_with(EXIT_UNSUPPORTED);
+            return i;
         }
     }
+    return -1;
+}
+
+bool has_cond_effects() {
+    return get_first_cond_effects_op_id() != -1;
+}
+
+void verify_no_cond_effects() {
+    int op_id = get_first_cond_effects_op_id();
+    if (op_id != -1) {
+            cerr << "Heuristic does not support conditional effects "
+                 << "(operator " << g_operators[op_id].get_name() << ")" << endl
+                 << "Terminating." << endl;
+            exit_with(EXIT_UNSUPPORTED);
+    }
+}
+
+void verify_no_axioms_no_cond_effects() {
+    verify_no_axioms();
+    verify_no_cond_effects();
 }
 
 bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
