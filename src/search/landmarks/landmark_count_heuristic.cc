@@ -27,9 +27,11 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         if (lgraph.is_using_reasonable_orderings()) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             exit_with(EXIT_INPUT_ERROR);
-        }
-        if (!g_axioms.empty()) {
+        } else if (has_axioms()) {
             cerr << "cost partitioning does not support axioms" << endl;
+            exit_with(EXIT_UNSUPPORTED);
+        } else if (has_cond_effects()) {
+            cerr << "cost partitioning does not support conditional effects" << endl;
             exit_with(EXIT_UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
