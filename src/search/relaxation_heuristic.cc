@@ -19,6 +19,10 @@ RelaxationHeuristic::RelaxationHeuristic(const Options &opts)
 RelaxationHeuristic::~RelaxationHeuristic() {
 }
 
+bool RelaxationHeuristic::dead_ends_are_reliable() const {
+    return !has_axioms();
+}
+
 // initialization
 void RelaxationHeuristic::initialize() {
     // Build propositions.
