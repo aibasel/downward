@@ -203,12 +203,12 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         abstraction->get_needed_costs(&needed_costs);
         task.adapt_remaining_costs(remaining_costs, needed_costs);
         abstraction->release_memory();
+        task.release_memory();
 
         if (abstraction->get_init_h() > 0) {
             tasks.push_back(task);
             abstractions.push_back(abstraction);
         }
-        task.release_memory();
 
         if (num_states >= max_states || g_timer() > max_time)
             break;
