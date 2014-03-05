@@ -531,6 +531,10 @@ double Abstraction::get_avg_h() const {
     return avg_h;
 }
 
+int Abstraction::get_init_h() const {
+    return init->get_h();
+}
+
 void Abstraction::write_dot_file(int num) {
     bool draw_loops = false;
     ostringstream oss;

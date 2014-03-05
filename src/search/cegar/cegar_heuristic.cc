@@ -182,7 +182,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
                 }
             }
         }
-        tasks.push_back(task);
         install_task(task);
 
         Abstraction *abstraction = new Abstraction(&task);
@@ -197,6 +196,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
         abstraction->build();
         avg_h_values.push_back(abstraction->get_avg_h());
+        num_states += abstraction->get_num_states();
         if (decomposition == NONE && num_abstractions == 1 && !search)
             abstraction->print_histograms();
         vector<int> needed_costs;
@@ -204,9 +204,10 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         task.adapt_remaining_costs(remaining_costs, needed_costs);
         abstraction->release_memory();
 
-        abstractions.push_back(abstraction);
-        num_states += abstraction->get_num_states();
-
+        if (abstraction->get_init_h() > 0) {
+            tasks.push_back(task);
+            abstractions.push_back(abstraction);
+        }
         task.release_memory();
 
         if (num_states >= max_states || g_timer() > max_time)
@@ -248,11 +249,11 @@ void CegarHeuristic::print_statistics() {
     cout << "Done building abstractions [t=" << g_timer << "]" << endl;
     cout << "Peak memory after initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
-    cout << "CEGAR abstractions: " << abstractions.size() << endl;
+    cout << "CEGAR abstractions: " << abstractions.size() << "/" << avg_h_values.size() << endl;
     cout << "Total abstract states: " << num_states << endl;
     // There will always be at least one abstraction.
     cout << "Init h: " << compute_heuristic(g_initial_state()) << endl;
-    cout << "Average h: " << sum_avg_h / abstractions.size() << endl;
+    cout << "Average h: " << sum_avg_h / avg_h_values.size() << endl;
     cout << endl;
 }
 

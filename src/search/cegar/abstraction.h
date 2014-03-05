@@ -135,6 +135,7 @@ public:
     void print_statistics();
     void print_histograms() const;
     double get_avg_h() const;
+    int get_init_h() const;
 
     // Settings.
     void set_max_states(int states) {max_states = states; }
