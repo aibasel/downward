@@ -71,17 +71,17 @@ string AbstractState::str() const {
 }
 
 void AbstractState::regress(const Operator &op, AbstractState *result) const {
-    // If v does NOT occur in op.pre and NOT in op.post we use the values from
-    // this state.
     *result->values = *values;
-    for (int v = 0; v < g_variable_domain.size(); ++v) {
-        int pre = get_pre(op, v);
-        int post = get_post(op, v);
-        if (pre != UNDEFINED) {
-            result->values->set(v, pre);
-        } else if (post != UNDEFINED) {
-            assert(values->test(v, post));
-            result->values->add_all(v);
+    for (int i = 0; i < op.get_prevail().size(); i++) {
+        const Prevail &prevail = op.get_prevail()[i];
+        result->values->set(prevail.var, prevail.prev);
+    }
+    for (int i = 0; i < op.get_pre_post().size(); i++) {
+        const PrePost &pre_post = op.get_pre_post()[i];
+        if (pre_post.pre != UNDEFINED) {
+            result->values->set(pre_post.var, pre_post.pre);
+        } else {
+            result->values->add_all(pre_post.var);
         }
     }
 }
