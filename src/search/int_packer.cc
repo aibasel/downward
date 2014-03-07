@@ -1,7 +1,5 @@
 #include "int_packer.h"
 
-#include "utilities.h"
-
 #include <cassert>
 #include <iostream>
 using namespace std;
@@ -19,7 +17,7 @@ int get_needed_bits(int num_values) {
 }
 
 int get_max_fitting_bits(const vector<vector<int> > &bits_to_entries,
-                                 int available_bits) {
+                         int available_bits) {
     for (size_t bits = available_bits; bits != 0; --bits) {
         if (!bits_to_entries[bits].empty()) {
             return bits;
@@ -88,6 +86,4 @@ void IntPacker::pack_bins(const vector<int> &ranges) {
         remaining_bits -= bits;
         ++num_packed_entries;
     }
-    cout << "Ints: " << ranges.size() << endl;
-    cout << "Bytes per packing: " << num_bins * sizeof(PackedStateEntry) << endl;
 }
