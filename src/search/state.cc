@@ -1,7 +1,6 @@
 #include "state.h"
 
 #include "globals.h"
-#include "int_packer.h"
 #include "utilities.h"
 #include "state_registry.h"
 

@@ -1,7 +1,7 @@
 #ifndef AXIOMS_H
 #define AXIOMS_H
 
-#include "packed_state_entry.h"
+#include "int_packer.h"
 
 #include <vector>
 
