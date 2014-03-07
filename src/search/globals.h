@@ -45,6 +45,8 @@ extern std::vector<int> g_axiom_layers;
 extern std::vector<int> g_default_axiom_values;
 
 extern IntPacker *g_state_packer;
+// This vector holds the initial values *before* the axioms have been evaluated.
+// Use the state registry to obtain the real initial state.
 extern std::vector<int> g_initial_state_data;
 // TODO The following function returns the initial state that is registered
 //      in g_state_registry. This is only a short-term solution. In the
