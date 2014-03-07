@@ -266,6 +266,10 @@ void read_everything(istream &in) {
     // built after the problem has been read in.
     assert(!g_variable_domain.empty());
     g_state_packer = new IntPacker(g_variable_domain);
+    cout << "Variables: " << g_variable_domain.size() << endl;
+    cout << "Bytes per state: "
+         << g_state_packer->get_num_bins() *
+            g_state_packer->get_bin_size_in_bytes() << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.

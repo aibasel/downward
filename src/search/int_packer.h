@@ -28,6 +28,7 @@ public:
     void set(PackedStateEntry *buffer, int var, int value) const;
 
     int get_num_bins() const {return num_bins; }
+    int get_bin_size_in_bytes() const {return sizeof(PackedStateEntry); }
 };
 
 #endif
