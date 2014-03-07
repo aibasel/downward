@@ -265,7 +265,7 @@ void read_everything(istream &in) {
     // NOTE: int packer needs the variable ranges, so must be
     // built after the problem has been read in.
     assert(!g_variable_domain.empty());
-    g_int_packer = new IntPacker(g_variable_domain);
+    g_state_packer = new IntPacker(g_variable_domain);
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
@@ -344,7 +344,7 @@ vector<int> g_variable_domain;
 vector<vector<string> > g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
-IntPacker *g_int_packer;
+IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
 vector<pair<int, int> > g_goal;
 vector<Operator> g_operators;

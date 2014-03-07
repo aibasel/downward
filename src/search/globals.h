@@ -44,7 +44,7 @@ extern std::vector<std::vector<std::string> > g_fact_names;
 extern std::vector<int> g_axiom_layers;
 extern std::vector<int> g_default_axiom_values;
 
-extern IntPacker *g_int_packer;
+extern IntPacker *g_state_packer;
 extern std::vector<int> g_initial_state_data;
 // TODO The following function returns the initial state that is registered
 //      in g_state_registry. This is only a short-term solution. In the
