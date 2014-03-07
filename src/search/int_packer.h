@@ -1,9 +1,9 @@
 #ifndef INT_PACKER_H
 #define INT_PACKER_H
 
-#include "packed_state_entry.h"
-
 #include <vector>
+
+typedef unsigned int PackedStateEntry;
 
 class IntPacker {
     struct PackedEntry {

@@ -1,7 +1,7 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include "packed_state_entry.h"
+#include "int_packer.h"
 #include "state_id.h"
 
 #include <iostream>
