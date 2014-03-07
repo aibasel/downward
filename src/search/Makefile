@@ -23,6 +23,7 @@ HEADERS = \
           g_evaluator.h \
           globals.h \
           heuristic.h \
+          int_packer.h \
           ipc_max_heuristic.h \
           iterated_search.h \
           lazy_search.h \
@@ -154,7 +155,7 @@ LINK_RELEASE_STATICALLY=0
 endif
 
 
-OBJECT_SUFFIX_RELEASE = 
+OBJECT_SUFFIX_RELEASE =
 TARGET_SUFFIX_RELEASE = -release
 OBJECT_SUFFIX_DEBUG   = .debug
 TARGET_SUFFIX_DEBUG   = -debug

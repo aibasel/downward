@@ -13,16 +13,6 @@ class StateRegistry;
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
 class State {
-    struct PackedVariable {
-        int index;
-        int shift;
-        PackedStateEntry read_mask;
-        PackedStateEntry clear_mask;
-    };
-
-    static int packed_size;
-    static std::vector<PackedVariable> packed_variables;
-
     friend class StateRegistry;
     template <class Entry>
     friend class PerStateInformation;
@@ -56,10 +46,6 @@ public:
 
     void dump_pddl() const;
     void dump_fdr() const;
-
-    static int get(const PackedStateEntry *buffer, int var);
-    static void set(PackedStateEntry *buffer, int var, int value);
-    static void calculate_packed_size();
 };
 
 #endif
