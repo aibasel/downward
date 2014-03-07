@@ -7,7 +7,7 @@
 using namespace std;
 
 StateRegistry::StateRegistry()
-    : state_data_pool(g_state_packer->get_packed_size()),
+    : state_data_pool(g_state_packer->get_num_bins()),
       registered_states(0,
                         StateIDSemanticHash(state_data_pool),
                         StateIDSemanticEqual(state_data_pool)),
@@ -46,7 +46,7 @@ State StateRegistry::lookup_state(StateID id) const {
 
 const State &StateRegistry::get_initial_state() {
     if (cached_initial_state == 0) {
-        PackedStateEntry *buffer = new PackedStateEntry[g_state_packer->get_packed_size()];
+        PackedStateEntry *buffer = new PackedStateEntry[g_state_packer->get_num_bins()];
         for (size_t i = 0; i < g_initial_state_data.size(); ++i) {
             g_state_packer->set(buffer, i, g_initial_state_data[i]);
         }
