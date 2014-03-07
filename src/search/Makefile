@@ -23,6 +23,7 @@ HEADERS = \
           g_evaluator.h \
           globals.h \
           heuristic.h \
+          int_packer.h \
           ipc_max_heuristic.h \
           iterated_search.h \
           lazy_search.h \

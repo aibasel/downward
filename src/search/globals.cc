@@ -4,6 +4,7 @@
 #include "causal_graph.h"
 #include "domain_transition_graph.h"
 #include "heuristic.h"
+#include "int_packer.h"
 #include "legacy_causal_graph.h"
 #include "operator.h"
 #include "rng.h"
@@ -261,9 +262,13 @@ void read_everything(istream &in) {
     // so must be built after the problem has been read in.
     g_causal_graph = new CausalGraph;
 
+    // NOTE: int packer needs the variable ranges, so must be
+    // built after the problem has been read in.
+    assert(!g_variable_domain.empty());
+    g_int_packer = new IntPacker(g_variable_domain);
+
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
-    State::pack_state();
     g_state_registry = new StateRegistry;
 }
 
@@ -339,6 +344,7 @@ vector<int> g_variable_domain;
 vector<vector<string> > g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
+IntPacker *g_int_packer;
 vector<int> g_initial_state_data;
 vector<pair<int, int> > g_goal;
 vector<Operator> g_operators;

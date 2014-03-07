@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <csignal>
-#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <limits>
