@@ -1,6 +1,7 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+#include <cstdlib>
 #include <ostream>
 #include <utility>
 #include <vector>
