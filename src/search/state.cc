@@ -24,7 +24,7 @@ State::~State() {
 }
 
 int State::operator[](int index) const {
-    return g_int_packer->get(buffer, index);
+    return g_state_packer->get(buffer, index);
 }
 
 void State::dump_pddl() const {

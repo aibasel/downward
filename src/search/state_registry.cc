@@ -7,7 +7,7 @@
 using namespace std;
 
 StateRegistry::StateRegistry()
-    : state_data_pool(g_int_packer->get_packed_size()),
+    : state_data_pool(g_state_packer->get_packed_size()),
       registered_states(0,
                         StateIDSemanticHash(state_data_pool),
                         StateIDSemanticEqual(state_data_pool)),
@@ -46,9 +46,9 @@ State StateRegistry::lookup_state(StateID id) const {
 
 const State &StateRegistry::get_initial_state() {
     if (cached_initial_state == 0) {
-        PackedStateEntry *buffer = new PackedStateEntry[g_int_packer->get_packed_size()];
+        PackedStateEntry *buffer = new PackedStateEntry[g_state_packer->get_packed_size()];
         for (size_t i = 0; i < g_initial_state_data.size(); ++i) {
-            g_int_packer->set(buffer, i, g_initial_state_data[i]);
+            g_state_packer->set(buffer, i, g_initial_state_data[i]);
         }
         g_axiom_evaluator->evaluate(buffer);
         state_data_pool.push_back(buffer);
@@ -70,7 +70,7 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
     for (size_t i = 0; i < op.get_pre_post().size(); ++i) {
         const PrePost &pre_post = op.get_pre_post()[i];
         if (pre_post.does_fire(predecessor))
-            g_int_packer->set(buffer, pre_post.var, pre_post.post);
+            g_state_packer->set(buffer, pre_post.var, pre_post.post);
     }
     g_axiom_evaluator->evaluate(buffer);
     StateID id = insert_id_or_pop_state();
