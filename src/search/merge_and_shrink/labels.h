@@ -42,8 +42,9 @@ public:
     ~Labels();
     void reduce(int abs_index,
                 const std::vector<Abstraction *> &all_abstractions);
+    // TODO: consider removing get_label_by_index and forwarding all required
+    // methods of Label and giving access to them by label number.
     const Label *get_label_by_index(int index) const;
-    // TODO: rename and/or add is_leaf method
     bool is_label_reduced(int label_no) const;
     void dump() const;
     void dump_options() const;

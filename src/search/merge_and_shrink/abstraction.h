@@ -49,17 +49,22 @@ class Abstraction {
 
     // There should only be one instance of Labels at runtime. It is created
     // and managed by MergeAndShrinkHeuristic. All abstraction instances have
-    // a copy of the object required for normalization.
+    // a copy of this object to ease access to the set of labels.
     const Labels *labels;
-    // relevant_labels is updated in normalize() and only contains leaf labels
-    std::vector<bool> relevant_labels;
-    int num_states;
-    std::vector<std::vector<AbstractTransition> > transitions_by_label;
-    // The number of labels that this abstraction is "aware of", i.e. that have
-    // been incorporated into transitions_by_label. Whenever new labels are
-    // generated through label reduction, we do *not* update all abstractions
-    // immediately.
+    /* num_labels equals to the number of labels that this abstraction is
+       "aware of", i.e. that have
+       been incorporated into transitions_by_label. Whenever new labels are
+       generated through label reduction, we do *not* update all abstractions
+       immediately. This equals labels->size() after normalizing. */
     int num_labels;
+    /* transitions_by_label and relevant_labels both have size of (2 * n) - 1
+       if n is the number of operators, because when applying label reduction,
+       at most n - 1 fresh labels can be generated in addition to the n
+       original labels. */
+    std::vector<std::vector<AbstractTransition> > transitions_by_label;
+    std::vector<bool> relevant_labels;
+
+    int num_states;
 
     std::vector<int> init_distances;
     std::vector<int> goal_distances;

@@ -49,6 +49,8 @@
 
 * General TODOs for now
 
+- CompositeAbstraction (constructor): swapping loops does not guarantee
+  sorting of transitions.
 - After we've started merging, the fixed-point variable order for
   label reduction doesn't really talk about variables any more but
   also about merged abstractions. Take this into account when thinking
@@ -130,6 +132,9 @@
   make computation faster through sorting transitions (O(n log n)) or hashing
   (O(n)). Sorting is probably better, because we do not need to consider all
   transitions in the best case.
+
+- Abstraction::apply_abstraction: possibly consider the special case that
+  nothing is actually being shrunk and then leave the method.
 
 * TODOs for rest of the code:
 
