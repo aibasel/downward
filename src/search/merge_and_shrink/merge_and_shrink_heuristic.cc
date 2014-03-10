@@ -66,7 +66,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
     cout << "Shrinking atomic abstractions..." << endl;
     for (size_t i = 0; i < all_abstractions.size(); ++i) {
-        assert(all_abstractions[i]->transitions_sorted_unique());
         all_abstractions[i]->compute_distances();
         if (!all_abstractions[i]->is_solvable())
             return all_abstractions[i];

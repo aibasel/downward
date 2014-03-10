@@ -75,7 +75,7 @@ class Abstraction {
     int max_g;
     int max_h;
 
-    bool normalized;
+    bool transitions_sorted_unique;
     bool goal_relevant;
 
     mutable int peak_memory;
@@ -85,6 +85,11 @@ class Abstraction {
     void compute_goal_distances_unit_cost();
     void compute_init_distances_general_cost();
     void compute_goal_distances_general_cost();
+
+    // are_transitions_sorted_unique() is used to determine whether the
+    // transitions of an abstraction are sorted uniquely or not after
+    // construction (composite abstraction) and shrinking (apply_abstraction).
+    bool are_transitions_sorted_unique() const;
 
     void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
 
@@ -127,11 +132,6 @@ public:
     EquivalenceRelation *compute_local_equivalence_relation() const;
     void release_memory();
 
-    // For debugging purposes.
-    // sorted_unique() is currently also used to determine whether an
-    // abstraction is normalized or not after construction (composite abstraction)
-    // and shrinking (apply_abstraction)
-    bool transitions_sorted_unique() const;
     void dump_relevant_labels() const;
     void dump() const;
 
