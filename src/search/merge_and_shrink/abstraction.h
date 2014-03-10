@@ -158,8 +158,6 @@ public:
     const std::vector<int> &get_varset() const {
         return varset;
     }
-    // For debugging
-    void trace_solution() const;
 };
 
 class AtomicAbstraction : public Abstraction {
