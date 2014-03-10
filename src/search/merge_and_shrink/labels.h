@@ -1,5 +1,5 @@
-#ifndef MERGE_AND_SHRINK_LABEL_REDUCTION_H
-#define MERGE_AND_SHRINK_LABEL_REDUCTION_H
+#ifndef MERGE_AND_SHRINK_LABELS_H
+#define MERGE_AND_SHRINK_LABELS_H
 
 #include "../operator_cost.h"
 
@@ -7,21 +7,8 @@
 
 class Abstraction;
 class Label;
-
-enum LabelReduction {
-    NONE,
-    OLD,
-    APPROXIMATIVE,
-    APPROXIMATIVE_WITH_FIXPOINT,
-    EXACT,
-    EXACT_WITH_FIXPOINT
-};
-
-enum FixpointVariableOrder {
-    REGULAR,
-    REVERSE,
-    RANDOM
-};
+class LabelReducer;
+class Options;
 
 /*
  The Labels class is basically a container class for the set of all
@@ -29,16 +16,11 @@ enum FixpointVariableOrder {
  */
 class Labels {
     const bool unit_cost;
-    LabelReduction label_reduction;
-    FixpointVariableOrder fix_point_variable_order;
+    const LabelReducer *label_reducer;
 
     std::vector<Label *> labels;
-    std::vector<int> variable_order;
 public:
-    Labels(OperatorCost cost_type,
-           bool unit_cost,
-           LabelReduction label_reduction,
-           FixpointVariableOrder fix_point_variable_order);
+    Labels(bool unit_cost, const Options &options, OperatorCost cost_type);
     ~Labels();
     void reduce(int abs_index,
                 const std::vector<Abstraction *> &all_abstractions);
