@@ -96,6 +96,7 @@ Abstraction::Abstraction(Labels *labels_)
     clear_distances();
     // at most n-1 fresh labels will be needed if n is the number of operators
     transitions_by_label.resize(g_operators.size() * 2);
+    relevant_labels.resize(transitions_by_label.size(), false);
 }
 
 Abstraction::~Abstraction() {
@@ -159,19 +160,21 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
         compute_distances();
     }
     assert(label_ranks.empty());
-    label_ranks.resize(transitions_by_label.size(), -1);
-    for (hash_set<const Label *, hash_pointer>::iterator it = relevant_labels.begin();
-         it != relevant_labels.end(); ++it) {
-        int label_id = (*it)->get_id();
-        const vector<AbstractTransition> &transitions = transitions_by_label[label_id];
-        int label_rank = infinity;
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const AbstractTransition &t = transitions[j];
-            label_rank = min(label_rank, goal_distances[t.target]);
+    label_ranks.reserve(transitions_by_label.size());
+    for (size_t label_no = 0; label_no < transitions_by_label.size(); ++label_no) {
+        if (relevant_labels[label_no]) {
+            const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
+            int label_rank = infinity;
+            for (size_t j = 0; j < transitions.size(); ++j) {
+                const AbstractTransition &t = transitions[j];
+                label_rank = min(label_rank, goal_distances[t.target]);
+            }
+            // relevant labels with no transitions have a rank of infinity (they
+            // block snychronization)
+            label_ranks.push_back(label_rank);
+        } else {
+            label_ranks.push_back(-1);
         }
-        // relevant labels with no transitions have a rank of infinity (they
-        // block snychronization)
-        label_ranks[label_id] = label_rank;
     }
 }
 
@@ -485,7 +488,7 @@ void Abstraction::normalize() {
             vector<AbstractTransition> &transitions =
                     transitions_by_label[parent_id];
 
-            if (relevant_labels.count(parent)) {
+            if (relevant_labels[parent_id]) {
                 for (int i = 0; i < transitions.size(); i++) {
                     const AbstractTransition &t = transitions[i];
                     target_buckets[t.target].push_back(
@@ -498,7 +501,7 @@ void Abstraction::normalize() {
 
                 // remove parent from relevant labels (will be replaced by the
                 // new composite label)
-                relevant_labels.erase(parent);
+                relevant_labels[parent_id] = false;
             } else {
                 some_parent_is_irrelevant = true;
             }
@@ -510,7 +513,7 @@ void Abstraction::normalize() {
                 labels_made_irrelevant.insert(reduced_label_no);
             } else {
                 // new label is relevant
-                relevant_labels.insert(reduced_label);
+                relevant_labels[reduced_label_no] = true;
                 // make self loops explicit
                 for (int i = 0; i < num_states; ++i) {
                     target_buckets[i].push_back(
@@ -519,7 +522,7 @@ void Abstraction::normalize() {
             }
         } else {
             // new label is relevant
-            relevant_labels.insert(reduced_label);
+            relevant_labels[reduced_label_no] = true;
         }
     }
 
@@ -590,9 +593,7 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
             if (label_cost != other_label->get_cost()) {
                 continue;
             }
-            bool relevant1 = relevant_labels.count(label);
-            bool relevant2 = relevant_labels.count(other_label);
-            if (relevant1 != relevant2) {
+            if (relevant_labels[label_no] != relevant_labels[other_label_no]) {
                 continue;
             }
             const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
@@ -629,7 +630,7 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
             Abstraction *abs = result[var];
             AbstractTransition trans(value, value);
             abs->transitions_by_label[label_no].push_back(trans);
-            abs->relevant_labels.insert(label);
+            abs->relevant_labels[label_no] = true;
         }
         const vector<PrePost> &pre_post = label->get_pre_post();
         for (int i = 0; i < pre_post.size(); i++) {
@@ -649,7 +650,7 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
                 AbstractTransition trans(value, post_value);
                 abs->transitions_by_label[label_no].push_back(trans);
             }
-            abs->relevant_labels.insert(label);
+            abs->relevant_labels[label_no] = true;
         }
     }
 
@@ -729,15 +730,12 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels,
         }
     }
 
-    relevant_labels.insert(abs1->relevant_labels.begin(), abs1->relevant_labels.end());
-    relevant_labels.insert(abs2->relevant_labels.begin(), abs2->relevant_labels.end());
-
     int multiplier = abs2->size();
     for (int label_no = 0; label_no < num_labels; label_no++) {
-        const Label *label = labels->get_label_by_index(label_no);
-        bool relevant1 = abs1->relevant_labels.count(label);
-        bool relevant2 = abs2->relevant_labels.count(label);
+        bool relevant1 = abs1->relevant_labels[label_no];
+        bool relevant2 = abs2->relevant_labels[label_no];
         if (relevant1 || relevant2) {
+            relevant_labels[label_no] = true;
             vector<AbstractTransition> &transitions = transitions_by_label[label_no];
             const vector<AbstractTransition> &bucket1 =
                 abs1->transitions_by_label[label_no];
@@ -966,7 +964,7 @@ int Abstraction::get_cost(const State &state) const {
 
 int Abstraction::memory_estimate() const {
     int result = sizeof(Abstraction);
-    result += sizeof(Label *) * relevant_labels.size(); // TODO: correct? was capacity(); for vector before
+    result += sizeof(Label *) * relevant_labels.capacity();
     result += sizeof(vector<AbstractTransition> )
               * transitions_by_label.capacity();
     for (int i = 0; i < transitions_by_label.size(); i++)
@@ -994,7 +992,7 @@ int CompositeAbstraction::memory_estimate() const {
 }
 
 void Abstraction::release_memory() {
-    hash_set<const Label *, hash_pointer>().swap(relevant_labels);
+    vector<bool>().swap(relevant_labels);
     vector<vector<AbstractTransition> >().swap(transitions_by_label);
 }
 
@@ -1067,9 +1065,10 @@ bool Abstraction::sorted_unique() const {
 
 void Abstraction::dump_relevant_labels() const {
     cout << "relevant labels" << endl;
-    for (hash_set<const Label *, hash_pointer>::iterator it = relevant_labels.begin();
-         it != relevant_labels.end(); ++it) {
-        cout << (*it)->get_id() << endl;
+    for (size_t label_no = 0; label_no < relevant_labels.size(); ++label_no) {
+        if (label_no) {
+            cout << label_no << endl;
+        }
     }
 }
 
