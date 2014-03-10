@@ -28,12 +28,16 @@ enum FixpointVariableOrder {
  labels used by merge-and-shrink abstractions.
  */
 class Labels {
-    std::vector<Label *> labels;
+    const bool unit_cost;
     LabelReduction label_reduction;
     FixpointVariableOrder fix_point_variable_order;
+
+    std::vector<Label *> labels;
     std::vector<int> variable_order;
 public:
-    Labels(OperatorCost cost_type, LabelReduction label_reduction,
+    Labels(OperatorCost cost_type,
+           bool unit_cost,
+           LabelReduction label_reduction,
            FixpointVariableOrder fix_point_variable_order);
     ~Labels();
     int reduce(int abs_index,
@@ -46,6 +50,9 @@ public:
 
     int get_size() const {
         return labels.size();
+    }
+    bool is_unit_cost() const {
+        return unit_cost;
     }
 };
 

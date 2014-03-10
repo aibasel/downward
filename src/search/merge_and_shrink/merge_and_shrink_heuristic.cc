@@ -22,7 +22,9 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
-    labels = new Labels(cost_type, LabelReduction(opts.get_enum("label_reduction")),
+    labels = new Labels(cost_type,
+                        is_unit_cost_problem(),
+                        LabelReduction(opts.get_enum("label_reduction")),
                         FixpointVariableOrder(opts.get_enum("fixpoint_var_order")));
 }
 
@@ -61,8 +63,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     //       allocates memory.
 
     vector<Abstraction *> atomic_abstractions;
-    Abstraction::build_atomic_abstractions(
-        is_unit_cost_problem(), atomic_abstractions, labels);
+    Abstraction::build_atomic_abstractions(atomic_abstractions, labels);
     // vector of all abstractions. entries with 0 have been merged.
     vector<Abstraction *> all_abstractions(atomic_abstractions);
 
@@ -138,10 +139,9 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
             abstraction->statistics(use_expensive_statistics);
         }
 
-        Abstraction *new_abstraction = new CompositeAbstraction(
-            is_unit_cost_problem(),
-            labels,
-            abstraction, other_abstraction);
+        Abstraction *new_abstraction = new CompositeAbstraction(labels,
+                                                                abstraction,
+                                                                other_abstraction);
 
         abstraction->release_memory();
         other_abstraction->release_memory();

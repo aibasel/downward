@@ -44,7 +44,6 @@ class Abstraction {
     static const int PRUNED_STATE = -1;
     static const int DISTANCE_UNKNOWN = -2;
 
-    const bool is_unit_cost;
     // There should only be one instance of Labels at runtime. It is created
     // and managed by MergeAndShrinkHeuristic. All abstraction instances have
     // a copy of the object required for normalization.
@@ -91,7 +90,7 @@ protected:
                                                        AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
 public:
-    Abstraction(bool is_unit_cost, Labels *labels);
+    Abstraction(Labels *labels);
     virtual ~Abstraction();
 
     // Two methods to identify the abstraction in output.
@@ -100,8 +99,8 @@ public:
     virtual std::string description() const = 0;
     std::string tag() const;
 
-    static void build_atomic_abstractions(bool is_unit_cost,
-        std::vector<Abstraction *> &result, Labels *labels);
+    static void build_atomic_abstractions(std::vector<Abstraction *> &result,
+                                          Labels *labels);
     bool is_solvable() const;
 
     int get_cost(const State &state) const;
@@ -173,7 +172,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    AtomicAbstraction(bool is_unit_cost, Labels *labels, int variable);
+    AtomicAbstraction(Labels *labels, int variable);
     virtual ~AtomicAbstraction();
 };
 
@@ -187,8 +186,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
-    CompositeAbstraction(bool is_unit_cost, Labels *labels,
-        Abstraction *abs1, Abstraction *abs2);
+    CompositeAbstraction(Labels *labels, Abstraction *abs1, Abstraction *abs2);
     virtual ~CompositeAbstraction();
 };
 
