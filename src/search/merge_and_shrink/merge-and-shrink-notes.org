@@ -91,9 +91,6 @@
     even consider dropping '(ir)relevant labels' and making self loops
     explicit in this case.
 
-- Related to the previous item: "normalized" currently means "sorted unique".
-  This should be changed
-
 - Transition systems should always be valid (see above), i.e. immediately after
   shrinking, after label reduction and after construction. We could have
   private methods apply_abstraction, apply_label_mapping. The only remaining
