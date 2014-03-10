@@ -62,7 +62,7 @@ SUITES = {
 TRANSLATOR_ATTRIBUTES = [
     'auxiliary_atoms', 'axioms', 'derived_variables',
     'effect_conditions_simplified', 'facts', 'final_queue_length',
-    'implied_effects_removed', 'implied_preconditions_added', 'mutex_groups',
+    'implied_preconditions_added', 'mutex_groups',
     'operators', 'operators_removed', 'propositions_removed',
     'relevant_atoms', 'task_size', 'total_mutex_groups_size',
     'total_queue_pushes', 'uncovered_facts', 'variables']
@@ -101,24 +101,25 @@ def parse_custom_args():
         help='Select whether "nightly" or "weekly" tests should be run.')
     return ARGPARSER.parse_args()
 
-def get_exp_dir(rev, test):
-    return os.path.join(EXPERIMENTS_DIR, '%s-%s' % (rev, test))
+def get_exp_dir(name, test):
+    return os.path.join(EXPERIMENTS_DIR, '%s-%s' % (name, test))
 
 def main():
     args = parse_custom_args()
 
     if not args.revision:
-        # If the working directory contains changes, the revision ends with '+'.
-        # Strip this to use the vanilla revision.
-        rev = checkouts.get_global_rev(REPO).rstrip('+')
+        rev = 'WORK'
+        name = 'current'
     elif args.revision.lower() == 'baseline':
         rev = BASELINE
+        name = 'baseline'
     else:
         rev = checkouts.get_global_rev(REPO, args.revision)
+        name = rev
 
     combo = [(Translator(REPO, rev=rev), Preprocessor(REPO, rev=rev), Planner(REPO, rev=rev))]
 
-    exp = DownwardExperiment(path=get_exp_dir(rev, args.test), repo=REPO, combinations=combo)
+    exp = DownwardExperiment(path=get_exp_dir(name, args.test), repo=REPO, combinations=combo)
     exp.add_suite(SUITES[args.test])
     for nick, config in CONFIGS[args.test]:
         exp.add_config(nick, config)
@@ -126,12 +127,11 @@ def main():
 
     # Only compare results if we are not running the baseline experiment.
     if rev != BASELINE:
+        exp.steps.insert(0, Step('rm-eval-dir', shutil.rmtree, exp.eval_dir, ignore_errors=True))
         exp.add_step(Step('fetch-baseline-results', Fetcher(),
-                          get_exp_dir(BASELINE, args.test) + '-eval',
+                          get_exp_dir('baseline', args.test) + '-eval',
                           exp.eval_dir))
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
-        exp.add_step(Step('rm-cached-clone', shutil.rmtree,
-                          os.path.join(exp.cache_dir, 'revision-cache', rev)))
         exp.add_step(Step('rm-preprocess-dir', shutil.rmtree, exp.preprocess_exp_path))
         exp.add_step(Step('rm-exp-dir', shutil.rmtree, exp.path))
         exp.add_step(Step('rm-preprocessed-tasks', shutil.rmtree, exp.preprocessed_tasks_dir))
