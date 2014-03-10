@@ -6,7 +6,6 @@
 #include "../utilities.h"
 
 #include <ext/slist>
-#include <ext/hash_set>
 #include <vector>
 
 class EquivalenceRelation;
@@ -49,7 +48,7 @@ class Abstraction {
     // a copy of the object required for normalization.
     const Labels *labels;
     // relevant_labels is updated in normalize() and only contains leaf labels
-    __gnu_cxx::hash_set<const Label *, hash_pointer> relevant_labels;
+    std::vector<bool> relevant_labels;
     int num_states;
     std::vector<std::vector<AbstractTransition> > transitions_by_label;
     // The number of labels that this abstraction is "aware of", i.e. that have
