@@ -253,8 +253,8 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
     }
 
     int num_labels = labels.size();
-    vector<pair<int, int> > labeled_label_nos;
-    labeled_label_nos.reserve(num_labels);
+    vector<pair<int, int> > groups_and_labels;
+    groups_and_labels.reserve(num_labels);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         const Label *label = labels[label_no];
         assert(label->get_id() == label_no);
@@ -262,10 +262,10 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
             // ignore already reduced labels
             continue;
         }
-        labeled_label_nos.push_back(make_pair(0, label_no));
+        groups_and_labels.push_back(make_pair(0, label_no));
     }
     // start with the relation where all labels are equivalent
-    EquivalenceRelation *relation = EquivalenceRelation::from_labels<int>(num_labels, labeled_label_nos);
+    EquivalenceRelation *relation = EquivalenceRelation::from_grouped_elements<int>(num_labels, groups_and_labels);
     for (size_t i = 0; i < all_abstractions.size(); ++i) {
         Abstraction *abs = all_abstractions[i];
         if (!abs || abs == abstraction) {

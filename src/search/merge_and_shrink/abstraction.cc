@@ -23,7 +23,7 @@
 using namespace std;
 using namespace __gnu_cxx;
 
-/* Implementation note: Transitions are grouped by their operators,
+/* Implementation note: Transitions are grouped by their labels,
  not by source state or any such thing. Such a grouping is beneficial
  for fast generation of products because we can iterate operator by
  operator, and it also allows applying abstraction mappings very
@@ -37,64 +37,16 @@ using namespace __gnu_cxx;
  computation is not worth the overhead.
  */
 
-/*
- TODO:
-
- * Separate out all code related to shrinking strategies into a
- separate shrinking strategy class.
-
- * Try out shrinking strategies that don't care about g.
-
- * NOTE: We might actually also try out DFP-style strategies that don't
- just consider h, but also g. Essentially, we might set it up in such
- a way that it works with arbitrary bucketings and bucket priority
- orderings -- we'd just need to replace the current "h" components
- by bucket indices.
-
- * Only compute g and h when you actually need to (i.e., don't compute
- g if the strategies doesn't need it; don't compute h for the random
- shrinking strategy except for the final abstraction where we need
- it for the h value). Actually... we do need to compute g values anyway
- for the relevance test. So never mind. Although we could get rid of
- the recomputation for non-f-preserving abstractions, but that's true
- for all strategies because none of them actually needs that.
-
- * It's maybe a bit of a problem that by indexing the transitions
- with the *global* operator no, we have overall size requirements
- of NUM_OPS * NUM_STATE_VARS for all abstractions together. This
- is all the more unfortunate considering that we only really need
- two abstractions at the same time. Can we do something about this?
-
- Idea: Use an alternative indexing scheme, e.g. ones where the vector
- is indexed by some sort of "local" operator id. If we don't need
- to the lookup frequently (and I don't think we do), then we can
- use a simple hash_map<Operator *, int> for this purpose.
-
- * Separate the parts relating to the abstraction mapping from the
- actual abstraction, so that later during search we need not keep
- the abstractions. This would allow us to get rid of the somewhat
- ugly "release_memory" stuff.
-
- * Change all the terminology here so that it matches the one in
- recent papers ("merge-and-shrink", "abstraction", "transition
- system", "atomic abstraction", "product abstraction", etc.)
- Currently, "abstraction" is used both for the abstract transition
- system and for the abstraction mapping. It should only be used for the
- latter; the former maybe called "TransitionSystem" or whatever.
-
- */
-
 //  TODO: We define infinity in more than a few places right now (=>
 //        grep for it). It should only be defined once.
 static const int infinity = numeric_limits<int>::max();
 
 Abstraction::Abstraction(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
+      transitions_by_label(g_operators.size() * 2),
+      relevant_labels(transitions_by_label.size(), false),
       normalized(true), peak_memory(0) {
     clear_distances();
-    // at most n-1 fresh labels will be needed if n is the number of operators
-    transitions_by_label.resize(g_operators.size() * 2);
-    relevant_labels.resize(transitions_by_label.size(), false);
 }
 
 Abstraction::~Abstraction() {
@@ -140,10 +92,6 @@ int Abstraction::get_num_labels() const {
 }
 
 const vector<AbstractTransition> &Abstraction::get_transitions_for_label(int label_no) const {
-    // we do *not* return the transitions for the mapped label because shrink_bisimulation
-    // iterates over all labels anyway. if the abstraction is not normalized, then we
-    // need to do so anyway, if it is, it doesn't hurt to return the then empty
-    // transitions of mapped labels.
     return transitions_by_label[label_no];
 }
 
@@ -336,7 +284,6 @@ void Abstraction::compute_init_distances_general_cost() {
         int label_cost = get_label_cost_by_index(label_no);
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (int j = 0; j < transitions.size(); j++) {
-            assert(label_cost != -1);
             const AbstractTransition &trans = transitions[j];
             forward_graph[trans.src].push_back(
                 make_pair(trans.target, label_cost));
@@ -361,7 +308,6 @@ void Abstraction::compute_goal_distances_general_cost() {
         int label_cost = get_label_cost_by_index(label_no);
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (int j = 0; j < transitions.size(); j++) {
-            assert(label_cost != -1);
             const AbstractTransition &trans = transitions[j];
             backward_graph[trans.target].push_back(
                 make_pair(trans.src, label_cost));
@@ -407,10 +353,9 @@ bool Abstraction::is_normalized() const {
 }
 
 void Abstraction::normalize() {
-    // This method normalizes all labels and transitions. Labels are normalized
-    // if transitions of labels that have been reduced via label reduction are
-    // correctly ordered with their new labels.
-    // Remove duplicate transitions.
+    /* This method sorts all transitions and removes duplicate transitions.
+       It also maps the labels so that they are up to date with the labels
+       object. */
 
     if (is_normalized()) {
         assert(transitions_sorted_unique());
@@ -497,8 +442,9 @@ void Abstraction::normalize() {
                 }
                 vector<AbstractTransition> ().swap(transitions);
 
-                // remove parent from relevant labels (will be replaced by the
-                // new composite label)
+                // mark parent as irrelevant (unused labels should not be
+                // marked as relevant in order to avoid confusions when
+                // considering all relevant labels).
                 relevant_labels[parent_id] = false;
             } else {
                 some_parent_is_irrelevant = true;
@@ -562,10 +508,13 @@ void Abstraction::normalize() {
 }
 
 EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
+    /* If label l1 is irrelevant and label l2 is relevant but has exactly the
+       transitions of an irrelevant label, we do not detect the equivalence. */
+
     assert(is_normalized());
     assert(transitions_sorted_unique());
     vector<bool> considered_labels(num_labels, false);
-    vector<pair<int, int> > labeled_label_nos;
+    vector<pair<int, int> > groups_and_labels;
     int group_number = 0;
     for (size_t label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_label_reduced(label_no)) {
@@ -575,9 +524,8 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
         if (considered_labels[label_no]) {
             continue;
         }
-        const Label *label = labels->get_label_by_index(label_no);
-        int label_cost = label->get_cost();
-        labeled_label_nos.push_back(make_pair(group_number, label_no));
+        int label_cost = get_label_cost_by_index(label_no);
+        groups_and_labels.push_back(make_pair(group_number, label_no));
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (size_t other_label_no = label_no + 1; other_label_no < num_labels; ++other_label_no) {
             if (labels->is_label_reduced(other_label_no)) {
@@ -587,8 +535,7 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
             if (considered_labels[other_label_no]) {
                 continue;
             }
-            const Label *other_label = labels->get_label_by_index(other_label_no);
-            if (label_cost != other_label->get_cost()) {
+            if (label_cost != get_label_cost_by_index(other_label_no)) {
                 continue;
             }
             if (relevant_labels[label_no] != relevant_labels[other_label_no]) {
@@ -598,12 +545,12 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
             if ((transitions.empty() && other_transitions.empty())
                 || (transitions == other_transitions)) {
                 considered_labels[other_label_no] = true;
-                labeled_label_nos.push_back(make_pair(group_number, other_label_no));
+                groups_and_labels.push_back(make_pair(group_number, other_label_no));
             }
         }
         ++group_number;
     }
-    return EquivalenceRelation::from_labels<int>(num_labels, labeled_label_nos);
+    return EquivalenceRelation::from_grouped_elements<int>(num_labels, groups_and_labels);
 }
 
 void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,

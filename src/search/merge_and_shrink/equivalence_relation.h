@@ -108,21 +108,23 @@ public:
     //      Also, default parameters are not allowed for function templates in
     //      the current c++ standard.
     template<class T>
-    static EquivalenceRelation *from_labels(int n,
-                                           std::vector<std::pair<T, int> > &labeled_elements);
+    static EquivalenceRelation *from_grouped_elements(
+            int n,
+            std::vector<std::pair<T, int> > &labeled_elements);
     template<class T, class Equal>
-    static EquivalenceRelation *from_labels(int n,
-                                           std::vector<std::pair<T, int> > &labeled_elements);
+    static EquivalenceRelation *from_grouped_elements(
+            int n,
+            std::vector<std::pair<T, int> > &labeled_elements);
 };
 
 template<class T>
-EquivalenceRelation *EquivalenceRelation::from_labels(int n,
+EquivalenceRelation *EquivalenceRelation::from_grouped_elements(int n,
     std::vector<std::pair<T, int> > &labeled_elements) {
-    return EquivalenceRelation::from_labels<T, std::equal_to<T> >(n, labeled_elements);
+    return EquivalenceRelation::from_grouped_elements<T, std::equal_to<T> >(n, labeled_elements);
 }
 
 template<class T, class Equal>
-EquivalenceRelation *EquivalenceRelation::from_labels(int n,
+EquivalenceRelation *EquivalenceRelation::from_grouped_elements(int n,
     std::vector<std::pair<T, int> > &labeled_elements) {
     EquivalenceRelation *relation = new EquivalenceRelation(n);
     if (!labeled_elements.empty()) {
