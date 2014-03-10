@@ -84,8 +84,6 @@ using namespace __gnu_cxx;
 
  */
 
-bool sorted(const vector<AbstractTransition> &transitions);
-
 //  TODO: We define infinity in more than a few places right now (=>
 //        grep for it). It should only be defined once.
 static const int infinity = numeric_limits<int>::max();
@@ -415,7 +413,7 @@ void Abstraction::normalize() {
     // Remove duplicate transitions.
 
     if (is_normalized()) {
-        assert(sorted_unique());
+        assert(transitions_sorted_unique());
         return;
     }
     //cout << tag() << "normalizing" << endl;
@@ -558,14 +556,14 @@ void Abstraction::normalize() {
     }
 
     // Abstraction has been normalized, restore invariant
-    assert(sorted_unique());
+    assert(transitions_sorted_unique());
     num_labels = labels->get_size();
     normalized = true;
 }
 
 EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
     assert(is_normalized());
-    assert(sorted_unique());
+    assert(transitions_sorted_unique());
     vector<bool> considered_labels(num_labels, false);
     vector<pair<int, int> > labeled_label_nos;
     int group_number = 0;
@@ -698,7 +696,7 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
 
     for (size_t i = 0; i < result.size(); ++i) {
         assert(result[i]->is_normalized());
-        assert(result[i]->sorted_unique());
+        assert(result[i]->transitions_sorted_unique());
     }
 }
 
@@ -748,7 +746,7 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels,
 
     assert(abs1->is_solvable() && abs2->is_solvable());
     assert(abs1->is_normalized() && abs2->is_normalized());
-    assert(abs1->sorted_unique() && abs2->sorted_unique());
+    assert(abs1->transitions_sorted_unique() && abs2->transitions_sorted_unique());
 
     components[0] = abs1;
     components[1] = abs2;
@@ -825,7 +823,7 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels,
     }
 
     // TODO do not check if transitions are sorted but just assume they are not?
-    if (!sorted_unique())
+    if (!transitions_sorted_unique())
         normalized = false;
 }
 
@@ -987,7 +985,7 @@ void Abstraction::apply_abstraction(
     }
 
     // TODO do not check if transitions are sorted but just assume they are not?
-    if (!sorted_unique())
+    if (!transitions_sorted_unique())
         normalized = false;
 }
 
@@ -1083,22 +1081,10 @@ int Abstraction::get_peak_memory_estimate() const {
     return peak_memory;
 }
 
-bool sorted(const vector<AbstractTransition> &transitions) {
-    for (size_t j = 1; j < transitions.size(); ++j) {
-        if (!(transitions[j].src >= transitions[j - 1].src))
-            return false;
-        if (transitions[j].src == transitions[j - 1].src) {
-            if (!(transitions[j].target > transitions[j - 1].target))
-                return false;
-        }
-    }
-    return true;
-}
-
-bool Abstraction::sorted_unique() const {
+bool Abstraction::transitions_sorted_unique() const {
     for (size_t i = 0; i < transitions_by_label.size(); ++i) {
         const vector<AbstractTransition> &transitions = transitions_by_label[i];
-        if (!sorted(transitions)) {
+        if (!is_sorted_unique(transitions)) {
             return false;
         }
     }
