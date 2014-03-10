@@ -185,7 +185,7 @@ void MergeAndShrinkHeuristic::initialize() {
     dump_options();
     warn_on_unusual_options();
 
-    verify_no_axioms_no_cond_effects();
+    verify_no_axioms();
 
     cout << "Building abstraction..." << endl;
     final_abstraction = build_abstraction();
@@ -208,12 +208,20 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Merge-and-shrink heuristic", "");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("conditional_effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
+    parser.document_note(
+        "Note",
+        "Conditional effects are supported directly. Note, however, that "
+        "for tasks that are not factored (in the sense of the JACM 2014 "
+        "merge-and-shrink paper), the atomic abstractions on which "
+        "merge-and-shrink heuristics are based are nondeterministic, "
+        "which can lead to poor heuristics even when no shrinking is "
+        "performed.");
 
     parser.add_option<MergeStrategy *>(
         "merge_strategy",
