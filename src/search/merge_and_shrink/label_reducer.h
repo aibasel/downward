@@ -12,8 +12,7 @@ class EquivalenceRelation;
 class LabelSignature;
 
 class LabelReducer {
-    int num_reduced_labels;
-
+    bool test;
     // old label reduction
     LabelSignature build_label_signature(const Label &label,
         const std::vector<bool> &var_is_used) const;
@@ -27,15 +26,12 @@ class LabelReducer {
                                                      std::vector<EquivalenceRelation *> &local_equivalence_relations) const;
     int reduce_exactly(const EquivalenceRelation *relation, std::vector<Label *> &labels) const;
 public:
-    LabelReducer(int abs_index,
-                 const std::vector<Abstraction *> &all_abstractions,
-                 std::vector<Label* > &labels,
-                 const LabelReduction &label_reduction,
-                 const std::vector<int> &variable_order);
-
-    int get_number_reduced_labels() const {
-        return num_reduced_labels;
-    }
+    LabelReducer() {}
+    void reduce_labels(int abs_index,
+                       const std::vector<Abstraction *> &all_abstractions,
+                       std::vector<Label* > &labels,
+                       const LabelReduction &label_reduction,
+                       const std::vector<int> &variable_order) const;
 };
 
 #endif

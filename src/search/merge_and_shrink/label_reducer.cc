@@ -15,14 +15,13 @@
 using namespace std;
 using namespace __gnu_cxx;
 
-LabelReducer::LabelReducer(int abs_index,
-                           const vector<Abstraction *> &all_abstractions,
-                           std::vector<Label *> &labels,
-                           const LabelReduction &label_reduction,
-                           const vector<int> &variable_order) {
-    num_reduced_labels = 0;
+void LabelReducer::reduce_labels(int abs_index,
+                                 const vector<Abstraction *> &all_abstractions,
+                                 std::vector<Label *> &labels,
+                                 const LabelReduction &label_reduction,
+                                 const vector<int> &variable_order) const {
     if (label_reduction == NONE) {
-        exit_with(EXIT_INPUT_ERROR);
+        exit_with(EXIT_CRITICAL_ERROR);
     }
     if (label_reduction == OLD) {
         // we need to normalize all abstraction to incorporate possible previous
@@ -33,7 +32,7 @@ LabelReducer::LabelReducer(int abs_index,
                 all_abstractions[i]->normalize();
             }
         }
-        num_reduced_labels += reduce_old(all_abstractions[abs_index]->get_varset(), labels);
+        reduce_old(all_abstractions[abs_index]->get_varset(), labels);
         return;
     }
     bool fixpoint = false;
@@ -68,7 +67,6 @@ LabelReducer::LabelReducer(int abs_index,
             } else {
                 exit_with(EXIT_INPUT_ERROR);
             }
-            num_reduced_labels += reduced_labels;
             if (!fixpoint) {
                 break;
             }
@@ -230,7 +228,7 @@ int LabelReducer::reduce_old(const vector<int> &abs_vars,
         labels.push_back(new_label);
     }
 
-    cout << "Label reduction: "
+    cout << "Old, local label reduction: "
          << num_labels << " labels, "
          << num_labels_after_reduction << " after reduction"
          << endl;
