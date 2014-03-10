@@ -70,9 +70,11 @@
 - Replace all the estimated memory stuff with actual memory
   measurements (or maybe better for now: add actual memory
   measurements)?
-- Later: split the representation of the abstraction function and
+- split the representation of the abstraction function and
   heuristic from the transition systems so that we can throw away the
   transition systems after constructing them?
+- Can we get rid of "shrink_atomic" (and the related block before the merge
+  and shrink main loop)?
 
 * General TODOs for the "big refactoring"
 

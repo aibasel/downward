@@ -43,14 +43,13 @@ Labels::Labels(OperatorCost cost_type,
 Labels::~Labels() {
 }
 
-int Labels::reduce(int abs_index,
-                   const std::vector<Abstraction *> &all_abstractions) {
-    if (label_reduction == NONE) {
-        return 0;
+void Labels::reduce(int abs_index,
+                    const std::vector<Abstraction *> &all_abstractions) {
+    if (label_reduction != NONE) {
+        LabelReducer label_reducer;
+        label_reducer.reduce_labels(abs_index, all_abstractions, labels,
+                                    label_reduction, variable_order);
     }
-    LabelReducer label_reducer(abs_index, all_abstractions, labels,
-                               label_reduction, variable_order);
-    return label_reducer.get_number_reduced_labels();
 }
 
 const Label *Labels::get_label_by_index(int index) const {

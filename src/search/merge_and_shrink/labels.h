@@ -40,8 +40,8 @@ public:
            LabelReduction label_reduction,
            FixpointVariableOrder fix_point_variable_order);
     ~Labels();
-    int reduce(int abs_index,
-               const std::vector<Abstraction *> &all_abstractions);
+    void reduce(int abs_index,
+                const std::vector<Abstraction *> &all_abstractions);
     const Label *get_label_by_index(int index) const;
     // TODO: rename and/or add is_leaf method
     bool is_label_reduced(int label_no) const;
