@@ -1,18 +1,34 @@
 #ifndef MERGE_AND_SHRINK_LABEL_REDUCER_H
 #define MERGE_AND_SHRINK_LABEL_REDUCER_H
 
-#include "label.h"
-#include "labels.h"
-
-#include <cassert>
 #include <vector>
 
 class Abstraction;
 class EquivalenceRelation;
+class Label;
 class LabelSignature;
+class Options;
+
+enum LabelReductionMethod {
+    NONE,
+    OLD,
+    APPROXIMATIVE,
+    APPROXIMATIVE_WITH_FIXPOINT,
+    EXACT,
+    EXACT_WITH_FIXPOINT
+};
+
+enum FixpointVariableOrder {
+    REGULAR,
+    REVERSE,
+    RANDOM
+};
 
 class LabelReducer {
-    bool test;
+    LabelReductionMethod label_reduction_method;
+    FixpointVariableOrder fixpoint_variable_order;
+    std::vector<int> variable_order;
+
     // old label reduction
     LabelSignature build_label_signature(const Label &label,
         const std::vector<bool> &var_is_used) const;
@@ -26,12 +42,12 @@ class LabelReducer {
                                                      std::vector<EquivalenceRelation *> &local_equivalence_relations) const;
     int reduce_exactly(const EquivalenceRelation *relation, std::vector<Label *> &labels) const;
 public:
-    LabelReducer() {}
+    explicit LabelReducer(const Options &options);
+    ~LabelReducer() {}
     void reduce_labels(int abs_index,
                        const std::vector<Abstraction *> &all_abstractions,
-                       std::vector<Label* > &labels,
-                       const LabelReduction &label_reduction,
-                       const std::vector<int> &variable_order) const;
+                       std::vector<Label* > &labels) const;
+    void dump_options() const;
 };
 
 #endif

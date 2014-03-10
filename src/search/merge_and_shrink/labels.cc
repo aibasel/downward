@@ -11,45 +11,23 @@
 
 using namespace std;
 
-Labels::Labels(OperatorCost cost_type,
-               bool unit_cost_,
-               LabelReduction label_reduction_,
-               FixpointVariableOrder fix_point_variable_order_)
-    : unit_cost(unit_cost_),
-      label_reduction(label_reduction_),
-      fix_point_variable_order(fix_point_variable_order_) {
+Labels::Labels(bool unit_cost_, const Options &options, OperatorCost cost_type)
+    : unit_cost(unit_cost_) {
+    label_reducer = new LabelReducer(options);
+    labels.reserve(g_operators.size() * 2 - 1);
     for (size_t i = 0; i < g_operators.size(); ++i) {
         labels.push_back(new OperatorLabel(i, get_adjusted_action_cost(g_operators[i], cost_type),
                                            g_operators[i].get_prevail(), g_operators[i].get_pre_post()));
     }
-    if (label_reduction == APPROXIMATIVE_WITH_FIXPOINT
-            || label_reduction == EXACT_WITH_FIXPOINT) {
-        for (int i = 0; i < g_variable_domain.size(); ++i) {
-            if (fix_point_variable_order == REGULAR
-                    || fix_point_variable_order == RANDOM) {
-                variable_order.push_back(i);
-            } else if (fix_point_variable_order == REVERSE) {
-                variable_order.push_back(g_variable_domain.size() - 1 - i);
-            } else {
-                exit_with(EXIT_INPUT_ERROR);
-            }
-        }
-        if (fix_point_variable_order == RANDOM) {
-            random_shuffle(variable_order.begin(), variable_order.end());
-        }
-    }
 }
 
 Labels::~Labels() {
+    delete label_reducer;
 }
 
 void Labels::reduce(int abs_index,
                     const std::vector<Abstraction *> &all_abstractions) {
-    if (label_reduction != NONE) {
-        LabelReducer label_reducer;
-        label_reducer.reduce_labels(abs_index, all_abstractions, labels,
-                                    label_reduction, variable_order);
-    }
+    label_reducer->reduce_labels(abs_index, all_abstractions, labels);
 }
 
 const Label *Labels::get_label_by_index(int index) const {
@@ -70,43 +48,5 @@ void Labels::dump() const {
 }
 
 void Labels::dump_options() const {
-    cout << "Label reduction: ";
-    switch (label_reduction) {
-    case NONE:
-        cout << "disabled";
-        break;
-    case OLD:
-        cout << "old";
-        break;
-    case APPROXIMATIVE:
-        cout << "approximative";
-        break;
-    case APPROXIMATIVE_WITH_FIXPOINT:
-        cout << "approximative with fixpoint computation";
-        break;
-    case EXACT:
-        cout << "exact";
-        break;
-    case EXACT_WITH_FIXPOINT:
-        cout << "exact with fixpoint computation";
-        break;
-    }
-    cout << endl;
-    if (label_reduction == APPROXIMATIVE_WITH_FIXPOINT
-            || label_reduction == EXACT_WITH_FIXPOINT) {
-        cout << "Fixpoint variable order: ";
-        switch (fix_point_variable_order) {
-        case REGULAR:
-            cout << "regular";
-            break;
-        case REVERSE:
-            cout << "reversed";
-            break;
-        case RANDOM:
-            cout << "random";
-            break;
-        }
-        cout << endl;
-        //cout << variable_order << endl;
-    }
+    label_reducer->dump_options();
 }

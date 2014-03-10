@@ -22,10 +22,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
-    labels = new Labels(cost_type,
-                        is_unit_cost_problem(),
-                        LabelReduction(opts.get_enum("label_reduction")),
-                        FixpointVariableOrder(opts.get_enum("fixpoint_var_order")));
+    labels = new Labels(is_unit_cost_problem(), opts, cost_type);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -293,7 +290,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        if (opts.get_enum("label_reduction") == OLD
+        if (opts.get_enum("label_reduction") == 1
                 && opts.get<MergeStrategy *>("merge_strategy")->name() != "linear") {
             parser.error("old label reduction is only correct when used with a "
                          "linear merge strategy!");
