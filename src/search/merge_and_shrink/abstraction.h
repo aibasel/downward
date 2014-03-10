@@ -32,6 +32,10 @@ struct AbstractTransition {
     bool operator<(const AbstractTransition &other) const {
         return src < other.src || (src == other.src && target < other.target);
     }
+
+    bool operator>=(const AbstractTransition &other) const {
+        return !(*this < other);
+    }
 };
 
 class Abstraction {
@@ -122,7 +126,7 @@ public:
     // sorted_unique() is currently also used to determine whether an
     // abstraction is normalized or not after construction (composite abstraction)
     // and shrinking (apply_abstraction)
-    bool sorted_unique() const;
+    bool transitions_sorted_unique() const;
     void dump_relevant_labels() const;
     void dump() const;
 
