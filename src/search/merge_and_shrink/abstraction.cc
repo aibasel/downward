@@ -90,8 +90,8 @@ bool sorted(const vector<AbstractTransition> &transitions);
 //        grep for it). It should only be defined once.
 static const int infinity = numeric_limits<int>::max();
 
-Abstraction::Abstraction(bool is_unit_cost_, Labels *labels_)
-    : is_unit_cost(is_unit_cost_), labels(labels_), num_labels(labels->get_size()),
+Abstraction::Abstraction(Labels *labels_)
+    : labels(labels_), num_labels(labels->get_size()),
       normalized(true), peak_memory(0) {
     clear_distances();
     // at most n-1 fresh labels will be needed if n is the number of operators
@@ -194,7 +194,7 @@ void Abstraction::compute_distances() {
 
     init_distances.resize(num_states, infinity);
     goal_distances.resize(num_states, infinity);
-    if (is_unit_cost) {
+    if (labels->is_unit_cost()) {
         cout << "computing distances using unit-cost algorithm" << endl;
         compute_init_distances_unit_cost();
         compute_goal_distances_unit_cost();
@@ -607,17 +607,15 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
     return EquivalenceRelation::from_labels<int>(num_labels, labeled_label_nos);
 }
 
-void Abstraction::build_atomic_abstractions(bool is_unit_cost,
-    vector<Abstraction *> &result,
-    Labels *labels) {
+void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
+                                            Labels *labels) {
     assert(result.empty());
     cout << "Building atomic abstractions... " << endl;
     int var_count = g_variable_domain.size();
 
     // Step 1: Create the abstraction objects without transitions.
     for (int var_no = 0; var_no < var_count; var_no++)
-        result.push_back(new AtomicAbstraction(
-                             is_unit_cost, labels, var_no));
+        result.push_back(new AtomicAbstraction(labels, var_no));
 
     // Step 2: Add transitions.
     // Note that when building atomic abstractions, no other labels than the
@@ -661,8 +659,8 @@ void Abstraction::build_atomic_abstractions(bool is_unit_cost,
     }
 }
 
-AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, Labels *labels, int variable_)
-    : Abstraction(is_unit_cost, labels), variable(variable_) {
+AtomicAbstraction::AtomicAbstraction(Labels *labels, int variable_)
+    : Abstraction(labels), variable(variable_) {
     varset.push_back(variable);
     /*
       This generates the states of the atomic abstraction, but not the
@@ -698,9 +696,10 @@ AtomicAbstraction::AtomicAbstraction(bool is_unit_cost, Labels *labels, int vari
 AtomicAbstraction::~AtomicAbstraction() {
 }
 
-CompositeAbstraction::CompositeAbstraction(bool is_unit_cost,
-    Labels *labels, Abstraction *abs1, Abstraction *abs2)
-    : Abstraction(is_unit_cost, labels) {
+CompositeAbstraction::CompositeAbstraction(Labels *labels,
+                                           Abstraction *abs1,
+                                           Abstraction *abs2)
+    : Abstraction(labels) {
     cout << "Merging " << abs1->description() << " and "
          << abs2->description() << endl;
 

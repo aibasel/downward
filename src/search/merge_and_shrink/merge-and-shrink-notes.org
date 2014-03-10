@@ -49,8 +49,6 @@
 
 * General TODOs for now
 
-- The attribute that knows if we have a unit-cost problem could live
-  in Labels rather than Abstraction.
 - After we've started merging, the fixed-point variable order for
   label reduction doesn't really talk about variables any more but
   also about merged abstractions. Take this into account when thinking
