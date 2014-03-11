@@ -6,7 +6,9 @@ using namespace std;
 
 void set_bits(PackedStateEntry &mask, unsigned int from, unsigned int to) {
     assert (from <= to);
-    mask |= (PackedStateEntry(1) << to) - (PackedStateEntry(1) << from);
+    int length = to - from;
+    assert(length < 32 && "1U << 32 has undefined behaviour");
+    mask |= ((PackedStateEntry(1) << length) - 1) << from;
 }
 
 int get_needed_bits(int num_values) {
