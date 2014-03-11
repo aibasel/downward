@@ -3,6 +3,7 @@
 
 #include <vector>
 
+// TODO: Make name more generic and try to hide it in IntPacker class (issue348).
 typedef unsigned int PackedStateEntry;
 
 class IntPacker {
@@ -21,6 +22,7 @@ class IntPacker {
     // No implementation to prevent default construction.
     IntPacker();
 public:
+    // Note that signed ints limit the ranges to 31 bits.
     explicit IntPacker(const std::vector<int> &ranges);
     ~IntPacker();
 
