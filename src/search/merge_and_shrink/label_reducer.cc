@@ -13,6 +13,7 @@
 #include <cassert>
 #include <ext/hash_map>
 #include <iostream>
+#include <limits>
 
 using namespace std;
 using namespace __gnu_cxx;
@@ -20,30 +21,28 @@ using namespace __gnu_cxx;
 LabelReducer::LabelReducer(const Options &options)
     : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction"))),
       fixpoint_variable_order(FixpointVariableOrder(options.get_enum("fixpoint_var_order"))) {
-    if (label_reduction_method == APPROXIMATIVE_WITH_FIXPOINT
-            || label_reduction_method == EXACT_WITH_FIXPOINT) {
-        for (int i = 0; i < g_variable_domain.size(); ++i) {
-            if (fixpoint_variable_order == REGULAR
-                    || fixpoint_variable_order == RANDOM) {
-                variable_order.push_back(i);
-            } else if (fixpoint_variable_order == REVERSE) {
-                variable_order.push_back(g_variable_domain.size() - 1 - i);
-            } else {
-                exit_with(EXIT_CRITICAL_ERROR);
-            }
-        }
+
+    if (fixpoint_variable_order == REGULAR
+        || fixpoint_variable_order == RANDOM) {
+        for (size_t i = 0; i < g_variable_domain.size(); ++i)
+            variable_order.push_back(i);
         if (fixpoint_variable_order == RANDOM) {
             random_shuffle(variable_order.begin(), variable_order.end());
         }
+    } else {
+        assert(fixpoint_variable_order == REVERSE);
+        for (size_t i = 0; i < g_variable_domain.size(); ++i)
+            variable_order.push_back(g_variable_domain.size() - 1 - i);
     }
 }
 
-void LabelReducer::reduce_labels(int abs_index,
+void LabelReducer::reduce_labels(int abs_start_index,
                                  const vector<Abstraction *> &all_abstractions,
                                  std::vector<Label *> &labels) const {
     if (label_reduction_method == NONE) {
         return;
     }
+
     if (label_reduction_method == OLD) {
         // we need to normalize all abstraction to incorporate possible previous
         // label reductions (normalize cannot deal with several label reductions
@@ -53,73 +52,68 @@ void LabelReducer::reduce_labels(int abs_index,
                 all_abstractions[i]->normalize();
             }
         }
-        reduce_old(all_abstractions[abs_index]->get_varset(), labels);
+        reduce_old(all_abstractions[abs_start_index]->get_varset(), labels);
         return;
     }
-    bool fixpoint = false;
-    if (label_reduction_method == APPROXIMATIVE_WITH_FIXPOINT
-            || label_reduction_method == EXACT_WITH_FIXPOINT) {
-        fixpoint = true;
-    }
-    int current_abs_index = abs_index;
+
     int variable_order_index = 0;
-    if (fixpoint) {
-        assert(!variable_order.empty());
-        while (variable_order[variable_order_index] != abs_index) {
-            ++variable_order_index;
-        }
-        assert(variable_order[variable_order_index] == current_abs_index);
+    assert(!variable_order.empty());
+    while (variable_order[variable_order_index] != abs_start_index) {
+        ++variable_order_index;
     }
-    int index_of_last_unsuccesful_reduction = -1;
-    vector<EquivalenceRelation *> local_equivalence_relations(all_abstractions.size(), 0);
-    while (true) {
-        Abstraction *current_abstraction = all_abstractions[current_abs_index];
-        if (current_abstraction) {
-            int reduced_labels = 0;
-            if (label_reduction_method == EXACT || label_reduction_method == EXACT_WITH_FIXPOINT) {
-                // Note: we need to normalize the current abstraction in order to
-                // avoid that when normalizing it at some point later, we would
-                // have two label reductions to incorporate.
-                // See Abstraction::normalize()
-                EquivalenceRelation *relation = compute_outside_equivalence(current_abs_index, all_abstractions,
-                                                                            labels, local_equivalence_relations);
-                reduced_labels = reduce_exactly(relation, labels);
-                delete relation;
-            } else {
-                exit_with(EXIT_CRITICAL_ERROR);
-            }
-            if (!fixpoint) {
-                break;
-            }
+    assert(variable_order[variable_order_index] == abs_start_index);
+
+    int max_iterations;
+    if (label_reduction_method == ONE_ABSTRACTION) {
+        max_iterations = 1;
+    } else if (label_reduction_method == ALL_ABSTRACTIONS) {
+        max_iterations = all_abstractions.size();
+    } else if (label_reduction_method == ALL_ABSTRACTIONS_WITH_FIXPOINT) {
+        max_iterations = numeric_limits<int>::max();
+    } else {
+        abort();
+    }
+
+    int num_unsuccessful_iterations = 0;
+    vector<EquivalenceRelation *> local_equivalence_relations(
+        all_abstractions.size(), 0);
+
+    for (int i = 0; i < max_iterations; ++i) {
+        int abs_index = variable_order[variable_order_index];
+        Abstraction *current_abstraction = all_abstractions[abs_index];
+
+        bool have_reduced = false;
+        if (current_abstraction != 0) {
+            EquivalenceRelation *relation = compute_outside_equivalence(
+                abs_index, all_abstractions,
+                labels, local_equivalence_relations);
+            // TODO: in the future, reduce_exactly will return a bool,
+            // which we can assign directly to have_reduced.
+            int reduced_labels = reduce_exactly(relation, labels);
+            delete relation;
             assert(reduced_labels >= 0);
-            if (reduced_labels > 0) {
-                index_of_last_unsuccesful_reduction = -1;
-            } else {
-                assert(reduced_labels == 0);
-                if (index_of_last_unsuccesful_reduction == -1) {
-                    index_of_last_unsuccesful_reduction = variable_order_index;
-                }
-            }
+            if (reduced_labels > 0)
+                have_reduced = true;
         }
-        // we can never end up here when *not* using fixpoint iteration
-        assert(fixpoint);
-        assert(!variable_order.empty());
+
+        if (have_reduced) {
+            num_unsuccessful_iterations = 0;
+        } else {
+            ++num_unsuccessful_iterations;
+        }
+        if (num_unsuccessful_iterations == all_abstractions.size() - 1)
+            break;
+
         ++variable_order_index;
         if (variable_order_index == variable_order.size()) {
             variable_order_index = 0;
         }
-        if (variable_order_index == index_of_last_unsuccesful_reduction) {
-            // reached fixpoint
-            break;
-        }
-        current_abs_index = variable_order[variable_order_index];
     }
-    for (size_t i = 0; i < local_equivalence_relations.size(); ++i) {
-        if (local_equivalence_relations[i]) {
-            delete local_equivalence_relations[i];
-        }
-    }
+
+    for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
+        delete local_equivalence_relations[i];
 }
+
 
 typedef pair<int, int> Assignment;
 
@@ -358,23 +352,20 @@ void LabelReducer::dump_options() const {
     case OLD:
         cout << "old";
         break;
-    case APPROXIMATIVE:
-        cout << "approximative";
+    case ONE_ABSTRACTION:
+        cout << "one abstraction";
         break;
-    case APPROXIMATIVE_WITH_FIXPOINT:
-        cout << "approximative with fixpoint computation";
+    case ALL_ABSTRACTIONS:
+        cout << "all abstractions";
         break;
-    case EXACT:
-        cout << "exact";
-        break;
-    case EXACT_WITH_FIXPOINT:
-        cout << "exact with fixpoint computation";
+    case ALL_ABSTRACTIONS_WITH_FIXPOINT:
+        cout << "all abstractions with fixpoint computation";
         break;
     }
     cout << endl;
-    if (label_reduction_method == APPROXIMATIVE_WITH_FIXPOINT
-            || label_reduction_method == EXACT_WITH_FIXPOINT) {
-        cout << "Fixpoint variable order: ";
+    if (label_reduction_method == ALL_ABSTRACTIONS ||
+        label_reduction_method == ALL_ABSTRACTIONS_WITH_FIXPOINT) {
+        cout << "Variable order: ";
         switch (fixpoint_variable_order) {
         case REGULAR:
             cout << "regular";

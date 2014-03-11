@@ -12,10 +12,9 @@ class Options;
 enum LabelReductionMethod {
     NONE,
     OLD,
-    APPROXIMATIVE,
-    APPROXIMATIVE_WITH_FIXPOINT,
-    EXACT,
-    EXACT_WITH_FIXPOINT
+    ONE_ABSTRACTION,
+    ALL_ABSTRACTIONS,
+    ALL_ABSTRACTIONS_WITH_FIXPOINT
 };
 
 enum FixpointVariableOrder {
