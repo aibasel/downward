@@ -9,7 +9,7 @@ class Options;
 
 class LinearMergeStrategy : public MergeStrategy {
     VariableOrderFinder order;
-    int first_index;
+    bool need_first_index;
 
     void dump_strategy_specific_options() const;
 public:

@@ -12,7 +12,7 @@ using namespace std;
 LinearMergeStrategy::LinearMergeStrategy(const Options &opts)
     : MergeStrategy(),
       order(VariableOrderType(opts.get_enum("type"))),
-      first_index(-1) {
+      need_first_index(true) {
 }
 
 bool LinearMergeStrategy::done() const {
@@ -20,11 +20,14 @@ bool LinearMergeStrategy::done() const {
 }
 
 pair<int, int> LinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abstractions) {
-    if (first_index == -1) {
-        first_index = order.next();
-        cout << "First variable: " << first_index << endl;
+    int first;
+    if (need_first_index) {
+        need_first_index = false;
+        first = order.next();
+        cout << "First variable: " << first << endl;
+    } else {
+        first = all_abstractions.size() - 1;
     }
-    int first = first_index;
     int second = order.next();
     cout << "Next variable: " << second << endl;
     assert(all_abstractions[first]);
