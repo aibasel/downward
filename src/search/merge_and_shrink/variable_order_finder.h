@@ -3,7 +3,7 @@
 
 #include <vector>
 
-enum LinearMergeStrategyType {
+enum VariableOrderType {
     CG_GOAL_LEVEL,
     CG_GOAL_RANDOM,
     GOAL_CG_LEVEL,
@@ -13,7 +13,7 @@ enum LinearMergeStrategyType {
 };
 
 class VariableOrderFinder {
-    const LinearMergeStrategyType linear_merge_strategy_type;
+    const VariableOrderType variable_order_type;
     std::vector<int> selected_vars;
     std::vector<int> remaining_vars;
     std::vector<bool> is_goal_variable;
@@ -21,7 +21,7 @@ class VariableOrderFinder {
 
     void select_next(int position, int var_no);
 public:
-    VariableOrderFinder(LinearMergeStrategyType linear_merge_strategy_type);
+    VariableOrderFinder(VariableOrderType variable_order_type);
     ~VariableOrderFinder();
     bool done() const;
     int next();

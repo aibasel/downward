@@ -43,10 +43,6 @@
    126 variable_order_finder.cc
     31 variable_order_finder.h
 
-- TODO: in variable_order_finder.{cc,h}, remove references to "merge
-  strategy" etc. in variable and type names. (The class is to be used
-  more generally.)
-
 * General TODOs for now
 
 - CompositeAbstraction (constructor): swapping loops does not guarantee
@@ -77,6 +73,7 @@
   transition systems after constructing them?
 - Can we get rid of "shrink_atomic" (and the related block before the merge
   and shrink main loop)?
+- VariableOrderFinder: Move one level up in the code base?
 
 * General TODOs for the "big refactoring"
 

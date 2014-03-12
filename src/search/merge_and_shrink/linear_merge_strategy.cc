@@ -11,7 +11,7 @@ using namespace std;
 
 LinearMergeStrategy::LinearMergeStrategy(const Options &opts)
     : MergeStrategy(),
-      order(LinearMergeStrategyType(opts.get_enum("type"))),
+      order(VariableOrderType(opts.get_enum("type"))),
       first_index(-1) {
 }
 
@@ -19,22 +19,24 @@ bool LinearMergeStrategy::done() const {
     return order.done();
 }
 
-void LinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abstractions, std::pair<int, int> &next_indices) {
+pair<int, int> LinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abstractions) {
     if (first_index == -1) {
         first_index = order.next();
         cout << "First variable: " << first_index << endl;
     }
-    next_indices.first = first_index;
-    next_indices.second = order.next();
-    cout << "Next variable: " << next_indices.second << endl;
-    assert(all_abstractions[next_indices.first]);
-    if (!all_abstractions[next_indices.second]) {
+    int first = first_index;
+    int second = order.next();
+    cout << "Next variable: " << second << endl;
+    assert(all_abstractions[first]);
+    if (!all_abstractions[second]) {
         exit_with(EXIT_CRITICAL_ERROR);
     }
-    assert(all_abstractions[next_indices.second]);
+    assert(all_abstractions[second]);
+    return make_pair(first, second);
 }
 
 void LinearMergeStrategy::dump_strategy_specific_options() const {
+    cout << "Linear merge strategy: ";
     order.dump();
 }
 

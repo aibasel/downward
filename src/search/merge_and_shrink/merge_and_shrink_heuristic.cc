@@ -78,8 +78,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     vector<int> system_order;
     // TODO: reconsider in which order things are done in the main loop
     while (!merge_strategy->done()) {
-        pair<int, int> next_systems;
-        merge_strategy->get_next(all_abstractions, next_systems);
+        pair<int, int> next_systems = merge_strategy->get_next(all_abstractions);
         int system_one = next_systems.first;
         system_order.push_back(system_one);
         Abstraction *abstraction = all_abstractions[system_one];
@@ -171,7 +170,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         cout << system_order[i - 1] << " " << system_order[i] << ", ";
     }
     cout << endl;
-    merge_strategy->print_summary();
     return final_abstraction;
 }
 
