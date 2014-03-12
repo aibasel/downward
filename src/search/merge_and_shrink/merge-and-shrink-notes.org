@@ -61,21 +61,18 @@
   label2 have the same transitions, don't store "label1: transition1,
   ...; label2: transition1, ...", but instead store "{label1, label2}:
   transition1, ...".
-- Make names of classes, variables etc. more consistent with the
-  papers. For example, Abstraction => TransitionSystem. Also clean up
-  the documentation. (Do this after all other changes are done and
-  evaluated?)
 - Replace all the estimated memory stuff with actual memory
   measurements (or maybe better for now: add actual memory
   measurements)?
-- split the representation of the abstraction function and
+- Split the representation of the abstraction function and
   heuristic from the transition systems so that we can throw away the
   transition systems after constructing them?
-- Can we get rid of "shrink_atomic" (and the related block before the merge
-  and shrink main loop)?
-- VariableOrderFinder: Move one level up in the code base?
 
 * General TODOs for the "big refactoring"
+
+- Make names of classes, variables etc. more consistent with the
+  papers. For example, Abstraction => TransitionSystem. Also clean up
+  the documentation.
 
 - Reconsider what we understand by "normalized", e.g. define the notion of a
   "valid state" of an abstraction as:
@@ -127,6 +124,26 @@
 
 - Abstraction::apply_abstraction: possibly consider the special case that
   nothing is actually being shrunk and then leave the method.
+
+- Can we get rid of "shrink_atomic" (and the related block before the merge
+  and shrink main loop)?
+
+- VariableOrderFinder: Move one level up in the code base?
+
+- LabelReducer: the caching of local equivalence relations of labels could be
+  stored in the abstractions rather than the label reducer
+
+- LabelReducer could be integrated (back) into Labels after we got rid of the
+  old label reduction method. There is a strong inter depedence between both
+  classes, as the label reducer creates new labels and Labels should handle
+  such operations.
+
+- LabelReducer::reduce_labels(...): get rid of the abs_index parameter and
+  determine internally with what abstraction to start (if using a label
+  reduction method which does several iterations of reductions). For example,
+  we could always take the "largest" abstraction in terms of variables
+  included in it. This should then reflect the same behavior as with the old
+  lable reduction, at least when using non-linear merge strategies.
 
 * TODOs for rest of the code:
 

@@ -22,6 +22,7 @@ LabelReducer::LabelReducer(const Options &options)
     : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction"))),
       fixpoint_variable_order(FixpointVariableOrder(options.get_enum("fixpoint_var_order"))) {
 
+    variable_order.reserve(g_variable_domain.size());
     if (fixpoint_variable_order == REGULAR
         || fixpoint_variable_order == RANDOM) {
         for (size_t i = 0; i < g_variable_domain.size(); ++i)
@@ -44,9 +45,9 @@ void LabelReducer::reduce_labels(int abs_start_index,
     }
 
     if (label_reduction_method == OLD) {
-        // we need to normalize all abstraction to incorporate possible previous
-        // label reductions (normalize cannot deal with several label reductions
-        // at the time)
+        // We need to normalize all abstraction to incorporate possible previous
+        // label reductions, because normalize cannot deal with several label
+        // reductions at once.
         for (size_t i = 0; i < all_abstractions.size(); ++i) {
             if (all_abstractions[i]) {
                 all_abstractions[i]->normalize();
@@ -87,13 +88,8 @@ void LabelReducer::reduce_labels(int abs_start_index,
             EquivalenceRelation *relation = compute_outside_equivalence(
                 abs_index, all_abstractions,
                 labels, local_equivalence_relations);
-            // TODO: in the future, reduce_exactly will return a bool,
-            // which we can assign directly to have_reduced.
-            int reduced_labels = reduce_exactly(relation, labels);
+            have_reduced = reduce_exactly(relation, labels);
             delete relation;
-            assert(reduced_labels >= 0);
-            if (reduced_labels > 0)
-                have_reduced = true;
         }
 
         if (have_reduced) {
@@ -191,7 +187,7 @@ LabelSignature LabelReducer::build_label_signature(
     return LabelSignature(preconditions, effects, label.get_cost());
 }
 
-int LabelReducer::reduce_old(const vector<int> &abs_vars,
+bool LabelReducer::reduce_old(const vector<int> &abs_vars,
                              vector<Label *> &labels) const {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
@@ -261,7 +257,7 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
     assert(abstraction);
     //cout << abstraction->tag() << "compute combinable labels" << endl;
 
-    // we always normalize the "starting" abstraction and delete the cached
+    // We always normalize the "starting" abstraction and delete the cached
     // local equivalence relation (if exists) because this does not happen
     // in the refinement loop below.
     abstraction->normalize();
@@ -270,20 +266,20 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
         local_equivalence_relations[abs_index] = 0;
     }
 
+    // create the equivalence relation where all labels are equivalent
     int num_labels = labels.size();
     vector<pair<int, int> > groups_and_labels;
     groups_and_labels.reserve(num_labels);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         const Label *label = labels[label_no];
         assert(label->get_id() == label_no);
-        if (label->is_reduced()) {
-            // ignore already reduced labels
-            continue;
+        if (!label->is_reduced()) {
+            // only consider non-reduced labels
+            groups_and_labels.push_back(make_pair(0, label_no));
         }
-        groups_and_labels.push_back(make_pair(0, label_no));
     }
-    // start with the relation where all labels are equivalent
     EquivalenceRelation *relation = EquivalenceRelation::from_grouped_elements<int>(num_labels, groups_and_labels);
+
     for (size_t i = 0; i < all_abstractions.size(); ++i) {
         Abstraction *abs = all_abstractions[i];
         if (!abs || abs == abstraction) {
@@ -309,7 +305,7 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
     return relation;
 }
 
-int LabelReducer::reduce_exactly(const EquivalenceRelation *relation, std::vector<Label *> &labels) const {
+bool LabelReducer::reduce_exactly(const EquivalenceRelation *relation, std::vector<Label *> &labels) const {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
     for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
@@ -318,12 +314,11 @@ int LabelReducer::reduce_exactly(const EquivalenceRelation *relation, std::vecto
         for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
             assert(*jt < labels.size());
             Label *label = labels[*jt];
-            if (label->is_reduced()) {
-                // ignore already reduced labels
-                continue;
+            if (!label->is_reduced()) {
+                // only consider non-reduced labels
+                equivalent_labels.push_back(label);
+                ++num_labels;
             }
-            equivalent_labels.push_back(label);
-            ++num_labels;
         }
         if (equivalent_labels.size() > 1) {
             Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
