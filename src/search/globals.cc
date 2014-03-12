@@ -262,8 +262,6 @@ void read_everything(istream &in) {
     // so must be built after the problem has been read in.
     g_causal_graph = new CausalGraph;
 
-    // NOTE: int packer needs the variable ranges, so must be
-    // built after the problem has been read in.
     assert(!g_variable_domain.empty());
     g_state_packer = new IntPacker(g_variable_domain);
     cout << "Variables: " << g_variable_domain.size() << endl;
