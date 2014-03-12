@@ -11,16 +11,15 @@ class NonLinearMergeStrategy : public MergeStrategy {
     };
     NonLinearMergeStrategyType non_linear_merge_strategy_type;
     int remaining_merges;
-    int pair_weights_unequal_zero_counter;
 
     void dump_strategy_specific_options() const;
 public:
     explicit NonLinearMergeStrategy(const Options &opts);
+    virtual ~NonLinearMergeStrategy() {}
 
     virtual bool done() const;
-    virtual void get_next(const std::vector<Abstraction *> &all_abstractions, std::pair<int, int> &next_indices);
+    virtual std::pair<int, int> get_next(const std::vector<Abstraction *> &all_abstractions);
     virtual std::string name() const;
-    virtual void print_summary() const;
 };
 
 #endif

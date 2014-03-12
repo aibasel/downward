@@ -16,9 +16,8 @@ public:
     void dump_options() const;
 
     virtual bool done() const = 0;
-    virtual void get_next(const std::vector<Abstraction *> &all_abstractions, std::pair<int, int> &next_indices) = 0;
+    virtual std::pair<int, int> get_next(const std::vector<Abstraction *> &all_abstractions) = 0;
     virtual std::string name() const = 0;
-    virtual void print_summary() const = 0;
 };
 
 #endif

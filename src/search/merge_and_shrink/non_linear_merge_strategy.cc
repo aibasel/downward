@@ -21,19 +21,19 @@ static const int infinity = numeric_limits<int>::max();
 NonLinearMergeStrategy::NonLinearMergeStrategy(const Options &opts)
     : MergeStrategy(),
       non_linear_merge_strategy_type(NonLinearMergeStrategyType(opts.get_enum("type"))),
-      remaining_merges(-1), pair_weights_unequal_zero_counter(0) {
+      remaining_merges(-1) {
 }
 
 bool NonLinearMergeStrategy::done() const {
     return remaining_merges == 0;
 }
 
-void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abstractions, pair<int, int> &next_indices) {
+pair<int, int> NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abstractions) {
     if (remaining_merges == -1) {
         remaining_merges = all_abstractions.size() - 1;
     }
-    next_indices.first = -1;
-    next_indices.second = -1;
+    int first = -1;
+    int second = -1;
     int minimum_weight = infinity;
     if (remaining_merges > 1) {
         vector<vector<int> > abstraction_label_ranks(all_abstractions.size());
@@ -68,12 +68,12 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
                             minimum_weight = pair_weight;
                             // always return a goal relevant abstraction as a first index
                             if (abstraction->is_goal_relevant()) {
-                                next_indices.first = abs_index;
-                                next_indices.second = other_abs_index;
+                                first = abs_index;
+                                second = other_abs_index;
                             } else {
                                 assert(other_abstraction->is_goal_relevant());
-                                next_indices.first = other_abs_index;
-                                next_indices.second = abs_index;
+                                first = other_abs_index;
+                                second = abs_index;
                             }
                         }
                     }
@@ -81,8 +81,8 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
             }
         }
     }
-    if (next_indices.first == -1) {
-        assert(next_indices.second == -1);
+    if (first == -1) {
+        assert(second == -1);
         assert(remaining_merges == 1 || minimum_weight == infinity);
         // we simply take the first two valid indices from the set of all
         // abstractions (prefering goal relevant abstractions) to be merged next if:
@@ -100,31 +100,29 @@ void NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abst
                         }
                         // always return a goal relevant abstraction as a first index
                         if (abstraction->is_goal_relevant()) {
-                            next_indices.first = abs_index;
-                            next_indices.second = other_abs_index;
+                            first = abs_index;
+                            second = other_abs_index;
                         } else {
                             assert(other_abstraction->is_goal_relevant());
-                            next_indices.first = other_abs_index;
-                            next_indices.second = abs_index;
+                            first = other_abs_index;
+                            second = abs_index;
                         }
                     }
                 }
             }
         }
     }
-    assert(next_indices.first != -1);
-    assert(next_indices.second != -1);
-    cout << "Next pair of indices: (" << next_indices.first << ", " << next_indices.second << ")" << endl;
+    assert(first != -1);
+    assert(second != -1);
+    cout << "Next pair of indices: (" << first << ", " << second << ")" << endl;
 //    if (remaining_merges > 1 && minimum_weight != infinity) {
 //        // in the case we do not make a trivial choice of a next pair
 //        cout << "Computed weight: " << minimum_weight << endl;
 //    } else {
 //        cout << "No weight computed (pair has been chosen trivially by order)" << endl;
 //    }
-    if (minimum_weight != 0 && minimum_weight != infinity) {
-        ++pair_weights_unequal_zero_counter;
-    }
     --remaining_merges;
+    return make_pair(first, second);
 }
 
 void NonLinearMergeStrategy::dump_strategy_specific_options() const {
@@ -141,11 +139,6 @@ void NonLinearMergeStrategy::dump_strategy_specific_options() const {
 
 string NonLinearMergeStrategy::name() const {
     return "non linear";
-}
-
-void NonLinearMergeStrategy::print_summary() const {
-//    cout << "Number of times a pair with weight unequal 0 has been chosen: "
-//         << pair_weights_unequal_zero_counter << endl;
 }
 
 static MergeStrategy *_parse(OptionParser &parser) {
