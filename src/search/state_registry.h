@@ -29,13 +29,13 @@
     is why ids are intended for long term storage (e.g. in open lists).
     Internally, a StateID is just an integer, so it is cheap to store and copy.
 
-  PackedStateEntry* (usually the same as int*, depends on word size)
+  PackedStateEntry* (currently the same as unsigned int*)
     The actual state data is internally represented as a PackedStateEntry array.
     Each PackedStateEntry can contain the values of multiple variables.
     To minimize allocation overhead, the implementation stores the data of many
     such states in a single large array (see SegmentedArrayVector).
     PackedStateEntry arrays are never manipulated directly but through
-    static methods in the State class.
+    a global IntPacker object.
 
   -------------
 
