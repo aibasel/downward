@@ -20,20 +20,21 @@ using namespace __gnu_cxx;
 
 LabelReducer::LabelReducer(const Options &options)
     : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction"))),
-      fixpoint_variable_order(FixpointVariableOrder(options.get_enum("fixpoint_var_order"))) {
+      label_reduction_system_order(LabelReductionSystemOrder(options.get_enum("fixpoint_var_order"))) {
 
-    variable_order.reserve(g_variable_domain.size());
-    if (fixpoint_variable_order == REGULAR
-        || fixpoint_variable_order == RANDOM) {
-        for (size_t i = 0; i < g_variable_domain.size(); ++i)
-            variable_order.push_back(i);
-        if (fixpoint_variable_order == RANDOM) {
-            random_shuffle(variable_order.begin(), variable_order.end());
+    size_t max_no_systems = g_variable_domain.size() * 2 - 1;
+    system_order.reserve(max_no_systems);
+    if (label_reduction_system_order == REGULAR
+        || label_reduction_system_order == RANDOM) {
+        for (size_t i = 0; i < max_no_systems; ++i)
+            system_order.push_back(i);
+        if (label_reduction_system_order == RANDOM) {
+            random_shuffle(system_order.begin(), system_order.end());
         }
     } else {
-        assert(fixpoint_variable_order == REVERSE);
-        for (size_t i = 0; i < g_variable_domain.size(); ++i)
-            variable_order.push_back(g_variable_domain.size() - 1 - i);
+        assert(label_reduction_system_order == REVERSE);
+        for (size_t i = 0; i < max_no_systems; ++i)
+            system_order.push_back(max_no_systems - 1 - i);
     }
 }
 
@@ -57,12 +58,12 @@ void LabelReducer::reduce_labels(int abs_start_index,
         return;
     }
 
-    int variable_order_index = 0;
-    assert(!variable_order.empty());
-    while (variable_order[variable_order_index] != abs_start_index) {
-        ++variable_order_index;
+    size_t system_order_index = 0;
+    assert(!system_order.empty());
+    while (system_order[system_order_index] != abs_start_index) {
+        ++system_order_index;
     }
-    assert(variable_order[variable_order_index] == abs_start_index);
+    assert(system_order[system_order_index] == abs_start_index);
 
     int max_iterations;
     if (label_reduction_method == ONE_ABSTRACTION) {
@@ -80,7 +81,7 @@ void LabelReducer::reduce_labels(int abs_start_index,
         all_abstractions.size(), 0);
 
     for (int i = 0; i < max_iterations; ++i) {
-        int abs_index = variable_order[variable_order_index];
+        size_t abs_index = system_order[system_order_index];
         Abstraction *current_abstraction = all_abstractions[abs_index];
 
         bool have_reduced = false;
@@ -100,9 +101,15 @@ void LabelReducer::reduce_labels(int abs_start_index,
         if (num_unsuccessful_iterations == all_abstractions.size() - 1)
             break;
 
-        ++variable_order_index;
-        if (variable_order_index == variable_order.size()) {
-            variable_order_index = 0;
+        ++system_order_index;
+        if (system_order_index == system_order.size()) {
+            system_order_index = 0;
+        }
+        while (system_order[system_order_index] >= all_abstractions.size()) {
+            ++system_order_index;
+            if (system_order_index == system_order.size()) {
+                system_order_index = 0;
+            }
         }
     }
 
@@ -361,7 +368,7 @@ void LabelReducer::dump_options() const {
     if (label_reduction_method == ALL_ABSTRACTIONS ||
         label_reduction_method == ALL_ABSTRACTIONS_WITH_FIXPOINT) {
         cout << "Variable order: ";
-        switch (fixpoint_variable_order) {
+        switch (label_reduction_system_order) {
         case REGULAR:
             cout << "regular";
             break;

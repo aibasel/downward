@@ -61,7 +61,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
     // vector of all abstractions. entries with 0 have been merged.
     vector<Abstraction *> all_abstractions;
-    all_abstractions.reserve(g_variable_domain.size());
+    all_abstractions.reserve(g_variable_domain.size() * 2 - 1);
     Abstraction::build_atomic_abstractions(all_abstractions, labels);
 
     cout << "Shrinking atomic abstractions..." << endl;
@@ -138,10 +138,12 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
         new_abstraction->statistics(use_expensive_statistics);
 
-        all_abstractions[system_one] = new_abstraction;
+        all_abstractions[system_one] = 0;
         all_abstractions[system_two] = 0;
+        all_abstractions.push_back(new_abstraction);
     }
 
+    assert(all_abstractions.size() == g_variable_domain.size() * 2 - 1);
     Abstraction *final_abstraction = 0;
     for (size_t i = 0; i < all_abstractions.size(); ++i) {
         if (all_abstractions[i]) {
@@ -150,6 +152,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
                 exit_with(EXIT_CRITICAL_ERROR);
             }
             final_abstraction = all_abstractions[i];
+            assert(i == all_abstractions.size() - 1);
         }
     }
 

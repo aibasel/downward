@@ -9,24 +9,24 @@ class Label;
 class LabelSignature;
 class Options;
 
-enum LabelReductionMethod {
-    NONE,
-    OLD,
-    ONE_ABSTRACTION,
-    ALL_ABSTRACTIONS,
-    ALL_ABSTRACTIONS_WITH_FIXPOINT
-};
-
-enum FixpointVariableOrder {
-    REGULAR,
-    REVERSE,
-    RANDOM
-};
-
 class LabelReducer {
+    enum LabelReductionMethod {
+        NONE,
+        OLD,
+        ONE_ABSTRACTION,
+        ALL_ABSTRACTIONS,
+        ALL_ABSTRACTIONS_WITH_FIXPOINT
+    };
+
+    enum LabelReductionSystemOrder {
+        REGULAR,
+        REVERSE,
+        RANDOM
+    };
+
     LabelReductionMethod label_reduction_method;
-    FixpointVariableOrder fixpoint_variable_order;
-    std::vector<int> variable_order;
+    LabelReductionSystemOrder label_reduction_system_order;
+    std::vector<std::size_t> system_order;
 
     // old label reduction
     LabelSignature build_label_signature(const Label &label,

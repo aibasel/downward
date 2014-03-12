@@ -87,7 +87,7 @@ pair<int, int> NonLinearMergeStrategy::get_next(const std::vector<Abstraction *>
         // we simply take the first two valid indices from the set of all
         // abstractions (prefering goal relevant abstractions) to be merged next if:
         // 1) remaining_merges = 1 (there are only two abstractions left)
-        // 2) when all pair weights have been computed to be infinity
+        // 2) all pair weights have been computed to be infinity
         for (size_t abs_index = 0; abs_index < all_abstractions.size(); ++abs_index) {
             Abstraction *abstraction = all_abstractions[abs_index];
             if (abstraction) {
