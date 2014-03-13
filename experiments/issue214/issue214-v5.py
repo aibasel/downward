@@ -29,4 +29,8 @@ exp = common_setup.MyExperiment(
     parsers=['state_size_parser.py'],
     )
 
+exp.add_comparison_table_step(
+    attributes=common_setup.MyExperiment.DEFAULT_TABLE_ATTRIBUTES + ['bytes_per_state', 'variables', 'state_var_t_size']
+)
+
 exp()
