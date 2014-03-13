@@ -19,7 +19,7 @@ using namespace std;
 using namespace __gnu_cxx;
 
 LabelReducer::LabelReducer(const Options &options)
-    : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction"))),
+    : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction_method"))),
       fixpoint_variable_order(FixpointVariableOrder(options.get_enum("fixpoint_var_order"))) {
 
     variable_order.reserve(g_variable_domain.size());
