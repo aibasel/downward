@@ -98,6 +98,7 @@ void IntPacker::pack_bins(const vector<int> &ranges) {
         assert(bits <= BITS_PER_BIN);
         bits_to_vars[bits].push_back(var);
     }
+
     int packed_vars = 0;
     while (packed_vars != num_vars)
         packed_vars += pack_one_bin(ranges, bits_to_vars);
