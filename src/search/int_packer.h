@@ -24,18 +24,17 @@ class IntPacker {
     std::vector<VariableInfo> var_infos;
     int num_bins;
 
+    int pack_one_bin(const std::vector<int> &ranges,
+                     std::vector<std::vector<int> > &bits_to_vars);
     void pack_bins(const std::vector<int> &ranges);
 public:
     typedef unsigned int Bin;
 
     /*
-      The constructor takes the range for each variable. The domain
-      of variable i is {0, ..., ranges[i] - 1}. Because we are using
-      signed ints for the range, a variable can take up at most 31
-      bits. Note that some parts of the code depend on the fact
-      that a variable cannot use the full 32 bits of a bin.
-      (For example, the code might perform bit shifts by 32 bits, whose
-      behaviour is not defined by the C++ standard for 32-bit types.)
+      The constructor takes the range for each variable. The domain of
+      variable i is {0, ..., ranges[i] - 1}. Because we are using signed
+      ints for the ranges (and genenerally for the values of variables),
+      a variable can take up at most 31 bits if int is 32-bit.
     */
     explicit IntPacker(const std::vector<int> &ranges);
     ~IntPacker();
