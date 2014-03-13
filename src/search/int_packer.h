@@ -3,9 +3,6 @@
 
 #include <vector>
 
-// TODO: Make name more generic and try to hide it in IntPacker class (issue348).
-typedef unsigned int PackedStateEntry;
-
 /*
   Utility class to pack lots of unsigned integers (called "variables"
   in the code below) with a small domain {0, ..., range - 1}
