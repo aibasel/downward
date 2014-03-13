@@ -3,24 +3,25 @@
 #include <cassert>
 using namespace std;
 
-static void set_bits(IntPacker::Bin &mask, unsigned int from, unsigned int to) {
+
+static void set_bits(IntPacker::Bin &mask, int from, int to) {
     // Set all bits in the range [from, to) to 1.
     assert(from <= to);
     int length = to - from;
-    assert(length < 32 && "1U << 32 has undefined behaviour");
+    assert(length < 32); // 1U << 32 has undefined behaviour on 32-bit platforms
     mask |= ((IntPacker::Bin(1) << length) - 1) << from;
 }
 
-static int get_needed_bits(int num_values) {
-    unsigned int num_bits = 0;
-    while (num_values > 1U << num_bits)
+static int get_needed_bitsize(int range) {
+    int num_bits = 0;
+    while ((1U << num_bits) < range)
         ++num_bits;
     return num_bits;
 }
 
 static int get_max_fitting_bits(
     const vector<vector<int> > &bits_to_vars, int available_bits) {
-    for (size_t bits = available_bits; bits != 0; --bits) {
+    for (int bits = available_bits; bits != 0; --bits) {
         if (!bits_to_vars[bits].empty()) {
             return bits;
         }
@@ -30,8 +31,7 @@ static int get_max_fitting_bits(
 
 
 IntPacker::IntPacker(const vector<int> &ranges)
-    : var_infos(),
-      num_bins(0) {
+    : num_bins(0) {
     pack_bins(ranges);
 }
 
@@ -40,15 +40,15 @@ IntPacker::~IntPacker() {
 
 int IntPacker::get(const Bin *buffer, int var) const {
     const VariableInfo &var_info = var_infos[var];
-    return (buffer[var_info.bin_index] & var_info.read_mask) >> var_info.shift;
+    Bin bin = buffer[var_info.bin_index];
+    return (bin & var_info.read_mask) >> var_info.shift;
 }
 
 void IntPacker::set(Bin *buffer, int var, int value) const {
     const VariableInfo &var_info = var_infos[var];
-    assert(value < var_info.range);
-    Bin before = buffer[var_info.bin_index];
-    buffer[var_info.bin_index] = (before & var_info.clear_mask) |
-                                 (value << var_info.shift);
+    assert(value >= 0 && value < var_info.range);
+    Bin &bin = buffer[var_info.bin_index];
+    bin = (bin & var_info.clear_mask) | (value << var_info.shift);
 }
 
 void IntPacker::pack_bins(const vector<int> &ranges) {
@@ -59,7 +59,7 @@ void IntPacker::pack_bins(const vector<int> &ranges) {
     int bits_per_bin = sizeof(Bin) * 8;
     vector<vector<int> > bits_to_vars(bits_per_bin + 1);
     for (size_t var = 0; var < num_vars; ++var) {
-        int bits = get_needed_bits(ranges[var]);
+        int bits = get_needed_bitsize(ranges[var]);
         assert(bits < bits_per_bin);
         bits_to_vars[bits].push_back(var);
     }
