@@ -3,7 +3,6 @@
 
 #include <vector>
 
-typedef unsigned int Bin;
 // TODO: Make name more generic and try to hide it in IntPacker class (issue348).
 typedef unsigned int PackedStateEntry;
 
@@ -22,6 +21,10 @@ typedef unsigned int PackedStateEntry;
   details.)
 */
 class IntPacker {
+public:
+    typedef unsigned int Bin;
+
+private:
     struct VariableInfo {
         int range;
         int bin_index;

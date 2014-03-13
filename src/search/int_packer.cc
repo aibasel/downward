@@ -3,12 +3,12 @@
 #include <cassert>
 using namespace std;
 
-static void set_bits(Bin &mask, unsigned int from, unsigned int to) {
+static void set_bits(IntPacker::Bin &mask, unsigned int from, unsigned int to) {
     // Set all bits in the range [from, to) to 1.
     assert(from <= to);
     int length = to - from;
     assert(length < 32 && "1U << 32 has undefined behaviour");
-    mask |= ((Bin(1) << length) - 1) << from;
+    mask |= ((IntPacker::Bin(1) << length) - 1) << from;
 }
 
 static int get_needed_bits(int num_values) {
