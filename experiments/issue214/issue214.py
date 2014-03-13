@@ -24,11 +24,6 @@ else:
     PRIORITY = 0     # number means maia experiment
 
 
-# TODO: I'd like to specify "search_revisions" (which uses the same
-# translator and preprocessor for everything) instead of "revisions"
-# here, but I can't seem to make this work with the REVS argument for
-# CompareRevisionsReport.
-
 exp = common_setup.MyExperiment(
     grid_priority=PRIORITY,
     revisions=REVS,

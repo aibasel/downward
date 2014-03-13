@@ -8,8 +8,8 @@ from downward.reports.scatter import ScatterPlotReport
 import common_setup
 
 
-REVS = ["issue214-base", "issue214-v4"]
-CONFIGS = {"ipdb": ["--search", "astar(ipdb())"]}
+REVS = ["issue214-base", "issue214-v5"]
+CONFIGS = {"blind": ["--search", "astar(blind())"]}
 
 TEST_RUN = False
 
