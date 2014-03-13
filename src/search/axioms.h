@@ -33,7 +33,7 @@ class AxiomEvaluator {
     std::vector<std::vector<NegationByFailureInfo> > nbf_info_by_layer;
 public:
     AxiomEvaluator();
-    void evaluate(PackedStateEntry *buffer);
+    void evaluate(PackedStateBin *buffer);
 };
 
 #endif
