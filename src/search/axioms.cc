@@ -1,5 +1,6 @@
 #include "axioms.h"
 #include "globals.h"
+#include "int_packer.h"
 #include "operator.h"
 
 #include <deque>

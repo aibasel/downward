@@ -10,6 +10,8 @@
 class Operator;
 class StateRegistry;
 
+typedef IntPacker::Bin PackedStateEntry;
+
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
 class State {
