@@ -143,7 +143,7 @@
   reduction method which does several iterations of reductions). For example,
   we could always take the "largest" abstraction in terms of variables
   included in it. This should then reflect the same behavior as with the old
-  lable reduction, at least when using non-linear merge strategies.
+  label reduction, at least when using non-linear merge strategies.
 
 * TODOs for rest of the code:
 
