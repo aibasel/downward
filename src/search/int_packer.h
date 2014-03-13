@@ -19,24 +19,15 @@
 */
 
 class IntPacker {
-public:
-    typedef unsigned int Bin;
-
-private:
-    struct VariableInfo {
-        int range;
-        int bin_index;
-        int shift;
-        Bin read_mask;
-        Bin clear_mask;
-    };
+    class VariableInfo;
 
     std::vector<VariableInfo> var_infos;
     int num_bins;
 
     void pack_bins(const std::vector<int> &ranges);
-
 public:
+    typedef unsigned int Bin;
+
     /*
       The constructor takes the range for each variable. The domain
       of variable i is {0, ..., ranges[i] - 1}. Because we are using

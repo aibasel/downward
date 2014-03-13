@@ -4,12 +4,22 @@
 using namespace std;
 
 
-static void set_bits(IntPacker::Bin &mask, int from, int to) {
-    // Set all bits in the range [from, to) to 1.
-    assert(from <= to);
+class IntPacker::VariableInfo {
+public:
+    int range;
+    int bin_index;
+    int shift;
+    Bin read_mask;
+    Bin clear_mask;
+};
+
+
+static IntPacker::Bin get_bit_mask(int from, int to) {
+    // Return mask with all bits in the range [from, to) set to 1.
+    assert(from >= 0 && to >= from);
     int length = to - from;
     assert(length < 32); // 1U << 32 has undefined behaviour on 32-bit platforms
-    mask |= ((IntPacker::Bin(1) << length) - 1) << from;
+    return ((IntPacker::Bin(1) << length) - 1) << from;
 }
 
 static int get_needed_bitsize(int range) {
@@ -82,11 +92,11 @@ void IntPacker::pack_bins(const vector<int> &ranges) {
         int var = best_fit_vars.back();
         best_fit_vars.pop_back();
         VariableInfo &var_info = var_infos[var];
+        int shift = bits_per_bin - remaining_bits;
         var_info.range = ranges[var];
-        var_info.shift = bits_per_bin - remaining_bits;
+        var_info.shift = shift;
         var_info.bin_index = num_bins - 1;
-        var_info.read_mask = 0;
-        set_bits(var_info.read_mask, var_info.shift, var_info.shift + bits);
+        var_info.read_mask = get_bit_mask(shift, shift + bits);
         var_info.clear_mask = ~var_info.read_mask;
         remaining_bits -= bits;
         ++num_packed_vars;
