@@ -17,6 +17,7 @@
   should be close to optimal in most cases. (See code comments for
   details.)
 */
+
 class IntPacker {
 public:
     typedef unsigned int Bin;
