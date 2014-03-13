@@ -90,13 +90,14 @@ void IntPacker::pack_bins(const vector<int> &ranges) {
     // bits_to_vars[k] contains all variables that require exactly k
     // bits to encode. Once a variable is packed into a bin, it is
     // removed from this index.
+    // Loop over the variables in reverse order to prefer variables with
+    // low indices in case of ties. This might increase cache-locality.
     vector<vector<int> > bits_to_vars(BITS_PER_BIN + 1);
-    for (size_t var = 0; var < num_vars; ++var) {
+    for (int var = num_vars - 1; var >= 0; --var) {
         int bits = get_bit_size_for_range(ranges[var]);
         assert(bits <= BITS_PER_BIN);
         bits_to_vars[bits].push_back(var);
     }
-
     int packed_vars = 0;
     while (packed_vars != num_vars)
         packed_vars += pack_one_bin(ranges, bits_to_vars);
