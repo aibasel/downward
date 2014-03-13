@@ -53,6 +53,8 @@
   about this variable order. One possible idea we could try in the
   future would be to take into account the size of the transition
   systems when deciding what to combine.
+- Abstraction::apply_abstraction_mapping: how can this remain private? Using
+  "friend" for classes that abstract abstractions seems not to be a good way.
 
 * General TODOs for later
 

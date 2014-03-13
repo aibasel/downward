@@ -173,8 +173,8 @@ class AtomicAbstraction : public Abstraction {
     std::vector<AbstractStateRef> lookup_table;
 protected:
     virtual std::string description() const;
-    virtual void apply_abstraction_to_lookup_table(const std::vector<
-                                                       AbstractStateRef> &abstraction_mapping);
+    virtual void apply_abstraction_to_lookup_table(
+        const std::vector<AbstractStateRef> &abstraction_mapping);
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:
