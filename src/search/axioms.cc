@@ -48,7 +48,7 @@ AxiomEvaluator::AxiomEvaluator() {
     }
 }
 
-void AxiomEvaluator::evaluate(PackedStateEntry *buffer) {
+void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
     // TODO rethink the way this is called: see issue 348.
     // cout << "Evaluating axioms..." << endl;
     deque<AxiomLiteral *> queue;

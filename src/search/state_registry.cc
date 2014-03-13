@@ -46,7 +46,7 @@ State StateRegistry::lookup_state(StateID id) const {
 
 const State &StateRegistry::get_initial_state() {
     if (cached_initial_state == 0) {
-        PackedStateEntry *buffer = new PackedStateEntry[g_state_packer->get_num_bins()];
+        PackedStateBin *buffer = new PackedStateBin[g_state_packer->get_num_bins()];
         for (size_t i = 0; i < g_initial_state_data.size(); ++i) {
             g_state_packer->set(buffer, i, g_initial_state_data[i]);
         }
@@ -62,11 +62,11 @@ const State &StateRegistry::get_initial_state() {
 
 //TODO it would be nice to move the actual state creation (and operator application)
 //     out of the StateRegistry. This could for example be done by global functions
-//     operating on state buffers (PackedStateEntry *).
+//     operating on state buffers (PackedStateBin *).
 State StateRegistry::get_successor_state(const State &predecessor, const Operator &op) {
     assert(!op.is_axiom());
     state_data_pool.push_back(predecessor.get_packed_buffer());
-    PackedStateEntry *buffer = state_data_pool[state_data_pool.size() - 1];
+    PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
     for (size_t i = 0; i < op.get_pre_post().size(); ++i) {
         const PrePost &pre_post = op.get_pre_post()[i];
         if (pre_post.does_fire(predecessor))

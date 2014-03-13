@@ -10,7 +10,7 @@
 class Operator;
 class StateRegistry;
 
-typedef IntPacker::Bin PackedStateEntry;
+typedef IntPacker::Bin PackedStateBin;
 
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
@@ -19,15 +19,15 @@ class State {
     template <class Entry>
     friend class PerStateInformation;
     // Values for vars are maintained in a packed state and accessed on demand.
-    const PackedStateEntry *buffer;
+    const PackedStateBin *buffer;
     // registry isn't a reference because we want to support operator=
     const StateRegistry *registry;
     StateID id;
     // Only used by the state registry.
-    State(const PackedStateEntry *buffer_, const StateRegistry &registry_,
+    State(const PackedStateBin *buffer_, const StateRegistry &registry_,
           StateID id_);
 
-    const PackedStateEntry *get_packed_buffer() const {
+    const PackedStateBin *get_packed_buffer() const {
         return buffer;
     }
 

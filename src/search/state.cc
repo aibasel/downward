@@ -10,7 +10,7 @@
 using namespace std;
 
 
-State::State(const PackedStateEntry *buffer_, const StateRegistry &registry_,
+State::State(const PackedStateBin *buffer_, const StateRegistry &registry_,
              StateID id_)
     : buffer(buffer_),
       registry(&registry_),
