@@ -12,7 +12,7 @@ static IntPacker::Bin get_bit_mask(int from, int to) {
     assert(from >= 0 && to >= from && to <= BITS_PER_BIN);
     int length = to - from;
     if (length == BITS_PER_BIN) {
-        // 1U << num_bits_in_word has undefined behaviour in C++; e.g.
+        // 1U << BITS_PER_BIN has undefined behaviour in C++; e.g.
         // 1U << 32 == 1 (not 0) on 32-bit Intel platforms. Hence this
         // special case.
         assert(from == 0 && to == BITS_PER_BIN);
