@@ -4,6 +4,7 @@
 #include "causal_graph.h"
 #include "domain_transition_graph.h"
 #include "heuristic.h"
+#include "int_packer.h"
 #include "legacy_causal_graph.h"
 #include "operator.h"
 #include "rng.h"
@@ -141,13 +142,6 @@ void read_variables(istream &in) {
         int range;
         in >> range;
         g_variable_domain.push_back(range);
-        if (range > numeric_limits<state_var_t>::max()) {
-            cerr << "This should not have happened!" << endl;
-            cerr << "Are you using the downward script, or are you using "
-                 << "downward-1 directly?" << endl;
-            exit_with(EXIT_INPUT_ERROR);
-        }
-
         in >> ws;
         vector<string> fact_names(range);
         for (size_t i = 0; i < fact_names.size(); i++)
@@ -247,16 +241,13 @@ void read_everything(istream &in) {
     read_metric(in);
     read_variables(in);
     read_mutexes(in);
-    g_initial_state_buffer = new state_var_t[g_variable_domain.size()];
+    g_initial_state_data.resize(g_variable_domain.size());
     check_magic(in, "begin_state");
     for (int i = 0; i < g_variable_domain.size(); i++) {
-        int var;
-        in >> var;
-        g_initial_state_buffer[i] = var;
+        in >> g_initial_state_data[i];
     }
     check_magic(in, "end_state");
-    g_default_axiom_values.assign(g_initial_state_buffer,
-                                  g_initial_state_buffer + g_variable_domain.size());
+    g_default_axiom_values = g_initial_state_data;
 
     read_goal(in);
     read_operators(in);
@@ -270,6 +261,13 @@ void read_everything(istream &in) {
     // NOTE: causal graph is computed from the problem specification,
     // so must be built after the problem has been read in.
     g_causal_graph = new CausalGraph;
+
+    assert(!g_variable_domain.empty());
+    g_state_packer = new IntPacker(g_variable_domain);
+    cout << "Variables: " << g_variable_domain.size() << endl;
+    cout << "Bytes per state: "
+         << g_state_packer->get_num_bins() *
+            g_state_packer->get_bin_size_in_bytes() << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
@@ -348,7 +346,8 @@ vector<int> g_variable_domain;
 vector<vector<string> > g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
-state_var_t *g_initial_state_buffer;
+IntPacker *g_state_packer;
+vector<int> g_initial_state_data;
 vector<pair<int, int> > g_goal;
 vector<Operator> g_operators;
 vector<Operator> g_axioms;
