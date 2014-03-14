@@ -3,8 +3,8 @@
 #include "int_packer.h"
 #include "operator.h"
 
-#include <deque>
 #include <iostream>
+#include <vector>
 using namespace std;
 
 AxiomEvaluator::AxiomEvaluator() {
@@ -53,7 +53,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
     if (!has_axioms())
         return;
 
-    deque<AxiomLiteral *> queue;
+    assert(queue.empty());
     for (int i = 0; i < g_axiom_layers.size(); i++) {
         if (g_axiom_layers[i] != -1) {
             g_state_packer->set(buffer, i, g_default_axiom_values[i]);
@@ -85,8 +85,8 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
     for (int layer_no = 0; layer_no < nbf_info_by_layer.size(); layer_no++) {
         // Apply Horn rules.
         while (!queue.empty()) {
-            AxiomLiteral *curr_literal = queue.front();
-            queue.pop_front();
+            AxiomLiteral *curr_literal = queue.back();
+            queue.pop_back();
             for (int i = 0; i < curr_literal->condition_of.size(); i++) {
                 AxiomRule *rule = curr_literal->condition_of[i];
                 if (--(rule->unsatisfied_conditions) == 0) {
@@ -100,12 +100,15 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
             }
         }
 
-        // Apply negation by failure rules.
-        const vector<NegationByFailureInfo> &nbf_info = nbf_info_by_layer[layer_no];
-        for (int i = 0; i < nbf_info.size(); i++) {
-            int var_no = nbf_info[i].var_no;
-            if (g_state_packer->get(buffer, var_no) == g_default_axiom_values[var_no])
-                queue.push_back(nbf_info[i].literal);
+        // Apply negation by failure rules. Skip this in last iteration
+        // to save some time (see issue420, msg3058).
+        if (layer_no != nbf_info_by_layer.size() - 1) {
+            const vector<NegationByFailureInfo> &nbf_info = nbf_info_by_layer[layer_no];
+            for (int i = 0; i < nbf_info.size(); i++) {
+                int var_no = nbf_info[i].var_no;
+                if (g_state_packer->get(buffer, var_no) == g_default_axiom_values[var_no])
+                    queue.push_back(nbf_info[i].literal);
+            }
         }
     }
 }
