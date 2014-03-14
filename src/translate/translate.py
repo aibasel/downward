@@ -48,7 +48,6 @@ ADD_IMPLIED_PRECONDITIONS = False
 
 DEBUG = False
 
-removed_implied_effect_counter = 0
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
 
@@ -539,7 +538,6 @@ def pddl_to_sas(task):
             task.init, goal_list, actions, axioms, task.use_min_cost_metric,
             implied_facts)
 
-    print("%d implied effects removed" % removed_implied_effect_counter)
     print("%d effect conditions simplified" %
           simplified_effect_condition_counter)
     print("%d implied preconditions added" %

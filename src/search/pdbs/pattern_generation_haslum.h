@@ -5,6 +5,7 @@
 #include "../state_registry.h"
 
 #include <map>
+#include <set>
 #include <vector>
 
 class Options;
@@ -24,8 +25,14 @@ class PatternGenerationHaslum {
 
     /* For the given pattern, all possible extensions of the pattern by one relevant variable
        are inserted into candidate_patterns. This may generate duplicated patterns. */
-    void generate_candidate_patterns(const std::vector<int> &pattern,
+    void generate_candidate_patterns(const PDBHeuristic *pdb,
                                      std::vector<std::vector<int> > &candidate_patterns);
+
+    /* Generates the PDBHeuristics for patterns in new_candidates if they have
+       not been generated already. */
+    std::size_t generate_pdbs_for_candidates(std::set<std::vector<int> > &generated_patterns,
+                                             std::vector<std::vector<int> > &new_candidates,
+                                             std::vector<PDBHeuristic *> &candidate_pdbs) const;
 
     /* Performs num_samples random walks with a lenght (different for each random walk) chosen
        according to a binomial distribution with n = 4 * solution depth estimate and p = 0.5,
@@ -36,6 +43,13 @@ class PatternGenerationHaslum {
        num_samples of sample states. */
     void sample_states(StateRegistry &sample_registry, std::vector<State> &samples,
                        double average_operator_costs);
+
+
+    /* Searches for the best improving pdb in candidate_pdbs according to the
+       counting approximation and the given samples. Returns the improvement and
+       the index of the best pdb in candidate_pdbs. */
+    std::pair<int, int> find_best_improving_pdb(std::vector<State> &samples,
+                                                std::vector<PDBHeuristic *> &candidate_pdbs);
 
     /* Returns true iff the h-value of the new pattern (from pdb_heuristic) plus the h-value of all
        maximal additive subsets from the current pattern collection heuristic if the new pattern was
