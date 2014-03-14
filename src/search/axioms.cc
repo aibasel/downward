@@ -50,6 +50,9 @@ AxiomEvaluator::AxiomEvaluator() {
 
 // TODO rethink the way this is called: see issue348.
 void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
+    if (!has_axioms())
+        return;
+
     deque<AxiomLiteral *> queue;
     for (int i = 0; i < g_axiom_layers.size(); i++) {
         if (g_axiom_layers[i] != -1) {
