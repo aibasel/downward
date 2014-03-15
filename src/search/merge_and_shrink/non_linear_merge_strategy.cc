@@ -29,22 +29,78 @@ bool NonLinearMergeStrategy::done() const {
 }
 
 pair<int, int> NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abstractions) {
+    /* Note: if we just invert the regular order (i.e. go through
+       all_abstractions from the last to the first element), we obtain very
+       bad results (h=10 on tpp06). Intermediate solutions are:
+       - use the inverted order only in the outer loop
+       - *always* start with the last element and then iterate through
+         all_abstractions in the regular order (h=25 on tpp06)
+       - in the first iteration, use the regular forward traversal, and from
+         the second on, start with the last element
+       - as previous method, but try to return the "bigger" abstraction as
+         first index as to avoid unnecessary shrinking.
+     */
+    int start_index;
+    //int max_index;
     if (remaining_merges == -1) {
         remaining_merges = all_abstractions.size() - 1;
+        start_index = 0;
+        //max_index = all_abstractions.size();
+    } else {
+        start_index = -1;
+        //max_index = all_abstractions.size() - 1;
     }
     int first = -1;
     int second = -1;
     int minimum_weight = infinity;
     if (remaining_merges > 1) {
         vector<vector<int> > abstraction_label_ranks(all_abstractions.size());
-        for (size_t abs_index = 0; abs_index < all_abstractions.size(); ++abs_index) {
+
+        if (start_index != 0) {
+            size_t abs1 = all_abstractions.size() - 1;
+            Abstraction *abst1 = all_abstractions[abs1];
+            assert(abst1->is_goal_relevant());
+            size_t abs2 = 0;
+            Abstraction *abst2 = all_abstractions[abs2];
+            while (!abst2) {
+                ++abs2;
+                abst2 = all_abstractions[abs2];
+            }
+            vector<int> &label_ranks1 = abstraction_label_ranks[abs1];
+            abst1->compute_label_ranks(label_ranks1);
+            vector<int> &label_ranks2 = abstraction_label_ranks[abs2];
+            abst2->compute_label_ranks(label_ranks2);
+            int pair_weight = infinity;
+            for (size_t i = 0; i < label_ranks1.size(); ++i) {
+                if (label_ranks1[i] != -1 && label_ranks2[i] != -1) {
+                    int max_label_rank = max(label_ranks1[i], label_ranks2[i]);
+                    pair_weight = min(pair_weight, max_label_rank);
+                }
+            }
+            cout << abs1 << " " << abs2 << " " << pair_weight << endl;
+            minimum_weight = pair_weight;
+            // always return a goal relevant abstraction as a first index
+            first = abs1;
+            second = abs2;
+        }
+
+        //for (int i = -1; i < all_abstractions.size() - 1; ++i) {
+        for (int i = 0; i < all_abstractions.size(); ++i) {
+            size_t abs_index = i;
+//            if (i == -1)
+//                abs_index = all_abstractions.size() - 1;
+//            else
+//                abs_index = i;
             Abstraction *abstraction = all_abstractions[abs_index];
             if (abstraction) {
                 vector<int> &label_ranks = abstraction_label_ranks[abs_index];
                 if (label_ranks.empty()) {
                     abstraction->compute_label_ranks(label_ranks);
                 }
-                for (size_t other_abs_index = abs_index + 1; other_abs_index < all_abstractions.size(); ++other_abs_index) {
+                for (size_t j = i + 1; j < all_abstractions.size(); ++j) {
+                    size_t other_abs_index = j;
+                    if (other_abs_index == abs_index)
+                        continue;
                     Abstraction *other_abstraction = all_abstractions[other_abs_index];
                     if (other_abstraction) {
                         if (!abstraction->is_goal_relevant() && !other_abstraction->is_goal_relevant()) {
@@ -64,6 +120,7 @@ pair<int, int> NonLinearMergeStrategy::get_next(const std::vector<Abstraction *>
                                 pair_weight = min(pair_weight, max_label_rank);
                             }
                         }
+                        //cout << abs_index << " " << other_abs_index << " " << pair_weight << endl;
                         if (pair_weight < minimum_weight) {
                             minimum_weight = pair_weight;
                             // always return a goal relevant abstraction as a first index
