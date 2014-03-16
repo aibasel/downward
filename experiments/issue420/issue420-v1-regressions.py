@@ -1,5 +1,18 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Before you can run the experiment you need to create duplicates of the
+two tasks we want to test:
+
+cd ../benchmarks/tidybot-opt11-strips
+for i in {00..49}; do cp p14.pddl p14-$i.pddl; done
+
+cd ../parking-opt11-strips
+for i in {00..49}; do cp pfile04-015.pddl pfile04-015-$i.pddl; done
+
+Don't forget to remove the duplicate tasks afterwards. Otherwise they
+will be included in subsequent experiments.
+"""
 
 import common_setup
 
