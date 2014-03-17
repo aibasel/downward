@@ -55,6 +55,13 @@ def get_repo_base():
         path = os.path.dirname(path)
 
 
+def get_revision_nick(combination):
+    nicks = [part.nick for part in combination]
+    if len(set(nicks)) == 1:
+        nicks = [nicks[0]]
+    return '-'.join(nicks)
+
+
 class MyExperiment(DownwardExperiment):
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
@@ -115,7 +122,7 @@ class MyExperiment(DownwardExperiment):
 
         If "suite" is specified, it should specify a problem suite.
 
-        If "parsers" is specified, it should be a list of paths to 
+        If "parsers" is specified, it should be a list of paths to
         parsers that should be run in addition to search_parser.py.
 
         Options "combinations" (from the base class), "revisions" and
@@ -184,26 +191,9 @@ class MyExperiment(DownwardExperiment):
                 run.add_command('additional-parser-%d' % i, [parser_alias])
 
     def add_comparison_table_step(self, attributes=None):
-        revisions = self._HACK_revisions
-        if revisions is None:
-            # TODO: It's not clear to me what a "revision" in the
-            # overall context of the code really is, e.g. when keeping
-            # the translator and preprocessor method fixed and only
-            # changing the search component. It's also not really
-            # clear to me how the interface of the Compare... reports
-            # works and how to use it more generally. Hence the
-            # present hack.
-
-            # Ideally, this method should look at the table columns we
-            # have (defined by planners and planner configurations),
-            # pair them up in a suitable way, either controlled by a
-            # convenience parameter or a more general grouping method,
-            # and then use this to define which pairs go together.
-            raise NotImplementedError(
-                "only supported when specifying revisions in __init__")
-
         if attributes is None:
             attributes = self.DEFAULT_TABLE_ATTRIBUTES
+        revisions = [get_revision_nick(combo) for combo in self.combinations]
         report = CompareRevisionsReport(*revisions, attributes=attributes)
         self.add_report(report, outfile="%s-compare.html" % self._report_prefix)
 
@@ -222,8 +212,8 @@ class MyExperiment(DownwardExperiment):
             raise NotImplementedError("need two revisions")
         scatter_dir = os.path.join(self.eval_dir, "scatter")
         def make_scatter_plots():
-            configs = [conf[0] for conf in self.configs]
-            for nick in configs:
+            nicks = [nick for nick, conf in self.configs]
+            for nick in nicks:
                 config_before = "%s-%s" % (revisions[0], nick)
                 config_after = "%s-%s" % (revisions[1], nick)
                 for attribute in attributes:
