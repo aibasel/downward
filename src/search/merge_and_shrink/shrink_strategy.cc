@@ -70,9 +70,13 @@ pair<int, int> ShrinkStrategy::compute_shrink_sizes(
             // Inverted case as before.
             new_size1 = max_states / new_size2;
         } else {
-            // Both abstractions are too big. Note that we potentially waste
-            // a bit of space here by not setting new_size2 = max_states /
-            // balanced_size, but we prefer a symmetric solution.
+            // Both abstractions are too big. We set both target sizes
+            // to balanced_size. An alternative would be to set one to
+            // N1 = balanced_size and the other to N2 = max_states /
+            // balanced_size, to get closer to the allowed maximum.
+            // However, this would make little difference (N2 would
+            // always be N1, N1 + 1 or N1 + 2), and our solution has the
+            // advantage of treating the abstractions symmetrically.
             new_size1 = balanced_size;
             new_size2 = balanced_size;
         }
