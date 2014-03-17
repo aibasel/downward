@@ -268,7 +268,8 @@ static Heuristic *_parse(OptionParser &parser) {
     label_reduction.push_back("ONE_ABSTRACTION");
     label_reduction.push_back("ALL_ABSTRACTIONS");
     label_reduction.push_back("ALL_ABSTRACTIONS_WITH_FIXPOINT");
-    parser.add_enum_option("label_reduction", label_reduction, "label reduction method", "ALL_ABSTRACTIONS_WITH_FIXPOINT");
+    parser.add_enum_option("label_reduction_method", label_reduction,
+                           "label reduction method", "ALL_ABSTRACTIONS_WITH_FIXPOINT");
     vector<string> fixpoint_variable_order;
     fixpoint_variable_order.push_back("REGULAR");
     fixpoint_variable_order.push_back("REVERSE");
@@ -289,7 +290,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        if (opts.get_enum("label_reduction") == 1
+        if (opts.get_enum("label_reduction_method") == 1
                 && opts.get<MergeStrategy *>("merge_strategy")->name() != "linear") {
             parser.error("old label reduction is only correct when used with a "
                          "linear merge strategy!");
