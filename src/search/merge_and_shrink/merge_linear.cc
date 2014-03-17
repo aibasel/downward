@@ -1,4 +1,4 @@
-#include "linear_merge_strategy.h"
+#include "merge_linear.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -9,17 +9,17 @@
 
 using namespace std;
 
-LinearMergeStrategy::LinearMergeStrategy(const Options &opts)
+MergeLinear::MergeLinear(const Options &opts)
     : MergeStrategy(),
-      order(VariableOrderType(opts.get_enum("type"))),
+      order(VariableOrderType(opts.get_enum("variable_order"))),
       need_first_index(true) {
 }
 
-bool LinearMergeStrategy::done() const {
+bool MergeLinear::done() const {
     return order.done();
 }
 
-pair<int, int> LinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abstractions) {
+pair<int, int> MergeLinear::get_next(const std::vector<Abstraction *> &all_abstractions) {
     int first;
     if (need_first_index) {
         need_first_index = false;
@@ -38,12 +38,12 @@ pair<int, int> LinearMergeStrategy::get_next(const std::vector<Abstraction *> &a
     return make_pair(first, second);
 }
 
-void LinearMergeStrategy::dump_strategy_specific_options() const {
+void MergeLinear::dump_strategy_specific_options() const {
     cout << "Linear merge strategy: ";
     order.dump();
 }
 
-string LinearMergeStrategy::name() const {
+string MergeLinear::name() const {
     return "linear";
 }
 
@@ -59,15 +59,13 @@ static MergeStrategy *_parse(OptionParser &parser) {
     merge_strategies.push_back("RANDOM");
     merge_strategies.push_back("LEVEL");
     merge_strategies.push_back("REVERSE_LEVEL");
-    parser.add_enum_option("type", merge_strategies,
+    parser.add_enum_option("variable_order", merge_strategies,
                            "linear merge strategy",
                            "CG_GOAL_LEVEL");
 
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
     if (!parser.dry_run())
-        return new LinearMergeStrategy(opts);
+        return new MergeLinear(opts);
     else
         return 0;
 }

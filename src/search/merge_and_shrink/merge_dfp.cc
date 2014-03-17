@@ -1,4 +1,4 @@
-#include "non_linear_merge_strategy.h"
+#include "merge_dfp.h"
 
 #include "abstraction.h"
 #include "label.h"
@@ -18,17 +18,16 @@ using namespace std;
 //        grep for it). It should only be defined once.
 static const int infinity = numeric_limits<int>::max();
 
-NonLinearMergeStrategy::NonLinearMergeStrategy(const Options &opts)
+MergeDFP::MergeDFP()
     : MergeStrategy(),
-      non_linear_merge_strategy_type(NonLinearMergeStrategyType(opts.get_enum("type"))),
       remaining_merges(-1) {
 }
 
-bool NonLinearMergeStrategy::done() const {
+bool MergeDFP::done() const {
     return remaining_merges == 0;
 }
 
-size_t NonLinearMergeStrategy::get_corrected_index(int index) const {
+size_t MergeDFP::get_corrected_index(int index) const {
     // This method assumes that we iterate over the vector of all
     // abstractions in inverted order (from back to front). It returns the
     // unmodified index as long as we are in the range of composite
@@ -42,7 +41,7 @@ size_t NonLinearMergeStrategy::get_corrected_index(int index) const {
     return border_atomics_composites - 1 - index;
 }
 
-pair<int, int> NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abstractions) {
+pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstractions) {
     /* Note: if we just invert the regular order (i.e. go through
        all_abstractions from the last to the first element), we obtain very
        bad results (h=10 on tpp06). Intermediate solutions are:
@@ -160,40 +159,15 @@ pair<int, int> NonLinearMergeStrategy::get_next(const std::vector<Abstraction *>
     return make_pair(first, second);
 }
 
-void NonLinearMergeStrategy::dump_strategy_specific_options() const {
-    cout << "Non linear merge strategy type: ";
-    switch (non_linear_merge_strategy_type) {
-    case DFP:
-        cout << "DFP";
-        break;
-    default:
-        ABORT("Unknown merge strategy.");
-    }
-    cout << endl;
-}
-
-string NonLinearMergeStrategy::name() const {
-    return "non linear";
+string MergeDFP::name() const {
+    return "dfp";
 }
 
 static MergeStrategy *_parse(OptionParser &parser) {
-    vector<string> merge_strategies;
-    //TODO: it's a bit dangerous that the merge strategies here
-    // have to be specified exactly in the same order
-    // as in the enum definition. Try to find a way around this,
-    // or at least raise an error when the order is wrong.
-    merge_strategies.push_back("DFP");
-    parser.add_enum_option("type", merge_strategies,
-                           "non linear merge strategy",
-                           "DFP");
-
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
     if (!parser.dry_run())
-        return new NonLinearMergeStrategy(opts);
+        return new MergeDFP();
     else
         return 0;
 }
 
-static Plugin<MergeStrategy> _plugin("merge_non_linear", _parse);
+static Plugin<MergeStrategy> _plugin("merge_dfp", _parse);

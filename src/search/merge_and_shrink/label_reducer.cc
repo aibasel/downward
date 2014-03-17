@@ -19,7 +19,7 @@ using namespace std;
 using namespace __gnu_cxx;
 
 LabelReducer::LabelReducer(const Options &options)
-    : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction"))),
+    : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction_method"))),
       label_reduction_system_order(LabelReductionSystemOrder(options.get_enum("fixpoint_var_order"))) {
 
     size_t max_no_systems = g_variable_domain.size() * 2 - 1;
