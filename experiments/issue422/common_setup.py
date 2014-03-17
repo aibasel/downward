@@ -200,22 +200,17 @@ class MyExperiment(DownwardExperiment):
     def add_scatter_plot_step(self, attributes=None):
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
-        revisions = self._HACK_revisions
-        if revisions is None:
-            # TODO: See add_comparison_table_step.
-            raise NotImplementedError(
-                "only supported when specifying revisions in __init__")
-        if len(revisions) != 2:
+        if len(self.combinations) != 2:
             # TODO: Should generalize this, too, by offering a general
             # grouping function and then comparing any pair of
             # settings in the same group.
             raise NotImplementedError("need two revisions")
         scatter_dir = os.path.join(self.eval_dir, "scatter")
         def make_scatter_plots():
-            nicks = [nick for nick, conf in self.configs]
+            nicks = [setting.nick for setting in self.settings]
             for nick in nicks:
-                config_before = "%s-%s" % (revisions[0], nick)
-                config_after = "%s-%s" % (revisions[1], nick)
+                config_before = "%s-%s" % (get_revision_nick(self.combinations[0]), nick)
+                config_after = "%s-%s" % (get_revision_nick(self.combinations[1]), nick)
                 for attribute in attributes:
                     name = "%s-%s-%s" % (self._report_prefix, attribute, nick)
                     report = ScatterPlotReport(
