@@ -42,17 +42,6 @@ size_t MergeDFP::get_corrected_index(int index) const {
 }
 
 pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstractions) {
-    /* Note: if we just invert the regular order (i.e. go through
-       all_abstractions from the last to the first element), we obtain very
-       bad results (h=10 on tpp06). Intermediate solutions are:
-       - use the inverted order only in the outer loop
-       - *always* start with the last element and then iterate through
-         all_abstractions in the regular order (h=25 on tpp06)
-       - in the first iteration, use the regular forward traversal, and from
-         the second on, start with the last element
-       - as previous method, but try to return the "bigger" abstraction as
-         first index as to avoid unnecessary shrinking.
-     */
     if (remaining_merges == -1) {
         remaining_merges = all_abstractions.size() - 1;
         border_atomics_composites = all_abstractions.size();
