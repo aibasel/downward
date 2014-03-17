@@ -5,7 +5,7 @@ import os.path
 from lab.environments import MaiaEnvironment
 from lab.steps import Step
 
-from downward.checkouts import Translator, Preprocessor, Planner
+from downward.checkouts import Translator, Preprocessor, Planner, Combination
 from downward.experiments import DownwardExperiment
 from downward.reports.compare import CompareRevisionsReport
 from downward.reports.scatter import ScatterPlotReport
@@ -53,13 +53,6 @@ def get_repo_base():
         if os.path.exists(os.path.join(path, ".hg")):
             return path
         path = os.path.dirname(path)
-
-
-def get_revision_nick(combination):
-    nicks = [part.nick for part in combination]
-    if len(set(nicks)) == 1:
-        nicks = [nicks[0]]
-    return '-'.join(nicks)
 
 
 class MyExperiment(DownwardExperiment):
@@ -146,9 +139,6 @@ class MyExperiment(DownwardExperiment):
             raise ValueError('must specify exactly one of "revisions", '
                              '"search_revisions" or "combinations"')
 
-        # See add_comparison_table_step for more on this variable.
-        self._HACK_revisions = revisions
-
         if revisions is not None:
             if not revisions:
                 raise ValueError("revisions cannot be empty")
@@ -164,8 +154,9 @@ class MyExperiment(DownwardExperiment):
             base_rev = search_revisions[0]
             translator = Translator(repo, base_rev)
             preprocessor = Preprocessor(repo, base_rev)
-            combinations = [(translator, preprocessor, Planner(repo, rev))
-                            for rev in search_revisions]
+            combinations = [
+                Combination(translator, preprocessor, Planner(repo, rev), nick=rev)
+                for rev in search_revisions]
             kwargs["combinations"] = combinations
 
         self._additional_parsers = parsers or []
@@ -193,7 +184,7 @@ class MyExperiment(DownwardExperiment):
     def add_comparison_table_step(self, attributes=None):
         if attributes is None:
             attributes = self.DEFAULT_TABLE_ATTRIBUTES
-        revisions = [get_revision_nick(combo) for combo in self.combinations]
+        revisions = [combo.nick for combo in self.combinations]
         report = CompareRevisionsReport(*revisions, attributes=attributes)
         self.add_report(report, outfile="%s-compare.html" % self._report_prefix)
 
@@ -209,8 +200,8 @@ class MyExperiment(DownwardExperiment):
         def make_scatter_plots():
             nicks = [setting.nick for setting in self.settings]
             for nick in nicks:
-                config_before = "%s-%s" % (get_revision_nick(self.combinations[0]), nick)
-                config_after = "%s-%s" % (get_revision_nick(self.combinations[1]), nick)
+                config_before = "%s-%s" % (self.combinations[0].nick, nick)
+                config_after = "%s-%s" % (self.combinations[1].nick, nick)
                 for attribute in attributes:
                     name = "%s-%s-%s" % (self._report_prefix, attribute, nick)
                     report = ScatterPlotReport(
