@@ -202,7 +202,6 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     sas_file = extra_args.pop(0)
     assert extra_args[0] in ["unit", "nonunit"], extra_args
     unitcost = extra_args.pop(0)
-    assert extra_args[0][-1] in ["1", "2", "4"], extra_args
     planner = extra_args.pop(0)
 
     safe_unlink("plan_numbers_and_cost")
