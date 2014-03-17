@@ -25,7 +25,7 @@ else:
 
 exp = common_setup.MyExperiment(
     grid_priority=PRIORITY,
-    revisions=REVS,
+    search_revisions=REVS,
     configs=CONFIGS,
     suite=SUITE,
     )
