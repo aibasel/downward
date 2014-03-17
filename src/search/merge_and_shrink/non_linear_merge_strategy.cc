@@ -28,6 +28,20 @@ bool NonLinearMergeStrategy::done() const {
     return remaining_merges == 0;
 }
 
+size_t NonLinearMergeStrategy::get_corrected_index(int index) const {
+    // This method assumes that we iterate over the vector of all
+    // abstractions in inverted order (from back to front). It returns the
+    // unmodified index as long as we are in the range of composite
+    // abstractions (these are thus traversed in order from the last one
+    // to the first one) and modifies the index otherwise so that the order
+    // in which atomic abstractions are considered is from the first to the
+    // last one (from front to back).
+    assert(index >= 0);
+    if (index >= border_atomics_composites)
+        return index;
+    return border_atomics_composites - 1 - index;
+}
+
 pair<int, int> NonLinearMergeStrategy::get_next(const std::vector<Abstraction *> &all_abstractions) {
     /* Note: if we just invert the regular order (i.e. go through
        all_abstractions from the last to the first element), we obtain very
@@ -40,38 +54,32 @@ pair<int, int> NonLinearMergeStrategy::get_next(const std::vector<Abstraction *>
        - as previous method, but try to return the "bigger" abstraction as
          first index as to avoid unnecessary shrinking.
      */
-    int start_index;
-    int max_index;
     if (remaining_merges == -1) {
         remaining_merges = all_abstractions.size() - 1;
-        start_index = 0;
-        max_index = all_abstractions.size();
-    } else {
-        start_index = -1;
-        max_index = all_abstractions.size() - 1;
+        border_atomics_composites = all_abstractions.size();
     }
     int first = -1;
     int second = -1;
     int minimum_weight = infinity;
     if (remaining_merges > 1) {
         vector<vector<int> > abstraction_label_ranks(all_abstractions.size());
-        //for (int i = -1; i < all_abstractions.size() - 1; ++i) {
-        for (int i = start_index; i < max_index; ++i) {
-            size_t abs_index;
-            if (i == -1)
-                abs_index = all_abstractions.size() - 1;
-            else
-                abs_index = i;
+        // We iterate from back to front, considering the composite
+        // abstractions in the order from "most recently added" (= at the back
+        // of the vector) to "first added" (= at border_atomics_composites).
+        // Afterwards, we consider the atomic abstrations in the "regular"
+        // order from the first one until the last one. See also explanation
+        // at get_corrected_index().
+        for (int i = all_abstractions.size() - 1; i >= 0; --i) {
+            size_t abs_index = get_corrected_index(i);
             Abstraction *abstraction = all_abstractions[abs_index];
             if (abstraction) {
                 vector<int> &label_ranks = abstraction_label_ranks[abs_index];
                 if (label_ranks.empty()) {
                     abstraction->compute_label_ranks(label_ranks);
                 }
-                for (size_t j = i + 1; j < all_abstractions.size(); ++j) {
-                    size_t other_abs_index = j;
-                    if (other_abs_index == abs_index)
-                        continue;
+                for (int j = i - 1; j >= 0; --j) {
+                    size_t other_abs_index = get_corrected_index(j);
+                    assert (other_abs_index != abs_index);
                     Abstraction *other_abstraction = all_abstractions[other_abs_index];
                     if (other_abstraction) {
                         if (!abstraction->is_goal_relevant() && !other_abstraction->is_goal_relevant()) {
@@ -91,7 +99,6 @@ pair<int, int> NonLinearMergeStrategy::get_next(const std::vector<Abstraction *>
                                 pair_weight = min(pair_weight, max_label_rank);
                             }
                         }
-                        cout << abs_index << " " << other_abs_index << " " << pair_weight << endl;
                         if (pair_weight < minimum_weight) {
                             minimum_weight = pair_weight;
                             // always return a goal relevant abstraction as a first index
