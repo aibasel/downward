@@ -177,10 +177,10 @@ string MergeDFP::name() const {
 }
 
 static MergeStrategy *_parse(OptionParser &parser) {
-    if (!parser.dry_run())
-        return new MergeDFP();
-    else
+    if (parser.dry_run())
         return 0;
+    else
+        return new MergeDFP();
 }
 
 static Plugin<MergeStrategy> _plugin("merge_dfp", _parse);

@@ -111,8 +111,8 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
         if (relevant_labels[label_no]) {
             const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
             int label_rank = infinity;
-            for (size_t j = 0; j < transitions.size(); ++j) {
-                const AbstractTransition &t = transitions[j];
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                const AbstractTransition &t = transitions[i];
                 label_rank = min(label_rank, goal_distances[t.target]);
             }
             // relevant labels with no transitions have a rank of infinity (they
