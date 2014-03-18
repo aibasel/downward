@@ -1,5 +1,5 @@
-#ifndef MERGE_AND_SHRINK_SHRINK_MERGE_DFP_H
-#define MERGE_AND_SHRINK_SHRINK_MERGE_DFP_H
+#ifndef MERGE_AND_SHRINK_MERGE_DFP_H
+#define MERGE_AND_SHRINK_MERGE_DFP_H
 
 #include "merge_strategy.h"
 
@@ -20,6 +20,10 @@ public:
     virtual ~MergeDFP() {}
 
     virtual bool done() const;
+    // Note: all_abstractions should be a vector of const Abstaction*, but
+    // for the moment, compute_label_ranks is a non-const method because it
+    // possibly needs to normalize and/or compute distances of some
+    // abstractions. This should change when abstractions are always valid.
     virtual std::pair<int, int> get_next(const std::vector<Abstraction *> &all_abstractions);
     virtual std::string name() const;
 };
