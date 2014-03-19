@@ -98,25 +98,10 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
                 }
                 if (pair_weight < minimum_weight) {
                     minimum_weight = pair_weight;
-                    // always return a goal relevant abstraction as a first index
-                    if (abstraction->is_goal_relevant()) {
-                        first = indices_mapping[abs_index];
-                        second = indices_mapping[other_abs_index];
-                        assert(all_abstractions[first] == abstraction);
-                        assert(all_abstractions[second] == other_abstraction);
-                    } else {
-                        assert(other_abstraction->is_goal_relevant());
-                        first = indices_mapping[other_abs_index];
-                        second = indices_mapping[abs_index];
-                        assert(all_abstractions[first] == other_abstraction);
-                        assert(all_abstractions[second] == abstraction);
-                    }
-                    // TODO: do not care about the index at which an abstraction
-                    // is returned. Use the following code instead.
-                    //first = indices_mapping[abs_index];
-                    //second = indices_mapping[other_abs_index];
-                    //assert(all_abstractions[first] == abstraction);
-                    //assert(all_abstractions[second] == other_abstraction);
+                    first = indices_mapping[abs_index];
+                    second = indices_mapping[other_abs_index];
+                    assert(all_abstractions[first] == abstraction);
+                    assert(all_abstractions[second] == other_abstraction);
                 }
             }
         }
@@ -136,25 +121,10 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
                 Abstraction *other_abstraction = sorted_abstractions[other_abs_index];
                 assert(other_abstraction);
                 if (abstraction->is_goal_relevant() || other_abstraction->is_goal_relevant()) {
-                    // always return a goal relevant abstraction as a first index
-                    if (abstraction->is_goal_relevant()) {
-                        first = indices_mapping[abs_index];
-                        second = indices_mapping[other_abs_index];
-                        assert(all_abstractions[first] == abstraction);
-                        assert(all_abstractions[second] == other_abstraction);
-                    } else {
-                        assert(other_abstraction->is_goal_relevant());
-                        first = indices_mapping[other_abs_index];
-                        second = indices_mapping[abs_index];
-                        assert(all_abstractions[first] == other_abstraction);
-                        assert(all_abstractions[second] == abstraction);
-                    }
-                    // TODO: do not care about the index at which an abstraction
-                    // is returned. Use the following code instead.
-                    //first = indices_mapping[abs_index];
-                    //second = indices_mapping[other_abs_index];
-                    //assert(all_abstractions[first] == abstraction);
-                    //assert(all_abstractions[second] == other_abstraction);
+                    first = indices_mapping[abs_index];
+                    second = indices_mapping[other_abs_index];
+                    assert(all_abstractions[first] == abstraction);
+                    assert(all_abstractions[second] == other_abstraction);
                 }
             }
         }
