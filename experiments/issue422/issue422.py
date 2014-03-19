@@ -11,11 +11,9 @@ REVS = ["issue422-base", "issue422-v1"]
 CONFIGS = default_configs_optimal()
 
 # remove config that is disabled in this branch
-del CONFIGS['astar_selmax_lmcut_lmcount']
+del CONFIGS["astar_selmax_lmcut_lmcount"]
 
-TEST_RUN = True
-
-if TEST_RUN:
+if common_setup.is_test_run():
     SUITE = "gripper:prob01.pddl"
     PRIORITY = None  # "None" means local experiment
 else:
@@ -31,9 +29,7 @@ exp = common_setup.MyExperiment(
     )
 
 
-exp.add_comparison_table_step(
-    attributes=common_setup.MyExperiment.DEFAULT_TABLE_ATTRIBUTES
-)
+exp.add_comparison_table_step()
 exp.add_scatter_plot_step()
 
 exp()
