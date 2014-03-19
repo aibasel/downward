@@ -163,9 +163,11 @@ class MyExperiment(DownwardExperiment):
 
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
+        self._config_nicks = []
         if configs is not None:
             for nick, config in configs.items():
                 self.add_config(nick, config)
+                self._config_nicks.append(nick)
 
         if suite is not None:
             self.add_suite(suite)
@@ -198,8 +200,7 @@ class MyExperiment(DownwardExperiment):
             raise NotImplementedError("need two revisions")
         scatter_dir = os.path.join(self.eval_dir, "scatter")
         def make_scatter_plots():
-            nicks = [setting.nick for setting in self.settings]
-            for nick in nicks:
+            for nick in self._config_nicks:
                 config_before = "%s-%s" % (self.combinations[0].nick, nick)
                 config_after = "%s-%s" % (self.combinations[1].nick, nick)
                 for attribute in attributes:
