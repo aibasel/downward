@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+import platform
 
+from lab.experiment import ARGPARSER
 from lab.environments import MaiaEnvironment
 from lab.steps import Step
 
@@ -9,6 +11,18 @@ from downward.checkouts import Translator, Preprocessor, Planner, Combination
 from downward.experiments import DownwardExperiment
 from downward.reports.compare import CompareRevisionsReport
 from downward.reports.scatter import ScatterPlotReport
+
+
+def parse_args():
+    ARGPARSER.add_argument(
+        "--test",
+        choices=["yes", "no", "auto"],
+        default="auto",
+        dest="test_run",
+        help="test setup on small suite locally")
+    return ARGPARSER.parse_args()
+
+ARGS = parse_args()
 
 
 def get_script():
@@ -53,6 +67,18 @@ def get_repo_base():
         if os.path.exists(os.path.join(path, ".hg")):
             return path
         path = os.path.dirname(path)
+
+
+def is_running_on_cluster():
+    node = platform.node()
+    return (node.endswith("cluster") or
+            node.startswith("gkigrid") or
+            node in ["habakuk", "turtur"])
+
+
+def is_test_run():
+    return ARGS.test_run == "yes" or (ARGS.test_run == "auto" and
+                                      not is_running_on_cluster())
 
 
 class MyExperiment(DownwardExperiment):
@@ -177,11 +203,11 @@ class MyExperiment(DownwardExperiment):
     def _make_search_runs(self):
         DownwardExperiment._make_search_runs(self)
         for i, parser in enumerate(self._additional_parsers):
-            parser_alias = 'ADDITIONALPARSER%d' % i
+            parser_alias = "ADDITIONALPARSER%d" % i
             self.add_resource(parser_alias, parser, os.path.basename(parser))
             for run in self.runs:
                 run.require_resource(parser_alias)
-                run.add_command('additional-parser-%d' % i, [parser_alias])
+                run.add_command("additional-parser-%d" % i, [parser_alias])
 
     def add_comparison_table_step(self, attributes=None):
         if attributes is None:
