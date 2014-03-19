@@ -213,6 +213,11 @@ class MyExperiment(DownwardExperiment):
         if attributes is None:
             attributes = self.DEFAULT_TABLE_ATTRIBUTES
         revisions = [combo.nick for combo in self.combinations]
+        if len(revisions) != 2:
+            # TODO: Should generalize this, too, by offering a general
+            # grouping function and then comparing any pair of
+            # settings in the same group.
+            raise NotImplementedError("need two revisions")
         report = CompareRevisionsReport(*revisions, attributes=attributes)
         self.add_report(report, outfile="%s-compare.html" % self._report_prefix)
 
