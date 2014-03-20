@@ -65,15 +65,8 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
                         }
                         if (pair_weight < minimum_weight) {
                             minimum_weight = pair_weight;
-                            // always return a goal relevant abstraction as a first index
-                            if (abstraction->is_goal_relevant()) {
-                                first = abs_index;
-                                second = other_abs_index;
-                            } else {
-                                assert(other_abstraction->is_goal_relevant());
-                                first = other_abs_index;
-                                second = abs_index;
-                            }
+                            first = abs_index;
+                            second = other_abs_index;
                         }
                     }
                 }
@@ -97,15 +90,8 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
                             // only consider pairs where at least one abstraction is goal relevant
                             continue;
                         }
-                        // always return a goal relevant abstraction as a first index
-                        if (abstraction->is_goal_relevant()) {
-                            first = abs_index;
-                            second = other_abs_index;
-                        } else {
-                            assert(other_abstraction->is_goal_relevant());
-                            first = other_abs_index;
-                            second = abs_index;
-                        }
+                        first = abs_index;
+                        second = other_abs_index;
                     }
                 }
             }
@@ -129,10 +115,10 @@ string MergeDFP::name() const {
 }
 
 static MergeStrategy *_parse(OptionParser &parser) {
-    if (!parser.dry_run())
-        return new MergeDFP();
-    else
+    if (parser.dry_run())
         return 0;
+    else
+        return new MergeDFP();
 }
 
 static Plugin<MergeStrategy> _plugin("merge_dfp", _parse);
