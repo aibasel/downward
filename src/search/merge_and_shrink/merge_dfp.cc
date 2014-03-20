@@ -18,8 +18,11 @@ using namespace std;
 //        grep for it). It should only be defined once.
 static const int infinity = numeric_limits<int>::max();
 
-MergeDFP::MergeDFP()
-    : MergeStrategy(), remaining_merges(-1), border_atomics_composites(-1) {
+MergeDFP::MergeDFP(const Options &opts)
+    : MergeStrategy(),
+      abstraction_order(AbstractionOrder(opts.get_enum("abstraction_order"))),
+      remaining_merges(-1),
+      border_atomics_composites(-1) {
 }
 
 bool MergeDFP::done() const {
@@ -147,10 +150,18 @@ string MergeDFP::name() const {
 }
 
 static MergeStrategy *_parse(OptionParser &parser) {
+    vector<string> abstraction_order;
+    abstraction_order.push_back("most_recent_composites_first");
+    abstraction_order.push_back("emulate_previous_abstraction_order");
+    parser.add_enum_option("abstraction_order", abstraction_order,
+                           "order in which dfp considers abstractions "
+                           "(important for tie breaking",
+                           "most_recent_composites_first");
+    Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
     else
-        return new MergeDFP();
+        return new MergeDFP(opts);
 }
 
 static Plugin<MergeStrategy> _plugin("merge_dfp", _parse);
