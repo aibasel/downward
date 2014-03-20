@@ -6,6 +6,12 @@
 class Options;
 
 class MergeDFP : public MergeStrategy {
+    enum AbstractionOrder {
+        MOST_RECENT_COMPOSITES_FIRST,
+        EMULATE_PREVIOUS_ABSTRACTION_ORDER
+    };
+    AbstractionOrder abstraction_order;
+
     int remaining_merges;
     // border_atomic_composites is the first index at which a composite
     // abstraction can be found in vector of all abstractions as passed
@@ -16,7 +22,7 @@ class MergeDFP : public MergeStrategy {
 protected:
     virtual void dump_strategy_specific_options() const {}
 public:
-    MergeDFP();
+    explicit MergeDFP(const Options &opts);
     virtual ~MergeDFP() {}
 
     virtual bool done() const;
