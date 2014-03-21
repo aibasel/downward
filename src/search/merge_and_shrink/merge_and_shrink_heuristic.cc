@@ -92,7 +92,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         // Note: we do not reduce labels several times for the same abstraction
         bool reduced_labels = false;
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            labels->reduce(system_one, all_abstractions);
+            labels->reduce((abstraction->is_goal_relevant() ? system_one : system_two), all_abstractions);
             reduced_labels = true;
             abstraction->normalize();
             other_abstraction->normalize();
@@ -119,7 +119,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         other_abstraction->statistics(use_expensive_statistics);
 
         if (!reduced_labels) {
-            labels->reduce(system_one, all_abstractions);
+            labels->reduce((abstraction->is_goal_relevant() ? system_one : system_two), all_abstractions);
         }
         abstraction->normalize();
         other_abstraction->normalize();
