@@ -49,7 +49,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 }
 
 CegarHeuristic::~CegarHeuristic() {
-    delete temp_state_buffer;
+    delete[] temp_state_buffer;
     temp_state_buffer = 0;
     // TODO: Delete abstractions.
 }
