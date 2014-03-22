@@ -159,7 +159,7 @@ class MyExperiment(DownwardExperiment):
             int(kwargs.get("combinations") is not None))
 
         if num_rev_opts_specified > 1:
-            raise ValueError('must specify exactly one of "revisions", '
+            raise ValueError('must specify at most one of "revisions", '
                              '"search_revisions" or "combinations"')
 
         if revisions is not None:
