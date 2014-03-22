@@ -112,7 +112,7 @@ class MyExperiment(DownwardExperiment):
 
     def __init__(self, configs=None, grid_priority=None, path=None,
                  repo=None, revisions=None, search_revisions=None,
-                 suite=None, parsers=None, **kwargs):
+                 suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
         If "configs" is specified, it should be a dict of {nick:
@@ -140,9 +140,6 @@ class MyExperiment(DownwardExperiment):
         revision.
 
         If "suite" is specified, it should specify a problem suite.
-
-        If "parsers" is specified, it should be a list of paths to
-        parsers that should be run in addition to search_parser.py.
 
         Options "combinations" (from the base class), "revisions" and
         "search_revisions" are mutually exclusive."""
@@ -185,8 +182,6 @@ class MyExperiment(DownwardExperiment):
                 for rev in search_revisions]
             kwargs["combinations"] = combinations
 
-        self._additional_parsers = parsers or []
-
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
         self._config_nicks = []
@@ -199,15 +194,6 @@ class MyExperiment(DownwardExperiment):
             self.add_suite(suite)
 
         self._report_prefix = get_experiment_name()
-
-    def _make_search_runs(self):
-        DownwardExperiment._make_search_runs(self)
-        for i, parser in enumerate(self._additional_parsers):
-            parser_alias = "ADDITIONALPARSER%d" % i
-            self.add_resource(parser_alias, parser, os.path.basename(parser))
-            for run in self.runs:
-                run.require_resource(parser_alias)
-                run.add_command("additional-parser-%d" % i, [parser_alias])
 
     def add_comparison_table_step(self, attributes=None):
         if attributes is None:
