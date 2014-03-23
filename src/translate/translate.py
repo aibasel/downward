@@ -7,7 +7,7 @@ import sys
 
 def python_version_supported():
     major, minor = sys.version_info[:2]
-    return (major == 2 and minor >= 7) or (major == 3 and minor >= 2)
+    return (major == 2 and minor >= 7) or (major, minor) >= (3, 2)
 
 if not python_version_supported():
     sys.exit("Error: Translator only supports Python >= 2.7 and Python >= 3.2.")
@@ -48,7 +48,6 @@ ADD_IMPLIED_PRECONDITIONS = False
 
 DEBUG = False
 
-removed_implied_effect_counter = 0
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
 
@@ -539,7 +538,6 @@ def pddl_to_sas(task):
             task.init, goal_list, actions, axioms, task.use_min_cost_metric,
             implied_facts)
 
-    print("%d implied effects removed" % removed_implied_effect_counter)
     print("%d effect conditions simplified" %
           simplified_effect_condition_counter)
     print("%d implied preconditions added" %

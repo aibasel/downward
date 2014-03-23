@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import glob
 import math
 import optparse
 import os
-import os.path
 import resource
 import signal
 import subprocess
@@ -34,6 +32,16 @@ EXIT_SIGXCPU = -signal.SIGXCPU
 EXPECTED_EXITCODES = set([
     EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
     EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT])
+
+# The portfolio's exitcode is determined as follows:
+# There is exactly one type of unexpected exit code -> use it.
+# There are multiple types of unexpected exit codes -> EXIT_CRITICAL_ERROR.
+# [..., EXIT_PLAN_FOUND, ...] -> EXIT_PLAN_FOUND
+# [..., EXIT_UNSOLVABLE, ...] -> EXIT_UNSOLVABLE
+# [..., EXIT_UNSOLVED_INCOMPLETE, ...] -> EXIT_UNSOLVED_INCOMPLETE
+# [..., EXIT_OUT_OF_MEMORY, ..., EXIT_TIMEOUT, ...] -> EXIT_TIMEOUT_AND_MEMORY
+# [..., EXIT_TIMEOUT, ...] -> EXIT_TIMEOUT
+# [..., EXIT_OUT_OF_MEMORY, ...] -> EXIT_OUT_OF_MEMORY
 
 
 def parse_args():
@@ -144,7 +152,10 @@ def _generate_exitcode(exitcodes):
     unexpected_codes = exitcodes - EXPECTED_EXITCODES
     if unexpected_codes:
         print "Error: Unexpected exit codes:", list(unexpected_codes)
-        return EXIT_CRITICAL_ERROR
+        if len(unexpected_codes) == 1:
+            return unexpected_codes.pop()
+        else:
+            return EXIT_CRITICAL_ERROR
     for code in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE]:
         if code in exitcodes:
             return code
@@ -191,7 +202,6 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     sas_file = extra_args.pop(0)
     assert extra_args[0] in ["unit", "nonunit"], extra_args
     unitcost = extra_args.pop(0)
-    assert extra_args[0][-1] in ["1", "2", "4"], extra_args
     planner = extra_args.pop(0)
 
     safe_unlink("plan_numbers_and_cost")
@@ -213,7 +223,9 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
         exitcodes = run_sat(configs, unitcost, planner, sas_file, plan_file,
                             final_config, final_config_builder,
                             remaining_time_at_start, memory)
-    sys.exit(_generate_exitcode(exitcodes))
+    exitcode = _generate_exitcode(exitcodes)
+    print "Exit with %d" % exitcode
+    sys.exit(exitcode)
 
 def _can_change_cost_type(args):
     return any('S_COST_TYPE' in part or 'H_COST_TYPE' in part for part in args)

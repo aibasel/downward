@@ -62,12 +62,24 @@ pair<int, int> ShrinkStrategy::compute_shrink_sizes(
     if (max_states / new_size1 < new_size2) {
         int balanced_size = int(sqrt(max_states));
 
-        // Shrink size2 (which in the linear strategies is the size
-        // for the atomic abstraction) down to balanced_size if larger.
-        new_size2 = min(new_size2, balanced_size);
-
-        // Use whatever is left for size1.
-        new_size1 = min(new_size1, max_states / new_size2);
+        if (new_size1 <= balanced_size) {
+            // Size of the first abstraction is small enough. Use whatever
+            // is left for the second abstraction.
+            new_size2 = max_states / new_size1;
+        } else if (new_size2 <= balanced_size) {
+            // Inverted case as before.
+            new_size1 = max_states / new_size2;
+        } else {
+            // Both abstractions are too big. We set both target sizes
+            // to balanced_size. An alternative would be to set one to
+            // N1 = balanced_size and the other to N2 = max_states /
+            // balanced_size, to get closer to the allowed maximum.
+            // However, this would make little difference (N2 would
+            // always be N1, N1 + 1 or N1 + 2), and our solution has the
+            // advantage of treating the abstractions symmetrically.
+            new_size1 = balanced_size;
+            new_size2 = balanced_size;
+        }
     }
     assert(new_size1 <= size1 && new_size2 <= size2);
     assert(new_size1 <= max_states_before_merge);

@@ -230,7 +230,7 @@ void PDBHeuristic::create_pdb() {
 }
 
 void PDBHeuristic::set_pattern(const vector<int> &pat) {
-    assert_sorted_unique(pat);
+    assert(is_sorted_unique(pat));
     pattern = pat;
     hash_multipliers.reserve(pattern.size());
     variable_to_index.resize(g_variable_name.size(), -1);
