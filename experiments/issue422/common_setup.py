@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import itertools
 import os.path
 import platform
 
@@ -202,23 +203,19 @@ class MyExperiment(DownwardExperiment):
     def add_scatter_plot_step(self, attributes=None):
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
-        if len(self._compared_revs) != 2:
-            # TODO: Should generalize this, too, by offering a general
-            # grouping function and then comparing any pair of
-            # settings in the same group.
-            raise NotImplementedError("need two revisions")
         scatter_dir = os.path.join(self.eval_dir, "scatter")
         def make_scatter_plots():
             for config_nick in self._config_nicks:
-                algo_before = "%s-%s" % (self._compared_revs[0], config_nick)
-                algo_after = "%s-%s" % (self._compared_revs[1], config_nick)
-                for attribute in attributes:
-                    name = "%s-%s-%s" % (self._report_prefix, attribute, config_nick)
-                    report = ScatterPlotReport(
-                        filter_config=[algo_before, algo_after],
-                        attributes=[attribute],
-                        get_category=lambda run1, run2: run1["domain"],
-                        legend_location=(1.3, 0.5))
-                    report(self.eval_dir, os.path.join(scatter_dir, name))
+                for rev1, rev2 in itertools.combinations(self._compared_revs, 2):
+                    algo1 = "%s-%s" % (rev1, config_nick)
+                    algo2 = "%s-%s" % (rev2, config_nick)
+                    for attribute in attributes:
+                        name = "-".join([rev1, rev2, attribute, config_nick])
+                        report = ScatterPlotReport(
+                            filter_config=[algo1, algo2],
+                            attributes=[attribute],
+                            get_category=lambda run1, run2: run1["domain"],
+                            legend_location=(1.3, 0.5))
+                        report(self.eval_dir, os.path.join(scatter_dir, name))
 
         self.add_step(Step("make-scatter-plots", make_scatter_plots))
