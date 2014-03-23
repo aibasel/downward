@@ -7,7 +7,6 @@ from lab.experiment import ARGPARSER
 from lab.environments import MaiaEnvironment
 from lab.steps import Step
 
-from downward.checkouts import Translator, Preprocessor, Planner, Combination
 from downward.experiments import DownwardExperiment
 from downward.reports.compare import CompareRevisionsReport
 from downward.reports.scatter import ScatterPlotReport
@@ -142,7 +141,11 @@ class MyExperiment(DownwardExperiment):
         If "suite" is specified, it should specify a problem suite.
 
         Options "combinations" (from the base class), "revisions" and
-        "search_revisions" are mutually exclusive."""
+        "search_revisions" can be freely mixed. However, only
+        "revisions" and "search_revisions" will be included in the
+        comparison table and the scatter plots."""
+
+        configs = configs or {}
 
         if grid_priority is not None and "environment" not in kwargs:
             kwargs["environment"] = MaiaEnvironment(priority=grid_priority)
@@ -153,77 +156,66 @@ class MyExperiment(DownwardExperiment):
         if repo is None:
             repo = get_repo_base()
 
-        num_rev_opts_specified = (
-            int(revisions is not None) +
-            int(search_revisions is not None) +
-            int(kwargs.get("combinations") is not None))
-
-        if num_rev_opts_specified > 1:
-            raise ValueError('must specify at most one of "revisions", '
-                             '"search_revisions" or "combinations"')
-
-        if revisions is not None:
-            if not revisions:
-                raise ValueError("revisions cannot be empty")
-            combinations = [(Translator(repo, rev),
-                             Preprocessor(repo, rev),
-                             Planner(repo, rev))
-                            for rev in revisions]
-            kwargs["combinations"] = combinations
-
-        if search_revisions is not None:
-            if not search_revisions:
-                raise ValueError("search_revisions cannot be empty")
-            base_rev = search_revisions[0]
-            translator = Translator(repo, base_rev)
-            preprocessor = Preprocessor(repo, base_rev)
-            combinations = [
-                Combination(translator, preprocessor, Planner(repo, rev), nick=rev)
-                for rev in search_revisions]
-            kwargs["combinations"] = combinations
-
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
-        self._config_nicks = []
-        if configs is not None:
-            for nick, config in configs.items():
-                self.add_config(nick, config)
-                self._config_nicks.append(nick)
+        combinations = kwargs.get("combinations", [])
+        revisions = revisions or []
+        search_revisions = search_revisions or []
+
+        if combinations or (not revisions and not search_revisions):
+            for config_nick, config in configs.items():
+                self.add_config(config_nick, config)
+
+        for rev in revisions:
+            for config_nick, config in configs.items():
+                algo_nick = rev + "-" + config_nick
+                self.add_config(algo_nick, config,
+                                preprocess_rev=rev, search_rev=rev)
+
+        if search_revisions:
+            base_rev = search_revisions[0]
+            for search_rev in search_revisions:
+                for config_nick, config in configs.items():
+                    algo_nick = search_rev + "-" + config_nick
+                    self.add_config(algo_nick, config,
+                                    preprocess_rev=base_rev,
+                                    search_rev=search_rev)
 
         if suite is not None:
             self.add_suite(suite)
 
         self._report_prefix = get_experiment_name()
+        self._compared_revs = revisions + search_revisions
+        self._config_nicks = configs.keys()
 
     def add_comparison_table_step(self, attributes=None):
         if attributes is None:
             attributes = self.DEFAULT_TABLE_ATTRIBUTES
-        revisions = [combo.nick for combo in self.combinations]
-        if len(revisions) != 2:
+        if len(self._compared_revs) != 2:
             # TODO: Should generalize this, too, by offering a general
             # grouping function and then comparing any pair of
             # settings in the same group.
             raise NotImplementedError("need two revisions")
-        report = CompareRevisionsReport(*revisions, attributes=attributes)
+        report = CompareRevisionsReport(*self._compared_revs, attributes=attributes)
         self.add_report(report, outfile="%s-compare.html" % self._report_prefix)
 
     def add_scatter_plot_step(self, attributes=None):
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
-        if len(self.combinations) != 2:
+        if len(self._compared_revs) != 2:
             # TODO: Should generalize this, too, by offering a general
             # grouping function and then comparing any pair of
             # settings in the same group.
             raise NotImplementedError("need two revisions")
         scatter_dir = os.path.join(self.eval_dir, "scatter")
         def make_scatter_plots():
-            for nick in self._config_nicks:
-                config_before = "%s-%s" % (self.combinations[0].nick, nick)
-                config_after = "%s-%s" % (self.combinations[1].nick, nick)
+            for config_nick in self._config_nicks:
+                algo_before = "%s-%s" % (self._compared_revs[0], config_nick)
+                algo_after = "%s-%s" % (self._compared_revs[1], config_nick)
                 for attribute in attributes:
-                    name = "%s-%s-%s" % (self._report_prefix, attribute, nick)
+                    name = "%s-%s-%s" % (self._report_prefix, attribute, config_nick)
                     report = ScatterPlotReport(
-                        filter_config=[config_before, config_after],
+                        filter_config=[algo_before, algo_after],
                         attributes=[attribute],
                         get_category=lambda run1, run2: run1["domain"],
                         legend_location=(1.3, 0.5))
