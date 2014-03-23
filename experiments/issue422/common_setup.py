@@ -4,8 +4,8 @@ import itertools
 import os.path
 import platform
 
-from lab.experiment import ARGPARSER
 from lab.environments import MaiaEnvironment
+from lab.experiment import ARGPARSER
 from lab.steps import Step
 
 from downward.experiments import DownwardExperiment
