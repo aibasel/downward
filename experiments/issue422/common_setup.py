@@ -185,25 +185,27 @@ class MyExperiment(DownwardExperiment):
         if suite is not None:
             self.add_suite(suite)
 
-        self._report_prefix = get_experiment_name()
         self._compared_revs = revisions + search_revisions
         self._config_nicks = configs.keys()
 
     def add_comparison_table_step(self, attributes=None):
         if attributes is None:
             attributes = self.DEFAULT_TABLE_ATTRIBUTES
-        if len(self._compared_revs) != 2:
-            # TODO: Should generalize this, too, by offering a general
-            # grouping function and then comparing any pair of
-            # settings in the same group.
-            raise NotImplementedError("need two revisions")
-        report = CompareRevisionsReport(*self._compared_revs, attributes=attributes)
-        self.add_report(report, outfile="%s-compare.html" % self._report_prefix)
+
+        def make_comparison_tables():
+            for rev1, rev2 in itertools.combinations(self._compared_revs, 2):
+                report = CompareRevisionsReport(rev1, rev2, attributes=attributes)
+                outfile = os.path.join(self.eval_dir,
+                                       "%s-%s-compare.html" % (rev1, rev2))
+                report(self.eval_dir, outfile)
+
+        self.add_step(Step("make-comparison-tables", make_comparison_tables))
 
     def add_scatter_plot_step(self, attributes=None):
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
         scatter_dir = os.path.join(self.eval_dir, "scatter")
+
         def make_scatter_plots():
             for config_nick in self._config_nicks:
                 for rev1, rev2 in itertools.combinations(self._compared_revs, 2):
