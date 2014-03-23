@@ -38,8 +38,13 @@ class Action(object):
             parameters = []
             precondition_tag_opt = parameters_tag_opt
         if precondition_tag_opt == ":precondition":
-            precondition = conditions.parse_condition(next(iterator))
-            precondition = precondition.simplified()
+            precondition_list = next(iterator)
+            if not precondition_list:
+                # Note that :precondition () is allowed in PDDL.
+                precondition = conditions.Conjunction([])
+            else:
+                precondition = conditions.parse_condition(precondition_list)
+                precondition = precondition.simplified()
             effect_tag = next(iterator)
         else:
             precondition = conditions.Conjunction([])
@@ -47,14 +52,19 @@ class Action(object):
         assert effect_tag == ":effect"
         effect_list = next(iterator)
         eff = []
-        try:
-            cost = effects.parse_effects(effect_list, eff)
-        except ValueError as e:
-            raise SystemExit("Error in Action %s\nReason: %s." % (name, e))
+        if effect_list:
+            try:
+                cost = effects.parse_effects(effect_list, eff)
+            except ValueError as e:
+                raise SystemExit("Error in Action %s\nReason: %s." % (name, e))
         for rest in iterator:
             assert False, rest
-        return Action(name, parameters, len(parameters),
-                      precondition, eff, cost)
+        if eff:
+            return Action(name, parameters, len(parameters),
+                          precondition, eff, cost)
+        else:
+            return None
+
     parse = staticmethod(parse)
     def dump(self):
         print("%s(%s)" % (self.name, ", ".join(map(str, self.parameters))))
