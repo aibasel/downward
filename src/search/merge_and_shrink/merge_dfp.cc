@@ -107,6 +107,7 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
     int first = -1;
     int second = -1;
     int minimum_weight = infinity;
+    bool first_abs_goal_relevant = false;
     for (size_t abs_index = 0; abs_index < sorted_abstractions.size(); ++abs_index) {
         Abstraction *abstraction = sorted_abstractions[abs_index];
         assert(abstraction);
@@ -132,6 +133,8 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
                     minimum_weight = pair_weight;
                     first = indices_mapping[abs_index];
                     second = indices_mapping[other_abs_index];
+                    if (abstraction->is_goal_relevant())
+                        first_abs_goal_relevant = true;
                     if (abstraction_order == ALL_COMPOSITES_THEN_ATOMICS) {
                         assert(all_abstractions[first] == abstraction);
                         assert(all_abstractions[second] == other_abstraction);
@@ -160,6 +163,8 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
                 if (abstraction->is_goal_relevant() || other_abstraction->is_goal_relevant()) {
                     first = indices_mapping[abs_index];
                     second = indices_mapping[other_abs_index];
+                    if (abstraction->is_goal_relevant())
+                        first_abs_goal_relevant = true;
                     if (abstraction_order == ALL_COMPOSITES_THEN_ATOMICS) {
                         assert(all_abstractions[first] == abstraction);
                         assert(all_abstractions[second] == other_abstraction);
@@ -188,8 +193,13 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
 //    }
     --remaining_merges;
     if (abstraction_order == EMULATE_PREVIOUS) {
-        indices_order[f] = all_abstractions.size();
-        indices_order[s] = infinity;
+        if (first_abs_goal_relevant) {
+            indices_order[f] = all_abstractions.size();
+            indices_order[s] = infinity;
+        } else {
+            indices_order[f] = infinity;
+            indices_order[s] = all_abstractions.size();
+        }
     }
     return make_pair(first, second);
 }
@@ -205,7 +215,7 @@ static MergeStrategy *_parse(OptionParser &parser) {
     parser.add_enum_option("abstraction_order", abstraction_order,
                            "order in which dfp considers abstractions "
                            "(important for tie breaking",
-                           "all_recent_composites_first");
+                           "all_composites_then_atomics");
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
