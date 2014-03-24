@@ -119,16 +119,12 @@ void LabelReducer::reduce_labels(int abs_start_index,
 
     for (int i = 0; i < max_iterations; ++i) {
         size_t abs_index = system_order[system_order_index];
-        Abstraction *current_abstraction = sorted_abstractions[abs_index];
 
-        bool have_reduced = false;
-        assert(current_abstraction);
-            EquivalenceRelation *relation = compute_outside_equivalence(
-                abs_index, sorted_abstractions,
-                labels, local_equivalence_relations);
-            have_reduced = reduce_exactly(relation, labels);
-            delete relation;
-
+        EquivalenceRelation *relation = compute_outside_equivalence(
+            abs_index, sorted_abstractions,
+            labels, local_equivalence_relations);
+        bool have_reduced = reduce_exactly(relation, labels);
+        delete relation;
 
         if (have_reduced) {
             num_unsuccessful_iterations = 0;
