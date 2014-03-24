@@ -28,6 +28,12 @@ class LabelReducer {
     LabelReductionSystemOrder label_reduction_system_order;
     std::vector<std::size_t> system_order;
 
+    // border_atomic_composites is the first index at which a composite
+    // abstraction can be found in vector of all abstractions as passed
+    // as argument to the get_next method.
+    std::size_t border_atomics_composites;
+    std::size_t get_corrected_index(int index) const;
+
     // old label reduction
     LabelSignature build_label_signature(const Label &label,
         const std::vector<bool> &var_is_used) const;
