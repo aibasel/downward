@@ -109,6 +109,12 @@ class MyExperiment(DownwardExperiment):
         "expansions_until_last_jump",
         ]
 
+    PORTFOLIO_ATTRIBUTES = [
+        "cost",
+        "coverage",
+        "plan_length",
+        ]
+
     """Wrapper for DownwardExperiment with a few convenience features."""
 
     def __init__(self, configs=None, grid_priority=None, path=None,
@@ -227,13 +233,23 @@ class MyExperiment(DownwardExperiment):
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
         scatter_dir = os.path.join(self.eval_dir, "scatter")
 
+        def is_portfolio(config_nick):
+            return "fdss" in config_nick
+
         def make_scatter_plots():
             for config_nick in self._config_nicks:
                 for rev1, rev2 in itertools.combinations(self._compared_revs, 2):
                     algo1 = "%s-%s" % (rev1, config_nick)
                     algo2 = "%s-%s" % (rev2, config_nick)
-                    for attribute in attributes:
+                    if is_portfolio(config_nick):
+                        valid_attributes = [
+                            attr for attr in attributes
+                            if attr in self.PORTFOLIO_ATTRIBUTES]
+                    else:
+                        valid_attributes = attributes
+                    for attribute in valid_attributes:
                         name = "-".join([rev1, rev2, attribute, config_nick])
+                        print "Make scatter plot for", name
                         report = ScatterPlotReport(
                             filter_config=[algo1, algo2],
                             attributes=[attribute],
