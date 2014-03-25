@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import itertools
-import os.path
+import os
 import platform
+import sys
 
 from lab.environments import MaiaEnvironment
 from lab.experiment import ARGPARSER
@@ -63,7 +64,7 @@ def get_repo_base():
     Found by searching upwards in the directory tree from the main
     script until a directory with a subdirectory named ".hg" is found."""
     path = os.path.abspath(get_script_dir())
-    while True:
+    while path != '/':
         if os.path.exists(os.path.join(path, ".hg")):
             return path
         path = os.path.dirname(path)
@@ -156,6 +157,10 @@ class MyExperiment(DownwardExperiment):
 
         if repo is None:
             repo = get_repo_base()
+            if repo is None:
+                # If the script is called by another program (e.g. by a
+                # profiler), we cannot find the repo base.
+                sys.exit("repo base could not be found")
 
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
