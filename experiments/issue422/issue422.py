@@ -9,16 +9,11 @@ import common_setup
 
 REVS = ["issue422-base", "issue422-v1"]
 CONFIGS = default_configs_optimal()
+SUITE = suite_optimal_with_ipc11()
+PRIORITY = 0
 
-# remove config that is disabled in this branch
+# Remove config that is disabled in this branch.
 del CONFIGS["astar_selmax_lmcut_lmcount"]
-
-if common_setup.is_test_run():
-    SUITE = "gripper:prob01.pddl"
-    PRIORITY = None  # "None" means local experiment
-else:
-    SUITE = suite_optimal_with_ipc11()
-    PRIORITY = 0     # number means maia experiment
 
 
 exp = common_setup.MyExperiment(
