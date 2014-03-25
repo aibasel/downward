@@ -43,7 +43,7 @@ def get_experiment_name():
     """Get name for experiment.
 
     Derived from the filename of the main script, e.g.
-    "/ham/spam/eggs.py" => "eggs"."""
+    "/ham/spam/eggs.py" => "spam-eggs"."""
     script = os.path.abspath(get_script())
     script_dir = os.path.basename(os.path.dirname(script))
     script_base = os.path.splitext(os.path.basename(script))[0]
@@ -194,6 +194,9 @@ class MyExperiment(DownwardExperiment):
         self._config_nicks = configs.keys()
 
     def add_comparison_table_step(self, attributes=None):
+        """
+        Add a step that creates comparison tables for all pairs of revisions.
+        """
         if attributes is None:
             attributes = self.DEFAULT_TABLE_ATTRIBUTES
 
@@ -207,6 +210,9 @@ class MyExperiment(DownwardExperiment):
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
 
     def add_scatter_plot_step(self, attributes=None):
+        """
+        Add a step that creates scatter plots for all pairs of revisions.
+        """
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
         scatter_dir = os.path.join(self.eval_dir, "scatter")
