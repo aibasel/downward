@@ -20,7 +20,7 @@ def parse_args():
         choices=["yes", "no", "auto"],
         default="auto",
         dest="test_run",
-        help="test setup on small suite locally")
+        help="run experiment on small suite locally")
     return ARGPARSER.parse_args()
 
 ARGS = parse_args()
@@ -116,12 +116,18 @@ class MyExperiment(DownwardExperiment):
                  suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
+        Use the "--test" command line parameter to decide whether to
+        perform a test run of the experiment:
+
+        --test=yes:  run the experiment locally on a small suite
+        --test=no:   run the full suite on the cluster
+        --test=auto: use --test=yes on cluster machines (default)
+
         If "configs" is specified, it should be a dict of {nick:
         cmdline} pairs that sets the planner configurations to test.
 
-        If "grid_priority" is specified and no environment is
-        specifically requested in **kwargs, use the maia environment
-        with the specified priority.
+        Use "grid_priority" to set the job priority for cluster
+        experiments.
 
         If "path" is not specified, the experiment data path is
         derived automatically from the main script's filename.
@@ -149,7 +155,11 @@ class MyExperiment(DownwardExperiment):
 
         configs = configs or {}
 
-        if grid_priority is not None and "environment" not in kwargs:
+        if is_test_run():
+            # Use LocalEnvironment.
+            kwargs["environment"] = None
+            suite = "gripper:prob01.pddl"
+        elif "environment" not in kwargs:
             kwargs["environment"] = MaiaEnvironment(priority=grid_priority)
 
         if path is None:
