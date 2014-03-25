@@ -69,17 +69,22 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
             heur->get_preferred_operators(preferred_operators);
     }
 
-    if (succ_mode == pref_first) {
+    if (succ_mode == pref_first || succ_mode == shuffled_pref_first) {
         for (int i = 0; i < preferred_operators.size(); i++) {
             if (!preferred_operators[i]->is_marked()) {
                 ops.push_back(preferred_operators[i]);
                 preferred_operators[i]->mark();
             }
         }
+        if (succ_mode == shuffled_pref_first)
+            random_shuffle(ops.begin(), ops.end());
+        int num_pref_ops = ops.size();
 
         for (int i = 0; i < all_operators.size(); i++)
             if (!all_operators[i]->is_marked())
                 ops.push_back(all_operators[i]);
+        if (succ_mode == shuffled_pref_first)
+            random_shuffle(ops.begin() + num_pref_ops, ops.end());
     } else {
         for (int i = 0; i < preferred_operators.size(); i++)
             if (!preferred_operators[i]->is_marked())
@@ -204,6 +209,7 @@ static void _add_succ_mode_options(OptionParser &parser) {
     options.push_back("ORIGINAL");
     options.push_back("PREF_FIRST");
     options.push_back("SHUFFLED");
+    options.push_back("SHUFFLED_PREF_FIRST");
     parser.add_enum_option("succ_mode",
                            options, "PREF_FIRST",
                            "ordering of applicable operators");
