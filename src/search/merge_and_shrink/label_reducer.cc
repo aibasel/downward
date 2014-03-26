@@ -20,8 +20,7 @@ using namespace __gnu_cxx;
 
 LabelReducer::LabelReducer(const Options &options)
     : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction_method"))),
-      label_reduction_system_order(LabelReductionSystemOrder(options.get_enum("fixpoint_var_order"))),
-      border_atomics_composites(g_variable_domain.size()) {
+      label_reduction_system_order(LabelReductionSystemOrder(options.get_enum("fixpoint_var_order"))) {
 
     size_t max_no_systems = g_variable_domain.size() * 2 - 1;
     system_order.reserve(max_no_systems);
@@ -39,22 +38,6 @@ LabelReducer::LabelReducer(const Options &options)
     }
 }
 
-size_t LabelReducer::get_corrected_index(int index) const {
-    // This method assumes that we iterate over the vector of all
-    // abstractions in inverted order (from back to front). It returns the
-    // unmodified index as long as we are in the range of composite
-    // abstractions (these are thus traversed in order from the last one
-    // to the first one) and modifies the index otherwise so that the order
-    // in which atomic abstractions are considered is from the first to the
-    // last one (from front to back). This is to emulate the previous behavior
-    // when new abstractions were not inserted after existing abstractions,
-    // but rather replaced arbitrarily one of the two original abstractions.
-    assert(index >= 0);
-    if (index >= border_atomics_composites)
-        return index;
-    return border_atomics_composites - 1 - index;
-}
-
 void LabelReducer::reduce_labels(int abs_start_index,
                                  const vector<Abstraction *> &all_abstractions,
                                  std::vector<Label *> &labels) const {
@@ -62,36 +45,16 @@ void LabelReducer::reduce_labels(int abs_start_index,
         return;
     }
 
-    vector<Abstraction *> sorted_abstractions;
-    // Precompute a vector sorted_abstrations which contains all exisiting
-    // abstractions from all_abstractions in the desired order.
-    for (int i = all_abstractions.size() - 1; i >= 0; --i) {
-        // We iterate from back to front, considering the composite
-        // abstractions in the order from "most recently added" (= at the back
-        // of the vector) to "first added" (= at border_atomics_composites).
-        // Afterwards, we consider the atomic abstrations in the "regular"
-        // order from the first one until the last one. See also explanation
-        // at get_corrected_index().
-        size_t abs_index = get_corrected_index(i);
-        Abstraction *abstraction = all_abstractions[abs_index];
-        if (abstraction) {
-            sorted_abstractions.push_back(abstraction);
-        }
-        if (i == abs_start_index) {
-            abs_start_index = sorted_abstractions.size() - 1;
-        }
-    }
-
     if (label_reduction_method == OLD) {
         // We need to normalize all abstraction to incorporate possible previous
         // label reductions, because normalize cannot deal with several label
         // reductions at once.
-        for (size_t i = 0; i < sorted_abstractions.size(); ++i) {
-            if (sorted_abstractions[i]) {
-                sorted_abstractions[i]->normalize();
+        for (size_t i = 0; i < all_abstractions.size(); ++i) {
+            if (all_abstractions[i]) {
+                all_abstractions[i]->normalize();
             }
         }
-        reduce_old(sorted_abstractions[abs_start_index]->get_varset(), labels);
+        reduce_old(all_abstractions[abs_start_index]->get_varset(), labels);
         return;
     }
 
@@ -106,7 +69,7 @@ void LabelReducer::reduce_labels(int abs_start_index,
     if (label_reduction_method == ONE_ABSTRACTION) {
         max_iterations = 1;
     } else if (label_reduction_method == ALL_ABSTRACTIONS) {
-        max_iterations = sorted_abstractions.size();
+        max_iterations = all_abstractions.size();
     } else if (label_reduction_method == ALL_ABSTRACTIONS_WITH_FIXPOINT) {
         max_iterations = numeric_limits<int>::max();
     } else {
@@ -115,30 +78,34 @@ void LabelReducer::reduce_labels(int abs_start_index,
 
     int num_unsuccessful_iterations = 0;
     vector<EquivalenceRelation *> local_equivalence_relations(
-        sorted_abstractions.size(), 0);
+        all_abstractions.size(), 0);
 
     for (int i = 0; i < max_iterations; ++i) {
         size_t abs_index = system_order[system_order_index];
+        Abstraction *current_abstraction = all_abstractions[abs_index];
 
-        EquivalenceRelation *relation = compute_outside_equivalence(
-            abs_index, sorted_abstractions,
-            labels, local_equivalence_relations);
-        bool have_reduced = reduce_exactly(relation, labels);
-        delete relation;
+        bool have_reduced = false;
+        if (current_abstraction != 0) {
+            EquivalenceRelation *relation = compute_outside_equivalence(
+                abs_index, all_abstractions,
+                labels, local_equivalence_relations);
+            have_reduced = reduce_exactly(relation, labels);
+            delete relation;
+        }
 
         if (have_reduced) {
             num_unsuccessful_iterations = 0;
         } else {
             ++num_unsuccessful_iterations;
         }
-        if (num_unsuccessful_iterations == sorted_abstractions.size() - 1)
+        if (num_unsuccessful_iterations == all_abstractions.size() - 1)
             break;
 
         ++system_order_index;
         if (system_order_index == system_order.size()) {
             system_order_index = 0;
         }
-        while (system_order[system_order_index] >= sorted_abstractions.size()) {
+        while (system_order[system_order_index] >= all_abstractions.size()) {
             ++system_order_index;
             if (system_order_index == system_order.size()) {
                 system_order_index = 0;
