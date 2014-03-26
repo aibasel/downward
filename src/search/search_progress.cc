@@ -1,5 +1,4 @@
 #include "search_progress.h"
-
 #include "utilities.h"
 
 #include <iostream>

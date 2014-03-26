@@ -7,20 +7,16 @@ from downward.configs import default_configs_optimal
 import common_setup
 
 
-REVS = ["issue422-base", "issue422-v1"]
-CONFIGS = default_configs_optimal()
-SUITE = suite_optimal_with_ipc11()
-PRIORITY = 0
-
+configs = default_configs_optimal()
 # Remove config that is disabled in this branch.
-del CONFIGS["astar_selmax_lmcut_lmcount"]
+del configs["astar_selmax_lmcut_lmcount"]
 
 
-exp = common_setup.MyExperiment(
-    grid_priority=PRIORITY,
-    search_revisions=REVS,
-    configs=CONFIGS,
-    suite=SUITE,
+exp = common_setup.IssueExperiment(
+    grid_priority=0,
+    #search_revisions=["issue422-base", "issue422-v1"],
+    configs=configs,
+    suite=suite_optimal_with_ipc11(),
     )
 
 

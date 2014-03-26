@@ -20,7 +20,8 @@ def parse_args():
         choices=["yes", "no", "auto"],
         default="auto",
         dest="test_run",
-        help="run experiment on small suite locally")
+        help="test experiment locally on a small suite if --test=yes or "
+             "--test=auto and we are not on a cluster")
     return ARGPARSER.parse_args()
 
 ARGS = parse_args()
@@ -42,7 +43,7 @@ def get_script_dir():
 def get_experiment_name():
     """Get name for experiment.
 
-    Derived from the filename of the main script, e.g.
+    Derived from the absolute filename of the main script, e.g.
     "/ham/spam/eggs.py" => "spam-eggs"."""
     script = os.path.abspath(get_script())
     script_dir = os.path.basename(os.path.dirname(script))
@@ -61,13 +62,16 @@ def get_data_dir():
 def get_repo_base():
     """Get base directory of the repository, as an absolute path.
 
-    Found by searching upwards in the directory tree from the main
-    script until a directory with a subdirectory named ".hg" is found."""
+    Search upwards in the directory tree from the main script until a
+    directory with a subdirectory named ".hg" is found.
+
+    Abort if the repo base cannot be found."""
     path = os.path.abspath(get_script_dir())
-    while path != '/':
+    while os.path.dirname(path) != path:
         if os.path.exists(os.path.join(path, ".hg")):
             return path
         path = os.path.dirname(path)
+    sys.exit("repo base could not be found")
 
 
 def is_running_on_cluster():
@@ -82,7 +86,11 @@ def is_test_run():
                                       not is_running_on_cluster())
 
 
-class MyExperiment(DownwardExperiment):
+class IssueExperiment(DownwardExperiment):
+    """Wrapper for DownwardExperiment with a few convenience features."""
+
+    # TODO: Once we have reference results, we should add "quality" here.
+    # TODO: Add something about errors/exit codes.
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
         "coverage",
@@ -103,10 +111,13 @@ class MyExperiment(DownwardExperiment):
         ]
 
     DEFAULT_SCATTER_PLOT_ATTRIBUTES = [
-        "total_time",
-        "search_time",
-        "memory",
+        "evaluations",
+        "expansions",
         "expansions_until_last_jump",
+        "initial_h_value",
+        "memory",
+        "search_time",
+        "total_time",
         ]
 
     PORTFOLIO_ATTRIBUTES = [
@@ -115,25 +126,23 @@ class MyExperiment(DownwardExperiment):
         "plan_length",
         ]
 
-    """Wrapper for DownwardExperiment with a few convenience features."""
-
     def __init__(self, configs=None, grid_priority=None, path=None,
                  repo=None, revisions=None, search_revisions=None,
                  suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
-        Use the "--test" command line parameter to decide whether to
-        perform a test run of the experiment:
-
-        --test=yes:  run the experiment locally on a small suite
-        --test=no:   run the full suite on the cluster
-        --test=auto: use --test=yes on cluster machines (default)
-
         If "configs" is specified, it should be a dict of {nick:
-        cmdline} pairs that sets the planner configurations to test.
+        cmdline} pairs that sets the planner configurations to test. ::
+
+            IssueExperiment(configs={
+                "lmcut": ["--search", "astar(lmcut())"],
+                "ipdb":  ["--search", "astar(ipdb())"]})
 
         Use "grid_priority" to set the job priority for cluster
-        experiments.
+        experiments. It must be in the range [-1023, 0] where 0 is the
+        highest priority. By default the priority is 0. ::
+
+            IssueExperiment(grid_priority=-500)
 
         If "path" is not specified, the experiment data path is
         derived automatically from the main script's filename.
@@ -173,10 +182,6 @@ class MyExperiment(DownwardExperiment):
 
         if repo is None:
             repo = get_repo_base()
-            if repo is None:
-                # If the script is called by another program (e.g. by a
-                # profiler), we cannot find the repo base.
-                sys.exit("repo base could not be found")
 
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
