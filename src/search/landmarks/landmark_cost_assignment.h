@@ -1,8 +1,10 @@
 #ifndef LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 #define LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 
-#include <set>
 #include "../globals.h"
+#include "../operator_cost.h"
+
+#include <set>
 
 class LandmarkGraph;
 class LandmarkNode;
