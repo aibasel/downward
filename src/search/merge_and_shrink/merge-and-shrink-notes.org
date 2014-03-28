@@ -115,10 +115,6 @@
   where apply label reduction means to determine combinable labels, to combine
   labels and to apply the label mapping in all abstractions (valid state!)
 
-- Main loop: use new indices in all_abstractions (reserve 2*#abs - 1). This
-  also makes sure that we do not choose indices at which we expect an atomic
-  abstraction for example, but find a composite abstraction.
-
 - Abstraction::compute_local_equivalence_relation():
   make computation faster through sorting transitions (O(n log n)) or hashing
   (O(n)). Sorting is probably better, because we do not need to consider all
