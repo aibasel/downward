@@ -13,7 +13,7 @@ class CompositeLabel;
    NOTE: operators that are axioms are currently not supported! */
 
 class Label {
-    friend class CompositeLabel;
+    friend class CompositeLabel; // required for update_root
     int id;
     int cost;
     // prevail and pre_posts are references to those of one "canonical"

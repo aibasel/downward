@@ -262,13 +262,13 @@ static Heuristic *_parse(OptionParser &parser) {
                   "the heuristic in the paper."));
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
-    vector<string> label_reduction;
-    label_reduction.push_back("NONE");
-    label_reduction.push_back("OLD");
-    label_reduction.push_back("ONE_ABSTRACTION");
-    label_reduction.push_back("ALL_ABSTRACTIONS");
-    label_reduction.push_back("ALL_ABSTRACTIONS_WITH_FIXPOINT");
-    parser.add_enum_option("label_reduction_method", label_reduction,
+    vector<string> label_reduction_method;
+    label_reduction_method.push_back("NONE");
+    label_reduction_method.push_back("OLD");
+    label_reduction_method.push_back("ONE_ABSTRACTION");
+    label_reduction_method.push_back("ALL_ABSTRACTIONS");
+    label_reduction_method.push_back("ALL_ABSTRACTIONS_WITH_FIXPOINT");
+    parser.add_enum_option("label_reduction_method", label_reduction_method,
                            "label reduction method", "ALL_ABSTRACTIONS_WITH_FIXPOINT");
     vector<string> fixpoint_variable_order;
     fixpoint_variable_order.push_back("REGULAR");

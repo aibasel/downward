@@ -53,6 +53,8 @@
   about this variable order. One possible idea we could try in the
   future would be to take into account the size of the transition
   systems when deciding what to combine.
+- Abstraction::apply_abstraction_mapping: how can this remain private? Using
+  "friend" for classes that abstract abstractions seems not to be a good way.
 
 * General TODOs for later
 
@@ -143,7 +145,7 @@
   reduction method which does several iterations of reductions). For example,
   we could always take the "largest" abstraction in terms of variables
   included in it. This should then reflect the same behavior as with the old
-  lable reduction, at least when using non-linear merge strategies.
+  label reduction, at least when using non-linear merge strategies.
 
 * TODOs for rest of the code:
 
