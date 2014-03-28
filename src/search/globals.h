@@ -1,8 +1,6 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include "operator_cost.h"
-
 #include <iosfwd>
 #include <string>
 #include <vector>
