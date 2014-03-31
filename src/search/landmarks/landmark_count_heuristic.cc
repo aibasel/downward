@@ -30,9 +30,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         } else if (has_axioms()) {
             cerr << "cost partitioning does not support axioms" << endl;
             exit_with(EXIT_UNSUPPORTED);
-        } else if (has_cond_effects()) {
-            cerr << "cost partitioning does not support conditional effects" << endl;
-            exit_with(EXIT_UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
 #ifdef USE_LP
