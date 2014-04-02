@@ -87,12 +87,12 @@ int Abstraction::get_label_cost_by_index(int label_no) const {
     return label->get_cost();
 }
 
-int Abstraction::get_num_labels() const {
-    return labels->get_size();
-}
-
 const vector<AbstractTransition> &Abstraction::get_transitions_for_label(int label_no) const {
     return transitions_by_label[label_no];
+}
+
+int Abstraction::get_num_labels() const {
+    return labels->get_size();
 }
 
 void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
