@@ -855,6 +855,8 @@ void Abstraction::apply_abstraction(
     // from the distances computation, which is done for the final abstraction
     // which on its turn may not be normalized at that time.
     assert(num_labels == labels->get_size());
+    // distances must have been computed before
+    assert(are_distances_computed());
 
     cout << tag() << "applying abstraction (" << size()
          << " to " << collapsed_groups.size() << " states)" << endl;
