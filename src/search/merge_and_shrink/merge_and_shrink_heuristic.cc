@@ -160,11 +160,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     if (!final_abstraction->is_solvable())
         return final_abstraction;
 
-    // TODO: get rid of this block (unless it does something meaningful)
-    ShrinkStrategy *def_shrink = ShrinkFH::create_default(final_abstraction->size());
-    def_shrink->shrink(*final_abstraction, final_abstraction->size(), true);
-    final_abstraction->compute_distances();
-
     final_abstraction->statistics(use_expensive_statistics);
     final_abstraction->release_memory();
 
