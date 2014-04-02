@@ -76,6 +76,10 @@
   papers. For example, Abstraction => TransitionSystem. Also clean up
   the documentation.
 
+- Make the order of methods in abstraction.h and abstraction.cc more
+  consistent (both comparing methods in the header and in the source
+  file, but also the grouping of methods).
+
 - Reconsider what we understand by "normalized", e.g. define the notion of a
   "valid state" of an abstraction as:
   - Transitions are sorted (by labels, by states) and there are no

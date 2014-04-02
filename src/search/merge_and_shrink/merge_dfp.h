@@ -13,7 +13,7 @@ class MergeDFP : public MergeStrategy {
     AbstractionOrder abstraction_order;
     int remaining_merges;
 
-    // MOST_RECENT_COMPOSITES_FIRST
+    // ALL_COMPOSITES_THEN_ATOMICS
     // border_atomic_composites is the first index at which a composite
     // abstraction can be found in vector of all abstractions as passed
     // as argument to the get_next method.

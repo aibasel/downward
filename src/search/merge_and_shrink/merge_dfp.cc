@@ -193,6 +193,8 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
 //    }
     --remaining_merges;
     if (abstraction_order == EMULATE_PREVIOUS) {
+        // we take the index of the goal relevant abstraction as the future
+        // index for the new composite abstraction.
         if (first_abs_goal_relevant) {
             indices_order[f] = all_abstractions.size();
             indices_order[s] = infinity;
