@@ -1,17 +1,12 @@
-* General TODOs for now
+* General TODOs for now (before integration)
 
 - CompositeAbstraction (constructor): swapping loops does not guarantee
-  sorting of transitions.
-- After we've started merging, the fixed-point variable order for
-  label reduction doesn't really talk about variables any more but
-  also about merged abstractions. Take this into account when thinking
-  about this variable order. One possible idea we could try in the
-  future would be to take into account the size of the transition
-  systems when deciding what to combine.
+  sorting of transitions. -> test this again and document
+
 - Abstraction::apply_abstraction_mapping: how can this remain private? Using
   "friend" for classes that abstract abstractions seems not to be a good way.
 
-* General TODOs for later
+* General TODOs for later (efficiency/improvements)
 
 - To reduce memory, we might combine the representation of the
   transitions of locally equivalent labels. That is, if label1 and
@@ -24,6 +19,12 @@
 - Split the representation of the abstraction function and
   heuristic from the transition systems so that we can throw away the
   transition systems after constructing them?
+- After we've started merging, the fixed-point variable order for
+  label reduction doesn't really talk about variables any more but
+  also about merged abstractions. Take this into account when thinking
+  about this variable order. One possible idea we could try in the
+  future would be to take into account the size of the transition
+  systems when deciding what to combine.
 
 * General TODOs for the "big refactoring"
 
@@ -101,6 +102,11 @@
   we could always take the "largest" abstraction in terms of variables
   included in it. This should then reflect the same behavior as with the old
   label reduction, at least when using non-linear merge strategies.
+  Update:
+  As for methods "one" (and/or "two"?), we could have a reduce labels method
+  that takes as argument one (and/or two) abstractions for which we want
+  to compute the combinable-relation and reduce labels. These would then
+  not be understood as a start index, however.
 
 * TODOs for rest of the code:
 
