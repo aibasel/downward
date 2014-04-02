@@ -124,9 +124,20 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
     }
 }
 
+bool Abstraction::are_distances_computed() const {
+    if (max_h == DISTANCE_UNKNOWN ) {
+        assert(max_f == DISTANCE_UNKNOWN);
+        assert(max_g == DISTANCE_UNKNOWN);
+        assert(init_distances.empty());
+        assert(goal_distances.empty());
+        return false;
+    }
+    return true;
+}
+
 void Abstraction::compute_distances() {
     cout << tag() << flush;
-    if (max_h != DISTANCE_UNKNOWN) {
+    if (are_distances_computed()) {
         cout << "distances already known" << endl;
         return;
     }
@@ -1017,7 +1028,7 @@ void Abstraction::statistics(bool include_expensive_statistics) const {
     cout << "/" << total_transitions() << " arcs, " << memory << " bytes"
          << endl;
     cout << tag();
-    if (max_h == DISTANCE_UNKNOWN) {
+    if (!are_distances_computed()) {
         cout << "distances not computed";
     } else if (is_solvable()) {
         cout << "init h=" << goal_distances[init_state] << ", max f=" << max_f

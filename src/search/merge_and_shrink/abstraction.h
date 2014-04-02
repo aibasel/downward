@@ -126,6 +126,7 @@ public:
     // TODO: Find a better way of doing this that doesn't require
     //       a mutable attribute?
 
+    bool are_distances_computed() const;
     void compute_distances();
     bool is_normalized() const;
     void normalize();
