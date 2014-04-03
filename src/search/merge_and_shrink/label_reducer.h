@@ -21,7 +21,8 @@ class LabelReducer {
     enum LabelReductionSystemOrder {
         REGULAR,
         REVERSE,
-        RANDOM
+        RANDOM,
+        COMPOSITES_REVERSE_ATOMICS_REGULAR
     };
 
     LabelReductionMethod label_reduction_method;
