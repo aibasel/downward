@@ -20,7 +20,7 @@ using namespace __gnu_cxx;
 
 LabelReducer::LabelReducer(const Options &options)
     : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction_method"))),
-      label_reduction_system_order(LabelReductionSystemOrder(options.get_enum("fixpoint_var_order"))) {
+      label_reduction_system_order(LabelReductionSystemOrder(options.get_enum("label_reduction_system_order"))) {
 
     size_t max_no_systems = g_variable_domain.size() * 2 - 1;
     system_order.reserve(max_no_systems);
@@ -31,10 +31,23 @@ LabelReducer::LabelReducer(const Options &options)
         if (label_reduction_system_order == RANDOM) {
             random_shuffle(system_order.begin(), system_order.end());
         }
-    } else {
-        assert(label_reduction_system_order == REVERSE);
+    } else if (label_reduction_system_order == REVERSE) {
         for (size_t i = 0; i < max_no_systems; ++i)
             system_order.push_back(max_no_systems - 1 - i);
+    } else {
+        assert(label_reduction_system_order == COMPOSITES_REVERSE_ATOMICS_REGULAR);
+        for (int i = max_no_systems - 1; i >= 0; --i) {
+            size_t index;
+            if (i < g_variable_domain.size()) {
+                // at index g_variable_domain.size(), the first composite
+                // abstraction is stored. all indices below are for atomic
+                // abstractions, which we want to consider in regular order.
+                index = g_variable_domain.size() - 1 - i;
+            } else {
+                index = i;
+            }
+            system_order.push_back(index);
+        }
     }
 }
 
@@ -382,6 +395,9 @@ void LabelReducer::dump_options() const {
             break;
         case RANDOM:
             cout << "random";
+            break;
+        case COMPOSITES_REVERSE_ATOMICS_REGULAR:
+            cout << "composites in reverse order, then atomics in regular order";
             break;
         }
         cout << endl;
