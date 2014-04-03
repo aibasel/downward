@@ -29,7 +29,7 @@ class MergeDFP : public MergeStrategy {
 protected:
     virtual void dump_strategy_specific_options() const {}
 public:
-    explicit MergeDFP(const Options &opts);
+    MergeDFP();
     virtual ~MergeDFP() {}
 
     virtual bool done() const;
