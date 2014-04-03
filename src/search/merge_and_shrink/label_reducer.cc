@@ -73,15 +73,10 @@ void LabelReducer::reduce_labels(int abs_start_index,
 
     size_t system_order_index = 0;
     assert(!system_order.empty());
-    while (system_order[system_order_index] >= all_abstractions.size()) {
+    while (system_order[system_order_index] != abs_start_index) {
         ++system_order_index;
-        assert(system_order_index < system_order.size());
     }
-
-    //while (system_order[system_order_index] != abs_start_index) {
-    //    ++system_order_index;
-    //}
-    //assert(system_order[system_order_index] == abs_start_index);
+    assert(system_order[system_order_index] == abs_start_index);
 
     int max_iterations;
     if (label_reduction_method == ONE_ABSTRACTION) {
