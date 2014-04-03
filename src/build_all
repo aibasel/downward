@@ -27,5 +27,6 @@ fi
 
 cd VAL
 make "$@" || exit 1
+strip validate
 cp validate ../
 cd ..
