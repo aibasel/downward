@@ -3,6 +3,9 @@
 - CompositeAbstraction (constructor): swapping loops does not guarantee
   sorting of transitions. -> test this again and document
 
+- grep for "hack" (based on linear merge strategy assumption etc)
+  and reomve missleading output (e.g. in shrink bisimulation)
+
 - Abstraction::apply_abstraction_mapping: how can this remain private? Using
   "friend" for classes that abstract abstractions seems not to be a good way.
 

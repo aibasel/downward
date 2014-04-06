@@ -775,14 +775,18 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels,
             } else if (relevant2) {
                 assert(!relevant1);
                 transitions.reserve(bucket2.size() * abs1->size());
-                for (int i = 0; i < bucket2.size(); i++) {
-                    int src2 = bucket2[i].src;
-                    int target2 = bucket2[i].target;
-                    for (int s1 = 0; s1 < abs1->size(); s1++) {
+                for (int s1 = 0; s1 < abs1->size(); s1++) {
+                    for (int i = 0; i < bucket2.size(); i++) {
+                        int src2 = bucket2[i].src;
+                        int target2 = bucket2[i].target;
                         int src = s1 * multiplier + src2;
                         int target = s1 * multiplier + target2;
                         transitions.push_back(AbstractTransition(src, target));
                     }
+                }
+                if (!is_sorted_unique(transitions)) {
+                    cerr << "Transitions not sorted" << endl;
+                    exit_with(EXIT_CRITICAL_ERROR);
                 }
             }
         }
