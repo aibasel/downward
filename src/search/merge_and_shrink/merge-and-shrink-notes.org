@@ -1,13 +1,7 @@
 * General TODOs for now (before integration)
 
-- CompositeAbstraction (constructor): swapping loops does not guarantee
-  sorting of transitions. -> test this again and document
-
 - grep for "hack" (based on linear merge strategy assumption etc)
   and reomve missleading output (e.g. in shrink bisimulation)
-
-- Abstraction::apply_abstraction_mapping: how can this remain private? Using
-  "friend" for classes that abstract abstractions seems not to be a good way.
 
 * General TODOs for later (efficiency/improvements)
 
@@ -54,6 +48,10 @@
   shrinking, after label reduction and after construction. We could have
   private methods apply_abstraction, apply_label_mapping. The only remaining
   public (non-const) methods could be release_memory.
+  Questions:
+  Abstraction::apply_abstraction_mapping: how can this remain private? Using
+  "friend" for classes that abstract abstractions seems not to be a good way.
+  The same question applies to possible method apply_label_mapping.
 
 - Split pruning of irrelevant states off from compute_distances and do not use
   a shrink strategy for it. Instead, we could have a private method
