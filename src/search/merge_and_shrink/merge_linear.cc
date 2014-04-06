@@ -64,10 +64,10 @@ static MergeStrategy *_parse(OptionParser &parser) {
                            "CG_GOAL_LEVEL");
 
     Options opts = parser.parse();
-    if (!parser.dry_run())
-        return new MergeLinear(opts);
-    else
+    if (parser.dry_run())
         return 0;
+    else
+        return new MergeLinear(opts);
 }
 
 static Plugin<MergeStrategy> _plugin("merge_linear", _parse);
