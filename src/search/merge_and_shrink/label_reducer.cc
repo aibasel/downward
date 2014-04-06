@@ -396,6 +396,5 @@ void LabelReducer::dump_options() const {
             break;
         }
         cout << endl;
-        //cout << variable_order << endl;
     }
 }
