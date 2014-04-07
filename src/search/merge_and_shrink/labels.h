@@ -22,7 +22,7 @@ class Labels {
 public:
     Labels(bool unit_cost, const Options &options, OperatorCost cost_type);
     ~Labels();
-    void reduce(int abs_index,
+    void reduce(std::pair<int, int> next_merge,
                 const std::vector<Abstraction *> &all_abstractions);
     // TODO: consider removing get_label_by_index and forwarding all required
     // methods of Label and giving access to them by label number.

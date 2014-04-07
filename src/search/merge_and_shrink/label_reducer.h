@@ -14,6 +14,9 @@ class LabelReducer {
         NONE,
         OLD,
         ONE_ABSTRACTION,
+        TWO_ABSTRACTIONS_LARGER_FIRST,
+        TWO_ABSTRACTIONS_SMALLER_FIRST,
+        TWO_ABSTRACTIONS_GIVEN_ORDER,
         ALL_ABSTRACTIONS,
         ALL_ABSTRACTIONS_WITH_FIXPOINT
     };
@@ -46,7 +49,7 @@ class LabelReducer {
 public:
     explicit LabelReducer(const Options &options);
     ~LabelReducer() {}
-    void reduce_labels(int abs_index,
+    void reduce_labels(std::pair<int, int> next_merge,
                        const std::vector<Abstraction *> &all_abstractions,
                        std::vector<Label* > &labels) const;
     void dump_options() const;
