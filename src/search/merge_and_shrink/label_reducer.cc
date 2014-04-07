@@ -19,7 +19,8 @@ using namespace std;
 using namespace __gnu_cxx;
 
 LabelReducer::LabelReducer(const Options &options)
-    : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction_method"))) {
+    : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction_method"))),
+      label_reduction_system_order(LabelReductionSystemOrder(options.get_enum("label_reduction_system_order"))) {
 
     size_t max_no_systems = g_variable_domain.size() * 2 - 1;
     system_order.reserve(max_no_systems);
@@ -37,7 +38,7 @@ LabelReducer::LabelReducer(const Options &options)
     }
 }
 
-void LabelReducer::reduce_labels(int abs_start_index,
+void LabelReducer::reduce_labels(pair<int, int> next_merge,
                                  const vector<Abstraction *> &all_abstractions,
                                  std::vector<Label *> &labels) const {
     if (label_reduction_method == NONE) {
@@ -53,21 +54,80 @@ void LabelReducer::reduce_labels(int abs_start_index,
                 all_abstractions[i]->normalize();
             }
         }
-        reduce_old(all_abstractions[abs_start_index]->get_varset(), labels);
+        assert(all_abstractions[next_merge.first]->get_varset().size() >=
+               all_abstractions[next_merge.second]->get_varset().size());
+        reduce_old(all_abstractions[next_merge.first]->get_varset(), labels);
+        return;
+    }
+
+    if (label_reduction_method == ONE_ABSTRACTION) {
+        vector<EquivalenceRelation *> local_equivalence_relations(
+            all_abstractions.size(), 0);
+        size_t abs_index = next_merge.first;
+        assert(all_abstractions[abs_index]);
+        EquivalenceRelation *relation = compute_outside_equivalence(
+            abs_index, all_abstractions,
+            labels, local_equivalence_relations);
+        reduce_exactly(relation, labels);
+        delete relation;
+        for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
+            delete local_equivalence_relations[i];
+        return;
+    }
+
+    if (label_reduction_method == TWO_ABSTRACTIONS_LARGER_FIRST
+            || label_reduction_method == TWO_ABSTRACTIONS_SMALLER_FIRST
+            || label_reduction_method == TWO_ABSTRACTIONS_GIVEN_ORDER) {
+        assert(all_abstractions[next_merge.first]);
+        assert(all_abstractions[next_merge.second]);
+        size_t larger_abs, smaller_abs;
+        if (all_abstractions[next_merge.first]->get_varset().size() >=
+                all_abstractions[next_merge.second]->get_varset().size()) {
+            larger_abs = next_merge.first;
+            smaller_abs = next_merge.second;
+        } else {
+            larger_abs = next_merge.second;
+            smaller_abs = next_merge.first;
+        }
+
+        size_t first_abs, second_abs;
+        if (label_reduction_method == TWO_ABSTRACTIONS_LARGER_FIRST) {
+            first_abs = larger_abs;
+            second_abs = smaller_abs;
+        } else if  (label_reduction_method == TWO_ABSTRACTIONS_SMALLER_FIRST) {
+            first_abs = smaller_abs;
+            second_abs = larger_abs;
+        } else {
+            first_abs = next_merge.first;
+            second_abs = next_merge.second;
+        }
+
+        vector<EquivalenceRelation *> local_equivalence_relations(
+            all_abstractions.size(), 0);
+        EquivalenceRelation *relation = compute_outside_equivalence(
+            first_abs, all_abstractions,
+            labels, local_equivalence_relations);
+        reduce_exactly(relation, labels);
+        delete relation;
+        relation = compute_outside_equivalence(
+                    second_abs, all_abstractions,
+                    labels, local_equivalence_relations);
+        reduce_exactly(relation, labels);
+        delete relation;
+        for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
+            delete local_equivalence_relations[i];
         return;
     }
 
     size_t system_order_index = 0;
     assert(!system_order.empty());
-    while (system_order[system_order_index] != abs_start_index) {
+    while (system_order[system_order_index] >= all_abstractions.size()) {
         ++system_order_index;
+        assert(system_order_index < system_order.size());
     }
-    assert(system_order[system_order_index] == abs_start_index);
 
     int max_iterations;
-    if (label_reduction_method == ONE_ABSTRACTION) {
-        max_iterations = 1;
-    } else if (label_reduction_method == ALL_ABSTRACTIONS) {
+    if (label_reduction_method == ALL_ABSTRACTIONS) {
         max_iterations = all_abstractions.size();
     } else if (label_reduction_method == ALL_ABSTRACTIONS_WITH_FIXPOINT) {
         max_iterations = numeric_limits<int>::max();
@@ -355,6 +415,15 @@ void LabelReducer::dump_options() const {
         break;
     case ONE_ABSTRACTION:
         cout << "one abstraction";
+        break;
+    case TWO_ABSTRACTIONS_LARGER_FIRST:
+        cout << "two abstractions larger first";
+        break;
+    case TWO_ABSTRACTIONS_SMALLER_FIRST:
+        cout << "two abstractions smaller first";
+        break;
+    case TWO_ABSTRACTIONS_GIVEN_ORDER:
+        cout << "two abstractions given order";
         break;
     case ALL_ABSTRACTIONS:
         cout << "all abstractions";

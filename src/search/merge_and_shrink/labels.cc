@@ -25,9 +25,9 @@ Labels::~Labels() {
     delete label_reducer;
 }
 
-void Labels::reduce(int abs_index,
+void Labels::reduce(pair<int, int> next_merge,
                     const std::vector<Abstraction *> &all_abstractions) {
-    label_reducer->reduce_labels(abs_index, all_abstractions, labels);
+    label_reducer->reduce_labels(next_merge, all_abstractions, labels);
 }
 
 const Label *Labels::get_label_by_index(int index) const {
