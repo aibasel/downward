@@ -268,10 +268,9 @@ static Heuristic *_parse(OptionParser &parser) {
     label_reduction_system_order.push_back("REGULAR");
     label_reduction_system_order.push_back("REVERSE");
     label_reduction_system_order.push_back("RANDOM");
-    label_reduction_system_order.push_back("COMPOSITES_REVERSE_ATOMICS_REGULAR");
     parser.add_enum_option("label_reduction_system_order", label_reduction_system_order,
                            "order in which variables are considered when using "
-                           "fixpoint iteration for label reduction", "REGULAR");
+                           "fixpoint iteration for label reduction", "RANDOM");
     parser.add_option<bool>("expensive_statistics",
                             "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow, i.e. too expensive to show by default "
