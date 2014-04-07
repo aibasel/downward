@@ -797,10 +797,7 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels,
                         transitions.push_back(AbstractTransition(src, target));
                     }
                 }
-                if (!is_sorted_unique(transitions)) {
-                    cerr << "Transitions not sorted" << endl;
-                    exit_with(EXIT_CRITICAL_ERROR);
-                }
+                assert(is_sorted_unique(transitions));
             }
         }
     }
