@@ -2,6 +2,15 @@
 
 - grep for "hack" (based on linear merge strategy assumption etc)
   and reomve missleading output (e.g. in shrink bisimulation)
+- shrink_bisimulation: why is abs.size() == 1 atomic abstraction?
+- ShrinkStrategy::shrink_before_merge and ShrinkBisimulation:shrink_before_merge
+  difference? is the latter required?
+- shrink_atomics: this only exists for shrink_bisimulation and uses the
+  ugly default_shrink mechanism. do we need this?
+- compute_shrink_sizes: only used by shrink_before_merge (see above).
+  then the target size is passed to shrink as "threshold". why this
+  naming? must_shrink seems also be at an akward place, why not place
+  it before calling shrink?
 
 * General TODOs for later (efficiency/improvements)
 
