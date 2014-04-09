@@ -26,14 +26,13 @@ pair<int, int> MergeLinear::get_next(const std::vector<Abstraction *> &all_abstr
         first = order.next();
         cout << "First variable: " << first << endl;
     } else {
+        // The most recent composite abstraction is appended at the end of
+        // all_abstractions in merge_and_shrink.cc
         first = all_abstractions.size() - 1;
     }
     int second = order.next();
     cout << "Next variable: " << second << endl;
     assert(all_abstractions[first]);
-    if (!all_abstractions[second]) {
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
     assert(all_abstractions[second]);
     return make_pair(first, second);
 }
