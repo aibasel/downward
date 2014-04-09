@@ -1,16 +1,5 @@
 * General TODOs for now (before integration)
 
-- grep for "hack" (based on linear merge strategy assumption etc)
-  and reomve missleading output (e.g. in shrink bisimulation)
-- shrink_bisimulation: why is abs.size() == 1 atomic abstraction?
-- ShrinkStrategy::shrink_before_merge and ShrinkBisimulation:shrink_before_merge
-  difference? is the latter required?
-- shrink_atomics: this only exists for shrink_bisimulation and uses the
-  ugly default_shrink mechanism. do we need this?
-- compute_shrink_sizes: only used by shrink_before_merge (see above).
-  then the target size is passed to shrink as "threshold". why this
-  naming? must_shrink seems also be at an akward place, why not place
-  it before calling shrink?
 
 * General TODOs for later (efficiency/improvements)
 
@@ -117,6 +106,21 @@
   that takes as argument one (and/or two) abstractions for which we want
   to compute the combinable-relation and reduce labels. These would then
   not be understood as a start index, however.
+
+- Shrink classes:
+  - Does ShrinkStrategy::shrink_before_merge need to check if the new
+    target size of an abstraction differs from the current size? check
+    if this test is performed via "must_shrink" in all implementations
+    of shrink strategies. If yes, then the method does not differ
+    from ShrinkBisimulation:shrink_before_merge.
+    As a consequence of having only one shrink_before_merge in the base
+    class, we could make "compute shrink sizes" private. It should be
+    clear however that every shrink strategy is responsible to decide
+    on their own if they need/want to shrink or not.
+  - shrink(): why is the parameter called threshold and not target?
+    bisimulation renames threshold to target and uses its own threshold
+    parameter, which has a different meaning.
+  - do we need shrink atomics (only for the sake of bisimulations)?
 
 * TODOs for rest of the code:
 
