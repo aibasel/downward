@@ -6,8 +6,6 @@
 class Options;
 
 class MergeDFP : public MergeStrategy {
-    int remaining_merges;
-
     // border_atomic_composites is the first index at which a composite
     // abstraction can be found in vector of all abstractions as passed
     // as argument to the get_next method.
@@ -19,7 +17,6 @@ public:
     MergeDFP();
     virtual ~MergeDFP() {}
 
-    virtual bool done() const;
     // Note: all_abstractions should be a vector of const Abstaction*, but
     // for the moment, compute_label_ranks is a non-const method because it
     // possibly needs to normalize and/or compute distances of some
