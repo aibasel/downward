@@ -15,11 +15,9 @@ MergeLinear::MergeLinear(const Options &opts)
       need_first_index(true) {
 }
 
-bool MergeLinear::done() const {
-    return order.done();
-}
-
 pair<int, int> MergeLinear::get_next(const std::vector<Abstraction *> &all_abstractions) {
+    assert(!done() && !order.done());
+
     int first;
     if (need_first_index) {
         need_first_index = false;
@@ -34,6 +32,11 @@ pair<int, int> MergeLinear::get_next(const std::vector<Abstraction *> &all_abstr
     cout << "Next variable: " << second << endl;
     assert(all_abstractions[first]);
     assert(all_abstractions[second]);
+    --remaining_merges;
+    if (done() && !order.done()) {
+        cerr << "Variable order finder not done, but no merges remaining" << endl;
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
     return make_pair(first, second);
 }
 
