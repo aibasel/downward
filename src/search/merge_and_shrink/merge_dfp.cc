@@ -22,6 +22,9 @@ MergeDFP::MergeDFP()
     : MergeStrategy(),
       remaining_merges(-1),
       border_atomics_composites(-1) {
+    // TODO: consider initializing the two fields already here (there are
+    // g_variable_domain.size() atomic abstractions and the same amount minus
+    // one merges will be performed).
 }
 
 bool MergeDFP::done() const {
