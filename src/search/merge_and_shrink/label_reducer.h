@@ -10,13 +10,27 @@ class LabelSignature;
 class Options;
 
 class LabelReducer {
+    /* none: no label reduction will be performed
+
+       old: emulate the label reduction as desribed in the
+       IJCAI 2011 paper by Nissim, Hoffmann and Helmert.
+
+       two_abstractions: compute the 'combinable relation'
+       for labels only for the two abstractions that will
+       be merged next and reduce labels.
+
+       all_abstractions: compute the 'combinable relation'
+       for labels once for every abstraction and reduce
+       labels.
+
+       all_abstractions_with_fixpoint: keep computing the
+       'combinable relation' for labels iteratively for all
+       abstractions until no more labels can be reduced.
+     */
     enum LabelReductionMethod {
         NONE,
         OLD,
-        ONE_ABSTRACTION,
-        TWO_ABSTRACTIONS_LARGER_FIRST,
-        TWO_ABSTRACTIONS_SMALLER_FIRST,
-        TWO_ABSTRACTIONS_GIVEN_ORDER,
+        TWO_ABSTRACTIONS,
         ALL_ABSTRACTIONS,
         ALL_ABSTRACTIONS_WITH_FIXPOINT
     };

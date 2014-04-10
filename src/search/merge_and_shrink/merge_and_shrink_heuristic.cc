@@ -73,9 +73,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
 
     cout << "Merging abstractions..." << endl;
 
-    // TODO: fix case where there is only one variable
     vector<int> system_order;
-    // TODO: reconsider in which order things are done in the main loop
     while (!merge_strategy->done()) {
         pair<int, int> next_systems = merge_strategy->get_next(all_abstractions);
         int system_one = next_systems.first;
@@ -99,12 +97,14 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
             other_abstraction->statistics(use_expensive_statistics);
         }
 
+        // distances need to be computed before shrinking
         abstraction->compute_distances();
-        // TODO: check for which abstraction?
+        other_abstraction->compute_distances();
         if (!abstraction->is_solvable())
             return abstraction;
+        if (!other_abstraction->is_solvable())
+            return other_abstraction;
 
-        other_abstraction->compute_distances();
         shrink_strategy->shrink_before_merge(*abstraction, *other_abstraction);
         // TODO: Make shrink_before_merge return a pair of bools
         //       that tells us whether they have actually changed,
@@ -259,14 +259,24 @@ static Heuristic *_parse(OptionParser &parser) {
     vector<string> label_reduction_method;
     label_reduction_method.push_back("NONE");
     label_reduction_method.push_back("OLD");
-    label_reduction_method.push_back("ONE_ABSTRACTION");
-    label_reduction_method.push_back("TWO_ABSTRACTIONS_LARGER_FIRST");
-    label_reduction_method.push_back("TWO_ABSTRACTIONS_SMALLER_FIRST");
-    label_reduction_method.push_back("TWO_ABSTRACTIONS_GIVEN_ORDER");
+    label_reduction_method.push_back("TWO_ABSTRACTIONS");
     label_reduction_method.push_back("ALL_ABSTRACTIONS");
     label_reduction_method.push_back("ALL_ABSTRACTIONS_WITH_FIXPOINT");
     parser.add_enum_option("label_reduction_method", label_reduction_method,
-                           "label reduction method", "ALL_ABSTRACTIONS_WITH_FIXPOINT");
+                           "label reduction method: "
+                           "none: no label reduction will be performed "
+                           "old: emulate the label reduction as desribed in the "
+                           "IJCAI 2011 paper by Nissim, Hoffmann and Helmert."
+                           "two_abstractions: compute the 'combinable relation' "
+                           "for labels only for the two abstractions that will "
+                           "be merged next and reduce labels."
+                           "all_abstractions: compute the 'combinable relation' "
+                           "for labels once for every abstraction and reduce "
+                           "labels."
+                           "all_abstractions_with_fixpoint: keep computing the "
+                           "'combinable relation' for labels iteratively for all "
+                           "abstractions until no more labels can be reduced."
+                           "ALL_ABSTRACTIONS_WITH_FIXPOINT");
     vector<string> label_reduction_system_order;
     label_reduction_system_order.push_back("REGULAR");
     label_reduction_system_order.push_back("REVERSE");
