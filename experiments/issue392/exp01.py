@@ -9,6 +9,7 @@ import common_setup
 
 REVS = ["issue392"]
 LIMITS = {"search_time": 300}
+ATTRIBUTES = common_setup.MyExperiment.DEFAULT_TABLE_ATTRIBUTES + ["quality"]
 
 CONFIGS = {}
 for option in ["pref_first", "original", "shuffled", "shuffled_pref_first"]:
@@ -54,7 +55,6 @@ exp = common_setup.MyExperiment(
     limits=LIMITS,
     )
 
-exp.add_report(AbsoluteReport(
-    attributes=common_setup.MyExperiment.DEFAULT_TABLE_ATTRIBUTES))
+exp.add_report(AbsoluteReport(attributes=ATTRIBUTES))
 
 exp()
