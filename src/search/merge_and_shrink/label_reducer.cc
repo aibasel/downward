@@ -73,21 +73,26 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
 
         vector<EquivalenceRelation *> local_equivalence_relations(
             all_abstractions.size(), 0);
+
         EquivalenceRelation *relation = compute_outside_equivalence(
             next_merge.first, all_abstractions,
             labels, local_equivalence_relations);
         reduce_exactly(relation, labels);
         delete relation;
+
         relation = compute_outside_equivalence(
-                    next_merge.second, all_abstractions,
-                    labels, local_equivalence_relations);
+            next_merge.second, all_abstractions,
+            labels, local_equivalence_relations);
         reduce_exactly(relation, labels);
         delete relation;
+
         for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
             delete local_equivalence_relations[i];
         return;
     }
 
+    // Make sure that we start with an index not ouf of range for
+    // all_abstractions
     size_t system_order_index = 0;
     assert(!system_order.empty());
     while (system_order[system_order_index] >= all_abstractions.size()) {
