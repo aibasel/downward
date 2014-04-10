@@ -165,11 +165,7 @@ class IssueExperiment(DownwardExperiment):
         If "suite" is specified, it should specify a problem suite.
 
         Options "combinations" (from the base class), "revisions" and
-        "search_revisions" can be freely mixed. However, only
-        "revisions" and "search_revisions" will be included in the
-        comparison table and the scatter plots."""
-
-        configs = configs or {}
+        "search_revisions" can be freely mixed."""
 
         if is_test_run():
             # Use LocalEnvironment.
@@ -184,45 +180,33 @@ class IssueExperiment(DownwardExperiment):
         if repo is None:
             repo = get_repo_base()
 
-        num_rev_opts_specified = (
-            int(revisions is not None) +
-            int(search_revisions is not None) +
-            int(kwargs.get("combinations") is not None))
+        kwargs.setdefault("combinations", [])
 
-        if num_rev_opts_specified > 1:
-            raise ValueError('must specify exactly one of "revisions", '
-                             '"search_revisions" or "combinations"')
+        if revisions:
+            kwargs["combinations"].extend([
+                (Translator(repo, rev),
+                 Preprocessor(repo, rev),
+                 Planner(repo, rev))
+                for rev in revisions])
 
-        if revisions is not None:
-            if not revisions:
-                raise ValueError("revisions cannot be empty")
-            combinations = [(Translator(repo, rev),
-                             Preprocessor(repo, rev),
-                             Planner(repo, rev))
-                            for rev in revisions]
-            kwargs["combinations"] = combinations
-
-        if search_revisions is not None:
-            if not search_revisions:
-                raise ValueError("search_revisions cannot be empty")
+        if search_revisions:
             base_rev = search_revisions[0]
             # Use the same nick for all parts to get short revision nick.
-            combinations = [(Translator(repo, base_rev, nick=rev),
-                             Preprocessor(repo, base_rev, nick=rev),
-                             Planner(repo, rev, nick=rev))
-                            for rev in search_revisions]
-            kwargs["combinations"] = combinations
+            kwargs["combinations"].extend([
+                (Translator(repo, base_rev, nick=rev),
+                 Preprocessor(repo, base_rev, nick=rev),
+                 Planner(repo, rev, nick=rev))
+                for rev in search_revisions])
 
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
         configs = configs or {}
         for nick, config in configs.items():
             self.add_config(nick, config)
+        self._config_nicks = configs.keys()
 
         if suite is not None:
             self.add_suite(suite)
-
-        self._config_nicks = configs.keys()
 
     @property
     def revision_nicks(self):
