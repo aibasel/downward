@@ -206,9 +206,10 @@ class IssueExperiment(DownwardExperiment):
             if not search_revisions:
                 raise ValueError("search_revisions cannot be empty")
             base_rev = search_revisions[0]
-            translator = Translator(repo, base_rev)
-            preprocessor = Preprocessor(repo, base_rev)
-            combinations = [(translator, preprocessor, Planner(repo, rev))
+            # Use the same nick for all parts to get short revision nick.
+            combinations = [(Translator(repo, base_rev, nick=rev),
+                             Preprocessor(repo, base_rev, nick=rev),
+                             Planner(repo, rev, nick=rev))
                             for rev in search_revisions]
             kwargs["combinations"] = combinations
 
