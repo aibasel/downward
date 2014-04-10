@@ -2,31 +2,39 @@
 # -*- coding: utf-8 -*-
 
 from downward.suites import suite_satisficing_with_ipc11
+from downward.reports.absolute import AbsoluteReport
 
 import common_setup
 
 
-# HACK HACK HACK -- stupid of course -- we don't want to do a
-# comparison experiment. But I don't really know how to set something
-# else up quickly at the moment, and the way this is set up here, it
-# should at least go fast because all the default runs will complain
-# about usage errors.
-
-REVS = ["default", "issue392"]
+REVS = ["issue392"]
+LIMITS = {"search_time": 300}
 
 CONFIGS = {}
-for option in ["pref_first", "original", "shuffled"]:
-    name = "lamafirst-%s" % option
-    args = [
+for option in ["pref_first", "original", "shuffled", "shuffled_pref_first"]:
+    CONFIGS["lamafirst-%s" % option] = [
         "--heuristic",
         "hlm1,hff1=lm_ff_syn(lm_rhw(reasonable_orders=true," +
         "lm_cost_type=ONE,cost_type=ONE))",
         "--search",
-        "lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],"+
+        "lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1]," +
         "cost_type=ONE,reopen_closed=false," +
-        "succ_mode=%s)" % option.upper()
-        ]
-    CONFIGS[name] = args
+        "succ_order=%s)" % option.upper()
+    ]
+    CONFIGS["lazy-greedy-ff-%s" % option] = [
+        "--heuristic",
+        "hff=ff()",
+        "--search",
+        "lazy_greedy(hff,preferred=[hff],reopen_closed=true,succ_order=%s)" %
+            option.upper()
+    ]
+    CONFIGS["iterated-lazy-greedy-ff-%s" % option] = [
+        "--heuristic",
+        "hff=ff()",
+        "--search",
+        "iterated(lazy_greedy(hff,preferred=[hff],reopen_closed=true,succ_order=%s),repeat_last=true)" %
+            option.upper()
+    ]
 
 TEST_RUN = False
 
@@ -42,11 +50,11 @@ exp = common_setup.MyExperiment(
     grid_priority=PRIORITY,
     revisions=REVS,
     configs=CONFIGS,
-    suite=SUITE
+    suite=SUITE,
+    limits=LIMITS,
     )
 
-
-exp.add_comparison_table_step()
-# exp.add_scatter_plot_step()
+exp.add_report(AbsoluteReport(
+    attributes=common_setup.MyExperiment.DEFAULT_TABLE_ATTRIBUTES))
 
 exp()
