@@ -210,6 +210,7 @@ class IssueExperiment(DownwardExperiment):
 
     @property
     def revision_nicks(self):
+        # TODO: Use add_algorithm() API once it's available.
         return [_get_rev_nick(*combo) for combo in self.combinations]
 
     def add_comparison_table_step(self, attributes=None):
