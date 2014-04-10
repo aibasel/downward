@@ -60,57 +60,26 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         return;
     }
 
-    if (label_reduction_method == ONE_ABSTRACTION) {
-        vector<EquivalenceRelation *> local_equivalence_relations(
-            all_abstractions.size(), 0);
-        size_t abs_index = next_merge.first;
-        assert(all_abstractions[abs_index]);
-        EquivalenceRelation *relation = compute_outside_equivalence(
-            abs_index, all_abstractions,
-            labels, local_equivalence_relations);
-        reduce_exactly(relation, labels);
-        delete relation;
-        for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
-            delete local_equivalence_relations[i];
-        return;
-    }
-
-    if (label_reduction_method == TWO_ABSTRACTIONS_LARGER_FIRST
-            || label_reduction_method == TWO_ABSTRACTIONS_SMALLER_FIRST
-            || label_reduction_method == TWO_ABSTRACTIONS_GIVEN_ORDER) {
+    if (label_reduction_method == TWO_ABSTRACTIONS) {
+        /* Note:
+           We compute the combinable relation for labels for the two abstractions
+           in the order given by the merge strategy. We conducted experiments
+           testing the impact of always starting with the larger abstraction
+           (in terms of variables) or with the smaller abstraction and found
+           no significant differences.
+         */
         assert(all_abstractions[next_merge.first]);
         assert(all_abstractions[next_merge.second]);
-        size_t larger_abs, smaller_abs;
-        if (all_abstractions[next_merge.first]->get_varset().size() >=
-                all_abstractions[next_merge.second]->get_varset().size()) {
-            larger_abs = next_merge.first;
-            smaller_abs = next_merge.second;
-        } else {
-            larger_abs = next_merge.second;
-            smaller_abs = next_merge.first;
-        }
-
-        size_t first_abs, second_abs;
-        if (label_reduction_method == TWO_ABSTRACTIONS_LARGER_FIRST) {
-            first_abs = larger_abs;
-            second_abs = smaller_abs;
-        } else if  (label_reduction_method == TWO_ABSTRACTIONS_SMALLER_FIRST) {
-            first_abs = smaller_abs;
-            second_abs = larger_abs;
-        } else {
-            first_abs = next_merge.first;
-            second_abs = next_merge.second;
-        }
 
         vector<EquivalenceRelation *> local_equivalence_relations(
             all_abstractions.size(), 0);
         EquivalenceRelation *relation = compute_outside_equivalence(
-            first_abs, all_abstractions,
+            next_merge.first, all_abstractions,
             labels, local_equivalence_relations);
         reduce_exactly(relation, labels);
         delete relation;
         relation = compute_outside_equivalence(
-                    second_abs, all_abstractions,
+                    next_merge.second, all_abstractions,
                     labels, local_equivalence_relations);
         reduce_exactly(relation, labels);
         delete relation;
@@ -413,17 +382,8 @@ void LabelReducer::dump_options() const {
     case OLD:
         cout << "old";
         break;
-    case ONE_ABSTRACTION:
-        cout << "one abstraction";
-        break;
-    case TWO_ABSTRACTIONS_LARGER_FIRST:
-        cout << "two abstractions larger first";
-        break;
-    case TWO_ABSTRACTIONS_SMALLER_FIRST:
-        cout << "two abstractions smaller first";
-        break;
-    case TWO_ABSTRACTIONS_GIVEN_ORDER:
-        cout << "two abstractions given order";
+    case TWO_ABSTRACTIONS:
+        cout << "two abstractions (which will be merged next)";
         break;
     case ALL_ABSTRACTIONS:
         cout << "all abstractions";
@@ -435,7 +395,7 @@ void LabelReducer::dump_options() const {
     cout << endl;
     if (label_reduction_method == ALL_ABSTRACTIONS ||
         label_reduction_method == ALL_ABSTRACTIONS_WITH_FIXPOINT) {
-        cout << "Variable order: ";
+        cout << "System order: ";
         switch (label_reduction_system_order) {
         case REGULAR:
             cout << "regular";

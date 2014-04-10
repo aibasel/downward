@@ -43,7 +43,7 @@ static const int infinity = numeric_limits<int>::max();
 
 Abstraction::Abstraction(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
-      transitions_by_label(g_operators.size() * 2 - 1),
+      transitions_by_label(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
       relevant_labels(transitions_by_label.size(), false),
       transitions_sorted_unique(true), peak_memory(0) {
     clear_distances();
