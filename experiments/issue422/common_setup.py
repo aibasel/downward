@@ -9,7 +9,8 @@ from lab.environments import MaiaEnvironment
 from lab.experiment import ARGPARSER
 from lab.steps import Step
 
-from downward.experiments import DownwardExperiment
+from downward.experiments import DownwardExperiment, _get_rev_nick
+from downward.checkouts import Translator, Preprocessor, Planner
 from downward.reports.compare import CompareRevisionsReport
 from downward.reports.scatter import ScatterPlotReport
 
@@ -183,36 +184,48 @@ class IssueExperiment(DownwardExperiment):
         if repo is None:
             repo = get_repo_base()
 
+        num_rev_opts_specified = (
+            int(revisions is not None) +
+            int(search_revisions is not None) +
+            int(kwargs.get("combinations") is not None))
+
+        if num_rev_opts_specified > 1:
+            raise ValueError('must specify exactly one of "revisions", '
+                             '"search_revisions" or "combinations"')
+
+        if revisions is not None:
+            if not revisions:
+                raise ValueError("revisions cannot be empty")
+            combinations = [(Translator(repo, rev),
+                             Preprocessor(repo, rev),
+                             Planner(repo, rev))
+                            for rev in revisions]
+            kwargs["combinations"] = combinations
+
+        if search_revisions is not None:
+            if not search_revisions:
+                raise ValueError("search_revisions cannot be empty")
+            base_rev = search_revisions[0]
+            translator = Translator(repo, base_rev)
+            preprocessor = Preprocessor(repo, base_rev)
+            combinations = [(translator, preprocessor, Planner(repo, rev))
+                            for rev in search_revisions]
+            kwargs["combinations"] = combinations
+
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
-        combinations = kwargs.get("combinations", [])
-        revisions = revisions or []
-        search_revisions = search_revisions or []
-
-        if combinations or (not revisions and not search_revisions):
-            for config_nick, config in configs.items():
-                self.add_config(config_nick, config)
-
-        for rev in revisions:
-            for config_nick, config in configs.items():
-                algo_nick = rev + "-" + config_nick
-                self.add_config(algo_nick, config,
-                                preprocess_rev=rev, search_rev=rev)
-
-        if search_revisions:
-            base_rev = search_revisions[0]
-            for search_rev in search_revisions:
-                for config_nick, config in configs.items():
-                    algo_nick = search_rev + "-" + config_nick
-                    self.add_config(algo_nick, config,
-                                    preprocess_rev=base_rev,
-                                    search_rev=search_rev)
+        configs = configs or {}
+        for nick, config in configs.items():
+            self.add_config(nick, config)
 
         if suite is not None:
             self.add_suite(suite)
 
-        self._compared_revs = revisions + search_revisions
         self._config_nicks = configs.keys()
+
+    @property
+    def revision_nicks(self):
+        return [_get_rev_nick(*combo) for combo in self.combinations]
 
     def add_comparison_table_step(self, attributes=None):
         """
@@ -222,7 +235,7 @@ class IssueExperiment(DownwardExperiment):
             attributes = self.DEFAULT_TABLE_ATTRIBUTES
 
         def make_comparison_tables():
-            for rev1, rev2 in itertools.combinations(self._compared_revs, 2):
+            for rev1, rev2 in itertools.combinations(self.revision_nicks, 2):
                 report = CompareRevisionsReport(rev1, rev2, attributes=attributes)
                 outfile = os.path.join(self.eval_dir,
                                        "%s-%s-compare.html" % (rev1, rev2))
@@ -243,7 +256,7 @@ class IssueExperiment(DownwardExperiment):
 
         def make_scatter_plots():
             for config_nick in self._config_nicks:
-                for rev1, rev2 in itertools.combinations(self._compared_revs, 2):
+                for rev1, rev2 in itertools.combinations(self.revision_nicks, 2):
                     algo1 = "%s-%s" % (rev1, config_nick)
                     algo2 = "%s-%s" % (rev2, config_nick)
                     if is_portfolio(config_nick):
