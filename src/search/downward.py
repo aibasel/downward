@@ -101,16 +101,10 @@ def main():
             args.search_args = args.unit_cost_search_args
             print "using special configuration for unit-cost problems"
 
-    if args.help_search:
-        state_var_size = 1
-    else:
-        state_var_size = input_analyzer.read_state_var_size(args.file)
-        print "state_var_size:", state_var_size
-
-    executable = os.path.join(BASE_DIR, "downward-%d" % state_var_size)
     if args.debug:
-        executable += "-debug"
-
+        executable = os.path.join(BASE_DIR, "downward-debug")
+    else:
+        executable = os.path.join(BASE_DIR, "downward-release")
     print "*** executable:", executable
 
     if args.portfolio:
@@ -128,6 +122,11 @@ def main():
             os.close(sys.stdin.fileno())
             os.open(args.file, os.O_RDONLY)
         # Run planner with exec to conserve memory.
+        # Note: Flushing is necessary; otherwise the output can get lots
+        # when Python is not running in line-buffered mode (e.g. when
+        # redirecting output to a file or pipe).
+        sys.stdout.flush()
+        sys.stderr.flush()
         os.execv(executable, [executable] + args.search_args)
 
 
