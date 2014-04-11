@@ -103,8 +103,6 @@ def test():
         if len(args) >= 2:
             print "%s:" % filename,
         print "is_unit_cost:", is_unit_cost(filename)
-        if len(args) >= 2:
-            print
 
 
 if __name__ == "__main__":
