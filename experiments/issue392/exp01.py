@@ -55,6 +55,7 @@ exp = common_setup.MyExperiment(
     limits=LIMITS,
     )
 
-exp.add_report(AbsoluteReport(attributes=ATTRIBUTES))
+exp.add_report(AbsoluteReport(attributes=ATTRIBUTES),
+               outfile=common_setup.get_experiment_name() + ".html")
 
 exp()
