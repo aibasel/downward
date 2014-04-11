@@ -161,6 +161,7 @@ class MyExperiment(DownwardExperiment):
             kwargs["combinations"] = combinations
 
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
+        self.include_preprocess_results_in_search_runs = False
 
         if configs is not None:
             for nick, config in configs.items():
