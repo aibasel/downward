@@ -2,6 +2,7 @@
 \.pyc$
 ^experiments/issue[0-9]*/data/
 ^misc/autodoc/downward-xmlrpc\.secret$
+^misc/buildbot/experiments/
 ^src/preprocess/\.obj/
 ^src/preprocess/Makefile\.depend$
 ^src/preprocess/preprocess$
@@ -9,9 +10,9 @@
 ^src/preprocess/preprocess-profile$
 ^src/search/\.obj/
 ^src/search/Makefile\.depend$
-^src/search/downward-[124]$
-^src/search/downward-[124]-debug$
-^src/search/downward-[124]-profile$
+^src/search/downward-debug$
+^src/search/downward-profile$
+^src/search/downward-release$
 ^src/search/lp/coin/
 ^src/VAL/.*\.o$
 ^src/VAL/lex\.yy\.cc$
@@ -21,4 +22,3 @@
 ^new-scripts/reports/
 ^new-scripts/preprocessed-tasks/
 ^new-scripts/exp-.*/
-
