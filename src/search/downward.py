@@ -96,7 +96,7 @@ def main():
         sys.exit()
 
     if args.unit_cost_search_args is not None:
-        is_unit_cost = input_analyzer.read_unit_cost(args.file)
+        is_unit_cost = input_analyzer.is_unit_cost(args.file)
         if is_unit_cost:
             args.search_args = args.unit_cost_search_args
             print "using special configuration for unit-cost problems"
