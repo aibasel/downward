@@ -200,7 +200,7 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     soft_mem_limit, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
     print 'External memory limits:', (soft_mem_limit, hard_mem_limit)
     # The soft memory limit is artificially lowered (by the downward script),
-    # so we use the hard memory limit.
+    # so we respect the hard limit and raise the soft limit for child processes.
     memory = hard_mem_limit - BYTES_FOR_PYTHON
     # Do not limit memory if the previous limit was very low or unlimited.
     if memory < 0:
