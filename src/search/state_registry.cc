@@ -2,12 +2,12 @@
 
 #include "axioms.h"
 #include "operator.h"
-#include "state_var_t.h"
+#include "per_state_information.h"
 
 using namespace std;
 
 StateRegistry::StateRegistry()
-    : state_data_pool(g_variable_domain.size()),
+    : state_data_pool(g_state_packer->get_num_bins()),
       registered_states(0,
                         StateIDSemanticHash(state_data_pool),
                         StateIDSemanticEqual(state_data_pool)),
@@ -16,6 +16,10 @@ StateRegistry::StateRegistry()
 
 
 StateRegistry::~StateRegistry() {
+    for (set<PerStateInformationBase *>::iterator it = subscribers.begin();
+         it != subscribers.end(); ++it) {
+        (*it)->remove_state_registry(this);
+    }
     delete cached_initial_state;
 }
 
@@ -37,14 +41,19 @@ StateID StateRegistry::insert_id_or_pop_state() {
 }
 
 State StateRegistry::lookup_state(StateID id) const {
-    return State(state_data_pool[id.value], id);
+    return State(state_data_pool[id.value], *this, id);
 }
 
 const State &StateRegistry::get_initial_state() {
     if (cached_initial_state == 0) {
-        state_data_pool.push_back(g_initial_state_buffer);
-        state_var_t *vars = state_data_pool[state_data_pool.size() - 1];
-        g_axiom_evaluator->evaluate(vars);
+        PackedStateBin *buffer = new PackedStateBin[g_state_packer->get_num_bins()];
+        for (size_t i = 0; i < g_initial_state_data.size(); ++i) {
+            g_state_packer->set(buffer, i, g_initial_state_data[i]);
+        }
+        g_axiom_evaluator->evaluate(buffer);
+        state_data_pool.push_back(buffer);
+        // buffer is copied by push_back
+        delete[] buffer;
         StateID id = insert_id_or_pop_state();
         cached_initial_state = new State(lookup_state(id));
     }
@@ -53,17 +62,25 @@ const State &StateRegistry::get_initial_state() {
 
 //TODO it would be nice to move the actual state creation (and operator application)
 //     out of the StateRegistry. This could for example be done by global functions
-//     operating on state buffers (state_var_t *).
+//     operating on state buffers (PackedStateBin *).
 State StateRegistry::get_successor_state(const State &predecessor, const Operator &op) {
     assert(!op.is_axiom());
-    state_data_pool.push_back(predecessor.get_buffer());
-    state_var_t *vars = state_data_pool[state_data_pool.size() - 1];
+    state_data_pool.push_back(predecessor.get_packed_buffer());
+    PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
     for (size_t i = 0; i < op.get_pre_post().size(); ++i) {
         const PrePost &pre_post = op.get_pre_post()[i];
         if (pre_post.does_fire(predecessor))
-            vars[pre_post.var] = pre_post.post;
+            g_state_packer->set(buffer, pre_post.var, pre_post.post);
     }
-    g_axiom_evaluator->evaluate(vars);
+    g_axiom_evaluator->evaluate(buffer);
     StateID id = insert_id_or_pop_state();
     return lookup_state(id);
+}
+
+void StateRegistry::subscribe(PerStateInformationBase *psi) const {
+    subscribers.insert(psi);
+}
+
+void StateRegistry::unsubscribe(PerStateInformationBase *const psi) const {
+    subscribers.erase(psi);
 }
