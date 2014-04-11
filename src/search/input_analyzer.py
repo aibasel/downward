@@ -2,91 +2,98 @@
 
 # Some performance numbers: on the largest preprocessor output file in
 # our benchmark collection as of end of 2013 (satellite #33, ~104 MB),
-# the input analyzer requires roughly 5 seconds. For comparison: the
+# analyzing the input requires roughly 5 seconds. For comparison: the
 # translator requires 130 seconds and the preprocessor 33 seconds on
 # this task.
 
 
-class AnalysisError(Exception):
+class ParseError(Exception):
     pass
 
 
-class UnitCostAnalyzer(object):
-    """Simple parser for the preprocessor output file that checks if
-    we have a unit-cost problem. Not a complete parser, so does not
-    completely validate that the input is syntax-correct.
+class FileParser(object):
+    """Simple generic file parser."""
 
-    The class is intended to be used through the helper functions in
-    the module rather than directly."""
-
-    def is_unit_cost(self, filename):
-        # This is more general than needed, since we only use one
-        # extract_func these days. (There used to be two different
-        # ones back when we had the downward-{1,2,4} executables.)
-        # But it doesn't hurt much to leave the generality in.
-        self.filename = filename
+    def __init__(self, input_file):
+        self.input_file = input_file
         self.curr_line = None
         self.prev_line = None
 
-        with open(filename) as input_file:
-            self.input_file = input_file
+    def error(self, msg):
+        """Raise a ParseError with the given message."""
+        raise ParseError("error in %s: %s" % (self.input_file.name, msg))
 
-            self._skip_to("begin_metric")
-            use_metric = bool(self._read_int(min_value=0, max_value=1))
-
-            self._skip_to("end_goal")
-            num_operators = self._read_int(min_value=0)
-            for _ in xrange(num_operators):
-                self._skip_to("begin_operator")
-                self._next_line() # Skip over operator name in case it's "end_operator."
-                self._skip_to("end_operator")
-                action_cost = self._parse_int(self.prev_line, min_value=0)
-                if use_metric:
-                    if action_cost != 1:
-                        return False
-                else:
-                    if action_cost != 0:
-                        # Currently, action costs in the input must all be
-                        # specified as 0 unless the metric is set. In the
-                        # future, it might make sense to change the
-                        # entries to 1 in this case (since they are
-                        # interpreted as 1) and get rid of the metric
-                        # block.
-                        self._error("action cost set despite use_metric=False")
-
-        return True
-
-    def _error(self, msg):
-        raise AnalysisError("error in %s: %s" % (self.filename, msg))
-
-    def _next_line(self):
+    def next_line(self):
+        """Read the next line and return it. All input lines are stripped."""
         self.prev_line = self.curr_line
         try:
             self.curr_line = next(self.input_file).strip()
         except StopIteration:
-            self._error("unexpected end of file")
+            self.error("unexpected end of file")
         return self.curr_line
 
-    def _skip_to(self, magic):
-        while self._next_line() != magic:
+    def get_curr_line(self):
+        """Get the current line, i.e., the one that was read by the
+        last call to next_line()."""
+        return self.curr_line
+
+    def get_prev_line(self):
+        """Get the previous line, i.e., the one that was read by the
+        second-last call to next_line()."""
+        return self.prev_line
+
+    def skip_to(self, magic):
+        """Skip over all input lines up to and including the next
+        one that is equal to "magic"."""
+        while self.next_line() != magic:
             pass
 
-    def _parse_int(self, line, min_value=None, max_value=None):
+    def read_int(self, **kwargs):
+        """Read the next line and parse it as an integer.
+        (See parse_int for keyword arguments.)"""
+        return self.parse_int(self.next_line(), **kwargs)
+
+    def parse_int(self, line, min_value=None, max_value=None):
+        """Parse a given line of a text as an integer and check that
+        it is between the given bounds (if specified)."""
         try:
             value = int(line)
         except ValueError:
-            self._error("expected int, got %r" % line)
+            self.error("expected int, got %r" % line)
         if ((min_value is not None and value < min_value) or
             (max_value is not None and value > max_value)):
-            self._error("value out of bound: %d" % value)
+            self.error("value out of bound: %d" % value)
         return value
 
-    def _read_int(self, **kwargs):
-        return self._parse_int(self._next_line(), **kwargs)
 
+def is_unit_cost(filename):
+    with open(filename) as input_file:
+        parser = FileParser(input_file)
 
-def read_unit_cost(filename):
-    return UnitCostAnalyzer().is_unit_cost(filename)
+        parser.skip_to("begin_metric")
+        use_metric = bool(parser.read_int(min_value=0, max_value=1))
+
+        parser.skip_to("end_goal")
+        num_operators = parser.read_int(min_value=0)
+        for _ in xrange(num_operators):
+            parser.skip_to("begin_operator")
+            # Skip over operator name in case it's "end_operator":
+            parser.next_line()
+            parser.skip_to("end_operator")
+            action_cost = parser.parse_int(parser.get_prev_line(), min_value=0)
+            if use_metric:
+                if action_cost != 1:
+                    return False
+            else:
+                if action_cost != 0:
+                    # Currently, action costs in the input must all be
+                    # specified as 0 unless the metric is set. In the
+                    # future, it might make sense to change the
+                    # entries to 1 in this case (since they are
+                    # interpreted as 1) and get rid of the metric
+                    # block.
+                    parser.error("action cost set despite use_metric=False")
+        return True
 
 
 def test():
@@ -94,8 +101,8 @@ def test():
     args = sys.argv[1:]
     for filename in args:
         if len(args) >= 2:
-            print "%s:" % filename
-        print "is_unit_cost:", read_unit_cost(filename)
+            print "%s:" % filename,
+        print "is_unit_cost:", is_unit_cost(filename)
         if len(args) >= 2:
             print
 
