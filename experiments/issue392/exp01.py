@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from downward.suites import suite_satisficing_with_ipc11
-from downward.reports.absolute import AbsoluteReport
 
 import common_setup
 
 
 REVS = ["issue392"]
 LIMITS = {"search_time": 300}
-ATTRIBUTES = common_setup.MyExperiment.DEFAULT_TABLE_ATTRIBUTES + ["quality"]
 
 CONFIGS = {}
 for option in ["pref_first", "original", "shuffled", "shuffled_pref_first"]:
@@ -55,7 +53,6 @@ exp = common_setup.MyExperiment(
     limits=LIMITS,
     )
 
-exp.add_report(AbsoluteReport(attributes=ATTRIBUTES),
-               outfile=common_setup.get_experiment_name() + ".html")
+exp.add_absolute_report_step()
 
 exp()

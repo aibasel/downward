@@ -7,6 +7,7 @@ from lab.steps import Step
 
 from downward.checkouts import Translator, Preprocessor, Planner
 from downward.experiments import DownwardExperiment
+from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import CompareRevisionsReport
 from downward.reports.scatter import ScatterPlotReport
 
@@ -64,6 +65,7 @@ class MyExperiment(DownwardExperiment):
         "expansions_until_last_jump",
         "generated",
         "memory",
+        "quality",
         "run_dir",
         "score_evaluations",
         "score_expansions",
@@ -222,3 +224,9 @@ class MyExperiment(DownwardExperiment):
                     report(self.eval_dir, os.path.join(scatter_dir, name))
 
         self.add_step(Step("make-scatter-plots", make_scatter_plots))
+
+    def add_absolute_report_step(self, outfile=None, **kwargs):
+        kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
+        report = AbsoluteReport(**kwargs)
+        outfile = outfile or get_experiment_name() + "." + report.output_format
+        self.add_report(report, outfile=outfile)
