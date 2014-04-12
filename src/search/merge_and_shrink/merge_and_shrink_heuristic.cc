@@ -275,7 +275,7 @@ static Heuristic *_parse(OptionParser &parser) {
                            "labels."
                            "all_abstractions_with_fixpoint: keep computing the "
                            "'combinable relation' for labels iteratively for all "
-                           "abstractions until no more labels can be reduced."
+                           "abstractions until no more labels can be reduced.",
                            "ALL_ABSTRACTIONS_WITH_FIXPOINT");
     vector<string> label_reduction_system_order;
     label_reduction_system_order.push_back("REGULAR");
