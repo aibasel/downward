@@ -89,7 +89,7 @@ def run_search(args):
         executable = os.path.join(SEARCH_DIR, "downward-release")
     print "*** executable:", executable
 
-    if args.portfolio:
+    if args.portfolio_file:
         assert not args.search_args
         # TODO: Implement portfolios. Don't forget exit code. Take
         # into account the time used by *this* process too for the
@@ -111,7 +111,7 @@ def main():
     args = arguments.parse_args()
     print "*** processed args:", args
 
-    if args.portfolio is not None:
+    if args.portfolio_file is not None:
         set_memory_limit()
 
     if args.show_aliases:
