@@ -24,8 +24,6 @@ def parse_args():
                         help="run a config with an alias (e.g. seq-sat-lama-2011)")
     parser.add_argument("--debug", action="store_true",
                         help="run search component in debug mode")
-    parser.add_argument("--input-file-search", default="output",
-                        help="preprocessed input file (default: %(default)s)")
     parser.add_argument("--help-search", action="store_true",
                         help="pass --help argument to search component")
     parser.add_argument("--ipc", dest="alias",

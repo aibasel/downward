@@ -9,10 +9,10 @@ from . import input_analyzer
 
 
 DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
-PARENT_DIR = os.path.dirname(DRIVER_DIR)
-TRANSLATE = os.path.join(PARENT_DIR, "translate", "translate.py")
-PREPROCESS = os.path.join(PARENT_DIR, "preprocess", "preprocess")
-SEARCH_DIR = os.path.join(PARENT_DIR, "search")
+SRC_DIR = os.path.dirname(DRIVER_DIR)
+TRANSLATE = os.path.join(SRC_DIR, "translate", "translate.py")
+PREPROCESS = os.path.join(SRC_DIR, "preprocess", "preprocess")
+SEARCH_DIR = os.path.join(SRC_DIR, "search")
 
 
 def write_elapsed_time():
@@ -57,30 +57,36 @@ def run_preprocess(args):
 def run_search(args):
     print "*** Running search."
 
-    if args.unit_cost_search_args is not None:
-        if input_analyzer.is_unit_cost(args.input_file_search):
-            print "*** using special configuration for unit-cost problems"
-            args.search_args = args.unit_cost_search_args
-
     if args.debug:
         executable = os.path.join(SEARCH_DIR, "downward-debug")
     else:
         executable = os.path.join(SEARCH_DIR, "downward-release")
     print "*** executable:", executable
 
-    if args.portfolio_file:
+    if args.help_search:
+        call_cmd(executable, args.search_args)
+    elif args.portfolio_file:
         assert not args.search_args
         # TODO: Implement portfolios. Don't forget exit code. Take
         # into account the time used by *this* process too for the
         # portfolio time slices. After all, we used to take into
         # account time for dispatch script and unitcost script, and
         # these are now in-process.
+
+        # TODO: Should the portfolios care about the
+        # unit-cost/general-cost disinction, too?
         raise NotImplementedError
     else:
-        print "*** final search args:", args.search_args
+        INPUT_FILE = "output"
+
+        search_args = args.search_args
+
+        if args.unit_cost_search_args is not None:
+            if input_analyzer.is_unit_cost(INPUT_FILE):
+                print "*** using special configuration for unit-cost problems"
+                search_args = args.unit_cost_search_args
+
+        print "*** final search args:", search_args
         write_elapsed_time()
-        if args.help_search:
-            call_cmd(executable, args.search_args)
-        else:
-            call_cmd(executable, args.search_args, stdin=args.input_file_search)
+        call_cmd(executable, search_args, stdin=INPUT_FILE)
     print "***"
