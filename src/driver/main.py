@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os.path
@@ -6,10 +5,11 @@ import subprocess
 import sys
 
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-TRANSLATE = os.path.join(BASE_DIR, "translate", "translate.py")
-PREPROCESS = os.path.join(BASE_DIR, "preprocess", "preprocess")
-SEARCH = os.path.join(BASE_DIR, "search", "downward")
+DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
+PARENT_DIR = os.path.dirname(DRIVER_DIR)
+TRANSLATE = os.path.join(PARENT_DIR, "translate", "translate.py")
+PREPROCESS = os.path.join(PARENT_DIR, "preprocess", "preprocess")
+SEARCH = os.path.join(PARENT_DIR, "search", "downward")
 
 
 def die(msg):
@@ -17,8 +17,9 @@ def die(msg):
 
 
 def usage():
+    import __main__
     die("usage: %s [DOMAIN_FILE] PROBLEM_FILE SEARCH_OPTION ..." %
-        os.path.basename(__file__))
+        os.path.basename(__main__.__file__))
 
 
 def parse_args():
@@ -80,6 +81,3 @@ def main():
     ## not be hard to change this, but it is probably better to wait
     ## with this until the search/downward script and portfolio
     ## scripts are integrated.
-
-if __name__ == "__main__":
-    main()
