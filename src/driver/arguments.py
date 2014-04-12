@@ -30,7 +30,7 @@ def parse_args():
                         help="pass --help argument to search component")
     parser.add_argument("--ipc", dest="alias",
                         help="same as --alias")
-    parser.add_argument("--portfolio", metavar="FILE",
+    parser.add_argument("--portfolio-file", metavar="FILE",
                         help="run a portfolio specified in FILE")
     parser.add_argument("--show-aliases", action="store_true",
                         help="show the known aliases; don't run search")
@@ -53,7 +53,7 @@ def parse_args():
     check_arg_conflicts(parser, [
             ("--alias", args.alias is not None),
             ("--help-search", args.help_search),
-            ("--portfolio", args.portfolio is not None),
+            ("--portfolio-file", args.portfolio_file is not None),
             ("arguments to search component", bool(args.search_args))])
 
     if args.help_search:
