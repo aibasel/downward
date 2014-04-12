@@ -39,13 +39,13 @@ def write_elapsed_time():
         print >> time_file, child_elapsed
 
 
-def call_cmd(cmd, stdin=None):
+def call_cmd(cmd, args, stdin=None):
     sys.stdout.flush()
     if stdin:
         with open(stdin) as stdin_file:
-            subprocess.check_call(cmd, stdin=stdin_file)
+            subprocess.check_call([cmd] + args, stdin=stdin_file)
     else:
-        subprocess.check_call(cmd)
+        subprocess.check_call([cmd] + args)
 
 
 def set_memory_limit():
@@ -126,14 +126,14 @@ def parse_args():
 def run_translate(args):
     print "*** Running translator."
     print "*** translator arguments: %s" % args.translate_args
-    call_cmd([TRANSLATE] + args.translate_args)
+    call_cmd(TRANSLATE, args.translate_args)
     print "***"
 
 
 def run_preprocess(args):
     print "*** Running preprocessor."
     print "*** preprocessor arguments: %s" % args.preprocess_args
-    call_cmd([PREPROCESS] + args.preprocess_args, stdin="output.sas")
+    call_cmd(PREPROCESS, args.preprocess_args, stdin="output.sas")
     print "***"
 
 
@@ -163,9 +163,9 @@ def run_search(args):
         print "*** final search args:", args.search_args
         write_elapsed_time()
         if args.help_search:
-            call_cmd([executable] + list(args.search_args))
+            call_cmd(executable, args.search_args)
         else:
-            call_cmd([executable] + list(args.search_args), stdin=args.input_file_search)
+            call_cmd(executable, args.search_args, stdin=args.input_file_search)
     print "***"
 
 
