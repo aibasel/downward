@@ -121,6 +121,11 @@
     bisimulation renames threshold to target and uses its own threshold
     parameter, which has a different meaning.
   - do we need shrink atomics (only for the sake of bisimulations)?
+  - Die Option threshold gibt es nur für shrink_bisimulation:
+    Ah, OK. Das könnte man evtl. später mal ändern, weil das gar nicht so
+    viel mit der Shrink-Strategie zu tun hat und mehr damit, wann und mit
+    welchen Parametern die Shrink-Strategie aufgerufen wird. Aber das ist
+    jetzt erst mal wurscht.
 
 * TODOs for rest of the code:
 
