@@ -4,6 +4,7 @@
 #include <fstream>
 #include <limits>
 #include <sstream>
+#include <unistd.h>
 using namespace std;
 
 #include "utilities.h"
