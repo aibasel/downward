@@ -129,7 +129,7 @@ DEPEND = g++ -MM
 CCOPT  = -g
 CCOPT += -m32
 CCOPT +=
-CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
+CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -DSTATE_VAR_BYTES=$(STATE_VAR_BYTES)
 
 ## The following line is a HACK to cross-compile a 64-bit executable
 ## on a 32-bit Ubuntu machine (it also needs the -m32 to be changed to
