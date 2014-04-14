@@ -145,8 +145,13 @@ class IssueExperiment(DownwardExperiment):
 
             IssueExperiment(grid_priority=-500)
 
-        If "path" is not specified, the experiment data path is
-        derived automatically from the main script's filename.
+        If "path" is specified, it must be the path to where the
+        experiment should be built (e.g.
+        /home/john/experiments/issue123/exp01/). If omitted, the
+        experiment path is derived automatically from the main
+        script's filename. Example:
+        script-name = experiments/issue123/exp01.py ->
+        path = experiments/issue123/data/issue123-exp01/
 
         If "repo" is not specified, the repository base is derived
         automatically from the main script's path.
