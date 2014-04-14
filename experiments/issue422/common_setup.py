@@ -143,7 +143,7 @@ class IssueExperiment(DownwardExperiment):
         experiments. It must be in the range [-1023, 0] where 0 is the
         highest priority. By default the priority is 0. ::
 
-            IssueExperiment(grid_priority=-500, ...)
+            IssueExperiment(grid_priority=-500)
 
         If "path" is specified, it must be the path to where the
         experiment should be built (e.g.
@@ -166,7 +166,7 @@ class IssueExperiment(DownwardExperiment):
         in the experiment. The same versions are used for translator,
         preprocessor and search. ::
 
-            IssueExperiment(revisions=['issue123', '4b3d581643'])
+            IssueExperiment(revisions=["issue123", "4b3d581643"])
 
         If "search_revisions" is specified, it should be a non-empty
         list of revisions, which specify which search component
@@ -174,19 +174,29 @@ class IssueExperiment(DownwardExperiment):
         translator and preprocessor component of the first
         revision. ::
 
-            IssueExperiment(search_revisions=['default', 'issue123'])
+            IssueExperiment(search_revisions=["default", "issue123"])
 
         If you really need to specify the (translator, preprocessor,
         planner) triples manually, use the "combinations" parameter
         from the base class (might be deprecated soon). If none of
         "revisions", "search_revisions" and "combinations" is given,
         the experiment will use the code from the working directory
-        at "repo".
+        at "repo". The options "revisions", "search_revisions" and
+        "combinations" can be freely mixed.
 
-        If "suite" is specified, it should specify a problem suite.
+        Test runs will use the first gripper task regardless of the
+        value of "suite". If "suite" is omitted for real
+        experiments, all IPC benchmarks in the Fast Downward
+        repository will be used. If "suite" is given, it must
+        specify a problem suite. ::
 
-        Options "combinations" (from the base class), "revisions" and
-        "search_revisions" can be freely mixed."""
+            from downward import suites
+            IssueExperiment(suite=suites.suite_all())  # default
+            IssueExperiment(suite=suites.suite_satisficing_with_ipc11())
+            IssueExperiment(suite=suites.suite_optimal())
+            IssueExperiment(suite=["grid", "gripper:prob01.pddl"])
+
+        """
 
         if is_test_run():
             # Use LocalEnvironment.
@@ -226,8 +236,9 @@ class IssueExperiment(DownwardExperiment):
             self.add_config(nick, config)
         self._config_nicks = configs.keys()
 
-        if suite is not None:
-            self.add_suite(suite)
+        if suite is None:
+            suite = suites.suite_all()
+        self.add_suite(suite)
 
     @property
     def revision_nicks(self):
