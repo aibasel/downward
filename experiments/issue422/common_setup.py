@@ -143,7 +143,7 @@ class IssueExperiment(DownwardExperiment):
         experiments. It must be in the range [-1023, 0] where 0 is the
         highest priority. By default the priority is 0. ::
 
-            IssueExperiment(grid_priority=-500)
+            IssueExperiment(grid_priority=-500, ...)
 
         If "path" is specified, it must be the path to where the
         experiment should be built (e.g.
@@ -164,13 +164,24 @@ class IssueExperiment(DownwardExperiment):
         If "revisions" is specified, it should be a non-empty
         list of revisions, which specify which planner versions to use
         in the experiment. The same versions are used for translator,
-        preprocessor and search.
+        preprocessor and search. ::
+
+            IssueExperiment(revisions=['issue123', '4b3d581643'])
 
         If "search_revisions" is specified, it should be a non-empty
         list of revisions, which specify which search component
-        versions to use in the experiment. All experiments use the
+        versions to use in the experiment. All runs use the
         translator and preprocessor component of the first
-        revision.
+        revision. ::
+
+            IssueExperiment(search_revisions=['default', 'issue123'])
+
+        If you really need to specify the (translator, preprocessor,
+        planner) triples manually, use the "combinations" parameter
+        from the base class (might be deprecated soon). If none of
+        "revisions", "search_revisions" and "combinations" is given,
+        the experiment will use the code from the working directory
+        at "repo".
 
         If "suite" is specified, it should specify a problem suite.
 
