@@ -149,12 +149,17 @@ class IssueExperiment(DownwardExperiment):
         experiment should be built (e.g.
         /home/john/experiments/issue123/exp01/). If omitted, the
         experiment path is derived automatically from the main
-        script's filename. Example:
-        script-name = experiments/issue123/exp01.py ->
-        path = experiments/issue123/data/issue123-exp01/
+        script's filename. Example::
 
-        If "repo" is not specified, the repository base is derived
-        automatically from the main script's path.
+            script = experiments/issue123/exp01.py -->
+            path = experiments/issue123/data/issue123-exp01/
+
+        If "repo" is specified, it must be the path to the root of a
+        local Fast Downward repository. If omitted, the repository
+        is derived automatically from the main script's path. Example::
+
+            script = /path/to/fd-repo/experiments/issue123/exp01.py -->
+            repo = /path/to/fd-repo
 
         If "revisions" is specified, it should be a non-empty
         list of revisions, which specify which planner versions to use
