@@ -112,7 +112,8 @@ void Abstraction::build() {
         if ((use_astar && goal->get_distance() == INF) ||
             (!use_astar && init->get_h() == INF)) {
             cout << "Abstract problem is unsolvable!" << endl;
-            exit_with(EXIT_UNSOLVABLE);
+            valid_conc_solution = false;
+            break;
         }
         valid_conc_solution = check_and_break_solution(g_initial_state(), init);
         if (valid_conc_solution)
