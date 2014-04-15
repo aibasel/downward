@@ -517,6 +517,7 @@ void Abstraction::update_h_values() const {
 }
 
 double Abstraction::get_avg_h() const {
+    assert(!memory_released);
     // This function is called after the abstraction has been built, so all
     // h-values are up-to-date.
     double avg_h = 0.;
@@ -533,6 +534,7 @@ double Abstraction::get_avg_h() const {
 }
 
 int Abstraction::get_init_h() const {
+    assert(!memory_released);
     return init->get_h();
 }
 
