@@ -237,8 +237,10 @@ void CegarHeuristic::initialize() {
     cout << endl;
     print_statistics();
 
-    if (!search)
+    if (!search) {
+        cout << "search=false -> stop" << endl;
         exit_with(EXIT_UNSOLVED_INCOMPLETE);
+    }
 }
 
 void CegarHeuristic::print_statistics() {
