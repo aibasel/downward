@@ -226,7 +226,11 @@ void CegarHeuristic::initialize() {
          << get_peak_memory_in_kb() << " KB" << endl;
     Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
     vector<Decomposition> decompositions;
-    if (decomposition == LANDMARKS_AND_GOALS) {
+    if (decomposition == LANDMARKS_AND_GOALS_AND_NONE) {
+        decompositions.push_back(LANDMARKS);
+        decompositions.push_back(GOALS);
+        decompositions.push_back(NONE);
+    } else if (decomposition == LANDMARKS_AND_GOALS) {
         decompositions.push_back(LANDMARKS);
         decompositions.push_back(GOALS);
     } else {
@@ -322,6 +326,7 @@ static Heuristic *_parse(OptionParser &parser) {
     decompositions.push_back("LANDMARKS");
     decompositions.push_back("GOALS");
     decompositions.push_back("LANDMARKS_AND_GOALS");
+    decompositions.push_back("LANDMARKS_AND_GOALS_AND_NONE");
     parser.add_enum_option("decomposition",
                            decompositions,
                            "build abstractions for each of these facts",
