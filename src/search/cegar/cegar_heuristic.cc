@@ -209,6 +209,10 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             tasks.push_back(task);
             abstractions.push_back(abstraction);
         }
+        if (abstraction->get_init_h() == INF) {
+            cout << "Abstraction is unsolvable" << endl;
+            break;
+        }
 
         if (num_states >= max_states || g_timer() > max_time)
             break;
@@ -231,7 +235,8 @@ void CegarHeuristic::initialize() {
         cout << endl << "Using decomposition " << decompositions[i] << endl;
         build_abstractions(decompositions[i]);
         original_task.install();
-        if (num_states >= max_states || g_timer() > max_time)
+        if (num_states >= max_states || g_timer() > max_time ||
+            (!abstractions.empty() && abstractions.back()->get_init_h() == INF))
             break;
     }
     cout << endl;
