@@ -42,8 +42,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     if (options.get<bool>("write_dot_files"))
         write_landmark_graph(landmark_graph);
 
-    original_task.dump();
-
     for (int i = 0; i < g_operators.size(); ++i)
         remaining_costs.push_back(g_operators[i].get_cost());
 }
