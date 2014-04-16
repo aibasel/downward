@@ -394,8 +394,7 @@ void Task::dump_facts() const {
 }
 
 void Task::dump_name() const {
-    string prefix = is_original_task ? "Original " : "";
-    cout << prefix << "Task ";
+    cout << "Task ";
     string sep = "";
     for (int i = 0; i < goal.size(); ++i) {
         cout << sep << goal[i].first << "=" << orig_index[goal[i].first][goal[i].second]
@@ -406,24 +405,23 @@ void Task::dump_name() const {
 }
 
 void Task::dump() const {
-    string prefix = is_original_task ? "Original " : "";
     dump_name();
     int num_facts = 0;
     for (int var = 0; var < variable_domain.size(); ++var)
         num_facts += variable_domain[var];
-    cout << "  " << prefix << "Facts: " << num_facts << endl;
+    cout << "  " << "Facts: " << num_facts << endl;
     if (DEBUG)
         dump_facts();
-    cout << "  " << prefix << "Operators: " << operators.size() << endl;
+    cout << "  " << "Operators: " << operators.size() << endl;
     if (DEBUG) {
         for (int i = 0; i < operators.size(); ++i) {
             cout << "    ";
             operators[i].dump();
         }
     }
-    cout << "  " << prefix << "Variable domain sizes: " << to_string(variable_domain) << endl;
+    cout << "  " << "Variable domain sizes: " << to_string(variable_domain) << endl;
     if (DEBUG) {
-        cout << "  " << prefix << "Fact mapping:" << endl;
+        cout << "  " << "Fact mapping:" << endl;
         for (int var = 0; var < task_index.size(); ++var)
             cout << "    " << var << ": " << to_string(task_index[var]) << endl;
     }
