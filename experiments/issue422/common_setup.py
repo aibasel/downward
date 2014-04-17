@@ -242,7 +242,9 @@ class IssueExperiment(DownwardExperiment):
 
     @property
     def revision_nicks(self):
-        # TODO: Use add_algorithm() API once it's available.
+        # TODO: Once the add_algorithm() API is available we should get
+        # rid of the call to _get_rev_nick() and avoid inspecting the
+        # list of combinations by setting and saving the algorithm nicks.
         return [_get_rev_nick(*combo) for combo in self.combinations]
 
     def add_comparison_table_step(self, attributes=None):
