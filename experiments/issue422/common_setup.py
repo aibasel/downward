@@ -186,7 +186,7 @@ class IssueExperiment(DownwardExperiment):
 
         Test runs will use the first gripper task regardless of the
         value of "suite". If "suite" is omitted for real
-        experiments, all IPC benchmarks in the Fast Downward
+        experiments, all benchmarks in the Fast Downward
         repository will be used. If "suite" is given, it must
         specify a problem suite. ::
 
