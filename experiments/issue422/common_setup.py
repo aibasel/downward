@@ -13,6 +13,7 @@ from downward.experiments import DownwardExperiment, _get_rev_nick
 from downward.checkouts import Translator, Preprocessor, Planner
 from downward.reports.compare import CompareRevisionsReport
 from downward.reports.scatter import ScatterPlotReport
+from downward import suites
 
 
 def parse_args():
@@ -90,7 +91,9 @@ def is_test_run():
 class IssueExperiment(DownwardExperiment):
     """Wrapper for DownwardExperiment with a few convenience features."""
 
-    # TODO: Once we have reference results, we should add "quality" here.
+    DEFAULT_TEST_SUITE = "gripper:prob01.pddl"
+
+    # TODO: Once we have reference results, we should add "quality".
     # TODO: Add something about errors/exit codes.
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
@@ -129,7 +132,7 @@ class IssueExperiment(DownwardExperiment):
 
     def __init__(self, configs=None, grid_priority=None, path=None,
                  repo=None, revisions=None, search_revisions=None,
-                 suite=None, **kwargs):
+                 suite=None, test_suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
         If "configs" is specified, it should be a dict of {nick:
@@ -184,11 +187,9 @@ class IssueExperiment(DownwardExperiment):
         at "repo". The options "revisions", "search_revisions" and
         "combinations" can be freely mixed.
 
-        Test runs will use the first gripper task regardless of the
-        value of "suite". If "suite" is omitted for real
-        experiments, all benchmarks in the Fast Downward
-        repository will be used. If "suite" is given, it must
-        specify a problem suite. ::
+        Specify "suite" to set the benchmarks for the experiment. By
+        default all benchmarks in the Fast Downward repository are
+        used. ::
 
             from downward import suites
             IssueExperiment(suite=suites.suite_all())  # default
@@ -196,11 +197,16 @@ class IssueExperiment(DownwardExperiment):
             IssueExperiment(suite=suites.suite_optimal())
             IssueExperiment(suite=["grid", "gripper:prob01.pddl"])
 
+        Specify "test_suite" to set the benchmarks for experiment test
+        runs. By default the first gripper task is used.
+
+            IssueExperiment(test_suite=["depot:pfile1", "tpp:p01.pddl"])
+
         """
 
         if is_test_run():
             kwargs["environment"] = LocalEnvironment()
-            suite = "gripper:prob01.pddl"
+            suite = test_suite or self.DEFAULT_TEST_SUITE
         elif "environment" not in kwargs:
             kwargs["environment"] = MaiaEnvironment(priority=grid_priority)
 
