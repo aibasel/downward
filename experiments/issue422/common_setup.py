@@ -5,7 +5,7 @@ import os
 import platform
 import sys
 
-from lab.environments import MaiaEnvironment
+from lab.environments import LocalEnvironment, MaiaEnvironment
 from lab.experiment import ARGPARSER
 from lab.steps import Step
 
@@ -199,8 +199,7 @@ class IssueExperiment(DownwardExperiment):
         """
 
         if is_test_run():
-            # Use LocalEnvironment.
-            kwargs["environment"] = None
+            kwargs["environment"] = LocalEnvironment()
             suite = "gripper:prob01.pddl"
         elif "environment" not in kwargs:
             kwargs["environment"] = MaiaEnvironment(priority=grid_priority)
