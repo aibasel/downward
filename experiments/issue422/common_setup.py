@@ -253,8 +253,16 @@ class IssueExperiment(DownwardExperiment):
         return [_get_rev_nick(*combo) for combo in self.combinations]
 
     def add_comparison_table_step(self, attributes=None):
-        """
-        Add a step that creates comparison tables for all pairs of revisions.
+        """Add a step that makes pairwise revision comparisons.
+
+        Create comparative reports for all pairs of Fast Downward
+        revision triples. Each report pairs up the runs of the same
+        config and lists the two absolute attribute values and their
+        difference for all attributes. If "attributes" is not
+        specified, a list of common attributes is used. ::
+
+            exp.add_comparison_table_step(attributes=["coverage"])
+
         """
         if attributes is None:
             attributes = self.DEFAULT_TABLE_ATTRIBUTES
@@ -269,8 +277,14 @@ class IssueExperiment(DownwardExperiment):
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
 
     def add_scatter_plot_step(self, attributes=None):
-        """
-        Add a step that creates scatter plots for all pairs of revisions.
+        """Add a step that creates scatter plots for all revision pairs.
+
+        Create a scatter plot for each combination of attribute,
+        configuration and revision pair. If "attributes" is not
+        specified, a list of common scatter plot attributes is used. ::
+
+            exp.add_scatter_plot_step(attributes=["expansions"])
+
         """
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
