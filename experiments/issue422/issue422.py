@@ -18,8 +18,7 @@ exp = common_setup.IssueExperiment(
     configs=configs,
     suite=suite_optimal_with_ipc11(),
     )
-
-
+exp.add_absolute_report_step()
 exp.add_comparison_table_step()
 exp.add_scatter_plot_step()
 
