@@ -318,7 +318,8 @@ class IssueExperiment(DownwardExperiment):
 
         def make_scatter_plots():
             for config_nick in self._config_nicks:
-                for rev1, rev2 in itertools.combinations(self.revision_nicks, 2):
+                for rev1, rev2 in itertools.combinations(
+                        self.revision_nicks, 2):
                     algo1 = "%s-%s" % (rev1, config_nick)
                     algo2 = "%s-%s" % (rev2, config_nick)
                     if is_portfolio(config_nick):
