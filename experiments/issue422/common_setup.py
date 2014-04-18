@@ -136,20 +136,20 @@ class IssueExperiment(DownwardExperiment):
                  suite=None, test_suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
-        If "configs" is specified, it should be a dict of {nick:
+        If *configs* is specified, it should be a dict of {nick:
         cmdline} pairs that sets the planner configurations to test. ::
 
             IssueExperiment(configs={
                 "lmcut": ["--search", "astar(lmcut())"],
                 "ipdb":  ["--search", "astar(ipdb())"]})
 
-        Use "grid_priority" to set the job priority for cluster
+        Use *grid_priority* to set the job priority for cluster
         experiments. It must be in the range [-1023, 0] where 0 is the
         highest priority. By default the priority is 0. ::
 
             IssueExperiment(grid_priority=-500)
 
-        If "path" is specified, it must be the path to where the
+        If *path* is specified, it must be the path to where the
         experiment should be built (e.g.
         /home/john/experiments/issue123/exp01/). If omitted, the
         experiment path is derived automatically from the main
@@ -158,21 +158,21 @@ class IssueExperiment(DownwardExperiment):
             script = experiments/issue123/exp01.py -->
             path = experiments/issue123/data/issue123-exp01/
 
-        If "repo" is specified, it must be the path to the root of a
+        If *repo* is specified, it must be the path to the root of a
         local Fast Downward repository. If omitted, the repository
         is derived automatically from the main script's path. Example::
 
             script = /path/to/fd-repo/experiments/issue123/exp01.py -->
             repo = /path/to/fd-repo
 
-        If "revisions" is specified, it should be a non-empty
+        If *revisions* is specified, it should be a non-empty
         list of revisions, which specify which planner versions to use
         in the experiment. The same versions are used for translator,
         preprocessor and search. ::
 
             IssueExperiment(revisions=["issue123", "4b3d581643"])
 
-        If "search_revisions" is specified, it should be a non-empty
+        If *search_revisions* is specified, it should be a non-empty
         list of revisions, which specify which search component
         versions to use in the experiment. All runs use the
         translator and preprocessor component of the first
@@ -181,14 +181,14 @@ class IssueExperiment(DownwardExperiment):
             IssueExperiment(search_revisions=["default", "issue123"])
 
         If you really need to specify the (translator, preprocessor,
-        planner) triples manually, use the "combinations" parameter
+        planner) triples manually, use the *combinations* parameter
         from the base class (might be deprecated soon). If none of
-        "revisions", "search_revisions" and "combinations" is given,
+        *revisions*, *search_revisions* and *combinations* is given,
         the experiment will use the code from the working directory
-        at "repo". The options "revisions", "search_revisions" and
-        "combinations" can be freely mixed.
+        at *repo*. The options *revisions*, *search_revisions* and
+        *combinations* can be freely mixed.
 
-        Specify "suite" to set the benchmarks for the experiment. By
+        Specify *suite* to set the benchmarks for the experiment. By
         default all benchmarks in the Fast Downward repository are
         used. ::
 
@@ -198,7 +198,7 @@ class IssueExperiment(DownwardExperiment):
             IssueExperiment(suite=suites.suite_optimal())
             IssueExperiment(suite=["grid", "gripper:prob01.pddl"])
 
-        Specify "test_suite" to set the benchmarks for experiment test
+        Specify *test_suite* to set the benchmarks for experiment test
         runs. By default the first gripper task is used.
 
             IssueExperiment(test_suite=["depot:pfile1", "tpp:p01.pddl"])
@@ -261,8 +261,8 @@ class IssueExperiment(DownwardExperiment):
 
         The report is written to the experiment evaluation directory.
 
-        All "kwargs" will be passed to the AbsoluteReport class. If
-        the keyword argument "attributes" is not specified, a
+        All *kwargs* will be passed to the AbsoluteReport class. If
+        the keyword argument *attributes* is not specified, a
         default list of attributes is used. ::
 
             exp.add_absolute_report_step(attributes=["coverage"])
@@ -279,11 +279,10 @@ class IssueExperiment(DownwardExperiment):
         Create comparative reports for all pairs of Fast Downward
         revision triples. Each report pairs up the runs of the same
         config and lists the two absolute attribute values and their
-        difference for all attributes. If "attributes" is not
-        specified, a list of common attributes is used.
+        difference for all attributes in kwargs["attributes"].
 
-        All "kwargs" will be passed to the CompareRevisionsReport
-        class. If the keyword argument "attributes" is not
+        All *kwargs* will be passed to the CompareRevisionsReport
+        class. If the keyword argument *attributes* is not
         specified, a default list of attributes is used. ::
 
             exp.add_comparison_table_step(attributes=["coverage"])
@@ -304,7 +303,7 @@ class IssueExperiment(DownwardExperiment):
         """Add a step that creates scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,
-        configuration and revision pair. If "attributes" is not
+        configuration and revision pair. If *attributes* is not
         specified, a list of common scatter plot attributes is used. ::
 
             exp.add_scatter_plot_step(attributes=["expansions"])
