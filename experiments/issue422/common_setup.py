@@ -273,24 +273,27 @@ class IssueExperiment(DownwardExperiment):
         outfile = get_experiment_name() + "." + report.output_format
         self.add_report(report, outfile=outfile)
 
-    def add_comparison_table_step(self, attributes=None):
+    def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
 
         Create comparative reports for all pairs of Fast Downward
         revision triples. Each report pairs up the runs of the same
         config and lists the two absolute attribute values and their
         difference for all attributes. If "attributes" is not
-        specified, a list of common attributes is used. ::
+        specified, a list of common attributes is used.
+
+        All "kwargs" will be passed to the CompareRevisionsReport
+        class. If the keyword argument "attributes" is not
+        specified, a default list of attributes is used. ::
 
             exp.add_comparison_table_step(attributes=["coverage"])
 
         """
-        if attributes is None:
-            attributes = self.DEFAULT_TABLE_ATTRIBUTES
+        kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
 
         def make_comparison_tables():
             for rev1, rev2 in itertools.combinations(self.revision_nicks, 2):
-                report = CompareRevisionsReport(rev1, rev2, attributes=attributes)
+                report = CompareRevisionsReport(rev1, rev2, **kwargs)
                 outfile = os.path.join(self.eval_dir,
                                        "%s-%s-compare.html" % (rev1, rev2))
                 report(self.eval_dir, outfile)
