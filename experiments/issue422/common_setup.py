@@ -253,30 +253,24 @@ class IssueExperiment(DownwardExperiment):
         # list of combinations by setting and saving the algorithm nicks.
         return [_get_rev_nick(*combo) for combo in self.combinations]
 
-    def add_absolute_report_step(self, outfile=None, **kwargs):
+    def add_absolute_report_step(self, **kwargs):
         """Add step that makes an absolute report.
 
-        Use this function if the experiment does not compare revisions.
+        Absolute reports are useful for experiments that don't
+        compare revisions.
 
-        If "outfile" is specified, and it is an absolute path, the
-        report will be written there. Relative paths are interpreted
-        as relative to the experiment's evaluation directory.
-        "outfile" defaults to "<experiment_name>.<format>". ::
-
-            script = issue123/exp01.py -->
-            report = issue123/data/issue123-exp01-eval/issue123-exp01.html
+        The report is written to the experiment evaluation directory.
 
         All "kwargs" will be passed to the AbsoluteReport class. If
         the keyword argument "attributes" is not specified, a
         default list of attributes is used. ::
 
-            exp.add_absolute_report_step(
-                outfile="myreport.html", attributes=["coverage"])
+            exp.add_absolute_report_step(attributes=["coverage"])
 
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
         report = AbsoluteReport(**kwargs)
-        outfile = outfile or get_experiment_name() + "." + report.output_format
+        outfile = get_experiment_name() + "." + report.output_format
         self.add_report(report, outfile=outfile)
 
     def add_comparison_table_step(self, attributes=None):
