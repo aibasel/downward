@@ -136,8 +136,10 @@ class IssueExperiment(DownwardExperiment):
                  suite=None, test_suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
-        If *configs* is specified, it should be a dict of {nick:
-        cmdline} pairs that sets the planner configurations to test. ::
+        If *configs* is specified, it must be a dict of {nick:
+        cmdline} pairs that sets the planner configurations to test.
+        If *configs* is omitted, at least one config has to be added
+        with add_config() later. ::
 
             IssueExperiment(configs={
                 "lmcut": ["--search", "astar(lmcut())"],
