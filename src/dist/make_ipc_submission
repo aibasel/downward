@@ -37,7 +37,9 @@ hg id -i >> $DIST/src/VERSION
 echo "$WORDSIZE bit" >> $DIST/src/VERSION
 
 echo "Preparing distribution directory..."
-cp build $DIST/
+echo '#! /bin/bash' > $DIST/build
+echo 'cd src; ./build_all; cd ..' > $DIST/build
+chmod 755 $DIST/build
 echo '#! /bin/bash' > $DIST/plan
 echo '"$(dirname "$0")"/src/plan-ipc' "$COMMANDLINEOPTIONS" '"$@"' >> $DIST/plan
 chmod 755 $DIST/plan
