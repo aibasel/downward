@@ -11,12 +11,13 @@ SANITY_TEST_UNPACK=1
 
 set -o errexit
 
-if [[ $# != 1 ]]; then
-    echo need exactly one argument: seq-opt-bjolp, seq-sat-lama-2011 or some such
+if [[ $# != 2 ]]; then
+    echo need exactly two arguments: seq-opt-bjolp 32, seq-sat-lama-2011 64 or some such
     exit 2
 fi
 
 DIST=$1
+WORDSIZE=$2
 
 COMMANDLINEOPTIONS="$DIST"
 
@@ -31,7 +32,9 @@ hg archive -I 're:src\/preprocess\/' $DIST
 hg archive -I 're:src\/search\/' $DIST
 hg archive -I 're:src\/build_all' $DIST
 hg archive -I 're:src\/plan-ipc' $DIST
-
+hg archive -I 're:src\/plan' $DIST
+hg id -i >> $DIST/src/VERSION
+echo "$WORDSIZE bit" >> $DIST/src/VERSION
 
 echo "Preparing distribution directory..."
 cp build $DIST/
@@ -42,9 +45,18 @@ chmod 755 $DIST/plan
 echo "Removing LP code..."
 rm -r $DIST/src/search/lp
 
-echo "Changing -m32 compiler option to -m64"
-sed -i -e "s/-m32/-m64/g" $DIST/src/preprocess/Makefile
-sed -i -e "s/-m32/-m64/g" $DIST/src/search/Makefile
+if [[ "$WORDSIZE" == "32" ]]; then
+    echo "Changing -m64 compiler option to -m32"
+    sed -i -e "s/-m64/-m32/g" $DIST/src/preprocess/Makefile
+    sed -i -e "s/-m64/-m32/g" $DIST/src/search/Makefile
+elif [[ "$WORDSIZE" == "64" ]]; then
+    echo "Changing -m32 compiler option to -m64"
+    sed -i -e "s/-m32/-m64/g" $DIST/src/preprocess/Makefile
+    sed -i -e "s/-m32/-m64/g" $DIST/src/search/Makefile
+else
+    echo "Second parameter must be 32 or 64"
+    exit 2
+fi
 
 # Packaging
 echo "Packaging..."
