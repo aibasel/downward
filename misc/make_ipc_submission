@@ -68,7 +68,7 @@ rm -rf $DIST
 
 # Sanity tests
 
-BENCHMARKS=`pwd`/../../benchmarks
+BENCHMARKS=`pwd`/../benchmarks
 
 function planner-test-run () {
     DOMAIN="$BENCHMARKS/$1"
