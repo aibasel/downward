@@ -70,7 +70,8 @@ rm -rf $DIST
 
 # Sanity tests
 
-BENCHMARKS=`pwd`/../benchmarks
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
+BENCHMARKS="$(realpath ${DIR}/../benchmarks)"
 
 function planner-test-run () {
     DOMAIN="$BENCHMARKS/$1"
