@@ -68,12 +68,13 @@ rm -rf $DIST
 
 # Sanity tests
 
-testdir=`pwd`/data/tests
+BENCHMARKS=`pwd`/../../benchmarks
 
 function planner-test-run () {
-    TESTID=$1
-    echo "Sanity test: $TESTID..."
-    ./plan $testdir/$TESTID-domain.pddl $testdir/$TESTID-problem.pddl $TESTID-plan
+    DOMAIN="$BENCHMARKS/$1"
+    PROBLEM="$BENCHMARKS/$2"
+    echo "Sanity test: $DOMAIN $PROBLEM ..."
+    ./plan "$DOMAIN" "$PROBLEM" sas-plan
 
     rm -f output.sas output sas_plan
 }
@@ -88,7 +89,7 @@ if [[ "$SANITY_TEST_UNPACK" == 1 ]]; then
         ./build
 
         if [[ "$SANITY_TEST_RUN_TEST1" == 1 ]]; then
-            planner-test-run test1
+            planner-test-run gripper/domain.pddl gripper/prob01.pddl
         fi
     fi
 
