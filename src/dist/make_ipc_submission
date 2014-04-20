@@ -89,7 +89,8 @@ if [[ "$SANITY_TEST_UNPACK" == 1 ]]; then
         ./build
 
         if [[ "$SANITY_TEST_RUN_TEST1" == 1 ]]; then
-            planner-test-run gripper/domain.pddl gripper/prob01.pddl
+            planner-test-run grid/domain.pddl grid/prob01.pddl
+            planner-test-run psr-large/domain.pddl psr-large/p01-s29-n2-l5-f30.pddl
         fi
     fi
 
