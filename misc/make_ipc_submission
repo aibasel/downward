@@ -19,7 +19,7 @@ fi
 DIST=$1
 WORDSIZE=$2
 
-COMMANDLINEOPTIONS="$DIST"
+PLANNER_NAME="$DIST"
 
 PACKAGE=$DIST.tar.gz
 
@@ -31,7 +31,6 @@ hg archive -I 're:src\/translate\/' $DIST
 hg archive -I 're:src\/preprocess\/' $DIST
 hg archive -I 're:src\/search\/' $DIST
 hg archive -I 're:src\/build_all' $DIST
-hg archive -I 're:src\/plan-ipc' $DIST
 hg archive -I 're:src\/plan' $DIST
 hg id -i >> $DIST/src/VERSION
 echo "$WORDSIZE bit" >> $DIST/src/VERSION
@@ -41,7 +40,10 @@ echo '#! /bin/bash' > $DIST/build
 echo 'cd src; ./build_all; cd ..' > $DIST/build
 chmod 755 $DIST/build
 echo '#! /bin/bash' > $DIST/plan
-echo '"$(dirname "$0")"/src/plan-ipc' "$COMMANDLINEOPTIONS" '"$@"' >> $DIST/plan
+echo 'DOMAIN="$1"' >> $DIST/plan
+echo 'PROBLEM="$2"' >> $DIST/plan
+echo 'PLAN_FILE="$3"' >> $DIST/plan
+echo '"$(dirname "$0")"/src/plan' '"$DOMAIN"' '"$PROBLEM"' "ipc" "$PLANNER_NAME" '--plan-file "$PLAN_FILE"' >> $DIST/plan
 chmod 755 $DIST/plan
 
 echo "Removing LP code..."
