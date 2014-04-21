@@ -7,7 +7,7 @@
 SANITY_TEST_UNPACK=1
 SANITY_TEST_COMPILE=1
 SANITY_TEST_RUN_STRIPS=1
-SANITY_TEST_RUN_ADL=0
+SANITY_TEST_RUN_AXIOMS=0
 
 
 set -o errexit
@@ -101,7 +101,7 @@ if [[ "$SANITY_TEST_UNPACK" == 1 ]]; then
         if [[ "$SANITY_TEST_RUN_STRIPS" == 1 ]]; then
             planner-test-run grid/domain.pddl grid/prob01.pddl
         fi
-        if [[ "$SANITY_TEST_RUN_ADL" == 1 ]]; then
+        if [[ "$SANITY_TEST_RUN_AXIOMS" == 1 ]]; then
             planner-test-run psr-large/domain.pddl \
                 psr-large/p01-s29-n2-l5-f30.pddl
         fi
