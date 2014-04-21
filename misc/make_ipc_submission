@@ -75,14 +75,18 @@ rm -rf $DIST
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 BENCHMARKS="$(realpath ${DIR}/../benchmarks)"
+VALIDATOR="$(realpath ${DIR}/../src/VAL/validate)"
 
 function planner-test-run () {
     DOMAIN="$BENCHMARKS/$1"
     PROBLEM="$BENCHMARKS/$2"
     echo "Sanity test: $DOMAIN $PROBLEM ..."
-    ./plan "$DOMAIN" "$PROBLEM" sas-plan
+    ./plan "$DOMAIN" "$PROBLEM" sas_plan
+    for PLAN in $(ls sas_plan*); do
+        "$VALIDATOR" "$DOMAIN" "$PROBLEM" "$PLAN"
+    done
 
-    rm -f output.sas output sas_plan
+    rm -f output.sas output sas_plan* plan_numbers_and_cost elapsed.time
 }
 
 if [[ "$SANITY_TEST_UNPACK" == 1 ]]; then
