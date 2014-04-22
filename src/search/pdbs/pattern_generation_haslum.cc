@@ -12,7 +12,6 @@
 #include "../state.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
-#include "../timer.h"
 #include "../utilities.h"
 
 #include <algorithm>
@@ -30,9 +29,9 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")),
+      max_time(opts.get<int>("max_time")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
       num_rejected(0) {
-    Timer timer;
     initialize();
     cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
 }
@@ -113,6 +112,9 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
 
     samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
+        if (timer() > max_time)
+            break;
+
         // calculate length of random walk accoring to a binomial distribution
         int length = 0;
         for (int j = 0; j < n; ++j) {
@@ -158,8 +160,11 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 
     // Iterate over all candidates and search for the best improving pattern/pdb
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
+        if (timer() > max_time)
+            break;
+
         PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
-        if (pdb_heuristic == 0) { 
+        if (pdb_heuristic == 0) {
             // candidate pattern is too large or has already been added to
             // the canonical heuristic.
             continue;
@@ -225,7 +230,7 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
 
 void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                                             vector<vector<int> > &initial_candidate_patterns) {
-    Timer timer;
+    Timer hill_climbing_timer;
     // stores all candidate patterns generated so far in order to avoid duplicates
     set<vector<int> > generated_patterns;
     // new_candidates is the set of new pattern candidates from the last call to generate_candidate_patterns
@@ -261,20 +266,12 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         int improvement = improvement_and_index.first;
         int best_pdb_index = improvement_and_index.second;
 
-        if (improvement < min_improvement) { // end hill climbing algorithm
-            // Note that using dominance pruning during hill-climbing could lead to
-            // fewer discovered patterns and pattern collections.
-            // A dominated pattern (collection) might no longer be dominated
-            // after more patterns are added.
-            current_heuristic->dominance_pruning();
-            cout << "iPDB: iterations = " << num_iterations << endl;
-            cout << "iPDB: num_patterns = "
-                 << current_heuristic->get_pattern_databases().size() << endl;
-            cout << "iPDB: size = " << current_heuristic->get_size() << endl;
-            cout << "iPDB: improvement = " << improvement << endl;
-            cout << "iPDB: generated = " << generated_patterns.size() << endl;
-            cout << "iPDB: rejected = " << num_rejected << endl;
-            cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
+        if (improvement < min_improvement) {
+            cout << "Improvement below threshold. Abort hill climbing." << endl;
+            break;
+        }
+        if (timer() > max_time) {
+            cout << "Time limit reached. Abort hill climbing." << endl;
             break;
         }
 
@@ -294,8 +291,21 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         delete candidate_pdbs[best_pdb_index];
         candidate_pdbs[best_pdb_index] = 0;
 
-        cout << "Hill-climbing time so far: " << timer << endl;
+        cout << "Hill-climbing time so far: " << hill_climbing_timer << endl;
     }
+
+    // Note that using dominance pruning during hill-climbing could lead to
+    // fewer discovered patterns and pattern collections.
+    // A dominated pattern (collection) might no longer be dominated
+    // after more patterns are added.
+    current_heuristic->dominance_pruning();
+    cout << "iPDB: iterations = " << num_iterations << endl;
+    cout << "iPDB: num_patterns = "
+         << current_heuristic->get_pattern_databases().size() << endl;
+    cout << "iPDB: size = " << current_heuristic->get_size() << endl;
+    cout << "iPDB: generated = " << generated_patterns.size() << endl;
+    cout << "iPDB: rejected = " << num_rejected << endl;
+    cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
 
     // delete all created PDB-pointer
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
@@ -420,6 +430,9 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("min_improvement",
                            "minimum number of samples on which a candidate pattern collection must improve on the "
                            "current one to be considered as the next pattern collection ", "10");
+    parser.add_option<int>("max_time",
+                           "maximum time in seconds for finding patterns",
+                           "infinity");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
