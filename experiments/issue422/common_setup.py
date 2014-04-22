@@ -238,9 +238,9 @@ class IssueExperiment(DownwardExperiment):
 
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
+        self._config_nicks = []
         for nick, config in configs.items():
             self.add_config(nick, config)
-        self._config_nicks = configs.keys()
 
         self.add_suite(suite)
 
@@ -250,6 +250,10 @@ class IssueExperiment(DownwardExperiment):
         # rid of the call to _get_rev_nick() and avoid inspecting the
         # list of combinations by setting and saving the algorithm nicks.
         return [_get_rev_nick(*combo) for combo in self.combinations]
+
+    def add_config(self, nick, config, timeout=None):
+        DownwardExperiment.add_config(self, nick, config, timeout=timeout)
+        self._config_nicks.append(nick)
 
     def add_absolute_report_step(self, **kwargs):
         """Add step that makes an absolute report.
