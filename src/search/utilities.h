@@ -1,7 +1,7 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#include <cassert>
+#include <cstdlib>
 #include <ostream>
 #include <utility>
 #include <vector>
@@ -49,7 +49,15 @@ extern void register_event_handlers();
 
 extern int get_peak_memory_in_kb();
 extern void print_peak_memory();
-extern void assert_sorted_unique(const std::vector<int> &values);
+
+template<class T>
+extern bool is_sorted_unique(const std::vector<T> &values) {
+    for (size_t i = 1; i < values.size(); ++i) {
+        if (values[i - 1] >= values[i])
+            return false;
+    }
+    return true;
+}
 
 namespace std {
 template<class T>
