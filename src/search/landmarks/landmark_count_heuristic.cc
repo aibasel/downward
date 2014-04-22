@@ -257,7 +257,7 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-count heuristic",
-                             "See also LAMAFFSynergy");
+                             "See also Synergy");
     parser.document_note(
         "Note",
         "to use `optimal=true`, you must build the planner with USE_LP=1. "
@@ -287,7 +287,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "yes (except maybe on tasks with axioms or when "
         "using `admissible=true` on tasks with conditional effects)");
     parser.document_property("preferred operators",
-                             "yes (if enabled; see `pref_ops` option)");
+                             "yes (if enabled; see `pref` option)");
 
     parser.add_option<LandmarkGraph *>(
         "lm_graph",
@@ -299,7 +299,9 @@ static Heuristic *_parse(OptionParser &parser) {
         "optimal",
         "use optimal (LP-based) cost sharing "
         "(only makes sense with `admissible=true`)", "false");
-    parser.add_option<bool>("pref", "identify preferred operators", "false");
+    parser.add_option<bool>("pref", "identify preferred operators "
+                            "(see OptionCaveats#Using_preferred_operators_"
+                            "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

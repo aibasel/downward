@@ -171,7 +171,7 @@ void MergeAndShrinkHeuristic::initialize() {
     dump_options();
     warn_on_unusual_options();
 
-    verify_no_axioms_no_cond_effects();
+    verify_no_axioms();
 
     cout << "Building abstraction..." << endl;
     final_abstraction = build_abstraction();
@@ -199,33 +199,51 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support(
         "action costs",
         "supported");
-    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support(
+        "conditional_effects",
+        "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
+    parser.document_note(
+        "Note",
+        "Conditional effects are supported directly. Note, however, that "
+        "for tasks that are not factored (in the sense of the JACM 2014 "
+        "merge-and-shrink paper), the atomic abstractions on which "
+        "merge-and-shrink heuristics are based are nondeterministic, "
+        "which can lead to poor heuristics even when no shrinking is "
+        "performed.");
 
     // TODO: better documentation what each parameter does
     vector<string> merge_strategies;
+    vector<string> merge_strategies_doc;
     //TODO: it's a bit dangerous that the merge strategies here
     // have to be specified exactly in the same order
     // as in the enum definition. Try to find a way around this,
     // or at least raise an error when the order is wrong.
     merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_LEVEL");
+    merge_strategies_doc.push_back("TODO");
     merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_RANDOM");
+    merge_strategies_doc.push_back("TODO");
     merge_strategies.push_back("MERGE_LINEAR_GOAL_CG_LEVEL");
+    merge_strategies_doc.push_back("TODO");
     merge_strategies.push_back("MERGE_LINEAR_RANDOM");
+    merge_strategies_doc.push_back("TODO");
     merge_strategies.push_back("MERGE_DFP");
+    merge_strategies_doc.push_back("(not implemented)");
     merge_strategies.push_back("MERGE_LINEAR_LEVEL");
+    merge_strategies_doc.push_back("TODO");
     merge_strategies.push_back("MERGE_LINEAR_REVERSE_LEVEL");
+    merge_strategies_doc.push_back("TODO");
     parser.add_enum_option("merge_strategy", merge_strategies,
                            "merge strategy",
                            "MERGE_LINEAR_CG_GOAL_LEVEL");
 
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy",
-        "shrink strategy; these are not fully documented yet; "
+        "shrink strategy; "
         "try one of the following:",
         "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low)");
     ValueExplanations shrink_value_explanations;
@@ -262,9 +280,21 @@ static Heuristic *_parse(OptionParser &parser) {
 
     // TODO: Rename option name to "use_label_reduction" to be
     //       consistent with the papers?
-    parser.add_option<bool>("reduce_labels", "enable label reduction", "true");
-    parser.add_option<bool>("expensive_statistics", "show statistics on \"unique unlabeled edges\" (WARNING: "
-                            "these are *very* slow -- check the warning in the output)", "false");
+    parser.add_option<bool>("reduce_labels",
+                            "enable label reduction. "
+                            " Note: it is hard to fathom a scenario where label reduction is a bad idea. "
+                            "The overhead should be low and the gains in time and memory can be massive. "
+                            "So unless you really know what you're doing, don't set this to false. "
+                            "(The point of this option is to perform controlled experiments on how useful "
+                            "label reduction is exactly.)",
+                            "true");
+    parser.add_option<bool>("expensive_statistics",
+                            "show statistics on \"unique unlabeled edges\" (WARNING: "
+                            "these are *very* slow, i.e. too expensive to show by default "
+                            "(in terms of time and memory). When this is used, the planner "
+                            "prints a big warning on stderr with information on the performance impact. "
+                            "Don't use when benchmarking!)",
+                            "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
