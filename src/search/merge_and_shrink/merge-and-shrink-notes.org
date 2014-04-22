@@ -8,18 +8,24 @@
   label2 have the same transitions, don't store "label1: transition1,
   ...; label2: transition1, ...", but instead store "{label1, label2}:
   transition1, ...".
+
 - Replace all the estimated memory stuff with actual memory
   measurements (or maybe better for now: add actual memory
   measurements)?
+
 - Split the representation of the abstraction function and
   heuristic from the transition systems so that we can throw away the
   transition systems after constructing them?
+
 - After we've started merging, the fixed-point variable order for
   label reduction doesn't really talk about variables any more but
   also about merged abstractions. Take this into account when thinking
   about this variable order. One possible idea we could try in the
   future would be to take into account the size of the transition
   systems when deciding what to combine.
+
+- Add a hybrid bisimulation/greedy bisimulation strategy, inspired from
+  the code used for the IJCAI 2011 paper. See also issue431.
 
 * General TODOs for the "big refactoring"
 
