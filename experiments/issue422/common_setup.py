@@ -14,7 +14,6 @@ from downward.checkouts import Translator, Preprocessor, Planner
 from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import CompareRevisionsReport
 from downward.reports.scatter import ScatterPlotReport
-from downward import suites
 
 
 def parse_args():
@@ -131,9 +130,9 @@ class IssueExperiment(DownwardExperiment):
         "plan_length",
         ]
 
-    def __init__(self, configs, grid_priority=None, path=None,
+    def __init__(self, configs, suite, grid_priority=None, path=None,
                  repo=None, revisions=None, search_revisions=None,
-                 suite=None, test_suite=None, **kwargs):
+                 test_suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
         *configs* must be a non-empty dict of {nick: cmdline} pairs
@@ -188,15 +187,17 @@ class IssueExperiment(DownwardExperiment):
         at *repo*. The options *revisions*, *search_revisions* and
         *combinations* can be freely mixed.
 
-        Specify *suite* to set the benchmarks for the experiment. By
-        default all benchmarks in the Fast Downward repository are
-        used. ::
+        *suite* sets the benchmarks for the experiment. It must be a
+        single string or a list of strings specifying domains or
+        tasks. The downward.suites module holds many predefined
+        suites. ::
+
+            IssueExperiment(suite=["grid", "gripper:prob01.pddl"])
 
             from downward import suites
-            IssueExperiment(suite=suites.suite_all())  # default
+            IssueExperiment(suite=suites.suite_all())
             IssueExperiment(suite=suites.suite_satisficing_with_ipc11())
             IssueExperiment(suite=suites.suite_optimal())
-            IssueExperiment(suite=["grid", "gripper:prob01.pddl"])
 
         Specify *test_suite* to set the benchmarks for experiment test
         runs. By default the first gripper task is used.
@@ -241,8 +242,6 @@ class IssueExperiment(DownwardExperiment):
             self.add_config(nick, config)
         self._config_nicks = configs.keys()
 
-        if suite is None:
-            suite = suites.suite_all()
         self.add_suite(suite)
 
     @property
