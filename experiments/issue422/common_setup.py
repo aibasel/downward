@@ -131,15 +131,13 @@ class IssueExperiment(DownwardExperiment):
         "plan_length",
         ]
 
-    def __init__(self, configs=None, grid_priority=None, path=None,
+    def __init__(self, configs, grid_priority=None, path=None,
                  repo=None, revisions=None, search_revisions=None,
                  suite=None, test_suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
-        If *configs* is specified, it must be a dict of {nick:
-        cmdline} pairs that sets the planner configurations to test.
-        If *configs* is omitted, at least one config has to be added
-        with add_config() later. ::
+        *configs* must be a non-empty dict of {nick: cmdline} pairs
+        that sets the planner configurations to test. ::
 
             IssueExperiment(configs={
                 "lmcut": ["--search", "astar(lmcut())"],
@@ -239,7 +237,6 @@ class IssueExperiment(DownwardExperiment):
 
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
-        configs = configs or {}
         for nick, config in configs.items():
             self.add_config(nick, config)
         self._config_nicks = configs.keys()
