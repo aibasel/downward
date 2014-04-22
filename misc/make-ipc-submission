@@ -74,8 +74,8 @@ rm -rf $DIST
 # Sanity tests
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-BENCHMARKS="$(realpath ${DIR}/../benchmarks)"
-VALIDATOR="$(realpath ${DIR}/../src/VAL/validate)"
+BENCHMARKS="$DIR/../benchmarks"
+VALIDATOR="$DIR/../src/VAL/validate"
 
 function planner-test-run () {
     DOMAIN="$BENCHMARKS/$1"
