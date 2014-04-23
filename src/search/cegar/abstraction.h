@@ -74,6 +74,7 @@ private:
     // Maximum time for building the abstraction.
     int max_time;
     bool use_astar;
+    bool use_negative_costs;
     bool write_dot_files;
 
     // Save whether the states have been destroyed.
@@ -141,6 +142,7 @@ public:
     void set_max_states(int states) {max_states = states; }
     void set_max_time(int time) {max_time = time; }
     void set_use_astar(bool astar) {use_astar = astar; }
+    void set_use_negative_costs(bool negative) {use_negative_costs = negative; }
     void set_pick_strategy(PickStrategy strategy);
     void set_write_dot_files(bool write) {write_dot_files = write; }
 

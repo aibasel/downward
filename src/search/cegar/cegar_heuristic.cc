@@ -189,6 +189,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         abstraction->set_max_time(ceil((max_time - g_timer()) / rem_tasks));
         abstraction->set_write_dot_files(options.get<bool>("write_dot_files"));
         abstraction->set_use_astar(options.get<bool>("use_astar"));
+        abstraction->set_use_negative_costs(options.get<bool>("negative_costs"));
 
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
@@ -334,6 +335,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("relevance_analysis", "remove irrelevant operators", "false");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
+    parser.add_option<bool>("negative_costs", "allow negative costs in cost-partitioning", "false");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
     parser.add_option<bool>("write_dot_files", "write graph files for debugging", "false");
