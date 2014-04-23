@@ -229,28 +229,30 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
                 cout << "GOAL REACHED" << endl;
             return true;
         }
+        // All operators that induce self-loops need at least 0 costs.
+        if (needed_costs) {
+            assert(forward);
+            assert(!use_h);
+            assert(needed_costs->size() == task->get_operators().size());
+            for (int i = 0; i < state->get_loops().size(); ++i) {
+                const Operator *op = state->get_loops()[i];
+                const int op_index = get_op_index(op);
+                (*needed_costs)[op_index] = max((*needed_costs)[op_index], 0);
+            }
+        }
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (Arcs::iterator it = successors.begin(); it != successors.end(); ++it) {
             const Operator *op = it->first;
             AbstractState *successor = it->second;
 
-            // Special code for additive abstractions.
+            // Collect needed operator costs for additive abstractions.
             if (needed_costs) {
                 assert(forward);
                 assert(!use_h);
-                // We are currently collecting the needed operator costs.
                 assert(needed_costs->size() == task->get_operators().size());
-                // cost'(op) = h(a1) - h(a2)
                 const int needed = state->get_h() - successor->get_h();
-                if (needed > 0) {
-                    // needed_costs is negative if we reach a2 with op and
-                    // h(a2) > h(a1). This includes the case when we reach a
-                    // dead-end node. If h(a1)==h(a2) we don't have to update
-                    // anything since we initialize the list with zeros. This
-                    // handles moving from one dead-end node to another.
-                    const int op_index = get_op_index(op);
-                    (*needed_costs)[op_index] = max((*needed_costs)[op_index], needed);
-                }
+                const int op_index = get_op_index(op);
+                (*needed_costs)[op_index] = max((*needed_costs)[op_index], needed);
             }
 
             const int succ_g = g + op->get_cost();
@@ -585,7 +587,7 @@ int Abstraction::get_op_index(const Operator *op) const {
 
 void Abstraction::get_needed_costs(vector<int> *needed_costs) {
     assert(needed_costs->empty());
-    needed_costs->resize(task->get_operators().size(), 0);
+    needed_costs->resize(task->get_operators().size(), -INF);
     // Traverse abstraction and remember the minimum cost we need to keep for
     // each operator in order not to decrease any heuristic values.
     open->clear();
