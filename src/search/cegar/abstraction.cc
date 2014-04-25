@@ -214,7 +214,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
         AbstractState *state = top_pair.second;
 
         const int g = state->get_distance();
-        assert(g < INF);
+        assert(0 <= g && g < INF);
         int new_f = g;
         if (use_h)
             new_f += state->get_h();
@@ -258,8 +258,11 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
                 (*needed_costs)[op_index] = max((*needed_costs)[op_index], needed);
             }
 
-            const int succ_g = g + op->get_cost();
-            assert(succ_g >= 0);
+            assert(op->get_cost() >= 0);
+            int succ_g = g + op->get_cost();
+            // Handle overflow.
+            if (succ_g < 0)
+                succ_g = INF;
 
             // If we use Dijkstra instead of A*, we can use "<" here instead of "<=".
             // This leads to way fewer queue pushes.
