@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import os
-import shutil
 import subprocess
 import sys
 
@@ -64,36 +63,23 @@ TESTS = [
 ]
 
 
-def preprocess_task(task_type, relpath):
-    translator = os.path.join(REPO_BASE, "src", "translate", "translate.py")
-    preprocessor = os.path.join(REPO_BASE, "src", "preprocess", "preprocess")
+def run_plan_script(task_type, relpath, search):
     problem = os.path.join(REPO_BASE, "benchmarks", relpath)
-    subprocess.check_call([translator, problem])
-    subprocess.check_call([preprocessor], stdin=open("output.sas"))
-    os.remove("output.sas")
-    shutil.move("output", task_type + ".output")
-
-
-def run_search(task_type, search):
     print "\nRun %(search)s on %(task_type)s task:" % locals()
-    return subprocess.call(["./downward", "--search", search],
-                           stdin=open(task_type + ".output"),
-                           cwd=os.path.join(REPO_BASE, "src", "search"))
+    return subprocess.call(
+        [os.path.join(REPO_BASE, "src", "plan"), problem, "--search", search])
 
 
 def cleanup():
-    for f in os.listdir("."):
-        if f.endswith(".output"):
-            os.remove(f)
+    subprocess.check_call([os.path.join(REPO_BASE, "src", "cleanup")])
 
 
 def main():
     subprocess.check_call(["./build_all"], cwd=os.path.join(REPO_BASE, "src"))
-    for task_type, relpath in TASKS.items():
-        preprocess_task(task_type, relpath)
     failures = []
     for task_type, search, expected in TESTS:
-        exitcode = run_search(task_type, search)
+        relpath = TASKS[task_type]
+        exitcode = run_plan_script(task_type, relpath, search)
         if not exitcode == expected:
             failures.append((task_type, search, expected, exitcode))
     cleanup()
