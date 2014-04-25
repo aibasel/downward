@@ -6,6 +6,7 @@
 #include <fstream>
 
 using namespace __gnu_cxx;
+using namespace std;
 
 LandmarkFactory::LandmarkFactory(const Options &opts)
     : lm_graph(new LandmarkGraph(opts)) {
@@ -350,17 +351,13 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 // of these trivial conditions here.)
                 const vector<PrePost> &prepost = op.get_pre_post();
                 set<pair<int, int> > trivially_conditioned_effects;
-                bool testing_for_trivial_conditions = true;
-                bool trivial_conditioned_effects_found = false;
-                if (testing_for_trivial_conditions)
-                    trivial_conditioned_effects_found = effect_always_happens(prepost,
-                                                                              trivially_conditioned_effects);
+                bool trivial_conditioned_effects_found = effect_always_happens(prepost,
+                                                                               trivially_conditioned_effects);
                 hash_map<int, int> next_eff;
                 for (unsigned i = 0; i < prepost.size(); i++) {
                     if (prepost[i].cond.empty() && prepost[i].var != a.first) {
                         next_eff.insert(make_pair(prepost[i].var, prepost[i].post));
-                    } else if (testing_for_trivial_conditions
-                               && trivial_conditioned_effects_found
+                    } else if (trivial_conditioned_effects_found
                                && trivially_conditioned_effects.find(make_pair(
                                                                          prepost[i].var, prepost[i].post))
                                != trivially_conditioned_effects.end())
@@ -423,7 +420,7 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
         if (node_p->disjunctive)
             continue;
 
-        if (node_p->is_true_in_state(*g_initial_state))
+        if (node_p->is_true_in_state(g_initial_state()))
             return;
 
         if (!obedient_orders && node_p->is_goal()) {

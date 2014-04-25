@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import glob
 import math
 import optparse
 import os
-import os.path
 import resource
 import signal
 import subprocess
@@ -34,6 +32,16 @@ EXIT_SIGXCPU = -signal.SIGXCPU
 EXPECTED_EXITCODES = set([
     EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
     EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT])
+
+# The portfolio's exitcode is determined as follows:
+# There is exactly one type of unexpected exit code -> use it.
+# There are multiple types of unexpected exit codes -> EXIT_CRITICAL_ERROR.
+# [..., EXIT_PLAN_FOUND, ...] -> EXIT_PLAN_FOUND
+# [..., EXIT_UNSOLVABLE, ...] -> EXIT_UNSOLVABLE
+# [..., EXIT_UNSOLVED_INCOMPLETE, ...] -> EXIT_UNSOLVED_INCOMPLETE
+# [..., EXIT_OUT_OF_MEMORY, ..., EXIT_TIMEOUT, ...] -> EXIT_TIMEOUT_AND_MEMORY
+# [..., EXIT_TIMEOUT, ...] -> EXIT_TIMEOUT
+# [..., EXIT_OUT_OF_MEMORY, ...] -> EXIT_OUT_OF_MEMORY
 
 
 def parse_args():
@@ -69,8 +77,8 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     for index, arg in enumerate(args):
         if arg == "--heuristic":
             heuristic_config = args[index + 1]
-            heuristic_config = heuristic_config.replace("H_COST_TYPE",
-                               str(heuristic_cost_type))
+            heuristic_config = heuristic_config.replace(
+                "H_COST_TYPE", str(heuristic_cost_type))
             args[index + 1] = heuristic_config
         elif arg == "--search":
             search_config = args[index + 1]
@@ -83,10 +91,10 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
                 curr_plan_file = "%s.%d" % (plan_file, plan_no + 1)
             search_config = search_config.replace("BOUND", str(g_bound))
             search_config = search_config.replace("PLANCOUNTER", str(plan_no))
-            search_config = search_config.replace("H_COST_TYPE",
-                               str(heuristic_cost_type))
-            search_config = search_config.replace("S_COST_TYPE",
-                               str(search_cost_type))
+            search_config = search_config.replace(
+                "H_COST_TYPE", str(heuristic_cost_type))
+            search_config = search_config.replace(
+                "S_COST_TYPE", str(search_cost_type))
             args[index + 1] = search_config
             break
     print "g bound: %s" % g_bound
@@ -96,17 +104,21 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
 def run_search(planner, args, sas_file, plan_file, timeout=None, memory=None):
     complete_args = [planner] + args + ["--plan-file", plan_file]
     print "args: %s" % complete_args
-    print "timeout: %.2f" % timeout
     sys.stdout.flush()
 
     def set_limits():
         if timeout is not None:
             # Don't try to raise the hard limit.
             _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
-            hard_limit = min(int(math.ceil(timeout)) + 1, external_hard_limit)
+            if external_hard_limit == resource.RLIM_INFINITY:
+                external_hard_limit = float("inf")
             # Soft limit reached --> SIGXCPU.
             # Hard limit reached --> SIGKILL.
-            set_limit(resource.RLIMIT_CPU, hard_limit - 1, hard_limit)
+            soft_limit = int(math.ceil(timeout))
+            hard_limit = min(soft_limit + 1, external_hard_limit)
+            print "timeout: %.2f -> (%d, %d)" % (timeout, soft_limit, hard_limit)
+            sys.stdout.flush()
+            set_limit(resource.RLIMIT_CPU, soft_limit, hard_limit)
         if memory is not None:
             # Memory in Bytes
             set_limit(resource.RLIMIT_AS, memory, memory)
@@ -140,7 +152,10 @@ def _generate_exitcode(exitcodes):
     unexpected_codes = exitcodes - EXPECTED_EXITCODES
     if unexpected_codes:
         print "Error: Unexpected exit codes:", list(unexpected_codes)
-        return EXIT_CRITICAL_ERROR
+        if len(unexpected_codes) == 1:
+            return unexpected_codes.pop()
+        else:
+            return EXIT_CRITICAL_ERROR
     for code in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE]:
         if code in exitcodes:
             return code
@@ -160,8 +175,9 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     # Time limits are either positive values in seconds or -1 (unlimited).
     soft_time_limit, hard_time_limit = resource.getrlimit(resource.RLIMIT_CPU)
     print 'External time limit:', hard_time_limit
-    if (hard_time_limit >= 0 and timeout is not None and
-        timeout != hard_time_limit):
+    if (hard_time_limit != resource.RLIM_INFINITY and
+            timeout is not None and
+            timeout != hard_time_limit):
         sys.stderr.write("The externally set timeout (%d) differs from the one "
                          "in the portfolio file (%d). Is this expected?\n" %
                          (hard_time_limit, timeout))
@@ -187,7 +203,6 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     sas_file = extra_args.pop(0)
     assert extra_args[0] in ["unit", "nonunit"], extra_args
     unitcost = extra_args.pop(0)
-    assert extra_args[0][-1] in ["1", "2", "4"], extra_args
     planner = extra_args.pop(0)
 
     safe_unlink("plan_numbers_and_cost")
@@ -209,7 +224,9 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
         exitcodes = run_sat(configs, unitcost, planner, sas_file, plan_file,
                             final_config, final_config_builder,
                             remaining_time_at_start, memory)
-    sys.exit(_generate_exitcode(exitcodes))
+    exitcode = _generate_exitcode(exitcodes)
+    print "Exit with %d" % exitcode
+    sys.exit(exitcode)
 
 def _can_change_cost_type(args):
     return any('S_COST_TYPE' in part or 'H_COST_TYPE' in part for part in args)

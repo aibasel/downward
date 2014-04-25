@@ -4,9 +4,10 @@
 using namespace std;
 
 #include "globals.h"
+#include "operator_cost.h"
+#include "option_parser.h"
 #include "search_engine.h"
 #include "timer.h"
-#include "option_parser.h"
 
 SearchEngine::SearchEngine(const Options &opts)
     : search_space(OperatorCost(opts.get_enum("cost_type"))),
@@ -69,15 +70,9 @@ int SearchEngine::get_adjusted_cost(const Operator &op) const {
 }
 
 void SearchEngine::add_options_to_parser(OptionParser &parser) {
-    vector<string> cost_types;
-    cost_types.push_back("NORMAL");
-    cost_types.push_back("ONE");
-    cost_types.push_back("PLUSONE");
-    parser.add_enum_option("cost_type",
-                           cost_types,
-                           "NORMAL",
-                           "operator cost adjustment type");
-    parser.add_option<int>("bound",
-                           numeric_limits<int>::max(),
-                           "exclusive bound on plan cost");
+    ::add_cost_type_option_to_parser(parser);
+    parser.add_option<int>(
+        "bound",
+        "exclusive depth bound on g-values. Cutoffs are always performed according to "
+        "the real cost, regardless of the cost_type parameter", "infinity");
 }

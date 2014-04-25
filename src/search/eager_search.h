@@ -22,20 +22,20 @@ class EagerSearch : public SearchEngine {
     bool do_pathmax; // whether to use pathmax correction
     bool use_multi_path_dependence;
 
-    OpenList<StateHandle> *open_list;
+    OpenList<StateID> *open_list;
     ScalarEvaluator *f_evaluator;
 
 protected:
     int step();
-    pair<SearchNode, bool> fetch_next_node();
+    std::pair<SearchNode, bool> fetch_next_node();
     bool check_goal(const SearchNode &node);
     void update_jump_statistic(const SearchNode &node);
-    void print_heuristic_values(const vector<int> &values) const;
+    void print_heuristic_values(const std::vector<int> &values) const;
     void reward_progress();
 
-    vector<Heuristic *> heuristics;
-    vector<Heuristic *> preferred_operator_heuristics;
-    vector<Heuristic *> estimate_heuristics;
+    std::vector<Heuristic *> heuristics;
+    std::vector<Heuristic *> preferred_operator_heuristics;
+    std::vector<Heuristic *> estimate_heuristics;
     // TODO: in the long term this
     // should disappear into the open list
 

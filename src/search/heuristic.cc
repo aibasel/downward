@@ -121,14 +121,7 @@ int Heuristic::get_adjusted_cost(const Operator &op) const {
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
-    vector<string> cost_types;
-    cost_types.push_back("NORMAL");
-    cost_types.push_back("ONE");
-    cost_types.push_back("PLUSONE");
-    parser.add_enum_option("cost_type",
-                           cost_types,
-                           "NORMAL",
-                           "operator cost adjustment type");
+    ::add_cost_type_option_to_parser(parser);
 }
 
 //this solution to get default values seems not optimal:

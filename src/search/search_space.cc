@@ -1,23 +1,23 @@
+#include "globals.h"
 #include "search_space.h"
 #include "state.h"
 #include "operator.h"
 
 #include <cassert>
-#include <ext/hash_map>
 #include "search_node_info.h"
 
 using namespace std;
 using namespace __gnu_cxx;
 
 
-SearchNode::SearchNode(const StateHandle &state_handle_,
-                       SearchNodeInfo &info_, OperatorCost cost_type_)
-    : state_handle(state_handle_), info(info_), cost_type(cost_type_) {
-    assert(state_handle.is_valid());
+SearchNode::SearchNode(StateID state_id_, SearchNodeInfo &info_,
+                       OperatorCost cost_type_)
+    : state_id(state_id_), info(info_), cost_type(cost_type_) {
+    assert(state_id != StateID::no_state);
 }
 
 State SearchNode::get_state() const {
-    return State(state_handle);
+    return g_state_registry->lookup_state(state_id);
 }
 
 bool SearchNode::is_open() const {
@@ -66,7 +66,7 @@ void SearchNode::open_initial(int h) {
     info.g = 0;
     info.real_g = 0;
     info.h = h;
-    info.parent_state_handle = StateHandle(StateHandle::invalid);
+    info.parent_state_id = StateID::no_state;
     info.creating_operator = 0;
 }
 
@@ -77,7 +77,7 @@ void SearchNode::open(int h, const SearchNode &parent_node,
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.h = h;
-    info.parent_state_handle = parent_node.get_state_handle();
+    info.parent_state_id = parent_node.get_state_id();
     info.creating_operator = parent_op;
 }
 
@@ -91,7 +91,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
     info.status = SearchNodeInfo::OPEN;
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
-    info.parent_state_handle = parent_node.get_state_handle();
+    info.parent_state_id = parent_node.get_state_id();
     info.creating_operator = parent_op;
 }
 
@@ -104,7 +104,7 @@ void SearchNode::update_parent(const SearchNode &parent_node,
     // may require reopening closed nodes.
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
-    info.parent_state_handle = parent_node.get_state_handle();
+    info.parent_state_id = parent_node.get_state_id();
     info.creating_operator = parent_op;
 }
 
@@ -123,11 +123,11 @@ void SearchNode::mark_as_dead_end() {
 }
 
 void SearchNode::dump() const {
-    cout << state_handle.get_id() << ": ";
-    State(state_handle).dump_fdr();
+    cout << state_id << ": ";
+    g_state_registry->lookup_state(state_id).dump_fdr();
     if (info.creating_operator) {
         cout << " created by " << info.creating_operator->get_name()
-             << " from " << info.parent_state_handle.get_id() << endl;
+             << " from " << info.parent_state_id << endl;
     } else {
         cout << " no parent" << endl;
     }
@@ -137,39 +137,39 @@ SearchSpace::SearchSpace(OperatorCost cost_type_)
     : cost_type(cost_type_) {
 }
 
-SearchNode SearchSpace::get_node(const StateHandle &handle) {
-    assert(handle.is_valid());
-    return SearchNode(handle, search_node_infos[handle], cost_type);
+SearchNode SearchSpace::get_node(const State &state) {
+    return SearchNode(state.get_id(), search_node_infos[state], cost_type);
 }
 
 void SearchSpace::trace_path(const State &goal_state,
                              vector<const Operator *> &path) const {
-    StateHandle current_state_handle = goal_state.get_handle();
+    State current_state = goal_state;
     assert(path.empty());
     for (;;) {
-        const SearchNodeInfo &info = search_node_infos[current_state_handle];
+        const SearchNodeInfo &info = search_node_infos[current_state];
         const Operator *op = info.creating_operator;
         if (op == 0) {
-            assert(!info.parent_state_handle.is_valid());
+            assert(info.parent_state_id == StateID::no_state);
             break;
         }
         path.push_back(op);
-        current_state_handle = info.parent_state_handle;
+        current_state = g_state_registry->lookup_state(info.parent_state_id);
     }
     reverse(path.begin(), path.end());
 }
 
 void SearchSpace::dump() const {
-    vector<StateHandle> handles = g_state_registry->get_all_registered_handles();
-    for (vector<StateHandle>::const_iterator it = handles.begin(); it != handles.end(); ++it) {
-        StateHandle state_handle = *it;
-        const SearchNodeInfo &node_info = search_node_infos[state_handle];
-        cout << "#" << state_handle.get_id() << ": ";
-        State(state_handle).dump_fdr();
-        if (node_info.creating_operator &&
-                node_info.parent_state_handle.is_valid()) {
+    for (PerStateInformation<SearchNodeInfo>::const_iterator it =
+            search_node_infos.begin(g_state_registry);
+         it != search_node_infos.end(g_state_registry); ++it) {
+        StateID id = *it;
+        State s = g_state_registry->lookup_state(id);
+        const SearchNodeInfo &node_info = search_node_infos[s];
+        cout << id << ": ";
+        s.dump_fdr();
+        if (node_info.creating_operator && node_info.parent_state_id != StateID::no_state) {
             cout << " created by " << node_info.creating_operator->get_name()
-                 << " from " << node_info.parent_state_handle.get_id() << endl;
+                 << " from " << node_info.parent_state_id << endl;
         } else {
             cout << "has no parent" << endl;
         }

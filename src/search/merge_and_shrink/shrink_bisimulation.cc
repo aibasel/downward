@@ -120,11 +120,6 @@ bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
 
 void ShrinkBisimulation::shrink(
     Abstraction &abs, int target, bool force) {
-    if (abs.size() == 1 && greedy) {
-        cout << "Special case: do not greedily bisimulate an atomic abstration."
-             << endl;
-        return;
-    }
 
     // TODO: Explain this min(target, threshold) stuff. Also, make the
     //       output clearer, which right now is rubbish, calling the
@@ -378,7 +373,6 @@ void ShrinkBisimulation::compute_abstraction(
 
                     assert(new_group_no != -1);
                     state_to_group[curr_sig.state] = new_group_no;
-
                     if (num_groups == target_size)
                         break;
                 }
@@ -420,18 +414,22 @@ ShrinkStrategy *ShrinkBisimulation::create_default() {
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
-    parser.add_option<bool>("greedy", false, "use greedy bisimulation");
-    parser.add_option<int>("threshold", -1); // default: same as max_states
-    parser.add_option<bool>("group_by_h", false);
+    parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
+    parser.add_option<int>("threshold", "TODO: document", "-1");  // default: same as max_states
+    parser.add_option<bool>("group_by_h", "TODO: document", "false");
 
     vector<string> at_limit;
     at_limit.push_back("RETURN");
     at_limit.push_back("USE_UP");
     parser.add_enum_option(
-        "at_limit", at_limit, "RETURN",
-        "what to do when the size limit is hit");
+        "at_limit", at_limit,
+        "what to do when the size limit is hit", "RETURN");
 
     Options opts = parser.parse();
+
+    if (parser.help_mode())
+        return 0;
+
     ShrinkStrategy::handle_option_defaults(opts);
 
     int threshold = opts.get<int>("threshold");

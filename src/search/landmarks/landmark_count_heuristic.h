@@ -27,8 +27,8 @@ class LandmarkCountHeuristic : public Heuristic {
 
     int get_heuristic_value(const State &state);
 
-    void collect_lm_leaves(bool disjunctive_lms, LandmarkSet &result, vector<
-                               pair<int, int> > &leaves);
+    void collect_lm_leaves(bool disjunctive_lms, LandmarkSet &result, std::vector<
+                               std::pair<int, int> > &leaves);
     bool ff_search_lm_leaves(bool disjunctive_lms, const State &state,
                              LandmarkSet &result);
     // returns true iff relaxed reachable and marks relaxed operators
@@ -46,7 +46,7 @@ class LandmarkCountHeuristic : public Heuristic {
 
     //int get_needed_landmarks(const State& state, LandmarkSet& needed) const;
     Exploration *get_exploration() {return exploration; }
-    void convert_lms(LandmarkSet &lms_set, const vector<bool> &lms_vec);
+    void convert_lms(LandmarkSet &lms_set, const std::vector<bool> &lms_vec);
 protected:
     virtual int compute_heuristic(const State &state);
 public:

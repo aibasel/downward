@@ -7,8 +7,6 @@
 
 #include <ext/slist>
 #include <vector>
-using namespace std;
-using namespace __gnu_cxx;
 
 class State;
 class Operator;
@@ -46,13 +44,13 @@ class Abstraction {
     const bool is_unit_cost;
     const OperatorCost cost_type;
 
-    vector<const Operator *> relevant_operators;
+    std::vector<const Operator *> relevant_operators;
     int num_states;
-    vector<vector<AbstractTransition> > transitions_by_op;
+    std::vector<std::vector<AbstractTransition> > transitions_by_op;
 
-    vector<int> init_distances;
-    vector<int> goal_distances;
-    vector<bool> goal_states;
+    std::vector<int> init_distances;
+    std::vector<int> goal_distances;
+    std::vector<bool> goal_states;
     AbstractStateRef init_state;
 
     int max_f;
@@ -69,15 +67,15 @@ class Abstraction {
     void compute_init_distances_general_cost();
     void compute_goal_distances_general_cost();
 
-    void apply_abstraction(vector<slist<AbstractStateRef> > &collapsed_groups);
+    void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
 
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
 protected:
-    vector<int> varset;
+    std::vector<int> varset;
 
     virtual AbstractStateRef get_abstract_state(const State &state) const = 0;
-    virtual void apply_abstraction_to_lookup_table(const vector<
+    virtual void apply_abstraction_to_lookup_table(const std::vector<
                                                        AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
 public:
@@ -143,10 +141,10 @@ public:
 
 class AtomicAbstraction : public Abstraction {
     int variable;
-    vector<AbstractStateRef> lookup_table;
+    std::vector<AbstractStateRef> lookup_table;
 protected:
     virtual std::string description() const;
-    virtual void apply_abstraction_to_lookup_table(const vector<
+    virtual void apply_abstraction_to_lookup_table(const std::vector<
                                                        AbstractStateRef> &abstraction_mapping);
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
@@ -157,11 +155,11 @@ public:
 
 class CompositeAbstraction : public Abstraction {
     Abstraction *components[2];
-    vector<vector<AbstractStateRef> > lookup_table;
+    std::vector<std::vector<AbstractStateRef> > lookup_table;
 protected:
     virtual std::string description() const;
     virtual void apply_abstraction_to_lookup_table(
-        const vector<AbstractStateRef> &abstraction_mapping);
+        const std::vector<AbstractStateRef> &abstraction_mapping);
     virtual AbstractStateRef get_abstract_state(const State &state) const;
     virtual int memory_estimate() const;
 public:

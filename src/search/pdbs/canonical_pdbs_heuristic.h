@@ -49,6 +49,13 @@ public:
     // checks for all max cliques if they would be additive to this pattern
     void get_max_additive_subsets(const std::vector<int> &new_pattern,
                                   std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
+
+    // to avoid unneccessary overhead in the sampling procedure of iPDB, provide
+    // this method to only evaluate the heuristic to check whether a
+    // given state is a dead end or not (see issue404).
+    // set Heuristic's evaluator_value to DEAD_END if state is a dead end and to
+    // 0 otherwise.
+    void evaluate_dead_end(const State &state);
     const std::vector<PDBHeuristic *> &get_pattern_databases() const {return pattern_databases; }
     int get_size() const {return size; }
     void dump() const;
