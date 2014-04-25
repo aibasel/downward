@@ -49,7 +49,7 @@ double Timer::reset() {
     return result;
 }
 
-ostream & operator<<(ostream &os, const Timer &timer) {
+ostream &operator<<(ostream &os, const Timer &timer) {
     double value = timer();
     if (value < 0 && value > -1e-10)
         value = 0.0;  // We sometimes get inaccuracies from god knows where.

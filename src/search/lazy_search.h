@@ -14,7 +14,7 @@ class Heuristic;
 class Operator;
 class Options;
 
-typedef pair<StateHandle, const Operator *> OpenListEntryLazy;
+typedef std::pair<StateID, const Operator *> OpenListEntryLazy;
 
 class LazySearch : public SearchEngine {
 protected:
@@ -24,12 +24,12 @@ protected:
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
     enum SuccOrder {original, pref_first, shuffled, shuffled_pref_first} succ_order;
 
-    vector<Heuristic *> heuristics;
-    vector<Heuristic *> preferred_operator_heuristics;
-    vector<Heuristic *> estimate_heuristics;
+    std::vector<Heuristic *> heuristics;
+    std::vector<Heuristic *> preferred_operator_heuristics;
+    std::vector<Heuristic *> estimate_heuristics;
 
     State current_state;
-    StateHandle current_predecessor_handle;
+    StateID current_predecessor_id;
     const Operator *current_operator;
     int current_g;
     int current_real_g;
@@ -42,12 +42,12 @@ protected:
 
     void reward_progress();
 
-    void get_successor_operators(vector<const Operator *> &ops);
+    void get_successor_operators(std::vector<const Operator *> &ops);
 public:
 
     LazySearch(const Options &opts);
     virtual ~LazySearch();
-    void set_pref_operator_heuristics(vector<Heuristic *> &heur);
+    void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
 
     virtual void statistics() const;
 };
