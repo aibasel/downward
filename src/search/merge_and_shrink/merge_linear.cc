@@ -62,7 +62,7 @@ static MergeStrategy *_parse(OptionParser &parser) {
     merge_strategies.push_back("LEVEL");
     merge_strategies.push_back("REVERSE_LEVEL");
     parser.add_enum_option("variable_order", merge_strategies,
-                           "linear merge strategy",
+                           "the order in which atomic abstractions are merged",
                            "CG_GOAL_LEVEL");
 
     Options opts = parser.parse();

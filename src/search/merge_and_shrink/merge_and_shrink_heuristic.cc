@@ -147,7 +147,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     for (size_t i = 0; i < all_abstractions.size(); ++i) {
         if (all_abstractions[i]) {
             if (final_abstraction) {
-                cerr << "Found more than one remaining abstration!" << endl;
+                cerr << "Found more than one remaining abstraction!" << endl;
                 exit_with(EXIT_CRITICAL_ERROR);
             }
             final_abstraction = all_abstractions[i];
@@ -162,7 +162,7 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     final_abstraction->statistics(use_expensive_statistics);
     final_abstraction->release_memory();
 
-    cout << "Order of merged indices: ";
+    cout << "Order of merged systems: ";
     for (size_t i = 1; i < system_order.size(); i += 2) {
         cout << system_order[i - 1] << " " << system_order[i] << ", ";
     }
@@ -216,12 +216,12 @@ static Heuristic *_parse(OptionParser &parser) {
 
     parser.add_option<MergeStrategy *>(
         "merge_strategy",
-        "merge strategy; choose between merge_linear or merge_non_linear",
+        "merge strategy; choose between merge_linear and merge_dfp",
         "merge_linear");
 
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy",
-        "shrink strategy; these are not fully documented yet; "
+        "shrink strategy; "
         "try one of the following:",
         "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low)");
     ValueExplanations shrink_value_explanations;
@@ -282,8 +282,10 @@ static Heuristic *_parse(OptionParser &parser) {
     label_reduction_system_order.push_back("REVERSE");
     label_reduction_system_order.push_back("RANDOM");
     parser.add_enum_option("label_reduction_system_order", label_reduction_system_order,
-                           "order in which variables are considered when using "
-                           "fixpoint iteration for label reduction", "RANDOM");
+                           "order of transition systems for the label reduction methods "
+                           "that iterate over the set of all abstractions. only useful "
+                           "for the choices all_abstractions and all_abstractions_with_fixpoint "
+                           "for the option label_reduction_method.", "RANDOM");
     parser.add_option<bool>("expensive_statistics",
                             "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow, i.e. too expensive to show by default "
