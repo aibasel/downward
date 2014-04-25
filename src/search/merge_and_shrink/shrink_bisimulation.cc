@@ -120,11 +120,6 @@ bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
 
 void ShrinkBisimulation::shrink(
     Abstraction &abs, int target, bool force) {
-    if (abs.get_varset().size() == 1 && greedy) {
-        cout << "Special case: do not greedily bisimulate an atomic abstration."
-             << endl;
-        return;
-    }
 
     // TODO: Explain this min(target, threshold) stuff. Also, make the
     //       output clearer, which right now is rubbish, calling the
