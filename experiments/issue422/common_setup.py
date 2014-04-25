@@ -308,7 +308,9 @@ class IssueExperiment(DownwardExperiment):
 
         Create a scatter plot for each combination of attribute,
         configuration and revision pair. If *attributes* is not
-        specified, a list of common scatter plot attributes is used. ::
+        specified, a list of common scatter plot attributes is used.
+        For portfolios all attributes except "cost", "coverage" and
+        "plan_length" will be ignored. ::
 
             exp.add_scatter_plot_step(attributes=["expansions"])
 
