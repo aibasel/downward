@@ -142,6 +142,18 @@ class IssueExperiment(DownwardExperiment):
                 "lmcut": ["--search", "astar(lmcut())"],
                 "ipdb":  ["--search", "astar(ipdb())"]})
 
+        *suite* sets the benchmarks for the experiment. It must be a
+        single string or a list of strings specifying domains or
+        tasks. The downward.suites module has many predefined
+        suites. ::
+
+            IssueExperiment(suite=["grid", "gripper:prob01.pddl"])
+
+            from downward import suites
+            IssueExperiment(suite=suites.suite_all())
+            IssueExperiment(suite=suites.suite_satisficing_with_ipc11())
+            IssueExperiment(suite=suites.suite_optimal())
+
         Use *grid_priority* to set the job priority for cluster
         experiments. It must be in the range [-1023, 0] where 0 is the
         highest priority. By default the priority is 0. ::
@@ -181,23 +193,9 @@ class IssueExperiment(DownwardExperiment):
 
         If you really need to specify the (translator, preprocessor,
         planner) triples manually, use the *combinations* parameter
-        from the base class (might be deprecated soon). If none of
-        *revisions*, *search_revisions* and *combinations* is given,
-        the experiment will use the code from the working directory
-        at *repo*. The options *revisions*, *search_revisions* and
-        *combinations* can be freely mixed.
-
-        *suite* sets the benchmarks for the experiment. It must be a
-        single string or a list of strings specifying domains or
-        tasks. The downward.suites module holds many predefined
-        suites. ::
-
-            IssueExperiment(suite=["grid", "gripper:prob01.pddl"])
-
-            from downward import suites
-            IssueExperiment(suite=suites.suite_all())
-            IssueExperiment(suite=suites.suite_satisficing_with_ipc11())
-            IssueExperiment(suite=suites.suite_optimal())
+        from the base class (might be deprecated soon). The options
+        *revisions*, *search_revisions* and *combinations* can be
+        freely mixed, but at least one of them must be given.
 
         Specify *test_suite* to set the benchmarks for experiment test
         runs. By default the first gripper task is used.
@@ -219,6 +217,10 @@ class IssueExperiment(DownwardExperiment):
             repo = get_repo_base()
 
         kwargs.setdefault("combinations", [])
+
+        if not any([revisions, search_revisions, kwargs["combinations"]]):
+            raise ValueError('At least one of "revisions", "search_revisions" '
+                             'or "combinations" must be given')
 
         if revisions:
             kwargs["combinations"].extend([
