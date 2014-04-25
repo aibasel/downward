@@ -137,9 +137,6 @@ public:
     }
 
     int get_cost_for_op(int op_no) const;
-    const std::vector<int> &get_varset() const {
-        return varset;
-    }
 };
 
 class AtomicAbstraction : public Abstraction {
