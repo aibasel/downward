@@ -55,4 +55,13 @@ exp = common_setup.MyExperiment(
 
 exp.add_absolute_report_step()
 
+def get_filter(nick):
+    def nick_filter(run):
+        return run["config_nick"].startswith(nick)
+    return nick_filter
+
+for nick in ["lamafirst", "lazy-greedy-ff", "iterated-lazy-greedy-ff"]:
+    exp.add_absolute_report_step(
+        filter=get_filter(nick), outfile="issue392-exp01-%s.html" % nick)
+
 exp()
