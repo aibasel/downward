@@ -205,6 +205,10 @@ void read_goal(istream &in) {
     check_magic(in, "begin_goal");
     int count;
     in >> count;
+    if (count < 1) {
+        cerr << "Task has no goal condition!" << endl;
+        exit_with(EXIT_INPUT_ERROR);
+    }
     for (int i = 0; i < count; i++) {
         int var, val;
         in >> var >> val;

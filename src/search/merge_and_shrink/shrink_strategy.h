@@ -49,7 +49,7 @@ public:
     /* Set this to true to apply label reduction before shrinking, in
        addition to the times when it is usually applied. Some shrink
        strategies may require labels to be reduced (e.g. ones based on
-       bisimulations), and others might prefer reduced labels becaues
+       bisimulations), and others might prefer reduced labels because
        it makes their computation more efficient.
 
        Set this to false if the shrink strategy does not benefit (or
