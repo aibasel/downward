@@ -264,8 +264,6 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             if (succ_g < 0)
                 succ_g = INF;
 
-            // If we use Dijkstra instead of A*, we can use "<" here instead of "<=".
-            // This leads to way fewer queue pushes.
             if (succ_g < successor->get_distance()) {
                 if (debug)
                     cout << "  Succ: " << successor->str()
@@ -283,7 +281,9 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
                         continue;
                     f += h;
                 }
-                assert(f >= 0);
+                // Handle overflow.
+                if (f < 0)
+                    f = INF;
                 open->push(f, successor);
                 successor->set_prev_solution_op(op);
                 successor->set_prev_solution_state(state);
