@@ -24,6 +24,9 @@ const int UNDEFINED = -1;
 // We cannot call the variable INFINITY, because that clashes with something in c++11.
 const int INF = std::numeric_limits<int>::max();
 
+// See additive_heuristic.h.
+const int MAX_COST_VALUE = 100000000;
+
 typedef boost::dynamic_bitset<> Bitset;
 typedef std::pair<int, std::vector<int> > Split;
 typedef std::vector<Split> Splits;
