@@ -260,9 +260,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
 
             assert(op->get_cost() >= 0);
             int succ_g = g + op->get_cost();
-            // Handle overflow.
-            if (succ_g < 0)
-                succ_g = INF;
+            assert(succ_g >= 0);
 
             if (succ_g < successor->get_distance()) {
                 if (debug)
@@ -281,9 +279,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
                         continue;
                     f += h;
                 }
-                // Handle overflow.
-                if (f < 0)
-                    f = INF;
+                assert(f >= 0);
                 open->push(f, successor);
                 successor->set_prev_solution_op(op);
                 successor->set_prev_solution_state(state);
@@ -593,7 +589,7 @@ int Abstraction::get_op_index(const Operator *op) const {
 
 void Abstraction::get_needed_costs(vector<int> *needed_costs) {
     assert(needed_costs->empty());
-    needed_costs->resize(task->get_operators().size(), -INF);
+    needed_costs->resize(task->get_operators().size(), -MAX_COST_VALUE);
     // Traverse abstraction and remember the minimum cost we need to keep for
     // each operator in order not to decrease any heuristic values.
     open->clear();

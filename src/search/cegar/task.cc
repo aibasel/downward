@@ -182,14 +182,7 @@ void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int>
         assert(op_number >= 0 && op_number < remaining_costs.size());
         assert(remaining_costs[op_number] >= 0);
         assert(needed_costs[i] <= remaining_costs[op_number]);
-        if (needed_costs[i] >= 0) {
-            remaining_costs[op_number] -= needed_costs[i];
-        } else {
-            remaining_costs[op_number] -= needed_costs[i];
-            // Handle overflow.
-            if (remaining_costs[op_number] < 0)
-                remaining_costs[op_number] = INF;
-        }
+        remaining_costs[op_number] -= needed_costs[i];
         assert(remaining_costs[op_number] >= 0);
     }
     if (DEBUG)

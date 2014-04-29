@@ -292,7 +292,7 @@ int CegarHeuristic::compute_heuristic(const State &state) {
             return DEAD_END;
         sum_h += h;
     }
-    assert(sum_h >= 0 && "check against overflow");
+    assert(sum_h >= 0);
     return sum_h;
 }
 
