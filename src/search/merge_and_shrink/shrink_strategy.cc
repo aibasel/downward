@@ -97,13 +97,7 @@ void ShrinkStrategy::shrink_before_merge(Abstraction &abs1, Abstraction &abs2) {
     int new_size1 = new_sizes.first;
     int new_size2 = new_sizes.second;
 
-    // HACK: The output is based on the assumptions of a linear merge
-    //       strategy. It would be better (and quite possible) to
-    //       treat both abstractions exactly the same here by amending
-    //       the output a bit.
-
     if (new_size2 != abs2.size()) {
-        cout << abs2.tag() << "atomic abstraction too big; must shrink" << endl;
         shrink(abs2, new_size2);
     }
 

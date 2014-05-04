@@ -76,8 +76,14 @@ HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
 HEADERS += merge_and_shrink/abstraction.h \
+           merge_and_shrink/equivalence_relation.h \
+           merge_and_shrink/label.h \
+           merge_and_shrink/labels.h \
            merge_and_shrink/label_reducer.h \
            merge_and_shrink/merge_and_shrink_heuristic.h \
+           merge_and_shrink/merge_dfp.h \
+           merge_and_shrink/merge_linear.h \
+           merge_and_shrink/merge_strategy.h \
            merge_and_shrink/shrink_bisimulation.h \
            merge_and_shrink/shrink_bucket_based.h \
            merge_and_shrink/shrink_fh.h \
