@@ -47,7 +47,7 @@ CONFIGS['nightly'] = [
     ('lama-2011', ['ipc', 'seq-sat-lama-2011']),
     ('blind', ['--search', 'astar(blind())']),
     ('merge-and-shrink-bisim', ['--search',
-        'astar(merge_and_shrink(merge_strategy=merge_linear_reverse_level,'
+        'astar(merge_and_shrink(merge_strategy=merge_linear(variable_order=reverse_level),'
             'shrink_strategy=shrink_bisimulation(max_states=50000,greedy=false,'
             'group_by_h=true)))']),
 ]
