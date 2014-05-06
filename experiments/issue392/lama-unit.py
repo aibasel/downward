@@ -13,7 +13,7 @@ CONFIGS = {}
 for option in ["pref_first", "original", "shuffled", "shuffled_pref_first"]:
     CONFIGS["lama-unit-%s" % option] = [
         "--heuristic",
-        "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=2,cost_type=2))",
+        "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=PLUSONE,cost_type=PLUSONE))",
         "--search",
         "iterated(["
             "lazy_greedy([hff,hlm],preferred=[hff,hlm],succ_order=%(option)s),"
