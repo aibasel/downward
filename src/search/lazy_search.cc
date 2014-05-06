@@ -69,28 +69,28 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
             heur->get_preferred_operators(preferred_operators);
     }
 
-    if (succ_order == pref_first || succ_order == shuffled_pref_first) {
+    if (succ_order == preferred_first || succ_order == random_preferred_first) {
         for (int i = 0; i < preferred_operators.size(); i++) {
             if (!preferred_operators[i]->is_marked()) {
                 ops.push_back(preferred_operators[i]);
                 preferred_operators[i]->mark();
             }
         }
-        if (succ_order == shuffled_pref_first)
+        if (succ_order == random_preferred_first)
             random_shuffle(ops.begin(), ops.end());
         int num_pref_ops = ops.size();
 
         for (int i = 0; i < all_operators.size(); i++)
             if (!all_operators[i]->is_marked())
                 ops.push_back(all_operators[i]);
-        if (succ_order == shuffled_pref_first)
+        if (succ_order == random_preferred_first)
             random_shuffle(ops.begin() + num_pref_ops, ops.end());
     } else {
         for (int i = 0; i < preferred_operators.size(); i++)
             if (!preferred_operators[i]->is_marked())
                 preferred_operators[i]->mark();
         ops.swap(all_operators);
-        if (succ_order == shuffled)
+        if (succ_order == random)
             random_shuffle(ops.begin(), ops.end());
     }
 }
@@ -207,11 +207,11 @@ void LazySearch::statistics() const {
 static void _add_succ_order_options(OptionParser &parser) {
     vector<string> options;
     options.push_back("ORIGINAL");
-    options.push_back("PREF_FIRST");
-    options.push_back("SHUFFLED");
-    options.push_back("SHUFFLED_PREF_FIRST");
+    options.push_back("PREFERRED_FIRST");
+    options.push_back("RANDOM");
+    options.push_back("RANDOM_PREFERRED_FIRST");
     parser.add_enum_option("succ_order",
-                           options, "PREF_FIRST",
+                           options, "PREFERRED_FIRST",
                            "ordering of applicable operators");
 }
 
