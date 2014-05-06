@@ -159,12 +159,6 @@ void ShrinkBisimulation::shrink_before_merge(
     int new_size1 = new_sizes.first;
     int new_size2 = new_sizes.second;
 
-    // HACK: The output is based on the assumptions of a linear merge
-    //       strategy. It would be better (and quite possible) to
-    //       treat both abstractions exactly the same here by amending
-    //       the output a bit.
-    if (new_size2 != abs2.size())
-        cout << "atomic abstraction too big; must shrink" << endl;
     shrink(abs2, new_size2);
     shrink(abs1, new_size1);
 }
@@ -224,11 +218,11 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(infinity, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    int num_ops = abs.get_num_ops();
-    for (int op_no = 0; op_no < num_ops; ++op_no) {
+    int num_labels = abs.get_num_labels();
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
         const vector<AbstractTransition> &transitions =
-            abs.get_transitions_for_op(op_no);
-        int op_cost = abs.get_cost_for_op(op_no);
+            abs.get_transitions_for_label(label_no);
+        int label_cost = abs.get_label_cost_by_index(label_no);
         for (size_t i = 0; i < transitions.size(); ++i) {
             const AbstractTransition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
@@ -236,13 +230,13 @@ void ShrinkBisimulation::compute_signatures(
             if (greedy) {
                 int src_h = abs.get_goal_distance(trans.src);
                 int target_h = abs.get_goal_distance(trans.target);
-                assert(target_h + op_cost >= src_h);
-                skip_transition = (target_h + op_cost != src_h);
+                assert(target_h + label_cost >= src_h);
+                skip_transition = (target_h + label_cost != src_h);
             }
             if (!skip_transition) {
                 int target_group = state_to_group[trans.target];
                 signatures[trans.src + 1].succ_signature.push_back(
-                    make_pair(op_no, target_group));
+                    make_pair(label_no, target_group));
             }
         }
     }
