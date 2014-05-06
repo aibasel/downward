@@ -16,7 +16,8 @@ LazySearch::LazySearch(const Options &opts)
     : SearchEngine(opts),
       open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      succ_order(static_cast<SuccOrder>(opts.get_enum("succ_order"))),
+      preferred_successors_first(opts.get<bool>("preferred_successors_first")),
+      randomize_successors(opts.get<bool>("randomize_successors")),
       current_state(g_initial_state()),
       current_predecessor_id(StateID::no_state),
       current_operator(NULL),
@@ -69,29 +70,28 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
             heur->get_preferred_operators(preferred_operators);
     }
 
-    if (succ_order == preferred_first || succ_order == random_preferred_first) {
+    if (randomize_successors) {
+        random_shuffle(all_operators.begin(), all_operators.end());
+        random_shuffle(preferred_operators.begin(), preferred_operators.end());
+    }
+
+    if (preferred_successors_first) {
         for (int i = 0; i < preferred_operators.size(); i++) {
             if (!preferred_operators[i]->is_marked()) {
                 ops.push_back(preferred_operators[i]);
                 preferred_operators[i]->mark();
             }
         }
-        if (succ_order == random_preferred_first)
-            random_shuffle(ops.begin(), ops.end());
-        int num_pref_ops = ops.size();
-
-        for (int i = 0; i < all_operators.size(); i++)
+        for (int i = 0; i < all_operators.size(); i++) {
             if (!all_operators[i]->is_marked())
                 ops.push_back(all_operators[i]);
-        if (succ_order == random_preferred_first)
-            random_shuffle(ops.begin() + num_pref_ops, ops.end());
+        }
     } else {
-        for (int i = 0; i < preferred_operators.size(); i++)
+        for (int i = 0; i < preferred_operators.size(); i++) {
             if (!preferred_operators[i]->is_marked())
                 preferred_operators[i]->mark();
+        }
         ops.swap(all_operators);
-        if (succ_order == random)
-            random_shuffle(ops.begin(), ops.end());
     }
 }
 
@@ -206,13 +206,19 @@ void LazySearch::statistics() const {
 
 static void _add_succ_order_options(OptionParser &parser) {
     vector<string> options;
-    options.push_back("ORIGINAL");
-    options.push_back("PREFERRED_FIRST");
-    options.push_back("RANDOM");
-    options.push_back("RANDOM_PREFERRED_FIRST");
-    parser.add_enum_option("succ_order",
-                           options, "PREFERRED_FIRST",
-                           "ordering of applicable operators");
+    parser.add_option<bool>(
+        "randomize_successors",
+        "shuffle applicable operators",
+        "false");
+    parser.add_option<bool>(
+        "preferred_successors_first",
+        "consider preferred operators first",
+        "false");
+    parser.document_note(
+        "Successor ordering",
+        "The list of successors is randomized first (if enabled), and "
+        "after that preferred successors are moved to the front (if "
+        "enabled).");
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
