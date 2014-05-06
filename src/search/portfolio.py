@@ -174,16 +174,22 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
 
     # Time limits are either positive values in seconds or -1 (unlimited).
     soft_time_limit, hard_time_limit = resource.getrlimit(resource.RLIMIT_CPU)
-    print 'External time limit:', hard_time_limit
-    if (hard_time_limit != resource.RLIM_INFINITY and
+    print 'External time limits:', (soft_time_limit, hard_time_limit)
+    external_time_limit = None
+    if soft_time_limit != resource.RLIM_INFINITY:
+        external_time_limit = soft_time_limit
+    elif hard_time_limit != resource.RLIM_INFINITY:
+        external_time_limit = hard_time_limit
+    if (external_time_limit is not None and
             timeout is not None and
-            timeout != hard_time_limit):
+            timeout != external_time_limit):
         sys.stderr.write("The externally set timeout (%d) differs from the one "
                          "in the portfolio file (%d). Is this expected?\n" %
-                         (hard_time_limit, timeout))
-    # Prefer limits in the order: externally set, from portfolio file, default.
-    if hard_time_limit >= 0:
-        timeout = hard_time_limit
+                         (external_time_limit, timeout))
+    # Prefer limits in the order: external soft limit, external hard limit,
+    # from portfolio file, default.
+    if external_time_limit is not None:
+        timeout = external_time_limit
     elif timeout is None:
         sys.stderr.write("No timeout has been set for the portfolio so we take "
                          "the default of %ds.\n" % DEFAULT_TIMEOUT)
@@ -192,7 +198,9 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
 
     # Memory limits are either positive values in Bytes or -1 (unlimited).
     soft_mem_limit, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
-    print 'External memory limit:', hard_mem_limit
+    print 'External memory limits:', (soft_mem_limit, hard_mem_limit)
+    # The soft memory limit is artificially lowered (by the downward script),
+    # so we respect the hard limit and raise the soft limit for child processes.
     memory = hard_mem_limit - BYTES_FOR_PYTHON
     # Do not limit memory if the previous limit was very low or unlimited.
     if memory < 0:
