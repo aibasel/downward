@@ -15,6 +15,7 @@
 #include <boost/any.hpp>
 
 
+class MergeStrategy;
 class ShrinkStrategy;
 class LandmarkGraph;
 class Heuristic;
@@ -234,6 +235,13 @@ template <>
 struct TypeNamer<Synergy *> {
     static std::string name() {
         return "Synergy";
+    }
+};
+
+template <>
+struct TypeNamer<MergeStrategy *> {
+    static std::string name() {
+        return "MergeStrategy";
     }
 };
 
