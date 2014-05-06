@@ -82,6 +82,7 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
                 preferred_operators[i]->mark();
             }
         }
+
         for (int i = 0; i < all_operators.size(); i++)
             if (!all_operators[i]->is_marked())
                 ops.push_back(all_operators[i]);
