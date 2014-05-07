@@ -1,15 +1,32 @@
 # -*- coding: utf-8 -*-
 
-import os.path
+import itertools
+import os
+import platform
+import sys
 
-from lab.environments import MaiaEnvironment
+from lab.environments import LocalEnvironment, MaiaEnvironment
+from lab.experiment import ARGPARSER
 from lab.steps import Step
 
+from downward.experiments import DownwardExperiment, _get_rev_nick
 from downward.checkouts import Translator, Preprocessor, Planner
-from downward.experiments import DownwardExperiment
 from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import CompareRevisionsReport
 from downward.reports.scatter import ScatterPlotReport
+
+
+def parse_args():
+    ARGPARSER.add_argument(
+        "--test",
+        choices=["yes", "no", "auto"],
+        default="auto",
+        dest="test_run",
+        help="test experiment locally on a small suite if --test=yes or "
+             "--test=auto and we are not on a cluster")
+    return ARGPARSER.parse_args()
+
+ARGS = parse_args()
 
 
 def get_script():
@@ -28,8 +45,8 @@ def get_script_dir():
 def get_experiment_name():
     """Get name for experiment.
 
-    Derived from the filename of the main script, e.g.
-    "/ham/spam/eggs.py" => "eggs"."""
+    Derived from the absolute filename of the main script, e.g.
+    "/ham/spam/eggs.py" => "spam-eggs"."""
     script = os.path.abspath(get_script())
     script_dir = os.path.basename(os.path.dirname(script))
     script_base = os.path.splitext(os.path.basename(script))[0]
@@ -47,16 +64,37 @@ def get_data_dir():
 def get_repo_base():
     """Get base directory of the repository, as an absolute path.
 
-    Found by searching upwards in the directory tree from the main
-    script until a directory with a subdirectory named ".hg" is found."""
+    Search upwards in the directory tree from the main script until a
+    directory with a subdirectory named ".hg" is found.
+
+    Abort if the repo base cannot be found."""
     path = os.path.abspath(get_script_dir())
-    while True:
+    while os.path.dirname(path) != path:
         if os.path.exists(os.path.join(path, ".hg")):
             return path
         path = os.path.dirname(path)
+    sys.exit("repo base could not be found")
 
 
-class MyExperiment(DownwardExperiment):
+def is_running_on_cluster():
+    node = platform.node()
+    return (node.endswith("cluster") or
+            node.startswith("gkigrid") or
+            node in ["habakuk", "turtur"])
+
+
+def is_test_run():
+    return ARGS.test_run == "yes" or (ARGS.test_run == "auto" and
+                                      not is_running_on_cluster())
+
+
+class IssueExperiment(DownwardExperiment):
+    """Wrapper for DownwardExperiment with a few convenience features."""
+
+    DEFAULT_TEST_SUITE = "gripper:prob01.pddl"
+
+    # TODO: Once we have reference results, we should add "quality".
+    # TODO: Add something about errors/exit codes.
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
         "coverage",
@@ -65,7 +103,6 @@ class MyExperiment(DownwardExperiment):
         "expansions_until_last_jump",
         "generated",
         "memory",
-        "quality",
         "run_dir",
         "score_evaluations",
         "score_expansions",
@@ -78,49 +115,99 @@ class MyExperiment(DownwardExperiment):
         ]
 
     DEFAULT_SCATTER_PLOT_ATTRIBUTES = [
-        "total_time",
-        "search_time",
-        "memory",
+        "evaluations",
+        "expansions",
         "expansions_until_last_jump",
+        "initial_h_value",
+        "memory",
+        "search_time",
+        "total_time",
         ]
 
-    """Wrapper for DownwardExperiment with a few convenience features."""
+    PORTFOLIO_ATTRIBUTES = [
+        "cost",
+        "coverage",
+        "plan_length",
+        ]
 
-    def __init__(self, configs=None, grid_priority=None, path=None,
+    def __init__(self, configs, suite, grid_priority=None, path=None,
                  repo=None, revisions=None, search_revisions=None,
-                 suite=None, **kwargs):
+                 test_suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
-        If "configs" is specified, it should be a dict of {nick:
-        cmdline} pairs that sets the planner configurations to test.
+        *configs* must be a non-empty dict of {nick: cmdline} pairs
+        that sets the planner configurations to test. ::
 
-        If "grid_priority" is specified and no environment is
-        specifically requested in **kwargs, use the maia environment
-        with the specified priority.
+            IssueExperiment(configs={
+                "lmcut": ["--search", "astar(lmcut())"],
+                "ipdb":  ["--search", "astar(ipdb())"]})
 
-        If "path" is not specified, the experiment data path is
-        derived automatically from the main script's filename.
+        *suite* sets the benchmarks for the experiment. It must be a
+        single string or a list of strings specifying domains or
+        tasks. The downward.suites module has many predefined
+        suites. ::
 
-        If "repo" is not specified, the repository base is derived
-        automatically from the main script's path.
+            IssueExperiment(suite=["grid", "gripper:prob01.pddl"])
 
-        If "revisions" is specified, it should be a non-empty
+            from downward import suites
+            IssueExperiment(suite=suites.suite_all())
+            IssueExperiment(suite=suites.suite_satisficing_with_ipc11())
+            IssueExperiment(suite=suites.suite_optimal())
+
+        Use *grid_priority* to set the job priority for cluster
+        experiments. It must be in the range [-1023, 0] where 0 is the
+        highest priority. By default the priority is 0. ::
+
+            IssueExperiment(grid_priority=-500)
+
+        If *path* is specified, it must be the path to where the
+        experiment should be built (e.g.
+        /home/john/experiments/issue123/exp01/). If omitted, the
+        experiment path is derived automatically from the main
+        script's filename. Example::
+
+            script = experiments/issue123/exp01.py -->
+            path = experiments/issue123/data/issue123-exp01/
+
+        If *repo* is specified, it must be the path to the root of a
+        local Fast Downward repository. If omitted, the repository
+        is derived automatically from the main script's path. Example::
+
+            script = /path/to/fd-repo/experiments/issue123/exp01.py -->
+            repo = /path/to/fd-repo
+
+        If *revisions* is specified, it should be a non-empty
         list of revisions, which specify which planner versions to use
         in the experiment. The same versions are used for translator,
-        preprocessor and search.
+        preprocessor and search. ::
 
-        If "search_revisions" is specified, it should be a non-empty
+            IssueExperiment(revisions=["issue123", "4b3d581643"])
+
+        If *search_revisions* is specified, it should be a non-empty
         list of revisions, which specify which search component
-        versions to use in the experiment. All experiments use the
+        versions to use in the experiment. All runs use the
         translator and preprocessor component of the first
-        revision.
+        revision. ::
 
-        If "suite" is specified, it should specify a problem suite.
+            IssueExperiment(search_revisions=["default", "issue123"])
 
-        Options "combinations" (from the base class), "revisions" and
-        "search_revisions" are mutually exclusive."""
+        If you really need to specify the (translator, preprocessor,
+        planner) triples manually, use the *combinations* parameter
+        from the base class (might be deprecated soon). The options
+        *revisions*, *search_revisions* and *combinations* can be
+        freely mixed, but at least one of them must be given.
 
-        if grid_priority is not None and "environment" not in kwargs:
+        Specify *test_suite* to set the benchmarks for experiment test
+        runs. By default the first gripper task is used.
+
+            IssueExperiment(test_suite=["depot:pfile1", "tpp:p01.pddl"])
+
+        """
+
+        if is_test_run():
+            kwargs["environment"] = LocalEnvironment()
+            suite = test_suite or self.DEFAULT_TEST_SUITE
+        elif "environment" not in kwargs:
             kwargs["environment"] = MaiaEnvironment(priority=grid_priority)
 
         if path is None:
@@ -129,105 +216,132 @@ class MyExperiment(DownwardExperiment):
         if repo is None:
             repo = get_repo_base()
 
-        num_rev_opts_specified = (
-            int(revisions is not None) +
-            int(search_revisions is not None) +
-            int(kwargs.get("combinations") is not None))
+        kwargs.setdefault("combinations", [])
 
-        if num_rev_opts_specified > 1:
-            raise ValueError('must specify exactly one of "revisions", '
-                             '"search_revisions" or "combinations"')
+        if not any([revisions, search_revisions, kwargs["combinations"]]):
+            raise ValueError('At least one of "revisions", "search_revisions" '
+                             'or "combinations" must be given')
 
-        # See add_comparison_table_step for more on this variable.
-        self._HACK_revisions = revisions
+        if revisions:
+            kwargs["combinations"].extend([
+                (Translator(repo, rev),
+                 Preprocessor(repo, rev),
+                 Planner(repo, rev))
+                for rev in revisions])
 
-        if revisions is not None:
-            if not revisions:
-                raise ValueError("revisions cannot be empty")
-            combinations = [(Translator(repo, rev),
-                             Preprocessor(repo, rev),
-                             Planner(repo, rev))
-                            for rev in revisions]
-            kwargs["combinations"] = combinations
-
-        if search_revisions is not None:
-            if not search_revisions:
-                raise ValueError("search_revisions cannot be empty")
+        if search_revisions:
             base_rev = search_revisions[0]
-            translator = Translator(repo, base_rev)
-            preprocessor = Preprocessor(repo, base_rev)
-            combinations = [(translator, preprocessor, Planner(repo, rev))
-                            for rev in search_revisions]
-            kwargs["combinations"] = combinations
+            # Use the same nick for all parts to get short revision nick.
+            kwargs["combinations"].extend([
+                (Translator(repo, base_rev, nick=rev),
+                 Preprocessor(repo, base_rev, nick=rev),
+                 Planner(repo, rev, nick=rev))
+                for rev in search_revisions])
 
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
-        self.include_preprocess_results_in_search_runs = False
 
-        if configs is not None:
-            for nick, config in configs.items():
-                self.add_config(nick, config)
+        self._config_nicks = []
+        for nick, config in configs.items():
+            self.add_config(nick, config)
 
-        if suite is not None:
-            self.add_suite(suite)
+        self.add_suite(suite)
 
-        self._report_prefix = get_experiment_name()
+    @property
+    def revision_nicks(self):
+        # TODO: Once the add_algorithm() API is available we should get
+        # rid of the call to _get_rev_nick() and avoid inspecting the
+        # list of combinations by setting and saving the algorithm nicks.
+        return [_get_rev_nick(*combo) for combo in self.combinations]
 
-    def add_comparison_table_step(self, attributes=None):
-        revisions = self._HACK_revisions
-        if revisions is None:
-            # TODO: It's not clear to me what a "revision" in the
-            # overall context of the code really is, e.g. when keeping
-            # the translator and preprocessor method fixed and only
-            # changing the search component. It's also not really
-            # clear to me how the interface of the Compare... reports
-            # works and how to use it more generally. Hence the
-            # present hack.
+    def add_config(self, nick, config, timeout=None):
+        DownwardExperiment.add_config(self, nick, config, timeout=timeout)
+        self._config_nicks.append(nick)
 
-            # Ideally, this method should look at the table columns we
-            # have (defined by planners and planner configurations),
-            # pair them up in a suitable way, either controlled by a
-            # convenience parameter or a more general grouping method,
-            # and then use this to define which pairs go together.
-            raise NotImplementedError(
-                "only supported when specifying revisions in __init__")
+    def add_absolute_report_step(self, **kwargs):
+        """Add step that makes an absolute report.
 
-        if attributes is None:
-            attributes = self.DEFAULT_TABLE_ATTRIBUTES
-        report = CompareRevisionsReport(*revisions, attributes=attributes)
-        self.add_report(report, outfile="%s-compare.html" % self._report_prefix)
+        Absolute reports are useful for experiments that don't
+        compare revisions.
 
-    def add_scatter_plot_step(self, attributes=None):
-        if attributes is None:
-            attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
-        revisions = self._HACK_revisions
-        if revisions is None:
-            # TODO: See add_comparison_table_step.
-            raise NotImplementedError(
-                "only supported when specifying revisions in __init__")
-        if len(revisions) != 2:
-            # TODO: Should generalize this, too, by offering a general
-            # grouping function and then comparing any pair of
-            # settings in the same group.
-            raise NotImplementedError("need two revisions")
-        scatter_dir = os.path.join(self.eval_dir, "scatter")
-        def make_scatter_plots():
-            configs = [conf[0] for conf in self.configs]
-            for nick in configs:
-                config_before = "%s-%s" % (revisions[0], nick)
-                config_after = "%s-%s" % (revisions[1], nick)
-                for attribute in attributes:
-                    name = "%s-%s-%s" % (self._report_prefix, attribute, nick)
-                    report = ScatterPlotReport(
-                        filter_config=[config_before, config_after],
-                        attributes=[attribute],
-                        get_category=lambda run1, run2: run1["domain"],
-                        legend_location=(1.3, 0.5))
-                    report(self.eval_dir, os.path.join(scatter_dir, name))
+        The report is written to the experiment evaluation directory.
 
-        self.add_step(Step("make-scatter-plots", make_scatter_plots))
+        All *kwargs* will be passed to the AbsoluteReport class. If
+        the keyword argument *attributes* is not specified, a
+        default list of attributes is used. ::
 
-    def add_absolute_report_step(self, outfile=None, **kwargs):
+            exp.add_absolute_report_step(attributes=["coverage"])
+
+        """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
         report = AbsoluteReport(**kwargs)
-        outfile = outfile or get_experiment_name() + "." + report.output_format
+        outfile = get_experiment_name() + "." + report.output_format
         self.add_report(report, outfile=outfile)
+
+    def add_comparison_table_step(self, **kwargs):
+        """Add a step that makes pairwise revision comparisons.
+
+        Create comparative reports for all pairs of Fast Downward
+        revision triples. Each report pairs up the runs of the same
+        config and lists the two absolute attribute values and their
+        difference for all attributes in kwargs["attributes"].
+
+        All *kwargs* will be passed to the CompareRevisionsReport
+        class. If the keyword argument *attributes* is not
+        specified, a default list of attributes is used. ::
+
+            exp.add_comparison_table_step(attributes=["coverage"])
+
+        """
+        kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
+
+        def make_comparison_tables():
+            for rev1, rev2 in itertools.combinations(self.revision_nicks, 2):
+                report = CompareRevisionsReport(rev1, rev2, **kwargs)
+                outfile = os.path.join(self.eval_dir,
+                                       "%s-%s-compare.html" % (rev1, rev2))
+                report(self.eval_dir, outfile)
+
+        self.add_step(Step("make-comparison-tables", make_comparison_tables))
+
+    def add_scatter_plot_step(self, attributes=None):
+        """Add a step that creates scatter plots for all revision pairs.
+
+        Create a scatter plot for each combination of attribute,
+        configuration and revision pair. If *attributes* is not
+        specified, a list of common scatter plot attributes is used.
+        For portfolios all attributes except "cost", "coverage" and
+        "plan_length" will be ignored. ::
+
+            exp.add_scatter_plot_step(attributes=["expansions"])
+
+        """
+        if attributes is None:
+            attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
+        scatter_dir = os.path.join(self.eval_dir, "scatter")
+
+        def is_portfolio(config_nick):
+            return "fdss" in config_nick
+
+        def make_scatter_plots():
+            for config_nick in self._config_nicks:
+                for rev1, rev2 in itertools.combinations(
+                        self.revision_nicks, 2):
+                    algo1 = "%s-%s" % (rev1, config_nick)
+                    algo2 = "%s-%s" % (rev2, config_nick)
+                    if is_portfolio(config_nick):
+                        valid_attributes = [
+                            attr for attr in attributes
+                            if attr in self.PORTFOLIO_ATTRIBUTES]
+                    else:
+                        valid_attributes = attributes
+                    for attribute in valid_attributes:
+                        name = "-".join([rev1, rev2, attribute, config_nick])
+                        print "Make scatter plot for", name
+                        report = ScatterPlotReport(
+                            filter_config=[algo1, algo2],
+                            attributes=[attribute],
+                            get_category=lambda run1, run2: run1["domain"],
+                            legend_location=(1.3, 0.5))
+                        report(self.eval_dir, os.path.join(scatter_dir, name))
+
+        self.add_step(Step("make-scatter-plots", make_scatter_plots))
