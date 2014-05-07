@@ -16,8 +16,8 @@ LazySearch::LazySearch(const Options &opts)
     : SearchEngine(opts),
       open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      preferred_successors_first(opts.get<bool>("preferred_successors_first")),
       randomize_successors(opts.get<bool>("randomize_successors")),
+      preferred_successors_first(opts.get<bool>("preferred_successors_first")),
       current_state(g_initial_state()),
       current_predecessor_id(StateID::no_state),
       current_operator(NULL),
@@ -58,6 +58,7 @@ void LazySearch::initialize() {
 }
 
 void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
+    assert(ops.empty());
     vector<const Operator *> all_operators;
     vector<const Operator *> preferred_operators;
 
@@ -72,6 +73,9 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
 
     if (randomize_successors) {
         random_shuffle(all_operators.begin(), all_operators.end());
+        // Note that preferred_operators can contain duplicates that are
+        // only filtered out later, which gives operators "preferred
+        // multiple times" a higher chance to be ordered early.
         random_shuffle(preferred_operators.begin(), preferred_operators.end());
     }
 
@@ -207,7 +211,7 @@ static void _add_succ_order_options(OptionParser &parser) {
     vector<string> options;
     parser.add_option<bool>(
         "randomize_successors",
-        "shuffle applicable operators",
+        "randomize the order in which successors are generated",
         "false");
     parser.add_option<bool>(
         "preferred_successors_first",
@@ -215,9 +219,9 @@ static void _add_succ_order_options(OptionParser &parser) {
         "false");
     parser.document_note(
         "Successor ordering",
-        "The list of successors is randomized first (if enabled), and "
-        "after that preferred successors are moved to the front (if "
-        "enabled).");
+        "When using randomize_successors=true and "
+        "preferred_successors_first=true, randomization happens before "
+        "preferred operators are moved to the front.");
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
