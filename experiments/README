@@ -1,6 +1,6 @@
 This directory archives Fast Downward experiments. All experiments
 use their own common_setup.py module that simplifies the creation of
-experiments. We recommend using common_setup.py from issue422 for
+experiments. We recommend using common_setup.py from issue392 for
 new experiments since it is the most polished version and provides
 the greatest flexibility.
 
