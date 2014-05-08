@@ -12,6 +12,7 @@
 #include "../state.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
+#include "../timer.h"
 #include "../utilities.h"
 
 #include <algorithm>
@@ -438,7 +439,7 @@ static Heuristic *_parse(OptionParser &parser) {
                            "current one to be considered as the next pattern collection ", "10");
     parser.add_option<int>("max_time",
                            "maximum time in seconds for improving the initial pattern "
-                           "collection via hill climbing. If set to 0, no hill-climbing is performed at all.",
+                           "collection via hill-climbing. If set to 0, no hill-climbing is performed at all.",
                            "infinity");
 
     Heuristic::add_options_to_parser(parser);

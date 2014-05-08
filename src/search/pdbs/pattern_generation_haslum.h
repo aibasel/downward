@@ -3,7 +3,6 @@
 
 #include "../operator_cost.h"
 #include "../state_registry.h"
-#include "../timer.h"
 
 #include <map>
 #include <set>
@@ -13,6 +12,7 @@ class Options;
 class CanonicalPDBsHeuristic;
 class PDBHeuristic;
 class State;
+class Timer;
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
     const int pdb_max_size; // maximum number of states for each pdb
