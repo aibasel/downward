@@ -309,6 +309,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     cout << "iPDB: generated = " << generated_patterns.size() << endl;
     cout << "iPDB: rejected = " << num_rejected << endl;
     cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
+    cout << "iPDB: hill-climbing time: " << *hill_climbing_timer << endl;
 
     // delete all created PDB-pointer
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
