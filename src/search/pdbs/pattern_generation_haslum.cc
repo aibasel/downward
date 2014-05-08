@@ -274,7 +274,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             break;
         }
         if (improvement < min_improvement) {
-            cout << "Improvement below threshold. Abort hill climbing." << endl;
+            cout << "Improvement below threshold. Stop hill climbing." << endl;
             break;
         }
 
