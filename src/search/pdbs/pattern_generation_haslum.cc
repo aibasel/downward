@@ -31,7 +31,9 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       min_improvement(opts.get<int>("min_improvement")),
       max_time(opts.get<int>("max_time")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
-      num_rejected(0) {
+      num_rejected(0),
+      hill_climbing_timer(0) {
+    Timer timer;
     initialize();
     cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
 }
@@ -112,7 +114,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
 
     samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
-        if (timer() > max_time)
+        if ((*hill_climbing_timer)() > max_time)
             break;
 
         // calculate length of random walk accoring to a binomial distribution
@@ -160,7 +162,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 
     // Iterate over all candidates and search for the best improving pattern/pdb
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
-        if (timer() > max_time)
+        if ((*hill_climbing_timer)() > max_time)
             break;
 
         PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
@@ -230,7 +232,7 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
 
 void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                                             vector<vector<int> > &initial_candidate_patterns) {
-    Timer hill_climbing_timer;
+    hill_climbing_timer = new Timer();
     // stores all candidate patterns generated so far in order to avoid duplicates
     set<vector<int> > generated_patterns;
     // new_candidates is the set of new pattern candidates from the last call to generate_candidate_patterns
@@ -266,12 +268,12 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         int improvement = improvement_and_index.first;
         int best_pdb_index = improvement_and_index.second;
 
-        if (improvement < min_improvement) {
-            cout << "Improvement below threshold. Abort hill climbing." << endl;
+        if ((*hill_climbing_timer)() > max_time) {
+            cout << "Time limit reached. Abort hill climbing." << endl;
             break;
         }
-        if (timer() > max_time) {
-            cout << "Time limit reached. Abort hill climbing." << endl;
+        if (improvement < min_improvement) {
+            cout << "Improvement below threshold. Abort hill climbing." << endl;
             break;
         }
 
@@ -291,7 +293,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         delete candidate_pdbs[best_pdb_index];
         candidate_pdbs[best_pdb_index] = 0;
 
-        cout << "Hill-climbing time so far: " << hill_climbing_timer << endl;
+        cout << "Hill-climbing time so far: " << *hill_climbing_timer << endl;
     }
 
     // Note that using dominance pruning during hill-climbing could lead to
@@ -311,6 +313,9 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
         delete candidate_pdbs[i];
     }
+
+    delete hill_climbing_timer;
+    hill_climbing_timer = 0;
 }
 
 void PatternGenerationHaslum::initialize() {
@@ -431,7 +436,8 @@ static Heuristic *_parse(OptionParser &parser) {
                            "minimum number of samples on which a candidate pattern collection must improve on the "
                            "current one to be considered as the next pattern collection ", "10");
     parser.add_option<int>("max_time",
-                           "maximum time in seconds for finding patterns",
+                           "maximum time in seconds for improving the initial pattern "
+                           "collection via hill climbing. If set to 0, no hill-climbing is performed at all.",
                            "infinity");
 
     Heuristic::add_options_to_parser(parser);
