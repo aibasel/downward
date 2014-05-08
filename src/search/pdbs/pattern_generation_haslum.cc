@@ -355,7 +355,8 @@ void PatternGenerationHaslum::initialize() {
 
     // call to this method modifies initial_candidate_patterns (contains the new_candidates
     // after each call to generate_candidate_patterns)
-    hill_climbing(average_operator_cost, initial_candidate_patterns);
+    if (max_time > 0)
+        hill_climbing(average_operator_cost, initial_candidate_patterns);
 }
 
 static Heuristic *_parse(OptionParser &parser) {
