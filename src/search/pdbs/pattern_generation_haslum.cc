@@ -249,7 +249,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         current_heuristic->evaluate(g_initial_state());
         cout << "current initial h value: ";
         if (current_heuristic->is_dead_end()) {
-            cout << "infinite => stopping hill-climbing" << endl;
+            cout << "infinite => stopping hill climbing" << endl;
             break;
         } else {
             cout << current_heuristic->get_heuristic() << endl;
@@ -294,10 +294,10 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
         delete candidate_pdbs[best_pdb_index];
         candidate_pdbs[best_pdb_index] = 0;
 
-        cout << "Hill-climbing time so far: " << *hill_climbing_timer << endl;
+        cout << "Hill climbing time so far: " << *hill_climbing_timer << endl;
     }
 
-    // Note that using dominance pruning during hill-climbing could lead to
+    // Note that using dominance pruning during hill climbing could lead to
     // fewer discovered patterns and pattern collections.
     // A dominated pattern (collection) might no longer be dominated
     // after more patterns are added.
@@ -309,7 +309,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     cout << "iPDB: generated = " << generated_patterns.size() << endl;
     cout << "iPDB: rejected = " << num_rejected << endl;
     cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
-    cout << "iPDB: hill-climbing time: " << *hill_climbing_timer << endl;
+    cout << "iPDB: hill climbing time: " << *hill_climbing_timer << endl;
 
     // delete all created PDB-pointer
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
@@ -440,7 +440,7 @@ static Heuristic *_parse(OptionParser &parser) {
                            "current one to be considered as the next pattern collection ", "10");
     parser.add_option<int>("max_time",
                            "maximum time in seconds for improving the initial pattern "
-                           "collection via hill-climbing. If set to 0, no hill-climbing is performed at all.",
+                           "collection via hill climbing. If set to 0, no hill climbing is performed at all.",
                            "infinity");
 
     Heuristic::add_options_to_parser(parser);
