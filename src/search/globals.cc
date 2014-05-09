@@ -311,7 +311,7 @@ void verify_no_axioms() {
     }
 }
 
-int get_first_cond_effects_op_id() {
+int get_first_conditional_effects_op_id() {
     for (int i = 0; i < g_operators.size(); i++) {
         const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
         for (int j = 0; j < pre_post.size(); j++) {
@@ -333,12 +333,12 @@ int get_first_cond_effects_op_id() {
     return -1;
 }
 
-bool has_cond_effects() {
-    return get_first_cond_effects_op_id() != -1;
+bool has_conditional_effects() {
+    return get_first_conditional_effects_op_id() != -1;
 }
 
-void verify_no_cond_effects() {
-    int op_id = get_first_cond_effects_op_id();
+void verify_no_conditional_effects() {
+    int op_id = get_first_conditional_effects_op_id();
     if (op_id != -1) {
             cerr << "Heuristic does not support conditional effects "
                  << "(operator " << g_operators[op_id].get_name() << ")" << endl
@@ -347,9 +347,9 @@ void verify_no_cond_effects() {
     }
 }
 
-void verify_no_axioms_no_cond_effects() {
+void verify_no_axioms_no_conditional_effects() {
     verify_no_axioms();
-    verify_no_cond_effects();
+    verify_no_conditional_effects();
 }
 
 bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {

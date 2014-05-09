@@ -30,6 +30,9 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         } else if (has_axioms()) {
             cerr << "cost partitioning does not support axioms" << endl;
             exit_with(EXIT_UNSUPPORTED);
+        } else if (has_conditional_effects() && !lgraph.supports_conditional_effects()) {
+            cerr << "conditional effects not supported by the landmark generation method" << endl;
+            exit_with(EXIT_UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
 #ifdef USE_LP
@@ -276,19 +279,25 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support("action costs",
                                      "supported");
     parser.document_language_support("conditional_effects",
-                                     "supported if `admissible=false`");
-    parser.document_language_support(
-        "axioms",
-        "supported if `admissible=false` (but may behave stupidly and lead to an unsafe heuristic)");
-    parser.document_property(
-        "admissible",
-        "yes if `admissible=true` and there are neither conditional effects "
-        "nor axioms");
-    parser.document_property("consistent", "no");
-    parser.document_property(
-        "safe",
-        "yes (except maybe on tasks with axioms or when "
-        "using `admissible=true` on tasks with conditional effects)");
+                                     "supported if the LandmarkGraph supports "
+                                     "them; otherwise ignored with "
+                                     "admissible=false and not allowed with "
+                                     "admissible=true");
+    parser.document_language_support("axioms",
+                                     "ignored with admissible=false; not "
+                                     "allowed with admissible=true");
+    // TODO: update!
+    parser.document_property("admissible",
+                             "yes if `admissible=true` and there are neither conditional effects "
+                             "nor axioms");
+    // TODO: this was "yes with admissible=true and optimal cost
+    // partitioning; otherwise no" before.
+    parser.document_property("consistent",
+                             "complicated; needs further thought");
+    parser.document_property("safe",
+                             "yes except on task with axioms or on tasks with "
+                             "conditional effects when using a LandmarkGraph "
+                             "not supporting them");
     parser.document_property("preferred operators",
                              "yes (if enabled; see `pref` option)");
 
