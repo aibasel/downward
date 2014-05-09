@@ -130,9 +130,23 @@ static LandmarkGraph *_parse(OptionParser &parser) {
 
     opts.verify_list_non_empty<LandmarkGraph *>("lm_graphs");
 
+    // TODO: correct?
+    parser.document_language_support("conditional_effects",
+                                     "supported if all components support them");
+
     if (parser.dry_run()) {
         return 0;
     } else {
+        vector<LandmarkGraph *> list = opts.get_list<LandmarkGraph *>("lm_graphs");
+        bool conditional_effects = true;
+        for (size_t i = 0; i < list.size(); ++i) {
+            if (!list[i]->supports_conditional_effects()) {
+                conditional_effects = false;
+                break;
+            }
+        }
+        opts.set<bool>("supports_conditional_effects", conditional_effects);
+
         opts.set<Exploration *>("explor", new Exploration(opts));
         LandmarkGraphMerged lm_graph_factory(opts);
         LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
