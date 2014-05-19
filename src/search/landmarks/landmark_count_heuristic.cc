@@ -272,7 +272,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "only used when `admissible=true` (see LandmarkGraph)");
     parser.document_language_support("action costs",
                                      "supported");
-    parser.document_language_support("conditional_effects",
+    parser.document_language_support("conditional effects",
                                      "supported if `admissible=false`");
     parser.document_language_support(
         "axioms",
