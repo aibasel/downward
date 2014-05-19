@@ -246,15 +246,14 @@ bool LandmarkCountHeuristic::reach_state(const State &parent_state,
 }
 
 bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
-    if (!use_cost_sharing) {
-        // admissible = false. This test is actually not needed, because if
-        // admissible = true, the following test will never trigger, but this
-        // is left here for completeness of requirements.
-        if (has_axioms() || (has_conditional_effects()
-                             && !lgraph.supports_conditional_effects()))
-            return false;
+    // admissible = true
+    if (use_cost_sharing) {
+        return true;
     }
-    return true;
+
+    // admissible = false
+    return (!has_axioms() && (!has_conditional_effects()
+                              || lgraph.supports_conditional_effects()));
 }
 
 void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
