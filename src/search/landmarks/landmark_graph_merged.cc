@@ -130,7 +130,6 @@ static LandmarkGraph *_parse(OptionParser &parser) {
 
     opts.verify_list_non_empty<LandmarkGraph *>("lm_graphs");
 
-    // TODO: correct?
     parser.document_language_support("conditional_effects",
                                      "supported if all components support them");
 

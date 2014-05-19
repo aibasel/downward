@@ -281,11 +281,11 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support("conditional_effects",
                                      "supported if the LandmarkGraph supports "
                                      "them; otherwise ignored with "
-                                     "admissible=false and not allowed with "
-                                     "admissible=true");
+                                     "`admissible=false` and not allowed with "
+                                     "`admissible=true`");
     parser.document_language_support("axioms",
-                                     "ignored with admissible=false; not "
-                                     "allowed with admissible=true");
+                                     "ignored with `admissible=false`; not "
+                                     "allowed with `admissible=true`");
     // TODO: update!
     parser.document_property("admissible",
                              "yes if `admissible=true` and there are neither conditional effects "
