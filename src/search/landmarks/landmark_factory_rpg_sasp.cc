@@ -548,7 +548,6 @@ static LandmarkGraph *_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
 
-    // TODO: correct?
     parser.document_language_support("conditional_effects",
                                      "supported");
     opts.set<bool>("supports_conditional_effects", true);
