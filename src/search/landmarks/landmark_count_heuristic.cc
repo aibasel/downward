@@ -246,7 +246,15 @@ bool LandmarkCountHeuristic::reach_state(const State &parent_state,
 }
 
 bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
-    return !has_axioms();
+    if (!use_cost_sharing) {
+        // admissible = false. This test is actually not needed, because if
+        // admissible = true, the following test will never trigger, but this
+        // is left here for completeness of requirements.
+        if (has_axioms() || (has_conditional_effects()
+                             && !lgraph.supports_conditional_effects()))
+            return false;
+    }
+    return true;
 }
 
 void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
@@ -286,10 +294,8 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support("axioms",
                                      "ignored with `admissible=false`; not "
                                      "allowed with `admissible=true`");
-    // TODO: update!
     parser.document_property("admissible",
-                             "yes if `admissible=true` and there are neither conditional effects "
-                             "nor axioms");
+                             "yes if `admissible=true`");
     // TODO: this was "yes with admissible=true and optimal cost
     // partitioning; otherwise no" before.
     parser.document_property("consistent",
