@@ -218,7 +218,7 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("h^m heuristic", "");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "ignored");
+    parser.document_language_support("conditional effects", "ignored");
     parser.document_language_support("axioms", "ignored");
     parser.document_property("admissible",
                              "yes for tasks without conditional "

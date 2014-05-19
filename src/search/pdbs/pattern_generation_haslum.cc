@@ -365,7 +365,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "all patterns consisting of a single goal variable, even if this violates "
         "the pdb_max_size or collection_max_size limits.");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");
