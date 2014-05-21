@@ -246,8 +246,8 @@ bool LandmarkCountHeuristic::reach_state(const State &parent_state,
 }
 
 bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
-    // admissible = true
     if (use_cost_sharing) {
+        // admissible = true
         return true;
     }
 
@@ -273,38 +273,38 @@ static Heuristic *_parse(OptionParser &parser) {
                              "See also Synergy");
     parser.document_note(
         "Note",
-        "to use `optimal=true`, you must build the planner with USE_LP=1. "
+        "to use ``optimal=true``, you must build the planner with USE_LP=1. "
         "See LPBuildInstructions.");
     parser.document_note(
         "Optimal search",
-        "when using landmarks for optimal search (`admissible=true`), "
+        "when using landmarks for optimal search (``admissible=true``), "
         "you probably also want to enable the mpd option of the A* algorithm "
         "to improve heuristic estimates");
     parser.document_note(
         "cost_type parameter",
-        "only used when `admissible=true` (see LandmarkGraph)");
+        "only used when ``admissible=true`` (see LandmarkGraph)");
     parser.document_language_support("action costs",
                                      "supported");
     parser.document_language_support("conditional_effects",
                                      "supported if the LandmarkGraph supports "
                                      "them; otherwise ignored with "
-                                     "`admissible=false` and not allowed with "
-                                     "`admissible=true`");
+                                     "``admissible=false`` and not allowed with "
+                                     "``admissible=true``");
     parser.document_language_support("axioms",
-                                     "ignored with `admissible=false`; not "
-                                     "allowed with `admissible=true`");
+                                     "ignored with ``admissible=false``; not "
+                                     "allowed with ``admissible=true``");
     parser.document_property("admissible",
-                             "yes if `admissible=true`");
+                             "yes if ``admissible=true``");
     // TODO: this was "yes with admissible=true and optimal cost
     // partitioning; otherwise no" before.
     parser.document_property("consistent",
                              "complicated; needs further thought");
     parser.document_property("safe",
-                             "yes except on task with axioms or on tasks with "
+                             "yes except on tasks with axioms or on tasks with "
                              "conditional effects when using a LandmarkGraph "
                              "not supporting them");
     parser.document_property("preferred operators",
-                             "yes (if enabled; see `pref` option)");
+                             "yes (if enabled; see ``pref`` option)");
 
     parser.add_option<LandmarkGraph *>(
         "lm_graph",
@@ -315,7 +315,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>(
         "optimal",
         "use optimal (LP-based) cost sharing "
-        "(only makes sense with `admissible=true`)", "false");
+        "(only makes sense with ``admissible=true``)", "false");
     parser.add_option<bool>("pref", "identify preferred operators "
                             "(see OptionCaveats#Using_preferred_operators_"
                             "with_the_lmcount_heuristic)", "false");

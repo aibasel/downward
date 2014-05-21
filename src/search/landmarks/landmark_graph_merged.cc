@@ -136,15 +136,15 @@ static LandmarkGraph *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        vector<LandmarkGraph *> list = opts.get_list<LandmarkGraph *>("lm_graphs");
-        bool conditional_effects = true;
-        for (size_t i = 0; i < list.size(); ++i) {
-            if (!list[i]->supports_conditional_effects()) {
-                conditional_effects = false;
+        vector<LandmarkGraph *> lm_graphs = opts.get_list<LandmarkGraph *>("lm_graphs");
+        bool supports_conditional_effects = true;
+        for (size_t i = 0; i < lm_graphs.size(); ++i) {
+            if (!lm_graphs[i]->supports_conditional_effects()) {
+                supports_conditional_effects = false;
                 break;
             }
         }
-        opts.set<bool>("supports_conditional_effects", conditional_effects);
+        opts.set<bool>("supports_conditional_effects", supports_conditional_effects);
 
         opts.set<Exploration *>("explor", new Exploration(opts));
         LandmarkGraphMerged lm_graph_factory(opts);
