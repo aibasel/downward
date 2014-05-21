@@ -28,7 +28,7 @@ LandmarkCutHeuristic::~LandmarkCutHeuristic() {
 void LandmarkCutHeuristic::initialize() {
     cout << "Initializing landmark cut heuristic..." << endl;
 
-    ::verify_no_axioms_no_cond_effects();
+    ::verify_no_axioms_no_conditional_effects();
 
     // Build propositions.
     assert(num_propositions == 2);

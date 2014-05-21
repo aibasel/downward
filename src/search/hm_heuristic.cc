@@ -17,6 +17,10 @@ HMHeuristic::HMHeuristic(const Options &opts)
 HMHeuristic::~HMHeuristic() {
 }
 
+bool HMHeuristic::dead_ends_are_reliable() const {
+    return !has_axioms() && !has_conditional_effects();
+}
+
 void HMHeuristic::initialize() {
     cout << "Using h^" << m << endl;
     cout << "The implementation of the h^m heuristic is preliminary" << endl
