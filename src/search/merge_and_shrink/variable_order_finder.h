@@ -1,13 +1,19 @@
 #ifndef MERGE_AND_SHRINK_VARIABLE_ORDER_FINDER_H
 #define MERGE_AND_SHRINK_VARIABLE_ORDER_FINDER_H
 
-#include "merge_and_shrink_heuristic.h" // needed for MergeStrategy type;
-// TODO: move that type somewhere else?
-
 #include <vector>
 
+enum VariableOrderType {
+    CG_GOAL_LEVEL,
+    CG_GOAL_RANDOM,
+    GOAL_CG_LEVEL,
+    RANDOM,
+    LEVEL,
+    REVERSE_LEVEL
+};
+
 class VariableOrderFinder {
-    const MergeStrategy merge_strategy;
+    const VariableOrderType variable_order_type;
     std::vector<int> selected_vars;
     std::vector<int> remaining_vars;
     std::vector<bool> is_goal_variable;
@@ -15,10 +21,11 @@ class VariableOrderFinder {
 
     void select_next(int position, int var_no);
 public:
-    VariableOrderFinder(MergeStrategy merge_strategy);
+    VariableOrderFinder(VariableOrderType variable_order_type);
     ~VariableOrderFinder();
     bool done() const;
     int next();
+    void dump() const;
 };
 
 #endif

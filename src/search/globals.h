@@ -1,9 +1,6 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include "operator_cost.h"
-#include "state_var_t.h"
-
 #include <iosfwd>
 #include <string>
 #include <vector>
@@ -12,6 +9,7 @@ class Axiom;
 class AxiomEvaluator;
 class CausalGraph;
 class DomainTransitionGraph;
+class IntPacker;
 class LegacyCausalGraph;
 class Operator;
 class RandomNumberGenerator;
@@ -49,7 +47,10 @@ extern std::vector<std::vector<std::string> > g_fact_names;
 extern std::vector<int> g_axiom_layers;
 extern std::vector<int> g_default_axiom_values;
 
-extern state_var_t *g_initial_state_buffer;
+extern IntPacker *g_state_packer;
+// This vector holds the initial values *before* the axioms have been evaluated.
+// Use the state registry to obtain the real initial state.
+extern std::vector<int> g_initial_state_data;
 // TODO The following function returns the initial state that is registered
 //      in g_state_registry. This is only a short-term solution. In the
 //      medium term, we should get rid of the global registry.
