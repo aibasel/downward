@@ -90,6 +90,8 @@ def main():
             print ("%(search)s on %(task_type)s task: expected %(expected)d, "
                    "got %(exitcode)d" % locals())
         sys.exit(1)
+    else:
+        print "\nNo errors detected."
 
 
 main()
