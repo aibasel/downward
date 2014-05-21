@@ -1,6 +1,0 @@
-(wait )
-(open sd11)
-(close cb2)
-(open sd1)
-(open sd7)
-(close cb1)
