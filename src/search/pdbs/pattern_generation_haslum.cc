@@ -19,11 +19,19 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <exception>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace std;
+
+struct HillClimbingTimeout: public exception {
+  virtual const char* what() const throw() {
+    return "Time limit reached. Abort hill climbing.";
+  }
+};
 
 PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
@@ -116,7 +124,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
     samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
         if ((*hill_climbing_timer)() > max_time)
-            break;
+            throw HillClimbingTimeout();
 
         // calculate length of random walk accoring to a binomial distribution
         int length = 0;
@@ -164,7 +172,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
     // Iterate over all candidates and search for the best improving pattern/pdb
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
         if ((*hill_climbing_timer)() > max_time)
-            break;
+            throw HillClimbingTimeout();
 
         PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
         if (pdb_heuristic == 0) {
@@ -262,17 +270,23 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
 
         StateRegistry sample_registry;
         vector<State> samples;
-        sample_states(sample_registry, samples, average_operator_cost);
+        try {
+            sample_states(sample_registry, samples, average_operator_cost);
+        } catch (HillClimbingTimeout &e) {
+            cout << e.what() << endl;
+            break;
+        }
 
-        pair<int, int> improvement_and_index
-                = find_best_improving_pdb(samples, candidate_pdbs);
+        pair<int, int> improvement_and_index = make_pair(-1, -1);
+        try {
+            improvement_and_index = find_best_improving_pdb(samples, candidate_pdbs);
+        } catch (HillClimbingTimeout &e) {
+            cout << e.what() << endl;
+            break;
+        }
         int improvement = improvement_and_index.first;
         int best_pdb_index = improvement_and_index.second;
 
-        if ((*hill_climbing_timer)() > max_time) {
-            cout << "Time limit reached. Abort hill climbing." << endl;
-            break;
-        }
         if (improvement < min_improvement) {
             cout << "Improvement below threshold. Stop hill climbing." << endl;
             break;
