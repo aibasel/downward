@@ -27,11 +27,7 @@
 
 using namespace std;
 
-struct HillClimbingTimeout: public exception {
-  virtual const char* what() const throw() {
-    return "Time limit reached. Abort hill climbing.";
-  }
-};
+struct HillClimbingTimeout: public exception {};
 
 PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
@@ -250,65 +246,59 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     vector<PDBHeuristic *> candidate_pdbs;
     int num_iterations = 0;
     size_t max_pdb_size = 0;
-    while (true) {
-        num_iterations += 1;
-        cout << "current collection size is " << current_heuristic->get_size() << endl;
-        // TODO think about how to handle this when state_registries are moved into the search algorithms.
-        current_heuristic->evaluate(g_initial_state());
-        cout << "current initial h value: ";
-        if (current_heuristic->is_dead_end()) {
-            cout << "infinite => stopping hill climbing" << endl;
-            break;
-        } else {
-            cout << current_heuristic->get_heuristic() << endl;
-        }
+    try {
+        while (true) {
+            num_iterations += 1;
+            cout << "current collection size is " << current_heuristic->get_size() << endl;
+            // TODO think about how to handle this when state_registries are moved into the search algorithms.
+            current_heuristic->evaluate(g_initial_state());
+            cout << "current initial h value: ";
+            if (current_heuristic->is_dead_end()) {
+                cout << "infinite => stopping hill climbing" << endl;
+                break;
+            } else {
+                cout << current_heuristic->get_heuristic() << endl;
+            }
 
-        size_t new_max_pdb_size = generate_pdbs_for_candidates(generated_patterns,
-                                                               new_candidates,
-                                                               candidate_pdbs);
-        max_pdb_size = max(max_pdb_size, new_max_pdb_size);
+            size_t new_max_pdb_size = generate_pdbs_for_candidates(generated_patterns,
+                                                                   new_candidates,
+                                                                   candidate_pdbs);
+            max_pdb_size = max(max_pdb_size, new_max_pdb_size);
 
-        StateRegistry sample_registry;
-        vector<State> samples;
-        try {
+            StateRegistry sample_registry;
+            vector<State> samples;
             sample_states(sample_registry, samples, average_operator_cost);
-        } catch (HillClimbingTimeout &e) {
-            cout << e.what() << endl;
-            break;
+
+            pair<int, int> improvement_and_index =
+                    find_best_improving_pdb(samples, candidate_pdbs);
+            int improvement = improvement_and_index.first;
+            int best_pdb_index = improvement_and_index.second;
+
+            if (improvement < min_improvement) {
+                cout << "Improvement below threshold. Stop hill climbing." << endl;
+                break;
+            }
+
+            // add the best pattern to the CanonicalPDBsHeuristic
+            assert(best_pdb_index != -1);
+            const PDBHeuristic *best_pdb = candidate_pdbs[best_pdb_index];
+            const vector<int> &best_pattern = best_pdb->get_pattern();
+            cout << "found a better pattern with improvement " << improvement << endl;
+            cout << "pattern: " << best_pattern << endl;
+            current_heuristic->add_pattern(best_pattern);
+
+            // clear current new_candidates and get successors for next iteration
+            new_candidates.clear();
+            generate_candidate_patterns(best_pdb, new_candidates);
+
+            // remove from candidate_pdbs the added PDB
+            delete candidate_pdbs[best_pdb_index];
+            candidate_pdbs[best_pdb_index] = 0;
+
+            cout << "Hill climbing time so far: " << *hill_climbing_timer << endl;
         }
-
-        pair<int, int> improvement_and_index = make_pair(-1, -1);
-        try {
-            improvement_and_index = find_best_improving_pdb(samples, candidate_pdbs);
-        } catch (HillClimbingTimeout &e) {
-            cout << e.what() << endl;
-            break;
-        }
-        int improvement = improvement_and_index.first;
-        int best_pdb_index = improvement_and_index.second;
-
-        if (improvement < min_improvement) {
-            cout << "Improvement below threshold. Stop hill climbing." << endl;
-            break;
-        }
-
-        // add the best pattern to the CanonicalPDBsHeuristic
-        assert(best_pdb_index != -1);
-        const PDBHeuristic *best_pdb = candidate_pdbs[best_pdb_index];
-        const vector<int> &best_pattern = best_pdb->get_pattern();
-        cout << "found a better pattern with improvement " << improvement << endl;
-        cout << "pattern: " << best_pattern << endl;
-        current_heuristic->add_pattern(best_pattern);
-
-        // clear current new_candidates and get successors for next iteration
-        new_candidates.clear();
-        generate_candidate_patterns(best_pdb, new_candidates);
-
-        // remove from candidate_pdbs the added PDB
-        delete candidate_pdbs[best_pdb_index];
-        candidate_pdbs[best_pdb_index] = 0;
-
-        cout << "Hill climbing time so far: " << *hill_climbing_timer << endl;
+    } catch (HillClimbingTimeout &e) {
+        cout << "Time limit reached. Abort hill climbing." << endl;
     }
 
     // Note that using dominance pruning during hill climbing could lead to
