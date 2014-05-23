@@ -93,7 +93,6 @@ class IssueExperiment(DownwardExperiment):
 
     DEFAULT_TEST_SUITE = "gripper:prob01.pddl"
 
-    # TODO: Once we have reference results, we should add "quality".
     # TODO: Add something about errors/exit codes.
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
@@ -103,6 +102,7 @@ class IssueExperiment(DownwardExperiment):
         "expansions_until_last_jump",
         "generated",
         "memory",
+        "quality",
         "run_dir",
         "score_evaluations",
         "score_expansions",
