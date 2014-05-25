@@ -12,16 +12,19 @@ class Options;
 class CanonicalPDBsHeuristic;
 class PDBHeuristic;
 class State;
+class Timer;
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
     const int pdb_max_size; // maximum number of states for each pdb
     const int collection_max_size; // maximum added size of all pdbs
     const int num_samples;
     const int min_improvement; // minimal improvement required for hill climbing to continue search
+    const int max_time;
     const OperatorCost cost_type;
     CanonicalPDBsHeuristic *current_heuristic;
 
     int num_rejected; // for stats only
+    Timer *hill_climbing_timer;
 
     /* For the given pattern, all possible extensions of the pattern by one relevant variable
        are inserted into candidate_patterns. This may generate duplicated patterns. */
