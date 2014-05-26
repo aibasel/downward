@@ -4,7 +4,10 @@ USAGE = """\
 Update baseline:
   * change BASELINE variable below
   * push the change
-  * run the following two commands as the buildslave user:
+  * login to buildbot server and become the buildslave user
+  * remove ~/experiments dir
+  * run in an updated repo (e.g. the one for build-quick):
+    export PYTHONPATH=~/lib/python/lab
     ./buildbot-exp.py --test nightly --rev baseline --all
     ./buildbot-exp.py --test weekly --rev baseline --all
 
