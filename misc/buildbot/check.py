@@ -16,7 +16,6 @@ class Check(object):
         self.ignored_abs_diff = ignored_abs_diff
 
     def get_error(self, base, new):
-        # We assume that no attributes are missing.
         val1 = base.get(self.attribute)
         val2 = new.get(self.attribute)
         if val1 is None and val2 is None:
@@ -63,13 +62,16 @@ class RegressionCheckReport(AbsoluteReport):
             assert len(runs_base) == len(runs_new), (len(runs_base), len(runs_new))
             for base, new in zip(runs_base, runs_new):
                 assert base['config_nick'] == new['config_nick']
+                config_nick = base['config_nick']
                 for check in self.checks:
                     error = check.get_error(base, new)
                     if error:
-                        lines.append('| %(domain)s:%(problem)s | %(error)s |' % locals())
+                        lines.append('| %(domain)s:%(problem)s '
+                                     '| %(config_nick)s '
+                                     '| %(error)s |' % locals())
         if lines:
             # Add header.
-            lines.insert(0, '|| Task | Attribute | Error |')
+            lines.insert(0, '|| Task | Config | Attribute | Error |')
         return '\n'.join(lines)
 
     def write(self):
