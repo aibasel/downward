@@ -117,7 +117,7 @@ public:
     // Build abstraction.
     void build();
 
-    int get_h(const state_var_t *buffer) const {return split_tree.get_node(buffer)->get_h(); }
+    int get_h(const int *buffer) const {return split_tree.get_node(buffer)->get_h(); }
 
     int get_num_states() const {return num_states; }
     bool may_keep_refining() const;

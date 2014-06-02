@@ -44,7 +44,7 @@ class CegarHeuristic : public Heuristic {
     int num_states;
     std::vector<double> avg_h_values;
     LandmarkGraph landmark_graph;
-    state_var_t *temp_state_buffer;
+    int *temp_state_buffer;
 
     LandmarkGraph get_landmark_graph() const;
     void get_prev_landmarks(Fact fact, std::tr1::unordered_map<int, std::tr1::unordered_set<int> > *groups) const;

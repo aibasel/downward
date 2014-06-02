@@ -2,7 +2,7 @@
 
 set -e
 
-BASEDIR="$(dirname "$0")"
+BASEDIR="$(dirname $(readlink -f "$0"))"
 
 function die {
     echo "$@" 1>&2

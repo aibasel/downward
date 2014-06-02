@@ -1,8 +1,9 @@
 #include "merge_and_shrink_heuristic.h"
 
 #include "abstraction.h"
-#include "shrink_fh.h"
-#include "variable_order_finder.h"
+#include "labels.h"
+#include "merge_strategy.h"
+#include "shrink_strategy.h"
 
 #include "../globals.h"
 #include "../option_parser.h"
@@ -17,49 +18,22 @@ using namespace std;
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
-      merge_strategy(MergeStrategy(opts.get_enum("merge_strategy"))),
+      merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      use_label_reduction(opts.get<bool>("reduce_labels")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
+    labels = new Labels(is_unit_cost_problem(), opts, cost_type);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
+    delete merge_strategy;
+    delete labels;
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
-    cout << "Merge strategy: ";
-    switch (merge_strategy) {
-    case MERGE_LINEAR_CG_GOAL_LEVEL:
-        cout << "linear CG/GOAL, tie breaking on level (main)";
-        break;
-    case MERGE_LINEAR_CG_GOAL_RANDOM:
-        cout << "linear CG/GOAL, tie breaking random";
-        break;
-    case MERGE_LINEAR_GOAL_CG_LEVEL:
-        cout << "linear GOAL/CG, tie breaking on level";
-        break;
-    case MERGE_LINEAR_RANDOM:
-        cout << "linear random";
-        break;
-    case MERGE_DFP:
-        cout << "Draeger/Finkbeiner/Podelski" << endl;
-        cerr << "DFP merge strategy not implemented." << endl;
-        exit_with(EXIT_UNSUPPORTED);
-        break;
-    case MERGE_LINEAR_LEVEL:
-        cout << "linear by level";
-        break;
-    case MERGE_LINEAR_REVERSE_LEVEL:
-        cout << "linear by reverse level";
-        break;
-    default:
-        ABORT("Unknown merge strategy.");
-    }
-    cout << endl;
+    merge_strategy->dump_options();
     shrink_strategy->dump_options();
-    cout << "Label reduction: "
-         << (use_label_reduction ? "enabled" : "disabled") << endl
-         << "Expensive statistics: "
+    labels->dump_options();
+    cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
 
@@ -84,44 +58,53 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     //       Don't forget that build_atomic_abstractions also
     //       allocates memory.
 
-    vector<Abstraction *> atomic_abstractions;
-    Abstraction::build_atomic_abstractions(
-        is_unit_cost_problem(), get_cost_type(), atomic_abstractions);
+    // vector of all abstractions. entries with 0 have been merged.
+    vector<Abstraction *> all_abstractions;
+    all_abstractions.reserve(g_variable_domain.size() * 2 - 1);
+    Abstraction::build_atomic_abstractions(all_abstractions, labels);
 
     cout << "Shrinking atomic abstractions..." << endl;
-    for (size_t i = 0; i < atomic_abstractions.size(); ++i) {
-        atomic_abstractions[i]->compute_distances();
-        if (!atomic_abstractions[i]->is_solvable())
-            return atomic_abstractions[i];
-        shrink_strategy->shrink_atomic(*atomic_abstractions[i]);
+    for (size_t i = 0; i < all_abstractions.size(); ++i) {
+        all_abstractions[i]->compute_distances();
+        if (!all_abstractions[i]->is_solvable())
+            return all_abstractions[i];
+        shrink_strategy->shrink_atomic(*all_abstractions[i]);
     }
 
     cout << "Merging abstractions..." << endl;
 
-    VariableOrderFinder order(merge_strategy);
+    vector<int> system_order;
+    while (!merge_strategy->done()) {
+        pair<int, int> next_systems = merge_strategy->get_next(all_abstractions);
+        int system_one = next_systems.first;
+        system_order.push_back(system_one);
+        Abstraction *abstraction = all_abstractions[system_one];
+        assert(abstraction);
+        int system_two = next_systems.second;
+        assert(system_one != system_two);
+        system_order.push_back(system_two);
+        Abstraction *other_abstraction = all_abstractions[system_two];
+        assert(other_abstraction);
 
-    int var_no = order.next();
-    cout << "First variable: #" << var_no << endl;
-    Abstraction *abstraction = atomic_abstractions[var_no];
-    abstraction->statistics(use_expensive_statistics);
-
-    while (!order.done()) {
-        int var_no = order.next();
-        cout << "Next variable: #" << var_no << endl;
-        Abstraction *other_abstraction = atomic_abstractions[var_no];
-
-        // TODO: When using nonlinear merge strategies, make sure not
-        // to normalize multiple parts of a composite. See issue68.
+        // Note: we do not reduce labels several times for the same abstraction
+        bool reduced_labels = false;
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            abstraction->normalize(use_label_reduction);
-            other_abstraction->normalize(false);
+            labels->reduce(make_pair(system_one, system_two), all_abstractions);
+            reduced_labels = true;
+            abstraction->normalize();
+            other_abstraction->normalize();
+            abstraction->statistics(use_expensive_statistics);
+            other_abstraction->statistics(use_expensive_statistics);
         }
 
+        // distances need to be computed before shrinking
         abstraction->compute_distances();
+        other_abstraction->compute_distances();
         if (!abstraction->is_solvable())
             return abstraction;
+        if (!other_abstraction->is_solvable())
+            return other_abstraction;
 
-        other_abstraction->compute_distances();
         shrink_strategy->shrink_before_merge(*abstraction, *other_abstraction);
         // TODO: Make shrink_before_merge return a pair of bools
         //       that tells us whether they have actually changed,
@@ -134,35 +117,57 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
         abstraction->statistics(use_expensive_statistics);
         other_abstraction->statistics(use_expensive_statistics);
 
-        abstraction->normalize(use_label_reduction);
-        abstraction->statistics(use_expensive_statistics);
+        if (!reduced_labels) {
+            labels->reduce(make_pair(system_one, system_two), all_abstractions);
+        }
+        abstraction->normalize();
+        other_abstraction->normalize();
+        if (!reduced_labels) {
+            // only print statistics if we just possibly reduced labels
+            other_abstraction->statistics(use_expensive_statistics);
+            abstraction->statistics(use_expensive_statistics);
+        }
 
-        // Don't label-reduce the atomic abstraction -- see issue68.
-        other_abstraction->normalize(false);
-        other_abstraction->statistics(use_expensive_statistics);
-
-        Abstraction *new_abstraction = new CompositeAbstraction(
-            is_unit_cost_problem(), get_cost_type(),
-            abstraction, other_abstraction);
+        Abstraction *new_abstraction = new CompositeAbstraction(labels,
+                                                                abstraction,
+                                                                other_abstraction);
 
         abstraction->release_memory();
         other_abstraction->release_memory();
 
-        abstraction = new_abstraction;
-        abstraction->statistics(use_expensive_statistics);
+        new_abstraction->statistics(use_expensive_statistics);
+
+        all_abstractions[system_one] = 0;
+        all_abstractions[system_two] = 0;
+        all_abstractions.push_back(new_abstraction);
     }
 
-    abstraction->compute_distances();
-    if (!abstraction->is_solvable())
-        return abstraction;
+    assert(all_abstractions.size() == g_variable_domain.size() * 2 - 1);
+    Abstraction *final_abstraction = 0;
+    for (size_t i = 0; i < all_abstractions.size(); ++i) {
+        if (all_abstractions[i]) {
+            if (final_abstraction) {
+                cerr << "Found more than one remaining abstraction!" << endl;
+                exit_with(EXIT_CRITICAL_ERROR);
+            }
+            final_abstraction = all_abstractions[i];
+            assert(i == all_abstractions.size() - 1);
+        }
+    }
 
-    ShrinkStrategy *def_shrink = ShrinkFH::create_default(abstraction->size());
-    def_shrink->shrink(*abstraction, abstraction->size(), true);
-    abstraction->compute_distances();
+    final_abstraction->compute_distances();
+    if (!final_abstraction->is_solvable())
+        return final_abstraction;
 
-    abstraction->statistics(use_expensive_statistics);
-    abstraction->release_memory();
-    return abstraction;
+    final_abstraction->statistics(use_expensive_statistics);
+    final_abstraction->release_memory();
+
+    cout << "Order of merged systems: ";
+    for (size_t i = 1; i < system_order.size(); i += 2) {
+        cout << system_order[i - 1] << " " << system_order[i] << ", ";
+    }
+    cout << endl;
+    return final_abstraction;
 }
 
 void MergeAndShrinkHeuristic::initialize() {
@@ -171,7 +176,7 @@ void MergeAndShrinkHeuristic::initialize() {
     dump_options();
     warn_on_unusual_options();
 
-    verify_no_axioms_no_cond_effects();
+    verify_no_axioms();
 
     cout << "Building abstraction..." << endl;
     final_abstraction = build_abstraction();
@@ -192,40 +197,31 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Merge-and-shrink heuristic",
-        "Note: The parameter space and syntax for the merge-and-shrink "
-        "heuristic has changed significantly in August 2011.");
-    parser.document_language_support(
-        "action costs",
-        "supported");
-    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_synopsis("Merge-and-shrink heuristic", "");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional_effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
+    parser.document_note(
+        "Note",
+        "Conditional effects are supported directly. Note, however, that "
+        "for tasks that are not factored (in the sense of the JACM 2014 "
+        "merge-and-shrink paper), the atomic abstractions on which "
+        "merge-and-shrink heuristics are based are nondeterministic, "
+        "which can lead to poor heuristics even when no shrinking is "
+        "performed.");
 
-    // TODO: better documentation what each parameter does
-    vector<string> merge_strategies;
-    //TODO: it's a bit dangerous that the merge strategies here
-    // have to be specified exactly in the same order
-    // as in the enum definition. Try to find a way around this,
-    // or at least raise an error when the order is wrong.
-    merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_LEVEL");
-    merge_strategies.push_back("MERGE_LINEAR_CG_GOAL_RANDOM");
-    merge_strategies.push_back("MERGE_LINEAR_GOAL_CG_LEVEL");
-    merge_strategies.push_back("MERGE_LINEAR_RANDOM");
-    merge_strategies.push_back("MERGE_DFP");
-    merge_strategies.push_back("MERGE_LINEAR_LEVEL");
-    merge_strategies.push_back("MERGE_LINEAR_REVERSE_LEVEL");
-    parser.add_enum_option("merge_strategy", merge_strategies,
-                           "merge strategy",
-                           "MERGE_LINEAR_CG_GOAL_LEVEL");
+    parser.add_option<MergeStrategy *>(
+        "merge_strategy",
+        "merge strategy; choose between merge_linear and merge_dfp",
+        "merge_linear");
 
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy",
-        "shrink strategy; these are not fully documented yet; "
+        "shrink strategy; "
         "try one of the following:",
         "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low)");
     ValueExplanations shrink_value_explanations;
@@ -237,16 +233,16 @@ static Heuristic *_parse(OptionParser &parser) {
                   "Hoffmann and Helmert). "
                   "Here, N is a numerical parameter for which sensible values "
                   "include 1000, 10000, 50000, 100000 and 200000. "
-                  "Combine this with the default merge strategy "
-                  "MERGE_LINEAR_CG_GOAL_LEVEL to match the heuristic "
+                  "Combine this with the default linear merge strategy "
+                  "CG_GOAL_LEVEL to match the heuristic "
                   "in the paper."));
     shrink_value_explanations.push_back(
         make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true, initialize_by_h=false, group_by_h=false)",
                   "Greedy bisimulation without size bound "
                   "(called M&S-gop in the IJCAI 2011 paper by Nissim, "
                   "Hoffmann and Helmert). "
-                  "Combine this with the merge strategy "
-                  "MERGE_LINEAR_REVERSE_LEVEL to match "
+                  "Combine this with the linear merge strategy "
+                  "REVERSE_LEVEL to match "
                   "the heuristic in the paper. "));
     shrink_value_explanations.push_back(
         make_pair("shrink_bisimulation(max_states=N, greedy=false, initialize_by_h=true, group_by_h=true)",
@@ -255,24 +251,59 @@ static Heuristic *_parse(OptionParser &parser) {
                   "Hoffmann and Helmert), "
                   "where N is a numerical parameter for which sensible values "
                   "include 1000, 10000, 50000, 100000 and 200000. "
-                  "Combine this with the merge strategy "
-                  "MERGE_LINEAR_REVERSE_LEVEL to match "
+                  "Combine this with the linear merge strategy "
+                  "REVERSE_LEVEL to match "
                   "the heuristic in the paper."));
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
-    // TODO: Rename option name to "use_label_reduction" to be
-    //       consistent with the papers?
-    parser.add_option<bool>("reduce_labels", "enable label reduction", "true");
-    parser.add_option<bool>("expensive_statistics", "show statistics on \"unique unlabeled edges\" (WARNING: "
-                            "these are *very* slow -- check the warning in the output)", "false");
+    vector<string> label_reduction_method;
+    label_reduction_method.push_back("NONE");
+    label_reduction_method.push_back("OLD");
+    label_reduction_method.push_back("TWO_ABSTRACTIONS");
+    label_reduction_method.push_back("ALL_ABSTRACTIONS");
+    label_reduction_method.push_back("ALL_ABSTRACTIONS_WITH_FIXPOINT");
+    parser.add_enum_option("label_reduction_method", label_reduction_method,
+                           "label reduction method: "
+                           "none: no label reduction will be performed "
+                           "old: emulate the label reduction as desribed in the "
+                           "IJCAI 2011 paper by Nissim, Hoffmann and Helmert."
+                           "two_abstractions: compute the 'combinable relation' "
+                           "for labels only for the two abstractions that will "
+                           "be merged next and reduce labels."
+                           "all_abstractions: compute the 'combinable relation' "
+                           "for labels once for every abstraction and reduce "
+                           "labels."
+                           "all_abstractions_with_fixpoint: keep computing the "
+                           "'combinable relation' for labels iteratively for all "
+                           "abstractions until no more labels can be reduced.",
+                           "ALL_ABSTRACTIONS_WITH_FIXPOINT");
+    vector<string> label_reduction_system_order;
+    label_reduction_system_order.push_back("REGULAR");
+    label_reduction_system_order.push_back("REVERSE");
+    label_reduction_system_order.push_back("RANDOM");
+    parser.add_enum_option("label_reduction_system_order", label_reduction_system_order,
+                           "order of transition systems for the label reduction methods "
+                           "that iterate over the set of all abstractions. only useful "
+                           "for the choices all_abstractions and all_abstractions_with_fixpoint "
+                           "for the option label_reduction_method.", "RANDOM");
+    parser.add_option<bool>("expensive_statistics",
+                            "show statistics on \"unique unlabeled edges\" (WARNING: "
+                            "these are *very* slow, i.e. too expensive to show by default "
+                            "(in terms of time and memory). When this is used, the planner "
+                            "prints a big warning on stderr with information on the performance impact. "
+                            "Don't use when benchmarking!)",
+                            "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
 
     if (parser.dry_run()) {
         return 0;
     } else {
+        if (opts.get_enum("label_reduction_method") == 1
+                && opts.get<MergeStrategy *>("merge_strategy")->name() != "linear") {
+            parser.error("old label reduction is only correct when used with a "
+                         "linear merge strategy!");
+        }
         MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(opts);
         return result;
     }

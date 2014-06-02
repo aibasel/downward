@@ -15,6 +15,7 @@
 #include <boost/any.hpp>
 
 
+class MergeStrategy;
 class ShrinkStrategy;
 class LandmarkGraph;
 class Heuristic;
@@ -238,6 +239,13 @@ struct TypeNamer<Synergy *> {
 };
 
 template <>
+struct TypeNamer<MergeStrategy *> {
+    static std::string name() {
+        return "MergeStrategy";
+    }
+};
+
+template <>
 struct TypeNamer<ShrinkStrategy *> {
     static std::string name() {
         return "ShrinkStrategy";
@@ -257,6 +265,53 @@ struct TypeNamer<std::vector<T> > {
         return "list of " + TypeNamer<T>::name();
     }
 };
+
+// TypeDocumenter allows to add global documentation to the types.
+// This cannot be done during parsing, because types are not parsed.
+
+template <class T>
+struct TypeDocumenter {
+    static std::string synopsis() {
+        return "";
+    }
+};
+
+template <>
+struct TypeDocumenter<Heuristic *> {
+    static std::string synopsis() {
+        return "A heuristic specification is either a newly created heuristic "
+               "instance or a heuristic that has been defined previously. "
+               "This page describes how one can specify a new heuristic instance. "
+               "For re-using heuristics, see OptionSyntax#Heuristic_Predefinitions.\n\n"
+               "Definitions of //properties// in the descriptions below:\n\n"
+               " * **admissible:** h(s) <= h*(s) for all states s\n"
+               " * **consistent:** h(s) + c(s, s') >= h(s') for all states s "
+               "connected to states s' by an action with cost c(s, s')\n"
+               " * **safe:** h(s) = infinity is only true for states "
+               "with h*(s) = infinity\n"
+               " * **preferred operators:** this heuristic identifies "
+               "preferred operators ";
+    }
+};
+
+template <>
+struct TypeDocumenter<LandmarkGraph *> {
+    static std::string synopsis() {
+        return "A landmark graph specification is either a newly created "
+               "instance or a landmark graph that has been defined previously. "
+               "This page describes how one can specify a new landmark graph instance. "
+               "For re-using landmark graphs, see OptionSyntax#Landmark_Predefinitions.\n\n"
+               "**Warning:** See OptionCaveats for using cost types with Landmarks";
+    }
+};
+
+template <>
+struct TypeDocumenter<ScalarEvaluator *> {
+    static std::string synopsis() {
+        return "XXX TODO: description of the role of scalar evaluators and the connection to Heuristic";
+    }
+};
+
 
 //helper functions for the ParseTree (=tree<ParseNode>)
 
@@ -404,12 +459,14 @@ struct PropertyInfo {
 };
 
 struct NoteInfo {
-    NoteInfo(std::string n, std::string descr)
+    NoteInfo(std::string n, std::string descr, bool long_text_)
         : name(n),
-          description(descr) {
+          description(descr),
+          long_text(long_text_){
     }
     std::string name;
     std::string description;
+    bool long_text;
 };
 
 
@@ -463,7 +520,7 @@ public:
     void add_feature(std::string k,
                      std::string feature, std::string description);
     void add_note(std::string k,
-                  std::string name, std::string description);
+                  std::string name, std::string description, bool long_text);
     void hide(std::string k);
 
     bool contains(std::string k);

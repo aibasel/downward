@@ -315,6 +315,12 @@ static LandmarkGraph *_parse(OptionParser &parser) {
     LandmarkGraph::add_options_to_parser(parser);
     Options opts = parser.parse();
 
+    // TODO: Make sure that conditional effects are indeed supported.
+    parser.document_language_support("conditional_effects",
+                                     "We think they are supported, but this "
+                                     "is not 100% sure.");
+    opts.set<bool>("supports_conditional_effects", true);
+
     if (parser.dry_run()) {
         return 0;
     } else {
