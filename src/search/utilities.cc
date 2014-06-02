@@ -1,7 +1,7 @@
 #include "utilities.h"
 
+#include <cassert>
 #include <csignal>
-#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <limits>
@@ -142,10 +142,4 @@ int get_peak_memory_in_kb() {
 
 void print_peak_memory() {
     cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
-}
-
-void assert_sorted_unique(const std::vector<int> &values) {
-    for (size_t i = 1; i < values.size(); ++i) {
-        assert(values[i - 1] < values[i]);
-    }
 }

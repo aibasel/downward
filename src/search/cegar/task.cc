@@ -25,9 +25,7 @@ Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> o
       additive_heuristic(0),
       is_original_task(false) {
     assert(state_registry);
-    copy(g_initial_state_buffer,
-         g_initial_state_buffer + g_variable_domain.size(),
-         initial_state_buffer.begin());
+    initial_state_buffer = g_initial_state_data;
     for (int var = 0; var < variable_domain.size(); ++var) {
         orig_index[var].resize(variable_domain[var]);
         task_index[var].resize(variable_domain[var]);
@@ -189,7 +187,7 @@ void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int>
         cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
-bool Task::translate_state(const State &state, state_var_t *translated) const {
+bool Task::translate_state(const State &state, int *translated) const {
     for (int var = 0; var < variable_domain.size(); ++var) {
         int value = task_index[var][state[var]];
         if (value == UNDEFINED) {
@@ -207,7 +205,7 @@ void Task::install() {
     // By overriding g_initial_state buffer, we assign the new registry
     // a modified initial state.
     if (!state_registry) {
-        copy(initial_state_buffer.begin(), initial_state_buffer.end(), g_initial_state_buffer);
+        g_initial_state_data = initial_state_buffer;
         state_registry = new StateRegistry();
     }
     g_state_registry = state_registry;

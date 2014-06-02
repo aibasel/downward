@@ -57,6 +57,7 @@ protected:
 public:
     RelaxationHeuristic(const Options &options);
     virtual ~RelaxationHeuristic();
+    virtual bool dead_ends_are_reliable() const;
 };
 
 #endif

@@ -55,7 +55,7 @@ void SplitTree::set_root(AbstractState *single) {
     root = new Node(single);
 }
 
-Node *SplitTree::get_node(const state_var_t *buffer) const {
+Node *SplitTree::get_node(const int *buffer) const {
     assert(root);
     assert(buffer);
     Node *current = root;

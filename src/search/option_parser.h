@@ -45,6 +45,7 @@ class LandmarkGraph;
 template<class Entry>
 class OpenList;
 class SearchEngine;
+class MergeStrategy;
 class ShrinkStrategy;
 
 /*
@@ -112,6 +113,12 @@ public:
 };
 
 template <>
+class TokenParser<MergeStrategy *> {
+public:
+    static inline MergeStrategy *parse(OptionParser &p);
+};
+
+template <>
 class TokenParser<ShrinkStrategy *> {
 public:
     static inline ShrinkStrategy *parse(OptionParser &p);
@@ -165,7 +172,7 @@ public:
     void document_synopsis(std::string name, std::string note) const;
     void document_property(std::string property, std::string note) const;
     void document_language_support(std::string feature, std::string note) const;
-    void document_note(std::string name, std::string note) const;
+    void document_note(std::string name, std::string note, bool long_text=false) const;
     void document_hide() const;
 
     void error(std::string msg);
@@ -363,6 +370,10 @@ ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
 
 SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
     return lookup_in_registry<SearchEngine>(p);
+}
+
+MergeStrategy *TokenParser<MergeStrategy *>::parse(OptionParser &p) {
+    return lookup_in_registry<MergeStrategy>(p);
 }
 
 ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {

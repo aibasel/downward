@@ -17,7 +17,7 @@ typedef std::tr1::unordered_set<Fact, hash_fact> FactSet;
 class Task {
 private:
     StateRegistry *state_registry;
-    std::vector<state_var_t> initial_state_buffer;
+    std::vector<int> initial_state_buffer;
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
     std::vector<std::vector<std::string> > fact_names;
@@ -58,7 +58,7 @@ public:
     void set_goal(const Fact &fact, bool adapt);
     void adapt_operator_costs(const std::vector<int> &remaining_costs);
     void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;
-    bool translate_state(const State &state, state_var_t *translated) const;
+    bool translate_state(const State &state, int *translated) const;
 
     void combine_facts(int var, std::tr1::unordered_set<int> &values);
 

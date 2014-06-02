@@ -31,11 +31,11 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       original_task(Task::get_original_task()),
       num_states(0),
       landmark_graph(get_landmark_graph()),
-      temp_state_buffer(new state_var_t[g_variable_domain.size()]) {
+      temp_state_buffer(new int[g_variable_domain.size()]) {
     DEBUG = opts.get<bool>("debug");
     assert(max_time >= 0);
 
-    verify_no_axioms_no_cond_effects();
+    verify_no_axioms_no_conditional_effects();
 
     if (DEBUG)
         landmark_graph.dump();
@@ -80,6 +80,7 @@ LandmarkGraph CegarHeuristic::get_landmark_graph() const {
     opts.set<bool>("conjunctive_landmarks", false);
     opts.set<bool>("no_orders", false);
     opts.set<int>("lm_cost_type", 0);
+    opts.set<bool>("supports_conditional_effects", false);
     opts.set<Exploration *>("explor", new Exploration(opts));
     HMLandmarks lm_graph_factory(opts);
     return *lm_graph_factory.compute_lm_graph();
@@ -274,10 +275,11 @@ int CegarHeuristic::compute_heuristic(const State &state) {
     for (int i = 0; i < abstractions.size(); ++i) {
         Task &task = tasks[i];
 
-        const state_var_t *buffer = 0;
+        const int *buffer = 0;
         // TODO: Use state buffer also for goal decomposition and adapt_task=false.
         if (Decomposition(options.get_enum("decomposition")) == NONE) {
-            buffer = state.get_buffer();
+            ABORT("Not implemented");
+            // TODO: buffer = state.get_buffer();
         } else {
             // If any fact in state is not reachable in this task, h(state) = 0.
             bool reachable = task.translate_state(state, temp_state_buffer);

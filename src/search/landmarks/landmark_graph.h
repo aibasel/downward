@@ -133,6 +133,13 @@ public:
     int get_reached_cost() const {return reached_cost; }
     LandmarkNode *get_landmark(const std::pair<int, int> &prop) const;
 
+    // TODO: the following method should not exist. Ideally, we want the
+    // information about support for conditional effects to reside in the
+    // landmark factory classes. For now, this cannot easily be done since the
+    // factories do not exist anymore when the landmark heuristic is
+    // constructed.
+    bool supports_conditional_effects() {return conditional_effects_supported; }
+
     // ------------------------------------------------------------------------------
     // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories
     inline const std::set<LandmarkNode *> &get_nodes() const {
@@ -214,6 +221,7 @@ private:
     bool conjunctive_landmarks;
     bool no_orders;
     OperatorCost lm_cost_type;
+    bool conditional_effects_supported;
     int reached_cost;
     int needed_cost;
     int landmarks_cost;

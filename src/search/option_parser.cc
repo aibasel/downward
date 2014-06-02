@@ -61,11 +61,14 @@ static void get_help(string k) {
     get_help_templ<LandmarkGraph *>(pt);
     Plugin<OpenList<int> >::register_open_lists();
     get_help_templ<OpenList<int> *>(pt);
+    get_help_templ<MergeStrategy *>(pt);
     get_help_templ<ShrinkStrategy *>(pt);
 }
 
 template <class T>
 static void get_full_help_templ() {
+    DocStore::instance()->set_synopsis(TypeNamer<T>::name(), "",
+                                       TypeDocumenter<T>::synopsis());
     vector<string> keys = Registry<T>::instance()->get_keys();
     for (size_t i(0); i != keys.size(); ++i) {
         ParseTree pt;
@@ -82,6 +85,7 @@ static void get_full_help() {
     get_full_help_templ<LandmarkGraph *>();
     Plugin<OpenList<int> >::register_open_lists();
     get_full_help_templ<OpenList<int> *>();
+    get_full_help_templ<MergeStrategy *>();
     get_full_help_templ<ShrinkStrategy *>();
 }
 
@@ -459,9 +463,9 @@ void OptionParser::document_language_support(string feature,
 }
 
 void OptionParser::document_note(string name,
-                                 string note) const {
+                                 string note, bool long_text) const {
     DocStore::instance()->add_note(parse_tree.begin()->value,
-                                   name, note);
+                                   name, note, long_text);
 }
 
 void OptionParser::document_hide() const {
