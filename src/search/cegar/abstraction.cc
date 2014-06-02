@@ -69,7 +69,7 @@ Abstraction::Abstraction(const Task *t)
       max_time(INF),
       use_astar(true),
       use_negative_costs(false),
-      write_dot_files(false),
+      dump_graphs(false),
       memory_released(false) {
     assert(!task->get_goal().empty());
 
@@ -98,7 +98,7 @@ void Abstraction::set_pick_strategy(PickStrategy strategy) {
 }
 
 void Abstraction::build() {
-    if (write_dot_files) {
+    if (dump_graphs) {
         assert(get_num_states() == 1);
         write_dot_file(get_num_states());
     }
@@ -191,7 +191,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     if (num_states % STATES_LOG_STEP == 0)
         cout << "Abstract states: " << num_states << "/"
              << max_states << endl;
-    if (write_dot_files)
+    if (dump_graphs)
         write_dot_file(num_states);
 }
 
