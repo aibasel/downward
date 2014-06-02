@@ -149,7 +149,7 @@ void write_landmark_graph(const LandmarkGraph &graph) {
     dotfile.close();
 }
 
-void write_causal_graph(const CausalGraph &causal_graph) {
+void write_causal_graph() {
     ofstream dotfile("causal-graph.dot");
     if (!dotfile.is_open()) {
         cerr << "dot file for causal graph could not be opened" << endl;
@@ -157,7 +157,7 @@ void write_causal_graph(const CausalGraph &causal_graph) {
     }
     dotfile << "digraph causal-graph {" << endl;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
-        const vector<int> &successors = causal_graph.get_successors(var);
+        const vector<int> &successors = g_causal_graph->get_successors(var);
         for (int i = 0; i < successors.size(); ++i) {
             dotfile << "  " << var << " -> " << successors[i] << ";" << endl;
         }
