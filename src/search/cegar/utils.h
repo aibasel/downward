@@ -71,13 +71,6 @@ std::string to_string(const std::set<int> &s);
 std::string to_string(const std::tr1::unordered_set<int> &s);
 
 std::ostream &operator<<(std::ostream &os, const Fact &fact);
-
-// Create an operator with cost 1.
-// prevails have the form "var value".
-// pre_posts have the form "0 var pre post" (no conditional effects).
-Operator create_op(const std::string desc);
-Operator create_op(const std::string name, std::vector<std::string> prevail,
-                   std::vector<std::string> pre_post, int cost = 1);
 }
 
 #endif
