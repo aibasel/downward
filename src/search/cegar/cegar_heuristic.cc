@@ -249,7 +249,7 @@ void CegarHeuristic::initialize() {
     print_statistics();
 
     if (!search) {
-        cout << "search=false -> stop" << endl;
+        cout << "search=false --> stop" << endl;
         exit_with(EXIT_UNSOLVED_INCOMPLETE);
     }
 }
@@ -264,7 +264,6 @@ void CegarHeuristic::print_statistics() {
          << get_peak_memory_in_kb() << " KB" << endl;
     cout << "CEGAR abstractions: " << abstractions.size() << "/" << avg_h_values.size() << endl;
     cout << "Total abstract states: " << num_states << endl;
-    // There will always be at least one abstraction.
     cout << "Init h: " << compute_heuristic(g_initial_state()) << endl;
     cout << "Average h: " << sum_avg_h / avg_h_values.size() << endl;
     cout << endl;

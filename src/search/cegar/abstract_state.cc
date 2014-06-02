@@ -28,6 +28,7 @@ AbstractState::AbstractState(string s)
     if (s.empty())
         return;
 
+    // TODO: Remove the following lines.
     // Construct state from string s of the form "<0={0,1}>".
     istringstream iss(s);
     char next;
@@ -274,6 +275,7 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
 }
 
 bool AbstractState::is_abstraction_of_goal() const {
+    // TODO: Move into abstraction class and use AbstractState goal object.
     assert(!g_goal.empty());
     for (int i = 0; i < g_goal.size(); ++i) {
         if (!values->test(g_goal[i].first, g_goal[i].second))

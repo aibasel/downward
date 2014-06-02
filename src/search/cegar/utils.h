@@ -44,7 +44,6 @@ void get_unmet_preconditions(const Operator &op, const State &state, Splits *spl
 void get_unmet_goal_conditions(const State &state, Splits *splits);
 
 bool goal_var(int var);
-bool test_cegar_goal(const State &s);
 
 struct hash_state_id {
     size_t operator()(const StateID &id) const {
