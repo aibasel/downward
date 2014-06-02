@@ -10,7 +10,7 @@ namespace cegar_heuristic {
 class AbstractState;
 
 class Values {
-friend class AbstractState;
+    friend class AbstractState;
 
 private:
     // Possible values of each variable in this state.
