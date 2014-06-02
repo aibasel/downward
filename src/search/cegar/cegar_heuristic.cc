@@ -39,7 +39,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 
     if (DEBUG)
         landmark_graph.dump();
-    if (options.get<bool>("write_dot_files")) {
+    if (options.get<bool>("dump_graphs")) {
         write_landmark_graph(landmark_graph);
         write_causal_graph();
     }
@@ -191,7 +191,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         int rem_tasks = num_abstractions - i;
         abstraction->set_max_states((max_states - num_states) / rem_tasks);
         abstraction->set_max_time(ceil((max_time - g_timer()) / rem_tasks));
-        abstraction->set_write_dot_files(options.get<bool>("write_dot_files"));
+        abstraction->set_dump_graphs(options.get<bool>("dump_graphs"));
         abstraction->set_use_astar(options.get<bool>("use_astar"));
         abstraction->set_use_negative_costs(options.get<bool>("negative_costs"));
 
@@ -342,7 +342,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>("negative_costs", "allow negative costs in cost-partitioning", "false");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
-    parser.add_option<bool>("write_dot_files", "write graph files for debugging", "false");
+    parser.add_option<bool>("dump_graphs", "write causal and landmark graphs", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
