@@ -318,7 +318,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         if (!states_to_splits[abs_state].empty())
             continue;
         if (abs_state == goal) {
-            if (test_cegar_goal(conc_state)) {
+            if (test_goal(conc_state)) {
                 // We found a valid concrete solution.
                 return true;
             } else {

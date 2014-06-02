@@ -22,9 +22,6 @@ using namespace std::tr1;
 
 namespace cegar_heuristic {
 bool DEBUG = false;
-typedef unordered_map<int, unordered_set<int> > Edges;
-
-static std::vector<int> CAUSAL_GRAPH_ORDERING_POS;
 
 bool is_not_marked(Operator &op) {
     return !op.is_marked();
@@ -99,23 +96,6 @@ void get_unmet_goal_conditions(const State &state, Splits *splits) {
             splits->push_back(make_pair(var, wanted));
         }
     }
-}
-
-bool goal_var(int var) {
-    for (int i = 0; i < g_goal.size(); i++) {
-        if (var == g_goal[i].first)
-            return true;
-    }
-    return false;
-}
-
-bool test_cegar_goal(const State &state) {
-    for (int i = 0; i < g_goal.size(); i++) {
-        if (state[g_goal[i].first] != g_goal[i].second) {
-            return false;
-        }
-    }
-    return true;
 }
 
 Fact get_fact(const LandmarkNode *node) {
