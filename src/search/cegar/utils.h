@@ -60,7 +60,7 @@ struct hash_fact {
 Fact get_fact(const LandmarkNode *node);
 
 void write_landmark_graph(const LandmarkGraph &graph);
-void write_causal_graph(const CausalGraph &causal_graph);
+void write_causal_graph();
 
 // Debugging.
 std::string to_string(int i);
