@@ -26,24 +26,6 @@ typedef unordered_map<int, unordered_set<int> > Edges;
 
 static std::vector<int> CAUSAL_GRAPH_ORDERING_POS;
 
-Operator create_op(const string desc) {
-    istringstream iss("begin_operator\n" + desc + "\nend_operator");
-    return Operator(iss, false);
-}
-
-Operator create_op(const string name, vector<string> prevail, vector<string> pre_post, int cost) {
-    ostringstream oss;
-    // Create operator description.
-    oss << name << endl << prevail.size() << endl;
-    for (int i = 0; i < prevail.size(); ++i)
-        oss << prevail[i] << endl;
-    oss << pre_post.size() << endl;
-    for (int i = 0; i < pre_post.size(); ++i)
-        oss << pre_post[i] << endl;
-    oss << cost;
-    return create_op(oss.str());
-}
-
 bool is_not_marked(Operator &op) {
     return !op.is_marked();
 }
