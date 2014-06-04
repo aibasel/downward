@@ -53,6 +53,15 @@ void no_memory_continue() {
     set_new_handler(global_out_of_memory_handler);
 }
 
+void reserve_memory_padding() {
+    assert(!cegar_memory_padding);
+    if (DEBUG)
+        cout << "Reserving " << MEMORY_PADDING_MB << " MB of memory padding." << endl;
+    cegar_memory_padding = new char[MEMORY_PADDING_MB * 1024 * 1024];
+    // TODO: Move into abstraction class.
+    global_out_of_memory_handler = set_new_handler(no_memory_continue);
+}
+
 Abstraction::Abstraction(const Task *t)
     : task(t),
       single(new AbstractState()),
@@ -72,13 +81,7 @@ Abstraction::Abstraction(const Task *t)
       dump_graphs(false),
       memory_released(false) {
     assert(!task->get_goal().empty());
-
-    assert(!cegar_memory_padding);
-    if (DEBUG)
-        cout << "Reserving " << MEMORY_PADDING_MB << " MB of memory padding." << endl;
-    cegar_memory_padding = new char[MEMORY_PADDING_MB * 1024 * 1024];
-    // TODO: Move into abstraction class.
-    global_out_of_memory_handler = set_new_handler(no_memory_continue);
+    reserve_memory_padding();
 
     split_tree.set_root(single);
     for (int i = 0; i < task->get_operators().size(); ++i) {
