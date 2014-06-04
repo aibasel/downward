@@ -15,7 +15,7 @@
 using namespace std;
 
 namespace cegar_heuristic {
-AbstractState::AbstractState(string s)
+AbstractState::AbstractState()
     : values(new Values()),
       distance(UNDEFINED),
       prev_solution_op(0),
@@ -23,40 +23,6 @@ AbstractState::AbstractState(string s)
       prev_solution_state(0),
       next_solution_state(0),
       node(0) {
-    assert(!g_variable_domain.empty());
-
-    if (s.empty())
-        return;
-
-    // TODO: Remove the following lines.
-    // Construct state from string s of the form "<0={0,1}>".
-    istringstream iss(s);
-    char next;
-    int current_var = UNDEFINED;
-    int current_val = UNDEFINED;
-    bool in_bracket = false;
-    while (!iss.eof()) {
-        // iss.peek() and iss.get() return strange chars at beginning and end
-        // of stream.
-        iss >> next;
-        if (next == '<' || next == '>' || next == '=' || next == ',') {
-            // skip.
-        } else if (next == '{') {
-            in_bracket = true;
-        } else if (next == '}') {
-            in_bracket = false;
-        } else if ((next >= '0') && (next <= '9')) {
-            // We can use iss.unget(), because next is a single char.
-            iss.unget();
-            if (in_bracket) {
-                iss >> current_val;
-                values->add(current_var, current_val);
-            } else {
-                iss >> current_var;
-                values->remove_all(current_var);
-            }
-        }
-    }
 }
 
 AbstractState::~AbstractState() {
