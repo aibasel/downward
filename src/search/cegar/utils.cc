@@ -23,6 +23,15 @@ using namespace std::tr1;
 namespace cegar_heuristic {
 bool DEBUG = false;
 
+// For values <= 50 MB the planner is often killed during the search.
+// Reserving 75 MB avoids this.
+static const int MEMORY_PADDING_MB = 75;
+
+static char *cegar_memory_padding = 0;
+
+// Save previous out-of-memory handler.
+static void (*global_out_of_memory_handler)(void) = 0;
+
 bool is_not_marked(Operator &op) {
     return !op.is_marked();
 }
@@ -168,6 +177,37 @@ void write_causal_graph() {
     }
     dotfile << "}" << endl;
     dotfile.close();
+}
+
+void continuing_out_of_memory_handler() {
+    assert(cegar_memory_padding);
+    delete[] cegar_memory_padding;
+    cegar_memory_padding = 0;
+    cout << "Failed to allocate memory for CEGAR abstraction. "
+         << "Released memory padding and will stop refinement now." << endl;
+    assert(global_out_of_memory_handler);
+    set_new_handler(global_out_of_memory_handler);
+}
+
+void reserve_memory_padding() {
+    assert(!cegar_memory_padding);
+    if (DEBUG)
+        cout << "Reserving " << MEMORY_PADDING_MB << " MB of memory padding." << endl;
+    cegar_memory_padding = new char[MEMORY_PADDING_MB * 1024 * 1024];
+    global_out_of_memory_handler = set_new_handler(continuing_out_of_memory_handler);
+}
+
+void release_memory_padding() {
+    if (cegar_memory_padding) {
+        delete[] cegar_memory_padding;
+        cegar_memory_padding = 0;
+    }
+    assert(global_out_of_memory_handler);
+    set_new_handler(global_out_of_memory_handler);
+}
+
+bool memory_padding_is_reserved() {
+    return cegar_memory_padding != 0;
 }
 
 string to_string(int i) {

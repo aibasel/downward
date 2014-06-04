@@ -61,6 +61,10 @@ Fact get_fact(const LandmarkNode *node);
 void write_landmark_graph(const LandmarkGraph &graph);
 void write_causal_graph();
 
+void reserve_memory_padding();
+void release_memory_padding();
+bool memory_padding_is_reserved();
+
 // Debugging.
 std::string to_string(int i);
 std::string to_string(Fact fact);
