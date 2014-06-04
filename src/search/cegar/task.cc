@@ -68,7 +68,6 @@ void Task::compute_possibly_before_facts(const Fact &last_fact, FactSet *reached
                 continue;
             // Add all facts that are achieved by an applicable operator.
             if (operator_applicable(op, *reached)) {
-                // TODO: Mark operator as applicable.
                 for (int i = 0; i < op.get_pre_post().size(); i++) {
                     const PrePost &pre_post = op.get_pre_post()[i];
                     reached->insert(Fact(pre_post.var, pre_post.post));

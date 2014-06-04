@@ -30,7 +30,6 @@ const int MAX_COST_VALUE = 100000000;
 typedef boost::dynamic_bitset<> Bitset;
 typedef std::pair<int, std::vector<int> > Split;
 typedef std::vector<Split> Splits;
-// TODO: Turn into struct.
 typedef std::pair<int, int> Fact;
 
 bool is_not_marked(Operator &op);
