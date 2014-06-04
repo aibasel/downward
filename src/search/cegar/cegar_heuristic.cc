@@ -278,8 +278,9 @@ int CegarHeuristic::compute_heuristic(const State &state) {
         Task &task = tasks[i];
 
         const int *buffer = 0;
-        // TODO: Use state buffer also for goal decomposition and adapt_task=false.
-        if (Decomposition(options.get_enum("decomposition")) == NONE) {
+        if (Decomposition(options.get_enum("decomposition")) == NONE ||
+            (Decomposition(options.get_enum("decomposition")) == GOALS &&
+             !options.get<bool>("adapt_task"))) {
             ABORT("Not implemented");
             // TODO: buffer = state.get_buffer();
         } else {
