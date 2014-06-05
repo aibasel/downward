@@ -36,7 +36,6 @@ private:
     void remove_unreachable_facts(const FactSet &reached_facts);
     void remove_unmarked_operators();
     void remove_inapplicable_operators(const FactSet reachable_facts);
-    void mark_relevant_operators(const Fact &fact);
 
     void setup_hadd() const;
 
@@ -54,7 +53,6 @@ public:
     const std::vector<Fact> &get_goal() const {return goal; }
     const std::vector<Operator> &get_operators() const {return operators; }
 
-    void remove_irrelevant_operators();
     void set_goal(const Fact &fact, bool adapt);
     void adapt_operator_costs(const std::vector<int> &remaining_costs);
     void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;

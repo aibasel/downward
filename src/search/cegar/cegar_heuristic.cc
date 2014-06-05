@@ -148,8 +148,6 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
 }
 
 void CegarHeuristic::install_task(Task &task) const {
-    if (options.get<bool>("relevance_analysis"))
-        task.remove_irrelevant_operators();
     task.adapt_operator_costs(remaining_costs);
     task.dump();
     task.install();
@@ -338,7 +336,6 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("max_abstractions", "max number of abstractions to build", "infinity");
     parser.add_option<bool>("adapt_task", "remove redundant operators and facts", "true");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
-    parser.add_option<bool>("relevance_analysis", "remove irrelevant operators", "false");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
     parser.add_option<bool>("negative_costs", "allow negative costs in cost-partitioning", "false");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
