@@ -130,7 +130,7 @@ void write_landmark_graph(const LandmarkGraph &graph) {
         cerr << "dot file for causal graph could not be opened" << endl;
         exit_with(EXIT_CRITICAL_ERROR);
     }
-    dotfile << "digraph landmark-graph {" << endl;
+    dotfile << "digraph landmarkgraph {" << endl;
 
 
     for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
@@ -143,16 +143,16 @@ void write_landmark_graph(const LandmarkGraph &graph) {
             Fact parent_fact = get_fact(parent_p);
             dotfile << "  \"" << get_node_name(parent_fact) << "\" -> "
                     << "\"" << get_node_name(node_fact) << "\";" << endl;
-            //if (g_initial_state()[parent_fact.first] == parent_fact.second)
-            //    dotfile << "\"" << get_node_name(parent_fact) << "\" [color=green];" << endl;
-            //if (g_initial_state()[node_fact.first] == node_fact.second)
-            //    dotfile << "\"" << get_node_name(node_fact) << "\" [color=green];" << endl;
+            // Mark initial state facts green.
+            if (g_initial_state()[parent_fact.first] == parent_fact.second)
+                dotfile << "  \"" << get_node_name(parent_fact) << "\" [color=green];" << endl;
+            if (g_initial_state()[node_fact.first] == node_fact.second)
+                dotfile << "  \"" << get_node_name(node_fact) << "\" [color=green];" << endl;
         }
     }
-    for (int var = 0; var < g_variable_domain.size(); var++) {
-    }
+    // Mark goal facts red.
     for (int i = 0; i < g_goal.size(); i++) {
-        dotfile << "\"" << get_node_name(g_goal[i]) << "\" [color=red];" << endl;
+        dotfile << "  \"" << get_node_name(g_goal[i]) << "\" [color=red];" << endl;
     }
     dotfile << "}" << endl;
     dotfile.close();
@@ -164,7 +164,7 @@ void write_causal_graph() {
         cerr << "dot file for causal graph could not be opened" << endl;
         exit_with(EXIT_CRITICAL_ERROR);
     }
-    dotfile << "digraph causal-graph {" << endl;
+    dotfile << "digraph causalgraph {" << endl;
     for (int var = 0; var < g_variable_domain.size(); ++var) {
         const vector<int> &successors = g_causal_graph->get_successors(var);
         for (int i = 0; i < successors.size(); ++i) {
