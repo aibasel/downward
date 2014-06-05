@@ -631,10 +631,6 @@ void Abstraction::print_statistics() {
 }
 
 void Abstraction::print_histograms() const {
-    //long double num_conc_states = 1;
-    //for (int var = 0; var < g_variable_domain.size(); ++var)
-    //    num_conc_states *= g_variable_domain[var];
-    //cout << "Num conc states: " << fixed << num_conc_states << scientific << endl;
     map<int, int> h_to_abs_states;
     map<int, double> h_to_rel_conc_states;
     for (AbstractStates::const_iterator it = states.begin(); it != states.end(); ++it) {
