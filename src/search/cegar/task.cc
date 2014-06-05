@@ -119,37 +119,6 @@ void Task::compute_facts_and_operators() {
     remove_unreachable_facts(reached_facts);
 }
 
-void Task::mark_relevant_operators(const Fact &fact) {
-    for (int i = 0; i < operators.size(); ++i) {
-        Operator &op = operators[i];
-        if (op.is_marked())
-            continue;
-        if (get_eff(op, fact.first) == fact.second) {
-            op.mark();
-            for (int j = 0; j < op.get_prevail().size(); ++j) {
-                const Prevail &prevail = op.get_prevail()[j];
-                mark_relevant_operators(Fact(prevail.var, prevail.prev));
-            }
-            for (int j = 0; j < op.get_pre_post().size(); ++j) {
-                const PrePost &pre_post = op.get_pre_post()[j];
-                if (pre_post.pre != UNDEFINED)
-                    mark_relevant_operators(Fact(pre_post.var, pre_post.pre));
-            }
-        }
-    }
-}
-
-void Task::remove_irrelevant_operators() {
-    if (goal.size() > 1)
-        return;
-    for (int i = 0; i < operators.size(); ++i)
-        operators[i].unmark();
-    assert(goal.size() == 1);
-    Fact &last_fact = goal[0];
-    mark_relevant_operators(last_fact);
-    remove_unmarked_operators();
-}
-
 void Task::set_goal(const Fact &fact, bool adapt) {
     goal.clear();
     goal.push_back(fact);

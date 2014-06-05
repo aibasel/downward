@@ -49,7 +49,6 @@ class CegarHeuristic : public Heuristic {
     LandmarkGraph get_landmark_graph() const;
     void get_prev_landmarks(Fact fact, std::tr1::unordered_map<int, std::tr1::unordered_set<int> > *groups) const;
 
-    void mark_relevant_operators(std::vector<Operator> &operators, Fact fact) const;
     void add_operators(Task &task);
 
     // Compute the possible-before-set of facts that can be reached in the
