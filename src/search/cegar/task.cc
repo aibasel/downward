@@ -208,7 +208,7 @@ void Task::move_fact(int var, int before, int after) {
     assert(0 <= after && after < task_index[var].size());
     for (int i = 0; i < operators.size(); ++i)
         operators[i].rename_fact(var, before, after);
-    // We never move a fact with more than one original indices. If we did, we
+    // We never move a fact with more than one original index. If we did, we
     // would have to use a vector here.
     orig_index[var][after] = orig_index[var][before];
     task_index[var][orig_index[var][before]] = after;

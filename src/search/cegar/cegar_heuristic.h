@@ -51,7 +51,7 @@ class CegarHeuristic : public Heuristic {
 
     void add_operators(Task &task);
 
-    // Compute the possible-before-set of facts that can be reached in the
+    // Compute the possibly-before-set of facts that can be reached in the
     // delete-relaxation before last_fact is reached the first time.
     void get_possibly_before_facts(const Fact last_fact, std::tr1::unordered_set<int> *reached) const;
 
