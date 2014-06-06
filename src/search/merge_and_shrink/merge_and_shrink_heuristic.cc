@@ -199,7 +199,7 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Merge-and-shrink heuristic", "");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "supported (but see note)");
+    parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");
