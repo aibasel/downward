@@ -183,6 +183,10 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             }
         }
         install_task(task);
+        if (decomposition != NONE) {
+            int goal_fact_hadd = task.get_hadd_value(facts[i].first, facts[i].second);
+            cout << "h^add(s*): " << goal_fact_hadd << endl;
+        }
 
         Abstraction *abstraction = new Abstraction(&task);
 
