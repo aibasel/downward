@@ -64,11 +64,6 @@ public:
 
     static Task get_original_task();
 
-    void reset_pointers() {
-        additive_heuristic = 0;
-        state_registry = 0;
-    }
-
     int get_hadd_value(int var, int value) const;
 
     void dump() const;

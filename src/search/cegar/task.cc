@@ -120,11 +120,12 @@ void Task::compute_facts_and_operators() {
 }
 
 void Task::set_goal(const Fact &fact, bool adapt) {
+    additive_heuristic = 0;
+    state_registry = 0;
     goal.clear();
     goal.push_back(fact);
     if (adapt)
         compute_facts_and_operators();
-    reset_pointers();
 }
 
 void Task::adapt_operator_costs(const vector<int> &remaining_costs) {
