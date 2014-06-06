@@ -168,7 +168,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
         Task task = original_task;
-        task.reset_pointers();
         if (decomposition != NONE) {
             bool combine_facts = (options.get<bool>("combine_facts") && decomposition == LANDMARKS);
             task.set_goal(facts[i], options.get<bool>("adapt_task") || combine_facts);
