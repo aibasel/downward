@@ -82,7 +82,7 @@ int FFHeuristic::compute_heuristic(const State &state) {
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("FF heuristic", "See also Synergy.");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "supported");
+    parser.document_language_support("conditional effects", "supported");
     parser.document_language_support(
         "axioms",
         "supported (in the sense that the planner won't complain -- "

@@ -32,7 +32,7 @@ int GoalCountHeuristic::compute_heuristic(const State &state) {
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Goal count heuristic", "");
     parser.document_language_support("action costs", "ignored by design");
-    parser.document_language_support("conditional_effects", "supported");
+    parser.document_language_support("conditional effects", "supported");
     parser.document_language_support("axioms", "supported");
     parser.document_property("admissible", "no");
     parser.document_property("consistent", "no");
