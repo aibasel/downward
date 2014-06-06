@@ -199,7 +199,7 @@ void AbstractState::add_arc(const Operator *op, AbstractState *other) {
     // increases the overall processing time. Out of 30 domains it made no
     // difference for 10 domains, 17 domains preferred unsorted arcs and in
     // 3 domains performance was better with sorted arcs.
-    // Inlining this method has no effect either.
+    // Inlining this method has no effect.
     assert(other != this);
     arcs_out.push_back(Arc(op, other));
     other->arcs_in.push_back(Arc(op, this));
@@ -235,13 +235,10 @@ bool AbstractState::is_abstraction_of(const State &conc_state) const {
 }
 
 bool AbstractState::is_abstraction_of(const AbstractState &other) const {
-    // Return true if all our possible value sets are supersets of the
-    // other's respective sets.
     return values->abstracts(*other.values);
 }
 
 bool AbstractState::is_abstraction_of_goal() const {
-    // TODO: Move into abstraction class and use AbstractState goal object.
     assert(!g_goal.empty());
     for (int i = 0; i < g_goal.size(); ++i) {
         if (!values->test(g_goal[i].first, g_goal[i].second))

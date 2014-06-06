@@ -40,6 +40,8 @@ private:
     bool test(int var, int value) const;
     int count(int var) const;
     bool domains_intersect(const Values &other, int var);
+    // Return true if all abstract domains are supersets of the
+    // other's respective domains.
     bool abstracts(const Values &other) const;
     void get_possible_splits(const Values &flaw, const State conc_state, Splits *splits) const;
 
