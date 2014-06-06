@@ -21,7 +21,7 @@ namespace cegar_heuristic {
 extern bool DEBUG;
 
 const int UNDEFINED = -1;
-// We cannot call the variable INFINITY, because that clashes with something in c++11.
+// The name INFINITY is reserved in C++11.
 const int INF = std::numeric_limits<int>::max();
 
 // See additive_heuristic.h.
@@ -41,8 +41,6 @@ int get_post(const Operator &op, int var);
 void get_unmet_preconditions(const Operator &op, const State &state, Splits *splits);
 
 void get_unmet_goal_conditions(const State &state, Splits *splits);
-
-bool goal_var(int var);
 
 struct hash_state_id {
     size_t operator()(const StateID &id) const {

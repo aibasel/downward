@@ -157,15 +157,14 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
             cout << "Using new goal state: " << goal->str() << endl;
     }
 
-    delete state;
-    state = 0;
-
     int num_states = get_num_states();
     if (num_states % STATES_LOG_STEP == 0)
         cout << "Abstract states: " << num_states << "/"
              << max_states << endl;
     if (dump_graphs)
         write_dot_file(num_states);
+
+    delete state;
 }
 
 void Abstraction::reset_distances_and_solution() const {
