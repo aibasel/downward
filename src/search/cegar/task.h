@@ -26,7 +26,6 @@ private:
     std::vector<std::vector<int> > orig_index;
     std::vector<std::vector<int> > task_index;
     mutable AdditiveHeuristic *additive_heuristic;
-    bool is_original_task;
 
     void move_fact(int var, int before, int after);
     void update_facts(int var, int num_values, const std::vector<int> &new_task_index);

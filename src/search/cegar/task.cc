@@ -22,8 +22,7 @@ Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> o
       original_operator_numbers(ops.size()),
       orig_index(domain.size()),
       task_index(domain.size()),
-      additive_heuristic(0),
-      is_original_task(false) {
+      additive_heuristic(0) {
     assert(state_registry);
     initial_state_buffer = g_initial_state_data;
     for (int var = 0; var < variable_domain.size(); ++var) {
@@ -124,7 +123,6 @@ void Task::set_goal(const Fact &fact, bool adapt) {
     goal.push_back(fact);
     if (adapt)
         compute_facts_and_operators();
-    is_original_task = false;
     reset_pointers();
 }
 
@@ -168,8 +166,6 @@ bool Task::translate_state(const State &state, int *translated) const {
 }
 
 void Task::install() {
-    if (!is_original_task)
-        assert(!additive_heuristic && "h^add can only be calculated for installed tasks");
     // By overriding g_initial_state buffer, we assign the new registry
     // a modified initial state.
     if (!state_registry) {
@@ -320,7 +316,6 @@ void Task::release_memory() {
 
 Task Task::get_original_task() {
     Task task(g_variable_domain, g_fact_names, g_operators, g_state_registry, g_goal);
-    task.is_original_task = true;
     task.setup_hadd();
     return task;
 }
