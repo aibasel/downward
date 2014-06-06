@@ -154,45 +154,6 @@ void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int>
         cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
-bool Task::translate_state(const State &state, int *translated) const {
-    for (int var = 0; var < variable_domain.size(); ++var) {
-        int value = task_index[var][state[var]];
-        if (value == UNDEFINED) {
-            return false;
-        } else {
-            translated[var] = value;
-        }
-    }
-    return true;
-}
-
-void Task::install() {
-    // The original task already has a registry.
-    if (!state_registry) {
-        // By overriding g_initial_state_data, we assign the new registry
-        // a modified initial state.
-        g_initial_state_data = initial_state_buffer;
-        state_registry = new StateRegistry();
-    }
-    g_state_registry = state_registry;
-
-    // Explicitly ensure that the initial state is set correctly.
-    const State &initial_state = g_state_registry->get_initial_state();
-    // Silence warning about unused variable.
-    (void)initial_state;
-    assert(g_state_registry->size() == 1);
-    for (int var = 0; var < variable_domain.size(); ++var) {
-        assert(initial_state[var] == initial_state_buffer[var]);
-    }
-
-    g_goal = goal;
-    g_variable_domain = variable_domain;
-    g_fact_names = fact_names;
-    g_operators = operators;
-    Values::initialize_static_members();
-    setup_hadd();
-}
-
 void Task::move_fact(int var, int before, int after) {
     if (DEBUG)
         cout << "Move fact " << var << ": " << before << " -> " << after << endl;
@@ -311,19 +272,6 @@ void Task::combine_facts(int var, unordered_set<int> &values) {
     fact_names[var][projected_value] = name.str();
 }
 
-void Task::release_memory() {
-    vector<Operator>().swap(operators);
-    assert(state_registry);
-    delete state_registry;
-    state_registry = 0;
-}
-
-Task Task::get_original_task() {
-    Task task(g_variable_domain, g_fact_names, g_operators, g_state_registry, g_goal);
-    task.setup_hadd();
-    return task;
-}
-
 void Task::setup_hadd() const {
     cout << "Start computing h^add values [t=" << g_timer << "] for ";
     dump_name();
@@ -352,6 +300,58 @@ void Task::setup_hadd() const {
 int Task::get_hadd_value(int var, int value) const {
     assert(additive_heuristic);
     return additive_heuristic->get_cost(var, value);
+}
+
+Task Task::get_original_task() {
+    Task task(g_variable_domain, g_fact_names, g_operators, g_state_registry, g_goal);
+    task.setup_hadd();
+    return task;
+}
+
+void Task::install() {
+    // The original task already has a registry.
+    if (!state_registry) {
+        // By overriding g_initial_state_data, we assign the new registry
+        // a modified initial state.
+        g_initial_state_data = initial_state_buffer;
+        state_registry = new StateRegistry();
+    }
+    g_state_registry = state_registry;
+
+    // Explicitly ensure that the initial state is set correctly.
+    const State &initial_state = g_state_registry->get_initial_state();
+    // Silence warning about unused variable.
+    (void)initial_state;
+    assert(g_state_registry->size() == 1);
+    for (int var = 0; var < variable_domain.size(); ++var) {
+        assert(initial_state[var] == initial_state_buffer[var]);
+    }
+
+    g_goal = goal;
+    g_variable_domain = variable_domain;
+    g_fact_names = fact_names;
+    g_operators = operators;
+    Values::initialize_static_members();
+    setup_hadd();
+}
+
+void Task::release_memory() {
+    vector<Operator>().swap(operators);
+    assert(state_registry);
+    delete state_registry;
+    state_registry = 0;
+}
+
+bool Task::translate_state(const State &state, int *translated) const {
+    for (int var = 0; var < variable_domain.size(); ++var) {
+        int value = task_index[var][state[var]];
+        if (value == UNDEFINED) {
+            return false;
+        } else {
+            translated[var] = value;
+        }
+    }
+    return true;
 }
 
 void Task::dump_facts() const {
