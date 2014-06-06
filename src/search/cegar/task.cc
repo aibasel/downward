@@ -3,6 +3,7 @@
 #include "values.h"
 #include "../timer.h"
 #include "../state_registry.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <set>
@@ -129,7 +130,7 @@ void Task::set_goal(const Fact &fact, bool adapt) {
 void Task::adapt_operator_costs(const vector<int> &remaining_costs) {
     if (operators.size() != original_operator_numbers.size()) {
         cout << "Updating original_operator_numbers not implemented." << endl;
-        exit(2);
+        exit_with(EXIT_CRITICAL_ERROR);
     }
     for (int i = 0; i < operators.size(); ++i)
         operators[i].set_cost(remaining_costs[original_operator_numbers[i]]);
