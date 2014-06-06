@@ -166,13 +166,15 @@ bool Task::translate_state(const State &state, int *translated) const {
 }
 
 void Task::install() {
-    // By overriding g_initial_state buffer, we assign the new registry
-    // a modified initial state.
+    // The original task already has a registry.
     if (!state_registry) {
+        // By overriding g_initial_state_data, we assign the new registry
+        // a modified initial state.
         g_initial_state_data = initial_state_buffer;
         state_registry = new StateRegistry();
     }
     g_state_registry = state_registry;
+
     // Explicitly ensure that the initial state is set correctly.
     const State &initial_state = g_state_registry->get_initial_state();
     // Silence warning about unused variable.
@@ -181,6 +183,7 @@ void Task::install() {
     for (int var = 0; var < variable_domain.size(); ++var) {
         assert(initial_state[var] == initial_state_buffer[var]);
     }
+
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
