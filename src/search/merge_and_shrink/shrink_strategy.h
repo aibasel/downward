@@ -9,8 +9,6 @@ class Abstraction;
 class OptionParser;
 class Options;
 
-typedef int AbstractStateRef;
-
 class ShrinkStrategy {
     const int max_states;
     const int max_states_before_merge;
@@ -24,6 +22,7 @@ protected:
        This is used to remove unreachable and irrelevant states.
     */
 
+    typedef int AbstractStateRef;
     typedef __gnu_cxx::slist<AbstractStateRef> EquivalenceClass;
     typedef std::vector<EquivalenceClass> EquivalenceRelation;
 public:

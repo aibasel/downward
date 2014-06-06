@@ -8,6 +8,7 @@
 #include "../globals.h"
 #include "../priority_queue.h"
 #include "../timer.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
