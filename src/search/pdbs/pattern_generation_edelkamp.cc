@@ -286,7 +286,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "In //Proceedings of the 4th Workshop on Model Checking and Artificial Intelligence "
         "(!MoChArt 2006)//, pp. 35-50, 2007.");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");

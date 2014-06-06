@@ -278,7 +278,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "the value for one subset S in A is the sum of the heuristic values for "
         "all patterns in S for a given state.");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");
