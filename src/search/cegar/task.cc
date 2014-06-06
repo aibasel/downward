@@ -190,6 +190,7 @@ void Task::install() {
     g_fact_names = fact_names;
     g_operators = operators;
     Values::initialize_static_members();
+    setup_hadd();
 }
 
 void Task::move_fact(int var, int before, int after) {
@@ -325,7 +326,6 @@ Task Task::get_original_task() {
 }
 
 void Task::setup_hadd() const {
-    assert(!additive_heuristic);
     cout << "Start computing h^add values [t=" << g_timer << "] for ";
     dump_name();
     Options opts;
@@ -351,8 +351,7 @@ void Task::setup_hadd() const {
 }
 
 int Task::get_hadd_value(int var, int value) const {
-    if (!additive_heuristic)
-        setup_hadd();
+    assert(additive_heuristic);
     return additive_heuristic->get_cost(var, value);
 }
 
