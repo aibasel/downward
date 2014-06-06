@@ -341,6 +341,8 @@ void Task::release_memory() {
     assert(state_registry);
     delete state_registry;
     state_registry = 0;
+    delete additive_heuristic;
+    additive_heuristic = 0;
 }
 
 bool Task::translate_state(const State &state, int *translated) const {
