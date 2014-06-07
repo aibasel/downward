@@ -241,6 +241,7 @@ void read_axioms(istream &in) {
 }
 
 void read_everything(istream &in) {
+    cout << "reading input... [t=" << g_timer << "]" << endl;
     read_and_verify_version(in);
     read_metric(in);
     read_variables(in);
@@ -262,20 +263,29 @@ void read_everything(istream &in) {
     DomainTransitionGraph::read_all(in);
     g_legacy_causal_graph = new LegacyCausalGraph(in);
 
+    cout << "done reading input! [t=" << g_timer << "]" << endl;
+
     // NOTE: causal graph is computed from the problem specification,
     // so must be built after the problem has been read in.
-    g_causal_graph = new CausalGraph;
 
+    cout << "building causal graph..." << flush;
+    g_causal_graph = new CausalGraph;
+    cout << "done! [t=" << g_timer << "]" << endl;
+
+    cout << "packing state variables..." << flush;
     assert(!g_variable_domain.empty());
     g_state_packer = new IntPacker(g_variable_domain);
     cout << "Variables: " << g_variable_domain.size() << endl;
     cout << "Bytes per state: "
          << g_state_packer->get_num_bins() *
             g_state_packer->get_bin_size_in_bytes() << endl;
+    cout << "done! [t=" << g_timer << "]" << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
     g_state_registry = new StateRegistry;
+
+    cout << "done initalizing global data [t=" << g_timer << "]" << endl;
 }
 
 void dump_everything() {
