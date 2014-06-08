@@ -26,6 +26,7 @@ LandmarkGraph::LandmarkGraph(const Options &opts)
     conjunctive_landmarks = opts.get<bool>("conjunctive_landmarks");
     no_orders = opts.get<bool>("no_orders");
     lm_cost_type = static_cast<OperatorCost>(opts.get_enum("lm_cost_type"));
+    conditional_effects_supported = opts.get<bool>("supports_conditional_effects");
     generate_operators_lookups();
 }
 

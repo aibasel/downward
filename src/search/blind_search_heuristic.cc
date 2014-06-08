@@ -38,7 +38,7 @@ static Heuristic *_parse(OptionParser &parser) {
                              "non-goal states, "
                              "0 for goal states");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "supported");
+    parser.document_language_support("conditional effects", "supported");
     parser.document_language_support("axioms", "supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");

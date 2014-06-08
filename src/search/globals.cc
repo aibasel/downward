@@ -241,6 +241,7 @@ void read_axioms(istream &in) {
 }
 
 void read_everything(istream &in) {
+    cout << "reading input... [t=" << g_timer << "]" << endl;
     read_and_verify_version(in);
     read_metric(in);
     read_variables(in);
@@ -262,20 +263,29 @@ void read_everything(istream &in) {
     DomainTransitionGraph::read_all(in);
     g_legacy_causal_graph = new LegacyCausalGraph(in);
 
+    cout << "done reading input! [t=" << g_timer << "]" << endl;
+
     // NOTE: causal graph is computed from the problem specification,
     // so must be built after the problem has been read in.
-    g_causal_graph = new CausalGraph;
 
+    cout << "building causal graph..." << flush;
+    g_causal_graph = new CausalGraph;
+    cout << "done! [t=" << g_timer << "]" << endl;
+
+    cout << "packing state variables..." << flush;
     assert(!g_variable_domain.empty());
     g_state_packer = new IntPacker(g_variable_domain);
     cout << "Variables: " << g_variable_domain.size() << endl;
     cout << "Bytes per state: "
          << g_state_packer->get_num_bins() *
             g_state_packer->get_bin_size_in_bytes() << endl;
+    cout << "done! [t=" << g_timer << "]" << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
     g_state_registry = new StateRegistry;
+
+    cout << "done initalizing global data [t=" << g_timer << "]" << endl;
 }
 
 void dump_everything() {
@@ -313,7 +323,7 @@ void verify_no_axioms() {
     }
 }
 
-int get_first_cond_effects_op_id() {
+int get_first_conditional_effects_op_id() {
     for (int i = 0; i < g_operators.size(); i++) {
         const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
         for (int j = 0; j < pre_post.size(); j++) {
@@ -335,12 +345,12 @@ int get_first_cond_effects_op_id() {
     return -1;
 }
 
-bool has_cond_effects() {
-    return get_first_cond_effects_op_id() != -1;
+bool has_conditional_effects() {
+    return get_first_conditional_effects_op_id() != -1;
 }
 
-void verify_no_cond_effects() {
-    int op_id = get_first_cond_effects_op_id();
+void verify_no_conditional_effects() {
+    int op_id = get_first_conditional_effects_op_id();
     if (op_id != -1) {
             cerr << "Heuristic does not support conditional effects "
                  << "(operator " << g_operators[op_id].get_name() << ")" << endl
@@ -349,9 +359,9 @@ void verify_no_cond_effects() {
     }
 }
 
-void verify_no_axioms_no_cond_effects() {
+void verify_no_axioms_no_conditional_effects() {
     verify_no_axioms();
-    verify_no_cond_effects();
+    verify_no_conditional_effects();
 }
 
 bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
