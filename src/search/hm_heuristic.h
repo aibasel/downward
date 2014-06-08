@@ -25,6 +25,7 @@ class HMHeuristic : public Heuristic {
 public:
     HMHeuristic(const Options &opts);
     virtual ~HMHeuristic();
+    virtual bool dead_ends_are_reliable() const;
 protected:
     virtual int compute_heuristic(const State &state);
     virtual void initialize();

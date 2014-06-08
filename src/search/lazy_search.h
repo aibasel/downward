@@ -22,7 +22,8 @@ protected:
 
     // Search Behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
-    enum {original, pref_first, shuffled} succ_mode;
+    bool randomize_successors;
+    bool preferred_successors_first;
 
     std::vector<Heuristic *> heuristics;
     std::vector<Heuristic *> preferred_operator_heuristics;
