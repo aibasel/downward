@@ -137,23 +137,26 @@ ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
 
 ifeq ($(OS), auto)
 UNAME := $(shell uname)
-UNAME_O := $(shell uname -o)
 ifeq ($(UNAME), Darwin)
 OS=osx
-endif
+else
 ifeq ($(UNAME), Linux)
 OS=linux
-endif
+else
+UNAME_O := $(shell uname -o)
 ifeq ($(UNAME_O), Cygwin)
 ## For now, we treat Linux and Cygwin equally in this Makefile, so we
 ## just call Cygwin "linux".
 OS=linux
-endif
+else
 ifeq ($(OS), auto)
 $(warning OS detection failed -- setting to Linux and hoping for the best!)
 OS=linux
-endif
-endif
+endif # OS == auto
+endif # OS == Cygwin
+endif # OS == Linux
+endif # OS == Darwin
+endif # OS == auto (top)
 
 ifeq ($(OS), osx)
 ## Disable static linking on OS X.
@@ -185,6 +188,10 @@ DEPEND = g++ -MM
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
 CCOPT = -Iext
+# if you have Mac OS, you may be getting tree.hh from /opt/local/include
+ifeq ($(OS), osx)
+  CCOPT += -I/opt/local/include/
+endif
 CCOPT += -g
 CCOPT += -m32
 CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
@@ -194,16 +201,17 @@ CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 ## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
 ## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
 ## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
-
+ifeq ($(OS), linux) # workarounds only valid for Linux...
 HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
 HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
 
 ifdef HAVE_GCC_4_4
-    CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
 endif
 
 ifdef HAVE_GCC_4_5
-    CCOPT += -I/usr/include/c++/4.5/i686-linux-gnu
+CCOPT += -I/usr/include/c++/4.5/i686-linux-gnu
+endif
 endif
 
 LINKOPT  = -g
@@ -363,7 +371,7 @@ distclean: clean
 Makefile.depend: $(SOURCES) $(HEADERS)
 	rm -f Makefile.temp
 	for source in $(SOURCES) ; do \
-	    $(DEPEND) $$source > Makefile.temp0; \
+	    $(DEPEND) $(CCOPT) $$source > Makefile.temp0; \
 	    objfile=$${source%%.cc}.o; \
 	    sed -i -e "s@^[^:]*:@$$objfile:@" Makefile.temp0; \
 	    cat Makefile.temp0 >> Makefile.temp; \
