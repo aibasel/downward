@@ -89,7 +89,7 @@ CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 ## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
 ## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
 ## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
-
+ifeq ($(OS), linux) # workarounds only valid for Linux...
 HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
 HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
 
@@ -99,6 +99,7 @@ endif
 
 ifdef HAVE_GCC_4_5
     CCOPT += -I/usr/include/c++/4.5/i686-linux-gnu
+endif
 endif
 
 LINKOPT  =
