@@ -84,7 +84,12 @@ DEPEND = g++ -MM
 CXXFLAGS  =
 ifeq ($(BITWIDTH), 32)
 CXXFLAGS += -m32
+else ifeq ($(BITWIDTH), 64)
+CXXFLAGS += -m64
+else ifneq ($(BITWIDTH), native)
+$(error Bad value for BITWIDTH)
 endif
+
 CXXFLAGS += -g
 CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 

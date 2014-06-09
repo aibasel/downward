@@ -140,26 +140,25 @@ ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
 
 ifeq ($(OS), auto)
 UNAME := $(shell uname)
+
 ifeq ($(UNAME), Darwin)
 OS=osx
-else
-ifeq ($(UNAME), Linux)
+else ifeq ($(UNAME), Linux)
 OS=linux
 else
 UNAME_O := $(shell uname -o)
+endif 
+
 ifeq ($(UNAME_O), Cygwin)
 ## For now, we treat Linux and Cygwin equally in this Makefile, so we
 ## just call Cygwin "linux".
 OS=linux
-else
-ifeq ($(OS), auto)
+else ifeq ($(OS), auto)
 $(warning OS detection failed -- setting to Linux and hoping for the best!)
 OS=linux
+endif
+
 endif # OS == auto
-endif # OS == Cygwin
-endif # OS == Linux
-endif # OS == Darwin
-endif # OS == auto (top)
 
 ifeq ($(OS), osx)
 ## Disable static linking on OS X.
@@ -196,9 +195,15 @@ ifeq ($(OS), osx)
   CXXFLAGS += -I/opt/local/include/
 endif
 CXXFLAGS += -g
+
 ifeq ($(BITWIDTH), 32)
 CXXFLAGS += -m32
+else ifeq ($(BITWIDTH), 64)
+CXXFLAGS += -m64
+else ifneq ($(BITWIDTH), native)
+$(error Bad value for BITWIDTH)
 endif
+
 CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 
 ## The following lines contain workarounds for bugs when
@@ -222,6 +227,8 @@ endif
 LDFLAGS  = -g
 ifeq ($(BITWIDTH), 32)
 LDFLAGS += -m32
+else ifeq ($(BITWIDTH), 64)
+LDFLAGS += -m64
 endif
 LDFLAGS +=
 
