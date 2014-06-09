@@ -1,3 +1,6 @@
+# By default, build in 32-bit width
+BITWIDTH ?= 32
+
 ## Set USE_LP to 1 to enable linear programming stuff.
 USE_LP=0
 
@@ -180,21 +183,23 @@ TARGET_DEBUG    = $(TARGET)$(TARGET_SUFFIX_DEBUG)
 OBJECTS_PROFILE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_PROFILE).o)
 TARGET_PROFILE  = $(TARGET)$(TARGET_SUFFIX_PROFILE)
 
-CC     = g++
+CXX     = g++
 DEPEND = g++ -MM
 
-## CCOPT, LINKOPT, POSTLINKOPT are options for compiler and linker
+## CXXFLAGS, LDFLAGS, POSTLINKOPT are options for compiler and linker
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
-CCOPT = -Iext
+CXXFLAGS = -Iext
 # if you have Mac OS, you may be getting tree.hh from /opt/local/include
 ifeq ($(OS), osx)
-  CCOPT += -I/opt/local/include/
+  CXXFLAGS += -I/opt/local/include/
 endif
-CCOPT += -g
-CCOPT += -m32
-CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
+CXXFLAGS += -g
+ifeq ($(BITWIDTH), 32)
+CXXFLAGS += -m32
+endif
+CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 
 ## The following lines contain workarounds for bugs when
 ## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
@@ -206,17 +211,19 @@ HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
 HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
 
 ifdef HAVE_GCC_4_4
-CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+CXXFLAGS += -I/usr/include/c++/4.4/i686-linux-gnu
 endif
 
 ifdef HAVE_GCC_4_5
-CCOPT += -I/usr/include/c++/4.5/i686-linux-gnu
+CXXFLAGS += -I/usr/include/c++/4.5/i686-linux-gnu
 endif
 endif
 
-LINKOPT  = -g
-LINKOPT += -m32
-LINKOPT +=
+LDFLAGS  = -g
+ifeq ($(BITWIDTH), 32)
+LDFLAGS += -m32
+endif
+LDFLAGS +=
 
 POSTLINKOPT =
 
@@ -228,20 +235,20 @@ POSTLINKOPT =
 ## NOTE: This precludes some uses of exceptions.
 ##        For details, see man gcc on -static-libgcc.
 
-CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
-CCOPT_DEBUG    = -O3
-CCOPT_PROFILE  = -O3 -pg
+CXXFLAGS_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
+CXXFLAGS_DEBUG    = -O3
+CXXFLAGS_PROFILE  = -O3 -pg
 
-LINKOPT_RELEASE =
-LINKOPT_DEBUG    =
-LINKOPT_PROFILE  = -pg
+LDFLAGS_RELEASE =
+LDFLAGS_DEBUG    =
+LDFLAGS_PROFILE  = -pg
 
 POSTLINKOPT_RELEASE =
 POSTLINKOPT_DEBUG   =
 POSTLINKOPT_PROFILE =
 
 ifeq ($(LINK_RELEASE_STATICALLY), 1)
-LINKOPT_RELEASE += -static -static-libgcc
+LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
 ifeq ($(OS), linux)
@@ -291,18 +298,18 @@ COIN_LIBS = OsiClp Clp CoinUtils Osi
 ## afterwards (unless in release mode with static linking enabled). See
 ## http://ubuntuforums.org/showthread.php?t=491455
 
-COIN_CCOPT = -I$(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
+COIN_CXXFLAGS = -I$(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
 ifeq ($(OS), osx)
-COIN_LINKOPT = -L$(COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
+COIN_LDFLAGS = -L$(COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
 else
-COIN_LINKOPT = -L$(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+COIN_LDFLAGS = -L$(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
 endif
 
-CCOPT += $(COIN_CCOPT)
+CXXFLAGS += $(COIN_CXXFLAGS)
 
-POSTLINKOPT_RELEASE += $(COIN_LINKOPT)
-POSTLINKOPT_DEBUG += $(COIN_LINKOPT)
-POSTLINKOPT_PROFILE += $(COIN_LINKOPT)
+POSTLINKOPT_RELEASE += $(COIN_LDFLAGS)
+POSTLINKOPT_DEBUG += $(COIN_LDFLAGS)
+POSTLINKOPT_PROFILE += $(COIN_LDFLAGS)
 
 ifeq ($(OS), linux)
 ifeq ($(LINK_RELEASE_STATICALLY), 0)
@@ -321,33 +328,33 @@ all: release debug profile
 release: $(TARGET_RELEASE)
 
 $(TARGET_RELEASE): $(OBJECTS_RELEASE)
-	$(CC) $(LINKOPT) $(LINKOPT_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
 
 $(OBJECTS_RELEASE): .obj/%$(OBJECT_SUFFIX_RELEASE).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_RELEASE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_RELEASE) -c $< -o $@
 
 ## Build rules for the debug target follow.
 
 debug: $(TARGET_DEBUG)
 
 $(TARGET_DEBUG): $(OBJECTS_DEBUG)
-	$(CC) $(LINKOPT) $(LINKOPT_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
 
 $(OBJECTS_DEBUG): .obj/%$(OBJECT_SUFFIX_DEBUG).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_DEBUG) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DEBUG) -c $< -o $@
 
 ## Build rules for the profile target follow.
 
 profile: $(TARGET_PROFILE)
 
 $(TARGET_PROFILE): $(OBJECTS_PROFILE)
-	$(CC) $(LINKOPT) $(LINKOPT_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
 
 $(OBJECTS_PROFILE): .obj/%$(OBJECT_SUFFIX_PROFILE).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_PROFILE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_PROFILE) -c $< -o $@
 
 ## Additional targets follow.
 
@@ -371,7 +378,7 @@ distclean: clean
 Makefile.depend: $(SOURCES) $(HEADERS)
 	rm -f Makefile.temp
 	for source in $(SOURCES) ; do \
-	    $(DEPEND) $(CCOPT) $$source > Makefile.temp0; \
+	    $(DEPEND) $(CXXFLAGS) $$source > Makefile.temp0; \
 	    objfile=$${source%%.cc}.o; \
 	    sed -i -e "s@^[^:]*:@$$objfile:@" Makefile.temp0; \
 	    cat Makefile.temp0 >> Makefile.temp; \
