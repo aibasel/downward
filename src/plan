@@ -30,7 +30,7 @@ fi
 
 TIME="$TIME --output=elapsed.time --format=%S\n%U\n"
 
-if [[ "$#" < 2 ]]; then
+if [[ "$#" -lt 2 ]]; then
     usage
 fi
 
