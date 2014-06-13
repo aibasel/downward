@@ -15,8 +15,9 @@
 using namespace std;
 
 namespace cegar_heuristic {
-AbstractState::AbstractState()
-    : values(new Values()),
+AbstractState::AbstractState(const Task *task_)
+    : task(task_),
+      values(new Values()),
       distance(UNDEFINED),
       prev_solution_op(0),
       next_solution_op(0),

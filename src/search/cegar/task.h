@@ -65,6 +65,7 @@ public:
     static Task get_original_task();
 
     int get_hadd_value(int var, int value) const;
+    int get_num_variables() const {return variable_domain.size(); }
 
     void dump() const;
 };
