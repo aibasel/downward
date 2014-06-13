@@ -1,5 +1,6 @@
 #include "abstract_state.h"
 
+#include "task.h"
 #include "values.h"
 
 #include "../globals.h"
@@ -228,7 +229,7 @@ void AbstractState::remove_prev_arc(const Operator *op, AbstractState *other) {
 
 bool AbstractState::is_abstraction_of(const State &conc_state) const {
     // Return true if every concrete value is contained in the possible values.
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
+    for (int var = 0; var < task->get_num_vars(); ++var) {
         if (!values->test(var, conc_state[var]))
             return false;
     }
@@ -250,10 +251,10 @@ bool AbstractState::is_abstraction_of_goal() const {
 
 double AbstractState::get_rel_conc_states() const {
     double fraction = 1.0;
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
+    for (int var = 0; var < task->get_num_vars(); ++var) {
         const double domain_size = values->count(var);
         assert(domain_size >= 1);
-        fraction *= domain_size / g_variable_domain[var];
+        fraction *= domain_size / task->get_num_values(var);
     }
     assert(fraction <= 1.0);
     assert(fraction > 0.0);
