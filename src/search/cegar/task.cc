@@ -337,7 +337,7 @@ void Task::install() {
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
     g_operators = operators;
-    Values::initialize_static_members();
+    Values::initialize_static_members(variable_domain);
     setup_hadd();
 }
 

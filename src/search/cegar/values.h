@@ -18,6 +18,7 @@ private:
     // 11 10 001 -> var0 = {0}, var1 = {1}, var2 = {0,1}
     Bitset values;
 
+    static std::vector<int> variable_domain;
     // Total number of facts and size of the values bitset.
     static int facts;
     // The first bit for var is at borders[var].
@@ -48,7 +49,7 @@ private:
     std::string str() const;
 
 public:
-    static void initialize_static_members();
+    static void initialize_static_members(const std::vector<int> &variable_domain_);
 };
 }
 
