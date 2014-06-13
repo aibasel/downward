@@ -5,6 +5,7 @@
 using namespace std;
 
 namespace cegar_heuristic {
+vector<int> Values::variable_domain;
 int Values::facts = -1;
 vector<int> Values::borders;
 vector<Bitset> Values::masks;
@@ -17,19 +18,20 @@ Values::Values() {
     values.set();
 }
 
-void Values::initialize_static_members() {
+void Values::initialize_static_members(const vector<int> &variable_domain_) {
+    variable_domain = variable_domain_;
     masks.clear();
     inverse_masks.clear();
     borders.clear();
     facts = 0;
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
+    for (int var = 0; var < variable_domain.size(); ++var) {
         borders.push_back(facts);
-        facts += g_variable_domain[var];
+        facts += variable_domain[var];
     }
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
+    for (int var = 0; var < variable_domain.size(); ++var) {
         // -----0000 -> --1110000 --> 001110000
         Bitset mask(borders[var]);
-        mask.resize(borders[var] + g_variable_domain[var], true);
+        mask.resize(borders[var] + variable_domain[var], true);
         mask.resize(facts, false);
         masks.push_back(mask);
         inverse_masks.push_back(~mask);
@@ -66,7 +68,7 @@ int Values::count(int var) const {
     // Profiling showed that an explicit loop is faster than doing:
     // (values & masks[var]).count(); (even if using a temp bitset).
     int num_values = 0;
-    for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
+    for (int pos = borders[var]; pos < borders[var] + variable_domain[var]; ++pos) {
         num_values += values.test(pos);
     }
     return num_values;
@@ -96,7 +98,7 @@ void Values::get_possible_splits(const Values &flaw, const State conc_state,
     for (int var = 0; var < borders.size(); ++var) {
         if (!intersection.test(pos(var, conc_state[var]))) {
             vector<int> wanted;
-            for (int pos = borders[var]; pos < borders[var] + g_variable_domain[var]; ++pos) {
+            for (int pos = borders[var]; pos < borders[var] + variable_domain[var]; ++pos) {
                 if (intersection.test(pos)) {
                     wanted.push_back(pos - borders[var]);
                 }
@@ -111,7 +113,7 @@ string Values::str() const {
     ostringstream oss;
     string sep = "";
     for (int var = 0; var < borders.size(); ++var) {
-        int next_border = borders[var] + g_variable_domain[var];
+        int next_border = borders[var] + variable_domain[var];
         vector<int> facts;
         int pos = (var == 0) ? values.find_first() : values.find_next(borders[var] - 1);
         while (pos != Bitset::npos && pos < next_border) {
@@ -119,7 +121,7 @@ string Values::str() const {
             pos = values.find_next(pos);
         }
         assert(!facts.empty());
-        if (facts.size() < g_variable_domain[var]) {
+        if (facts.size() < variable_domain[var]) {
             oss << sep << var << "={";
             sep = ",";
             string value_sep = "";
