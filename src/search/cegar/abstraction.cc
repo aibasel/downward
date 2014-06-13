@@ -32,9 +32,9 @@ using namespace std::tr1;
 namespace cegar_heuristic {
 typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
-Abstraction::Abstraction(const Task *t)
-    : task(t),
-      single(new AbstractState()),
+Abstraction::Abstraction(const Task *task_)
+    : task(task_),
+      single(new AbstractState(task_)),
       init(single),
       goal(single),
       open(new AdaptiveQueue<AbstractState *>()),
@@ -123,8 +123,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     if (DEBUG)
         cout << "Refine " << state->str() << " for "
              << var << "=" << to_string(wanted) << endl;
-    AbstractState *v1 = new AbstractState();
-    AbstractState *v2 = new AbstractState();
+    AbstractState *v1 = new AbstractState(task);
+    AbstractState *v2 = new AbstractState(task);
     state->split(var, wanted, v1, v2);
 
     states.erase(state);
@@ -329,7 +329,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     if (DEBUG)
                         cout << "      Paths deviate." << endl;
                     ++deviations;
-                    AbstractState desired_abs_state;
+                    AbstractState desired_abs_state(task);
                     next_abs->regress(*op, &desired_abs_state);
                     abs_state->get_possible_splits(desired_abs_state, conc_state,
                                                    &splits);

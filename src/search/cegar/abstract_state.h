@@ -10,6 +10,7 @@
 
 namespace cegar_heuristic {
 class AbstractState;
+class Task;
 class Values;
 typedef std::pair<const Operator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
@@ -20,6 +21,8 @@ private:
     // Forbid copy constructor and copy assignment operator.
     AbstractState(const AbstractState &);
     AbstractState &operator=(const AbstractState &);
+
+    const Task *task;
 
     // Abstract domains for each variable.
     Values *values;
@@ -50,7 +53,7 @@ private:
     bool domains_intersect(const AbstractState *other, int var);
 
 public:
-    AbstractState();
+    explicit AbstractState(const Task *task_);
     ~AbstractState();
 
     // Let "result" be the set of states in which applying "op" leads to this state.
