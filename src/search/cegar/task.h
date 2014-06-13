@@ -17,7 +17,7 @@ typedef std::tr1::unordered_set<Fact, hash_fact> FactSet;
 class Task {
 private:
     StateRegistry *state_registry;
-    std::vector<int> initial_state_buffer;
+    std::vector<int> initial_state_data;
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
     std::vector<std::vector<std::string> > fact_names;
