@@ -290,7 +290,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 if (DEBUG)
                     cout << "      Goal test failed." << endl;
                 unmet_goals++;
-                get_unmet_goal_conditions(conc_state, &states_to_splits[abs_state]);
+                get_unmet_goals(task->get_goals(), conc_state, &states_to_splits[abs_state]);
                 continue;
             }
         }

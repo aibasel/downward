@@ -40,7 +40,7 @@ int get_post(const Operator &op, int var);
 
 void get_unmet_preconditions(const Operator &op, const State &state, Splits *splits);
 
-void get_unmet_goal_conditions(const State &state, Splits *splits);
+void get_unmet_goals(const std::vector<Fact> &goals, const State &state, Splits *splits);
 
 struct hash_state_id {
     size_t operator()(const StateID &id) const {
