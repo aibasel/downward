@@ -89,7 +89,7 @@ void Abstraction::build() {
             valid_conc_solution = false;
             break;
         }
-        valid_conc_solution = check_and_break_solution(g_initial_state(), init);
+        valid_conc_solution = check_and_break_solution(task->get_initial_state(), init);
         if (valid_conc_solution)
             break;
     }
@@ -135,8 +135,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     // Since the search is always started from the abstract
     // initial state, v2 is never "init" and v1 is never "goal".
     if (state == init) {
-        assert(v1->is_abstraction_of(g_initial_state()));
-        assert(!v2->is_abstraction_of(g_initial_state()));
+        assert(v1->is_abstraction_of(task->get_initial_state()));
+        assert(!v2->is_abstraction_of(task->get_initial_state()));
         init = v1;
         if (DEBUG)
             cout << "Using new init state: " << init->str() << endl;
@@ -395,7 +395,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         double min_refinement = 0.0;
         double max_refinement = -1.1;
         for (int i = 0; i < splits.size(); ++i) {
-            double all_values = g_variable_domain[splits[i].first];
+            double all_values = task->get_num_values(splits[i].first);
             double rest = state.count(splits[i].first);
             assert(all_values >= 2);
             assert(rest >= 2);

@@ -68,6 +68,7 @@ public:
     int get_num_vars() const {return variable_domain.size(); }
     int get_num_values(int var) const {return variable_domain[var]; }
     const std::vector<Fact> &get_goals() const {return goal; }
+    const State &get_initial_state() const;
 
     void dump() const;
 };
