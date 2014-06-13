@@ -15,7 +15,7 @@ namespace cegar_heuristic {
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> ops,
            StateRegistry *registry, vector<Fact> goal_facts)
     : state_registry(registry),
-      initial_state_buffer(g_variable_domain.size()),
+      initial_state_buffer(g_initial_state_data),
       goal(goal_facts),
       variable_domain(domain),
       fact_names(names),
@@ -24,8 +24,6 @@ Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> o
       orig_index(domain.size()),
       task_index(domain.size()),
       additive_heuristic(0) {
-    assert(state_registry);
-    initial_state_buffer = g_initial_state_data;
     for (int var = 0; var < variable_domain.size(); ++var) {
         orig_index[var].resize(variable_domain[var]);
         task_index[var].resize(variable_domain[var]);
