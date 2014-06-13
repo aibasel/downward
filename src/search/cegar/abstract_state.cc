@@ -241,9 +241,10 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
 }
 
 bool AbstractState::is_abstraction_of_goal() const {
-    assert(!g_goal.empty());
-    for (int i = 0; i < g_goal.size(); ++i) {
-        if (!values->test(g_goal[i].first, g_goal[i].second))
+    const vector<Fact> &goals = task->get_goals();
+    assert(!goals.empty());
+    for (int i = 0; i < goals.size(); ++i) {
+        if (!values->test(goals[i].first, goals[i].second))
             return false;
     }
     return true;
