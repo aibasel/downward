@@ -132,27 +132,19 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     states.insert(v2);
     ++num_states;
 
-    // TODO: Since the search is always started from the abstract initial state
-    // we can assume v2 is never "init" and v1 is never "goal".
+    // Since the search is always started from the abstract
+    // initial state, v2 is never "init" and v1 is never "goal".
     if (state == init) {
-        if (v1->is_abstraction_of(g_initial_state())) {
-            assert(!v2->is_abstraction_of(g_initial_state()));
-            init = v1;
-        } else {
-            assert(v2->is_abstraction_of(g_initial_state()));
-            init = v2;
-        }
+        assert(v1->is_abstraction_of(g_initial_state()));
+        assert(!v2->is_abstraction_of(g_initial_state()));
+        init = v1;
         if (DEBUG)
             cout << "Using new init state: " << init->str() << endl;
     }
     if (state == goal) {
-        if (v1->is_abstraction_of_goal()) {
-            assert(!v2->is_abstraction_of_goal());
-            goal = v1;
-        } else {
-            assert(v2->is_abstraction_of_goal());
-            goal = v2;
-        }
+        assert(!v1->is_abstraction_of_goal());
+        assert(v2->is_abstraction_of_goal());
+        goal = v2;
         if (DEBUG)
             cout << "Using new goal state: " << goal->str() << endl;
     }
