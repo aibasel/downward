@@ -15,7 +15,7 @@ namespace cegar_heuristic {
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> ops,
            StateRegistry *registry, vector<Fact> goal_facts)
     : state_registry(registry),
-      initial_state_buffer(g_initial_state_data),
+      initial_state_data(g_initial_state_data),
       goal(goal_facts),
       variable_domain(domain),
       fact_names(names),
@@ -53,7 +53,7 @@ bool operator_applicable(const Operator &op, const FactSet &reached) {
 void Task::compute_possibly_before_facts(const Fact &last_fact, FactSet *reached) {
     // Add facts from initial state.
     for (int var = 0; var < variable_domain.size(); ++var)
-        reached->insert(Fact(var, initial_state_buffer[var]));
+        reached->insert(Fact(var, initial_state_data[var]));
 
     // Until no more facts can be added:
     int last_num_reached = 0;
@@ -158,7 +158,7 @@ void Task::move_fact(int var, int before, int after) {
         cout << "Move fact " << var << ": " << before << " -> " << after << endl;
     assert(0 <= before && before < task_index[var].size());
     if (after == UNDEFINED) {
-        assert(initial_state_buffer[var] != before);
+        assert(initial_state_data[var] != before);
         for (int i = 0; i < goal.size(); ++i) {
             assert(goal[i].first != var || goal[i].second != before);
         }
@@ -173,8 +173,8 @@ void Task::move_fact(int var, int before, int after) {
     orig_index[var][after] = orig_index[var][before];
     task_index[var][orig_index[var][before]] = after;
     fact_names[var][after] = fact_names[var][before];
-    if (initial_state_buffer[var] == before)
-        initial_state_buffer[var] = after;
+    if (initial_state_data[var] == before)
+        initial_state_data[var] = after;
     for (int i = 0; i < goal.size(); ++i) {
         if (var == goal[i].first && before == goal[i].second)
             goal[i].second = after;
@@ -280,7 +280,7 @@ void Task::setup_hadd() const {
     assert(state_registry);
     const State &initial_state = state_registry->get_initial_state();
     for (int var = 0; var < variable_domain.size(); ++var) {
-        assert(initial_state[var] == initial_state_buffer[var]);
+        assert(initial_state[var] == initial_state_data[var]);
     }
     additive_heuristic->evaluate(initial_state);
     if (false) {
@@ -317,7 +317,7 @@ void Task::install() {
     if (!state_registry) {
         // By overriding g_initial_state_data, we assign the new registry
         // a modified initial state.
-        g_initial_state_data = initial_state_buffer;
+        g_initial_state_data = initial_state_data;
         state_registry = new StateRegistry();
     }
     g_state_registry = state_registry;
@@ -328,7 +328,7 @@ void Task::install() {
     (void)initial_state;
     assert(g_state_registry->size() == 1);
     for (int var = 0; var < variable_domain.size(); ++var) {
-        assert(initial_state[var] == initial_state_buffer[var]);
+        assert(initial_state[var] == initial_state_data[var]);
     }
 
     g_goal = goal;
