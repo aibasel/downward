@@ -94,11 +94,11 @@ void get_unmet_preconditions(const Operator &op, const State &state, Splits *spl
     assert(splits->empty() == op.is_applicable(state));
 }
 
-void get_unmet_goal_conditions(const State &state, Splits *splits) {
+void get_unmet_goals(const vector<Fact> &goals, const State &state, Splits *splits) {
     assert(splits->empty());
-    for (int i = 0; i < g_goal.size(); i++) {
-        int var = g_goal[i].first;
-        int value = g_goal[i].second;
+    for (int i = 0; i < goals.size(); i++) {
+        int var = goals[i].first;
+        int value = goals[i].second;
         if (state[var] != value) {
             vector<int> wanted;
             wanted.push_back(value);
