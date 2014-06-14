@@ -33,7 +33,7 @@ private:
     void remove_unmarked_operators();
     void remove_inapplicable_operators(const FactSet reachable_facts);
 
-    void setup_hadd() const;
+    void setup_hadd();
 
     void dump_name() const;
     void dump_facts() const;

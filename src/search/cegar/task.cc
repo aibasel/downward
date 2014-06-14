@@ -269,12 +269,13 @@ void Task::combine_facts(int var, unordered_set<int> &values) {
     fact_names[var][projected_value] = name.str();
 }
 
-void Task::setup_hadd() const {
+void Task::setup_hadd() {
     cout << "Start computing h^add values [t=" << g_timer << "] for ";
     dump_name();
     Options opts;
     opts.set<int>("cost_type", 0);
     additive_heuristic = new AdditiveHeuristic(opts);
+    g_initial_state_data = initial_state_data;
     StateRegistry *registry = new StateRegistry();
     const State &initial_state = registry->get_initial_state();
     for (int var = 0; var < variable_domain.size(); ++var) {
