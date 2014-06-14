@@ -1,8 +1,8 @@
 #include "task.h"
 
 #include "values.h"
-#include "../timer.h"
 #include "../state_registry.h"
+#include "../timer.h"
 #include "../utilities.h"
 
 #include <algorithm>
@@ -13,9 +13,8 @@ using namespace std::tr1;
 
 namespace cegar_heuristic {
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> ops,
-           StateRegistry *registry, vector<Fact> goal_facts)
-    : state_registry(registry),
-      initial_state_data(g_initial_state_data),
+           vector<Fact> goal_facts)
+    : initial_state_data(g_initial_state_data),
       goal(goal_facts),
       variable_domain(domain),
       fact_names(names),
@@ -119,7 +118,6 @@ void Task::compute_facts_and_operators() {
 
 void Task::set_goal(const Fact &fact, bool adapt) {
     additive_heuristic = 0;
-    state_registry = 0;
     goal.clear();
     goal.push_back(fact);
     if (adapt)
@@ -303,30 +301,12 @@ int Task::get_hadd_value(int var, int value) const {
 }
 
 Task Task::get_original_task() {
-    Task task(g_variable_domain, g_fact_names, g_operators, g_state_registry, g_goal);
+    Task task(g_variable_domain, g_fact_names, g_operators, g_goal);
     task.setup_hadd();
     return task;
 }
 
 void Task::install() {
-    // The original task already has a registry.
-    if (!state_registry) {
-        // By overriding g_initial_state_data, we assign the new registry
-        // a modified initial state.
-        g_initial_state_data = initial_state_data;
-        state_registry = new StateRegistry();
-    }
-    g_state_registry = state_registry;
-
-    // Explicitly ensure that the initial state is set correctly.
-    const State &initial_state = g_state_registry->get_initial_state();
-    // Silence warning about unused variable.
-    (void)initial_state;
-    assert(g_state_registry->size() == 1);
-    for (int var = 0; var < variable_domain.size(); ++var) {
-        assert(initial_state[var] == initial_state_data[var]);
-    }
-
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
@@ -337,9 +317,6 @@ void Task::install() {
 
 void Task::release_memory() {
     vector<Operator>().swap(operators);
-    assert(state_registry);
-    delete state_registry;
-    state_registry = 0;
     delete additive_heuristic;
     additive_heuristic = 0;
 }
