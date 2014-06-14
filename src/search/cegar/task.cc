@@ -13,8 +13,8 @@ using namespace std::tr1;
 
 namespace cegar_heuristic {
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> ops,
-           vector<Fact> goal_facts)
-    : initial_state_data(g_initial_state_data),
+           vector<int> initial_state_data_, vector<Fact> goal_facts)
+    : initial_state_data(initial_state_data_),
       goal(goal_facts),
       variable_domain(domain),
       fact_names(names),
@@ -302,7 +302,7 @@ int Task::get_hadd_value(int var, int value) const {
 }
 
 Task Task::get_original_task() {
-    Task task(g_variable_domain, g_fact_names, g_operators, g_goal);
+    Task task(g_variable_domain, g_fact_names, g_operators, g_initial_state_data, g_goal);
     task.setup_hadd();
     return task;
 }
