@@ -53,6 +53,12 @@ Abstraction::Abstraction(const Task *task_)
     assert(!task->get_goal().empty());
     reserve_memory_padding();
 
+    vector<int> original_initial_state_data;
+    original_initial_state_data.swap(g_initial_state_data);
+    g_initial_state_data = task->get_initial_state_data();
+    registry = new StateRegistry();
+    original_initial_state_data.swap(g_initial_state_data);
+
     split_tree.set_root(single);
     for (int i = 0; i < task->get_operators().size(); ++i) {
         single->add_loop(&task->get_operators()[i]);
@@ -89,7 +95,7 @@ void Abstraction::build() {
             valid_conc_solution = false;
             break;
         }
-        valid_conc_solution = check_and_break_solution(task->get_initial_state(), init);
+        valid_conc_solution = check_and_break_solution(registry->get_initial_state(), init);
         if (valid_conc_solution)
             break;
     }
@@ -135,8 +141,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     // Since the search is always started from the abstract
     // initial state, v2 is never "init" and v1 is never "goal".
     if (state == init) {
-        assert(v1->is_abstraction_of(task->get_initial_state()));
-        assert(!v2->is_abstraction_of(task->get_initial_state()));
+        assert(v1->is_abstraction_of(registry->get_initial_state()));
+        assert(!v2->is_abstraction_of(registry->get_initial_state()));
         init = v1;
         if (DEBUG)
             cout << "Using new init state: " << init->str() << endl;
@@ -310,7 +316,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 if (DEBUG)
                     cout << "      Move to: " << next_abs->str()
                          << " with " << op->get_name() << endl;
-                State next_conc = task->get_state_registry()->get_successor_state(conc_state, *op);
+                State next_conc = registry->get_successor_state(conc_state, *op);
                 if (next_abs->is_abstraction_of(next_conc)) {
                     if (seen.count(next_conc.get_id()) == 0) {
                         unseen.push(make_pair(next_abs, next_conc));
@@ -582,6 +588,7 @@ void Abstraction::release_memory() {
         delete state;
     }
     AbstractStates().swap(states);
+    delete registry;
     memory_released = true;
 }
 

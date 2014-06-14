@@ -13,6 +13,8 @@
 #include <utility>
 #include <vector>
 
+class StateRegistry;
+
 namespace cegar_heuristic {
 class AbstractState;
 class Task;
@@ -43,6 +45,7 @@ private:
     Abstraction &operator=(const Abstraction &);
 
     const Task *task;
+    StateRegistry *registry;
 
     // Set of all valid states, i.e. states that have not been split.
     AbstractStates states;
