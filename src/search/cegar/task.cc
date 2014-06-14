@@ -277,8 +277,8 @@ void Task::setup_hadd() const {
     Options opts;
     opts.set<int>("cost_type", 0);
     additive_heuristic = new AdditiveHeuristic(opts);
-    assert(state_registry);
-    const State &initial_state = state_registry->get_initial_state();
+    StateRegistry *registry = new StateRegistry();
+    const State &initial_state = registry->get_initial_state();
     for (int var = 0; var < variable_domain.size(); ++var) {
         assert(initial_state[var] == initial_state_data[var]);
     }
@@ -294,6 +294,7 @@ void Task::setup_hadd() const {
         cout << endl;
     }
     cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
+    delete registry;
 }
 
 int Task::get_hadd_value(int var, int value) const {
