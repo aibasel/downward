@@ -165,6 +165,13 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         num_abstractions = min(static_cast<int>(facts.size()), max_abstractions);
     }
 
+    if (!facts.empty()) {
+        cout << "h^add values: ";
+        for (int i = 0; i < facts.size(); ++i) {
+            cout << to_string(facts[i]) << ":" << original_task.get_hadd_value(facts[i].first, facts[i].second) << " ";
+        }
+    }
+
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
         Task task = original_task;
