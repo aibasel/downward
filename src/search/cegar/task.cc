@@ -302,11 +302,6 @@ int Task::get_hadd_value(int var, int value) const {
     return additive_heuristic->get_cost(var, value);
 }
 
-const State &Task::get_initial_state() const {
-    assert(state_registry);
-    return state_registry->get_initial_state();
-}
-
 Task Task::get_original_task() {
     Task task(g_variable_domain, g_fact_names, g_operators, g_state_registry, g_goal);
     task.setup_hadd();
