@@ -605,7 +605,7 @@ void Abstraction::print_statistics() {
     }
     assert(nexts == prevs);
 
-    cout << "Done building abstraction [t=" << g_timer << "]" << endl;
+    cout << "Time: " << timer << endl;
     cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "States: " << num_states << endl;
     cout << "Dead-ends: " << dead_ends << endl;
