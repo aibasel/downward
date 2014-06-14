@@ -40,7 +40,8 @@ private:
 
 public:
     Task(std::vector<int> domain, std::vector<std::vector<std::string> > names,
-         std::vector<Operator> ops, std::vector<Fact> goal_facts);
+         std::vector<Operator> ops, std::vector<int> initial_state_data_,
+         std::vector<Fact> goal_facts);
 
     const std::vector<Fact> &get_goal() const {return goal; }
     const std::vector<Operator> &get_operators() const {return operators; }
