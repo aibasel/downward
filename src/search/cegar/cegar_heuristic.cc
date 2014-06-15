@@ -252,6 +252,7 @@ void CegarHeuristic::initialize() {
     for (int i = 0; i < decompositions.size(); ++i) {
         cout << endl << "Using decomposition " << decompositions[i] << endl;
         build_abstractions(decompositions[i]);
+        cout << endl;
         original_task.install();
         if (num_states >= max_states || g_timer() > max_time ||
             compute_heuristic(g_initial_state()) == DEAD_END)
