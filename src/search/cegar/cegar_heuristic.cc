@@ -291,11 +291,11 @@ int CegarHeuristic::compute_heuristic(const State &state) {
         Task &task = tasks[i];
 
         const int *buffer = 0;
-        if (Decomposition(options.get_enum("decomposition")) == NONE ||
-            (Decomposition(options.get_enum("decomposition")) == GOALS &&
-             !options.get<bool>("adapt_task"))) {
+        // TODO: Use the state's buffer directly.
+        if (false && (Decomposition(options.get_enum("decomposition")) == NONE ||
+                      (Decomposition(options.get_enum("decomposition")) == GOALS &&
+                       !options.get<bool>("adapt_task")))) {
             ABORT("Not implemented");
-            // TODO: buffer = state.get_buffer();
         } else {
             // If any fact in state is not reachable in this task, h(state) = 0.
             bool reachable = task.translate_state(state, temp_state_buffer);
