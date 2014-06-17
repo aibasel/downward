@@ -28,7 +28,7 @@ public:
 class TaskVariable {
 public:
     virtual std::size_t get_id() const = 0;
-    virtual std::size_t get_domain() const = 0;
+    virtual std::size_t get_domain_size() const = 0;
     virtual const TaskFact &get_fact(std::size_t index) const = 0;
 };
 
@@ -104,7 +104,7 @@ public:
     virtual const TaskVariables &get_variables() const = 0;
     virtual const TaskOperators &get_operators() const = 0;
     virtual const TaskAxioms &get_axioms() const = 0;
-    virtual const TaskFact &get_initial_state() const = 0;
+    virtual const TaskState &get_initial_state() const = 0;
     virtual const TaskCondition &get_goal() const = 0;
 };
 
