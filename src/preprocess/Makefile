@@ -8,6 +8,9 @@ LINK_RELEASE_STATICALLY=1
 ## operating system is a supported one, please report this as a bug.
 OS=auto
 
+# By default, build in 32-bit width. See search Makefile for other
+# settings.
+BITWIDTH ?= 32
 
 HEADERS = \
           axiom.h \
@@ -72,38 +75,46 @@ OBJECTS_PROFILE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_PROFILE).o)
 TARGET_PROFILE  = $(TARGET)$(TARGET_SUFFIX_PROFILE)
 
 
-CC     = g++
+CXX     = g++
 DEPEND = g++ -MM
 
-## CCOPT, LINKOPT, POSTLINKOPT are options for compiler and linker
+## CXXFLAGS, LDFLAGS, POSTLINKOPT are options for compiler and linker
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
-CCOPT  =
-CCOPT += -m32
-CCOPT += -g
-CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
+ifeq ($(BITWIDTH), 32)
+BITWIDTHOPT = -m32
+else ifeq ($(BITWIDTH), 64)
+BITWIDTHOPT = -m64
+else ifneq ($(BITWIDTH), native)
+$(error Bad value for BITWIDTH)
+endif
+
+CXXFLAGS  =
+CXXFLAGS += $(BITWIDTHOPT)
+CXXFLAGS += -g
+CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 
 ## The following lines contain workarounds for bugs when
 ## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
 ## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
 ## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
 ## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
-
+ifeq ($(OS), linux) # workarounds only valid for Linux...
 HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
 HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
 
 ifdef HAVE_GCC_4_4
-    CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+    CXXFLAGS += -I/usr/include/c++/4.4/i686-linux-gnu
 endif
 
 ifdef HAVE_GCC_4_5
-    CCOPT += -I/usr/include/c++/4.5/i686-linux-gnu
+    CXXFLAGS += -I/usr/include/c++/4.5/i686-linux-gnu
+endif
 endif
 
-LINKOPT  =
-LINKOPT += -m32
-LINKOPT += -g
+LDFLAGS = $(BITWIDTHOPT)
+LDFLAGS += -g
 
 POSTLINKOPT =
 
@@ -115,17 +126,17 @@ POSTLINKOPT =
 ## NOTE: This precludes some uses of exceptions.
 ##        For details, see man gcc on -static-libgcc.
 
-CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
-CCOPT_DEBUG    = -O3
-CCOPT_PROFILE  = -O3 -pg
+CXXFLAGS_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
+CXXFLAGS_DEBUG    = -O3
+CXXFLAGS_PROFILE  = -O3 -pg
 
-LINKOPT_RELEASE =
-LINKOPT_DEBUG    =
-LINKOPT_PROFILE  = -pg
-# LINKOPT_PROFILE += -lc_p
+LDFLAGS_RELEASE =
+LDFLAGS_DEBUG    =
+LDFLAGS_PROFILE  = -pg
+# LDFLAGS_PROFILE += -lc_p
 
 ifeq ($(LINK_RELEASE_STATICALLY), 1)
-LINKOPT_RELEASE += -static -static-libgcc
+LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
 POSTLINKOPT_RELEASE  =
@@ -143,33 +154,33 @@ all: release debug profile
 release: $(TARGET_RELEASE)
 
 $(TARGET_RELEASE): $(OBJECTS_RELEASE)
-	$(CC) $(LINKOPT) $(LINKOPT_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
 
 $(OBJECTS_RELEASE): .obj/%$(OBJECT_SUFFIX_RELEASE).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_RELEASE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_RELEASE) -c $< -o $@
 
 ## Build rules for the debug target follow.
 
 debug: $(TARGET_DEBUG)
 
 $(TARGET_DEBUG): $(OBJECTS_DEBUG)
-	$(CC) $(LINKOPT) $(LINKOPT_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
 
 $(OBJECTS_DEBUG): .obj/%$(OBJECT_SUFFIX_DEBUG).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_DEBUG) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DEBUG) -c $< -o $@
 
 ## Build rules for the profile target follow.
 
 profile: $(TARGET_PROFILE)
 
 $(TARGET_PROFILE): $(OBJECTS_PROFILE)
-	$(CC) $(LINKOPT) $(LINKOPT_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
 
 $(OBJECTS_PROFILE): .obj/%$(OBJECT_SUFFIX_PROFILE).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_PROFILE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_PROFILE) -c $< -o $@
 
 ## Additional targets follow.
 
