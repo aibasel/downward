@@ -1,11 +1,7 @@
 #ifndef STATE_ID_H
 #define STATE_ID_H
 
-#if __APPLE__
 #include <ext/hash_set>
-#else
-#include <hash_set>
-#endif
 
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.

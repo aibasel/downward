@@ -8,7 +8,8 @@ LINK_RELEASE_STATICALLY=1
 ## operating system is a supported one, please report this as a bug.
 OS=auto
 
-# By default, build in 32-bit width
+# By default, build in 32-bit width. See search Makefile for other
+# settings.
 BITWIDTH ?= 32
 
 HEADERS = \
@@ -81,15 +82,16 @@ DEPEND = g++ -MM
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
-CXXFLAGS  =
 ifeq ($(BITWIDTH), 32)
-CXXFLAGS += -m32
+BITWIDTHOPT = -m32
 else ifeq ($(BITWIDTH), 64)
-CXXFLAGS += -m64
+BITWIDTHOPT = -m64
 else ifneq ($(BITWIDTH), native)
 $(error Bad value for BITWIDTH)
 endif
 
+CXXFLAGS  =
+CXXFLAGS += $(BITWIDTHOPT)
 CXXFLAGS += -g
 CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 
@@ -111,10 +113,7 @@ ifdef HAVE_GCC_4_5
 endif
 endif
 
-LDFLAGS  =
-ifeq ($(BITWIDTH), 32)
-LDFLAGS += -m32
-endif
+LDFLAGS = $(BITWIDTHOPT)
 LDFLAGS += -g
 
 POSTLINKOPT =
