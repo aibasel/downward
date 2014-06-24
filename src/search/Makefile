@@ -1,4 +1,6 @@
-# By default, build in 32-bit width
+# By default, build in 32-bit mode. Use BITWIDTH=64 (on command
+# line or in environment) to build in 64-bit mode and BITWIDTH=native
+# to use the native bitness of the OS.
 BITWIDTH ?= 32
 
 ## Set USE_LP to 1 to enable linear programming stuff.
@@ -147,7 +149,7 @@ else ifeq ($(UNAME), Linux)
 OS=linux
 else
 UNAME_O := $(shell uname -o)
-endif 
+endif
 
 ifeq ($(UNAME_O), Cygwin)
 ## For now, we treat Linux and Cygwin equally in this Makefile, so we
@@ -189,21 +191,22 @@ DEPEND = g++ -MM
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
+ifeq ($(BITWIDTH), 32)
+BITWIDTHOPT = -m32
+else ifeq ($(BITWIDTH), 64)
+BITWIDTHOPT = -m64
+else ifneq ($(BITWIDTH), native)
+$(error Bad value for BITWIDTH)
+endif
+
 CXXFLAGS = -Iext
 # if you have Mac OS, you may be getting tree.hh from /opt/local/include
 ifeq ($(OS), osx)
   CXXFLAGS += -I/opt/local/include/
 endif
+
 CXXFLAGS += -g
-
-ifeq ($(BITWIDTH), 32)
-CXXFLAGS += -m32
-else ifeq ($(BITWIDTH), 64)
-CXXFLAGS += -m64
-else ifneq ($(BITWIDTH), native)
-$(error Bad value for BITWIDTH)
-endif
-
+CXXFLAGS += $(BITWIDTHOPT)
 CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 
 ## The following lines contain workarounds for bugs when
@@ -224,13 +227,7 @@ CXXFLAGS += -I/usr/include/c++/4.5/i686-linux-gnu
 endif
 endif
 
-LDFLAGS  = -g
-ifeq ($(BITWIDTH), 32)
-LDFLAGS += -m32
-else ifeq ($(BITWIDTH), 64)
-LDFLAGS += -m64
-endif
-LDFLAGS +=
+LDFLAGS += $(BITWIDTHOPT)
 
 POSTLINKOPT =
 
