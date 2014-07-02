@@ -15,6 +15,7 @@
 #include <cassert>
 #include <cmath>
 #include <string>
+#include <tr1/unordered_set>
 #include <vector>
 
 using namespace std;
@@ -89,11 +90,17 @@ LandmarkGraph CegarHeuristic::get_landmark_graph() const {
     return *lm_graph_factory.compute_lm_graph();
 }
 
+/*
+  Do a breadth-first search through the landmark graph ignoring
+  duplicates. Start at the node for the given fact and collect for each
+  variable the facts that have to be made true before the fact is made
+  true for the first time. */
 void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_set<int> > *groups) const {
     assert(groups->empty());
     LandmarkNode *node = landmark_graph.get_landmark(fact);
     assert(node);
     vector<const LandmarkNode *> open;
+    unordered_set<const LandmarkNode *> closed;
     for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
              node->parents.begin(); it != node->parents.end(); ++it) {
         const LandmarkNode *parent = it->first;
@@ -102,6 +109,9 @@ void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_
     while (!open.empty()) {
         const LandmarkNode *ancestor = open.back();
         open.pop_back();
+        if (closed.count(ancestor) == 1)
+            continue;
+        closed.insert(ancestor);
         Fact ancestor_fact = get_fact(ancestor);
         (*groups)[ancestor_fact.first].insert(ancestor_fact.second);
         for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
