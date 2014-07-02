@@ -237,6 +237,10 @@ void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     cout << "Peak memory before initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
+    if (DEBUG) {
+        cout << "Original task:" << endl;
+        original_task.dump();
+    }
     Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
     vector<Decomposition> decompositions;
     if (decomposition == LANDMARKS_AND_GOALS_AND_NONE) {
