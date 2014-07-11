@@ -1,10 +1,10 @@
 #include "abstraction.h"
 
-#include "equivalence_relation.h"
 #include "label.h"
 #include "labels.h"
 #include "shrink_fh.h"
 
+#include "../equivalence_relation.h"
 #include "../globals.h"
 #include "../priority_queue.h"
 #include "../timer.h"
@@ -535,8 +535,8 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
 
     assert(is_normalized());
     vector<bool> considered_labels(num_labels, false);
-    vector<pair<int, int> > groups_and_labels;
-    int group_number = 0;
+    vector<pair<int, int> > annotated_labels;
+    int annotation = 0;
     for (size_t label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_label_reduced(label_no)) {
             // do not consider non-leaf labels
@@ -546,7 +546,7 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
             continue;
         }
         int label_cost = get_label_cost_by_index(label_no);
-        groups_and_labels.push_back(make_pair(group_number, label_no));
+        annotated_labels.push_back(make_pair(annotation, label_no));
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (size_t other_label_no = label_no + 1; other_label_no < num_labels; ++other_label_no) {
             if (labels->is_label_reduced(other_label_no)) {
@@ -566,12 +566,12 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
             if ((transitions.empty() && other_transitions.empty())
                 || (transitions == other_transitions)) {
                 considered_labels[other_label_no] = true;
-                groups_and_labels.push_back(make_pair(group_number, other_label_no));
+                annotated_labels.push_back(make_pair(annotation, other_label_no));
             }
         }
-        ++group_number;
+        ++annotation;
     }
-    return EquivalenceRelation::from_grouped_elements<int>(num_labels, groups_and_labels);
+    return EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 }
 
 void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
@@ -657,7 +657,7 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
                     }
                 }
             }
-            
+
             abs->relevant_labels[label_no] = true;
         }
     }

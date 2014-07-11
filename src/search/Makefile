@@ -24,6 +24,7 @@ HEADERS = \
           domain_transition_graph.h \
           eager_search.h \
           enforced_hill_climbing_search.h \
+          equivalence_relation.h \
           exact_timer.h \
           g_evaluator.h \
           globals.h \
@@ -81,7 +82,6 @@ HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
 HEADERS += merge_and_shrink/abstraction.h \
-           merge_and_shrink/equivalence_relation.h \
            merge_and_shrink/label.h \
            merge_and_shrink/labels.h \
            merge_and_shrink/label_reducer.h \
