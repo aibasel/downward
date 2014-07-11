@@ -1,9 +1,9 @@
 #include "label_reducer.h"
 
 #include "abstraction.h"
-#include "equivalence_relation.h"
 #include "label.h"
 
+#include "../equivalence_relation.h"
 #include "../globals.h"
 #include "../operator.h"
 #include "../option_parser.h"
@@ -308,17 +308,17 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
 
     // create the equivalence relation where all labels are equivalent
     int num_labels = labels.size();
-    vector<pair<int, int> > groups_and_labels;
-    groups_and_labels.reserve(num_labels);
+    vector<pair<int, int> > annotated_labels;
+    annotated_labels.reserve(num_labels);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         const Label *label = labels[label_no];
         assert(label->get_id() == label_no);
         if (!label->is_reduced()) {
             // only consider non-reduced labels
-            groups_and_labels.push_back(make_pair(0, label_no));
+            annotated_labels.push_back(make_pair(0, label_no));
         }
     }
-    EquivalenceRelation *relation = EquivalenceRelation::from_grouped_elements<int>(num_labels, groups_and_labels);
+    EquivalenceRelation *relation = EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 
     for (size_t i = 0; i < all_abstractions.size(); ++i) {
         Abstraction *abs = all_abstractions[i];
