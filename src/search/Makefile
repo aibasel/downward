@@ -177,6 +177,8 @@ ifeq ($(DOWNWARD_OS), auto)
         ## For now, we treat Linux and Cygwin equally in this
         ## Makefile, so we just call Cygwin "linux".
         DOWNWARD_OS=linux
+    else ifeq ($(UNAME_O), Msys)
+        DOWNWARD_OS=win32
     else ifeq ($(OS), auto)
         $(warning OS detection failed -- setting to Linux and hoping for the best!)
         DOWNWARD_OS=linux
@@ -278,6 +280,7 @@ POSTLINKOPT_PROFILE =
 ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
     LDFLAGS_RELEASE += -static -static-libgcc
 endif
+
 
 ifeq ($(DOWNWARD_OS), linux)
     ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
