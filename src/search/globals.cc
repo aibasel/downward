@@ -27,8 +27,6 @@ using namespace std;
 #include <ext/hash_map>
 using namespace __gnu_cxx;
 
-#include "state_registry.h"
-
 static const int PRE_FILE_VERSION = 3;
 
 
