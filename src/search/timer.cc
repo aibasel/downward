@@ -1,8 +1,13 @@
 #include "timer.h"
 
 #include <ostream>
-#include <sys/times.h>
 #include <unistd.h>
+
+#ifndef _WIN32
+    #include <sys/times.h>
+#else
+    #include <windows.h>
+#endif
 
 using namespace std;
 
@@ -16,10 +21,29 @@ Timer::~Timer() {
 }
 
 double Timer::current_clock() const {
+#ifndef _WIN32
     struct tms the_tms;
     times(&the_tms);
     clock_t clocks = the_tms.tms_utime + the_tms.tms_stime;
     return double(clocks) / sysconf(_SC_CLK_TCK);
+#else
+    //http://nadeausoftware.com/articles/2012/03/c_c_tip_how_measure_cpu_time_benchmarking
+    FILETIME createTime;
+    FILETIME exitTime;
+    FILETIME kernelTime;
+    FILETIME userTime;
+    if ( GetProcessTimes( GetCurrentProcess( ),
+        &createTime, &exitTime, &kernelTime, &userTime ) != -1 )
+    {
+        SYSTEMTIME userSystemTime;
+        if ( FileTimeToSystemTime( &userTime, &userSystemTime ) != -1 )
+            return (double)userSystemTime.wHour * 3600.0 +
+                (double)userSystemTime.wMinute * 60.0 +
+                (double)userSystemTime.wSecond +
+                (double)userSystemTime.wMilliseconds / 1000.0;
+    }
+    return -1;
+#endif
 }
 
 double Timer::stop() {
