@@ -697,7 +697,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn, hash_set<
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());
         if (visited.find(cur) != visited.end()) { // cycle
-            // find other occurence of cur node in path
+            // find other occurrence of cur node in path
             list<pair<LandmarkNode *, edge_type> >::iterator it;
             for (it = path.begin(); it != path.end(); it++) {
                 if (it->first == cur)
