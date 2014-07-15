@@ -7,6 +7,7 @@ set(downward_SRC planner.cc
                 axioms.cc
                 causal_graph.cc
                 combining_evaluator.cc
+                const_evaluator.cc
                 domain_transition_graph.cc
                 eager_search.cc
                 enforced_hill_climbing_search.cc
