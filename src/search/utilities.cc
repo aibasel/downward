@@ -14,7 +14,8 @@ static void exit_handler(int exit_code, void *hint);
 static void exit_handler();
 #include <mach/mach.h>
 #elif OPERATING_SYSTEM == CYGWIN
-// nothing
+#include "windows.h"
+#include "psapi.h"
 #endif
 
 static char *memory_padding = new char[512 * 1024];
@@ -119,6 +120,11 @@ int get_peak_memory_in_kb() {
                   reinterpret_cast<task_info_t>(&t_info),
                   &t_info_count) == KERN_SUCCESS)
         memory_in_kb = t_info.virtual_size / 1024;
+#elif OPERATING_SYSTEM == CYGWIN
+    //TODO: we cant determine the peak mem but this is better than nothing
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+    memory_in_kb = pmc.PrivateUsage / 1024;
 #else
     ifstream procfile("/proc/self/status");
     string word;

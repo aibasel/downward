@@ -282,14 +282,22 @@ ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
 endif
 
 
-ifeq ($(DOWNWARD_OS), linux)
-    ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
-        POSTLINKOPT_RELEASE += -lrt
-    else
-        POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+## Define the default target up here so that the LP stuff below
+## doesn't define a default target.
+ifeq ($(DOWNWARD_OS), win32)
+    POSTLINKOPT_RELEASE = -lpsapi
+    POSTLINKOPT_DEBUG = -lpsapi
+    POSTLINKOPT_PROFILE = -lpsapi
+else
+    ifeq ($(DOWNWARD_OS), linux)
+        ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
+            POSTLINKOPT_RELEASE += -lrt
+        else
+            POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+        endif
+        POSTLINKOPT_DEBUG  += -lrt
+        POSTLINKOPT_PROFILE += -lrt
     endif
-    POSTLINKOPT_DEBUG  += -lrt
-    POSTLINKOPT_PROFILE += -lrt
 endif
 
 
