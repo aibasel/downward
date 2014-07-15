@@ -41,6 +41,7 @@ HEADERS = \
           axioms.h \
           causal_graph.h \
           combining_evaluator.h \
+          const_evaluator.h\
           domain_transition_graph.h \
           eager_search.h \
           enforced_hill_climbing_search.h \
