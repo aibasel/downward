@@ -3,6 +3,7 @@
 #ifdef OPEN_LISTS_TYPED_OPEN_LIST_H
 
 #include "../option_parser.h"
+#include "../rng.h"
 #include "../globals.h"
 
 #include <cassert>
@@ -21,8 +22,7 @@ OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
     if (parser.help_mode())
         return 0;
 
-    if (opts.get_list<ScalarEvaluator*>("sublists").empty())
-        parser.error("need at least one internal evaluator");
+    opts.verify_list_non_empty<ScalarEvaluator*>("sublists");
     if (parser.dry_run())
         return 0;
     else
@@ -56,7 +56,7 @@ int TypedOpenList<Entry>::insert(const Entry &entry) {
 }
 
 template<class Entry>
-Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
+Entry TypedOpenList<Entry>::remove_min(vector<int> *) {
     assert(size > 0);
 
     int bucket_id = g_rng.next(open_list.size());
