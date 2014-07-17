@@ -6,6 +6,12 @@ BITWIDTH ?= 32
 ## Set USE_LP to 1 to enable linear programming stuff.
 USE_LP=0
 
+## TODO move configuration variables to separate file
+CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
+CPLEX_LIBDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic
+GUROBI_INCDIR ?=
+GUROBI_LIBDIR ?=
+
 ## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
 ## static linking of the executable in release mode.
 ## On OS X, this is unsupported and will be silently disabled.
@@ -62,6 +68,8 @@ HEADERS = \
           open_lists/pareto_open_list.h \
           open_lists/standard_scalar_open_list.h \
           open_lists/tiebreaking_open_list.h \
+          \
+          lp_solver_interface.h \
 
 ## Each of the following "HEADERS += ..." constructs defines a
 ## "plugin" feature that can be enabled or disabled by simply
@@ -274,10 +282,25 @@ default: release
 
 ifeq ($(USE_LP),1)
 
+
 COIN_ROOT = lp/coin
+COIN_HAS_CPX = $(shell test -d $(CPLEX_INCDIR) && test -f $(CPLEX_LIBDIR)/libcplex.a && echo 1)
+ifeq ($(COIN_HAS_CPX),1)
+    CPLEX_LIB = $(CPLEX_LIBDIR)/libcplex.a
+endif
+
+COIN_HAS_GUROBI = $(shell test -d $(GUROBI_INCDIR) && test -f $(GUROBI_LIBDIR)/libgurobi.a && echo 1)
+ifeq ($(COIN_HAS_GUROBI),1)
+    GUROBI_LIB = $(GUROBI_LIBDIR)/libgurobi.a
+endif
 
 $(COIN_ROOT):
-	cd lp && ./setup
+	cd lp && \
+        CPLEX_INCDIR=$(CPLEX_INCDIR) \
+        CPLEX_LIB=$(CPLEX_LIB) \
+        GUROBI_INCDIR=$(GUROBI_INCDIR) \
+        GUROBI_LIB=$(GUROBI_LIB) \
+        ./setup
 
 $(TARGET_RELEASE) $(OBJECTS_RELEASE): $(COIN_ROOT)
 $(TARGET_DEBUG) $(OBJECTS_DEBUG): $(COIN_ROOT)
@@ -294,7 +317,24 @@ $(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
 ## libraries. See
 ## http://ask.metafilter.com/117792/How-to-fix-C-static-linking-problems
 
-COIN_LIBS = OsiClp Clp CoinUtils Osi
+ifeq ($(COIN_HAS_CPX),1)
+COIN_LIBS += OsiCpx cplex
+COIN_CXXFLAGS += -D COIN_HAS_CPX
+COIN_LDFLAGS += -L$(CPLEX_LIBDIR) -pthread
+endif
+
+ifeq ($(COIN_HAS_GRB),1)
+COIN_LIBS += OsiGrb
+COIN_CXXFLAGS += -D COIN_HAS_GRB
+COIN_LDFLAGS += -L$(GUROBI_LIBDIR) -pthread
+endif
+
+## CLP is part of coin and can always be enabled
+COIN_CXXFLAGS += -D COIN_HAS_CLP
+COIN_LIBS += OsiClp Clp
+
+## Basic Osi libs must be added after (!) all osi solver libs
+COIN_LIBS += Osi CoinUtils
 
 ## We want to always link the COIN libraries statically, even if static
 ## linking is otherwise disabled. We accomplish this by
@@ -302,11 +342,11 @@ COIN_LIBS = OsiClp Clp CoinUtils Osi
 ## afterwards (unless in release mode with static linking enabled). See
 ## http://ubuntuforums.org/showthread.php?t=491455
 
-COIN_CXXFLAGS = -I$(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
+COIN_CXXFLAGS += -I$(COIN_ROOT)/include/coin -D USE_LP
 ifeq ($(OS), osx)
-COIN_LDFLAGS = -L$(COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
+COIN_LDFLAGS += -L$(COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
 else
-COIN_LDFLAGS = -L$(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+COIN_LDFLAGS += -L$(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
 endif
 
 CXXFLAGS += $(COIN_CXXFLAGS)
