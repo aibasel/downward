@@ -11,6 +11,8 @@ CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
 CPLEX_LIBDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic
 GUROBI_INCDIR ?=
 GUROBI_LIBDIR ?=
+COIN_ROOT_FALLBACK = lp/coin
+COIN_ROOT ?= $(COIN_ROOT_FALLBACK)
 
 ## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
 ## static linking of the executable in release mode.
@@ -282,8 +284,6 @@ default: release
 
 ifeq ($(USE_LP),1)
 
-
-COIN_ROOT = lp/coin
 COIN_HAS_CPX = $(shell test -d $(CPLEX_INCDIR) && test -f $(CPLEX_LIBDIR)/libcplex.a && echo 1)
 ifeq ($(COIN_HAS_CPX),1)
     CPLEX_LIB = $(CPLEX_LIBDIR)/libcplex.a
@@ -294,12 +294,12 @@ ifeq ($(COIN_HAS_GUROBI),1)
     GUROBI_LIB = $(GUROBI_LIBDIR)/libgurobi.a
 endif
 
-$(COIN_ROOT):
+$(COIN_ROOT_FALLBACK):
 	cd lp && \
         CPLEX_INCDIR=$(CPLEX_INCDIR) \
-        CPLEX_LIB=$(CPLEX_LIB) \
+        CPLEX_LIBDIR=$(CPLEX_LIBDIR) \
         GUROBI_INCDIR=$(GUROBI_INCDIR) \
-        GUROBI_LIB=$(GUROBI_LIB) \
+        GUROBI_LIBDIR=$(GUROBI_LIBDIR) \
         ./setup
 
 $(TARGET_RELEASE) $(OBJECTS_RELEASE): $(COIN_ROOT)
