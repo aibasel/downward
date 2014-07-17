@@ -4,7 +4,7 @@
 BITWIDTH ?= 32
 
 ## Set USE_LP to 1 to enable linear programming stuff.
-USE_LP=0
+USE_LP=1
 
 ## TODO move configuration variables to separate file
 CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
@@ -284,16 +284,6 @@ default: release
 
 ifeq ($(USE_LP),1)
 
-COIN_HAS_CPX = $(shell test -d $(CPLEX_INCDIR) && test -f $(CPLEX_LIBDIR)/libcplex.a && echo 1)
-ifeq ($(COIN_HAS_CPX),1)
-    CPLEX_LIB = $(CPLEX_LIBDIR)/libcplex.a
-endif
-
-COIN_HAS_GUROBI = $(shell test -d $(GUROBI_INCDIR) && test -f $(GUROBI_LIBDIR)/libgurobi.a && echo 1)
-ifeq ($(COIN_HAS_GUROBI),1)
-    GUROBI_LIB = $(GUROBI_LIBDIR)/libgurobi.a
-endif
-
 $(COIN_ROOT_FALLBACK):
 	cd lp && \
         CPLEX_INCDIR=$(CPLEX_INCDIR) \
@@ -305,6 +295,22 @@ $(COIN_ROOT_FALLBACK):
 $(TARGET_RELEASE) $(OBJECTS_RELEASE): $(COIN_ROOT)
 $(TARGET_DEBUG) $(OBJECTS_DEBUG): $(COIN_ROOT)
 $(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
+
+# We now find out which solvers COIN was build with.
+# If the fallback version shipped with Fast Downward is used but not
+# compiled yet, we assume that compilation of a solver interface will
+# work if the solver itself is present.
+
+COIN_HAS_CPX = $(shell test -d $(CPLEX_INCDIR) && test -f $(CPLEX_LIBDIR)/libcplex.a && test -f $(COIN_ROOT)/lib/libOsiCpx.a && echo 1)
+COIN_HAS_GUROBI = $(shell test -d $(GUROBI_INCDIR) && test -f $(GUROBI_LIBDIR)/libgurobi.a && test -f $(COIN_ROOT)/lib/OsiGrb.a && echo 1)
+
+ifeq ($(COIN_ROOT),$(COIN_ROOT_FALLBACK))
+COIN_FALLBACK_WILL_BE_COMPILED = $(shell test ! -d $(COIN_ROOT_FALLBACK) && echo 1)
+ifeq ($(COIN_FALLBACK_WILL_BE_COMPILED),1)
+COIN_HAS_CPX = $(shell test -d $(CPLEX_INCDIR) && test -f $(CPLEX_LIBDIR)/libcplex.a && echo 1)
+COIN_HAS_GUROBI = $(shell test -d $(GUROBI_INCDIR) && test -f $(GUROBI_LIBDIR)/libgurobi.a && echo 1)
+endif
+endif
 
 ## We want to link the Linear Programming libraries statically since
 ## they are unlikely to be preinstalled on the grids we use for
@@ -324,7 +330,7 @@ COIN_LDFLAGS += -L$(CPLEX_LIBDIR) -pthread
 endif
 
 ifeq ($(COIN_HAS_GRB),1)
-COIN_LIBS += OsiGrb
+COIN_LIBS += OsiGrb gurobi
 COIN_CXXFLAGS += -D COIN_HAS_GRB
 COIN_LDFLAGS += -L$(GUROBI_LIBDIR) -pthread
 endif
