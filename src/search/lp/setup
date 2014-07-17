@@ -18,11 +18,11 @@ tar xvzf Osi-0.103.0.tgz
 
 cd Osi-0.103.0
 
-if [[ -d $CPLEX_INCDIR && -f $CPLEX_LIB ]]; then
-    CPLEX_CONFIG="--with-cplex-incdir=$CPLEX_INCDIR --with-cplex-lib=$CPLEX_LIB"
+if [[ -d $CPLEX_INCDIR && -f $CPLEX_LIBDIR/libcplex.a ]]; then
+    CPLEX_CONFIG="--with-cplex-incdir=$CPLEX_INCDIR --with-cplex-lib=$CPLEX_LIBDIR/libcplex.a"
 fi
-if [[ -d $GUROBI_INCDIR && -f $GUROBI_LIB ]]; then
-    GUROBI_CONFIG="--with-gurobi-incdir=$GUROBI_INCDIR --with-gurobi-lib=$GUROBI_LIB"
+if [[ -d $GUROBI_INCDIR && -f $GUROBI_LIBDIR/libgurobi.a ]]; then
+    GUROBI_CONFIG="--with-gurobi-incdir=$GUROBI_INCDIR --with-gurobi-lib=$GUROBI_LIBDIR/libgurobi.a"
 fi
 
 if [[ $OS == osx ]]; then
