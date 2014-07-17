@@ -37,7 +37,8 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         if (opts.get<bool>("optimal")) {
 #ifdef USE_LP
             lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph,
-                                                                                  OperatorCost(opts.get_enum("cost_type")));
+                                                                                  OperatorCost(opts.get_enum("cost_type")),
+                                                                                  LPSolverType(opts.get_enum("lpsolver")));
 #else
             cerr << "You must build the planner with the USE_LP symbol defined." << endl
                  << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
@@ -306,6 +307,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators",
                              "yes (if enabled; see ``pref`` option)");
 
+    add_lp_solver_option_to_parser(parser);
     parser.add_option<LandmarkGraph *>(
         "lm_graph",
         "the set of landmarks to use for this heuristic. "
@@ -322,9 +324,6 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>("alm", "use action landmarks", "true");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-
-    if (!parser.dry_run() && opts.get<LandmarkGraph *>("lm_graph") == 0)
-        parser.error("landmark graph could not be constructed");
 
     if (parser.dry_run())
         return 0;
