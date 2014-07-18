@@ -321,7 +321,7 @@ void verify_no_axioms() {
     }
 }
 
-int get_first_conditional_effects_op_id() {
+static int get_first_conditional_effects_op_id() {
     for (int i = 0; i < g_operators.size(); i++) {
         const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
         for (int j = 0; j < pre_post.size(); j++) {
