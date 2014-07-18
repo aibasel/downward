@@ -27,7 +27,6 @@ void dump_everything();
 
 bool has_axioms();
 void verify_no_axioms();
-int get_first_conditional_effects_op_id();
 bool has_conditional_effects();
 void verify_no_conditional_effects();
 void verify_no_axioms_no_conditional_effects();
