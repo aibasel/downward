@@ -290,7 +290,14 @@ $(COIN_ROOT_FALLBACK):
         CPLEX_LIBDIR=$(CPLEX_LIBDIR) \
         GUROBI_INCDIR=$(GUROBI_INCDIR) \
         GUROBI_LIBDIR=$(GUROBI_LIBDIR) \
-        ./setup
+        ./setup && \
+        echo "" && \
+        echo "#########################" && \
+        echo "#### Warning ############" && \
+        echo "#########################" && \
+        echo "Using the COIN implementation bundled with Fast Downward is deprecated. The bundled implementation will be removed in the future. Please install COIN outside of the repository (e.g. by copying the directory $(COIN_ROOT_FALLBACK)) and set up the environment variable COIN_ROOT to the new path." && \
+        echo "#########################" && \
+        echo ""
 
 $(TARGET_RELEASE) $(OBJECTS_RELEASE): $(COIN_ROOT)
 $(TARGET_DEBUG) $(OBJECTS_DEBUG): $(COIN_ROOT)
