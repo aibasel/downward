@@ -279,12 +279,8 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         */
         return h;
     } catch (CoinError &ex) {
-        cerr << "Exception:" << ex.message() << endl
-             << " from method " << ex.methodName() << endl
-             << " from class " << ex.className() << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
+        handle_coin_error(ex);
     }
-    ;
 #else
     // Should be unreachable if USE_LP is not set.
     exit_with(EXIT_CRITICAL_ERROR);

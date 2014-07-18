@@ -38,8 +38,12 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
         break;
     case CPLEX:
 #ifdef COIN_HAS_CPX
-        cout << "Using LP solver Cplex" << endl;
-        return new OsiCpxSolverInterface();
+        {
+            cout << "Using LP solver Cplex" << endl;
+            OsiSolverInterface *lp_solver = new OsiCpxSolverInterface();
+            lp_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler());
+            return lp_solver;
+        }
 #else
         missing_symbol = "COIN_HAS_CPX";
 #endif
@@ -60,29 +64,30 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
 }
 
 
+// Cplex warning that is misleadingly reported with the severity of a critical error.
+static const string CPLEX_WARNING_COMPRESS = "CPX0000  Compressing row and column files.";
+static const string CPLEX_ERROR_OOM = "CPX0000  CPLEX Error  1001: Out of memory.";
+static const string CPLEX_ERROR_OOM_PRE = "CPX0000  Insufficient memory for presolve.";
+
 void ErrorCatchingCoinMessageHandler::checkSeverity() {
     // NOTE currentMessage_ should be used here but it doesn't help for clpex:
     //      currentMessage_.severity() is always "I"
     //      currentMessage_.externalNumber() is always 0
     //      currentMessage_.detail() is always empty
     //      currentMessage_.message() also is empty (NFI)
-    string compress_warning = "CPX0000  Compressing row and column files.";
-    if (compress_warning != messageBuffer_) {
+    if (messageBuffer_ == CPLEX_WARNING_COMPRESS) {
+        CoinMessageHandler::checkSeverity();
+    } else if (messageBuffer_ == CPLEX_ERROR_OOM || messageBuffer_ == CPLEX_ERROR_OOM_PRE) {
+        exit_with(EXIT_OUT_OF_MEMORY);
+    } else {
         exit_with(EXIT_CRITICAL_ERROR);
     }
-    CoinMessageHandler::checkSeverity();
 }
 
 extern void handle_coin_error(CoinError error) {
-    cerr << "Exception: " << error.message() << endl
+    cerr << "Coin threw exception: " << error.message() << endl
          << " from method " << error.methodName() << endl
          << " from class " << error.className() << endl;
-    // TODO exit with OOM if message is one of those
-    //  "CPX0000  CPLEX Error  1001: Out of memory."
-    //  "CPX0000  Insufficient memory for presolve."
-    // This are messages from the solver interface message handler
-    // they do not lead to exceptions so they do not show up here.
-    // See comment on ErrorCatchingCoinMessageHandler.
     exit_with(EXIT_CRITICAL_ERROR);
 }
 #endif
