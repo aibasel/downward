@@ -63,6 +63,12 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
     exit_with(EXIT_CRITICAL_ERROR);
 }
 
+extern void handle_coin_error(CoinError error) {
+    cerr << "Coin threw exception: " << error.message() << endl
+         << " from method " << error.methodName() << endl
+         << " from class " << error.className() << endl;
+    exit_with(EXIT_CRITICAL_ERROR);
+}
 
 // Cplex warning that is misleadingly reported with the severity of a critical error.
 static const string CPLEX_WARNING_COMPRESS = "CPX0000  Compressing row and column files.";
@@ -82,13 +88,6 @@ void ErrorCatchingCoinMessageHandler::checkSeverity() {
     } else {
         exit_with(EXIT_CRITICAL_ERROR);
     }
-}
-
-extern void handle_coin_error(CoinError error) {
-    cerr << "Coin threw exception: " << error.message() << endl
-         << " from method " << error.methodName() << endl
-         << " from class " << error.className() << endl;
-    exit_with(EXIT_CRITICAL_ERROR);
 }
 #endif
 
