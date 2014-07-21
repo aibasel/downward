@@ -326,18 +326,8 @@ static int get_first_conditional_effects_op_id() {
         const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
         for (int j = 0; j < pre_post.size(); j++) {
             const vector<Prevail> &cond = pre_post[j].cond;
-            if (cond.empty())
-                continue;
-            // Accept conditions that are redundant, but nothing else.
-            // In a better world, these would never be included in the
-            // input in the first place.
-            int var = pre_post[j].var;
-            int pre = pre_post[j].pre;
-            int post = pre_post[j].post;
-            if (pre == -1 && cond.size() == 1 && cond[0].var == var
-                && cond[0].prev != post && g_variable_domain[var] == 2)
-                continue;
-            return i;
+            if (!cond.empty())
+                return i;
         }
     }
     return -1;
