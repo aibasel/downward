@@ -4,14 +4,16 @@
 
 
 ConstEvaluator::ConstEvaluator(const Options &opts)
-    :value(opts.get<int>("value")){
+    :Heuristic(opts), value(opts.get<int>("value")){
 }
 
-ConstEvaluator::ConstEvaluator(const int value)
-    :value(value){
-}
 
 ConstEvaluator::~ConstEvaluator() {
+}
+
+int ConstEvaluator::compute_heuristic(const State &)
+{
+    return value;
 }
 
 
@@ -24,14 +26,11 @@ bool ConstEvaluator::dead_end_is_reliable() const {
     return true;
 }
 
-int ConstEvaluator::get_value() const {
-    return value;
-}
-
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.document_synopsis("const-value evaluator",
                              "Returns a constant value.");
     parser.add_option<int>("value","the constant value", "1");
+    Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
