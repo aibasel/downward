@@ -81,7 +81,7 @@ struct ExUnaryOperator {
 };
 
 struct ex_hash_operator_ptr {
-    size_t operator()(const Operator *key) const {
+    uintptr_t operator()(const Operator *key) const {
         return reinterpret_cast<uintptr_t>(key);
     }
 };
