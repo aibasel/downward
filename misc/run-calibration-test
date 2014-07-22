@@ -17,11 +17,8 @@ function compile {
     echo "Compiling..." | tee -a "$STDOUT"
     (
         set +e
-        cd search
-        make distclean
-        make USE_LP=1
-        cd ..
-        ./build_all
+        ./build_all distclean
+        ./build_all USE_LP=1
     ) 1>> "$STDOUT" 2>> "$STDERR"
 }
 
@@ -102,7 +99,7 @@ solve-task \
 
 log "Testing merge-and-shrink..."
 MAS="merge_and_shrink(
-         merge_strategy=merge_linear_reverse_level,
+         merge_strategy=merge_linear(variable_order=reverse_level),
          shrink_strategy=shrink_bisimulation(
              max_states=infinity,
              threshold=1,
