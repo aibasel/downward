@@ -1,16 +1,18 @@
+## By default, build in 32-bit mode. Use BITWIDTH=64 (on command
+## line or in environment) to build in 64-bit mode and BITWIDTH=native
+## to use the native bitness of the OS.
+BITWIDTH ?= 32
+
 ## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
 ## static linking of the executable in release mode.
 ## On OS X, this is unsupported and will be silently disabled.
-LINK_RELEASE_STATICALLY=1
+LINK_RELEASE_STATICALLY = 1
 
 ## On a supported operating system, there should be no need to override
 ## the OS setting. If the provided code does not work even though your
 ## operating system is a supported one, please report this as a bug.
-OS=auto
+OS = auto
 
-# By default, build in 32-bit width. See search Makefile for other
-# settings.
-BITWIDTH ?= 32
 
 HEADERS = \
           axiom.h \
@@ -28,34 +30,37 @@ HEADERS = \
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = preprocess
 
+default: release
+
 ARGS_PROFILE =
 
+SHELL = /bin/bash
 
 ifeq ($(OS), auto)
-UNAME := $(shell uname)
-UNAME_O := $(shell uname -o)
-ifeq ($(UNAME), Darwin)
-OS=osx
-endif
-ifeq ($(UNAME), Linux)
-OS=linux
-endif
-ifeq ($(UNAME_O), Cygwin)
-## For now, we treat Linux and Cygwin equally in this Makefile, so we
-## just call Cygwin "linux".
-OS=linux
-endif
-ifeq ($(OS), auto)
-$(warning OS detection failed -- setting to Linux and hoping for the best!)
-OS=linux
-endif
+    UNAME := $(shell uname)
+
+    ifeq ($(UNAME), Darwin)
+        OS=osx
+    else ifeq ($(UNAME), Linux)
+        OS=linux
+    else
+        UNAME_O := $(shell uname -o)
+    endif
+
+    ifeq ($(UNAME_O), Cygwin)
+        ## For now, we treat Linux and Cygwin equally in this
+        ## Makefile, so we just call Cygwin "linux".
+        OS=linux
+    else ifeq ($(OS), auto)
+        $(warning OS detection failed -- setting to Linux and hoping for the best!)
+        OS=linux
+    endif
 endif
 
 ifeq ($(OS), osx)
-## Disable static linking on OS X.
-LINK_RELEASE_STATICALLY=0
+    ## Disable static linking on OS X.
+    LINK_RELEASE_STATICALLY=0
 endif
-
 
 
 OBJECT_SUFFIX_RELEASE =
@@ -83,16 +88,16 @@ DEPEND = g++ -MM
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
 ifeq ($(BITWIDTH), 32)
-BITWIDTHOPT = -m32
+    BITWIDTHOPT = -m32
 else ifeq ($(BITWIDTH), 64)
-BITWIDTHOPT = -m64
+    BITWIDTHOPT = -m64
 else ifneq ($(BITWIDTH), native)
-$(error Bad value for BITWIDTH)
+    $(error Bad value for BITWIDTH)
 endif
 
-CXXFLAGS  =
-CXXFLAGS += $(BITWIDTHOPT)
+CXXFLAGS =
 CXXFLAGS += -g
+CXXFLAGS += $(BITWIDTHOPT)
 CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 
 ## The following lines contain workarounds for bugs when
@@ -101,19 +106,20 @@ CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 ## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
 ## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
 ifeq ($(OS), linux) # workarounds only valid for Linux...
-HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
-HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
+    HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
+    HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
 
-ifdef HAVE_GCC_4_4
-    CXXFLAGS += -I/usr/include/c++/4.4/i686-linux-gnu
+    ifdef HAVE_GCC_4_4
+        CXXFLAGS += -I/usr/include/c++/4.4/i686-linux-gnu
+    endif
+
+    ifdef HAVE_GCC_4_5
+        CXXFLAGS += -I/usr/include/c++/4.5/i686-linux-gnu
+    endif
 endif
 
-ifdef HAVE_GCC_4_5
-    CXXFLAGS += -I/usr/include/c++/4.5/i686-linux-gnu
-endif
-endif
-
-LDFLAGS = $(BITWIDTHOPT)
+LDFLAGS =
+LDFLAGS += $(BITWIDTHOPT)
 LDFLAGS += -g
 
 POSTLINKOPT =
@@ -121,7 +127,7 @@ POSTLINKOPT =
 ## Additional specialized options for the various targets follow.
 ## In release mode, we link statically since this makes it more likely
 ## that local compiles will work on the various grids (gkigrid, Black
-## Forest Grid).
+## Forest Grid, maia).
 ##
 ## NOTE: This precludes some uses of exceptions.
 ##        For details, see man gcc on -static-libgcc.
@@ -130,22 +136,29 @@ CXXFLAGS_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
 CXXFLAGS_DEBUG    = -O3
 CXXFLAGS_PROFILE  = -O3 -pg
 
-LDFLAGS_RELEASE =
+LDFLAGS_RELEASE  =
 LDFLAGS_DEBUG    =
 LDFLAGS_PROFILE  = -pg
-# LDFLAGS_PROFILE += -lc_p
+
+POSTLINKOPT_RELEASE =
+POSTLINKOPT_DEBUG   =
+POSTLINKOPT_PROFILE =
 
 ifeq ($(LINK_RELEASE_STATICALLY), 1)
-LDFLAGS_RELEASE += -static -static-libgcc
+    LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
-POSTLINKOPT_RELEASE  =
-POSTLINKOPT_DEBUG    =
-POSTLINKOPT_PROFILE  =
+ifeq ($(OS), linux)
+    ifeq ($(LINK_RELEASE_STATICALLY), 0)
+        POSTLINKOPT_RELEASE += -lrt
+    else
+        POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+    endif
+    POSTLINKOPT_DEBUG  += -lrt
+    POSTLINKOPT_PROFILE += -lrt
+endif
 
-default: release
 
-SHELL = /bin/bash
 
 all: release debug profile
 
@@ -197,14 +210,14 @@ clean:
 distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
 
-## Note: If we just call gcc -MM on a source file that lives within a
+## NOTE: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
 ## the for loop with the sed call.
 
 Makefile.depend: $(SOURCES) $(HEADERS)
 	rm -f Makefile.temp
 	for source in $(SOURCES) ; do \
-	    $(DEPEND) $$source > Makefile.temp0; \
+	    $(DEPEND) $(CXXFLAGS) $$source > Makefile.temp0; \
 	    objfile=$${source%%.cc}.o; \
 	    sed -i -e "s@^[^:]*:@$$objfile:@" Makefile.temp0; \
 	    cat Makefile.temp0 >> Makefile.temp; \
@@ -216,9 +229,9 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 	rm -f Makefile.temp
 
 ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(MAKECMDGOALS),distclean)
--include Makefile.depend
-endif
+    ifneq ($(MAKECMDGOALS),distclean)
+        -include Makefile.depend
+    endif
 endif
 
 .PHONY: default all release debug profile clean distclean
