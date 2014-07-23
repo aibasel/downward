@@ -1,9 +1,62 @@
 #include "lp_solver_interface.h"
 
+#include "option_parser.h"
+#include "utilities.h"
+
+#ifdef COIN_HAS_CLP
+#include <OsiClpSolverInterface.hpp>
+#endif
+#ifdef COIN_HAS_CPX
+#include <OsiCpxSolverInterface.hpp>
+#endif
+#ifdef COIN_HAS_GRB
+#include <OsiGrbSolverInterface.hpp>
+#endif
+
+
 using namespace std;
 
-// TODO when merging this, the wiki page LPBuildInstructions should be updated
-//      to explain how cplex and gurobi can be used.
+
+// CPLEX warning that is misleadingly reported with the severity of a critical error.
+static const string CPLEX_WARNING_COMPRESS = "CPX0000  Compressing row and column files.";
+static const string CPLEX_ERROR_OOM = "CPX0000  CPLEX Error  1001: Out of memory.";
+static const string CPLEX_ERROR_OOM_PRE = "CPX0000  Insufficient memory for presolve.";
+
+
+/*
+  CPLEX sometimes does not report errors as exceptions and only prints an
+  error message. This class will report any error messages as usual but will
+  exit with a critical error afterwards.
+*/
+class ErrorCatchingCoinMessageHandler : public CoinMessageHandler {
+public:
+    ErrorCatchingCoinMessageHandler()
+        : CoinMessageHandler() {
+        setLogLevel(0);
+    }
+
+    ~ErrorCatchingCoinMessageHandler() {
+    }
+
+    virtual void checkSeverity() {
+        /*
+          Note that currentMessage_ should be used here but it doesn't help for clpex:
+            currentMessage_.severity() is always "I"
+            currentMessage_.externalNumber() is always 0
+            currentMessage_.detail() is always empty
+            currentMessage_.message() also is empty (NFI)
+        */
+        if (messageBuffer_ == CPLEX_WARNING_COMPRESS) {
+            CoinMessageHandler::checkSeverity();
+        } else if (messageBuffer_ == CPLEX_ERROR_OOM || messageBuffer_ == CPLEX_ERROR_OOM_PRE) {
+            exit_with(EXIT_OUT_OF_MEMORY);
+        } else {
+            exit_with(EXIT_CRITICAL_ERROR);
+        }
+    }
+};
+
+
 void add_lp_solver_option_to_parser(OptionParser &parser) {
     parser.document_note(
         "Note",
@@ -39,7 +92,7 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
     case CPLEX:
 #ifdef COIN_HAS_CPX
         {
-            cout << "Using LP solver Cplex" << endl;
+            cout << "Using LP solver CPLEX" << endl;
             OsiSolverInterface *lp_solver = new OsiCpxSolverInterface();
             lp_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler());
             return lp_solver;
@@ -63,31 +116,11 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
     exit_with(EXIT_CRITICAL_ERROR);
 }
 
-extern void handle_coin_error(CoinError error) {
+extern void handle_coin_error(const CoinError &error) {
     cerr << "Coin threw exception: " << error.message() << endl
          << " from method " << error.methodName() << endl
          << " from class " << error.className() << endl;
     exit_with(EXIT_CRITICAL_ERROR);
 }
 
-// Cplex warning that is misleadingly reported with the severity of a critical error.
-static const string CPLEX_WARNING_COMPRESS = "CPX0000  Compressing row and column files.";
-static const string CPLEX_ERROR_OOM = "CPX0000  CPLEX Error  1001: Out of memory.";
-static const string CPLEX_ERROR_OOM_PRE = "CPX0000  Insufficient memory for presolve.";
-
-void ErrorCatchingCoinMessageHandler::checkSeverity() {
-    // NOTE currentMessage_ should be used here but it doesn't help for clpex:
-    //      currentMessage_.severity() is always "I"
-    //      currentMessage_.externalNumber() is always 0
-    //      currentMessage_.detail() is always empty
-    //      currentMessage_.message() also is empty (NFI)
-    if (messageBuffer_ == CPLEX_WARNING_COMPRESS) {
-        CoinMessageHandler::checkSeverity();
-    } else if (messageBuffer_ == CPLEX_ERROR_OOM || messageBuffer_ == CPLEX_ERROR_OOM_PRE) {
-        exit_with(EXIT_OUT_OF_MEMORY);
-    } else {
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
-}
 #endif
-
