@@ -24,7 +24,7 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type);
   the planner will attempt to terminate gracefully, like it does with
   uncaught out-of-memory exceptions in other parts of the code.
 */
-extern void handle_coin_error(const CoinError &error) __attribute__((noreturn));
+void handle_coin_error(const CoinError &error) __attribute__((noreturn));
 #endif
 
 #endif
