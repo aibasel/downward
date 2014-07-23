@@ -6,7 +6,6 @@ BITWIDTH ?= 32
 ## Set USE_LP to 1 to enable linear programming stuff.
 USE_LP=0
 
-## TODO move configuration variables to separate file
 CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
 CPLEX_LIBDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic
 GUROBI_INCDIR ?=
