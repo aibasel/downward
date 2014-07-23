@@ -4,7 +4,7 @@
 BITWIDTH ?= 32
 
 ## Set USE_LP to 1 to enable linear programming stuff.
-USE_LP=1
+USE_LP=0
 
 ## TODO move configuration variables to separate file
 CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
@@ -303,7 +303,7 @@ $(TARGET_RELEASE) $(OBJECTS_RELEASE): $(COIN_ROOT)
 $(TARGET_DEBUG) $(OBJECTS_DEBUG): $(COIN_ROOT)
 $(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
 
-# We now find out which solvers COIN was build with.
+# We now find out which solvers COIN was built with.
 # If the fallback version shipped with Fast Downward is used but not
 # compiled yet, we assume that compilation of a solver interface will
 # work if the solver itself is present.

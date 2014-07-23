@@ -3,7 +3,6 @@
 #include "landmark_graph.h"
 
 #ifdef USE_LP
-#include "CoinPackedVector.hpp"
 #include "CoinPackedMatrix.hpp"
 #include <sys/times.h>
 #endif
@@ -146,15 +145,13 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarkGraph &graph, OperatorCost cost_type, LPSolverType
-#ifdef USE_LP
-        solver_type
-#endif
-        )
+    LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type)
     : LandmarkCostAssignment(graph, cost_type) {
 #ifdef USE_LP
     si = create_lp_solver(solver_type);
 #else
+    // silence unused variable warning
+    (void) solver_type;
     cerr << "You must build the planner with the USE_LP symbol defined" << endl;
     exit_with(EXIT_CRITICAL_ERROR);
 #endif
