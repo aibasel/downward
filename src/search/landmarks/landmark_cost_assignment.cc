@@ -151,7 +151,7 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
     si = create_lp_solver(solver_type);
 #else
     // silence unused variable warning
-    (void) solver_type;
+    (void)solver_type;
     cerr << "You must build the planner with the USE_LP symbol defined" << endl;
     exit_with(EXIT_CRITICAL_ERROR);
 #endif
