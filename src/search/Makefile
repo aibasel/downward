@@ -285,23 +285,7 @@ default: release
 ifeq ($(USE_LP),1)
 
 $(COIN_ROOT):
-	echo "" && \
-        echo "#########################" && \
-        echo "Using the COIN implementation bundled with Fast Downward is deprecated. The bundled implementation will be removed in the future. Please install COIN outside of the repository and set up the environment variable COIN_ROOT to the new path." && \
-        echo "" && \
-        echo "To install COIN, first set up the environment variables CPLEX_INCDIR and CPLEX_LIBDIR (if you have CPLEX installed) and GUROBI_INCDIR and GUROBI_LIBDIR (if you have gurobi installed). The headers for CPLEX and gurobi will only be installed if the environment variables are set correctly. The default paths for 32-bit CPLEX are" && \
-        echo "    CPLEX_INCDIR=/opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex" && \
-        echo "    CPLEX_LIBDIR=/opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic" && \
-        echo "After these paths are set up, compile the included COIN installation:" && \
-        echo "    cd lp" && \
-        echo "    ./setup" && \
-        echo "This will create the directory lp/coin which should be copied to a globally accessible location. Set the environment variable COIN_ROOT to this location. For example:" && \
-        echo "    sudo mv coin /opt/coin" && \
-        echo "    export COIN_ROOT=/opt/coin" && \
-        echo "#########################" && \
-        echo "" && \
-        echo >&2 "USE_LP was specified but no COIN installation was found." && \
-        false
+	$(error COIN is no longer bundled with Fast Downward. Please install COIN outside of the repository and set up the environment variable COIN_ROOT to the new path. See http://www.fast-downward.org/LPBuildInstructions for details on how to install COIN and LP solvers)
 
 $(TARGET_RELEASE) $(OBJECTS_RELEASE): $(COIN_ROOT)
 $(TARGET_DEBUG) $(OBJECTS_DEBUG): $(COIN_ROOT)
