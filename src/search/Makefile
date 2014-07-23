@@ -11,8 +11,8 @@ CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
 CPLEX_LIBDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic
 GUROBI_INCDIR ?=
 GUROBI_LIBDIR ?=
-COIN_ROOT_FALLBACK = lp/coin
-COIN_ROOT ?= $(COIN_ROOT_FALLBACK)
+
+COIN_ROOT ?= /opt/coin
 
 ## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
 ## static linking of the executable in release mode.
@@ -284,40 +284,28 @@ default: release
 
 ifeq ($(USE_LP),1)
 
-$(COIN_ROOT_FALLBACK):
-	cd lp && \
-        CPLEX_INCDIR=$(CPLEX_INCDIR) \
-        CPLEX_LIBDIR=$(CPLEX_LIBDIR) \
-        GUROBI_INCDIR=$(GUROBI_INCDIR) \
-        GUROBI_LIBDIR=$(GUROBI_LIBDIR) \
-        ./setup && \
+$(COIN_ROOT):
+	echo "" && \
+        echo "#########################" && \
+        echo "Using the COIN implementation bundled with Fast Downward is deprecated. The bundled implementation will be removed in the future. Please install COIN outside of the repository and set up the environment variable COIN_ROOT to the new path." && \
         echo "" && \
+        echo "To install COIN, first set up the environment variables CPLEX_INCDIR and CPLEX_LIBDIR (if you have CPLEX installed) and GUROBI_INCDIR and GUROBI_LIBDIR (if you have gurobi installed). The headers for CPLEX and gurobi will only be installed if the environment variables are set correctly. The default paths for 32-bit CPLEX are" && \
+        echo "    CPLEX_INCDIR=/opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex" && \
+        echo "    CPLEX_LIBDIR=/opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic" && \
+        echo "After these paths are set up, compile the included COIN installation:" && \
+        echo "    cd lp" && \
+        echo "    ./setup" && \
+        echo "This will create the directory lp/coin which should be copied to a globally accessible location. Set the environment variable COIN_ROOT to this location. For example:" && \
+        echo "    sudo mv coin /opt/coin" && \
+        echo "    export COIN_ROOT=/opt/coin" && \
         echo "#########################" && \
-        echo "#### Warning ############" && \
-        echo "#########################" && \
-        echo "Using the COIN implementation bundled with Fast Downward is deprecated. The bundled implementation will be removed in the future. Please install COIN outside of the repository (e.g. by copying the directory $(COIN_ROOT_FALLBACK)) and set up the environment variable COIN_ROOT to the new path." && \
-        echo "#########################" && \
-        echo ""
+        echo "" && \
+        echo >&2 "USE_LP was specified but no COIN installation was found." && \
+        false
 
 $(TARGET_RELEASE) $(OBJECTS_RELEASE): $(COIN_ROOT)
 $(TARGET_DEBUG) $(OBJECTS_DEBUG): $(COIN_ROOT)
 $(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
-
-# We now find out which solvers COIN was built with.
-# If the fallback version shipped with Fast Downward is used but not
-# compiled yet, we assume that compilation of a solver interface will
-# work if the solver itself is present.
-
-COIN_HAS_CPX = $(shell test -d $(CPLEX_INCDIR) && test -f $(CPLEX_LIBDIR)/libcplex.a && test -f $(COIN_ROOT)/lib/libOsiCpx.a && echo 1)
-COIN_HAS_GUROBI = $(shell test -d $(GUROBI_INCDIR) && test -f $(GUROBI_LIBDIR)/libgurobi.a && test -f $(COIN_ROOT)/lib/OsiGrb.a && echo 1)
-
-ifeq ($(COIN_ROOT),$(COIN_ROOT_FALLBACK))
-COIN_FALLBACK_WILL_BE_COMPILED = $(shell test ! -d $(COIN_ROOT_FALLBACK) && echo 1)
-ifeq ($(COIN_FALLBACK_WILL_BE_COMPILED),1)
-COIN_HAS_CPX = $(shell test -d $(CPLEX_INCDIR) && test -f $(CPLEX_LIBDIR)/libcplex.a && echo 1)
-COIN_HAS_GUROBI = $(shell test -d $(GUROBI_INCDIR) && test -f $(GUROBI_LIBDIR)/libgurobi.a && echo 1)
-endif
-endif
 
 ## We want to link the Linear Programming libraries statically since
 ## they are unlikely to be preinstalled on the grids we use for
@@ -330,12 +318,14 @@ endif
 ## libraries. See
 ## http://ask.metafilter.com/117792/How-to-fix-C-static-linking-problems
 
+COIN_HAS_CPX = $(shell test -d $(CPLEX_INCDIR) && test -f $(CPLEX_LIBDIR)/libcplex.a && test -f $(COIN_ROOT)/lib/libOsiCpx.a && echo 1)
 ifeq ($(COIN_HAS_CPX),1)
 COIN_LIBS += OsiCpx cplex
 COIN_CXXFLAGS += -D COIN_HAS_CPX
 COIN_LDFLAGS += -L$(CPLEX_LIBDIR) -pthread
 endif
 
+COIN_HAS_GUROBI = $(shell test -d $(GUROBI_INCDIR) && test -f $(GUROBI_LIBDIR)/libgurobi.a && test -f $(COIN_ROOT)/lib/OsiGrb.a && echo 1)
 ifeq ($(COIN_HAS_GRB),1)
 COIN_LIBS += OsiGrb gurobi
 COIN_CXXFLAGS += -D COIN_HAS_GRB
