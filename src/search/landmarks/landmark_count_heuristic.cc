@@ -255,8 +255,8 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
     }
 
     // admissible = false
-    return (!has_axioms() && (!has_conditional_effects()
-                              || lgraph.supports_conditional_effects()));
+    return !has_axioms() && (!has_conditional_effects()
+                             || lgraph.supports_conditional_effects());
 }
 
 void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
