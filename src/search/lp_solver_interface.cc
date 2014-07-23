@@ -13,21 +13,19 @@
 #include <OsiGrbSolverInterface.hpp>
 #endif
 
-
 using namespace std;
-
 
 // CPLEX warning that is misleadingly reported with the severity of a critical error.
 static const string CPLEX_WARNING_COMPRESS = "CPX0000  Compressing row and column files.";
 static const string CPLEX_ERROR_OOM = "CPX0000  CPLEX Error  1001: Out of memory.";
 static const string CPLEX_ERROR_OOM_PRE = "CPX0000  Insufficient memory for presolve.";
 
-
 /*
   CPLEX sometimes does not report errors as exceptions and only prints an
   error message. This class will report any error messages as usual but will
   exit with a critical error afterwards.
 */
+#ifdef USE_LP
 class ErrorCatchingCoinMessageHandler : public CoinMessageHandler {
 public:
     ErrorCatchingCoinMessageHandler()
@@ -55,7 +53,7 @@ public:
         }
     }
 };
-
+#endif
 
 void add_lp_solver_option_to_parser(OptionParser &parser) {
     parser.document_note(
@@ -73,7 +71,7 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
     parser.add_enum_option("lpsolver",
                            lp_solvers,
                            "external solver that should be used to solve linear programs",
-                           "CLP",
+                           "CPLEX",
                            lp_solvers_doc);
 }
 
@@ -116,7 +114,7 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
     exit_with(EXIT_CRITICAL_ERROR);
 }
 
-extern void handle_coin_error(const CoinError &error) {
+void handle_coin_error(const CoinError &error) {
     cerr << "Coin threw exception: " << error.message() << endl
          << " from method " << error.methodName() << endl
          << " from class " << error.className() << endl;
