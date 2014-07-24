@@ -1,27 +1,39 @@
-## By default, build in 32-bit mode. Use BITWIDTH=64 (on command
-## line or in environment) to build in 64-bit mode and BITWIDTH=native
-## to use the native bitness of the OS.
-BITWIDTH ?= 32
+## Variables prefixed with "DOWNWARD_" are used to configure the 
+## build. They can be changed on the command line or set as 
+## environment variables.
 
-## Set USE_LP to 1 to enable linear programming stuff.
-USE_LP = 0
+## By default, build in 32-bit mode. Use DOWNWARD_BITWIDTH=64
+## to build in 64-bit mode and DOWNWARD_BITWIDTH=native to use
+## the native bitness of the OS.
+DOWNWARD_BITWIDTH ?= 32
 
-CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
-CPLEX_LIBDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic
-GUROBI_INCDIR ?=
-GUROBI_LIBDIR ?=
+## Set DOWNWARD_USE_LP to 1 to enable linear programming stuff.
+DOWNWARD_USE_LP ?= 0
 
-COIN_ROOT ?= /opt/coin
+## Fast Downward uses the Open Solver Interface (OSI) by the
+## COIN-OR project for access to LP solvers. Set DOWNWARD_COIN_ROOT
+## to a path where OSI is installed.
+DOWNWARD_COIN_ROOT ?= /opt/coin
 
-## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
-## static linking of the executable in release mode.
+## If COIN/OSI should be used to access an external solver such as 
+## CPLEX or gurobi, set the following variables to paths for the
+## solvers "include" and "lib" directories. 
+DOWNWARD_CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
+DOWNWARD_CPLEX_LIBDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic
+DOWNWARD_GUROBI_INCDIR ?=
+DOWNWARD_GUROBI_LIBDIR ?=
+
+
+## Set DOWNWARD_LINK_RELEASE_STATICALLY to 0 or 1 (default) to
+## disable/enable static linking of the executable in release mode.
 ## On OS X, this is unsupported and will be silently disabled.
-LINK_RELEASE_STATICALLY = 1
+DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 
 ## On a supported operating system, there should be no need to override
-## the OS setting. If the provided code does not work even though your
-## operating system is a supported one, please report this as a bug.
-OS = auto
+## the DOWNWARD_OS setting. If the provided code does not work even
+## though your operating system is a supported one, please report this
+## as a bug.
+DOWNWARD_OS ?= auto
 
 
 HEADERS = \
@@ -150,13 +162,13 @@ ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
 
 SHELL = /bin/bash
 
-ifeq ($(OS), auto)
+ifeq ($(DOWNWARD_OS), auto)
     UNAME := $(shell uname)
 
     ifeq ($(UNAME), Darwin)
-        OS=osx
+        DOWNWARD_OS=osx
     else ifeq ($(UNAME), Linux)
-        OS=linux
+        DOWNWARD_OS=linux
     else
         UNAME_O := $(shell uname -o)
     endif
@@ -164,16 +176,16 @@ ifeq ($(OS), auto)
     ifeq ($(UNAME_O), Cygwin)
         ## For now, we treat Linux and Cygwin equally in this
         ## Makefile, so we just call Cygwin "linux".
-        OS=linux
+        DOWNWARD_OS=linux
     else ifeq ($(OS), auto)
         $(warning OS detection failed -- setting to Linux and hoping for the best!)
-        OS=linux
+        DOWNWARD_OS=linux
     endif
 endif
 
-ifeq ($(OS), osx)
+ifeq ($(DOWNWARD_OS), osx)
     ## Disable static linking on OS X.
-    LINK_RELEASE_STATICALLY=0
+    DOWNWARD_LINK_RELEASE_STATICALLY=0
 endif
 
 
@@ -193,19 +205,17 @@ TARGET_DEBUG    = $(TARGET)$(TARGET_SUFFIX_DEBUG)
 OBJECTS_PROFILE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_PROFILE).o)
 TARGET_PROFILE  = $(TARGET)$(TARGET_SUFFIX_PROFILE)
 
-
-CXX     = g++
-DEPEND = g++ -MM
+DEPEND = $(CXX) -MM
 
 ## CXXFLAGS, LDFLAGS, POSTLINKOPT are options for compiler and linker
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
-ifeq ($(BITWIDTH), 32)
+ifeq ($(DOWNWARD_BITWIDTH), 32)
     BITWIDTHOPT = -m32
-else ifeq ($(BITWIDTH), 64)
+else ifeq ($(DOWNWARD_BITWIDTH), 64)
     BITWIDTHOPT = -m64
-else ifneq ($(BITWIDTH), native)
+else ifneq ($(DOWNWARD_BITWIDTH), native)
     $(error Bad value for BITWIDTH)
 endif
 
@@ -215,7 +225,7 @@ CXXFLAGS += $(BITWIDTHOPT)
 CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 
 CXXFLAGS += -Iext
-ifeq ($(OS), osx)
+ifeq ($(DOWNWARD_OS), osx)
     ## If you have Mac OS, you may be getting tree.hh from /opt/local/include.
     CXXFLAGS += -I/opt/local/include/
 endif
@@ -226,7 +236,7 @@ endif
 ## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
 ## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
 ## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
-ifeq ($(OS), linux) # workarounds only valid for Linux...
+ifeq ($(DOWNWARD_OS), linux) # workarounds only valid for Linux...
     HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
     HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
 
@@ -265,12 +275,12 @@ POSTLINKOPT_RELEASE =
 POSTLINKOPT_DEBUG   =
 POSTLINKOPT_PROFILE =
 
-ifeq ($(LINK_RELEASE_STATICALLY), 1)
+ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
     LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
-ifeq ($(OS), linux)
-    ifeq ($(LINK_RELEASE_STATICALLY), 0)
+ifeq ($(DOWNWARD_OS), linux)
+    ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
         POSTLINKOPT_RELEASE += -lrt
     else
         POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
@@ -280,14 +290,14 @@ ifeq ($(OS), linux)
 endif
 
 
-ifeq ($(USE_LP),1)
+ifeq ($(DOWNWARD_USE_LP),1)
 
-$(COIN_ROOT):
-	$(error COIN is no longer bundled with Fast Downward. Please install COIN outside of the repository and set up the environment variable COIN_ROOT to the new path. See http://www.fast-downward.org/LPBuildInstructions for details on how to install COIN and LP solvers)
+$(DOWNWARD_COIN_ROOT):
+	$(error COIN is no longer bundled with Fast Downward. Please install COIN outside of the repository and set up the environment variable DOWNWARD_COIN_ROOT to the new path. See http://www.fast-downward.org/LPBuildInstructions for details on how to install COIN and LP solvers)
 
-$(TARGET_RELEASE) $(OBJECTS_RELEASE): $(COIN_ROOT)
-$(TARGET_DEBUG) $(OBJECTS_DEBUG): $(COIN_ROOT)
-$(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
+$(TARGET_RELEASE) $(OBJECTS_RELEASE): $(DOWNWARD_COIN_ROOT)
+$(TARGET_DEBUG) $(OBJECTS_DEBUG): $(DOWNWARD_COIN_ROOT)
+$(TARGET_PROFILE) $(OBJECTS_PROFILE): $(DOWNWARD_COIN_ROOT)
 
 ## We want to link the Linear Programming libraries statically since
 ## they are unlikely to be preinstalled on the grids we use for
@@ -300,18 +310,22 @@ $(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
 ## libraries. See
 ## http://ask.metafilter.com/117792/How-to-fix-C-static-linking-problems
 
-COIN_HAS_CPX = $(shell test -d $(CPLEX_INCDIR) && test -f $(CPLEX_LIBDIR)/libcplex.a && test -f $(COIN_ROOT)/lib/libOsiCpx.a && echo 1)
+COIN_LIBS =
+COIN_CXXFLAGS =
+COIN_LDFLAGS =
+
+COIN_HAS_CPX := $(shell test -d $(DOWNWARD_CPLEX_INCDIR) && test -f $(DOWNWARD_CPLEX_LIBDIR)/libcplex.a && test -f $(DOWNWARD_COIN_ROOT)/lib/libOsiCpx.a && echo 1)
 ifeq ($(COIN_HAS_CPX),1)
 COIN_LIBS += OsiCpx cplex
 COIN_CXXFLAGS += -D COIN_HAS_CPX
-COIN_LDFLAGS += -L$(CPLEX_LIBDIR) -pthread
+COIN_LDFLAGS += -L$(DOWNWARD_CPLEX_LIBDIR) -pthread
 endif
 
-COIN_HAS_GUROBI = $(shell test -d $(GUROBI_INCDIR) && test -f $(GUROBI_LIBDIR)/libgurobi.a && test -f $(COIN_ROOT)/lib/OsiGrb.a && echo 1)
+COIN_HAS_GRB := $(shell test -d $(DOWNWARD_GUROBI_INCDIR) && test -f $(DOWNWARD_GUROBI_LIBDIR)/libgurobi.a && test -f $(DOWNWARD_COIN_ROOT)/lib/OsiGrb.a && echo 1)
 ifeq ($(COIN_HAS_GRB),1)
 COIN_LIBS += OsiGrb gurobi
 COIN_CXXFLAGS += -D COIN_HAS_GRB
-COIN_LDFLAGS += -L$(GUROBI_LIBDIR) -pthread
+COIN_LDFLAGS += -L$(DOWNWARD_GUROBI_LIBDIR) -pthread
 endif
 
 ## CLP is part of coin and can always be enabled
@@ -327,11 +341,11 @@ COIN_LIBS += Osi CoinUtils
 ## afterwards (unless in release mode with static linking enabled). See
 ## http://ubuntuforums.org/showthread.php?t=491455
 
-COIN_CXXFLAGS += -I$(COIN_ROOT)/include/coin -D USE_LP
+COIN_CXXFLAGS += -I$(DOWNWARD_COIN_ROOT)/include/coin -D USE_LP
 ifeq ($(OS), osx)
-COIN_LDFLAGS += -L$(COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
+COIN_LDFLAGS += -L$(DOWNWARD_COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
 else
-COIN_LDFLAGS += -L$(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+COIN_LDFLAGS += -L$(DOWNWARD_COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
 endif
 
 CXXFLAGS += $(COIN_CXXFLAGS)
@@ -340,8 +354,8 @@ POSTLINKOPT_RELEASE += $(COIN_LDFLAGS)
 POSTLINKOPT_DEBUG += $(COIN_LDFLAGS)
 POSTLINKOPT_PROFILE += $(COIN_LDFLAGS)
 
-ifeq ($(OS), linux)
-ifeq ($(LINK_RELEASE_STATICALLY), 0)
+ifeq ($(DOWNWARD_OS), linux)
+ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
 POSTLINKOPT_RELEASE += -Wl,-Bdynamic
 endif
 POSTLINKOPT_DEBUG   += -Wl,-Bdynamic
