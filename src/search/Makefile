@@ -15,9 +15,9 @@ DOWNWARD_USE_LP ?= 0
 ## to a path where OSI is installed.
 DOWNWARD_COIN_ROOT ?= /opt/coin
 
-## If COIN/OSI should be used to access an external solver such as 
-## CPLEX or gurobi, set the following variables to paths for the
-## solvers "include" and "lib" directories. 
+## If you want to use the CPLEX and/or Gurobi LP solvers, set the
+## following variables to paths for the "include" and "lib"
+## directories of the solvers. 
 DOWNWARD_CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
 DOWNWARD_CPLEX_LIBDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic
 DOWNWARD_GUROBI_INCDIR ?=
