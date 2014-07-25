@@ -1,17 +1,22 @@
-## By default, build in 32-bit mode. Use BITWIDTH=64 (on command
-## line or in environment) to build in 64-bit mode and BITWIDTH=native
-## to use the native bitness of the OS.
-BITWIDTH ?= 32
+## Variables prefixed with "DOWNWARD_" are used to configure the 
+## build. They can be changed on the command line or set as 
+## environment variables.
 
-## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
-## static linking of the executable in release mode.
+## By default, build in 32-bit mode. Use DOWNWARD_BITWIDTH=64
+## to build in 64-bit mode and DOWNWARD_BITWIDTH=native to use
+## the native bitness of the OS.
+DOWNWARD_BITWIDTH ?= 32
+
+## Set DOWNWARD_LINK_RELEASE_STATICALLY to 0 or 1 (default) to
+## disable/enable static linking of the executable in release mode.
 ## On OS X, this is unsupported and will be silently disabled.
-LINK_RELEASE_STATICALLY = 1
+DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 
 ## On a supported operating system, there should be no need to override
-## the OS setting. If the provided code does not work even though your
-## operating system is a supported one, please report this as a bug.
-OS = auto
+## the DOWNWARD_OS setting. If the provided code does not work even
+## though your operating system is a supported one, please report this
+## as a bug.
+DOWNWARD_OS ?= auto
 
 
 HEADERS = \
@@ -36,13 +41,13 @@ ARGS_PROFILE =
 
 SHELL = /bin/bash
 
-ifeq ($(OS), auto)
+ifeq ($(DOWNWARD_OS), auto)
     UNAME := $(shell uname)
 
     ifeq ($(UNAME), Darwin)
-        OS=osx
+        DOWNWARD_OS=osx
     else ifeq ($(UNAME), Linux)
-        OS=linux
+        DOWNWARD_OS=linux
     else
         UNAME_O := $(shell uname -o)
     endif
@@ -50,16 +55,16 @@ ifeq ($(OS), auto)
     ifeq ($(UNAME_O), Cygwin)
         ## For now, we treat Linux and Cygwin equally in this
         ## Makefile, so we just call Cygwin "linux".
-        OS=linux
-    else ifeq ($(OS), auto)
+        DOWNWARD_OS=linux
+    else ifeq ($(DOWNWARD_OS), auto)
         $(warning OS detection failed -- setting to Linux and hoping for the best!)
-        OS=linux
+        DOWNWARD_OS=linux
     endif
 endif
 
-ifeq ($(OS), osx)
+ifeq ($(DOWNWARD_OS), osx)
     ## Disable static linking on OS X.
-    LINK_RELEASE_STATICALLY=0
+    DOWNWARD_LINK_RELEASE_STATICALLY=0
 endif
 
 
@@ -87,12 +92,12 @@ DEPEND = g++ -MM
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
-ifeq ($(BITWIDTH), 32)
+ifeq ($(DOWNWARD_BITWIDTH), 32)
     BITWIDTHOPT = -m32
-else ifeq ($(BITWIDTH), 64)
+else ifeq ($(DOWNWARD_BITWIDTH), 64)
     BITWIDTHOPT = -m64
-else ifneq ($(BITWIDTH), native)
-    $(error Bad value for BITWIDTH)
+else ifneq ($(DOWNWARD_BITWIDTH), native)
+    $(error Bad value for DOWNWARD_BITWIDTH)
 endif
 
 CXXFLAGS =
@@ -105,7 +110,7 @@ CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
 ## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
 ## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
 ## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
-ifeq ($(OS), linux) # workarounds only valid for Linux...
+ifeq ($(DOWNWARD_OS), linux) # workarounds only valid for Linux...
     HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
     HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
 
@@ -144,12 +149,12 @@ POSTLINKOPT_RELEASE =
 POSTLINKOPT_DEBUG   =
 POSTLINKOPT_PROFILE =
 
-ifeq ($(LINK_RELEASE_STATICALLY), 1)
+ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
     LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
-ifeq ($(OS), linux)
-    ifeq ($(LINK_RELEASE_STATICALLY), 0)
+ifeq ($(DOWNWARD_OS), linux)
+    ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
         POSTLINKOPT_RELEASE += -lrt
     else
         POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
