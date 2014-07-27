@@ -17,6 +17,7 @@ def get_type_id(typename):
 
 class Type(object):
     def __init__(self, name, basetype_name=None):
+        self.name = name
         self.id = get_type_id(name)
         if basetype_name is None:
             self.basetype_id = None
