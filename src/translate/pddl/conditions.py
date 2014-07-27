@@ -1,9 +1,12 @@
 from __future__ import print_function
 
+import sys
+
+
 from . import pddl_types
 
-def parse_condition(alist):
-    condition = parse_condition_aux(alist, False)
+def parse_condition(alist, type_dict, predicate_dict):
+    condition = parse_condition_aux(alist, False, type_dict, predicate_dict)
     # TODO: The next line doesn't appear to do anything good,
     # since uniquify_variables doesn't modify the condition in place.
     # Conditions in actions or axioms are uniquified elsewhere, but
@@ -12,7 +15,7 @@ def parse_condition(alist):
     condition.uniquify_variables({})
     return condition
 
-def parse_condition_aux(alist, negated):
+def parse_condition_aux(alist, negated, type_dict, predicate_dict):
     """Parse a PDDL condition. The condition is translated into NNF on the fly."""
     tag = alist[0]
     if tag in ("and", "or", "not", "imply"):
@@ -21,21 +24,27 @@ def parse_condition_aux(alist, negated):
             assert len(args) == 2
         if tag == "not":
             assert len(args) == 1
-            return parse_condition_aux(args[0], not negated)
+            return parse_condition_aux(
+                args[0], not negated, type_dict, predicate_dict)
     elif tag in ("forall", "exists"):
         parameters = pddl_types.parse_typed_list(alist[1])
         args = alist[2:]
         assert len(args) == 1
     elif negated:
-        return NegatedAtom(alist[0], alist[1:])
+        pred = get_predicate_id(alist[0], type_dict, predicate_dict)
+        return NegatedAtom(pred, alist[1:])
     else:
-        return Atom(alist[0], alist[1:])
+        pred = get_predicate_id(alist[0], type_dict, predicate_dict)
+        return Atom(pred, alist[1:])
     if tag == "imply":
-        parts = [parse_condition_aux(args[0], not negated),
-                 parse_condition_aux(args[1], negated)]
+        parts = [parse_condition_aux(
+                args[0], not negated, type_dict, predicate_dict),
+                 parse_condition_aux(
+                args[1], negated, type_dict, predicate_dict)]
         tag = "or"
     else:
-        parts = [parse_condition_aux(part, negated) for part in args]
+        parts = [parse_condition_aux(part, negated, type_dict, predicate_dict)
+                 for part in args]
 
     if tag == "and" and not negated or tag == "or" and negated:
         return Conjunction(parts)
@@ -46,13 +55,37 @@ def parse_condition_aux(alist, negated):
     elif tag == "exists" and not negated or tag == "forall" and negated:
         return ExistentialCondition(parameters, parts)
 
-def parse_literal(alist):
+def parse_literal(alist, type_dict, predicate_dict):
     if alist[0] == "not":
         assert len(alist) == 2
         alist = alist[1]
-        return NegatedAtom(alist[0], alist[1:])
+        pred = get_predicate_id(alist[0], type_dict, predicate_dict)
+        return NegatedAtom(pred, alist[1:])
     else:
+        pred = get_predicate_id(alist[0], type_dict, predicate_dict)
         return Atom(alist[0], alist[1:])
+
+
+SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = False
+def get_predicate_id(text, type_dict, predicate_dict):
+    global SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH
+
+    the_type = type_dict.get(text)
+    the_predicate = predicate_dict.get(text)
+
+    if the_type is None and the_predicate is None:
+        raise SystemExit("Undeclared predicate: %s" % text)
+    elif the_predicate is not None:
+        if the_type is not None and not SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH:
+            msg = ("Warning: name clash between type and predicate %r.\n"
+                   "Interpreting as predicate in conditions.") % text
+            print(msg, file=sys.stderr)
+            SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = True
+        return the_predicate.name
+    else:
+        assert the_type is not None
+        return the_type.id
+
 
 # Conditions (of any type) are immutable, because they need to
 # be hashed occasionally. Immutability also allows more efficient comparison
