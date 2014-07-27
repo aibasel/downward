@@ -20,8 +20,7 @@ class Axiom(object):
     def parse(cls, alist, type_dict, predicate_dict):
         assert len(alist) == 3
         assert alist[0] == ":derived"
-        predicate = predicates.Predicate.parse(
-            alist[1], type_dict, predicate_dict)
+        predicate = predicates.Predicate.parse(alist[1])
         condition = conditions.parse_condition(
             alist[2], type_dict, predicate_dict)
         return cls(predicate.name, predicate.arguments,

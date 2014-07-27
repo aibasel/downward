@@ -79,7 +79,7 @@ def parse_effect(alist, type_dict, predicate_dict):
         assert len(alist) == 3
         condition = conditions.parse_condition(
             alist[1], type_dict, predicate_dict)
-        effect = parse_effect(alist[2])
+        effect = parse_effect(alist[2], type_dict, predicate_dict)
         return ConditionalEffect(condition, effect)
     elif tag == "increase":
         assert len(alist) == 3
