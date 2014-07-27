@@ -30,12 +30,9 @@ def parse_condition_aux(alist, negated, type_dict, predicate_dict):
         parameters = pddl_types.parse_typed_list(alist[1])
         args = alist[2:]
         assert len(args) == 1
-    elif negated:
-        pred = get_predicate_id(alist[0], type_dict, predicate_dict)
-        return NegatedAtom(pred, alist[1:])
     else:
-        pred = get_predicate_id(alist[0], type_dict, predicate_dict)
-        return Atom(pred, alist[1:])
+        return parse_literal(alist, type_dict, predicate_dict, negated=negated)
+
     if tag == "imply":
         parts = [parse_condition_aux(
                 args[0], not negated, type_dict, predicate_dict),
@@ -55,19 +52,28 @@ def parse_condition_aux(alist, negated, type_dict, predicate_dict):
     elif tag == "exists" and not negated or tag == "forall" and negated:
         return ExistentialCondition(parameters, parts)
 
-def parse_literal(alist, type_dict, predicate_dict):
+
+def parse_literal(alist, type_dict, predicate_dict, negated=False):
     if alist[0] == "not":
         assert len(alist) == 2
         alist = alist[1]
-        pred = get_predicate_id(alist[0], type_dict, predicate_dict)
-        return NegatedAtom(pred, alist[1:])
+        negated = not negated
+
+    pred_id, arity = _get_predicate_id_and_arity(
+        alist[0], type_dict, predicate_dict)
+
+    if arity != len(alist) - 1:
+        raise SystemExit("predicate used with wrong arity: (%s)"
+                         % " ".join(alist))
+
+    if negated:
+        return NegatedAtom(pred_id, alist[1:])
     else:
-        pred = get_predicate_id(alist[0], type_dict, predicate_dict)
-        return Atom(alist[0], alist[1:])
+        return Atom(pred_id, alist[1:])
 
 
 SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = False
-def get_predicate_id(text, type_dict, predicate_dict):
+def _get_predicate_id_and_arity(text, type_dict, predicate_dict):
     global SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH
 
     the_type = type_dict.get(text)
@@ -81,10 +87,10 @@ def get_predicate_id(text, type_dict, predicate_dict):
                    "Interpreting as predicate in conditions.") % text
             print(msg, file=sys.stderr)
             SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = True
-        return the_predicate.name
+        return the_predicate.name, the_predicate.get_arity()
     else:
         assert the_type is not None
-        return the_type.id
+        return the_type.id, 1
 
 
 # Conditions (of any type) are immutable, because they need to
