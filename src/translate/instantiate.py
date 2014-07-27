@@ -23,10 +23,10 @@ def get_objects_by_type(typed_objects, types):
     result = defaultdict(list)
     supertypes = {}
     for type in types:
-        supertypes[type.name] = type.supertype_names
+        supertypes[type.id] = type.supertype_ids
     for obj in typed_objects:
-        result[obj.type].append(obj.name)
-        for type in supertypes[obj.type]:
+        result[obj.type_id].append(obj.name)
+        for type in supertypes[obj.type_id]:
             result[type].append(obj.name)
     return result
 

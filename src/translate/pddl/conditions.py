@@ -250,7 +250,7 @@ class QuantifiedCondition(Condition):
 
 class UniversalCondition(QuantifiedCondition):
     def _untyped(self, parts):
-        type_literals = [NegatedAtom(par.type, [par.name]) for par in self.parameters]
+        type_literals = [NegatedAtom(par.type_id, [par.name]) for par in self.parameters]
         return UniversalCondition(self.parameters,
                                   [Disjunction(type_literals + parts)])
     def negate(self):
@@ -260,7 +260,7 @@ class UniversalCondition(QuantifiedCondition):
 
 class ExistentialCondition(QuantifiedCondition):
     def _untyped(self, parts):
-        type_literals = [Atom(par.type, [par.name]) for par in self.parameters]
+        type_literals = [Atom(par.type_id, [par.name]) for par in self.parameters]
         return ExistentialCondition(self.parameters,
                                     [Conjunction(type_literals + parts)])
     def negate(self):
