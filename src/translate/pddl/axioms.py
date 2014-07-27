@@ -27,7 +27,7 @@ class Axiom(object):
         print("Axiom %s(%s)" % (self.name, ", ".join(args)))
         self.condition.dump()
     def uniquify_variables(self):
-        self.type_map = dict([(par.name, par.type) for par in self.parameters])
+        self.type_map = dict([(par.name, par.type_id) for par in self.parameters])
         self.condition = self.condition.uniquify_variables(self.type_map)
     def instantiate(self, var_mapping, init_facts, fluent_facts):
         # The comments for Action.instantiate apply accordingly.
