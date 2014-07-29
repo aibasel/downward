@@ -89,6 +89,9 @@ def parse_effect(alist, type_dict, predicate_dict):
     else:
         # We pass in {} instead of type_dict here because types must
         # be static predicates, so cannot be the target of an effect.
+        #
+        # TODO: Improve error reporting in the case where an effect
+        # affects a type.
         return SimpleEffect(conditions.parse_literal(alist, {}, predicate_dict))
 
 
