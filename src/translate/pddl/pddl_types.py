@@ -2,83 +2,86 @@
 # In the future, use explicitly relative imports or absolute
 # imports as a better solution.
 
-import graph
-
 import itertools
 
+import graph
 
-def get_type_id(typename):
+
+def _get_type_predicate_name(type_name):
     # PDDL allows mixing types and predicates, but some PDDL files
-    # have name collisions between types and predicates. To support
-    # this, we give types string IDs that cannot be confused with
-    # non-type predicates.
-    return "type@%s" % typename
+    # have name collisions between types and predicates. We want to
+    # support both the case where such name collisions occur and the
+    # case where types are used as predicates.
+    #
+    # We internally give types predicate names that cannot be confused
+    # with non-type predicates. When the input uses a PDDL type as a
+    # predicate, we automatically map it to this internal name.
+    return "type@%s" % type_name
 
 
 class Type(object):
     def __init__(self, name, basetype_name=None):
         self.name = name
-        self.id = get_type_id(name)
-        if basetype_name is None:
-            self.basetype_id = None
-        else:
-            self.basetype_id = get_type_id(basetype_name)
+        self.basetype_name = basetype_name
 
     def __str__(self):
-        return self.id
+        return self.name
 
     def __repr__(self):
-        return "Type(%s, %s)" % (self.id, self.basetype_id)
+        return "Type(%s, %s)" % (self.name, self.basetype_name)
+
+    def get_predicate_name(self):
+        return _get_type_predicate_name(self.name)
 
 
 def set_supertypes(type_list):
-    typeid_to_type = {}
+    type_name_to_type = {}
     child_types = []
     for type in type_list:
-        type.supertype_ids = []
-        typeid_to_type[type.id] = type
-        if type.basetype_id:
-            child_types.append((type.id, type.basetype_id))
-    for (desc_id, anc_id) in graph.transitive_closure(child_types):
-        typeid_to_type[desc_id].supertype_ids.append(anc_id)
+        type.supertype_names = []
+        type_name_to_type[type.name] = type
+        if type.basetype_name:
+            child_types.append((type.name, type.basetype_name))
+    for (desc_name, anc_name) in graph.transitive_closure(child_types):
+        type_name_to_type[desc_name].supertype_names.append(anc_name)
 
 
 class TypedObject(object):
     def __init__(self, name, type_name):
         self.name = name
-        self.type_id = get_type_id(type_name)
+        self.type_name = type_name
 
     def __hash__(self):
-        return hash((self.name, self.type_id))
+        return hash((self.name, self.type_name))
 
     def __eq__(self, other):
-        return self.name == other.name and self.type_id == other.type_id
+        return self.name == other.name and self.type_name == other.type_name
 
     def __ne__(self, other):
         return not self == other
 
     def __str__(self):
-        return "%s: %s" % (self.name, self.type_id)
+        return "%s: %s" % (self.name, self.type_name)
 
     def __repr__(self):
-        return "<TypedObject %s: %s>" % (self.name, self.type_id)
+        return "<TypedObject %s: %s>" % (self.name, self.type_name)
 
     def uniquify_name(self, type_map, renamings):
         if self.name not in type_map:
-            type_map[self.name] = self.type_id
+            type_map[self.name] = self.type_name
             return self
         for counter in itertools.count(1):
             new_name = self.name + str(counter)
             if new_name not in type_map:
                 renamings[self.name] = new_name
-                type_map[new_name] = self.type_id
-                return TypedObject(new_name, self.type_id)
+                type_map[new_name] = self.type_name
+                return TypedObject(new_name, self.type_name)
 
-    def to_untyped_strips(self):
-        # TODO: Try to resolve the cyclic import differently.
-        # Avoid cyclic import.
+    def get_atom(self):
+        # TODO: Resolve cyclic import differently.
         from . import conditions
-        return conditions.Atom(self.type_id, [self.name])
+        predicate_name = _get_type_predicate_name(self.type_name)
+        return conditions.Atom(predicate_name, [self.name])
 
 
 def parse_typed_list(alist, only_variables=False, constructor=TypedObject,

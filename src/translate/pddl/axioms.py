@@ -32,7 +32,8 @@ class Axiom(object):
         self.condition.dump()
 
     def uniquify_variables(self):
-        self.type_map = dict([(par.name, par.type_id) for par in self.parameters])
+        self.type_map = dict([(par.name, par.type_name)
+                              for par in self.parameters])
         self.condition = self.condition.uniquify_variables(self.type_map)
 
     def instantiate(self, var_mapping, init_facts, fluent_facts):
