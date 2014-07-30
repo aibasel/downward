@@ -2,8 +2,8 @@ from __future__ import print_function
 
 import sys
 
-
 from . import pddl_types
+
 
 def parse_condition(alist, type_dict, predicate_dict):
     condition = parse_condition_aux(alist, False, type_dict, predicate_dict)
@@ -90,7 +90,7 @@ def _get_predicate_id_and_arity(text, type_dict, predicate_dict):
         return the_predicate.name, the_predicate.get_arity()
     else:
         assert the_type is not None
-        return the_type.id, 1
+        return the_type.get_predicate_name(), 1
 
 
 # Conditions (of any type) are immutable, because they need to
@@ -289,7 +289,7 @@ class QuantifiedCondition(Condition):
 
 class UniversalCondition(QuantifiedCondition):
     def _untyped(self, parts):
-        type_literals = [NegatedAtom(par.type_id, [par.name]) for par in self.parameters]
+        type_literals = [par.get_atom().negate() for par in self.parameters]
         return UniversalCondition(self.parameters,
                                   [Disjunction(type_literals + parts)])
     def negate(self):
@@ -299,7 +299,7 @@ class UniversalCondition(QuantifiedCondition):
 
 class ExistentialCondition(QuantifiedCondition):
     def _untyped(self, parts):
-        type_literals = [Atom(par.type_id, [par.name]) for par in self.parameters]
+        type_literals = [par.get_atom() for par in self.parameters]
         return ExistentialCondition(self.parameters,
                                     [Conjunction(type_literals + parts)])
     def negate(self):

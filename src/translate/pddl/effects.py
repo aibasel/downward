@@ -128,7 +128,7 @@ class Effect(object):
                     objects_by_type, result):
         if self.parameters:
             var_mapping = var_mapping.copy() # Will modify this.
-            object_lists = [objects_by_type.get(par.type_id, [])
+            object_lists = [objects_by_type.get(par.type_name, [])
                             for par in self.parameters]
             for object_tuple in cartesian_product(*object_lists):
                 for (par, obj) in zip(self.parameters, object_tuple):

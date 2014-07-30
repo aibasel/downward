@@ -4,7 +4,7 @@ class Function(object):
     def __init__(self, name, arguments, type_name):
         self.name = name
         self.arguments = arguments
-        if (type_name != "number"):
+        if type_name != "number":
             raise SystemExit("Error: object fluents not supported\n" +
                              "(function %s has type %s)" % (name, type_name))
         self.type_name = type_name
