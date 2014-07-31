@@ -12,7 +12,8 @@ from . import f_expression
 
 class Task(object):
     def __init__(self, domain_name, task_name, requirements,
-                 types, objects, predicates, functions, init, goal, actions, axioms, use_metric):
+                 types, objects, predicates, functions, init, goal,
+                 actions, axioms, use_metric):
         self.domain_name = domain_name
         self.task_name = task_name
         self.requirements = requirements
@@ -37,9 +38,11 @@ class Task(object):
 
     @staticmethod
     def parse(domain_pddl, task_pddl):
-        domain_name, domain_requirements, types, constants, predicates, functions, actions, axioms \
-                     = parse_domain(domain_pddl)
-        task_name, task_domain_name, task_requirements, objects, init, goal, use_metric = parse_task(task_pddl)
+        (domain_name, domain_requirements, types, type_dict,
+         constants, predicates, predicate_dict, functions,
+         actions, axioms) = parse_domain(domain_pddl)
+        (task_name, task_domain_name, task_requirements, objects, init,
+         goal, use_metric) = parse_task(task_pddl, type_dict, predicate_dict)
 
         assert domain_name == task_domain_name
         requirements = Requirements(sorted(set(
@@ -52,8 +55,9 @@ class Task(object):
             finalmsg="please check :constants and :objects definitions")
         init += [conditions.Atom("=", (obj.name, obj.name)) for obj in objects]
 
-        return Task(domain_name, task_name, requirements, types, objects,
-                    predicates, functions, init, goal, actions, axioms, use_metric)
+        return Task(domain_name, task_name, requirements,
+                    types, objects, predicates, functions,
+                    init, goal, actions, axioms, use_metric)
 
     def dump(self):
         print("Problem %s: %s [%s]" % (
@@ -124,7 +128,8 @@ def parse_domain(domain_pddl):
                              "Reason: two '%s' specifications." % field)
         if (seen_fields and
             correct_order.index(seen_fields[-1]) > correct_order.index(field)):
-            msg = "\nWarning: %s specification not allowed here (cf. PDDL BNF)" % field
+            msg = ("\nWarning: %s specification not allowed here "
+                   "(cf. PDDL BNF)") % field
             print(msg, file=sys.stderr)
         seen_fields.append(field)
         if field == ":requirements":
@@ -146,12 +151,14 @@ def parse_domain(domain_pddl):
                 constructor=functions.Function.parse,
                 default_type="number")
     pddl_types.set_supertypes(the_types)
-    # for type in the_types:
-    #   print repr(type), type.supertype_names
     yield requirements
     yield the_types
+    type_dict = dict((type.name, type) for type in the_types)
+    yield type_dict
     yield constants
     yield the_predicates
+    predicate_dict = dict((pred.name, pred) for pred in the_predicates)
+    yield predicate_dict
     yield the_functions
 
     entries = [first_action] + [entry for entry in iterator]
@@ -159,16 +166,16 @@ def parse_domain(domain_pddl):
     the_actions = []
     for entry in entries:
         if entry[0] == ":derived":
-            axiom = axioms.Axiom.parse(entry)
+            axiom = axioms.Axiom.parse(entry, type_dict, predicate_dict)
             the_axioms.append(axiom)
         else:
-            action = actions.Action.parse(entry)
+            action = actions.Action.parse(entry, type_dict, predicate_dict)
             if action is not None:
                 the_actions.append(action)
     yield the_actions
     yield the_axioms
 
-def parse_task(task_pddl):
+def parse_task(task_pddl, type_dict, predicate_dict):
     iterator = iter(task_pddl)
 
     define_tag = next(iterator)
@@ -220,7 +227,7 @@ def parse_task(task_pddl):
                 else:
                     raise SystemExit("Error in initial state specification\n" +
                                      "Reason: conflicting assignment for " +
-                                     "%s." %  assignment.fluent)
+                                     "%s." % assignment.fluent)
             else:
                 initial_assignments[assignment.fluent] = assignment
                 initial.append(assignment)
@@ -237,7 +244,7 @@ def parse_task(task_pddl):
 
     goal = next(iterator)
     assert goal[0] == ":goal" and len(goal) == 2
-    yield conditions.parse_condition(goal[1])
+    yield conditions.parse_condition(goal[1], type_dict, predicate_dict)
 
     use_metric = False
     for entry in iterator:
@@ -251,15 +258,18 @@ def parse_task(task_pddl):
     for entry in iterator:
         assert False, entry
 
-def check_atom_consistency(atom, same_truth_value, other_truth_value, atom_is_true=True):
+
+def check_atom_consistency(atom, same_truth_value, other_truth_value,
+                           atom_is_true=True):
     if atom in other_truth_value:
         raise SystemExit("Error in initial state specification\n" +
                          "Reason: %s is true and false." %  atom)
     if atom in same_truth_value:
         if not atom_is_true:
             atom = atom.negate()
-        print("Warning: %s is specified twice in initial state specification" % atom)
-    
+        print("Warning: %s is specified twice in initial state specification" %
+              atom)
+
 
 def check_for_duplicates(elements, errmsg, finalmsg):
     seen = set()
