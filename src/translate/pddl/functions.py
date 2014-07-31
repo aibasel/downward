@@ -1,5 +1,3 @@
-from . import pddl_types
-
 class Function(object):
     def __init__(self, name, arguments, type_name):
         self.name = name
@@ -8,11 +6,7 @@ class Function(object):
             raise SystemExit("Error: object fluents not supported\n" +
                              "(function %s has type %s)" % (name, type_name))
         self.type_name = type_name
-    @classmethod
-    def parse(cls, alist, type_name):
-        name = alist[0]
-        arguments = pddl_types.parse_typed_list(alist[1:])
-        return cls(name, arguments, type_name)
+
     def __str__(self):
         result = "%s(%s)" % (self.name, ", ".join(map(str, self.arguments)))
         if self.type_name:

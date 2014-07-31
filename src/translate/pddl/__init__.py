@@ -1,7 +1,5 @@
 from .pddl_file import open
 
-from .parser import ParseError
-
 from .pddl_types import Type
 from .pddl_types import TypedObject
 

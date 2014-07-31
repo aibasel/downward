@@ -3,8 +3,6 @@ from __future__ import print_function
 import copy
 
 from . import conditions
-from . import effects
-from . import pddl_types
 
 
 class Action(object):
@@ -26,50 +24,6 @@ class Action(object):
 
     def __repr__(self):
         return "<Action %r at %#x>" % (self.name, id(self))
-
-    @classmethod
-    def parse(cls, alist, type_dict, predicate_dict):
-        iterator = iter(alist)
-        action_tag = next(iterator)
-        assert action_tag == ":action"
-        name = next(iterator)
-        parameters_tag_opt = next(iterator)
-        if parameters_tag_opt == ":parameters":
-            parameters = pddl_types.parse_typed_list(next(iterator),
-                                                     only_variables=True)
-            precondition_tag_opt = next(iterator)
-        else:
-            parameters = []
-            precondition_tag_opt = parameters_tag_opt
-        if precondition_tag_opt == ":precondition":
-            precondition_list = next(iterator)
-            if not precondition_list:
-                # Note that :precondition () is allowed in PDDL.
-                precondition = conditions.Conjunction([])
-            else:
-                precondition = conditions.parse_condition(
-                    precondition_list, type_dict, predicate_dict)
-                precondition = precondition.simplified()
-            effect_tag = next(iterator)
-        else:
-            precondition = conditions.Conjunction([])
-            effect_tag = precondition_tag_opt
-        assert effect_tag == ":effect"
-        effect_list = next(iterator)
-        eff = []
-        if effect_list:
-            try:
-                cost = effects.parse_effects(
-                    effect_list, eff, type_dict, predicate_dict)
-            except ValueError as e:
-                raise SystemExit("Error in Action %s\nReason: %s." % (name, e))
-        for rest in iterator:
-            assert False, rest
-        if eff:
-            return cls(name, parameters, len(parameters),
-                       precondition, eff, cost)
-        else:
-            return None
 
     def dump(self):
         print("%s(%s)" % (self.name, ", ".join(map(str, self.parameters))))
