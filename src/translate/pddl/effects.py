@@ -1,8 +1,6 @@
 from __future__ import print_function
 
 from . import conditions
-from . import pddl_types
-from . import f_expression
 
 def cartesian_product(*sequences):
     # TODO: Also exists in tools.py outside the pddl package (defined slightly
@@ -13,86 +11,6 @@ def cartesian_product(*sequences):
         for tup in cartesian_product(*sequences[1:]):
             for item in sequences[0]:
                 yield (item,) + tup
-
-def parse_effects(alist, result, type_dict, predicate_dict):
-    """Parse a PDDL effect (any combination of simple, conjunctive, conditional, and universal)."""
-    tmp_effect = parse_effect(alist, type_dict, predicate_dict)
-    normalized = tmp_effect.normalize()
-    cost_eff, rest_effect = normalized.extract_cost()
-    add_effect(rest_effect, result)
-    if cost_eff:
-        return cost_eff.effect
-    else:
-        return None
-
-def add_effect(tmp_effect, result):
-    """tmp_effect has the following structure:
-       [ConjunctiveEffect] [UniversalEffect] [ConditionalEffect] SimpleEffect."""
-
-    if isinstance(tmp_effect, ConjunctiveEffect):
-        for effect in tmp_effect.effects:
-            add_effect(effect, result)
-        return
-    else:
-        parameters = []
-        condition = conditions.Truth()
-        if isinstance(tmp_effect, UniversalEffect):
-            parameters = tmp_effect.parameters
-            if isinstance(tmp_effect.effect, ConditionalEffect):
-                condition = tmp_effect.effect.condition
-                assert isinstance(tmp_effect.effect.effect, SimpleEffect)
-                effect = tmp_effect.effect.effect.effect
-            else:
-                assert isinstance(tmp_effect.effect, SimpleEffect)
-                effect = tmp_effect.effect.effect
-        elif isinstance(tmp_effect, ConditionalEffect):
-            condition = tmp_effect.condition
-            assert isinstance(tmp_effect.effect, SimpleEffect)
-            effect = tmp_effect.effect.effect
-        else:
-            assert isinstance(tmp_effect, SimpleEffect)
-            effect = tmp_effect.effect
-        assert isinstance(effect, conditions.Literal)
-        # Check for contradictory effects
-        condition = condition.simplified()
-        new_effect = Effect(parameters, condition, effect)
-        contradiction = Effect(parameters, condition, effect.negate())
-        if not contradiction in result:
-            result.append(new_effect)
-        else:
-            # We use add-after-delete semantics, keep positive effect
-            if isinstance(contradiction.literal, conditions.NegatedAtom):
-                result.remove(contradiction)
-                result.append(new_effect)
-
-def parse_effect(alist, type_dict, predicate_dict):
-    tag = alist[0]
-    if tag == "and":
-        return ConjunctiveEffect(
-            [parse_effect(eff, type_dict, predicate_dict) for eff in alist[1:]])
-    elif tag == "forall":
-        assert len(alist) == 3
-        parameters = pddl_types.parse_typed_list(alist[1])
-        effect = parse_effect(alist[2], type_dict, predicate_dict)
-        return UniversalEffect(parameters, effect)
-    elif tag == "when":
-        assert len(alist) == 3
-        condition = conditions.parse_condition(
-            alist[1], type_dict, predicate_dict)
-        effect = parse_effect(alist[2], type_dict, predicate_dict)
-        return ConditionalEffect(condition, effect)
-    elif tag == "increase":
-        assert len(alist) == 3
-        assert alist[1] == ['total-cost']
-        assignment = f_expression.parse_assignment(alist)
-        return CostEffect(assignment)
-    else:
-        # We pass in {} instead of type_dict here because types must
-        # be static predicates, so cannot be the target of an effect.
-        #
-        # TODO: Improve error reporting in the case where an effect
-        # affects a type.
-        return SimpleEffect(conditions.parse_literal(alist, {}, predicate_dict))
 
 
 class Effect(object):
