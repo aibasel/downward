@@ -138,8 +138,10 @@ def get_groups(task, reachable_action_params=None):
 
 if __name__ == "__main__":
     import normalize
+    import pddl_parser
+
     print("Parsing...")
-    task = pddl.open()
+    task = pddl_parser.open()
     print("Normalizing...")
     normalize.normalize(task)
     print("Finding invariants...")

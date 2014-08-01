@@ -4,8 +4,6 @@
 
 import itertools
 
-import graph
-
 
 def _get_type_predicate_name(type_name):
     # PDDL allows mixing types and predicates, but some PDDL files
@@ -32,18 +30,6 @@ class Type(object):
 
     def get_predicate_name(self):
         return _get_type_predicate_name(self.name)
-
-
-def set_supertypes(type_list):
-    type_name_to_type = {}
-    child_types = []
-    for type in type_list:
-        type.supertype_names = []
-        type_name_to_type[type.name] = type
-        if type.basetype_name:
-            child_types.append((type.name, type.basetype_name))
-    for (desc_name, anc_name) in graph.transitive_closure(child_types):
-        type_name_to_type[desc_name].supertype_names.append(anc_name)
 
 
 class TypedObject(object):
@@ -82,26 +68,3 @@ class TypedObject(object):
         from . import conditions
         predicate_name = _get_type_predicate_name(self.type_name)
         return conditions.Atom(predicate_name, [self.name])
-
-
-def parse_typed_list(alist, only_variables=False, constructor=TypedObject,
-                     default_type="object"):
-    result = []
-    while alist:
-        try:
-            separator_position = alist.index("-")
-        except ValueError:
-            items = alist
-            _type = default_type
-            alist = []
-        else:
-            items = alist[:separator_position]
-            _type = alist[separator_position + 1]
-            alist = alist[separator_position + 2:]
-        for item in items:
-            assert not only_variables or item.startswith("?"), \
-                   "Expected item to be a variable: %s in (%s)" % (
-                item, " ".join(items))
-            entry = constructor(item, _type)
-            result.append(entry)
-    return result
