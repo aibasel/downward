@@ -150,26 +150,27 @@ def show_aliases():
         print alias
 
 
-def set_args_for_alias(alias_name, args):
-    """If alias_name is a simple alias, set args.search_args to the
-    command-line arguments. If it is a complex alias, set
-    args.search_args to the command-line arguments for the
-    general-cost case and args.unit_cost_search_args to the
+def set_options_for_alias(alias_name, options):
+    """If alias_name is a simple alias, set args.search_options to the
+    command-line arguments for the alias. If it is a complex alias,
+    set args.search_options to the command-line arguments for the
+    general-cost case and args.unit_cost_search_options to the
     command-line arguments for the unit-cost case."""
 
     # TODO: Implement and document effect on args.portfolio.
 
-    assert not args.search_args
+    assert not args.search_options
 
-    args.search_args = SIMPLE_ALIASES.get(alias_name)
-    if args.search_args is not None:
+    args.search_options = SIMPLE_ALIASES.get(alias_name)
+    if args.search_options is not None:
         return
 
-    args.search_args = COMPLEX_ALIASES_GENERAL_COST.get(alias_name)
-    if args.search_args is not None:
-        args.unit_cost_search_args = COMPLEX_ALIASES_UNIT_COST[alias_name]
+    args.search_options = COMPLEX_ALIASES_GENERAL_COST.get(alias_name)
+    if args.search_options is not None:
+        args.unit_cost_search_options = COMPLEX_ALIASES_UNIT_COST[alias_name]
         return
 
     raise NotImplementedError("portfolio aliases not implemented")
+
     # TODO: The old code checked if a portfolio file with the given name
     # existed and then loaded it. How should we implement this now?

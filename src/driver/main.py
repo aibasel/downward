@@ -30,14 +30,16 @@ def main():
     args = arguments.parse_args()
     print "*** processed args:", args
 
-    if args.portfolio_file is not None:
+    # raise SystemExit("stopping to debug arg parsing")
+
+    if args.portfolio is not None:
         set_memory_limit()
 
     if args.show_aliases:
         aliases.show_aliases()
         sys.exit()
 
-    if len(args.translate_args) == 0:
+    if len(args.translate_options) == 0:
         # This is of course a HACK.
         print "*** no positional filenames: run search only"
         run_components.run_search(args)
