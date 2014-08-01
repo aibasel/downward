@@ -441,7 +441,7 @@ bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Context-enhanced additive heuristic", "");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "supported");
+    parser.document_language_support("conditional effects", "supported");
     parser.document_language_support(
         "axioms",
         "supported (in the sense that the planner won't complain -- "

@@ -369,11 +369,11 @@ def build_exploration_rules(task):
 
 def condition_to_rule_body(parameters, condition):
     for par in parameters:
-        yield pddl.Atom(par.type, [par.name])
+        yield par.get_atom()
     if not isinstance(condition, pddl.Truth):
         if isinstance(condition, pddl.ExistentialCondition):
             for par in condition.parameters:
-                yield pddl.Atom(par.type, [par.name])
+                yield par.get_atom()
             condition = condition.parts[0]
         if isinstance(condition, pddl.Conjunction):
             parts = condition.parts
@@ -385,6 +385,7 @@ def condition_to_rule_body(parameters, condition):
                 yield part
 
 if __name__ == "__main__":
-    task = pddl.open()
+    import pddl_parser
+    task = pddl_parser.open()
     normalize(task)
     task.dump()

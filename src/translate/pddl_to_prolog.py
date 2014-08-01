@@ -140,9 +140,9 @@ class Rule:
         return "%s :- %s." % (self.effect, cond_str)
 
 def translate_typed_object(prog, obj, type_dict):
-    supertypes = type_dict[obj.type].supertype_names
-    for type_name in [obj.type] + supertypes:
-        prog.add_fact(pddl.Atom(type_name, [obj.name]))
+    supertypes = type_dict[obj.type_name].supertype_names
+    for type_name in [obj.type_name] + supertypes:
+        prog.add_fact(pddl.TypedObject(obj.name, type_name).get_atom())
 
 def translate_facts(prog, task):
     type_dict = dict((type.name, type) for type in task.types)
@@ -169,9 +169,8 @@ def translate(task):
 
 
 if __name__ == "__main__":
-    # test_normalization()
-
-    task = pddl.open()
+    import pddl_parser
+    task = pddl_parser.open()
     normalize.normalize(task)
     prog = translate(task)
     prog.dump()

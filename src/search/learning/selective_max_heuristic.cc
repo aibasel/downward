@@ -563,7 +563,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "action costs",
         "if supported by all component heuristics");
     parser.document_language_support(
-        "conditional_effects",
+        "conditional effects",
         "if supported by all component heuristics");
     parser.document_language_support(
         "axioms",

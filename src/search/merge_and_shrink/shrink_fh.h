@@ -18,7 +18,7 @@ class Options;
 
   To see how we can get disastrous results here, try
 
-  $ make debug && ./downward-1-debug --search 'astar(mas(10000,shrink_strategy=shrink_fh(LOW,HIGH)))' < output
+  $ make debug && ./downward-debug --search 'astar(mas(10000,shrink_strategy=shrink_fh(LOW,HIGH)))' < output
 
   Of course, LOW/HIGH are not very clever parameters, but that is not
   the point here. The init h value drops from 43 to 0 at the point
