@@ -27,10 +27,9 @@ void dump_everything();
 
 bool has_axioms();
 void verify_no_axioms();
-int get_first_cond_effects_op_id();
-bool has_cond_effects();
-void verify_no_cond_effects();
-void verify_no_axioms_no_cond_effects();
+bool has_conditional_effects();
+void verify_no_conditional_effects();
+void verify_no_axioms_no_conditional_effects();
 
 void check_magic(std::istream &in, std::string magic);
 

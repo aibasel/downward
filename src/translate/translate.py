@@ -23,6 +23,7 @@ import fact_groups
 import instantiate
 import normalize
 import pddl
+import pddl_parser
 import sas_tasks
 import simplify
 import timers
@@ -651,7 +652,7 @@ def main():
 
     timer = timers.Timer()
     with timers.timing("Parsing", True):
-        task = pddl.open(task_filename=args.task, domain_filename=args.domain)
+        task = pddl_parser.open(task_filename=args.task, domain_filename=args.domain)
 
     with timers.timing("Normalizing task"):
         normalize.normalize(task)

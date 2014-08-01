@@ -1,16 +1,25 @@
 #! /usr/bin/env python
 
 USAGE = """\
-# Set or change baseline manually.
-./buildbot-exp.py --test nightly --rev baseline --all
-./buildbot-exp.py --test weekly --rev baseline --all
+Update baseline:
+  * change BASELINE variable below
+  * push the change
+  * login to buildbot server and become the buildslave user
+  * remove ~/experiments dir
+  * run in an updated repo (e.g. the one for build-quick):
+    export PYTHONPATH=~/lib/python/lab
+    ./buildbot-exp.py --test nightly --rev baseline --all
+    ./buildbot-exp.py --test weekly --rev baseline --all
 
-# Let the buildbot compare the current revision to the baseline.
-./buildbot-exp.py --test nightly --all
+Compare the current revision to the baseline (add to master.cfg):
+  ./buildbot-exp.py --test nightly --all
+  ./buildbot-exp.py --test weekly --all
 
-The second command exits with 1 if a regression was found. You can
-adapt the experiment by changing the values for BASELINE, CONFIGS,
-SUITES and RELATIVE_CHECKS below.
+These commands exit with 1 if a regression was found.
+
+You can adapt the experiment by changing the values for BASELINE,
+CONFIGS, SUITES and RELATIVE_CHECKS below.
+
 """
 
 import logging
@@ -22,7 +31,6 @@ from lab.steps import Step
 from lab.experiment import ARGPARSER
 
 from downward.experiments import DownwardExperiment
-# TODO: Use add_revision() once it's available.
 from downward.checkouts import Translator, Preprocessor, Planner
 from downward import checkouts
 from downward.reports.absolute import AbsoluteReport
@@ -34,7 +42,7 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(DIR, '../../'))
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 
-BASELINE = checkouts.get_global_rev(REPO, 'f5110717a963')
+BASELINE = checkouts.get_global_rev(REPO, '8852bb518934')
 if not BASELINE:
     logging.critical('Baseline not set or not found in repo.')
 CONFIGS = {}
@@ -47,7 +55,7 @@ CONFIGS['nightly'] = [
     ('lama-2011', ['ipc', 'seq-sat-lama-2011']),
     ('blind', ['--search', 'astar(blind())']),
     ('merge-and-shrink-bisim', ['--search',
-        'astar(merge_and_shrink(merge_strategy=merge_linear_reverse_level,'
+        'astar(merge_and_shrink(merge_strategy=merge_linear(variable_order=reverse_level),'
             'shrink_strategy=shrink_bisimulation(max_states=50000,greedy=false,'
             'group_by_h=true)))']),
 ]
