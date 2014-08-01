@@ -385,6 +385,7 @@ def condition_to_rule_body(parameters, condition):
                 yield part
 
 if __name__ == "__main__":
-    task = pddl.open()
+    import pddl_parser
+    task = pddl_parser.open()
     normalize(task)
     task.dump()

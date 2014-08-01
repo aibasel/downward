@@ -4,19 +4,12 @@ from __future__ import print_function
 
 import sys
 
-from . import actions
-from . import axioms
-from . import conditions
-from . import effects
-from . import f_expression
-from . import functions
-from . import pddl_types
-from . import predicates
-from . import tasks
+import graph
+import pddl
 
 
 def parse_typed_list(alist, only_variables=False,
-                     constructor=pddl_types.TypedObject,
+                     constructor=pddl.TypedObject,
                      default_type="object"):
     result = []
     while alist:
@@ -39,16 +32,30 @@ def parse_typed_list(alist, only_variables=False,
     return result
 
 
+def set_supertypes(type_list):
+    # TODO: This is a two-stage construction, which is perhaps
+    # not a great idea. Might need more thought in the future.
+    type_name_to_type = {}
+    child_types = []
+    for type in type_list:
+        type.supertype_names = []
+        type_name_to_type[type.name] = type
+        if type.basetype_name:
+            child_types.append((type.name, type.basetype_name))
+    for (desc_name, anc_name) in graph.transitive_closure(child_types):
+        type_name_to_type[desc_name].supertype_names.append(anc_name)
+
+
 def parse_predicate(alist):
     name = alist[0]
     arguments = parse_typed_list(alist[1:], only_variables=True)
-    return predicates.Predicate(name, arguments)
+    return pddl.Predicate(name, arguments)
 
 
 def parse_function(alist, type_name):
     name = alist[0]
     arguments = parse_typed_list(alist[1:])
-    return functions.Function(name, arguments, type_name)
+    return pddl.Function(name, arguments, type_name)
 
 
 def parse_condition(alist, type_dict, predicate_dict):
@@ -91,13 +98,13 @@ def parse_condition_aux(alist, negated, type_dict, predicate_dict):
                  for part in args]
 
     if tag == "and" and not negated or tag == "or" and negated:
-        return conditions.Conjunction(parts)
+        return pddl.Conjunction(parts)
     elif tag == "or" and not negated or tag == "and" and negated:
-        return conditions.Disjunction(parts)
+        return pddl.Disjunction(parts)
     elif tag == "forall" and not negated or tag == "exists" and negated:
-        return conditions.UniversalCondition(parameters, parts)
+        return pddl.UniversalCondition(parameters, parts)
     elif tag == "exists" and not negated or tag == "forall" and negated:
-        return conditions.ExistentialCondition(parameters, parts)
+        return pddl.ExistentialCondition(parameters, parts)
 
 
 def parse_literal(alist, type_dict, predicate_dict, negated=False):
@@ -114,9 +121,9 @@ def parse_literal(alist, type_dict, predicate_dict, negated=False):
                          % " ".join(alist))
 
     if negated:
-        return conditions.NegatedAtom(pred_id, alist[1:])
+        return pddl.NegatedAtom(pred_id, alist[1:])
     else:
-        return conditions.Atom(pred_id, alist[1:])
+        return pddl.Atom(pred_id, alist[1:])
 
 
 SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = False
@@ -155,79 +162,79 @@ def add_effect(tmp_effect, result):
     """tmp_effect has the following structure:
        [ConjunctiveEffect] [UniversalEffect] [ConditionalEffect] SimpleEffect."""
 
-    if isinstance(tmp_effect, effects.ConjunctiveEffect):
+    if isinstance(tmp_effect, pddl.ConjunctiveEffect):
         for effect in tmp_effect.effects:
             add_effect(effect, result)
         return
     else:
         parameters = []
-        condition = conditions.Truth()
-        if isinstance(tmp_effect, effects.UniversalEffect):
+        condition = pddl.Truth()
+        if isinstance(tmp_effect, pddl.UniversalEffect):
             parameters = tmp_effect.parameters
-            if isinstance(tmp_effect.effect, effects.ConditionalEffect):
+            if isinstance(tmp_effect.effect, pddl.ConditionalEffect):
                 condition = tmp_effect.effect.condition
-                assert isinstance(tmp_effect.effect.effect, effects.SimpleEffect)
+                assert isinstance(tmp_effect.effect.effect, pddl.SimpleEffect)
                 effect = tmp_effect.effect.effect.effect
             else:
-                assert isinstance(tmp_effect.effect, effects.SimpleEffect)
+                assert isinstance(tmp_effect.effect, pddl.SimpleEffect)
                 effect = tmp_effect.effect.effect
-        elif isinstance(tmp_effect, effects.ConditionalEffect):
+        elif isinstance(tmp_effect, pddl.ConditionalEffect):
             condition = tmp_effect.condition
-            assert isinstance(tmp_effect.effect, effects.SimpleEffect)
+            assert isinstance(tmp_effect.effect, pddl.SimpleEffect)
             effect = tmp_effect.effect.effect
         else:
-            assert isinstance(tmp_effect, effects.SimpleEffect)
+            assert isinstance(tmp_effect, pddl.SimpleEffect)
             effect = tmp_effect.effect
-        assert isinstance(effect, conditions.Literal)
+        assert isinstance(effect, pddl.Literal)
         # Check for contradictory effects
         condition = condition.simplified()
-        new_effect = effects.Effect(parameters, condition, effect)
-        contradiction = effects.Effect(parameters, condition, effect.negate())
+        new_effect = pddl.Effect(parameters, condition, effect)
+        contradiction = pddl.Effect(parameters, condition, effect.negate())
         if not contradiction in result:
             result.append(new_effect)
         else:
             # We use add-after-delete semantics, keep positive effect
-            if isinstance(contradiction.literal, conditions.NegatedAtom):
+            if isinstance(contradiction.literal, pddl.NegatedAtom):
                 result.remove(contradiction)
                 result.append(new_effect)
 
 def parse_effect(alist, type_dict, predicate_dict):
     tag = alist[0]
     if tag == "and":
-        return effects.ConjunctiveEffect(
+        return pddl.ConjunctiveEffect(
             [parse_effect(eff, type_dict, predicate_dict) for eff in alist[1:]])
     elif tag == "forall":
         assert len(alist) == 3
         parameters = parse_typed_list(alist[1])
         effect = parse_effect(alist[2], type_dict, predicate_dict)
-        return effects.UniversalEffect(parameters, effect)
+        return pddl.UniversalEffect(parameters, effect)
     elif tag == "when":
         assert len(alist) == 3
         condition = parse_condition(
             alist[1], type_dict, predicate_dict)
         effect = parse_effect(alist[2], type_dict, predicate_dict)
-        return effects.ConditionalEffect(condition, effect)
+        return pddl.ConditionalEffect(condition, effect)
     elif tag == "increase":
         assert len(alist) == 3
         assert alist[1] == ['total-cost']
         assignment = parse_assignment(alist)
-        return effects.CostEffect(assignment)
+        return pddl.CostEffect(assignment)
     else:
         # We pass in {} instead of type_dict here because types must
         # be static predicates, so cannot be the target of an effect.
-        return effects.SimpleEffect(parse_literal(alist, {}, predicate_dict))
+        return pddl.SimpleEffect(parse_literal(alist, {}, predicate_dict))
 
 
 def parse_expression(exp):
     if isinstance(exp, list):
         functionsymbol = exp[0]
-        return f_expression.PrimitiveNumericExpression(functionsymbol, exp[1:])
+        return pddl.PrimitiveNumericExpression(functionsymbol, exp[1:])
     elif exp.replace(".", "").isdigit():
-        return f_expression.NumericConstant(float(exp))
+        return pddl.NumericConstant(float(exp))
     elif exp[0] == "-":
         raise ValueError("Negative numbers are not supported")
     else:
-        return f_expression.PrimitiveNumericExpression(exp, [])
+        return pddl.PrimitiveNumericExpression(exp, [])
 
 def parse_assignment(alist):
     assert len(alist) == 3
@@ -235,9 +242,9 @@ def parse_assignment(alist):
     head = parse_expression(alist[1])
     exp = parse_expression(alist[2])
     if op == "=":
-        return f_expression.Assign(head, exp)
+        return pddl.Assign(head, exp)
     elif op == "increase":
-        return f_expression.Increase(head, exp)
+        return pddl.Increase(head, exp)
     else:
         assert False, "Assignment operator not supported."
 
@@ -259,14 +266,14 @@ def parse_action(alist, type_dict, predicate_dict):
         precondition_list = next(iterator)
         if not precondition_list:
             # Note that :precondition () is allowed in PDDL.
-            precondition = conditions.Conjunction([])
+            precondition = pddl.Conjunction([])
         else:
             precondition = parse_condition(
                 precondition_list, type_dict, predicate_dict)
             precondition = precondition.simplified()
         effect_tag = next(iterator)
     else:
-        precondition = conditions.Conjunction([])
+        precondition = pddl.Conjunction([])
         effect_tag = precondition_tag_opt
     assert effect_tag == ":effect"
     effect_list = next(iterator)
@@ -280,8 +287,8 @@ def parse_action(alist, type_dict, predicate_dict):
     for rest in iterator:
         assert False, rest
     if eff:
-        return actions.Action(name, parameters, len(parameters),
-                              precondition, eff, cost)
+        return pddl.Action(name, parameters, len(parameters),
+                           precondition, eff, cost)
     else:
         return None
 
@@ -292,8 +299,8 @@ def parse_axiom(alist, type_dict, predicate_dict):
     predicate = parse_predicate(alist[1])
     condition = parse_condition(
         alist[2], type_dict, predicate_dict)
-    return axioms.Axiom(predicate.name, predicate.arguments,
-                        len(predicate.arguments), condition)
+    return pddl.Axiom(predicate.name, predicate.arguments,
+                      len(predicate.arguments), condition)
 
 
 def parse_task(domain_pddl, task_pddl):
@@ -302,7 +309,7 @@ def parse_task(domain_pddl, task_pddl):
     task_name, task_domain_name, task_requirements, objects, init, goal, use_metric = parse_task_pddl(task_pddl, type_dict, predicate_dict)
 
     assert domain_name == task_domain_name
-    requirements = tasks.Requirements(sorted(set(
+    requirements = pddl.Requirements(sorted(set(
                 domain_requirements.requirements +
                 task_requirements.requirements)))
     objects = constants + objects
@@ -310,9 +317,9 @@ def parse_task(domain_pddl, task_pddl):
         [o.name for o in objects],
         errmsg="error: duplicate object %r",
         finalmsg="please check :constants and :objects definitions")
-    init += [conditions.Atom("=", (obj.name, obj.name)) for obj in objects]
+    init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
 
-    return tasks.Task(
+    return pddl.Task(
         domain_name, task_name, requirements, types, objects,
         predicates, functions, init, goal, actions, axioms, use_metric)
 
@@ -329,8 +336,8 @@ def parse_domain_pddl(domain_pddl):
     ## We allow an arbitrary order of the requirement, types, constants,
     ## predicates and functions specification. The PDDL BNF is more strict on
     ## this, so we print a warning if it is violated.
-    requirements = tasks.Requirements([":strips"])
-    the_types = [pddl_types.Type("object")]
+    requirements = pddl.Requirements([":strips"])
+    the_types = [pddl.Type("object")]
     constants, the_predicates, the_functions = [], [], []
     correct_order = [":requirements", ":types", ":constants", ":predicates",
                      ":functions"]
@@ -349,24 +356,24 @@ def parse_domain_pddl(domain_pddl):
             print(msg, file=sys.stderr)
         seen_fields.append(field)
         if field == ":requirements":
-            requirements = tasks.Requirements(opt[1:])
+            requirements = pddl.Requirements(opt[1:])
         elif field == ":types":
             the_types.extend(parse_typed_list(
-                    opt[1:], constructor=pddl_types.Type))
+                    opt[1:], constructor=pddl.Type))
         elif field == ":constants":
             constants = parse_typed_list(opt[1:])
         elif field == ":predicates":
             the_predicates = [parse_predicate(entry)
                               for entry in opt[1:]]
-            the_predicates += [predicates.Predicate("=",
-                                 [pddl_types.TypedObject("?x", "object"),
-                                  pddl_types.TypedObject("?y", "object")])]
+            the_predicates += [pddl.Predicate("=",
+                                 [pddl.TypedObject("?x", "object"),
+                                  pddl.TypedObject("?y", "object")])]
         elif field == ":functions":
             the_functions = parse_typed_list(
                 opt[1:],
                 constructor=parse_function,
                 default_type="number")
-    pddl_types.set_supertypes(the_types)
+    set_supertypes(the_types)
     yield requirements
     yield the_types
     type_dict = dict((type.name, type) for type in the_types)
@@ -410,7 +417,7 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
     else:
         requirements = []
         objects_opt = requirements_opt
-    yield tasks.Requirements(requirements)
+    yield pddl.Requirements(requirements)
 
     if objects_opt[0] == ":objects":
         yield parse_typed_list(objects_opt[1:])
@@ -432,7 +439,7 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
                 raise SystemExit("Error in initial state specification\n" +
                                  "Reason: %s." %  e)
             if not isinstance(assignment.expression,
-                              f_expression.NumericConstant):
+                              pddl.NumericConstant):
                 raise SystemExit("Illegal assignment in initial state " +
                     "specification:\n%s" % assignment)
             if assignment.fluent in initial_assignments:
@@ -448,11 +455,11 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
                 initial_assignments[assignment.fluent] = assignment
                 initial.append(assignment)
         elif fact[0] == "not":
-            atom = conditions.Atom(fact[1][0], fact[1][1:])
+            atom = pddl.Atom(fact[1][0], fact[1][1:])
             check_atom_consistency(atom, initial_false, initial_true, False)
             initial_false.add(atom)
         else:
-            atom = conditions.Atom(fact[0], fact[1:])
+            atom = pddl.Atom(fact[0], fact[1:])
             check_atom_consistency(atom, initial_true, initial_false)
             initial_true.add(atom)
     initial.extend(initial_true)
