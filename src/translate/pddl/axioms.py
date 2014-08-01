@@ -1,7 +1,6 @@
 from __future__ import print_function
 
 from . import conditions
-from . import predicates
 
 
 class Axiom(object):
@@ -15,16 +14,6 @@ class Axiom(object):
         self.num_external_parameters = num_external_parameters
         self.condition = condition
         self.uniquify_variables()
-
-    @classmethod
-    def parse(cls, alist, type_dict, predicate_dict):
-        assert len(alist) == 3
-        assert alist[0] == ":derived"
-        predicate = predicates.Predicate.parse(alist[1])
-        condition = conditions.parse_condition(
-            alist[2], type_dict, predicate_dict)
-        return cls(predicate.name, predicate.arguments,
-                   len(predicate.arguments), condition)
 
     def dump(self):
         args = map(str, self.parameters[:self.num_external_parameters])
