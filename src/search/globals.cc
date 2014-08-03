@@ -309,6 +309,10 @@ void dump_everything() {
     */
 }
 
+bool is_unit_cost() {
+    return g_min_action_cost == 1 && g_max_action_cost == 1;
+}
+
 bool has_axioms() {
     return !g_axioms.empty();
 }
