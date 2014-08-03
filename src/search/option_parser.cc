@@ -174,10 +174,21 @@ Parse command line options
 */
 
 SearchEngine *OptionParser::parse_cmd_line(
-    int argc, const char **argv, bool dry_run) {
+    int argc, const char **argv, bool dry_run, bool is_unit_cost) {
     vector<string> args;
-    for (int i = 1; i < argc; ++i)
-        args.push_back(argv[i]);
+    bool active = true;
+    for (int i = 1; i < argc; ++i) {
+        string arg = argv[i];
+        if (arg == "--if-unit-cost") {
+            active = is_unit_cost;
+        } else if (arg == "--if-non-unit-cost") {
+            active = !is_unit_cost;
+        } else if (arg == "--always") {
+            active = true;
+        } else if (active) {
+            args.push_back(arg);
+        }
+    }
     return parse_cmd_line_aux(args, dry_run);
 }
 

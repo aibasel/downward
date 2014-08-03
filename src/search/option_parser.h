@@ -145,7 +145,7 @@ public:
 
     //this is where input from the commandline goes:
     static SearchEngine *parse_cmd_line(
-        int argc, const char **argv, bool dr);
+        int argc, const char **argv, bool dr, bool is_unit_cost);
 
     static std::string usage(std::string progname);
 
