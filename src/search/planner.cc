@@ -26,9 +26,10 @@ int main(int argc, const char **argv) {
 
     // The command line is parsed twice: once in dry-run mode, to
     // check for simple input errors, and then in normal mode.
+    bool unit_cost = is_unit_cost();
     try {
-        OptionParser::parse_cmd_line(argc, argv, true);
-        engine = OptionParser::parse_cmd_line(argc, argv, false);
+        OptionParser::parse_cmd_line(argc, argv, true, unit_cost);
+        engine = OptionParser::parse_cmd_line(argc, argv, false, unit_cost);
     } catch (ArgError &error) {
         cerr << error << endl;
         OptionParser::usage(argv[0]);
