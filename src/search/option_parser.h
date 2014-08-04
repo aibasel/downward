@@ -137,12 +137,16 @@ By calling addArgument, the parse tree is partially parsed,
 and the result is added to the Options.
  */
 class OptionParser {
+    static SearchEngine *parse_cmd_line_aux(
+        const std::vector<std::string> &args, bool dry_run);
 public:
     OptionParser(std::string config, bool dr);
     OptionParser(ParseTree pt, bool dr);
 
     //this is where input from the commandline goes:
-    static SearchEngine *parse_cmd_line(int argc, const char **argv, bool dr);
+    static SearchEngine *parse_cmd_line(
+        int argc, const char **argv, bool dr, bool is_unit_cost);
+
     static std::string usage(std::string progname);
 
     //this function initiates parsing of T (the root node of parse_tree
@@ -175,6 +179,7 @@ public:
     void document_note(std::string name, std::string note, bool long_text=false) const;
     void document_hide() const;
 
+    static void static_error(std::string msg);
     void error(std::string msg);
     void warning(std::string msg);
 
