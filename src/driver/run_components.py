@@ -64,7 +64,7 @@ def run_search(args):
         executable = os.path.join(SEARCH_DIR, "downward-release")
     print "*** executable:", executable
 
-    if args.portfolio_file:
+    if args.portfolio:
         assert not args.search_options
         # TODO: Implement portfolios. Don't forget exit code. Take
         # into account the time used by *this* process too for the
