@@ -25,6 +25,7 @@ int calculate_plan_cost(const std::vector<const Operator *> &plan);
 void read_everything(std::istream &in);
 void dump_everything();
 
+bool is_unit_cost();
 bool has_axioms();
 void verify_no_axioms();
 bool has_conditional_effects();

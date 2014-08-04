@@ -59,10 +59,10 @@ void exit_with(ExitCode exitcode) {
         cout << "Solution found." << endl;
         break;
     case EXIT_CRITICAL_ERROR:
-        cerr << "Unexplained error occured." << endl;
+        cerr << "Unexplained error occurred." << endl;
         break;
     case EXIT_INPUT_ERROR:
-        cerr << "Usage error occured." << endl;
+        cerr << "Usage error occurred." << endl;
         break;
     case EXIT_UNSUPPORTED:
         cerr << "Tried to use unsupported feature." << endl;
