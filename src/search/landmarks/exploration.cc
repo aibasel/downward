@@ -165,11 +165,11 @@ void Exploration::build_unary_operators(const Operator &op) {
 
 class hash_unary_operator {
 public:
-    uintptr_t operator()(const pair<vector<ExProposition *>, ExProposition *> &key) const {
-        uintptr_t hash_value = reinterpret_cast<uintptr_t>(key.second);
+    size_t operator()(const pair<vector<ExProposition *>, ExProposition *> &key) const {
+        size_t hash_value = reinterpret_cast<size_t>(key.second);
         const vector<ExProposition *> &vec = key.first;
         for (int i = 0; i < vec.size(); i++)
-            hash_value = 17 * hash_value + reinterpret_cast<uintptr_t>(vec[i]);
+            hash_value = 17 * hash_value + reinterpret_cast<size_t>(vec[i]);
         return hash_value;
     }
 };

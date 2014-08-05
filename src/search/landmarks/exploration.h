@@ -10,7 +10,6 @@
 #include <ext/hash_set>
 #include <ext/hash_map>
 #include <cassert>
-#include <stdint.h>
 
 class Operator;
 class State;
@@ -81,8 +80,8 @@ struct ExUnaryOperator {
 };
 
 struct ex_hash_operator_ptr {
-    uintptr_t operator()(const Operator *key) const {
-        return reinterpret_cast<uintptr_t>(key);
+    size_t operator()(const Operator *key) const {
+        return reinterpret_cast<size_t>(key);
     }
 };
 
