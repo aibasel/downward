@@ -281,9 +281,6 @@ ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
     LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
-
-## Define the default target up here so that the LP stuff below
-## doesn't define a default target.
 ifeq ($(DOWNWARD_OS), win32)
     POSTLINKOPT_RELEASE = -lpsapi
     POSTLINKOPT_DEBUG = -lpsapi
