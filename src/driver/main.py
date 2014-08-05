@@ -39,7 +39,7 @@ def main():
         aliases.show_aliases()
         sys.exit()
 
-    if len(args.translate_options) == 0:
+    if not args.filenames:
         # This is of course a HACK.
         print "*** no positional filenames: run search only"
         run_components.run_search(args)
