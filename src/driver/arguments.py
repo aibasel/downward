@@ -106,7 +106,6 @@ def parse_args():
     args = parser.parse_args()
 
     _split_planner_args(parser, args)
-    args.unit_cost_search_options = None
 
     _check_arg_conflicts(parser, [
             ("--alias", args.alias is not None),

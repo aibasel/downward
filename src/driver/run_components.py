@@ -5,8 +5,6 @@ import os.path
 import subprocess
 import sys
 
-from . import input_analyzer
-
 
 DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
 SRC_DIR = os.path.dirname(DRIVER_DIR)
@@ -71,20 +69,10 @@ def run_search(args):
         # portfolio time slices. After all, we used to take into
         # account time for dispatch script and unitcost script, and
         # these are now in-process.
-
-        # TODO: Should the portfolios care about the
-        # unit-cost/general-cost disinction, too?
         raise NotImplementedError
     else:
         INPUT_FILE = "output"
-
         search_options = args.search_options
-
-        if args.unit_cost_search_options is not None:
-            if input_analyzer.is_unit_cost(INPUT_FILE):
-                print "*** using special configuration for unit-cost problems"
-                search_options = args.unit_cost_search_options
-
         print "*** final search options:", search_options
         write_elapsed_time()
         call_cmd(executable, search_options, stdin=INPUT_FILE)
