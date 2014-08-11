@@ -178,7 +178,7 @@ ifeq ($(DOWNWARD_OS), auto)
         ## Makefile, so we just call Cygwin "linux".
         DOWNWARD_OS=linux
     else ifeq ($(UNAME_O), Msys)
-        DOWNWARD_OS=win32
+        DOWNWARD_OS=windows
     else ifeq ($(OS), auto)
         $(warning OS detection failed -- setting to Linux and hoping for the best!)
         DOWNWARD_OS=linux
@@ -281,7 +281,7 @@ ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
     LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
-ifeq ($(DOWNWARD_OS), win32)
+ifeq ($(DOWNWARD_OS), windows)
     POSTLINKOPT_RELEASE = -lpsapi
     POSTLINKOPT_DEBUG = -lpsapi
     POSTLINKOPT_PROFILE = -lpsapi

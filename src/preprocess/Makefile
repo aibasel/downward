@@ -57,7 +57,7 @@ ifeq ($(DOWNWARD_OS), auto)
         ## Makefile, so we just call Cygwin "linux".
         DOWNWARD_OS=linux
     else ifeq ($(UNAME_O), Msys)
-        DOWNWARD_OS=win32
+        DOWNWARD_OS=windows
     else ifeq ($(DOWNWARD_OS), auto)
         $(warning OS detection failed -- setting to Linux and hoping for the best!)
         DOWNWARD_OS=linux
