@@ -1,5 +1,7 @@
 #include "task.h"
 
+using namespace std;
+
 OperatorRef::OperatorRef(const TaskImpl &task_impl_, size_t index_)
     : task_impl(task_impl_),
       index(index_) {}
