@@ -1,6 +1,10 @@
 #ifndef TASK_H
 #define TASK_H
 
+#include "globals.h"
+#include "operator.h"
+
+#include <cassert>
 #include <cstddef>
 
 
@@ -42,6 +46,10 @@ class Task {
 public:
     Task(const TaskImpl &task_impl_);
     const OperatorsRef get_operators() const {return task_impl.get_operators(); }
+    const Operator &get_original_operator(std::size_t index) const {
+        assert(index < g_operators.size());
+        return g_operators[index];
+    }
 };
 
 #endif
