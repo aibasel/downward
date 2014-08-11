@@ -64,6 +64,8 @@ public:
     const std::vector<Fact> &get_goals() const {return goal; }
     const std::vector<int> &get_initial_state_data() const {return initial_state_data; }
 
+    int get_projected_index(int var, int value) const {return task_index[var][value]; }
+
     void dump() const;
 };
 }

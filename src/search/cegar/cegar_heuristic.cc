@@ -201,8 +201,11 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         }
         install_task(task);
         if (decomposition != NONE) {
-            int goal_fact_hadd = task.get_hadd_value(facts[i].first, facts[i].second);
+            int fact_index = task.get_projected_index(facts[i].first, facts[i].second);
+            int goal_fact_hadd = task.get_hadd_value(facts[i].first, fact_index);
             cout << "h^add(s*): " << goal_fact_hadd << endl;
+            assert(options.get<bool>("negative_costs") || goal_fact_hadd >= 0);
+            assert(goal_fact_hadd != -1);
             if (goal_fact_hadd < min_hadd)
                 continue;
         }
