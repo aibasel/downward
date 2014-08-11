@@ -1,9 +1,12 @@
 #include "timer.h"
+#include "utilities.h"
 
 #include <ostream>
 #include <unistd.h>
 
-#ifndef _WIN32
+
+
+#if OPERATING_SYSTEM != CYGWIN
     #include <sys/times.h>
 #else
     #include <windows.h>
@@ -21,7 +24,7 @@ Timer::~Timer() {
 }
 
 double Timer::current_clock() const {
-#ifndef _WIN32
+#if OPERATING_SYSTEM == CYGWIN
     struct tms the_tms;
     times(&the_tms);
     clock_t clocks = the_tms.tms_utime + the_tms.tms_stime;
