@@ -298,6 +298,8 @@ void Task::setup_hadd() {
 
 int Task::get_hadd_value(int var, int value) const {
     assert(additive_heuristic);
+    assert(var < variable_domain.size());
+    assert(value < variable_domain[var]);
     return additive_heuristic->get_cost(var, value);
 }
 
