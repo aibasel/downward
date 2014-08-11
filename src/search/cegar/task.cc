@@ -365,7 +365,7 @@ void Task::dump() const {
     cout << "  " << "Operators: " << operators.size() << endl;
     if (DEBUG) {
         for (int i = 0; i < operators.size(); ++i) {
-            cout << "    ";
+            cout << "    c=" << operators[i].get_cost() << " ";
             operators[i].dump();
         }
     }
