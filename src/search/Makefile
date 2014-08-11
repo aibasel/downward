@@ -281,19 +281,20 @@ ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
     LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
-ifeq ($(DOWNWARD_OS), windows)
-    POSTLINKOPT_RELEASE = -lpsapi
-    POSTLINKOPT_DEBUG = -lpsapi
-    POSTLINKOPT_PROFILE = -lpsapi
+
+ifeq ($(DOWNWARD_OS), linux)
+    ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
+        POSTLINKOPT_RELEASE += -lrt
+    else
+        POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+    endif
+    POSTLINKOPT_DEBUG  += -lrt
+    POSTLINKOPT_PROFILE += -lrt
 else
-    ifeq ($(DOWNWARD_OS), linux)
-        ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
-            POSTLINKOPT_RELEASE += -lrt
-        else
-            POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
-        endif
-        POSTLINKOPT_DEBUG  += -lrt
-        POSTLINKOPT_PROFILE += -lrt
+    ifeq ($(DOWNWARD_OS), windows)
+        POSTLINKOPT_RELEASE += -lpsapi
+        POSTLINKOPT_DEBUG += -lpsapi
+        POSTLINKOPT_PROFILE += -lpsapi
     endif
 endif
 
