@@ -38,7 +38,6 @@ class CegarHeuristic : public Heuristic {
     const int max_time;
     const GoalOrder fact_order;
     std::vector<int> remaining_costs;
-    const int min_hadd;
     Task original_task;
     std::vector<Task> tasks;
     std::vector<Abstraction *> abstractions;
