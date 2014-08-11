@@ -29,6 +29,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       max_states(options.get<int>("max_states")),
       max_time(options.get<int>("max_time")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
+      min_hadd(options.get<int>("min_hadd")),
       original_task(Task::get_original_task()),
       num_states(0),
       landmark_graph(get_landmark_graph()),
@@ -202,7 +203,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         if (decomposition != NONE) {
             int goal_fact_hadd = task.get_hadd_value(facts[i].first, facts[i].second);
             cout << "h^add(s*): " << goal_fact_hadd << endl;
-            if (goal_fact_hadd == 0)
+            if (goal_fact_hadd < min_hadd)
                 continue;
         }
 
@@ -366,6 +367,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>("adapt_task", "remove redundant operators and facts", "true");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
+    parser.add_option<int>("min_hadd", "ignore facts with too low h^add values", "1");
     parser.add_option<bool>("negative_costs", "allow negative costs in cost-partitioning", "false");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
