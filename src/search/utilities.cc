@@ -121,7 +121,7 @@ int get_peak_memory_in_kb() {
                   &t_info_count) == KERN_SUCCESS)
         memory_in_kb = t_info.virtual_size / 1024;
 #elif OPERATING_SYSTEM == CYGWIN
-    //TODO: we cant determine the peak mem but this is better than nothing
+    // We can't retrieve peak memory usage on Windows so we return current memory usage.
     PROCESS_MEMORY_COUNTERS_EX pmc;
     GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
     memory_in_kb = pmc.PrivateUsage / 1024;
