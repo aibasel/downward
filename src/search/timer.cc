@@ -27,7 +27,7 @@ double Timer::current_clock() const {
     clock_t clocks = the_tms.tms_utime + the_tms.tms_stime;
     return double(clocks) / sysconf(_SC_CLK_TCK);
 #else
-    //http://nadeausoftware.com/articles/2012/03/c_c_tip_how_measure_cpu_time_benchmarking
+    // http://nadeausoftware.com/articles/2012/03/c_c_tip_how_measure_cpu_time_benchmarking
     FILETIME createTime;
     FILETIME exitTime;
     FILETIME kernelTime;
