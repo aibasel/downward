@@ -29,7 +29,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       max_states(options.get<int>("max_states")),
       max_time(options.get<int>("max_time")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
-      min_hadd(options.get<int>("min_hadd")),
       original_task(Task::get_original_task()),
       num_states(0),
       landmark_graph(get_landmark_graph()),
@@ -206,7 +205,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             cout << "h^add(s*): " << goal_fact_hadd << endl;
             assert(options.get<bool>("negative_costs") || goal_fact_hadd >= 0);
             assert(goal_fact_hadd != -1);
-            if (goal_fact_hadd < min_hadd)
+            if (goal_fact_hadd < options.get<int>("min_hadd"))
                 continue;
         }
 
