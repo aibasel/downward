@@ -29,6 +29,10 @@ class OperatorRef {
 public:
     OperatorRef(const TaskImpl &task_impl_, std::size_t index_);
     int get_cost() const {return task_impl.get_operator_cost(index); }
+    const Operator &get_original_operator() const {
+        assert(index < g_operators.size());
+        return g_operators[index];
+    }
 };
 
 
@@ -46,10 +50,6 @@ class Task {
 public:
     Task(const TaskImpl &task_impl_);
     const OperatorsRef get_operators() const {return task_impl.get_operators(); }
-    const Operator &get_original_operator(std::size_t index) const {
-        assert(index < g_operators.size());
-        return g_operators[index];
-    }
 };
 
 #endif
