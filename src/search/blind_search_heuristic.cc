@@ -1,21 +1,23 @@
 #include "blind_search_heuristic.h"
 
-#include "globals.h"
-#include "operator.h"
+#include "global_task.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "state.h"
+#include "task.h"
 
 #include <limits>
 #include <utility>
 using namespace std;
 
-BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
-    : Heuristic(opts) {
+BlindSearchHeuristic::BlindSearchHeuristic(const Task &task_, const Options &opts)
+    : Heuristic(opts),
+      task(task_) {
     min_operator_cost = numeric_limits<int>::max();
-    for (int i = 0; i < g_operators.size(); ++i)
+    for (size_t i = 0; i < task.get_operators().size(); ++i)
+        // TODO: Use adjusted cost.
         min_operator_cost = min(min_operator_cost,
-                                get_adjusted_cost(g_operators[i]));
+                                task.get_operators()[i].get_cost());
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {
@@ -50,7 +52,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new BlindSearchHeuristic(opts);
+        return new BlindSearchHeuristic(Task(GlobalTaskImpl()), opts);
 }
 
 static Plugin<Heuristic> _plugin("blind", _parse);

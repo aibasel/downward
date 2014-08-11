@@ -22,6 +22,7 @@ HEADERS = \
           exact_timer.h \
           g_evaluator.h \
           globals.h \
+          global_task.h \
           heuristic.h \
           int_packer.h \
           ipc_max_heuristic.h \
