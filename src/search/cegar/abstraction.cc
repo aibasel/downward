@@ -454,9 +454,6 @@ void Abstraction::extract_solution() const {
     assert(goal->get_h() == 0);
     AbstractState *current = goal;
     while (current != init) {
-        if (DEBUG)
-            cout << endl << "Current: " << current->str() << " g:" << current->get_distance()
-                 << " h:" << current->get_h() << endl;
         const Operator *prev_op = current->get_prev_solution_op();
         AbstractState *prev_state = current->get_prev_solution_state();
         prev_state->set_next_solution_op(prev_op);
