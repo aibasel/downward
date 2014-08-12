@@ -15,7 +15,7 @@ public:
         assert(index < g_operators.size());
         return g_operators[index].get_cost();
     }
-    std::size_t get_number_of_operators() const {return g_operators.size(); }
+    std::size_t get_num_operators() const {return g_operators.size(); }
 };
 
 #endif

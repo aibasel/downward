@@ -17,17 +17,17 @@ class Task;
 class TaskImpl {
 public:
     virtual int get_operator_cost(std::size_t index) const = 0;
-    virtual size_t get_number_of_operators() const = 0;
+    virtual size_t get_num_operators() const = 0;
 };
 
 
 class OperatorRef {
-    const TaskImpl &task_impl;
+    const TaskImpl &impl;
     size_t index;
 public:
-    OperatorRef(const TaskImpl &task_impl_, std::size_t index_);
+    OperatorRef(const TaskImpl &impl_, std::size_t index_);
     ~OperatorRef();
-    int get_cost() const {return task_impl.get_operator_cost(index); }
+    int get_cost() const {return impl.get_operator_cost(index); }
     const Operator &get_original_operator() const {
         assert(index < g_operators.size());
         return g_operators[index];
@@ -36,21 +36,21 @@ public:
 
 
 class OperatorsRef {
-    const TaskImpl &task_impl;
+    const TaskImpl &impl;
 public:
-    OperatorsRef(const TaskImpl &task_impl_);
+    OperatorsRef(const TaskImpl &impl_);
     ~OperatorsRef();
-    std::size_t size() const {return task_impl.get_number_of_operators(); }
-    const OperatorRef operator[](std::size_t index) const {return OperatorRef(task_impl, index); }
+    std::size_t size() const {return impl.get_num_operators(); }
+    const OperatorRef operator[](std::size_t index) const {return OperatorRef(impl, index); }
 };
 
 
 class Task {
-    const TaskImpl &task_impl;
+    const TaskImpl &impl;
 public:
-    Task(const TaskImpl &task_impl_);
+    Task(const TaskImpl &impl_);
     ~Task();
-    const OperatorsRef get_operators() const {return OperatorsRef(task_impl); }
+    const OperatorsRef get_operators() const {return OperatorsRef(impl); }
 };
 
 #endif
