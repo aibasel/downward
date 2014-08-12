@@ -11,16 +11,15 @@
 
 
 class GlobalTaskImpl : public TaskImpl {
-    OperatorCost cost_type;
 public:
-    explicit GlobalTaskImpl(OperatorCost cost_type_);
+    GlobalTaskImpl();
     ~GlobalTaskImpl();
 
     int get_operator_cost(std::size_t index) const {
         assert(index < g_operators.size());
         return g_operators[index].get_cost();
     }
-    int get_adjusted_operator_cost(std::size_t index) const {
+    int get_adjusted_operator_cost(std::size_t index, OperatorCost cost_type) const {
         assert(index < g_operators.size());
         return get_adjusted_action_cost(g_operators[index], cost_type);
     }
