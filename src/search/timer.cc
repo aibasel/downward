@@ -24,7 +24,7 @@ Timer::~Timer() {
 }
 
 double Timer::current_clock() const {
-#if OPERATING_SYSTEM == CYGWIN
+#if OPERATING_SYSTEM != CYGWIN
     struct tms the_tms;
     times(&the_tms);
     clock_t clocks = the_tms.tms_utime + the_tms.tms_stime;
