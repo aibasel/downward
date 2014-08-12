@@ -142,11 +142,11 @@ def main():
                           get_exp_dir('baseline', args.test) + '-eval',
                           exp.eval_dir))
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
+        exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_CHECKS),
+                       name='regression-check')
         exp.add_step(Step('rm-preprocess-dir', shutil.rmtree, exp.preprocess_exp_path))
         exp.add_step(Step('rm-exp-dir', shutil.rmtree, exp.path))
         exp.add_step(Step('rm-preprocessed-tasks', shutil.rmtree, exp.preprocessed_tasks_dir))
-        exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_CHECKS),
-                       name='regression-check')
 
     exp()
 
