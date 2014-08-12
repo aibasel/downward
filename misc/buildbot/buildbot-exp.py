@@ -42,7 +42,7 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(DIR, '../../'))
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 
-BASELINE = checkouts.get_global_rev(REPO, '8852bb518934')
+BASELINE = checkouts.get_global_rev(REPO, '5c061af448cd')
 if not BASELINE:
     logging.critical('Baseline not set or not found in repo.')
 CONFIGS = {}
@@ -58,6 +58,8 @@ CONFIGS['nightly'] = [
         'astar(merge_and_shrink(merge_strategy=merge_linear(variable_order=reverse_level),'
             'shrink_strategy=shrink_bisimulation(max_states=50000,greedy=false,'
             'group_by_h=true)))']),
+    ('lmcount-optimal', ['--search',
+        'astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true,optimal=true,lpsolver=CPLEX))']),
 ]
 CONFIGS['weekly'] = CONFIGS['nightly']
 
