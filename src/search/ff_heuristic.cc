@@ -1,10 +1,12 @@
 #include "ff_heuristic.h"
 
 #include "globals.h"
+#include "global_task.h"
 #include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "state.h"
+#include "task.h"
 
 #include <cassert>
 #include <vector>
@@ -18,7 +20,7 @@ using namespace __gnu_cxx;
 
 // construction and destruction
 FFHeuristic::FFHeuristic(const Options &opts)
-    : AdditiveHeuristic(opts) {
+    : AdditiveHeuristic(Task(GlobalTaskImpl()), opts) {
 }
 
 FFHeuristic::~FFHeuristic() {

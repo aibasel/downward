@@ -1,9 +1,11 @@
 #include "additive_heuristic.h"
 
+#include "global_task.h"
 #include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "state.h"
+#include "task.h"
 
 #include <cassert>
 #include <vector>
@@ -13,8 +15,8 @@ using namespace std;
 
 
 // construction and destruction
-AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
-    : RelaxationHeuristic(opts),
+AdditiveHeuristic::AdditiveHeuristic(const Task &task, const Options &opts)
+    : RelaxationHeuristic(task, opts),
       did_write_overflow_warning(false) {
 }
 
@@ -162,7 +164,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new AdditiveHeuristic(opts);
+        return new AdditiveHeuristic(Task(GlobalTaskImpl()), opts);
 }
 
 static Plugin<Heuristic> _plugin("add", _parse);
