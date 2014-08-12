@@ -164,7 +164,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new AdditiveHeuristic(Task(GlobalTaskImpl()), opts);
+        return new AdditiveHeuristic(Task(GlobalTaskImpl(OperatorCost(opts.get_enum("cost_type")))), opts);
 }
 
 static Plugin<Heuristic> _plugin("add", _parse);

@@ -20,7 +20,7 @@ using namespace __gnu_cxx;
 
 // construction and destruction
 FFHeuristic::FFHeuristic(const Options &opts)
-    : AdditiveHeuristic(Task(GlobalTaskImpl()), opts) {
+    : AdditiveHeuristic(Task(GlobalTaskImpl(OperatorCost(opts.get_enum("cost_type")))), opts) {
 }
 
 FFHeuristic::~FFHeuristic() {

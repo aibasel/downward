@@ -16,7 +16,7 @@ BlindSearchHeuristic::BlindSearchHeuristic(const Task &task_, const Options &opt
     min_operator_cost = numeric_limits<int>::max();
     for (size_t i = 0; i < task.get_operators().size(); ++i)
         min_operator_cost = min(min_operator_cost,
-                                get_adjusted_cost(task.get_operators()[i].get_original_operator()));
+                                task.get_operators()[i].get_adjusted_cost());
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {
@@ -51,7 +51,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new BlindSearchHeuristic(Task(GlobalTaskImpl()), opts);
+        return new BlindSearchHeuristic(Task(GlobalTaskImpl(OperatorCost(opts.get_enum("cost_type")))), opts);
 }
 
 static Plugin<Heuristic> _plugin("blind", _parse);
