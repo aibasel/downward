@@ -2,18 +2,18 @@
 
 using namespace std;
 
-OperatorRef::OperatorRef(const TaskImpl &task_impl_, size_t index_)
-    : task_impl(task_impl_),
+OperatorRef::OperatorRef(const TaskImpl &impl_, size_t index_)
+    : impl(impl_),
       index(index_) {}
 
 OperatorRef::~OperatorRef() {}
 
-OperatorsRef::OperatorsRef(const TaskImpl &task_impl_)
-    : task_impl(task_impl_) {}
+OperatorsRef::OperatorsRef(const TaskImpl &impl_)
+    : impl(impl_) {}
 
 OperatorsRef::~OperatorsRef() {}
 
-Task::Task(const TaskImpl &task_impl_)
-    : task_impl(task_impl_) {}
+Task::Task(const TaskImpl &impl_)
+    : impl(impl_) {}
 
 Task::~Task() {}
