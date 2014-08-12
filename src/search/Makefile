@@ -281,7 +281,6 @@ ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
     LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
-
 ifeq ($(DOWNWARD_OS), linux)
     ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
         POSTLINKOPT_RELEASE += -lrt
