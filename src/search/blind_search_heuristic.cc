@@ -1,6 +1,5 @@
 #include "blind_search_heuristic.h"
 
-#include "global_task.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "state.h"
@@ -51,7 +50,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new BlindSearchHeuristic(Task(GlobalTaskImpl()), opts);
+        return new BlindSearchHeuristic(g_task, opts);
 }
 
 static Plugin<Heuristic> _plugin("blind", _parse);
