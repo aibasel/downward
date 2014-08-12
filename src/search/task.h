@@ -3,10 +3,10 @@
 
 #include "globals.h"
 #include "operator.h"
+#include "operator_cost.h"
 
 #include <cassert>
 #include <cstddef>
-
 
 class TaskImpl;
 class OperatorRef;
@@ -17,7 +17,7 @@ class Task;
 class TaskImpl {
 public:
     virtual int get_operator_cost(std::size_t index) const = 0;
-    virtual int get_adjusted_operator_cost(std::size_t index) const = 0;
+    virtual int get_adjusted_operator_cost(std::size_t index, OperatorCost cost_type) const = 0;
     virtual size_t get_num_operators() const = 0;
 };
 
@@ -29,7 +29,9 @@ public:
     OperatorRef(const TaskImpl &impl_, std::size_t index_);
     ~OperatorRef();
     int get_cost() const {return impl.get_operator_cost(index); }
-    int get_adjusted_cost() const {return impl.get_adjusted_operator_cost(index); }
+    int get_adjusted_cost(OperatorCost cost_type) const {
+        return impl.get_adjusted_operator_cost(index, cost_type);
+    }
     const Operator &get_original_operator() const {
         assert(index < g_operators.size());
         return g_operators[index];
