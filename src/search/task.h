@@ -17,9 +17,7 @@ class Task;
 class TaskImpl {
 public:
     virtual int get_operator_cost(std::size_t index) const = 0;
-    virtual OperatorRef get_operator(std::size_t index) const = 0;
     virtual size_t get_number_of_operators() const = 0;
-    virtual const OperatorsRef get_operators() const = 0;
 };
 
 
@@ -43,7 +41,7 @@ public:
     OperatorsRef(const TaskImpl &task_impl_);
     ~OperatorsRef();
     std::size_t size() const {return task_impl.get_number_of_operators(); }
-    const OperatorRef operator[](std::size_t index) const {return task_impl.get_operator(index); }
+    const OperatorRef operator[](std::size_t index) const {return OperatorRef(task_impl, index); }
 };
 
 
@@ -52,7 +50,7 @@ class Task {
 public:
     Task(const TaskImpl &task_impl_);
     ~Task();
-    const OperatorsRef get_operators() const {return task_impl.get_operators(); }
+    const OperatorsRef get_operators() const {return OperatorsRef(task_impl); }
 };
 
 #endif
