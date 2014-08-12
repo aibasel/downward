@@ -15,9 +15,7 @@ public:
         assert(index < g_operators.size());
         return g_operators[index].get_cost();
     }
-    OperatorRef get_operator(std::size_t index) const {return OperatorRef(*this, index); }
     std::size_t get_number_of_operators() const {return g_operators.size(); }
-    const OperatorsRef get_operators() const {return OperatorsRef(*this); }
 };
 
 #endif
