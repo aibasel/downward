@@ -19,6 +19,7 @@ public:
     virtual int get_operator_cost(std::size_t index) const = 0;
     virtual int get_adjusted_operator_cost(std::size_t index, OperatorCost cost_type) const = 0;
     virtual size_t get_num_operators() const = 0;
+    virtual size_t get_num_axioms() const = 0;
 };
 
 
@@ -49,12 +50,23 @@ public:
 };
 
 
+class Axioms {
+    const TaskImpl &impl;
+public:
+    Axioms(const TaskImpl &impl_);
+    ~Axioms();
+    std::size_t size() const {return impl.get_num_axioms(); }
+    const OperatorRef operator[](std::size_t index) const {return OperatorRef(impl, index); }
+};
+
+
 class Task {
     const TaskImpl &impl;
 public:
     Task(const TaskImpl &impl_);
     ~Task();
     const OperatorsRef get_operators() const {return OperatorsRef(impl); }
+    const Axioms get_axioms() const {return Axioms(impl); }
 };
 
 #endif

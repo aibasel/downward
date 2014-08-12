@@ -24,6 +24,7 @@ public:
         return get_adjusted_action_cost(g_operators[index], cost_type);
     }
     std::size_t get_num_operators() const {return g_operators.size(); }
+    std::size_t get_num_axioms() const {return g_axioms.size(); }
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "state.h"
+#include "task.h"
 
 #include <cassert>
 #include <vector>
@@ -42,10 +43,10 @@ void RelaxationHeuristic::initialize() {
     }
 
     // Build unary operators for operators and axioms.
-    for (int i = 0; i < g_operators.size(); i++)
-        build_unary_operators(g_operators[i], i);
-    for (int i = 0; i < g_axioms.size(); i++)
-        build_unary_operators(g_axioms[i], -1);
+    for (int i = 0; i < task.get_operators().size(); i++)
+        build_unary_operators(task.get_operators()[i], i);
+    for (int i = 0; i < task.get_axioms().size(); i++)
+        build_unary_operators(task.get_axioms()[i], -1);
 
     // Simplify unary operators.
     simplify();
@@ -58,8 +59,9 @@ void RelaxationHeuristic::initialize() {
     }
 }
 
-void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
-    int base_cost = get_adjusted_cost(op);
+void RelaxationHeuristic::build_unary_operators(const OperatorRef &op_ref, int op_no) {
+    const Operator &op = op_ref.get_original_operator();
+    int base_cost = op_ref.get_adjusted_cost(cost_type);
     const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<Proposition *> precondition;

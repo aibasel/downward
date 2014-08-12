@@ -13,6 +13,11 @@ OperatorsRef::OperatorsRef(const TaskImpl &impl_)
 
 OperatorsRef::~OperatorsRef() {}
 
+Axioms::Axioms(const TaskImpl &impl_)
+    : impl(impl_) {}
+
+Axioms::~Axioms() {}
+
 Task::Task(const TaskImpl &impl_)
     : impl(impl_) {}
 

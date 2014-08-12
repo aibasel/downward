@@ -1,11 +1,9 @@
 #include "additive_heuristic.h"
 
-#include "global_task.h"
 #include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "state.h"
-#include "task.h"
 
 #include <cassert>
 #include <vector>
@@ -164,7 +162,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new AdditiveHeuristic(Task(GlobalTaskImpl()), opts);
+        return new AdditiveHeuristic(g_task, opts);
 }
 
 static Plugin<Heuristic> _plugin("add", _parse);
