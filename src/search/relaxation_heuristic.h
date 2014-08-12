@@ -7,6 +7,7 @@
 
 class Operator;
 class State;
+class Task;
 
 class Proposition;
 class UnaryOperator;
@@ -45,6 +46,7 @@ struct Proposition {
 };
 
 class RelaxationHeuristic : public Heuristic {
+    const Task &task;
     void build_unary_operators(const Operator &op, int operator_no);
     void simplify();
 protected:
@@ -55,7 +57,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state) = 0;
 public:
-    RelaxationHeuristic(const Options &options);
+    RelaxationHeuristic(const Task &task_, const Options &options);
     virtual ~RelaxationHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };

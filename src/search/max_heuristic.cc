@@ -1,9 +1,11 @@
 #include "max_heuristic.h"
 
+#include "global_task.h"
 #include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "state.h"
+#include "task.h"
 
 #include <cassert>
 #include <vector>
@@ -26,7 +28,7 @@ using namespace std;
 
 // construction and destruction
 HSPMaxHeuristic::HSPMaxHeuristic(const Options &opts)
-    : RelaxationHeuristic(opts) {
+    : RelaxationHeuristic(Task(GlobalTaskImpl()), opts) {
 }
 
 HSPMaxHeuristic::~HSPMaxHeuristic() {
