@@ -205,6 +205,8 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             cout << "h^add(s*): " << goal_fact_hadd << endl;
             assert(options.get<bool>("negative_costs") || goal_fact_hadd >= 0);
             assert(goal_fact_hadd != -1);
+            // Note that due to its value accumulation semantics h^add
+            // may underestimate the cost to reach a fact.
             if (goal_fact_hadd < options.get<int>("min_hadd"))
                 continue;
         }
