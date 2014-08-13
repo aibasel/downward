@@ -46,7 +46,7 @@ public:
     OperatorsRef(const TaskImpl &impl_);
     ~OperatorsRef();
     std::size_t size() const {return impl.get_num_operators(); }
-    const OperatorRef operator[](std::size_t index) const {return OperatorRef(impl, index); }
+    OperatorRef operator[](std::size_t index) const {return OperatorRef(impl, index); }
 };
 
 
@@ -56,7 +56,7 @@ public:
     Axioms(const TaskImpl &impl_);
     ~Axioms();
     std::size_t size() const {return impl.get_num_axioms(); }
-    const OperatorRef operator[](std::size_t index) const {return OperatorRef(impl, index); }
+    OperatorRef operator[](std::size_t index) const {return OperatorRef(impl, index); }
 };
 
 
@@ -65,8 +65,8 @@ class Task {
 public:
     Task(const TaskImpl &impl_);
     ~Task();
-    const OperatorsRef get_operators() const {return OperatorsRef(impl); }
-    const Axioms get_axioms() const {return Axioms(impl); }
+    OperatorsRef get_operators() const {return OperatorsRef(impl); }
+    Axioms get_axioms() const {return Axioms(impl); }
 };
 
 #endif
