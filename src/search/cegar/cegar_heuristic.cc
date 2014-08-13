@@ -294,12 +294,10 @@ void CegarHeuristic::print_statistics() {
     cout << "CEGAR abstractions: " << abstractions.size() << "/" << avg_h_values.size() << endl;
     cout << "Total abstract states: " << num_states << endl;
     cout << "Init h: " << compute_heuristic(g_initial_state()) << endl;
-    if (!avg_h_values.empty()) {
-        double sum_avg_h = 0;
-        for (int i = 0; i < avg_h_values.size(); ++i)
-            sum_avg_h += avg_h_values[i];
-        cout << "Average h: " << sum_avg_h / avg_h_values.size() << endl;
-    }
+    double sum_avg_h = 0;
+    for (int i = 0; i < avg_h_values.size(); ++i)
+        sum_avg_h += avg_h_values[i];
+    cout << "Average h: " << sum_avg_h << endl;
     cout << endl;
 }
 
