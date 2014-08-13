@@ -144,7 +144,7 @@ def _get_predicate_id_and_arity(text, type_dict, predicate_dict):
         return the_predicate.name, the_predicate.get_arity()
     else:
         assert the_type is not None
-        return the_type.id, 1
+        return the_type.get_predicate_name(), 1
 
 
 def parse_effects(alist, result, type_dict, predicate_dict):
