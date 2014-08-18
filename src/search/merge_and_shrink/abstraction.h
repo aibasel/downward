@@ -12,6 +12,9 @@ class State;
 
 typedef int AbstractStateRef;
 
+// Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
+extern const int INF;
+
 struct AbstractTransition {
     AbstractStateRef src;
     AbstractStateRef target;
