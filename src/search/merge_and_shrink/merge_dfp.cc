@@ -14,9 +14,6 @@
 
 using namespace std;
 
-//  TODO: We define infinity in more than a few places right now (=>
-//        grep for it). It should only be defined once.
-static const int infinity = numeric_limits<int>::max();
 
 MergeDFP::MergeDFP()
     : MergeStrategy(),
@@ -71,7 +68,7 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
 
     int first = -1;
     int second = -1;
-    int minimum_weight = infinity;
+    int minimum_weight = INF;
     for (size_t abs_index = 0; abs_index < sorted_abstractions.size(); ++abs_index) {
         Abstraction *abstraction = sorted_abstractions[abs_index];
         assert(abstraction);
@@ -85,7 +82,7 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
                 vector<int> &other_label_ranks = abstraction_label_ranks[other_abs_index];
                 assert(!other_label_ranks.empty());
                 assert(label_ranks.size() == other_label_ranks.size());
-                int pair_weight = infinity;
+                int pair_weight = INF;
                 for (size_t i = 0; i < label_ranks.size(); ++i) {
                     if (label_ranks[i] != -1 && other_label_ranks[i] != -1) {
                         // label is relevant in both abstractions
@@ -108,7 +105,7 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
         // take the first pair according to our ordering consisting of at
         // least one goal relevant abstraction.
         assert(second == -1);
-        assert(minimum_weight == infinity);
+        assert(minimum_weight == INF);
 
         for (size_t abs_index = 0; abs_index < sorted_abstractions.size(); ++abs_index) {
             Abstraction *abstraction = sorted_abstractions[abs_index];
@@ -129,7 +126,7 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
     assert(first != -1);
     assert(second != -1);
     cout << "Next pair of indices: (" << first << ", " << second << ")" << endl;
-//    if (remaining_merges > 1 && minimum_weight != infinity) {
+//    if (remaining_merges > 1 && minimum_weight != INF) {
 //        // in the case we do not make a trivial choice of a next pair
 //        cout << "Computed weight: " << minimum_weight << endl;
 //    } else {
