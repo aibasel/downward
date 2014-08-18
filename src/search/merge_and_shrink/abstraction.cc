@@ -38,9 +38,7 @@ using namespace __gnu_cxx;
  computation is not worth the overhead.
  */
 
-//  TODO: We define infinity in more than a few places right now (=>
-//        grep for it). It should only be defined once.
-static const int infinity = numeric_limits<int>::max();
+const int INF = numeric_limits<int>::max();
 
 Abstraction::Abstraction(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
@@ -111,7 +109,7 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
     for (size_t label_no = 0; label_no < transitions_by_label.size(); ++label_no) {
         if (relevant_labels[label_no]) {
             const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-            int label_rank = infinity;
+            int label_rank = INF;
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const AbstractTransition &t = transitions[i];
                 label_rank = min(label_rank, goal_distances[t.target]);
@@ -149,12 +147,12 @@ void Abstraction::compute_distances() {
         cout << "init state was pruned, no distances to compute" << endl;
         // If init_state was pruned, then everything must have been pruned.
         assert(num_states == 0);
-        max_f = max_g = max_h = infinity;
+        max_f = max_g = max_h = INF;
         return;
     }
 
-    init_distances.resize(num_states, infinity);
-    goal_distances.resize(num_states, infinity);
+    init_distances.resize(num_states, INF);
+    goal_distances.resize(num_states, INF);
     if (labels->is_unit_cost()) {
         cout << "computing distances using unit-cost algorithm" << endl;
         compute_init_distances_unit_cost();
@@ -176,9 +174,9 @@ void Abstraction::compute_distances() {
         // States that are both unreachable and irrelevant are counted
         // as unreachable, not irrelevant. (Doesn't really matter, of
         // course.)
-        if (g == infinity) {
+        if (g == INF) {
             unreachable_count++;
-        } else if (h == infinity) {
+        } else if (h == INF) {
             irrelevant_count++;
         } else {
             max_f = max(max_f, g + h);
@@ -890,8 +888,8 @@ void Abstraction::apply_abstraction(
     }
 
     int new_num_states = collapsed_groups.size();
-    vector<int> new_init_distances(new_num_states, infinity);
-    vector<int> new_goal_distances(new_num_states, infinity);
+    vector<int> new_init_distances(new_num_states, INF);
+    vector<int> new_goal_distances(new_num_states, INF);
     vector<bool> new_goal_states(new_num_states, false);
 
     bool must_clear_distances = false;
@@ -977,7 +975,7 @@ int Abstraction::get_cost(const State &state) const {
     if (abs_state == PRUNED_STATE)
         return -1;
     int cost = goal_distances[abs_state];
-    assert(cost != infinity);
+    assert(cost != INF);
     return cost;
 }
 
