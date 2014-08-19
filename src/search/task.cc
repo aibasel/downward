@@ -8,10 +8,10 @@ OperatorRef::OperatorRef(const TaskInterface &impl_, size_t index_)
 
 OperatorRef::~OperatorRef() {}
 
-OperatorsRef::OperatorsRef(const TaskInterface &impl_)
+Operators::Operators(const TaskInterface &impl_)
     : impl(impl_) {}
 
-OperatorsRef::~OperatorsRef() {}
+Operators::~Operators() {}
 
 Axioms::Axioms(const TaskInterface &impl_)
     : impl(impl_) {}
