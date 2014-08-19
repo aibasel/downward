@@ -1,5 +1,4 @@
 // HACK! Ignore this if used as a top-level compile target.
-//#include "typed_open_list.h"
 #ifdef OPEN_LISTS_TYPED_OPEN_LIST_H
 
 #include "../option_parser.h"
@@ -15,8 +14,10 @@ using namespace std;
 template<class Entry>
 OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
     parser.document_synopsis("Typed open list",
-                             "Typed open list ....");
-    parser.add_list_option<ScalarEvaluator*>("sublists", "sub evaluators");
+                             "Typed open list that uses multiple evaluators to put nodes into buckets."
+                             "Buckets are selected at uniform random, and a node is then selected at random from the bucket."
+                             "This open list should only be used in a combination with another open list, seee alt().");
+    parser.add_list_option<ScalarEvaluator*>("sublists", "The evaluators to goup the nodes by.");
 
     Options opts = parser.parse();
     if (parser.help_mode())
