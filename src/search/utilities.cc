@@ -13,7 +13,7 @@ static void exit_handler(int exit_code, void *hint);
 #elif OPERATING_SYSTEM == OSX
 static void exit_handler();
 #include <mach/mach.h>
-#elif OPERATING_SYSTEM == CYGWIN
+#elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
 #include "windows.h"
 #include "psapi.h"
 #endif
@@ -35,7 +35,7 @@ void register_event_handlers() {
     on_exit(exit_handler, 0);
 #elif OPERATING_SYSTEM == OSX
     atexit(exit_handler);
-#elif OPERATING_SYSTEM == CYGWIN
+#elif OPERATING_SYSTEM == CYGWIN || OPERATING_SYSTEM == WINDOWS
     // nothing
 #endif
     signal(SIGABRT, signal_handler);
@@ -44,7 +44,7 @@ void register_event_handlers() {
     signal(SIGINT, signal_handler);
 }
 
-#if OPERATING_SYSTEM != CYGWIN
+#if OPERATING_SYSTEM != CYGWIN && OPERATING_SYSTEM != WINDOWS
 #if OPERATING_SYSTEM == LINUX
 void exit_handler(int, void *) {
 #elif OPERATING_SYSTEM == OSX
@@ -120,7 +120,7 @@ int get_peak_memory_in_kb() {
                   reinterpret_cast<task_info_t>(&t_info),
                   &t_info_count) == KERN_SUCCESS)
         memory_in_kb = t_info.virtual_size / 1024;
-#elif OPERATING_SYSTEM == CYGWIN
+#elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
     // We can't retrieve peak memory usage on Windows so we return current memory usage.
     PROCESS_MEMORY_COUNTERS_EX pmc;
     GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
