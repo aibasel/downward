@@ -1,7 +1,7 @@
 #include "global_task.h"
 
-GlobalTaskImpl::GlobalTaskImpl() {
+GlobalTaskInterface::GlobalTaskInterface() {
 }
 
-GlobalTaskImpl::~GlobalTaskImpl() {
+GlobalTaskInterface::~GlobalTaskInterface() {
 }

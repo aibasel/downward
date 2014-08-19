@@ -8,13 +8,13 @@
 #include <cassert>
 #include <cstddef>
 
-class TaskImpl;
+class TaskInterface;
 class OperatorRef;
 class OperatorsRef;
 class Task;
 
 
-class TaskImpl {
+class TaskInterface {
 public:
     virtual int get_operator_cost(std::size_t index) const = 0;
     virtual int get_adjusted_operator_cost(std::size_t index, OperatorCost cost_type) const = 0;
@@ -24,10 +24,10 @@ public:
 
 
 class OperatorRef {
-    const TaskImpl &impl;
+    const TaskInterface &impl;
     size_t index;
 public:
-    OperatorRef(const TaskImpl &impl_, std::size_t index_);
+    OperatorRef(const TaskInterface &impl_, std::size_t index_);
     ~OperatorRef();
     int get_cost() const {return impl.get_operator_cost(index); }
     int get_adjusted_cost(OperatorCost cost_type) const {
@@ -41,9 +41,9 @@ public:
 
 
 class OperatorsRef {
-    const TaskImpl &impl;
+    const TaskInterface &impl;
 public:
-    OperatorsRef(const TaskImpl &impl_);
+    OperatorsRef(const TaskInterface &impl_);
     ~OperatorsRef();
     std::size_t size() const {return impl.get_num_operators(); }
     OperatorRef operator[](std::size_t index) const {return OperatorRef(impl, index); }
@@ -51,9 +51,9 @@ public:
 
 
 class Axioms {
-    const TaskImpl &impl;
+    const TaskInterface &impl;
 public:
-    Axioms(const TaskImpl &impl_);
+    Axioms(const TaskInterface &impl_);
     ~Axioms();
     std::size_t size() const {return impl.get_num_axioms(); }
     OperatorRef operator[](std::size_t index) const {return OperatorRef(impl, index); }
@@ -61,9 +61,9 @@ public:
 
 
 class Task {
-    const TaskImpl &impl;
+    const TaskInterface &impl;
 public:
-    Task(const TaskImpl &impl_);
+    Task(const TaskInterface &impl_);
     ~Task();
     OperatorsRef get_operators() const {return OperatorsRef(impl); }
     Axioms get_axioms() const {return Axioms(impl); }
