@@ -10,10 +10,10 @@
 #include <cstddef>
 
 
-class GlobalTaskImpl : public TaskImpl {
+class GlobalTaskInterface : public TaskInterface {
 public:
-    GlobalTaskImpl();
-    ~GlobalTaskImpl();
+    GlobalTaskInterface();
+    ~GlobalTaskInterface();
 
     int get_operator_cost(std::size_t index) const {
         assert(index < g_operators.size());

@@ -2,23 +2,23 @@
 
 using namespace std;
 
-OperatorRef::OperatorRef(const TaskImpl &impl_, size_t index_)
+OperatorRef::OperatorRef(const TaskInterface &impl_, size_t index_)
     : impl(impl_),
       index(index_) {}
 
 OperatorRef::~OperatorRef() {}
 
-OperatorsRef::OperatorsRef(const TaskImpl &impl_)
+OperatorsRef::OperatorsRef(const TaskInterface &impl_)
     : impl(impl_) {}
 
 OperatorsRef::~OperatorsRef() {}
 
-Axioms::Axioms(const TaskImpl &impl_)
+Axioms::Axioms(const TaskInterface &impl_)
     : impl(impl_) {}
 
 Axioms::~Axioms() {}
 
-Task::Task(const TaskImpl &impl_)
+Task::Task(const TaskInterface &impl_)
     : impl(impl_) {}
 
 Task::~Task() {}

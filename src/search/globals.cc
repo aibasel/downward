@@ -41,7 +41,7 @@ static const int PRE_FILE_VERSION = 3;
 
 static vector<vector<set<pair<int, int> > > > g_inconsistent_facts;
 
-static const GlobalTaskImpl global_task_impl;
+static const GlobalTaskInterface global_task_impl;
 
 bool test_goal(const State &state) {
     for (int i = 0; i < g_goal.size(); i++) {
