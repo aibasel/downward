@@ -10,7 +10,7 @@
 
 class TaskInterface;
 class OperatorRef;
-class OperatorsRef;
+class Operators;
 class Task;
 
 
@@ -40,11 +40,11 @@ public:
 };
 
 
-class OperatorsRef {
+class Operators {
     const TaskInterface &impl;
 public:
-    OperatorsRef(const TaskInterface &impl_);
-    ~OperatorsRef();
+    Operators(const TaskInterface &impl_);
+    ~Operators();
     std::size_t size() const {return impl.get_num_operators(); }
     OperatorRef operator[](std::size_t index) const {return OperatorRef(impl, index); }
 };
@@ -65,7 +65,7 @@ class Task {
 public:
     Task(const TaskInterface &impl_);
     ~Task();
-    OperatorsRef get_operators() const {return OperatorsRef(impl); }
+    Operators get_operators() const {return Operators(impl); }
     Axioms get_axioms() const {return Axioms(impl); }
 };
 
