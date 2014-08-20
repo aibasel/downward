@@ -62,20 +62,11 @@ void RelaxationHeuristic::initialize() {
 void RelaxationHeuristic::build_unary_operators(const OperatorRef &op_ref, int op_no) {
     const Operator &op = op_ref.get_original_operator();
     int base_cost = op_ref.get_adjusted_cost(cost_type);
-    const vector<Prevail> &prevail = op.get_prevail();
     const vector<PrePost> &pre_post = op.get_pre_post();
     vector<Proposition *> precondition;
-    for (int i = 0; i < prevail.size(); i++) {
-        assert(prevail[i].var >= 0 && prevail[i].var < g_variable_domain.size());
-        assert(prevail[i].prev >= 0 && prevail[i].prev < g_variable_domain[prevail[i].var]);
-        precondition.push_back(&propositions[prevail[i].var][prevail[i].prev]);
-    }
-    for (int i = 0; i < pre_post.size(); i++) {
-        if (pre_post[i].pre != -1) {
-            assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
-            assert(pre_post[i].pre >= 0 && pre_post[i].pre < g_variable_domain[pre_post[i].var]);
-            precondition.push_back(&propositions[pre_post[i].var][pre_post[i].pre]);
-        }
+    for (int i = 0; i < op_ref.get_precondition().size(); ++i) {
+        Fact fact = op_ref.get_precondition()[i];
+        precondition.push_back(&propositions[fact.get_variable().get_id()][fact.get_value()]);
     }
     for (int i = 0; i < pre_post.size(); i++) {
         assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
