@@ -29,9 +29,9 @@ bool RelaxationHeuristic::dead_ends_are_reliable() const {
 void RelaxationHeuristic::initialize() {
     // Build propositions.
     int prop_id = 0;
-    propositions.resize(g_variable_domain.size());
-    for (int var = 0; var < g_variable_domain.size(); var++) {
-        for (int value = 0; value < g_variable_domain[var]; value++)
+    propositions.resize(task.get_variables().size());
+    for (int var = 0; var < task.get_variables().size(); var++) {
+        for (int value = 0; value < task.get_variables()[var].get_domain_size(); value++)
             propositions[var].push_back(Proposition(prop_id++));
     }
 
@@ -69,12 +69,12 @@ void RelaxationHeuristic::build_unary_operators(const OperatorRef &op_ref, int o
         precondition.push_back(&propositions[fact.get_variable().get_id()][fact.get_value()]);
     }
     for (int i = 0; i < pre_post.size(); i++) {
-        assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
+        assert(pre_post[i].var >= 0 && pre_post[i].var < task.get_variables().size());
         assert(pre_post[i].post >= 0 && pre_post[i].post < g_variable_domain[pre_post[i].var]);
         Proposition *effect = &propositions[pre_post[i].var][pre_post[i].post];
         const vector<Prevail> &eff_cond = pre_post[i].cond;
         for (int j = 0; j < eff_cond.size(); j++) {
-            assert(eff_cond[j].var >= 0 && eff_cond[j].var < g_variable_domain.size());
+            assert(eff_cond[j].var >= 0 && eff_cond[j].var < task.get_variables().size());
             assert(eff_cond[j].prev >= 0 && eff_cond[j].prev < g_variable_domain[eff_cond[j].var]);
             precondition.push_back(&propositions[eff_cond[j].var][eff_cond[j].prev]);
         }
