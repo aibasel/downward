@@ -13,9 +13,6 @@
 
 class GlobalTaskInterface : public TaskInterface {
 public:
-    GlobalTaskInterface();
-    ~GlobalTaskInterface();
-
     std::size_t get_state_value(std::size_t state_index, std::size_t var) const;
 
     std::size_t get_num_variables() const {return g_variable_domain.size(); }

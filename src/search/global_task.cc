@@ -5,12 +5,6 @@
 
 using namespace std;
 
-GlobalTaskInterface::GlobalTaskInterface() {
-}
-
-GlobalTaskInterface::~GlobalTaskInterface() {
-}
-
 size_t GlobalTaskInterface::get_state_value(size_t state_index, size_t var) const {
     assert(state_index < g_state_registry->size());
     return g_state_registry->lookup_state(StateID(state_index))[var];
