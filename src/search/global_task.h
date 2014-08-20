@@ -13,11 +13,11 @@
 
 class GlobalTaskInterface : public TaskInterface {
 public:
-    std::size_t get_state_value(std::size_t state_index, std::size_t var) const;
+    std::size_t get_value_in_state(std::size_t state_index, std::size_t var) const;
 
     std::size_t get_num_variables() const {return g_variable_domain.size(); }
-    std::size_t get_variable_domain_size(std::size_t id) const {
-        return g_variable_domain[id];
+    std::size_t get_variable_domain_size(std::size_t var) const {
+        return g_variable_domain[var];
     }
 
     int get_operator_cost(std::size_t index) const {
