@@ -26,18 +26,18 @@ public:
     virtual std::size_t get_variable_domain_size(std::size_t id) const = 0;
     virtual int get_operator_cost(std::size_t index) const = 0;
     virtual int get_adjusted_operator_cost(
-            std::size_t index, OperatorCost cost_type) const = 0;
+        std::size_t index, OperatorCost cost_type) const = 0;
     virtual std::size_t get_num_operators() const = 0;
     virtual std::size_t get_operator_precondition_size(std::size_t index) const = 0;
     virtual std::pair<std::size_t, std::size_t> get_operator_precondition_fact(
-            std::size_t op_index, std::size_t fact_index) const = 0;
+        std::size_t op_index, std::size_t fact_index) const = 0;
     virtual std::size_t get_num_operator_effects(std::size_t op_index) const = 0;
     virtual std::size_t get_operator_effect_condition_size(
-            std::size_t op_index, std::size_t eff_index) const = 0;
+        std::size_t op_index, std::size_t eff_index) const = 0;
     virtual std::pair<std::size_t, std::size_t> get_operator_effect_condition(
-            std::size_t op_index, std::size_t eff_index, std::size_t cond_index) const = 0;
+        std::size_t op_index, std::size_t eff_index, std::size_t cond_index) const = 0;
     virtual std::pair<std::size_t, std::size_t> get_operator_effect(
-            std::size_t op_index, std::size_t eff_index) const = 0;
+        std::size_t op_index, std::size_t eff_index) const = 0;
     virtual std::size_t get_num_axioms() const = 0;
     virtual std::size_t get_goal_size() const = 0;
     virtual std::pair<std::size_t, std::size_t> get_goal_fact(std::size_t index) const = 0;
