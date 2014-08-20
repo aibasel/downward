@@ -69,6 +69,7 @@ public:
 
 
 class Condition {
+protected:
     const TaskInterface &impl;
 public:
     Condition(const TaskInterface &impl_) : impl(impl_) {};
@@ -78,11 +79,10 @@ public:
 };
 
 
-class Precondition {
-    const TaskInterface &impl;
+class Precondition : Condition {
     std::size_t op_index;
 public:
-    Precondition(const TaskInterface &impl_, std::size_t op_index_) : impl(impl_), op_index(op_index_) {};
+    Precondition(const TaskInterface &impl_, std::size_t op_index_) : Condition(impl_), op_index(op_index_) {};
     ~Precondition() {};
     std::size_t size() const {return impl.get_operator_precondition_size(op_index); }
     Fact operator[](std::size_t fact_index) const {
@@ -92,10 +92,9 @@ public:
 };
 
 
-class Goal {
-    const TaskInterface &impl;
+class Goal : Condition {
 public:
-    Goal(const TaskInterface &impl_) : impl(impl_) {};
+    Goal(const TaskInterface &impl_) : Condition(impl_) {};
     ~Goal() {};
     std::size_t size() const {return impl.get_goal_size(); }
     Fact operator[](std::size_t index) const {
