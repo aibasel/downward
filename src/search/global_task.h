@@ -16,6 +16,7 @@ public:
     GlobalTaskInterface();
     ~GlobalTaskInterface();
 
+    std::size_t get_num_variables() const {return g_variable_domain.size(); }
     std::size_t get_variable_domain_size(std::size_t id) const {return g_variable_domain[id]; }
     int get_operator_cost(std::size_t index) const {
         assert(index < g_operators.size());
