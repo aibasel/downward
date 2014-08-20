@@ -21,6 +21,7 @@ class Task;
 
 class TaskInterface {
 public:
+    virtual std::size_t get_num_variables() const = 0;
     virtual std::size_t get_variable_domain_size(std::size_t id) const = 0;
     virtual int get_operator_cost(std::size_t index) const = 0;
     virtual int get_adjusted_operator_cost(std::size_t index, OperatorCost cost_type) const = 0;
@@ -52,6 +53,16 @@ public:
     std::size_t get_id() const {return id; }
     std::size_t get_domain_size() const {return impl.get_variable_domain_size(id); }
     Fact get_fact(std::size_t index) const {return Fact(impl, id, index); }
+};
+
+
+class Variables {
+    const TaskInterface &impl;
+public:
+    Variables(const TaskInterface &impl_) : impl(impl_) {};
+    ~Variables() {};
+    std::size_t size() const {return impl.get_num_variables(); }
+    Variable operator[](std::size_t index) const {return Variable(impl, index); }
 };
 
 
@@ -122,6 +133,7 @@ class Task {
 public:
     Task(const TaskInterface &impl_);
     ~Task();
+    Variables get_variables() const {return Variables(impl); }
     Operators get_operators() const {return Operators(impl); }
     Axioms get_axioms() const {return Axioms(impl); }
 };
