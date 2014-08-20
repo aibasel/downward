@@ -6,27 +6,6 @@ Variable Fact::get_variable() const {
     return Variable(impl, var_id);
 }
 
-OperatorRef::OperatorRef(const TaskInterface &impl_, size_t index_)
-    : impl(impl_),
-      index(index_) {}
-
-OperatorRef::~OperatorRef() {}
-
 bool OperatorRef::is_applicable(const StateRef &state) const {
     return impl.operator_is_applicable_in_state(index, state.get_index());
 }
-
-Operators::Operators(const TaskInterface &impl_)
-    : impl(impl_) {}
-
-Operators::~Operators() {}
-
-Axioms::Axioms(const TaskInterface &impl_)
-    : impl(impl_) {}
-
-Axioms::~Axioms() {}
-
-Task::Task(const TaskInterface &impl_)
-    : impl(impl_) {}
-
-Task::~Task() {}

@@ -181,8 +181,9 @@ class OperatorRef {
     const TaskInterface &impl;
     size_t index;
 public:
-    OperatorRef(const TaskInterface &impl_, std::size_t index_);
-    ~OperatorRef();
+    OperatorRef(const TaskInterface &impl_, std::size_t index_)
+        : impl(impl_), index(index_) {}
+    ~OperatorRef() {}
     Precondition get_precondition() const {return Precondition(impl, index); }
     Effects get_effects() const {return Effects(impl, index); }
     int get_cost() const {return impl.get_operator_cost(index); }
@@ -196,8 +197,8 @@ public:
 class Operators {
     const TaskInterface &impl;
 public:
-    Operators(const TaskInterface &impl_);
-    ~Operators();
+    Operators(const TaskInterface &impl_) : impl(impl_) {}
+    ~Operators() {}
     std::size_t size() const {return impl.get_num_operators(); }
     OperatorRef operator[](std::size_t index) const {
         return OperatorRef(impl, index);
@@ -208,8 +209,8 @@ public:
 class Axioms {
     const TaskInterface &impl;
 public:
-    Axioms(const TaskInterface &impl_);
-    ~Axioms();
+    Axioms(const TaskInterface &impl_) : impl(impl_) {}
+    ~Axioms() {}
     std::size_t size() const {return impl.get_num_axioms(); }
     OperatorRef operator[](std::size_t index) const {
         return OperatorRef(impl, index);
@@ -235,8 +236,8 @@ public:
 class Task {
     const TaskInterface &impl;
 public:
-    Task(const TaskInterface &impl_);
-    ~Task();
+    Task(const TaskInterface &impl_) : impl(impl_) {}
+    ~Task() {}
     Variables get_variables() const {return Variables(impl); }
     Operators get_operators() const {return Operators(impl); }
     const Operator &get_original_operator(std::size_t index) const {
