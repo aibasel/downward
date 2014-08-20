@@ -4,6 +4,7 @@
 #include "option_parser.h"
 #include "plugin.h"
 #include "state.h"
+#include "task.h"
 
 #include <cassert>
 #include <vector>
@@ -111,9 +112,9 @@ void AdditiveHeuristic::mark_preferred_operators(
                 // more expensive applicability test.
                 // If we had no 0-cost operators and axioms to worry
                 // about, this would also be a sufficient condition.
-                const Operator *op = &g_operators[operator_no];
-                if (op->is_applicable(state))
-                    set_preferred(op);
+                OperatorRef op = task.get_operators()[operator_no];
+                if (op.is_applicable(task.get_state(state.get_id().hash())))
+                    set_preferred(&op.get_original_operator());
             }
         }
     }

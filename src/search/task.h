@@ -16,12 +16,13 @@ class TaskInterface;
 class OperatorRef;
 class Operators;
 class Axioms;
+class StateRef;
 class Task;
 
 
 class TaskInterface {
 public:
-    virtual std::size_t get_state_value(std::size_t state_id, std::size_t var) const = 0;
+    virtual std::size_t get_state_value(std::size_t state_index, std::size_t var) const = 0;
     virtual std::size_t get_num_variables() const = 0;
     virtual std::size_t get_variable_domain_size(std::size_t id) const = 0;
     virtual int get_operator_cost(std::size_t index) const = 0;
@@ -38,6 +39,8 @@ public:
         std::size_t op_index, std::size_t eff_index, std::size_t cond_index) const = 0;
     virtual std::pair<std::size_t, std::size_t> get_operator_effect(
         std::size_t op_index, std::size_t eff_index) const = 0;
+    virtual bool operator_is_applicable_in_state(
+        std::size_t op_index, std::size_t state_index) const = 0;
     virtual std::size_t get_num_axioms() const = 0;
     virtual std::size_t get_goal_size() const = 0;
     virtual std::pair<std::size_t, std::size_t> get_goal_fact(std::size_t index) const = 0;
@@ -181,6 +184,7 @@ public:
         assert(index < g_operators.size());
         return g_operators[index];
     }
+    bool is_applicable(const StateRef &state) const;
 };
 
 
@@ -210,15 +214,16 @@ public:
 
 class StateRef {
     const TaskInterface &impl;
-    std::size_t id;
+    std::size_t index;
 public:
-    StateRef(const TaskInterface &impl_, std::size_t id_)
-        : impl(impl_), id(id_) {}
+    StateRef(const TaskInterface &impl_, std::size_t index_)
+        : impl(impl_), index(index_) {}
     ~StateRef() {}
     std::size_t size() const {return impl.get_num_variables(); }
     Fact operator[](std::size_t var) const {
-        return Fact(impl, var, impl.get_state_value(id, var));
+        return Fact(impl, var, impl.get_state_value(index, var));
     }
+    std::size_t get_index() const {return index; }
 };
 
 
@@ -231,6 +236,7 @@ public:
     Operators get_operators() const {return Operators(impl); }
     Axioms get_axioms() const {return Axioms(impl); }
     StateRef get_initial_state() const {return StateRef(impl, 0); }
+    StateRef get_state(std::size_t index) const {return StateRef(impl, index); }
     Goal get_goal() const {return Goal(impl); }
 };
 
