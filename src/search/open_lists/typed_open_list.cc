@@ -17,13 +17,13 @@ OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
                              "Typed open list that uses multiple evaluators to put nodes into buckets."
                              "Buckets are selected at uniform random, and a node is then selected at random from the bucket."
                              "This open list should only be used in a combination with another open list, seee alt().");
-    parser.add_list_option<ScalarEvaluator*>("sublists", "The evaluators to goup the nodes by.");
+    parser.add_list_option<ScalarEvaluator *>("sublists", "The evaluators to goup the nodes by.");
 
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
 
-    opts.verify_list_non_empty<ScalarEvaluator*>("sublists");
+    opts.verify_list_non_empty<ScalarEvaluator *>("sublists");
     if (parser.dry_run())
         return 0;
     else
@@ -62,7 +62,7 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *) {
 
     int bucket_id = g_rng.next(open_list.size());
     typename BucketMap::iterator it = open_list.begin();
-    for(int i = 0;it != open_list.end() && i < bucket_id;++i,++it);
+    for (int i = 0; it != open_list.end() && i < bucket_id; ++i, ++it) ;
     Bucket &bucket = it->second;
 
     int pos = g_rng.next(bucket.size());
@@ -73,8 +73,7 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *) {
 //        key->insert(key->begin(),it->first.begin(), it->first.end());
 //    }
     bucket.erase(bucket.begin() + pos);
-    if(bucket.empty())
-    {
+    if (bucket.empty()) {
         open_list.erase(it);
     }
     size--;
@@ -132,5 +131,4 @@ void TypedOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) 
     for (size_t i = 0; i < evaluators.size(); i++)
         evaluators[i]->get_involved_heuristics(hset);
 }
-
 #endif
