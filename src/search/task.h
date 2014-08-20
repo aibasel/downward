@@ -22,10 +22,10 @@ class Task;
 
 class TaskInterface {
 public:
-    virtual std::size_t get_state_value(std::size_t state_index, std::size_t var) const = 0;
+    virtual std::size_t get_value_in_state(std::size_t state_index, std::size_t var) const = 0;
 
     virtual std::size_t get_num_variables() const = 0;
-    virtual std::size_t get_variable_domain_size(std::size_t id) const = 0;
+    virtual std::size_t get_variable_domain_size(std::size_t var) const = 0;
 
     virtual int get_operator_cost(std::size_t index) const = 0;
     virtual int get_adjusted_operator_cost(
@@ -227,7 +227,7 @@ public:
     ~StateRef() {}
     std::size_t size() const {return impl.get_num_variables(); }
     Fact operator[](std::size_t var) const {
-        return Fact(impl, var, impl.get_state_value(index, var));
+        return Fact(impl, var, impl.get_value_in_state(index, var));
     }
     std::size_t get_index() const {return index; }
 };
