@@ -122,6 +122,7 @@ int get_peak_memory_in_kb() {
         memory_in_kb = t_info.virtual_size / 1024;
 #elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
     // We can't retrieve peak memory usage on Windows so we return current memory usage.
+    // The file /proc/self/status is not available under Cygwin
     PROCESS_MEMORY_COUNTERS_EX pmc;
     GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
     memory_in_kb = pmc.PrivateUsage / 1024;
