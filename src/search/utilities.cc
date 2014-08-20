@@ -44,7 +44,7 @@ void register_event_handlers() {
     signal(SIGINT, signal_handler);
 }
 
-#if OPERATING_SYSTEM != CYGWIN || OPERATING_SYSTEM != WINDOWS
+#if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
 #if OPERATING_SYSTEM == LINUX
 void exit_handler(int, void *) {
 #elif OPERATING_SYSTEM == OSX
