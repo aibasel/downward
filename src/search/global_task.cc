@@ -53,3 +53,23 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_precondition_fact(size_t 
     assert(pre_post.pre >= 0 && pre_post.pre < g_variable_domain[pre_post.var]);
     return make_pair(pre_post.var, pre_post.pre);
 }
+
+pair<size_t, size_t> GlobalTaskInterface::get_operator_effect_condition(size_t op_index, size_t eff_index, size_t cond_index) const {
+    assert(op_index < g_operators.size());
+    assert(eff_index < g_operators[op_index].get_pre_post().size());
+    const PrePost &pre_post = g_operators[op_index].get_pre_post()[eff_index];
+    assert(cond_index < pre_post.cond.size());
+    const Prevail &condition = pre_post.cond[cond_index];
+    assert(condition.var >= 0 && condition.var < g_variable_domain.size());
+    assert(condition.prev >= 0 && condition.prev < g_variable_domain[condition.var]);
+    return make_pair(condition.var, condition.prev);
+}
+
+pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(size_t op_index, size_t eff_index) const {
+    assert(op_index < g_operators.size());
+    assert(eff_index < g_operators[op_index].get_pre_post().size());
+    const PrePost &pre_post = g_operators[op_index].get_pre_post()[eff_index];
+    assert(pre_post.var >= 0 && pre_post.var < g_variable_domain.size());
+    assert(pre_post.post >= 0 && pre_post.post < g_variable_domain[pre_post.var]);
+    return make_pair(pre_post.var, pre_post.post);
+}

@@ -61,26 +61,22 @@ void RelaxationHeuristic::initialize() {
 }
 
 void RelaxationHeuristic::build_unary_operators(const OperatorRef &op_ref, int op_no) {
-    const Operator &op = op_ref.get_original_operator();
     int base_cost = op_ref.get_adjusted_cost(cost_type);
-    const vector<PrePost> &pre_post = op.get_pre_post();
     vector<Proposition *> precondition;
     for (int i = 0; i < op_ref.get_precondition().size(); ++i) {
         Fact fact = op_ref.get_precondition()[i];
         precondition.push_back(&propositions[fact.get_variable().get_id()][fact.get_value()]);
     }
-    for (int i = 0; i < pre_post.size(); i++) {
-        assert(pre_post[i].var >= 0 && pre_post[i].var < task.get_variables().size());
-        assert(pre_post[i].post >= 0 && pre_post[i].post < g_variable_domain[pre_post[i].var]);
-        Proposition *effect = &propositions[pre_post[i].var][pre_post[i].post];
-        const vector<Prevail> &eff_cond = pre_post[i].cond;
-        for (int j = 0; j < eff_cond.size(); j++) {
-            assert(eff_cond[j].var >= 0 && eff_cond[j].var < task.get_variables().size());
-            assert(eff_cond[j].prev >= 0 && eff_cond[j].prev < g_variable_domain[eff_cond[j].var]);
-            precondition.push_back(&propositions[eff_cond[j].var][eff_cond[j].prev]);
+    Effects effects = op_ref.get_effects();
+    for (int i = 0; i < effects.size(); ++i) {
+        Proposition *effect = &propositions[effects[i].get_effect().get_variable().get_id()][effects[i].get_effect().get_value()];
+        EffectCondition eff_conds = effects[i].get_condition();
+        for (int j = 0; j < eff_conds.size(); ++j) {
+            Fact condition = eff_conds[j];
+            precondition.push_back(&propositions[condition.get_variable().get_id()][condition.get_value()]);
         }
         unary_operators.push_back(UnaryOperator(precondition, effect, op_no, base_cost));
-        precondition.erase(precondition.end() - eff_cond.size(), precondition.end());
+        precondition.erase(precondition.end() - eff_conds.size(), precondition.end());
     }
 }
 
