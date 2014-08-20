@@ -41,6 +41,7 @@ public:
         std::size_t op_index, std::size_t eff_index) const = 0;
     virtual bool operator_is_applicable_in_state(
         std::size_t op_index, std::size_t state_index) const = 0;
+    virtual const Operator &get_original_operator(std::size_t index) const = 0;
     virtual std::size_t get_num_axioms() const = 0;
     virtual std::size_t get_goal_size() const = 0;
     virtual std::pair<std::size_t, std::size_t> get_goal_fact(std::size_t index) const = 0;
@@ -180,10 +181,6 @@ public:
     int get_adjusted_cost(OperatorCost cost_type) const {
         return impl.get_adjusted_operator_cost(index, cost_type);
     }
-    const Operator &get_original_operator() const {
-        assert(index < g_operators.size());
-        return g_operators[index];
-    }
     bool is_applicable(const StateRef &state) const;
 };
 
@@ -234,6 +231,9 @@ public:
     ~Task();
     Variables get_variables() const {return Variables(impl); }
     Operators get_operators() const {return Operators(impl); }
+    const Operator &get_original_operator(std::size_t index) const {
+        return impl.get_original_operator(index);
+    }
     Axioms get_axioms() const {return Axioms(impl); }
     StateRef get_initial_state() const {return StateRef(impl, 0); }
     StateRef get_state(std::size_t index) const {return StateRef(impl, index); }
