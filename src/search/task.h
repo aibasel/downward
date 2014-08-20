@@ -102,7 +102,8 @@ public:
     ~Precondition() {}
     std::size_t size() const {return impl.get_operator_precondition_size(op_index); }
     Fact operator[](std::size_t fact_index) const {
-        std::pair<std::size_t, std::size_t> fact = impl.get_operator_precondition_fact(op_index, fact_index);
+        std::pair<std::size_t, std::size_t> fact =
+            impl.get_operator_precondition_fact(op_index, fact_index);
         return Fact(impl, fact.first, fact.second);
     }
 };
@@ -124,14 +125,16 @@ class EffectCondition : Condition {
     std::size_t op_index;
     std::size_t eff_index;
 public:
-    EffectCondition(const TaskInterface &impl_, std::size_t op_index_, std::size_t eff_index_)
+    EffectCondition(
+        const TaskInterface &impl_, std::size_t op_index_, std::size_t eff_index_)
         : Condition(impl_), op_index(op_index_), eff_index(eff_index_) {}
     ~EffectCondition() {}
     std::size_t size() const {
         return impl.get_operator_effect_condition_size(op_index, eff_index);
     }
     Fact operator[](std::size_t index) const {
-        std::pair<std::size_t, std::size_t> fact = impl.get_operator_effect_condition(op_index, eff_index, index);
+        std::pair<std::size_t, std::size_t> fact =
+            impl.get_operator_effect_condition(op_index, eff_index, index);
         return Fact(impl, fact.first, fact.second);
     }
 };
@@ -149,7 +152,8 @@ public:
         return EffectCondition(impl, op_index, eff_index);
     }
     Fact get_effect() const {
-        std::pair<std::size_t, std::size_t> fact = impl.get_operator_effect(op_index, eff_index);
+        std::pair<std::size_t, std::size_t> fact =
+            impl.get_operator_effect(op_index, eff_index);
         return Fact(impl, fact.first, fact.second);
     }
 };

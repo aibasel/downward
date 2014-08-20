@@ -26,7 +26,8 @@ size_t GlobalTaskInterface::get_operator_precondition_size(size_t index) const {
     return size;
 }
 
-pair<size_t, size_t> GlobalTaskInterface::get_operator_precondition_fact(size_t op_index, size_t fact_index) const {
+pair<size_t, size_t> GlobalTaskInterface::get_operator_precondition_fact(
+    size_t op_index, size_t fact_index) const {
     assert(op_index < g_operators.size());
     assert(fact_index < get_operator_precondition_size(op_index));
     size_t num_prevails = g_operators[op_index].get_prevail().size();
@@ -54,7 +55,8 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_precondition_fact(size_t 
     return make_pair(pre_post.var, pre_post.pre);
 }
 
-pair<size_t, size_t> GlobalTaskInterface::get_operator_effect_condition(size_t op_index, size_t eff_index, size_t cond_index) const {
+pair<size_t, size_t> GlobalTaskInterface::get_operator_effect_condition(
+    size_t op_index, size_t eff_index, size_t cond_index) const {
     assert(op_index < g_operators.size());
     assert(eff_index < g_operators[op_index].get_pre_post().size());
     const PrePost &pre_post = g_operators[op_index].get_pre_post()[eff_index];
@@ -65,7 +67,8 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_effect_condition(size_t o
     return make_pair(condition.var, condition.prev);
 }
 
-pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(size_t op_index, size_t eff_index) const {
+pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(
+    size_t op_index, size_t eff_index) const {
     assert(op_index < g_operators.size());
     assert(eff_index < g_operators[op_index].get_pre_post().size());
     const PrePost &pre_post = g_operators[op_index].get_pre_post()[eff_index];
@@ -74,7 +77,8 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(size_t op_index, s
     return make_pair(pre_post.var, pre_post.post);
 }
 
-bool GlobalTaskInterface::operator_is_applicable_in_state(size_t op_index, size_t state_index) const {
+bool GlobalTaskInterface::operator_is_applicable_in_state(
+    size_t op_index, size_t state_index) const {
     const State &state = g_state_registry->lookup_state(StateID(state_index));
     return g_operators[op_index].is_applicable(state);
 }
