@@ -21,6 +21,7 @@ class Task;
 
 class TaskInterface {
 public:
+    virtual std::size_t get_state_value(std::size_t state_id, std::size_t var) const = 0;
     virtual std::size_t get_num_variables() const = 0;
     virtual std::size_t get_variable_domain_size(std::size_t id) const = 0;
     virtual int get_operator_cost(std::size_t index) const = 0;
@@ -142,6 +143,17 @@ public:
 };
 
 
+class StateRef {
+    const TaskInterface &impl;
+    std::size_t id;
+public:
+    StateRef(const TaskInterface &impl_, std::size_t id_) : impl(impl_), id(id_) {};
+    ~StateRef() {};
+    std::size_t size() const {return impl.get_num_variables(); }
+    Fact operator[](std::size_t var) const {return Fact(impl, var, impl.get_state_value(id, var)); }
+};
+
+
 class Task {
     const TaskInterface &impl;
 public:
@@ -150,6 +162,7 @@ public:
     Variables get_variables() const {return Variables(impl); }
     Operators get_operators() const {return Operators(impl); }
     Axioms get_axioms() const {return Axioms(impl); }
+    StateRef get_initial_state() const {return StateRef(impl, 0); }
     Goal get_goal() const {return Goal(impl); }
 };
 

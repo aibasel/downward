@@ -41,6 +41,7 @@ StateID StateRegistry::insert_id_or_pop_state() {
 }
 
 State StateRegistry::lookup_state(StateID id) const {
+    assert(id.value < state_data_pool.size());
     return State(state_data_pool[id.value], *this, id);
 }
 

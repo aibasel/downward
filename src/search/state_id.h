@@ -7,6 +7,7 @@
 // states see the file state_registry.h.
 
 class StateID {
+    friend class GlobalTaskInterface;
     friend class StateRegistry;
     friend std::ostream &operator<<(std::ostream &os, StateID id);
     template<typename>

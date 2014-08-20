@@ -1,11 +1,19 @@
 #include "global_task.h"
 
+#include "state_id.h"
+#include "state_registry.h"
+
 using namespace std;
 
 GlobalTaskInterface::GlobalTaskInterface() {
 }
 
 GlobalTaskInterface::~GlobalTaskInterface() {
+}
+
+size_t GlobalTaskInterface::get_state_value(size_t state_id, size_t var) const {
+    assert(state_id < g_state_registry->size());
+    return g_state_registry->lookup_state(StateID(state_id))[var];
 }
 
 size_t GlobalTaskInterface::get_operator_precondition_size(size_t index) const {
