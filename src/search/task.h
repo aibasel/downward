@@ -8,18 +8,74 @@
 #include <cassert>
 #include <cstddef>
 
+class Fact;
+class Variable;
+class Condition;
+class Precondition;
 class TaskInterface;
 class OperatorRef;
 class Operators;
+class Axioms;
 class Task;
 
 
 class TaskInterface {
 public:
+    virtual std::size_t get_variable_domain_size(std::size_t id) const = 0;
     virtual int get_operator_cost(std::size_t index) const = 0;
     virtual int get_adjusted_operator_cost(std::size_t index, OperatorCost cost_type) const = 0;
-    virtual size_t get_num_operators() const = 0;
-    virtual size_t get_num_axioms() const = 0;
+    virtual std::size_t get_num_operators() const = 0;
+    virtual std::size_t get_operator_precondition_size(std::size_t index) const = 0;
+    virtual std::pair<std::size_t, std::size_t> get_operator_precondition_fact(std::size_t op_index, std::size_t fact_index) const = 0;
+    virtual std::size_t get_num_axioms() const = 0;
+};
+
+
+class Fact {
+    const TaskInterface &impl;
+    std::size_t var_id;
+    std::size_t value;
+public:
+    Fact(const TaskInterface &impl_, std::size_t var_id_, std::size_t value_) : impl(impl_), var_id(var_id_), value(value_) {};
+    ~Fact() {};
+    std::size_t get_value() const {return value; }
+    Variable get_variable() const;
+};
+
+
+class Variable {
+    const TaskInterface &impl;
+    std::size_t id;
+public:
+    Variable(const TaskInterface &impl_, std::size_t id_) : impl(impl_), id(id_) {};
+    ~Variable() {};
+    std::size_t get_id() const {return id; }
+    std::size_t get_domain_size() const {return impl.get_variable_domain_size(id); }
+    Fact get_fact(std::size_t index) const {return Fact(impl, id, index); }
+};
+
+
+class Condition {
+    const TaskInterface &impl;
+public:
+    Condition(const TaskInterface &impl_) : impl(impl_) {};
+    ~Condition() {};
+    virtual std::size_t size() const = 0;
+    virtual Fact operator[](std::size_t index) const = 0;
+};
+
+
+class Precondition {
+    const TaskInterface &impl;
+    std::size_t op_index;
+public:
+    Precondition(const TaskInterface &impl_, std::size_t op_index_) : impl(impl_), op_index(op_index_) {};
+    ~Precondition() {};
+    std::size_t size() const {return impl.get_operator_precondition_size(op_index); }
+    Fact operator[](std::size_t fact_index) const {
+        std::pair<std::size_t, std::size_t> fact = impl.get_operator_precondition_fact(op_index, fact_index);
+        return Fact(impl, fact.first, fact.second);
+    }
 };
 
 
@@ -29,6 +85,7 @@ class OperatorRef {
 public:
     OperatorRef(const TaskInterface &impl_, std::size_t index_);
     ~OperatorRef();
+    Precondition get_precondition() const {return Precondition(impl, index); }
     int get_cost() const {return impl.get_operator_cost(index); }
     int get_adjusted_cost(OperatorCost cost_type) const {
         return impl.get_adjusted_operator_cost(index, cost_type);

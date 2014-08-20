@@ -2,6 +2,10 @@
 
 using namespace std;
 
+Variable Fact::get_variable() const {
+    return Variable(impl, var_id);
+}
+
 OperatorRef::OperatorRef(const TaskInterface &impl_, size_t index_)
     : impl(impl_),
       index(index_) {}
