@@ -47,10 +47,10 @@ struct Proposition {
 };
 
 class RelaxationHeuristic : public Heuristic {
-    const Task &task;
     void build_unary_operators(const OperatorRef &op, int operator_no);
     void simplify();
 protected:
+    const Task &task;
     std::vector<UnaryOperator> unary_operators;
     std::vector<std::vector<Proposition> > propositions;
     std::vector<Proposition *> goal_propositions;

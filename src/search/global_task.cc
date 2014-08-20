@@ -11,9 +11,9 @@ GlobalTaskInterface::GlobalTaskInterface() {
 GlobalTaskInterface::~GlobalTaskInterface() {
 }
 
-size_t GlobalTaskInterface::get_state_value(size_t state_id, size_t var) const {
-    assert(state_id < g_state_registry->size());
-    return g_state_registry->lookup_state(StateID(state_id))[var];
+size_t GlobalTaskInterface::get_state_value(size_t state_index, size_t var) const {
+    assert(state_index < g_state_registry->size());
+    return g_state_registry->lookup_state(StateID(state_index))[var];
 }
 
 size_t GlobalTaskInterface::get_operator_precondition_size(size_t index) const {
@@ -72,4 +72,9 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(size_t op_index, s
     assert(pre_post.var >= 0 && pre_post.var < g_variable_domain.size());
     assert(pre_post.post >= 0 && pre_post.post < g_variable_domain[pre_post.var]);
     return make_pair(pre_post.var, pre_post.post);
+}
+
+bool GlobalTaskInterface::operator_is_applicable_in_state(size_t op_index, size_t state_index) const {
+    const State &state = g_state_registry->lookup_state(StateID(state_index));
+    return g_operators[op_index].is_applicable(state);
 }
