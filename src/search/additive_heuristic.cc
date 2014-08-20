@@ -114,7 +114,7 @@ void AdditiveHeuristic::mark_preferred_operators(
                 // about, this would also be a sufficient condition.
                 OperatorRef op = task.get_operators()[operator_no];
                 if (op.is_applicable(task.get_state(state.get_id().hash())))
-                    set_preferred(&op.get_original_operator());
+                    set_preferred(&task.get_original_operator(operator_no));
             }
         }
     }

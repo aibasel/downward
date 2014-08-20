@@ -78,3 +78,8 @@ bool GlobalTaskInterface::operator_is_applicable_in_state(size_t op_index, size_
     const State &state = g_state_registry->lookup_state(StateID(state_index));
     return g_operators[op_index].is_applicable(state);
 }
+
+const Operator &GlobalTaskInterface::get_original_operator(size_t index) const {
+    assert(index < g_operators.size());
+    return g_operators[index];
+}
