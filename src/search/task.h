@@ -29,6 +29,8 @@ public:
     virtual std::size_t get_operator_precondition_size(std::size_t index) const = 0;
     virtual std::pair<std::size_t, std::size_t> get_operator_precondition_fact(std::size_t op_index, std::size_t fact_index) const = 0;
     virtual std::size_t get_num_axioms() const = 0;
+    virtual std::size_t get_goal_size() const = 0;
+    virtual std::pair<std::size_t, std::size_t> get_goal_fact(std::size_t index) const = 0;
 };
 
 
@@ -90,6 +92,19 @@ public:
 };
 
 
+class Goal {
+    const TaskInterface &impl;
+public:
+    Goal(const TaskInterface &impl_) : impl(impl_) {};
+    ~Goal() {};
+    std::size_t size() const {return impl.get_goal_size(); }
+    Fact operator[](std::size_t index) const {
+        std::pair<std::size_t, std::size_t> fact = impl.get_goal_fact(index);
+        return Fact(impl, fact.first, fact.second);
+    }
+};
+
+
 class OperatorRef {
     const TaskInterface &impl;
     size_t index;
@@ -136,6 +151,7 @@ public:
     Variables get_variables() const {return Variables(impl); }
     Operators get_operators() const {return Operators(impl); }
     Axioms get_axioms() const {return Axioms(impl); }
+    Goal get_goal() const {return Goal(impl); }
 };
 
 #endif
