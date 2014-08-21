@@ -14,9 +14,9 @@ class LegacyCausalGraph;
 class Operator;
 class RandomNumberGenerator;
 class State;
-class StateRegistry;
 class SuccessorGenerator;
 class Timer;
+class StateRegistry;
 
 bool test_goal(const State &state);
 void save_plan(const std::vector<const Operator *> &plan, int iter);

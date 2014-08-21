@@ -3,8 +3,6 @@
 
 #include "heuristic.h"
 
-class Task;
-
 class BlindSearchHeuristic : public Heuristic {
     int min_operator_cost;
 protected:
