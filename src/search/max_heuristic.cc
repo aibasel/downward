@@ -26,7 +26,7 @@ using namespace std;
 
 // construction and destruction
 HSPMaxHeuristic::HSPMaxHeuristic(const Options &opts)
-    : RelaxationHeuristic(g_task, opts) {
+    : RelaxationHeuristic(opts) {
 }
 
 HSPMaxHeuristic::~HSPMaxHeuristic() {

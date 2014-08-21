@@ -18,7 +18,7 @@ using namespace __gnu_cxx;
 
 // construction and destruction
 FFHeuristic::FFHeuristic(const Options &opts)
-    : AdditiveHeuristic(g_task, opts) {
+    : AdditiveHeuristic(opts) {
 }
 
 FFHeuristic::~FFHeuristic() {

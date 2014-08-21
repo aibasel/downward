@@ -1,5 +1,7 @@
 #include "global_task_interface.h"
 
+#include "option_parser.h"
+#include "plugin.h"
 #include "state_id.h"
 #include "state_registry.h"
 
@@ -56,3 +58,12 @@ const Operator *GlobalTaskInterface::get_original_operator(size_t index) const {
     assert(index < g_operators.size());
     return &g_operators[index];
 }
+
+static TaskInterface *_parse(OptionParser &parser) {
+    if (parser.dry_run())
+        return 0;
+    else
+        return new GlobalTaskInterface();
+}
+
+static Plugin<TaskInterface> _plugin("global_task_interface", _parse);

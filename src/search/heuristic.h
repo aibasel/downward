@@ -1,8 +1,9 @@
 #ifndef HEURISTIC_H
 #define HEURISTIC_H
 
-#include "scalar_evaluator.h"
 #include "operator_cost.h"
+#include "scalar_evaluator.h"
+#include "task.h"
 
 #include <map>
 #include <set>
@@ -24,6 +25,7 @@ class Heuristic : public ScalarEvaluator {
     std::vector<const Operator *> preferred_operators;
     bool is_unit_cost;
 protected:
+    Task task;
     OperatorCost cost_type;
     enum {DEAD_END = -1};
     virtual void initialize() {}
