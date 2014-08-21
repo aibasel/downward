@@ -2,6 +2,7 @@
 #define OPERATOR_H
 
 #include <cassert>
+#include <cstddef>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -61,6 +62,7 @@ class Operator {
     bool is_an_axiom;
     std::vector<Prevail> prevail;      // var, val
     std::vector<PrePost> pre_post;     // var, old-val, new-val, effect conditions
+    std::vector<size_t> indices_of_effects_with_precondition;
     std::string name;
     int cost;
 
@@ -74,6 +76,9 @@ public:
 
     const std::vector<Prevail> &get_prevail() const {return prevail; }
     const std::vector<PrePost> &get_pre_post() const {return pre_post; }
+    const std::vector<size_t> &get_indices_of_effects_with_precondition() const {
+        return indices_of_effects_with_precondition;
+    }
 
     bool is_applicable(const State &state) const {
         for (int i = 0; i < prevail.size(); i++)
