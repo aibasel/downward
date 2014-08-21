@@ -6,7 +6,6 @@
 class Task;
 
 class BlindSearchHeuristic : public Heuristic {
-    const Task &task;
     int min_operator_cost;
 protected:
     virtual void initialize();
