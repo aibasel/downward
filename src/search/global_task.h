@@ -13,8 +13,6 @@
 
 class GlobalTaskInterface : public TaskInterface {
 public:
-    std::size_t get_value_in_state(std::size_t state_index, std::size_t var) const;
-
     std::size_t get_num_variables() const {return g_variable_domain.size(); }
     std::size_t get_variable_domain_size(std::size_t var) const {
         return g_variable_domain[var];
@@ -43,8 +41,6 @@ public:
         std::size_t op_index, std::size_t eff_index, std::size_t cond_index) const;
     std::pair<std::size_t, std::size_t> get_operator_effect(
         std::size_t op_index, std::size_t eff_index) const;
-    bool operator_is_applicable_in_state(
-        std::size_t op_index, std::size_t state_index) const;
     const Operator &get_original_operator(std::size_t index) const;
 
     std::size_t get_num_axioms() const {return g_axioms.size(); }

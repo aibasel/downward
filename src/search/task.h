@@ -16,14 +16,11 @@ class TaskInterface;
 class OperatorRef;
 class Operators;
 class Axioms;
-class StateRef;
 class Task;
 
 
 class TaskInterface {
 public:
-    virtual std::size_t get_value_in_state(std::size_t state_index, std::size_t var) const = 0;
-
     virtual std::size_t get_num_variables() const = 0;
     virtual std::size_t get_variable_domain_size(std::size_t var) const = 0;
 
@@ -41,8 +38,6 @@ public:
         std::size_t op_index, std::size_t eff_index, std::size_t cond_index) const = 0;
     virtual std::pair<std::size_t, std::size_t> get_operator_effect(
         std::size_t op_index, std::size_t eff_index) const = 0;
-    virtual bool operator_is_applicable_in_state(
-        std::size_t op_index, std::size_t state_index) const = 0;
     virtual const Operator &get_original_operator(std::size_t index) const = 0;
 
     virtual std::size_t get_num_axioms() const = 0;
@@ -190,7 +185,6 @@ public:
     int get_adjusted_cost(OperatorCost cost_type) const {
         return impl.get_adjusted_operator_cost(index, cost_type);
     }
-    bool is_applicable(const StateRef &state) const;
 };
 
 
@@ -218,21 +212,6 @@ public:
 };
 
 
-class StateRef {
-    const TaskInterface &impl;
-    std::size_t index;
-public:
-    StateRef(const TaskInterface &impl_, std::size_t index_)
-        : impl(impl_), index(index_) {}
-    ~StateRef() {}
-    std::size_t size() const {return impl.get_num_variables(); }
-    Fact operator[](std::size_t var) const {
-        return Fact(impl, var, impl.get_value_in_state(index, var));
-    }
-    std::size_t get_index() const {return index; }
-};
-
-
 class Task {
     const TaskInterface &impl;
 public:
@@ -244,8 +223,6 @@ public:
         return impl.get_original_operator(index);
     }
     Axioms get_axioms() const {return Axioms(impl); }
-    StateRef get_initial_state() const {return StateRef(impl, 0); }
-    StateRef get_state(std::size_t index) const {return StateRef(impl, index); }
     Goal get_goal() const {return Goal(impl); }
 };
 
