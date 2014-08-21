@@ -7,8 +7,8 @@
 
 #include <cassert>
 #include <cstdlib>
-using namespace std;
 
+using namespace std;
 
 
 template<class Entry>

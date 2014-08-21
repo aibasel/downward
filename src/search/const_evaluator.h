@@ -2,6 +2,7 @@
 #define CONST_EVALUATOR_H
 
 #include "heuristic.h"
+
 #include <string>
 #include <vector>
 
@@ -21,9 +22,6 @@ public:
     void evaluate(int, bool) {}
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;
-
-
-
 };
 
 #endif
