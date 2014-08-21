@@ -5,11 +5,6 @@
 
 using namespace std;
 
-size_t GlobalTaskInterface::get_value_in_state(size_t state_index, size_t var) const {
-    assert(state_index < g_state_registry->size());
-    return g_state_registry->lookup_state(StateID(state_index))[var];
-}
-
 size_t GlobalTaskInterface::get_operator_precondition_size(size_t index) const {
     assert(index < g_operators.size());
     size_t size = g_operators[index].get_prevail().size();
@@ -69,12 +64,6 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(
     assert(pre_post.var >= 0 && pre_post.var < g_variable_domain.size());
     assert(pre_post.post >= 0 && pre_post.post < g_variable_domain[pre_post.var]);
     return make_pair(pre_post.var, pre_post.post);
-}
-
-bool GlobalTaskInterface::operator_is_applicable_in_state(
-    size_t op_index, size_t state_index) const {
-    const State &state = g_state_registry->lookup_state(StateID(state_index));
-    return g_operators[op_index].is_applicable(state);
 }
 
 const Operator &GlobalTaskInterface::get_original_operator(size_t index) const {
