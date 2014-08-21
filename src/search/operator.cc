@@ -49,6 +49,11 @@ Operator::Operator(istream &in, bool axiom) {
     }
 
     marker1 = marker2 = false;
+
+    for (size_t i = 0; i < pre_post.size(); ++i) {
+        if (pre_post[i].pre != -1)
+            indices_of_effects_with_precondition.push_back(i);
+    }
 }
 
 void Prevail::dump() const {
