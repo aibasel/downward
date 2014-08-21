@@ -14,9 +14,9 @@ using namespace std;
 template<class Entry>
 OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
     parser.document_synopsis("Typed open list",
-                             "Typed open list that uses multiple evaluators to put nodes into buckets."
-                             "Buckets are selected at uniform random, and a node is then selected at random from the bucket."
-                             "This open list should only be used in a combination with another open list, seee alt().");
+                             "Typed open list that uses multiple evaluators to put nodes into buckets. "
+                             "When retrieving a node, a bucket is chosen uniformly at random and one of the contained nodes is selected randomly. "
+                             "This open list should be used in combination with other open lists, e.g. alt().");
     parser.add_list_option<ScalarEvaluator *>("sublists", "The evaluators to goup the nodes by.");
 
     Options opts = parser.parse();
