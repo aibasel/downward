@@ -5,7 +5,7 @@
 
 using namespace std;
 
-size_t GlobalTaskInterface::get_operator_precondition_size(size_t index) const {
+size_t GlobalTaskInterface::get_num_operator_preconditions(size_t index) const {
     assert(index < g_operators.size());
     size_t size = g_operators[index].get_prevail().size();
     for (int i = 0; i < g_operators[index].get_pre_post().size(); ++i) {
@@ -15,10 +15,10 @@ size_t GlobalTaskInterface::get_operator_precondition_size(size_t index) const {
     return size;
 }
 
-pair<size_t, size_t> GlobalTaskInterface::get_operator_precondition_fact(
+pair<size_t, size_t> GlobalTaskInterface::get_operator_precondition(
     size_t op_index, size_t fact_index) const {
     assert(op_index < g_operators.size());
-    assert(fact_index < get_operator_precondition_size(op_index));
+    assert(fact_index < get_num_operator_preconditions(op_index));
     size_t num_prevails = g_operators[op_index].get_prevail().size();
     if (fact_index < num_prevails) {
         const Prevail &prevail = g_operators[op_index].get_prevail()[fact_index];
