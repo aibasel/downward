@@ -16,7 +16,6 @@ class RandomNumberGenerator;
 class State;
 class StateRegistry;
 class SuccessorGenerator;
-class Task;
 class Timer;
 
 bool test_goal(const State &state);
@@ -72,8 +71,6 @@ extern RandomNumberGenerator g_rng;
 // for each problem in this case the method State::get_id would also have to be
 // changed.
 extern StateRegistry *g_state_registry;
-
-extern Task g_task;
 
 
 

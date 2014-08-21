@@ -11,7 +11,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
 public:
-    BlindSearchHeuristic(const Task &task_, const Options &options);
+    BlindSearchHeuristic(const Options &options);
     ~BlindSearchHeuristic();
 };
 

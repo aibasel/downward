@@ -3,7 +3,6 @@
 #include "axioms.h"
 #include "causal_graph.h"
 #include "domain_transition_graph.h"
-#include "global_task_interface.h"
 #include "heuristic.h"
 #include "int_packer.h"
 #include "legacy_causal_graph.h"
@@ -12,7 +11,6 @@
 #include "state.h"
 #include "state_registry.h"
 #include "successor_generator.h"
-#include "task.h"
 #include "timer.h"
 #include "utilities.h"
 
@@ -41,8 +39,6 @@ static const int PRE_FILE_VERSION = 3;
 //       structure globally.)
 
 static vector<vector<set<pair<int, int> > > > g_inconsistent_facts;
-
-static const GlobalTaskInterface global_task_impl;
 
 bool test_goal(const State &state) {
     for (int i = 0; i < g_goal.size(); i++) {
@@ -391,5 +387,3 @@ Timer g_timer;
 string g_plan_filename = "sas_plan";
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 StateRegistry *g_state_registry = 0;
-
-Task g_task(global_task_impl);
