@@ -9,13 +9,17 @@
 #include <cstddef>
 
 class Fact;
+class Facts;
 class Variable;
-class Conditions;
+class Variables;
 class Preconditions;
-class TaskInterface;
+class EffectConditions;
+class Effect;
+class Effects;
 class OperatorRef;
 class Operators;
 class Axioms;
+class Goals;
 class Task;
 
 
@@ -60,6 +64,17 @@ public:
 };
 
 
+class Facts {
+protected:
+    const TaskInterface &interface;
+public:
+    Facts(const TaskInterface &interface_) : interface(interface_) {}
+    ~Facts() {}
+    virtual std::size_t size() const = 0;
+    virtual Fact operator[](std::size_t index) const = 0;
+};
+
+
 class Variable {
     const TaskInterface &interface;
     std::size_t id;
@@ -83,22 +98,11 @@ public:
 };
 
 
-class Conditions {
-protected:
-    const TaskInterface &interface;
-public:
-    Conditions(const TaskInterface &interface_) : interface(interface_) {}
-    ~Conditions() {}
-    virtual std::size_t size() const = 0;
-    virtual Fact operator[](std::size_t index) const = 0;
-};
-
-
-class Preconditions : Conditions {
+class Preconditions : Facts {
     std::size_t op_index;
 public:
     Preconditions(const TaskInterface &interface_, std::size_t op_index_)
-        : Conditions(interface_), op_index(op_index_) {}
+        : Facts(interface_), op_index(op_index_) {}
     ~Preconditions() {}
     std::size_t size() const {return interface.get_num_operator_preconditions(op_index); }
     Fact operator[](std::size_t fact_index) const {
@@ -109,25 +113,13 @@ public:
 };
 
 
-class Goals : Conditions {
-public:
-    Goals(const TaskInterface &interface_) : Conditions(interface_) {}
-    ~Goals() {}
-    std::size_t size() const {return interface.get_num_goals(); }
-    Fact operator[](std::size_t index) const {
-        std::pair<std::size_t, std::size_t> fact = interface.get_goal_fact(index);
-        return Fact(interface, fact.first, fact.second);
-    }
-};
-
-
-class EffectConditions : Conditions {
+class EffectConditions : Facts {
     std::size_t op_index;
     std::size_t eff_index;
 public:
     EffectConditions(
         const TaskInterface &interface_, std::size_t op_index_, std::size_t eff_index_)
-        : Conditions(interface_), op_index(op_index_), eff_index(eff_index_) {}
+        : Facts(interface_), op_index(op_index_), eff_index(eff_index_) {}
     ~EffectConditions() {}
     std::size_t size() const {
         return interface.get_num_operator_effect_conditions(op_index, eff_index);
@@ -210,6 +202,18 @@ public:
     std::size_t size() const {return interface.get_num_axioms(); }
     OperatorRef operator[](std::size_t index) const {
         return OperatorRef(interface, index);
+    }
+};
+
+
+class Goals : Facts {
+public:
+    Goals(const TaskInterface &interface_) : Facts(interface_) {}
+    ~Goals() {}
+    std::size_t size() const {return interface.get_num_goals(); }
+    Fact operator[](std::size_t index) const {
+        std::pair<std::size_t, std::size_t> fact = interface.get_goal_fact(index);
+        return Fact(interface, fact.first, fact.second);
     }
 };
 
