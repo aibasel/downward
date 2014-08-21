@@ -63,14 +63,14 @@ void RelaxationHeuristic::initialize() {
 void RelaxationHeuristic::build_unary_operators(const OperatorRef &op, int op_no) {
     int base_cost = op.get_adjusted_cost(cost_type);
     vector<Proposition *> precondition;
-    for (int i = 0; i < op.get_precondition().size(); ++i) {
-        Fact fact = op.get_precondition()[i];
+    for (int i = 0; i < op.get_preconditions().size(); ++i) {
+        Fact fact = op.get_preconditions()[i];
         precondition.push_back(&propositions[fact.get_variable().get_id()][fact.get_value()]);
     }
     Effects effects = op.get_effects();
     for (int i = 0; i < effects.size(); ++i) {
         Proposition *effect = &propositions[effects[i].get_effect().get_variable().get_id()][effects[i].get_effect().get_value()];
-        EffectCondition eff_conds = effects[i].get_condition();
+        EffectConditions eff_conds = effects[i].get_conditions();
         for (int j = 0; j < eff_conds.size(); ++j) {
             Fact condition = eff_conds[j];
             precondition.push_back(&propositions[condition.get_variable().get_id()][condition.get_value()]);

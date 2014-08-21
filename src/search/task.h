@@ -10,8 +10,8 @@
 
 class Fact;
 class Variable;
-class Condition;
-class Precondition;
+class Conditions;
+class Preconditions;
 class TaskInterface;
 class OperatorRef;
 class Operators;
@@ -28,11 +28,11 @@ public:
     virtual int get_adjusted_operator_cost(
         std::size_t index, OperatorCost cost_type) const = 0;
     virtual std::size_t get_num_operators() const = 0;
-    virtual std::size_t get_operator_precondition_size(std::size_t index) const = 0;
-    virtual std::pair<std::size_t, std::size_t> get_operator_precondition_fact(
+    virtual std::size_t get_num_operator_preconditions(std::size_t index) const = 0;
+    virtual std::pair<std::size_t, std::size_t> get_operator_precondition(
         std::size_t op_index, std::size_t fact_index) const = 0;
     virtual std::size_t get_num_operator_effects(std::size_t op_index) const = 0;
-    virtual std::size_t get_operator_effect_condition_size(
+    virtual std::size_t get_num_operator_effect_conditions(
         std::size_t op_index, std::size_t eff_index) const = 0;
     virtual std::pair<std::size_t, std::size_t> get_operator_effect_condition(
         std::size_t op_index, std::size_t eff_index, std::size_t cond_index) const = 0;
@@ -83,35 +83,35 @@ public:
 };
 
 
-class Condition {
+class Conditions {
 protected:
     const TaskInterface &interface;
 public:
-    Condition(const TaskInterface &interface_) : interface(interface_) {}
-    ~Condition() {}
+    Conditions(const TaskInterface &interface_) : interface(interface_) {}
+    ~Conditions() {}
     virtual std::size_t size() const = 0;
     virtual Fact operator[](std::size_t index) const = 0;
 };
 
 
-class Precondition : Condition {
+class Preconditions : Conditions {
     std::size_t op_index;
 public:
-    Precondition(const TaskInterface &interface_, std::size_t op_index_)
-        : Condition(interface_), op_index(op_index_) {}
-    ~Precondition() {}
-    std::size_t size() const {return interface.get_operator_precondition_size(op_index); }
+    Preconditions(const TaskInterface &interface_, std::size_t op_index_)
+        : Conditions(interface_), op_index(op_index_) {}
+    ~Preconditions() {}
+    std::size_t size() const {return interface.get_num_operator_preconditions(op_index); }
     Fact operator[](std::size_t fact_index) const {
         std::pair<std::size_t, std::size_t> fact =
-            interface.get_operator_precondition_fact(op_index, fact_index);
+            interface.get_operator_precondition(op_index, fact_index);
         return Fact(interface, fact.first, fact.second);
     }
 };
 
 
-class Goals : Condition {
+class Goals : Conditions {
 public:
-    Goals(const TaskInterface &interface_) : Condition(interface_) {}
+    Goals(const TaskInterface &interface_) : Conditions(interface_) {}
     ~Goals() {}
     std::size_t size() const {return interface.get_num_goals(); }
     Fact operator[](std::size_t index) const {
@@ -121,16 +121,16 @@ public:
 };
 
 
-class EffectCondition : Condition {
+class EffectConditions : Conditions {
     std::size_t op_index;
     std::size_t eff_index;
 public:
-    EffectCondition(
+    EffectConditions(
         const TaskInterface &interface_, std::size_t op_index_, std::size_t eff_index_)
-        : Condition(interface_), op_index(op_index_), eff_index(eff_index_) {}
-    ~EffectCondition() {}
+        : Conditions(interface_), op_index(op_index_), eff_index(eff_index_) {}
+    ~EffectConditions() {}
     std::size_t size() const {
-        return interface.get_operator_effect_condition_size(op_index, eff_index);
+        return interface.get_num_operator_effect_conditions(op_index, eff_index);
     }
     Fact operator[](std::size_t index) const {
         std::pair<std::size_t, std::size_t> fact =
@@ -148,8 +148,8 @@ public:
     Effect(const TaskInterface &interface_, std::size_t op_index_, std::size_t eff_index_)
         : interface(interface_), op_index(op_index_), eff_index(eff_index_) {}
     ~Effect() {}
-    EffectCondition get_condition() const {
-        return EffectCondition(interface, op_index, eff_index);
+    EffectConditions get_conditions() const {
+        return EffectConditions(interface, op_index, eff_index);
     }
     Fact get_effect() const {
         std::pair<std::size_t, std::size_t> fact =
@@ -180,7 +180,7 @@ public:
     OperatorRef(const TaskInterface &interface_, std::size_t index_)
         : interface(interface_), index(index_) {}
     ~OperatorRef() {}
-    Precondition get_precondition() const {return Precondition(interface, index); }
+    Preconditions get_preconditions() const {return Preconditions(interface, index); }
     Effects get_effects() const {return Effects(interface, index); }
     int get_cost() const {return interface.get_operator_cost(index); }
     int get_adjusted_cost(OperatorCost cost_type) const {

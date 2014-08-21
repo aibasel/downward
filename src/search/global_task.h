@@ -27,13 +27,13 @@ public:
         return get_adjusted_action_cost(g_operators[index], cost_type);
     }
     std::size_t get_num_operators() const {return g_operators.size(); }
-    std::size_t get_operator_precondition_size(std::size_t index) const;
-    std::pair<std::size_t, std::size_t> get_operator_precondition_fact(
+    std::size_t get_num_operator_preconditions(std::size_t index) const;
+    std::pair<std::size_t, std::size_t> get_operator_precondition(
         std::size_t op_index, std::size_t fact_index) const;
     std::size_t get_num_operator_effects(std::size_t op_index) const {
         return g_operators[op_index].get_pre_post().size();
     }
-    std::size_t get_operator_effect_condition_size(
+    std::size_t get_num_operator_effect_conditions(
         std::size_t op_index, std::size_t eff_index) const {
         return g_operators[op_index].get_pre_post()[eff_index].cond.size();
     }
