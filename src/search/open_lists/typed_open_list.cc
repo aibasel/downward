@@ -80,7 +80,7 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *) {
     if (bucket.empty()) {
         open_list.erase(it);
     }
-    size--;
+    --size;
     return result;
 }
 

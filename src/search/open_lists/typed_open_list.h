@@ -16,8 +16,7 @@ template<class Entry>
 class TypedOpenList : public OpenList<Entry> {
     typedef std::vector<Entry> Bucket;
     std::vector<ScalarEvaluator *> evaluators;
-    //TODO: use ordered std::map?
-    //TODO: switch to c++11 std::unordered_map
+
     typedef typename __gnu_cxx::hash_map<std::vector<int>, Bucket, __gnu_cxx::hash<const std::vector<int> > > BucketMap;
     BucketMap open_list;
 
