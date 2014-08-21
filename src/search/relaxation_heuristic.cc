@@ -36,9 +36,9 @@ void RelaxationHeuristic::initialize() {
     }
 
     // Build goal propositions.
-    for (int i = 0; i < task.get_goal().size(); i++) {
-        int var = task.get_goal()[i].get_variable().get_id();
-        int val = task.get_goal()[i].get_value();
+    for (int i = 0; i < task.get_goals().size(); i++) {
+        int var = task.get_goals()[i].get_variable().get_id();
+        int val = task.get_goals()[i].get_value();
         propositions[var][val].is_goal = true;
         goal_propositions.push_back(&propositions[var][val]);
     }

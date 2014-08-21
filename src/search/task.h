@@ -42,7 +42,7 @@ public:
 
     virtual std::size_t get_num_axioms() const = 0;
 
-    virtual std::size_t get_goal_size() const = 0;
+    virtual std::size_t get_num_goals() const = 0;
     virtual std::pair<std::size_t, std::size_t> get_goal_fact(std::size_t index) const = 0;
 };
 
@@ -109,11 +109,11 @@ public:
 };
 
 
-class Goal : Condition {
+class Goals : Condition {
 public:
-    Goal(const TaskInterface &interface_) : Condition(interface_) {}
-    ~Goal() {}
-    std::size_t size() const {return interface.get_goal_size(); }
+    Goals(const TaskInterface &interface_) : Condition(interface_) {}
+    ~Goals() {}
+    std::size_t size() const {return interface.get_num_goals(); }
     Fact operator[](std::size_t index) const {
         std::pair<std::size_t, std::size_t> fact = interface.get_goal_fact(index);
         return Fact(interface, fact.first, fact.second);
@@ -225,7 +225,7 @@ public:
         return interface.get_original_operator(op_ref.get_index());
     }
     Axioms get_axioms() const {return Axioms(interface); }
-    Goal get_goal() const {return Goal(interface); }
+    Goals get_goals() const {return Goals(interface); }
 };
 
 #endif
