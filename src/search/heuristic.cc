@@ -9,8 +9,11 @@
 
 using namespace std;
 
+class TaskInterface;
+
 Heuristic::Heuristic(const Options &opts)
-    : cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+    : task(*opts.get<TaskInterface *>("task_interface")),
+      cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
 
     is_unit_cost = true;
@@ -122,6 +125,7 @@ int Heuristic::get_adjusted_cost(const Operator &op) const {
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
+    parser.add_option<TaskInterface *>("task_interface", "Task interface", "global_task_interface");
 }
 
 //this solution to get default values seems not optimal:

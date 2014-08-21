@@ -50,7 +50,6 @@ class RelaxationHeuristic : public Heuristic {
     void build_unary_operators(const OperatorRef &op, int operator_no);
     void simplify();
 protected:
-    const Task &task;
     std::vector<UnaryOperator> unary_operators;
     std::vector<std::vector<Proposition> > propositions;
     std::vector<Proposition *> goal_propositions;
@@ -58,7 +57,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const State &state) = 0;
 public:
-    RelaxationHeuristic(const Task &task_, const Options &options);
+    RelaxationHeuristic(const Options &options);
     virtual ~RelaxationHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };

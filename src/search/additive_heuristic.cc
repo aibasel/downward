@@ -14,8 +14,8 @@ using namespace std;
 
 
 // construction and destruction
-AdditiveHeuristic::AdditiveHeuristic(const Task &task, const Options &opts)
-    : RelaxationHeuristic(task, opts),
+AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
+    : RelaxationHeuristic(opts),
       did_write_overflow_warning(false) {
 }
 
@@ -164,7 +164,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new AdditiveHeuristic(g_task, opts);
+        return new AdditiveHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("add", _parse);
