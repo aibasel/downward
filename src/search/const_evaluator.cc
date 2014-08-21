@@ -23,7 +23,7 @@ bool ConstEvaluator::dead_end_is_reliable() const {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.document_synopsis("const-value evaluator",
+    parser.document_synopsis("Constant evaluator",
                              "Returns a constant value.");
     parser.add_option<int>("value", "the constant value", "1");
     Heuristic::add_options_to_parser(parser);
