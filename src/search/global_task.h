@@ -41,7 +41,7 @@ public:
         std::size_t op_index, std::size_t eff_index, std::size_t cond_index) const;
     std::pair<std::size_t, std::size_t> get_operator_effect(
         std::size_t op_index, std::size_t eff_index) const;
-    const Operator &get_original_operator(std::size_t index) const;
+    const Operator *get_original_operator(std::size_t index) const;
 
     std::size_t get_num_axioms() const {return g_axioms.size(); }
 

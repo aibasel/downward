@@ -38,7 +38,7 @@ public:
         std::size_t op_index, std::size_t eff_index, std::size_t cond_index) const = 0;
     virtual std::pair<std::size_t, std::size_t> get_operator_effect(
         std::size_t op_index, std::size_t eff_index) const = 0;
-    virtual const Operator &get_original_operator(std::size_t index) const = 0;
+    virtual const Operator *get_original_operator(std::size_t index) const = 0;
 
     virtual std::size_t get_num_axioms() const = 0;
 
@@ -219,7 +219,7 @@ public:
     ~Task() {}
     Variables get_variables() const {return Variables(impl); }
     Operators get_operators() const {return Operators(impl); }
-    const Operator &get_original_operator(std::size_t index) const {
+    const Operator *get_original_operator(std::size_t index) const {
         return impl.get_original_operator(index);
     }
     Axioms get_axioms() const {return Axioms(impl); }

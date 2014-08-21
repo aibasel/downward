@@ -66,7 +66,7 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(
     return make_pair(pre_post.var, pre_post.post);
 }
 
-const Operator &GlobalTaskInterface::get_original_operator(size_t index) const {
+const Operator *GlobalTaskInterface::get_original_operator(size_t index) const {
     assert(index < g_operators.size());
-    return g_operators[index];
+    return &g_operators[index];
 }
