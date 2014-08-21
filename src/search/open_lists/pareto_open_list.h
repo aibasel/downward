@@ -13,7 +13,6 @@
 
 class ScalarEvaluator;
 
-//TODO: move to common location
 namespace __gnu_cxx {
 template<>
 struct hash<const std::vector<int> > {
