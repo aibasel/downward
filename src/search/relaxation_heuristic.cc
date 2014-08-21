@@ -40,7 +40,7 @@ void RelaxationHeuristic::initialize() {
     size_t num_goals = goals.size();
     for (int i = 0; i < num_goals; i++) {
         Fact goal = goals[i];
-        int var = goal.get_variable().get_id();
+        int var = goal.get_var_id();
         int val = goal.get_value();
         propositions[var][val].is_goal = true;
         goal_propositions.push_back(&propositions[var][val]);
@@ -74,19 +74,19 @@ void RelaxationHeuristic::build_unary_operators(const OperatorRef &op, int op_no
     size_t num_preconditions = preconditions.size();
     for (int i = 0; i < num_preconditions; ++i) {
         Fact fact = preconditions[i];
-        precondition_props.push_back(&propositions[fact.get_variable().get_id()][fact.get_value()]);
+        precondition_props.push_back(&propositions[fact.get_var_id()][fact.get_value()]);
     }
     Effects effects = op.get_effects();
     size_t num_effects = effects.size();
     for (int i = 0; i < num_effects; ++i) {
         Effect effect = effects[i];
         Fact effect_fact = effect.get_effect();
-        Proposition *effect_prop = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
+        Proposition *effect_prop = &propositions[effect_fact.get_var_id()][effect_fact.get_value()];
         EffectConditions eff_conds = effect.get_conditions();
         size_t num_eff_conds = eff_conds.size();
         for (int j = 0; j < num_eff_conds; ++j) {
             Fact eff_cond = eff_conds[j];
-            precondition_props.push_back(&propositions[eff_cond.get_variable().get_id()][eff_cond.get_value()]);
+            precondition_props.push_back(&propositions[eff_cond.get_var_id()][eff_cond.get_value()]);
         }
         unary_operators.push_back(UnaryOperator(precondition_props, effect_prop, op_no, base_cost));
         precondition_props.erase(precondition_props.end() - eff_conds.size(), precondition_props.end());

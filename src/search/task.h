@@ -32,8 +32,8 @@ public:
     Fact(const TaskInterface &interface_, std::size_t var_id_, std::size_t value_)
         : interface(interface_), var_id(var_id_), value(value_) {}
     ~Fact() {}
+    std::size_t get_var_id() const {return var_id; }
     std::size_t get_value() const {return value; }
-    Variable get_variable() const;
 };
 
 
