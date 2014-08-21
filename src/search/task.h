@@ -1,8 +1,6 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include "globals.h"
-#include "operator.h"
 #include "operator_cost.h"
 #include "task_interface.h"
 
@@ -22,6 +20,8 @@ class Operators;
 class Axioms;
 class Goals;
 class Task;
+
+class Operator;
 
 
 class Fact {

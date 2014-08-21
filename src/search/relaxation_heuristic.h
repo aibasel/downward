@@ -5,10 +5,8 @@
 
 #include <vector>
 
-class Operator;
 class OperatorRef;
 class State;
-class Task;
 
 class Proposition;
 class UnaryOperator;
