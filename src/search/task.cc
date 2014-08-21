@@ -3,5 +3,5 @@
 using namespace std;
 
 Variable Fact::get_variable() const {
-    return Variable(impl, var_id);
+    return Variable(interface, var_id);
 }
