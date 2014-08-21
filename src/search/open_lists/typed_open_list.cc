@@ -4,6 +4,7 @@
 #include "../option_parser.h"
 #include "../rng.h"
 #include "../globals.h"
+#include "../utilities.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -51,8 +52,8 @@ int TypedOpenList<Entry>::insert(const Entry &entry) {
     for (size_t i = 0; i < evaluators.size(); i++) {
         key.push_back(evaluators[i]->get_value());
     }
-    size++;
     open_list[key].push_back(entry);
+    ++size;
     return 1;
 }
 
@@ -60,18 +61,21 @@ template<class Entry>
 Entry TypedOpenList<Entry>::remove_min(vector<int> *) {
     assert(size > 0);
 
+    if (key) {
+        cerr << "not implemented -- see msg639 in the tracker" << endl;
+        exit_with(EXIT_UNSUPPORTED);
+    }
+
     int bucket_id = g_rng.next(open_list.size());
     typename BucketMap::iterator it = open_list.begin();
-    for (int i = 0; it != open_list.end() && i < bucket_id; ++i, ++it) ;
+    for (int i = 0; it != open_list.end() && i < bucket_id; ++i, ++it);
+    assert(it != open_list.end());
     Bucket &bucket = it->second;
 
     int pos = g_rng.next(bucket.size());
-    Entry result = bucket.at(pos);
+    assert(pos < bucket.size());
+    Entry result = bucket[pos];
 
-//    if(key)//TODO: as this open list is only used with alt open list this doesn't make sense
-//    {
-//        key->insert(key->begin(),it->first.begin(), it->first.end());
-//    }
     bucket.erase(bucket.begin() + pos);
     if (bucket.empty()) {
         open_list.erase(it);
@@ -87,8 +91,8 @@ bool TypedOpenList<Entry>::empty() const {
 
 template<class Entry>
 void TypedOpenList<Entry>::clear() {
-    size = 0;
     open_list.clear();
+    size = 0;
 }
 
 template<class Entry>

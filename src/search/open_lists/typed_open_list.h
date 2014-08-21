@@ -21,7 +21,6 @@ class TypedOpenList : public OpenList<Entry> {
     typedef typename __gnu_cxx::hash_map<std::vector<int>, Bucket, __gnu_cxx::hash<const std::vector<int> > > BucketMap;
     BucketMap open_list;
 
-
     int size;
     bool dead_end;
     bool dead_end_reliable;
@@ -45,7 +44,6 @@ public:
     bool is_dead_end() const;
     bool dead_end_is_reliable() const;
     void get_involved_heuristics(std::set<Heuristic *> &hset);
-
 
     static OpenList<Entry> *_parse(OptionParser &parser);
 };
