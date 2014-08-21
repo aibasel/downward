@@ -2,8 +2,6 @@
 
 #include "option_parser.h"
 #include "plugin.h"
-#include "state_id.h"
-#include "state_registry.h"
 
 using namespace std;
 

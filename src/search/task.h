@@ -148,6 +148,7 @@ public:
     Preconditions get_preconditions() const {return Preconditions(interface, index); }
     Effects get_effects() const {return Effects(interface, index); }
     int get_cost() const {return interface.get_operator_cost(index); }
+    // TODO: Remove this method.
     int get_adjusted_cost(OperatorCost cost_type) const {
         return interface.get_adjusted_operator_cost(index, cost_type);
     }
