@@ -40,8 +40,8 @@ public:
 class Facts {
 protected:
     const TaskInterface &interface;
+    explicit Facts(const TaskInterface &interface_) : interface(interface_) {}
 public:
-    Facts(const TaskInterface &interface_) : interface(interface_) {}
     ~Facts() {}
     virtual std::size_t size() const = 0;
     virtual Fact operator[](std::size_t index) const = 0;
@@ -64,7 +64,7 @@ public:
 class Variables {
     const TaskInterface &interface;
 public:
-    Variables(const TaskInterface &interface_) : interface(interface_) {}
+    explicit Variables(const TaskInterface &interface_) : interface(interface_) {}
     ~Variables() {}
     std::size_t size() const {return interface.get_num_variables(); }
     Variable operator[](std::size_t index) const {return Variable(interface, index); }
@@ -159,7 +159,7 @@ public:
 class Operators {
     const TaskInterface &interface;
 public:
-    Operators(const TaskInterface &interface_) : interface(interface_) {}
+    explicit Operators(const TaskInterface &interface_) : interface(interface_) {}
     ~Operators() {}
     std::size_t size() const {return interface.get_num_operators(); }
     OperatorRef operator[](std::size_t index) const {
@@ -171,7 +171,7 @@ public:
 class Axioms {
     const TaskInterface &interface;
 public:
-    Axioms(const TaskInterface &interface_) : interface(interface_) {}
+    explicit Axioms(const TaskInterface &interface_) : interface(interface_) {}
     ~Axioms() {}
     std::size_t size() const {return interface.get_num_axioms(); }
     OperatorRef operator[](std::size_t index) const {
@@ -182,7 +182,7 @@ public:
 
 class Goals : Facts {
 public:
-    Goals(const TaskInterface &interface_) : Facts(interface_) {}
+    explicit Goals(const TaskInterface &interface_) : Facts(interface_) {}
     ~Goals() {}
     std::size_t size() const {return interface.get_num_goals(); }
     Fact operator[](std::size_t index) const {
@@ -195,7 +195,7 @@ public:
 class Task {
     const TaskInterface &interface;
 public:
-    Task(const TaskInterface &interface_) : interface(interface_) {}
+    explicit Task(const TaskInterface &interface_) : interface(interface_) {}
     ~Task() {}
     Variables get_variables() const {return Variables(interface); }
     Operators get_operators() const {return Operators(interface); }

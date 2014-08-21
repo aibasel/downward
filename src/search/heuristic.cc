@@ -11,6 +11,7 @@ using namespace std;
 
 class TaskInterface;
 
+// TODO: Decide who should delete the TaskInterface object.
 Heuristic::Heuristic(const Options &opts)
     : task(*opts.get<TaskInterface *>("task_interface")),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
