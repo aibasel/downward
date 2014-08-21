@@ -113,7 +113,7 @@ void AdditiveHeuristic::mark_preferred_operators(
                 // If we had no 0-cost operators and axioms to worry
                 // about, this would also be a sufficient condition.
                 OperatorRef op_ref = task.get_operators()[operator_no];
-                const Operator *op = task.get_original_operator(operator_no);
+                const Operator *op = task.get_original_operator(op_ref);
                 if (op->is_applicable(state))
                     set_preferred(op);
             }
