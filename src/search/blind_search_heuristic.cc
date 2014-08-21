@@ -9,13 +9,14 @@
 #include <utility>
 using namespace std;
 
-BlindSearchHeuristic::BlindSearchHeuristic(const Task &task, const Options &opts)
+BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();
-    size_t num_operators = task.get_operators().size();
+    Operators ops = task.get_operators();
+    size_t num_operators = ops.size();
     for (size_t i = 0; i < num_operators; ++i)
         min_operator_cost = min(min_operator_cost,
-                                task.get_operators()[i].get_adjusted_cost(cost_type));
+                                ops[i].get_adjusted_cost(cost_type));
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {
@@ -50,7 +51,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new BlindSearchHeuristic(g_task, opts);
+        return new BlindSearchHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("blind", _parse);
