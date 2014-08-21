@@ -9,9 +9,8 @@
 #include <utility>
 using namespace std;
 
-BlindSearchHeuristic::BlindSearchHeuristic(const Task &task_, const Options &opts)
-    : Heuristic(opts),
-      task(task_) {
+BlindSearchHeuristic::BlindSearchHeuristic(const Task &task, const Options &opts)
+    : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();
     size_t num_operators = task.get_operators().size();
     for (size_t i = 0; i < num_operators; ++i)
