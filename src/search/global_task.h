@@ -4,7 +4,7 @@
 #include "globals.h"
 #include "operator.h"
 #include "operator_cost.h"
-#include "task.h"
+#include "task_interface.h"
 
 #include <cassert>
 #include <cstddef>
