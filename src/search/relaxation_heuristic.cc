@@ -29,9 +29,12 @@ bool RelaxationHeuristic::dead_ends_are_reliable() const {
 void RelaxationHeuristic::initialize() {
     // Build propositions.
     int prop_id = 0;
-    propositions.resize(task.get_variables().size());
-    for (int var = 0; var < task.get_variables().size(); var++) {
-        for (int value = 0; value < task.get_variables()[var].get_domain_size(); value++)
+    Variables vars = task.get_variables();
+    size_t num_vars = vars.size();
+    propositions.resize(num_vars);
+    for (int var = 0; var < num_vars; var++) {
+        size_t num_values = vars[var].get_domain_size();
+        for (int value = 0; value < num_values; value++)
             propositions[var].push_back(Proposition(prop_id++));
     }
 
