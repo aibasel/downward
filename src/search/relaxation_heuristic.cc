@@ -36,18 +36,25 @@ void RelaxationHeuristic::initialize() {
     }
 
     // Build goal propositions.
-    for (int i = 0; i < task.get_goals().size(); i++) {
-        int var = task.get_goals()[i].get_variable().get_id();
-        int val = task.get_goals()[i].get_value();
+    Goals goals = task.get_goals();
+    size_t num_goals = goals.size();
+    for (int i = 0; i < num_goals; i++) {
+        Fact goal = goals[i];
+        int var = goal.get_variable().get_id();
+        int val = goal.get_value();
         propositions[var][val].is_goal = true;
         goal_propositions.push_back(&propositions[var][val]);
     }
 
     // Build unary operators for operators and axioms.
-    for (int i = 0; i < task.get_operators().size(); i++)
-        build_unary_operators(task.get_operators()[i], i);
-    for (int i = 0; i < task.get_axioms().size(); i++)
-        build_unary_operators(task.get_axioms()[i], -1);
+    Operators operators = task.get_operators();
+    size_t num_operators = operators.size();
+    for (int i = 0; i < num_operators; i++)
+        build_unary_operators(operators[i], i);
+    Axioms axioms = task.get_axioms();
+    size_t num_axioms = axioms.size();
+    for (int i = 0; i < num_axioms; i++)
+        build_unary_operators(axioms[i], -1);
 
     // Simplify unary operators.
     simplify();
@@ -62,21 +69,27 @@ void RelaxationHeuristic::initialize() {
 
 void RelaxationHeuristic::build_unary_operators(const OperatorRef &op, int op_no) {
     int base_cost = op.get_adjusted_cost(cost_type);
-    vector<Proposition *> precondition;
-    for (int i = 0; i < op.get_preconditions().size(); ++i) {
-        Fact fact = op.get_preconditions()[i];
-        precondition.push_back(&propositions[fact.get_variable().get_id()][fact.get_value()]);
+    vector<Proposition *> precondition_props;
+    Preconditions preconditions = op.get_preconditions();
+    size_t num_preconditions = preconditions.size();
+    for (int i = 0; i < num_preconditions; ++i) {
+        Fact fact = preconditions[i];
+        precondition_props.push_back(&propositions[fact.get_variable().get_id()][fact.get_value()]);
     }
     Effects effects = op.get_effects();
-    for (int i = 0; i < effects.size(); ++i) {
-        Proposition *effect = &propositions[effects[i].get_effect().get_variable().get_id()][effects[i].get_effect().get_value()];
-        EffectConditions eff_conds = effects[i].get_conditions();
-        for (int j = 0; j < eff_conds.size(); ++j) {
-            Fact condition = eff_conds[j];
-            precondition.push_back(&propositions[condition.get_variable().get_id()][condition.get_value()]);
+    size_t num_effects = effects.size();
+    for (int i = 0; i < num_effects; ++i) {
+        Effect effect = effects[i];
+        Fact effect_fact = effect.get_effect();
+        Proposition *effect_prop = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
+        EffectConditions eff_conds = effect.get_conditions();
+        size_t num_eff_conds = eff_conds.size();
+        for (int j = 0; j < num_eff_conds; ++j) {
+            Fact eff_cond = eff_conds[j];
+            precondition_props.push_back(&propositions[eff_cond.get_variable().get_id()][eff_cond.get_value()]);
         }
-        unary_operators.push_back(UnaryOperator(precondition, effect, op_no, base_cost));
-        precondition.erase(precondition.end() - eff_conds.size(), precondition.end());
+        unary_operators.push_back(UnaryOperator(precondition_props, effect_prop, op_no, base_cost));
+        precondition_props.erase(precondition_props.end() - eff_conds.size(), precondition_props.end());
     }
 }
 
