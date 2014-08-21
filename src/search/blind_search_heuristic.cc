@@ -13,7 +13,8 @@ BlindSearchHeuristic::BlindSearchHeuristic(const Task &task_, const Options &opt
     : Heuristic(opts),
       task(task_) {
     min_operator_cost = numeric_limits<int>::max();
-    for (size_t i = 0; i < task.get_operators().size(); ++i)
+    size_t num_operators = task.get_operators().size();
+    for (size_t i = 0; i < num_operators; ++i)
         min_operator_cost = min(min_operator_cost,
                                 task.get_operators()[i].get_adjusted_cost(cost_type));
 }
