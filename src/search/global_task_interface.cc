@@ -1,4 +1,4 @@
-#include "global_task.h"
+#include "global_task_interface.h"
 
 #include "state_id.h"
 #include "state_registry.h"

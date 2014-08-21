@@ -3,7 +3,7 @@
 #include "axioms.h"
 #include "causal_graph.h"
 #include "domain_transition_graph.h"
-#include "global_task.h"
+#include "global_task_interface.h"
 #include "heuristic.h"
 #include "int_packer.h"
 #include "legacy_causal_graph.h"

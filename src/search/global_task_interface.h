@@ -1,5 +1,5 @@
-#ifndef GLOBAL_TASK_H
-#define GLOBAL_TASK_H
+#ifndef GLOBAL_TASK_INTERFACE_H
+#define GLOBAL_TASK_INTERFACE_H
 
 #include "globals.h"
 #include "operator.h"
