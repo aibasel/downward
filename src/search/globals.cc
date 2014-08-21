@@ -12,6 +12,7 @@
 #include "state.h"
 #include "state_registry.h"
 #include "successor_generator.h"
+#include "task.h"
 #include "timer.h"
 #include "utilities.h"
 
