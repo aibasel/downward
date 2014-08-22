@@ -152,7 +152,9 @@ public:
     int get_adjusted_cost(OperatorCost cost_type) const {
         return interface.get_adjusted_operator_cost(index, cost_type);
     }
-    std::size_t get_index() const {return index; }
+    const Operator *get_original_operator() const {
+        return interface.get_original_operator(index);
+    }
 };
 
 
@@ -199,9 +201,6 @@ public:
     ~Task() {}
     Variables get_variables() const {return Variables(interface); }
     Operators get_operators() const {return Operators(interface); }
-    const Operator *get_original_operator(OperatorRef op_ref) const {
-        return interface.get_original_operator(op_ref.get_index());
-    }
     Axioms get_axioms() const {return Axioms(interface); }
     Goals get_goals() const {return Goals(interface); }
 };
