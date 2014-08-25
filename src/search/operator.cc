@@ -50,9 +50,20 @@ Operator::Operator(istream &in, bool axiom) {
 
     marker1 = marker2 = false;
 
+    for (size_t i = 0; i < prevail.size(); ++i) {
+        const Prevail &prev = prevail[i];
+        preconditions.push_back(OperatorCondition(prev.var, prev.prev));
+    }
     for (size_t i = 0; i < pre_post.size(); ++i) {
-        if (pre_post[i].pre != -1)
-            indices_of_effects_with_precondition.push_back(i);
+        const PrePost &effect = pre_post[i];
+        if (effect.pre != -1) {
+            preconditions.push_back(OperatorCondition(effect.var, effect.pre));
+        }
+        vector<OperatorCondition> conditions;
+        for (size_t j = 0; j < effect.cond.size(); ++j) {
+            conditions.push_back(OperatorCondition(effect.cond[j].var, effect.cond[j].prev));
+        }
+        effects.push_back(OperatorEffect(effect.var, effect.post, conditions));
     }
 }
 

@@ -58,11 +58,55 @@ struct PrePost {
     void dump() const;
 };
 
+struct OperatorCondition {
+    int var;
+    int value;
+    OperatorCondition(int var_, int value_)
+        : var(var_), value(value_) {}
+
+    bool is_applicable(const State &state) const {
+        assert(var >= 0 && var < g_variable_name.size());
+        assert(value >= 0 && value < g_variable_domain[var]);
+        return state[var] == value;
+    }
+
+    bool operator==(const OperatorCondition &other) const {
+        return var == other.var && value == other.value;
+    }
+
+    bool operator!=(const OperatorCondition &other) const {
+        return !(*this == other);
+    }
+};
+
+struct OperatorEffect {
+    int var;
+    int value;
+    std::vector<OperatorCondition> conditions;
+    OperatorEffect(int var_, int value_, const std::vector<OperatorCondition> &conditions_)
+        : var(var_), value(value_), conditions(conditions_) {}
+
+    bool does_fire(const State &state) const {
+        for (size_t i = 0; i < conditions.size(); ++i)
+            if (!conditions[i].is_applicable(state))
+                return false;
+        return true;
+    }
+};
+
+/* Note: Currently we support two interfaces to preconditions and effects.
+ * The first separates prevail variables from effect variables.
+ * In the future we would like to remove this interface and only support
+ * the newer interface which separates preconditions from effects.
+ * Please do not use the PrePost and Prevail classes in new code.
+ */
 class Operator {
     bool is_an_axiom;
+    // TODO: Remove prevail and pre_post and use preconditions and effects instead.
     std::vector<Prevail> prevail;      // var, val
     std::vector<PrePost> pre_post;     // var, old-val, new-val, effect conditions
-    std::vector<std::size_t> indices_of_effects_with_precondition;
+    std::vector<OperatorCondition> preconditions;
+    std::vector<OperatorEffect> effects;
     std::string name;
     int cost;
 
@@ -76,8 +120,11 @@ public:
 
     const std::vector<Prevail> &get_prevail() const {return prevail; }
     const std::vector<PrePost> &get_pre_post() const {return pre_post; }
-    const std::vector<std::size_t> &get_indices_of_effects_with_precondition() const {
-        return indices_of_effects_with_precondition;
+    const std::vector<OperatorCondition> &get_preconditions() const {
+        return preconditions;
+    }
+    const std::vector<OperatorEffect> &get_effects() const {
+        return effects;
     }
 
     bool is_applicable(const State &state) const {
