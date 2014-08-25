@@ -1,7 +1,7 @@
 #include "cg_cache.h"
 
 #include "globals.h"
-#include "legacy_causal_graph.h"
+#include "causal_graph.h"
 #include "state.h"
 
 #include <algorithm>
@@ -16,14 +16,14 @@ CGCache::CGCache() {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = g_variable_domain.size();
-    LegacyCausalGraph *cg = g_legacy_causal_graph;
+    CausalGraph *cg = g_causal_graph;
 
     // Compute inverted causal graph.
     depends_on.resize(var_count);
     for (int var = 0; var < var_count; var++) {
         // This is to be on the safe side of overflows for the multiplications below.
         assert(g_variable_domain[var] <= 1000);
-        const vector<int> &succ = cg->get_successors(var);
+        const vector<int> &succ = cg->get_pre_to_eff(var);
         for (int i = 0; i < succ.size(); i++) {
             // Ignore arcs that are not part of the reduced CG:
             // These are ignored by the CG heuristic.
