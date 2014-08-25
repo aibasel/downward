@@ -21,26 +21,38 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_precondition(
     return make_pair(precondition.var, precondition.value);
 }
 
+size_t GlobalTaskInterface::get_num_operator_effects(std::size_t op_index) const {
+    assert(op_index < g_operators.size());
+    return g_operators[op_index].get_effects().size();
+}
+
+size_t GlobalTaskInterface::get_num_operator_effect_conditions(
+    std::size_t op_index, std::size_t eff_index) const {
+    assert(op_index < g_operators.size());
+    assert(eff_index < get_num_operator_effects(op_index));
+    return g_operators[op_index].get_effects()[eff_index].conditions.size();
+}
+
 pair<size_t, size_t> GlobalTaskInterface::get_operator_effect_condition(
     size_t op_index, size_t eff_index, size_t cond_index) const {
     assert(op_index < g_operators.size());
-    assert(eff_index < g_operators[op_index].get_pre_post().size());
-    const PrePost &pre_post = g_operators[op_index].get_pre_post()[eff_index];
-    assert(cond_index < pre_post.cond.size());
-    const Prevail &condition = pre_post.cond[cond_index];
+    assert(eff_index < get_num_operator_effects(op_index));
+    const OperatorEffect &effect = g_operators[op_index].get_effects()[eff_index];
+    assert(cond_index < effect.conditions.size());
+    const OperatorCondition &condition = effect.conditions[cond_index];
     assert(condition.var >= 0 && condition.var < g_variable_domain.size());
-    assert(condition.prev >= 0 && condition.prev < g_variable_domain[condition.var]);
-    return make_pair(condition.var, condition.prev);
+    assert(condition.value >= 0 && condition.value < g_variable_domain[condition.var]);
+    return make_pair(condition.var, condition.value);
 }
 
 pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(
     size_t op_index, size_t eff_index) const {
     assert(op_index < g_operators.size());
-    assert(eff_index < g_operators[op_index].get_pre_post().size());
-    const PrePost &pre_post = g_operators[op_index].get_pre_post()[eff_index];
-    assert(pre_post.var >= 0 && pre_post.var < g_variable_domain.size());
-    assert(pre_post.post >= 0 && pre_post.post < g_variable_domain[pre_post.var]);
-    return make_pair(pre_post.var, pre_post.post);
+    assert(eff_index < get_num_operator_effects(op_index));
+    const OperatorEffect &effect = g_operators[op_index].get_effects()[eff_index];
+    assert(effect.var >= 0 && effect.var < g_variable_domain.size());
+    assert(effect.value >= 0 && effect.value < g_variable_domain[effect.var]);
+    return make_pair(effect.var, effect.value);
 }
 
 const Operator *GlobalTaskInterface::get_original_operator(size_t index) const {
