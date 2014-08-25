@@ -1,7 +1,6 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include "operator_cost.h"
 #include "task_interface.h"
 
 #include <cassert>
@@ -148,10 +147,6 @@ public:
     Preconditions get_preconditions() const {return Preconditions(interface, index); }
     Effects get_effects() const {return Effects(interface, index); }
     int get_cost() const {return interface.get_operator_cost(index); }
-    // TODO: Remove this method.
-    int get_adjusted_cost(OperatorCost cost_type) const {
-        return interface.get_adjusted_operator_cost(index, cost_type);
-    }
     const Operator *get_original_operator() const {
         return interface.get_original_operator(index);
     }

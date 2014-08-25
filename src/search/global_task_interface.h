@@ -3,7 +3,6 @@
 
 #include "globals.h"
 #include "operator.h"
-#include "operator_cost.h"
 #include "task_interface.h"
 
 #include <cassert>
@@ -21,10 +20,6 @@ public:
     int get_operator_cost(std::size_t index) const {
         assert(index < g_operators.size());
         return g_operators[index].get_cost();
-    }
-    int get_adjusted_operator_cost(std::size_t index, OperatorCost cost_type) const {
-        assert(index < g_operators.size());
-        return get_adjusted_action_cost(g_operators[index], cost_type);
     }
     std::size_t get_num_operators() const {return g_operators.size(); }
     std::size_t get_num_operator_preconditions(std::size_t index) const;

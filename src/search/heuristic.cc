@@ -124,6 +124,10 @@ int Heuristic::get_adjusted_cost(const Operator &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 
+int Heuristic::get_adjusted_cost(const OperatorRef &op) const {
+    return get_adjusted_action_cost(op.get_cost(), cost_type);
+}
+
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
     parser.add_option<TaskInterface *>("task_interface", "Task interface", "global_task_interface");
