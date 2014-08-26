@@ -128,7 +128,12 @@ struct CausalGraphBuilder {
 
         // Handle pre->eff links from effect conditions.
         for (size_t i = 0; i < effects.size(); ++i) {
-            // TODO introduce fix for conditional effects from issue 372
+            for (size_t j = 0; j < effects[i].conditions.size(); ++j) {
+                int pre_var = effects[i].conditions[j].var;
+                int eff_var = effects[i].var;
+                if (pre_var != eff_var)
+                    handle_pre_eff_arc(pre_var, eff_var);
+            }
         }
 
         // Handle eff->eff links.
