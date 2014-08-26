@@ -104,6 +104,9 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
     while (!vars_to_check.empty()) {
         int var = vars_to_check.back();
         vars_to_check.pop_back();
+        // A variable is relevant to the pattern if it is a goal variable or if
+        // there is a pre->eff arc from the variable to a relevant variable.
+        // Note that there is no point in considering eff->eff arcs here.
         const vector<int> &rel = g_causal_graph->get_eff_to_pre(var);
         for (size_t i = 0; i < rel.size(); ++i) {
             int var_no = rel[i];
