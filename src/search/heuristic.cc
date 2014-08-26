@@ -130,7 +130,10 @@ int Heuristic::get_adjusted_cost(const OperatorRef &op) const {
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
-    parser.add_option<Task *>("task", "Task", "global_task");
+    parser.add_option<Task *>(
+        "task",
+        "Task that the heuristic should operate on. Currently only global_task is supported.",
+        "global_task");
 }
 
 //this solution to get default values seems not optimal:
