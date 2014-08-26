@@ -49,9 +49,8 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(
     return make_pair(effect.var, effect.value);
 }
 
-const Operator *GlobalTaskInterface::get_original_operator(size_t index) const {
-    assert(index < g_operators.size());
-    return &g_operators[index];
+const Operator *GlobalTaskInterface::get_global_operator(size_t index, bool is_axiom) const {
+    return &get_operator_or_axiom(index, is_axiom);
 }
 
 static TaskInterface *_parse(OptionParser &parser) {
