@@ -153,8 +153,8 @@ public:
     Effects get_effects() const {return Effects(interface, index, is_an_axiom); }
     int get_cost() const {return interface.get_operator_cost(index, is_an_axiom); }
     bool is_axiom() const {return is_an_axiom; }
-    const Operator *get_original_operator() const {
-        return interface.get_original_operator(index);
+    const Operator *get_global_operator() const {
+        return interface.get_global_operator(index, is_an_axiom);
     }
 };
 
