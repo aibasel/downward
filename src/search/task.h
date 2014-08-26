@@ -72,14 +72,15 @@ public:
 
 class Preconditions : Facts {
     std::size_t op_index;
+    bool is_axiom;
 public:
-    Preconditions(const TaskInterface &interface_, std::size_t op_index_)
-        : Facts(interface_), op_index(op_index_) {}
+    Preconditions(const TaskInterface &interface_, std::size_t op_index_, bool is_axiom_)
+        : Facts(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~Preconditions() {}
-    std::size_t size() const {return interface.get_num_operator_preconditions(op_index); }
+    std::size_t size() const {return interface.get_num_operator_preconditions(op_index, is_axiom); }
     Fact operator[](std::size_t fact_index) const {
         std::pair<std::size_t, std::size_t> fact =
-            interface.get_operator_precondition(op_index, fact_index);
+            interface.get_operator_precondition(op_index, fact_index, is_axiom);
         return Fact(interface, fact.first, fact.second);
     }
 };
@@ -145,7 +146,7 @@ public:
     OperatorRef(const TaskInterface &interface_, std::size_t index_, bool is_axiom)
         : interface(interface_), index(index_), is_an_axiom(is_axiom) {}
     ~OperatorRef() {}
-    Preconditions get_preconditions() const {return Preconditions(interface, index); }
+    Preconditions get_preconditions() const {return Preconditions(interface, index, is_an_axiom); }
     Effects get_effects() const {return Effects(interface, index); }
     int get_cost() const {return interface.get_operator_cost(index, is_an_axiom); }
     bool is_axiom() const {return is_an_axiom; }
