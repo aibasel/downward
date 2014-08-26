@@ -89,17 +89,18 @@ public:
 class EffectConditions : Facts {
     std::size_t op_index;
     std::size_t eff_index;
+    bool is_axiom;
 public:
     EffectConditions(
-        const TaskInterface &interface_, std::size_t op_index_, std::size_t eff_index_)
-        : Facts(interface_), op_index(op_index_), eff_index(eff_index_) {}
+        const TaskInterface &interface_, std::size_t op_index_, std::size_t eff_index_, bool is_axiom_)
+        : Facts(interface_), op_index(op_index_), eff_index(eff_index_), is_axiom(is_axiom_) {}
     ~EffectConditions() {}
     std::size_t size() const {
-        return interface.get_num_operator_effect_conditions(op_index, eff_index);
+        return interface.get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
     }
     Fact operator[](std::size_t index) const {
         std::pair<std::size_t, std::size_t> fact =
-            interface.get_operator_effect_condition(op_index, eff_index, index);
+            interface.get_operator_effect_condition(op_index, eff_index, index, is_axiom);
         return Fact(interface, fact.first, fact.second);
     }
 };
@@ -109,16 +110,17 @@ class Effect {
     const TaskInterface &interface;
     std::size_t op_index;
     std::size_t eff_index;
+    bool is_axiom;
 public:
-    Effect(const TaskInterface &interface_, std::size_t op_index_, std::size_t eff_index_)
-        : interface(interface_), op_index(op_index_), eff_index(eff_index_) {}
+    Effect(const TaskInterface &interface_, std::size_t op_index_, std::size_t eff_index_, bool is_axiom_)
+        : interface(interface_), op_index(op_index_), eff_index(eff_index_), is_axiom(is_axiom_) {}
     ~Effect() {}
     EffectConditions get_conditions() const {
-        return EffectConditions(interface, op_index, eff_index);
+        return EffectConditions(interface, op_index, eff_index, is_axiom);
     }
     Fact get_effect() const {
         std::pair<std::size_t, std::size_t> fact =
-            interface.get_operator_effect(op_index, eff_index);
+            interface.get_operator_effect(op_index, eff_index, is_axiom);
         return Fact(interface, fact.first, fact.second);
     }
 };
@@ -127,13 +129,14 @@ public:
 class Effects {
     const TaskInterface &interface;
     std::size_t op_index;
+    bool is_axiom;
 public:
-    Effects(const TaskInterface &interface_, std::size_t op_index_)
-        : interface(interface_), op_index(op_index_) {}
+    Effects(const TaskInterface &interface_, std::size_t op_index_, bool is_axiom_)
+        : interface(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~Effects() {}
-    std::size_t size() const {return interface.get_num_operator_effects(op_index); }
+    std::size_t size() const {return interface.get_num_operator_effects(op_index, is_axiom); }
     Effect operator[](std::size_t eff_index) const {
-        return Effect(interface, op_index, eff_index);
+        return Effect(interface, op_index, eff_index, is_axiom);
     }
 };
 
@@ -147,7 +150,7 @@ public:
         : interface(interface_), index(index_), is_an_axiom(is_axiom) {}
     ~OperatorRef() {}
     Preconditions get_preconditions() const {return Preconditions(interface, index, is_an_axiom); }
-    Effects get_effects() const {return Effects(interface, index); }
+    Effects get_effects() const {return Effects(interface, index, is_an_axiom); }
     int get_cost() const {return interface.get_operator_cost(index, is_an_axiom); }
     bool is_axiom() const {return is_an_axiom; }
     const Operator *get_original_operator() const {
