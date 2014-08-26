@@ -11,15 +11,25 @@
 
 
 class GlobalTaskInterface : public TaskInterface {
+protected:
+    const Operator &get_global_operator_or_axiom(size_t index, bool is_axiom) const {
+        if (is_axiom) {
+            assert(index < g_axioms.size());
+            return g_axioms[index];
+        } else {
+            assert(index < g_operators.size());
+            return g_operators[index];
+        }
+    }
+
 public:
     std::size_t get_num_variables() const {return g_variable_domain.size(); }
     std::size_t get_variable_domain_size(std::size_t var) const {
         return g_variable_domain[var];
     }
 
-    int get_operator_cost(std::size_t index) const {
-        assert(index < g_operators.size());
-        return g_operators[index].get_cost();
+    int get_operator_cost(std::size_t index, bool is_axiom) const {
+        return get_global_operator_or_axiom(index, is_axiom).get_cost();
     }
     std::size_t get_num_operators() const {return g_operators.size(); }
     std::size_t get_num_operator_preconditions(std::size_t index) const;

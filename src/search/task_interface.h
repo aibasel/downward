@@ -10,7 +10,7 @@ public:
     virtual std::size_t get_num_variables() const = 0;
     virtual std::size_t get_variable_domain_size(std::size_t var) const = 0;
 
-    virtual int get_operator_cost(std::size_t index) const = 0;
+    virtual int get_operator_cost(std::size_t index, bool is_axiom) const = 0;
     virtual std::size_t get_num_operators() const = 0;
     virtual std::size_t get_num_operator_preconditions(std::size_t index) const = 0;
     virtual std::pair<std::size_t, std::size_t> get_operator_precondition(
