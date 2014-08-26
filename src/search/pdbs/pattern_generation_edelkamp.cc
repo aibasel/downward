@@ -3,8 +3,8 @@
 #include "pdb_heuristic.h"
 #include "zero_one_pdbs_heuristic.h"
 
-#include "../globals.h"
 #include "../causal_graph.h"
+#include "../globals.h"
 #include "../plugin.h"
 #include "../rng.h"
 #include "../timer.h"
