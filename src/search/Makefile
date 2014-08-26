@@ -287,12 +287,10 @@ ifeq ($(DOWNWARD_OS), linux)
     endif
     POSTLINKOPT_DEBUG  += -lrt
     POSTLINKOPT_PROFILE += -lrt
-else
-    ifeq ($(DOWNWARD_OS), windows)
-        POSTLINKOPT_RELEASE += -lpsapi
-        POSTLINKOPT_DEBUG += -lpsapi
-        POSTLINKOPT_PROFILE += -lpsapi
-    endif
+else ifeq ($(DOWNWARD_OS), windows)
+    POSTLINKOPT_RELEASE += -lpsapi
+    POSTLINKOPT_DEBUG += -lpsapi
+    POSTLINKOPT_PROFILE += -lpsapi
 endif
 
 
