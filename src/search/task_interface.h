@@ -12,9 +12,9 @@ public:
 
     virtual int get_operator_cost(std::size_t index, bool is_axiom) const = 0;
     virtual std::size_t get_num_operators() const = 0;
-    virtual std::size_t get_num_operator_preconditions(std::size_t index) const = 0;
+    virtual std::size_t get_num_operator_preconditions(std::size_t index, bool is_axiom) const = 0;
     virtual std::pair<std::size_t, std::size_t> get_operator_precondition(
-        std::size_t op_index, std::size_t fact_index) const = 0;
+        std::size_t op_index, std::size_t fact_index, bool is_axiom) const = 0;
     virtual std::size_t get_num_operator_effects(std::size_t op_index) const = 0;
     virtual std::size_t get_num_operator_effect_conditions(
         std::size_t op_index, std::size_t eff_index) const = 0;

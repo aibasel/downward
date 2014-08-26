@@ -12,7 +12,7 @@
 
 class GlobalTaskInterface : public TaskInterface {
 protected:
-    const Operator &get_global_operator_or_axiom(size_t index, bool is_axiom) const {
+    const Operator &get_operator_or_axiom(size_t index, bool is_axiom) const {
         if (is_axiom) {
             assert(index < g_axioms.size());
             return g_axioms[index];
@@ -29,12 +29,12 @@ public:
     }
 
     int get_operator_cost(std::size_t index, bool is_axiom) const {
-        return get_global_operator_or_axiom(index, is_axiom).get_cost();
+        return get_operator_or_axiom(index, is_axiom).get_cost();
     }
     std::size_t get_num_operators() const {return g_operators.size(); }
-    std::size_t get_num_operator_preconditions(std::size_t index) const;
+    std::size_t get_num_operator_preconditions(std::size_t index, bool is_axiom) const;
     std::pair<std::size_t, std::size_t> get_operator_precondition(
-        std::size_t op_index, std::size_t fact_index) const;
+        std::size_t op_index, std::size_t fact_index, bool is_axiom) const;
     std::size_t get_num_operator_effects(std::size_t op_index) const;
     std::size_t get_num_operator_effect_conditions(
         std::size_t op_index, std::size_t eff_index) const;

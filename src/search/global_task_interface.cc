@@ -5,15 +5,14 @@
 
 using namespace std;
 
-size_t GlobalTaskInterface::get_num_operator_preconditions(size_t index) const {
-    assert(index < g_operators.size());
-    return g_operators[index].get_preconditions().size();
+size_t GlobalTaskInterface::get_num_operator_preconditions(size_t index, bool is_axiom) const {
+    return get_operator_or_axiom(index, is_axiom).get_preconditions().size();
 }
 
 pair<size_t, size_t> GlobalTaskInterface::get_operator_precondition(
-    size_t op_index, size_t fact_index) const {
+    size_t op_index, size_t fact_index, bool is_axiom) const {
     assert(op_index < g_operators.size());
-    assert(fact_index < get_num_operator_preconditions(op_index));
+    assert(fact_index < get_num_operator_preconditions(op_index, is_axiom));
     const Operator &op = g_operators[op_index];
     const OperatorCondition &precondition = op.get_preconditions()[fact_index];
     assert(precondition.var >= 0 && precondition.var < g_variable_domain.size());
