@@ -16,7 +16,7 @@ CGCache::CGCache() {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = g_variable_domain.size();
-    CausalGraph *cg = g_causal_graph;
+    const CausalGraph *cg = g_causal_graph;
 
     // Compute inverted causal graph.
     depends_on.resize(var_count);
