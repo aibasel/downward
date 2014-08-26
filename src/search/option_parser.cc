@@ -56,6 +56,7 @@ static void get_help(string k) {
     pt.insert(pt.begin(), ParseNode(k));
     get_help_templ<SearchEngine *>(pt);
     get_help_templ<Heuristic *>(pt);
+    get_help_templ<Task *>(pt);
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
     get_help_templ<LandmarkGraph *>(pt);
@@ -80,6 +81,7 @@ static void get_full_help_templ() {
 static void get_full_help() {
     get_full_help_templ<SearchEngine *>();
     get_full_help_templ<Heuristic *>();
+    get_full_help_templ<Task *>();
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
     get_full_help_templ<LandmarkGraph *>();
