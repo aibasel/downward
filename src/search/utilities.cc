@@ -14,8 +14,8 @@ static void exit_handler(int exit_code, void *hint);
 static void exit_handler();
 #include <mach/mach.h>
 #elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
-#include "windows.h"
-#include "psapi.h"
+#include <windows.h>
+#include <psapi.h>
 #endif
 
 static char *memory_padding = new char[512 * 1024];
