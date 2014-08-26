@@ -5,7 +5,6 @@
 #include "domain_transition_graph.h"
 #include "heuristic.h"
 #include "int_packer.h"
-#include "legacy_causal_graph.h"
 #include "operator.h"
 #include "rng.h"
 #include "state.h"
@@ -259,7 +258,7 @@ void read_everything(istream &in) {
     g_successor_generator = read_successor_generator(in);
     check_magic(in, "end_SG");
     DomainTransitionGraph::read_all(in);
-    g_legacy_causal_graph = new LegacyCausalGraph(in);
+    check_magic(in, "begin_CG"); // ignore everything from here
 
     cout << "done reading input! [t=" << g_timer << "]" << endl;
 
@@ -383,7 +382,6 @@ AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
-LegacyCausalGraph *g_legacy_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";
