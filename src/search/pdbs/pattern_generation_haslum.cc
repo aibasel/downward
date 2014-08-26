@@ -52,7 +52,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pd
     int pdb_size = pdb->get_size();
     for (size_t i = 0; i < pattern.size(); ++i) {
         // causally relevant variables for current variable from pattern
-        vector<int> rel_vars = g_causal_graph->get_eff_to_pre(pattern[i]);
+        const vector<int> &rel_vars = g_causal_graph->get_eff_to_pre(pattern[i]);
         vector<int> relevant_vars;
         // make sure we only use relevant variables which are not already included in pattern
         set_difference(rel_vars.begin(), rel_vars.end(), pattern.begin(), pattern.end(), back_inserter(relevant_vars));
