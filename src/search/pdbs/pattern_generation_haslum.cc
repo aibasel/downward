@@ -51,7 +51,10 @@ void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pd
     const vector<int> &pattern = pdb->get_pattern();
     int pdb_size = pdb->get_size();
     for (size_t i = 0; i < pattern.size(); ++i) {
-        // causally relevant variables for current variable from pattern
+        /* Only consider variables used in preconditions for current
+           variable from pattern. It would also make sense to consider
+           *goal* variables connected by effect-effect arcs, but we
+           don't. This may be worth experimenting with. */
         const vector<int> &rel_vars = g_causal_graph->get_eff_to_pre(pattern[i]);
         vector<int> relevant_vars;
         // make sure we only use relevant variables which are not already included in pattern
@@ -420,9 +423,10 @@ static Heuristic *_parse(OptionParser &parser) {
                          "The section \"avoiding redundant evaluations\" describes how the search neighbourhood "
                          "of patterns can be restricted to variables that are somewhat relevant to the variables "
                          "already included in the pattern by analyzing causal graphs. This is also implemented "
-                         "in Fast Downward. The second approach described in the paper (statistical confidence "
-                         "interval) is not applicable to this implementation, as it doesn't use A* search but "
-                         "constructs the entire pattern databases for all candidate patterns anyway.\n"
+                         "in Fast Downward, but we only consider precondition-to-effect arcs of the causal graph, "
+                         "ignoring effect-to-effect arcs. The second approach described in the paper (statistical "
+                         "confidence interval) is not applicable to this implementation, as it doesn't use A* "
+                         "search but constructs the entire pattern databases for all candidate patterns anyway.\n"
                          "The search is ended if there is no more improvement (or the improvement is smaller "
                          "than the minimal improvement which can be set as an option), how ever there is no "
                          "limit of iterations of the local search. This is similar to the techniques used in "
