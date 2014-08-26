@@ -4,7 +4,6 @@
 #include "task_interface.h"
 
 #include <cassert>
-#include <cstddef>
 #include <utility>
 
 class Fact;
