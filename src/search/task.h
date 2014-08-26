@@ -7,7 +7,7 @@
 #include <cstddef>
 
 class Fact;
-class Facts;
+class Conditions;
 class Variable;
 class Variables;
 class Preconditions;
@@ -36,12 +36,12 @@ public:
 };
 
 
-class Facts {
+class Conditions {
 protected:
     const TaskInterface &interface;
-    explicit Facts(const TaskInterface &interface_) : interface(interface_) {}
+    explicit Conditions(const TaskInterface &interface_) : interface(interface_) {}
 public:
-    ~Facts() {}
+    virtual ~Conditions() {}
     virtual std::size_t size() const = 0;
     virtual Fact operator[](std::size_t index) const = 0;
 };
@@ -70,12 +70,12 @@ public:
 };
 
 
-class Preconditions : Facts {
+class Preconditions : public Conditions {
     std::size_t op_index;
     bool is_axiom;
 public:
     Preconditions(const TaskInterface &interface_, std::size_t op_index_, bool is_axiom_)
-        : Facts(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
+        : Conditions(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~Preconditions() {}
     std::size_t size() const {return interface.get_num_operator_preconditions(op_index, is_axiom); }
     Fact operator[](std::size_t fact_index) const {
@@ -86,14 +86,14 @@ public:
 };
 
 
-class EffectConditions : Facts {
+class EffectConditions : public Conditions {
     std::size_t op_index;
     std::size_t eff_index;
     bool is_axiom;
 public:
     EffectConditions(
         const TaskInterface &interface_, std::size_t op_index_, std::size_t eff_index_, bool is_axiom_)
-        : Facts(interface_), op_index(op_index_), eff_index(eff_index_), is_axiom(is_axiom_) {}
+        : Conditions(interface_), op_index(op_index_), eff_index(eff_index_), is_axiom(is_axiom_) {}
     ~EffectConditions() {}
     std::size_t size() const {
         return interface.get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
@@ -183,9 +183,9 @@ public:
 };
 
 
-class Goals : Facts {
+class Goals : public Conditions {
 public:
-    explicit Goals(const TaskInterface &interface_) : Facts(interface_) {}
+    explicit Goals(const TaskInterface &interface_) : Conditions(interface_) {}
     ~Goals() {}
     std::size_t size() const {return interface.get_num_goals(); }
     Fact operator[](std::size_t index) const {
