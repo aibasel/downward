@@ -78,6 +78,9 @@ public:
       i.e., their condition variables are treated as precondition
       variables and the derived variable is treated as an effect
       variable.
+
+      For effect conditions, we only add pre->eff arcs for the respective
+      conditional effect.
     */
 
     const std::vector<int> &get_pre_to_eff(int var) const {
