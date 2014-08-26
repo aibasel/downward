@@ -1,7 +1,6 @@
 #ifndef TASK_INTERFACE_H
 #define TASK_INTERFACE_H
 
-#include <cstddef>
 #include <utility>
 
 class Operator;
