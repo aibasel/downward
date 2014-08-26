@@ -140,13 +140,15 @@ public:
 class OperatorRef {
     const TaskInterface &interface;
     size_t index;
+    bool is_an_axiom;
 public:
-    OperatorRef(const TaskInterface &interface_, std::size_t index_)
-        : interface(interface_), index(index_) {}
+    OperatorRef(const TaskInterface &interface_, std::size_t index_, bool is_axiom)
+        : interface(interface_), index(index_), is_an_axiom(is_axiom) {}
     ~OperatorRef() {}
     Preconditions get_preconditions() const {return Preconditions(interface, index); }
     Effects get_effects() const {return Effects(interface, index); }
     int get_cost() const {return interface.get_operator_cost(index); }
+    bool is_axiom() const {return is_an_axiom; }
     const Operator *get_original_operator() const {
         return interface.get_original_operator(index);
     }
@@ -160,7 +162,7 @@ public:
     ~Operators() {}
     std::size_t size() const {return interface.get_num_operators(); }
     OperatorRef operator[](std::size_t index) const {
-        return OperatorRef(interface, index);
+        return OperatorRef(interface, index, false);
     }
 };
 
@@ -172,7 +174,7 @@ public:
     ~Axioms() {}
     std::size_t size() const {return interface.get_num_axioms(); }
     OperatorRef operator[](std::size_t index) const {
-        return OperatorRef(interface, index);
+        return OperatorRef(interface, index, true);
     }
 };
 
