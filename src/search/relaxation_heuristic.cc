@@ -29,17 +29,17 @@ void RelaxationHeuristic::initialize() {
     // Build propositions.
     int prop_id = 0;
     Variables vars = task.get_variables();
-    size_t num_vars = vars.size();
+    int num_vars = vars.size();
     propositions.resize(num_vars);
     for (int var = 0; var < num_vars; var++) {
-        size_t num_values = vars[var].get_domain_size();
+        int num_values = vars[var].get_domain_size();
         for (int value = 0; value < num_values; value++)
             propositions[var].push_back(Proposition(prop_id++));
     }
 
     // Build goal propositions.
     Goals goals = task.get_goals();
-    size_t num_goals = goals.size();
+    int num_goals = goals.size();
     for (int i = 0; i < num_goals; i++) {
         Fact goal = goals[i];
         int var = goal.get_var_id();
@@ -50,11 +50,11 @@ void RelaxationHeuristic::initialize() {
 
     // Build unary operators for operators and axioms.
     Operators operators = task.get_operators();
-    size_t num_operators = operators.size();
+    int num_operators = operators.size();
     for (int i = 0; i < num_operators; i++)
         build_unary_operators(operators[i], i);
     Axioms axioms = task.get_axioms();
-    size_t num_axioms = axioms.size();
+    int num_axioms = axioms.size();
     for (int i = 0; i < num_axioms; i++)
         build_unary_operators(axioms[i], -1);
 
@@ -73,19 +73,19 @@ void RelaxationHeuristic::build_unary_operators(const OperatorRef &op, int op_no
     int base_cost = get_adjusted_cost(op);
     vector<Proposition *> precondition_props;
     Preconditions preconditions = op.get_preconditions();
-    size_t num_preconditions = preconditions.size();
+    int num_preconditions = preconditions.size();
     for (int i = 0; i < num_preconditions; ++i) {
         Fact fact = preconditions[i];
         precondition_props.push_back(&propositions[fact.get_var_id()][fact.get_value()]);
     }
     Effects effects = op.get_effects();
-    size_t num_effects = effects.size();
+    int num_effects = effects.size();
     for (int i = 0; i < num_effects; ++i) {
         Effect effect = effects[i];
         Fact effect_fact = effect.get_effect();
         Proposition *effect_prop = &propositions[effect_fact.get_var_id()][effect_fact.get_value()];
         EffectConditions eff_conds = effect.get_conditions();
-        size_t num_eff_conds = eff_conds.size();
+        int num_eff_conds = eff_conds.size();
         for (int j = 0; j < num_eff_conds; ++j) {
             Fact eff_cond = eff_conds[j];
             precondition_props.push_back(&propositions[eff_cond.get_var_id()][eff_cond.get_value()]);
