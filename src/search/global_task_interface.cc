@@ -5,6 +5,8 @@
 
 using namespace std;
 
+class Task;
+
 int GlobalTaskInterface::get_num_operator_preconditions(int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).get_preconditions().size();
 }
@@ -53,11 +55,11 @@ const Operator *GlobalTaskInterface::get_global_operator(int index, bool is_axio
     return &get_operator_or_axiom(index, is_axiom);
 }
 
-static TaskInterface *_parse(OptionParser &parser) {
+static Task *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new GlobalTaskInterface();
+        return new Task(new GlobalTaskInterface());
 }
 
-static Plugin<TaskInterface> _plugin("global_task_interface", _parse);
+static Plugin<Task> _plugin("global_task", _parse);

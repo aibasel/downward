@@ -2,11 +2,14 @@
 #define TASK_INTERFACE_H
 
 #include <cstddef>
+#include <utility>
 
 class Operator;
 
 class TaskInterface {
 public:
+    TaskInterface() {}
+    virtual ~TaskInterface() {}
     virtual int get_num_variables() const = 0;
     virtual int get_variable_domain_size(int var) const = 0;
 

@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <utility>
 
 class Fact;
 class Conditions;
@@ -39,7 +40,8 @@ public:
 class Conditions {
 protected:
     const TaskInterface &interface;
-    explicit Conditions(const TaskInterface &interface_) : interface(interface_) {}
+    explicit Conditions(const TaskInterface &interface_)
+        : interface(interface_) {}
 public:
     virtual ~Conditions() {}
     virtual int size() const = 0;
@@ -63,7 +65,8 @@ public:
 class Variables {
     const TaskInterface &interface;
 public:
-    explicit Variables(const TaskInterface &interface_) : interface(interface_) {}
+    explicit Variables(const TaskInterface &interface_)
+        : interface(interface_) {}
     ~Variables() {}
     int size() const {return interface.get_num_variables(); }
     Variable operator[](int index) const {return Variable(interface, index); }
@@ -162,7 +165,8 @@ public:
 class Operators {
     const TaskInterface &interface;
 public:
-    explicit Operators(const TaskInterface &interface_) : interface(interface_) {}
+    explicit Operators(const TaskInterface &interface_)
+        : interface(interface_) {}
     ~Operators() {}
     int size() const {return interface.get_num_operators(); }
     OperatorRef operator[](int index) const {
@@ -174,7 +178,8 @@ public:
 class Axioms {
     const TaskInterface &interface;
 public:
-    explicit Axioms(const TaskInterface &interface_) : interface(interface_) {}
+    explicit Axioms(const TaskInterface &interface_)
+        : interface(interface_) {}
     ~Axioms() {}
     int size() const {return interface.get_num_axioms(); }
     OperatorRef operator[](int index) const {
@@ -185,7 +190,8 @@ public:
 
 class Goals : public Conditions {
 public:
-    explicit Goals(const TaskInterface &interface_) : Conditions(interface_) {}
+    explicit Goals(const TaskInterface &interface_)
+        : Conditions(interface_) {}
     ~Goals() {}
     int size() const {return interface.get_num_goals(); }
     Fact operator[](int index) const {
@@ -196,14 +202,15 @@ public:
 
 
 class Task {
-    const TaskInterface &interface;
+    const TaskInterface *interface;
 public:
-    explicit Task(const TaskInterface &interface_) : interface(interface_) {}
-    ~Task() {}
-    Variables get_variables() const {return Variables(interface); }
-    Operators get_operators() const {return Operators(interface); }
-    Axioms get_axioms() const {return Axioms(interface); }
-    Goals get_goals() const {return Goals(interface); }
+    explicit Task(const TaskInterface *interface_)
+        : interface(interface_) {}
+    ~Task() {delete interface; }
+    Variables get_variables() const {return Variables(*interface); }
+    Operators get_operators() const {return Operators(*interface); }
+    Axioms get_axioms() const {return Axioms(*interface); }
+    Goals get_goals() const {return Goals(*interface); }
 };
 
 #endif

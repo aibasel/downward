@@ -9,11 +9,8 @@
 
 using namespace std;
 
-class TaskInterface;
-
-// TODO: Decide who should delete the TaskInterface object.
 Heuristic::Heuristic(const Options &opts)
-    : task(*opts.get<TaskInterface *>("task_interface")),
+    : task(*opts.get<Task *>("task")),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
 
@@ -130,7 +127,7 @@ int Heuristic::get_adjusted_cost(const OperatorRef &op) const {
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
-    parser.add_option<TaskInterface *>("task_interface", "Task interface", "global_task_interface");
+    parser.add_option<Task *>("task", "Task", "global_task");
 }
 
 //this solution to get default values seems not optimal:
