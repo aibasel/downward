@@ -28,7 +28,7 @@ double Timer::current_clock() const {
     FILETIME exitTime;
     FILETIME kernelTime;
     FILETIME userTime;
-    if (GetProcessTimes(GetCurrentProcess( ),
+    if (GetProcessTimes(GetCurrentProcess(),
                         &createTime, &exitTime, &kernelTime, &userTime) != -1) {
         SYSTEMTIME userSystemTime;
         if (FileTimeToSystemTime(&userTime, &userSystemTime) != -1)
