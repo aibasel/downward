@@ -12,7 +12,7 @@
 
 class GlobalTaskInterface : public TaskInterface {
 protected:
-    const Operator &get_operator_or_axiom(size_t index, bool is_axiom) const {
+    const Operator &get_operator_or_axiom(int index, bool is_axiom) const {
         if (is_axiom) {
             assert(index < g_axioms.size());
             return g_axioms[index];
@@ -23,31 +23,31 @@ protected:
     }
 
 public:
-    std::size_t get_num_variables() const {return g_variable_domain.size(); }
-    std::size_t get_variable_domain_size(std::size_t var) const {
+    int get_num_variables() const {return g_variable_domain.size(); }
+    int get_variable_domain_size(int var) const {
         return g_variable_domain[var];
     }
 
-    int get_operator_cost(std::size_t index, bool is_axiom) const {
+    int get_operator_cost(int index, bool is_axiom) const {
         return get_operator_or_axiom(index, is_axiom).get_cost();
     }
-    std::size_t get_num_operators() const {return g_operators.size(); }
-    std::size_t get_num_operator_preconditions(std::size_t index, bool is_axiom) const;
-    std::pair<std::size_t, std::size_t> get_operator_precondition(
-        std::size_t op_index, std::size_t fact_index, bool is_axiom) const;
-    std::size_t get_num_operator_effects(std::size_t op_index, bool is_axiom) const;
-    std::size_t get_num_operator_effect_conditions(
-        std::size_t op_index, std::size_t eff_index, bool is_axiom) const;
-    std::pair<std::size_t, std::size_t> get_operator_effect_condition(
-        std::size_t op_index, std::size_t eff_index, std::size_t cond_index, bool is_axiom) const;
-    std::pair<std::size_t, std::size_t> get_operator_effect(
-        std::size_t op_index, std::size_t eff_index, bool is_axiom) const;
-    const Operator *get_global_operator(std::size_t index, bool is_axiom) const;
+    int get_num_operators() const {return g_operators.size(); }
+    int get_num_operator_preconditions(int index, bool is_axiom) const;
+    std::pair<int, int> get_operator_precondition(
+        int op_index, int fact_index, bool is_axiom) const;
+    int get_num_operator_effects(int op_index, bool is_axiom) const;
+    int get_num_operator_effect_conditions(
+        int op_index, int eff_index, bool is_axiom) const;
+    std::pair<int, int> get_operator_effect_condition(
+        int op_index, int eff_index, int cond_index, bool is_axiom) const;
+    std::pair<int, int> get_operator_effect(
+        int op_index, int eff_index, bool is_axiom) const;
+    const Operator *get_global_operator(int index, bool is_axiom) const;
 
-    std::size_t get_num_axioms() const {return g_axioms.size(); }
+    int get_num_axioms() const {return g_axioms.size(); }
 
-    std::size_t get_num_goals() const {return g_goal.size(); }
-    std::pair<std::size_t, std::size_t> get_goal_fact(std::size_t index) const {
+    int get_num_goals() const {return g_goal.size(); }
+    std::pair<int, int> get_goal_fact(int index) const {
         assert(index < get_num_goals());
         return g_goal[index];
     }

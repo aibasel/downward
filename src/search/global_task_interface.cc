@@ -5,12 +5,12 @@
 
 using namespace std;
 
-size_t GlobalTaskInterface::get_num_operator_preconditions(size_t index, bool is_axiom) const {
+int GlobalTaskInterface::get_num_operator_preconditions(int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).get_preconditions().size();
 }
 
-pair<size_t, size_t> GlobalTaskInterface::get_operator_precondition(
-    size_t op_index, size_t fact_index, bool is_axiom) const {
+pair<int, int> GlobalTaskInterface::get_operator_precondition(
+    int op_index, int fact_index, bool is_axiom) const {
     assert(fact_index < get_num_operator_preconditions(op_index, is_axiom));
     const Operator &op = get_operator_or_axiom(op_index, is_axiom);
     const OperatorCondition &precondition = op.get_preconditions()[fact_index];
@@ -19,18 +19,18 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_precondition(
     return make_pair(precondition.var, precondition.value);
 }
 
-size_t GlobalTaskInterface::get_num_operator_effects(std::size_t op_index, bool is_axiom) const {
+int GlobalTaskInterface::get_num_operator_effects(int op_index, bool is_axiom) const {
     return get_operator_or_axiom(op_index, is_axiom).get_effects().size();
 }
 
-size_t GlobalTaskInterface::get_num_operator_effect_conditions(
-    std::size_t op_index, std::size_t eff_index, bool is_axiom) const {
+int GlobalTaskInterface::get_num_operator_effect_conditions(
+    int op_index, int eff_index, bool is_axiom) const {
     assert(eff_index < get_num_operator_effects(op_index, is_axiom));
     return get_operator_or_axiom(op_index, is_axiom).get_effects()[eff_index].conditions.size();
 }
 
-pair<size_t, size_t> GlobalTaskInterface::get_operator_effect_condition(
-    size_t op_index, size_t eff_index, size_t cond_index, bool is_axiom) const {
+pair<int, int> GlobalTaskInterface::get_operator_effect_condition(
+    int op_index, int eff_index, int cond_index, bool is_axiom) const {
     assert(eff_index < get_num_operator_effects(op_index, is_axiom));
     const OperatorEffect &effect = get_operator_or_axiom(op_index, is_axiom).get_effects()[eff_index];
     assert(cond_index < effect.conditions.size());
@@ -40,8 +40,8 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_effect_condition(
     return make_pair(condition.var, condition.value);
 }
 
-pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(
-    size_t op_index, size_t eff_index, bool is_axiom) const {
+pair<int, int> GlobalTaskInterface::get_operator_effect(
+    int op_index, int eff_index, bool is_axiom) const {
     assert(eff_index < get_num_operator_effects(op_index, is_axiom));
     const OperatorEffect &effect = get_operator_or_axiom(op_index, is_axiom).get_effects()[eff_index];
     assert(effect.var >= 0 && effect.var < g_variable_domain.size());
@@ -49,7 +49,7 @@ pair<size_t, size_t> GlobalTaskInterface::get_operator_effect(
     return make_pair(effect.var, effect.value);
 }
 
-const Operator *GlobalTaskInterface::get_global_operator(size_t index, bool is_axiom) const {
+const Operator *GlobalTaskInterface::get_global_operator(int index, bool is_axiom) const {
     return &get_operator_or_axiom(index, is_axiom);
 }
 
