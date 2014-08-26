@@ -122,7 +122,10 @@ int Heuristic::get_adjusted_cost(const Operator &op) const {
 }
 
 int Heuristic::get_adjusted_cost(const OperatorRef &op) const {
-    return get_adjusted_action_cost(op.get_cost(), cost_type);
+    if (op.is_axiom())
+        return 0;
+    else
+        return get_adjusted_action_cost(op.get_cost(), cost_type);
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
