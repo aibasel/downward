@@ -587,24 +587,29 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
     // original operators have been added yet.
     for (int label_no = 0; label_no < labels->get_size(); label_no++) {
         const Label *label = labels->get_label_by_index(label_no);
-        const vector<Prevail> &prev = label->get_prevail();
-        for (int i = 0; i < prev.size(); i++) {
-            int var = prev[i].var;
-            int value = prev[i].prev;
-            Abstraction *abs = result[var];
-            AbstractTransition trans(value, value);
-            abs->transitions_by_label[label_no].push_back(trans);
-            abs->relevant_labels[label_no] = true;
-        }
-        const vector<PrePost> &pre_post = label->get_pre_post();
-        for (int i = 0; i < pre_post.size(); i++) {
-            int var = pre_post[i].var;
-            int post_value = pre_post[i].post;
+        const vector<Condition> &preconditions = label->get_preconditions();
+        const vector<Effect> &effects = label->get_effects();
+        vector<int> preval(g_variable_domain.size(), -1);
+        vector<int> has_effect_on_var(g_variable_domain.size(), false);
+        for (int i = 0; i < preconditions.size(); i++) 
+            preval[preconditions[i].var] = preconditions[i].val;
+//            int var = prev[i].var;
+//            int value = prev[i].prev;
+//            Abstraction *abs = result[var];
+//            // TODO only for those preconditions that do not have an effect
+//            AbstractTransition trans(value, value);
+//            abs->transitions_by_label[label_no].push_back(trans);
+//            abs->relevant_labels[label_no] = true;
+//        }
+        for (int i = 0; i < effects.size(); i++) {
+            int var = effects[i].var;
+            has_effect_on_var[var] = true;
+            int post_value = effects[i].val;
             Abstraction *abs = result[var];
 
             // Determine possible values that var can have when this
             // operator is applicable.
-            int pre_value = pre_post[i].pre;
+            int pre_value = preval[var];
             int pre_value_min, pre_value_max;
             if (pre_value == -1) {
                 pre_value_min = 0;
@@ -619,12 +624,12 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
             // cond_effect_pre_value == -1 means no effect condition on var.
             // has_other_effect_cond is true iff there exists an effect
             // condition on a variable other than var.
-            const vector<Prevail> &eff_cond = pre_post[i].cond;
+            const vector<Condition> &eff_cond = effects[i].conditions;
             int cond_effect_pre_value = -1;
             bool has_other_effect_cond = false;
             for (size_t j = 0; j < eff_cond.size(); ++j) {
                 if (eff_cond[j].var == var) {
-                    cond_effect_pre_value = eff_cond[j].prev;
+                    cond_effect_pre_value = eff_cond[j].val;
                 } else {
                     has_other_effect_cond = true;
                 }
@@ -657,6 +662,16 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
             }
 
             abs->relevant_labels[label_no] = true;
+        }
+        for (int i = 0; i < preconditions.size(); i++) {
+            int var = preconditions[i].var;
+            if (!has_effect_on_var[var]) {
+                int value = preconditions[i].val;
+                Abstraction *abs = result[var];
+                AbstractTransition trans(value, value);
+                abs->transitions_by_label[label_no].push_back(trans);
+                abs->relevant_labels[label_no] = true;
+            }
         }
     }
 

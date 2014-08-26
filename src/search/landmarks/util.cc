@@ -9,9 +9,9 @@
 using namespace std;
 using namespace __gnu_cxx;
 
-bool _possibly_fires(const vector<Prevail> &prevail, const vector<vector<int> > &lvl_var) {
-    for (int j = 0; j < prevail.size(); j++)
-        if (lvl_var[prevail[j].var][prevail[j].prev] ==
+bool _possibly_fires(const vector<Condition> &conditions, const vector<vector<int> > &lvl_var) {
+    for (int j = 0; j < conditions.size(); j++)
+        if (lvl_var[conditions[j].var][conditions[j].val] ==
             numeric_limits<int>::max())
             return false;
     return true;
@@ -37,40 +37,33 @@ bool _possibly_reaches_lm(const Operator &o, const vector<vector<int> > &lvl_var
 
     assert(!lvl_var.empty());
 
-    // Test whether all "prevail" preconditions of o can be reached
+    // Test whether all preconditions of o can be reached
     // Otherwise, operator is not applicable
-    const vector<Prevail> &prevail = o.get_prevail();
-    for (unsigned i = 0; i < prevail.size(); i++)
-        if (lvl_var[prevail[i].var][prevail[i].prev] ==
+    const vector<Condition> &preconditions = o.get_preconditions();
+    for (unsigned i = 0; i < preconditions.size(); i++)
+        if (lvl_var[preconditions[i].var][preconditions[i].val] ==
             numeric_limits<int>::max())
             return false;
 
-    // Test remaining preconditions and conditions in effects
+    // Test effect conditions
     bool reaches_lm = false;
     // Go through all effects of o...
-    const vector<PrePost> &prepost = o.get_pre_post();
-    for (unsigned i = 0; i < prepost.size(); i++) {
-        // If there is a precondition on the effect, check whether it can be reached
-        // Otherwise, operator is not applicable
-        if (prepost[i].pre != -1)
-            if (lvl_var[prepost[i].var][prepost[i].pre] ==
-                numeric_limits<int>::max())
-                return false;
-
+    const vector<Effect> &effects = o.get_effects();
+    for (unsigned i = 0; i < effects.size(); i++) {
         // If lmp is a conditional effect, check the condition
         bool effect_condition_reachable = false;
-        assert(!lvl_var[prepost[i].var].empty());
+        assert(!lvl_var[effects[i].var].empty());
         bool correct_effect = false;
         // Check whether *this* effect of o reaches a proposition in lmp...
         for (unsigned int j = 0; j < lmp->vars.size(); j++) {
-            if (prepost[i].var == lmp->vars[j] && prepost[i].post == lmp->vals[j]) {
+            if (effects[i].var == lmp->vars[j] && effects[i].val == lmp->vals[j]) {
                 correct_effect = true;
                 break;
             }
         }
         if (correct_effect)
             // ...if so, test whether the condition can be satisfied
-            effect_condition_reachable = _possibly_fires(prepost[i].cond, lvl_var);
+            effect_condition_reachable = _possibly_fires(effects[i].conditions, lvl_var);
         else
             continue;
         if (effect_condition_reachable)

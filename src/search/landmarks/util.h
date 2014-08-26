@@ -6,9 +6,9 @@
 
 class LandmarkNode;
 class Operator;
-class Prevail;
+class Condition;
 
-bool _possibly_fires(const std::vector<Prevail> &prevail,
+bool _possibly_fires(const std::vector<Condition> &conditions,
                      const std::vector<std::vector<int> > &lvl_var);
 
 __gnu_cxx::hash_map<int, int> _intersect(

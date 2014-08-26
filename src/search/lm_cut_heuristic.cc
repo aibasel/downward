@@ -70,18 +70,14 @@ void LandmarkCutHeuristic::initialize() {
 }
 
 void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
-    const vector<Prevail> &prevail = op.get_prevail();
-    const vector<PrePost> &pre_post = op.get_pre_post();
+    const vector<Condition> &op_preconds = op.get_preconditions();
+    const vector<Effect> &op_effects = op.get_effects();
     vector<RelaxedProposition *> precondition;
     vector<RelaxedProposition *> effects;
-    for (int i = 0; i < prevail.size(); i++)
-        precondition.push_back(&propositions[prevail[i].var][prevail[i].prev]);
-    for (int i = 0; i < pre_post.size(); i++) {
-        if (pre_post[i].pre != -1)
-            precondition.push_back(&propositions[pre_post[i].var][
-                                       pre_post[i].pre]);
-        effects.push_back(&propositions[pre_post[i].var][pre_post[i].post]);
-    }
+    for (int i = 0; i < op_preconds.size(); i++)
+        precondition.push_back(&propositions[op_preconds[i].var][op_preconds[i].val]);
+    for (int i = 0; i < op_effects.size(); i++)
+        effects.push_back(&propositions[op_effects[i].var][op_effects[i].val]);
     add_relaxed_operator(precondition, effects, &op, get_adjusted_cost(op));
 }
 

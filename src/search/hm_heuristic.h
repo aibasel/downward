@@ -51,46 +51,34 @@ protected:
     }
 
     int get_operator_pre_value(const Operator &op, int var) {
-        for (int i = 0; i < op.get_prevail().size(); i++) {
-            if (op.get_prevail()[i].var == var)
-                return op.get_prevail()[i].prev;
+        // TODO issue107 if preconditions are sorted we can break early
+        for (int i = 0; i < op.get_preconditions().size(); i++) {
+            if (op.get_preconditions()[i].var == var)
+                return op.get_preconditions()[i].val;
         }
-
-
-        for (int i = 0; i < op.get_pre_post().size(); i++)
-            if (op.get_pre_post()[i].var == var)
-                return op.get_pre_post()[i].pre;
-
         return -1;
     }
 
     void get_operator_pre(const Operator &op, tuple &t) {
-        for (int i = 0; i < op.get_prevail().size(); i++)
-            t.push_back(make_pair(op.get_prevail()[i].var, op.get_prevail()[i].prev));
+        for (int i = 0; i < op.get_preconditions().size(); i++)
+            t.push_back(make_pair(op.get_preconditions()[i].var, op.get_preconditions()[i].val));
 
-        for (int i = 0; i < op.get_pre_post().size(); i++)
-            if (op.get_pre_post()[i].pre >= 0)
-                t.push_back(make_pair(op.get_pre_post()[i].var, op.get_pre_post()[i].pre));
-
+        // TODO issue107 if preconditions are sorted we can skip this
         sort(t.begin(), t.end());
     }
 
     void get_operator_eff(const Operator &op, tuple &t) {
-        for (int i = 0; i < op.get_pre_post().size(); i++)
-            t.push_back(make_pair(op.get_pre_post()[i].var, op.get_pre_post()[i].post));
+        for (int i = 0; i < op.get_effects().size(); i++)
+            t.push_back(make_pair(op.get_effects()[i].var, op.get_effects()[i].val));
 
         sort(t.begin(), t.end());
     }
 
 
     bool is_pre_of(const Operator &op, int var) {
-        for (int j = 0; j < op.get_prevail().size(); j++) {
-            if (op.get_prevail()[j].var == var) {
-                return true;
-            }
-        }
-        for (int j = 0; j < op.get_pre_post().size(); j++) {
-            if (op.get_pre_post()[j].var == var) {
+        // TODO issue107 if preconditions are sorted we can break early
+        for (int j = 0; j < op.get_preconditions().size(); j++) {
+            if (op.get_preconditions()[j].var == var) {
                 return true;
             }
         }
@@ -98,8 +86,9 @@ protected:
     }
 
     bool is_effect_of(const Operator &op, int var) {
-        for (int j = 0; j < op.get_pre_post().size(); j++) {
-            if (op.get_pre_post()[j].var == var) {
+        // TODO issue107 if effects are sorted we can break early
+        for (int j = 0; j < op.get_effects().size(); j++) {
+            if (op.get_effects()[j].var == var) {
                 return true;
             }
         }
@@ -107,8 +96,8 @@ protected:
     }
 
     bool contradict_effect_of(const Operator &op, int var, int val) {
-        for (int j = 0; j < op.get_pre_post().size(); j++) {
-            if ((op.get_pre_post()[j].var == var) && (op.get_pre_post()[j].post != val)) {
+        for (int j = 0; j < op.get_effects().size(); j++) {
+            if ((op.get_effects()[j].var == var) && (op.get_effects()[j].val != val)) {
                 return true;
             }
         }

@@ -118,36 +118,26 @@ void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_g
 void Exploration::build_unary_operators(const Operator &op) {
     // Note: changed from the original to allow sorting of operator conditions
     int base_cost = get_adjusted_cost(op);
-    const vector<Prevail> &prevail = op.get_prevail();
-    const vector<PrePost> &pre_post = op.get_pre_post();
+    const vector<Condition> &preconditions = op.get_preconditions();
+    const vector<Effect> &effects = op.get_effects();
     vector<ExProposition *> precondition;
     vector<pair<int, int> > precondition_var_vals1;
 
-    for (int i = 0; i < prevail.size(); i++) {
-        assert(prevail[i].var >= 0 && prevail[i].var < g_variable_domain.size());
-        assert(prevail[i].prev >= 0 && prevail[i].prev < g_variable_domain[prevail[i].var]);
-        // precondition.push_back(&propositions[prevail[i].var][prevail[i].prev]);
-        precondition_var_vals1.push_back(make_pair(prevail[i].var, prevail[i].prev));
+    for (int i = 0; i < preconditions.size(); i++) {
+        assert(preconditions[i].var >= 0 && preconditions[i].var < g_variable_domain.size());
+        assert(preconditions[i].val >= 0 && preconditions[i].val < g_variable_domain[preconditions[i].var]);
+        precondition_var_vals1.push_back(make_pair(preconditions[i].var, preconditions[i].val));
     }
-    for (int i = 0; i < pre_post.size(); i++) {
-        if (pre_post[i].pre != -1) {
-            assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
-            assert(pre_post[i].pre >= 0 && pre_post[i].pre < g_variable_domain[pre_post[i].var]);
-            // precondition.push_back(&propositions[pre_post[i].var][pre_post[i].pre]);
-            precondition_var_vals1.push_back(make_pair(pre_post[i].var, pre_post[i].pre));
-        }
-    }
-    for (int i = 0; i < pre_post.size(); i++) {
+    for (int i = 0; i < effects.size(); i++) {
         vector<pair<int, int> > precondition_var_vals2(precondition_var_vals1);
-        assert(pre_post[i].var >= 0 && pre_post[i].var < g_variable_domain.size());
-        assert(pre_post[i].post >= 0 && pre_post[i].post < g_variable_domain[pre_post[i].var]);
-        ExProposition *effect = &propositions[pre_post[i].var][pre_post[i].post];
-        const vector<Prevail> &eff_cond = pre_post[i].cond;
-        for (int j = 0; j < eff_cond.size(); j++) {
-            assert(eff_cond[j].var >= 0 && eff_cond[j].var < g_variable_domain.size());
-            assert(eff_cond[j].prev >= 0 && eff_cond[j].prev < g_variable_domain[eff_cond[j].var]);
-            // precondition.push_back(&propositions[eff_cond[j].var][eff_cond[j].prev]);
-            precondition_var_vals2.push_back(make_pair(eff_cond[j].var, eff_cond[j].prev));
+        assert(effects[i].var >= 0 && effects[i].var < g_variable_domain.size());
+        assert(effects[i].val >= 0 && effects[i].val < g_variable_domain[effects[i].var]);
+        ExProposition *effect = &propositions[effects[i].var][effects[i].val];
+        const vector<Condition> &eff_conds = effects[i].conditions;
+        for (int j = 0; j < eff_conds.size(); j++) {
+            assert(eff_conds[j].var >= 0 && eff_conds[j].var < g_variable_domain.size());
+            assert(eff_conds[j].val >= 0 && eff_conds[j].val < g_variable_domain[eff_conds[j].var]);
+            precondition_var_vals2.push_back(make_pair(eff_conds[j].var, eff_conds[j].val));
         }
 
         sort(precondition_var_vals2.begin(), precondition_var_vals2.end());
@@ -157,7 +147,6 @@ void Exploration::build_unary_operators(const Operator &op) {
                                    [precondition_var_vals2[j].second]);
 
         unary_operators.push_back(ExUnaryOperator(precondition, effect, &op, base_cost));
-        // precondition.erase(precondition.end() - eff_cond.size(), precondition.end());
         precondition.clear();
         precondition_var_vals2.clear();
     }

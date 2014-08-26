@@ -113,36 +113,29 @@ struct CausalGraphBuilder {
     }
 
     void handle_operator(const Operator &op) {
-        const vector<Prevail> &prevail = op.get_prevail();
-        const vector<PrePost> &pre_post = op.get_pre_post();
+        const vector<Condition> &preconditions = op.get_preconditions();
+        const vector<Effect> &effects = op.get_effects();
 
-        // Handle pre->eff links from prevail conditions.
-        for (size_t i = 0; i < prevail.size(); ++i) {
-            int pre_var = prevail[i].var;
-            for (size_t j = 0; j < pre_post.size(); ++j) {
-                int eff_var = pre_post[j].var;
+        // Handle pre->eff links from preconditions.
+        for (size_t i = 0; i < preconditions.size(); ++i) {
+            int pre_var = preconditions[i].var;
+            for (size_t j = 0; j < effects.size(); ++j) {
+                int eff_var = effects[j].var;
                 if (pre_var != eff_var)
                     handle_pre_eff_arc(pre_var, eff_var);
             }
         }
 
-        // Handle pre->eff links from preconditions inside PrePost.
-        for (size_t i = 0; i < pre_post.size(); ++i) {
-            if (pre_post[i].pre == -1)
-                continue;
-            int pre_var = pre_post[i].var;
-            for (size_t j = 0; j < pre_post.size(); ++j) {
-                int eff_var = pre_post[j].var;
-                if (pre_var != eff_var)
-                    handle_pre_eff_arc(pre_var, eff_var);
-            }
+        // Handle pre->eff links from effect conditions.
+        for (size_t i = 0; i < effects.size(); ++i) {
+            // TODO introduce fix for conditional effects from issue 372
         }
 
         // Handle eff->eff links.
-        for (size_t i = 0; i < pre_post.size(); ++i) {
-            int eff1_var = pre_post[i].var;
-            for (size_t j = i + 1; j < pre_post.size(); ++j) {
-                int eff2_var = pre_post[j].var;
+        for (size_t i = 0; i < effects.size(); ++i) {
+            int eff1_var = effects[i].var;
+            for (size_t j = i + 1; j < effects.size(); ++j) {
+                int eff2_var = effects[j].var;
                 if (eff1_var != eff2_var)
                     handle_eff_eff_edge(eff1_var, eff2_var);
             }
