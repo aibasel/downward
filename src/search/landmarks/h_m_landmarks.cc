@@ -315,34 +315,29 @@ void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
 void get_operator_precondition(int op_index, FluentSet &pc) {
     Operator &op = g_operators[op_index];
 
-    const std::vector<Prevail> &prevail = op.get_prevail();
-    const std::vector<PrePost> &pre_post = op.get_pre_post();
+    const std::vector<Condition> &preconditions = op.get_preconditions();
+    for (int i = 0; i < preconditions.size(); i++) 
+        pc.push_back(make_pair(preconditions[i].var, preconditions[i].val));
 
-    for (int i = 0; i < prevail.size(); i++) {
-        pc.push_back(make_pair(prevail[i].var, prevail[i].prev));
-    }
-
-    for (int i = 0; i < pre_post.size(); i++) {
-        if (pre_post[i].pre != -1) {
-            pc.push_back(make_pair(pre_post[i].var, pre_post[i].pre));
-        }
-    }
-
+    // TODO issue107 can omit this if already presorted
     std::sort(pc.begin(), pc.end());
 }
 
 void get_operator_effect(int op_index, FluentSet &eff) {
     Operator &op = g_operators[op_index];
 
-    const std::vector<PrePost> &pre_post = op.get_pre_post();
-    const std::vector<Prevail> &prevail = op.get_prevail();
+    const std::vector<Condition> &preconditions = op.get_preconditions();
+    const std::vector<Effect> &effects = op.get_effects();
+    std::vector<bool> has_effect_on_var(g_variable_domain.size(), false);
 
-    for (int i = 0; i < prevail.size(); i++) {
-        eff.push_back(make_pair(prevail[i].var, prevail[i].prev));
+    for (int i = 0; i < effects.size(); i++) {
+        eff.push_back(make_pair(effects[i].var, effects[i].val));
+        has_effect_on_var[effects[i].var] = true;
     }
 
-    for (int i = 0; i < pre_post.size(); i++) {
-        eff.push_back(make_pair(pre_post[i].var, pre_post[i].post));
+    for (int i = 0; i < preconditions.size(); i++) {
+        if (!has_effect_on_var[preconditions[i].var])
+            eff.push_back(make_pair(preconditions[i].var, preconditions[i].val));
     }
 
     std::sort(eff.begin(), eff.end());

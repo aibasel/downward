@@ -137,24 +137,17 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
 bool LandmarkFactoryZhuGivan::operator_applicable(const Operator &op,
                                                   const proposition_layer &state) const {
     // test preconditions
-    const vector<Prevail> &prevail = op.get_prevail();
-    for (unsigned i = 0; i < prevail.size(); i++)
-        if (!state[prevail[i].var][prevail[i].prev].reached())
+    const vector<Condition> &preconditions = op.get_preconditions();
+    for (unsigned i = 0; i < preconditions.size(); i++)
+        if (!state[preconditions[i].var][preconditions[i].val].reached())
             return false;
-
-    const vector<PrePost> &prepost = op.get_pre_post();
-    for (unsigned i = 0; i < prepost.size(); i++)
-        if (prepost[i].pre != -1
-            && !state[prepost[i].var][prepost[i].pre].reached())
-            return false;
-
     return true;
 }
 
 bool LandmarkFactoryZhuGivan::operator_cond_effect_fires(
-    const vector<Prevail> &cond, const proposition_layer &state) const {
+    const vector<Condition> &cond, const proposition_layer &state) const {
     for (unsigned i = 0; i < cond.size(); i++)
-        if (!state[cond[i].var][cond[i].prev].reached())
+        if (!state[cond[i].var][cond[i].val].reached())
             return false;
     return true;
 }
@@ -186,26 +179,20 @@ lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const Operator &op,
                                                              const proposition_layer &current) const {
     lm_set result;
 
-    const vector<Prevail> &prevail = op.get_prevail();
-    for (unsigned i = 0; i < prevail.size(); i++)
+    const vector<Condition> &preconditions = op.get_preconditions();
+    for (unsigned i = 0; i < preconditions.size(); i++)
         result =
             _union(result,
-                   current[prevail[i].var][prevail[i].prev].labels);
-
-    const vector<PrePost> &prepost = op.get_pre_post();
-    for (unsigned i = 0; i < prepost.size(); i++)
-        if (prepost[i].pre != -1)
-            result = _union(result,
-                            current[prepost[i].var][prepost[i].pre].labels);
+                   current[preconditions[i].var][preconditions[i].val].labels);
 
     return result;
 }
 
 lm_set LandmarkFactoryZhuGivan::union_of_condition_labels(
-    const vector<Prevail> &cond, const proposition_layer &current) const {
+    const vector<Condition> &cond, const proposition_layer &current) const {
     lm_set result;
     for (unsigned i = 0; i < cond.size(); i++)
-        result = _union(result, current[cond[i].var][cond[i].prev].labels);
+        result = _union(result, current[cond[i].var][cond[i].val].labels);
 
     return result;
 }
@@ -242,18 +229,18 @@ lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
     lm_set result;
     lm_set precond_label_union = union_of_precondition_labels(op, current);
 
-    const vector<PrePost> &prepost = op.get_pre_post();
-    for (int i = 0; i < prepost.size(); i++) {
-        const int var = prepost[i].var;
-        const int post = prepost[i].post;
+    const vector<Effect> &effects = op.get_effects();
+    for (int i = 0; i < effects.size(); i++) {
+        const int var = effects[i].var;
+        const int post = effects[i].val;
 
         if (next[var][post].labels.size() == 1)
             continue;
 
-        if (operator_cond_effect_fires(prepost[i].cond, current)) {
+        if (operator_cond_effect_fires(effects[i].conditions, current)) {
             const lm_set precond_label_union_with_condeff = _union(
                 precond_label_union, union_of_condition_labels(
-                    prepost[i].cond, current));         // NOTE: this equals precond_label_union, if prepost[i] is
+                    effects[i].conditions, current));         // NOTE: this equals precond_label_union, if effects[i] is
             // not a conditional effect
 
             if (_propagate_labels(next[var][post].labels,
@@ -280,21 +267,17 @@ void LandmarkFactoryZhuGivan::compute_triggers() {
         bool has_cond = false;
 
         const Operator &op = lm_graph->get_operator_for_lookup_index(i);
-        const vector<Prevail> &prevail = op.get_prevail();
-        for (unsigned j = 0; j < prevail.size(); j++) {
-            t.insert(make_pair(prevail[j].var, prevail[j].prev));
+        const vector<Condition> &preconditions = op.get_preconditions();
+        for (unsigned j = 0; j < preconditions.size(); j++) {
+            t.insert(make_pair(preconditions[j].var, preconditions[j].val));
             has_cond = true;
         }
 
-        const vector<PrePost> &prepost = op.get_pre_post();
-        for (unsigned j = 0; j < prepost.size(); j++) {
-            if (prepost[j].pre != -1) {
-                t.insert(make_pair(prepost[j].var, prepost[j].pre));
-                has_cond = true;
-            }
-            const vector<Prevail> &cond = prepost[j].cond;
+        const vector<Effect> &effects = op.get_effects();
+        for (unsigned j = 0; j < effects.size(); j++) {
+            const vector<Condition> &cond = effects[j].conditions;
             for (unsigned k = 0; k < cond.size(); k++) {
-                t.insert(make_pair(cond[k].var, cond[k].prev));
+                t.insert(make_pair(cond[k].var, cond[k].val));
             }
         }
         if (!has_cond) // no preconditions

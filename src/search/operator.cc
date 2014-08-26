@@ -4,17 +4,32 @@
 #include <iostream>
 using namespace std;
 
-Prevail::Prevail(istream &in) {
-    in >> var >> prev;
+Condition::Condition(istream &in) {
+    in >> var >> val;
 }
 
-PrePost::PrePost(istream &in) {
-    int condCount;
+// TODO if the input file format was changed, we would need something like this
+// Effect::Effect(istream &in) {
+//    int condCount;
+//    in >> condCount;
+//    for (int i = 0; i < condCount; i++)
+//        cond.push_back(Prevail(in));
+//    in >> var >> pre >> post;
+//}
+
+
+void Operator::read_pre_post(istream &in) {
+    int condCount, var, pre, post;
     in >> condCount;
+    std::vector<Condition> conditions;
     for (int i = 0; i < condCount; i++)
-        cond.push_back(Prevail(in));
+        conditions.push_back(Condition(in));
     in >> var >> pre >> post;
+    if (pre != -1)
+        preconditions.push_back(Condition(var, pre));
+    effects.push_back(Effect(var, post, conditions));
 }
+
 
 Operator::Operator(istream &in, bool axiom) {
     marked = false;
@@ -27,10 +42,10 @@ Operator::Operator(istream &in, bool axiom) {
         int count;
         in >> count;
         for (int i = 0; i < count; i++)
-            prevail.push_back(Prevail(in));
+            preconditions.push_back(Condition(in));
         in >> count;
         for (int i = 0; i < count; i++)
-            pre_post.push_back(PrePost(in));
+            read_pre_post(in);
 
         int op_cost;
         in >> op_cost;
@@ -44,38 +59,38 @@ Operator::Operator(istream &in, bool axiom) {
         name = "<axiom>";
         cost = 0;
         check_magic(in, "begin_rule");
-        pre_post.push_back(PrePost(in));
+            read_pre_post(in);
         check_magic(in, "end_rule");
     }
 
     marker1 = marker2 = false;
 }
 
-void Prevail::dump() const {
-    cout << g_variable_name[var] << ": " << prev;
+void Condition::dump() const {
+    cout << g_variable_name[var] << ": " << val;
 }
 
-void PrePost::dump() const {
-    cout << g_variable_name[var] << ": " << pre << " => " << post;
-    if (!cond.empty()) {
+void Effect::dump() const {
+    cout << g_variable_name[var] << ":= " << val;
+    if (!conditions.empty()) {
         cout << " if";
-        for (int i = 0; i < cond.size(); i++) {
+        for (int i = 0; i < conditions.size(); i++) {
             cout << " ";
-            cond[i].dump();
+            conditions[i].dump();
         }
     }
 }
 
 void Operator::dump() const {
     cout << name << ":";
-    for (int i = 0; i < prevail.size(); i++) {
+    for (int i = 0; i < preconditions.size(); i++) {
         cout << " [";
-        prevail[i].dump();
+        preconditions[i].dump();
         cout << "]";
     }
-    for (int i = 0; i < pre_post.size(); i++) {
+    for (int i = 0; i < effects.size(); i++) {
         cout << " [";
-        pre_post[i].dump();
+        effects[i].dump();
         cout << "]";
     }
     cout << endl;

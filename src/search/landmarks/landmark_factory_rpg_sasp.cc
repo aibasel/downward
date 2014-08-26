@@ -27,52 +27,57 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     // operator preconditions, but only reports those effect conditions that are true for ALL
     // effects achieving the LM.
 
+    vector<bool> has_precondition_on_var(g_variable_domain.size(), false);
+    const vector<Condition> preconditions = o.get_preconditions();
+    for (unsigned j = 0; j < preconditions.size(); j++) {
+        result.insert(make_pair(preconditions[j].var, preconditions[j].val));
+        has_precondition_on_var[preconditions[j].var] = true;
+    } 
+
+    // XXX TODO issue107 why is this optimization sound?
+    // If there is an effect but no precondition on a variable v with domain
+    // size 2 and the landmark requires a different value than v has initially
+    // then we add v with its initial value to the result
     const State &initial_state = g_initial_state();
-    const vector<PrePost> &prepost = o.get_pre_post();
-    for (unsigned j = 0; j < prepost.size(); j++) {
-        if (prepost[j].pre != -1) {
-            assert(prepost[j].pre < g_variable_domain[prepost[j].var]);
-            result.insert(make_pair(prepost[j].var, prepost[j].pre));
-        } else if (g_variable_domain[prepost[j].var] == 2) {
+    const vector<Effect> &effects = o.get_effects();
+    for (unsigned j = 0; j < effects.size(); j++) {
+        int var = effects[j].var;
+        if (!has_precondition_on_var[var] && g_variable_domain[var] == 2) {
             for (int i = 0; i < lmp->vars.size(); i++) {
-                if (lmp->vars[i] == prepost[j].var
-                    && initial_state[prepost[j].var] != lmp->vals[i]) {
-                    result.insert(make_pair(prepost[j].var,
-                                            initial_state[prepost[j].var]));
+                if (lmp->vars[i] == var
+                    && initial_state[var] != lmp->vals[i]) {
+                    result.insert(make_pair(var, initial_state[var]));
                     break;
                 }
             }
         }
     }
 
-    const vector<Prevail> prevail = o.get_prevail();
-    for (unsigned j = 0; j < prevail.size(); j++)
-        result.insert(make_pair(prevail[j].var, prevail[j].prev));
     // Check for lmp in conditional effects
     set<int> lm_props_achievable;
-    for (unsigned j = 0; j < prepost.size(); j++)
+    for (unsigned j = 0; j < effects.size(); j++)
         for (int i = 0; i < lmp->vars.size(); i++)
-            if (lmp->vars[i] == prepost[j].var && lmp->vals[i]
-                == prepost[j].post)
+            if (lmp->vars[i] == effects[j].var && lmp->vals[i]
+                == effects[j].val)
                 lm_props_achievable.insert(i);
     // Intersect effect conditions of all effects that can achieve lmp
     hash_map<int, int> intersection;
     bool init = true;
     set<int>::iterator it = lm_props_achievable.begin();
     for (; it != lm_props_achievable.end(); ++it) {
-        for (unsigned j = 0; j < prepost.size(); j++) {
+        for (unsigned j = 0; j < effects.size(); j++) {
             if (!init && intersection.empty())
                 break;
             hash_map<int, int> current_cond;
-            if (lmp->vars[*it] == prepost[j].var && lmp->vals[*it]
-                == prepost[j].post) {
-                if (prepost[j].cond.empty()) {
+            if (lmp->vars[*it] == effects[j].var &&
+                lmp->vals[*it] == effects[j].val) {
+                if (effects[j].conditions.empty()) {
                     intersection.clear();
                     break;
                 } else
-                    for (unsigned k = 0; k < prepost[j].cond.size(); k++)
-                        current_cond.insert(make_pair(prepost[j].cond[k].var,
-                                                      prepost[j].cond[k].prev));
+                    for (unsigned k = 0; k < effects[j].conditions.size(); k++)
+                        current_cond.insert(make_pair(effects[j].conditions[k].var,
+                                                      effects[j].conditions[k].val));
             }
             if (init) {
                 init = false;

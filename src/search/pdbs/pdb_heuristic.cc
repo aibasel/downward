@@ -122,20 +122,31 @@ void PDBHeuristic::build_abstract_operators(
     vector<pair<int, int> > pre_pairs; // all variable value pairs that are a precondition (value != -1)
     vector<pair<int, int> > eff_pairs; // all variable value pairs that are an effect
     vector<pair<int, int> > effects_without_pre; // all variable value pairs that are a precondition (value = -1)
-    const vector<Prevail> &prevail = op.get_prevail();
-    const vector<PrePost> &pre_post = op.get_pre_post();
-    for (size_t i = 0; i < prevail.size(); ++i) {
-        if (variable_to_index[prevail[i].var] != -1) { // variable occurs in pattern
-            prev_pairs.push_back(make_pair(variable_to_index[prevail[i].var], prevail[i].prev));
+
+    const vector<Condition> &preconditions = op.get_preconditions();
+    const vector<Effect> &effects = op.get_effects();
+    vector<bool> has_effect_on_var(g_variable_domain.size(), false);
+    vector<bool> has_precondition_on_var(g_variable_domain.size(), false);
+
+    for (size_t i = 0; i < preconditions.size(); ++i)
+        has_precondition_on_var[preconditions[i].var] = true;
+    
+    for (size_t i = 0; i < effects.size(); ++i) {
+        if (variable_to_index[effects[i].var] != -1) {
+            if (has_precondition_on_var[effects[i].var]) {
+                has_effect_on_var[effects[i].var] = true;
+                eff_pairs.push_back(make_pair(variable_to_index[effects[i].var], effects[i].val));
+            } else {
+                effects_without_pre.push_back(make_pair(variable_to_index[effects[i].var], effects[i].val));
+            }
         }
     }
-    for (size_t i = 0; i < pre_post.size(); ++i) {
-        if (variable_to_index[pre_post[i].var] != -1) {
-            if (pre_post[i].pre != -1) {
-                pre_pairs.push_back(make_pair(variable_to_index[pre_post[i].var], pre_post[i].pre));
-                eff_pairs.push_back(make_pair(variable_to_index[pre_post[i].var], pre_post[i].post));
+    for (size_t i = 0; i < preconditions.size(); ++i) {
+        if (variable_to_index[preconditions[i].var] != -1) { // variable occurs in pattern
+            if (has_effect_on_var[preconditions[i].var]) {
+                pre_pairs.push_back(make_pair(variable_to_index[preconditions[i].var], preconditions[i].val));
             } else {
-                effects_without_pre.push_back(make_pair(variable_to_index[pre_post[i].var], pre_post[i].post));
+                prev_pairs.push_back(make_pair(variable_to_index[preconditions[i].var], preconditions[i].val));
             }
         }
     }

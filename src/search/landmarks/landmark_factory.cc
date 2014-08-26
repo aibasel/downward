@@ -59,12 +59,12 @@ bool LandmarkFactory::achieves_non_conditional(const Operator &o,
     /* Test whether the landmark is achieved by the operator unconditionally.
     A disjunctive landmarks is achieved if one of its disjuncts is achieved. */
     assert(lmp != NULL);
-    const vector<PrePost> &prepost = o.get_pre_post();
-    for (unsigned j = 0; j < prepost.size(); j++) {
+    const vector<Effect> &effects = o.get_effects();
+    for (unsigned j = 0; j < effects.size(); j++) {
         for (unsigned int k = 0; k < lmp->vars.size(); k++) {
-            if (prepost[j].var == lmp->vars[k] && prepost[j].post
+            if (effects[j].var == lmp->vars[k] && effects[j].val
                 == lmp->vals[k])
-                if (prepost[j].cond.empty())
+                if (effects[j].conditions.empty())
                     return true;
         }
     }
@@ -76,21 +76,11 @@ bool LandmarkFactory::is_landmark_precondition(const Operator &o,
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
     assert(lmp != NULL);
-    const vector<Prevail> &prevail = o.get_prevail();
-    for (unsigned j = 0; j < prevail.size(); j++) {
+    const vector<Condition> &preconditions = o.get_preconditions();
+    for (unsigned j = 0; j < preconditions.size(); j++) {
         for (unsigned int k = 0; k < lmp->vars.size(); k++) {
-            if (prevail[j].var == lmp->vars[k] && prevail[j].prev
+            if (preconditions[j].var == lmp->vars[k] && preconditions[j].val
                 == lmp->vals[k])
-                //if (prepost[j].cond.empty())
-                return true;
-        }
-    }
-    const vector<PrePost> &prepost = o.get_pre_post();
-    for (unsigned j = 0; j < prepost.size(); j++) {
-        for (unsigned int k = 0; k < lmp->vars.size(); k++) {
-            if (prepost[j].var == lmp->vars[k] && prepost[j].pre
-                == lmp->vals[k])
-                //if (prepost[j].cond.empty())
                 return true;
         }
     }
@@ -112,10 +102,10 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
         for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
             const Operator &op = lm_graph->get_operator_for_lookup_index(i);
             lvl_op[i] = hash_map<pair<int, int>, int, hash_int_pair> ();
-            const vector<PrePost> &prepost = op.get_pre_post();
-            for (unsigned j = 0; j < prepost.size(); j++)
-                lvl_op[i].insert(make_pair(make_pair(prepost[j].var,
-                                                     prepost[j].post),
+            const vector<Effect> &effects = op.get_effects();
+            for (unsigned j = 0; j < effects.size(); j++)
+                lvl_op[i].insert(make_pair(make_pair(effects[j].var,
+                                                     effects[j].val),
                                            numeric_limits<int>::max()));
         }
     }
@@ -186,7 +176,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
     return false;
 }
 
-bool LandmarkFactory::effect_always_happens(const vector<PrePost> &prepost, set<
+bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
                                                 pair<int, int> > &eff) const {
     /* Test whether the condition of a conditional effect is trivial, i.e. always true.
      We test for the simple case that the same effect proposition is triggered by
@@ -199,47 +189,47 @@ bool LandmarkFactory::effect_always_happens(const vector<PrePost> &prepost, set<
      oldpaint == red, then not painted ?x etc.
      If conditional effects are found that are always true, they are returned in "eff".
      */
-    // Go through all effects of operator (as given by prepost) and collect:
+    // Go through all effects of operator and collect:
     // - all variables that are set to some value in a conditional effect (effect_vars)
     // - variables that can be set to more than one value in a cond. effect (nogood_effect_vars)
     // - a mapping from cond. effect propositions to all the conditions that they appear with
     set<int> effect_vars;
     set<int> nogood_effect_vars;
     map<int, pair<int, vector<pair<int, int> > > > effect_conditions;
-    for (unsigned i = 0; i < prepost.size(); i++) {
-        if (prepost[i].cond.empty() ||
-            nogood_effect_vars.find(prepost[i].var) != nogood_effect_vars.end()) {
+    for (unsigned i = 0; i < effects.size(); i++) {
+        if (effects[i].conditions.empty() ||
+            nogood_effect_vars.find(effects[i].var) != nogood_effect_vars.end()) {
             // Var has no condition or can take on different values, skipping
             continue;
         }
-        if (effect_vars.find(prepost[i].var) != effect_vars.end()) {
+        if (effect_vars.find(effects[i].var) != effect_vars.end()) {
             // We have seen this effect var before
-            assert(effect_conditions.find(prepost[i].var) != effect_conditions.end());
-            int old_eff = effect_conditions.find(prepost[i].var)->second.first;
-            if (old_eff != prepost[i].post) {
+            assert(effect_conditions.find(effects[i].var) != effect_conditions.end());
+            int old_eff = effect_conditions.find(effects[i].var)->second.first;
+            if (old_eff != effects[i].val) {
                 // Was different effect
-                nogood_effect_vars.insert(prepost[i].var);
+                nogood_effect_vars.insert(effects[i].var);
                 continue;
             }
         } else {
             // We have not seen this effect var before
-            effect_vars.insert(prepost[i].var);
+            effect_vars.insert(effects[i].var);
         }
-        if (effect_conditions.find(prepost[i].var) != effect_conditions.end()
-            && effect_conditions.find(prepost[i].var)->second.first
-            == prepost[i].post) {
+        if (effect_conditions.find(effects[i].var) != effect_conditions.end()
+            && effect_conditions.find(effects[i].var)->second.first
+            == effects[i].val) {
             // We have seen this effect before, adding conditions
-            for (int k = 0; k < prepost[i].cond.size(); k++) {
-                vector<pair<int, int> > &vec = effect_conditions.find(prepost[i].var)->second.second;
-                vec.push_back(make_pair(prepost[i].cond[k].var, prepost[i].cond[k].prev));
+            for (int k = 0; k < effects[i].conditions.size(); k++) {
+                vector<pair<int, int> > &vec = effect_conditions.find(effects[i].var)->second.second;
+                vec.push_back(make_pair(effects[i].conditions[k].var, effects[i].conditions[k].val));
             }
         } else {
             // We have not seen this effect before, making new effect entry
             vector<pair<int, int> > &vec = effect_conditions.insert(make_pair(
-                                                                        prepost[i].var, make_pair(prepost[i].post, vector<pair<int,
+                                                                        effects[i].var, make_pair(effects[i].val, vector<pair<int,
                                                                                                                                int> > ()))).first->second.second;
-            for (int k = 0; k < prepost[i].cond.size(); k++) {
-                vec.push_back(make_pair(prepost[i].cond[k].var, prepost[i].cond[k].prev));
+            for (int k = 0; k < effects[i].conditions.size(); k++) {
+                vec.push_back(make_pair(effects[i].conditions[k].var, effects[i].conditions[k].val));
             }
         }
     }
@@ -349,19 +339,19 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 // e.g. in Schedule. There, the same effect is conditioned on a disjunction
                 // of conditions of which one will always be true. We test for a simple kind
                 // of these trivial conditions here.)
-                const vector<PrePost> &prepost = op.get_pre_post();
+                const vector<Effect> &effects = op.get_effects();
                 set<pair<int, int> > trivially_conditioned_effects;
-                bool trivial_conditioned_effects_found = effect_always_happens(prepost,
+                bool trivial_conditioned_effects_found = effect_always_happens(effects,
                                                                                trivially_conditioned_effects);
                 hash_map<int, int> next_eff;
-                for (unsigned i = 0; i < prepost.size(); i++) {
-                    if (prepost[i].cond.empty() && prepost[i].var != a.first) {
-                        next_eff.insert(make_pair(prepost[i].var, prepost[i].post));
+                for (unsigned i = 0; i < effects.size(); i++) {
+                    if (effects[i].conditions.empty() && effects[i].var != a.first) {
+                        next_eff.insert(make_pair(effects[i].var, effects[i].val));
                     } else if (trivial_conditioned_effects_found
                                && trivially_conditioned_effects.find(make_pair(
-                                                                         prepost[i].var, prepost[i].post))
+                                                                         effects[i].var, effects[i].val))
                                != trivially_conditioned_effects.end())
-                        next_eff.insert(make_pair(prepost[i].var, prepost[i].post));
+                        next_eff.insert(make_pair(effects[i].var, effects[i].val));
                 }
                 // Intersect effects of this operator with those of previous operators
                 if (init)

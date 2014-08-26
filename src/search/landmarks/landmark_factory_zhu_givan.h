@@ -34,7 +34,7 @@ public:
 
     bool operator_applicable(const Operator &, const proposition_layer &) const;
 
-    bool operator_cond_effect_fires(const vector<Prevail> &cond,
+    bool operator_cond_effect_fires(const vector<Condition> &cond,
                                     const proposition_layer &layer) const;
 
     // Apply operator and propagate labels to next layer. Returns set of
@@ -51,7 +51,7 @@ public:
 
     // Calculate the union of precondition labels of a conditional effect,
     // using the labels from current
-    lm_set union_of_condition_labels(const vector<Prevail> &cond,
+    lm_set union_of_condition_labels(const vector<Condition> &cond,
                                      const proposition_layer &current) const;
 
     // Relaxed exploration, returns the last proposition layer
