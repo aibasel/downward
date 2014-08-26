@@ -74,12 +74,13 @@ struct GlobalOperatorEffect {
         : var(var_), value(value_), conditions(conditions_) {}
 };
 
-/* Note: Currently we support two interfaces to preconditions and effects.
- * The first separates prevail variables from effect variables.
- * In the future we would like to remove this interface and only support
- * the newer interface which separates preconditions from effects.
- * Please do not use the PrePost and Prevail classes in new code.
- */
+/*
+  Note: Currently we support two interfaces to preconditions and effects.
+  The first separates prevail variables from effect variables.
+  In the future we would like to remove this interface and only support
+  the newer interface which separates preconditions from effects.
+  Please do not use the PrePost and Prevail classes in new code.
+*/
 class Operator {
     bool is_an_axiom;
     // TODO: Remove prevail and pre_post and use preconditions and effects instead.
