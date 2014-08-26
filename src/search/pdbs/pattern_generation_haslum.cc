@@ -3,8 +3,8 @@
 #include "canonical_pdbs_heuristic.h"
 #include "pdb_heuristic.h"
 
-#include "../globals.h"
 #include "../causal_graph.h"
+#include "../globals.h"
 #include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
