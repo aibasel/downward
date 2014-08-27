@@ -218,7 +218,6 @@ LabelSignature LabelReducer::build_label_signature(
             effects.push_back(make_pair(var, post));
         }
     }
-    // TODO issue107 could spare sorting if this is done globally
     ::sort(preconditions.begin(), preconditions.end());
     ::sort(effects.begin(), effects.end());
 

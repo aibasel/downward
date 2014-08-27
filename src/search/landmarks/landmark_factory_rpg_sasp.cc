@@ -34,7 +34,6 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
         has_precondition_on_var[preconditions[j].var] = true;
     } 
 
-    // XXX TODO issue107 why is this optimization sound?
     // If there is an effect but no precondition on a variable v with domain
     // size 2 and the landmark requires a different value than v has initially
     // then we add v with its initial value to the result

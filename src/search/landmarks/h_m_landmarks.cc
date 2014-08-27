@@ -319,7 +319,6 @@ void get_operator_precondition(int op_index, FluentSet &pc) {
     for (int i = 0; i < preconditions.size(); i++) 
         pc.push_back(make_pair(preconditions[i].var, preconditions[i].val));
 
-    // TODO issue107 can omit this if already presorted
     std::sort(pc.begin(), pc.end());
 }
 

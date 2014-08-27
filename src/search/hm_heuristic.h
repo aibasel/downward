@@ -51,7 +51,6 @@ protected:
     }
 
     int get_operator_pre_value(const Operator &op, int var) {
-        // TODO issue107 if preconditions are sorted we can break early
         for (int i = 0; i < op.get_preconditions().size(); i++) {
             if (op.get_preconditions()[i].var == var)
                 return op.get_preconditions()[i].val;
@@ -63,7 +62,6 @@ protected:
         for (int i = 0; i < op.get_preconditions().size(); i++)
             t.push_back(make_pair(op.get_preconditions()[i].var, op.get_preconditions()[i].val));
 
-        // TODO issue107 if preconditions are sorted we can skip this
         sort(t.begin(), t.end());
     }
 
@@ -86,7 +84,6 @@ protected:
     }
 
     bool is_effect_of(const Operator &op, int var) {
-        // TODO issue107 if effects are sorted we can break early
         for (int j = 0; j < op.get_effects().size(); j++) {
             if (op.get_effects()[j].var == var) {
                 return true;
