@@ -179,6 +179,8 @@ lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const Operator &op,
                                                              const proposition_layer &current) const {
     lm_set result;
 
+    // TODO This looks like an O(n^2) algorithm where O(n log n) would do, a
+    // bit like the Python string concatenation anti-pattern.
     const vector<Condition> &preconditions = op.get_preconditions();
     for (unsigned i = 0; i < preconditions.size(); i++)
         result =

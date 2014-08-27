@@ -128,9 +128,10 @@ struct CausalGraphBuilder {
 
         // Handle pre->eff links from effect conditions.
         for (size_t i = 0; i < effects.size(); ++i) {
-            for (size_t j = 0; j < effects[i].conditions.size(); ++j) {
-                int pre_var = effects[i].conditions[j].var;
-                int eff_var = effects[i].var;
+            int eff_var = effects[i].var;
+            const vector<Condition> &conditions = effects[i].conditions;
+            for (size_t j = 0; j < conditions.size(); ++j) {
+                int pre_var = conditions[j].var;
                 if (pre_var != eff_var)
                     handle_pre_eff_arc(pre_var, eff_var);
             }

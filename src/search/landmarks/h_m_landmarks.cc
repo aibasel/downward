@@ -322,7 +322,9 @@ void get_operator_precondition(int op_index, FluentSet &pc) {
     std::sort(pc.begin(), pc.end());
 }
 
-void get_operator_effect(int op_index, FluentSet &eff) {
+// get facts that are always true after the operator application
+// (effects plus prevail conditions)
+void get_operator_postcondition(int op_index, FluentSet &post) {
     Operator &op = g_operators[op_index];
 
     const std::vector<Condition> &preconditions = op.get_preconditions();
@@ -330,16 +332,16 @@ void get_operator_effect(int op_index, FluentSet &eff) {
     std::vector<bool> has_effect_on_var(g_variable_domain.size(), false);
 
     for (int i = 0; i < effects.size(); i++) {
-        eff.push_back(make_pair(effects[i].var, effects[i].val));
+        post.push_back(make_pair(effects[i].var, effects[i].val));
         has_effect_on_var[effects[i].var] = true;
     }
 
     for (int i = 0; i < preconditions.size(); i++) {
         if (!has_effect_on_var[preconditions[i].var])
-            eff.push_back(make_pair(preconditions[i].var, preconditions[i].val));
+            post.push_back(make_pair(preconditions[i].var, preconditions[i].val));
     }
 
-    std::sort(eff.begin(), eff.end());
+    std::sort(post.begin(), post.end());
 }
 
 
@@ -498,7 +500,7 @@ void HMLandmarks::build_pm_ops() {
         }
 
         // same for effects
-        get_operator_effect(i, eff);
+        get_operator_postcondition(i, eff);
         get_m_sets(m_, eff_subsets, eff);
         op.eff.reserve(eff_subsets.size());
 
@@ -635,32 +637,32 @@ void HMLandmarks::calc_achievers() {
              cands_it != candidates.end(); cands_it++) {
             int op = *cands_it;
 
-            FluentSet eff, pc;
-            get_operator_effect(op, eff);
-            get_operator_precondition(op, pc);
+            FluentSet post, pre;
+            get_operator_postcondition(op, post);
+            get_operator_precondition(op, pre);
             int j;
             for (j = 0; j < lmn.vars.size(); j++) {
                 std::pair<int, int> lm_val = std::make_pair(lmn.vars[j], lmn.vals[j]);
                 // action adds this element of lm as well
-                if (std::find(eff.begin(), eff.end(), lm_val) != eff.end())
+                if (std::find(post.begin(), post.end(), lm_val) != post.end())
                     continue;
                 int k;
-                for (k = 0; k < eff.size(); k++) {
-                    if (are_mutex(eff[k], lm_val)) {
+                for (k = 0; k < post.size(); k++) {
+                    if (are_mutex(post[k], lm_val)) {
                         break;
                     }
                 }
-                if (k != eff.size()) {
+                if (k != post.size()) {
                     break;
                 }
-                for (k = 0; k < pc.size(); k++) {
+                for (k = 0; k < pre.size(); k++) {
                     // we know that lm_val is not added by the operator
                     // so if it incompatible with the pc, this can't be an achiever
-                    if (are_mutex(pc[k], lm_val)) {
+                    if (are_mutex(pre[k], lm_val)) {
                         break;
                     }
                 }
-                if (k != pc.size()) {
+                if (k != pre.size()) {
                     break;
                 }
             }
