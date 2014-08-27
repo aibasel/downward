@@ -342,6 +342,7 @@ def parse_domain_pddl(domain_pddl):
     correct_order = [":requirements", ":types", ":constants", ":predicates",
                      ":functions"]
     seen_fields = []
+    first_action = None
     for opt in iterator:
         field = opt[0]
         if field not in correct_order:
@@ -384,7 +385,11 @@ def parse_domain_pddl(domain_pddl):
     yield predicate_dict
     yield the_functions
 
-    entries = [first_action] + [entry for entry in iterator]
+    entries = []
+    if first_action is not None:
+        entries.append(first_action)
+    entries.extend(iterator)
+
     the_axioms = []
     the_actions = []
     for entry in entries:
