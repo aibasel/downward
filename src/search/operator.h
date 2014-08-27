@@ -60,7 +60,7 @@ struct Effect {
 class Operator {
     bool is_an_axiom;
     std::vector<Condition> preconditions;      // var, val
-    std::vector<Effect> effects;     // var, val, effect conditions
+    std::vector<Effect> effects;               // var, val, effect conditions
     std::string name;
     int cost;
 
@@ -97,48 +97,5 @@ public:
 
     int get_cost() const {return cost; }
 };
-
-//class OldOperator {
-//    bool is_an_axiom;
-//    std::vector<Prevail> prevail;      // var, val
-//    std::vector<PrePost> pre_post;     // var, old-val, new-val, effect conditions
-//    std::string name;
-//    int cost;
-//
-//    mutable bool marked; // Used for short-term marking of preferred operators
-//public:
-//    Operator(std::istream &in, bool is_axiom);
-//    void dump() const;
-//    std::string get_name() const {return name; }
-//
-//    bool is_axiom() const {return is_an_axiom; }
-//
-//    const std::vector<Prevail> &get_prevail() const {return prevail; }
-//    const std::vector<PrePost> &get_pre_post() const {return pre_post; }
-//
-//    bool is_applicable(const State &state) const {
-//        for (int i = 0; i < prevail.size(); i++)
-//            if (!prevail[i].is_applicable(state))
-//                return false;
-//        for (int i = 0; i < pre_post.size(); i++)
-//            if (!pre_post[i].is_applicable(state))
-//                return false;
-//        return true;
-//    }
-//
-//    bool is_marked() const {
-//        return marked;
-//    }
-//    void mark() const {
-//        marked = true;
-//    }
-//    void unmark() const {
-//        marked = false;
-//    }
-//
-//    mutable bool marker1, marker2; // HACK! HACK!
-//
-//    int get_cost() const {return cost; }
-//};
 
 #endif

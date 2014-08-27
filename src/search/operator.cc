@@ -8,7 +8,7 @@ Condition::Condition(istream &in) {
     in >> var >> val;
 }
 
-// TODO if the input file format was changed, we would need something like this
+// TODO if the input file format has been changed, we would need something like this
 // Effect::Effect(istream &in) {
 //    int condCount;
 //    in >> condCount;
@@ -29,7 +29,6 @@ void Operator::read_pre_post(istream &in) {
         preconditions.push_back(Condition(var, pre));
     effects.push_back(Effect(var, post, conditions));
 }
-
 
 Operator::Operator(istream &in, bool axiom) {
     marked = false;

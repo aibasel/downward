@@ -79,8 +79,8 @@ bool LandmarkFactory::is_landmark_precondition(const Operator &o,
     const vector<Condition> &preconditions = o.get_preconditions();
     for (unsigned j = 0; j < preconditions.size(); j++) {
         for (unsigned int k = 0; k < lmp->vars.size(); k++) {
-            if (preconditions[j].var == lmp->vars[k] && preconditions[j].val
-                == lmp->vals[k])
+            if (preconditions[j].var == lmp->vars[k] && 
+                preconditions[j].val == lmp->vals[k])
                 return true;
         }
     }

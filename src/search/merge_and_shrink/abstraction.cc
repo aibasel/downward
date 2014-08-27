@@ -590,17 +590,10 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
         const vector<Condition> &preconditions = label->get_preconditions();
         const vector<Effect> &effects = label->get_effects();
         vector<int> preval(g_variable_domain.size(), -1);
-        vector<int> has_effect_on_var(g_variable_domain.size(), false);
+        vector<bool> has_effect_on_var(g_variable_domain.size(), false);
         for (int i = 0; i < preconditions.size(); i++) 
             preval[preconditions[i].var] = preconditions[i].val;
-//            int var = prev[i].var;
-//            int value = prev[i].prev;
-//            Abstraction *abs = result[var];
-//            // TODO only for those preconditions that do not have an effect
-//            AbstractTransition trans(value, value);
-//            abs->transitions_by_label[label_no].push_back(trans);
-//            abs->relevant_labels[label_no] = true;
-//        }
+
         for (int i = 0; i < effects.size(); i++) {
             int var = effects[i].var;
             has_effect_on_var[var] = true;
