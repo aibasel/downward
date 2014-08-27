@@ -51,7 +51,7 @@ protected:
     }
 
     int get_operator_pre_value(const Operator &op, int var) {
-        for (int i = 0; i < op.get_preconditions().size(); i++) {
+        for (int i = 0; i < op.get_preconditions().size(); ++i) {
             if (op.get_preconditions()[i].var == var)
                 return op.get_preconditions()[i].val;
         }
@@ -59,14 +59,14 @@ protected:
     }
 
     void get_operator_pre(const Operator &op, tuple &t) {
-        for (int i = 0; i < op.get_preconditions().size(); i++)
+        for (int i = 0; i < op.get_preconditions().size(); ++i)
             t.push_back(make_pair(op.get_preconditions()[i].var, op.get_preconditions()[i].val));
 
         sort(t.begin(), t.end());
     }
 
     void get_operator_eff(const Operator &op, tuple &t) {
-        for (int i = 0; i < op.get_effects().size(); i++)
+        for (int i = 0; i < op.get_effects().size(); ++i)
             t.push_back(make_pair(op.get_effects()[i].var, op.get_effects()[i].val));
 
         sort(t.begin(), t.end());
@@ -74,8 +74,9 @@ protected:
 
 
     bool is_pre_of(const Operator &op, int var) {
-        // TODO issue107 if preconditions are sorted we can break early
-        for (int j = 0; j < op.get_preconditions().size(); j++) {
+        // TODO if preconditions will be always sorted we should use a log-n
+        // search instead
+        for (int j = 0; j < op.get_preconditions().size(); ++j) {
             if (op.get_preconditions()[j].var == var) {
                 return true;
             }
@@ -84,7 +85,7 @@ protected:
     }
 
     bool is_effect_of(const Operator &op, int var) {
-        for (int j = 0; j < op.get_effects().size(); j++) {
+        for (int j = 0; j < op.get_effects().size(); ++j) {
             if (op.get_effects()[j].var == var) {
                 return true;
             }
@@ -93,8 +94,8 @@ protected:
     }
 
     bool contradict_effect_of(const Operator &op, int var, int val) {
-        for (int j = 0; j < op.get_effects().size(); j++) {
-            if ((op.get_effects()[j].var == var) && (op.get_effects()[j].val != val)) {
+        for (int j = 0; j < op.get_effects().size(); ++j) {
+            if (op.get_effects()[j].var == var && op.get_effects()[j].val != val) {
                 return true;
             }
         }
@@ -116,7 +117,7 @@ protected:
 
     void dump_table() const {
         map<tuple, int>::const_iterator it;
-        for (it = hm_table.begin(); it != hm_table.end(); it++) {
+        for (it = hm_table.begin(); it != hm_table.end(); ++it) {
             pair<tuple, int> hm_ent = *it;
             cout << "h[";
             print_tuple(hm_ent.first);

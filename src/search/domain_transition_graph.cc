@@ -120,21 +120,18 @@ void DomainTransitionGraph::read_data(istream &in) {
             // afterthought.
             sort(precond_pairs.begin(), precond_pairs.end());
 
+            hash_map<int, int> pre_map;
+            const vector<Condition> &preconditions = the_operator->get_preconditions();
+            for (int j = 0; j < preconditions.size(); ++j)
+                pre_map[preconditions[j].var] = preconditions[j].val;
+
             const vector<Effect> &effects = the_operator->get_effects();
-            for (int j = 0; j < effects.size(); j++) {
+            for (int j = 0; j < effects.size(); ++j) {
                 int var_no = effects[j].var;
-
-                // TODO this is not as efficient as possible (but we want to get
-                // rid of the DTG anyway)
                 int pre = -1;
-                const vector<Condition> &precond = the_operator->get_preconditions();
-                for (int k = 0; k < precond.size(); ++k) {
-                    if (precond[k].var == var_no) {
-                        pre = precond[k].val;
-                        break;
-                    }
-                }
-
+                hash_map<int, int>::const_iterator pre_it = pre_map.find(var_no); 
+                if (pre_it != pre_map.end())
+                    pre = pre_it->second;
                 int post = effects[j].val;
 
                 if (var_no == var || !global_to_cea_parent.count(var_no)) {
@@ -152,7 +149,7 @@ void DomainTransitionGraph::read_data(istream &in) {
                 const vector<Condition> &cond = effects[j].conditions;
                 for (int k = 0; k < cond.size(); k++)
                     triggercond_pairs.push_back(make_pair(cond[k].var, cond[k].val));
-                sort(triggercond_pairs.begin(), triggercond_pairs.end()); // todo sort conditions already in operator
+                sort(triggercond_pairs.begin(), triggercond_pairs.end());
 
                 if (includes(precond_pairs.begin(), precond_pairs.end(),
                              triggercond_pairs.begin(), triggercond_pairs.end())) {

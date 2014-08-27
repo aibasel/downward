@@ -10,19 +10,20 @@ Condition::Condition(istream &in) {
 
 // TODO if the input file format has been changed, we would need something like this
 // Effect::Effect(istream &in) {
-//    int condCount;
-//    in >> condCount;
-//    for (int i = 0; i < condCount; i++)
-//        cond.push_back(Prevail(in));
-//    in >> var >> pre >> post;
+//    int cond_count;
+//    in >> cond_count;
+//    for (int i = 0; i < cond_count; i++)
+//        cond.push_back(Condition(in));
+//    in >> var >> post;
 //}
 
 
 void Operator::read_pre_post(istream &in) {
-    int condCount, var, pre, post;
-    in >> condCount;
+    int cond_count, var, pre, post;
+    in >> cond_count;
     std::vector<Condition> conditions;
-    for (int i = 0; i < condCount; i++)
+    conditions.reserve(cond_count);
+    for (int i = 0; i < cond_count; i++)
         conditions.push_back(Condition(in));
     in >> var >> pre >> post;
     if (pre != -1)
@@ -58,7 +59,7 @@ Operator::Operator(istream &in, bool axiom) {
         name = "<axiom>";
         cost = 0;
         check_magic(in, "begin_rule");
-            read_pre_post(in);
+        read_pre_post(in);
         check_magic(in, "end_rule");
     }
 

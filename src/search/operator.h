@@ -12,7 +12,7 @@
 struct Condition {
     int var;
     int val;
-    Condition(std::istream &in);
+    explicit Condition(std::istream &in);
     Condition(int v, int p) : var(v), val(p) {}
 
     bool is_applicable(const State &state) const {
@@ -36,16 +36,9 @@ struct Effect {
     int var;
     int val;
     std::vector<Condition> conditions;
-    Effect(std::istream &in);
+    explicit Effect(std::istream &in);
     Effect(int var, int val, const std::vector<Condition> &co)
         : var(var), val(val), conditions(co) {}
-
-    // TODO do we need to preserve these assertions?
-    bool is_applicable(const State &) const {
-        assert(var >= 0 && var < g_variable_name.size());
-        assert(pre == -1 || (pre >= 0 && pre < g_variable_domain[var]));
-        return true;
-    }
 
     bool does_fire(const State &state) const {
         for (int i = 0; i < conditions.size(); i++)
@@ -59,15 +52,15 @@ struct Effect {
 
 class Operator {
     bool is_an_axiom;
-    std::vector<Condition> preconditions;      // var, val
-    std::vector<Effect> effects;               // var, val, effect conditions
+    std::vector<Condition> preconditions;
+    std::vector<Effect> effects;
     std::string name;
     int cost;
 
     mutable bool marked; // Used for short-term marking of preferred operators
     void read_pre_post(std::istream &in);
 public:
-    Operator(std::istream &in, bool is_axiom);
+    explicit Operator(std::istream &in, bool is_axiom);
     void dump() const;
     std::string get_name() const {return name; }
 

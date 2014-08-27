@@ -60,8 +60,8 @@ bool LandmarkFactory::achieves_non_conditional(const Operator &o,
     A disjunctive landmarks is achieved if one of its disjuncts is achieved. */
     assert(lmp != NULL);
     const vector<Effect> &effects = o.get_effects();
-    for (unsigned j = 0; j < effects.size(); j++) {
-        for (unsigned int k = 0; k < lmp->vars.size(); k++) {
+    for (size_t j = 0; j < effects.size(); ++j) {
+        for (size_t k = 0; k < lmp->vars.size(); ++k) {
             if (effects[j].var == lmp->vars[k] && effects[j].val
                 == lmp->vals[k])
                 if (effects[j].conditions.empty())
@@ -77,8 +77,8 @@ bool LandmarkFactory::is_landmark_precondition(const Operator &o,
     A disjunctive landmarks is used if one of its disjuncts is used. */
     assert(lmp != NULL);
     const vector<Condition> &preconditions = o.get_preconditions();
-    for (unsigned j = 0; j < preconditions.size(); j++) {
-        for (unsigned int k = 0; k < lmp->vars.size(); k++) {
+    for (size_t j = 0; j < preconditions.size(); ++j) {
+        for (size_t k = 0; k < lmp->vars.size(); ++k) {
             if (preconditions[j].var == lmp->vars[k] && 
                 preconditions[j].val == lmp->vals[k])
                 return true;
@@ -103,14 +103,14 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
             const Operator &op = lm_graph->get_operator_for_lookup_index(i);
             lvl_op[i] = hash_map<pair<int, int>, int, hash_int_pair> ();
             const vector<Effect> &effects = op.get_effects();
-            for (unsigned j = 0; j < effects.size(); j++)
+            for (size_t j = 0; j < effects.size(); ++j)
                 lvl_op[i].insert(make_pair(make_pair(effects[j].var,
                                                      effects[j].val),
                                            numeric_limits<int>::max()));
         }
     }
     lvl_var.resize(g_variable_name.size());
-    for (unsigned var = 0; var < g_variable_name.size(); var++) {
+    for (size_t var = 0; var < g_variable_name.size(); ++var) {
         lvl_var[var].resize(g_variable_domain[var],
                             numeric_limits<int>::max());
     }
@@ -152,7 +152,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
     vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
     // Initialize lvl_var to numeric_limits<int>::max()
     lvl_var.resize(g_variable_name.size());
-    for (unsigned var = 0; var < g_variable_name.size(); var++) {
+    for (size_t var = 0; var < g_variable_name.size(); ++var) {
         lvl_var[var].resize(g_variable_domain[var],
                             numeric_limits<int>::max());
     }
@@ -196,7 +196,7 @@ bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
     set<int> effect_vars;
     set<int> nogood_effect_vars;
     map<int, pair<int, vector<pair<int, int> > > > effect_conditions;
-    for (unsigned i = 0; i < effects.size(); i++) {
+    for (size_t i = 0; i < effects.size(); ++i) {
         if (effects[i].conditions.empty() ||
             nogood_effect_vars.find(effects[i].var) != nogood_effect_vars.end()) {
             // Var has no condition or can take on different values, skipping
@@ -245,7 +245,7 @@ bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
         // variables to the set of values they take on (in unique_conds)
         map<int, set<int> > unique_conds;
         vector<pair<int, int> > &conds = it->second.second;
-        for (unsigned int j = 0; j < conds.size(); j++) {
+        for (size_t j = 0; j < conds.size(); ++j) {
             if (unique_conds.find(conds[j].first) != unique_conds.end()) {
                 unique_conds.find(conds[j].first)->second.insert(
                     conds[j].second);
@@ -328,7 +328,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             bool init = true;
             const vector<int> &ops = lm_graph->get_operators_including_eff(a);
             // Intersect operators that achieve a one by one
-            for (unsigned i = 0; i < ops.size(); i++) {
+            for (size_t i = 0; i < ops.size(); ++i) {
                 const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
                 // If no shared effect among previous operators, break
                 if (!init && shared_eff.empty())
@@ -344,7 +344,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 bool trivial_conditioned_effects_found = effect_always_happens(effects,
                                                                                trivially_conditioned_effects);
                 hash_map<int, int> next_eff;
-                for (unsigned i = 0; i < effects.size(); i++) {
+                for (size_t i = 0; i < effects.size(); ++i) {
                     if (effects[i].conditions.empty() && effects[i].var != a.first) {
                         next_eff.insert(make_pair(effects[i].var, effects[i].val));
                     } else if (trivial_conditioned_effects_found
