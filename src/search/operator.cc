@@ -21,7 +21,7 @@ Condition::Condition(istream &in) {
 void Operator::read_pre_post(istream &in) {
     int cond_count, var, pre, post;
     in >> cond_count;
-    std::vector<Condition> conditions;
+    vector<Condition> conditions;
     conditions.reserve(cond_count);
     for (int i = 0; i < cond_count; i++)
         conditions.push_back(Condition(in));

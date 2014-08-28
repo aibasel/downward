@@ -589,10 +589,10 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
         const Label *label = labels->get_label_by_index(label_no);
         const vector<Condition> &preconditions = label->get_preconditions();
         const vector<Effect> &effects = label->get_effects();
-        vector<int> preval(g_variable_domain.size(), -1);
+        hash_map<int,int> pre_val;
         vector<bool> has_effect_on_var(g_variable_domain.size(), false);
         for (int i = 0; i < preconditions.size(); i++) 
-            preval[preconditions[i].var] = preconditions[i].val;
+            pre_val[preconditions[i].var] = preconditions[i].val;
 
         for (int i = 0; i < effects.size(); i++) {
             int var = effects[i].var;
@@ -602,7 +602,10 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
 
             // Determine possible values that var can have when this
             // operator is applicable.
-            int pre_value = preval[var];
+            int pre_value = -1;
+            hash_map<int,int>::const_iterator pre_val_it = pre_val.find(var);
+            if (pre_val_it != pre_val.end())
+                pre_value = pre_val_it->second;
             int pre_value_min, pre_value_max;
             if (pre_value == -1) {
                 pre_value_min = 0;
