@@ -45,7 +45,7 @@ bool _possibly_reaches_lm(const Operator &o, const vector<vector<int> > &lvl_var
             numeric_limits<int>::max())
             return false;
 
-    // Go through all effects of o and check whether one can reaches a
+    // Go through all effects of o and check whether one can reach a
     // proposition in lmp
     const vector<Effect> &effects = o.get_effects();
     for (size_t i = 0; i < effects.size(); ++i) {
