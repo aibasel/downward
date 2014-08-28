@@ -10,11 +10,12 @@
 #define LINUX 0
 #define OSX 1
 #define CYGWIN 2
+#define WINDOWS 3
 
 #if defined(__CYGWIN32__)
 #define OPERATING_SYSTEM CYGWIN
 #elif defined(__WINNT__)
-#define OPERATING_SYSTEM CYGWIN
+#define OPERATING_SYSTEM WINDOWS
 #elif defined(__APPLE__)
 #define OPERATING_SYSTEM OSX
 #else
