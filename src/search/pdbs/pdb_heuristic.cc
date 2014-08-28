@@ -125,7 +125,7 @@ void PDBHeuristic::build_abstract_operators(
 
     const vector<Condition> &preconditions = op.get_preconditions();
     const vector<Effect> &effects = op.get_effects();
-    vector<bool> has_effect_on_var(g_variable_domain.size(), false);
+    vector<bool> has_precond_and_effect_on_var(g_variable_domain.size(), false);
     vector<bool> has_precondition_on_var(g_variable_domain.size(), false);
 
     for (size_t i = 0; i < preconditions.size(); ++i)
@@ -134,7 +134,7 @@ void PDBHeuristic::build_abstract_operators(
     for (size_t i = 0; i < effects.size(); ++i) {
         if (variable_to_index[effects[i].var] != -1) {
             if (has_precondition_on_var[effects[i].var]) {
-                has_effect_on_var[effects[i].var] = true;
+                has_precond_and_effect_on_var[effects[i].var] = true;
                 eff_pairs.push_back(make_pair(variable_to_index[effects[i].var], effects[i].val));
             } else {
                 effects_without_pre.push_back(make_pair(variable_to_index[effects[i].var], effects[i].val));
@@ -143,7 +143,7 @@ void PDBHeuristic::build_abstract_operators(
     }
     for (size_t i = 0; i < preconditions.size(); ++i) {
         if (variable_to_index[preconditions[i].var] != -1) { // variable occurs in pattern
-            if (has_effect_on_var[preconditions[i].var]) {
+            if (has_precond_and_effect_on_var[preconditions[i].var]) {
                 pre_pairs.push_back(make_pair(variable_to_index[preconditions[i].var], preconditions[i].val));
             } else {
                 prev_pairs.push_back(make_pair(variable_to_index[preconditions[i].var], preconditions[i].val));

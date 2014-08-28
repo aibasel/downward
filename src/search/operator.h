@@ -13,11 +13,12 @@ struct Condition {
     int var;
     int val;
     explicit Condition(std::istream &in);
-    Condition(int v, int p) : var(v), val(p) {}
-
-    bool is_applicable(const State &state) const {
+    Condition(int variable, int value) : var(variable), val(value) {
         assert(var >= 0 && var < g_variable_name.size());
         assert(val >= 0 && val < g_variable_domain[var]);
+    }
+
+    bool is_applicable(const State &state) const {
         return state[var] == val;
     }
 
@@ -37,11 +38,11 @@ struct Effect {
     int val;
     std::vector<Condition> conditions;
     explicit Effect(std::istream &in);
-    Effect(int var, int val, const std::vector<Condition> &co)
-        : var(var), val(val), conditions(co) {}
+    Effect(int variable, int value, const std::vector<Condition> &conds)
+        : var(variable), val(value), conditions(conds) {}
 
     bool does_fire(const State &state) const {
-        for (int i = 0; i < conditions.size(); i++)
+        for (int i = 0; i < conditions.size(); ++i)
             if (!conditions[i].is_applicable(state))
                 return false;
         return true;

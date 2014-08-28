@@ -36,7 +36,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
 
     // If there is an effect but no precondition on a variable v with domain
     // size 2 and initially the variable has the other value than required by
-    // the landmark then at the first  time the landmark is reached the
+    // the landmark then at the first time the landmark is reached the
     // variable must still have the initial value.
     const State &initial_state = g_initial_state();
     const vector<Effect> &effects = o.get_effects();
