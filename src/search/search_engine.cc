@@ -11,7 +11,8 @@ using namespace std;
 
 SearchEngine::SearchEngine(const Options &opts)
     : search_space(OperatorCost(opts.get_enum("cost_type"))),
-      cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+      cost_type(OperatorCost(opts.get_enum("cost_type"))),
+      max_time(opts.get<int>("max_time")) {
     solved = false;
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
@@ -43,8 +44,12 @@ void SearchEngine::set_plan(const Plan &p) {
 void SearchEngine::search() {
     initialize();
     Timer timer;
-    while (step() == IN_PROGRESS)
-        ;
+    while (step() == IN_PROGRESS) {
+        if (timer() > max_time) {
+            cout << "Time limit reached. Abort search." << endl;
+            break;
+        }
+    }
     cout << "Actual search time: " << timer
          << " [t=" << g_timer << "]" << endl;
 }
@@ -75,4 +80,8 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "bound",
         "exclusive depth bound on g-values. Cutoffs are always performed according to "
         "the real cost, regardless of the cost_type parameter", "infinity");
+    parser.add_option<int>(
+        "max_time",
+        "maximum time in seconds the search is allowed to run for",
+        "infinity");
 }
