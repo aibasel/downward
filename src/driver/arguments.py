@@ -41,7 +41,7 @@ def _split_off_filenames(planner_args):
 
 
 def _split_planner_args(parser, args):
-    """Partitions args.planner_args, the list of arguments for the
+    """Partition args.planner_args, the list of arguments for the
     planner components, into args.filenames, args.translate_options,
     arge.preprocess_options and args.search_options. Modifies args
     directly and removes the original args.planner_args list."""
@@ -75,16 +75,15 @@ def _looks_like_search_input(filename):
     # We don't currently have a good way to distinguish preprocess and
     # search inputs without going through most of the file, so we
     # don't even try.
-
     with open(filename) as input_file:
         first_line = next(input_file, "").rstrip()
     return first_line == "begin_version"
 
 
 def _set_components_automatically(parser, args):
-    """Automatically tries to guess which planner components to run
-    based on the specified filenames. Currently implements some very
-    simple heuristics:
+    """Guess which planner components to run based on the specified
+    filenames and set args.components accordingly. Currently
+    implements some simple heuristics:
 
     1. If there is exactly one input file and it looks like a
        Fast-Downward-generated file, run search only.
@@ -97,7 +96,9 @@ def _set_components_automatically(parser, args):
 
 
 def _set_components_and_inputs(parser, args):
-    """Sets args.components to the planner components to be run.
+    """Set args.components to the planner components to be run
+    and set args.translate_inputs, args.preprocess_input and
+    args.search_input to the correct input filenames.
 
     Rules:
     1. If any --run-xxx option is specified, then the union
