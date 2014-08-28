@@ -50,13 +50,9 @@ int main(int argc, const char **argv) {
     cout << "Search time: " << search_timer << endl;
     cout << "Total time: " << g_timer << endl;
 
-    switch (engine->get_status()) {
-    case SOLVED:
+    if (engine->found_solution()) {
         exit_with(EXIT_PLAN_FOUND);
-    case FAILED:
-    case TIMEOUT:
+    } else {
         exit_with(EXIT_UNSOLVED_INCOMPLETE);
-    case IN_PROGRESS:
-        ABORT("status cannot be IN_PROGRESS after the search stopped");
     }
 }
