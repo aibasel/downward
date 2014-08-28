@@ -5,9 +5,9 @@
 #include <unistd.h>
 
 #if OPERATING_SYSTEM == WINDOWS
-    #include <windows.h>
+#include <windows.h>
 #else
-    #include <sys/times.h>
+#include <sys/times.h>
 #endif
 
 using namespace std;
