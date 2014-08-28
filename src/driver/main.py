@@ -30,6 +30,7 @@ def main():
     args = arguments.parse_args()
     print "*** processed args:", args
 
+    # TODO: Get rid of this:
     # raise SystemExit("stopping to debug arg parsing")
 
     if args.portfolio is not None:
@@ -57,6 +58,6 @@ def main():
 
 
 if __name__ == "__main__":
-    # TODO: Test suite that tests all the aliases, including
+    # TODO: lab test case that tests all the aliases, including
     # unit/general case. Ditto for the portfolios.
     main()
