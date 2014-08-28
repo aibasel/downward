@@ -47,7 +47,7 @@ Abstraction::Abstraction(const Task *task_)
       max_states(1),
       max_time(INF),
       use_astar(true),
-      use_negative_costs(false),
+      use_general_costs(false),
       dump_graphs(false),
       memory_released(false) {
     assert(!task->get_goal().empty());
@@ -222,7 +222,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
                 assert(!use_h);
                 assert(needed_costs->size() == task->get_operators().size());
                 int needed = state->get_h() - successor->get_h();
-                if (!use_negative_costs)
+                if (!use_general_costs)
                     needed = max(0, needed);
                 const int op_index = get_op_index(op);
                 (*needed_costs)[op_index] = max((*needed_costs)[op_index], needed);
