@@ -63,8 +63,11 @@ public:
     int get_num_values(int var) const {return variable_domain[var]; }
     const std::vector<Fact> &get_goals() const {return goal; }
     const std::vector<int> &get_initial_state_data() const {return initial_state_data; }
+    const std::vector<int> &get_variable_domain() const {return variable_domain; }
 
     int get_projected_index(int var, int value) const {return task_index[var][value]; }
+
+    double get_state_space_fraction(const Task &global_task) const;
 
     void dump() const;
 };
