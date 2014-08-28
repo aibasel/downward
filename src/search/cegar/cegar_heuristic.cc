@@ -203,7 +203,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             int fact_index = task.get_projected_index(facts[i].first, facts[i].second);
             int goal_fact_hadd = task.get_hadd_value(facts[i].first, fact_index);
             cout << "h^add(s*): " << goal_fact_hadd << endl;
-            assert(options.get<bool>("negative_costs") || goal_fact_hadd >= 0);
+            assert(options.get<bool>("general_costs") || goal_fact_hadd >= 0);
             assert(goal_fact_hadd != -1);
             // Note that due to its value accumulation semantics h^add
             // may underestimate the cost to reach a fact.
@@ -218,7 +218,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         abstraction->set_max_time(ceil((max_time - g_timer()) / rem_tasks));
         abstraction->set_dump_graphs(options.get<bool>("dump_graphs"));
         abstraction->set_use_astar(options.get<bool>("use_astar"));
-        abstraction->set_use_negative_costs(options.get<bool>("negative_costs"));
+        abstraction->set_use_general_costs(options.get<bool>("general_costs"));
 
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
@@ -370,7 +370,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
     parser.add_option<int>("min_hadd", "ignore facts with too low h^add values", "0");
-    parser.add_option<bool>("negative_costs", "allow negative costs in cost-partitioning", "false");
+    parser.add_option<bool>("general_costs", "allow negative costs in cost-partitioning", "false");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
     parser.add_option<bool>("dump_graphs", "write causal and landmark graphs", "false");
