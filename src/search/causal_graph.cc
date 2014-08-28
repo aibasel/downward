@@ -126,13 +126,19 @@ struct CausalGraphBuilder {
             }
         }
 
-        // Handle pre->eff links from preconditions inside PrePost.
+        // Handle pre->eff links from pre- and effect conditions inside PrePost.
         for (size_t i = 0; i < pre_post.size(); ++i) {
-            if (pre_post[i].pre == -1)
-                continue;
-            int pre_var = pre_post[i].var;
-            for (size_t j = 0; j < pre_post.size(); ++j) {
-                int eff_var = pre_post[j].var;
+            if (pre_post[i].pre != -1) {
+                int pre_var = pre_post[i].var;
+                for (size_t j = 0; j < pre_post.size(); ++j) {
+                    int eff_var = pre_post[j].var;
+                    if (pre_var != eff_var)
+                        handle_pre_eff_arc(pre_var, eff_var);
+                }
+            }
+            for (size_t j = 0; j < pre_post[i].cond.size(); ++j) {
+                int pre_var = pre_post[i].cond[j].var;
+                int eff_var = pre_post[i].var;
                 if (pre_var != eff_var)
                     handle_pre_eff_arc(pre_var, eff_var);
             }

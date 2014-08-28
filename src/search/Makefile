@@ -15,9 +15,10 @@ DOWNWARD_USE_LP ?= 0
 ## to a path where OSI is installed.
 DOWNWARD_COIN_ROOT ?= /opt/coin
 
-## If you want to use the CPLEX and/or Gurobi LP solvers, set the
-## following variables to paths for the "include" and "lib"
-## directories of the solvers. 
+## To use an LP solver through OSI, set the following variables
+## to paths for the solver's "include" and "lib" directories. 
+DOWNWARD_CLP_INCDIR ?= $(DOWNWARD_COIN_ROOT)/include/coin
+DOWNWARD_CLP_LIBDIR ?= $(DOWNWARD_COIN_ROOT)/lib
 DOWNWARD_CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
 DOWNWARD_CPLEX_LIBDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic
 DOWNWARD_GUROBI_INCDIR ?=
@@ -52,7 +53,6 @@ HEADERS = \
           ipc_max_heuristic.h \
           iterated_search.h \
           lazy_search.h \
-          legacy_causal_graph.h \
           max_evaluator.h \
           operator.h \
           operator_cost.h \
@@ -328,9 +328,12 @@ COIN_CXXFLAGS += -D COIN_HAS_GRB
 COIN_LDFLAGS += -L$(DOWNWARD_GUROBI_LIBDIR) -pthread
 endif
 
-## CLP is part of coin and can always be enabled
-COIN_CXXFLAGS += -D COIN_HAS_CLP
+COIN_HAS_CLP := $(shell test -d $(DOWNWARD_CLP_INCDIR) && test -f $(DOWNWARD_CLP_LIBDIR)/libClp.a && test -f $(DOWNWARD_COIN_ROOT)/lib/libOsiClp.a && echo 1)
+ifeq ($(COIN_HAS_CLP),1)
 COIN_LIBS += OsiClp Clp
+COIN_CXXFLAGS += -D COIN_HAS_CLP
+COIN_LDFLAGS += -L$(DOWNWARD_CLP_LIBDIR)
+endif
 
 ## Basic Osi libs must be added after (!) all osi solver libs
 COIN_LIBS += Osi CoinUtils

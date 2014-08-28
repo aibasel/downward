@@ -6,14 +6,10 @@
 #include "../plugin.h"
 
 #include <cassert>
-#include <limits>
 #include <map>
 #include <vector>
 
 using namespace std;
-
-
-static const int infinity = numeric_limits<int>::max();
 
 
 ShrinkFH::ShrinkFH(const Options &opts)
@@ -88,7 +84,7 @@ void ShrinkFH::ordered_buckets_use_map(
     for (AbstractStateRef state = 0; state < abs.size(); ++state) {
         int g = abs.get_init_distance(state);
         int h = abs.get_goal_distance(state);
-        if (g != infinity && h != infinity) {
+        if (g != INF && h != INF) {
             int f = g + h;
             Bucket &bucket = states_by_f_and_h[f][h];
             if (bucket.empty())
@@ -121,7 +117,7 @@ void ShrinkFH::ordered_buckets_use_vector(
     for (AbstractStateRef state = 0; state < abs.size(); ++state) {
         int g = abs.get_init_distance(state);
         int h = abs.get_goal_distance(state);
-        if (g != infinity && h != infinity) {
+        if (g != INF && h != INF) {
             int f = g + h;
             assert(f >= 0 && f < states_by_f_and_h.size());
             assert(h >= 0 && h < states_by_f_and_h[f].size());
