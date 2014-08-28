@@ -336,6 +336,15 @@ bool Task::translate_state(const State &state, int *translated) const {
     return true;
 }
 
+double Task::get_state_space_fraction(const Task &global_task) const {
+    double fraction = 1.0;
+    for (size_t var = 0; var < variable_domain.size(); ++var) {
+        assert(variable_domain[var] <= global_task.get_variable_domain()[var]);
+        fraction *= (variable_domain[var] / static_cast<double>(global_task.get_variable_domain()[var]));
+    }
+    return fraction;
+}
+
 void Task::dump_facts() const {
     for (int var = 0; var < variable_domain.size(); ++var) {
         for (int value = 0; value < variable_domain[var]; ++value)

@@ -223,7 +223,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
         abstraction->build();
-        avg_h_values.push_back(abstraction->get_avg_h());
+        avg_h_values.push_back(abstraction->get_avg_h() * task.get_state_space_fraction(original_task));
         num_states += abstraction->get_num_states();
         if (decomposition == NONE && num_abstractions == 1 && !search)
             abstraction->print_histograms();
