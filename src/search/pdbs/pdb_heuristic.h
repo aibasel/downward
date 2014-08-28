@@ -58,7 +58,6 @@ class PDBHeuristic : public Heuristic {
     std::vector<int> distances;
 
     std::vector<size_t> hash_multipliers; // multipliers for each variable for perfect hash function
-    void verify_no_axioms_no_cond_effects() const; // we support SAS+ tasks only
 
     /* Recursive method; called by build_abstract_operators.
        In the case of a precondition with value = -1 in the conrete operator, all mutliplied out abstract
