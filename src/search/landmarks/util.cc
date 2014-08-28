@@ -40,35 +40,24 @@ bool _possibly_reaches_lm(const Operator &o, const vector<vector<int> > &lvl_var
     // Test whether all preconditions of o can be reached
     // Otherwise, operator is not applicable
     const vector<Condition> &preconditions = o.get_preconditions();
-    for (unsigned i = 0; i < preconditions.size(); i++)
+    for (unsigned i = 0; i < preconditions.size(); ++i)
         if (lvl_var[preconditions[i].var][preconditions[i].val] ==
             numeric_limits<int>::max())
             return false;
 
-    // Test effect conditions
-    bool reaches_lm = false;
-    // Go through all effects of o...
+    // Go through all effects of o and check whether one can reaches a
+    // proposition in lmp
     const vector<Effect> &effects = o.get_effects();
-    for (unsigned i = 0; i < effects.size(); i++) {
-        // If lmp is a conditional effect, check the condition
-        bool effect_condition_reachable = false;
+    for (size_t i = 0; i < effects.size(); ++i) {
         assert(!lvl_var[effects[i].var].empty());
-        bool correct_effect = false;
-        // Check whether *this* effect of o reaches a proposition in lmp...
-        for (unsigned int j = 0; j < lmp->vars.size(); j++) {
+        for (size_t j = 0; j < lmp->vars.size(); ++j) {
             if (effects[i].var == lmp->vars[j] && effects[i].val == lmp->vals[j]) {
-                correct_effect = true;
+                if (_possibly_fires(effects[i].conditions, lvl_var))
+                    return true;
                 break;
             }
         }
-        if (correct_effect)
-            // ...if so, test whether the condition can be satisfied
-            effect_condition_reachable = _possibly_fires(effects[i].conditions, lvl_var);
-        else
-            continue;
-        if (effect_condition_reachable)
-            reaches_lm = true;
     }
 
-    return reaches_lm;
+    return false;
 }
