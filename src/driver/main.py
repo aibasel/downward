@@ -39,15 +39,14 @@ def main():
         aliases.show_aliases()
         sys.exit()
 
-    if not args.filenames:
-        # This is of course a HACK.
-        print "*** no positional filenames: run search only"
-        run_components.run_search(args)
-    else:
-        print "*** run all planner components"
-        run_components.run_translate(args)
-        run_components.run_preprocess(args)
-        run_components.run_search(args)
+    for component in args.components:
+        if component == "translate":
+            run_components.run_translate(args)
+        elif component == "preprocess":
+            run_components.run_preprocess(args)
+        elif component == "search":
+            run_components.run_search(args)
+
 
     ## TODO: The old "plan" script preserved the exit code of the
     ## search component. Make sure that this one does, too, both in

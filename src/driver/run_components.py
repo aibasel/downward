@@ -40,16 +40,16 @@ def call_cmd(cmd, args, stdin=None):
 
 def run_translate(args):
     print "*** Running translator."
-    print "*** filenames: %s" % args.filenames
+    print "*** translator inputs: %s" % args.translate_inputs
     print "*** translator arguments: %s" % args.translate_options
-    call_cmd(TRANSLATE, args.filenames + args.translate_options)
+    call_cmd(TRANSLATE, args.translate_inputs + args.translate_options)
     print "***"
 
 
 def run_preprocess(args):
     print "*** Running preprocessor."
     print "*** preprocessor arguments: %s" % args.preprocess_options
-    call_cmd(PREPROCESS, args.preprocess_options, stdin="output.sas")
+    call_cmd(PREPROCESS, args.preprocess_options, stdin=args.preprocess_input)
     print "***"
 
 
@@ -71,9 +71,7 @@ def run_search(args):
         # these are now in-process.
         raise NotImplementedError
     else:
-        INPUT_FILE = "output"
-        search_options = args.search_options
-        print "*** final search options:", search_options
+        print "*** final search options:", args.search_options
         write_elapsed_time()
-        call_cmd(executable, search_options, stdin=INPUT_FILE)
+        call_cmd(executable, args.search_options, stdin=args.search_input)
     print "***"

@@ -47,7 +47,6 @@ def _split_planner_args(parser, args):
     directly and removes the original args.planner_args list."""
 
     args.filenames, options = _split_off_filenames(args.planner_args)
-    del args.planner_args
 
     args.translate_options = []
     args.preprocess_options = []
@@ -72,6 +71,78 @@ def _check_arg_conflicts(parser, possible_conflicts):
                 parser.error("cannot combine %s with %s" % (name1, name2))
 
 
+def _looks_like_search_input(filename):
+    # We don't currently have a good way to distinguish preprocess and
+    # search inputs without going through most of the file, so we
+    # don't even try.
+
+    with open(filename) as input_file:
+        first_line = next(input_file, "").rstrip()
+    return first_line == "begin_version"
+
+
+def _set_components_automatically(parser, args):
+    """Automatically tries to guess which planner components to run
+    based on the specified filenames. Currently implements some very
+    simple heuristics:
+
+    1. If there is exactly one input file and it looks like a
+       Fast-Downward-generated file, run search only.
+    2. Otherwise, run all components."""
+
+    if len(args.filenames) == 1 and _looks_like_search_input(args.filenames[0]):
+        args.components = ["search"]
+    else:
+        args.components = ["translate", "preprocess", "search"]
+
+
+def _set_components_and_inputs(parser, args):
+    """Sets args.components to the planner components to be run.
+
+    Rules:
+    1. If any --run-xxx option is specified, then the union
+       of the specified components is run.
+    2. It is an error to specify running the translator and
+       search, but not the preprocessor.
+    3. If nothing is specified, use automatic rules. See
+       separate function."""
+
+    args.components = []
+    if args.run_translator or args.run_all:
+        args.components.append("translate")
+    if args.run_preprocessor or args.run_all:
+        args.components.append("preprocess")
+    if args.run_search or args.run_all:
+        args.components.append("search")
+
+    if args.components == ["translate", "search"]:
+        parser.error("cannot run translator and search without preprocessor")
+
+    if not args.components:
+        _set_components_automatically(parser, args)
+
+    args.translate_inputs = []
+    args.preprocess_input = "output.sas"
+    args.search_input = "output"
+
+    assert args.components
+    first = args.components[0]
+    if first == "translate":
+        if len(args.filenames) not in [1, 2]:
+            parser.error("translator needs one or two input files")
+        args.translate_inputs = args.filenames
+    elif first == "preprocess":
+        if len(args.filenames) != 1:
+            parser.error("preprocessor needs exactly one input file")
+        args.preprocess_input, = args.filenames
+    elif first == "search":
+        if len(args.filenames) != 1:
+            parser.error("search needs exactly one input file")
+        args.search_input, = args.filenames
+    else:
+        assert False, first
+
+
 def parse_args():
     # TODO: Need better usage string. We might also want to improve
     # the help output more generally. Note that there are various ways
@@ -82,13 +153,25 @@ def parse_args():
         help="run a config with an alias (e.g. seq-sat-lama-2011)")
     parser.add_argument(
         "--debug", action="store_true",
-        help="run search component in debug mode")
+        help="use debug mode for search component")
     parser.add_argument(
         "--ipc", dest="alias",
         help="same as --alias")
     parser.add_argument(
         "--portfolio", metavar="FILE",
         help="run a portfolio specified in FILE")
+    parser.add_argument(
+        "--run-all", action="store_true",
+        help="run all components of the planner")
+    parser.add_argument(
+        "--run-translator", action="store_true",
+        help="run translator component of the planner")
+    parser.add_argument(
+        "--run-preprocessor", action="store_true",
+        help="run preprocessor component of the planner")
+    parser.add_argument(
+        "--run-search", action="store_true",
+        help="run search component of the planner")
     parser.add_argument(
         "--show-aliases", action="store_true",
         help="show the known aliases; don't run search")
@@ -117,5 +200,7 @@ def parse_args():
             aliases.set_options_for_alias(args.alias, args)
         except KeyError:
             parser.error("unknown alias: %r" % args.alias)
+
+    _set_components_and_inputs(parser, args)
 
     return args
