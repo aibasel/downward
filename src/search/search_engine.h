@@ -23,6 +23,7 @@ protected:
     SearchProgress search_progress;
     int bound;
     OperatorCost cost_type;
+    int max_time;
 
     enum {FAILED, SOLVED, IN_PROGRESS};
     virtual void initialize() {}
