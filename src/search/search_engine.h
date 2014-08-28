@@ -12,11 +12,14 @@ class Options;
 #include "search_progress.h"
 #include "operator_cost.h"
 
+enum {FAILED, SOLVED, IN_PROGRESS, TIMEOUT};
+
 class SearchEngine {
 public:
     typedef std::vector<const Operator *> Plan;
 private:
-    bool solved;
+    int status;
+    bool solution_found;
     Plan plan;
 protected:
     SearchSpace search_space;
@@ -25,7 +28,6 @@ protected:
     OperatorCost cost_type;
     int max_time;
 
-    enum {FAILED, SOLVED, IN_PROGRESS};
     virtual void initialize() {}
     virtual int step() = 0;
 
@@ -39,6 +41,7 @@ public:
     virtual void heuristic_statistics() const {}
     virtual void save_plan_if_necessary() const;
     bool found_solution() const;
+    int get_status() const;
     const Plan &get_plan() const;
     void search();
     SearchProgress get_search_progress() const {return search_progress; }
