@@ -10,10 +10,11 @@ using namespace std;
 #include "timer.h"
 
 SearchEngine::SearchEngine(const Options &opts)
-    : search_space(OperatorCost(opts.get_enum("cost_type"))),
+    : status(IN_PROGRESS),
+      solution_found(false),
+      search_space(OperatorCost(opts.get_enum("cost_type"))),
       cost_type(OperatorCost(opts.get_enum("cost_type"))),
       max_time(opts.get<int>("max_time")) {
-    solved = false;
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
         exit_with(EXIT_INPUT_ERROR);
@@ -28,25 +29,31 @@ void SearchEngine::statistics() const {
 }
 
 bool SearchEngine::found_solution() const {
-    return solved;
+    return solution_found;
+}
+
+int SearchEngine::get_status() const {
+    return status;
 }
 
 const SearchEngine::Plan &SearchEngine::get_plan() const {
-    assert(solved);
+    assert(solution_found);
     return plan;
 }
 
 void SearchEngine::set_plan(const Plan &p) {
-    solved = true;
+    solution_found = true;
     plan = p;
 }
 
 void SearchEngine::search() {
     initialize();
     Timer timer;
-    while (step() == IN_PROGRESS) {
+    while (status == IN_PROGRESS) {
+        status = step();
         if (timer() > max_time) {
             cout << "Time limit reached. Abort search." << endl;
+            status = TIMEOUT;
             break;
         }
     }
