@@ -54,7 +54,6 @@ HEADERS = \
           ipc_max_heuristic.h \
           iterated_search.h \
           lazy_search.h \
-          legacy_causal_graph.h \
           max_evaluator.h \
           operator.h \
           operator_cost.h \
@@ -177,9 +176,9 @@ ifeq ($(DOWNWARD_OS), auto)
     endif
 
     ifeq ($(UNAME_O), Cygwin)
-        ## For now, we treat Linux and Cygwin equally in this
-        ## Makefile, so we just call Cygwin "linux".
-        DOWNWARD_OS=linux
+        DOWNWARD_OS=windows
+    else ifeq ($(UNAME_O), Msys)
+        DOWNWARD_OS=windows
     else ifeq ($(OS), auto)
         $(warning OS detection failed -- setting to Linux and hoping for the best!)
         DOWNWARD_OS=linux
@@ -290,6 +289,10 @@ ifeq ($(DOWNWARD_OS), linux)
     endif
     POSTLINKOPT_DEBUG  += -lrt
     POSTLINKOPT_PROFILE += -lrt
+else ifeq ($(DOWNWARD_OS), windows)
+    POSTLINKOPT_RELEASE += -lpsapi
+    POSTLINKOPT_DEBUG += -lpsapi
+    POSTLINKOPT_PROFILE += -lpsapi
 endif
 
 
