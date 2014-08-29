@@ -45,7 +45,7 @@ protected:
 
 private:
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
-    bool effect_always_happens(const std::vector<Effect> &effects,
+    bool effect_always_happens(const std::vector<GlobalEffect> &effects,
                                std::set<std::pair<int, int> > &eff) const;
     void approximate_reasonable_orders(bool obedient_orders);
     void mk_acyclic_graph();

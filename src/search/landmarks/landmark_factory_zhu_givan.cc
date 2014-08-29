@@ -231,7 +231,7 @@ lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
     lm_set result;
     lm_set precond_label_union = union_of_precondition_labels(op, current);
 
-    const vector<Effect> &effects = op.get_effects();
+    const vector<GlobalEffect> &effects = op.get_effects();
     for (int i = 0; i < effects.size(); ++i) {
         const int var = effects[i].var;
         const int post = effects[i].val;
@@ -272,7 +272,7 @@ void LandmarkFactoryZhuGivan::compute_triggers() {
         for (size_t j = 0; j < preconditions.size(); ++j)
             t.insert(make_pair(preconditions[j].var, preconditions[j].val));
         
-        const vector<Effect> &effects = op.get_effects();
+        const vector<GlobalEffect> &effects = op.get_effects();
         for (size_t j = 0; j < effects.size(); ++j) {
             const vector<Condition> &cond = effects[j].conditions;
             for (size_t k = 0; k < cond.size(); ++k)

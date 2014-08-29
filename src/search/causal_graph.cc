@@ -114,7 +114,7 @@ struct CausalGraphBuilder {
 
     void handle_operator(const Operator &op) {
         const vector<Condition> &preconditions = op.get_preconditions();
-        const vector<Effect> &effects = op.get_effects();
+        const vector<GlobalEffect> &effects = op.get_effects();
 
         // Handle pre->eff links from preconditions.
         for (size_t i = 0; i < preconditions.size(); ++i) {

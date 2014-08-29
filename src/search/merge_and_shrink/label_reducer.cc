@@ -210,7 +210,7 @@ LabelSignature LabelReducer::build_label_signature(
             preconditions.push_back(make_pair(var, val));
         }
     }
-    const vector<Effect> &effs = label.get_effects();
+    const vector<GlobalEffect> &effs = label.get_effects();
     for (size_t i = 0; i < effs.size(); ++i) {
         int var = effs[i].var;
         if (var_is_used[var]) {

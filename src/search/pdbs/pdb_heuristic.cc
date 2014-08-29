@@ -124,7 +124,7 @@ void PDBHeuristic::build_abstract_operators(
     vector<pair<int, int> > effects_without_pre; // all variable value pairs that are a precondition (value = -1)
 
     const vector<Condition> &preconditions = op.get_preconditions();
-    const vector<Effect> &effects = op.get_effects();
+    const vector<GlobalEffect> &effects = op.get_effects();
     vector<bool> has_precond_and_effect_on_var(g_variable_domain.size(), false);
     vector<bool> has_precondition_on_var(g_variable_domain.size(), false);
 

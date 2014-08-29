@@ -125,7 +125,7 @@ void DomainTransitionGraph::read_data(istream &in) {
             for (int j = 0; j < preconditions.size(); ++j)
                 pre_map[preconditions[j].var] = preconditions[j].val;
 
-            const vector<Effect> &effects = the_operator->get_effects();
+            const vector<GlobalEffect> &effects = the_operator->get_effects();
             for (int j = 0; j < effects.size(); ++j) {
                 int var_no = effects[j].var;
                 int pre = -1;

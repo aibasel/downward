@@ -119,7 +119,7 @@ void Exploration::build_unary_operators(const Operator &op) {
     // Note: changed from the original to allow sorting of operator conditions
     int base_cost = get_adjusted_cost(op);
     const vector<Condition> &preconditions = op.get_preconditions();
-    const vector<Effect> &effects = op.get_effects();
+    const vector<GlobalEffect> &effects = op.get_effects();
     vector<ExProposition *> precondition;
     vector<pair<int, int> > precondition_var_vals1;
 

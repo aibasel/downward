@@ -28,7 +28,7 @@ void Operator::read_pre_post(istream &in) {
     in >> var >> pre >> post;
     if (pre != -1)
         preconditions.push_back(Condition(var, pre));
-    effects.push_back(Effect(var, post, conditions));
+    effects.push_back(GlobalEffect(var, post, conditions));
 }
 
 Operator::Operator(istream &in, bool axiom) {
@@ -70,7 +70,7 @@ void Condition::dump() const {
     cout << g_variable_name[var] << ": " << val;
 }
 
-void Effect::dump() const {
+void GlobalEffect::dump() const {
     cout << g_variable_name[var] << ":= " << val;
     if (!conditions.empty()) {
         cout << " if";

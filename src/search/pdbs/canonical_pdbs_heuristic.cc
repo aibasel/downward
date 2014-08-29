@@ -95,7 +95,7 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
     are_additive.resize(num_vars, vector<bool>(num_vars, true));
     for (size_t k = 0; k < g_operators.size(); ++k) {
         const Operator &o = g_operators[k];
-        const vector<Effect> effects = o.get_effects();
+        const vector<GlobalEffect> effects = o.get_effects();
         for (size_t e1 = 0; e1 < effects.size(); ++e1) {
             for (size_t e2 = 0; e2 < effects.size(); ++e2) {
                 are_additive[effects[e1].var][effects[e2].var] = false;

@@ -33,12 +33,12 @@ struct Condition {
     void dump() const;
 };
 
-struct Effect {
+struct GlobalEffect {
     int var;
     int val;
     std::vector<Condition> conditions;
-    explicit Effect(std::istream &in);
-    Effect(int variable, int value, const std::vector<Condition> &conds)
+    explicit GlobalEffect(std::istream &in);
+    GlobalEffect(int variable, int value, const std::vector<Condition> &conds)
         : var(variable), val(value), conditions(conds) {}
 
     bool does_fire(const State &state) const {
@@ -54,7 +54,7 @@ struct Effect {
 class Operator {
     bool is_an_axiom;
     std::vector<Condition> preconditions;
-    std::vector<Effect> effects;
+    std::vector<GlobalEffect> effects;
     std::string name;
     int cost;
 
@@ -68,7 +68,7 @@ public:
     bool is_axiom() const {return is_an_axiom; }
 
     const std::vector<Condition> &get_preconditions() const {return preconditions; }
-    const std::vector<Effect> &get_effects() const {return effects; }
+    const std::vector<GlobalEffect> &get_effects() const {return effects; }
 
     bool is_applicable(const State &state) const {
         for (int i = 0; i < preconditions.size(); ++i)

@@ -60,7 +60,7 @@ void RelaxationHeuristic::initialize() {
 void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
     int base_cost = get_adjusted_cost(op);
     const vector<Condition> &preconditions = op.get_preconditions();
-    const vector<Effect> &effects = op.get_effects();
+    const vector<GlobalEffect> &effects = op.get_effects();
     vector<Proposition *> precondition;
     for (int i = 0; i < preconditions.size(); i++) {
         assert(preconditions[i].var >= 0 && preconditions[i].var < g_variable_domain.size());

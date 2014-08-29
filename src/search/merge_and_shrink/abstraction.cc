@@ -588,7 +588,7 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
     for (int label_no = 0; label_no < labels->get_size(); label_no++) {
         const Label *label = labels->get_label_by_index(label_no);
         const vector<Condition> &preconditions = label->get_preconditions();
-        const vector<Effect> &effects = label->get_effects();
+        const vector<GlobalEffect> &effects = label->get_effects();
         hash_map<int,int> pre_val;
         vector<bool> has_effect_on_var(g_variable_domain.size(), false);
         for (int i = 0; i < preconditions.size(); i++) 
