@@ -6,9 +6,9 @@
 #include <vector>
 
 class EquivalenceRelation;
+class GlobalState;
 class Label;
 class Labels;
-class GlobalState;
 
 typedef int AbstractStateRef;
 

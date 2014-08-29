@@ -8,10 +8,10 @@
 #include <set>
 #include <vector>
 
-class Options;
 class CanonicalPDBsHeuristic;
-class PDBHeuristic;
 class GlobalState;
+class Options;
+class PDBHeuristic;
 class Timer;
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {

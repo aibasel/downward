@@ -12,7 +12,6 @@
 
 class GlobalOperator;
 class GlobalState;
-
 class RelaxedProposition;
 class RelaxedOperator;
 
