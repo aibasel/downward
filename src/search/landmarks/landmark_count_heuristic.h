@@ -1,7 +1,7 @@
 #ifndef LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
 #define LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
 
-#include "../state.h"
+#include "../global_state.h"
 #include "../heuristic.h"
 #include "landmark_graph.h"
 #include "exploration.h"

@@ -47,6 +47,8 @@ HEADERS = \
           equivalence_relation.h \
           exact_timer.h \
           g_evaluator.h \
+          global_operator.h \
+          global_state.h \
           globals.h \
           heuristic.h \
           int_packer.h \
@@ -54,7 +56,6 @@ HEADERS = \
           iterated_search.h \
           lazy_search.h \
           max_evaluator.h \
-          operator.h \
           operator_cost.h \
           option_parser.h \
           option_parser_util.h \
@@ -67,7 +68,6 @@ HEADERS = \
           search_node_info.h \
           search_progress.h \
           search_space.h \
-          state.h \
           state_id.h \
           state_registry.h \
           successor_generator.h \

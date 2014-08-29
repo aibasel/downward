@@ -1,7 +1,7 @@
 #include "state_registry.h"
 
 #include "axioms.h"
-#include "operator.h"
+#include "global_operator.h"
 #include "per_state_information.h"
 
 using namespace std;

@@ -6,7 +6,7 @@
 #include "open_lists/open_list.h"
 #include "search_engine.h"
 #include "search_space.h"
-#include "state.h"
+#include "global_state.h"
 #include "timer.h"
 #include "evaluator.h"
 #include "search_progress.h"

@@ -2,7 +2,7 @@
 
 #include "causal_graph.h"
 #include "globals.h"
-#include "state.h"
+#include "global_state.h"
 
 #include <algorithm>
 #include <cassert>

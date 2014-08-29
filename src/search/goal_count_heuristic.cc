@@ -3,7 +3,7 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "state.h"
+#include "global_state.h"
 
 
 

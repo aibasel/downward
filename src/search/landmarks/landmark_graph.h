@@ -9,7 +9,7 @@
 #include <ext/hash_set>
 #include <cassert>
 
-#include "../operator.h"
+#include "../global_operator.h"
 #include "exploration.h"
 #include "landmark_types.h"
 #include "../option_parser.h"

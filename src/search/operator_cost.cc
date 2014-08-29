@@ -1,7 +1,7 @@
 #include "operator_cost.h"
 
 #include "globals.h"
-#include "operator.h"
+#include "global_operator.h"
 #include "option_parser.h"
 #include "utilities.h"
 

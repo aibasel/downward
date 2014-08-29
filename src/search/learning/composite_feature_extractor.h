@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "feature_extractor.h"
-#include "../state.h"
+#include "../global_state.h"
 
 class CompositeFeatureExtractor : public FeatureExtractor {
 protected:
