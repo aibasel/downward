@@ -1,12 +1,12 @@
 #include "globals.h"
 
-#include "ext/tree_util.hh"
 #include "global_operator.h"
 #include "option_parser.h"
 #include "search_engine.h"
 #include "timer.h"
 #include "utilities.h"
 
+#include "ext/tree_util.hh"
 
 #include <iostream>
 #include <new>
