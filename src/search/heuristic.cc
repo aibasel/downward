@@ -1,4 +1,5 @@
 #include "heuristic.h"
+
 #include "global_operator.h"
 #include "option_parser.h"
 #include "operator_cost.h"

@@ -1,8 +1,8 @@
 #include "cg_cache.h"
 
 #include "causal_graph.h"
-#include "globals.h"
 #include "global_state.h"
+#include "globals.h"
 
 #include <algorithm>
 #include <cassert>

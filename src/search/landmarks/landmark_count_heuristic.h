@@ -1,12 +1,12 @@
 #ifndef LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
 #define LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
 
+#include "exploration.h"
+#include "landmark_cost_assignment.h"
+#include "landmark_graph.h"
+#include "landmark_status_manager.h"
 #include "../global_state.h"
 #include "../heuristic.h"
-#include "landmark_graph.h"
-#include "exploration.h"
-#include "landmark_status_manager.h"
-#include "landmark_cost_assignment.h"
 
 extern LandmarkGraph *g_lgraph; // Make global so graph does not need to be built more than once
 // even when iterating search (TODO: clean up use of g_lgraph vs.

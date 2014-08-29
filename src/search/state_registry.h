@@ -1,10 +1,10 @@
 #ifndef STATE_REGISTRY_H
 #define STATE_REGISTRY_H
 
+#include "global_state.h"
 #include "globals.h"
 #include "int_packer.h"
 #include "segmented_vector.h"
-#include "global_state.h"
 #include "state_id.h"
 #include "utilities.h"
 

@@ -4,8 +4,8 @@
 #include "label.h"
 
 #include "../equivalence_relation.h"
-#include "../globals.h"
 #include "../global_operator.h"
+#include "../globals.h"
 #include "../option_parser.h"
 #include "../utilities.h"
 

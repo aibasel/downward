@@ -1,8 +1,9 @@
 #include "maximum_heuristic.h"
-#include "../globals.h"
+
 #include "../global_state.h"
-#include "../search_space.h"
+#include "../globals.h"
 #include "../option_parser.h"
+#include "../search_space.h"
 
 #include <cassert>
 #include <limits>

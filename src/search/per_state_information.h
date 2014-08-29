@@ -1,9 +1,9 @@
 #ifndef PER_STATE_INFORMATION_H
 #define PER_STATE_INFORMATION_H
 
+#include "global_state.h"
 #include "globals.h"
 #include "segmented_vector.h"
-#include "global_state.h"
 #include "state_id.h"
 #include "state_registry.h"
 #include "utilities.h"

@@ -1,10 +1,10 @@
 #include "lm_cut_heuristic.h"
 
-#include "globals.h"
 #include "global_operator.h"
+#include "global_state.h"
+#include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "global_state.h"
 
 #include <cassert>
 #include <cstdlib>

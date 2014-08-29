@@ -1,9 +1,9 @@
 #include "landmark_graph.h"
 
 #include "../exact_timer.h"
-#include "../globals.h"
 #include "../global_operator.h"
 #include "../global_state.h"
+#include "../globals.h"
 
 #include <cassert>
 #include <ext/hash_map>

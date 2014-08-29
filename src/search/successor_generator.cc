@@ -1,7 +1,8 @@
-#include "globals.h"
+#include "successor_generator.h"
+
 #include "global_operator.h"
 #include "global_state.h"
-#include "successor_generator.h"
+#include "globals.h"
 #include "utilities.h"
 
 #include <cstdlib>

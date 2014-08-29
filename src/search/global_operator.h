@@ -1,13 +1,13 @@
- #ifndef OPERATOR_H
+#ifndef OPERATOR_H
 #define OPERATOR_H
+
+#include "global_state.h"
+#include "globals.h"
 
 #include <cassert>
 #include <iostream>
 #include <string>
 #include <vector>
-
-#include "globals.h"
-#include "global_state.h"
 
 struct GlobalCondition {
     int var;
