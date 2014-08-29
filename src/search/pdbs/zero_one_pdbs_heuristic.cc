@@ -61,7 +61,7 @@ ZeroOnePDBsHeuristic::~ZeroOnePDBsHeuristic() {
 void ZeroOnePDBsHeuristic::initialize() {
 }
 
-int ZeroOnePDBsHeuristic::compute_heuristic(const State &state) {
+int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &state) {
     // since we use action cost partitioning, we can simply add up all h-values
     // from the patterns in the pattern collection
     int h_val = 0;

@@ -101,7 +101,7 @@ CGCache::CGCache() {
 CGCache::~CGCache() {
 }
 
-int CGCache::get_index(int var, const State &state,
+int CGCache::get_index(int var, const GlobalState &state,
                        int from_val, int to_val) const {
     assert(is_cached(var));
     assert(from_val != to_val);

@@ -32,7 +32,7 @@ void Heuristic::set_preferred(const GlobalOperator *op) {
     }
 }
 
-void Heuristic::evaluate(const State &state) {
+void Heuristic::evaluate(const GlobalState &state) {
     if (heuristic == NOT_INITIALIZED)
         initialize();
     preferred_operators.clear();
@@ -93,8 +93,8 @@ void Heuristic::get_preferred_operators(std::vector<const GlobalOperator *> &res
                   preferred_operators.end());
 }
 
-bool Heuristic::reach_state(const State & /*parent_state*/,
-                            const GlobalOperator & /*op*/, const State & /*state*/) {
+bool Heuristic::reach_state(const GlobalState & /*parent_state*/,
+                            const GlobalOperator & /*op*/, const GlobalState & /*state*/) {
     return false;
 }
 

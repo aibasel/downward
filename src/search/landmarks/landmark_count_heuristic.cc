@@ -58,7 +58,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     lm_status_manager.set_landmarks_for_initial_state();
 }
 
-void LandmarkCountHeuristic::set_exploration_goals(const State &state) {
+void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &state) {
     assert(exploration != 0);
     // Set additional goals for FF exploration
     vector<pair<int, int> > lm_leaves;
@@ -69,7 +69,7 @@ void LandmarkCountHeuristic::set_exploration_goals(const State &state) {
     exploration->set_additional_goals(lm_leaves);
 }
 
-int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
+int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &state) {
     double epsilon = 0.01;
 
     // Need explicit test to see if state is a goal state. The landmark
@@ -105,7 +105,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
     return h;
 }
 
-int LandmarkCountHeuristic::compute_heuristic(const State &state) {
+int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
     bool goal_reached = test_goal(state);
     if (goal_reached)
         return 0;
@@ -181,7 +181,7 @@ bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
     return false;
 }
 
-bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
+bool LandmarkCountHeuristic::generate_helpful_actions(const GlobalState &state,
                                                       const LandmarkSet &reached) {
     /* Find actions that achieve new landmark leaves. If no such action exist,
      return false. If a simple landmark can be achieved, return only operators
@@ -223,7 +223,7 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
     return true;
 }
 
-bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
+bool LandmarkCountHeuristic::landmark_is_interesting(const GlobalState &s,
                                                      const LandmarkSet &reached, LandmarkNode &lm) const {
     /* A landmark is interesting if it hasn't been reached before and
      its parents have all been reached, or if all landmarks have been
@@ -238,8 +238,8 @@ bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
     return lm.is_goal() && !lm.is_true_in_state(s);
 }
 
-bool LandmarkCountHeuristic::reach_state(const State &parent_state,
-                                         const GlobalOperator &op, const State &state) {
+bool LandmarkCountHeuristic::reach_state(const GlobalState &parent_state,
+                                         const GlobalOperator &op, const GlobalState &state) {
     lm_status_manager.update_reached_lms(parent_state, op, state);
     /* TODO: The return value "true" signals that the LM set of this state
              has changed and the h value should be recomputed. It's not

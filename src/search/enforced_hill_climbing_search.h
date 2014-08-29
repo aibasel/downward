@@ -35,7 +35,7 @@ protected:
     bool use_preferred;
     PreferredUsage preferred_usage;
 
-    State current_state;
+    GlobalState current_state;
     int current_h;
     int current_g;
 
@@ -47,8 +47,8 @@ protected:
     virtual void initialize();
     virtual int step();
     int ehc();
-    void get_successors(const State &state, vector<const GlobalOperator *> &ops);
-    void evaluate(const State &parent, const GlobalOperator *op, const State &state);
+    void get_successors(const GlobalState &state, vector<const GlobalOperator *> &ops);
+    void evaluate(const GlobalState &parent, const GlobalOperator *op, const GlobalState &state);
 public:
     EnforcedHillClimbingSearch(const Options &opts);
     virtual ~EnforcedHillClimbingSearch();

@@ -211,7 +211,7 @@ bool ContextEnhancedAdditiveHeuristic::is_local_problem_set_up(
 
 void ContextEnhancedAdditiveHeuristic::set_up_local_problem(
     LocalProblem *problem, int base_priority,
-    int start_value, const State &state) {
+    int start_value, const GlobalState &state) {
     assert(problem->base_priority == -1);
     problem->base_priority = base_priority;
 
@@ -271,7 +271,7 @@ void ContextEnhancedAdditiveHeuristic::expand_node(LocalProblemNode *node) {
 }
 
 void ContextEnhancedAdditiveHeuristic::expand_transition(
-    LocalTransition *trans, const State &state) {
+    LocalTransition *trans, const GlobalState &state) {
     /* Called when the source of trans is reached by Dijkstra
        exploration. Try to compute cost for the target of the
        transition from the source cost, action cost, and set-up costs
@@ -331,7 +331,7 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
     try_to_fire_transition(trans);
 }
 
-int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
+int ContextEnhancedAdditiveHeuristic::compute_costs(const GlobalState &state) {
     while (!node_queue.empty()) {
         pair<int, LocalProblemNode *> top_pair = node_queue.pop();
         int curr_priority = top_pair.first;
@@ -352,7 +352,7 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
 }
 
 void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
-    LocalProblem *problem, LocalProblemNode *node, const State &state) {
+    LocalProblem *problem, LocalProblemNode *node, const GlobalState &state) {
     assert(node->cost >= 0 && node->cost < numeric_limits<int>::max());
     LocalTransition *first_on_path = node->reached_by;
     if (first_on_path) {
@@ -401,7 +401,7 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
     }
 }
 
-int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
+int ContextEnhancedAdditiveHeuristic::compute_heuristic(const GlobalState &state) {
     initialize_heap();
     goal_problem->base_priority = -1;
     for (size_t i = 0; i < local_problems.size(); ++i)

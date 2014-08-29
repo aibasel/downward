@@ -12,7 +12,7 @@
 #include <cassert>
 
 class GlobalOperator;
-class State;
+class GlobalState;
 
 class ExProposition;
 class ExUnaryOperator;
@@ -103,34 +103,34 @@ class Exploration : public Heuristic {
     void build_unary_operators(const GlobalOperator &op);
     void simplify();
 
-    void setup_exploration_queue(const State &state,
+    void setup_exploration_queue(const GlobalState &state,
                                  const std::vector<std::pair<int, int> > &excluded_props,
                                  const __gnu_cxx::hash_set<const GlobalOperator *,
                                                            ex_hash_operator_ptr> &excluded_ops,
                                  bool use_h_max);
-    inline void setup_exploration_queue(const State &state, bool h_max) {
+    inline void setup_exploration_queue(const GlobalState &state, bool h_max) {
         std::vector<std::pair<int, int> > excluded_props;
         __gnu_cxx::hash_set<const GlobalOperator *, ex_hash_operator_ptr> excluded_ops;
         setup_exploration_queue(state, excluded_props, excluded_ops, h_max);
     }
     void relaxed_exploration(bool use_h_max, bool level_out);
-    void prepare_heuristic_computation(const State &state, bool h_max);
-    void collect_relaxed_plan(ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
+    void prepare_heuristic_computation(const GlobalState &state, bool h_max);
+    void collect_relaxed_plan(ExProposition *goal, RelaxedPlan &relaxed_plan, const GlobalState &state);
 
     int compute_hsp_add_heuristic();
     int compute_hsp_max_heuristic();
-    int compute_ff_heuristic(const State &state);
+    int compute_ff_heuristic(const GlobalState &state);
 
-    void collect_ha(ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
+    void collect_ha(ExProposition *goal, RelaxedPlan &relaxed_plan, const GlobalState &state);
 
     void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
                               bool use_h_max);
     void increase_cost(int &cost, int amount);
     void write_overflow_warning();
 protected:
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 public:
-    int get_lower_bound(const State &state);
+    int get_lower_bound(const GlobalState &state);
     void set_additional_goals(const std::vector<std::pair<int, int> > &goals);
     void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
     void compute_reachability_with_excludes(std::vector<std::vector<int> > &lvl_var,
@@ -145,7 +145,7 @@ public:
 
     // Returns true iff disj_goal is relaxed reachable. As a side effect, marks preferred operators
     // via "exported_ops". (This is the real reason why you might want to call this.)
-    bool plan_for_disj(std::vector<std::pair<int, int> > &disj_goal, const State &state);
+    bool plan_for_disj(std::vector<std::pair<int, int> > &disj_goal, const GlobalState &state);
 
     Exploration(const Options &opts);
     ~Exploration();

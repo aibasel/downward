@@ -16,7 +16,7 @@ SearchNode::SearchNode(StateID state_id_, SearchNodeInfo &info_,
     assert(state_id != StateID::no_state);
 }
 
-State SearchNode::get_state() const {
+GlobalState SearchNode::get_state() const {
     return g_state_registry->lookup_state(state_id);
 }
 
@@ -137,13 +137,13 @@ SearchSpace::SearchSpace(OperatorCost cost_type_)
     : cost_type(cost_type_) {
 }
 
-SearchNode SearchSpace::get_node(const State &state) {
+SearchNode SearchSpace::get_node(const GlobalState &state) {
     return SearchNode(state.get_id(), search_node_infos[state], cost_type);
 }
 
-void SearchSpace::trace_path(const State &goal_state,
+void SearchSpace::trace_path(const GlobalState &goal_state,
                              vector<const GlobalOperator *> &path) const {
-    State current_state = goal_state;
+    GlobalState current_state = goal_state;
     assert(path.empty());
     for (;;) {
         const SearchNodeInfo &info = search_node_infos[current_state];
@@ -163,7 +163,7 @@ void SearchSpace::dump() const {
             search_node_infos.begin(g_state_registry);
          it != search_node_infos.end(g_state_registry); ++it) {
         StateID id = *it;
-        State s = g_state_registry->lookup_state(id);
+        GlobalState s = g_state_registry->lookup_state(id);
         const SearchNodeInfo &node_info = search_node_infos[s];
         cout << id << ": ";
         s.dump_fdr();

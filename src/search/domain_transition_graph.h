@@ -8,7 +8,7 @@
 using namespace std;
 
 class CGHeuristic;
-class State;
+class GlobalState;
 class GlobalOperator;
 
 class ValueNode;

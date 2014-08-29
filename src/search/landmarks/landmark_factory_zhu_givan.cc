@@ -89,7 +89,7 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
     hash_set<int> triggered(g_operators.size() + g_axioms.size());
 
     // set initial layer
-    const State &initial_state = g_initial_state();
+    const GlobalState &initial_state = g_initial_state();
     current_prop_layer.resize(g_variable_domain.size());
     for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         current_prop_layer[i].resize(g_variable_domain[i]);
