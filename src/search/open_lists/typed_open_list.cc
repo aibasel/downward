@@ -1,4 +1,5 @@
 // HACK! Ignore this if used as a top-level compile target.
+//#include "typed_open_list.h"
 #ifdef OPEN_LISTS_TYPED_OPEN_LIST_H
 
 #include "../option_parser.h"
@@ -18,7 +19,7 @@ OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
                              "Typed open list that uses multiple evaluators to put nodes into buckets. "
                              "When retrieving a node, a bucket is chosen uniformly at random and one of the contained nodes is selected randomly. "
                              "This open list should be used in combination with other open lists, e.g. alt().");
-    parser.add_list_option<ScalarEvaluator *>("sublists", "The evaluators to goup the nodes by.");
+    parser.add_list_option<ScalarEvaluator *>("sublists", "The evaluators to group the nodes by.");
 
     Options opts = parser.parse();
     if (parser.help_mode())
@@ -48,17 +49,28 @@ TypedOpenList<Entry>::~TypedOpenList() {
 
 template<class Entry>
 int TypedOpenList<Entry>::insert(const Entry &entry) {
-    std::vector<int> key;
-    for (size_t i = 0; i < evaluators.size(); i++) {
-        key.push_back(evaluators[i]->get_value());
+    std::vector<int> key(evaluators.size());
+
+    for (size_t i = 0; i < evaluators.size(); ++i) {
+        key[i] = evaluators[i]->get_value();
     }
-    open_list[key].push_back(entry);
+
+    typename BucketMap::iterator bucket = open_list.find(key);
+    if(bucket == open_list.end()) {
+        bucket_list.push_back(make_pair<vector<int>,Bucket>(key,Bucket()));
+        bucket_list.back().second.push_back(entry);//TODO: c++11 list init
+        open_list[key] = bucket_list.size() - 1;
+    } else {
+        assert(bucket->second < bucket_list.size());
+        bucket_list[bucket->second].second.push_back(entry);
+    }
+
     ++size;
     return 1;
 }
 
 template<class Entry>
-Entry TypedOpenList<Entry>::remove_min(vector<int> *) {
+Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
 
     if (key) {
@@ -66,19 +78,24 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *) {
         exit_with(EXIT_UNSUPPORTED);
     }
 
-    int bucket_id = g_rng.next(open_list.size());
-    typename BucketMap::iterator it = open_list.begin();
-    for (int i = 0; it != open_list.end() && i < bucket_id; ++i, ++it);
-    assert(it != open_list.end());
-    Bucket &bucket = it->second;
+    int bucket_id = g_rng.next(bucket_list.size());
+    pair<std::vector<int>,Bucket> &bucket_pair = bucket_list[bucket_id];
+    vector<int> bucket_key = bucket_pair.first;//copy the key
+    Bucket &bucket = bucket_pair.second;
 
     int pos = g_rng.next(bucket.size());
-    assert(pos < bucket.size());
     Entry result = bucket[pos];
 
     bucket.erase(bucket.begin() + pos);
     if (bucket.empty()) {
-        open_list.erase(it);
+        if(bucket_list.size() > 1 && (bucket_list.size() - 1 != bucket_id)) {
+            //swap: move the back to the position to be deleted and then pop_back
+            pair<std::vector<int>,Bucket> &last = bucket_list.back();
+            bucket_list[bucket_id] = last;
+            open_list[last.first] = bucket_id;
+        }
+        open_list.erase(bucket_key);
+        bucket_list.pop_back();
     }
     --size;
     return result;
@@ -91,6 +108,7 @@ bool TypedOpenList<Entry>::empty() const {
 
 template<class Entry>
 void TypedOpenList<Entry>::clear() {
+    bucket_list.clear();
     open_list.clear();
     size = 0;
 }
