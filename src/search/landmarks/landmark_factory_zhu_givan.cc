@@ -137,7 +137,7 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
 bool LandmarkFactoryZhuGivan::operator_applicable(const Operator &op,
                                                   const proposition_layer &state) const {
     // test preconditions
-    const vector<Condition> &preconditions = op.get_preconditions();
+    const vector<GlobalCondition> &preconditions = op.get_preconditions();
     for (size_t i = 0; i < preconditions.size(); ++i)
         if (!state[preconditions[i].var][preconditions[i].val].reached())
             return false;
@@ -145,7 +145,7 @@ bool LandmarkFactoryZhuGivan::operator_applicable(const Operator &op,
 }
 
 bool LandmarkFactoryZhuGivan::operator_cond_effect_fires(
-    const vector<Condition> &cond, const proposition_layer &state) const {
+    const vector<GlobalCondition> &cond, const proposition_layer &state) const {
     for (size_t i = 0; i < cond.size(); ++i)
         if (!state[cond[i].var][cond[i].val].reached())
             return false;
@@ -181,7 +181,7 @@ lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const Operator &op,
 
     // TODO This looks like an O(n^2) algorithm where O(n log n) would do, a
     // bit like the Python string concatenation anti-pattern.
-    const vector<Condition> &preconditions = op.get_preconditions();
+    const vector<GlobalCondition> &preconditions = op.get_preconditions();
     for (size_t i = 0; i < preconditions.size(); ++i)
         result =
             _union(result,
@@ -191,7 +191,7 @@ lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const Operator &op,
 }
 
 lm_set LandmarkFactoryZhuGivan::union_of_condition_labels(
-    const vector<Condition> &cond, const proposition_layer &current) const {
+    const vector<GlobalCondition> &cond, const proposition_layer &current) const {
     lm_set result;
     for (size_t i = 0; i < cond.size(); ++i)
         result = _union(result, current[cond[i].var][cond[i].val].labels);
@@ -268,13 +268,13 @@ void LandmarkFactoryZhuGivan::compute_triggers() {
         lm_set t;
 
         const Operator &op = lm_graph->get_operator_for_lookup_index(i);
-        const vector<Condition> &preconditions = op.get_preconditions();
+        const vector<GlobalCondition> &preconditions = op.get_preconditions();
         for (size_t j = 0; j < preconditions.size(); ++j)
             t.insert(make_pair(preconditions[j].var, preconditions[j].val));
         
         const vector<GlobalEffect> &effects = op.get_effects();
         for (size_t j = 0; j < effects.size(); ++j) {
-            const vector<Condition> &cond = effects[j].conditions;
+            const vector<GlobalCondition> &cond = effects[j].conditions;
             for (size_t k = 0; k < cond.size(); ++k)
                 t.insert(make_pair(cond[k].var, cond[k].val));
         }

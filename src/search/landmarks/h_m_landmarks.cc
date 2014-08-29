@@ -315,7 +315,7 @@ void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
 void get_operator_precondition(int op_index, FluentSet &pc) {
     Operator &op = g_operators[op_index];
 
-    const std::vector<Condition> &preconditions = op.get_preconditions();
+    const std::vector<GlobalCondition> &preconditions = op.get_preconditions();
     for (int i = 0; i < preconditions.size(); i++) 
         pc.push_back(make_pair(preconditions[i].var, preconditions[i].val));
 
@@ -327,7 +327,7 @@ void get_operator_precondition(int op_index, FluentSet &pc) {
 void get_operator_postcondition(int op_index, FluentSet &post) {
     Operator &op = g_operators[op_index];
 
-    const std::vector<Condition> &preconditions = op.get_preconditions();
+    const std::vector<GlobalCondition> &preconditions = op.get_preconditions();
     const std::vector<GlobalEffect> &effects = op.get_effects();
     std::vector<bool> has_effect_on_var(g_variable_domain.size(), false);
 

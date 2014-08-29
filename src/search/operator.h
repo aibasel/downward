@@ -1,4 +1,4 @@
-#ifndef OPERATOR_H
+ #ifndef OPERATOR_H
 #define OPERATOR_H
 
 #include <cassert>
@@ -9,11 +9,11 @@
 #include "globals.h"
 #include "state.h"
 
-struct Condition {
+struct GlobalCondition {
     int var;
     int val;
-    explicit Condition(std::istream &in);
-    Condition(int variable, int value) : var(variable), val(value) {
+    explicit GlobalCondition(std::istream &in);
+    GlobalCondition(int variable, int value) : var(variable), val(value) {
         assert(var >= 0 && var < g_variable_name.size());
         assert(val >= 0 && val < g_variable_domain[var]);
     }
@@ -22,11 +22,11 @@ struct Condition {
         return state[var] == val;
     }
 
-    bool operator==(const Condition &other) const {
+    bool operator==(const GlobalCondition &other) const {
         return var == other.var && val == other.val;
     }
 
-    bool operator!=(const Condition &other) const {
+    bool operator!=(const GlobalCondition &other) const {
         return !(*this == other);
     }
 
@@ -36,9 +36,9 @@ struct Condition {
 struct GlobalEffect {
     int var;
     int val;
-    std::vector<Condition> conditions;
+    std::vector<GlobalCondition> conditions;
     explicit GlobalEffect(std::istream &in);
-    GlobalEffect(int variable, int value, const std::vector<Condition> &conds)
+    GlobalEffect(int variable, int value, const std::vector<GlobalCondition> &conds)
         : var(variable), val(value), conditions(conds) {}
 
     bool does_fire(const State &state) const {
@@ -53,7 +53,7 @@ struct GlobalEffect {
 
 class Operator {
     bool is_an_axiom;
-    std::vector<Condition> preconditions;
+    std::vector<GlobalCondition> preconditions;
     std::vector<GlobalEffect> effects;
     std::string name;
     int cost;
@@ -67,7 +67,7 @@ public:
 
     bool is_axiom() const {return is_an_axiom; }
 
-    const std::vector<Condition> &get_preconditions() const {return preconditions; }
+    const std::vector<GlobalCondition> &get_preconditions() const {return preconditions; }
     const std::vector<GlobalEffect> &get_effects() const {return effects; }
 
     bool is_applicable(const State &state) const {

@@ -4,11 +4,11 @@
 #include <vector>
 #include <ext/hash_map>
 
-class Condition;
+class GlobalCondition;
 class LandmarkNode;
 class Operator;
 
-bool _possibly_fires(const std::vector<Condition> &conditions,
+bool _possibly_fires(const std::vector<GlobalCondition> &conditions,
                      const std::vector<std::vector<int> > &lvl_var);
 
 __gnu_cxx::hash_map<int, int> _intersect(

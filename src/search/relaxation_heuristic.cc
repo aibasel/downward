@@ -59,7 +59,7 @@ void RelaxationHeuristic::initialize() {
 
 void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
     int base_cost = get_adjusted_cost(op);
-    const vector<Condition> &preconditions = op.get_preconditions();
+    const vector<GlobalCondition> &preconditions = op.get_preconditions();
     const vector<GlobalEffect> &effects = op.get_effects();
     vector<Proposition *> precondition;
     for (int i = 0; i < preconditions.size(); i++) {
@@ -71,7 +71,7 @@ void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
         assert(effects[i].var >= 0 && effects[i].var < g_variable_domain.size());
         assert(effects[i].val >= 0 && effects[i].val < g_variable_domain[effects[i].var]);
         Proposition *effect = &propositions[effects[i].var][effects[i].val];
-        const vector<Condition> &eff_cond = effects[i].conditions;
+        const vector<GlobalCondition> &eff_cond = effects[i].conditions;
         for (int j = 0; j < eff_cond.size(); j++) {
             assert(eff_cond[j].var >= 0 && eff_cond[j].var < g_variable_domain.size());
             assert(eff_cond[j].val >= 0 && eff_cond[j].val < g_variable_domain[eff_cond[j].var]);

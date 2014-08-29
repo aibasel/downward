@@ -70,7 +70,7 @@ void LandmarkCutHeuristic::initialize() {
 }
 
 void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
-    const vector<Condition> &op_preconds = op.get_preconditions();
+    const vector<GlobalCondition> &op_preconds = op.get_preconditions();
     const vector<GlobalEffect> &op_effects = op.get_effects();
     vector<RelaxedProposition *> precondition;
     vector<RelaxedProposition *> effects;

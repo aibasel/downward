@@ -328,7 +328,7 @@ static int get_first_conditional_effects_op_id() {
     for (int i = 0; i < g_operators.size(); ++i) {
         const vector<GlobalEffect> &effects = g_operators[i].get_effects();
         for (int j = 0; j < effects.size(); ++j) {
-            const vector<Condition> &cond = effects[j].conditions;
+            const vector<GlobalCondition> &cond = effects[j].conditions;
             if (!cond.empty())
                 return i;
         }

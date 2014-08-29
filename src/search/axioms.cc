@@ -24,9 +24,9 @@ AxiomEvaluator::AxiomEvaluator() {
 
     // Cross-reference rules and literals
     for (int i = 0; i < g_axioms.size(); i++) {
-        const vector<Condition> &conditions = g_axioms[i].get_effects()[0].conditions;
+        const vector<GlobalCondition> &conditions = g_axioms[i].get_effects()[0].conditions;
         for (int j = 0; j < conditions.size(); j++) {
-            const Condition &cond = conditions[j];
+            const GlobalCondition &cond = conditions[j];
             axiom_literals[cond.var][cond.val].condition_of.push_back(&rules[i]);
         }
     }
