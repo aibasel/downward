@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "heuristic.h"
-#include "globals.h"
 #include "global_state.h"
 #include "global_operator.h"
+#include "globals.h"
+#include "heuristic.h"
 
 using namespace std;
 

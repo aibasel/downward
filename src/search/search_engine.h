@@ -8,9 +8,9 @@ class OptionParser;
 class Options;
 
 #include "global_operator.h"
+#include "operator_cost.h"
 #include "search_space.h"
 #include "search_progress.h"
-#include "operator_cost.h"
 
 class SearchEngine {
 public:

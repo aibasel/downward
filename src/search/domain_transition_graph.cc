@@ -6,8 +6,8 @@ using namespace std;
 using namespace __gnu_cxx;
 
 #include "domain_transition_graph.h"
-#include "globals.h"
 #include "global_operator.h"
+#include "globals.h"
 
 void DomainTransitionGraph::read_all(istream &in) {
     int var_count = g_variable_domain.size();

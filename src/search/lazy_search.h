@@ -1,14 +1,14 @@
 #ifndef LAZY_SEARCH_H
 #define LAZY_SEARCH_H
 
-#include <vector>
-
-#include "open_lists/open_list.h"
-#include "search_engine.h"
 #include "global_state.h"
+#include "open_lists/open_list.h"
 #include "scalar_evaluator.h"
-#include "search_space.h"
+#include "search_engine.h"
 #include "search_progress.h"
+#include "search_space.h"
+
+#include <vector>
 
 class GlobalOperator;
 class Heuristic;

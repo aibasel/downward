@@ -9,9 +9,9 @@
 #include <ext/hash_set>
 #include <cassert>
 
-#include "../global_operator.h"
 #include "exploration.h"
 #include "landmark_types.h"
+#include "../global_operator.h"
 #include "../option_parser.h"
 
 enum edge_type {

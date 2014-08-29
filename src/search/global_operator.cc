@@ -1,5 +1,6 @@
-#include "globals.h"
 #include "global_operator.h"
+
+#include "globals.h"
 
 #include <iostream>
 using namespace std;

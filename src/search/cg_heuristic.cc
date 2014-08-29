@@ -2,11 +2,11 @@
 
 #include "cg_cache.h"
 #include "domain_transition_graph.h"
-#include "globals.h"
 #include "global_operator.h"
+#include "global_state.h"
+#include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "global_state.h"
 
 #include <algorithm>
 #include <cassert>

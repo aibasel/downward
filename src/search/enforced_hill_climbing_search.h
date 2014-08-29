@@ -1,17 +1,18 @@
 #ifndef ENFORCED_HILL_CLIMBING_SEARCH_H
 #define ENFORCED_HILL_CLIMBING_SEARCH_H
 
-#include "search_engine.h"
-#include "globals.h"
-#include "search_space.h"
-#include "search_node_info.h"
+#include "g_evaluator.h"
 #include "global_operator.h"
 #include "global_state.h"
+#include "globals.h"
 #include "open_lists/open_list.h"
-#include "g_evaluator.h"
+#include "search_engine.h"
+#include "search_node_info.h"
 #include "search_progress.h"
-#include <vector>
+#include "search_space.h"
+
 #include <map>
+#include <vector>
 
 using namespace std;
 
