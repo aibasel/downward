@@ -46,7 +46,7 @@ bool test_goal(const State &state) {
     return true;
 }
 
-int calculate_plan_cost(const vector<const Operator *> &plan) {
+int calculate_plan_cost(const vector<const GlobalOperator *> &plan) {
     // TODO: Refactor: this is only used by save_plan (see below)
     //       and the SearchEngine classes and hence should maybe
     //       be moved into the SearchEngine (along with save_plan).
@@ -57,7 +57,7 @@ int calculate_plan_cost(const vector<const Operator *> &plan) {
     return plan_cost;
 }
 
-void save_plan(const vector<const Operator *> &plan, int iter) {
+void save_plan(const vector<const GlobalOperator *> &plan, int iter) {
     // TODO: Refactor: this is only used by the SearchEngine classes
     //       and hence should maybe be moved into the SearchEngine.
     ofstream outfile;
@@ -225,14 +225,14 @@ void read_operators(istream &in) {
     int count;
     in >> count;
     for (int i = 0; i < count; i++)
-        g_operators.push_back(Operator(in, false));
+        g_operators.push_back(GlobalOperator(in, false));
 }
 
 void read_axioms(istream &in) {
     int count;
     in >> count;
     for (int i = 0; i < count; i++)
-        g_axioms.push_back(Operator(in, true));
+        g_axioms.push_back(GlobalOperator(in, true));
 
     g_axiom_evaluator = new AxiomEvaluator;
 }
@@ -376,8 +376,8 @@ vector<int> g_default_axiom_values;
 IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
 vector<pair<int, int> > g_goal;
-vector<Operator> g_operators;
-vector<Operator> g_axioms;
+vector<GlobalOperator> g_operators;
+vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;

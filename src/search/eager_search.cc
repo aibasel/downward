@@ -109,8 +109,8 @@ int EagerSearch::step() {
     if (check_goal_and_set_plan(s))
         return SOLVED;
 
-    vector<const Operator *> applicable_ops;
-    set<const Operator *> preferred_ops;
+    vector<const GlobalOperator *> applicable_ops;
+    set<const GlobalOperator *> preferred_ops;
 
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
     // This evaluates the expanded state (again) to get preferred ops
@@ -120,7 +120,7 @@ int EagerSearch::step() {
         if (!h->is_dead_end()) {
             // In an alternation search with unreliable heuristics, it is
             // possible that this heuristic considers the state a dead end.
-            vector<const Operator *> preferred;
+            vector<const GlobalOperator *> preferred;
             h->get_preferred_operators(preferred);
             preferred_ops.insert(preferred.begin(), preferred.end());
         }
@@ -128,7 +128,7 @@ int EagerSearch::step() {
     search_progress.inc_evaluations(preferred_operator_heuristics.size());
 
     for (int i = 0; i < applicable_ops.size(); i++) {
-        const Operator *op = applicable_ops[i];
+        const GlobalOperator *op = applicable_ops[i];
 
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;

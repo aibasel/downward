@@ -50,7 +50,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
                     // so we perform it to save work.
                     // If we had no 0-cost operators and axioms to worry
                     // about, it would also imply applicability.
-                    const Operator *op = &g_operators[operator_no];
+                    const GlobalOperator *op = &g_operators[operator_no];
                     if (op->is_applicable(state))
                         set_preferred(op);
                 }

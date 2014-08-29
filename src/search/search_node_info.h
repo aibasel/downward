@@ -15,7 +15,7 @@ struct SearchNodeInfo {
     int h : 31; // TODO:CR - should we get rid of it
     bool h_is_dirty : 1;
     StateID parent_state_id;
-    const Operator *creating_operator;
+    const GlobalOperator *creating_operator;
     int real_g;
 
     SearchNodeInfo()

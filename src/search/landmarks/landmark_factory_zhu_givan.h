@@ -32,7 +32,7 @@ public:
     // Note: must include operators that only have conditional effects
     vector<int> operators_without_preconditions;
 
-    bool operator_applicable(const Operator &, const proposition_layer &) const;
+    bool operator_applicable(const GlobalOperator &, const proposition_layer &) const;
 
     bool operator_cond_effect_fires(const vector<GlobalCondition> &cond,
                                     const proposition_layer &layer) const;
@@ -41,12 +41,12 @@ public:
     // propositions that:
     // (a) have just been reached OR (b) had their labels changed in next
     // proposition layer
-    lm_set apply_operator_and_propagate_labels(const Operator &,
+    lm_set apply_operator_and_propagate_labels(const GlobalOperator &,
                                                const proposition_layer &current, proposition_layer &next) const;
 
     // Calculate the union of precondition labels of op, using the
     // labels from current
-    lm_set union_of_precondition_labels(const Operator &op,
+    lm_set union_of_precondition_labels(const GlobalOperator &op,
                                         const proposition_layer &current) const;
 
     // Calculate the union of precondition labels of a conditional effect,

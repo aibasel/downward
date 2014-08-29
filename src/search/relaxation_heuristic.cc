@@ -57,7 +57,7 @@ void RelaxationHeuristic::initialize() {
     }
 }
 
-void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
+void RelaxationHeuristic::build_unary_operators(const GlobalOperator &op, int op_no) {
     int base_cost = get_adjusted_cost(op);
     const vector<GlobalCondition> &preconditions = op.get_preconditions();
     const vector<GlobalEffect> &effects = op.get_effects();

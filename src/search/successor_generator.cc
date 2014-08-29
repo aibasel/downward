@@ -17,16 +17,16 @@ class SuccessorGeneratorSwitch : public SuccessorGenerator {
 public:
     SuccessorGeneratorSwitch(istream &in);
     virtual void generate_applicable_ops(const State &curr,
-                                         vector<const Operator *> &ops);
+                                         vector<const GlobalOperator *> &ops);
     virtual void _dump(string indent);
 };
 
 class SuccessorGeneratorGenerate : public SuccessorGenerator {
-    vector<const Operator *> op;
+    vector<const GlobalOperator *> op;
 public:
     SuccessorGeneratorGenerate(istream &in);
     virtual void generate_applicable_ops(const State &curr,
-                                         vector<const Operator *> &ops);
+                                         vector<const GlobalOperator *> &ops);
     virtual void _dump(string indent);
 };
 
@@ -39,7 +39,7 @@ SuccessorGeneratorSwitch::SuccessorGeneratorSwitch(istream &in) {
 }
 
 void SuccessorGeneratorSwitch::generate_applicable_ops(
-    const State &curr, vector<const Operator *> &ops) {
+    const State &curr, vector<const GlobalOperator *> &ops) {
     immediate_ops->generate_applicable_ops(curr, ops);
     generator_for_value[curr[switch_var]]->generate_applicable_ops(curr, ops);
     default_generator->generate_applicable_ops(curr, ops);
@@ -58,7 +58,7 @@ void SuccessorGeneratorSwitch::_dump(string indent) {
 }
 
 void SuccessorGeneratorGenerate::generate_applicable_ops(const State &,
-                                                         vector<const Operator *> &ops) {
+                                                         vector<const GlobalOperator *> &ops) {
     ops.insert(ops.end(), op.begin(), op.end());
 }
 

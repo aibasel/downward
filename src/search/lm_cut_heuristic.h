@@ -10,7 +10,7 @@
 
 // TODO: Fix duplication with the other relaxation heuristics.
 
-class Operator;
+class GlobalOperator;
 class State;
 
 class RelaxedProposition;
@@ -58,7 +58,7 @@ const int COST_MULTIPLIER = 1;
  */
 
 struct RelaxedOperator {
-    const Operator *op;
+    const GlobalOperator *op;
     std::vector<RelaxedProposition *> precondition;
     std::vector<RelaxedProposition *> effects;
     int base_cost; // 0 for axioms, 1 for regular operators
@@ -69,7 +69,7 @@ struct RelaxedOperator {
     RelaxedProposition *h_max_supporter;
     RelaxedOperator(const std::vector<RelaxedProposition *> &pre,
                     const std::vector<RelaxedProposition *> &eff,
-                    const Operator *the_op, int base)
+                    const GlobalOperator *the_op, int base)
         : op(the_op), precondition(pre), effects(eff), base_cost(base) {
     }
 
@@ -114,10 +114,10 @@ class LandmarkCutHeuristic : public Heuristic {
 
     virtual void initialize();
     virtual int compute_heuristic(const State &state);
-    void build_relaxed_operator(const Operator &op);
+    void build_relaxed_operator(const GlobalOperator &op);
     void add_relaxed_operator(const std::vector<RelaxedProposition *> &precondition,
                               const std::vector<RelaxedProposition *> &effects,
-                              const Operator *op, int base_cost);
+                              const GlobalOperator *op, int base_cost);
     void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
     void first_exploration(const State &state);

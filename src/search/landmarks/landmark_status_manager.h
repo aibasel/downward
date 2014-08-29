@@ -22,7 +22,7 @@ public:
     bool update_lm_status(const State &state);
 
     void set_landmarks_for_initial_state();
-    bool update_reached_lms(const State &parent_state, const Operator &op, const State &state);
+    bool update_reached_lms(const State &parent_state, const GlobalOperator &op, const State &state);
 };
 
 #endif

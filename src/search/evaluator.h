@@ -4,7 +4,7 @@
 #include <set>
 
 class Heuristic;
-class Operator;
+class GlobalOperator;
 class State;
 
 class Evaluator {

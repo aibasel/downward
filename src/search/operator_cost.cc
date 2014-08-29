@@ -9,7 +9,7 @@
 #include <vector>
 using namespace std;
 
-int get_adjusted_action_cost(const Operator &op, OperatorCost cost_type) {
+int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type) {
     if (op.is_axiom())
         return 0;
     switch (cost_type) {

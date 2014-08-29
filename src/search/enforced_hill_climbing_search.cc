@@ -34,7 +34,7 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
     delete g_evaluator;
 }
 
-void EnforcedHillClimbingSearch::evaluate(const State &parent, const Operator *op, const State &state) {
+void EnforcedHillClimbingSearch::evaluate(const State &parent, const GlobalOperator *op, const State &state) {
     search_progress.inc_evaluated_states();
 
     if (!preferred_contains_eval) {
@@ -90,7 +90,7 @@ void EnforcedHillClimbingSearch::initialize() {
     }
 }
 
-void EnforcedHillClimbingSearch::get_successors(const State &state, vector<const Operator *> &ops) {
+void EnforcedHillClimbingSearch::get_successors(const State &state, vector<const GlobalOperator *> &ops) {
     if (!use_preferred || preferred_usage == RANK_PREFERRED_FIRST) {
         g_successor_generator->generate_applicable_ops(state, ops);
 
@@ -99,7 +99,7 @@ void EnforcedHillClimbingSearch::get_successors(const State &state, vector<const
             for (int i = 0; i < ops.size(); i++) {
                 ops[i]->unmark();
             }
-            vector<const Operator *> preferred_ops;
+            vector<const GlobalOperator *> preferred_ops;
             for (int i = 0; i < preferred_heuristics.size(); i++) {
                 preferred_heuristics[i]->get_preferred_operators(preferred_ops);
             }
@@ -108,7 +108,7 @@ void EnforcedHillClimbingSearch::get_successors(const State &state, vector<const
             }
         }
     } else {
-        vector<const Operator *> preferred_ops;
+        vector<const GlobalOperator *> preferred_ops;
         for (int i = 0; i < preferred_heuristics.size(); i++) {
             preferred_heuristics[i]->get_preferred_operators(preferred_ops);
             for (int j = 0; j < preferred_ops.size(); j++) {
@@ -139,7 +139,7 @@ int EnforcedHillClimbingSearch::step() {
         return SOLVED;
     }
 
-    vector<const Operator *> ops;
+    vector<const GlobalOperator *> ops;
     get_successors(current_state, ops);
 
     SearchNode current_node = search_space.get_node(current_state);
@@ -161,7 +161,7 @@ int EnforcedHillClimbingSearch::ehc() {
         StateID last_parent_id = next.first;
         State last_parent = g_state_registry->lookup_state(last_parent_id);
         int d = next.second.first;
-        const Operator *last_op = next.second.second;
+        const GlobalOperator *last_op = next.second.second;
 
         if (search_space.get_node(last_parent).get_real_g() + last_op->get_cost() >= bound)
             continue;
@@ -199,7 +199,7 @@ int EnforcedHillClimbingSearch::ehc() {
                 open_list->clear();
                 return IN_PROGRESS;
             } else {
-                vector<const Operator *> ops;
+                vector<const GlobalOperator *> ops;
                 get_successors(s, ops);
 
                 node.close();

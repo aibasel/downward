@@ -113,7 +113,7 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
         changes = false;
         for (hash_set<int>::const_iterator it = triggered.begin(); it
              != triggered.end(); ++it) {
-            const Operator &op = lm_graph->get_operator_for_lookup_index(*it);
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(*it);
             if (operator_applicable(op, current_prop_layer)) {
                 lm_set changed = apply_operator_and_propagate_labels(op,
                                                                      current_prop_layer, next_prop_layer);
@@ -134,7 +134,7 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
     return current_prop_layer;
 }
 
-bool LandmarkFactoryZhuGivan::operator_applicable(const Operator &op,
+bool LandmarkFactoryZhuGivan::operator_applicable(const GlobalOperator &op,
                                                   const proposition_layer &state) const {
     // test preconditions
     const vector<GlobalCondition> &preconditions = op.get_preconditions();
@@ -175,7 +175,7 @@ static lm_set _intersection(const lm_set &a, const lm_set &b) {
     return result;
 }
 
-lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const Operator &op,
+lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const GlobalOperator &op,
                                                              const proposition_layer &current) const {
     lm_set result;
 
@@ -224,7 +224,7 @@ static bool _propagate_labels(lm_set &labels, const lm_set &new_labels,
 }
 
 lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
-    const Operator &op, const proposition_layer &current,
+    const GlobalOperator &op, const proposition_layer &current,
     proposition_layer &next) const {
     assert(operator_applicable(op, current));
 
@@ -267,7 +267,7 @@ void LandmarkFactoryZhuGivan::compute_triggers() {
         // collect possible triggers first
         lm_set t;
 
-        const Operator &op = lm_graph->get_operator_for_lookup_index(i);
+        const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(i);
         const vector<GlobalCondition> &preconditions = op.get_preconditions();
         for (size_t j = 0; j < preconditions.size(); ++j)
             t.insert(make_pair(preconditions[j].var, preconditions[j].val));

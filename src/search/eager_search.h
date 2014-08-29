@@ -12,7 +12,7 @@
 #include "search_progress.h"
 
 class Heuristic;
-class Operator;
+class GlobalOperator;
 class ScalarEvaluator;
 class Options;
 

@@ -11,10 +11,10 @@
 #include "search_progress.h"
 
 class Heuristic;
-class Operator;
+class GlobalOperator;
 class Options;
 
-typedef std::pair<StateID, const Operator *> OpenListEntryLazy;
+typedef std::pair<StateID, const GlobalOperator *> OpenListEntryLazy;
 
 class LazySearch : public SearchEngine {
 protected:
@@ -31,7 +31,7 @@ protected:
 
     State current_state;
     StateID current_predecessor_id;
-    const Operator *current_operator;
+    const GlobalOperator *current_operator;
     int current_g;
     int current_real_g;
 
@@ -43,7 +43,7 @@ protected:
 
     void reward_progress();
 
-    void get_successor_operators(std::vector<const Operator *> &ops);
+    void get_successor_operators(std::vector<const GlobalOperator *> &ops);
 public:
 
     LazySearch(const Options &opts);

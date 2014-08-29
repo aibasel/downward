@@ -54,7 +54,7 @@ void LandmarkFactory::generate() {
     calc_achievers();
 }
 
-bool LandmarkFactory::achieves_non_conditional(const Operator &o,
+bool LandmarkFactory::achieves_non_conditional(const GlobalOperator &o,
                                                const LandmarkNode *lmp) const {
     /* Test whether the landmark is achieved by the operator unconditionally.
     A disjunctive landmarks is achieved if one of its disjuncts is achieved. */
@@ -71,7 +71,7 @@ bool LandmarkFactory::achieves_non_conditional(const Operator &o,
     return false;
 }
 
-bool LandmarkFactory::is_landmark_precondition(const Operator &o,
+bool LandmarkFactory::is_landmark_precondition(const GlobalOperator &o,
                                                const LandmarkNode *lmp) const {
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
@@ -100,7 +100,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     if (compute_lvl_op) {
         lvl_op.resize(g_operators.size() + g_axioms.size());
         for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
-            const Operator &op = lm_graph->get_operator_for_lookup_index(i);
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(i);
             lvl_op[i] = hash_map<pair<int, int>, int, hash_int_pair> ();
             const vector<GlobalEffect> &effects = op.get_effects();
             for (size_t j = 0; j < effects.size(); ++j)
@@ -115,7 +115,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
                             numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
-    hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
+    hash_set<const GlobalOperator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
     if (exclude != NULL) {
         for (int op = 0; op < g_operators.size(); op++) {
@@ -156,7 +156,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
         lvl_var[var].resize(g_variable_domain[var],
                             numeric_limits<int>::max());
     }
-    hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
+    hash_set<const GlobalOperator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
     for (int op = 0; op < g_operators.size(); op++) {
         if (is_landmark_precondition(g_operators[op], &landmark)) {
@@ -329,7 +329,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             const vector<int> &ops = lm_graph->get_operators_including_eff(a);
             // Intersect operators that achieve a one by one
             for (size_t i = 0; i < ops.size(); ++i) {
-                const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
+                const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
                 // If no shared effect among previous operators, break
                 if (!init && shared_eff.empty())
                     break;
@@ -776,7 +776,7 @@ void LandmarkFactory::calc_achievers() {
         for (ach_it = lmn.possible_achievers.begin(); ach_it
              != lmn.possible_achievers.end(); ++ach_it) {
             int op_id = *ach_it;
-            const Operator &op = lm_graph->get_operator_for_lookup_index(op_id);
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(op_id);
 
             if (_possibly_reaches_lm(op, lvl_var, &lmn)) {
                 lmn.first_achievers.insert(op_id);

@@ -158,7 +158,7 @@ public:
       registers it if this was not done before. This is an expensive operation
       as it includes duplicate checking.
     */
-    State get_successor_state(const State &predecessor, const Operator &op);
+    State get_successor_state(const State &predecessor, const GlobalOperator &op);
 
     /*
       Returns the number of states registered so far.

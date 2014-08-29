@@ -14,7 +14,7 @@ class Options;
 
 class SearchEngine {
 public:
-    typedef std::vector<const Operator *> Plan;
+    typedef std::vector<const GlobalOperator *> Plan;
 private:
     bool solved;
     Plan plan;
@@ -30,7 +30,7 @@ protected:
 
     void set_plan(const Plan &plan);
     bool check_goal_and_set_plan(const State &state);
-    int get_adjusted_cost(const Operator &op) const;
+    int get_adjusted_cost(const GlobalOperator &op) const;
 public:
     SearchEngine(const Options &opts);
     virtual ~SearchEngine();

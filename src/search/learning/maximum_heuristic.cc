@@ -124,7 +124,7 @@ void MaxHeuristic::print_statistics() const {
     }
 }
 
-bool MaxHeuristic::reach_state(const State &parent_state, const Operator &op,
+bool MaxHeuristic::reach_state(const State &parent_state, const GlobalOperator &op,
                                const State &state) {
     int ret = false;
     int val;

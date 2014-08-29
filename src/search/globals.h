@@ -11,7 +11,7 @@ class CausalGraph;
 class DomainTransitionGraph;
 class IntPacker;
 class LegacyCausalGraph;
-class Operator;
+class GlobalOperator;
 class RandomNumberGenerator;
 class State;
 class SuccessorGenerator;
@@ -19,8 +19,8 @@ class Timer;
 class StateRegistry;
 
 bool test_goal(const State &state);
-void save_plan(const std::vector<const Operator *> &plan, int iter);
-int calculate_plan_cost(const std::vector<const Operator *> &plan);
+void save_plan(const std::vector<const GlobalOperator *> &plan, int iter);
+int calculate_plan_cost(const std::vector<const GlobalOperator *> &plan);
 
 void read_everything(std::istream &in);
 void dump_everything();
@@ -57,8 +57,8 @@ extern std::vector<int> g_initial_state_data;
 extern const State &g_initial_state();
 extern std::vector<std::pair<int, int> > g_goal;
 
-extern std::vector<Operator> g_operators;
-extern std::vector<Operator> g_axioms;
+extern std::vector<GlobalOperator> g_operators;
+extern std::vector<GlobalOperator> g_axioms;
 extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
 extern std::vector<DomainTransitionGraph *> g_transition_graphs;
