@@ -328,7 +328,7 @@ void get_operator_postcondition(int op_index, FluentSet &post) {
     Operator &op = g_operators[op_index];
 
     const std::vector<Condition> &preconditions = op.get_preconditions();
-    const std::vector<Effect> &effects = op.get_effects();
+    const std::vector<GlobalEffect> &effects = op.get_effects();
     std::vector<bool> has_effect_on_var(g_variable_domain.size(), false);
 
     for (int i = 0; i < effects.size(); i++) {

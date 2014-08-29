@@ -39,7 +39,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     // the landmark then at the first time the landmark is reached the
     // variable must still have the initial value.
     const State &initial_state = g_initial_state();
-    const vector<Effect> &effects = o.get_effects();
+    const vector<GlobalEffect> &effects = o.get_effects();
     for (size_t j = 0; j < effects.size(); ++j) {
         int var = effects[j].var;
         if (!has_precondition_on_var[var] && g_variable_domain[var] == 2) {

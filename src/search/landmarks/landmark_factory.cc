@@ -59,7 +59,7 @@ bool LandmarkFactory::achieves_non_conditional(const Operator &o,
     /* Test whether the landmark is achieved by the operator unconditionally.
     A disjunctive landmarks is achieved if one of its disjuncts is achieved. */
     assert(lmp != NULL);
-    const vector<Effect> &effects = o.get_effects();
+    const vector<GlobalEffect> &effects = o.get_effects();
     for (size_t j = 0; j < effects.size(); ++j) {
         for (size_t k = 0; k < lmp->vars.size(); ++k) {
             if (effects[j].var == lmp->vars[k] && effects[j].val
@@ -102,7 +102,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
         for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
             const Operator &op = lm_graph->get_operator_for_lookup_index(i);
             lvl_op[i] = hash_map<pair<int, int>, int, hash_int_pair> ();
-            const vector<Effect> &effects = op.get_effects();
+            const vector<GlobalEffect> &effects = op.get_effects();
             for (size_t j = 0; j < effects.size(); ++j)
                 lvl_op[i].insert(make_pair(make_pair(effects[j].var,
                                                      effects[j].val),
@@ -176,7 +176,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
     return false;
 }
 
-bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
+bool LandmarkFactory::effect_always_happens(const vector<GlobalEffect> &effects, set<
                                                 pair<int, int> > &eff) const {
     /* Test whether the condition of a conditional effect is trivial, i.e. always true.
      We test for the simple case that the same effect proposition is triggered by
@@ -339,7 +339,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 // e.g. in Schedule. There, the same effect is conditioned on a disjunction
                 // of conditions of which one will always be true. We test for a simple kind
                 // of these trivial conditions here.)
-                const vector<Effect> &effects = op.get_effects();
+                const vector<GlobalEffect> &effects = op.get_effects();
                 set<pair<int, int> > trivially_conditioned_effects;
                 bool trivial_conditioned_effects_found = effect_always_happens(effects,
                                                                                trivially_conditioned_effects);

@@ -193,7 +193,7 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
     vector<const Operator *> ha_disj;
 
     for (int i = 0; i < all_operators.size(); i++) {
-        const vector<Effect> &effects = all_operators[i]->get_effects();
+        const vector<GlobalEffect> &effects = all_operators[i]->get_effects();
         for (int j = 0; j < effects.size(); j++) {
             if (!effects[j].does_fire(state))
                 continue;

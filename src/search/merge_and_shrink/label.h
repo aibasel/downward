@@ -20,7 +20,7 @@ class Label {
     // operator, which is the operator an OperatorLabel was built from or
     // the "first" label of all parent labels when constructing a CompositeLabel.
     const std::vector<Condition> &preconditions;
-    const std::vector<Effect> &effects;
+    const std::vector<GlobalEffect> &effects;
 protected:
     // root is a pointer to a composite label that this label has been reduced
     // to, if such a label exists, or to itself, if the label has not been
@@ -28,12 +28,12 @@ protected:
     Label *root;
 
     Label(int id, int cost, const std::vector<Condition> &precondition,
-          const std::vector<Effect> &effects);
+          const std::vector<GlobalEffect> &effects);
     virtual ~Label() {}
     virtual void update_root(CompositeLabel *new_root) = 0;
 public:
     const std::vector<Condition> &get_preconditions() const {return preconditions; }
-    const std::vector<Effect> &get_effects() const {return effects; }
+    const std::vector<GlobalEffect> &get_effects() const {return effects; }
     int get_id() const {
         return id;
     }
@@ -49,7 +49,7 @@ class OperatorLabel : public Label {
     void update_root(CompositeLabel *new_root);
 public:
     OperatorLabel(int id, int cost, const std::vector<Condition> &conditions,
-                  const std::vector<Effect> &effects);
+                  const std::vector<GlobalEffect> &effects);
 
     const std::vector<Label *> &get_parents() const;
 };

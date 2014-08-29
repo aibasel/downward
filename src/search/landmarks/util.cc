@@ -47,7 +47,7 @@ bool _possibly_reaches_lm(const Operator &o, const vector<vector<int> > &lvl_var
 
     // Go through all effects of o and check whether one can reach a
     // proposition in lmp
-    const vector<Effect> &effects = o.get_effects();
+    const vector<GlobalEffect> &effects = o.get_effects();
     for (size_t i = 0; i < effects.size(); ++i) {
         assert(!lvl_var[effects[i].var].empty());
         for (size_t j = 0; j < lmp->vars.size(); ++j) {

@@ -68,7 +68,7 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
     state_data_pool.push_back(predecessor.get_packed_buffer());
     PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
     for (size_t i = 0; i < op.get_effects().size(); ++i) {
-        const Effect &effect = op.get_effects()[i];
+        const GlobalEffect &effect = op.get_effects()[i];
         if (effect.does_fire(predecessor))
             g_state_packer->set(buffer, effect.var, effect.val);
     }
