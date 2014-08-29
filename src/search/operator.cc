@@ -49,22 +49,6 @@ Operator::Operator(istream &in, bool axiom) {
     }
 
     marker1 = marker2 = false;
-
-    for (int i = 0; i < prevail.size(); ++i) {
-        const Prevail &prev = prevail[i];
-        preconditions.push_back(GlobalOperatorCondition(prev.var, prev.prev));
-    }
-    for (int i = 0; i < pre_post.size(); ++i) {
-        const PrePost &effect = pre_post[i];
-        if (effect.pre != -1) {
-            preconditions.push_back(GlobalOperatorCondition(effect.var, effect.pre));
-        }
-        vector<GlobalOperatorCondition> conditions;
-        for (int j = 0; j < effect.cond.size(); ++j) {
-            conditions.push_back(GlobalOperatorCondition(effect.cond[j].var, effect.cond[j].prev));
-        }
-        effects.push_back(GlobalOperatorEffect(effect.var, effect.post, conditions));
-    }
 }
 
 void Prevail::dump() const {
