@@ -9,19 +9,18 @@
 class Options;
 
 class ConstEvaluator : public Heuristic {
-private:
     int value;
 
 protected:
-    int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const State &state);
 
 public:
     ConstEvaluator(const Options &opts);
-    ~ConstEvaluator();
+    virtual ~ConstEvaluator();
 
-    void evaluate(int, bool) {}
-    bool is_dead_end() const;
-    bool dead_end_is_reliable() const;
+    virtual void evaluate(int, bool) {}
+    virtual bool is_dead_end() const;
+    virtual bool dead_end_is_reliable() const;
 };
 
 #endif
