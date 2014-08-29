@@ -10,8 +10,8 @@
 #include "search_space.h"
 #include "search_progress.h"
 
-class Heuristic;
 class GlobalOperator;
+class Heuristic;
 class Options;
 
 typedef std::pair<StateID, const GlobalOperator *> OpenListEntryLazy;

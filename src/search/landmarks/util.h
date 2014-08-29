@@ -5,8 +5,8 @@
 #include <ext/hash_map>
 
 class GlobalCondition;
-class LandmarkNode;
 class GlobalOperator;
+class LandmarkNode;
 
 bool _possibly_fires(const std::vector<GlobalCondition> &conditions,
                      const std::vector<std::vector<int> > &lvl_var);

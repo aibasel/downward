@@ -3,9 +3,9 @@
 
 #include <set>
 
-class Heuristic;
 class GlobalOperator;
 class GlobalState;
+class Heuristic;
 
 class Evaluator {
 public:

@@ -8,8 +8,8 @@
 using namespace std;
 
 class CGHeuristic;
-class GlobalState;
 class GlobalOperator;
+class GlobalState;
 
 class ValueNode;
 class ValueTransition;

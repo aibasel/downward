@@ -11,10 +11,10 @@
 #include "evaluator.h"
 #include "search_progress.h"
 
-class Heuristic;
 class GlobalOperator;
-class ScalarEvaluator;
+class Heuristic;
 class Options;
+class ScalarEvaluator;
 
 class EagerSearch : public SearchEngine {
     // Search Behavior parameters
