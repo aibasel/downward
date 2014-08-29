@@ -1,7 +1,7 @@
 #include "globals.h"
 #include "search_space.h"
-#include "state.h"
-#include "operator.h"
+#include "global_state.h"
+#include "global_operator.h"
 
 #include <cassert>
 #include "search_node_info.h"

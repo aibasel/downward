@@ -2,7 +2,7 @@
 
 #include "state_vars_feature_extractor.h"
 #include "../globals.h"
-#include "../state.h"
+#include "../global_state.h"
 
 StateVarFeatureExtractor::StateVarFeatureExtractor() {
 }

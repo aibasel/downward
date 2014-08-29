@@ -1,7 +1,7 @@
 #include "enforced_hill_climbing_search.h"
 #include "successor_generator.h"
 #include "heuristic.h"
-#include "operator.h"
+#include "global_operator.h"
 #include "pref_evaluator.h"
 #include "plugin.h"
 #include "utilities.h"

@@ -1,6 +1,6 @@
 #include "maximum_heuristic.h"
 #include "../globals.h"
-#include "../state.h"
+#include "../global_state.h"
 #include "../search_space.h"
 #include "../option_parser.h"
 

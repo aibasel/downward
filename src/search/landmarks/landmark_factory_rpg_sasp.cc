@@ -3,8 +3,8 @@
 #include "landmark_graph.h"
 #include "util.h"
 
-#include "../operator.h"
-#include "../state.h"
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
 #include "../domain_transition_graph.h"
 #include "../option_parser.h"

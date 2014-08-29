@@ -5,11 +5,11 @@
 
 #include "../causal_graph.h"
 #include "../globals.h"
-#include "../operator.h"
+#include "../global_operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
-#include "../state.h"
+#include "../global_state.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
 #include "../timer.h"

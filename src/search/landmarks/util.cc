@@ -2,7 +2,7 @@
 
 #include "landmark_graph.h"
 
-#include "../operator.h"
+#include "../global_operator.h"
 
 #include <limits>
 

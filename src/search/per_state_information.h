@@ -3,7 +3,7 @@
 
 #include "globals.h"
 #include "segmented_vector.h"
-#include "state.h"
+#include "global_state.h"
 #include "state_id.h"
 #include "state_registry.h"
 #include "utilities.h"

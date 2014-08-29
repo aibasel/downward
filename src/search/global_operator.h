@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "globals.h"
-#include "state.h"
+#include "global_state.h"
 
 struct GlobalCondition {
     int var;

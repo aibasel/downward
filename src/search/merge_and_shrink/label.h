@@ -1,7 +1,7 @@
 #ifndef MERGE_AND_SHRINK_LABEL_H
 #define MERGE_AND_SHRINK_LABEL_H
 
-#include "../operator.h"
+#include "../global_operator.h"
 
 #include <vector>
 

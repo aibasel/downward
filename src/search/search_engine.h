@@ -7,7 +7,7 @@ class Heuristic;
 class OptionParser;
 class Options;
 
-#include "operator.h"
+#include "global_operator.h"
 #include "search_space.h"
 #include "search_progress.h"
 #include "operator_cost.h"

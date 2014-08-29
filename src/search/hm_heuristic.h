@@ -8,8 +8,8 @@
 
 #include "heuristic.h"
 #include "globals.h"
-#include "state.h"
-#include "operator.h"
+#include "global_state.h"
+#include "global_operator.h"
 
 using namespace std;
 

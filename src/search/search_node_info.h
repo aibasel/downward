@@ -2,7 +2,7 @@
 #define SEARCH_NODE_INFO_H
 
 #include "state_id.h"
-#include "operator.h"
+#include "global_operator.h"
 
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.

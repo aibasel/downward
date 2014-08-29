@@ -4,7 +4,7 @@
 #include "globals.h"
 #include "int_packer.h"
 #include "segmented_vector.h"
-#include "state.h"
+#include "global_state.h"
 #include "state_id.h"
 #include "utilities.h"
 

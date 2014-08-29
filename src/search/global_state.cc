@@ -1,4 +1,4 @@
-#include "state.h"
+#include "global_state.h"
 
 #include "globals.h"
 #include "utilities.h"

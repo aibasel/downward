@@ -1,7 +1,7 @@
 #include "exploration.h"
 #include "../globals.h"
-#include "../operator.h"
-#include "../state.h"
+#include "../global_operator.h"
+#include "../global_state.h"
 
 #include <cassert>
 #include <limits>
