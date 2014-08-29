@@ -120,11 +120,19 @@ void DomainTransitionGraph::read_data(istream &in) {
             // afterthought.
             sort(precond_pairs.begin(), precond_pairs.end());
 
-            const vector<PrePost> &pre_post = the_operator->get_pre_post();
-            for (int j = 0; j < pre_post.size(); j++) {
-                int var_no = pre_post[j].var;
-                int pre = pre_post[j].pre;
-                int post = pre_post[j].post;
+            hash_map<int, int> pre_map;
+            const vector<Condition> &preconditions = the_operator->get_preconditions();
+            for (int j = 0; j < preconditions.size(); ++j)
+                pre_map[preconditions[j].var] = preconditions[j].val;
+
+            const vector<Effect> &effects = the_operator->get_effects();
+            for (int j = 0; j < effects.size(); ++j) {
+                int var_no = effects[j].var;
+                int pre = -1;
+                hash_map<int, int>::const_iterator pre_it = pre_map.find(var_no); 
+                if (pre_it != pre_map.end())
+                    pre = pre_it->second;
+                int post = effects[j].val;
 
                 if (var_no == var || !global_to_cea_parent.count(var_no)) {
                     // This is either an effect on the variable we're
@@ -138,9 +146,9 @@ void DomainTransitionGraph::read_data(istream &in) {
                 if (pre != -1)
                     triggercond_pairs.push_back(make_pair(var_no, pre));
 
-                const vector<Prevail> &cond = pre_post[j].cond;
+                const vector<Condition> &cond = effects[j].conditions;
                 for (int k = 0; k < cond.size(); k++)
-                    triggercond_pairs.push_back(make_pair(cond[k].var, cond[k].prev));
+                    triggercond_pairs.push_back(make_pair(cond[k].var, cond[k].val));
                 sort(triggercond_pairs.begin(), triggercond_pairs.end());
 
                 if (includes(precond_pairs.begin(), precond_pairs.end(),

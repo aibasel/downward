@@ -202,22 +202,19 @@ LabelSignature LabelReducer::build_label_signature(
     vector<Assignment> preconditions;
     vector<Assignment> effects;
 
-    const vector<Prevail> &prev = label.get_prevail();
-    for (size_t i = 0; i < prev.size(); ++i) {
-        int var = prev[i].var;
+    const vector<Condition> &precs = label.get_preconditions();
+    for (size_t i = 0; i < precs.size(); ++i) {
+        int var = precs[i].var;
         if (var_is_used[var]) {
-            int val = prev[i].prev;
+            int val = precs[i].val;
             preconditions.push_back(make_pair(var, val));
         }
     }
-    const vector<PrePost> &pre_post = label.get_pre_post();
-    for (size_t i = 0; i < pre_post.size(); ++i) {
-        int var = pre_post[i].var;
+    const vector<Effect> &effs = label.get_effects();
+    for (size_t i = 0; i < effs.size(); ++i) {
+        int var = effs[i].var;
         if (var_is_used[var]) {
-            int pre = pre_post[i].pre;
-            if (pre != -1)
-                preconditions.push_back(make_pair(var, pre));
-            int post = pre_post[i].post;
+            int post = effs[i].val;
             effects.push_back(make_pair(var, post));
         }
     }

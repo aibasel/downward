@@ -40,9 +40,9 @@ void LandmarkGraph::generate_operators_lookups() {
     }
     for (unsigned i = 0; i < g_operators.size() + g_axioms.size(); i++) {
         const Operator &op = get_operator_for_lookup_index(i);
-        const vector<PrePost> &prepost = op.get_pre_post();
-        for (unsigned j = 0; j < prepost.size(); j++) {
-            operators_eff_lookup[prepost[j].var][prepost[j].post].push_back(i);
+        const vector<Effect> &effects = op.get_effects();
+        for (unsigned j = 0; j < effects.size(); j++) {
+            operators_eff_lookup[effects[j].var][effects[j].val].push_back(i);
         }
     }
 }

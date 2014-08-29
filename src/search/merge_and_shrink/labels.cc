@@ -18,7 +18,7 @@ Labels::Labels(bool unit_cost_, const Options &options, OperatorCost cost_type)
         labels.reserve(g_operators.size() * 2 - 1);
     for (size_t i = 0; i < g_operators.size(); ++i) {
         labels.push_back(new OperatorLabel(i, get_adjusted_action_cost(g_operators[i], cost_type),
-                                           g_operators[i].get_prevail(), g_operators[i].get_pre_post()));
+                                           g_operators[i].get_preconditions(), g_operators[i].get_effects()));
     }
 }
 

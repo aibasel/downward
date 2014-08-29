@@ -193,12 +193,12 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
     vector<const Operator *> ha_disj;
 
     for (int i = 0; i < all_operators.size(); i++) {
-        const vector<PrePost> &prepost = all_operators[i]->get_pre_post();
-        for (int j = 0; j < prepost.size(); j++) {
-            if (!prepost[j].does_fire(state))
+        const vector<Effect> &effects = all_operators[i]->get_effects();
+        for (int j = 0; j < effects.size(); j++) {
+            if (!effects[j].does_fire(state))
                 continue;
-            const pair<int, int> varval = make_pair(prepost[j].var,
-                                                    prepost[j].post);
+            const pair<int, int> varval = make_pair(effects[j].var,
+                                                    effects[j].val);
             LandmarkNode *lm_p = lgraph.get_landmark(varval);
             if (lm_p != 0 && landmark_is_interesting(state, reached, *lm_p)) {
                 if (lm_p->disjunctive) {
