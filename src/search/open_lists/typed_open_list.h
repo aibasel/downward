@@ -2,9 +2,9 @@
 #define OPEN_LISTS_TYPED_OPEN_LIST_H
 
 #include "open_list.h"
+#include "pareto_open_list.h"
 #include "../evaluator.h"
 #include "../plugin.h"
-#include "pareto_open_list.h"
 
 #include <vector>
 

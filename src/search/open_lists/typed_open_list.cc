@@ -1,9 +1,9 @@
 // HACK! Ignore this if used as a top-level compile target.
 #ifdef OPEN_LISTS_TYPED_OPEN_LIST_H
 
+#include "../globals.h"
 #include "../option_parser.h"
 #include "../rng.h"
-#include "../globals.h"
 #include "../utilities.h"
 
 #include <cassert>
@@ -15,7 +15,7 @@ using namespace std;
 template<class Entry>
 OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
     parser.document_synopsis("Typed open list",
-                             "Typed open list that uses multiple evaluators to put nodes into buckets. "
+                             "Type-Based open list that uses multiple evaluators to put nodes into buckets. "
                              "When retrieving a node, a bucket is chosen uniformly at random and one of the contained nodes is selected randomly. "
                              "This open list should be used in combination with other open lists, e.g. alt().");
     parser.add_list_option<ScalarEvaluator *>("sublists", "The evaluators to group the nodes by.");
